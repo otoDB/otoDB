@@ -1,0 +1,13 @@
+diff-match-patch==20230430
+Django==4.2.5
+django-debug-toolbar==4.2.0
+django-role-permissions==3.2.0
+django-simple-history==3.4.0
+django-storages==1.14
+django-taggit==4.0.0
+dotmap==1.3.30
+Pillow==10.0.1
+python-dotenv==1.0.0
+PyYAML==6.0.1
+s3transfer==0.6.2
+yt-dlp==2023.7.6

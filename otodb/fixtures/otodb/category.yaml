@@ -1,0 +1,40 @@
+- model: otodb.category
+  pk: 1
+  fields:
+    label: General
+    title_singular: General
+    title_plural: Generals
+    shortcut: gen
+    color: ffffff
+- model: otodb.category
+  pk: 2
+  fields:
+    label: Language
+    title_singular: Language
+    title_plural: Languages
+    shortcut: lang
+    color: ffffff
+- model: otodb.category
+  pk: 3
+  fields:
+    label: Source
+    title_singular: Source
+    title_plural: Sources
+    shortcut: src
+    color: ffffff
+- model: otodb.category
+  pk: 4
+  fields:
+    label: Creator
+    title_singular: Creator
+    title_plural: Creators
+    shortcut: c
+    color: ffffff
+- model: otodb.category
+  pk: 5
+  fields:
+    label: Meta
+    title_singular: Meta
+    title_plural: Meta
+    shortcut: meta
+    color: ffffff

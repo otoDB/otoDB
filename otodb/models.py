@@ -21,6 +21,11 @@ class TagCategory(IntEnum):
     META      = 5
     CHARACTER = 6
 
+class MediaOrigin(models.IntegerChoices):
+    AUTHOR   = 0, "Author"
+    PRIMARY  = 1, "Primary"
+    REUPLOAD = 2, "Reupload"
+
 class Rating(models.IntegerChoices):
     NONE         = 0, "None"
     GENERAL      = 1, "General"
@@ -208,7 +213,13 @@ class Media(models.Model):
         verbose_name = ("Media")
         verbose_name_plural = ("Media")
 
-
+class MediaSource(models.Model):
+    media = models.ForeignKey(Media, on_delete=models.CASCADE)
+    url = models.URLField()
+    media_origin = models.IntegerField(
+        choices=MediaOrigin.choices,
+        default=MediaOrigin.AUTHOR
+    )
 
 class Configuration(models.Model):
     code_name = models.CharField(max_length=127, blank=False)

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ___ import settings  # noqa: F811
 
+
 def G(request):
     return DotMap({
         "config": settings.OTODB_CONFIG_DICT

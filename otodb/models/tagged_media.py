@@ -14,7 +14,7 @@ class TaggedMedia(GenericTaggedItemBase):
         role_flags: BitField
 
     tag = models.ForeignKey(TagMain, related_name="%(app_label)s_%(class)s_items", on_delete=models.CASCADE)
-    role_flags = BitField(RoleFlags) # type: ignore
+    role_flags = BitField(RoleFlags)  # type: ignore
 
     def save(self, *args, **kwargs):
         if self.role_flags.mask == 0 and self.tag.default_role_flags.mask != 0:

@@ -13,8 +13,8 @@ from .enums import RoleFlags, TagCategory
 
 class TagMain(TagBase):
     # NOTE: default=1 == 'General' -- see fixtures/otodb/category.yaml for more
-    category = models.ForeignKey(Category, default=int(TagCategory.GENERAL), on_delete=models.SET_DEFAULT) # type: ignore
-    default_role_flags = BitField(RoleFlags) # type: ignore
+    category = models.ForeignKey(Category, default=int(TagCategory.GENERAL), on_delete=models.SET_DEFAULT)  # type: ignore
+    default_role_flags = BitField(RoleFlags)  # type: ignore
     wiki_page = models.OneToOneField('wiki.WikiPage', on_delete=models.CASCADE, null=True, blank=True)
     aliases = TaggableManager(
         verbose_name="Aliases",
@@ -41,6 +41,7 @@ class TagMain(TagBase):
         permissions = [
             ("manage_tags", "Can manage tags"),
         ]
+
 
 # NOTE: This is not ideal because the `contains` filter could match on
 #       a substring of a tag, and thus have to check more rows.

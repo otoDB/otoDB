@@ -56,6 +56,10 @@ class Implication(models.Model):
     def __str__(self) -> str:
         return f'{self.from_tag} -> {self.to_tag}'
 
+    def save(self, *args, **kwargs):
+        super(Implication, self).save(*args, **kwargs)
+        utils.verify_and_perform_implications(self.from_tag)
+
 class Category(models.Model):
     if TYPE_CHECKING:
         id: int

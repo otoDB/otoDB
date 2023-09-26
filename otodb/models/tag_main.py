@@ -14,14 +14,14 @@ from .enums import RoleFlags, TagCategory
 class TagMain(TagBase):
     # NOTE: default=1 == 'General' -- see fixtures/otodb/category.yaml for more
     category = models.ForeignKey(Category, default=int(TagCategory.GENERAL), on_delete=models.SET_DEFAULT) # type: ignore
+    default_role_flags = BitField(RoleFlags) # type: ignore
+    wiki_page = models.OneToOneField('wiki.WikiPage', on_delete=models.CASCADE, null=True, blank=True)
     aliases = TaggableManager(
         verbose_name="Aliases",
         help_text="An optional space-separated list of tag aliases.",
         blank=True,
     )
     history = HistoricalRecords()
-    default_role_flags = BitField(RoleFlags) # type: ignore
-    wiki_page = models.OneToOneField('wiki.WikiPage', on_delete=models.CASCADE, null=True, blank=True)
 
     @property
     def display_name(self):

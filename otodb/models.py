@@ -1,18 +1,40 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 from taggit.models import GenericTaggedItemBase, TagBase
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
+from enum import IntEnum
+from bitfield import BitField
 
 from otodb.account.models import Account
 from otodb import utils
 
+# NOTE: Should match up with fixtures/otodb/category.yaml
+class TagCategory(IntEnum):
+    GENERAL  = 1
+    LANGUAGE = 2
+    SOURCE   = 3
+    CREATOR  = 4
+    META     = 5
+
 class Rating(models.IntegerChoices):
-        NONE = 0, "None"
-        GENERAL = 1, "General"
-        SENSITIVE = 2, "Sensitive"
-        QUESTIONABLE = 3, "Questionable"
-        EXPLICIT = 4, "Explicit"
+    NONE         = 0, "None"
+    GENERAL      = 1, "General"
+    SENSITIVE    = 2, "Sensitive"
+    QUESTIONABLE = 3, "Questionable"
+    EXPLICIT     = 4, "Explicit"
+
+role_flags = (
+    ('OTHER',    'Other'),
+    ('AUDIO',    'Audio'),
+    ('VISUALS',  'Visuals'),
+    ('DIRECTOR', 'Director'),
+    ('HOST',     'Host'),
+    ('MUSIC',    'Music'),
+    ('ARTIST',   'Art'),
+    ('THANKS',   'Special Thanks'),
+)
 
 class Implication(models.Model):
     from_tag = models.ForeignKey("otodb.TagMain", blank=True, null=True, default=None, on_delete=models.CASCADE, related_name="from_implications")
@@ -52,16 +74,26 @@ class Category(models.Model):
 
 class TagMain(TagBase):
     # NOTE: default=1 == 'General' -- see fixtures/otodb/category.yaml for more
-    category = models.ForeignKey(Category, default=1, on_delete=models.SET_DEFAULT) # type: ignore
+    category = models.ForeignKey(Category, default=int(TagCategory.GENERAL), on_delete=models.SET_DEFAULT) # type: ignore
     aliases = TaggableManager(
         verbose_name="Aliases",
         help_text="An optional space-separated list of tag aliases.",
         blank=True,
     )
     history = HistoricalRecords()
+    default_role_flags = BitField(role_flags, null=True, blank=True) # type: ignore
+
+    @property
+    def display_name(self):
+        return self.name.replace('_', ' ')
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.default_role_flags.mask != 0:
+            if self.category.id != TagCategory.CREATOR:
+                raise ValidationError('Role flags can only be set for creator tags')
 
     class Meta:
         verbose_name = ("Tag")
@@ -72,10 +104,22 @@ class TagMain(TagBase):
 
 class TaggedMedia(GenericTaggedItemBase):
     tag = models.ForeignKey(TagMain, related_name="%(app_label)s_%(class)s_items", on_delete=models.CASCADE)
+    role_flags = BitField(role_flags) # type: ignore
 
     def save(self, *args, **kwargs):
+        if self.role_flags.mask == 0 and self.tag.default_role_flags.mask != 0: # type: ignore
+            self.role_flags = self.tag.default_role_flags
         super(TaggedMedia, self).save(*args, **kwargs)
         utils.verify_and_perform_implications(self.tag)
+
+    def clean(self):
+        if self.role_flags is not None and self.role_flags.mask != 0: # type: ignore
+            if self.tag.category.id != TagCategory.CREATOR:
+                raise ValidationError('Role flags can only be set for creator tags')
+
+    class Meta:
+        verbose_name = ("Tagged Media")
+        verbose_name_plural = ("Tagged Media")
 
 class Media(models.Model):
     if TYPE_CHECKING:
@@ -104,6 +148,9 @@ class Media(models.Model):
 
     def __str__(self) -> str:
         return f'#{self.id}'
+
+    def save(self, *args, **kwargs):
+        super(Media, self).save(*args, **kwargs)
 
     def get_parent(self):
         if self.parent:
@@ -138,6 +185,12 @@ class Media(models.Model):
         if missing_implications.exists():
             for impl in missing_implications:
                 self.tags.add(impl.to_tag)
+
+        self.check_and_update_mirror()
+
+    class Meta:
+        verbose_name = ("Media")
+        verbose_name_plural = ("Media")
 
 
 

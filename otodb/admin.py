@@ -16,6 +16,11 @@ class TaggedMediaAdmin(admin.ModelAdmin):
         BitField: {'widget': BitFieldCheckboxSelectMultiple},
     }
 
+class MediaAdmin(admin.ModelAdmin):
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.check_and_update_implications()
+
 admin.site.register([
     Category,
     Implication,

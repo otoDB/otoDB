@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group
+from django.contrib.auth.models import AbstractUser
 from rolepermissions.roles import assign_role
 from typing import TYPE_CHECKING
 
@@ -32,7 +32,7 @@ class Account(AbstractUser):
         give_role = False
         if self._is_a_new_user():
             give_role = True
-        
+
         super(Account, self).save(*args, **kwargs)
 
         if give_role:

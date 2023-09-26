@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 from taggit.models import GenericTaggedItemBase, TagBase
@@ -169,13 +171,18 @@ class Media(models.Model):
     def get_children(self):
         return Media.objects.filter(parent=self.id) or None
 
-    def check_and_update_mirror(self):
+    def check_and_update_mirror(self, record_history=False):
         mirror = " ".join(self.tags.names())
 
         if self.tags_mirror != mirror:
             self.tags_mirror = mirror
+        else:
+            return
 
-        self.save_without_historial_record()
+        if record_history:
+            self.save()
+        else:
+            self.save_without_historial_record()
 
     def save_without_historial_record(self, *args, **kwargs):
         self.skip_history_when_saving = True
@@ -214,3 +221,10 @@ class Configuration(models.Model):
         permissions = [
             ('manage_configuration', 'Can change the configurations of the application'),
         ]
+
+# NOTE: This is not ideal because the `contains` filter could match on
+#       a substring of a tag, and thus have to check more rows.
+@receiver(post_delete, sender=TagMain)
+def on_post_delete_tag_main(sender, instance, using, **kwargs):
+    for media in Media.objects.filter(tags_mirror__contains=instance.name):
+        media.check_and_update_mirror(record_history=True)

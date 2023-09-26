@@ -7,6 +7,7 @@ from .tagged_media import TaggedMedia
 from .implication import Implication
 from .enums import Rating
 
+
 class Media(models.Model):
     if TYPE_CHECKING:
         id: int

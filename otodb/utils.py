@@ -5,15 +5,18 @@ if TYPE_CHECKING:
     from .models import Media as T_Media
     from .models import Implication as T_Implication
 
+
 def space_splitter(tag_string):
     return [t.strip().lower() for t in tag_string.split(' ') if t.strip()]
+
 
 def space_joiner(tags):
     return ' '.join(t.name for t in tags)
 
+
 def verify_and_perform_implications(from_tag_name):
-    Media: 'T_Media' = apps.get_model('otodb', 'Media') # type: ignore
-    Implication: 'T_Implication' = apps.get_model('otodb', 'Implication') # type: ignore
+    Media: 'T_Media' = apps.get_model('otodb', 'Media')  # type: ignore
+    Implication: 'T_Implication' = apps.get_model('otodb', 'Implication')  # type: ignore
 
     implication = Implication.objects.filter(from_tag__name=from_tag_name, status=1).first()
 
@@ -26,6 +29,7 @@ def verify_and_perform_implications(from_tag_name):
         if missing_media.exists():
             for media in missing_media:
                 media.check_and_update_implications()
+
 
 def get_diff(field_name, old_revision, new_revision):
     old_revision_field = old_revision.field_dict[field_name]

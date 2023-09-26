@@ -2,6 +2,7 @@ from django.db import models
 from otodb.account.models import Account
 from otodb import utils
 
+
 class Implication(models.Model):
     from_tag = models.ForeignKey("otodb.TagMain", blank=True, null=True, default=None, on_delete=models.CASCADE, related_name="from_implications")
     to_tag = models.ForeignKey("otodb.TagMain", blank=True, null=True, default=None, on_delete=models.CASCADE, related_name="to_implications")

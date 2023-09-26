@@ -7,6 +7,7 @@ class MediaOrigin(models.IntegerChoices):
     PRIMARY  = 1, "Primary"
     REUPLOAD = 2, "Reupload"
 
+
 class MediaSource(models.Model):
     media = models.ForeignKey(Media, on_delete=models.CASCADE)
     url = models.URLField()

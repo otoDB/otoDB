@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Configuration(models.Model):
     code_name = models.CharField(max_length=127, blank=False)
     value = models.TextField(blank=True)

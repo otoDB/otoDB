@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from otodb.managers import UserManager
 
+
 class Priviledge(models.Model):
     name = models.CharField(max_length=255)
     codename = models.CharField(max_length=127)
@@ -16,6 +17,7 @@ class Priviledge(models.Model):
 
     def __str__(self) -> str:
         return f'{self.codename} | {self.name}'
+
 
 class Account(AbstractUser):
     # first_name = None

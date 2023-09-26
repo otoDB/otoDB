@@ -109,17 +109,20 @@ class TagMain(TagBase):
         ]
 
 class TaggedMedia(GenericTaggedItemBase):
+    if TYPE_CHECKING:
+        role_flags: BitField
+
     tag = models.ForeignKey(TagMain, related_name="%(app_label)s_%(class)s_items", on_delete=models.CASCADE)
     role_flags = BitField(role_flags) # type: ignore
 
     def save(self, *args, **kwargs):
-        if self.role_flags.mask == 0 and self.tag.default_role_flags.mask != 0: # type: ignore
+        if self.role_flags.mask == 0 and self.tag.default_role_flags.mask != 0:
             self.role_flags = self.tag.default_role_flags
         super(TaggedMedia, self).save(*args, **kwargs)
         utils.verify_and_perform_implications(self.tag)
 
     def clean(self):
-        if self.role_flags is not None and self.role_flags.mask != 0: # type: ignore
+        if self.role_flags is not None and self.role_flags.mask != 0:
             if self.tag.category.id != TagCategory.CREATOR:
                 raise ValidationError('Role flags can only be set for creator tags')
 

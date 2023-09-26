@@ -45,7 +45,7 @@ class TagMain(TagBase):
 # NOTE: This is not ideal because the `contains` filter could match on
 #       a substring of a tag, and thus have to check more rows.
 @receiver(post_delete, sender=TagMain)
-def on_post_delete_tag_main(sender, instance, using, **kwargs):
+def on_post_delete_tag_main(sender, instance: TagMain, using, **kwargs):
     from .media import Media
     for media in Media.objects.filter(tags_mirror__contains=instance.name):
         media.check_and_update_mirror(record_history=True)

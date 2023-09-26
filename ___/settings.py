@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'otodb',
     'otodb.account',
+    'otodb.wiki',
     'simple_history',
     'taggit',
     'rolepermissions',

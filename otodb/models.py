@@ -86,6 +86,7 @@ class TagMain(TagBase):
     )
     history = HistoricalRecords()
     default_role_flags = BitField(role_flags, null=True, blank=True) # type: ignore
+    wiki_page = models.OneToOneField('wiki.WikiPage', on_delete=models.CASCADE, null=True, blank=True)
 
     @property
     def display_name(self):

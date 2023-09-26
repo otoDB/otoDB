@@ -38,3 +38,11 @@
     title_plural: Meta
     shortcut: meta
     color: ffffff
+- model: otodb.category
+  pk: 6
+  fields:
+    label: Character
+    title_singular: Character
+    title_plural: Characters
+    shortcut: char
+    color: ffffff

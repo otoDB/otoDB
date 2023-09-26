@@ -11,11 +11,11 @@ def space_splitter(tag_string):
 def space_joiner(tags):
     return ' '.join(t.name for t in tags)
 
-def verify_and_perform_implications(tag_name):
+def verify_and_perform_implications(from_tag_name):
     Media: 'T_Media' = apps.get_model('otodb', 'Media') # type: ignore
     Implication: 'T_Implication' = apps.get_model('otodb', 'Implication') # type: ignore
 
-    implication = Implication.objects.filter(from_tag__name=tag_name, status=1).first()
+    implication = Implication.objects.filter(from_tag__name=from_tag_name, status=1).first()
 
     if implication is not None:
         from_tag = implication.from_tag

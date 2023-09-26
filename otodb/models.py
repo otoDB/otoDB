@@ -12,11 +12,12 @@ from otodb import utils
 
 # NOTE: Should match up with fixtures/otodb/category.yaml
 class TagCategory(IntEnum):
-    GENERAL  = 1
-    LANGUAGE = 2
-    SOURCE   = 3
-    CREATOR  = 4
-    META     = 5
+    GENERAL   = 1
+    LANGUAGE  = 2
+    SOURCE    = 3
+    CREATOR   = 4
+    META      = 5
+    CHARACTER = 6
 
 class Rating(models.IntegerChoices):
     NONE         = 0, "None"

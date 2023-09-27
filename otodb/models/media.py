@@ -16,9 +16,10 @@ class Media(models.Model):
         id: int
 
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
-    media_name = models.CharField(max_length=255, null=False, blank=False)
-    media_width = models.IntegerField(null=True, blank=True)
-    media_height = models.IntegerField(null=True, blank=True)
+    title = models.CharField(max_length=1000, null=False, blank=False)
+    title_translated = models.CharField(max_length=1000, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    description_translated = models.TextField(null=True, blank=True)
     tags = TaggableManager(
         through=TaggedMedia,
         related_name="media",

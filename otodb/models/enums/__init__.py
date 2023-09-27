@@ -21,6 +21,16 @@ class Rating(models.IntegerChoices):
     EXPLICIT     = 4, "Explicit"
 
 
+class MediaOrigin(models.IntegerChoices):
+    AUTHOR   = 0, "Author"
+    REUPLOAD = 1, "Reupload"
+
+
+class MediaStatus(models.IntegerChoices):
+    AVAILABLE = 0, "Available"
+    DOWN      = 1, "Down"
+
+
 RoleFlags = (
     ('OTHER',    'Other'),
     ('AUDIO',    'Audio'),

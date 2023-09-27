@@ -9,12 +9,15 @@ otodb/
 │  ├─ settings.py              # Initial configuration settings
 ├─ otodb/                      # Main application
 │  ├─ account/                 # Account app
+│  ├─ common/                  # Common functionality
 │  ├─ fixtures/                # Database seed data
 │  ├─ migrations/              # Database migrations
+│  ├─ models/                  # Database models
+│  │  ├─ enums/                # Shared enums
+│  │  ├─ sources/              # Models for sources (i.e. websites)
 │  ├─ templates/               # View templates
 │  ├─ templatetags/            # Tag templates for views
 │  ├─ context_preprocessors.py # Context for views, currently just a global `G`
-├─ templates/                  # Base templates
 ├─ .env                        # Environment configuration
 ```
 

@@ -17,6 +17,7 @@ otodb/
 │  │  ├─ sources/              # Models for sources (i.e. websites)
 │  ├─ templates/               # View templates
 │  ├─ templatetags/            # Tag templates for views
+│  ├─ tests/                   # Tests
 │  ├─ context_preprocessors.py # Context for views, currently just a global `G`
 ├─ .env                        # Environment configuration
 ```

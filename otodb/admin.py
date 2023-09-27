@@ -16,12 +16,27 @@ class TaggedMediaAdmin(admin.ModelAdmin):
     formfield_overrides = {
         BitField: {'widget': BitFieldCheckboxSelectMultiple},
     }
+    readonly_fields = [
+        'tag',
+    ]
+    exclude = [
+        'content_type',
+        'object_id',
+    ]
 
 
 class MediaAdmin(admin.ModelAdmin):
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         form.instance.check_and_update_implications()
+
+    list_display = [
+        '__str__',
+        'media_name',
+    ]
+    search_fields = [
+        'media_name',
+    ]
 
 
 admin.site.register([

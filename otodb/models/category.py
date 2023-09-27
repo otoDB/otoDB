@@ -1,6 +1,9 @@
 from typing import TYPE_CHECKING
 
+from django.core.exceptions import ValidationError
 from django.db import models
+
+from otodb.common.regex import RE_HEX_COLOR
 
 
 class Category(models.Model):
@@ -15,6 +18,14 @@ class Category(models.Model):
 
     def __str__(self) -> str:
         return f'{self.title_singular}'
+
+    def clean(self):
+        if ' ' in self.shortcut:
+            raise ValidationError('Category shortcut must not contain spaces')
+        if self.shortcut != self.shortcut.lower():
+            raise ValidationError('Category shortcut must be lowercase')
+        if not RE_HEX_COLOR.match(self.color):
+            raise ValidationError('Color must be a valid hexidecimal color code (3 or 6 chars)')
 
     class Meta:
         verbose_name_plural = 'Categories'

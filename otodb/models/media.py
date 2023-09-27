@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import F, Q
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
@@ -13,8 +15,8 @@ class Media(models.Model):
     if TYPE_CHECKING:
         id: int
 
-    parent = models.IntegerField(null=True, blank=True)
-    media = models.CharField(max_length=255, null=False, blank=False)
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    media_name = models.CharField(max_length=255, null=False, blank=False)
     media_width = models.IntegerField(null=True, blank=True)
     media_height = models.IntegerField(null=True, blank=True)
     tags = TaggableManager(
@@ -39,6 +41,10 @@ class Media(models.Model):
 
     def save(self, *args, **kwargs):
         super(Media, self).save(*args, **kwargs)
+
+    def clean(self):
+        if self.parent == self:
+            raise ValidationError('Media cannot be set as parent of itself')
 
     def get_parent(self):
         if self.parent:
@@ -84,3 +90,9 @@ class Media(models.Model):
     class Meta:
         verbose_name = ("Media")
         verbose_name_plural = ("Media")
+        constraints = [
+            models.CheckConstraint(
+                name='media_prevent_self_parent',
+                check=~Q(parent=F('id'))
+            )
+        ]

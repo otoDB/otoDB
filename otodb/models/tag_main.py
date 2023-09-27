@@ -31,6 +31,8 @@ class TagMain(TagBase):
         return self.name
 
     def clean(self):
+        if ' ' in self.name or ' ' in self.slug:
+            raise ValidationError('Singular tag must not contain spaces')
         if self.default_role_flags.mask != 0:
             if self.category.id != TagCategory.CREATOR:
                 raise ValidationError('Role flags can only be set for creator tags')

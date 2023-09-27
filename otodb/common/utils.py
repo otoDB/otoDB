@@ -4,8 +4,8 @@ import diff_match_patch as dmp_mod
 from django.apps import apps
 
 if TYPE_CHECKING:
-    from .models import Implication as T_Implication
-    from .models import Media as T_Media
+    from ..models import Implication as T_Implication
+    from ..models import Media as T_Media
 
 
 def space_splitter(tag_string):

@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from taggit.models import GenericTaggedItemBase
 
-from otodb import utils
+from otodb.common import utils
 
 from .enums import RoleFlags, TagCategory
 from .tag_main import TagMain

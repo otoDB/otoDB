@@ -1,7 +1,7 @@
 from django.db import models
 
-from otodb import utils
 from otodb.account.models import Account
+from otodb.common import utils
 
 
 class Implication(models.Model):

@@ -1,11 +1,12 @@
-from django.db import models
 from typing import TYPE_CHECKING
-from taggit.managers import TaggableManager
-from simple_history.models import HistoricalRecords
 
-from .tagged_media import TaggedMedia
-from .implication import Implication
+from django.db import models
+from simple_history.models import HistoricalRecords
+from taggit.managers import TaggableManager
+
 from .enums import Rating
+from .implication import Implication
+from .tagged_media import TaggedMedia
 
 
 class Media(models.Model):

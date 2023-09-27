@@ -1,11 +1,11 @@
-from django.db import models
+from bitfield import BitField
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
-from taggit.models import TagBase
-from taggit.managers import TaggableManager
 from simple_history.models import HistoricalRecords
-from bitfield import BitField
+from taggit.managers import TaggableManager
+from taggit.models import TagBase
 
 from .category import Category
 from .enums import RoleFlags, TagCategory

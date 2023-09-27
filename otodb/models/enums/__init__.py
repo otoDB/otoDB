@@ -1,5 +1,6 @@
-from django.db import models
 from enum import IntEnum
+
+from django.db import models
 
 
 # NOTE: Should match up with fixtures/otodb/category.yaml

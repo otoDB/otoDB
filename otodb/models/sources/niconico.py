@@ -1,9 +1,9 @@
 from django.db import models
 
-from .base import SourceMediaBase
+from .base import SourceWorkBase
 
 
-class SourceMediaNiconicoCategory(models.IntegerChoices):
+class SourceWorkNiconicoCategory(models.IntegerChoices):
     NONE                  =  0, "None"
     ENTERTAINMENT         =  1, "エンターテイメント"
     RADIO                 =  2, "ラジオ"
@@ -24,11 +24,11 @@ class SourceMediaNiconicoCategory(models.IntegerChoices):
     R18                   = 17, "R-18"
 
 
-class SourceMediaNiconico(SourceMediaBase):
+class SourceWorkNiconico(SourceWorkBase):
     source_id = models.CharField(max_length=100)
     likes = models.IntegerField(null=True, blank=True)
     mylists = models.IntegerField(null=True, blank=True)
     category = models.IntegerField(
-        choices=SourceMediaNiconicoCategory.choices,
-        default=SourceMediaNiconicoCategory.NONE
+        choices=SourceWorkNiconicoCategory.choices,
+        default=SourceWorkNiconicoCategory.NONE
     )

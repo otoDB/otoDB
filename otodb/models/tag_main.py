@@ -49,6 +49,6 @@ class TagMain(TagBase):
 #       a substring of a tag, and thus have to check more rows.
 @receiver(post_delete, sender=TagMain)
 def on_post_delete_tag_main(sender, instance: TagMain, using, **kwargs):
-    from .media import Media
-    for media in Media.objects.filter(tags_mirror__contains=instance.name):
+    from .media_work import MediaWork
+    for media in MediaWork.objects.filter(tags_mirror__contains=instance.name):
         media.check_and_update_mirror(record_history=True)

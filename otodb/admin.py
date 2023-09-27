@@ -8,17 +8,18 @@ from .models import (
     Category,
     Configuration,
     Implication,
-    Media,
-    MediaSource,
-    SourceMediaNiconico,
-    SourceMediaYouTube,
+    MediaSong,
+    MediaWork,
+    SourceWorkNiconico,
+    SourceWorkYouTube,
     TaggedMedia,
     TagMain,
+    WorkSource,
 )
 
 
 class MediaSourceInline(admin.TabularInline):
-    model = MediaSource
+    model = WorkSource
     extra = 0
 
 
@@ -47,11 +48,21 @@ class MediaAdminForm(forms.ModelForm):
         super(MediaAdminForm, self).__init__(*args, **kwargs)
 
     class Meta:
-        model = Media
+        model = MediaWork
         widgets = {
             'tags': TextareaTagWidget
         }
         fields = '__all__'
+
+
+class MediaSongInline(admin.TabularInline):
+    model = MediaSong.media.through
+    extra = 0
+
+
+class MediaInline(admin.TabularInline):
+    model = MediaSong.media.through
+    extra = 0
 
 
 class MediaAdmin(admin.ModelAdmin):
@@ -60,7 +71,7 @@ class MediaAdmin(admin.ModelAdmin):
         form.instance.check_and_update_implications()
 
     form = MediaAdminForm
-    inlines = [MediaSourceInline]
+    inlines = [MediaSourceInline, MediaSongInline]
     list_display = [
         '__str__',
         'title',
@@ -70,13 +81,18 @@ class MediaAdmin(admin.ModelAdmin):
     ]
 
 
+class MediaSongAdmin(admin.ModelAdmin):
+    inlines = [MediaInline]
+
+
 admin.site.register([
     Category,
     Implication,
     Configuration,
-    SourceMediaNiconico,
-    SourceMediaYouTube
+    SourceWorkNiconico,
+    SourceWorkYouTube
 ])
 admin.site.register(TagMain, TagMainAdmin)
 admin.site.register(TaggedMedia, TaggedMediaAdmin)
-admin.site.register(Media, MediaAdmin)
+admin.site.register(MediaWork, MediaAdmin)
+admin.site.register(MediaSong, MediaSongAdmin)

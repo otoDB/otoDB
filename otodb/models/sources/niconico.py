@@ -25,7 +25,7 @@ class SourceMediaNiconicoCategory(models.IntegerChoices):
 
 
 class SourceMediaNiconico(SourceMediaBase):
-    video_id = models.CharField(max_length=100)
+    source_id = models.CharField(max_length=100)
     likes = models.IntegerField(null=True, blank=True)
     mylists = models.IntegerField(null=True, blank=True)
     category = models.IntegerField(

@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -174,8 +174,8 @@ INTERNAL_IPS = [
 ]
 
 TAGGIT_CASE_INSENSITIVE = True
-TAGGIT_TAGS_FROM_STRING = 'otodb.utils.space_splitter'
-TAGGIT_STRING_FROM_TAGS = 'otodb.utils.space_joiner'
+TAGGIT_TAGS_FROM_STRING = 'otodb.common.utils.space_splitter'
+TAGGIT_STRING_FROM_TAGS = 'otodb.common.utils.space_joiner'
 
 ROLEPERMISSIONS_MODULE = '___.roles'
 

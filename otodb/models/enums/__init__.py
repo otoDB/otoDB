@@ -21,12 +21,12 @@ class Rating(models.IntegerChoices):
     EXPLICIT     = 4, "Explicit"
 
 
-class MediaOrigin(models.IntegerChoices):
+class WorkOrigin(models.IntegerChoices):
     AUTHOR   = 0, "Author"
     REUPLOAD = 1, "Reupload"
 
 
-class MediaStatus(models.IntegerChoices):
+class WorkStatus(models.IntegerChoices):
     AVAILABLE = 0, "Available"
     DOWN      = 1, "Down"
 

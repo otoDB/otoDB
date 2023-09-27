@@ -1,9 +1,8 @@
-from django.contrib import admin
 from bitfield import BitField
 from bitfield.forms import BitFieldCheckboxSelectMultiple
-from .models import (
-    Category, Implication, Media, TagMain, Configuration, TaggedMedia
-)
+from django.contrib import admin
+
+from .models import Category, Configuration, Implication, Media, TaggedMedia, TagMain
 
 
 class TagMainAdmin(admin.ModelAdmin):

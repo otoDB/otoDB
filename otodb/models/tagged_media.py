@@ -1,12 +1,14 @@
-from django.db import models
-from django.core.exceptions import ValidationError
 from typing import TYPE_CHECKING
-from taggit.models import GenericTaggedItemBase
+
 from bitfield import BitField
+from django.core.exceptions import ValidationError
+from django.db import models
+from taggit.models import GenericTaggedItemBase
+
 from otodb import utils
 
-from .tag_main import TagMain
 from .enums import RoleFlags, TagCategory
+from .tag_main import TagMain
 
 
 class TaggedMedia(GenericTaggedItemBase):

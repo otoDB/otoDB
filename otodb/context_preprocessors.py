@@ -1,6 +1,8 @@
-from dotmap import DotMap
-from django.conf import settings
 from typing import TYPE_CHECKING
+
+from django.conf import settings
+from dotmap import DotMap
+
 if TYPE_CHECKING:
     from ___ import settings  # noqa: F811
 

@@ -1,7 +1,8 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from rolepermissions.roles import assign_role
 from typing import TYPE_CHECKING
+
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from rolepermissions.roles import assign_role
 
 from otodb.managers import UserManager
 

@@ -21,6 +21,12 @@ class Rating(models.IntegerChoices):
     EXPLICIT     = 4, "Explicit"
 
 
+class Status(models.IntegerChoices):
+    PENDING = 0, "Pending"
+    APPROVED = 1, "Approved"
+    UNAPPROVED = 2, "Unapproved"
+
+
 class WorkOrigin(models.IntegerChoices):
     AUTHOR   = 0, "Author"
     REUPLOAD = 1, "Reupload"

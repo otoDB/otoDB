@@ -7,6 +7,7 @@ from ..models import TagMain
 class WikiPage(models.Model):
     slug = models.SlugField(unique=True)
     body = models.TextField(default="")
+    other_names = models.CharField(max_length=1000)
 
     def clean(self):
         if ':' in self.slug:

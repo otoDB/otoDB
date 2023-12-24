@@ -3,6 +3,11 @@ from enum import IntEnum
 from django.db import models
 
 
+class PoolCategory(models.IntegerChoices):
+    COLLECTION = 1, "Collection"
+    SERIES = 2, "Series"
+
+
 # NOTE: Should match up with fixtures/otodb/category.yaml
 class TagCategory(IntEnum):
     GENERAL   = 1

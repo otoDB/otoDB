@@ -10,6 +10,7 @@ from .models import (
     Implication,
     MediaSong,
     MediaWork,
+    Pool,
     SourceWorkNiconico,
     SourceWorkYouTube,
     TaggedMedia,
@@ -89,6 +90,7 @@ admin.site.register([
     Category,
     Implication,
     Configuration,
+    Pool,
     SourceWorkNiconico,
     SourceWorkYouTube
 ])

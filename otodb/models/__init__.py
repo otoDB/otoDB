@@ -3,6 +3,7 @@ from .configuration import Configuration
 from .implication import Implication
 from .media_song import MediaSong
 from .media_work import MediaWork
+from .pool import Pool
 from .sources import SourceWorkNiconico, SourceWorkYouTube
 from .tag_main import TagMain
 from .tagged_media import TaggedMedia

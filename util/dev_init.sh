@@ -1,4 +1,4 @@
 #!/bin/bash
 
-find . -path "*/migrations/*.py" -not -name "__init__.py"
-rm db.sqlite3
+find . -path "./otodb/migrations/*.py" -not -name "__init__.py" -not -path "./venv/*"
+rm db.sqlite3 || true

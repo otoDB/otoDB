@@ -12,18 +12,12 @@ As the model schema is still a very early WIP, migrations are currently not comm
 # Setup the initial environment
 git clone https://github.com/mmaker-gh/otodb.git
 cd otodb
-python -m virtualenv venv
+python -m venv venv
+.\venv\Scripts\Activate
 python -m pip install -r requirements.txt
 
-# Make migrations and migrate changes
-python manage.py makemigrations
-python manage.py migrate
-
-# Load seed data
-python manage.py loaddata otodb/fixtures/otodb/category.yaml
-
-# Create admin account
-python manage.py createsuperuser
+# Make migrations, migrate changes, load seed data, create admin account
+.\util\dev_setup.bat
 
 # Copy the base .env file (you will need to modify this!)
 cp .env.example .env

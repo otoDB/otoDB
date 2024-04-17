@@ -4,30 +4,43 @@ html {
 
 body {
     margin: 0;
-	overflow-x: hidden;
-	background-color: lightgray;
+	background-color: darkgray;
+	display:grid;
+	gap: 1rem;
+	grid-template-columns: 1fr 4fr;
+	padding: 15rem 5rem 2rem 2rem;
+}
+
+body::after {
+	content: 'the otomad/ytpmv database';
+	position: absolute;
+	top: 7rem;
+	left: 10rem;
+	font-style: italic;
+	font-family: mono;
 }
 
 nav {
-	width: calc(100% - 4rem);
 	display: flex;
-	padding: .5rem 2rem;
-	background-color: hsl(0,30%,80%);
-	position: sticky;
-	top: 0;
+	flex-direction: column;
+	padding: 3rem 1rem;
 	gap: 1rem;
-	justify-content: flex-end;
-	box-shadow: 0 2px 2px rgba(0,0,0,.4);
-}
-
-nav > a:first-child {
-	margin-right: auto;
+	background-color: lightgray;
+	border: 2px solid white;
 }
 
 main {
 	margin: auto;
-	width: 50rem;
-	background-color: white;
+	width: 100%;
+	max-width: 70rem;
+	min-height: 20rem;
+	background-color: lightgray;
+	border: 2px solid white;
 	padding: 1rem 2rem;
+	text-align: center;
+}
+
+main > *:first-child {
+	text-align: initial;
 }
 

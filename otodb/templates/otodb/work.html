@@ -3,6 +3,7 @@
 
 {% block content %}
   <h1>{{ work.title }}</h1>
+  <p>{{ work.description }}</p>
   <ul>
 	{% for source in sources %}
 	<li><a href="{{ source.url }}">{{ source }}</a></li>

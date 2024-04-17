@@ -3,5 +3,7 @@
 
 {% block content %}
     <h1>{{ config.site_name }}</h1>
-	<h2>Random work: <a href="{% url 'otodb:work' work.id %}">{{ work.title }}</a></h2>
+	{% if random_work %}
+		<h2>Random work: <a href="{% url 'otodb:work' random_work.id %}">{{ random_work.title }}</a></h2>
+	{% endif %}
 {% endblock content %}

@@ -6,5 +6,9 @@ app_name = "otodb"
 urlpatterns = [
     path("", views.index, name="index"),
     path("work/<int:work_id>", views.work, name="work"),
+    path("tag/<int:tag_id>", views.tag, name="tag"),
     path("search", views.search, name="search"),
+    path("profile", views.profile, name="profile"),
+    path("login", views.login_view, name="login"),
+    path("logout", views.logout_view, name="logout"),
 ]

@@ -3,6 +3,12 @@
 
 {% block content %}
   <h1>{{ work.title }}</h1>
-  <h2>Author</h2>
+  <ul>
+	{% for source in sources %}
+	<li><a href="{{ source.url }}">{{ source }}</a></li>
+	{% empty %}
+	<li>No sources!</li>
+	{% endfor %}
+  <ul>
 {% endblock content %}
 	

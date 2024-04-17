@@ -6,6 +6,8 @@
     <ul>
     {% for entry in results %}
 	    <li><a href="{% url 'otodb:work' entry.id %}">{{ entry.title }}</a></li>
+	{% empty %}
+	    <li>No results found!</li>	
     {% endfor %}
 	</ul>
 {% endblock content %}

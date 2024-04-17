@@ -1,0 +1,13 @@
+{% extends "otodb/base.html" %}
+{% block page_title %}Login{% endblock page_title %}
+
+{% block content %}
+<h1>Login</h1>
+<form name="login" target="_self" method="post" action="login">
+  {% csrf_token %}
+  <input required type="text" id="username" name="username" placeholder="Username"/>
+  <input required type="password" id="password" name="password" placeholder="Password"/>
+  <input type="submit"/>
+</form>
+{% endblock content %}
+	

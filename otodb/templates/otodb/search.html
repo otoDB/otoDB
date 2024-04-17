@@ -1,0 +1,11 @@
+{% extends "otodb/base.html" %}
+{% block page_title %}Search Results{% endblock page_title %}
+
+{% block content %}
+    <h1>Search</h1>
+    <ul>
+    {% for entry in results %}
+	    <li><a href="{% url 'otodb:work' entry.id %}">{{ entry.title }}</a></li>
+    {% endfor %}
+	</ul>
+{% endblock content %}

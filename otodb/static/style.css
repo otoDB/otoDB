@@ -1,0 +1,30 @@
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+	overflow-x: hidden;
+}
+
+nav {
+	width: calc(100% - 4rem);
+	display: flex;
+	padding: .5rem 2rem;
+	background-color: hsla(0,50%,80%,.8);
+	backdrop-filter: blur(2px) brightness(.4);
+	position: sticky;
+	top: 0;
+	gap: 1rem;
+	justify-content: flex-end;
+}
+
+nav > a:first-child {
+	margin-right: auto;
+}
+
+main {
+	margin: auto;
+	width: 50rem;
+}
+

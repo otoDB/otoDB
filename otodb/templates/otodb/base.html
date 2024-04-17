@@ -1,4 +1,5 @@
 {% load otodb.helpers %}
+{% load static %}
 
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
@@ -13,13 +14,21 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="description" content="{% block meta_description %}{% endblock meta_description %}">
 		<meta name="og:site_name" content="{{ config.site_name }}">
-		<link rel="stylesheet" href="">
+		<link rel="stylesheet" href="{% static 'style.css' %}">
 	</head>
 	<body>
 		<!--[if lt IE 7]>
 			<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
 		<![endif]-->
-		
-		{% block content %}{% endblock content %}
+
+		 <nav>
+		   <a href="{% url 'otodb:index' %}">otoDB</a>
+		   
+		   <a href="{% url 'otodb:index' %}">Login</a>
+		   <a href="{% url 'otodb:index' %}">Register</a>
+		 </nav>
+		<main>
+		  {% block content %}{% endblock content %}
+		</main>
 	</body>
 </html>

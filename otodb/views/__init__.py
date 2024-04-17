@@ -1,9 +1,11 @@
-from django.http import HttpRequest
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
 from random import choice
 
-from otodb.models import MediaWork, TagMain, MediaSong, WorkSource
+from django.contrib.auth import authenticate, login, logout
+from django.http import HttpRequest
+from django.shortcuts import redirect, render
+from taggit.models import TagBase
+
+from otodb.models import MediaSong, MediaWork, TagMain, WorkSource
 
 
 def index(request: HttpRequest):
@@ -35,15 +37,14 @@ def login_view(request: HttpRequest):
     password = request.POST.get("password", None)
     if username is None or password is None:
         return render(request, "otodb/login.html")
-    
+
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
         return redirect('otodb:index')
     else:
         return redirect('otodb:index')
-    
+
 def logout_view(request: HttpRequest):
     logout(request)
     return redirect('otodb:index')
-

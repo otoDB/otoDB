@@ -52,7 +52,7 @@ Models
 - [ ] Votes
 - [ ] Favorites
 - [ ] Favgroups
-- More casual version of pools, might just use a different type for this 
+- More casual version of pools, might just use a different type for this
 - [ ] Comments
 - [ ] Notes (?)
 

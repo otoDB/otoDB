@@ -23,9 +23,6 @@
         "--ignore-revs-file",
         ".git-blame.ignore-revs"
     ],
-    "flake8.args": [
-        "--ignore=E221,E222,E241,E501,F401"
-    ],
     "[yaml]": {
         "editor.defaultFormatter": "redhat.vscode-yaml",
         "editor.formatOnSave": true

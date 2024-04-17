@@ -9,8 +9,11 @@ from otodb.models import MediaSong, MediaWork, TagMain, WorkSource
 
 
 def index(request: HttpRequest):
-    rand_work = MediaWork.objects.get(pk=choice(MediaWork.objects.values_list('pk', flat=True)))
-    return render(request, "otodb/index.html", {"work": rand_work})
+    random_work = None
+    work_ids = MediaWork.objects.values_list('pk', flat=True)
+    if work_ids:
+        random_work = MediaWork.objects.get(pk=choice(work_ids))
+    return render(request, "otodb/index.html", {"random_work": random_work})
 
 def work(request: HttpRequest, work_id: int):
     context = {

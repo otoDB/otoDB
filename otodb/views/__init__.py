@@ -3,7 +3,6 @@ from random import choice
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpRequest
 from django.shortcuts import redirect, render
-from taggit.models import TagBase
 
 from otodb.models import MediaSong, MediaWork, TagMain, WorkSource
 
@@ -23,7 +22,7 @@ def work(request: HttpRequest, work_id: int):
     return render(request, "otodb/work.html", context)
 
 def tag(request: HttpRequest, tag_id: int):
-    return render(request, "otodb/tag.html", {"work": TagBase.objects.get(pk=tag_id)})
+    return render(request, "otodb/tag.html", {"work": TagMain.objects.get(pk=tag_id)})
 
 SEARCH_TYPE_LOOKUP = {"work": MediaWork, "song": MediaSong, "tag": TagMain, "wiki": None}
 def search(request: HttpRequest):
@@ -51,3 +50,4 @@ def login_view(request: HttpRequest):
 def logout_view(request: HttpRequest):
     logout(request)
     return redirect('otodb:index')
+

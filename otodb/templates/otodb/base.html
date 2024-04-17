@@ -34,13 +34,13 @@
 			 <input type="submit" hidden />
 		   </form>
 		   
-		   <a href="{% url 'otodb:index' %}">Forum</a>
+		   <a href="javascript:alert('mmtroll')">Forum</a>
 
 		   {% if user.is_authenticated %}
-		   <a href="{% url 'otodb:index' %}">Profile</a>
-		   <a href="{% url 'otodb:index' %}">Logout</a>
+		   <a href="{% url 'otodb:profile' %}">Profile</a>
+		   <a href="{% url 'otodb:logout' %}">Logout</a>
 		   {% else %}
-		   <a href="{% url 'otodb:index' %}">Login</a>
+		   <a href="{% url 'otodb:login' %}">Login</a>
 		   <a href="{% url 'otodb:index' %}">Register</a>
 		   {% endif %}
 		 </nav>

@@ -2,5 +2,6 @@
 {% block page_title %}Home{% endblock page_title %}
 
 {% block content %}
-	<pre>Welcome to {{ config.site_name }}!</pre>
+    <h1>{{ config.site_name }}</h1>
+	<h2>Random work: <a href="{% url 'otodb:work' work.id %}">{{ work.title }}</a></h2>
 {% endblock content %}

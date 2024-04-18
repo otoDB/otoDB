@@ -4,11 +4,25 @@ on:
   - push
   - pull_request
 
+env:
+  OTODB_DEBUG: False
+  OTODB_SECRET_KEY: 114514
+  OTODB_TIME_ZONE: UTC
+  OTODB_ALLOWED_HOSTS: localhost, 127.0.0.1
+  OTODB_INTERNAL_IPS: 127.0.0.1
+  OTODB_CONF_SITE_NAME: otoDB
+  OTODB_DB_NAME: otodb
+  OTODB_DB_USER: db_admin
+  OTODB_DB_PASSWORD: db_password
+  OTODB_DB_HOST: 127.0.0.1
+  DJANGO_SUPERUSER_PASSWORD: admin
+  DJANGO_SUPERUSER_USERNAME: admin
+  DJANGO_SUPERUSER_EMAIL: admin@otodb.net
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
       matrix:
         db:
           - sqlite3
@@ -21,29 +35,12 @@ jobs:
           - db: postgresql
             db_port: 5432
 
-    env:
-      OTODB_DEBUG: False
-      OTODB_SECRET_KEY: 114514
-      OTODB_TIME_ZONE: UTC
-      OTODB_ALLOWED_HOSTS: localhost, 127.0.0.1
-      OTODB_INTERNAL_IPS: 127.0.0.1
-      OTODB_CONF_SITE_NAME: otoDB
-      OTODB_DB_BACKEND: ${{ matrix.db }}
-      OTODB_DB_NAME: otodb
-      OTODB_DB_USER: postgres
-      OTODB_DB_PASSWORD: postgres
-      OTODB_DB_HOST: 127.0.0.1
-      OTODB_DB_PORT: ${{ matrix.db_port }}
-      DJANGO_SUPERUSER_PASSWORD: admin
-      DJANGO_SUPERUSER_USERNAME: admin
-      DJANGO_SUPERUSER_EMAIL: admin@otodb.net
-
     services:
       postgres:
         image: postgres:13
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: db_admin
+          POSTGRES_PASSWORD: db_password
           POSTGRES_DB: otodb
         options: >-
           --health-cmd pg_isready
@@ -52,6 +49,10 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+
+    env:
+      OTODB_DB_BACKEND: ${{ matrix.db }}
+      OTODB_DB_PORT: ${{ matrix.db_port }}
 
     steps:
       - uses: actions/checkout@v4

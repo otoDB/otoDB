@@ -23,6 +23,7 @@ jobs:
 
     env:
       OTODB_DEBUG: False
+      OTODB_SECRET_KEY: 114514
       OTODB_TIME_ZONE: UTC
       OTODB_ALLOWED_HOSTS: localhost, 127.0.0.1
       OTODB_INTERNAL_IPS: 127.0.0.1

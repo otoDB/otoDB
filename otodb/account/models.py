@@ -63,19 +63,28 @@ class Account(AbstractBaseUser):
     def __str__(self):
         return self.username
 
-    def has_perm(self, perm, obj=None):
-        return True
-
-    def has_module_perms(self, app_label):
-        return True
-
     def save(self, *args, **kwargs):
         super(Account, self).save(*args, **kwargs)
+
+    @property
+    def is_moderator(self):
+        return self.level >= self.Levels.MODERATOR
 
     @property
     def is_staff(self):
         return self.level >= self.Levels.ADMIN
 
     @property
-    def is_moderator(self):
-        return self.level >= self.Levels.MODERATOR
+    def is_owner(self):
+        return self.level >= self.Levels.OWNER
+
+    def has_perm(self, perm, obj=None):
+        # TODO: Implement object-level permissions
+        return True
+
+    def has_module_perms(self, app_label):
+        if self.is_owner and app_label == "account":
+            return True
+        if self.is_staff and app_label != "account":
+            return True
+        return False

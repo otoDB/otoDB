@@ -22,6 +22,9 @@
 		<![endif]-->
 		 <nav>
 		   <a href="{% url 'otodb:index' %}">otoDB</a>
+		   {% if user.is_staff %}
+		   <a href="{% url 'admin:index' %}">Admin</a>
+		   {% endif %}
 		   <form name="query" target="_self" method="get" action="search">
 			 <select required name="type" id="search-type">
 			   <option value="work">Work</option>

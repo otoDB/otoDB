@@ -63,9 +63,6 @@ jobs:
       - name: Run tests
         run: |
           : # Only make and run migrations if they don't exist
-          test -f ./otodb/migrations/0001_initial.py || python manage.py makemigrations \
-          python manage.py migrate \
-          python manage.py loaddata otodb/fixtures/otodb/category.yaml \
-          python manage.py createsuperuser --noinput
+          test -f ./otodb/migrations/0001_initial.py || (python manage.py makemigrations && python manage.py migrate && python manage.py loaddata otodb/fixtures/otodb/category.yaml && python manage.py createsuperuser --noinput)
           : # Run Django tests
           python manage.py test

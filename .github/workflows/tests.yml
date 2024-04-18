@@ -11,7 +11,7 @@ jobs:
       max-parallel: 4
       matrix:
         db:
-          - sqlite
+          - sqlite3
           - postgresql
         python-version:
           - "3.9"

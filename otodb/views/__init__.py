@@ -1,5 +1,3 @@
-from random import choice
-
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
@@ -9,11 +7,10 @@ from otodb.models import MediaSong, MediaWork, TagMain, WorkSource
 
 
 def index(request: HttpRequest):
-    random_work = None
-    work_ids = MediaWork.objects.values_list('pk', flat=True)
-    if work_ids:
-        random_work = MediaWork.objects.get(pk=choice(work_ids))
-    return render(request, "otodb/index.html", {"random_work": random_work})
+    return render(request, "otodb/index.html", {
+        "random_work": MediaWork.objects.random()
+        }
+    )
 
 def work(request: HttpRequest, work_id: int):
     context = {

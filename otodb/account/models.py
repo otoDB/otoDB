@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from rolepermissions.roles import assign_role
 
 from otodb.managers import UserManager
 
@@ -21,8 +20,6 @@ class Priviledge(models.Model):
 
 
 class Account(AbstractUser):
-    # first_name = None
-    # last_name = None
     email_activated = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
 
@@ -32,17 +29,7 @@ class Account(AbstractUser):
         id: int
 
     def save(self, *args, **kwargs):
-        give_role = False
-        if self._is_a_new_user():
-            give_role = True
-
         super(Account, self).save(*args, **kwargs)
-
-        if give_role:
-            if self.is_staff:
-                assign_role(self, 'administrator')
-            else:
-                assign_role(self, 'user')
 
     def _is_a_new_user(self):
         return not self.id

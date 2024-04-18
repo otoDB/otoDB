@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     'otodb.wiki',
     'simple_history',
     'taggit',
-    'rolepermissions',
 ]
 
 if DEBUG_TOOLBAR:
@@ -180,8 +179,6 @@ INTERNAL_IPS = [
 TAGGIT_CASE_INSENSITIVE = True
 TAGGIT_TAGS_FROM_STRING = 'otodb.common.utils.space_splitter'
 TAGGIT_STRING_FROM_TAGS = 'otodb.common.utils.space_joiner'
-
-ROLEPERMISSIONS_MODULE = '___.roles'
 
 OTODB_CONFIG_DICT = {
     'site_name': os.environ.get(

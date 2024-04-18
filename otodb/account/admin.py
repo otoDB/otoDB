@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import Account, Priviledge
+from .models import Account
 
 
 class UserAdmin(BaseUserAdmin):
@@ -17,4 +17,3 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(Account, UserAdmin)
-admin.site.register(Priviledge)

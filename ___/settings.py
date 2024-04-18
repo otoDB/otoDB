@@ -93,29 +93,33 @@ WSGI_APPLICATION = '___.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASE_DEBUG = {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': BASE_DIR / 'db.sqlite3',
-}
-DATABASE_PROD = {
-    'ENGINE': 'django.db.backends.postgresql',
+ALLOWED_DATABASE_BACKENDS = ['sqlite3', 'postgresql']
+if 'OTODB_DB_BACKEND' in os.environ and os.environ['OTODB_DB_BACKEND'] not in ALLOWED_DATABASE_BACKENDS:
+    print(f"Database backend {os.environ['OTODB_DB_BACKEND']} not allowed -- exiting")
+    exit(1)
+
+DATABASE_BACKEND = os.environ.get("OTODB_DB_BACKEND", "sqlite3")
+DATABASE = {
+    'ENGINE': f'django.db.backends.{DATABASE_BACKEND}',
     'OPTIONS': {},
 }
 
-if not DEBUG and 'OTODB_DB_SERVICE' in os.environ and 'OTODB_DB_PASSFILE' in os.environ:
-    DATABASE_PROD['OPTIONS'] = {
+if DATABASE_BACKEND == 'postgresql' and 'OTODB_DB_SERVICE' in os.environ and 'OTODB_DB_PASSFILE' in os.environ:
+    DATABASE['OPTIONS'] = {
         'service': os.environ['OTODB_DB_SERVICE'],
         'passfile': os.environ['OTODB_DB_PASSFILE'],
     }
-elif not DEBUG:
-    DATABASE_PROD['NAME'] = os.environ['OTODB_DB_NAME']
-    DATABASE_PROD['USER'] = os.environ['OTODB_DB_USER']
-    DATABASE_PROD['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
-    DATABASE_PROD['HOST'] = os.environ['OTODB_DB_HOST']
-    DATABASE_PROD['PORT'] = os.environ['OTODB_DB_PORT']
+elif DATABASE_BACKEND == 'postgresql':
+    DATABASE['NAME'] = os.environ['OTODB_DB_NAME']
+    DATABASE['USER'] = os.environ['OTODB_DB_USER']
+    DATABASE['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
+    DATABASE['HOST'] = os.environ['OTODB_DB_HOST']
+    DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
+else:
+    DATABASE['NAME'] = BASE_DIR / f'{os.environ.get("OTODB_DB_NAME", "db")}.sqlite3'
 
 DATABASES = {
-    'default': DATABASE_DEBUG if DEBUG else DATABASE_PROD
+    'default': DATABASE,
 }
 
 AUTH_PASSWORD_VALIDATORS = [

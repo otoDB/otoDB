@@ -34,6 +34,9 @@ jobs:
       OTODB_DB_PASSWORD: postgres
       OTODB_DB_HOST: 127.0.0.1
       OTODB_DB_PORT: ${{ matrix.db_port }}
+      DJANGO_SUPERUSER_PASSWORD: admin
+      DJANGO_SUPERUSER_USERNAME: admin
+      DJANGO_SUPERUSER_EMAIL: admin@otodb.net
 
     services:
       postgres:

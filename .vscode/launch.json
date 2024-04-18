@@ -2,8 +2,8 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Python: Django",
-			"type": "python",
+			"name": "Django: Run server",
+			"type": "debugpy",
 			"request": "launch",
 			"program": "${workspaceFolder}\\manage.py",
 			"args": [
@@ -13,8 +13,8 @@
 			"justMyCode": true
 		},
 		{
-			"name": "Python: Django Tests",
-			"type": "python",
+			"name": "Django: Run tests",
+			"type": "debugpy",
 			"request": "launch",
 			"program": "${workspaceFolder}\\manage.py",
 			"args": [
@@ -22,6 +22,23 @@
 			],
 			"django": true,
 			"justMyCode": true
-		}
+		},
+		{
+			"name": "Django: Create superuser",
+			"type": "debugpy",
+			"request": "launch",
+			"program": "${workspaceFolder}\\manage.py",
+			"args": [
+				"createsuperuser",
+				"--noinput"
+			],
+			"env": {
+				"DJANGO_SUPERUSER_USERNAME": "admin",
+				"DJANGO_SUPERUSER_PASSWORD": "admin",
+				"DJANGO_SUPERUSER_EMAIL": "admin@otodb.net",
+			},
+			"django": true,
+			"justMyCode": false
+		},
 	]
 }

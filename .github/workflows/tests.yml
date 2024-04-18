@@ -28,25 +28,8 @@ jobs:
           - "3.9"
           - "3.10"
           - "3.11"
-
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_USER: db_admin
-          POSTGRES_PASSWORD: db_password
-          POSTGRES_DB: otodb
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     env:
       OTODB_DB_BACKEND: sqlite3
-
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
@@ -70,7 +53,6 @@ jobs:
           - "3.9"
           - "3.10"
           - "3.11"
-
     services:
       postgres:
         image: postgres:13
@@ -85,11 +67,9 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-
     env:
       OTODB_DB_BACKEND: postgresql
       OTODB_DB_PORT: 5432
-
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}

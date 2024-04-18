@@ -1,3 +1,4 @@
+import random
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -5,6 +6,14 @@ from taggit.managers import TaggableManager
 
 from .implication import Implication
 
+
+class MediaBaseManager(models.Manager):
+    def random(self):
+        random_work = None
+        work_ids = self.values_list('pk', flat=True)
+        if work_ids:
+            random_work = self.get(pk=random.choice(work_ids))
+            return random_work
 
 class MediaBase(models.Model):
     if TYPE_CHECKING:
@@ -20,6 +29,8 @@ class MediaBase(models.Model):
         blank=True,
         editable=False,
     )
+
+    objects = MediaBaseManager()
 
     def __str__(self) -> str:
         return f'{self._meta.verbose_name} #{self.id}'

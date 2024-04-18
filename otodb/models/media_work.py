@@ -4,7 +4,7 @@ from django.db.models import F, Q
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
-from .base import MediaBase
+from .base import MediaBase, MediaBaseManager
 from .enums import Rating
 from .tagged_media import TaggedMedia
 
@@ -28,6 +28,7 @@ class MediaWork(MediaBase):
     )
 
     history = HistoricalRecords()
+    objects: MediaBaseManager
 
     def clean(self):
         if self.parent == self:

@@ -9,6 +9,7 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = base_fieldsets + (  # type: ignore
         (None, {
             "fields": (
+                'level',
                 'email_activated',
                 'is_deleted',
             ),

@@ -1,6 +1,7 @@
 from random import choice
 
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import redirect, render
 
@@ -31,6 +32,7 @@ def search(request: HttpRequest):
     results = SEARCH_TYPE_LOOKUP[type].objects.filter(title__contains=query)
     return render(request, "otodb/search.html", {"results": results})
 
+@login_required
 def profile(request: HttpRequest):
     return render(request, "otodb/profile.html")
 

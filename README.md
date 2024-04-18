@@ -8,6 +8,7 @@ As the model schema is still a very early WIP, migrations are currently not comm
 
 ## Setup
 
+These commands are for Windows, but other operating systems will be similar.
 ```sh
 # Setup the initial environment
 git clone https://github.com/mmaker-gh/otodb.git
@@ -20,8 +21,8 @@ python -m pip install -r requirements.txt
 .\util\dev_setup.bat
 
 # Copy the base .env file (you will need to modify this!)
-cp .env.example .env
-nano .env
+copy .env.example .env
+notepad .env
 
 # Run
 python manage.py runserver

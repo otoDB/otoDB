@@ -51,7 +51,7 @@ jobs:
           - "3.11"
     services:
       postgres:
-        image: postgres:13
+        image: postgres:15
         env:
           POSTGRES_USER: db_admin
           POSTGRES_PASSWORD: db_password

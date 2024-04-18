@@ -46,8 +46,7 @@ def login_view(request: HttpRequest):
     if user is not None:
         login(request, user)
         return redirect('otodb:index')
-    else:
-        return redirect('otodb:index')
+    return redirect('otodb:login')
 
 def logout_view(request: HttpRequest):
     logout(request)

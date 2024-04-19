@@ -44,7 +44,7 @@ jobs:
           python manage.py migrate && \
           python manage.py loaddata otodb/fixtures/otodb/category.yaml && \
           python manage.py createsuperuser --noinput)
-          python manage.py test
+          python manage.py test --noinput --parallel
 
   test_postgres:
     runs-on: ubuntu-latest
@@ -90,4 +90,4 @@ jobs:
           python manage.py migrate && \
           python manage.py loaddata otodb/fixtures/otodb/category.yaml && \
           python manage.py createsuperuser --noinput)
-          python manage.py test
+          python manage.py test --noinput --parallel

@@ -36,14 +36,13 @@ jobs:
       - name: Cache venv
         uses: actions/cache@v4
         with:
-          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('requirements.txt') }}
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ env.OTODB_DB_BACKEND }}-${{ hashFiles('requirements.txt') }}
           path: .venv
       - name: Install dependencies
         run: |
           python -m venv .venv
           source .venv/bin/activate
           pip install -r requirements.txt
-          pip install psycopg2
           echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
           echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
       - name: Run tests
@@ -86,7 +85,7 @@ jobs:
       - name: Cache venv
         uses: actions/cache@v4
         with:
-          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('requirements.txt') }}
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ env.OTODB_DB_BACKEND }}-${{ hashFiles('requirements.txt') }}
           path: .venv
       - name: Install dependencies
         run: |

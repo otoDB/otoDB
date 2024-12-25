@@ -1,0 +1,19 @@
+{% extends "otodb/base.html" %}
+{% block page_title %}New work{% endblock page_title %}
+
+{% block content %}
+<h1>New work</h1>
+<p>Currently accepted sites:</p>
+<ul>
+  <li>YouTube</li>
+  <li>Niconico</li>
+  <li>Bilibili</li>
+  <li>SoundCloud</li>
+</ul>
+<form name="new_work" target="_self" method="post">
+  {% csrf_token %}
+  {{ form }}
+  <input type="submit"/>
+</form>
+  
+{% endblock content %}

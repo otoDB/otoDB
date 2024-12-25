@@ -12,9 +12,7 @@ from .tagged_media import TaggedMedia
 class MediaWork(MediaBase):
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=1000, null=False, blank=False)
-    title_translated = models.CharField(max_length=1000, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    description_translated = models.TextField(null=True, blank=True)
 
     rating = models.IntegerField(
         choices=Rating.choices,

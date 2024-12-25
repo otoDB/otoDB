@@ -8,8 +8,6 @@ class WorkSource(models.Model):
     media = models.ForeignKey(MediaWork, on_delete=models.CASCADE)
     url = models.URLField(null=False, blank=False)
     published_date = models.DateField(auto_now=False, auto_now_add=False)
-    views = models.IntegerField(null=True, blank=True)
-    views_updated = models.DateTimeField(auto_now=False, auto_now_add=True)
     work_origin = models.IntegerField(
         choices=WorkOrigin.choices,
         default=WorkOrigin.AUTHOR

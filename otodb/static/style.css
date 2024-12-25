@@ -40,6 +40,6 @@ main {
 	text-align: center;
 }
 
-main > *:first-child {
+main > h1 {
 	text-align: initial;
 }

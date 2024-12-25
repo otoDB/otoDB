@@ -3,10 +3,9 @@
 
 {% block content %}
 <h1>Login</h1>
-<form name="login" target="_self" method="post" action="login">
+<form name="login" target="_self" method="post"">
   {% csrf_token %}
-  <input required type="text" id="username" name="username" placeholder="Username"/>
-  <input required type="password" id="password" name="password" placeholder="Password"/>
+  {{ form }}
   <input type="submit"/>
 </form>
 {% endblock content %}

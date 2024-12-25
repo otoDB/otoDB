@@ -9,7 +9,6 @@ from .tagged_media import TaggedMedia
 
 class MediaSong(MediaBase):
     title = models.CharField(max_length=1000, null=False, blank=False)
-    title_translated = models.CharField(max_length=1000, null=True, blank=True)
 
     tags = TaggableManager(
         through=TaggedMedia,

@@ -41,7 +41,8 @@
 
 		   {% if user.is_authenticated %}
 		   <a href="{% url 'otodb:new_work' %}">Add a new work</a>
-		   <a href="{% url 'otodb:profile' %}">Profile</a>
+		   <a href="{% url 'otodb:profile' user.id %}">My Profile</a>
+		   <a href="{% url 'otodb:user_lists' user.id %}">My Lists</a>
 		   <a href="{% url 'otodb:logout' %}">Logout</a>
 		   {% else %}
 		   <a href="{% url 'otodb:login' %}">Login</a>

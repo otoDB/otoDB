@@ -3,11 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import *
 
-from otodb.models import MediaSong, MediaWork, TagMain, WorkSource
+from otodb.models import MediaSong, MediaWork, TagMain, WorkSource, Pool
 from otodb.models.sources import SourceWorkBilibili, SourceWorkNiconico, SourceWorkSoundCloud, SourceWorkYouTube, SourceWorkBase
 from otodb.models.enums import WorkOrigin, WorkStatus
+from otodb.account.models import Account
 
-from .forms import LoginForm, WorkForm, SourceSiteForm
+from .forms import LoginForm, WorkForm, SourceSiteForm, NewListForm
 from .scrape_platform import video_info
 
 from datetime import date
@@ -41,9 +42,9 @@ def search(request: HttpRequest):
     results = SEARCH_TYPE_LOOKUP[search_type](query)
     return render(request, "otodb/search.html", {"results": results, "type": search_type, 'query': query})
 
-@login_required
-def profile(request: HttpRequest):
-    return render(request, "otodb/profile.html")
+def profile(request: HttpRequest, user_id: int):
+    user = get_object_or_404(Account, pk=user_id)
+    return render(request, "otodb/profile.html", {'view_user': user})
 
 def login_view(request: HttpRequest):
     if request.user.is_authenticated:
@@ -170,3 +171,47 @@ def edit_work(request: HttpRequest, work_id: int):
 
     return render(request, 'otodb/edit_work.html', {'work': work, 'form': form})
 
+def user_lists(request: HttpRequest, user_id: int):
+    lists = Pool.objects.filter(author__pk=user_id)
+    return render(request, 'otodb/user_lists.html', {'lists': lists})
+
+@login_required
+def new_list(request: HttpRequest):
+    if request.method == 'POST':
+        form = NewListForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            desc = form.cleaned_data['description']
+            stat = form.cleaned_data['status']
+
+            l = Pool(name=name, description=desc, status=stat, author=request.user)
+            l.save()
+
+            return redirect('otodb:list', list_id=l.pk)
+
+    else:
+        form = NewListForm()
+
+    return render(request, 'otodb/new_list.html', {'form': form})
+
+def list(request: HttpRequest, list_id: int):
+    l = get_object_or_404(Pool, pk=list_id)
+    return render(request, "otodb/list.html", {"list": l})
+
+def list_add_work(request: HttpRequest, list_id: int):
+    l = get_object_or_404(Pool, pk=list_id)
+    if request.method == 'POST':
+        form = ListAddWorkForm(request.POST)
+        if form.is_valid():
+            work = form.cleaned_data['work']
+            desc = form.cleaned_data['description']
+
+            item = PoolItem(work__pk=work, description=desc)
+            item.save()
+            l.works
+
+            return redirect('otodb:list', list_id=list_id)
+    else:
+        form = ListAddWorkForm()
+
+    return render(request, "otodb/list_add_work.html", {"list": l})

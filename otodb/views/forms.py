@@ -1,6 +1,6 @@
 from django import forms
 
-from otodb.models import MediaSong, MediaWork, TagMain, WorkSource
+from otodb.models import MediaSong, MediaWork, TagMain, WorkSource, Pool, PoolItem
 
 class LoginForm(forms.Form):
     username = forms.CharField(label="Username", required=True)
@@ -19,3 +19,13 @@ class ManualSourceForm(forms.ModelForm):
 class SourceSiteForm(forms.Form):
     link = forms.CharField(label='Link', required=True)
     official = forms.BooleanField(label='Is this an official upload?', required=False)
+
+class NewListForm(forms.ModelForm):
+    class Meta:
+        model = Pool
+        fields = ['name', 'description', 'status']
+
+class ListAddWorkForm(forms.ModelForm):
+    class Meta:
+        model = PoolItem
+        fields = ['work', 'description']

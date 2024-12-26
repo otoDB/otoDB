@@ -15,7 +15,7 @@
 		<meta name="description" content="{% block meta_description %}{% endblock meta_description %}">
 		<meta name="og:site_name" content="{{ config.site_name }}">
 		<link rel="stylesheet" href="{% static 'style.css' %}">
-		<script src="{% static 'lkrm.js' %}"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 	</head>
 	<body>
 		<!--[if lt IE 7]>
@@ -33,10 +33,10 @@
 			   <option value="tag">Tag</option>
 			   <option value="wiki">Wiki</option>
 			 </select>
-			 <input type="search" id="search" name="query" />
-			 <input type="submit" hidden />
+			 <input type="search" id="search" name="query" placeholder="Search..."/>
+			 <input type="submit" hidden/>
 		   </form>
-
+			<hr>
 		   <!-- <a href="javascript:alert('mmtroll')">Forum</a> -->
 
 		   {% if user.is_authenticated %}

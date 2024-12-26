@@ -7,3 +7,6 @@ class SourceWorkYouTube(SourceWorkBase):
     source_id = models.CharField(max_length=16)
     likes = models.IntegerField(null=True, blank=True)
     dislikes = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.work_source.published_date} @ YouTube'

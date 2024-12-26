@@ -2,6 +2,14 @@
 {% block page_title %}{{ tag.id }}{% endblock page_title %}
 
 {% block content %}
-    <h1>{{ tag.id }}</h1>
+    <h1>Tag: {{ tag }}</h1>
     <!-- INSERT WIKI EXCERPT -->
+    <h2>Works tagged with "{{ tag }}"</h2>
+    <ul>
+        {% for work in works %}
+        <li><a href="{% url 'otodb:work' work.id %}">{{ work.title }}</a></li>
+        {% empty %}
+        <li>No works found!</li>
+        {% endfor %}
+    </ul>    
 {% endblock content %}

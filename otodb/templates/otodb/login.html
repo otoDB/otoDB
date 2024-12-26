@@ -5,7 +5,9 @@
 <h1>Login</h1>
 <form name="login" target="_self" method="post"">
   {% csrf_token %}
-  {{ form }}
+  <table>
+    {{ form }}
+    </table>
   <input type="submit"/>
 </form>
 {% endblock content %}

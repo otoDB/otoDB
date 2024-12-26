@@ -32,3 +32,6 @@ class SourceWorkNiconico(SourceWorkBase):
         choices=SourceWorkNiconicoCategory.choices,
         default=SourceWorkNiconicoCategory.NONE
     )
+
+    def __str__(self):
+        return f'{self.work_source.published_date} @ Niconico'

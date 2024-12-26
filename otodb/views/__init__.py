@@ -8,27 +8,16 @@ from otodb.models.sources import SourceWorkBilibili, SourceWorkNiconico, SourceW
 from otodb.models.enums import WorkOrigin, WorkStatus
 from otodb.account.models import Account
 
-from .forms import LoginForm, WorkForm, SourceSiteForm, NewListForm
+from .forms import *
 from .scrape_platform import video_info
 
 from datetime import date
 
 def index(request: HttpRequest):
-    return render(request, "otodb/index.html", {
+    return render(request, "index.html", {
         "random_work": MediaWork.objects.random()
         }
     )
-
-def work(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork, pk=work_id)
-    sources = WorkSource.objects.filter(media=work)
-    sources = [SourceWorkBase.objects.get_subclass(work_source=src) for src in sources]
-    return render(request, "otodb/work.html", {'work':work, "sources": sources})
-
-def tag(request: HttpRequest, tag_id: int):
-    tag = get_object_or_404(TagMain, pk=tag_id)
-    works = MediaWork.objects.filter(tags__id=tag_id)
-    return render(request, "otodb/tag.html", {"tag": tag, "works": works})
 
 SEARCH_TYPE_LOOKUP = {
     "work": lambda q: MediaWork.objects.filter(title__contains=q),
@@ -40,11 +29,7 @@ def search(request: HttpRequest):
     search_type = request.GET.get('type')
     query = request.GET.get('query')
     results = SEARCH_TYPE_LOOKUP[search_type](query)
-    return render(request, "otodb/search.html", {"results": results, "type": search_type, 'query': query})
-
-def profile(request: HttpRequest, user_id: int):
-    user = get_object_or_404(Account, pk=user_id)
-    return render(request, "otodb/profile.html", {'view_user': user})
+    return render(request, "search.html", {"results": results, "type": search_type, 'query': query})
 
 def login_view(request: HttpRequest):
     if request.user.is_authenticated:
@@ -63,7 +48,7 @@ def login_view(request: HttpRequest):
     else:
         form = LoginForm()
 
-    return render(request, 'otodb/login.html', {"form": form})
+    return render(request, 'user/login.html', {"form": form})
 
 @login_required
 def logout_view(request: HttpRequest):
@@ -73,7 +58,21 @@ def logout_view(request: HttpRequest):
 def register_view(request: HttpRequest):
     if request.user.is_authenticated:
         return redirect('otodb:index')
-    return render(request, 'otodb/register.html')
+    return render(request, 'user/register.html')
+
+def profile(request: HttpRequest, user_id: int):
+    user = get_object_or_404(Account, pk=user_id)
+    return render(request, "user/profile.html", {'view_user': user})
+
+def user_lists(request: HttpRequest, user_id: int):
+    lists = Pool.objects.filter(author__pk=user_id)
+    return render(request, 'user/user_lists.html', {'lists': lists})
+
+def work(request: HttpRequest, work_id: int):
+    work = get_object_or_404(MediaWork, pk=work_id)
+    sources = WorkSource.objects.filter(media=work)
+    sources = [SourceWorkBase.objects.get_subclass(work_source=src) for src in sources]
+    return render(request, "work/work.html", {'work':work, "sources": sources})
 
 ACCEPT_SITES = {'niconico': SourceWorkNiconico, 'bilibili': SourceWorkBilibili, 'youtube': SourceWorkYouTube, 'soundcloud': SourceWorkSoundCloud}
 @login_required
@@ -105,7 +104,7 @@ def new_work(request: HttpRequest):
     else:
         form = SourceSiteForm()
 
-    return render(request, 'otodb/new_work.html', {'form': form})
+    return render(request, 'work/new_work.html', {'form': form})
 
 @login_required
 def new_source(request: HttpRequest, work_id: int):
@@ -142,7 +141,7 @@ def new_source(request: HttpRequest, work_id: int):
     else:
         form = SourceSiteForm()
 
-    return render(request, 'otodb/new_source.html', {'form': form, 'work': work})
+    return render(request, 'work/new_source.html', {'form': form, 'work': work})
 
 @login_required
 def attach_tag(request: HttpRequest, work_id: int): # todo
@@ -155,7 +154,7 @@ def attach_tag(request: HttpRequest, work_id: int): # todo
     else:
         form = SourceSiteForm()
 
-    return render(request, 'otodb/attach_tag.html', {'work': work})
+    return render(request, 'work/attach_tag.html', {'work': work})
 
 @login_required
 def edit_work(request: HttpRequest, work_id: int):
@@ -169,11 +168,17 @@ def edit_work(request: HttpRequest, work_id: int):
     else:
         form = WorkForm(instance=work)
 
-    return render(request, 'otodb/edit_work.html', {'work': work, 'form': form})
+    return render(request, 'work/edit_work.html', {'work': work, 'form': form})
 
-def user_lists(request: HttpRequest, user_id: int):
-    lists = Pool.objects.filter(author__pk=user_id)
-    return render(request, 'otodb/user_lists.html', {'lists': lists})
+def tag(request: HttpRequest, tag_id: int):
+    tag = get_object_or_404(TagMain, pk=tag_id)
+    works = MediaWork.objects.filter(tags__id=tag_id)
+    return render(request, "tag/tag.html", {"tag": tag, "works": works})
+
+def list(request: HttpRequest, list_id: int):
+    l = get_object_or_404(Pool, pk=list_id)
+    works = PoolItem.objects.filter(pool=l).select_related('work').order_by('order')
+    return render(request, "list/list.html", {"list": l, 'works': works})
 
 @login_required
 def new_list(request: HttpRequest):
@@ -192,11 +197,7 @@ def new_list(request: HttpRequest):
     else:
         form = NewListForm()
 
-    return render(request, 'otodb/new_list.html', {'form': form})
-
-def list(request: HttpRequest, list_id: int):
-    l = get_object_or_404(Pool, pk=list_id)
-    return render(request, "otodb/list.html", {"list": l})
+    return render(request, 'list/new_list.html', {'form': form})
 
 def list_add_work(request: HttpRequest, list_id: int):
     l = get_object_or_404(Pool, pk=list_id)
@@ -206,12 +207,11 @@ def list_add_work(request: HttpRequest, list_id: int):
             work = form.cleaned_data['work']
             desc = form.cleaned_data['description']
 
-            item = PoolItem(work__pk=work, description=desc)
+            item = PoolItem(work=work, description=desc, pool=l)
             item.save()
-            l.works
 
             return redirect('otodb:list', list_id=list_id)
     else:
         form = ListAddWorkForm()
 
-    return render(request, "otodb/list_add_work.html", {"list": l})
+    return render(request, "list/add_work.html", {"list": l, "form": form})

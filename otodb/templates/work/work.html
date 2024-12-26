@@ -1,30 +1,69 @@
 {% extends "base.html" %}
+{% load static %}
 {% block page_title %}{{ work.title }}{% endblock page_title %}
 
 {% block content %}
+<style>
+#work-tags {
+	display: flex;
+	gap: .3rem 2rem;
+	flex-wrap: wrap;
+}
+
+#work-tags > li {
+	margin: 0;
+}
+
+#infobox {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+	column-gap: 2rem;
+	align-items: center;
+}
+</style>
   <h1>{{ work.title }}</h1>
-  <a href="{% url 'otodb:edit_work' work.id %}">Edit this work</a>
- {% if work.thumbnail is not None %}
- <img src="{{ work.thumbnail }}" alt="{{ work.title }}">
- {% endif %} 
-  <h2>Description</h2>
-  <p>{{ work.description | linebreaksbr }}</p>
-  <h2>Tags</h2>
-  <ul id="work-tags">
-	{% for tag in work.tags.all %}
-	<li><a href="{% url 'otodb:tag' tag.id %}">{{ tag }}</a></li>
-	{% empty %}
-	<li>No tags!</li>
-	{% endfor %}
-	<li><a href="{% url 'otodb:attach_tag' work.pk %}">Attach tag...</a></li>
-  </ul>
+  <div id="infobox">
+	<img src="{{ work.thumbnail }}" alt="{{ work.title }}">
+	<div>
+		<h2>Description</h2>
+		<p>{{ work.description | linebreaksbr }}</p>
+		<a href="{% url 'otodb:edit_work' work.id %}">Edit this work</a>
+	</div>
+	<div style="grid-column: 1 / span 2; border-top: var(--otodb-faint-content) 1px solid; margin-top: 2rem;">
+		<!-- <h2>Tags</h2> -->
+		<ul id="work-tags">
+			{% for tag in work.tags.all %}
+			<li><a href="{% url 'otodb:tag' tag.id %}">{{ tag }}</a></li>
+			{% empty %}
+			<li>No tags!</li>
+			{% endfor %}
+			<li><a href="{% url 'otodb:attach_tag' work.pk %}">Attach tag...</a></li>
+		</ul>
+	</div>
+  </div>
   <h2>Work Sources</h2>
-  <ul>
-	{% for source in sources %}
-	<li><a href="{{ source.work_source.url }}" target="_blank" rel="noopener noreferrer">{{ source }}</a></li>
-	{% empty %}
-	<li>No sources!</li>
-	{% endfor %}
-	<li><a href="{% url 'otodb:new_source' work.pk %}">Add source...</a></li>
-  <ul>
+  <a href="{% url 'otodb:new_source' work.pk %}">Add a source...</a>
+  <table style="width: 100%;">
+	<thead>
+	<tr>
+		<th>Platform</th>
+		<th>Date</th>
+		<th>Official</th>
+		<th>Available</th>
+		<th>Resolution</th>
+		<th>Link</th>
+	</tr>
+	</thead>
+	<tbody>
+		{% for source in sources %}
+		<tr>
+			<td>{{ source }}</td><td>{{ source.work_source.published_date }}
+			</td><td>{{ source.work_source.work_origin|yesno:"No,Yes" }}</td><td>{{ source.work_source.work_status|yesno:"No,Yes" }}</td>
+			<td>{{ source.work_source.work_width }}x{{ source.work_source.work_height }}</td><td><a href="{{ source.work_source.url }}" target="_blank" rel="noopener noreferrer">Link</a></td>
+		</tr>
+		{% empty %}
+		<li>No sources!</li>
+		{% endfor %}
+	</tbody>
+  </table>
 {% endblock content %}

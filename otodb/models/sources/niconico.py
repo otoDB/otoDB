@@ -34,4 +34,4 @@ class SourceWorkNiconico(SourceWorkBase):
     )
 
     def __str__(self):
-        return f'{self.work_source.published_date} @ Niconico'
+        return f'Niconico'

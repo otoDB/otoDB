@@ -12,10 +12,15 @@ urlpatterns = [
     path("work/<int:work_id>/new_source", views.new_source, name="new_source"),
     path("work/<int:work_id>/attach_tag", views.attach_tag, name="attach_tag"),
 
+    path("new_list", views.new_list, name="new_list"),
+    path("list/<int:list_id>", views.list, name="list"),
+    path("list/<int:list_id>/add_work", views.list_add_work, name="list_add_work"),
+
     path("tag/<int:tag_id>", views.tag, name="tag"),
 
     path("search", views.search, name="search"),
-    path("profile", views.profile, name="profile"),
+    path("profile/<int:user_id>", views.profile, name="profile"),
+    path("profile/<int:user_id>/lists", views.user_lists, name="user_lists"),
 
     path("login", views.login_view, name="login"),
     path("register", views.register_view, name="register"),

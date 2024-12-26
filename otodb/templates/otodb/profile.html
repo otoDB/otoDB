@@ -1,8 +1,8 @@
 {% extends "otodb/base.html" %}
-{% block page_title %}User: {{ user.username }}{% endblock page_title %}
+{% block page_title %}User: {{ view_user.username }}{% endblock page_title %}
 
 {% block content %}
-  <h1>User: {{ user.username }}</h1>
-  <p>E-mail: {{ user.email }}</p>
-  <p>Joined otoDB on {{ user.date_created }}</p>
+  <h1>User: {{ view_user.username }}</h1>
+  <p>E-mail: {{ view_user.email }}</p>
+  <p>Joined otoDB on {{ view_user.date_created }}</p>
 {% endblock content %}

@@ -9,4 +9,4 @@ class SourceWorkYouTube(SourceWorkBase):
     dislikes = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return f'{self.work_source.published_date} @ YouTube'
+        return f'YouTube'

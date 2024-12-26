@@ -2,6 +2,7 @@
 	--otodb-bg-color: white;
 	--otodb-content-color: black;
 	--otodb-faint-bg: color-mix(in hsl, var(--otodb-bg-color) 90%, var(--otodb-content-color));
+	--otodb-fainter-bg: color-mix(in hsl, var(--otodb-bg-color) 80%, var(--otodb-content-color));
 	--otodb-faint-content: color-mix(in hsl, var(--otodb-bg-color) 12.5%, var(--otodb-content-color));
 }
 
@@ -35,7 +36,7 @@ body {
 	background-color: var(--otodb-bg-color);
 	display:flex;
 	gap: 1rem;
-	padding: 7rem 3rem 0 3rem;
+	padding: 12rem 3rem 0 3rem;
 	font-size: smaller;
 	align-items: flex-start;
 }
@@ -43,7 +44,7 @@ body {
 body::after {
 	content: 'the otomad/ytpmv database';
 	position: absolute;
-	top: 3rem;
+	top: 5rem;
 	left: 10rem;
 	font-style: italic;
 	font-family: mono;
@@ -76,19 +77,21 @@ main {
 	background-color: var(--otodb-faint-bg);
 	border: 1px solid var(--otodb-faint-content);
 	padding: 1rem 2rem;
-	text-align: center;
 }
 
 main > h1 {
 	text-align: initial;
 }
 
-#work-tags {
-	display: flex;
-	gap: .3rem 2rem;
-	flex-wrap: wrap;
+thead {
+	background-color: var(--otodb-bg-color);
 }
 
-#work-tags > li {
-	margin: 0;
+tbody > tr:nth-of-type(odd) {
+	background-color: var(--otodb-fainter-bg);
+}
+
+input[type="submit"], input[type="button"], select, button {
+    border: 1px solid white;
+    outline: none;
 }

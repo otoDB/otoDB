@@ -81,6 +81,7 @@ def new_work(request: HttpRequest):
         form = SourceSiteForm(request.POST)
         if form.is_valid():
             link = form.cleaned_data['link']
+            official = form.cleaned_data['official']
             try:
                 info = video_info(link)
                 if info['site'] not in ACCEPT_SITES:
@@ -91,7 +92,7 @@ def new_work(request: HttpRequest):
                 if 'tags' in info:
                     work.tags.add(*info['tags'])
 
-                src = WorkSource(media=work, url=info['url'], published_date=date.fromtimestamp(info['timestamp']))
+                src = WorkSource(media=work, url=info['url'], published_date=date.fromtimestamp(info['timestamp']), work_origin=WorkOrigin.AUTHOR if official else WorkOrigin.REUPLOAD, work_width=info.get('work_width',None), work_height=info.get('work_height',None))
                 src.save()
 
                 site_src = ACCEPT_SITES[info['site']](work_source=src, source_id=info['id'])
@@ -128,7 +129,7 @@ def new_source(request: HttpRequest, work_id: int):
                 if any(src.source_id == info['id'] for src in sources):
                     raise Exception('This source already exists for this work')
 
-                src = WorkSource(media=work, url=info['url'], published_date=date.fromtimestamp(info['timestamp']), work_origin=WorkOrigin.AUTHOR if official else WorkOrigin.REUPLOAD)
+                src = WorkSource(media=work, url=info['url'], published_date=date.fromtimestamp(info['timestamp']), work_origin=WorkOrigin.AUTHOR if official else WorkOrigin.REUPLOAD, work_width=info.get('work_width',None), work_height=info.get('work_height',None))
                 src.save()
 
                 site_src = ACCEPT_SITES[info['site']](work_source=src, source_id=info['id'])

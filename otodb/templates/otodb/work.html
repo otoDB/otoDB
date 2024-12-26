@@ -3,22 +3,28 @@
 
 {% block content %}
   <h1>{{ work.title }}</h1>
+  <a href="{% url 'otodb:edit_work' work.id %}">Edit this work</a>
+ {% if work.thumbnail is not None %}
+ <img src="{{ work.thumbnail }}" alt="{{ work.title }}">
+ {% endif %} 
   <h2>Description</h2>
-  <p>{{ work.description }}</p>
+  <p>{{ work.description | linebreaksbr }}</p>
   <h2>Tags</h2>
-  <ul>
-	{% for tag in work.tags.names %}
-	<li><a href="#">{{ tag }}</a></li>
+  <ul id="work-tags">
+	{% for tag in work.tags.all %}
+	<li><a href="{% url 'otodb:tag' tag.id %}">{{ tag }}</a></li>
 	{% empty %}
 	<li>No tags!</li>
 	{% endfor %}
+	<li><a href="{% url 'otodb:attach_tag' work.pk %}">Attach tag...</a></li>
   </ul>
   <h2>Work Sources</h2>
   <ul>
 	{% for source in sources %}
-	<li><a href="{{ source.url }}">{{ source.published_date }} @ {{ source.url }}</a></li>
+	<li><a href="{{ source.work_source.url }}" target="_blank" rel="noopener noreferrer">{{ source }}</a></li>
 	{% empty %}
 	<li>No sources!</li>
 	{% endfor %}
+	<li><a href="{% url 'otodb:new_source' work.pk %}">Add source...</a></li>
   <ul>
 {% endblock content %}

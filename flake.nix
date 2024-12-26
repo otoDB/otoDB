@@ -37,7 +37,9 @@
             pp.dotmap
             pp.python-dotenv
             pp.pyyaml
+            # NEW
             pp.yt-dlp
+            pp.django-model-utils
           ]))
         ];
       };

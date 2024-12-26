@@ -25,6 +25,8 @@ class MediaWork(MediaBase):
         help_text="A space-separated list of tags."
     )
 
+    thumbnail = models.CharField(max_length=200, null=True, blank=True)
+
     history = HistoricalRecords()
     objects: MediaBaseManager
 

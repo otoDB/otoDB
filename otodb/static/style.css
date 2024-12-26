@@ -1,20 +1,49 @@
+:root {
+	--otodb-bg-color: white;
+	--otodb-content-color: black;
+	--otodb-faint-bg: color-mix(in hsl, var(--otodb-bg-color) 90%, var(--otodb-content-color));
+	--otodb-faint-content: color-mix(in hsl, var(--otodb-bg-color) 12.5%, var(--otodb-content-color));
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+	  --otodb-bg-color: black;
+	  --otodb-content-color: white;
+	}
+}
+
 html {
     scroll-behavior: smooth;
+	color: var(--otodb-content-color);
+}
+
+a {
+	color: var(--otodb-content-color);
+}
+
+hr {
+	width: 100%;
+	color: var(--otodb-content-color);
+}
+
+img {
+	width: 100%;
 }
 
 body {
     margin: 0;
-	background-color: darkgray;
-	display:grid;
+	background-color: var(--otodb-bg-color);
+	display:flex;
 	gap: 1rem;
-	grid-template-columns: 1fr 4fr;
-	padding: 15rem 5rem 2rem 2rem;
+	padding: 7rem 3rem 0 3rem;
+	font-size: smaller;
+	align-items: flex-start;
 }
 
 body::after {
 	content: 'the otomad/ytpmv database';
 	position: absolute;
-	top: 7rem;
+	top: 3rem;
 	left: 10rem;
 	font-style: italic;
 	font-family: mono;
@@ -23,23 +52,43 @@ body::after {
 nav {
 	display: flex;
 	flex-direction: column;
-	padding: 3rem 1rem;
+	padding: 2rem 1rem;
 	gap: 1rem;
-	background-color: lightgray;
-	border: 2px solid white;
+	background-color: var(--otodb-faint-bg);;
+	border: 1px solid var(--otodb-faint-content);
+	max-width: 8rem;
+}
+
+nav > form {
+	width: 100%;
+	display: flex;
+}
+
+nav > form > input {
+	max-width: 4rem;
 }
 
 main {
+	flex-grow: 1;
 	margin: auto;
 	width: 100%;
-	max-width: 70rem;
 	min-height: 20rem;
-	background-color: lightgray;
-	border: 2px solid white;
+	background-color: var(--otodb-faint-bg);
+	border: 1px solid var(--otodb-faint-content);
 	padding: 1rem 2rem;
 	text-align: center;
 }
 
 main > h1 {
 	text-align: initial;
+}
+
+#work-tags {
+	display: flex;
+	gap: .3rem 2rem;
+	flex-wrap: wrap;
+}
+
+#work-tags > li {
+	margin: 0;
 }

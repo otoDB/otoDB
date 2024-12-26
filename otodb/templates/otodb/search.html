@@ -2,10 +2,14 @@
 {% block page_title %}Search Results{% endblock page_title %}
 
 {% block content %}
-    <h1>Search</h1>
+    <h1>{{ type.capitalize }} Search: {{ query }}</h1>
     <ul>
     {% for entry in results %}
+        {% if type == 'work' %}
 	    <li><a href="{% url 'otodb:work' entry.id %}">{{ entry.title }}</a></li>
+        {% elif type == 'tag' %}
+	    <li><a href="{% url 'otodb:tag' entry.id %}">{{ entry.name }}</a></li>
+        {% endif %}
 	{% empty %}
 	    <li>No results found!</li>
     {% endfor %}

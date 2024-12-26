@@ -36,3 +36,9 @@ class PoolItem(models.Model):
         verbose_name = 'List Entry'
         verbose_name_plural = 'List Entries'
         ordering = ['order']
+
+    def save(self, *args, **kwargs):
+        if not self.order:  # Set order only if it's not already set
+            max_order = PoolItem.objects.filter(pool=self.pool).aggregate(max_order=models.Max('order'))['max_order']
+            self.order = (max_order or 0) + 1
+        super().save(*args, **kwargs)

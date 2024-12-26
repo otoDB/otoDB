@@ -1,8 +1,8 @@
-{% extends "otodb/base.html" %}
-{% block page_title %}New work{% endblock page_title %}
+{% extends "base.html" %}
+{% block page_title %}Adding source for {{work.title}}{% endblock page_title %}
 
 {% block content %}
-<h1>New work</h1>
+<h1>New source for "{{ work.title }}"</h1>
 <p>Currently accepted sites:</p>
 <ul>
   <li>YouTube</li>
@@ -10,7 +10,7 @@
   <li>Bilibili</li>
   <li>SoundCloud</li>
 </ul>
-<form name="new_work" target="_self" method="post">
+<form name="new_source" target="_self" method="post">
   {% csrf_token %}
   <table>
     {{ form }}

@@ -1,18 +1,18 @@
-{% extends "otodb/base.html" %}
+{% extends "base.html" %}
 {% block page_title %}{{ list.name }}{% endblock page_title %}
 
 {% block content %}
     <h1>List: {{ list.name }}</h1>
     <p>{{ list.description | linebreaksbr }}</p>
     <h2>By: <a href="{% url 'otodb:profile' list.author.id %}">{{ list.author.username }}</a></h2>
-    <ul>
-        {% for work in list.works.all %}
-        <li><a href="{% url 'otodb:work' work.work.id %}">{{ work.work.title }}</a><br><p>{{ work.description }}</p></li>
+    <ol>
+        {% for w in works %}
+        <li><a href="{% url 'otodb:work' w.work_id %}">{{ w.work.title }}</a><br><p>{{ w.description }}</p></li>
         {% empty %}
         <li>No works in this list!</li>
         {% endfor %}
-        {% if user == list.author %}
-        <li><a href="{% url 'otodb:list_add_work' list.id %}">Add a work...</a></li>
-        {% endif %}
-    </ul>    
+    </ol>    
+    {% if user == list.author %}
+    <p><a href="{% url 'otodb:list_add_work' list.id %}">Add a work...</a></p>
+    {% endif %}
 {% endblock content %}

@@ -147,19 +147,6 @@ def new_source(request: HttpRequest, work_id: int):
     return render(request, 'work/new_source.html', {'form': form, 'work': work})
 
 @login_required
-def attach_tag(request: HttpRequest, work_id: int): # todo
-    work = get_object_or_404(MediaWork, pk=work_id)
-    if request.method == 'POST':
-        form = SourceSiteForm(request.POST)
-        if form.is_valid():
-
-            return redirect('otodb:work', work_id=work.pk)
-    else:
-        form = SourceSiteForm()
-
-    return render(request, 'work/attach_tag.html', {'work': work})
-
-@login_required
 def edit_work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork, pk=work_id)
     if request.method == 'POST':
@@ -172,6 +159,26 @@ def edit_work(request: HttpRequest, work_id: int):
         form = WorkForm(instance=work)
 
     return render(request, 'work/edit_work.html', {'work': work, 'form': form})
+
+@login_required
+
+@login_required
+def work_set_tags(request: HttpRequest, work_id: int):
+    work = get_object_or_404(MediaWork, pk=work_id)
+
+    error = None
+    if request.method == 'POST':
+        try:
+            sz = int(request.POST['size'])
+            tags = [request.POST[f'tag-{i}'] for i in range(sz)]
+            work.tags.set(tags)
+            work.save()
+
+        except Exception as e:
+            print(e)
+
+    return redirect('otodb:work', work_id=work.pk)
+
 
 def tag(request: HttpRequest, tag_id: int):
     tag = get_object_or_404(TagMain, pk=tag_id)

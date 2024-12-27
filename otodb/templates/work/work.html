@@ -25,35 +25,70 @@
   <div id="infobox">
 	<img src="{{ work.thumbnail }}" alt="{{ work.title }}">
 	<div>
-		<h2>Description</h2>
-		<p>{{ work.description | linebreaksbr }}</p>
+		<table>
+			<tr>
+				<th>Title</th>
+				<td>{{ work.title }}</td>
+			</tr>
+			<tr>
+				<th>Description</th>
+				<td>{{ work.description | linebreaksbr }}</td>
+			</tr>
+		</table>
 		<a href="{% url 'otodb:edit_work' work.id %}">Edit this work</a>
+		<h2>User Options</h2>
+		<table>
+			<tr>
+				<th>Lists</th>
+				<td>TODO widget</td>
+			</tr>
+			<tr>
+				<th>Something else, maybe votes</th>
+				<td>TODO widget</td>
+			</tr>
+		</table>
 	</div>
-	<div style="grid-column: 1 / span 2; border-top: var(--otodb-faint-content) 1px solid; margin-top: 2rem;">
-		<!-- <h2>Tags</h2> -->
-		<ul id="work-tags">
+	<div style="grid-column: 1 / span 2; border-top: var(--otodb-faint-content) 1px solid; margin-top: 2rem;" x-data="{
+		edit: false,
+		tags: [
 			{% for tag in work.tags.all %}
-			<li><a href="{% url 'otodb:tag' tag.id %}">{{ tag }}</a></li>
-			{% empty %}
-			<li>No tags!</li>
+			{
+				url: `{% url 'otodb:tag' tag.id %}`,
+				name: `{{ tag }}`
+			},
 			{% endfor %}
-			<li><a href="{% url 'otodb:attach_tag' work.pk %}">Attach tag...</a></li>
+		],
+		new_tag: ''
+	}">
+	<form target="_self" action="{% url 'otodb:work_set_tags' work.id %}" method="post">
+		{% csrf_token %}
+		<input type="number" hidden name="size" :value="tags.length">
+		<ul id="work-tags">
+			<template x-for="(tag, i) in tags">
+				<li><a :href="tag.url" x-text="tag.name"></a><button type="button" x-show="edit" @click="tags.splice(i, 1)">X</button><input type="text" hidden :name="'tag-'+i" x-model="tag.name"></li>
+			</template>
+			<li x-show="edit"><input type="text" x-model="new_tag" @keydown.enter="$event.preventDefault(); $refs.add.click();"><button x-ref="add" type="button" @click="
+				const trim = new_tag.trim();
+				if (trim === '' || tags.map(e=>e.name).indexOf(trim) !== -1) return;
+				tags.push({url: '#', name: trim});
+				new_tag = '';"
+			>Add</button></li>
+			<li><button @click="edit=true" x-show="!edit" type="button">Edit</button><button x-show="edit" type="submit">Done</button></li>
 		</ul>
+	</form>
 	</div>
   </div>
   <h2>Work Sources</h2>
   <a href="{% url 'otodb:new_source' work.pk %}">Add a source...</a>
   <table style="width: 100%;">
-	<thead>
-	<tr>
-		<th>Platform</th>
-		<th>Date</th>
-		<th>Official</th>
-		<th>Available</th>
-		<th>Resolution</th>
-		<th>Link</th>
-	</tr>
-	</thead>
+	<thead><tr>
+			<th>Platform</th>
+			<th>Date</th>
+			<th>Official</th>
+			<th>Available</th>
+			<th>Resolution</th>
+			<th>Link</th>
+	</tr></thead>
 	<tbody>
 		{% for source in sources %}
 		<tr>
@@ -61,8 +96,6 @@
 			</td><td>{{ source.work_source.work_origin|yesno:"No,Yes" }}</td><td>{{ source.work_source.work_status|yesno:"No,Yes" }}</td>
 			<td>{{ source.work_source.work_width }}x{{ source.work_source.work_height }}</td><td><a href="{{ source.work_source.url }}" target="_blank" rel="noopener noreferrer">Link</a></td>
 		</tr>
-		{% empty %}
-		<li>No sources!</li>
 		{% endfor %}
 	</tbody>
   </table>

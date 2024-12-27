@@ -12,6 +12,7 @@ def tag(request: HttpRequest, tag_id: int):
 
 @login_required
 def alias(request: HttpRequest):
+    # alias tree is at most one layer deep
     redir = 1
     if request.method == 'POST':
         try:
@@ -19,13 +20,20 @@ def alias(request: HttpRequest):
             into = int(request.POST['into'])
             tags = [TagMain.objects.get(name=request.POST[f'tag-{i}']) for i in range(n)]
             into = tags[into]
-            redir = into.id
+            if into.aliased_to:
+                into = into.aliased_to
 
+            redir = into.id
             for tag in tags:
                 if tag is not into:
                     tag.aliased_to = into
                     tag.save()
-                    # todo drop all tags tag, join into into
+                    for work in MediaWork.objects.filter(tags__id=tag.id):
+                        work.tags.add(into)
+                        work.tags.remove(tag)
+                    for t in TagMain.objects.filter(aliased_to=tag):
+                        t.aliased_to = into
+
         except Exception as e:
             print(e)
 

@@ -10,7 +10,7 @@ urlpatterns = [
     path("work/<int:work_id>", views.work, name="work"),
     path("work/<int:work_id>/edit", views.edit_work, name="edit_work"),
     path("work/<int:work_id>/new_source", views.new_source, name="new_source"),
-    path("work/<int:work_id>/attach_tag", views.attach_tag, name="attach_tag"),
+    path("work/<int:work_id>/set_tags", views.work_set_tags, name="work_set_tags"),
 
     path("new_list", views.new_list, name="new_list"),
     path("list/<int:list_id>", views.list, name="list"),

@@ -23,7 +23,7 @@
             {% empty %}
             <li>No works in this list!</li>
             {% endfor %}
-        </ol>    
+        </ol>
         {% if user == list.author %}
         <p><a href="{% url 'otodb:list_edit' list.id %}">Edit this list...</a></p>
         <p><a href="{% url 'otodb:list_delete' list.id %}">Delete this list...</a></p>

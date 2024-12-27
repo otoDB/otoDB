@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block page_title %}{{ tag }}{% endblock page_title %}
+
+{% block content %}
+    <h1>Tag: {{ tag }}</h1>
+    {% if tag.aliased_to %}
+    This tag is aliased to <a href="{% url 'otodb:tag' tag.aliased_to.id %}">{{ tag.aliased_to }}</a>. You will be redirected in <span id="countdown"></span> seconds.
+    <script>
+        let cd = 3;
+        let countdown = document.querySelector('#countdown');
+        countdown.innerHTML = cd;
+        setInterval(() => {
+            countdown.innerHTML = --cd;
+            if (cd === 0) window.location.replace('{% url 'otodb:tag' tag.aliased_to.id %}');
+        }, 1000);
+    </script>
+    {% else %}
+        {% if aliases %}
+        <h3>Also known as: {{ aliases | join:', ' }}.</h3>
+            
+        {% endif %}
+    <!-- INSERT WIKI EXCERPT -->
+    <h2>Works tagged with "{{ tag }}"</h2>
+    <ul>
+        {% for work in works %}
+        <li><a href="{% url 'otodb:work' work.id %}">{{ work.title }}</a></li>
+        {% empty %}
+        <li>No works found!</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endblock content %}

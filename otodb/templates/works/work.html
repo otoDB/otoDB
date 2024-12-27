@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+{% block page_title %}{{ work.title }}{% endblock page_title %}
+
+{% block content %}
+<style>
+#work-tags {
+	display: flex;
+	gap: .3rem 2rem;
+	flex-wrap: wrap;
+}
+
+#work-tags > li {
+	margin: 0;
+}
+
+#infobox {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+	column-gap: 2rem;
+	align-items: center;
+}
+
+#infobox table th {
+	background-color: var(--otodb-fainter-bg);
+}
+#infobox table td {
+	background-color: var(--otodb-faint-bg);
+}
+</style>
+  <h1>{{ work.title }}</h1>
+  <div id="infobox">
+	<img src="{{ work.thumbnail }}" alt="{{ work.title }}">
+	<div>
+		<table>
+			<tr>
+				<th>Title</th>
+				<td>{{ work.title }}</td>
+			</tr>
+			<tr>
+				<th>Description</th>
+				<td>{{ work.description | linebreaksbr }}</td>
+			</tr>
+		</table>
+		<a href="{% url 'otodb:work_edit' work.id %}">Edit this work</a>
+		<h2>User Options</h2>
+		<table>
+			<tr>
+				<th>Lists</th>
+				<td>TODO widget</td>
+			</tr>
+			<tr>
+				<th>Something else, maybe votes</th>
+				<td>TODO widget</td>
+			</tr>
+		</table>
+	</div>
+	<div style="grid-column: 1 / span 2; border-top: var(--otodb-faint-content) 1px solid; margin-top: 2rem;" x-data="{
+		edited: false,
+		mode: 0, // 0 - default, 1 - edit, 2 - alias
+		alias: false,
+		tags: [
+			{% for tag in tags %}
+			{
+				url: `{% url 'otodb:tag' tag.id %}`,
+				name: `{{ tag }}`,
+				selected: false
+			},
+			{% endfor %}
+		],
+		new_tag: '',
+		add: function () {
+			const trim = this.new_tag.trim();
+			if (trim === '' || this.tags.map(e=>e.name).indexOf(trim) !== -1) return;
+			this.tags.push({url: '#', name: trim});
+			this.new_tag = '';
+			this.edited = true;
+		},
+		merge_into: -1,
+		selected: []
+	}" x-effect="selected = tags.filter(t => t.selected)">
+		<form target="_self" action="{% url 'otodb:work_set_tags' work.id %}" method="post">
+			{% csrf_token %}
+			<input type="number" name="size" :value="tags.length" hidden>
+			<ul id="work-tags">
+				<template x-for="(tag, i) in tags">
+					<li>
+						<a :href="tag.url" x-text="tag.name"></a>
+						<button type="button" x-show="mode===1" @click="tags.splice(i, 1); edited = true;">X</button>
+						<input type="text" hidden :name="'tag-'+i" x-model="tag.name">
+						<input type="checkbox" x-show="mode===2" x-model="tag.selected" name="mode === 2 ? into : ''" :disabled="merge_into >= 0">
+					</li>
+				</template>
+				<li x-show="mode===1"><input type="text" x-model="new_tag" @keydown.enter="$event.preventDefault(); add()"><button x-ref="add" type="button" @click="add()"
+				>Add</button></li>
+			</ul>
+
+			<button x-show="mode===1" type="submit" @click="edited ? void(0) : ($event.preventDefault(), mode = 0);">Done</button>
+		</form>
+		<button @click="mode=1" x-show="!mode" type="button">Edit</button>
+		<button @click="mode=2" x-show="!mode" type="button">Alias</button>
+		<button x-show="mode===2 && merge_into < 0" type="button" :disabled="selected.length === 0" @click="merge_into=0">Continue</button>
+		<form x-show="merge_into >= 0" target="_self" action="{% url 'otodb:tag_alias' %}" method="post">
+			<h3 >... into:</h3>
+			{% csrf_token %}
+			<input type="number" name="size" :value="selected.length" hidden>
+			<input type="number" name="into" :value="merge_into" hidden>
+			<ul>
+				<template x-for="(tag, i) in selected">
+					<li>
+						<input type="text" hidden :name="'tag-'+i" x-model="tag.name">
+						<label x-text="tag.name"></label>
+						<input type="radio" :value="i" x-model="merge_into"></input>
+					</li>
+				</template>
+			</ul>
+			<button>Submit</button>
+		</form>
+	</div>
+  </div>
+  <h2>Work Sources</h2>
+  <a href="{% url 'otodb:work_new_source' work.pk %}">Add a source...</a>
+  <table style="width: 100%;">
+	<thead><tr>
+			<th>Platform</th>
+			<th>Date</th>
+			<th>Official</th>
+			<th>Available</th>
+			<th>Resolution</th>
+			<th>Link</th>
+	</tr></thead>
+	<tbody>
+		{% for source in sources %}
+		<tr>
+			<td>{{ source }}</td><td>{{ source.work_source.published_date }}
+			</td><td>{{ source.work_source.work_origin|yesno:"No,Yes" }}</td><td>{{ source.work_source.work_status|yesno:"No,Yes" }}</td>
+			<td>{{ source.work_source.work_width }}x{{ source.work_source.work_height }}</td><td><a href="{{ source.work_source.url }}" target="_blank" rel="noopener noreferrer">Link</a></td>
+		</tr>
+		{% endfor %}
+	</tbody>
+  </table>
+{% endblock content %}

@@ -3,7 +3,7 @@
 
 {% block content %}
     <h1>{{user.username}}'s lists</h1>
-    <a href="{% url 'otodb:new_list' %}">Make a new list</a>
+    <a href="{% url 'otodb:list_new' %}">Make a new list</a>
     <ul>
     {% for entry in lists %}
 	    <li>{{ entry.get_status_display }}: <a href="{% url 'otodb:list' entry.id %}">{{ entry.name }}</a></li>

@@ -5,25 +5,26 @@ from . import views
 app_name = "otodb"
 urlpatterns = [
     path("", views.index, name="index"),
-
-    path("new_work", views.new_work, name="new_work"),
-    path("work/<int:work_id>", views.work, name="work"),
-    path("work/<int:work_id>/edit", views.edit_work, name="edit_work"),
-    path("work/<int:work_id>/new_source", views.new_source, name="new_source"),
-    path("work/<int:work_id>/set_tags", views.work_set_tags, name="work_set_tags"),
-
-    path("new_list", views.new_list, name="new_list"),
-    path("list/<int:list_id>", views.list, name="list"),
-    path("list/<int:list_id>/edit", views.list_edit, name="list_edit"),
-    path("list/<int:list_id>/delete", views.list_delete, name="list_delete"),
-
-    path("tag/<int:tag_id>", views.tag, name="tag"),
-
     path("search", views.search, name="search"),
-    path("profile/<int:user_id>", views.profile, name="profile"),
-    path("profile/<int:user_id>/lists", views.user_lists, name="user_lists"),
 
-    path("login", views.login_view, name="login"),
-    path("register", views.register_view, name="register"),
-    path("logout", views.logout_view, name="logout"),
+    path("works/new", views.works.new, name="work_new"),
+    path("works/<int:work_id>", views.works.work, name="work"),
+    path("works/<int:work_id>/edit", views.works.edit, name="work_edit"),
+    path("works/<int:work_id>/new_source", views.works.new_source, name="work_new_source"),
+    path("works/<int:work_id>/set_tags", views.works.set_tags, name="work_set_tags"),
+
+    path("lists/new", views.lists.new, name="list_new"),
+    path("lists/<int:list_id>", views.lists.list, name="list"),
+    path("lists/<int:list_id>/edit", views.lists.edit, name="list_edit"),
+    path("lists/<int:list_id>/delete", views.lists.delete, name="list_delete"),
+
+    path("tag/<int:tag_id>", views.tags.tag, name="tag"),
+    path("tag/alias", views.tags.alias, name="tag_alias"),
+
+    path("profile/<int:user_id>", views.users.profile, name="profile"),
+    path("profile/<int:user_id>/lists", views.users.lists, name="profile_lists"),
+
+    path("login", views.users.login_view, name="login"),
+    path("register", views.users.register_view, name="register"),
+    path("logout", views.users.logout_view, name="logout"),
 ]

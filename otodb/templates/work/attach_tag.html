@@ -3,7 +3,7 @@
 
 {% block content %}
 <h1>Attach tag for "{{ work.title }}"</h1>
-<form name="attach_tag" target="_self" method="post">
+<form target="_self" method="post">
   {% csrf_token %}
   <table>
   {{ form }}

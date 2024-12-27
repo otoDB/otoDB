@@ -16,6 +16,7 @@
 		<meta name="og:site_name" content="{{ config.site_name }}">
 		<link rel="stylesheet" href="{% static 'style.css' %}">
 		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script src="https://unpkg.com/htmx.org@2.0.4"></script>
 	</head>
 	<body>
 		<!--[if lt IE 7]>
@@ -26,7 +27,7 @@
 		   {% if user.is_staff %}
 		   <a href="{% url 'admin:index' %}">Admin View</a>
 		   {% endif %}
-		   <form name="query" target="_self" method="get" action="/search">
+		   <form target="_self" method="get" action="/search">
 			 <select required name="type" id="search-type">
 			   <option value="work">Work</option>
 			   <option value="song">Song</option>

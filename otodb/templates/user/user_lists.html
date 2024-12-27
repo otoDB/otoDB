@@ -6,7 +6,7 @@
     <a href="{% url 'otodb:new_list' %}">Make a new list</a>
     <ul>
     {% for entry in lists %}
-	    <li><a href="{% url 'otodb:list' entry.id %}">{{ entry.name }}</a></li>
+	    <li>{{ entry.get_status_display }}: <a href="{% url 'otodb:list' entry.id %}">{{ entry.name }}</a></li>
 	{% empty %}
 	    <li>No lists!</li>
     {% endfor %}

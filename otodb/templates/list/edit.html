@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block page_title %}Adding to {{ list.name }}{% endblock page_title %}
+
+{% block content %}
+    <h1>Editing list "{{ list.name }}"</h1>
+    {% if error %}
+    Error: {{ error }}
+    {% endif %}
+    <div x-data="{
+      works: [
+        {% for item in list.poolitem_set.all %}
+        {work: {{ item.work.id }}, desc: `{{ item.description }}` },
+        {% endfor %}
+      ]
+    }">
+    <form target="_self" method="post">
+      {% csrf_token %}
+      <table>
+      {{ list_form }}
+    </table>
+      <input type="number" hidden name="size" :value="works.length">
+      <button type="button" @click="works.push({work:'', desc:''})">Add a new work</button>
+      <table>
+        <thead><tr><th></th><th>Work</th><th>Description</th><th></th></tr></thead>
+        <tbody>
+          <template x-for="(w, i) in works">
+            <tr>
+              <td>
+                <button type="button" :disabled="i===0" @click="[works[i-1], works[i]] = [works[i], works[i-1]]">↑</button>
+                <button type="button" :disabled="i===works.length-1" @click="[works[i+1], works[i]] = [works[i], works[i+1]]">↓</button></td>
+              <td><input type="text" :name="'work-'+i" x-model="w.work" placeholder="Work..."></td>
+              <td><textarea x-model="w.desc" :name="'desc-'+i" placeholder="Description..."></textarea></td>
+              <td><button type="button" @click="works.splice(i, 1)">X</button></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+      <input type="submit" value="Done" />
+    </form>
+  </div>
+  
+{% endblock content %}

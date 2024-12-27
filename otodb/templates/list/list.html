@@ -2,17 +2,31 @@
 {% block page_title %}{{ list.name }}{% endblock page_title %}
 
 {% block content %}
-    <h1>List: {{ list.name }}</h1>
-    <p>{{ list.description | linebreaksbr }}</p>
+<style>
+    ol > li {
+        margin-top: .5rem;
+        margin-bottom: .5rem;
+    }
+</style>
+    <h1>{{ list.get_status_display }} List: {{ list.name }}</h1>
     <h2>By: <a href="{% url 'otodb:profile' list.author.id %}">{{ list.author.username }}</a></h2>
-    <ol>
-        {% for w in works %}
-        <li><a href="{% url 'otodb:work' w.work_id %}">{{ w.work.title }}</a><br><p>{{ w.description }}</p></li>
-        {% empty %}
-        <li>No works in this list!</li>
-        {% endfor %}
-    </ol>    
-    {% if user == list.author %}
-    <p><a href="{% url 'otodb:list_add_work' list.id %}">Add a work...</a></p>
-    {% endif %}
+    <p>{{ list.description | linebreaksbr }}</p>
+    <div id="list">
+        <ol>
+            {% for w in works %}
+            <li>
+                <div style="display: flex; gap: 1rem;align-items:flex-start;">
+                    <img style="max-width:5rem" src="{{ w.work.thumbnail }}" alt="{{ w.work.title }}">
+                    <div><a href="{% url 'otodb:work' w.work_id %}">{{ w.work.title }}</a><p>{{ w.description | linebreaksbr }}</p></div>
+                </div>
+            </li>
+            {% empty %}
+            <li>No works in this list!</li>
+            {% endfor %}
+        </ol>    
+        {% if user == list.author %}
+        <p><a href="{% url 'otodb:list_edit' list.id %}">Edit this list...</a></p>
+        <p><a href="{% url 'otodb:list_delete' list.id %}">Delete this list...</a></p>
+        {% endif %}
+    </div>
 {% endblock content %}

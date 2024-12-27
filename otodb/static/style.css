@@ -36,7 +36,7 @@ body {
 	background-color: var(--otodb-bg-color);
 	display:flex;
 	gap: 1rem;
-	padding: 12rem 3rem 0 3rem;
+	padding: 12rem 3rem 5rem 3rem;
 	font-size: smaller;
 	align-items: flex-start;
 }
@@ -81,6 +81,10 @@ main {
 
 main > h1 {
 	text-align: initial;
+}
+
+table {
+	margin-bottom: 1rem;
 }
 
 thead {

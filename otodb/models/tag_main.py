@@ -16,11 +16,7 @@ class TagMain(TagBase):
     category = models.ForeignKey(Category, default=int(TagCategory.GENERAL), on_delete=models.SET_DEFAULT)  # type: ignore
     default_role_flags = BitField(RoleFlags)  # type: ignore
     wiki_page = models.OneToOneField('wiki.WikiPage', on_delete=models.CASCADE, null=True, blank=True)
-    aliases = TaggableManager(
-        verbose_name="Aliases",
-        help_text="An optional space-separated list of tag aliases.",
-        blank=True,
-    )
+    aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
     @property

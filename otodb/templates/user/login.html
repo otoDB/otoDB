@@ -3,7 +3,7 @@
 
 {% block content %}
 <h1>Login</h1>
-<form name="login" target="_self" method="post"">
+<form target="_self" method="post"">
   {% csrf_token %}
   <table>
     {{ form }}

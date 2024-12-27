@@ -12,6 +12,7 @@ from .forms import *
 from .scrape_platform import video_info
 
 from datetime import date
+import json
 
 def index(request: HttpRequest):
     return render(request, "index.html", {
@@ -75,6 +76,20 @@ def work(request: HttpRequest, work_id: int):
     return render(request, "work/work.html", {'work':work, "sources": sources})
 
 ACCEPT_SITES = {'niconico': SourceWorkNiconico, 'bilibili': SourceWorkBilibili, 'youtube': SourceWorkYouTube, 'soundcloud': SourceWorkSoundCloud}
+def save_source(work, info, official):
+    if ACCEPT_SITES[info['site']].objects.filter(source_id=info['id']):
+        raise Exception('This source already exists in the database.')
+
+    src = WorkSource(media=work,
+        url=info['url'],
+        published_date=date.fromtimestamp(info['timestamp']),
+        work_origin=WorkOrigin.AUTHOR if official else WorkOrigin.REUPLOAD,
+        work_width=info.get('work_width',None), work_height=info.get('work_height',None))
+    src.save()
+
+    site_src = ACCEPT_SITES[info['site']](work_source=src, source_id=info['id'])
+    site_src.save()
+
 @login_required
 def new_work(request: HttpRequest):
     if request.method == 'POST':
@@ -92,11 +107,7 @@ def new_work(request: HttpRequest):
                 if 'tags' in info:
                     work.tags.add(*info['tags'])
 
-                src = WorkSource(media=work, url=info['url'], published_date=date.fromtimestamp(info['timestamp']), work_origin=WorkOrigin.AUTHOR if official else WorkOrigin.REUPLOAD, work_width=info.get('work_width',None), work_height=info.get('work_height',None))
-                src.save()
-
-                site_src = ACCEPT_SITES[info['site']](work_source=src, source_id=info['id'])
-                site_src.save()
+                save_source(work, info, official)
 
                 return redirect('otodb:work', work_id=work.pk)
             except Exception as e:
@@ -124,16 +135,7 @@ def new_source(request: HttpRequest, work_id: int):
                 if 'tags' in info:
                     work.tags.add(*info['tags'])
 
-                sources = ACCEPT_SITES[info['site']].objects.filter(work_source__in=WorkSource.objects.filter(media=work))
-                print ([src.source_id for src in sources])
-                if any(src.source_id == info['id'] for src in sources):
-                    raise Exception('This source already exists for this work')
-
-                src = WorkSource(media=work, url=info['url'], published_date=date.fromtimestamp(info['timestamp']), work_origin=WorkOrigin.AUTHOR if official else WorkOrigin.REUPLOAD, work_width=info.get('work_width',None), work_height=info.get('work_height',None))
-                src.save()
-
-                site_src = ACCEPT_SITES[info['site']](work_source=src, source_id=info['id'])
-                site_src.save()
+                save_source(work, info, official)
 
                 return redirect('otodb:work', work_id=work.pk)
             except Exception as e:
@@ -184,7 +186,7 @@ def list(request: HttpRequest, list_id: int):
 @login_required
 def new_list(request: HttpRequest):
     if request.method == 'POST':
-        form = NewListForm(request.POST)
+        form = ListForm(request.POST)
         if form.is_valid():
             name = form.cleaned_data['name']
             desc = form.cleaned_data['description']
@@ -196,23 +198,48 @@ def new_list(request: HttpRequest):
             return redirect('otodb:list', list_id=l.pk)
 
     else:
-        form = NewListForm()
+        form = ListForm()
 
     return render(request, 'list/new_list.html', {'form': form})
 
-def list_add_work(request: HttpRequest, list_id: int):
+@login_required
+def list_edit(request: HttpRequest, list_id: int):
     l = get_object_or_404(Pool, pk=list_id)
+    if l.author != request.user:
+        return redirect('otodb:list', list_id=l.pk)
+
+    error = None
     if request.method == 'POST':
-        form = ListAddWorkForm(request.POST)
-        if form.is_valid():
-            work = form.cleaned_data['work']
-            desc = form.cleaned_data['description']
+        list_form = ListForm(request.POST, instance=l)
+        if list_form.is_valid():
+            name = list_form.cleaned_data['name']
+            desc = list_form.cleaned_data['description']
+            stat = list_form.cleaned_data['status']
+            l.name = name
+            l.description = desc
+            l.status = stat
+            l.save()
+        try:
+            sz = int(request.POST['size'])
+            new_entries = [(i, int(request.POST[f'work-{i}']), request.POST[f'desc-{i}']) for i in range(sz)]
+            PoolItem.objects.filter(pool=l).delete()
+            for i, wk, desc in new_entries:
+                PoolItem(work_id=wk, description=desc, order=i, pool=l).save()
 
-            item = PoolItem(work=work, description=desc, pool=l)
-            item.save()
-
-            return redirect('otodb:list', list_id=list_id)
+            return redirect('otodb:list', list_id=l.pk)
+        except Exception as e:
+            error = str(e)
     else:
-        form = ListAddWorkForm()
+        list_form = ListForm(instance=l)
 
-    return render(request, "list/add_work.html", {"list": l, "form": form})
+    return render(request, "list/edit.html", {"list": l, 'error': error, 'list_form': list_form})
+
+@login_required
+def list_delete(request: HttpRequest, list_id: int):
+    l = get_object_or_404(Pool, pk=list_id)
+    if l.author != request.user:
+        return redirect('otodb:list', list_id=l.pk)
+
+    l.delete()
+
+    return redirect("otodb:user_lists", user_id=request.user.id)

@@ -9,18 +9,18 @@
     <div x-data="{
       works: [
         {% for item in list.poolitem_set.all %}
-        {id: {{ item.work.id }}, title: `{{ item.work.title }}`, desc: `{{ item.description }}`, uuid: crypto.randomUUID() },
+        {id: {{ item.work.id }}, title: `{{ item.work.title }}`, desc: `{{ item.description }}`, uuid: {{ forloop.counter0 }} },
         {% endfor %}
-      ]
+      ],
+      counter: {{ list.poolitem_set.all|length }}
     }"> 
-    <!-- TODO This is actually braindead... UUID is soooo overkill, im sorry... if someone has time & energy please fix this  --lach -->
     <form target="_self" method="post">
       {% csrf_token %}
       <table>
       {{ list_form }}
     </table>
       <input type="number" hidden name="size" :value="works.length">
-      <button type="button" @click="works.push({id: -1, title: '', desc:'', uuid: crypto.randomUUID()})">Add a new work</button>
+      <button type="button" @click="works.push({id: -1, title: '', desc:'', uuid: counter++})">Add a new work</button>
       <table>
         <thead><tr><th></th><th>Work</th><th>Description</th><th></th></tr></thead>
         <tbody>
@@ -32,7 +32,7 @@
               <td x-data="{ work_query: w.title, locked_in: w.title !== '' }" x-init="htmx.process($el)">
                 <input type="number" :name="'work-'+i" x-model="w.id" hidden>
                 <input type="text" x-model="work_query" name="query" @keydown.enter="$event.preventDefault();" placeholder="Search..." :disabled="locked_in">
-                <button type="button" hx-get="{% url 'otodb:query' 'work' %}" hx-target="next div" hx-include="previous input" x-show="!locked_in">Search</button>
+                <button type="button" hx-get="{% url 'otodb:query' 'work' %}" hx-target="next div" hx-include="previous input" x-show="!locked_in" :disabled="work_query===''">Search</button>
                 <div class="query-results" x-data="{ query_action: ({id, title}) => { work_query = title; w.id = id; locked_in = true; $el.innerHTML = ''; } }"></div>
                 <button type="button" @click="locked_in = false;" x-show="locked_in">Change</button>
               </td>
@@ -42,7 +42,7 @@
           </template>
         </tbody>
       </table>
-      <input type="submit" value="Done" />
+      <input type="submit" value="Done" :disabled="works.some(w => w.id <= 0)" />
     </form>
   </div>
   

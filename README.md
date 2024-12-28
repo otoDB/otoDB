@@ -1,28 +1,11 @@
 # otoDB
-
 otoDB is a community-driven website consisting of a collaborative user-managed database, forum, and wiki.
 
 ## ! NOTICE !
 As the model schema is still a very early WIP, migrations are currently not committed as part of this repo. You will need to make these migrations yourself (the command is provided below).
 
-## Dependencies
-```
-diff_match_patch
-Django
-django-bitfield
-django_simple_history
-django-tagulous
-dotmap
-python-dotenv
-PyYAML
-yt-dlp
-django-model-utils
-pypinyin
-pykakasi
-```
-
 ## Setup
-Install the required python packages via your preferred means.
+We recommend using `uv`. Project setup is contained in `pyproject.toml`.
 ```sh
 # Copy the base .env file
 copy .env.example .env
@@ -30,13 +13,19 @@ copy .env.example .env
 # Make necessary modifications to .env, e.g. change DB name to "db", add accepted hosts
 
 # Make migrations, migrate changes, load seed data, create admin account
-python _setup.py
+uv run _setup.py
 
 # Run
-python manage.py runserver
+uv run manage.py runserver
 ```
 
 The script `_clear.py` clears migratinos and deletes the database, at which point you can run `_setup.py` again.
+
+When running through `uv`, you may get an SSL error when the server fetches content from the web, because the virtual enviroment cannot find the local certificates. Map the variable `SSL_CERT_FILE` to the correct location:
+```sh
+# Linux
+export SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
+```
 
 ## Project Structure
 Below is an overview of the structure of this project. Application directories contain the usual Django files.

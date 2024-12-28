@@ -1,10 +1,12 @@
-from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
-from django.shortcuts import *
+from django.shortcuts import render
 
 from otodb.models import MediaSong, MediaWork, TagMain
 
-from . import works, tags, lists, users
+from . import lists, tags, users, works
+
+__all__ = ['lists', 'tags', 'users', 'works']
+
 
 def index(request: HttpRequest):
     return render(request, "index.html", {

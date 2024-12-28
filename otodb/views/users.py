@@ -1,11 +1,12 @@
+from django import forms
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
-from django.shortcuts import *
-from django.contrib.auth import authenticate, login, logout
-from django import forms
+from django.shortcuts import get_object_or_404, redirect, render
 
-from otodb.models import Pool
 from otodb.account.models import Account
+from otodb.models import Pool
+
 
 class LoginForm(forms.Form):
     username = forms.CharField(label="Username", required=True)

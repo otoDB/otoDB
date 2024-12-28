@@ -1,19 +1,20 @@
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
-from django.shortcuts import *
-from django import forms
+from django.shortcuts import get_object_or_404, redirect, render
 
 from otodb.models import Pool, PoolItem
+
 
 class ListForm(forms.ModelForm):
     class Meta:
         model = Pool
-        fields = ['name', 'description', 'status']
+        fields = ['name', 'description']
 
 def list(request: HttpRequest, list_id: int):
-    l = get_object_or_404(Pool, pk=list_id)
-    works = PoolItem.objects.filter(pool=l).select_related('work').order_by('order')
-    return render(request, "lists/list.html", {"list": l, 'works': works})
+    list_ = get_object_or_404(Pool, pk=list_id)
+    works = PoolItem.objects.filter(pool=list_).select_related('work').order_by('order')
+    return render(request, "lists/list.html", {"list": list_, 'works': works})
 
 @login_required
 def new(request: HttpRequest):
@@ -22,12 +23,11 @@ def new(request: HttpRequest):
         if form.is_valid():
             name = form.cleaned_data['name']
             desc = form.cleaned_data['description']
-            stat = form.cleaned_data['status']
 
-            l = Pool(name=name, description=desc, status=stat, author=request.user)
-            l.save()
+            list_ = Pool(name=name, description=desc, author=request.user)
+            list_.save()
 
-            return redirect('otodb:list_edit', list_id=l.pk)
+            return redirect('otodb:list_edit', list_id=list_.id)
 
     else:
         form = ListForm()
@@ -36,42 +36,40 @@ def new(request: HttpRequest):
 
 @login_required
 def edit(request: HttpRequest, list_id: int):
-    l = get_object_or_404(Pool, pk=list_id)
-    if l.author != request.user:
-        return redirect('otodb:list', list_id=l.pk)
+    list_ = get_object_or_404(Pool, pk=list_id)
+    if list_.author != request.user:
+        return redirect('otodb:list', list_id=list_.id)
 
     error = None
     if request.method == 'POST':
-        list_form = ListForm(request.POST, instance=l)
+        list_form = ListForm(request.POST, instance=list_)
         if list_form.is_valid():
             name = list_form.cleaned_data['name']
             desc = list_form.cleaned_data['description']
-            stat = list_form.cleaned_data['status']
-            l.name = name
-            l.description = desc
-            l.status = stat
-            l.save()
+            list_.name = name
+            list_.description = desc
+            list_.save()
         try:
             sz = int(request.POST['size'])
             new_entries = [(i, int(request.POST[f'work-{i}']), request.POST[f'desc-{i}']) for i in range(sz)]
-            PoolItem.objects.filter(pool=l).delete()
+            PoolItem.objects.filter(pool=list_).delete()
             for i, wk, desc in new_entries:
-                PoolItem(work_id=wk, description=desc, order=i, pool=l).save()
+                PoolItem(work_id=wk, description=desc, order=i, pool=list_).save()
 
-            return redirect('otodb:list', list_id=l.pk)
+            return redirect('otodb:list', list_id=list_.id)
         except Exception as e:
             error = str(e)
     else:
-        list_form = ListForm(instance=l)
+        list_form = ListForm(instance=list_)
 
-    return render(request, "lists/edit.html", {"list": l, 'error': error, 'list_form': list_form})
+    return render(request, "lists/edit.html", {"list": list_, 'error': error, 'list_form': list_form})
 
 @login_required
 def delete(request: HttpRequest, list_id: int):
-    l = get_object_or_404(Pool, pk=list_id)
-    if l.author != request.user:
-        return redirect('otodb:list', list_id=l.pk)
+    list_ = get_object_or_404(Pool, pk=list_id)
+    if list_.author != request.user:
+        return redirect('otodb:list', list_id=list_.id)
 
-    l.delete()
+    list_.delete()
 
     return redirect("otodb:profile_lists", user_id=request.user.id)

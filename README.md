@@ -22,17 +22,19 @@ django-model-utils
 ## Setup
 Install the required python packages via your preferred means.
 ```sh
-# Make migrations, migrate changes, load seed data, create admin account
-python _setup.py
-
 # Copy the base .env file
 copy .env.example .env
+
+# Make migrations, migrate changes, load seed data, create admin account
+python _setup.py
 
 # Make necessary modifications to .env, e.g. change DB name to "db", add accepted hosts
 
 # Run
 python manage.py runserver
 ```
+
+The script `_clear.py` clears migratinos and deletes the database, at which point you can run `_setup.py` again.
 
 ## Project Structure
 Below is an overview of the structure of this project. Application directories contain the usual Django files.

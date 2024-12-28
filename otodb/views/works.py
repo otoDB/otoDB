@@ -1,16 +1,14 @@
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest
-from django.shortcuts import *
-from django import forms
-
-from otodb.models import MediaWork, WorkSource
-from otodb.models.sources import SourceWorkBilibili, SourceWorkNiconico, SourceWorkSoundCloud, SourceWorkYouTube, SourceWorkBase
-from otodb.models.enums import WorkOrigin, WorkStatus
-
 from datetime import date
 
+from django import forms
+from django.contrib.auth.decorators import login_required
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404, redirect, render
 from yt_dlp import YoutubeDL
+
+from otodb.models import MediaWork, WorkSource
+from otodb.models.enums import Platform, WorkOrigin
+
 
 def video_info(link):
     keys = {
@@ -29,17 +27,23 @@ def video_info(link):
         info = ydl.extract_info(link, download=False)
         if info.get('_type') == 'playlist':
             info = info['entries'][0] # todo need some work...
-        info['extractor'] = info['extractor'].lower()
-        if info['extractor'] == 'bilibili':
-            info['tags'] = [tag[3:-1] if tag.startswith('发现《') and tag.endswith('》') else tag for tag in info['tags']]
+
+        info['extractor'] = {
+            'youtube': Platform.YOUTUBE,
+            'bilibili': Platform.BILIBILI,
+            'niconico': Platform.NICONICO,
+            'soundcloud': Platform.SOUNDCLOUD,
+        }.get(info['extractor'].lower())
+
         match info['extractor']:
-            case 'youtube':
+            case Platform.YOUTUBE:
                 info['webpage_url'] = f'https://youtu.be/{info['id']}'
-            case 'bilibili':
+            case Platform.BILIBILI:
                 info['webpage_url'] = f'https://bilibili.com/video/{info['id']}/'
-            case 'niconico':
+                info['tags'] = [tag[3:-1] if tag.startswith('发现《') and tag.endswith('》') else tag for tag in info['tags']]
+            case Platform.NICONICO:
                 info['webpage_url'] = f'https://nicovideo.jp/watch/{info['id']}'
-            case 'soundcloud':
+            case Platform.SOUNDCLOUD:
                 pass
 
         return { keys[key]: info[key] for key in keys if key in info }
@@ -53,7 +57,7 @@ class WorkForm(forms.ModelForm):
 class ManualSourceForm(forms.ModelForm):
     class Meta:
         model = WorkSource
-        fields = ['media', 'url', 'published_date', 'work_origin', 'work_status', 'work_width', 'work_height']
+        fields = ['media', 'url', 'published_date', 'work_origin', 'work_status', 'work_width', 'work_height', 'platform']
 
 class SourceSiteForm(forms.Form):
     link = forms.CharField(label='Link', required=True)
@@ -62,24 +66,20 @@ class SourceSiteForm(forms.Form):
 def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork, pk=work_id)
     sources = WorkSource.objects.filter(media=work)
-    sources = [SourceWorkBase.objects.get_subclass(work_source=src) for src in sources]
     tags = work.tags.filter(aliased_to__isnull=True)
     return render(request, "works/work.html", {'work':work, "sources": sources, 'tags': tags})
 
-ACCEPT_SITES = {'niconico': SourceWorkNiconico, 'bilibili': SourceWorkBilibili, 'youtube': SourceWorkYouTube, 'soundcloud': SourceWorkSoundCloud}
 def save_source(work, info, official):
-    if ACCEPT_SITES[info['site']].objects.filter(source_id=info['id']):
+    print(WorkSource.objects.filter(platform=info['site'], source_id=info['id']))
+    if WorkSource.objects.filter(platform=info['site'], source_id=info['id']):
         raise Exception('This source already exists in the database.')
 
     src = WorkSource(media=work,
-        url=info['url'],
+        url=info['url'], platform=info['site'], source_id=info['id'],
         published_date=date.fromtimestamp(info['timestamp']),
-        work_origin=WorkOrigin.AUTHOR if official else WorkOrigin.REUPLOAD,
+        work_origin=WorkOrigin(official),
         work_width=info.get('work_width',None), work_height=info.get('work_height',None))
     src.save()
-
-    site_src = ACCEPT_SITES[info['site']](work_source=src, source_id=info['id'])
-    site_src.save()
 
 @login_required
 def new(request: HttpRequest):
@@ -90,8 +90,8 @@ def new(request: HttpRequest):
             official = form.cleaned_data['official']
             try:
                 info = video_info(link)
-                if info['site'] not in ACCEPT_SITES:
-                    raise Exception(f"Site {info['site']} not supported")
+                if info['site'] is None:
+                    raise Exception('Site not supported')
 
                 work = MediaWork(title=info['title'], description=info['description'], thumbnail=info.get('thumb', None))
                 work.save()
@@ -100,12 +100,12 @@ def new(request: HttpRequest):
 
                 save_source(work, info, official)
 
-                return redirect('otodb:work', work_id=work.pk)
+                return redirect('otodb:work', work_id=work.id)
             except Exception as e:
                 form.add_error(None, 'Error: ' + str(e))
 
     else:
-        form = SourceSiteForm()
+        form = SourceSiteForm(initial={'official':True})
 
     return render(request, 'works/new.html', {'form': form})
 
@@ -120,15 +120,15 @@ def new_source(request: HttpRequest, work_id: int):
             official = form.cleaned_data['official']
             try:
                 info = video_info(link)
-                if info['site'] not in ACCEPT_SITES:
-                    raise Exception(f"Site {info['site']} not supported")
+                if info['site'] is None:
+                    raise Exception('Site not supported')
 
                 if 'tags' in info:
                     work.tags.add(*info['tags'])
 
                 save_source(work, info, official)
 
-                return redirect('otodb:work', work_id=work.pk)
+                return redirect('otodb:work', work_id=work.id)
             except Exception as e:
                 form.add_error(None, 'Error: ' + str(e))
 
@@ -144,7 +144,7 @@ def edit(request: HttpRequest, work_id: int):
         form = WorkForm(request.POST, instance=work)
         if form.is_valid():
             form.save()
-            return redirect('otodb:work', work_id=work.pk)
+            return redirect('otodb:work', work_id=work.id)
 
     else:
         form = WorkForm(instance=work)
@@ -155,7 +155,6 @@ def edit(request: HttpRequest, work_id: int):
 def set_tags(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork, pk=work_id)
 
-    error = None
     if request.method == 'POST':
         try:
             n = int(request.POST['size'])
@@ -166,4 +165,4 @@ def set_tags(request: HttpRequest, work_id: int):
         except Exception as e:
             print(e)
 
-    return redirect('otodb:work', work_id=work.pk)
+    return redirect('otodb:work', work_id=work.id)

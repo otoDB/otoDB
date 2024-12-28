@@ -1,17 +1,14 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
 
-from .enums import PoolCategory
-from .media_work import MediaWork
 from otodb.account.models import Account
+
+from .media_work import MediaWork
+
 
 class Pool(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    status = models.IntegerField(
-        choices=PoolCategory.choices,
-        default=PoolCategory.COLLECTION
-    )
 
     history = HistoricalRecords()
     author = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)

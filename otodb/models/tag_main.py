@@ -4,7 +4,6 @@ from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from simple_history.models import HistoricalRecords
-from taggit.managers import TaggableManager
 from taggit.models import TagBase
 
 from .category import Category

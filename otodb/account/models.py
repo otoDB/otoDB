@@ -74,6 +74,11 @@ class Account(AbstractBaseUser):
     def is_staff(self):
         return self.level >= self.Levels.ADMIN
 
+    # alias for wiki
+    @property
+    def is_superuser(self):
+        return self.is_moderator
+
     @property
     def is_owner(self):
         return self.level >= self.Levels.OWNER

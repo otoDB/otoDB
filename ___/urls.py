@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^', include('otodb.urls')),
+    path('wiki/notifications/', include('django_nyt.urls')),
+    path('wiki/', include('wiki.urls'))
 ]
 
 if settings.DEBUG_TOOLBAR:

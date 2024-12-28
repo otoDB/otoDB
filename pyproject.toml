@@ -1,3 +1,25 @@
+[project]
+name = "otodb"
+version = "0.1.0"
+description = "otoDB is a community-driven website consisting of a collaborative user-managed database, forum, and wiki."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "diff-match-patch>=20241021",
+    "django-bitfield>=2.2.0",
+    "django-model-utils>=5.0.0",
+    "django-simple-history>=3.7.0",
+    "django-tagulous>=2.1.0",
+    "django>=5.1.4",
+    "dotmap>=1.3.30",
+    "pykakasi>=2.3.0",
+    "pypinyin>=0.53.0",
+    "python-dotenv>=1.0.1",
+    "pyyaml>=6.0.2",
+    "wiki>=0.11.2",
+    "yt-dlp>=2024.12.23",
+]
+
 [tool.ruff]
 lint.ignore = [
 	"E501", # Line too long

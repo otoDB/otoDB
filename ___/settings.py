@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from django.urls import reverse_lazy
 
 load_dotenv()
 
@@ -46,9 +47,21 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'otodb',
     'otodb.account',
-    'otodb.wiki',
+    # 'otodb.wiki',
     'simple_history',
     'tagulous',
+
+    'django.contrib.sites.apps.SitesConfig',
+    'django.contrib.humanize.apps.HumanizeConfig',
+    'django_nyt.apps.DjangoNytConfig',
+    'mptt',
+    'sekizai',
+    'sorl.thumbnail',
+    'wiki.apps.WikiConfig',
+    'wiki.plugins.attachments.apps.AttachmentsConfig',
+    'wiki.plugins.notifications.apps.NotificationsConfig',
+    'wiki.plugins.images.apps.ImagesConfig',
+    'wiki.plugins.macros.apps.MacrosConfig',
 ]
 
 if DEBUG_TOOLBAR:
@@ -81,6 +94,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'otodb.context_preprocessors.G',
+                "sekizai.context_processors.sekizai",
+
             ],
         },
     },
@@ -196,3 +211,9 @@ SERIALIZATION_MODULES = {
     'python': 'tagulous.serializers.python',
     'yaml':   'tagulous.serializers.pyyaml',
 }
+
+
+SITE_ID = 1
+WIKI_ACCOUNT_HANDLING = True
+WIKI_ACCOUNT_SIGNUP_ALLOWED = False
+LOGIN_REDIRECT_URL = reverse_lazy('wiki:get', kwargs={'path': ''})

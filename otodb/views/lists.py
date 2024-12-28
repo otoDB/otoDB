@@ -52,9 +52,14 @@ def edit(request: HttpRequest, list_id: int):
         try:
             sz = int(request.POST['size'])
             new_entries = [(i, int(request.POST[f'work-{i}']), request.POST[f'desc-{i}']) for i in range(sz)]
-            PoolItem.objects.filter(pool=list_).delete()
-            for i, wk, desc in new_entries:
-                PoolItem(work_id=wk, description=desc, order=i, pool=list_).save()
+            old_entries = PoolItem.objects.filter(pool=list_)
+
+            # this may fail, so we do this first
+            new_entries = [PoolItem(work_id=wk, description=desc, order=i, pool=list_) for (i, wk, desc) in new_entries]
+
+            # old must go first, querysets are lazy
+            for old in old_entries: old.delete()
+            for new in new_entries: new.save()
 
             return redirect('otodb:list', list_id=list_.id)
         except Exception as e:

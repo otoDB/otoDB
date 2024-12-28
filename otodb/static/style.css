@@ -83,10 +83,6 @@ main > h1 {
 	text-align: initial;
 }
 
-table {
-	margin-bottom: 1rem;
-}
-
 thead {
 	background-color: var(--otodb-bg-color);
 }
@@ -98,4 +94,16 @@ tbody > tr:nth-of-type(odd) {
 input[type="submit"], input[type="button"], select, button {
     border: 1px solid white;
     outline: none;
+}
+
+.query-results:empty {
+	display: none;
+}
+
+.query-results {
+	position: absolute;
+	background-color: var(--otodb-fainter-bg);
+	border: 1px var(--otodb-faint-content) solid;
+	max-height: 15rem;
+	overflow-y: scroll;
 }

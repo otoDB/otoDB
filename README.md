@@ -9,14 +9,16 @@ As the model schema is still a very early WIP, migrations are currently not comm
 ```
 diff_match_patch
 Django
-django_bitfield
+django-bitfield
 django_simple_history
-django_taggit
+django-tagulous
 dotmap
 python-dotenv
 PyYAML
 yt-dlp
 django-model-utils
+pypinyin
+pykakasi
 ```
 
 ## Setup
@@ -25,10 +27,10 @@ Install the required python packages via your preferred means.
 # Copy the base .env file
 copy .env.example .env
 
+# Make necessary modifications to .env, e.g. change DB name to "db", add accepted hosts
+
 # Make migrations, migrate changes, load seed data, create admin account
 python _setup.py
-
-# Make necessary modifications to .env, e.g. change DB name to "db", add accepted hosts
 
 # Run
 python manage.py runserver

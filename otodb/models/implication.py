@@ -7,8 +7,8 @@ from .enums import Status
 
 
 class Implication(models.Model):
-    from_tag = models.ForeignKey("otodb.TagMain", default=None, on_delete=models.CASCADE, related_name="from_implications", help_text="Child")
-    to_tag = models.ForeignKey("otodb.TagMain", default=None, on_delete=models.CASCADE, related_name="to_implications", help_text="Parent")
+    from_tag = models.ForeignKey("otodb.TagWork", default=None, on_delete=models.CASCADE, related_name="from_implications", help_text="Child")
+    to_tag = models.ForeignKey("otodb.TagWork", default=None, on_delete=models.CASCADE, related_name="to_implications", help_text="Parent")
     author = models.ForeignKey(Account, null=True, on_delete=models.SET_NULL, related_name="authored_implications")
     approver = models.ForeignKey(Account, blank=True, null=True, default=None, on_delete=models.SET_NULL, related_name="approved_implications")
     timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)

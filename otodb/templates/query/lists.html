@@ -1,0 +1,7 @@
+<table>
+{% for list in results %}
+    <tr><td>{{list.name}}</td><td><input type="checkbox" @click="query_action({{ list.id }})"></td></tr>
+{% empty %}
+    <tr><td>No results found!</td></tr>
+{% endfor %}
+</table>

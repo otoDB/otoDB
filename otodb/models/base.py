@@ -2,7 +2,6 @@ import random
 from typing import TYPE_CHECKING
 
 from django.db import models
-from taggit.managers import TaggableManager
 
 from .implication import Implication
 
@@ -18,7 +17,6 @@ class MediaBaseManager(models.Manager):
 class MediaBase(models.Model):
     if TYPE_CHECKING:
         id: int
-        tags: TaggableManager
 
     class Meta:
         verbose_name = 'Item'

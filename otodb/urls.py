@@ -1,11 +1,13 @@
 from django.urls import path
 
 from . import views
+from .models import TagWork
 
 app_name = "otodb"
 urlpatterns = [
     path("", views.index, name="index"),
     path("search", views.search, name="search"),
+    path("query/<str:query_type>", views.query, name="query"),
 
     path("works/new", views.works.new, name="work_new"),
     path("works/<int:work_id>", views.works.work, name="work"),

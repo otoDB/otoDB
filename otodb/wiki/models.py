@@ -1,7 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from ..models import TagMain
+from ..models import TagWork
 
 
 class WikiPage(models.Model):
@@ -13,5 +13,5 @@ class WikiPage(models.Model):
         if ':' in self.slug:
             return
 
-        if not TagMain.objects.filter(slug=self.slug).exists():
+        if not TagWork.objects.filter(slug=self.slug).exists():
             raise ValidationError('Wiki page must match existing tag slug, or use namespace prefix')

@@ -1,12 +1,13 @@
 from datetime import date
 
+import tagulous.forms
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from yt_dlp import YoutubeDL
 
-from otodb.models import MediaWork, WorkSource
+from otodb.models import MediaWork, TagWork, WorkSource
 from otodb.models.enums import Platform, WorkOrigin
 
 
@@ -66,20 +67,7 @@ class SourceSiteForm(forms.Form):
 def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork, pk=work_id)
     sources = WorkSource.objects.filter(media=work)
-    tags = work.tags.filter(aliased_to__isnull=True)
-    return render(request, "works/work.html", {'work':work, "sources": sources, 'tags': tags})
-
-def save_source(work, info, official):
-    print(WorkSource.objects.filter(platform=info['site'], source_id=info['id']))
-    if WorkSource.objects.filter(platform=info['site'], source_id=info['id']):
-        raise Exception('This source already exists in the database.')
-
-    src = WorkSource(media=work,
-        url=info['url'], platform=info['site'], source_id=info['id'],
-        published_date=date.fromtimestamp(info['timestamp']),
-        work_origin=WorkOrigin(official),
-        work_width=info.get('work_width',None), work_height=info.get('work_height',None))
-    src.save()
+    return render(request, "works/work.html", {'work':work, "sources": sources})
 
 @login_required
 def new(request: HttpRequest):
@@ -87,18 +75,29 @@ def new(request: HttpRequest):
         form = SourceSiteForm(request.POST)
         if form.is_valid():
             link = form.cleaned_data['link']
-            official = form.cleaned_data['official']
+            is_reupload = not form.cleaned_data['official']
             try:
                 info = video_info(link)
                 if info['site'] is None:
                     raise Exception('Site not supported')
 
+                # Check duplicates
+                if WorkSource.objects.filter(platform=info['site'], source_id=info['id']):
+                    raise Exception('This source already exists in the database.')
+
+                # Save work
                 work = MediaWork(title=info['title'], description=info['description'], thumbnail=info.get('thumb', None))
                 work.save()
                 if 'tags' in info:
                     work.tags.add(*info['tags'])
 
-                save_source(work, info, official)
+                # Save source
+                src = WorkSource(media=work,
+                    url=info['url'], platform=info['site'], source_id=info['id'],
+                    published_date=date.fromtimestamp(info['timestamp']),
+                    work_origin=WorkOrigin(is_reupload),
+                    work_width=info.get('work_width',None), work_height=info.get('work_height',None))
+                src.save()
 
                 return redirect('otodb:work', work_id=work.id)
             except Exception as e:
@@ -117,7 +116,7 @@ def new_source(request: HttpRequest, work_id: int):
         form = SourceSiteForm(request.POST)
         if form.is_valid():
             link = form.cleaned_data['link']
-            official = form.cleaned_data['official']
+            is_reupload = not form.cleaned_data['official']
             try:
                 info = video_info(link)
                 if info['site'] is None:
@@ -126,7 +125,17 @@ def new_source(request: HttpRequest, work_id: int):
                 if 'tags' in info:
                     work.tags.add(*info['tags'])
 
-                save_source(work, info, official)
+                # Check duplicates
+                if WorkSource.objects.filter(platform=info['site'], source_id=info['id']):
+                    raise Exception('This source already exists in the database.')
+
+                # Save source
+                src = WorkSource(media=work,
+                    url=info['url'], platform=info['site'], source_id=info['id'],
+                    published_date=date.fromtimestamp(info['timestamp']),
+                    work_origin=WorkOrigin(is_reupload),
+                    work_width=info.get('work_width',None), work_height=info.get('work_height',None))
+                src.save()
 
                 return redirect('otodb:work', work_id=work.id)
             except Exception as e:

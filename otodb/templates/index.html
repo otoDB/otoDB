@@ -5,6 +5,6 @@
     <h1>{{ config.site_name }}</h1>
 	<h3>Welcome, {{ user.username|default:"Anonymous" }}!</h3>
 	{% if random_work %}
-		<h2>Random work: <a href="{% url 'otodb:work' random_work.id %}">{{ random_work.title }}</a></h2>
+		<h2>Random work: <a href="{% url 'otodb:work' random_work.id %}">{{ random_work.title }}</a></h2><img style="width:25rem;" src="{{ random_work.thumbnail }}" alt="{{ random_work.title }}"></img>
 	{% endif %}
 {% endblock content %}

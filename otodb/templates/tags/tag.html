@@ -3,6 +3,7 @@
 
 {% block content %}
     <h1>Tag: {{ tag }}</h1>
+    <h2>Category: {{ tag.category }}</h2>
     {% if tag.aliased_to %}
     This tag is aliased to <a href="{% url 'otodb:tag' tag.aliased_to.id %}">{{ tag.aliased_to }}</a>. You will be redirected in <span id="countdown"></span> seconds.
     <script>
@@ -15,18 +16,29 @@
         }, 1000);
     </script>
     {% else %}
-        {% if aliases %}
-        <h3>Also known as: {{ aliases | join:', ' }}.</h3>
+        {% if tag.aliases.all %}
+        <h3>Also known as: {{ tag.aliases.all | join:', ' }}.</h3>
             
         {% endif %}
-    <!-- INSERT WIKI EXCERPT -->
-    <h2>Works tagged with "{{ tag }}"</h2>
-    <ul>
-        {% for work in works %}
-        <li><a href="{% url 'otodb:work' work.id %}">{{ work.title }}</a></li>
-        {% empty %}
-        <li>No works found!</li>
-        {% endfor %}
-    </ul>
+        <p>
+            {% lorem %}
+            <!-- INSERT WIKI EXCERPT --> <a href="#">Go to wiki...</a>
+        </p>
+        <h2>Works tagged with "{{ tag }}"</h2>
+        <table>
+            <thead><tr><th>Thumbnail</th><th>Title</th><th>Rating</th><th>Tags</th><th>Sources</th></tr></thead><tbody>
+            {% for work in works %}
+                <tr>
+                    <td><img src="{{ work.thumbnail }}" alt="{{ work }}" style="width:10rem;"></td>
+                    <td><a href="{% url 'otodb:work' work.id %}">{{ work.title }}</a></td>
+                    <td>{{ work.get_rating_display }}</td>
+                    <td>{{ work.tags }}</td>
+                    <td>{{ work.worksource_set.all|length }}</td>
+                </tr>
+            {% empty %}
+                <tr>No results found!</tr>
+            {% endfor %}
+            </tbody>
+        </table>
     {% endif %}
 {% endblock content %}

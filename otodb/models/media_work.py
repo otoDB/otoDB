@@ -2,11 +2,11 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F, Q
 from simple_history.models import HistoricalRecords
-from taggit.managers import TaggableManager
+from tagulous.models import TagField
 
 from .base import MediaBase, MediaBaseManager
 from .enums import Rating
-from .tagged_media import TaggedMedia
+from .tag_main import TagWork
 
 
 class MediaWork(MediaBase):
@@ -19,10 +19,9 @@ class MediaWork(MediaBase):
         default=Rating.NONE
     )
 
-    tags = TaggableManager(
-        through=TaggedMedia,
-        related_name="work_tags",
-        help_text="A space-separated list of tags."
+    tags = TagField(
+        to=TagWork,
+        related_name="work_tags"
     )
 
     thumbnail = models.CharField(max_length=200, null=True, blank=True)
@@ -41,6 +40,9 @@ class MediaWork(MediaBase):
 
     def get_children(self):
         return MediaWork.objects.filter(parent=self.id) or None
+
+    def __str__(self):
+        return self.title
 
     class Meta:
         verbose_name = ("Work")

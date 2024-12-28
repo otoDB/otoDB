@@ -8,7 +8,7 @@
         margin-bottom: .5rem;
     }
 </style>
-    <h1>{{ list.get_status_display }} List: {{ list.name }}</h1>
+    <h1>List: {{ list.name }}</h1>
     <h2>By: <a href="{% url 'otodb:profile' list.author.id %}">{{ list.author.username }}</a></h2>
     <p>{{ list.description | linebreaksbr }}</p>
     <div id="list">

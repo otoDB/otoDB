@@ -33,25 +33,25 @@
 	<img src="{{ work.thumbnail }}" alt="{{ work.title }}">
 	<div>
 		<table>
-			<tr>
-				<th>Title</th>
-				<td>{{ work.title }}</td>
-			</tr>
-			<tr>
-				<th>Description</th>
-				<td>{{ work.description | linebreaksbr }}</td>
-			</tr>
+			<tr><th>Title</th><td>{{ work.title }}</td></tr>
+			<tr><th>Description</th><td>{{ work.description | linebreaksbr }}</td></tr>
+			<tr><th>Rating</th><td>{{ work.get_rating_display }}</td></tr>
 		</table>
 		<a href="{% url 'otodb:work_edit' work.id %}">Edit this work</a>
-		<h2>User Options</h2>
+		<h2>User options</h2>
 		<table>
 			<tr>
 				<th>Lists</th>
-				<td>TODO widget</td>
+				<td x-data="{ pinged: false, collapsed: false }">
+					<button hx-target="next div" hx-get="{% url 'otodb:query' 'mylists' %}" x-show="!pinged" @click="pinged=true">Add/Remove...</button>
+					<button x-show="pinged" @click="collapsed = !collapsed;">Add/Remove...</button>
+					<div class="query-results" x-show="!collapsed"></div>
+					TODO this doesn't work yet
+				</td>
 			</tr>
 			<tr>
-				<th>Something else, maybe votes</th>
-				<td>TODO widget</td>
+				<th>Something else</th>
+				<td>...</td>
 			</tr>
 		</table>
 	</div>
@@ -60,7 +60,7 @@
 		mode: 0, // 0 - default, 1 - edit, 2 - alias
 		alias: false,
 		tags: [
-			{% for tag in tags %}
+			{% for tag in work.tags.all %}
 			{
 				url: `{% url 'otodb:tag' tag.id %}`,
 				name: `{{ tag }}`,
@@ -91,10 +91,13 @@
 						<input type="checkbox" x-show="mode===2" x-model="tag.selected" name="mode === 2 ? into : ''" :disabled="merge_into >= 0">
 					</li>
 				</template>
-				<li x-show="mode===1"><input type="text" x-model="new_tag" @keydown.enter="$event.preventDefault(); add()"><button x-ref="add" type="button" @click="add()"
-				>Add</button></li>
+				<li x-show="mode===1">
+					<input type="text" x-model="new_tag" name="query" @keydown.enter="$event.preventDefault(); add()">
+					<button type="button" hx-get="{% url 'otodb:query' 'tag' %}" hx-target="next div" hx-include="previous input">Search</button>
+					<div class="query-results" x-data="{ query_action: text => { new_tag = text; $el.innerHTML = ''; } }"></div>
+					<button x-ref="add" type="button" @click="add()">Add</button>
+				</li>
 			</ul>
-
 			<button x-show="mode===1" type="submit" @click="edited ? void(0) : ($event.preventDefault(), mode = 0);">Done</button>
 		</form>
 		<button @click="mode=1" x-show="!mode" type="button">Edit</button>

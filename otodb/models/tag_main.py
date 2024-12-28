@@ -1,16 +1,14 @@
 from bitfield import BitField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import post_delete
-from django.dispatch import receiver
 from simple_history.models import HistoricalRecords
-from taggit.models import TagBase
+from tagulous.models import TagModel
 
 from .category import Category
 from .enums import RoleFlags, TagCategory
 
 
-class TagMain(TagBase):
+class TagWork(TagModel):
     # NOTE: default=1 == 'General' -- see fixtures/otodb/category.yaml for more
     category = models.ForeignKey(Category, default=int(TagCategory.GENERAL), on_delete=models.SET_DEFAULT)  # type: ignore
     default_role_flags = BitField(RoleFlags)  # type: ignore
@@ -39,11 +37,6 @@ class TagMain(TagBase):
             ("manage_tags", "Can manage tags"),
         ]
 
-
-# NOTE: This is not ideal because the `contains` filter could match on
-#       a substring of a tag, and thus have to check more rows.
-@receiver(post_delete, sender=TagMain)
-def on_post_delete_tag_main(sender, instance: TagMain, using, **kwargs):
-    from .media_work import MediaWork
-    for media in MediaWork.objects.filter(tags_mirror__contains=instance.name):
-        media.check_and_update_mirror(record_history=True)
+    class TagMeta:
+        protect_all = True
+        force_lowercase = True

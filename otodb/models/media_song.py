@@ -1,19 +1,19 @@
 from django.db import models
 from simple_history.models import HistoricalRecords
-from taggit.managers import TaggableManager
+from tagulous.models import TagField
 
 from .base import MediaBase
 from .media_work import MediaWork
-from .tagged_media import TaggedMedia
+from .tag_main import TagWork
 
+#  TODO whenever we get to songs...
 
 class MediaSong(MediaBase):
     title = models.CharField(max_length=1000, null=False, blank=False)
 
-    tags = TaggableManager(
-        through=TaggedMedia,
-        related_name="song_tags",
-        help_text="A space-separated list of tags."
+    tags = TagField(
+        to=TagWork,
+        related_name="song_tags"
     )
 
     media = models.ManyToManyField(MediaWork, related_name='songs')

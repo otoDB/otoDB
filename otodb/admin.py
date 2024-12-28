@@ -2,7 +2,6 @@ from bitfield import BitField
 from bitfield.forms import BitFieldCheckboxSelectMultiple
 from django import forms
 from django.contrib import admin
-from taggit.forms import TextareaTagWidget
 
 from .models import (
     Category,
@@ -11,8 +10,7 @@ from .models import (
     MediaSong,
     MediaWork,
     Pool,
-    TaggedMedia,
-    TagMain,
+    TagWork,
     WorkSource,
 )
 
@@ -22,25 +20,11 @@ class MediaSourceInline(admin.TabularInline):
     extra = 0
 
 
-class TagMainAdmin(admin.ModelAdmin):
+class TagWorkAdmin(admin.ModelAdmin):
     readonly_fields = ('display_name',)
     formfield_overrides = {
         BitField: {'widget': BitFieldCheckboxSelectMultiple},
     }
-
-
-class TaggedMediaAdmin(admin.ModelAdmin):
-    formfield_overrides = {
-        BitField: {'widget': BitFieldCheckboxSelectMultiple},
-    }
-    readonly_fields = [
-        'tag',
-    ]
-    exclude = [
-        'content_type',
-        'object_id',
-    ]
-
 
 class MediaAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs) -> None:
@@ -49,7 +33,7 @@ class MediaAdminForm(forms.ModelForm):
     class Meta:
         model = MediaWork
         widgets = {
-            'tags': TextareaTagWidget
+            # 'tags': TextareaTagWidget
         }
         fields = '__all__'
 
@@ -90,7 +74,6 @@ admin.site.register([
     Configuration,
     Pool,
 ])
-admin.site.register(TagMain, TagMainAdmin)
-admin.site.register(TaggedMedia, TaggedMediaAdmin)
+admin.site.register(TagWork, TagWorkAdmin)
 admin.site.register(MediaWork, MediaAdmin)
 admin.site.register(MediaSong, MediaSongAdmin)

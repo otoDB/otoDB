@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'otodb.account',
     'otodb.wiki',
     'simple_history',
-    'taggit',
+    'tagulous',
 ]
 
 if DEBUG_TOOLBAR:
@@ -188,4 +188,11 @@ OTODB_CONFIG_DICT = {
         'OTODB_CONF_SITE_NAME',
         'otoDB'
     )
+}
+
+SERIALIZATION_MODULES = {
+    'xml':    'tagulous.serializers.xml_serializer',
+    'json':   'tagulous.serializers.json',
+    'python': 'tagulous.serializers.python',
+    'yaml':   'tagulous.serializers.pyyaml',
 }

@@ -2,12 +2,12 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
-from otodb.models import MediaWork, TagMain
+from otodb.models import MediaWork, TagWork
 
 
 def tag(request: HttpRequest, tag_id: int):
-    tag = get_object_or_404(TagMain, pk=tag_id)
-    aliases = TagMain.objects.filter(aliased_to=tag)
+    tag = get_object_or_404(TagWork, pk=tag_id)
+    aliases = TagWork.objects.filter(aliased_to=tag)
     works = MediaWork.objects.filter(tags__id=tag_id)
     return render(request, "tags/tag.html", {"tag": tag, "works": works, 'aliases': aliases})
 
@@ -19,7 +19,7 @@ def alias(request: HttpRequest):
         try:
             n = int(request.POST['size'])
             into = int(request.POST['into'])
-            tags = [TagMain.objects.get(name=request.POST[f'tag-{i}']) for i in range(n)]
+            tags = [TagWork.objects.get(name=request.POST[f'tag-{i}']) for i in range(n)]
             into = tags[into]
             if into.aliased_to:
                 into = into.aliased_to
@@ -32,7 +32,7 @@ def alias(request: HttpRequest):
                     for work in MediaWork.objects.filter(tags__id=tag.id):
                         work.tags.add(into)
                         work.tags.remove(tag)
-                    for t in TagMain.objects.filter(aliased_to=tag):
+                    for t in TagWork.objects.filter(aliased_to=tag):
                         t.aliased_to = into
 
         except Exception as e:

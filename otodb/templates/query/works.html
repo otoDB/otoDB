@@ -1,0 +1,12 @@
+<table>
+{% for work in results %}
+    <tr>
+        <td><img style="width: 10rem;" src="{{ work.thumbnail }}" alt="{{ work.title }}"></td>
+        <td><a href="{% url 'otodb:work' work.id %}">{{ work }}</a></td>
+        <td><button type="button" @click="query_action({id: {{ work.id }}, title: `{{ work.title }}`})">Select</button></td>
+    </tr>
+{% empty %}
+    <tr><td>No results found!</td></tr>
+{% endfor %}
+</table>
+    

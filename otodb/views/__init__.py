@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from otodb.models import MediaSong, MediaWork, Pool, TagWork
@@ -18,7 +18,7 @@ def index(request: HttpRequest):
 SEARCH_TYPE_LOOKUP = {
     "work": lambda q: MediaWork.objects.filter(title__contains=q),
     "song": lambda q: MediaSong.objects.filter(title__contains=q),
-    "tag":  lambda q: TagWork.objects.filter(name__contains=q),
+    "tag":  lambda q: TagWork.objects.filter(name__contains=q, aliased_to__isnull=True),
     "wiki": None
 }
 def search(request: HttpRequest):
@@ -31,15 +31,17 @@ def search(request: HttpRequest):
 def query(request: HttpRequest, query_type: str):
     if request.method == 'GET':
         q = request.GET.get('query')
-        results = None
-        match query_type:
-            case 'work':
-                results = MediaWork.objects.filter(title__contains=q)
-                return render(request, "query/works.html", {'results': results})
-            case 'tag':
-                results = TagWork.objects.filter(name__contains=q, aliased_to__isnull=True)
-                return render(request, "query/tags.html", {'results': results})
-            case 'mylists':
-                results = Pool.objects.filter(author=request.user)
-                return render(request, "query/lists.html", {'results': results})
-    return redirect('otodb:index')
+        if q != '': # reject empty query
+            results = None
+            match query_type:
+                case 'work':
+                    results = MediaWork.objects.filter(title__contains=q)
+                    return render(request, "query/works.html", {'results': results})
+                case 'tag':
+                    results = TagWork.objects.filter(name__contains=q, aliased_to__isnull=True)
+                    return render(request, "query/tags.html", {'results': results})
+                case 'mylists':
+                    results = Pool.objects.filter(author=request.user)
+                    return render(request, "query/lists.html", {'results': results})
+    return HttpResponse('')
+

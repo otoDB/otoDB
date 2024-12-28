@@ -13,7 +13,7 @@ class TagWork(TagModel):
     category = models.ForeignKey(Category, default=int(TagCategory.GENERAL), on_delete=models.SET_DEFAULT)  # type: ignore
     default_role_flags = BitField(RoleFlags)  # type: ignore
     wiki_page = models.OneToOneField('wiki.WikiPage', on_delete=models.CASCADE, null=True, blank=True)
-    aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+    aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
 
     @property

@@ -38,6 +38,20 @@
             sha256 = "sha256-9im1StcgBSCSeFsNzgVtxqaMe2P4EmB1r5wlhIslC/0=";
           };
         };
+      django-wiki = let
+          pname = "wiki"; # WTF, the package name is a hyphen but the DL is underscore
+          version = "0.11.2";
+        in
+        pkgs.python3Packages.buildPythonPackage {
+          inherit pname version;
+          pyproject = true;
+          build-system = [ pkgs.python3Packages.hatchling ];
+          dependencies = with pkgs.python3Packages; [ django hatchling hatch-build-scripts ];
+          src = pkgs.fetchPypi {
+            inherit pname version;
+            sha256 = "sha256-acw0j/fDw5NtZqK9R6ayhsLnXvBBQLTJxkSXc2wVlNc=";
+          };
+        };
     in rec {
       devShell = pkgs.mkShell {
         buildInputs = with pkgs; [
@@ -56,6 +70,13 @@
             pp.django-model-utils
             pp.pypinyin
             pp.pykakasi
+            django-wiki
+            pp.pillow
+            pp.django-mptt
+            pp.django-sekizai
+            pp.sorl-thumbnail
+            pp.markdown
+            pp.pymdown-extensions
           ]))
         ];
       };

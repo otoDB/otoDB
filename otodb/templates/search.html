@@ -3,15 +3,29 @@
 
 {% block content %}
     <h1>{{ type.capitalize }} Search: {{ query }}</h1>
-    <ul>
-    {% for entry in results %}
-        {% if type == 'work' %}
-	    <li><a href="{% url 'otodb:work' entry.id %}">{{ entry.title }}</a></li>
-        {% elif type == 'tag' %}
-	    <li><a href="{% url 'otodb:tag' entry.id %}">{{ entry.name }}</a></li>
-        {% endif %}
-	{% empty %}
-	    <li>No results found!</li>
-    {% endfor %}
-	</ul>
+    <table>
+    {% if type == 'work' %}
+        <thead><tr><th>Thumbnail</th><th>Title</th><th>Rating</th><th>Tags</th><th>Sources</th></tr></thead><tbody>
+        {% for entry in results %}
+            <tr>
+                <td><img src="{{ entry.thumbnail }}" alt="{{ entry }}" style="width:10rem;"></td>
+                <td><a href="{% url 'otodb:work' entry.id %}">{{ entry.title }}</a></td>
+                <td>{{ entry.get_rating_display }}</td>
+                <td>{{ entry.tags }}</td>
+                <td>{{ entry.worksource_set.all|length }}</td>
+            </tr>
+        {% empty %}
+            <tr>No results found!</tr>
+        {% endfor %}
+        </tbody>
+    {% elif type == 'tag' %}
+        <thead><tr><th>Name</td><td>Aliases</td></tr></thead><tbody>
+        {% for entry in results %}
+            <tr><td><a href="{% url 'otodb:tag' entry.id %}">{{ entry.name }}</a></td><td>{{ entry.aliases.all|join:',' }}</td></tr>
+        {% empty %}
+            <tr>No results found!</tr>
+        {% endfor %}
+        </tbody>
+    {% endif %}
+	</table>
 {% endblock content %}

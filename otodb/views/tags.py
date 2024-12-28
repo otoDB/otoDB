@@ -7,9 +7,8 @@ from otodb.models import MediaWork, TagWork
 
 def tag(request: HttpRequest, tag_id: int):
     tag = get_object_or_404(TagWork, pk=tag_id)
-    aliases = TagWork.objects.filter(aliased_to=tag)
     works = MediaWork.objects.filter(tags__id=tag_id)
-    return render(request, "tags/tag.html", {"tag": tag, "works": works, 'aliases': aliases})
+    return render(request, "tags/tag.html", {"tag": tag, "works": works})
 
 @login_required
 def alias(request: HttpRequest):

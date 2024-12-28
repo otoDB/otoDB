@@ -1,8 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
-from django.shortcuts import *
+from django.shortcuts import get_object_or_404, redirect, render
 
-from otodb.models import MediaSong, MediaWork, WorkSource, TagMain
+from otodb.models import MediaWork, TagMain
+
 
 def tag(request: HttpRequest, tag_id: int):
     tag = get_object_or_404(TagMain, pk=tag_id)
@@ -37,4 +38,4 @@ def alias(request: HttpRequest):
         except Exception as e:
             print(e)
 
-    return redirect('otodb:tag', tag_id=into.id)
+    return redirect('otodb:tag', tag_id=redir) # what?

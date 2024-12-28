@@ -119,7 +119,7 @@
 	</div>
   </div>
   <h2>Work Sources</h2>
-  <a href="{% url 'otodb:work_new_source' work.pk %}">Add a source...</a>
+  <a href="{% url 'otodb:work_new_source' work.id %}">Add a source...</a>
   <table style="width: 100%;">
 	<thead><tr>
 			<th>Platform</th>
@@ -132,9 +132,9 @@
 	<tbody>
 		{% for source in sources %}
 		<tr>
-			<td>{{ source }}</td><td>{{ source.work_source.published_date }}
-			</td><td>{{ source.work_source.work_origin|yesno:"No,Yes" }}</td><td>{{ source.work_source.work_status|yesno:"No,Yes" }}</td>
-			<td>{{ source.work_source.work_width }}x{{ source.work_source.work_height }}</td><td><a href="{{ source.work_source.url }}" target="_blank" rel="noopener noreferrer">Link</a></td>
+			<td>{{ source.get_platform_display }}</td><td>{{ source.published_date }}
+			</td><td>{{ source.work_source.work_origin|yesno:"No,Yes" }}</td><td>{{ source.work_status|yesno:"No,Yes" }}</td>
+			<td>{{ source.work_width }}x{{ source.work_height }}</td><td><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">Link</a></td>
 		</tr>
 		{% endfor %}
 	</tbody>

@@ -3,11 +3,6 @@ from enum import IntEnum
 from django.db import models
 
 
-class PoolCategory(models.IntegerChoices):
-    COLLECTION = 1, "Collection"
-    SERIES = 2, "Series"
-
-
 # NOTE: Should match up with fixtures/otodb/category.yaml
 class TagCategory(IntEnum):
     GENERAL   = 1
@@ -15,32 +10,25 @@ class TagCategory(IntEnum):
     SOURCE    = 3
     CREATOR   = 4
     META      = 5
-    CHARACTER = 6
-
 
 class Rating(models.IntegerChoices):
     NONE         = 0, "None"
     GENERAL      = 1, "General"
     SENSITIVE    = 2, "Sensitive"
-    QUESTIONABLE = 3, "Questionable"
-    EXPLICIT     = 4, "Explicit"
-
+    EXPLICIT     = 3, "Explicit"
 
 class Status(models.IntegerChoices):
     PENDING = 0, "Pending"
     APPROVED = 1, "Approved"
     UNAPPROVED = 2, "Unapproved"
 
-
 class WorkOrigin(models.IntegerChoices):
     AUTHOR   = 0, "Author"
     REUPLOAD = 1, "Reupload"
 
-
 class WorkStatus(models.IntegerChoices):
     AVAILABLE = 0, "Available"
     DOWN      = 1, "Down"
-
 
 RoleFlags = (
     ('OTHER',    'Other'),
@@ -52,3 +40,9 @@ RoleFlags = (
     ('ARTIST',   'Art'),
     ('THANKS',   'Special Thanks'),
 )
+
+class Platform(models.IntegerChoices):
+    YOUTUBE    = 1, "YouTube"
+    NICONICO   = 2, "Niconico"
+    BILIBILI   = 3, "Bilibili"
+    SOUNDCLOUD = 4, "SoundCloud"

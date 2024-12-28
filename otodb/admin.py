@@ -11,8 +11,6 @@ from .models import (
     MediaSong,
     MediaWork,
     Pool,
-    SourceWorkNiconico,
-    SourceWorkYouTube,
     TaggedMedia,
     TagMain,
     WorkSource,
@@ -91,8 +89,6 @@ admin.site.register([
     Implication,
     Configuration,
     Pool,
-    SourceWorkNiconico,
-    SourceWorkYouTube
 ])
 admin.site.register(TagMain, TagMainAdmin)
 admin.site.register(TaggedMedia, TaggedMediaAdmin)

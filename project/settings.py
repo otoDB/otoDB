@@ -48,17 +48,6 @@ INSTALLED_APPS = [
     'otodb.account',
     'simple_history',
     'tagulous',
-
-    'django.contrib.sites.apps.SitesConfig',
-    'django.contrib.humanize.apps.HumanizeConfig',
-    'django_nyt.apps.DjangoNytConfig',
-    'mptt',
-    'sekizai',
-    'sorl.thumbnail',
-    'wiki.apps.WikiConfig',
-    'wiki.plugins.attachments.apps.AttachmentsConfig',
-    'wiki.plugins.images.apps.ImagesConfig',
-    'wiki.plugins.macros.apps.MacrosConfig',
 ]
 
 if DEBUG_TOOLBAR:
@@ -208,8 +197,3 @@ SERIALIZATION_MODULES = {
     'python': 'tagulous.serializers.python',
     'yaml':   'tagulous.serializers.pyyaml',
 }
-
-
-SITE_ID = 1
-WIKI_ACCOUNT_HANDLING = True
-WIKI_ACCOUNT_SIGNUP_ALLOWED = False

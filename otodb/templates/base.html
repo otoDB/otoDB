@@ -1,4 +1,4 @@
-{% load otodb.helpers %}
+{% load helpers %}
 {% load static %}
 
 <!DOCTYPE html>
@@ -24,6 +24,9 @@
 		<![endif]-->
 		 <nav>
 		   <a href="{% url 'otodb:index' %}">otoDB</a>
+
+		   <a href="javascript:alert('mmtroll')">Forum</a>
+		   <a href="/wiki">Wiki</a>
 		   {% if user.is_staff %}
 		   <a href="{% url 'admin:index' %}">Admin View</a>
 		   {% endif %}
@@ -32,13 +35,11 @@
 			   <option value="work">Work</option>
 			   <option value="song">Song</option>
 			   <option value="tag">Tag</option>
-			   <option value="wiki">Wiki</option>
 			 </select>
 			 <input type="search" id="search" name="query" placeholder="Search..."/>
 			 <input type="submit" hidden/>
 		   </form>
 			<hr>
-		   <!-- <a href="javascript:alert('mmtroll')">Forum</a> -->
 
 		   {% if user.is_authenticated %}
 		   <a href="{% url 'otodb:work_new' %}">Add a new work</a>

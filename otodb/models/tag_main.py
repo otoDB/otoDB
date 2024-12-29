@@ -9,10 +9,10 @@ from .enums import RoleFlags, TagCategory
 
 
 class TagWork(TagModel):
-    # NOTE: default=1 == 'General' -- see fixtures/otodb/category.yaml for more
+    # NOTE: default=1 == 'General' -- see fixtures/category.yaml for more
     category = models.ForeignKey(Category, default=int(TagCategory.GENERAL), on_delete=models.SET_DEFAULT)  # type: ignore
     default_role_flags = BitField(RoleFlags)  # type: ignore
-    # wiki_page = models.OneToOneField('wiki.WikiPage', on_delete=models.CASCADE, null=True, blank=True)
+    wiki_page = models.OneToOneField('wiki.article', on_delete=models.SET_NULL, null=True, blank=True)
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
 

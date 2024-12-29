@@ -4,7 +4,7 @@ from django.conf import settings
 from dotmap import DotMap
 
 if TYPE_CHECKING:
-    from ___ import settings  # noqa: F811
+    from project import settings  # noqa: F811
 
 
 def G(request):

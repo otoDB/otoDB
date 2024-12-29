@@ -8,7 +8,7 @@ As the model schema is still a very early WIP, migrations are currently not comm
 We recommend using `uv`. Project setup is contained in `pyproject.toml`.
 ```sh
 # Copy the base .env file
-copy .env.example .env
+cp .env.example .env
 
 # Make necessary modifications to .env, e.g. change DB name to "db", add accepted hosts
 
@@ -27,7 +27,7 @@ When running through `uv`, you may get an SSL error when the server fetches cont
 export SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
 ```
 
-## Project Structure
+<!-- ## Project Structure
 Below is an overview of the structure of this project. Application directories contain the usual Django files.
 
 ```sh
@@ -48,4 +48,4 @@ Below is an overview of the structure of this project. Application directories c
 │  ├─ views/                   # View logic
 │  ├─ context_preprocessors.py # Context for views, currently just a global `G`
 ├─ .env                        # Environment configuration
-```
+``` -->

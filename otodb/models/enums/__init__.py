@@ -3,7 +3,7 @@ from enum import IntEnum
 from django.db import models
 
 
-# NOTE: Should match up with fixtures/otodb/category.yaml
+# NOTE: Should match up with fixtures/category.yaml
 class TagCategory(IntEnum):
     GENERAL   = 1
     LANGUAGE  = 2

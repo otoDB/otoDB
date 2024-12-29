@@ -3,8 +3,6 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
 from otodb.models import MediaWork, TagWork
-# from wiki import
-
 
 def tag(request: HttpRequest, tag_id: int):
     tag = get_object_or_404(TagWork, pk=tag_id)

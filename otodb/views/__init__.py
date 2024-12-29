@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 
 from otodb.models import MediaSong, MediaWork, Pool, TagWork
 
@@ -18,8 +18,7 @@ def index(request: HttpRequest):
 SEARCH_TYPE_LOOKUP = {
     "work": lambda q: MediaWork.objects.filter(title__contains=q),
     "song": lambda q: MediaSong.objects.filter(title__contains=q),
-    "tag":  lambda q: TagWork.objects.filter(name__contains=q, aliased_to__isnull=True),
-    "wiki": None
+    "tag":  lambda q: TagWork.objects.filter(name__contains=q, aliased_to__isnull=True)
 }
 def search(request: HttpRequest):
     search_type = request.GET.get('type')

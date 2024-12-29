@@ -1,5 +1,5 @@
 """
-URL configuration for ___ project.
+URL configuration for project project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.2/topics/http/urls/
@@ -20,12 +20,11 @@ from django.conf import settings
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ___ import settings  # noqa: F811
+    from project import settings  # noqa: F811
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^', include('otodb.urls')),
-    path('wiki/notifications/', include('django_nyt.urls')),
     path('wiki/', include('wiki.urls'))
 ]
 

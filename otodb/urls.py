@@ -1,7 +1,6 @@
 from django.urls import path
 
 from . import views
-from .models import TagWork
 
 app_name = "otodb"
 urlpatterns = [

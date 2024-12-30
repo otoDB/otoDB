@@ -12,8 +12,8 @@ def tag(request: HttpRequest, tag_id: int):
 @login_required
 def alias(request: HttpRequest):
     # alias tree is at most one layer deep
-    redir = 1
     if request.method == 'POST':
+        print(request.POST)
         try:
             n = int(request.POST['size'])
             into = int(request.POST['into'])
@@ -22,7 +22,6 @@ def alias(request: HttpRequest):
             if into.aliased_to:
                 into = into.aliased_to
 
-            redir = into.id
             for tag in tags:
                 if tag is not into:
                     tag.aliased_to = into
@@ -33,7 +32,8 @@ def alias(request: HttpRequest):
                     for t in TagWork.objects.filter(aliased_to=tag):
                         t.aliased_to = into
 
+            return redirect('otodb:tag', tag_id=into.id)        
         except Exception as e:
             print(e)
 
-    return redirect('otodb:tag', tag_id=redir) # what?
+    return render(request, 'tags/alias.html')

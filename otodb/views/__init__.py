@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from otodb.models import MediaSong, MediaWork, Pool, TagWork
 
@@ -21,10 +21,13 @@ SEARCH_TYPE_LOOKUP = {
     "tag":  lambda q: TagWork.objects.filter(name__contains=q, aliased_to__isnull=True)
 }
 def search(request: HttpRequest):
-    search_type = request.GET.get('type')
-    query = request.GET.get('query')
-    results = SEARCH_TYPE_LOOKUP[search_type](query)
-    return render(request, "search.html", {"results": results, "type": search_type, 'query': query})
+    if request.method == 'GET':
+        search_type = request.GET.get('type')
+        query = request.GET.get('query')
+        results = SEARCH_TYPE_LOOKUP[search_type](query)
+        return render(request, "search.html", {"results": results, "type": search_type, 'query': query})
+    else:
+        return redirect('otodb:index')
 
 @login_required
 def query(request: HttpRequest, query_type: str):

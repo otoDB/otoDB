@@ -75,6 +75,10 @@ class Account(AbstractBaseUser):
         return self.level >= self.Levels.ADMIN
 
     @property
+    def is_superuser(self):
+        return self.is_staff
+
+    @property
     def is_owner(self):
         return self.level >= self.Levels.OWNER
 
@@ -82,9 +86,15 @@ class Account(AbstractBaseUser):
         # TODO: Implement object-level permissions
         return True
 
+    def has_perms(self, perms):
+        return all(self.has_perm(p) for p in perms)
+
     def has_module_perms(self, app_label):
         if self.is_owner and app_label == "account":
             return True
         if self.is_staff and app_label != "account":
             return True
         return False
+
+    def get_full_name(self):
+        return self.username

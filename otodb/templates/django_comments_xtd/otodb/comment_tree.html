@@ -1,0 +1,48 @@
+{% load i18n %}
+{% load comments %}
+{% load comments_xtd %}
+
+{% for item in comments %}
+{% if not item.comment.is_removed %}
+<div id="c{{ item.comment.id }}" class="comment" style="display: flex; {% if not item.children %} padding-bottom: 1rem;{% endif %}">
+  <div style="display: flex; flex-direction: column; flex-grow: 1;">
+    <h6 class="comment-header" style="font-size: 0.8rem; margin-bottom: .2rem; display: flex; justify-content: space-between;">
+      <div style="display: inline; flex-grow: 1;">
+        <span>{{ item.comment.submit_date }}&nbsp;-&nbsp;{% if item.comment.url %}<a href="{{ item.comment.url }}" target="_new" style="text-decoration: none;">{% endif %}{{ item.comment.name }}{% if item.comment.url %}</a>{% endif %}</span>
+        <span>{% if item.comment.user and item.comment.user|has_permission:"django_comments.can_moderate" %}&nbsp;<span style="color: brown;">{% trans "moderator" %}</span>{% endif %}&nbsp;&nbsp;<a style="text-decoration: none;" title="{% trans 'comment permalink' %}" href="{% get_comment_permalink item.comment %}">¶</a></span>
+      </div>
+      <div style="display: inline;">
+        {% if perms.comments.can_moderate %}
+        {% if item.flagged_count %}
+            <span style="font-size: small; color: red;" title="{% blocktrans count counter=item.flagged_count %}A user has flagged this comment as inappropriate.{% plural %}{{ counter }} users have flagged this comment as inappropriate.{% endblocktrans %}">{{ item.flagged_count }}</span>
+        {% endif %}
+        {% endif %}
+        {% if allow_flagging and request.user in item.flagged %}
+        <span style="color: red;">Flagged</span>
+        {% elif allow_flagging %}
+        <a style="text-decoration: none;" href="{% url 'comments-flag' item.comment.pk %}">Flag</a>
+        {% endif %}
+        {% if perms.comments.can_moderate %}
+        {% if allow_flagging %}<span style="color: gray;">&bull;</span>{% endif %}
+        <a style="text-decoration: none;" href="{% url 'comments-delete' item.comment.pk %}">Delete</a>
+        {% endif %}
+      </div>
+    </h6>
+      <div class="content" style="{% if not allow_feedback and not item.comment.allow_thread %} padding-top: .2rem; padding-bottom: 1rem;{% else %} padding: 0 .2rem;{% endif %}">
+        {% include "includes/django_comments_xtd/comment_content.html" with content=item.comment.comment %}
+      </div>
+      <div>
+        {% include "includes/django_comments_xtd/user_feedback.html" %}
+        {% if item.comment.allow_thread %}
+          {% if allow_feedback %}&nbsp;&nbsp;<span style="color: gray;">&bull;</span>&nbsp;&nbsp;{% endif %}<a style="text-decoration: none; font-size: small;" href="{{ item.comment.get_reply_url }}">{% trans "Reply" %}</a>
+        {% endif %}
+      </div>
+    {% if item.children %}
+      <div style="padding: 0 1rem;">
+        {% render_xtdcomment_tree with comments=item.children %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endfor %}

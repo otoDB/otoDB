@@ -1,0 +1,22 @@
+{% load static %}
+{% load comments %}
+{% load comments_xtd %}
+{% get_comment_count for object as comment_count %}
+{% if comment_count %}
+<div class="comments">
+  {% render_xtdcomment_tree for object %}
+</div>
+{% endif %}
+{% if user.is_authenticated %}
+<div class="comment">
+  <h5 class="text-center">Post your comment</h5>
+  <div class="well my-4">
+	{% render_comment_form for object %}
+  </div>
+</div>
+{% else %}
+<p class="text-center">
+  Only registered users can post comments. Please,
+  <a href="{% url 'admin:login' %}?next={{ object.get_absolute_url }}">login</a>.
+</p>
+{% endif %}

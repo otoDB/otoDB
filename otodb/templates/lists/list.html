@@ -2,12 +2,6 @@
 {% block page_title %}{{ list.name }}{% endblock page_title %}
 
 {% block content %}
-<style>
-    ol > li {
-        margin-top: .5rem;
-        margin-bottom: .5rem;
-    }
-</style>
     <h1>List: {{ list.name }}</h1>
     <h2>By: <a href="{% url 'otodb:profile' list.author.id %}">{{ list.author.username }}</a></h2>
     <p>{{ list.description | linebreaksbr }}</p>
@@ -29,4 +23,15 @@
         <p><a href="{% url 'otodb:list_delete' list.id %}">Delete this list...</a></p>
         {% endif %}
     </div>
+    <h2>Comments</h2>
+    {% include 'comments.html' with object=list %}  
 {% endblock content %}
+
+{% block extra-css %}
+<style>
+    ol > li {
+        margin-top: .5rem;
+        margin-bottom: .5rem;
+    }
+</style>
+{% endblock extra-css %}

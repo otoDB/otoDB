@@ -1,33 +1,7 @@
 {% extends "base.html" %}
-{% load static %}
 {% block page_title %}{{ work.title }}{% endblock page_title %}
 
 {% block content %}
-<style>
-#work-tags {
-	display: flex;
-	gap: .3rem 2rem;
-	flex-wrap: wrap;
-}
-
-#work-tags > li {
-	margin: 0;
-}
-
-#infobox {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-	column-gap: 2rem;
-	align-items: center;
-}
-
-#infobox table th {
-	background-color: var(--otodb-fainter-bg);
-}
-#infobox table td {
-	background-color: var(--otodb-faint-bg);
-}
-</style>
   <h1>{{ work.title }}</h1>
   <div id="infobox">
 	<img src="{{ work.thumbnail }}" alt="{{ work.title }}">
@@ -142,4 +116,34 @@
 		{% endfor %}
 	</tbody>
   </table>
+  <h2>Comments</h2>
+  {% include 'comments.html' with object=work %}
+
 {% endblock content %}
+{% block extra-css %}
+<style>
+	#work-tags {
+		display: flex;
+		gap: .3rem 2rem;
+		flex-wrap: wrap;
+	}
+	
+	#work-tags > li {
+		margin: 0;
+	}
+	
+	#infobox {
+		display: grid;
+		grid-template-columns: 1fr 2fr;
+		column-gap: 2rem;
+		align-items: center;
+	}
+	
+	#infobox table th {
+		background-color: var(--otodb-fainter-bg);
+	}
+	#infobox table td {
+		background-color: var(--otodb-faint-bg);
+	}
+	</style>
+{% endblock extra-css %}

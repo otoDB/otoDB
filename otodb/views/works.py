@@ -92,7 +92,7 @@ def new(request: HttpRequest):
                     work.tags.add(*info['tags'])
 
                 # Save source
-                src = WorkSource(media=work,
+                src = WorkSource(media=work, title=info['title'], description=info['description'],
                     url=info['url'], platform=info['site'], source_id=info['id'],
                     published_date=date.fromtimestamp(info['timestamp']),
                     work_origin=WorkOrigin(is_reupload),
@@ -130,7 +130,7 @@ def new_source(request: HttpRequest, work_id: int):
                     raise Exception('This source already exists in the database.')
 
                 # Save source
-                src = WorkSource(media=work,
+                src = WorkSource(media=work, title=info['title'], description=info['description'],
                     url=info['url'], platform=info['site'], source_id=info['id'],
                     published_date=date.fromtimestamp(info['timestamp']),
                     work_origin=WorkOrigin(is_reupload),

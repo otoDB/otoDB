@@ -16,11 +16,10 @@
 		<table>
 			<tr>
 				<th>Lists</th>
-				<td x-data="{ pinged: false, collapsed: false }">
-					<button hx-target="next div" hx-get="{% url 'otodb:query' 'mylists' %}" x-show="!pinged" @click="pinged=true">Add/Remove...</button>
-					<button x-show="pinged" @click="collapsed = !collapsed;">Add/Remove...</button>
+				<td x-data="{ collapsed: true }">
+					<input type="number" hidden value="{{ work.id }}" name="work_id">
+					<button hx-target="next div" hx-get="{% url 'otodb:query' 'mylists' %}" hx-trigger="click once" @click="collapsed = !collapsed" hx-include="previous input">Add/Remove...</button>
 					<div class="query-results" x-show="!collapsed"></div>
-					TODO this doesn't work yet
 				</td>
 			</tr>
 			<tr>
@@ -99,6 +98,8 @@
   <a href="{% url 'otodb:work_new_source' work.id %}">Add a source...</a>
   <table style="width: 100%;">
 	<thead><tr>
+			<th>Title</th>
+			<th>Desciption</th>
 			<th>Platform</th>
 			<th>Date</th>
 			<th>Official</th>
@@ -108,8 +109,9 @@
 	</tr></thead>
 	<tbody>
 		{% for source in sources %}
-		<tr>
-			<td>{{ source.get_platform_display }}</td><td>{{ source.published_date }}
+		<tr x-data="{ description: `{{ source.description }}`, expanded: false }">
+			<td>{{ source.title }}</td><td x-text="expanded ? description : description.slice(0,8) + '[...expand]'" @click="expanded=!expanded"></td>
+				<td>{{ source.get_platform_display }}</td><td>{{ source.published_date }}
 			</td><td>{{ source.work_source.work_origin|yesno:"No,Yes" }}</td><td>{{ source.work_status|yesno:"No,Yes" }}</td>
 			<td>{{ source.work_width }}x{{ source.work_height }}</td><td><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">Link</a></td>
 		</tr>

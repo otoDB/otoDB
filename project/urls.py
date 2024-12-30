@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^', include('otodb.urls')),
+    re_path(r'^comments/', include('django_comments_xtd.urls')),
 ]
 
 if settings.DEBUG_TOOLBAR:

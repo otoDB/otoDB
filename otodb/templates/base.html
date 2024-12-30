@@ -17,6 +17,7 @@
 		<link rel="stylesheet" href="{% static 'style.css' %}">
 		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 		<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+		{% block extra-css %}{% endblock extra-css %}
 	</head>
 	<body>
 		<!--[if lt IE 7]>
@@ -24,8 +25,6 @@
 		<![endif]-->
 		 <nav>
 		   <a href="{% url 'otodb:index' %}">otoDB</a>
-
-		   <a href="#">Forum</a>
 		   <a href="#">Wiki</a>
 		   {% if user.is_staff %}
 		   <a href="{% url 'admin:index' %}">Admin View</a>
@@ -54,5 +53,6 @@
 		<main>
 		  {% block content %}{% endblock content %}
 		</main>
+		{% block extra-js %}{% endblock extra-js %}
 	</body>
 </html>

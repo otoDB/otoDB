@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F, Q
+from django.urls import reverse
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagField
 
@@ -53,3 +54,6 @@ class MediaWork(MediaBase):
                 check=~Q(parent=F('id'))
             )
         ]
+
+    def get_absolute_url(self):
+        return reverse('otodb:work', kwargs={ 'work_id': self.id })

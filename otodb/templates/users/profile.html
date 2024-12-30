@@ -5,4 +5,7 @@
   <h1>User: {{ view_user.username }}</h1>
   <p>E-mail: {{ view_user.email }}</p>
   <p>Joined otoDB on {{ view_user.date_created }}</p>
+  <h2>Comments</h2>
+  {% include 'comments.html' with object=view_user %}
+
 {% endblock content %}

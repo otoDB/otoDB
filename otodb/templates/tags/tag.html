@@ -47,4 +47,7 @@
             </tbody>
         </table>
     {% endif %}
+    <h2>Comments</h2>
+    {% include 'comments.html' with object=tag %}
+  
 {% endblock content %}

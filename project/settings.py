@@ -48,6 +48,11 @@ INSTALLED_APPS = [
     'otodb.account',
     'simple_history',
     'tagulous',
+ 
+    'django.contrib.sites',
+    'django_comments_xtd',
+    'django_comments',
+    'corsheaders'
 ]
 
 if DEBUG_TOOLBAR:
@@ -80,8 +85,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'otodb.context_preprocessors.G',
-                "sekizai.context_processors.sekizai",
-
             ],
         },
     },
@@ -197,3 +200,21 @@ SERIALIZATION_MODULES = {
     'python': 'tagulous.serializers.python',
     'yaml':   'tagulous.serializers.pyyaml',
 }
+
+SITE_ID = 1
+COMMENTS_APP = 'django_comments_xtd'
+COMMENTS_XTD_MAX_THREAD_LEVEL = 3
+
+COMMENTS_XTD_APP_MODEL_OPTIONS = {
+    'default': {
+        'allow_flagging': True,
+        'allow_feedback': False,
+        'show_feedback': False,
+        'who_can_post': 'users'
+    }
+}
+
+CORS_ALLOWED_ORIGINS = [
+    "https://cdn.jsdelivr.net",
+    "https://unpkg.com"
+]

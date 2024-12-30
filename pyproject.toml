@@ -1,12 +1,14 @@
 [project]
 name = "otodb"
 version = "0.1.0"
-description = "otoDB is a community-driven website consisting of a collaborative user-managed database, forum, and wiki."
+description = "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "diff-match-patch>=20241021",
     "django-bitfield>=2.2.0",
+    "django-comments-xtd>=2.10.1",
+    "django-cors-headers>=4.6.0",
     "django-model-utils>=5.0.0",
     "django-simple-history>=3.7.0",
     "django-tagulous>=2.1.0",

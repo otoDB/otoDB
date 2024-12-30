@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from django.urls import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 from django.db import models
 from django.utils import timezone
@@ -98,3 +99,7 @@ class Account(AbstractBaseUser):
 
     def get_full_name(self):
         return self.username
+
+    def get_absolute_url(self):
+        return reverse('otodb:profile', kwargs={ 'user_id': self.id })
+

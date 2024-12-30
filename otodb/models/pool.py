@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from simple_history.models import HistoricalRecords
 
 from otodb.account.models import Account
@@ -20,6 +21,21 @@ class Pool(models.Model):
         verbose_name = 'List'
         verbose_name_plural = 'Lists'
 
+    def get_absolute_url(self):
+        return reverse('otodb:list', kwargs={ 'list_id': self.id })
+
+    def work_in_pool(self, work_id: int):
+        return self.poolitem_set.filter(work_id=work_id)
+    
+    def add_work(self, work_id: int):
+        print(self.poolitem_set)
+        if not self.poolitem_set.all():
+            order = 1
+        else:
+            order = self.poolitem_set.aggregate(models.Max('order'))['order__max'] + 1
+        PoolItem(work_id=work_id, description="", order=order, pool=self).save()
+
+
 class PoolItem(models.Model):
     work = models.ForeignKey(MediaWork, blank=False, null=False, on_delete=models.CASCADE)
     pool = models.ForeignKey(Pool, on_delete=models.CASCADE, blank=False, null=False)
@@ -39,3 +55,4 @@ class PoolItem(models.Model):
             max_order = PoolItem.objects.filter(pool=self.pool).aggregate(max_order=models.Max('order'))['max_order']
             self.order = (max_order or 0) + 1
         super().save(*args, **kwargs)
+

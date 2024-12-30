@@ -1,4 +1,5 @@
 from bitfield import BitField
+from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -40,3 +41,9 @@ class TagWork(TagModel):
     class TagMeta:
         protect_all = True
         force_lowercase = True
+
+
+    def get_absolute_url(self):
+        return reverse('otodb:tag', kwargs={ 'tag_id': self.id })
+
+

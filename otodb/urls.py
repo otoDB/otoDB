@@ -18,6 +18,7 @@ urlpatterns = [
     path("lists/<int:list_id>", views.lists.list, name="list"),
     path("lists/<int:list_id>/edit", views.lists.edit, name="list_edit"),
     path("lists/<int:list_id>/delete", views.lists.delete, name="list_delete"),
+    path("lists/<int:list_id>/toggle", views.lists.toggle, name="list_toggle"),
 
     path("tag/<int:tag_id>", views.tags.tag, name="tag"),
     path("tag/alias", views.tags.alias, name="tag_alias"),

@@ -1,6 +1,12 @@
 <table>
-{% for list in results %}
-    <tr><td>{{list.name}}</td><td><input type="checkbox" @click="query_action({{ list.id }})"></td></tr>
+{% for list, work_in_list in results %}
+    <tr><td><a href="{% url 'otodb:list' list.id %}">{{list.name}}</a></td><td>
+        <form>
+            {% csrf_token %}
+            <input hidden type="number" value="{{ work_id }}" name="work_id">
+            <input hx-trigger="change" hx-post="{% url 'otodb:list_toggle' list.id %}" hx-swap="none" type="checkbox" {% if work_in_list %} checked {% endif %}>
+        </form>
+    </td></tr>
 {% empty %}
     <tr><td>No results found!</td></tr>
 {% endfor %}

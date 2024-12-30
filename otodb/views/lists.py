@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
-from otodb.models import Pool, PoolItem
+from otodb.models import Pool, PoolItem, MediaWork
 
 
 class ListForm(forms.ModelForm):
@@ -75,6 +75,24 @@ def delete(request: HttpRequest, list_id: int):
     if list_.author != request.user:
         return redirect('otodb:list', list_id=list_.id)
 
-    list_.delete()
+    if request.method == 'POST':
+        list_.delete()
+
+    return redirect("otodb:profile_lists", user_id=request.user.id)
+
+@login_required
+def toggle(request: HttpRequest, list_id: int):
+    list_ = get_object_or_404(Pool, pk=list_id)
+    if list_.author != request.user:
+        return redirect('otodb:list', list_id=list_.id)
+
+    if request.method == 'POST':
+        work_id = request.POST['work_id']
+        if entries := list_.work_in_pool(work_id):
+            for entry in entries:
+                entry.delete()
+        else:
+            list_.add_work(work_id)
+
 
     return redirect("otodb:profile_lists", user_id=request.user.id)

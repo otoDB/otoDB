@@ -44,6 +44,8 @@ def query(request: HttpRequest, query_type: str):
                     return render(request, "query/tags.html", {'results': results})
                 case 'mylists':
                     results = Pool.objects.filter(author=request.user)
-                    return render(request, "query/lists.html", {'results': results})
+                    work_id = request.GET['work_id']
+                    results = [(lst, not not lst.work_in_pool(work_id)) for lst in results]
+                    return render(request, "query/lists.html", {'results': results, 'work_id': work_id})
     return HttpResponse('')
 

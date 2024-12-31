@@ -3,7 +3,7 @@
 
 {% block content %}
     <h1>Tag: {{ tag }}</h1>
-    <h2>Category: {{ tag.category }}</h2>
+    <h2>Category: {{ tag.get_category_display }}</h2>
     {% if tag.aliased_to %}
     This tag is aliased to <a href="{% url 'otodb:tag' tag.aliased_to.id %}">{{ tag.aliased_to }}</a>. You will be redirected in <span id="countdown"></span> seconds.
     <script>
@@ -46,8 +46,8 @@
             {% endfor %}
             </tbody>
         </table>
+        <h2>Comments</h2>
+        {% include 'comments.html' with object=tag %}
     {% endif %}
-    <h2>Comments</h2>
-    {% include 'comments.html' with object=tag %}
   
 {% endblock content %}

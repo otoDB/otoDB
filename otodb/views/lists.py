@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
-from otodb.models import Pool, PoolItem, MediaWork
+from otodb.models import Pool, PoolItem
 
 
 class ListForm(forms.ModelForm):

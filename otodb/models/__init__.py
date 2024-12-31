@@ -1,4 +1,3 @@
-from .category import Category
 from .configuration import Configuration
 from .implication import Implication
 from .media_song import MediaSong

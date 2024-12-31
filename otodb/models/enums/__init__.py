@@ -1,21 +1,17 @@
-from enum import IntEnum
-
 from django.db import models
 
 
-# NOTE: Should match up with fixtures/category.yaml
-class TagCategory(IntEnum):
-    GENERAL   = 1
-    LANGUAGE  = 2
-    SOURCE    = 3
-    CREATOR   = 4
-    META      = 5
+class TagCategory(models.IntegerChoices):
+    GENERAL   = 0, "General"
+    LANGUAGE  = 1, "Language"
+    SOURCE    = 2, "Source"
+    CREATOR   = 3, "Creator"
+    META      = 4, "Meta"
 
 class Rating(models.IntegerChoices):
-    NONE         = 0, "None"
-    GENERAL      = 1, "General"
-    SENSITIVE    = 2, "Sensitive"
-    EXPLICIT     = 3, "Explicit"
+    GENERAL      = 0, "General"
+    SENSITIVE    = 1, "Sensitive"
+    EXPLICIT     = 2, "Explicit"
 
 class Status(models.IntegerChoices):
     PENDING = 0, "Pending"

@@ -1,13 +1,12 @@
 from datetime import date
 
-import tagulous.forms
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from yt_dlp import YoutubeDL
 
-from otodb.models import MediaWork, TagWork, WorkSource
+from otodb.models import MediaWork, WorkSource
 from otodb.models.enums import Platform, WorkOrigin
 
 
@@ -66,8 +65,7 @@ class SourceSiteForm(forms.Form):
 
 def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork, pk=work_id)
-    sources = WorkSource.objects.filter(media=work)
-    return render(request, "works/work.html", {'work':work, "sources": sources})
+    return render(request, "works/work.html", {'work':work})
 
 @login_required
 def new(request: HttpRequest):
@@ -95,7 +93,7 @@ def new(request: HttpRequest):
                 src = WorkSource(media=work, title=info['title'], description=info['description'],
                     url=info['url'], platform=info['site'], source_id=info['id'],
                     published_date=date.fromtimestamp(info['timestamp']),
-                    work_origin=WorkOrigin(is_reupload),
+                    work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
                     work_width=info.get('work_width',None), work_height=info.get('work_height',None))
                 src.save()
 
@@ -133,7 +131,7 @@ def new_source(request: HttpRequest, work_id: int):
                 src = WorkSource(media=work, title=info['title'], description=info['description'],
                     url=info['url'], platform=info['site'], source_id=info['id'],
                     published_date=date.fromtimestamp(info['timestamp']),
-                    work_origin=WorkOrigin(is_reupload),
+                    work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
                     work_width=info.get('work_width',None), work_height=info.get('work_height',None))
                 src.save()
 
@@ -175,3 +173,37 @@ def set_tags(request: HttpRequest, work_id: int):
             print(e)
 
     return redirect('otodb:work', work_id=work.id)
+
+@login_required
+def merge(request: HttpRequest):
+    if request.method == 'POST':
+        try:
+            work_a = request.POST['left']
+            work_b = request.POST['right']
+
+            title = request.POST['title']
+            description = request.POST['description']
+            thumbnail = request.POST['thumbnail']
+            rating = request.POST['rating']
+
+            work_a = MediaWork.objects.get(id=work_a)
+            work_b = MediaWork.objects.get(id=work_b)
+
+            work_a.title = title
+            work_a.description = description
+            work_a.thumbnail = thumbnail 
+            work_a.rating = rating
+            work_a.tags.add(*work_b.tags.all())
+            work_a.save()
+
+            for src in work_b.worksource_set.all():
+                src.media = work_a
+                src.save()
+
+            work_b.delete()
+
+            return redirect('otodb:work', work_id=work_a.id)        
+        except Exception as e:
+            print(e)
+
+    return render(request, 'works/merge.html')

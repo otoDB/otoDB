@@ -28,7 +28,6 @@ class Pool(models.Model):
         return self.poolitem_set.filter(work_id=work_id)
     
     def add_work(self, work_id: int):
-        print(self.poolitem_set)
         if not self.poolitem_set.all():
             order = 1
         else:

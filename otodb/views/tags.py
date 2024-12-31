@@ -13,7 +13,6 @@ def tag(request: HttpRequest, tag_id: int):
 def alias(request: HttpRequest):
     # alias tree is at most one layer deep
     if request.method == 'POST':
-        print(request.POST)
         try:
             n = int(request.POST['size'])
             into = int(request.POST['into'])

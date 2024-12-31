@@ -22,10 +22,6 @@
 					<div class="query-results" x-show="!collapsed"></div>
 				</td>
 			</tr>
-			<tr>
-				<th>Something else</th>
-				<td>...</td>
-			</tr>
 		</table>
 	</div>
 	<div style="grid-column: 1 / span 2; border-top: var(--otodb-faint-content) 1px solid; margin-top: 2rem;" x-data="{
@@ -108,11 +104,11 @@
 			<th>Link</th>
 	</tr></thead>
 	<tbody>
-		{% for source in sources %}
+		{% for source in work.worksource_set.all %}
 		<tr x-data="{ description: `{{ source.description }}`, expanded: false }">
 			<td>{{ source.title }}</td><td x-text="expanded ? description : description.slice(0,8) + '[...expand]'" @click="expanded=!expanded"></td>
 				<td>{{ source.get_platform_display }}</td><td>{{ source.published_date }}
-			</td><td>{{ source.work_source.work_origin|yesno:"No,Yes" }}</td><td>{{ source.work_status|yesno:"No,Yes" }}</td>
+			</td><td>{{ source.work_origin|yesno:"No,Yes" }}</td><td>{{ source.work_status|yesno:"No,Yes" }}</td>
 			<td>{{ source.work_width }}x{{ source.work_height }}</td><td><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">Link</a></td>
 		</tr>
 		{% endfor %}

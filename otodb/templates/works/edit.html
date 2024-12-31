@@ -3,11 +3,37 @@
 
 {% block content %}
   <h1>Editing work: "{{ work.title }}"</h1>
-  <form target="_self" method="post">
-    {% csrf_token %}
-    <table>
+  <div style="display: flex;align-items: center;gap: 1rem;">
+    <form target="_self" method="post">
+      {% csrf_token %}
+      <table>
         {{ form.as_table }}
-    </table>
-    <input type="submit" value="Confirm"/>
-  </form>
+      </table>
+      <input type="submit" value="Confirm"/>
+    </form>
+    <p>or import...</p>
+    <div>
+  <table>
+	<thead><tr>
+			<th></th><th>Title</th><th>Desciption</th><th>Platform</th><th>Date</th><th>Official</th><th>Link</th>
+	</tr></thead>
+	<tbody>
+		{% for source in work.worksource_set.all %}
+		<tr x-data="{ title: `{{ source.title }}`, thumbnail: `{{ source.thumbnail }}`, description: `{{ source.description }}`, expanded: false }">
+      <td><button @click="
+        document.querySelector(`input[name='title']`).value = title;
+        document.querySelector(`input[name='thumbnail']`).value = thumbnail;
+        document.querySelector(`textarea[name='description']`).value = description;
+        "><</button></td>
+			<td>{{ source.title }}</td><td x-text="expanded ? description : description.slice(0,8) + '[...expand]'" @click="expanded=!expanded"></td>
+				<td>{{ source.get_platform_display }}</td><td>{{ source.published_date }}
+			</td><td>{{ source.work_origin|yesno:"No,Yes" }}</td>
+			<td><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">Link</a></td>
+		</tr>
+		{% endfor %}
+	</tbody>
+  </table>
+
+    </div>
+  </div>
 {% endblock content %}

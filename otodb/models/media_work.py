@@ -17,7 +17,7 @@ class MediaWork(MediaBase):
 
     rating = models.IntegerField(
         choices=Rating.choices,
-        default=Rating.NONE
+        default=Rating.GENERAL
     )
 
     tags = TagField(

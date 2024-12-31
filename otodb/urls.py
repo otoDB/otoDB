@@ -9,6 +9,7 @@ urlpatterns = [
     path("query/<str:query_type>", views.query, name="query"),
 
     path("works/new", views.works.new, name="work_new"),
+    path("works/merge", views.works.merge, name="work_merge"),
     path("works/<int:work_id>", views.works.work, name="work"),
     path("works/<int:work_id>/edit", views.works.edit, name="work_edit"),
     path("works/<int:work_id>/new_source", views.works.new_source, name="work_new_source"),

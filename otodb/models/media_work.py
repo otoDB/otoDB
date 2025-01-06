@@ -7,7 +7,7 @@ from tagulous.models import TagField
 
 from .base import MediaBase, MediaBaseManager
 from .enums import Rating
-from .tag_main import TagWork
+from .tag import TagWork
 
 
 class MediaWork(MediaBase):

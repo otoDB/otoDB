@@ -28,6 +28,8 @@
 		   <a href="#">Wiki</a>
 		   {% if user.is_staff %}
 		   <a href="{% url 'admin:index' %}">Admin View</a>
+		   <a href="{% url 'otodb:work_merge' %}">Merge works</a>
+		   <a href="{% url 'otodb:tag_alias' %}">Alias tags</a>
 		   {% endif %}
 		   <form target="_self" method="get" action="/search">
 			 <select required name="type" id="search-type">

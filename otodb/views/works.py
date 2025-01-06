@@ -23,7 +23,7 @@ def video_info(link):
             'thumbnail': 'thumb',
             'timestamp':  'timestamp'
         }
-    with YoutubeDL({'http_headers': {'Accept-Language': 'ja'}}) as ydl:
+    with YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}) as ydl:
         info = ydl.extract_info(link, download=False)
         if info.get('_type') == 'playlist':
             info = info['entries'][0] # todo need some work...

@@ -12,6 +12,7 @@
 			<tr><th>Rating</th><td>{{ work.get_rating_display }}</td></tr>
 		</table>
 		<a href="{% url 'otodb:work_edit' work.id %}">Edit this work</a>
+		{% if user.is_authenticated %}
 		<h2>User options</h2>
 		<table>
 			<tr>
@@ -23,6 +24,7 @@
 				</td>
 			</tr>
 		</table>
+		{% endif %}
 	</div>
 	<div style="grid-column: 1 / span 2; border-top: var(--otodb-faint-content) 1px solid; margin-top: 2rem;" x-data="{
 		edited: false,
@@ -69,8 +71,10 @@
 			</ul>
 			<button x-show="mode===1" type="submit" @click="edited ? void(0) : ($event.preventDefault(), mode = 0);">Done</button>
 		</form>
+		{% if user.is_authenticated %}
 		<button @click="mode=1" x-show="!mode" type="button">Edit</button>
 		<button @click="mode=2" x-show="!mode" type="button">Alias</button>
+		{% endif %}
 		<button x-show="mode===2 && merge_into < 0" type="button" :disabled="selected.length === 0" @click="merge_into=0">Continue</button>
 		<form x-show="merge_into >= 0" target="_self" action="{% url 'otodb:tag_alias' %}" method="post">
 			<h3 >... into:</h3>

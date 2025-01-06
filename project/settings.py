@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django_comments_xtd',
     'django_comments',
-    'corsheaders'
+    'corsheaders',
 ]
 
 if DEBUG_TOOLBAR:
@@ -61,6 +61,7 @@ if DEBUG_TOOLBAR:
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -217,4 +218,10 @@ COMMENTS_XTD_APP_MODEL_OPTIONS = {
 CORS_ALLOWED_ORIGINS = [
     "https://cdn.jsdelivr.net",
     "https://unpkg.com"
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://www.youtube.com",
+    "https://www.nicovideo.jp",
+    "https://www.bilibili.com",
 ]

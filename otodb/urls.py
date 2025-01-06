@@ -1,12 +1,14 @@
 from django.urls import path
 
-from . import views
+from . import views, api
 
 app_name = "otodb"
 urlpatterns = [
     path("", views.index, name="index"),
     path("search", views.search, name="search"),
     path("query/<str:query_type>", views.query, name="query"),
+
+    path("api/", api.api.urls),
 
     path("works/new", views.works.new, name="work_new"),
     path("works/merge", views.works.merge, name="work_merge"),

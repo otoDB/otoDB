@@ -1,0 +1,17 @@
+{
+
+    "manifest_version": 2,
+    "name": "otoDB",
+    "version": "1.0",
+    "description": "...",
+
+    "content_scripts": [
+      {
+        "matches": ["*://*.youtube.com/watch*", "*://*.bilibili.com/video*", "*://*.nicovideo.jp/watch*", "*://*.soundcloud.com/*"],
+        "js": ["main.js"],
+        "css": ["style.css"]
+      }
+    ],
+  
+    "host_permissions": ["*://127.0.0.1/*"]
+}

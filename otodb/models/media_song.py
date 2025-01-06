@@ -4,15 +4,17 @@ from tagulous.models import TagField
 
 from .base import MediaBase
 from .media_work import MediaWork
-from .tag_main import TagWork
+from .tag import TagWork, TagSong
 
 #  TODO whenever we get to songs...
 
 class MediaSong(MediaBase):
     title = models.CharField(max_length=1000, null=False, blank=False)
+    bpm = models.IntegerField(null=False)
+    work_tag = models.ForeignKey(TagWork, null=False, on_delete=models.CASCADE)
 
     tags = TagField(
-        to=TagWork,
+        to=TagSong,
         related_name="song_tags"
     )
 

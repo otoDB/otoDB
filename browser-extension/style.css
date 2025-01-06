@@ -1,0 +1,11 @@
+#otodb-tags {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-size: 20px;
+}
+
+#otodb-tags a {
+    text-decoration: underline;
+}

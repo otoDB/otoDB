@@ -27,6 +27,8 @@ When running through `uv`, you may get an SSL error when the server fetches cont
 export SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
 ```
 
+You should also change the domain of the default site in the admin panel.
+
 <!-- ## Project Structure
 Below is an overview of the structure of this project. Application directories contain the usual Django files.
 

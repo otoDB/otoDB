@@ -25,9 +25,9 @@ def query_video(request, url: str):
     if info['site'] is None:
         return 404, {'message': 'Site not supported'}
 
-    work = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
-        
-    if work is None:
+    try:
+        work = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
+    except WorkSource.DoesNotExist:
         return 404, {'message': 'Not in the database.'}
     
     tags = list(work.media.tags.values_list('name', 'id'))

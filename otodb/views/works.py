@@ -1,10 +1,9 @@
 from datetime import date
-from asgiref.sync import sync_to_async
 
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, aget_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from yt_dlp import YoutubeDL
 
 from otodb.models import MediaWork, WorkSource
@@ -68,8 +67,24 @@ def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork, pk=work_id)
     return render(request, "works/work.html", {'work':work})
 
+def check_source_duplicates(info):
+    if WorkSource.objects.filter(platform=info['site'], source_id=info['id']).exists():
+        raise Exception('This source already exists in the database.')
+
+def save_source(work: MediaWork, info):
+    src = WorkSource(media=work, title=info['title'], description=info['description'],
+        url=info['url'], platform=info['site'], source_id=info['id'],
+        published_date=date.fromtimestamp(info['timestamp']),
+        work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
+        work_width=info.get('work_width',None), work_height=info.get('work_height',None))
+    src.save()
+
+def add_tags_to_work(work: MediaWork, info):
+    if 'tags' in info:
+        work.tags.add(*info['tags'])
+
 @login_required
-async def new(request: HttpRequest):
+def new(request: HttpRequest):
     if request.method == 'POST':
         form = SourceSiteForm(request.POST)
         if form.is_valid():
@@ -80,36 +95,28 @@ async def new(request: HttpRequest):
                 if info['site'] is None:
                     raise Exception('Site not supported')
 
-                # Check duplicates
-                if await WorkSource.objects.filter(platform=info['site'], source_id=info['id']).aexists():
-                    raise Exception('This source already exists in the database.')
+                check_source_duplicates(info)
 
                 # Save work
                 work = MediaWork(title=info['title'], description=info['description'], thumbnail=info.get('thumb', None))
-                await work.asave()
-                if 'tags' in info:
-                    await sync_to_async(work.tags.add)(*info['tags'])
+                work.save()
 
-                # Save source
-                src = WorkSource(media=work, title=info['title'], description=info['description'],
-                    url=info['url'], platform=info['site'], source_id=info['id'],
-                    published_date=date.fromtimestamp(info['timestamp']),
-                    work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
-                    work_width=info.get('work_width',None), work_height=info.get('work_height',None))
-                await src.asave()
+                add_tags_to_work(work, info)
 
-                return await sync_to_async(redirect)('otodb:work', work_id=work.id)
+                save_source(work, info)
+
+                return redirect('otodb:work', work_id=work.id)
             except Exception as e:
                 form.add_error(None, 'Error: ' + str(e)) # FIXME potentially dangerous if a deeper exception is caught (e.g. from the DB)
 
     else:
         form = SourceSiteForm(initial={'official':True})
 
-    return await sync_to_async(render)(request, 'works/new.html', {'form': form})
+    return render(request, 'works/new.html', {'form': form})
 
 @login_required
-async def new_source(request: HttpRequest, work_id: int):
-    work = await aget_object_or_404(MediaWork, pk=work_id)
+def new_source(request: HttpRequest, work_id: int):
+    work = get_object_or_404(MediaWork, pk=work_id)
 
     if request.method == 'POST':
         form = SourceSiteForm(request.POST)
@@ -121,29 +128,20 @@ async def new_source(request: HttpRequest, work_id: int):
                 if info['site'] is None:
                     raise Exception('Site not supported')
 
-                if 'tags' in info:
-                    await sync_to_async(work.tags.add)(*info['tags'])
+                add_tags_to_work(work, info)
+                
+                check_source_duplicates(info)
+                
+                save_source(work, info)
 
-                # Check duplicates
-                if await WorkSource.objects.filter(platform=info['site'], source_id=info['id']).aexists():
-                    raise Exception('This source already exists in the database.')
-
-                # Save source
-                src = WorkSource(media=work, title=info['title'], description=info['description'],
-                    url=info['url'], platform=info['site'], source_id=info['id'],
-                    published_date=date.fromtimestamp(info['timestamp']),
-                    work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
-                    work_width=info.get('work_width',None), work_height=info.get('work_height',None))
-                await src.asave()
-
-                return await sync_to_async(redirect)('otodb:work', work_id=work.id)
+                return redirect('otodb:work', work_id=work.id)
             except Exception as e:
                 form.add_error(None, 'Error: ' + str(e)) # FIXME potentially dangerous if a deeper exception is caught (e.g. from the DB)
 
     else:
         form = SourceSiteForm()
 
-    return await sync_to_async(render)(request, 'works/new_source.html', {'form': form, 'work': work})
+    return render(request, 'works/new_source.html', {'form': form, 'work': work})
 
 @login_required
 def edit(request: HttpRequest, work_id: int):

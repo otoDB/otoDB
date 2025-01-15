@@ -1,11 +1,10 @@
 from typing import List, Tuple
-from asgiref.sync import sync_to_async
 
 from django.urls import reverse
 from ninja import NinjaAPI, Schema
 
 from otodb.views.works import video_info
-from otodb.models import WorkSource, MediaWork
+from otodb.models import WorkSource
 
 api = NinjaAPI()
 

@@ -20,12 +20,11 @@
         <h3>Also known as: {{ tag.aliases.all | join:', ' }}.</h3>
             
         {% endif %}
-        {% if tag.wiki_page %}TODO
+        {% if tag.wiki_page %}
         <p>
-            {% lorem %}
             <!-- INSERT WIKI EXCERPT --> <a href="#">Go to wiki...</a>
         </p>
-        {% else %}TODO
+        {% else %}
         <p>
             This tag does not yet have a wiki page. <a href="#">Go create one...</a>
         </p>

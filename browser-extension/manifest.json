@@ -1,9 +1,8 @@
 {
-
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "otoDB",
     "version": "1.0",
-    "description": "...",
+    "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
 
     "content_scripts": [
       {

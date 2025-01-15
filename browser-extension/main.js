@@ -12,6 +12,11 @@ const main = async ({inject, div, div_ready}) => {
 
     if (div_ready) div_ready(div)
 
+    let link = document.createElement('A');
+    link.innerText = "otoDB";
+    link.href = `${OTODB_URL}`;
+    div.appendChild(link);
+
     let status = document.createElement('P');
     status.innerText = 'Fetching...';
     div.appendChild(status);
@@ -19,23 +24,23 @@ const main = async ({inject, div, div_ready}) => {
     // 2. ping endpoint 
     const response = await fetch(`${OTODB_URL}/api/query_video?url=${encodeURIComponent(window.location)}`,
         { mode: 'cors' }
-    );
+    ).catch(r => { status.innerText = 'Cannot reach the database.'; });
 
     // 3. update interface with response
     if (response.ok) {
         status.remove();
-        const { tags } = await response.json();
+        const { tags, rel } = await response.json();
         tags.forEach(([tag, rel]) => {
             let a = document.createElement('A');
             a.innerText = tag;
             a.href = `${OTODB_URL}${rel}`;
             div.appendChild(a);
         });
+        link.innerText = "View this work on otoDB"
+        link.href = `${OTODB_URL}${rel}`
     }
-    else if (response.status === 404)
-        status.innerText = 'This work is not in the database.';
-    else
-        status.innerText = 'Cannot reach the database.';
+    else if (response.status === 404) status.innerText = 'This work is not in the database.';
+    else status.innerText = 'Cannot reach the database.';
 };
 
 const wait_for_target = (get_target, mutation_props, mutation_host = document) => new Promise(resolve => {

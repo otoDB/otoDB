@@ -1,20 +1,22 @@
 from typing import List, Tuple
+from asgiref.sync import sync_to_async
 
 from django.urls import reverse
 from ninja import NinjaAPI, Schema
 
 from otodb.views.works import video_info
-from otodb.models import WorkSource
+from otodb.models import WorkSource, MediaWork
 
 api = NinjaAPI()
 
-class TagList(Schema):
+class VideoQuery(Schema):
+    rel: str
     tags: List[Tuple[str, str]]
 
 class Error(Schema):
     message: str
 
-@api.get("/query_video", response={200: TagList, 404: Error})
+@api.get("/query_video", response={200: VideoQuery, 404: Error})
 def query_video(request, url: str):
     try:
         info = video_info(url)
@@ -29,7 +31,8 @@ def query_video(request, url: str):
         work = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
     except WorkSource.DoesNotExist:
         return 404, {'message': 'Not in the database.'}
-    
-    tags = list(work.media.tags.values_list('name', 'id'))
 
-    return {'tags': [(name, reverse('otodb:tag', kwargs={ 'tag_id': id_ })) for name, id_ in tags]}
+    media = work.media
+    tags = list(media.tags.values_list('name', 'id'))
+
+    return {'tags': [(name, reverse('otodb:tag', kwargs={ 'tag_id': id_ })) for name, id_ in tags], 'rel': reverse('otodb:work', kwargs={ 'work_id': media.id })}

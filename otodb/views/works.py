@@ -1,9 +1,10 @@
 from datetime import date
+from asgiref.sync import sync_to_async
 
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, aget_object_or_404, redirect, render
 from yt_dlp import YoutubeDL
 
 from otodb.models import MediaWork, WorkSource
@@ -68,7 +69,7 @@ def work(request: HttpRequest, work_id: int):
     return render(request, "works/work.html", {'work':work})
 
 @login_required
-def new(request: HttpRequest):
+async def new(request: HttpRequest):
     if request.method == 'POST':
         form = SourceSiteForm(request.POST)
         if form.is_valid():
@@ -80,14 +81,14 @@ def new(request: HttpRequest):
                     raise Exception('Site not supported')
 
                 # Check duplicates
-                if WorkSource.objects.filter(platform=info['site'], source_id=info['id']):
+                if await WorkSource.objects.filter(platform=info['site'], source_id=info['id']).aexists():
                     raise Exception('This source already exists in the database.')
 
                 # Save work
                 work = MediaWork(title=info['title'], description=info['description'], thumbnail=info.get('thumb', None))
-                work.save()
+                await work.asave()
                 if 'tags' in info:
-                    work.tags.add(*info['tags'])
+                    await sync_to_async(work.tags.add)(*info['tags'])
 
                 # Save source
                 src = WorkSource(media=work, title=info['title'], description=info['description'],
@@ -95,20 +96,20 @@ def new(request: HttpRequest):
                     published_date=date.fromtimestamp(info['timestamp']),
                     work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
                     work_width=info.get('work_width',None), work_height=info.get('work_height',None))
-                src.save()
+                await src.asave()
 
-                return redirect('otodb:work', work_id=work.id)
+                return await sync_to_async(redirect)('otodb:work', work_id=work.id)
             except Exception as e:
-                form.add_error(None, 'Error: ' + str(e))
+                form.add_error(None, 'Error: ' + str(e)) # FIXME potentially dangerous if a deeper exception is caught (e.g. from the DB)
 
     else:
         form = SourceSiteForm(initial={'official':True})
 
-    return render(request, 'works/new.html', {'form': form})
+    return await sync_to_async(render)(request, 'works/new.html', {'form': form})
 
 @login_required
-def new_source(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork, pk=work_id)
+async def new_source(request: HttpRequest, work_id: int):
+    work = await aget_object_or_404(MediaWork, pk=work_id)
 
     if request.method == 'POST':
         form = SourceSiteForm(request.POST)
@@ -121,10 +122,10 @@ def new_source(request: HttpRequest, work_id: int):
                     raise Exception('Site not supported')
 
                 if 'tags' in info:
-                    work.tags.add(*info['tags'])
+                    await sync_to_async(work.tags.add)(*info['tags'])
 
                 # Check duplicates
-                if WorkSource.objects.filter(platform=info['site'], source_id=info['id']):
+                if await WorkSource.objects.filter(platform=info['site'], source_id=info['id']).aexists():
                     raise Exception('This source already exists in the database.')
 
                 # Save source
@@ -133,16 +134,16 @@ def new_source(request: HttpRequest, work_id: int):
                     published_date=date.fromtimestamp(info['timestamp']),
                     work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
                     work_width=info.get('work_width',None), work_height=info.get('work_height',None))
-                src.save()
+                await src.asave()
 
-                return redirect('otodb:work', work_id=work.id)
+                return await sync_to_async(redirect)('otodb:work', work_id=work.id)
             except Exception as e:
-                form.add_error(None, 'Error: ' + str(e))
+                form.add_error(None, 'Error: ' + str(e)) # FIXME potentially dangerous if a deeper exception is caught (e.g. from the DB)
 
     else:
         form = SourceSiteForm()
 
-    return render(request, 'works/new_source.html', {'form': form, 'work': work})
+    return await sync_to_async(render)(request, 'works/new_source.html', {'form': form, 'work': work})
 
 @login_required
 def edit(request: HttpRequest, work_id: int):

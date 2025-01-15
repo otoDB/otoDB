@@ -2,6 +2,6 @@
 {% for tag in results %}
     <tr><td><a href="{% url 'otodb:tag' tag.id %}">{{ tag }}</a></td><td><button type="button" @click="query_action(`{{ tag }}`)">Select</button></td></li></tr>
 {% empty %}
-    <tr><td>No results found!</td></tr>
+    <tr><td>No tags found!</td></tr>
 {% endfor %}
 </table>

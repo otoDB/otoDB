@@ -28,12 +28,7 @@ def video_info(link):
         if info.get('_type') == 'playlist':
             info = info['entries'][0] # todo need some work...
 
-        info['extractor'] = {
-            'youtube': Platform.YOUTUBE,
-            'bilibili': Platform.BILIBILI,
-            'niconico': Platform.NICONICO,
-            'soundcloud': Platform.SOUNDCLOUD,
-        }.get(info['extractor'].lower())
+        info['extractor'] = Platform.from_str(info['extractor'])
 
         match info['extractor']:
             case Platform.YOUTUBE:
@@ -71,7 +66,7 @@ def check_source_duplicates(info):
     if WorkSource.objects.filter(platform=info['site'], source_id=info['id']).exists():
         raise Exception('This source already exists in the database.')
 
-def save_source(work: MediaWork, info):
+def save_source(work: MediaWork, info, is_reupload: bool):
     src = WorkSource(media=work, title=info['title'], description=info['description'],
         url=info['url'], platform=info['site'], source_id=info['id'],
         published_date=date.fromtimestamp(info['timestamp']),
@@ -103,7 +98,7 @@ def new(request: HttpRequest):
 
                 add_tags_to_work(work, info)
 
-                save_source(work, info)
+                save_source(work, info, is_reupload)
 
                 return redirect('otodb:work', work_id=work.id)
             except Exception as e:
@@ -132,7 +127,7 @@ def new_source(request: HttpRequest, work_id: int):
                 
                 check_source_duplicates(info)
                 
-                save_source(work, info)
+                save_source(work, info, is_reupload)
 
                 return redirect('otodb:work', work_id=work.id)
             except Exception as e:

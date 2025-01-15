@@ -1,10 +1,9 @@
-const main = async ({inject, div, div_ready}) => {
+const main = async ({inject, div, div_ready, platform, get_id}) => {
     const OTODB_URL = `http://127.0.0.1:8000`;
 
     // 1. temp interface
     if (!div) {
         div = document.createElement('DIV');
-        div.style.border = '2px solid red';
         div.id = 'otodb-tags';
         inject(div);
     }
@@ -22,7 +21,10 @@ const main = async ({inject, div, div_ready}) => {
     div.appendChild(status);
 
     // 2. ping endpoint 
-    const response = await fetch(`${OTODB_URL}/api/query_video?url=${encodeURIComponent(window.location)}`,
+    const response = await fetch(`${OTODB_URL}/api/query_video?${new URLSearchParams({
+        platform: platform,
+        id: get_id(window.location.toString())
+    })}`,
         { mode: 'cors' }
     ).catch(r => { status.innerText = 'Cannot reach the database.'; });
 
@@ -59,25 +61,60 @@ const wait_for_target = (get_target, mutation_props, mutation_host = document) =
 
 const init = async () => {    
     if (window.location.hostname.endsWith('youtube.com')) {
-        const target = await wait_for_target(records => document.querySelector('ytd-watch-metadata #title'), { subtree: true, childList: true });
-        const div = await new Promise(resolve => main({ inject: node => target.insertAdjacentElement('afterend', node), div: null, div_ready: resolve }));
+        const platform = 'youtube';
+        const get_id = loc => loc.match(/v=([a-zA-Z0-9_-]{11})/)[1];
+
+        const target = await wait_for_target(records => document.querySelector('ytd-watch-metadata #top-row'), { subtree: true, childList: true });
+        const div = await new Promise(resolve => main({
+            div_ready: resolve,
+            inject: node => target.insertAdjacentElement('afterend', node),
+            div: null,
+            platform: platform,
+            get_id: get_id
+        }));
         const spa_target = await wait_for_target(records => document.querySelector('#movie_player video'), { subtree: true, childList: true });
 
         while (true) {
             await wait_for_target(records => records.some(record => record.type === 'attributes' && record.attributeName === 'src'), { attributes: true }, spa_target);
-            main({div: div});
+            main({
+                div: div,
+                platform: platform,
+                get_id: get_id,
+            });
         }
     }
-    else if (window.location.hostname.endsWith('bilibili.com'))
-        main({ inject: node => document.querySelector('.video-desc-container').insertAdjacentElement('afterend', node), div: null });
+    else if (window.location.hostname.endsWith('bilibili.com')) {
+        const platform = 'bilibili';
+        const get_id = loc => loc.match(/\/video\/(BV[a-zA-Z0-9]{10})\//)[1];
+
+        main({
+            inject: node => document.querySelector('.video-desc-container').insertAdjacentElement('afterend', node),
+            div: null,
+            platform: platform,
+            get_id: get_id
+        });
+    }
     else if (window.location.hostname.endsWith('nicovideo.jp')) {
+        const platform = 'niconico';
+        const get_id = loc => loc.match(/\/watch\/(sm[0-9]+)/)[1];
+
         const target = await wait_for_target(records => document.getElementsByClassName('grid-area_[meta]')[0]?.firstElementChild, { subtree: true, childList: true });
-        const div = await new Promise(resolve => main({ inject: node => target.insertAdjacentElement('afterend', node), div: null, div_ready: resolve }));
+        const div = await new Promise(resolve => main({
+            div_ready: resolve,
+            inject: node => target.insertAdjacentElement('afterend', node),
+            div: null,
+            platform: platform,
+            get_id: get_id,
+        }));
         const spa_target = await wait_for_target(records => document.querySelector('video'), { subtree: true, childList: true });
 
         while (true) {
             await wait_for_target(records => records.some(record => record.type === 'attributes' && record.attributeName === 'src'), { attributes: true }, spa_target);
-            main({div: div});
+            main({
+                div: div,
+                platform: platform,
+                get_id: get_id,
+            });
         }
     }
     else if (window.location.hostname.endsWith('soundcloud.com'))

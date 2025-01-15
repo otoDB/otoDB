@@ -24,7 +24,7 @@
 			<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
 		<![endif]-->
 		 <nav>
-		   <a href="{% url 'otodb:index' %}">otoDB</a>
+		   <a href="{% url 'otodb:index' %}">{{ config.site_name }}</a>
 		   <a href="#">Wiki</a>
 		   {% if user.is_staff %}
 		   <a href="{% url 'admin:index' %}">Admin View</a>

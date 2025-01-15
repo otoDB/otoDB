@@ -42,3 +42,9 @@ class Platform(models.IntegerChoices):
     NICONICO   = 2, "Niconico"
     BILIBILI   = 3, "Bilibili"
     SOUNDCLOUD = 4, "SoundCloud"
+
+    def from_str(s):
+        for choice, string in Platform.choices:
+            if string.lower() == s.lower():
+                return choice
+        return None

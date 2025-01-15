@@ -3,9 +3,6 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 
-from .implication import Implication
-
-
 class MediaBaseManager(models.Manager):
     def random(self):
         random_work = None
@@ -54,14 +51,3 @@ class MediaBase(models.Model):
         finally:
             del self.skip_history_when_saving
         return ret
-
-    def check_and_update_implications(self):
-        missing_implications = Implication.objects.filter(
-            from_tag__in=self.tags.all(), status=1
-        ).exclude(to_tag__in=self.tags.all()).distinct()
-
-        if missing_implications.exists():
-            for impl in missing_implications:
-                self.tags.add(impl.to_tag)
-
-        self.check_and_update_mirror()

@@ -13,7 +13,6 @@ dependencies = [
     "django-simple-history>=3.7.0",
     "django-tagulous>=2.1.0",
     "django>=5.1.4",
-    "dotmap>=1.3.30",
     "pykakasi>=2.3.0",
     "pypinyin>=0.53.0",
     "python-dotenv>=1.0.1",

@@ -14,9 +14,9 @@ urlpatterns = [
     path("works/merge", views.works.merge, name="work_merge"),
     path("works/<int:work_id>", views.works.work, name="work"),
     path("works/<int:work_id>/edit", views.works.edit, name="work_edit"),
-    path("works/<int:work_id>/new_source", views.works.new_source, name="work_new_source"),
     path("works/<int:work_id>/set_tags", views.works.set_tags, name="work_set_tags"),
     path("works/<int:work_id>/history", views.works.history, name="work_history"),
+    path("works/sources/check-in/<int:source_id>", views.works.check_in_source, name="work_check_in_source"),
 
     path("lists/new", views.lists.new, name="list_new"),
     path("lists/<int:list_id>", views.lists.list, name="list"),

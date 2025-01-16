@@ -5,7 +5,7 @@ from .media_work import MediaWork
 
 
 class WorkSource(models.Model):
-    media = models.ForeignKey(MediaWork, on_delete=models.CASCADE)
+    media = models.ForeignKey(MediaWork, on_delete=models.CASCADE, null=True)
     platform = models.IntegerField(choices=Platform.choices)
     source_id = models.CharField(max_length=1000)
 

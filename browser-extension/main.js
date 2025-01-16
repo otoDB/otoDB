@@ -38,7 +38,13 @@ const main = async ({inject, div, div_ready, query}) => {
         link.innerText = "View this work on otoDB"
         link.href = `${OTODB_URL}${rel}`
     }
-    else if (response.status === 404) status.innerText = 'This work is not in the database.';
+    else if (response.status === 404) {
+        status.innerText = 'This work is not in the database.';
+        let add = document.createElement('A');
+        add.innerText = "Add this work to otoDB...";
+        add.href = `${OTODB_URL}/works/new?${new URLSearchParams({ url: window.location.toString() })}`;
+        div.appendChild(add);    
+    }
     else status.innerText = 'Cannot reach the database.';
 };
 

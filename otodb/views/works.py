@@ -1,8 +1,9 @@
 from datetime import date
 
 from django import forms
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest
+from django.http import HttpRequest, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 # from simple_history.template_utils import HistoricalRecordContextHelper
@@ -10,7 +11,7 @@ from simple_history.utils import update_change_reason
 
 from yt_dlp import YoutubeDL
 
-from otodb.common.utils import get_diff
+from otodb.common import get_diff
 from otodb.models import MediaWork, WorkSource
 from otodb.models.enums import Platform, WorkOrigin
 
@@ -30,6 +31,7 @@ def video_info(link):
         }
     with YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}) as ydl:
         info = ydl.extract_info(link, download=False)
+        print(info)
         if info.get('_type') == 'playlist':
             info = info['entries'][0] # todo need some work...
 
@@ -39,15 +41,16 @@ def video_info(link):
             case Platform.YOUTUBE:
                 info['webpage_url'] = f'https://youtu.be/{info['id']}'
             case Platform.BILIBILI:
-                info['webpage_url'] = f'https://bilibili.com/video/{info['id']}/'
+                info['webpage_url'] = f'https://www.bilibili.com/video/{info['id']}/'
                 info['tags'] = [tag[3:-1] if tag.startswith('发现《') and tag.endswith('》') else tag for tag in info['tags']]
             case Platform.NICONICO:
                 info['webpage_url'] = f'https://nicovideo.jp/watch/{info['id']}'
             case Platform.SOUNDCLOUD:
-                pass
+                pass # TODO
         
         for c in ['?', '/']: # drop query strings and subdirectories
-            if i := info['id'].find(c):
+            i = info['id'].find(c)
+            if i != -1:
                 info['id'] = info['id'][:i]
 
         return { keys[key]: info[key] for key in keys if key in info }
@@ -67,6 +70,11 @@ class ManualSourceForm(forms.ModelForm):
 class SourceSiteForm(forms.Form):
     link = forms.CharField(label='Link', required=True)
     official = forms.BooleanField(label='Is this an official upload?', required=False)
+    work_id = forms.IntegerField(widget=forms.HiddenInput(), initial=-1)
+
+class SourceCheckinForm(forms.Form):
+    official = forms.BooleanField(label='Is this an official upload?', required=False)
+    work_id = forms.IntegerField(widget=forms.HiddenInput(), initial=-1)
 
 def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork, pk=work_id)
@@ -84,76 +92,102 @@ def save_source(work: MediaWork, info, is_reupload: bool):
         work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
         work_width=info.get('work_width',None), work_height=info.get('work_height',None))
     src.save()
+    return src
 
 def add_tags_to_work(work: MediaWork, info):
     if 'tags' in info:
         work.tags.add(*info['tags'])
 
 @login_required
-def new(request: HttpRequest):
+def check_in_source(request: HttpRequest, source_id: int):
+    src = get_object_or_404(WorkSource, pk=source_id)
+    title = f'Checking-in source {src.title}'
+    suggestions = None # used in case we want to prompt adding source to an existing work instead of a new work
+
+    if src.media is not None:
+        raise Http404("Source is already bound.")
+
     if request.method == 'POST':
-        form = SourceSiteForm(request.POST)
+        form = SourceCheckinForm(request.POST)
         if form.is_valid():
-            link = form.cleaned_data['link']
             is_reupload = not form.cleaned_data['official']
-            try:
-                info = video_info(link)
-                if info['site'] is None:
-                    raise Exception('Site not supported')
-
-                if src := check_source_duplicates(info):
-                    return redirect('otodb:work', work_id=src.media.id)
-
-                # Save work
-                work = MediaWork(title=info['title'], description=info['description'], thumbnail=info.get('thumb', None))
+            work_id = form.cleaned_data['work_id']
+            if work_id > 0:
+                work = get_object_or_404(MediaWork, pk=work_id)
+                title += f' for "{work.title}"'
+            else:
+                work = MediaWork(title=src.title, description=src.description, thumbnail=src.thumbnail)
                 work.save()
+            
+            # FIXME this double ping will do for now.. I don't want to store tags on sources
+            add_tags_to_work(work, video_info(src.url))
 
-                add_tags_to_work(work, info)
+            src.media = work
+            src.work_origin = WorkOrigin(is_reupload)
+            src.save()
 
-                save_source(work, info, is_reupload)
-
-                return redirect('otodb:work', work_id=work.id)
-            except Exception as e:
-                form.add_error(None, 'Error: ' + str(e)) # FIXME potentially dangerous if a deeper exception is caught (e.g. from the DB)
-
+            return redirect('otodb:work', work_id=work.id)
     else:
-        form = SourceSiteForm(initial={'official':True})
+        work_id = request.GET.get('work_id')
+        form = SourceCheckinForm(initial={ 'official': not src.work_origin })
+        if work_id and int(work_id) > 0:
+            work_id = int(work_id)
+            work = get_object_or_404(MediaWork, pk=work_id)
+            title += f' for "{work.title}"'
+            form.fields["work_id"].initial = work_id
+        else:
+            suggestions = MediaWork.objects.filter(title__contains=src.title)[:3]
 
-    return render(request, 'works/new.html', {'form': form, 'title': 'New work'})
+    return render(request, 'works/check_in_source.html', {'form': form, 'source': src, 'title': title, 'suggestions': suggestions})
 
 @login_required
-def new_source(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork, pk=work_id)
-
+def new(request: HttpRequest):
+    title = 'New work'
     if request.method == 'POST':
         form = SourceSiteForm(request.POST)
         if form.is_valid():
             link = form.cleaned_data['link']
             is_reupload = not form.cleaned_data['official']
+            work_id = form.cleaned_data['work_id']
+            work = None
+            if work_id > 0:
+                work = get_object_or_404(MediaWork, pk=work_id)
+                title = f'New source for "{work.title}"'
             try:
                 info = video_info(link)
                 if info['site'] is None:
                     raise Exception('Site not supported')
 
-                add_tags_to_work(work, info)
-                
-                if src := check_source_duplicates(info):
-                    if src.media.id != work.id:
+                src = check_source_duplicates(info)
+                if not src: # src does not exist
+                    src = save_source(None, info, is_reupload)
+                elif src.media: # src exists and is already bound to a work
+                    if not work:
+                        return redirect('otodb:work', work_id=src.media.id)
+                    elif src.media.id != work_id:
                         raise Exception(f'This source already belongs to a different work ({work.id} - {work}). Consider merging works.')
                     else:
                         return redirect('otodb:work', work_id=work.id)
 
-                
-                save_source(work, info, is_reupload)
-
-                return redirect('otodb:work', work_id=work.id)
+                if work:
+                    return redirect(reverse('otodb:work_check_in_source', kwargs={'source_id':src.id}) + f'?work_id={work_id}')
+                else:
+                    return redirect('otodb:work_check_in_source', source_id=src.id)
             except Exception as e:
-                form.add_error(None, 'Error: ' + str(e)) # FIXME potentially dangerous if a deeper exception is caught (e.g. from the DB)
-
+                # FIXME potentially dangerous to send this to client if a deeper exception is caught (e.g. from the DB)
+                form.add_error(None, 'Error: ' + str(e))
     else:
-        form = SourceSiteForm()
-
-    return render(request, 'works/new.html', {'form': form, 'title': f'New source for "{work.title}"'})
+        if url := request.GET.get('url'):
+            form = SourceSiteForm(initial={ 'link': url })
+        elif work_id := request.GET.get('work_id'):
+            work_id = int(work_id)
+            form = SourceSiteForm(initial={ 'work_id': work_id })
+            work = get_object_or_404(MediaWork, pk=work_id)
+            title = f'New source for "{work.title}"'
+        else:
+            form = SourceSiteForm(initial={ 'official': True })
+        
+    return render(request, 'works/new.html', {'form': form, 'title': title})
 
 @login_required
 def edit(request: HttpRequest, work_id: int):

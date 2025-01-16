@@ -51,4 +51,4 @@ def history(request: HttpRequest, tag_id: int):
             record.history_delta_changes = HistoricalRecordContextHelper(MediaWork, prev).context_for_delta_changes(delta)
         history.append(record)
     history.reverse()
-    return render(request, 'works/history.html', { 'tag': tag, 'history': history })
+    return render(request, 'tags/history.html', { 'tag': tag, 'history': history })

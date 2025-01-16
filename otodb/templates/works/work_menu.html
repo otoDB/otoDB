@@ -2,7 +2,7 @@
 	{% url 'otodb:work' work.id as w_url %}
 	{% url 'otodb:work_edit' work.id as we_url %}
 	{% url 'otodb:work_history' work.id as wh_url %}
-	<a href="{{ w_url }}" {% if request.get_full_path == w_url %}class="current"{% endif %}>Work {{ work.id }}</a>
-	<a href="{{ we_url }}" {% if request.get_full_path == we_url %}class="current"{% endif %}>Edit</a>
-	<a href="{{ wh_url }}" {% if request.get_full_path == wh_url %}class="current"{% endif %}>History</a>
+	<a href="{{ w_url }}" {% if request.path == w_url %}class="current"{% endif %}>Work {{ work.id }}</a>
+	<a href="{{ we_url }}" {% if request.path == we_url %}class="current"{% endif %}>Edit</a>
+	<a href="{{ wh_url }}" {% if request.path == wh_url %}class="current"{% endif %}>History</a>
 </menu>

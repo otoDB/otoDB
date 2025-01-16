@@ -1,9 +1,10 @@
 {% extends "base.html" %}
-{% block page_title %}{{user.username}}'s lists{% endblock page_title %}
+{% block page_title %}{{view_user.username}}'s lists{% endblock page_title %}
 
 {% block content %}
+{% include 'users/profile_menu.html' %}
 <section>
-    <h1>{{user.username}}'s lists</h1>
+    <h1>{{view_user.username}}'s lists</h1>
     <a href="{% url 'otodb:list_new' %}">Make a new list</a>
     <ul>
     {% for entry in lists %}

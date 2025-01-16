@@ -2,6 +2,7 @@
 {% block page_title %}User: {{ view_user.username }}{% endblock page_title %}
 
 {% block content %}
+{% include 'users/profile_menu.html' %}
 <section>
   <h1>User: {{ view_user.username }}</h1>
   <p>E-mail: {{ view_user.email }}</p>

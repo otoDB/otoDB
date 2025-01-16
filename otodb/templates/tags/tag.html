@@ -2,6 +2,8 @@
 {% block page_title %}{{ tag }}{% endblock page_title %}
 
 {% block content %}
+{% include 'tags/tag_menu.html' %}
+<section>
     <h1>Tag: {{ tag }}</h1>
     <h2>Category: {{ tag.get_category_display }}</h2>
     {% if tag.aliased_to %}
@@ -29,6 +31,8 @@
             This tag does not yet have a wiki page. <a href="#">Go create one...</a>
         </p>
         {% endif %}
+</section>
+<section>
         <h2>Works tagged with "{{ tag }}"</h2>
         <table>
             <thead><tr><th>Thumbnail</th><th>Title</th><th>Rating</th><th>Tags</th><th>Sources</th></tr></thead><tbody>
@@ -45,8 +49,10 @@
             {% endfor %}
             </tbody>
         </table>
+</section>
+<section>
         <h2>Comments</h2>
         {% include 'comments.html' with object=tag %}
     {% endif %}
-  
+</section>
 {% endblock content %}

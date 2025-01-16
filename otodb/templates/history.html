@@ -1,0 +1,49 @@
+<table id="change-history" class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th scope="col">Object</th>
+        <th scope="col">Date/time</th>
+        <th scope="col">Comment</th>
+        <th scope="col">Changed by</th>
+        <th scope="col">Change reason</th>
+        <th scope="col">Changes</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for record in history %}
+        <tr>
+        <td>
+            {{ record.history_object }}
+        </td>
+        <td>{{ record.history_date }}</td>
+        <td>{{ record.get_history_type_display }}</td>
+        <td>
+            {% if record.history_user %}
+            <a href="{% url 'otodb:profile' record.history_user.id %}">{{ record.history_user }}</a>
+            {% else %}
+            None
+            {% endif %}
+        </td>
+        <td>
+            {{ record.history_change_reason }}
+        </td>
+        <td>
+            {% if record.history_delta_changes %}
+            <ul>
+                {% for change in record.history_delta_changes %}
+                <li>
+                    <strong>{{ change.field }}:</strong>
+                    {{ change.old }}
+                    {# Add some spacing, and prevent having the arrow point to the edge of the page if `new` is wrapped #}
+                    &nbsp;&rarr;&nbsp;&nbsp;{{ change.new }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            Not Applicable
+            {% endif %}
+        </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

@@ -75,8 +75,7 @@ def delete(request: HttpRequest, list_id: int):
     if list_.author != request.user:
         return redirect('otodb:list', list_id=list_.id)
 
-    if request.method == 'POST':
-        list_.delete()
+    list_.delete()
 
     return redirect("otodb:profile_lists", user_id=request.user.id)
 

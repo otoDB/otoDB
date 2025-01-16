@@ -1,7 +1,8 @@
 {% extends "base.html" %}
-{% block page_title %}{{ tag }}{% endblock page_title %}
+{% block page_title %}Aliasing Tags{% endblock page_title %}
 
 {% block content %}
+<section>
     <h1>Aliasing Tags</h1>
     <form target="_self" method="post" x-data="{
         selected_tags: [],
@@ -17,7 +18,7 @@
         <button type="button" hx-get="{% url 'otodb:query' 'tag' %}" hx-target="next div" hx-include="previous input">Search</button>
         <div class="query-results" x-data="{ query_action: text => { add(text); } }"></div>
 
-        <div style="display: flex; flex-direction: row; gap: 2rem; align-items: center;">
+        <div style="display: flex; flex-direction: row; gap: 2rem; align-items: center; margin-bottom: 1rem;" x-show="selected_tags.length">
             <table>
                 <template x-for="(tag, i) in selected_tags">
                     <tr>
@@ -29,7 +30,7 @@
                     </tr>
                 </template>
             </table>
-            <h3>into:</h3>
+            <h3 style="display: inline;">into:</h3>
             <select name="into" x-model="target_tag">
                 <template x-for="(tag, i) in selected_tags">
                     <option x-text="tag" :value="i"></option>
@@ -37,7 +38,7 @@
             </select> 
         </div>
         <input type="number" name="size" :value="selected_tags.length" hidden>
-        <button>Submit</button>
+        <button x-show="selected_tags.length">Submit</button>
     </form>
-
+</section>
 {% endblock content %}

@@ -1,0 +1,6 @@
+<menu class="right">
+	{% url 'otodb:tag' tag.id as t_url %}
+	{% url 'otodb:tag_history' tag.id as th_url %}
+	<a href="{{ t_url }}" {% if request.get_full_path == t_url %}class="current"{% endif %}>Tag {{ tag.id }}</a>
+	<a href="{{ th_url }}" {% if request.get_full_path == th_url %}class="current"{% endif %}>History</a>
+</menu>

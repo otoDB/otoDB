@@ -2,6 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
+from simple_history.template_utils import HistoricalRecordContextHelper
+
 from otodb.models import MediaWork, TagWork
 
 def tag(request: HttpRequest, tag_id: int):
@@ -30,9 +32,23 @@ def alias(request: HttpRequest):
                         work.tags.remove(tag)
                     for t in TagWork.objects.filter(aliased_to=tag):
                         t.aliased_to = into
+                # TODO transfer children and parent relationships to 'into'
 
             return redirect('otodb:tag', tag_id=into.id)        
         except Exception as e:
             print(e)
 
     return render(request, 'tags/alias.html')
+
+def history(request: HttpRequest, tag_id: int):
+    tag = get_object_or_404(TagWork, pk=tag_id)
+
+    history = []
+    for record in tag.history.all().reverse():
+        if history != []:
+            prev = history[-1]
+            delta = record.diff_against(prev)
+            record.history_delta_changes = HistoricalRecordContextHelper(MediaWork, prev).context_for_delta_changes(delta)
+        history.append(record)
+    history.reverse()
+    return render(request, 'works/history.html', { 'tag': tag, 'history': history })

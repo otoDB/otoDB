@@ -2,10 +2,13 @@
 {% block page_title %}User: {{ view_user.username }}{% endblock page_title %}
 
 {% block content %}
+<section>
   <h1>User: {{ view_user.username }}</h1>
   <p>E-mail: {{ view_user.email }}</p>
   <p>Joined {{ config.site_name }} on {{ view_user.date_created }}</p>
+</section>
+<section>
   <h2>Comments</h2>
   {% include 'comments.html' with object=view_user %}
-
+</section>
 {% endblock content %}

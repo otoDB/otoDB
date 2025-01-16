@@ -2,6 +2,8 @@
 {% block page_title %}{{ work.title }}{% endblock page_title %}
 
 {% block content %}
+{% include 'works/work_menu.html' %}
+<section>
   <h1>{{ work.title }}</h1>
   <div id="infobox">
 	<img src="{{ work.thumbnail }}" alt="{{ work.title }}">
@@ -11,7 +13,6 @@
 			<tr><th>Description</th><td>{{ work.description | linebreaksbr }}</td></tr>
 			<tr><th>Rating</th><td>{{ work.get_rating_display }}</td></tr>
 		</table>
-		<a href="{% url 'otodb:work_edit' work.id %}">Edit this work</a>
 		{% if user.is_authenticated %}
 		<h2>User options</h2>
 		<table>
@@ -94,8 +95,12 @@
 		</form>
 	</div>
   </div>
+</section>
+<menu class="right">
+	<a href="{% url 'otodb:work_new_source' work.id %}">Add source</a>
+</menu>
+<section>
   <h2>Work Sources</h2>
-  <a href="{% url 'otodb:work_new_source' work.id %}">Add a source...</a>
   <table style="width: 100%;">
 	<thead><tr>
 			<th>Title</th>
@@ -118,9 +123,11 @@
 		{% endfor %}
 	</tbody>
   </table>
+</section>
+<section>
   <h2>Comments</h2>
   {% include 'comments.html' with object=work %}
-
+</section>
 {% endblock content %}
 {% block extra-css %}
 <style>

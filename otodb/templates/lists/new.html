@@ -2,6 +2,7 @@
 {% block page_title %}New list{% endblock page_title %}
 
 {% block content %}
+<section>
 <h1>New list</h1>
 <form target="_self" method="post">
   {% csrf_token %}
@@ -10,5 +11,5 @@
     </table>
   <input type="submit" value="Create"/>
 </form>
-  
+</section>
 {% endblock content %}

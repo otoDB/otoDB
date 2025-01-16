@@ -5,12 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
-from simple_history.template_utils import HistoricalRecordContextHelper
+# from simple_history.template_utils import HistoricalRecordContextHelper
 from simple_history.utils import update_change_reason
 
 from yt_dlp import YoutubeDL
 
-from otodb.models import MediaWork, WorkSource, TagWork
+from otodb.common.utils import get_diff
+from otodb.models import MediaWork, WorkSource
 from otodb.models.enums import Platform, WorkOrigin
 
 
@@ -227,14 +228,7 @@ def history(request: HttpRequest, work_id: int):
         if history != []:
             prev = history[-1]
             delta = record.diff_against(prev)
-            record.history_delta_changes = HistoricalRecordContextHelper(MediaWork, prev).context_for_delta_changes(delta)
-
-            def int_list_str_to_list_of_int(s):
-                return [ss.strip() for ss in s[1:-1].split(',') if ss.strip() != '']
-            for rec in record.history_delta_changes:
-                if rec['field'] == 'Tags': # FIXME this is horrible?
-                    rec['old'] = str([str(TagWork.objects.get(id=int(id_))) for id_ in int_list_str_to_list_of_int(rec['old'])])
-                    rec['new'] = str([str(TagWork.objects.get(id=int(id_))) for id_ in int_list_str_to_list_of_int(rec['new'])])
+            record.history_delta_changes = get_diff(delta)
         history.append(record)
     history.reverse()
     return render(request, 'works/history.html', { 'work': work, 'history': history })

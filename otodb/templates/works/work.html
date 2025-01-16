@@ -43,7 +43,7 @@
 		new_tag: '',
 		add: function () {
 			const trim = this.new_tag.trim();
-			if (trim === '' || this.tags.map(e=>e.name).indexOf(trim) !== -1) return;
+			if (trim === '' || this.tags.map(e=>e.name.toLowerCase()).indexOf(trim.toLowerCase()) !== -1) return;
 			this.tags.push({url: '#', name: trim});
 			this.new_tag = '';
 			this.edited = true;

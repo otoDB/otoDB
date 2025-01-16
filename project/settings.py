@@ -185,10 +185,6 @@ INTERNAL_IPS = [
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login'
 
-TAGGIT_CASE_INSENSITIVE = True
-TAGGIT_TAGS_FROM_STRING = 'otodb.common.utils.space_splitter'
-TAGGIT_STRING_FROM_TAGS = 'otodb.common.utils.space_joiner'
-
 OTODB_CONFIG_DICT = {
     'site_name': os.environ.get(
         'OTODB_CONF_SITE_NAME',

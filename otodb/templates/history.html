@@ -33,9 +33,9 @@
                 {% for change in record.history_delta_changes %}
                 <li>
                     <strong>{{ change.field }}:</strong>
-                    {{ change.old }}
-                    {# Add some spacing, and prevent having the arrow point to the edge of the page if `new` is wrapped #}
-                    &nbsp;&rarr;&nbsp;&nbsp;{{ change.new }}
+                    <div style="display: inline-block;vertical-align: top;">
+                        {{ change.html|safe }}
+                    </div>
                 </li>
                 {% endfor %}
             </ul>

@@ -4,12 +4,14 @@
 	--otodb-faint-bg: color-mix(in hsl, var(--otodb-bg-color) 90%, var(--otodb-content-color));
 	--otodb-fainter-bg: color-mix(in hsl, var(--otodb-bg-color) 80%, var(--otodb-content-color));
 	--otodb-faint-content: color-mix(in hsl, var(--otodb-bg-color) 12.5%, var(--otodb-content-color));
+	--otodb-ins: color-mix(in hsl, var(--otodb-faint-bg) 35%, green);
+	--otodb-del: color-mix(in hsl, var(--otodb-faint-bg) 35%, red);
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-	  --otodb-bg-color: black;
-	  --otodb-content-color: white;
+		--otodb-bg-color: black;
+		--otodb-content-color: white;
 	}
 }
 
@@ -142,4 +144,12 @@ input[type="submit"], input[type="button"], select, button {
 	border: 1px var(--otodb-faint-content) solid;
 	max-height: 15rem;
 	overflow-y: scroll;
+}
+
+ins {
+	background-color: var(--otodb-ins);
+}
+
+del {
+	background-color: var(--otodb-del);
 }

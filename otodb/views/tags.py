@@ -2,8 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
-from simple_history.template_utils import HistoricalRecordContextHelper
-
+from otodb.common.utils import get_diff
 from otodb.models import MediaWork, TagWork
 
 def tag(request: HttpRequest, tag_id: int):
@@ -48,7 +47,7 @@ def history(request: HttpRequest, tag_id: int):
         if history != []:
             prev = history[-1]
             delta = record.diff_against(prev)
-            record.history_delta_changes = HistoricalRecordContextHelper(MediaWork, prev).context_for_delta_changes(delta)
+            record.history_delta_changes = get_diff(delta)
         history.append(record)
     history.reverse()
     return render(request, 'tags/history.html', { 'tag': tag, 'history': history })

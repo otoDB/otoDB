@@ -11,6 +11,9 @@ class ListForm(forms.ModelForm):
         model = Pool
         fields = ['name', 'description']
 
+class ListImportForm(forms.Form):
+    link = forms.CharField(label='Link', required=True)
+
 def list(request: HttpRequest, list_id: int):
     list_ = get_object_or_404(Pool, pk=list_id)
     works = PoolItem.objects.filter(pool=list_).select_related('work').order_by('order')
@@ -95,3 +98,22 @@ def toggle(request: HttpRequest, list_id: int):
 
 
     return redirect("otodb:profile_lists", user_id=request.user.id)
+
+@login_required
+def list_import(request: HttpRequest):
+    if request.method == 'POST':
+        form = ListImportForm(request.POST)
+        if form.is_valid():
+            url = form.cleaned_data['link']
+
+            pass
+
+            # list_ = Pool(name=name, description=desc, author=request.user)
+            # list_.save()
+
+            # return redirect('otodb:list_edit', list_id=list_.id)
+
+    else:
+        form = ListImportForm()
+
+    return render(request, 'lists/import.html', {'form': form})

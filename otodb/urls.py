@@ -27,6 +27,7 @@ urlpatterns = [
     path("song_tags/<int:tag_id>/history", views.tags.song_history, name="song_tag_history"),
 
     path("lists/new", views.lists.new, name="list_new"),
+    path("lists/import", views.lists.list_import, name="list_import"),
     path("lists/<int:list_id>", views.lists.list, name="list"),
     path("lists/<int:list_id>/edit", views.lists.edit, name="list_edit"),
     path("lists/<int:list_id>/delete", views.lists.delete, name="list_delete"),

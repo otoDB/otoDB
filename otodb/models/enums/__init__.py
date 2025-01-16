@@ -1,13 +1,20 @@
 from django.db import models
 
 
-class TagCategory(models.IntegerChoices):
+class WorkTagCategory(models.IntegerChoices):
     GENERAL   = 0, "General"
     LANGUAGE  = 1, "Language"
     SONG      = 2, "Song"
     SOURCE    = 3, "Source"
     CREATOR   = 4, "Creator"
     META      = 5, "Meta"
+
+class SongTagCategory(models.IntegerChoices):
+    GENERAL   = 0, "General"
+    GENRE     = 1, "Genre"
+    LANGUAGE  = 2, "Language"
+    AUTHOR    = 3, "Author"
+    META      = 4, "Meta"
 
 class Rating(models.IntegerChoices):
     GENERAL      = 0, "General"
@@ -27,6 +34,7 @@ class WorkStatus(models.IntegerChoices):
     AVAILABLE = 0, "Available"
     DOWN      = 1, "Down"
 
+# TODO unused, what's the plan?
 RoleFlags = (
     ('OTHER',    'Other'),
     ('AUDIO',    'Audio'),

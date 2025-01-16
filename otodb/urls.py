@@ -16,17 +16,21 @@ urlpatterns = [
     path("works/<int:work_id>/edit", views.works.edit, name="work_edit"),
     path("works/<int:work_id>/set_tags", views.works.set_tags, name="work_set_tags"),
     path("works/<int:work_id>/history", views.works.history, name="work_history"),
-    path("works/sources/check-in/<int:source_id>", views.works.check_in_source, name="work_check_in_source"),
+    path("works/checkin/<int:source_id>", views.works.check_in_source, name="work_check_in_source"),
+
+    path("work_tags/alias", views.tags.work_alias, name="tag_alias"),
+    path("work_tags/<int:tag_id>", views.tags.work_tag, name="tag"),
+    path("work_tags/<int:tag_id>/history", views.tags.work_history, name="tag_history"),
+
+    path("song_tags/alias", views.tags.song_alias, name="song_tag_alias"),
+    path("song_tags/<int:tag_id>", views.tags.song_tag, name="song_tag"),
+    path("song_tags/<int:tag_id>/history", views.tags.song_history, name="song_tag_history"),
 
     path("lists/new", views.lists.new, name="list_new"),
     path("lists/<int:list_id>", views.lists.list, name="list"),
     path("lists/<int:list_id>/edit", views.lists.edit, name="list_edit"),
     path("lists/<int:list_id>/delete", views.lists.delete, name="list_delete"),
     path("lists/<int:list_id>/toggle", views.lists.toggle, name="list_toggle"),
-
-    path("tag/alias", views.tags.alias, name="tag_alias"),
-    path("tag/<int:tag_id>", views.tags.tag, name="tag"),
-    path("tag/<int:tag_id>/history", views.tags.history, name="tag_history"),
 
     path("profile/<int:user_id>", views.users.profile, name="profile"),
     path("profile/<int:user_id>/lists", views.users.lists, name="profile_lists"),

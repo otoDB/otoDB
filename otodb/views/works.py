@@ -105,7 +105,7 @@ def add_tags_to_work(work: MediaWork, info):
 @login_required
 def check_in_source(request: HttpRequest, source_id: int):
     src = get_object_or_404(WorkSource, pk=source_id)
-    title = f'Checking-in source {src.title}'
+    title = f'Checking-in source "{src.title}"'
     suggestions = None # used in case we want to prompt adding source to an existing work instead of a new work
     work_id = -1
 

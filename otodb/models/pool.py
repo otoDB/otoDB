@@ -1,6 +1,5 @@
 from django.db import models
 from django.urls import reverse
-from simple_history.models import HistoricalRecords
 
 from otodb.account.models import Account
 
@@ -11,7 +10,6 @@ class Pool(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
 
-    history = HistoricalRecords()
     author = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
 
     def __str__(self) -> str:

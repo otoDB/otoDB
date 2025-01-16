@@ -5,7 +5,8 @@
 {% include 'users/profile_menu.html' %}
 <section>
     <h1>{{view_user.username}}'s lists</h1>
-    <a href="{% url 'otodb:list_new' %}">Make a new list</a>
+    <p><a href="{% url 'otodb:list_new' %}">Make a new list...</a></p>
+    <p><a href="{% url 'otodb:list_import' %}">Import a list...</a></p>
     <ul>
     {% for entry in lists %}
 	    <li>{{ entry.get_status_display }}: <a href="{% url 'otodb:list' entry.id %}">{{ entry.name }}</a></li>

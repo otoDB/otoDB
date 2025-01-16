@@ -3,7 +3,6 @@ from typing import List, Tuple
 from django.urls import reverse
 from ninja import NinjaAPI, Schema
 
-from otodb.views.works import video_info
 from otodb.models import WorkSource
 from otodb.models.enums import Platform
 
@@ -16,7 +15,7 @@ class VideoQuery(Schema):
 class Error(Schema):
     message: str
 
-@api.get("/query_video", response={200: VideoQuery, 404: Error})
+@api.get("/query_video", response={ 200: VideoQuery, 404: Error })
 def query_video(request, platform: str, id: str):
     try:
         work = WorkSource.objects.get(platform=Platform.from_str(platform), source_id=id)

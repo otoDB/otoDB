@@ -2,6 +2,7 @@
 {% block page_title %}{{user.username}}'s lists{% endblock page_title %}
 
 {% block content %}
+<section>
     <h1>{{user.username}}'s lists</h1>
     <a href="{% url 'otodb:list_new' %}">Make a new list</a>
     <ul>
@@ -11,4 +12,5 @@
 	    <li>No lists!</li>
     {% endfor %}
 	</ul>
+</section>
 {% endblock content %}

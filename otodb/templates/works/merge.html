@@ -2,6 +2,7 @@
 {% block page_title %}{{ tag }}{% endblock page_title %}
 
 {% block content %}
+<section>
     <h1>Merging Works</h1>
     <form target="_self" method="post" x-data="{
         works: [{title: '', description: '', rating: -1, id: -1, thumbnail: ''}, {title: '', description: '', rating: -1, id: -1, thumbnail: ''}],
@@ -63,5 +64,5 @@
         <input hidden type="number" name="rating" x-model="works[selecting.rating].rating">
         <button :disabled="works[0].id <= 0 || works[1].id <= 0 || (Object.values(selecting).some(e => e < 0))">Submit</button>
     </form>
-
+</section>
 {% endblock content %}

@@ -1,8 +1,9 @@
 {% extends "base.html" %}
-{% block page_title %}New work{% endblock page_title %}
+{% block page_title %}{{ title }}{% endblock page_title %}
 
 {% block content %}
-<h1>New work</h1>
+<section>
+<h1>{{ title }}</h1>
 <p>Currently accepted sites:</p>
 <ul>
   <li>YouTube</li>
@@ -17,5 +18,5 @@
     </table>
   <input type="submit" value="Add"/>
 </form>
-  
+</section>
 {% endblock content %}

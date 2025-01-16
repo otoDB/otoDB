@@ -9,7 +9,6 @@ from .base import MediaBase, MediaBaseManager
 from .enums import Rating
 from .tag import TagWork
 
-
 class MediaWork(MediaBase):
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=1000, null=False, blank=False)
@@ -27,7 +26,7 @@ class MediaWork(MediaBase):
 
     thumbnail = models.CharField(max_length=200, null=True, blank=True)
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(m2m_fields=[tags])
     objects: MediaBaseManager
 
     def clean(self):

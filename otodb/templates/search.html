@@ -2,6 +2,7 @@
 {% block page_title %}Search Results{% endblock page_title %}
 
 {% block content %}
+<section>
     <h1>{{ type.capitalize }} Search: {{ query }}</h1>
     {% if not results %}
     <p>No results found!</p>
@@ -28,4 +29,5 @@
         {% endif %}
         </table>
     {% endif %}
+</section>
 {% endblock content %}

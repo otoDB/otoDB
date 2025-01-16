@@ -2,6 +2,7 @@
 {% block page_title %}Login{% endblock page_title %}
 
 {% block content %}
+<section>
 <h1>Login</h1>
 <form target="_self" method="post"">
   {% csrf_token %}
@@ -10,4 +11,5 @@
     </table>
   <input type="submit" value="Login"/>
 </form>
+</section>
 {% endblock content %}

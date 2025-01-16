@@ -4,9 +4,10 @@ from django.db import models
 class TagCategory(models.IntegerChoices):
     GENERAL   = 0, "General"
     LANGUAGE  = 1, "Language"
-    SOURCE    = 2, "Source"
-    CREATOR   = 3, "Creator"
-    META      = 4, "Meta"
+    SONG      = 2, "Song"
+    SOURCE    = 3, "Source"
+    CREATOR   = 4, "Creator"
+    META      = 5, "Meta"
 
 class Rating(models.IntegerChoices):
     GENERAL      = 0, "General"

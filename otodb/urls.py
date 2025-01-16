@@ -16,6 +16,7 @@ urlpatterns = [
     path("works/<int:work_id>/edit", views.works.edit, name="work_edit"),
     path("works/<int:work_id>/new_source", views.works.new_source, name="work_new_source"),
     path("works/<int:work_id>/set_tags", views.works.set_tags, name="work_set_tags"),
+    path("works/<int:work_id>/history", views.works.history, name="work_history"),
 
     path("lists/new", views.lists.new, name="list_new"),
     path("lists/<int:list_id>", views.lists.list, name="list"),
@@ -23,8 +24,9 @@ urlpatterns = [
     path("lists/<int:list_id>/delete", views.lists.delete, name="list_delete"),
     path("lists/<int:list_id>/toggle", views.lists.toggle, name="list_toggle"),
 
-    path("tag/<int:tag_id>", views.tags.tag, name="tag"),
     path("tag/alias", views.tags.alias, name="tag_alias"),
+    path("tag/<int:tag_id>", views.tags.tag, name="tag"),
+    path("tag/<int:tag_id>/history", views.tags.history, name="tag_history"),
 
     path("profile/<int:user_id>", views.users.profile, name="profile"),
     path("profile/<int:user_id>/lists", views.users.lists, name="profile_lists"),

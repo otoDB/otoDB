@@ -2,6 +2,8 @@
 {% block page_title %}Editing {{ work.title }}{% endblock page_title %}
 
 {% block content %}
+{% include 'works/work_menu.html' %}
+<section>
   <h1>Editing work: "{{ work.title }}"</h1>
   <div style="display: flex;align-items: center;gap: 1rem;">
     <form target="_self" method="post">
@@ -36,4 +38,5 @@
 
     </div>
   </div>
+</section>
 {% endblock content %}

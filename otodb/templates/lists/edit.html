@@ -2,6 +2,7 @@
 {% block page_title %}Adding to {{ list.name }}{% endblock page_title %}
 
 {% block content %}
+<section>
     <h1>Editing list "{{ list.name }}"</h1>
     {% if error %}
     Error: {{ error }}
@@ -45,5 +46,5 @@
       <input type="submit" value="Done" :disabled="works.some(w => w.id <= 0)" />
     </form>
   </div>
-  
+</section>
 {% endblock content %}

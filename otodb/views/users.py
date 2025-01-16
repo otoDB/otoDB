@@ -46,5 +46,6 @@ def profile(request: HttpRequest, user_id: int):
     return render(request, "users/profile.html", {'view_user': user})
 
 def lists(request: HttpRequest, user_id: int):
-    lists = Pool.objects.filter(author__pk=user_id)
-    return render(request, 'users/lists.html', {'lists': lists})
+    user = get_object_or_404(Account, pk=user_id)
+    lists = Pool.objects.filter(author=user)
+    return render(request, 'users/lists.html', {'view_user': user, 'lists': lists})

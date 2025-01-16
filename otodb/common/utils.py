@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING
 
 import diff_match_patch as dmp_mod
-from django.apps import apps
+
+from otodb.models import TagWork
 
 if TYPE_CHECKING:
     from ..models import Implication as T_Implication
@@ -9,42 +10,36 @@ if TYPE_CHECKING:
     from ..models import MediaWork as T_MediaWork
     from ..models.base import MediaBase as T_MediaBase
 
-
-def space_splitter(tag_string):
-    return [t.strip().lower() for t in tag_string.split(' ') if t.strip()]
-
-
-def space_joiner(tags):
-    return ' '.join(t.name for t in tags)
-
-
-def verify_and_perform_implications(from_tag_name):
-    MediaWork: 'T_MediaWork' = apps.get_model('otodb', 'MediaWork')  # type: ignore
-    MediaSong: 'T_MediaSong' = apps.get_model('otodb', 'MediaSong')  # type: ignore
-    Implication: 'T_Implication' = apps.get_model('otodb', 'Implication')  # type: ignore
-
-    implication = Implication.objects.filter(from_tag__name=from_tag_name, status=1).first()
-
-    if implication is not None:
-        from_tag = implication.from_tag
-        to_tag = implication.to_tag
-
-        for media_class in [MediaWork, MediaSong]:
-            media_class: T_MediaBase
-            missing_media = media_class.objects.filter(tags__name__in=[from_tag]).exclude(tags__name__in=[to_tag])
-
-            if missing_media.exists():
-                for media in missing_media:
-                    media.check_and_update_implications()
-
-
-def get_diff(field_name, old_revision, new_revision):
-    old_revision_field = old_revision.field_dict[field_name]
-    new_revision_field = new_revision.field_dict[field_name]
-
+def get_diff(delta):
     dmp = dmp_mod.diff_match_patch()
-    diff_field = dmp.diff_main(old_revision_field, new_revision_field)
-    dmp.diff_cleanupSemantic(diff_field)
-    diff_html = dmp.diff_prettyHtml(diff_field).replace('&para;', '')
 
-    return diff_html
+    def diff_prettyHtml(diffs):
+        html = []
+        for (op, data) in diffs:
+            text = (data.replace("&", "&amp;").replace("<", "&lt;")
+                        .replace(">", "&gt;").replace("\n", "&para;<br>"))
+            if op == dmp.DIFF_INSERT:
+                html.append("<ins>%s</ins>" % text)
+            elif op == dmp.DIFF_DELETE:
+                html.append("<del>%s</del>" % text)
+            elif op == dmp.DIFF_EQUAL:
+                html.append("<span>%s</span>" % text)
+        return "".join(html)
+        
+    diffs_html = []
+
+    for change in delta.changes:
+        match change.field:
+            case 'tags':
+                old, new = set([c['tagwork'] for c in change.old]), set([c['tagwork'] for c in change.new])
+                old, new = old - new, new - old
+                changes = ['- ' + str(TagWork.objects.get(id=id_)) for id_ in old] + ['+ ' + str(TagWork.objects.get(id=id_)) for id_ in new]
+                diffs_html.append({'html': ('<br>').join(changes), 'field': change.field})
+            case _:
+                old, new = change.old, change.new
+                diff_field = dmp.diff_main(old, new)
+                dmp.diff_cleanupSemantic(diff_field)
+                 
+                diffs_html.append({'html': diff_prettyHtml(diff_field).replace('&para;', ''), 'field': change.field})
+
+    return diffs_html

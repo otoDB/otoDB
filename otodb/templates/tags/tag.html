@@ -34,6 +34,9 @@
 </section>
 <section>
         <h2>Works tagged with "{{ tag }}"</h2>
+        {% if not works %}
+        <p>This tag is an orphan. There are tagged works.</p>
+        {% else %}
         <table>
             <thead><tr><th>Thumbnail</th><th>Title</th><th>Rating</th><th>Tags</th><th>Sources</th></tr></thead><tbody>
             {% for work in works %}
@@ -44,11 +47,10 @@
                     <td>{{ work.tags }}</td>
                     <td>{{ work.worksource_set.all|length }}</td>
                 </tr>
-            {% empty %}
-                <tr>No results found!</tr>
             {% endfor %}
             </tbody>
         </table>
+        {% endif %}
 </section>
 <section>
         <h2>Comments</h2>

@@ -6,12 +6,11 @@ from .base import MediaBase
 from .media_work import MediaWork
 from .tag import TagWork, TagSong
 
-#  TODO whenever we get to songs...
-
 class MediaSong(MediaBase):
     title = models.CharField(max_length=1000, null=False, blank=False)
     bpm = models.IntegerField(null=False)
     work_tag = models.ForeignKey(TagWork, null=False, on_delete=models.CASCADE)
+    author = models.CharField(max_length=1000, null=False, blank=False)
 
     tags = TagField(
         to=TagSong,

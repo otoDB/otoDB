@@ -24,7 +24,6 @@
 		<![endif]-->
 		 <nav>
 		   <a href="{% url 'otodb:index' %}">{{ config.site_name }}</a>
-		   <a href="#">Wiki</a>
 		   {% if user.is_staff %}
 		   <a href="{% url 'admin:index' %}">Admin View</a>
 		   <a href="{% url 'otodb:work_merge' %}">Merge works</a>

@@ -14,10 +14,3 @@ def on_add_remove_tag_main(sender, instance, action, pk_set, **kwargs):
             if tag.aliased_to:
                 instance.tags.remove(tag)
                 instance.tags.add(tag.aliased_to)
-
-# NOTE: This is not ideal because the `contains` filter could match on
-#       a substring of a tag, and thus have to check more rows.
-@receiver(post_delete, sender=TagWork)
-def on_post_delete_tag_main(sender, instance: TagWork, using, **kwargs):
-    for media in MediaWork.objects.filter(tags_mirror__contains=instance.name):
-        media.check_and_update_mirror(record_history=True)

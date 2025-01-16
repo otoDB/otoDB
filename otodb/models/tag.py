@@ -1,17 +1,15 @@
-from bitfield import BitField
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.db import models
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagModel
 
-from .enums import RoleFlags, TagCategory
+from .enums import WorkTagCategory, SongTagCategory
 
 
 class TagWork(TagModel):
-    category = models.IntegerField(choices=TagCategory.choices, default=TagCategory.GENERAL)
-    default_role_flags = BitField(RoleFlags)  # type: ignore
-    # wiki_page = models.OneToOneField('wiki.article', on_delete=models.SET_NULL, null=True, blank=True)
+    category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
+    # TODO wiki_page = models.OneToOneField('wiki.article', on_delete=models.SET_NULL, null=True, blank=True)
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
 
@@ -22,12 +20,31 @@ class TagWork(TagModel):
     def __str__(self):
         return self.name
 
-    def clean(self):
-        if ' ' in self.name or ' ' in self.slug:
-            raise ValidationError('Singular tag must not contain spaces')
-        if self.default_role_flags.mask != 0:
-            if self.category.id != TagCategory.CREATOR:
-                raise ValidationError('Role flags can only be set for creator tags')
+    class Meta:
+        verbose_name = ("Work Tag")
+        verbose_name_plural = ("Work Tags")
+        permissions = [
+            ("manage_tags", "Can manage tags"),
+        ]
+
+    class TagMeta:
+        protect_all = True
+        force_lowercase = True
+
+    def get_absolute_url(self):
+        return reverse('otodb:tag', kwargs={ 'tag_id': self.id })
+
+class TagSong(TagModel):
+    category = models.IntegerField(choices=SongTagCategory.choices, default=SongTagCategory.GENERAL)
+    aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
+    history = HistoricalRecords()
+
+    @property
+    def display_name(self):
+        return self.name.replace('_', ' ')
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = ("Tag")
@@ -41,41 +58,6 @@ class TagWork(TagModel):
         force_lowercase = True
 
     def get_absolute_url(self):
-        return reverse('otodb:tag', kwargs={ 'tag_id': self.id })
-
-class TagSong(TagModel): # TODO
-    category = models.IntegerField(choices=TagCategory.choices, default=TagCategory.GENERAL)
-    default_role_flags = BitField(RoleFlags)  # type: ignore
-    # wiki_page = models.OneToOneField('wiki.article', on_delete=models.SET_NULL, null=True, blank=True)
-    aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
-    history = HistoricalRecords()
-
-    @property
-    def display_name(self):
-        return self.name.replace('_', ' ')
-
-    def __str__(self):
-        return self.name
-
-    def clean(self):
-        if ' ' in self.name or ' ' in self.slug:
-            raise ValidationError('Singular tag must not contain spaces')
-        if self.default_role_flags.mask != 0:
-            if self.category.id != TagCategory.CREATOR:
-                raise ValidationError('Role flags can only be set for creator tags')
-
-    class Meta:
-        verbose_name = ("Tag")
-        verbose_name_plural = ("Tags")
-        permissions = [
-            ("manage_tags", "Can manage tags"),
-        ]
-
-    class TagMeta:
-        protect_all = True
-        force_lowercase = True
-
-    def get_absolute_url(self):
-        return reverse('otodb:tag', kwargs={ 'tag_id': self.id })
+        return reverse('otodb:tag_song', kwargs={ 'tag_id': self.id })
 
 

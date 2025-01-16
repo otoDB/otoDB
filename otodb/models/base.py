@@ -19,29 +19,10 @@ class MediaBase(models.Model):
         verbose_name = 'Item'
         abstract = True
 
-    tags_mirror = models.CharField(
-        max_length=1000,
-        blank=True,
-        editable=False,
-    )
-
     objects = MediaBaseManager()
 
     def __str__(self) -> str:
         return f'{self._meta.verbose_name} #{self.id}'
-
-    def check_and_update_mirror(self, record_history=False):
-        mirror = " ".join(self.tags.names())
-
-        if self.tags_mirror != mirror:
-            self.tags_mirror = mirror
-        else:
-            return
-
-        if record_history:
-            self.save()
-        else:
-            self.save_without_historial_record()
 
     def save_without_historial_record(self, *args, **kwargs):
         self.skip_history_when_saving = True

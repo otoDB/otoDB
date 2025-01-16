@@ -31,9 +31,8 @@ def video_info(link):
         }
     with YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}) as ydl:
         info = ydl.extract_info(link, download=False)
-        print(info)
         if info.get('_type') == 'playlist':
-            info = info['entries'][0] # todo need some work...
+            info = info['entries'][0] # TODO need some work...
 
         info['extractor'] = Platform.from_str(info['extractor'])
 
@@ -41,6 +40,12 @@ def video_info(link):
             case Platform.YOUTUBE:
                 info['webpage_url'] = f'https://youtu.be/{info['id']}'
             case Platform.BILIBILI:
+                chapter_mark = info['id'].find('_')
+                if chapter_mark != -1:
+                    info['id'] = info['id'][:chapter_mark]
+                title_chapter_mark = info['title'].find(' p01') # TODO this is far from perfect
+                if chapter_mark != -1:
+                    info['title'] = info['title'][:title_chapter_mark]
                 info['webpage_url'] = f'https://www.bilibili.com/video/{info['id']}/'
                 info['tags'] = [tag[3:-1] if tag.startswith('发现《') and tag.endswith('》') else tag for tag in info['tags']]
             case Platform.NICONICO:
@@ -74,7 +79,6 @@ class SourceSiteForm(forms.Form):
 
 class SourceCheckinForm(forms.Form):
     official = forms.BooleanField(label='Is this an official upload?', required=False)
-    work_id = forms.IntegerField(widget=forms.HiddenInput(), initial=-1)
 
 def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork, pk=work_id)
@@ -103,6 +107,7 @@ def check_in_source(request: HttpRequest, source_id: int):
     src = get_object_or_404(WorkSource, pk=source_id)
     title = f'Checking-in source {src.title}'
     suggestions = None # used in case we want to prompt adding source to an existing work instead of a new work
+    work_id = -1
 
     if src.media is not None:
         raise Http404("Source is already bound.")
@@ -111,7 +116,8 @@ def check_in_source(request: HttpRequest, source_id: int):
         form = SourceCheckinForm(request.POST)
         if form.is_valid():
             is_reupload = not form.cleaned_data['official']
-            work_id = form.cleaned_data['work_id']
+            if w_id := request.POST.get('work_id'):
+                work_id = int(w_id)
             if work_id > 0:
                 work = get_object_or_404(MediaWork, pk=work_id)
                 title += f' for "{work.title}"'
@@ -128,17 +134,17 @@ def check_in_source(request: HttpRequest, source_id: int):
 
             return redirect('otodb:work', work_id=work.id)
     else:
-        work_id = request.GET.get('work_id')
+        if w_id := request.GET.get('work_id'):
+            work_id = int(w_id)
         form = SourceCheckinForm(initial={ 'official': not src.work_origin })
-        if work_id and int(work_id) > 0:
+        if work_id > 0:
             work_id = int(work_id)
             work = get_object_or_404(MediaWork, pk=work_id)
             title += f' for "{work.title}"'
-            form.fields["work_id"].initial = work_id
         else:
             suggestions = MediaWork.objects.filter(title__contains=src.title)[:3]
 
-    return render(request, 'works/check_in_source.html', {'form': form, 'source': src, 'title': title, 'suggestions': suggestions})
+    return render(request, 'works/check_in_source.html', {'form': form, 'source': src, 'title': title, 'suggestions': suggestions, 'work_id': work_id})
 
 @login_required
 def new(request: HttpRequest):

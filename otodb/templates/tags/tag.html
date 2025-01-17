@@ -29,6 +29,7 @@
         <h3>Also known as: {{ tag.aliases.all | join:', ' }}.</h3>
             
         {% endif %}
+{% comment %}TODO
         {% if tag.wiki_page %}
         <p>
             <!-- INSERT WIKI EXCERPT --> <a href="#">Go to wiki...</a>
@@ -38,6 +39,7 @@
             This tag does not yet have a wiki page. <a href="#">Go create one...</a>
         </p>
         {% endif %}
+{% endcomment %}
     </section>
     {% if tag.mediasong %}
 {% include 'songs/song_menu.html' with song=tag.mediasong %}

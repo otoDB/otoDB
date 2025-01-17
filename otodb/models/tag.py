@@ -27,6 +27,12 @@ class TagWork(TagModel):
         permissions = [
             ("manage_tags", "Can manage tags"),
         ]
+        constraints = [
+            models.CheckConstraint(
+                name="work_tag_song_not_null",
+                check=models.Q(category__ne=WorkTagCategory.SONG) | models.Q(category=WorkTagCategory.SONG, mediasong__isnull=False),
+            ),
+        ]
 
     class TagMeta:
         protect_all = True

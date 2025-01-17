@@ -1,0 +1,8 @@
+<menu class="right">
+	{% url 'otodb:tag' song.work_tag.id as t_url %}
+	{% url 'otodb:tag_edit' song.work_tag.id as te_url %}
+	{% url 'otodb:song_history' song.id as sh_url %}
+	<a href="{{ t_url }}" {% if request.path == t_url %}class="current"{% endif %}>Song {{ song.id }}</a>
+	<a href="{{ te_url }}" {% if request.path == te_url %}class="current"{% endif %}>Edit</a>
+	<a href="{{ sh_url }}" {% if request.path == sh_url %}class="current"{% endif %}>History</a>
+</menu>

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block page_title %}History: {{ song.title }}{% endblock page_title %}
+
+{% block content %}
+{% include 'tags/songs/song_menu.html' %}
+<section>
+  <h1>History: {{ song.title }}</h1>
+  {% include 'history.html' %}
+</section>
+{% endblock content %}

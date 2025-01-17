@@ -68,12 +68,12 @@
               <option value="1">←</option>
             </select>
           </td>
-          <td x-data="{ work_query: relation.title, locked_in: relation.title !== '' }" x-init="htmx.process($el)">
+          <td x-data="{ locked_in: relation.title !== '' }" x-init="htmx.process($el)">
             <input type="number" :name="'work-'+i" x-model="relation.id" hidden>
-            <input type="text" x-model="work_query" name="query" @keydown.enter="$event.preventDefault();" placeholder="Search..." :disabled="locked_in">
-            <button type="button" hx-get="{% url 'otodb:query' 'work' %}" hx-target="next div" hx-include="previous input" x-show="!locked_in" :disabled="work_query===''">Search</button>
-            <div class="query-results" x-data="{ query_action: ({id, title}) => { work_query = title; relation.id = id; locked_in = true; $el.innerHTML = ''; } }"></div>
-            <button type="button" @click="locked_in = false;" x-show="locked_in">Change</button>
+            <input type="text" x-model="relation.title" name="query" @keydown.enter="$event.preventDefault();" placeholder="Search..." :disabled="locked_in">
+            <button type="button" hx-get="{% url 'otodb:query' 'work' %}" hx-target="next div" hx-include="previous input" x-show="!locked_in" :disabled="relation.title===''">Search</button>
+            <div class="query-results" x-data="{ query_action: ({id, title}) => { if (relations.map(r=>r.id).includes(id) || id === {{ work.id }}) return; relation.title = title; relation.id = id; locked_in = true; $el.innerHTML = ''; } }"></div>
+            <button type="button" @click="locked_in = false; relation.id = -1;" x-show="locked_in">Change</button>
           </td>
           <td>
             <select x-model="relation.relation" :name="'relation-'+i">
@@ -82,10 +82,10 @@
               {% endfor %}
             </select>
           </td>
+          <td><button type="button" @click="relations.splice(i, 1)">X</button></td>
         </tr>
       </template></tbody>
     </table>
-
 		<button :disabled="relations.some(r => r.id <= 0)">Submit</button>
   </form>
 </section>

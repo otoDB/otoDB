@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block page_title %}New song from tag "{{ tag }}"{% endblock page_title %}
+
+{% block content %}
+<section>
+<h1>New song from tag "{{ tag }}"</h1>
+<form target="_self" method="post">
+  {% csrf_token %}
+  <table>
+    {{ form.as_table }}
+</table>
+  <input type="submit" value="Next"/>
+</form>
+</section>
+{% endblock content %}

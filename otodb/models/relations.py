@@ -20,6 +20,11 @@ class WorkRelation(models.Model):
         verbose_name_plural = 'Work relations'
         constraints = [
             models.UniqueConstraint(fields=["A", "B"], name="unique_relation_between_works"),
+            models.CheckConstraint(
+                name="work_relation_nonreflexive",
+                check=models.Q(A__ne=models.F("B")),
+                violation_error_message="A must be different from B",
+            ),
         ]
 
     def get_absolute_url(self):
@@ -29,6 +34,7 @@ class WorkRelation(models.Model):
         return WorkRelation.objects.filter(A__in=works) | WorkRelation.objects.filter(B__in=works)
 
     def get_component_from_work(work: MediaWork):
+        # TODO plenty of room for optimization here
         def get_works_from_relations(relations):
             return (MediaWork.objects.filter(relation_A__in=relations) | MediaWork.objects.filter(relation_B__in=relations)).distinct()
 
@@ -54,6 +60,11 @@ class SongRelation(models.Model):
         verbose_name_plural = 'Song relations'
         constraints = [
             models.UniqueConstraint(fields=["A", "B"], name="unique_relation_between_songs"),
+            models.CheckConstraint(
+                name="song_relation_nonreflexive",
+                check=models.Q(A__ne=models.F("B")),
+                violation_error_message="A must be different from B",
+            ),
         ]
 
     def get_absolute_url(self):

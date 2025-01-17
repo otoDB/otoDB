@@ -1,15 +1,17 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% block page_title %}New list{% endblock page_title %}
 
 {% block content %}
 <section>
-<h1>New list</h1>
-<form target="_self" method="post">
+<h1>{% trans 'New list' %}</h1>
+<form target="_self" method="post" x-data="{ submitted: false }" @submit="submitted ? $event.preventDefault() : submitted = true">
   {% csrf_token %}
   <table>
     {{ form.as_table }}
     </table>
-  <input type="submit" value="Create"/>
+  <input type="submit" value="Create" x-show="!submitted"/>
+  <progress aria-busy="true" x-show="submitted"></progress>
 </form>
 </section>
 {% endblock content %}

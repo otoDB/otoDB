@@ -4,7 +4,7 @@
 {% block content %}
 <section>
 <h1>{{ title }}</h1>
-<form target="_self" method="post" {% if suggestions %}x-data="{ work_id: {{ work_id }} }"{% endif %}>{% csrf_token %}
+<form target="_self" method="post" x-data="{ work_id: {{ work_id }}, submitted: false }" @submit="submitted ? $event.preventDefault() : submitted = true">{% csrf_token %}
 <table style="width: 100%;">
 		<tr>
 			<th>Title</th>
@@ -57,7 +57,8 @@
 	{% else %}
 	<input type="number" hidden value="{{ work_id }}">
 	{% endif %}
-	<input type="submit"/>
+	<input type="submit" value="Submit" x-show="!submitted"/>
+	<progress aria-busy="true" x-show="submitted"></progress>
 </form>
 
 </section>

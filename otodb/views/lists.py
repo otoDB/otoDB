@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from otodb.common import playlist_info
 from otodb.models import Pool, PoolItem
 
 
@@ -95,9 +96,17 @@ def toggle(request: HttpRequest, list_id: int):
                 entry.delete()
         else:
             list_.add_work(work_id)
+        return HttpResponse('')
 
 
     return redirect("otodb:profile_lists", user_id=request.user.id)
+
+from otodb.common import video_info
+def video_info_wrapped(uu):
+    try:
+        return video_info(uu)
+    except:
+        return {}
 
 @login_required
 def list_import(request: HttpRequest):
@@ -106,12 +115,37 @@ def list_import(request: HttpRequest):
         if form.is_valid():
             url = form.cleaned_data['link']
 
-            pass
+            info = playlist_info(url)
+            list_ = Pool(name=info['title'], description=info['description'], author=request.user)
+            list_.save()
+            # TODO temp until we decide on access control schemes
+            import multiprocessing
+            pool = multiprocessing.Pool(processes=16)
+            infos = pool.map(video_info_wrapped, info['entries'])
+            for i, vid_info in enumerate(infos):
+                if vid_info == {}: continue
+                from otodb.models import WorkSource, MediaWork
+                from otodb.models.enums import WorkOrigin
+                from datetime import date
+                from .works import check_source_duplicates, add_tags_to_work
+                src = check_source_duplicates(vid_info)
+                work = None
+                if not src: # src does not exist
+                    work = MediaWork(title=vid_info['title'], description=vid_info['description'], thumbnail=vid_info['thumb'])
+                    src = WorkSource(media=work, title=vid_info['title'], description=vid_info['description'],
+                        url=vid_info['url'], platform=vid_info['site'], source_id=vid_info['id'],
+                        published_date=date.fromtimestamp(vid_info['timestamp']),
+                        work_origin=WorkOrigin(False), thumbnail=vid_info.get('thumb', None),
+                        work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None))
+                    work.save()
+                    add_tags_to_work(work, vid_info)
+                    src.save()
+                else:
+                    work = src.media
 
-            # list_ = Pool(name=name, description=desc, author=request.user)
-            # list_.save()
+                PoolItem(work=work, description='', order=i, pool=list_).save()
 
-            # return redirect('otodb:list_edit', list_id=list_.id)
+            return redirect('otodb:list_edit', list_id=list_.id)
 
     else:
         form = ListImportForm()

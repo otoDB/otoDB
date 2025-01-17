@@ -11,12 +11,13 @@
   <li>Bilibili</li>
   <li>SoundCloud</li>
 </ul>
-<form target="_self" method="post">
+<form target="_self" method="post" x-data="{ submitted: false }" @submit="submitted ? $event.preventDefault() : submitted = true">
   {% csrf_token %}
   <table>
     {{ form.as_table }}
     </table>
-  <input type="submit" value="Next"/>
+  <input type="submit" value="Next" x-show="!submitted"/>
+  <progress aria-busy="true" x-show="submitted"></progress>
 </form>
 </section>
 {% endblock content %}

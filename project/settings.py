@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
 
@@ -62,6 +63,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -153,6 +155,13 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = os.environ.get('OTODB_TIME_ZONE', 'UTC')
 
 USE_I18N = True
+
+LANGUAGES = [
+    ("en", _("English")),
+    ("ja", _("Japanese")),
+    ("zh", _("Chinese")),
+    ("kr", _("Korean")),
+]
 
 USE_TZ = True
 

@@ -81,17 +81,10 @@ def check_in_source(request: HttpRequest, source_id: int):
 
             return redirect('otodb:work', work_id=work.id)
     else:
-        if w_id := request.GET.get('work_id'):
-            work_id = int(w_id)
         form = SourceCheckinForm(initial={ 'official': not src.work_origin })
-        if work_id > 0:
-            work_id = int(work_id)
-            work = get_work_by_id(work_id)
-            title += f' for "{work.title}"'
-        else:
-            suggestions = MediaWork.objects.filter(title__contains=src.title, moved_to__isnull=True)[:3]
+        suggestions = MediaWork.objects.filter(title__contains=src.title, moved_to__isnull=True)[:3]
 
-    return render(request, 'works/check_in_source.html', {'form': form, 'source': src, 'title': title, 'suggestions': suggestions, 'work_id': work_id})
+    return render(request, 'works/check_in_source.html', {'form': form, 'source': src, 'title': title, 'suggestions': suggestions})
 
 def save_source(work: MediaWork, link: str, is_reupload: bool):
     info = video_info(link)
@@ -115,7 +108,7 @@ def save_source(work: MediaWork, link: str, is_reupload: bool):
             return redirect('otodb:work', work_id=work.id)
 
     if work:
-        return redirect(reverse('otodb:work_check_in_source', kwargs={'source_id':src.id}) + f'?work_id={work.id}')
+        return redirect('otodb:work', work_id=work.id)
     else:
         return redirect('otodb:work_check_in_source', source_id=src.id)
 

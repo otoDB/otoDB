@@ -4,7 +4,7 @@
 {% block content %}
 <section>
 <h1>{{ title }}</h1>
-<form target="_self" method="post" x-data="{ work_id: {{ work_id }}, submitted: false }" @submit="submitted ? $event.preventDefault() : submitted = true">{% csrf_token %}
+<form target="_self" method="post" x-data="{ work_id: -1, submitted: false }" @submit="submitted ? $event.preventDefault() : submitted = true">{% csrf_token %}
 <table style="width: 100%;">
 		<tr>
 			<th>Title</th>
@@ -51,11 +51,11 @@
 	</tbody>
 	</table>
 	<div>
-		<input type="radio" value="{{ work_id }}" x-model="work_id" id="new-work"><label for="new-work">Add this source to a new work.</label>
+		<input type="radio" value="-1" x-model="work_id" id="new-work"><label for="new-work">Add this source to a new work.</label>
 	</div>
 	
 	{% else %}
-	<input type="number" hidden value="{{ work_id }}">
+	<input type="number" hidden value="-1">
 	{% endif %}
 	<input type="submit" value="Submit" x-show="!submitted"/>
 	<progress aria-busy="true" x-show="submitted"></progress>

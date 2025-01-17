@@ -27,9 +27,6 @@ class WorkRelation(models.Model):
             ),
         ]
 
-    def get_absolute_url(self):
-        return reverse('otodb:list', kwargs={ 'list_id': self.id })
-
     def get_relations_including_works(works):
         return WorkRelation.objects.filter(A__in=works) | WorkRelation.objects.filter(B__in=works)
 
@@ -53,7 +50,7 @@ class SongRelation(models.Model):
     relation = models.IntegerField(choices=SongRelationTypes.choices)
 
     def __str__(self) -> str:
-        return f'{self.A} - {self.B}: {self.relation}'
+        return f'{self.A.id} -->|{SongRelationTypes(self.relation).label}| {self.B.id}'
 
     class Meta:
         verbose_name = 'Song relation'
@@ -67,6 +64,19 @@ class SongRelation(models.Model):
             ),
         ]
 
-    def get_absolute_url(self):
-        return reverse('otodb:list', kwargs={ 'list_id': self.id })
+    def get_relations_including_songs(songs):
+        return SongRelation.objects.filter(A__in=songs) | SongRelation.objects.filter(B__in=songs)
 
+    def get_component_from_song(song: MediaSong):
+        # TODO plenty of room for optimization here
+        def get_songs_from_relations(relations):
+            return (MediaSong.objects.filter(relation_A__in=relations) | MediaSong.objects.filter(relation_B__in=relations)).distinct()
+
+        component = SongRelation.get_relations_including_songs([song])
+        songs = get_songs_from_relations(component)
+        while True:
+            last_size = len(songs)
+            component = SongRelation.get_relations_including_songs(songs)
+            songs = get_songs_from_relations(component)
+            if last_size == len(songs):
+                return component, songs

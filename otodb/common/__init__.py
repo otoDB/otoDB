@@ -31,7 +31,7 @@ def get_diff(delta):
                 diffs_html.append({'html': ('<br>').join(changes), 'field': change.field})
             case _:
                 old, new = change.old, change.new
-                diff_field = dmp.diff_main(old, new)
+                diff_field = dmp.diff_main(str(old), str(new))
                 dmp.diff_cleanupSemantic(diff_field)
                  
                 diffs_html.append({'html': diff_prettyHtml(diff_field).replace('&para;', ''), 'field': change.field})

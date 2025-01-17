@@ -20,7 +20,7 @@
 				<th>Lists</th>
 				<td x-data="{ collapsed: true }">
 					<input type="number" hidden value="{{ work.id }}" name="work_id">
-					<button hx-target="next div" hx-get="{% url 'otodb:query' 'mylists' %}" hx-trigger="click once" @click="collapsed = !collapsed" hx-include="previous input">Add/Remove...</button>
+					<button hx-target="next div" hx-get="{% url 'otodb:query' 'list' %}" hx-trigger="click once" @click="collapsed = !collapsed" hx-include="previous input">Add/Remove...</button>
 					<div class="query-results" x-show="!collapsed"></div>
 				</td>
 			</tr>

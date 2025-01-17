@@ -1,6 +1,4 @@
-from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F, Q
 from django.urls import reverse
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagField
@@ -28,6 +26,8 @@ class MediaWork(models.Model):
     history = HistoricalRecords(m2m_fields=[tags])
 
     objects = MediaBaseManager()
+
+    moved_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title

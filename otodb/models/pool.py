@@ -24,13 +24,14 @@ class Pool(models.Model):
 
     def work_in_pool(self, work_id: int):
         return self.poolitem_set.filter(work_id=work_id)
-    
+
     def add_work(self, work_id: int):
         if not self.poolitem_set.all():
             order = 1
         else:
             order = self.poolitem_set.aggregate(models.Max('order'))['order__max'] + 1
-        PoolItem(work_id=work_id, description="", order=order, pool=self).save()
+        work = MediaWork.objects.get(id=work_id, moved_to__isnull=True)
+        PoolItem(work=work, description='', order=order, pool=self).save()
 
 
 class PoolItem(models.Model):
@@ -49,7 +50,7 @@ class PoolItem(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.order:  # Set order only if it's not already set
-            max_order = PoolItem.objects.filter(pool=self.pool).aggregate(max_order=models.Max('order'))['max_order']
+            max_order = self.pool.poolitem_set.aggregate(max_order=models.Max('order'))['max_order']
             self.order = (max_order or 0) + 1
         super().save(*args, **kwargs)
 

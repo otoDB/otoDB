@@ -17,7 +17,7 @@ class ListImportForm(forms.Form):
 
 def list(request: HttpRequest, list_id: int):
     list_ = get_object_or_404(Pool, pk=list_id)
-    works = PoolItem.objects.filter(pool=list_).select_related('work').order_by('order')
+    works = list_.poolitem_set.select_related('work').order_by('order')
     return render(request, "lists/list.html", {"list": list_, 'works': works})
 
 @login_required
@@ -47,7 +47,7 @@ def edit(request: HttpRequest, list_id: int):
     error = None
     if request.method == 'POST':
         list_form = ListForm(request.POST, instance=list_)
-        if list_form.is_valid():
+        if list_form.has_changed() and list_form.is_valid():
             name = list_form.cleaned_data['name']
             desc = list_form.cleaned_data['description']
             list_.name = name
@@ -56,7 +56,7 @@ def edit(request: HttpRequest, list_id: int):
         try:
             sz = int(request.POST['size'])
             new_entries = [(i, int(request.POST[f'work-{i}']), request.POST[f'desc-{i}']) for i in range(sz)]
-            old_entries = PoolItem.objects.filter(pool=list_)
+            old_entries = list_.poolitem_set.all()
 
             # this may fail, so we do this first
             new_entries = [PoolItem(work_id=wk, description=desc, order=i, pool=list_) for (i, wk, desc) in new_entries]
@@ -120,7 +120,7 @@ def list_import(request: HttpRequest):
             list_.save()
             # TODO temp until we decide on access control schemes
             import multiprocessing
-            pool = multiprocessing.Pool(processes=16)
+            pool = multiprocessing.Pool(processes=len(info['entries']))
             infos = pool.map(video_info_wrapped, info['entries'])
             for i, vid_info in enumerate(infos):
                 if vid_info == {}: continue

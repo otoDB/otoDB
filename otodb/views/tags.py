@@ -1,14 +1,39 @@
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
+from simple_history.utils import update_change_reason
+
 from otodb.common import get_diff
 from otodb.models import MediaWork, TagWork, TagSong
 
+class WorkTagEditForm(forms.ModelForm):
+    reason = forms.CharField(label="Update Reason", required=True)
+    class Meta:
+        model = TagWork
+        fields = ['category', 'parent']
+
 def tag(request: HttpRequest, tag_id: int, tag_type):
     tag = get_object_or_404(tag_type, pk=tag_id)
-    works = MediaWork.objects.filter(tags__id=tag_id)
+    works = MediaWork.objects.filter(tags__id=tag_id, moved_to__isnull=True)
     return render(request, "tags/tag.html", {"tag": tag, "works": works})
+
+@login_required
+def edit(request: HttpRequest, tag_id:int, tag_type):
+    tag = get_object_or_404(tag_type, id=tag_id)
+
+    if request.method == 'POST':
+        form = WorkTagEditForm(request.POST, instance=tag)
+        if form.has_changed and form.is_valid():
+            form.save()
+            update_change_reason(tag, form.cleaned_data['reason'])
+            return redirect('otodb:tag', tag_id=tag.id)
+
+    else:
+        form = WorkTagEditForm(instance=tag)
+
+    return render(request, 'tags/edit.html', {'tag': tag, 'form': form})
 
 @login_required
 def alias(request: HttpRequest, tag_type):
@@ -26,12 +51,19 @@ def alias(request: HttpRequest, tag_type):
                 if tag is not into:
                     tag.aliased_to = into
                     tag.save()
-                    for work in MediaWork.objects.filter(tags__id=tag.id):
+                    for work in MediaWork.objects.filter(tags__id=tag.id, moved_to__isnull=True):
                         work.tags.add(into)
                         work.tags.remove(tag)
                     for t in tag_type.objects.filter(aliased_to=tag):
                         t.aliased_to = into
-                # TODO transfer children and parent relationships to 'into'
+                        t.save()
+                    for t in tag_type.objects.filter(parent=tag):
+                        t.parent = into
+                        t.save()
+                    if into.parent is None:
+                        into.parent = tag.parent
+                        
+            into.save()
 
             return redirect('otodb:tag', tag_id=into.id)        
         except Exception as e:
@@ -54,6 +86,9 @@ def history(request: HttpRequest, tag_id: int, tag_type):
 
 def work_tag(request: HttpRequest, tag_id: int):
     return tag(request, tag_id, TagWork)
+
+def work_edit(request: HttpRequest, tag_id: int):
+    return edit(request, tag_id, TagWork)
 
 def work_alias(request: HttpRequest):
     return alias(request, TagWork)

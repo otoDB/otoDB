@@ -6,12 +6,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
-# from simple_history.template_utils import HistoricalRecordContextHelper
 from simple_history.utils import update_change_reason
 
 from otodb.common import get_diff, video_info
-from otodb.models import MediaWork, WorkSource, PoolItem
-from otodb.models.enums import WorkOrigin
+from otodb.models import MediaWork, WorkSource, WorkRelation
+from otodb.models.enums import WorkOrigin, WorkRelationTypes
 
 class WorkEditForm(forms.ModelForm):
     reason = forms.CharField(label="Update Reason", required=True)
@@ -32,10 +31,12 @@ class SourceSiteForm(forms.Form):
 class SourceCheckinForm(forms.Form):
     official = forms.BooleanField(label='Is this an official upload?', required=False)
 
-def work(request: HttpRequest, work_id: int):
+def get_work_by_id(work_id: int):
     work = get_object_or_404(MediaWork, pk=work_id)
-    return render(request, "works/work.html", {'work':work})
-
+    if work.moved_to is not None:
+        raise Exception('This work has been moved. Operation is invalid.')
+    return work
+    
 def check_source_duplicates(info):
     query = WorkSource.objects.filter(platform=info['site'], source_id=info['id'])
     if query.exists():
@@ -44,6 +45,10 @@ def check_source_duplicates(info):
 def add_tags_to_work(work: MediaWork, info):
     if 'tags' in info:
         work.tags.add(*info['tags'])
+
+def work(request: HttpRequest, work_id: int):
+    work = get_work_by_id(work_id)
+    return render(request, "works/work.html", {'work':work})
 
 @login_required
 def check_in_source(request: HttpRequest, source_id: int):
@@ -62,7 +67,7 @@ def check_in_source(request: HttpRequest, source_id: int):
             if w_id := request.POST.get('work_id'):
                 work_id = int(w_id)
             if work_id > 0:
-                work = get_object_or_404(MediaWork, pk=work_id)
+                work = get_work_by_id(work_id)
                 title += f' for "{work.title}"'
             else:
                 work = MediaWork(title=src.title, description=src.description, thumbnail=src.thumbnail)
@@ -81,10 +86,10 @@ def check_in_source(request: HttpRequest, source_id: int):
         form = SourceCheckinForm(initial={ 'official': not src.work_origin })
         if work_id > 0:
             work_id = int(work_id)
-            work = get_object_or_404(MediaWork, pk=work_id)
+            work = get_work_by_id(work_id)
             title += f' for "{work.title}"'
         else:
-            suggestions = MediaWork.objects.filter(title__contains=src.title)[:3]
+            suggestions = MediaWork.objects.filter(title__contains=src.title, moved_to__isnull=True)[:3]
 
     return render(request, 'works/check_in_source.html', {'form': form, 'source': src, 'title': title, 'suggestions': suggestions, 'work_id': work_id})
 
@@ -125,7 +130,7 @@ def new(request: HttpRequest):
             work_id = form.cleaned_data['work_id']
             work = None
             if work_id > 0:
-                work = get_object_or_404(MediaWork, pk=work_id)
+                work = get_work_by_id(work_id)
                 title = f'New source for "{work.title}"'
             try:
                 return save_source(work, link, is_reupload)
@@ -142,8 +147,9 @@ def new(request: HttpRequest):
                 form.add_error(None, 'Error: ' + str(e))
         elif work_id := request.GET.get('work_id'):
             work_id = int(work_id)
-            form = SourceSiteForm(initial={ 'work_id': work_id })
-            work = get_object_or_404(MediaWork, pk=work_id)
+            form = SourceSiteForm(initial={ 'work_id': work_id })    
+            work = get_work_by_id(work_id)
+
             title = f'New source for "{work.title}"'
         else:
             form = SourceSiteForm(initial={ 'official': True })
@@ -152,10 +158,12 @@ def new(request: HttpRequest):
 
 @login_required
 def edit(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork, pk=work_id)
+    work = get_work_by_id(work_id)
+    relations = WorkRelation.get_relations_including_works([work])
+
     if request.method == 'POST':
         form = WorkEditForm(request.POST, instance=work)
-        if form.is_valid():
+        if form.has_changed and form.is_valid():
             form.save()
             update_change_reason(work, form.cleaned_data['reason'])
             return redirect('otodb:work', work_id=work.id)
@@ -163,11 +171,33 @@ def edit(request: HttpRequest, work_id: int):
     else:
         form = WorkEditForm(instance=work)
 
-    return render(request, 'works/edit.html', {'work': work, 'form': form})
+    return render(request, 'works/edit.html', {'work': work, 'form': form, 'relations': relations, 'relation_types': WorkRelationTypes})
+
+@login_required
+def edit_relations(request: HttpRequest, work_id: int):
+    work = get_work_by_id(work_id)
+
+    if request.method == 'POST':
+        try:
+            n = int(request.POST['size'])
+            print(request.POST)
+            new_relations = [(int(request.POST[f'relation-{i}']), int(request.POST[f'work-{i}']), bool(int(request.POST[f'direction-{i}']))) for i in range(n)]
+            new_relations = [WorkRelation(B_id=work_id, A_id=w, relation=r) if d else WorkRelation(A_id=work_id, B_id=w, relation=r) for r, w, d in new_relations]
+            
+            old_relations = WorkRelation.get_relations_including_works([work])
+            for r in old_relations:
+                r.delete()
+            for r in new_relations:
+                r.save()
+
+        except Exception as e:
+            print(e)
+
+    return redirect('otodb:work_relations', work_id=work.id)
 
 @login_required
 def set_tags(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork, pk=work_id)
+    work = get_work_by_id(work_id)
 
     if request.method == 'POST':
         try:
@@ -193,8 +223,8 @@ def merge(request: HttpRequest):
             thumbnail = request.POST['thumbnail']
             rating = request.POST['rating']
 
-            work_a = MediaWork.objects.get(id=work_a)
-            work_b = MediaWork.objects.get(id=work_b)
+            work_a = MediaWork.objects.get(id=work_a, moved_to__isnull=True)
+            work_b = MediaWork.objects.get(id=work_b, moved_to__isnull=True)
 
             work_a.title = title
             work_a.description = description
@@ -207,11 +237,26 @@ def merge(request: HttpRequest):
                 src.media = work_a
                 src.save()
 
-            for item in PoolItem.objects.filter(work=work_b):
+            for item in work_b.poolitem_set.all():
                 item.work = work_a
                 item.save()
 
-            work_b.delete()
+            for relation in work_b.relation_A.all():
+                if relation.B.id == work_a.id:
+                    relation.delete()
+                else:
+                    relation.A = work_a
+                    relation.save()
+
+            for relation in work_b.relation_B.all():
+                if relation.A.id == work_a.id:
+                    relation.delete()
+                else:
+                    relation.B = work_a
+                    relation.save()
+
+            work_b.moved_to = work_a
+            work_b.save()
 
             return redirect('otodb:work', work_id=work_a.id)        
         except Exception as e:
@@ -231,3 +276,8 @@ def history(request: HttpRequest, work_id: int):
         history.append(record)
     history.reverse()
     return render(request, 'works/history.html', { 'work': work, 'history': history })
+
+def relations(request: HttpRequest, work_id: int):
+    work = get_work_by_id(work_id)
+    relations, works = WorkRelation.get_component_from_work(work)
+    return render(request, 'works/relations.html', { 'work': work, 'relations': relations, 'works': works })

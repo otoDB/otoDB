@@ -16,7 +16,7 @@ def index(request: HttpRequest):
     )
 
 SEARCH_TYPE_LOOKUP = {
-    "work": lambda q: MediaWork.objects.filter(title__contains=q),
+    "work": lambda q: MediaWork.objects.filter(title__contains=q, moved_to__isnull=True),
     "song": lambda q: MediaSong.objects.filter(title__contains=q),
     "tag":  lambda q: TagWork.objects.filter(name__contains=q, aliased_to__isnull=True)
 }
@@ -37,15 +37,15 @@ def query(request: HttpRequest, query_type: str):
             results = None
             match query_type:
                 case 'work':
-                    results = MediaWork.objects.filter(title__contains=q)
+                    results = MediaWork.objects.filter(title__contains=q, moved_to__isnull=True)
                     return render(request, "query/works.html", {'results': results})
                 case 'tag':
                     results = TagWork.objects.filter(name__contains=q, aliased_to__isnull=True)
                     return render(request, "query/tags.html", {'results': results})
                 case 'mylists':
-                    results = Pool.objects.filter(author=request.user)
+                    results = request.user.pool_set
                     work_id = request.GET['work_id']
-                    results = [(lst, not not lst.work_in_pool(work_id)) for lst in results]
+                    results = [(lst, lst.work_in_pool(work_id).exists()) for lst in results.all()]
                     return render(request, "query/lists.html", {'results': results, 'work_id': work_id})
     return HttpResponse('')
 

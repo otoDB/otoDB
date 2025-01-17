@@ -40,5 +40,20 @@
         {% endif %}
         </table>
     {% endif %}
+    <span class="step-links">
+        {% if results.has_previous %}
+            <a href="?query={{query}}&type={{type}}&page=1">&laquo; first</a>
+            <a href="?query={{query}}&type={{type}}&page={{ results.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ results.number }} of {{ results.paginator.num_pages }}.
+        </span>
+
+        {% if results.has_next %}
+            <a href="?query={{query}}&type={{type}}&page={{ results.next_page_number }}">next</a>
+            <a href="?query={{query}}&type={{type}}&page={{ results.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
 </section>
 {% endblock content %}

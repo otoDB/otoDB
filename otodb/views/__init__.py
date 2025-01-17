@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
 
 from otodb.models import MediaSong, MediaWork, Pool, TagWork
 
@@ -25,7 +26,10 @@ def search(request: HttpRequest):
         search_type = request.GET.get('type')
         query = request.GET.get('query')
         results = SEARCH_TYPE_LOOKUP[search_type](query)
-        return render(request, "search.html", {"results": results, "type": search_type, 'query': query})
+        paginator = Paginator(results, 20)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        return render(request, "search.html", {"results": page_obj, "type": search_type, 'query': query})
     else:
         return redirect('otodb:index')
 

@@ -16,10 +16,13 @@ urlpatterns = [
     path("works/<int:work_id>/edit", views.works.edit, name="work_edit"),
     path("works/<int:work_id>/set_tags", views.works.set_tags, name="work_set_tags"),
     path("works/<int:work_id>/history", views.works.history, name="work_history"),
+    path("works/<int:work_id>/relations", views.works.relations, name="work_relations"),
+    path("works/<int:work_id>/edit_relations", views.works.edit_relations, name="work_edit_relations"),
     path("works/checkin/<int:source_id>", views.works.check_in_source, name="work_check_in_source"),
 
     path("work_tags/alias", views.tags.work_alias, name="tag_alias"),
     path("work_tags/<int:tag_id>", views.tags.work_tag, name="tag"),
+    path("work_tags/<int:tag_id>/edit", views.tags.work_edit, name="tag_edit"),
     path("work_tags/<int:tag_id>/history", views.tags.work_history, name="tag_history"),
 
     path("song_tags/alias", views.tags.song_alias, name="song_tag_alias"),

@@ -35,6 +35,14 @@ class TagWork(TagModel):
     def get_absolute_url(self):
         return reverse('otodb:tag', kwargs={ 'tag_id': self.id })
 
+    def get_tree(self):
+        tree = []
+        curr = self
+        while curr is not None:
+            tree.append(curr)
+            curr = curr.parent
+        return reversed(tree)
+
 class TagSong(TagModel):
     category = models.IntegerField(choices=SongTagCategory.choices, default=SongTagCategory.GENERAL)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)

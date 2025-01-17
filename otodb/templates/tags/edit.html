@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block page_title %}Editing {{ tag.title }}{% endblock page_title %}
+
+{% block content %}
+{% include 'tags/tag_menu.html' %}
+<section>
+  <h1>Editing tag: "{{ tag }}"</h1>
+  <div style="display: flex;align-items: center;gap: 1rem;">
+    <form target="_self" method="post">
+      {% csrf_token %}
+      <table>
+        {{ form.as_table }}
+      </table>
+      <input type="submit" value="Confirm"/>
+    </form>
+  </div>
+</section>
+{% endblock content %}

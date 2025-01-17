@@ -34,18 +34,6 @@ class WorkStatus(models.IntegerChoices):
     AVAILABLE = 0, "Available"
     DOWN      = 1, "Down"
 
-# TODO unused, what's the plan?
-RoleFlags = (
-    ('OTHER',    'Other'),
-    ('AUDIO',    'Audio'),
-    ('VISUALS',  'Visuals'),
-    ('DIRECTOR', 'Director'),
-    ('HOST',     'Host'),
-    ('MUSIC',    'Music'),
-    ('ARTIST',   'Art'),
-    ('THANKS',   'Special Thanks'),
-)
-
 class Platform(models.IntegerChoices):
     YOUTUBE    = 1, "YouTube"
     NICONICO   = 2, "Niconico"
@@ -57,3 +45,15 @@ class Platform(models.IntegerChoices):
             if string.lower() == s.lower():
                 return choice
         return None
+
+class WorkRelationTypes(models.IntegerChoices):
+    SEQUEL      = 1, "Sequel"
+    RESPECT     = 2, "Respect"
+    COLLAB_PART = 3, "Collab Part"
+    SAMPLE      = 4, "Sample"
+
+class SongRelationTypes(models.IntegerChoices):
+    REMIX    = 1, "Remix"
+    REMASTER = 2, "Remaster"
+    MEDLEY   = 3, "Medley"
+    SEQUEL   = 4, "Sequel"

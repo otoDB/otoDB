@@ -10,6 +10,7 @@ from .enums import WorkTagCategory, SongTagCategory
 class TagWork(TagModel):
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
     # TODO wiki_page = models.OneToOneField('wiki.article', on_delete=models.SET_NULL, null=True, blank=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
 
@@ -36,6 +37,7 @@ class TagWork(TagModel):
 
 class TagSong(TagModel):
     category = models.IntegerField(choices=SongTagCategory.choices, default=SongTagCategory.GENERAL)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
 

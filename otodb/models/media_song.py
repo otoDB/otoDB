@@ -2,11 +2,11 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagField
 
-from .base import MediaBase
+from .base import MediaBaseManager
 from .media_work import MediaWork
 from .tag import TagWork, TagSong
 
-class MediaSong(MediaBase):
+class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)
     bpm = models.IntegerField(null=False)
     work_tag = models.ForeignKey(TagWork, null=False, on_delete=models.CASCADE)
@@ -20,6 +20,7 @@ class MediaSong(MediaBase):
     media = models.ManyToManyField(MediaWork, related_name='songs')
 
     history = HistoricalRecords()
+    objects = MediaBaseManager()
 
     class Meta:
         verbose_name = ("Song")

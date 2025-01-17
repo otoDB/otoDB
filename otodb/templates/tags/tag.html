@@ -17,9 +17,12 @@
         }, 1000);
     </script>
     {% else %}
+    <div>
+        <span>Tags</span> >
         {% for t in tag.get_tree %}
-        <a href="{% url 'otodb:tag' t.id %}">{{ t }}</a> {% if not forloop.last %}>{% endif %}
+        {% if not forloop.last %}<a href="{% url 'otodb:tag' t.id %}">{{ t }}</a> >{% else %} <span>{{ t }}</span> {% endif %}
         {% endfor %}
+    </div>
         <h2>Category: {{ tag.get_category_display }}</h2>
 
         {% if tag.aliases.all %}
@@ -36,6 +39,18 @@
         </p>
         {% endif %}
     </section>
+    {% if tag.mediasong %}
+{% include 'tags/songs/song_menu.html' with song=tag.mediasong %}
+
+<section>
+    <h2>Song: {{ tag.mediasong.title }}</h2>
+    <table>
+    <tr><th>Title</th><td>{{ tag.mediasong.title }}</td></tr>
+    <tr><th>BPM</th><td>{{ tag.mediasong.bpm }}</td></tr>
+    <tr><th>Author</th><td>{{ tag.mediasong.author }}</td></tr>
+    </table>
+</section>
+{% endif %}
     {% if tag.tagwork_set.exists %}
     <section>
     <h2>Child tags</h2>

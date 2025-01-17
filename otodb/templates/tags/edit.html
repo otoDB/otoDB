@@ -14,5 +14,20 @@
       <input type="submit" value="Confirm"/>
     </form>
   </div>
+{% if not tag.mediasong %} 
+<h2>Or...</h2>
+  <a href="{% url 'otodb:song_new_from_tag' tag.id %}">This tag correspond to a song!</a>
+{% endif %}
 </section>
+{% if tag.mediasong %} 
+<section>
+  <h2>Editing song: "{{ tag.mediasong.title }}"</h2>
+  <form action="asdasdsad">
+    <table>
+      {{ song_form.as_table }}
+    </table>
+  </form>
+  <input type="submit" value="Confirm"/>
+</section>
+{% endif %}
 {% endblock content %}

@@ -163,7 +163,7 @@ def edit(request: HttpRequest, work_id: int):
 
     if request.method == 'POST':
         form = WorkEditForm(request.POST, instance=work)
-        if form.has_changed and form.is_valid():
+        if form.has_changed() and form.is_valid():
             form.save()
             update_change_reason(work, form.cleaned_data['reason'])
             return redirect('otodb:work', work_id=work.id)
@@ -180,7 +180,6 @@ def edit_relations(request: HttpRequest, work_id: int):
     if request.method == 'POST':
         try:
             n = int(request.POST['size'])
-            print(request.POST)
             new_relations = [(int(request.POST[f'relation-{i}']), int(request.POST[f'work-{i}']), bool(int(request.POST[f'direction-{i}']))) for i in range(n)]
             new_relations = [WorkRelation(B_id=work_id, A_id=w, relation=r) if d else WorkRelation(A_id=work_id, B_id=w, relation=r) for r, w, d in new_relations]
             

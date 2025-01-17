@@ -26,6 +26,17 @@
                 <tr><td><a href="{% url 'otodb:tag' entry.id %}">{{ entry.name }}</a></td><td>{{ entry.aliases.all|join:',' }}</td></tr>
             {% endfor %}
             </tbody>
+        {% elif type == 'song' %}
+        <thead><tr><th>Title</th><th>BPM</th><th>Author</th><th>Tags</th></tr></thead><tbody>
+            {% for entry in results %}
+                <tr>
+                    <td><a href="{% url 'otodb:song' entry.id %}">{{ entry.title }}</a></td>
+                    <td>{{ entry.bpm }}</td>
+                    <td>{{ entry.author }}</td>
+                    <td>{{ entry.tags }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
         {% endif %}
         </table>
     {% endif %}

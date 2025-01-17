@@ -1,12 +1,13 @@
 from django import forms
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest
+from django.http import HttpRequest, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 from simple_history.utils import update_change_reason
 
 from otodb.common import get_diff
-from otodb.models import MediaWork, TagWork, TagSong
+from otodb.models import MediaWork, MediaSong, TagWork, TagSong
+from otodb.models.enums import WorkTagCategory
 
 class WorkTagEditForm(forms.ModelForm):
     reason = forms.CharField(label="Update Reason", required=True)
@@ -22,18 +23,28 @@ def tag(request: HttpRequest, tag_id: int, tag_type):
 @login_required
 def edit(request: HttpRequest, tag_id:int, tag_type):
     tag = get_object_or_404(tag_type, id=tag_id)
+    song_form = None
 
     if request.method == 'POST':
         form = WorkTagEditForm(request.POST, instance=tag)
-        if form.has_changed and form.is_valid():
+        if form.has_changed() and form.is_valid():
+            if tag.category == WorkTagCategory.SONG:
+                form.instance.category = WorkTagCategory.SONG # defensive
             form.save()
+
             update_change_reason(tag, form.cleaned_data['reason'])
             return redirect('otodb:tag', tag_id=tag.id)
 
     else:
         form = WorkTagEditForm(instance=tag)
+        if tag.category != WorkTagCategory.SONG:
+            # exclude song category
+            form.fields['category'].choices = form.fields['category'].choices[:2] + form.fields['category'].choices[3:]
+        else:
+            song_form = SongEditForm(instance=tag.mediasong)
+            form.fields['category'].widget = forms.HiddenInput()
 
-    return render(request, 'tags/edit.html', {'tag': tag, 'form': form})
+    return render(request, 'tags/edit.html', { 'tag': tag, 'form': form, 'song_form': song_form })
 
 @login_required
 def alias(request: HttpRequest, tag_type):
@@ -62,6 +73,10 @@ def alias(request: HttpRequest, tag_type):
                         t.save()
                     if into.parent is None:
                         into.parent = tag.parent
+                    if tag.category == WorkTagCategory.SONG:
+                        song = tag.mediasong
+                        song.work_tag = into
+                        song.save()
                         
             into.save()
 
@@ -96,11 +111,58 @@ def work_alias(request: HttpRequest):
 def work_history(request: HttpRequest, tag_id: int):
     return history(request, tag_id, TagWork)
 
-def song_tag(request: HttpRequest, tag_id: int):
-    return tag(request, tag_id, TagSong)
+# def song_tag(request: HttpRequest, tag_id: int):
+#     return tag(request, tag_id, TagSong)
 
-def song_alias(request: HttpRequest):
-    return alias(request, TagSong)
+# def song_alias(request: HttpRequest):
+#     return alias(request, TagSong)
 
-def song_history(request: HttpRequest, tag_id: int):
-    return history(request, tag_id, TagSong)
+# def song_history(request: HttpRequest, tag_id: int):
+#     return history(request, tag_id, TagSong)
+
+class SongForm(forms.ModelForm):
+    class Meta:
+        model = MediaSong
+        fields = ['title', 'bpm', 'author']
+    
+class SongEditForm(SongForm):
+    reason = forms.CharField(label="Update Reason", required=True)
+
+@login_required
+def new_song_from_tag(request: HttpRequest, tag_id: int):
+    tag = get_object_or_404(TagWork, id=tag_id)
+    if tag.aliased_to is not None:
+        tag = tag.aliased_to
+    if tag.category == WorkTagCategory.SONG:
+        raise Http404("This tag is already a song tag.")
+
+    if request.method == 'POST':
+        form = SongForm(request.POST)
+        if form.is_valid():
+            form.instance.work_tag = tag
+            form.save()
+            tag.category = WorkTagCategory.SONG
+            tag.save()
+            return redirect('otodb:tag', tag_id=tag_id)
+
+    else:
+        form = SongForm()
+        
+    return render(request, 'tags/songs/new_from_tag.html', { 'form': form, 'tag': tag })
+
+def song(request: HttpRequest, song_id: int):
+    song = get_object_or_404(MediaSong, id=song_id)
+    return redirect('otodb:tag', song.work_tag.id)
+
+def song_history(request: HttpRequest, song_id: int):
+    song = get_object_or_404(MediaSong, pk=song_id)
+    
+    history = []
+    for record in song.history.all().reverse():
+        if history != []:
+            prev = history[-1]
+            delta = record.diff_against(prev)
+            record.history_delta_changes = get_diff(delta)
+        history.append(record)
+    history.reverse()
+    return render(request, 'tags/songs/history.html', { 'song': song, 'history': history })

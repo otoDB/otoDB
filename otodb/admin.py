@@ -34,24 +34,13 @@ class MediaAdminForm(forms.ModelForm):
         }
         fields = '__all__'
 
-
-class MediaSongInline(admin.TabularInline):
-    model = MediaSong.media.through
-    extra = 0
-
-
-class MediaInline(admin.TabularInline):
-    model = MediaSong.media.through
-    extra = 0
-
-
 class MediaAdmin(admin.ModelAdmin):
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         form.instance.check_and_update_implications()
 
     form = MediaAdminForm
-    inlines = [MediaSourceInline, MediaSongInline]
+    inlines = [MediaSourceInline]
     list_display = [
         '__str__',
         'title',
@@ -60,14 +49,8 @@ class MediaAdmin(admin.ModelAdmin):
         'title',
     ]
 
-
-class MediaSongAdmin(admin.ModelAdmin):
-    inlines = [MediaInline]
-
-
 admin.site.register([
     Pool,
 ])
 admin.site.register(TagWork, TagWorkAdmin)
 admin.site.register(MediaWork, MediaAdmin)
-admin.site.register(MediaSong, MediaSongAdmin)

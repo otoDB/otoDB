@@ -25,9 +25,13 @@ urlpatterns = [
     path("work_tags/<int:tag_id>/edit", views.tags.work_edit, name="tag_edit"),
     path("work_tags/<int:tag_id>/history", views.tags.work_history, name="tag_history"),
 
-    path("song_tags/alias", views.tags.song_alias, name="song_tag_alias"),
-    path("song_tags/<int:tag_id>", views.tags.song_tag, name="song_tag"),
-    path("song_tags/<int:tag_id>/history", views.tags.song_history, name="song_tag_history"),
+    path("songs/<int:song_id>", views.tags.song, name="song"),
+    path("songs/<int:song_id>/history", views.tags.song_history, name="song_history"),
+    path("songs/new_from_tag/<int:tag_id>", views.tags.new_song_from_tag, name="song_new_from_tag"),
+
+    # path("song_tags/alias", views.tags.song_alias, name="song_tag_alias"),
+    # path("song_tags/<int:tag_id>", views.tags.song_tag, name="song_tag"),
+    # path("song_tags/<int:tag_id>/history", views.tags.song_history, name="song_tag_history"),
 
     path("lists/new", views.lists.new, name="list_new"),
     path("lists/import", views.lists.list_import, name="list_import"),

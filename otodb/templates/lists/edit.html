@@ -30,11 +30,11 @@
               <td>
                 <button type="button" :disabled="i===0" @click="[works[i-1], works[i]] = [works[i], works[i-1]]">↑</button>
                 <button type="button" :disabled="i===works.length-1" @click="[works[i+1], works[i]] = [works[i], works[i+1]]">↓</button></td>
-              <td x-data="{ work_query: w.title, locked_in: w.title !== '' }" x-init="htmx.process($el)">
+              <td x-data="{ locked_in: w.title !== '' }" x-init="htmx.process($el)">
                 <input type="number" :name="'work-'+i" x-model="w.id" hidden>
-                <input type="text" x-model="work_query" name="query" @keydown.enter="$event.preventDefault();" placeholder="Search..." :disabled="locked_in">
-                <button type="button" hx-get="{% url 'otodb:query' 'work' %}" hx-target="next div" hx-include="previous input" x-show="!locked_in" :disabled="work_query===''">Search</button>
-                <div class="query-results" x-data="{ query_action: ({id, title}) => { work_query = title; w.id = id; locked_in = true; $el.innerHTML = ''; } }"></div>
+                <input type="text" x-model="w.title" name="query" @keydown.enter="$event.preventDefault();" placeholder="Search..." :disabled="locked_in">
+                <button type="button" hx-get="{% url 'otodb:query' 'work' %}" hx-target="next div" hx-include="previous input" x-show="!locked_in" :disabled="w.title===''">Search</button>
+                <div class="query-results" x-data="{ query_action: ({id, title}) => { w.title = title; w.id = id; locked_in = true; $el.innerHTML = ''; } }"></div>
                 <button type="button" @click="locked_in = false;" x-show="locked_in">Change</button>
               </td>
               <td><textarea x-model="w.desc" :name="'desc-'+i" placeholder="Description..."></textarea></td>

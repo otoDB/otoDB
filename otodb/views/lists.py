@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from otodb.common import playlist_info
+from otodb.common import video_info, playlist_info
 from otodb.models import Pool, PoolItem
 
 
@@ -101,10 +101,9 @@ def toggle(request: HttpRequest, list_id: int):
 
     return redirect("otodb:profile_lists", user_id=request.user.id)
 
-from otodb.common import video_info
-def video_info_wrapped(uu):
+def video_info_wrapped(url):
     try:
-        return video_info(uu)
+        return video_info(url)
     except:
         return {}
 
@@ -118,21 +117,19 @@ def list_import(request: HttpRequest):
             info = playlist_info(url)
             list_ = Pool(name=info['title'], description=info['description'], author=request.user)
             list_.save()
+
             # TODO temp until we decide on access control schemes
-            import multiprocessing
+            from multiprocessing.pool import ThreadPool
+            from itertools import batched
             
             # Querying video infos is done in batches to avoid creating 114514 processes
-            batch_size_max = 20
+            batch_size = 20
             infos = []
-            while len(info['entries']):
-                batch_size = min(batch_size_max, len(info['entries']))
-                pool = multiprocessing.Pool(processes=batch_size)
-                batch = info['entries'][:batch_size]
-                del info['entries'][:batch_size]
-                infos += pool.map(video_info_wrapped, batch)
+            for batch in batched(info['entries'], batch_size):
+                pool = ThreadPool(processes=len(batch))
+                infos += [i for i in pool.map(video_info_wrapped, batch) if i != {}]
 
             for i, vid_info in enumerate(infos):
-                if vid_info == {}: continue
                 from otodb.models import WorkSource, MediaWork
                 from otodb.models.enums import WorkOrigin
                 from datetime import date

@@ -120,8 +120,18 @@ def list_import(request: HttpRequest):
             list_.save()
             # TODO temp until we decide on access control schemes
             import multiprocessing
-            pool = multiprocessing.Pool(processes=len(info['entries']))
-            infos = pool.map(video_info_wrapped, info['entries'])
+            
+            # Querying video infos is done in batches to avoid creating 114514 processes
+            batch_size_max = 20
+            infos = []
+            while len(info['entries']):
+                batch_size = min(batch_size_max, len(info['entries']))
+                pool = multiprocessing.Pool(processes=batch_size)
+                batch = info['entries'][:batch_size]
+                del info['entries'][:batch_size]
+                print(f'{len(info['entries'])} videos remaining')
+                infos += pool.map(video_info_wrapped, batch)
+
             for i, vid_info in enumerate(infos):
                 if vid_info == {}: continue
                 from otodb.models import WorkSource, MediaWork

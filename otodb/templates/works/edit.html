@@ -26,7 +26,6 @@
         document.querySelector(`input[name='title']`).value = title;
         document.querySelector(`input[name='thumbnail']`).value = thumbnail;
         document.querySelector(`textarea[name='description']`).value = description;
-        console.log(thumbnail)
         "><</button></td>
 			<td>{{ source.title }}</td><td x-text="expanded ? description : description.slice(0,8) + '[...expand]'" @click="expanded=!expanded"></td>
 				<td>{{ source.get_platform_display }}</td><td>{{ source.published_date }}

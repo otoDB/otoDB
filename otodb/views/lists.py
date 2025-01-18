@@ -129,7 +129,6 @@ def list_import(request: HttpRequest):
                 pool = multiprocessing.Pool(processes=batch_size)
                 batch = info['entries'][:batch_size]
                 del info['entries'][:batch_size]
-                print(f'{len(info['entries'])} videos remaining')
                 infos += pool.map(video_info_wrapped, batch)
 
             for i, vid_info in enumerate(infos):

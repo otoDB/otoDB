@@ -108,6 +108,7 @@ def save_source(work: MediaWork, link: str, is_reupload: bool):
             return redirect('otodb:work', work_id=work.id)
 
     if work:
+        add_tags_to_work(work, info)
         return redirect('otodb:work', work_id=work.id)
     else:
         return redirect('otodb:work_check_in_source', source_id=src.id)

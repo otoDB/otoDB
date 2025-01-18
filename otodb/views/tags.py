@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
+from django.core.paginator import Paginator
 
 from simple_history.utils import update_change_reason
 
@@ -18,7 +19,11 @@ class WorkTagEditForm(forms.ModelForm):
 def tag(request: HttpRequest, tag_id: int, tag_type):
     tag = get_object_or_404(tag_type, pk=tag_id)
     works = MediaWork.objects.filter(tags__id=tag_id, moved_to__isnull=True)
-    return render(request, "tags/tag.html", {"tag": tag, "works": works})
+    paginator = Paginator(works, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "tags/tag.html", {"tag": tag, "works": page_obj})
 
 @login_required
 def edit(request: HttpRequest, tag_id:int, tag_type):

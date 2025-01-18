@@ -22,7 +22,7 @@ class WorkRelation(models.Model):
             models.UniqueConstraint(fields=["A", "B"], name="unique_relation_between_works"),
             models.CheckConstraint(
                 name="work_relation_nonreflexive",
-                check=models.Q(A__ne=models.F("B")),
+                check=~models.Q(A=models.F("B")),
                 violation_error_message="A must be different from B",
             ),
         ]
@@ -59,7 +59,7 @@ class SongRelation(models.Model):
             models.UniqueConstraint(fields=["A", "B"], name="unique_relation_between_songs"),
             models.CheckConstraint(
                 name="song_relation_nonreflexive",
-                check=models.Q(A__ne=models.F("B")),
+                check=~models.Q(A=models.F("B")),
                 violation_error_message="A must be different from B",
             ),
         ]

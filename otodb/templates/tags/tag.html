@@ -81,6 +81,21 @@
             {% endfor %}
             </tbody>
         </table>
+        <span class="step-links">
+            {% if works.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ works.previous_page_number }}">previous</a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ works.number }} of {{ works.paginator.num_pages }}.
+            </span>
+    
+            {% if works.has_next %}
+                <a href="?page={{ works.next_page_number }}">next</a>
+                <a href="?page={{ works.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
         {% endif %}
     </section>
     <section>

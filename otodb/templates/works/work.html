@@ -111,6 +111,9 @@
 			<th>Available</th>
 			<th>Resolution</th>
 			<th>Link</th>
+			{% if user.is_authenticated %}
+			<th>Refresh</th>
+			{% endif %}
 	</tr></thead>
 	<tbody>
 		{% for source in work.worksource_set.all %}
@@ -119,6 +122,14 @@
 				<td>{{ source.get_platform_display }}</td><td>{{ source.published_date }}
 			</td><td>{{ source.work_origin|yesno:"No,Yes" }}</td><td>{{ source.work_status|yesno:"No,Yes" }}</td>
 			<td>{{ source.work_width }}x{{ source.work_height }}</td><td><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">Link</a></td>
+			{% if user.is_authenticated %}
+			<td>
+				<form action="/source/{{ source.id }}/refresh" method="post">
+					{% csrf_token %}
+					<button type="submit">Refresh</button>
+				</form>
+			</td>
+			{% endif %}
 		</tr>
 		{% endfor %}
 	</tbody>

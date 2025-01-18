@@ -25,6 +25,8 @@ urlpatterns = [
     path("work_tags/<int:tag_id>/edit", views.tags.work_edit, name="tag_edit"),
     path("work_tags/<int:tag_id>/history", views.tags.work_history, name="tag_history"),
 
+    path("source/<int:source_id>/refresh", views.works.refresh_source, name="source_refresh"),
+
     path("songs/<int:song_id>", views.songs.song, name="song"),
     path("songs/<int:song_id>/edit", views.songs.edit, name="song_edit"),
     path("songs/<int:song_id>/history", views.songs.history, name="song_history"),

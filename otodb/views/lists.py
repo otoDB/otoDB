@@ -3,9 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from otodb.common import playlist_info
+from otodb.common import video_info, playlist_info
 from otodb.models import Pool, PoolItem
-
 
 class ListForm(forms.ModelForm):
     class Meta:
@@ -101,10 +100,9 @@ def toggle(request: HttpRequest, list_id: int):
 
     return redirect("otodb:profile_lists", user_id=request.user.id)
 
-from otodb.common import video_info
-def video_info_wrapped(uu):
+def video_info_wrapped(url):
     try:
-        return video_info(uu)
+        return video_info(url)
     except:
         return {}
 
@@ -118,12 +116,13 @@ def list_import(request: HttpRequest):
             info = playlist_info(url)
             list_ = Pool(name=info['title'], description=info['description'], author=request.user)
             list_.save()
+
             # TODO temp until we decide on access control schemes
-            import multiprocessing
-            pool = multiprocessing.Pool(processes=len(info['entries']))
-            infos = pool.map(video_info_wrapped, info['entries'])
+            from concurrent.futures import ProcessPoolExecutor
+            with ProcessPoolExecutor() as executor:
+                infos = [i for i in executor.map(video_info_wrapped, info['entries']) if i != {}]
+
             for i, vid_info in enumerate(infos):
-                if vid_info == {}: continue
                 from otodb.models import WorkSource, MediaWork
                 from otodb.models.enums import WorkOrigin
                 from datetime import date

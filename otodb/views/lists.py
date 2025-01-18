@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from otodb.common import video_info, playlist_info
 from otodb.models import Pool, PoolItem
 
-
 class ListForm(forms.ModelForm):
     class Meta:
         model = Pool
@@ -119,15 +118,9 @@ def list_import(request: HttpRequest):
             list_.save()
 
             # TODO temp until we decide on access control schemes
-            from multiprocessing.pool import ThreadPool
-            from itertools import batched
-            
-            # Querying video infos is done in batches to avoid creating 114514 processes
-            batch_size = 20
-            infos = []
-            for batch in batched(info['entries'], batch_size):
-                pool = ThreadPool(processes=len(batch))
-                infos += [i for i in pool.map(video_info_wrapped, batch) if i != {}]
+            from concurrent.futures import ProcessPoolExecutor
+            with ProcessPoolExecutor() as executor:
+                infos = [i for i in executor.map(video_info_wrapped, info['entries']) if i != {}]
 
             for i, vid_info in enumerate(infos):
                 from otodb.models import WorkSource, MediaWork

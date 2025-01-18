@@ -114,6 +114,19 @@ def save_source(work: MediaWork, link: str, is_reupload: bool):
         return redirect('otodb:work_check_in_source', source_id=src.id)
 
 @login_required
+def refresh_source(request: HttpRequest, source_id: int):
+    src = get_object_or_404(WorkSource, pk=source_id)
+
+    if request.method == 'POST':
+        info = video_info(src.url)
+        src.title=info['title']
+        src.description=info['description']
+        src.thumbnail=info.get('thumb', None)
+        src.save()
+
+    return redirect('otodb:work', work_id=src.media.id)
+
+@login_required
 def new(request: HttpRequest):
     title = 'New work'
     if request.method == 'POST':

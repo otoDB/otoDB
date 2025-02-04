@@ -10,7 +10,7 @@ We recommend using `uv`. Project setup is contained in `pyproject.toml`.
 # Copy the base .env file
 cp .env.example .env
 
-# Make necessary modifications to .env, e.g. change DB name to "db", add accepted hosts
+# Make necessary modifications to .env, e.g. add accepted hosts
 
 # Make migrations, migrate changes, load seed data, create admin account
 uv run _setup.py

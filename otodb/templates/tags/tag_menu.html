@@ -2,7 +2,9 @@
 	{% url 'otodb:tag' tag.id as t_url %}
 	{% url 'otodb:tag_edit' tag.id as te_url %}
 	{% url 'otodb:tag_history' tag.id as th_url %}
+	{% url 'otodb:tag_wiki_page' tag.id as tw_url %}
 	<a href="{{ t_url }}" {% if request.path == t_url %}class="current"{% endif %}>Tag {{ tag.id }}</a>
+	<a href="{{ tw_url }}" {% if request.path == tw_url %}class="current"{% endif %}>Wiki</a>
 	<a href="{{ te_url }}" {% if request.path == te_url %}class="current"{% endif %}>Edit</a>
 	<a href="{{ th_url }}" {% if request.path == th_url %}class="current"{% endif %}>History</a>
 </menu>

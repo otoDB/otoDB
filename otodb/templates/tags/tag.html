@@ -29,17 +29,16 @@
         <h3>Also known as: {{ tag.aliases.all | join:', ' }}.</h3>
             
         {% endif %}
-{% comment %}TODO
+        <hr>
         {% if tag.wiki_page %}
-        <p>
-            <!-- INSERT WIKI EXCERPT --> <a href="#">Go to wiki...</a>
+        <p x-data="{ content: (new DOMParser()).parseFromString(`{{ tag.wiki_page.page_rendered | safe }}`, 'text/html').children[0].innerText.substring(0,50) + '...' }" x-text="content">
         </p>
+        <a href="{% url 'otodb:tag_wiki_page' tag.id %}">Go to wiki...</a>
         {% else %}
         <p>
-            This tag does not yet have a wiki page. <a href="#">Go create one...</a>
+            This tag does not yet have a wiki page. <a href="{% url 'otodb:tag_new_wiki_page' tag.id %}">Go create one...</a>
         </p>
         {% endif %}
-{% endcomment %}
     </section>
     {% if tag.mediasong %}
 {% include 'songs/song_menu.html' with song=tag.mediasong %}

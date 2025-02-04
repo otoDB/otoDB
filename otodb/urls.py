@@ -1,6 +1,7 @@
 from django.urls import path
 
-from . import views, api
+from . import views
+from .api import api
 
 app_name = "otodb"
 urlpatterns = [
@@ -8,7 +9,7 @@ urlpatterns = [
     path("search", views.search, name="search"),
     path("query/<str:query_type>", views.query, name="query"),
 
-    path("api/", api.api.urls),
+    path("api/", api.urls),
 
     path("works/new", views.works.new, name="work_new"),
     path("works/merge", views.works.merge, name="work_merge"),
@@ -24,6 +25,9 @@ urlpatterns = [
     path("work_tags/<int:tag_id>", views.tags.work_tag, name="tag"),
     path("work_tags/<int:tag_id>/edit", views.tags.work_edit, name="tag_edit"),
     path("work_tags/<int:tag_id>/history", views.tags.work_history, name="tag_history"),
+    path("work_tags/<int:tag_id>/wiki_page", views.tags.wiki_page, name="tag_wiki_page"),
+    path("work_tags/<int:tag_id>/new_wiki_page", views.tags.new_wiki_page, name="tag_new_wiki_page"),
+    path("work_tags/<int:tag_id>/edit_wiki_page", views.tags.edit_wiki_page, name="tag_edit_wiki_page"),
 
     path("source/<int:source_id>/refresh", views.works.refresh_source, name="source_refresh"),
 

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block page_title %}Edit wiki page for: {{ tag }}{% endblock page_title %}
+
+{% block content %}
+{% include 'tags/tag_menu.html' %}
+<section>
+  <h1>Edit wiki page for: {{ tag }}</h1>
+<form method="post" target="_self">
+    {% csrf_token %}
+    {{ form.media }}
+    {{ form.as_p }}
+    <input type="submit">
+</form>
+</section>
+{% endblock content %}

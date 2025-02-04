@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'markdownfield',
     'django.contrib.staticfiles',
     'otodb',
     'otodb.account',
@@ -150,20 +151,20 @@ AUTH_USER_MODEL = "account.Account"
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = os.environ.get('OTODB_TIME_ZONE', 'UTC')
+# TIME_ZONE = os.environ.get('OTODB_TIME_ZONE', 'UTC')
 
-USE_I18N = True
+# USE_I18N = True
 
-LANGUAGES = [
-    ("en", _("English")),
-    ("ja", _("Japanese")),
-    ("zh", _("Chinese")),
-    ("kr", _("Korean")),
-]
+# LANGUAGES = [
+#     ("en", _("English")),
+#     ("ja", _("Japanese")),
+#     ("zh", _("Chinese")),
+#     ("kr", _("Korean")),
+# ]
 
-USE_TZ = True
+# USE_TZ = True
 
 STORAGES = {
     "default": {
@@ -208,6 +209,7 @@ SERIALIZATION_MODULES = {
     'yaml':   'tagulous.serializers.pyyaml',
 }
 
+SITE_URL = ALLOWED_HOSTS[0]
 SITE_ID = 1
 COMMENTS_APP = 'django_comments_xtd'
 COMMENTS_XTD_MAX_THREAD_LEVEL = 3

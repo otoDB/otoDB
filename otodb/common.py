@@ -1,5 +1,15 @@
 import diff_match_patch as dmp_mod
+
+import requests, json, html, re
+from time import mktime
+from datetime import datetime
+
 from yt_dlp import YoutubeDL
+from yt_dlp.utils import DownloadError
+from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliPlaylistIE
+from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
+from yt_dlp.extractor.youtube import YoutubeIE, YoutubePlaylistIE
+from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 
 from otodb.models import TagWork
 from otodb.models.enums import Platform
@@ -38,6 +48,43 @@ def get_diff(delta):
 
     return diffs_html
 
+ydl = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}, auto_init=False)
+ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=False)
+
+for e in (BiliBiliIE, NiconicoIE, YoutubeIE, SoundcloudIE):
+    ydl.add_info_extractor(e)
+
+for e in (BilibiliPlaylistIE, NiconicoPlaylistIE, YoutubePlaylistIE, SoundcloudPlaylistIE):
+    ydl_playlist.add_info_extractor(e)
+
+make_video_url = {
+    'youtube': lambda s: f'https://youtu.be/{s}',
+    'niconico': lambda s: f'https://nicovideo.jp/watch/{s}',
+    'bilibili': lambda s: f'https://www.bilibili.com/video/{s}/'
+    }
+
+niconico_meta_re = re.compile(r"<meta name=\"server-response\" content=\"([ -~]*?)\" \/>")
+
+def get_niconico_geoblocked(sm):
+    clean_url = make_video_url['niconico'](sm)
+    r = requests.get(clean_url, headers={'User-Agent': 'Twitterbot/1.0', 'Accept-Language': 'ja'})
+    if r.ok:
+        res = json.loads(html.unescape(niconico_meta_re.search(r.text).group(1)))['data']['response']
+        video = res['video']
+        max_res = max(res['media']['domand']['videos'], key=lambda s: s['width'])
+        return {
+            'extractor': 'niconico',
+            'title': video['title'],
+            'description': video['description'],
+            'tags': [x['name'] for x in res['tag']['items']],
+            'width': max_res['width'],
+            'height': max_res['height'],
+            'webpage_url': clean_url,
+            'id': video['id'],
+            'thumbnail': video['thumbnail'].get('ogp', video['thumbnail']['url']),
+            'timestamp': int(mktime(datetime.fromisoformat(video['registeredAt']).timetuple()))
+        }
+
 def video_info(link):
     keys = {
             'extractor': 'site',
@@ -51,36 +98,42 @@ def video_info(link):
             'thumbnail': 'thumb',
             'timestamp':  'timestamp'
         }
-    with YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}) as ydl:
+    try:
         info = ydl.extract_info(link, download=False)
-        if info.get('_type') == 'playlist':
-            info = info['entries'][0] # TODO need some work...
+    except DownloadError:
+        niconico = ydl.get_info_extractor(NiconicoIE.ie_key())
+        if niconico.suitable(link):
+            info = get_niconico_geoblocked(niconico.get_temp_id(link))
+            
 
-        info['extractor'] = Platform.from_str(info['extractor'])
+    if info.get('_type') == 'playlist':
+        info = info['entries'][0] # TODO need some work...
 
-        match info['extractor']:
-            case Platform.YOUTUBE:
-                info['webpage_url'] = f'https://youtu.be/{info['id']}'
-            case Platform.BILIBILI:
-                chapter_mark = info['id'].find('_')
-                if chapter_mark != -1:
-                    info['id'] = info['id'][:chapter_mark]
-                title_chapter_mark = info['title'].find(' p01') # TODO this is far from perfect
-                if chapter_mark != -1:
-                    info['title'] = info['title'][:title_chapter_mark]
-                info['webpage_url'] = f'https://www.bilibili.com/video/{info['id']}/'
-                info['tags'] = [tag[3:-1] if tag.startswith('发现《') and tag.endswith('》') else tag for tag in info['tags']]
-            case Platform.NICONICO:
-                info['webpage_url'] = f'https://nicovideo.jp/watch/{info['id']}'
-            case Platform.SOUNDCLOUD:
-                pass # TODO
-        
-        for c in ['?', '/']: # drop query strings and subdirectories
-            i = info['id'].find(c)
-            if i != -1:
-                info['id'] = info['id'][:i]
+    info['extractor'] = Platform.from_str(info['extractor'])
 
-        return { keys[key]: info[key] for key in keys if key in info }
+    match info['extractor']:
+        case Platform.YOUTUBE:
+            info['webpage_url'] = make_video_url['youtube'](info['id'])
+        case Platform.BILIBILI:
+            chapter_mark = info['id'].find('_')
+            if chapter_mark != -1:
+                info['id'] = info['id'][:chapter_mark]
+            title_chapter_mark = info['title'].find(' p01') # TODO this is far from perfect
+            if chapter_mark != -1:
+                info['title'] = info['title'][:title_chapter_mark]
+            info['webpage_url'] = make_video_url['bilibili'](info['id'])
+            info['tags'] = [tag[3:-1] if tag.startswith('发现《') and tag.endswith('》') else tag for tag in info['tags']]
+        case Platform.NICONICO:
+            info['webpage_url'] = make_video_url['niconico'](info['id'])
+        case Platform.SOUNDCLOUD:
+            pass # TODO
+    
+    for c in ['?', '/']: # drop query strings and subdirectories
+        i = info['id'].find(c)
+        if i != -1:
+            info['id'] = info['id'][:i]
+
+    return { keys[key]: info[key] for key in keys if key in info }
 
 
 def playlist_info(link):
@@ -89,24 +142,23 @@ def playlist_info(link):
             'description': 'description',
             'entries': 'entries',
         }
-    with YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}) as ydl:
-        info = ydl.extract_info(link, download=False)
-        if info.get('_type') != 'playlist':
-            return None
+    info = ydl_playlist.extract_info(link, download=False)
+    if info.get('_type') != 'playlist':
+        return None
 
-        match info['extractor_key']:
-            case 'YoutubeTab':
-                pass
-            case 'NiconicoPlaylist':
-                pass
-            case 'BilibiliFavoritesList':
-                pass
+    match info['extractor_key']:
+        case 'YoutubeTab':
+            pass
+        case 'NiconicoPlaylist':
+            pass
+        case 'BilibiliFavoritesList':
+            pass
 
-        info['entries'] = [entry['url'] for entry in info['entries']]
-        
-        if info['description'] != '':
-            info['description'] += '\n\n'
+    info['entries'] = [entry['url'] for entry in info['entries']]
     
-        info['description'] += f'Extracted from {info['webpage_url']}'
+    if info['description'] != '':
+        info['description'] += '\n\n'
 
-        return { keys[key]: info[key] for key in keys if key in info }
+    info['description'] += f'Extracted from {info['webpage_url']}'
+
+    return { keys[key]: info[key] for key in keys if key in info }

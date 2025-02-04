@@ -19,7 +19,7 @@ class TagWorkInstance(models.Model):
     work = models.ForeignKey("MediaWork", on_delete=models.CASCADE)
     work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 
-    score = models.FloatField()
+    score = models.FloatField(null=True)
 
 class MediaWork(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)

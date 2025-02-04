@@ -6,7 +6,7 @@ from ninja import NinjaAPI, Schema
 from otodb.models import WorkSource
 from otodb.models.enums import Platform
 
-api = NinjaAPI()
+api = NinjaAPI(urls_namespace="otodb:api")
 
 class VideoQuery(Schema):
     rel: str

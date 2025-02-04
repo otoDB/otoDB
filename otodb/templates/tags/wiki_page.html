@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block page_title %}Wiki: {{ tag }}{% endblock page_title %}
+
+{% block content %}
+{% include 'tags/tag_menu.html' %}
+<section>
+  <h1>Wiki: {{ tag }}</h1>
+  <a href="{% url 'otodb:tag_edit_wiki_page' tag.id %}">Edit</a>
+  {{ tag.wiki_page.page_rendered | safe }}
+</section>
+{% endblock content %}

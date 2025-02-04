@@ -1,15 +1,22 @@
 from django.urls import reverse
-from django.core.exceptions import ValidationError
 from django.db import models
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagModel
 
+from markdownfield.models import MarkdownField, RenderedMarkdownField
+from markdownfield.validators import VALIDATOR_STANDARD
+
 from .enums import WorkTagCategory, SongTagCategory
 
+class WikiPage(models.Model):
+    page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_STANDARD, null=False)
+    page_rendered = RenderedMarkdownField()
+
+    history = HistoricalRecords()
 
 class TagWork(TagModel):
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
-    # TODO wiki_page = models.OneToOneField('wiki.article', on_delete=models.SET_NULL, null=True, blank=True)
+    wiki_page = models.OneToOneField(WikiPage, on_delete=models.SET_NULL, null=True, blank=True)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()

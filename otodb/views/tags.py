@@ -7,8 +7,9 @@ from django.core.paginator import Paginator
 from simple_history.utils import update_change_reason
 
 from otodb.common import get_diff
-from otodb.models import MediaWork, TagWork
+from otodb.models import MediaWork, TagWork, WikiPage
 from otodb.models.enums import WorkTagCategory
+from markdownfield.widgets import MDEWidget
 
 class WorkTagEditForm(forms.ModelForm):
     reason = forms.CharField(label="Update Reason", required=True)
@@ -122,3 +123,57 @@ def work_history(request: HttpRequest, tag_id: int):
 
 # def song_history(request: HttpRequest, tag_id: int):
 #     return history(request, tag_id, TagSong)
+
+class WikiPageForm(forms.ModelForm):
+    # page = forms.CharField(widget=MDEWidget())
+    class Meta:
+        model = WikiPage
+        fields = ['page']
+
+def new_wiki_page(request: HttpRequest, tag_id: int):
+    tag = get_object_or_404(TagWork, pk=tag_id)
+    if tag.wiki_page is not None:
+        return redirect('otodb:tag_wiki_page', tag_id=tag.wiki_page.id)
+
+    if request.method == 'POST':
+        form = WikiPageForm(request.POST)
+        if form.is_valid():
+            page = WikiPage(page=form.cleaned_data['page'])
+            page.save()
+            tag.wiki_page = page
+            tag.save()
+            return redirect('otodb:tag_wiki_page', tag_id=tag.id)
+
+    else:
+        form = WikiPageForm()
+
+
+    return render(request, 'tags/new_wiki_page.html', { 'tag': tag, 'form': form })
+
+
+def wiki_page(request: HttpRequest, tag_id: int):
+    tag = get_object_or_404(TagWork, pk=tag_id)
+    if tag.wiki_page is None:
+        return redirect('otodb:tag_new_wiki_page', tag_id=tag.id)
+
+    return render(request, 'tags/wiki_page.html', { 'tag': tag })
+
+
+def edit_wiki_page(request: HttpRequest, tag_id: int):
+    tag = get_object_or_404(TagWork, pk=tag_id)
+    if tag.wiki_page is None:
+        return redirect('otodb:tag_new_wiki_page', tag_id=tag.id)
+    if request.method == 'POST':
+        form = WikiPageForm(request.POST)
+        if form.is_valid():
+            page = tag.wiki_page
+            page.page = form.cleaned_data['page']
+            page.save()
+            return redirect('otodb:tag_wiki_page', tag_id=tag.id)
+
+    else:
+        form = WikiPageForm(instance=tag.wiki_page)
+
+
+    return render(request, 'tags/edit_wiki_page.html', { 'tag': tag, 'form': form })
+

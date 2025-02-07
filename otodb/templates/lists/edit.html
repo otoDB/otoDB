@@ -9,11 +9,11 @@
     {% endif %}
     <div x-data="{
       works: [
-        {% for item in list.poolitem_set.all %}
+        {% for item in works %}
         {id: {{ item.work.id }}, title: `{{ item.work.title }}`, desc: `{{ item.description }}`, uuid: {{ forloop.counter0 }} },
         {% endfor %}
       ],
-      counter: {{ list.poolitem_set.all|length }}
+      counter: {{ works|length }}
     }"> 
     <form target="_self" method="post">
       {% csrf_token %}
@@ -43,6 +43,24 @@
           </template>
         </tbody>
       </table>
+      {% if works %}
+      <div class="step-links">
+          {% if works.has_previous %}
+              <a href="?page=1">&laquo; first</a>
+              <a href="?page={{ works.previous_page_number }}">previous</a>
+          {% endif %}
+  
+          <span class="current">
+              Page {{ works.number }} of {{ works.paginator.num_pages }}.
+          </span>
+  
+          {% if works.has_next %}
+              <a href="?page={{ works.next_page_number }}">next</a>
+              <a href="?page={{ works.paginator.num_pages }}">last &raquo;</a>
+          {% endif %}
+        </div>
+      {% endif %}
+  
       <input type="submit" value="Done" :disabled="works.some(w => w.id <= 0)" />
     </form>
   </div>

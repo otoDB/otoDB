@@ -47,6 +47,10 @@ class PoolItem(models.Model):
         verbose_name = 'List Entry'
         verbose_name_plural = 'List Entries'
         ordering = ['order']
+        constraints = [
+            models.UniqueConstraint(fields=["pool", "order"], name="unique_order_in_pool"),
+        ]
+
 
     def save(self, *args, **kwargs):
         if not self.order:  # Set order only if it's not already set

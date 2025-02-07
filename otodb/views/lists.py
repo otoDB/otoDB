@@ -1,4 +1,5 @@
 from django import forms
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -17,7 +18,10 @@ class ListImportForm(forms.Form):
 def list(request: HttpRequest, list_id: int):
     list_ = get_object_or_404(Pool, pk=list_id)
     works = list_.poolitem_set.select_related('work').order_by('order')
-    return render(request, "lists/list.html", {"list": list_, 'works': works})
+    paginator = Paginator(works, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    return render(request, "lists/list.html", {"list": list_, 'works': page_obj})
 
 @login_required
 def new(request: HttpRequest):
@@ -43,6 +47,12 @@ def edit(request: HttpRequest, list_id: int):
     if list_.author != request.user:
         return redirect('otodb:list', list_id=list_.id)
 
+    works = list_.poolitem_set.select_related('work').order_by('order')
+    page_size = 20
+    paginator = Paginator(works, page_size)
+    page_number = request.GET.get("page") or request.POST.get("page") or 1
+    page_obj = paginator.get_page(page_number)
+
     error = None
     if request.method == 'POST':
         list_form = ListForm(request.POST, instance=list_)
@@ -55,22 +65,29 @@ def edit(request: HttpRequest, list_id: int):
         try:
             sz = int(request.POST['size'])
             new_entries = [(i, int(request.POST[f'work-{i}']), request.POST[f'desc-{i}']) for i in range(sz)]
-            old_entries = list_.poolitem_set.all()
+            old_entries = page_obj
 
             # this may fail, so we do this first
-            new_entries = [PoolItem(work_id=wk, description=desc, order=i, pool=list_) for (i, wk, desc) in new_entries]
-
+            n_previous = (int(page_number) - 1) * page_size
+            new_entries = [PoolItem(work_id=wk, description=desc, order=i + n_previous, pool=list_) for (i, wk, desc) in new_entries]
             # old must go first, querysets are lazy
-            for old in old_entries: old.delete()
-            for new in new_entries: new.save()
+            for entry in old_entries: entry.delete()
+
+            entries_after_page = list_.poolitem_set.filter(order__gte=n_previous)
+            for item in entries_after_page:
+                item.order += sz - page_size
+            PoolItem.objects.bulk_update(entries_after_page, ['order'])
+            
+            PoolItem.objects.bulk_create(new_entries)
 
             return redirect('otodb:list', list_id=list_.id)
         except Exception as e:
             error = str(e)
     else:
+
         list_form = ListForm(instance=list_)
 
-    return render(request, "lists/edit.html", {"list": list_, 'error': error, 'list_form': list_form})
+    return render(request, "lists/edit.html", {"list": list_, 'error': error, 'list_form': list_form, 'works': page_obj})
 
 @login_required
 def delete(request: HttpRequest, list_id: int):
@@ -104,7 +121,7 @@ def video_info_wrapped(url):
     try:
         return video_info(url)
     except:
-        return {}
+        return {} # TODO alert user of failures
 
 @login_required
 def list_import(request: HttpRequest):
@@ -122,6 +139,7 @@ def list_import(request: HttpRequest):
             with ProcessPoolExecutor() as executor:
                 infos = [i for i in executor.map(video_info_wrapped, info['entries']) if i != {}]
 
+            pool_items = []
             for i, vid_info in enumerate(infos):
                 from otodb.models import WorkSource, MediaWork
                 from otodb.models.enums import WorkOrigin
@@ -142,7 +160,9 @@ def list_import(request: HttpRequest):
                 else:
                     work = src.media
 
-                PoolItem(work=work, description='', order=i, pool=list_).save()
+                pool_items.append(PoolItem(work=work, description='', order=i, pool=list_))
+
+            PoolItem.objects.bulk_create(pool_items)
 
             return redirect('otodb:list_edit', list_id=list_.id)
 

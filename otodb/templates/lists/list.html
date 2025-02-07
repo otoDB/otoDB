@@ -14,10 +14,28 @@
                     <img style="max-width:10rem" src="{{ w.work.thumbnail }}" alt="{{ w.work.title }}">
                     <div><a href="{% url 'otodb:work' w.work_id %}">{{ w.work.title }}</a><p>{{ w.description | linebreaksbr }}</p></div>
                 </div>
-            </li>
+            </li>      
             {% empty %}
             <li>No works in this list!</li>
             {% endfor %}
+
+            {% if works %}
+            <span class="step-links">
+                {% if works.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ works.previous_page_number }}">previous</a>
+                {% endif %}
+        
+                <span class="current">
+                    Page {{ works.number }} of {{ works.paginator.num_pages }}.
+                </span>
+        
+                {% if works.has_next %}
+                    <a href="?page={{ works.next_page_number }}">next</a>
+                    <a href="?page={{ works.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+            {% endif %}
         </ol>
         {% if user == list.author %}
         <p><a href="{% url 'otodb:list_edit' list.id %}">Edit this list...</a></p>

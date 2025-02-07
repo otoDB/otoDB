@@ -6,9 +6,9 @@ from datetime import datetime
 
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
-from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliPlaylistIE
+from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
 from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
-from yt_dlp.extractor.youtube import YoutubeIE, YoutubePlaylistIE
+from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 
 from otodb.models import TagWork
@@ -49,12 +49,12 @@ def get_diff(delta):
     return diffs_html
 
 ydl = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}, auto_init=False)
-ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=False)
+ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True)
 
-for e in (BiliBiliIE, NiconicoIE, YoutubeIE, SoundcloudIE):
+for e in (YoutubeIE, NiconicoIE, BiliBiliIE, SoundcloudIE):
     ydl.add_info_extractor(e)
 
-for e in (BilibiliPlaylistIE, NiconicoPlaylistIE, YoutubePlaylistIE, SoundcloudPlaylistIE):
+for e in (YoutubeTabIE, NiconicoPlaylistIE, BilibiliFavoritesListIE, SoundcloudPlaylistIE):
     ydl_playlist.add_info_extractor(e)
 
 make_video_url = {

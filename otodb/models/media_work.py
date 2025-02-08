@@ -6,7 +6,7 @@ from tagulous.models import TagField
 from .base import MediaBaseManager
 from .enums import Rating
 from .tag import TagWork
-from .vote import Vote
+from otodb.account.models import Account
 
 # allow setting a through table on tag fields
 TagField.forbidden_fields = tuple(
@@ -21,7 +21,16 @@ class TagWorkInstance(models.Model):
     work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 
     mean_score = models.FloatField(null=False, blank=False, default=0.0)
-    scores = models.ForeignKey(Vote, on_delete=models.RESTRICT, null=True)
+
+    song_used_as_source = models.BooleanField(null=False, default=False)
+    instance_imported_from_source = models.BooleanField(null=False, default=False)
+
+
+class TagWorkVote(models.Model):
+    user = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
+    score = models.FloatField(null=False, blank=False)
+
+    tag_instance = models.ForeignKey(TagWorkInstance, on_delete=models.CASCADE, null=True)
 
 class MediaWork(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)

@@ -6,6 +6,7 @@ from tagulous.models import TagField
 from .base import MediaBaseManager
 from .enums import Rating
 from .tag import TagWork
+from .vote import Vote
 
 # allow setting a through table on tag fields
 TagField.forbidden_fields = tuple(
@@ -19,7 +20,8 @@ class TagWorkInstance(models.Model):
     work = models.ForeignKey("MediaWork", on_delete=models.CASCADE)
     work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 
-    score = models.FloatField(null=True)
+    mean_score = models.FloatField(null=False, blank=False, default=0.0)
+    scores = models.ForeignKey(Vote, on_delete=models.RESTRICT, null=True)
 
 class MediaWork(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)

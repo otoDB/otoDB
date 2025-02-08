@@ -1,6 +1,9 @@
 import diff_match_patch as dmp_mod
 
-import requests, json, html, re
+import requests
+import json
+import html
+import re
 from time import mktime
 from datetime import datetime
 

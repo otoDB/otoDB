@@ -121,7 +121,7 @@ def video_info_wrapped(url):
     try:
         return video_info(url)
     except:
-        return {} # TODO alert user of failures
+        return {'failed': url}
 
 @login_required
 def list_import(request: HttpRequest):
@@ -132,21 +132,24 @@ def list_import(request: HttpRequest):
 
             info = playlist_info(url)
             list_ = Pool(name=info['title'], description=info['description'], author=request.user)
-            list_.save()
 
             # TODO temp until we decide on access control schemes
             from concurrent.futures import ProcessPoolExecutor
             with ProcessPoolExecutor() as executor:
-                infos = [i for i in executor.map(video_info_wrapped, info['entries']) if i != {}]
+                infos = executor.map(video_info_wrapped, info['entries'])
 
-            pool_items = []
-            for i, vid_info in enumerate(infos):
-                from otodb.models import WorkSource, MediaWork
-                from otodb.models.enums import WorkOrigin
-                from datetime import date
-                from .works import check_source_duplicates, add_tags_to_work
+            new_works, new_tag_instances, new_sources, pool_items = [], [], [], []
+            i = 0
+            from otodb.models import WorkSource, MediaWork, TagWork, TagWorkInstance
+            from otodb.models.enums import WorkOrigin
+            from datetime import date
+            from .works import check_source_duplicates
+            for vid_info in infos:
+                if 'failed' in vid_info:
+                    list_.description += f'\nFailed to fetch {vid_info['failed']}'
+                    continue
+
                 src = check_source_duplicates(vid_info)
-                work = None
                 if not src: # src does not exist
                     work = MediaWork(title=vid_info['title'], description=vid_info['description'], thumbnail=vid_info['thumb'])
                     src = WorkSource(media=work, title=vid_info['title'], description=vid_info['description'],
@@ -154,14 +157,20 @@ def list_import(request: HttpRequest):
                         published_date=date.fromtimestamp(vid_info['timestamp']),
                         work_origin=WorkOrigin(False), thumbnail=vid_info.get('thumb', None),
                         work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None))
-                    work.save()
-                    add_tags_to_work(work, vid_info)
-                    src.save()
+                    new_works.append(work)
+                    new_sources.append(src)
                 else:
                     work = src.media
 
+                new_tag_instances.extend([TagWorkInstance(work=work, work_tag=TagWork.objects.get_or_create(name=t)[0]) for t in vid_info['tags']])
                 pool_items.append(PoolItem(work=work, description='', order=i, pool=list_))
 
+                i += 1
+
+            list_.save()
+            MediaWork.objects.bulk_create(new_works)
+            TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True) # bulk_create does not handle M2M so we do this manually
+            WorkSource.objects.bulk_create(new_sources)
             PoolItem.objects.bulk_create(pool_items)
 
             return redirect('otodb:list_edit', list_id=list_.id)

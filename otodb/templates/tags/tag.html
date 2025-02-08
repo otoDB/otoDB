@@ -31,7 +31,7 @@
         {% endif %}
         <hr>
         {% if tag.wiki_page %}
-        <p x-data="{ content: (new DOMParser()).parseFromString(`{{ tag.wiki_page.page_rendered | safe }}`, 'text/html').children[0].innerText.substring(0,50) + '...' }" x-text="content">
+        <p x-data="{ content: (new DOMParser()).parseFromString(`{{ tag.wiki_page.page_rendered }}`, 'text/html').children[0].innerText.substring(0,50) + '...' }" x-text="content">
         </p>
         <a href="{% url 'otodb:tag_wiki_page' tag.id %}">Go to wiki...</a>
         {% else %}

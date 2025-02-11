@@ -1,5 +1,6 @@
-from os import system
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-system('python manage.py migrate')
-system('python manage.py shell -c "from otodb.account.models import Account; Account.objects.create_superuser(\'admin\', \'admin@example.com\', \'admin\')"')
-
+os.system('python manage.py migrate')
+os.system('python manage.py createsuperuser --noinput')

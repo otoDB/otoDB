@@ -10,7 +10,7 @@
 	<div>
 		<table>
 			<tr><th>Title</th><td>{{ work.title }}</td></tr>
-			<tr><th>Description</th><td>{{ work.description | linebreaksbr }}</td></tr>
+			<tr><th>Description</th><td>{{ work.description | safe | linebreaks }}</td></tr>
 			<tr><th>Rating</th><td>{{ work.get_rating_display }}</td></tr>
 		</table>
 		{% if user.is_authenticated %}

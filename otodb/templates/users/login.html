@@ -5,7 +5,7 @@
 {% include 'users/user_menu.html' %}
 <section>
 <h1>Login</h1>
-<form target="_self" method="post"">
+<form target="_self" method="post">
   {% csrf_token %}
   <table>
     {{ form.as_table }}

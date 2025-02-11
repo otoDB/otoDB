@@ -12,7 +12,10 @@ cp .env.example .env
 
 # Make necessary modifications to .env, e.g. add accepted hosts
 
-# Make migrations, migrate changes, load seed data, create admin account
+# Make migrations if starting from scratch
+# uv run manage.py makemigrations
+
+# Migrate changes and create admin account
 uv run _setup.py
 
 # Run

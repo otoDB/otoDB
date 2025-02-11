@@ -1,12 +1,23 @@
 from django.urls import reverse
 from django.db import models
 from simple_history.models import HistoricalRecords
-from tagulous.models import TagModel
+from tagulous.models import TagModel, TagModelManager
 
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
 
 from .enums import WorkTagCategory, SongTagCategory
+
+class LowerCaseTagModelManager(TagModelManager):
+    def get_or_create(self, *args, **kwargs):
+        if 'name' in kwargs:
+            kwargs['name'] = kwargs['name'].lower()
+        return super().get_or_create(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        if 'name' in kwargs:
+            kwargs['name'] = kwargs['name'].lower()
+        return super().get(*args, **kwargs)
 
 class WikiPage(models.Model):
     page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_STANDARD, null=False)
@@ -15,6 +26,18 @@ class WikiPage(models.Model):
     history = HistoricalRecords()
 
 class TagWork(TagModel):
+    objects = LowerCaseTagModelManager()
+
+    class TagMeta:
+        protect_all = True
+        case_sensitive = False
+        force_lowercase = True
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.lower()
+        super().save(*args, **kwargs)
+
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
     wiki_page = models.OneToOneField(WikiPage, on_delete=models.SET_NULL, null=True, blank=True)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
@@ -35,10 +58,6 @@ class TagWork(TagModel):
             ("manage_tags", "Can manage tags"),
         ]
 
-    class TagMeta:
-        protect_all = True
-        force_lowercase = True
-
     def get_absolute_url(self):
         return reverse('otodb:tag', kwargs={ 'tag_id': self.id })
 
@@ -51,6 +70,18 @@ class TagWork(TagModel):
         return reversed(tree)
 
 class TagSong(TagModel):
+    objects = LowerCaseTagModelManager()
+
+    class TagMeta:
+        protect_all = True
+        case_sensitive = False
+        force_lowercase = True
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.lower()
+        super().save(*args, **kwargs)
+
     category = models.IntegerField(choices=SongTagCategory.choices, default=SongTagCategory.GENERAL)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
@@ -72,6 +103,7 @@ class TagSong(TagModel):
 
     class TagMeta:
         protect_all = True
+        case_sensitive = False
         force_lowercase = True
 
     def get_absolute_url(self):

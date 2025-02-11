@@ -7,3 +7,4 @@ media
 static
 .python-version
 uv.lock
+.vscode

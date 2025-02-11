@@ -117,7 +117,7 @@ DATABASE = {
     'OPTIONS': {},
 }
 
-if DATABASE_BACKEND == 'postgresql' and 'OTODB_DB_SERVICE' in os.environ and 'OTODB_DB_PASSFILE' in os.environ:
+if DATABASE_BACKEND == 'postgresql' and os.environ.get('OTODB_DB_SERVICE') and os.environ.get('OTODB_DB_PASSFILE'):
     DATABASE['OPTIONS'] = {
         'service': os.environ['OTODB_DB_SERVICE'],
         'passfile': os.environ['OTODB_DB_PASSFILE'],

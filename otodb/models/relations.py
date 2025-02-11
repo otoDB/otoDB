@@ -1,8 +1,7 @@
 from django.db import models
 from django.urls import reverse
 
-from .media_work import MediaWork
-from .media_song import MediaSong
+from .media import MediaWork, MediaSong
 
 from .enums import WorkRelationTypes, SongRelationTypes
 

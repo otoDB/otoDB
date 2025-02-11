@@ -1,7 +1,7 @@
 from django.db import models
 
 from .enums import Platform, WorkOrigin, WorkStatus
-from .media_work import MediaWork
+from .media import MediaWork
 
 
 class WorkSource(models.Model):

@@ -101,11 +101,6 @@ class TagSong(TagModel):
             ("manage_tags", "Can manage tags"),
         ]
 
-    class TagMeta:
-        protect_all = True
-        case_sensitive = False
-        force_lowercase = True
-
     def get_absolute_url(self):
         return reverse('otodb:tag_song', kwargs={ 'tag_id': self.id })
 

@@ -38,7 +38,8 @@ def get_diff(delta):
     for change in delta.changes:
         match change.field:
             case 'tags':
-                old, new = set([c['tagwork'] for c in change.old]), set([c['tagwork'] for c in change.new])
+                # TODO make this not hardcoded...
+                old, new = set([c['work_tag'] for c in change.old]), set([c['work_tag'] for c in change.new])
                 old, new = old - new, new - old
                 changes = ['- ' + str(TagWork.objects.get(id=id_)) for id_ in old] + ['+ ' + str(TagWork.objects.get(id=id_)) for id_ in new]
                 diffs_html.append({'html': ('<br>').join(changes), 'field': change.field})

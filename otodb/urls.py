@@ -22,12 +22,12 @@ urlpatterns = [
     path("works/checkin/<int:source_id>", views.works.check_in_source, name="work_check_in_source"),
 
     path("work_tags/alias", views.tags.work_alias, name="tag_alias"),
-    path("work_tags/<int:tag_id>", views.tags.work_tag, name="tag"),
-    path("work_tags/<int:tag_id>/edit", views.tags.work_edit, name="tag_edit"),
-    path("work_tags/<int:tag_id>/history", views.tags.work_history, name="tag_history"),
-    path("work_tags/<int:tag_id>/wiki_page", views.tags.wiki_page, name="tag_wiki_page"),
-    path("work_tags/<int:tag_id>/new_wiki_page", views.tags.new_wiki_page, name="tag_new_wiki_page"),
-    path("work_tags/<int:tag_id>/edit_wiki_page", views.tags.edit_wiki_page, name="tag_edit_wiki_page"),
+    path("work_tags/<str:tag_slug>", views.tags.work_tag, name="tag"),
+    path("work_tags/<str:tag_slug>/edit", views.tags.work_edit, name="tag_edit"),
+    path("work_tags/<str:tag_slug>/history", views.tags.work_history, name="tag_history"),
+    path("work_tags/<str:tag_slug>/wiki_page", views.tags.wiki_page, name="tag_wiki_page"),
+    path("work_tags/<str:tag_slug>/new_wiki_page", views.tags.new_wiki_page, name="tag_new_wiki_page"),
+    path("work_tags/<str:tag_slug>/edit_wiki_page", views.tags.edit_wiki_page, name="tag_edit_wiki_page"),
 
     path("source/<int:source_id>/refresh", views.works.refresh_source, name="source_refresh"),
 
@@ -36,7 +36,7 @@ urlpatterns = [
     path("songs/<int:song_id>/history", views.songs.history, name="song_history"),
     path("songs/<int:song_id>/relations", views.songs.relations, name="song_relations"),
     path("songs/<int:song_id>/edit_relations", views.songs.edit_relations, name="song_edit_relations"),
-    path("songs/new_from_tag/<int:tag_id>", views.songs.new_from_tag, name="song_new_from_tag"),
+    path("songs/new_from_tag/<str:tag_slug>", views.songs.new_from_tag, name="song_new_from_tag"),
 
     # path("song_tags/alias", views.tags.song_alias, name="song_tag_alias"),
     # path("song_tags/<int:tag_id>", views.tags.song_tag, name="song_tag"),

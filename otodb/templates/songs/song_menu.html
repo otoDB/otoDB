@@ -1,5 +1,5 @@
 <menu class="right">
-	{% url 'otodb:tag' song.work_tag.id as t_url %}
+	{% url 'otodb:tag' song.work_tag.slug as t_url %}
 	{% url 'otodb:song_relations' song.id as sr_url %}
 	{% url 'otodb:song_edit' song.id as se_url %}
 	{% url 'otodb:song_history' song.id as sh_url %}

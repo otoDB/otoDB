@@ -23,7 +23,7 @@
         {% elif type == 'tag' %}
             <thead><tr><th>Name</td><td>Aliases</td></tr></thead><tbody>
             {% for entry in results %}
-                <tr><td><a href="{% url 'otodb:tag' entry.id %}">{{ entry.name }}</a></td><td>{{ entry.aliases.all|join:',' }}</td></tr>
+                <tr><td><a href="{% url 'otodb:tag' entry.slug %}">{{ entry.name }}</a></td><td>{{ entry.aliases.all|join:',' }}</td></tr>
             {% endfor %}
             </tbody>
         {% elif type == 'song' %}

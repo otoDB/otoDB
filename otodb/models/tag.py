@@ -59,7 +59,7 @@ class TagWork(TagModel):
         ]
 
     def get_absolute_url(self):
-        return reverse('otodb:tag', kwargs={ 'tag_id': self.id })
+        return reverse('otodb:tag', kwargs={ 'tag_slug': self.slug })
 
     def get_tree(self):
         tree = []
@@ -102,6 +102,6 @@ class TagSong(TagModel):
         ]
 
     def get_absolute_url(self):
-        return reverse('otodb:tag_song', kwargs={ 'tag_id': self.id })
+        return reverse('otodb:tag_song', kwargs={ 'tag_slug': self.slug })
 
 

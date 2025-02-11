@@ -214,6 +214,8 @@ SERIALIZATION_MODULES = {
     'yaml':   'tagulous.serializers.pyyaml',
 }
 
+TAGULOUS_SLUG_ALLOW_UNICODE = True
+
 SITE_URL = ALLOWED_HOSTS[0]
 SITE_ID = 1
 COMMENTS_APP = 'django_comments_xtd'

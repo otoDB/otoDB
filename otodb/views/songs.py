@@ -17,8 +17,8 @@ class SongEditForm(SongForm):
     reason = forms.CharField(label="Update Reason", required=True)
 
 @login_required
-def new_from_tag(request: HttpRequest, tag_id: int):
-    tag = get_object_or_404(TagWork, id=tag_id)
+def new_from_tag(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
     if tag.aliased_to is not None:
         tag = tag.aliased_to
     if tag.category == WorkTagCategory.SONG:
@@ -31,7 +31,7 @@ def new_from_tag(request: HttpRequest, tag_id: int):
             form.save()
             tag.category = WorkTagCategory.SONG
             tag.save()
-            return redirect('otodb:tag', tag_id=tag_id)
+            return redirect('otodb:tag', tag_slug=tag_slug)
 
     else:
         form = SongForm()

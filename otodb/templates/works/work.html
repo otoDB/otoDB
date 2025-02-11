@@ -34,7 +34,7 @@
 		tags: [
 			{% for tag in work.tags.all %}
 			{
-				url: `{% url 'otodb:tag' tag.id %}`,
+				url: `{% url 'otodb:tag' tag.slug %}`,
 				name: `{{ tag }}`,
 				selected: false
 			},

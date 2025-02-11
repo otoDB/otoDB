@@ -6,21 +6,21 @@
 <section>
     <h1>Tag: {{ tag }}</h1>
     {% if tag.aliased_to %}
-    This tag is aliased to <a href="{% url 'otodb:tag' tag.aliased_to.id %}">{{ tag.aliased_to }}</a>. You will be redirected in <span id="countdown"></span> seconds.
+    This tag is aliased to <a href="{% url 'otodb:tag' tag.aliased_to.slug %}">{{ tag.aliased_to }}</a>. You will be redirected in <span id="countdown"></span> seconds.
     <script>
         let cd = 3;
         let countdown = document.querySelector('#countdown');
         countdown.innerHTML = cd;
         setInterval(() => {
             countdown.innerHTML = --cd;
-            if (cd === 0) window.location.replace('{% url 'otodb:tag' tag.aliased_to.id %}');
+            if (cd === 0) window.location.replace('{% url 'otodb:tag' tag.aliased_to.slug %}');
         }, 1000);
     </script>
     {% else %}
     <div>
         <span>Tags</span> >
         {% for t in tag.get_tree %}
-        {% if not forloop.last %}<a href="{% url 'otodb:tag' t.id %}">{{ t }}</a> >{% else %} <span>{{ t }}</span> {% endif %}
+        {% if not forloop.last %}<a href="{% url 'otodb:tag' t.slug %}">{{ t }}</a> >{% else %} <span>{{ t }}</span> {% endif %}
         {% endfor %}
     </div>
         <h2>Category: {{ tag.get_category_display }}</h2>
@@ -33,10 +33,10 @@
         {% if tag.wiki_page %}
         <p x-data="{ content: (new DOMParser()).parseFromString(`{{ tag.wiki_page.page_rendered }}`, 'text/html').children[0].innerText.substring(0,50) + '...' }" x-text="content">
         </p>
-        <a href="{% url 'otodb:tag_wiki_page' tag.id %}">Go to wiki...</a>
+        <a href="{% url 'otodb:tag_wiki_page' tag.slug %}">Go to wiki...</a>
         {% else %}
         <p>
-            This tag does not yet have a wiki page. <a href="{% url 'otodb:tag_new_wiki_page' tag.id %}">Go create one...</a>
+            This tag does not yet have a wiki page. <a href="{% url 'otodb:tag_new_wiki_page' tag.slug %}">Go create one...</a>
         </p>
         {% endif %}
     </section>
@@ -57,7 +57,7 @@
     <h2>Child tags</h2>
     <ul>
         {% for t in tag.tagwork_set.all %}
-        <li><a href="{% url 'otodb:tag' t.id %}">{{ t }}</a></li>
+        <li><a href="{% url 'otodb:tag' t.slug %}">{{ t }}</a></li>
         {% endfor %}
     </ul>
     </section>

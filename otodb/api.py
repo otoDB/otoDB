@@ -23,9 +23,9 @@ def query_video(request, platform: str, id: str):
         return 404, {'message': 'Not in the database.'}
 
     media = work.media
-    tags = list(media.tags.values_list('name', 'id'))
+    tags = list(media.tags.values_list('name', 'slug'))
 
     return {
-        'tags': [(name, reverse('otodb:tag', kwargs={ 'tag_id': id_ })) for name, id_ in tags],
+        'tags': [(name, reverse('otodb:tag', kwargs={ 'tag_slug': slug })) for name, slug in tags],
         'rel': reverse('otodb:work', kwargs={ 'work_id': media.id })
         }

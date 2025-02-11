@@ -34,6 +34,11 @@ ALLOWED_HOSTS = [
     for host in os.environ.get('OTODB_ALLOWED_HOSTS', "").split(',')
     if host
 ]
+CSRF_TRUSTED_ORIGINS = [
+    host.strip()
+    for host in os.environ.get('OTODB_CSRF_TRUSTED_ORIGINS', "").split(',')
+    if host
+]
 
 
 # Application definition

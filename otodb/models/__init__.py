@@ -1,5 +1,4 @@
-from .media_song import MediaSong
-from .media_work import MediaWork, TagWorkInstance, TagWorkVote
+from .media import MediaWork, TagWorkInstance, TagWorkVote, MediaSong
 from .pool import Pool, PoolItem
 from .tag import TagWork, TagSong, WikiPage
 from .work_source import WorkSource

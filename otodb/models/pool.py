@@ -3,8 +3,7 @@ from django.urls import reverse
 
 from otodb.account.models import Account
 
-from .media_work import MediaWork
-
+from .media import MediaWork
 
 class Pool(models.Model):
     name = models.CharField(max_length=255)

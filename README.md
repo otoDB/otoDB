@@ -1,8 +1,8 @@
 # otoDB
 otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.
 
-## ! NOTICE !
-As the model schema is still a very early WIP, migrations are currently not committed as part of this repo. You will need to make these migrations yourself (the command is provided below).
+<!-- ## ! NOTICE !
+As the model schema is still a very early WIP, migrations are currently not committed as part of this repo. You will need to make these migrations yourself (the command is provided below). -->
 
 ## Setup
 We recommend using `uv`. Project setup is contained in `pyproject.toml`.

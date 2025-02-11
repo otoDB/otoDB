@@ -53,6 +53,7 @@ def get_diff(delta):
 
 ydl = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}, auto_init=False)
 ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True)
+niconico_ie = ydl.get_info_extractor(NiconicoIE.ie_key())
 
 for e in (YoutubeIE, NiconicoIE, BiliBiliIE, SoundcloudIE):
     ydl.add_info_extractor(e)
@@ -101,13 +102,10 @@ def video_info(link):
             'thumbnail': 'thumb',
             'timestamp':  'timestamp'
         }
-    try:
+    if niconico_ie.suitable(link):
+        info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+    else:
         info = ydl.extract_info(link, download=False)
-    except DownloadError:
-        niconico = ydl.get_info_extractor(NiconicoIE.ie_key())
-        if niconico.suitable(link):
-            info = get_niconico_geoblocked(niconico.get_temp_id(link))
-            
 
     if info.get('_type') == 'playlist':
         info = info['entries'][0] # TODO need some work...

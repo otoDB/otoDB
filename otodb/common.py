@@ -12,12 +12,9 @@ from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
 from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
-import googleapiclient.discovery
 
 from otodb.models import TagWork
 from otodb.models.enums import Platform
-
-from django.conf import settings
 
 def get_diff(delta):
     dmp = dmp_mod.diff_match_patch()
@@ -54,16 +51,23 @@ def get_diff(delta):
 
     return diffs_html
 
-ydl = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}, auto_init=False)
 ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True)
-youtube_ie, niconico_ie = ydl.get_info_extractor(YoutubeIE.ie_key()), ydl.get_info_extractor(NiconicoIE.ie_key())
-youtube_api = googleapiclient.discovery.build('youtube', 'v3', developerKey=settings.YOUTUBE_API_KEY) if settings.YOUTUBE_API_KEY else None
-
-for e in (YoutubeIE, NiconicoIE, BiliBiliIE, SoundcloudIE):
-    ydl.add_info_extractor(e)
-
 for e in (YoutubeTabIE, NiconicoPlaylistIE, BilibiliFavoritesListIE, SoundcloudPlaylistIE):
     ydl_playlist.add_info_extractor(e)
+
+ydl, niconico_ie = None, None
+def reset_ydl(cookie_file=None):
+    global ydl, niconico_ie
+    opts = { 'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True }
+    if cookie_file:
+        opts['cookiefile'] = cookie_file
+    ydl = YoutubeDL(opts, auto_init=False)
+    niconico_ie = ydl.get_info_extractor(NiconicoIE.ie_key())
+
+    for e in (YoutubeIE, NiconicoIE, BiliBiliIE, SoundcloudIE):
+        ydl.add_info_extractor(e)
+
+reset_ydl()
 
 make_video_url = {
     'youtube': lambda s: f'https://youtu.be/{s}',
@@ -93,25 +97,6 @@ def get_niconico_geoblocked(sm):
             'timestamp': int(mktime(datetime.fromisoformat(video['registeredAt']).timetuple()))
         }
 
-def get_youtube_from_api(video_id):
-    r = youtube_api.videos().list(part='snippet', id=video_id).execute()
-    video = r['items'][0]['snippet']
-    clean_url = make_video_url['youtube'](video_id)
-    thumb = max(video['thumbnails'].values(), key=lambda s: s['width'])
-
-    return {
-        'extractor': 'youtube',
-        'title': video['title'],
-        'description': video['description'],
-        'tags': video.get('tags', []),
-        'width': thumb['width'], # likely wrong
-        'height': thumb['height'], # likely wrong
-        'webpage_url': clean_url,
-        'id': r['items'][0]['id'],
-        'thumbnail': thumb['url'],
-        'timestamp': int(mktime(datetime.fromisoformat(video['publishedAt']).timetuple()))
-    }
-
 def video_info(link):
     keys = {
             'extractor': 'site',
@@ -127,8 +112,6 @@ def video_info(link):
         }
     if niconico_ie.suitable(link):
         info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
-    elif youtube_api and youtube_ie.suitable(link):
-        info = get_youtube_from_api(youtube_ie.get_temp_id(link))
     else:
         info = ydl.extract_info(link, download=False)
 

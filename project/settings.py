@@ -39,8 +39,6 @@ CSRF_TRUSTED_ORIGINS = [
     if host
 ]
 
-YOUTUBE_API_KEY = os.environ.get('OTODB_YOUTUBE_API_KEY', None)
-
 # Application definition
 
 INSTALLED_APPS = [

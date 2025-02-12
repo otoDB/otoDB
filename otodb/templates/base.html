@@ -19,6 +19,7 @@
 		   <a href="{% url 'otodb:index' %}">{{ config.site_name }}</a>
 		   {% if user.is_staff %}
 		   <a href="{% url 'admin:index' %}">Admin View</a>
+		   <a href="{% url 'otodb:upload_youtube_cookies' %}">Upload YouTube Cookies</a>
 		   {% endif %}
 		   {% if user.is_authenticated %}
 		   <a href="{% url 'otodb:work_merge' %}">Merge works</a>

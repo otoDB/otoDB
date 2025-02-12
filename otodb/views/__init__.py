@@ -21,9 +21,9 @@ def index(request: HttpRequest):
     )
 
 SEARCH_TYPE_LOOKUP = {
-    "work": lambda q: MediaWork.objects.filter(title__contains=q, moved_to__isnull=True),
-    "song": lambda q: MediaSong.objects.filter(title__contains=q),
-    "tag":  lambda q: TagWork.objects.filter(name__contains=q, aliased_to__isnull=True)
+    "work": lambda q: MediaWork.objects.filter(title__icontains=q, moved_to__isnull=True),
+    "song": lambda q: MediaSong.objects.filter(title__icontains=q),
+    "tag":  lambda q: TagWork.objects.filter(name__icontains=q, aliased_to__isnull=True)
 }
 def search(request: HttpRequest):
     if request.method == 'GET':
@@ -45,10 +45,10 @@ def query(request: HttpRequest, query_type: str):
             results = None
             match query_type:
                 case 'work':
-                    results = MediaWork.objects.filter(title__contains=q, moved_to__isnull=True)
+                    results = MediaWork.objects.filter(title__icontains=q, moved_to__isnull=True)
                     return render(request, "query/works.html", {'results': results})
                 case 'tag':
-                    results = TagWork.objects.filter(name__contains=q, aliased_to__isnull=True)
+                    results = TagWork.objects.filter(name__icontains=q, aliased_to__isnull=True)
                     return render(request, "query/tags.html", {'results': results})
                 case 'list':
                     results = request.user.pool_set
@@ -56,7 +56,7 @@ def query(request: HttpRequest, query_type: str):
                     results = [(lst, lst.work_in_pool(work_id).exists()) for lst in results.all()]
                     return render(request, "query/lists.html", {'results': results, 'work_id': work_id})
                 case 'song':
-                    results = MediaSong.objects.filter(title__contains=q)
+                    results = MediaSong.objects.filter(title__icontains=q)
                     return render(request, "query/songs.html", {'results': results})
     return HttpResponse('')
 

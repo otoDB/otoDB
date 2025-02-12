@@ -82,7 +82,7 @@ def check_in_source(request: HttpRequest, source_id: int):
             return redirect('otodb:work', work_id=work.id)
     else:
         form = SourceCheckinForm(initial={ 'official': not src.work_origin })
-        suggestions = MediaWork.objects.filter(title__contains=src.title, moved_to__isnull=True)[:3]
+        suggestions = MediaWork.objects.filter(title__icontains=src.title, moved_to__isnull=True)[:3]
 
     return render(request, 'works/check_in_source.html', {'form': form, 'source': src, 'title': title, 'suggestions': suggestions})
 

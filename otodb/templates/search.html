@@ -16,7 +16,7 @@
                     <td><a href="{% url 'otodb:work' entry.id %}">{{ entry.title }}</a></td>
                     <td>{{ entry.get_rating_display }}</td>
                     <td>{{ entry.tags }}</td>
-                    <td>{{ entry.worksource_set.all|length }}</td>
+                    <td>{{ entry.worksource_set.count }}</td>
                 </tr>
             {% endfor %}
             </tbody>

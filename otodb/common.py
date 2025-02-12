@@ -97,16 +97,18 @@ def get_youtube_from_api(video_id):
     r = youtube_api.videos().list(part='snippet', id=video_id).execute()
     video = r['items'][0]['snippet']
     clean_url = make_video_url['youtube'](video_id)
+    thumb = max(video['thumbnails'].values(), key=lambda s: s['width'])
+
     return {
         'extractor': 'youtube',
         'title': video['title'],
         'description': video['description'],
-        'tags': video['tags'],
-        'width': video['thumbnails']['maxres']['width'],
-        'height': video['thumbnails']['maxres']['height'],
+        'tags': video.get('tags', []),
+        'width': thumb['width'], # likely wrong
+        'height': thumb['height'], # likely wrong
         'webpage_url': clean_url,
         'id': r['items'][0]['id'],
-        'thumbnail': video['thumbnails']['maxres']['url'],
+        'thumbnail': thumb['url'],
         'timestamp': int(mktime(datetime.fromisoformat(video['publishedAt']).timetuple()))
     }
 

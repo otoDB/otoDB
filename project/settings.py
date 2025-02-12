@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
 
@@ -40,6 +39,7 @@ CSRF_TRUSTED_ORIGINS = [
     if host
 ]
 
+YOUTUBE_API_KEY = os.environ.get('OTODB_YOUTUBE_API_KEY', None)
 
 # Application definition
 

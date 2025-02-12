@@ -27,6 +27,7 @@ if not DEBUG and 'OTODB_SECRET_KEY' not in os.environ:
     exit(1)
 
 SECRET_KEY = os.environ.get('OTODB_SECRET_KEY', '1145141919')
+YOUTUBE_COOKIES_FILE = os.environ.get('OTODB_YOUTUBE_COOKIES_FILE')
 
 ALLOWED_HOSTS = [
     host.strip()

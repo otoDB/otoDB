@@ -116,9 +116,10 @@ def video_info(link):
         info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
     else:
         info = ydl.extract_info(link, download=False)
-
-    if info.get('_type') == 'playlist':
-        info = info['entries'][0] # TODO need some work...
+        if info.get('_type') == 'playlist':
+            info = info['entries'][0] # TODO need some work...
+        resolutions = [(f['width'], f['height']) for f in info['formats'] if f['width']]
+        info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
 
     info['extractor'] = Platform.from_str(info['extractor'])
 
@@ -145,7 +146,6 @@ def video_info(link):
             info['id'] = info['id'][:i]
 
     return { keys[key]: info[key] for key in keys if key in info }
-
 
 def playlist_info(link):
     keys = {

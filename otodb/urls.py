@@ -55,4 +55,6 @@ urlpatterns = [
     path("login", views.users.login_view, name="login"),
     path("register", views.users.register_view, name="register"),
     path("logout", views.users.logout_view, name="logout"),
+
+    path("upload_youtube_cookies", views.upload_youtube_cookies, name="upload_youtube_cookies"),
 ]

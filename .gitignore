@@ -8,3 +8,4 @@ static
 .python-version
 uv.lock
 .vscode
+*cookies.txt

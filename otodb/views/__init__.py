@@ -1,9 +1,12 @@
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
+from django.contrib.admin.views.decorators import staff_member_required
 
 from otodb.models import MediaSong, MediaWork, Pool, TagWork
+from otodb.common import reset_ydl
 
 from . import lists, tags, users, works, songs
 
@@ -55,4 +58,24 @@ def query(request: HttpRequest, query_type: str):
                     results = MediaSong.objects.filter(title__contains=q)
                     return render(request, "query/songs.html", {'results': results})
     return HttpResponse('')
+
+class UploadForm(forms.Form):
+    file = forms.FileField()
+
+YT_COOKIE_FILE = 'youtube_cookies.txt'
+@staff_member_required
+def upload_youtube_cookies(request: HttpRequest):
+    if request.method == 'POST':
+        form = UploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            with open(YT_COOKIE_FILE, "wb+") as destination:
+                for chunk in request.FILES['file'].chunks():
+                    destination.write(chunk)
+            reset_ydl(YT_COOKIE_FILE)
+            return redirect('otodb:index')
+    else:
+        form = UploadForm()
+
+    return render(request, 'upload_youtube_cookies.html', { 'form': form })
+
 

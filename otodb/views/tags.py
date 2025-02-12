@@ -153,7 +153,7 @@ def new_wiki_page(request: HttpRequest, tag_slug: str):
 def wiki_page(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, pk=tag_slug)
     if tag.wiki_page is None:
-        return redirect('otodb:tag_new_wiki_page', tag_slug=tag.id)
+        return redirect('otodb:tag_new_wiki_page', tag_slug=tag.slug)
 
     return render(request, 'tags/wiki_page.html', { 'tag': tag })
 

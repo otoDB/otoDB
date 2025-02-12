@@ -40,7 +40,7 @@ def new_from_tag(request: HttpRequest, tag_slug: str):
 
 def song(request: HttpRequest, song_id: int):
     song = get_object_or_404(MediaSong, id=song_id)
-    return redirect('otodb:tag', song.work_tag.id)
+    return redirect('otodb:tag', song.work_tag.slug)
 
 def history(request: HttpRequest, song_id: int):
     song = get_object_or_404(MediaSong, pk=song_id)

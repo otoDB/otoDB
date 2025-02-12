@@ -30,7 +30,7 @@ class Pool(models.Model):
         else:
             order = self.poolitem_set.aggregate(models.Max('order'))['order__max'] + 1
         work = MediaWork.objects.get(id=work_id, moved_to__isnull=True)
-        PoolItem(work=work, description='', order=order, pool=self).save()
+        PoolItem.objects.create(work=work, description='', order=order, pool=self)
 
 
 class PoolItem(models.Model):

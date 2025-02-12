@@ -75,7 +75,7 @@
                     <td><a href="{% url 'otodb:work' work.id %}">{{ work.title }}</a></td>
                     <td>{{ work.get_rating_display }}</td>
                     <td>{{ work.tags }}</td>
-                    <td>{{ work.worksource_set.all|length }}</td>
+                    <td>{{ work.worksource_set.count }}</td>
                 </tr>
             {% endfor %}
             </tbody>

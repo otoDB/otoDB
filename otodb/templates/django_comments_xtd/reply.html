@@ -3,9 +3,10 @@
 {% load comments %}
 {% load comments_xtd %}
 
-{% block title %}{% trans "Comment reply" %}{% endblock %}
+{% block page_title %}{% trans "Comment reply" %}{% endblock %}
 
 {% block content %}
+<section>
 <div class="container">
   <div class="row justify-content-center my-4">
     <div class="text-center">
@@ -32,4 +33,5 @@
     </div>
   </div>
 </div>
+</section>
 {% endblock %}

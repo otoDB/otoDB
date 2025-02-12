@@ -8,14 +8,16 @@ from time import mktime
 from datetime import datetime
 
 from yt_dlp import YoutubeDL
-from yt_dlp.utils import DownloadError
 from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
 from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
+import googleapiclient.discovery
 
 from otodb.models import TagWork
 from otodb.models.enums import Platform
+
+from django.conf import settings
 
 def get_diff(delta):
     dmp = dmp_mod.diff_match_patch()
@@ -54,7 +56,8 @@ def get_diff(delta):
 
 ydl = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}, auto_init=False)
 ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True)
-niconico_ie = ydl.get_info_extractor(NiconicoIE.ie_key())
+youtube_ie, niconico_ie = ydl.get_info_extractor(YoutubeIE.ie_key()), ydl.get_info_extractor(NiconicoIE.ie_key())
+youtube_api = googleapiclient.discovery.build('youtube', 'v3', developerKey=settings.YOUTUBE_API_KEY) if settings.YOUTUBE_API_KEY else None
 
 for e in (YoutubeIE, NiconicoIE, BiliBiliIE, SoundcloudIE):
     ydl.add_info_extractor(e)
@@ -90,6 +93,23 @@ def get_niconico_geoblocked(sm):
             'timestamp': int(mktime(datetime.fromisoformat(video['registeredAt']).timetuple()))
         }
 
+def get_youtube_from_api(video_id):
+    r = youtube_api.videos().list(part='snippet', id=video_id).execute()
+    video = r['items'][0]['snippet']
+    clean_url = make_video_url['youtube'](video_id)
+    return {
+        'extractor': 'youtube',
+        'title': video['title'],
+        'description': video['description'],
+        'tags': video['tags'],
+        'width': video['thumbnails']['maxres']['width'],
+        'height': video['thumbnails']['maxres']['height'],
+        'webpage_url': clean_url,
+        'id': r['items'][0]['id'],
+        'thumbnail': video['thumbnails']['maxres']['url'],
+        'timestamp': int(mktime(datetime.fromisoformat(video['publishedAt']).timetuple()))
+    }
+
 def video_info(link):
     keys = {
             'extractor': 'site',
@@ -105,6 +125,8 @@ def video_info(link):
         }
     if niconico_ie.suitable(link):
         info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+    elif youtube_api and youtube_ie.suitable(link):
+        info = get_youtube_from_api(youtube_ie.get_temp_id(link))
     else:
         info = ydl.extract_info(link, download=False)
 

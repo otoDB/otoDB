@@ -122,6 +122,8 @@ def refresh_source(request: HttpRequest, source_id: int):
         src.title=info['title']
         src.description=info['description']
         src.thumbnail=info.get('thumb', None)
+        src.work_width = info['work_width']
+        src.work_height = info['work_height']
         src.save()
 
     return redirect('otodb:work', work_id=src.media.id)

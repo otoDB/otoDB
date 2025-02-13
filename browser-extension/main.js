@@ -91,12 +91,29 @@ const init = async () => {
             platform: 'bilibili',
             id: window.location.toString().match(/\/video\/(BV[a-zA-Z0-9]{10})\//)[1]
         });
-        
-        main({
-            inject: node => document.querySelector('.video-desc-container').insertAdjacentElement('afterend', node),
+        const get_div = () => new Promise(resolve => main({
+            div_ready: resolve,
+            // We put it outside #app -- the reactive (meta)-framework used fails if we insert unexpected nodes inside #app
+            inject: node => document.querySelector('#app').insertAdjacentElement('afterend', node),
             div: null,
             query: get_query(),
-        });
+        })), set_style = div => {
+            // TODO this is not ideal...
+            div.style.position = 'fixed';
+            div.style.bottom = 0;
+            div.style.zIndex = 1;
+        };
+
+        let div = await get_div();
+        set_style(div);
+        const spa_target = await wait_for_target(records => document.querySelector('video'), { subtree: true, childList: true });
+
+        while (true) {
+            await wait_for_target(records => records.some(record => record.type === 'attributes' && record.attributeName === 'src'), { attributes: true }, spa_target);
+            div.remove();
+            div = await get_div();
+            set_style(div);
+        }
     }
     else if (window.location.hostname.endsWith('nicovideo.jp')) {
         const get_query = () => ({
@@ -111,9 +128,9 @@ const init = async () => {
             div: null,
             query: get_query(),
         }));
-        const spa_target = await wait_for_target(records => document.querySelector('video'), { subtree: true, childList: true });
-
+        
         while (true) {
+            const spa_target = await wait_for_target(records => document.querySelector('video'), { subtree: true, childList: true });
             await wait_for_target(records => records.some(record => record.type === 'attributes' && record.attributeName === 'src'), { attributes: true }, spa_target);
             main({
                 div: div,

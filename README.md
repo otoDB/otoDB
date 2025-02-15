@@ -22,7 +22,7 @@ uv run _setup.py
 uv run manage.py runserver
 ```
 
-The script `_clear.py` clears migratinos and deletes the database, at which point you can run `_setup.py` again.
+The script `_clear.py` and deletes the database, at which point you can run `_setup.py` again.
 
 When running through `uv`, you may get an SSL error when the server fetches content from the web, because the virtual enviroment cannot find the local certificates. Map the variable `SSL_CERT_FILE` to the correct location:
 ```sh

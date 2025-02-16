@@ -1,7 +1,10 @@
 import createClient from "openapi-fetch";
 import type { paths } from "./schema";
+import {
+    BACKEND_URL,
+} from '$env/static/private';
 
-const client = createClient<paths>({ baseUrl: "http://127.0.0.1:8000/", credentials: 'include' });
+const client = createClient<paths>({ baseUrl: BACKEND_URL, credentials: 'include' });
 export default client;
 
 // N.B. USE ON CLIENT ONLY! DO NOT USE THIS ON THE SERVER

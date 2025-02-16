@@ -3,8 +3,6 @@
 import client from "$lib/api";
 import type { PageLoad } from "./$types";
 
-export const prerender = true;
-
 export const load: PageLoad = async ({ fetch }) => {
     const video = await client.GET('/api/query_video', {
         params: { query: { id: 'sm43808529', platform: 'niconico' } },

@@ -13,7 +13,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  backend:
+  web:
     build: ./backend
     command: >
       sh -c "python _setup.py &&
@@ -34,11 +34,11 @@ services:
       - db
     restart: always
 
-  frontend:
-    build: ./frontend
-    ports:
-      - "5173:5173"
-    restart: always
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - "5173:5173"
+  #   restart: always
 
 volumes:
   postgres_data:

@@ -3,7 +3,7 @@
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import Header from './Header.svelte';
 	import '../app.css';
-
+	
 	let { children } = $props();
 </script>
 
@@ -45,10 +45,6 @@
 		justify-content: center;
 		align-items: center;
 		padding: 12px;
-	}
-
-	footer a {
-		font-weight: bold;
 	}
 
 	@media (min-width: 480px) {

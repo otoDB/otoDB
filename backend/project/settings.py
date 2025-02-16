@@ -231,11 +231,9 @@ COMMENTS_XTD_APP_MODEL_OPTIONS = {
 
 CORS_ALLOWED_ORIGINS = [
     "https://cdn.jsdelivr.net",
-    "https://unpkg.com"
-]
-
-CORS_ALLOWED_ORIGINS = [
+    "https://unpkg.com",
     "https://www.youtube.com",
     "https://www.nicovideo.jp",
     "https://www.bilibili.com",
+    "http://127.0.0.1:5173", # TODO FRONTEND URL
 ]

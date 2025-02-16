@@ -1,7 +1,12 @@
 <script lang="ts">
-	import Counter from './Counter.svelte';
 	import welcome from '$lib/images/svelte-welcome.webp';
 	import welcomeFallback from '$lib/images/svelte-welcome.png';
+
+	import * as m from '$lib/paraglide/messages.js';
+
+	import type { PageData } from "./$types";
+
+	export let data: PageData;
 </script>
 
 <svelte:head>
@@ -18,14 +23,27 @@
 			</picture>
 		</span>
 
-		to your new<br />SvelteKit app
+		to the otomad/ytpmv database...
+		<br>
+		We'll make more progress here soon.
 	</h1>
+	<p>
+		Here is i18n in action:
+		{m.hello_world({ name: 'User' })}.
+		<br>
+		Try appending ja, ko, zh-cn to the URL!
+	</p>
+	<p>
+		Here's an API call that will be SSR'd:
+	</p>
+	{#if data.video.error}
+	<div>There was an error: {data.video.error.message}</div>
+	{:else if data.video.data}
+	<pre><code>{JSON.stringify(data.video.data, undefined, 2)}</code></pre>
+	{:else}
+	<div>Loading...</div>
+	{/if}
 
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
 </section>
 
 <style>

@@ -35,6 +35,10 @@ bun run dev
 bun run dev -- --open
 ```
 
+To regenerate API types (the default dev backend is served on`http://127.0.0.1:8000`.):
+```sh
+bunx openapi-typescript <server>/api/openapi.json -o src/lib/schema.d.ts
+```
 <!-- ### Building
 ```sh
 bun run build

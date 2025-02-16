@@ -39,7 +39,6 @@ def login_endpoint(request, username: str, password: str):
 
 @auth.get("/status", response={ 200: UserLogin, 401: Error })
 def status(request):
-    print(request.user)
     if request.user.is_authenticated:
         return { 'user_id': request.user.id, 'username': request.user.username }
     return 401, {'message': 'Not logged in.'}

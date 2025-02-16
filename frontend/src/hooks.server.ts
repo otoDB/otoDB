@@ -1,4 +1,4 @@
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { i18n } from '$lib/i18n';
 const handleParaglide: Handle = i18n.handle();
@@ -13,3 +13,10 @@ const handleContentLength: Handle = async ({ event, resolve }) => {
 };
 
 export const handle: Handle = sequence(handleContentLength, handleParaglide);
+
+export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
+  const csrf = event.cookies.get('csrftoken');
+  if (csrf && request.headers.get('cookie')?.includes('csrftoken=' + csrf))
+    request.headers.set('X-CSRFToken', csrf);
+  return fetch(request);
+};

@@ -20,8 +20,6 @@ FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 ENV NODE_ENV=production
-# TODO: Not sure if this is supposed to go here
-ENV BACKEND_URL=http://localhost:8000/
 RUN bun test
 RUN bun run prepare
 RUN bun run build

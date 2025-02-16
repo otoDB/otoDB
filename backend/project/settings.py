@@ -236,6 +236,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.youtube.com",
     "https://www.nicovideo.jp",
     "https://www.bilibili.com",
-    "http://127.0.0.1:5173", # TODO FRONTEND URL
 ]
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5173'] # TODO FRONTEND URL -- NOT NECESSARY WHEN SERVING FROM SAME DOMAIN
+
+OTODB_FRONTEND_URL = os.environ.get('OTODB_FRONTEND_URL')
+if OTODB_FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS.append(OTODB_FRONTEND_URL)
+    CSRF_TRUSTED_ORIGINS = [OTODB_FRONTEND_URL]

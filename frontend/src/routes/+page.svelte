@@ -3,10 +3,11 @@
 	import welcomeFallback from '$lib/images/svelte-welcome.png';
 
 	import * as m from '$lib/paraglide/messages.js';
+	import { setToken } from '$lib/api.js';
 
-	import type { PageData } from "./$types";
-
-	export let data: PageData;
+    let { data } = $props();
+	if (data?.csrf)
+		setToken(data.csrf)
 </script>
 
 <svelte:head>

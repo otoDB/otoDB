@@ -13,10 +13,3 @@ const handleContentLength: Handle = async ({ event, resolve }) => {
 };
 
 export const handle: Handle = sequence(handleContentLength, handleParaglide);
-
-export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
-  const csrf = event.cookies.get('csrftoken');
-  if (csrf && request.headers.get('cookie')?.includes('csrftoken=' + csrf))
-    request.headers.set('X-CSRFToken', csrf);
-  return fetch(request);
-};

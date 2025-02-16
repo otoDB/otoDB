@@ -29,7 +29,7 @@
 	</h1>
 	<p>
 		Here is i18n in action:
-		{m.hello_world({ name: data.user ? data.user.name : "Guest" })}.
+		{m.hello_world({ name: data.user ? data.user.name : "Guest" })}
 		<br>
 		Try appending ja, ko, zh-cn to the URL!
 	</p>

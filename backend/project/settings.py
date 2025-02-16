@@ -229,6 +229,7 @@ COMMENTS_XTD_APP_MODEL_OPTIONS = {
     }
 }
 
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://cdn.jsdelivr.net",
     "https://unpkg.com",
@@ -237,3 +238,4 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.bilibili.com",
     "http://127.0.0.1:5173", # TODO FRONTEND URL
 ]
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5173'] # TODO FRONTEND URL -- NOT NECESSARY WHEN SERVING FROM SAME DOMAIN

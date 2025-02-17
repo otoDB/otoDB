@@ -4,8 +4,8 @@ __pycache__
 .env
 db.sqlite3
 media
-./static
-!./static/style.css
+static/*
+!static/style.css
 .python-version
 uv.lock
 *cookies.txt

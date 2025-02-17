@@ -6,8 +6,9 @@ import { PUBLIC_BACKEND_URL_INTERNAL, PUBLIC_BACKEND_URL_EXTERNAL } from '$env/s
 import { browser } from "$app/environment";
 
 const client = createClient<paths>({ baseUrl: 
-    browser ? PUBLIC_BACKEND_URL_EXTERNAL : PUBLIC_BACKEND_URL_INTERNAL
-, credentials: 'include' });
+   browser ? PUBLIC_BACKEND_URL_EXTERNAL : PUBLIC_BACKEND_URL_INTERNAL,
+   credentials: 'include'
+});
 export default client;
 
 export const setToken = (token: string) => {

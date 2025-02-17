@@ -8,8 +8,11 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter()
-	}
+		adapter: adapter(),
+		paths: {
+			base: '/staging'
+		}
+	},
 };
 
 export default config;

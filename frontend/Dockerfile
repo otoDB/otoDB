@@ -3,7 +3,7 @@
 # Stage 1: Set up the base image
 # FROM oven/bun:latest AS base
 # FROM oven/bun:latest
-FROM node:22-alpine as base
+FROM node:22-alpine AS install
 WORKDIR /app
 
 # Stage 2: Install all dependencies (for development)
@@ -24,6 +24,7 @@ RUN npm install
 # COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 # ENV NODE_ENV=production
+
 ENV PUBLIC_BACKEND_URL_EXTERNAL=https://peepeepoopoo.otodb.net/
 ENV PUBLIC_BACKEND_URL_INTERNAL=https://peepeepoopoo.otodb.net/
 
@@ -37,9 +38,12 @@ RUN npm run build
 # TODO: Shouldn't need to copy the entire source code, but copying build only doesn't work...?
 # COPY --from=prerelease /usr/src/app .
 
-WORKDIR /app/build
+FROM oven/bun:latest AS build
+WORKDIR /app
 
-# USER bun
+COPY --from=install /app/build .
+
+USER bun
 EXPOSE 5173/tcp
 
-ENTRYPOINT [ "sh", "-c", "ORIGIN=https://peepeepoopoo.otodb.net HOST=0.0.0.0 PORT=5173 node ." ]
+ENTRYPOINT [ "sh", "-c", "ORIGIN=https://peepeepoopoo.otodb.net HOST=0.0.0.0 PORT=5173 bun run start" ]

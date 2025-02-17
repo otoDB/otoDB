@@ -42,4 +42,4 @@ WORKDIR /app/build
 # USER bun
 EXPOSE 5173/tcp
 
-ENTRYPOINT [ "sh", "-c", "HOST=0.0.0.0 PORT=5173 node ." ]
+ENTRYPOINT [ "sh", "-c", "ORIGIN=https://peepeepoopoo.otodb.net HOST=0.0.0.0 PORT=5173 node ." ]

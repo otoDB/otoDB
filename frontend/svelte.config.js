@@ -10,7 +10,8 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		paths: {
-			base: '/staging'
+			base: '/staging', // TODO
+			relative:  false
 		}
 	},
 };

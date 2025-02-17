@@ -24,8 +24,8 @@ RUN npm install
 # COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 # ENV NODE_ENV=production
-ENV PUBLIC_BACKEND_URL_EXTERNAL=http://127.0.0.1:8000/
-ENV PUBLIC_BACKEND_URL_INTERNAL=http://127.0.0.1:8000/
+ENV PUBLIC_BACKEND_URL_EXTERNAL=https://peepeepoopoo.otodb.net/
+ENV PUBLIC_BACKEND_URL_INTERNAL=https://peepeepoopoo.otodb.net/
 
 RUN npm run prepare
 RUN npm run build
@@ -37,7 +37,7 @@ RUN npm run build
 # TODO: Shouldn't need to copy the entire source code, but copying build only doesn't work...?
 # COPY --from=prerelease /usr/src/app .
 
-WORKDIR /usr/src/app/build
+WORKDIR /app/build
 
 # USER bun
 EXPOSE 5173/tcp

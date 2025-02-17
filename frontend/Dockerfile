@@ -26,7 +26,7 @@ COPY . .
 # ENV NODE_ENV=production
 
 ENV PUBLIC_BACKEND_URL_EXTERNAL=https://peepeepoopoo.otodb.net/
-ENV PUBLIC_BACKEND_URL_INTERNAL=https://peepeepoopoo.otodb.net/
+ENV PUBLIC_BACKEND_URL_INTERNAL=http://backend:8000/
 
 RUN npm run prepare
 RUN npm run build

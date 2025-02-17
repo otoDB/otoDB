@@ -27,15 +27,16 @@ export SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
 You may also need to change the domain of the default site (example.com) in the admin panel.
 
 ## Frontend Setup
-We recommend using `bun`.
+We recommend using `bun`. You can replace `bun` with `npm` below.
 ```sh
-bun run dev
+bun install
 
+bun run dev
 # or start the server and open the app in a new browser tab
 bun run dev -- --open
 ```
 
-To regenerate API types (the default dev backend is served on`http://127.0.0.1:8000`.):
+To regenerate API types (the default dev backend is served on`http://127.0.0.1:8000`.), you can replace `bunx` with `npx`:
 ```sh
 bunx openapi-typescript <server>/api/openapi.json -o src/lib/schema.d.ts
 ```

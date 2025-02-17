@@ -4,8 +4,12 @@ docker-compose*
 .dockerignore
 .git
 .gitignore
+.gitattributes
+.npmrc
+.prettierrc
 README.md
 LICENSE
+.svelte-kit
 .vscode
 .env
 .idea

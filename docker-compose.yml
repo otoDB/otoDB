@@ -35,7 +35,13 @@ services:
     restart: always
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfle: Dockerfile
+      args:
+        OTODB_DEPLOY_DOMAIN: ${OTODB_DEPLOY_DOMAIN}
+    environment:
+      - OTODB_DEPLOY_DOMAIN=${OTODB_DEPLOY_DOMAIN}
     ports:
       - "5173:5173"
     restart: always

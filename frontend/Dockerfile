@@ -25,7 +25,9 @@ RUN npm install
 COPY . .
 # ENV NODE_ENV=production
 
-ENV PUBLIC_BACKEND_URL_EXTERNAL=https://peepeepoopoo.otodb.net/
+ARG OTODB_DEPLOY_DOMAIN
+ENV OTODB_DEPLOY_DOMAIN=${OTODB_DEPLOY_DOMAIN}
+ENV PUBLIC_BACKEND_URL_EXTERNAL=https://${OTODB_DEPLOY_DOMAIN}/
 ENV PUBLIC_BACKEND_URL_INTERNAL=http://backend:8000/
 
 RUN npm run prepare
@@ -46,4 +48,4 @@ COPY --from=install /app/build .
 USER bun
 EXPOSE 5173/tcp
 
-ENTRYPOINT [ "sh", "-c", "ORIGIN=https://peepeepoopoo.otodb.net HOST=0.0.0.0 PORT=5173 bun run start" ]
+ENTRYPOINT [ "sh", "-c", "ORIGIN=https://$OTODB_DEPLOY_DOMAIN HOST=0.0.0.0 PORT=5173 bun run start" ]

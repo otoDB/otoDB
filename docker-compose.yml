@@ -37,7 +37,6 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfle: Dockerfile
       args:
         OTODB_FRONTEND_DOMAIN: ${OTODB_FRONTEND_DOMAIN}
     environment:

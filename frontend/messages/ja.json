@@ -1,4 +1,5 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "こんにちは、jaの{name}さん！"
+	"hello_world": "こんにちは、jaの{name}さん！",
+	"glad_born_mouse_taste": "音MADデータベース"
 }

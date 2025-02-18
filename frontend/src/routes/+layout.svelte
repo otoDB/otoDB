@@ -4,6 +4,7 @@
 	import Header from './Header.svelte';
 	import '../app.css';
 	import { setToken } from '$lib/api.js';
+	import * as m from '$lib/paraglide/messages.js';
 	
 	let { data, children } = $props();
 
@@ -12,6 +13,10 @@
 </script>
 
 <ParaglideJS {i18n}>
+	<span class="absolute top-20 left-40 italic monospace select-none">
+		{m.glad_born_mouse_taste()}
+	</span>
+
 	<div class="app">
 		<Header user={data.user}></Header>
 
@@ -20,7 +25,7 @@
 		</main>
 
 		<footer>
-			the otomad/ytpmv database
+			{m.glad_born_mouse_taste()}
 		</footer>
 	</div>
 </ParaglideJS>

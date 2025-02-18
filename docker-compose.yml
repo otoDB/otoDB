@@ -39,9 +39,9 @@ services:
       context: ./frontend
       dockerfle: Dockerfile
       args:
-        OTODB_DEPLOY_DOMAIN: ${OTODB_DEPLOY_DOMAIN}
+        OTODB_FRONTEND_DOMAIN: ${OTODB_FRONTEND_DOMAIN}
     environment:
-      - OTODB_DEPLOY_DOMAIN=${OTODB_DEPLOY_DOMAIN}
+      - OTODB_FRONTEND_DOMAIN=${OTODB_FRONTEND_DOMAIN}
     ports:
       - "5173:5173"
     restart: always

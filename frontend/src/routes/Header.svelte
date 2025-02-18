@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { base } from '$app/paths';
+
+	let { user } = $props();
 </script>
 
 <header>
@@ -9,14 +11,39 @@
 			<li aria-current={page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="{base}/">Home</a>
 			</li>
+			{#if !user}
 			<li aria-current={page.url.pathname === '/login' ? 'page' : undefined}>
 				<a href="{base}/login">Login</a>
 			</li>
+			{:else}
+			<li aria-current={page.url.pathname === '/logout' ? 'page' : undefined}>
+				<a href="{base}/logout">Logout</a>
+			</li>
+			{/if}
 		</ul>
 	</nav>
 </header>
 
 <style>
+	nav {
+		display: flex;
+		flex-direction: column;
+		padding: 2rem 1rem;
+		gap: 1rem;
+		background-color: var(--otodb-faint-bg);
+		border: 1px solid var(--otodb-faint-content);
+		max-width: 8rem;
+	}
+
+	nav > form {
+		width: 100%;
+		display: flex;
+	}
+
+	nav > form > input {
+		max-width: 4rem;
+	}
+/* 
 	nav {
 		display: flex;
 		justify-content: center;
@@ -69,5 +96,5 @@
 
 	a:hover {
 		color: var(--color-theme-1);
-	}
+	} */
 </style>

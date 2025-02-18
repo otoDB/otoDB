@@ -15,6 +15,8 @@ class MediaBaseManager(models.Manager):
         work_ids = self.values_list('pk', flat=True)
         if work_ids:
             random_work = self.get(pk=random.choice(work_ids))
+            if random_work.moved_to:
+                random_work = random_work.moved_to
             return random_work
 
 # allow setting a through table on tag fields

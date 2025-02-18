@@ -13,7 +13,7 @@
 
 <ParaglideJS {i18n}>
 	<div class="app">
-		<Header></Header>
+		<Header user={data.user}></Header>
 
 		<main>
 			{@render children()}
@@ -26,34 +26,50 @@
 </ParaglideJS>
 
 <style>
-	.app {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-	}
+.app {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	align-items: flex-start;
+	gap: 1rem;
+}
 
-	main {
-		flex: 1;
+main {
+	margin: 0 auto;
+	width: 100%;
+	min-height: 15rem;
+/*	
+	& > menu {
 		display: flex;
-		flex-direction: column;
-		padding: 1rem;
-		width: 100%;
-		max-width: 64rem;
-		margin: 0 auto;
-		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 12px 0;
+		margin: 0;
+		margin-top: -.5rem;
+		gap: .3rem;
+		& a {
+			background-color: var(--otodb-faint-bg);
+			  border: 1px solid var(--otodb-faint-content);
+			border-bottom: none;
+			padding: .2rem .2rem 0 .2rem;
+		}
+		& > a.current::after {
+			content: '';
+			width: 100%;
+			height: 2px;
+			background-color:  var(--otodb-faint-bg);
+			display: block;
+			position: relative;
+			bottom: -.1rem;
+			width: calc(100% + .4rem);
+			left: -.2rem;
 		}
 	}
+	
+	& > menu.right {
+		margin-left: auto;
+		margin-right: 0;
+		width: max-content;
+	} */
+}
+
+footer {
+	grid-column: 2;
+}
 </style>

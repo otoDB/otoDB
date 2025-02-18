@@ -153,15 +153,3 @@ ins {
 del {
 	background-color: var(--otodb-del);
 }
-
-pre.mermaid {
-	display: none;
-}
-
-pre.mermaid[data-processed='true'] {
-	display: unset;
-}
-
-.mermaid > svg {
-	background-color: gray;
-}

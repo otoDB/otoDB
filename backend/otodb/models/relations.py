@@ -12,7 +12,7 @@ class WorkRelation(models.Model):
     relation = models.IntegerField(choices=WorkRelationTypes.choices)
 
     def __str__(self) -> str:
-        return f'{self.A.id} -->|{WorkRelationTypes(self.relation).label}| {self.B.id}'
+        return f'{self.A.id} -> {self.B.id}: {WorkRelationTypes(self.relation).label}'
 
     class Meta:
         verbose_name = 'Work relation'

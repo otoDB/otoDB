@@ -1,4 +1,7 @@
+import subprocess
+
 from django import forms
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -58,7 +61,12 @@ def history(request: HttpRequest, song_id: int):
 def relations(request: HttpRequest, song_id: int):
     song = get_object_or_404(MediaSong, id=song_id)
     relations, songs = SongRelation.get_component_from_song(song)
-    return render(request, 'songs/relations.html', { 'song': song, 'relations': relations, 'songs': songs })
+    d2 = '\n'.join(['direction: right'] + [f'''{w.id}: {w.title} {{
+            link: http:{reverse('otodb:work', kwargs={'work_id': w.id})}
+        }}''' for w in songs] + [str(r) for r in relations]) # TODO temporary workaround https://github.com/terrastruct/d2/issues/2357
+    d2_out = subprocess.run(['d2', '--dark-theme=200', '-b=false', '-'], input=d2, capture_output=True, text=True)
+    d2_out.check_returncode()
+    return render(request, 'songs/relations.html', { 'song': song, 'diagram': d2_out.stdout })
 
 @login_required
 def edit_relations(request: HttpRequest, song_id: int):

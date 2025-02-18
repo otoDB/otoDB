@@ -1,4 +1,5 @@
 from datetime import date
+import subprocess
 
 from django import forms
 from django.urls import reverse
@@ -288,4 +289,18 @@ def history(request: HttpRequest, work_id: int):
 def relations(request: HttpRequest, work_id: int):
     work = get_work_by_id(work_id)
     relations, works = WorkRelation.get_component_from_work(work)
-    return render(request, 'works/relations.html', { 'work': work, 'relations': relations, 'works': works })
+    d2 = '\n'.join(['direction: right'] + [f'''{w.id}: {w.title} {{
+            shape: image
+            icon: {w.thumbnail}
+            link: http:{reverse('otodb:work', kwargs={'work_id': w.id})}
+            {'''style: {
+                font-color: red
+            }''' if work.id == w.id else ''}
+        }}''' for w in works] + [str(r) for r in relations]) # TODO temporary workaround https://github.com/terrastruct/d2/issues/2357
+    d2_out = subprocess.run(['d2', '--dark-theme=200', '-b=false', '-'], input=d2, capture_output=True, text=True)
+    d2_out.check_returncode()
+
+    return render(request, 'works/relations.html', {
+        'work': work,
+        'diagram': d2_out.stdout[38:], # skip <?xml ... ?>
+        })

@@ -1,21 +1,14 @@
-import client from "$lib/api";
+import client, { getAuth } from "$lib/api";
 import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
-    const session = cookies.get('sessionid'),
-        csrf = cookies.get('csrftoken');
-    if (!session || !csrf)
-        return;
-
-    const status = await client.GET('/api/auth/status', { fetch });
-    if (!status.data)
-        return;
-
-    return {
-        user: {
-            name: status.data.username,
-            id: status.data.user_id
-        },
-        csrf
-    };
+    const r = await getAuth(cookies, fetch);
+    if (r)    
+        return {
+            user: {
+                name: r.data.username,
+                id: r.data.user_id
+            },
+            csrf: r.csrf
+        };
 };

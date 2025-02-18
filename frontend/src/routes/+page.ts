@@ -4,15 +4,12 @@ import client from "$lib/api";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ fetch }) => {
-    const video = await client.GET('/api/query_video', {
-        params: { query: { id: 'sm43808529', platform: 'niconico' } },
-        fetch
-    });
+    const work = await client.GET('/api/random_work', { fetch });
 
     return {
-        video: {
-            data: video.data,
-            error: video.error
+        work: {
+            data: work.data,
+            error: work.error
         }
     };
 }

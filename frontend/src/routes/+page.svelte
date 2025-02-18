@@ -1,49 +1,51 @@
 <script lang="ts">
+	import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
+	import { i18n } from '$lib/i18n';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import * as m from '$lib/paraglide/messages.js';
+	
+	import Section from './Section.svelte';
 
     let { data } = $props();
+
+	function switchToLanguage(newLanguage: AvailableLanguageTag) {
+		const canonicalPath = i18n.route(page.url.pathname);
+		const localisedPath = i18n.resolveRoute(canonicalPath, newLanguage);
+		goto(localisedPath);
+	}
 </script>
 
 <svelte:head>
 	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<meta name="description" content="the otomad/ytpmv database" />
 </svelte:head>
 
-<section>
-	<h1>
-		welcome to the otomad/ytpmv database...
-		<br>
-		We'll make more progress here soon.
-	</h1>
+<Section title="Home">
+	<p>
+		Welcome to the otomad/ytpmv database... We'll make more progress here soon.
+	</p>
 	<p>
 		Here is i18n in action:
 		{m.hello_world({ name: data.user ? data.user.name : "Guest" })}
 		<br>
-		Try appending ja, ko, zh-cn to the URL!
+		Click here (look at the URL bar!):
+		<button onclick={() => switchToLanguage('en')}>English</button>
+		<button onclick={() => switchToLanguage('ja')}>日本語</button>
+		<button onclick={() => switchToLanguage('ko')}>한국인</button>
+		<button onclick={() => switchToLanguage('zh-cn')}>简体中文</button>
 	</p>
-	<p>
-		Here's an API call that will be SSR'd:
-	</p>
-	{#if data.video.error}
-	<div>There was an error: {data.video.error.message}</div>
-	{:else if data.video.data}
-	<pre><code>{JSON.stringify(data.video.data, undefined, 2)}</code></pre>
+
+	{#if data.work.error}
+	<div>There was an error: {data.work.error.message}</div>
+	{:else if data.work.data}
+	<div>
+		<h2>Random work: {data.work.data.title} </h2><img style="width:25rem;" src="{ data.work.data.thumbnail }" alt="{ data.work.data.title }"/>
+	</div>
 	{:else}
 	<div>Loading...</div>
 	{/if}
-
-</section>
+</Section>
 
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	h1 {
-		width: 100%;
-	}
 </style>

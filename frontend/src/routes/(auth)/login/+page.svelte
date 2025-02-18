@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { invalidateAll } from "$app/navigation";
+	import { goto, invalidateAll } from "$app/navigation";
 	import client from "$lib/api.js";
+	import Section from "../../Section.svelte";
 
     let username = $state('');
     let password = $state('');
@@ -21,11 +22,7 @@
 			return;
 		
 		invalidateAll();
-	};
-	const logout = async () => {
-		await client.POST('/api/auth/logout');
-
-		invalidateAll();
+		goto('/');
 	};
 </script>
 
@@ -34,12 +31,7 @@
 	<meta name="description" content="Login" />
 </svelte:head>
 
-<div class="text-column">
-	<h1>Login</h1>
-	{#if data.user}
-	You are already logged in, {data.user.name}!
-	<button onclick={logout}>Logout</button>
-	{:else}
+<Section title="Login">
 	<form onsubmit={login}>
 		<table>
 		  <tbody>
@@ -55,5 +47,4 @@
 		  </table>
 		<input type="submit" value="Login"/>
 	</form>
-	{/if}
-</div>
+</Section>

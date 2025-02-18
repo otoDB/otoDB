@@ -40,14 +40,6 @@ body {
 	background-color: var(--otodb-bg-color);
 	padding: 12rem 3rem 5rem 3rem;
 	font-size: smaller;
-	> ::after {
-		content: 'the otomad/ytpmv database';
-		position: absolute;
-		top: 5rem;
-		left: 10rem;
-		font-style: italic;
-		font-family: mono;
-	}
 }
 
 thead {

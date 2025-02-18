@@ -1,4 +1,5 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "您好，来自zh-cn的{name}！"
+	"hello_world": "您好，来自zh-cn的{name}！",
+	"glad_born_mouse_taste": "音MAD数据库"
 }

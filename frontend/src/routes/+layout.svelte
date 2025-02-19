@@ -35,13 +35,12 @@
 	display: grid;
 	grid-template-columns: max-content 1fr;
 	align-items: flex-start;
-	gap: 1rem;
+	column-gap: 1rem;
 }
 
 main {
 	margin: 0 auto;
 	width: 100%;
-	min-height: 15rem;
 /*	
 	& > menu {
 		display: flex;

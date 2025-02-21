@@ -42,8 +42,8 @@ RUN npm run build
 
 FROM oven/bun:latest AS build
 WORKDIR /app
-
 COPY --from=install /app/build .
+RUN bun install
 
 USER bun
 EXPOSE 5173/tcp

@@ -46,7 +46,7 @@ export interface paths {
             cookie?: never;
         };
         /** Csrf */
-        get: operations["otodb_api_csrf"];
+        get: operations["otodb_api_auth_csrf"];
         put?: never;
         post?: never;
         delete?: never;
@@ -65,7 +65,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Login Endpoint */
-        post: operations["otodb_api_login_endpoint"];
+        post: operations["otodb_api_auth_login_endpoint"];
         delete?: never;
         options?: never;
         head?: never;
@@ -80,7 +80,7 @@ export interface paths {
             cookie?: never;
         };
         /** Status */
-        get: operations["otodb_api_status"];
+        get: operations["otodb_api_auth_status"];
         put?: never;
         post?: never;
         delete?: never;
@@ -99,7 +99,24 @@ export interface paths {
         get?: never;
         put?: never;
         /** Logout Endpoint */
-        post: operations["otodb_api_logout_endpoint"];
+        post: operations["otodb_api_auth_logout_endpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/work": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Work */
+        get: operations["otodb_api_work_work"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -125,12 +142,52 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** WorkSchema2 */
+        WorkSchema2: {
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Rating
+             * @default 0
+             */
+            rating: number;
+            /**
+             * Tags
+             * @description Enter a comma-separated tag string
+             */
+            tags: number[];
+            /** Thumbnail */
+            thumbnail?: string | null;
+        };
         /** UserLogin */
         UserLogin: {
             /** User Id */
             user_id: number;
             /** Username */
             username: string;
+        };
+        /** WorkSchema */
+        WorkSchema: {
+            /** ID */
+            id?: number | null;
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Rating
+             * @default 0
+             */
+            rating: number;
+            /**
+             * Tags
+             * @description Enter a comma-separated tag string
+             */
+            tags: number[];
+            /** Thumbnail */
+            thumbnail?: string | null;
         };
     };
     responses: never;
@@ -187,11 +244,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["WorkSchema2"];
+                };
             };
         };
     };
-    otodb_api_csrf: {
+    otodb_api_auth_csrf: {
         parameters: {
             query?: never;
             header?: never;
@@ -209,7 +268,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_login_endpoint: {
+    otodb_api_auth_login_endpoint: {
         parameters: {
             query: {
                 username: string;
@@ -241,7 +300,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_status: {
+    otodb_api_auth_status: {
         parameters: {
             query?: never;
             header?: never;
@@ -270,7 +329,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_logout_endpoint: {
+    otodb_api_auth_logout_endpoint: {
         parameters: {
             query?: never;
             header?: never;
@@ -285,6 +344,28 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    otodb_api_work_work: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkSchema"];
+                };
             };
         };
     };

@@ -17,7 +17,7 @@
 			</li>
 			{:else}
 			<li aria-current={page.url.pathname === '/logout' ? 'page' : undefined}>
-				<a href="{base}/logout">Logout</a>
+				<a href="{base}/logout" data-sveltekit-preload-data="tap">Logout</a>
 			</li>
 			{/if}
 		</ul>

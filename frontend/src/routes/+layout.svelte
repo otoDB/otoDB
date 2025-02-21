@@ -13,7 +13,7 @@
 </script>
 
 <ParaglideJS {i18n}>
-	<span class="absolute top-20 left-40 italic monospace select-none">
+	<span class="absolute top-20 left-40 italic font-mono select-none">
 		{m.glad_born_mouse_taste()}
 	</span>
 

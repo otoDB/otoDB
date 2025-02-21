@@ -8,15 +8,15 @@
 <header>
 	<nav>
 		<ul>
-			<li aria-current={page.url.pathname === '/' ? 'page' : undefined}>
+			<li aria-current={page.url.pathname === `${base}/` ? 'page' : undefined}>
 				<a href="{base}/">Home</a>
 			</li>
 			{#if !user}
-			<li aria-current={page.url.pathname === '/login' ? 'page' : undefined}>
+			<li aria-current={page.url.pathname === `${base}/login` ? 'page' : undefined}>
 				<a href="{base}/login">Login</a>
 			</li>
 			{:else}
-			<li aria-current={page.url.pathname === '/logout' ? 'page' : undefined}>
+			<li aria-current={page.url.pathname === `${base}/logout` ? 'page' : undefined}>
 				<a href="{base}/logout" data-sveltekit-preload-data="tap">Logout</a>
 			</li>
 			{/if}

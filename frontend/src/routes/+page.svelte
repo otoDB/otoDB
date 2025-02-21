@@ -40,7 +40,7 @@
 	<div>There was an error: {data.work.error.message}</div>
 	{:else if data.work.data}
 	<div>
-		<h2>Random work: {data.work.data.title} </h2><img style="width:25rem;" src="{ data.work.data.thumbnail }" alt="{ data.work.data.title }"/>
+		<h2>Random work: <a href="work/{data.work.data.id}">{data.work.data.title}</a> </h2><img style="width:25rem;" src="{ data.work.data.thumbnail }" alt="{ data.work.data.title }"/>
 	</div>
 	{:else}
 	<div>Loading...</div>

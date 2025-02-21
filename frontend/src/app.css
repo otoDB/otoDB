@@ -24,6 +24,7 @@ html {
 
 a {
 	color: var(--otodb-content-color);
+	text-decoration: underline 1px;
 }
 
 hr {

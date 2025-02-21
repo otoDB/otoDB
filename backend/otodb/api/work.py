@@ -20,3 +20,6 @@ def work(request: HttpRequest, work_id: int):
     work = get_work_by_id(work_id)
     return work
 
+@work_router.get('random', response=WorkSchema)
+def random_video(request: HttpRequest):
+    return MediaWork.objects.random()

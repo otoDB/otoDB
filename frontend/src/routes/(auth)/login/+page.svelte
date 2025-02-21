@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from "$app/navigation";
+	import { base } from "$app/paths";
 	import client from "$lib/api.js";
 	import Section from "../../Section.svelte";
 
@@ -22,7 +23,7 @@
 			return;
 		
 		invalidateAll();
-		goto('/');
+		goto(base);
 	};
 </script>
 

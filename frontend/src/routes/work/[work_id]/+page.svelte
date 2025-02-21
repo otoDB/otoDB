@@ -34,7 +34,7 @@
         </div>
         <ul id="work-tags">
             {#each data.tags as tag}
-                <li><a href="{tag.slug}">{tag.name}</a></li>
+                <li><a href="#{tag.slug}">{tag.name}</a></li>
             {/each}
         </ul>
     </div>

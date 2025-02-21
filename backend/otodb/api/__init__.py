@@ -40,7 +40,3 @@ class WorkSchema(ModelSchema):
     class Meta:
         model = MediaWork
         fields = ['title', 'description', 'rating', 'tags', 'thumbnail']
-
-@api.get("/random_work", response=WorkSchema)
-def random_video(request):
-    return MediaWork.objects.random()

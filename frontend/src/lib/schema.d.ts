@@ -21,23 +21,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/random_work": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Random Video */
-        get: operations["otodb_api_random_video"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/auth/csrf": {
         parameters: {
             query?: never;
@@ -123,6 +106,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/random": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Random Video */
+        get: operations["otodb_api_work_random_video"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -142,25 +142,6 @@ export interface components {
             /** Message */
             message: string;
         };
-        /** WorkSchema2 */
-        WorkSchema2: {
-            /** Title */
-            title: string;
-            /** Description */
-            description?: string | null;
-            /**
-             * Rating
-             * @default 0
-             */
-            rating: number;
-            /**
-             * Tags
-             * @description Enter a comma-separated tag string
-             */
-            tags: number[];
-            /** Thumbnail */
-            thumbnail?: string | null;
-        };
         /** UserLogin */
         UserLogin: {
             /** User Id */
@@ -168,26 +149,58 @@ export interface components {
             /** Username */
             username: string;
         };
+        /** TagSchema */
+        TagSchema: {
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+        };
         /** WorkSchema */
         WorkSchema: {
+            /** Sources */
+            sources: components["schemas"]["WorkSourceSchema"][];
+            /** Rating */
+            rating: string;
+            /** Tags */
+            tags: components["schemas"]["TagSchema"][];
             /** ID */
             id?: number | null;
             /** Title */
             title: string;
             /** Description */
             description?: string | null;
-            /**
-             * Rating
-             * @default 0
-             */
-            rating: number;
-            /**
-             * Tags
-             * @description Enter a comma-separated tag string
-             */
-            tags: number[];
             /** Thumbnail */
             thumbnail?: string | null;
+        };
+        /** WorkSourceSchema */
+        WorkSourceSchema: {
+            /** Platform */
+            platform: string;
+            /** Work Origin */
+            work_origin: string;
+            /** Work Status */
+            work_status: string;
+            /** Url */
+            url: string;
+            /**
+             * Published Date
+             * Format: date
+             */
+            published_date: string;
+            /** Work Width */
+            work_width?: number | null;
+            /** Work Height */
+            work_height?: number | null;
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
         };
     };
     responses: never;
@@ -226,26 +239,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    otodb_api_random_video: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WorkSchema2"];
                 };
             };
         };
@@ -352,6 +345,26 @@ export interface operations {
             query: {
                 work_id: number;
             };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_work_random_video: {
+        parameters: {
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;

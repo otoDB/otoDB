@@ -1,6 +1,7 @@
 import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { i18n } from '$lib/i18n';
+import { PUBLIC_BACKEND_URL_INTERNAL } from '$env/static/public';
 const handleParaglide: Handle = i18n.handle();
 
 const handleContentLength: Handle = async ({ event, resolve }) => {
@@ -15,7 +16,7 @@ const handleContentLength: Handle = async ({ event, resolve }) => {
 export const handle: Handle = sequence(handleContentLength, handleParaglide);
 
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
-  if (request.url.startsWith('http://backend:8000')) {
+  if (request.url.startsWith(PUBLIC_BACKEND_URL_INTERNAL)) {
     const cookies = event.request.headers.get('cookie');
     if (cookies)
       request.headers.set('cookie', cookies);

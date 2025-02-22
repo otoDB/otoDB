@@ -1,48 +1,27 @@
 <script lang="ts">
-	import { goto, invalidateAll } from "$app/navigation";
-	import { base } from "$app/paths";
-	import client from "$lib/api.js";
+	import { enhance } from "$app/forms";
 	import Section from "../../Section.svelte";
-
-    let username = $state('');
-    let password = $state('');
-
-    let { data } = $props();
-
-    const login = async (e: SubmitEvent) => {
-        e.preventDefault();
-		const { data: csrf } = await client.GET('/api/auth/csrf');
-		if (!csrf)
-			return;
-
-		const { data, error } = await client.POST('/api/auth/login', {
-			params: { query: { username, password } },
-			headers: { 'X-CSRFToken': csrf['csrf_token'] }
-		});
-		if (error)
-			return;
-		
-		invalidateAll();
-		goto(base);
-	};
+	import type { PageProps } from "./$types";
+	let { form }: PageProps = $props();
 </script>
 
 <svelte:head>
 	<title>Login</title>
-	<meta name="description" content="Login" />
 </svelte:head>
 
 <Section title="Login">
-	<form onsubmit={login}>
+	<form method="POST" use:enhance>
+		{#if form?.missing}<p class="error">All fields are required.</p>{/if}
+        {#if form?.failed}<p class="error">Authentication failed!</p>{/if}
 		<table>
 		  <tbody>
 			  <tr>
 				  <th><label for="username">Username</label></th>
-				  <td><input type="text" name="username" bind:value={username}></td>
+				  <td><input type="text" name="username" value={form?.username ?? ''}></td>
 			  </tr>
 			  <tr>
 				  <th><label for="password">Password</label></th>
-				  <td><input type="password" name="password" bind:value={password}></td>
+				  <td><input type="password" name="password"></td>
 			  </tr>
 		  </tbody>
 		  </table>

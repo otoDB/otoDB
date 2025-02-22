@@ -1,5 +1,5 @@
 <script lang="ts">
-    let { title, children, menu } = $props();
+    let { title, children, menu = null } = $props();
 </script>
 
 {#if menu}

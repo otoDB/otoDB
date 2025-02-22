@@ -8,8 +8,8 @@
 	
 	let { data, children } = $props();
 
-	if (data?.csrf)
-		setToken(data.csrf)
+	if (data?.user?.csrf)
+		setToken(data.user.csrf)
 </script>
 
 <ParaglideJS {i18n}>

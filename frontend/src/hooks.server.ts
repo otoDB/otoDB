@@ -2,7 +2,20 @@ import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { i18n } from '$lib/i18n';
 import { PUBLIC_BACKEND_URL_INTERNAL } from '$env/static/public';
+import client from '$lib/api';
 const handleParaglide: Handle = i18n.handle();
+
+const handleAuth: Handle = async ({event, resolve}) => {
+  const session = event.cookies.get('sessionid'),
+  csrf = event.cookies.get('csrftoken');
+  if (session && csrf) {
+    const status = await client.GET('/api/auth/status', { fetch: event.fetch });
+    if (status.data)
+      event.locals.user = { csrf: csrf, ...status.data };
+  }
+
+  return resolve(event);
+}
 
 const handleContentLength: Handle = async ({ event, resolve }) => {
   return resolve(event, {
@@ -13,7 +26,7 @@ const handleContentLength: Handle = async ({ event, resolve }) => {
   });
 };
 
-export const handle: Handle = sequence(handleContentLength, handleParaglide);
+export const handle: Handle = sequence(handleAuth, handleContentLength, handleParaglide);
 
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
   if (request.url.startsWith(PUBLIC_BACKEND_URL_INTERNAL)) {

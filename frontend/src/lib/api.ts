@@ -19,16 +19,3 @@ export const setToken = (token: string) => {
             },
         });
 };
-
-export const getAuth = async (cookies: Cookies, fetch: any) => {
-    const session = cookies.get('sessionid'),
-        csrf = cookies.get('csrftoken');
-    if (!session || !csrf)
-        return null;
-
-    const status = await client.GET('/api/auth/status', { fetch });
-    if (!status.data)
-        return null;
-
-    return { csrf: csrf, data: status.data };
-}

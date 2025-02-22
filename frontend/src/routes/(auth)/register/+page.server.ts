@@ -26,7 +26,8 @@ export const actions = {
 		if (!csrf)
 			return;
 
-        const csrf_cookie = setCookie.parse(response_csrf.headers.getSetCookie())[0];
+        const raw_csrf_cookie = response_csrf.headers.getSetCookie();
+        const csrf_cookie = setCookie.parse(raw_csrf_cookie)[0];
         cookies.set(csrf_cookie.name, csrf_cookie.value, {
             path: '/',
             expires: csrf_cookie.expires,
@@ -36,7 +37,7 @@ export const actions = {
 
 		const { response, error } = await client.POST('/api/auth/register', {
 			params: { query: { username, password, email } },
-			headers: { 'X-CSRFToken': csrf['csrf_token'] },
+			headers: { 'X-CSRFToken': csrf['csrf_token'], cookie: raw_csrf_cookie[0] },
             fetch
         });
 		if (error) {

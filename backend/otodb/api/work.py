@@ -21,5 +21,5 @@ def work(request: HttpRequest, work_id: int):
     return work
 
 @work_router.get('random', response=WorkSchema)
-def random_video(request: HttpRequest):
+def random(request: HttpRequest):
     return MediaWork.objects.random()

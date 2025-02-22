@@ -10,6 +10,6 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         }
     }, fetch });
     if (error)
-        redirect(307, base)
+        return; // TODO
     return data;
 };

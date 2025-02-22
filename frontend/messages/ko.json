@@ -1,5 +1,5 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"hello_world": "안녕하세요, ko의{name}님!",
-	"glad_born_mouse_taste": "소리MAD 데이터 베이스"
+	"glad_born_mouse_taste": "소리MAD데이터베이스"
 }

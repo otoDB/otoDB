@@ -1,5 +1,25 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"hello_world": "こんにちは、jaの{name}さん！",
-	"glad_born_mouse_taste": "音MADデータベース"
+	"glad_born_mouse_taste": "音MADデータベース",
+	"large_factual_octopus_exhale": "タイトル",
+	"clear_lucky_peacock_pick": "説明文",
+	"sour_swift_sparrow_spin": "プラットフォーム",
+	"super_agent_pigeon_aim": "投稿日",
+	"large_polite_otter_thrive": "元",
+	"civil_trick_oryx_clap": "状態",
+	"big_dry_seahorse_succeed": "解像度",
+	"noisy_moving_newt_belong": "リンク",
+	"mushy_proof_hornet_dig": "更新する",
+	"extra_brave_tapir_skip": "作品ソース",
+	"mild_loud_shad_enchant": "{type}：{name}",
+	"good_dark_bumblebee_spur": "レイティング",
+	"watery_sunny_seal_heal": "ユーザーオプション",
+	"helpful_away_jay_succeed": "新しいソースを登録する",
+	"tough_early_sparrow_bask": "展開",
+	"same_broad_haddock_pinch": "コメント",
+	"grand_merry_fly_succeed": "作品",
+	"fine_late_chicken_quiz": "ホーム",
+	"fuzzy_crazy_cobra_lead": "ユーザー",
+	"stale_loose_squid_cut": "リスト"
 }

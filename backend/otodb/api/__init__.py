@@ -1,21 +1,23 @@
 from typing import List, Tuple
 
 from django.urls import reverse
-from django.middleware.csrf import get_token
 
-from ninja import NinjaAPI, Schema, Router, ModelSchema
-from ninja.security import django_auth, django_auth_superuser
+from ninja import NinjaAPI, Schema
 
-from otodb.models import WorkSource, MediaWork
+from otodb.models import WorkSource
 from otodb.models.enums import Platform
 
 from .common import Error
 from .auth import auth_router
 from .work import work_router
+from .profile import profile_router
+from .list import list_router
 
 api = NinjaAPI(urls_namespace="otodb:api", csrf=True)
 api.add_router('/auth/', auth_router)
 api.add_router('/work/', work_router)
+api.add_router('/profile/', profile_router)
+api.add_router('/list/', list_router)
 
 class VideoQuery(Schema):
     rel: str
@@ -35,8 +37,3 @@ def query_video(request, platform: str, id: str):
         'tags': [(name, reverse('otodb:tag', kwargs={ 'tag_slug': slug })) for name, slug in tags],
         'rel': reverse('otodb:work', kwargs={ 'work_id': media.id })
         }
-
-class WorkSchema(ModelSchema):
-    class Meta:
-        model = MediaWork
-        fields = ['title', 'description', 'rating', 'tags', 'thumbnail']

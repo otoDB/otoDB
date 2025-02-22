@@ -1,31 +1,33 @@
 <script lang="ts">
 	import Section from "../../Section.svelte";
+	import SectionMenu from "../../SectionMenu.svelte";
 	import CollapsibleText from "./CollapsibleText.svelte";
+    import * as m from '$lib/paraglide/messages.js';
+    
     let { data } = $props();
-
 </script>
 
 <svelte:head>
-	<title>Work: {data.title}</title>
+	<title>{m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}</title>
 </svelte:head>
 
-<Section title="Work: {data.title}">
+<Section title="{m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}">
     <div id="infobox">
       <img src="{data.thumbnail}" alt="{data.title}">
       <div>
         <table>
         <tbody>
-            <tr><th>Title</th><td>{data.title}</td></tr>
-            <tr><th>Description</th><td>{@html data.description}</td></tr>
-            <tr><th>Rating</th><td>{data.rating}</td></tr>
+            <tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.title}</td></tr>
+            <tr><th>{m.clear_lucky_peacock_pick()}</th><td>{@html data.description}</td></tr>
+            <tr><th>{m.good_dark_bumblebee_spur()}</th><td>{data.rating}</td></tr>
         </tbody>
         </table>
 {#if data.user}
-        <h2>User options</h2>
+        <h2>{m.watery_sunny_seal_heal()}</h2>
         <table>
         <tbody>
             <tr>
-                <th>Lists</th>
+                <th>{m.stale_loose_squid_cut()}</th>
                 <td>
                     <button>Add/Remove...</button>
                 </td>
@@ -42,22 +44,24 @@
     </div>
 </Section>
 
-<Section title="Work Sources">
+<Section title={m.extra_brave_tapir_skip()}>
     {#snippet menu()}
-    <a href="#TODO">Add source</a>
+    <SectionMenu links={[
+        { pathname: "#TODO", title: m.helpful_away_jay_succeed() }
+        ]}/>
     {/snippet}
     <table class="w-full">
         <thead><tr>
-            <th>Title</th>
-            <th>Desciption</th>
-            <th>Platform</th>
-            <th>Date</th>
-            <th>Official</th>
-            <th>Available</th>
-            <th>Resolution</th>
-            <th>Link</th>
+            <th>{m.large_factual_octopus_exhale()}</th>
+            <th>{m.clear_lucky_peacock_pick()}</th>
+            <th>{m.sour_swift_sparrow_spin()}</th>
+            <th>{m.super_agent_pigeon_aim()}</th>
+            <th>{m.large_polite_otter_thrive()}</th>
+            <th>{m.civil_trick_oryx_clap()}</th>
+            <th>{m.big_dry_seahorse_succeed()}</th>
+            <th>{m.noisy_moving_newt_belong()}</th>
 {#if data.user}
-            <th>Refresh</th>
+            <th>{m.mushy_proof_hornet_dig()}</th>
 {/if}
         </tr></thead>
     <tbody>
@@ -67,16 +71,16 @@
             <td><CollapsibleText text={src.description}></CollapsibleText></td>
             <td>{src.platform}</td><td>{src.published_date}</td>
             <td>{src.work_origin}</td><td>{src.work_status}</td>
-            <td>{src.work_width}x{src.work_height}</td><td><a href="{src.url}" target="_blank" rel="noopener noreferrer">Link</a></td>
+            <td>{src.work_width}x{src.work_height}</td><td><a href="{src.url}" target="_blank" rel="noopener noreferrer">{m.noisy_moving_newt_belong()}</a></td>
 {#if data.user}
-            <td><button type="submit">Refresh</button></td>
+            <td><button type="submit">{m.mushy_proof_hornet_dig()}</button></td>
 {/if}
         </tr>
         {/each}
       </tbody>
     </table>
 </Section>
-<Section title="Comments">
+<Section title={m.same_broad_haddock_pinch()}>
      include 'comments.html' with object=work 
 </Section>
 
@@ -94,6 +98,7 @@
     display: flex;
     gap: .3rem 2rem;
     flex-wrap: wrap;
+    list-style: none;
     &> li {
         margin: 0;
     }

@@ -1,15 +1,12 @@
 <script lang="ts">
+    import * as m from '$lib/paraglide/messages.js';
     const { text, cutoff = 25 } = $props();
 </script>
 
 <label>
     <input type="checkbox">
     <span>
-        {#if text.length > cutoff}
-        {text.slice(0, cutoff) + '...(click to expand)'}
-        {:else}
-        {text}
-        {/if}
+        [{m.tough_early_sparrow_bask()}]
     </span>
     <span>{text}</span>
 </label>

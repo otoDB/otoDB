@@ -40,7 +40,7 @@ class TagWork(TagModel):
 
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
     wiki_page = models.OneToOneField(WikiPage, on_delete=models.SET_NULL, null=True, blank=True)
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
 
@@ -68,6 +68,10 @@ class TagWork(TagModel):
             tree.append(curr)
             curr = curr.parent
         return reversed(tree)
+
+    def get_song(self):
+        if hasattr(self, 'mediasong'):
+            return self.mediasong
 
 class TagSong(TagModel):
     objects = LowerCaseTagModelManager()

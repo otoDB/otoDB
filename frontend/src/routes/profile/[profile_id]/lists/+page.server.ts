@@ -2,16 +2,6 @@ import client from "$lib/api";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
-    const { data, error } = await client.GET('/api/profile/profile', { fetch,
-        params: {
-            query: {
-                user_id: +params.profile_id
-            }
-        }
-    });
-    if (error)
-        return; // TODO
-
     const { data: lists } = await client.GET('/api/profile/lists', { fetch,
         params: {
             query: {
@@ -20,7 +10,6 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
         }
     });
     return {
-        profile: data,
         lists
     };
 }

@@ -8,7 +8,7 @@
 <menu>
     <ul>
         {#each links as {pathname, title}}
-        <li aria-current={page.url.pathname.endsWith(pathname)}>
+        <li aria-current={page.url.pathname.endsWith(encodeURI(pathname))}>
             <a href="{base}/{pathname}">{title}</a>
         </li>
         {/each}
@@ -29,8 +29,11 @@ menu {
         &> li {
             background-color: var(--otodb-faint-bg);
             border: 1px solid var(--otodb-faint-content);
+            padding-left: .2rem;
+            padding-right: .2rem;
             &[aria-current="true"] {
                 border-bottom: none;
+                pointer-events: none;
             }
             &> a {
                 text-decoration: none;

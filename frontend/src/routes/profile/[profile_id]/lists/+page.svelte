@@ -12,7 +12,7 @@
     <title>{m.mild_loud_shad_enchant({ type: m.fuzzy_crazy_cobra_lead(), name: data.profile.username})}</title>
 </svelte:head>
 
-<Section title="{m.mild_loud_shad_enchant({ type: m.fuzzy_crazy_cobra_lead(), name: data.profile.username})}">
+<Section title={m.mild_loud_shad_enchant({ type: m.fuzzy_crazy_cobra_lead(), name: data.profile.username})}>
     {#snippet menu()}
     <SectionMenu links={data.links} />
     {/snippet}

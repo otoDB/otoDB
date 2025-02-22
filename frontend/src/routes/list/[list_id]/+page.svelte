@@ -11,7 +11,7 @@ import Section from "../../Section.svelte";
     <title>{m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name})}</title>
 </svelte:head>
 
-<Section title="{m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name})}">
+<Section title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name})}>
     <p class="whitespace-pre-wrap">{data.list.description}</p>
 </Section>
 <Section title="Entries">
@@ -19,7 +19,7 @@ import Section from "../../Section.svelte";
     {#each data.entries.items as entry}
     <li>
         <div style="display: flex; gap: 1rem;align-items:flex-start;">
-            <img style="max-width:10rem" src="{entry.work.thumbnail}" alt="{entry.work.title}">
+            <img style="max-width:10rem" src={entry.work.thumbnail} alt={entry.work.title}>
             <div><a href="{base}/work/{entry.work.id}">{entry.work.title}</a><p>{entry.description}</p></div>
         </div>
     </li>

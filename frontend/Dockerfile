@@ -48,4 +48,4 @@ RUN bun install
 USER bun
 EXPOSE 5173/tcp
 
-ENTRYPOINT [ "sh", "-c", "ORIGIN=https://$OTODB_FRONTEND_DOMAIN HOST=0.0.0.0 PORT=5173 bun run start" ]
+ENTRYPOINT [ "sh", "-c", "PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 bun run start" ]

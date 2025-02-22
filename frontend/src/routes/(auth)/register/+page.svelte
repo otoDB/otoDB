@@ -2,7 +2,7 @@
 	import { enhance } from "$app/forms";
 	import Section from "../../Section.svelte";
 	import type { PageProps } from "./$types";
-	let { form }: PageProps = $props();
+	let { form, data }: PageProps = $props();
     import * as m from '$lib/paraglide/messages.js';
 </script>
 
@@ -12,6 +12,7 @@
 
 <Section title={m.blue_whole_camel_type()}>
 	<form method="POST" use:enhance>
+		<input type="text" hidden name="csrf" value={data.csrf}>
 		{#if form?.missing}<p class="error">All fields are required.</p>{/if}
         {#if form?.failed}<p class="error">Authentication failed!</p>{/if}
 		<table>

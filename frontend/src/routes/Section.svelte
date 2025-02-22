@@ -3,9 +3,7 @@
 </script>
 
 {#if menu}
-<menu>
-    {@render menu()}
-</menu>
+{@render menu()}
 {/if}
 
 <section>
@@ -14,13 +12,6 @@
 </section>
 
 <style>
-menu {
-    display: flex;
-	margin: -.5rem 0 0 auto;
-	gap: .3rem;
-	width: max-content;
-    border: 1px solid var(--otodb-faint-content);
-}
 section {
     background-color: var(--otodb-faint-bg);
     border: 1px solid var(--otodb-faint-content);

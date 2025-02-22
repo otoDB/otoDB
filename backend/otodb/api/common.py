@@ -1,10 +1,20 @@
+from typing import Optional
+
 from pydantic import field_validator, ValidationInfo
+
 from ninja import Schema, ModelSchema, Field
-from otodb.models import MediaWork, WorkSource, TagWork
+
+from otodb.account.models import Account
+from otodb.models import MediaWork, WorkSource, TagWork, Pool, PoolItem
 from otodb.models.enums import WorkOrigin, WorkStatus, Platform, Rating
 
 class Error(Schema):
     message: str
+
+class ProfileSchema(ModelSchema):
+    class Meta:
+        model = Account
+        fields = ['username', 'email', 'level', 'date_created']
 
 class TagSchema(ModelSchema):
     class Meta:
@@ -19,7 +29,7 @@ class WorkSourceSchema(ModelSchema):
         model = WorkSource
         fields = [
             'platform', 'url',
-            'published_date',
+            'published_date', 'id',
             'work_width', 'work_height',
             'title', 'description'
         ]
@@ -36,7 +46,7 @@ class WorkSourceSchema(ModelSchema):
                 return WorkOrigin(value).label
 
 class WorkSchema(ModelSchema):
-    sources: list[WorkSourceSchema] = Field(..., alias='worksource_set')
+    sources: Optional[list[WorkSourceSchema]] = Field(..., alias='worksource_set')
     rating: str
     tags: list[TagSchema]
     class Meta:
@@ -47,3 +57,15 @@ class WorkSchema(ModelSchema):
     @classmethod
     def origin_str(cls, value) -> str:
         return Rating(value).label
+
+class ListItemSchema(ModelSchema):
+    work: WorkSchema
+    class Meta:
+        model = PoolItem
+        fields = ['description']
+
+class ListSchema(ModelSchema):
+    author: ProfileSchema
+    class Meta:
+        model = Pool
+        fields = ['name', 'description', 'id']

@@ -74,3 +74,11 @@ ins {
 del {
 	background-color: var(--otodb-del);
 }
+
+ol {
+	list-style-type: decimal;
+}
+
+ul {
+	list-style-type: disc;
+}

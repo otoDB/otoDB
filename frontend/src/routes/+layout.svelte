@@ -25,7 +25,7 @@
 		</main>
 
 		<footer>
-			{m.glad_born_mouse_taste()}
+			{m.glad_born_mouse_taste()} Pre-alpha
 		</footer>
 	</div>
 </ParaglideJS>

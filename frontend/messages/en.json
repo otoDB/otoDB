@@ -1,5 +1,25 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"hello_world": "Hello, {name} from en!",
-	"glad_born_mouse_taste": "the otomad/ytpmv database"
+	"glad_born_mouse_taste": "the otomad/ytpmv database",
+	"large_factual_octopus_exhale": "Title",
+	"clear_lucky_peacock_pick": "Description",
+	"sour_swift_sparrow_spin": "Platform",
+	"super_agent_pigeon_aim": "Date",
+	"large_polite_otter_thrive": "Origin",
+	"civil_trick_oryx_clap": "Availability",
+	"big_dry_seahorse_succeed": "Resolution",
+	"noisy_moving_newt_belong": "Link",
+	"mushy_proof_hornet_dig": "Refresh",
+	"extra_brave_tapir_skip": "Work Sources",
+	"mild_loud_shad_enchant": "{type}: {name}",
+	"good_dark_bumblebee_spur": "Rating",
+	"watery_sunny_seal_heal": "User options",
+	"helpful_away_jay_succeed": "Add Source",
+	"tough_early_sparrow_bask": "expand",
+	"same_broad_haddock_pinch": "Comments",
+	"grand_merry_fly_succeed": "Work",
+	"fine_late_chicken_quiz": "Home",
+	"fuzzy_crazy_cobra_lead": "User",
+	"stale_loose_squid_cut": "List"
 }

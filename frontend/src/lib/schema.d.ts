@@ -130,8 +130,76 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Random Video */
-        get: operations["otodb_api_work_random_video"];
+        /** Random */
+        get: operations["otodb_api_work_random"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/profile/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Profile */
+        get: operations["otodb_api_profile_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/profile/lists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists */
+        get: operations["otodb_api_profile_lists"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/list/list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List */
+        get: operations["otodb_api_list_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/list/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Entries */
+        get: operations["otodb_api_list_entries"];
         put?: never;
         post?: never;
         delete?: never;
@@ -181,7 +249,7 @@ export interface components {
         /** WorkSchema */
         WorkSchema: {
             /** Sources */
-            sources: components["schemas"]["WorkSourceSchema"][];
+            sources: components["schemas"]["WorkSourceSchema"][] | null;
             /** Rating */
             rating: string;
             /** Tags */
@@ -210,6 +278,8 @@ export interface components {
              * Format: date
              */
             published_date: string;
+            /** ID */
+            id?: number | null;
             /** Work Width */
             work_width?: number | null;
             /** Work Height */
@@ -218,6 +288,60 @@ export interface components {
             title: string;
             /** Description */
             description?: string | null;
+        };
+        /** ProfileSchema */
+        ProfileSchema: {
+            /** Username */
+            username: string;
+            /** Email Address */
+            email: string;
+            /**
+             * Level
+             * @default 20
+             */
+            level: number;
+            /**
+             * Date Created
+             * Format: date-time
+             */
+            date_created?: string;
+        };
+        /** ListSchema */
+        ListSchema: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Author */
+            author: number;
+            /** ID */
+            id?: number | null;
+        };
+        /** Input */
+        Input: {
+            /**
+             * Limit
+             * @default 100
+             */
+            limit: number;
+            /**
+             * Offset
+             * @default 0
+             */
+            offset: number;
+        };
+        /** ListItemSchema */
+        ListItemSchema: {
+            work: components["schemas"]["WorkSchema"];
+            /** Description */
+            description?: string | null;
+        };
+        /** PagedListItemSchema */
+        PagedListItemSchema: {
+            /** Items */
+            items: components["schemas"]["ListItemSchema"][];
+            /** Count */
+            count: number;
         };
     };
     responses: never;
@@ -412,7 +536,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_random_video: {
+    otodb_api_work_random: {
         parameters: {
             query?: never;
             header?: never;
@@ -428,6 +552,96 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_profile_profile: {
+        parameters: {
+            query: {
+                user_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_profile_lists: {
+        parameters: {
+            query: {
+                user_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_list_list: {
+        parameters: {
+            query: {
+                list_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_list_entries: {
+        parameters: {
+            query: {
+                list_id: number;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedListItemSchema"];
                 };
             };
         };

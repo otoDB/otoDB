@@ -36,7 +36,6 @@ def logout_endpoint(request):
     logout(request)
     return {'message': 'Logged out'}
 
-
 @auth_router.post("/register", response={ 200:UserLogin, 401: Error })
 def register(request, username: str, password: str, email: str):
     user = Account.objects.create_user(username, email, password=password)

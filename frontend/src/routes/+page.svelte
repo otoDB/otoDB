@@ -6,6 +6,7 @@
 	import * as m from '$lib/paraglide/messages.js';
 	
 	import Section from './Section.svelte';
+	import { base } from '$app/paths';
 
     let { data } = $props();
 
@@ -17,17 +18,17 @@
 </script>
 
 <svelte:head>
-	<title>Home</title>
+	<title>{m.fine_late_chicken_quiz()}</title>
 	<meta name="description" content="the otomad/ytpmv database" />
 </svelte:head>
 
-<Section title="Home">
+<Section title={m.fine_late_chicken_quiz()}>
 	<p>
 		Welcome to the otomad/ytpmv database... We'll make more progress here soon.
 	</p>
 	<p>
 		Here is i18n in action:
-		{m.hello_world({ name: data.user ? data.user.name : "Guest" })}
+		{m.hello_world({ name: data.user ? data.user.username : "Guest" })}
 		<br>
 		Click here (look at the URL bar!):
 		<button onclick={() => switchToLanguage('en')}>English</button>
@@ -40,7 +41,7 @@
 	<div>There was an error: {data.work.error.message}</div>
 	{:else if data.work.data}
 	<div>
-		<h2>Random work: <a href="work/{data.work.data.id}">{data.work.data.title}</a> </h2><img style="width:25rem;" src="{ data.work.data.thumbnail }" alt="{ data.work.data.title }"/>
+		<h2>Random work: <a href="{base}/work/{data.work.data.id}">{data.work.data.title}</a> </h2><img style="width:25rem;" src="{ data.work.data.thumbnail }" alt="{ data.work.data.title }"/>
 	</div>
 	{:else}
 	<div>Loading...</div>

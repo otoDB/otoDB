@@ -3,6 +3,7 @@
 	import SectionMenu from "../../SectionMenu.svelte";
 	import CollapsibleText from "./CollapsibleText.svelte";
     import * as m from '$lib/paraglide/messages.js';
+	import { base } from "$app/paths";
     
     let { data } = $props();
 </script>
@@ -11,9 +12,12 @@
 	<title>{m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}</title>
 </svelte:head>
 
-<Section title="{m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}">
+<Section title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}>
+{#snippet menu()}
+<SectionMenu links={data.links} />
+{/snippet}
     <div id="infobox">
-      <img src="{data.thumbnail}" alt="{data.title}">
+      <img src={data.thumbnail} alt={data.title}>
       <div>
         <table>
         <tbody>
@@ -34,11 +38,11 @@
             </tr>
         </tbody>
         </table>
-{/if} 
+{/if}
         </div>
         <ul id="work-tags">
             {#each data.tags as tag}
-                <li><a href="#{tag.slug}">{tag.name}</a></li>
+                <li><a href="{base}/tag/{tag.slug}">{tag.name}</a></li>
             {/each}
         </ul>
     </div>
@@ -59,7 +63,7 @@
             <th>{m.large_polite_otter_thrive()}</th>
             <th>{m.civil_trick_oryx_clap()}</th>
             <th>{m.big_dry_seahorse_succeed()}</th>
-            <th>{m.noisy_moving_newt_belong()}</th>
+            <th class="whitespace-nowrap">{m.noisy_moving_newt_belong()}</th>
 {#if data.user}
             <th>{m.mushy_proof_hornet_dig()}</th>
 {/if}
@@ -67,13 +71,13 @@
     <tbody>
         {#each data.sources as src}
         <tr>
-            <td>{src.title}</td>
+            <td class="whitespace-nowrap">{src.title}</td>
             <td><CollapsibleText text={src.description}></CollapsibleText></td>
             <td>{src.platform}</td><td>{src.published_date}</td>
             <td>{src.work_origin}</td><td>{src.work_status}</td>
-            <td>{src.work_width}x{src.work_height}</td><td><a href="{src.url}" target="_blank" rel="noopener noreferrer">{m.noisy_moving_newt_belong()}</a></td>
+            <td>{src.work_width}x{src.work_height}</td><td class="whitespace-nowrap"><a href={src.url} target="_blank" rel="noopener noreferrer">{m.noisy_moving_newt_belong()}</a></td>
 {#if data.user}
-            <td><button type="submit">{m.mushy_proof_hornet_dig()}</button></td>
+            <td><button type="submit" class="whitespace-nowrap">{m.mushy_proof_hornet_dig()}</button></td>
 {/if}
         </tr>
         {/each}
@@ -102,5 +106,8 @@
     &> li {
         margin: 0;
     }
+}
+table > tbody > tr > th {
+    white-space: nowrap;
 }
 </style>

@@ -38,6 +38,7 @@
 	},
 	"dependencies": {
 		"@inlang/paraglide-sveltekit": "^0.15.5",
+		"@sveltejs/adapter-node": "^5.2.12",
 		"openapi-fetch": "^0.13.4",
 		"set-cookie-parser": "^2.7.1"
 	}

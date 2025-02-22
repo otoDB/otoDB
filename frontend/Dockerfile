@@ -3,7 +3,7 @@
 # Stage 1: Set up the base image
 # FROM oven/bun:latest AS base
 # FROM oven/bun:latest
-FROM node:22-alpine AS install
+FROM node:22-alpine AS base
 WORKDIR /app
 
 # Stage 2: Install all dependencies (for development)
@@ -40,12 +40,12 @@ RUN npm run build
 # TODO: Shouldn't need to copy the entire source code, but copying build only doesn't work...?
 # COPY --from=prerelease /usr/src/app .
 
-FROM oven/bun:latest AS build
+FROM base AS build
 WORKDIR /app
-COPY --from=install /app/build .
-RUN bun install
+COPY --from=base /app/build .
+RUN npm install
 
-USER bun
+# USER bun
 EXPOSE 5173/tcp
 
-ENTRYPOINT [ "sh", "-c", "PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 bun run start" ]
+ENTRYPOINT [ "sh", "-c", "PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 node ./index.js" ]

@@ -6,6 +6,7 @@
       "dependencies": {
         "@inlang/paraglide-sveltekit": "^0.15.5",
         "openapi-fetch": "^0.13.4",
+        "set-cookie-parser": "^2.7.1",
       },
       "devDependencies": {
         "@eslint/compat": "^1.2.5",

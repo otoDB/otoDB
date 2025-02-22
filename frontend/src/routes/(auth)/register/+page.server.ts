@@ -12,10 +12,15 @@ export const load: PageServerLoad = async ({cookies, fetch, locals}) => {
 export const actions = {
     default: async ({ cookies, request, fetch, locals }) => {
         const data = await request.formData();
-        const username = data.get('username') as string, password = data.get('password') as string;
+        const username = data.get('username') as string,
+            email = data.get('email') as string,
+            password = data.get('password') as string,
+            confirm = data.get('confirm') as string;
 
-        if (!username || !password)
-            return fail(400, { username, missing: true });
+        if (!username || !email || !password || !confirm)
+            return fail(400, { username, email, missing: true });
+        else if (password != confirm)
+            return fail(400, { username, email, unmatch: true });
 
         const { response: response_csrf, data: csrf } = await client.GET('/api/auth/csrf', { fetch });
 		if (!csrf)
@@ -29,8 +34,8 @@ export const actions = {
             sameSite: csrf_cookie.sameSite
         })
 
-		const { response, error } = await client.POST('/api/auth/login', {
-			params: { query: { username, password } },
+		const { response, error } = await client.POST('/api/auth/register', {
+			params: { query: { username, password, email } },
 			headers: { 'X-CSRFToken': csrf['csrf_token'] },
             fetch
         });

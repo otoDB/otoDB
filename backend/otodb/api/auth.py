@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from ninja import Schema, Router
 from ninja.security import django_auth
 
+from otodb.account.models import Account
+
 from .common import Error
 
 auth_router = Router()
@@ -33,3 +35,10 @@ def status(request):
 def logout_endpoint(request):
     logout(request)
     return {'message': 'Logged out'}
+
+
+@auth_router.post("/register", response={ 200:UserLogin, 401: Error })
+def register(request, username: str, password: str, email: str):
+    user = Account.objects.create_user(username, email, password=password)
+    login(request, user)
+    return { 'user_id': user.id, 'username': user.username }

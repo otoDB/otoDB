@@ -15,9 +15,12 @@
 			<li aria-current={page.url.pathname === `${base}/login` ? 'page' : undefined}>
 				<a href="{base}/login">Login</a>
 			</li>
+			<li aria-current={page.url.pathname === `${base}/register` ? 'page' : undefined}>
+				<a href="{base}/register">Register</a>
+			</li>
 			{:else}
 			<li aria-current={page.url.pathname === `${base}/logout` ? 'page' : undefined}>
-				<a href="{base}/logout" data-sveltekit-preload-data="tap">Logout</a>
+				<a href="{base}/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload>Logout</a>
 			</li>
 			{/if}
 		</ul>

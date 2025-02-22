@@ -1,6 +1,8 @@
-<script>
+<script lang="ts">
 	import Section from "../../Section.svelte";
+	import CollapsibleText from "./CollapsibleText.svelte";
     let { data } = $props();
+
 </script>
 
 <svelte:head>
@@ -42,31 +44,34 @@
 
 <Section title="Work Sources">
     {#snippet menu()}
-    <a href="TODO">Add source</a>
+    <a href="#TODO">Add source</a>
     {/snippet}
-    <table style="width: 100%;">
-      <thead><tr>
-              <th>Title</th>
-              <th>Desciption</th>
-              <th>Platform</th>
-              <th>Date</th>
-              <th>Official</th>
-              <th>Available</th>
-              <th>Resolution</th>
-              <th>Link</th>
-              <th>Refresh</th>
-      </tr></thead>
-      <tbody>
+    <table class="w-full">
+        <thead><tr>
+            <th>Title</th>
+            <th>Desciption</th>
+            <th>Platform</th>
+            <th>Date</th>
+            <th>Official</th>
+            <th>Available</th>
+            <th>Resolution</th>
+            <th>Link</th>
+{#if data.user}
+            <th>Refresh</th>
+{/if}
+        </tr></thead>
+    <tbody>
         {#each data.sources as src}
-          <tr>
-              <td>{src.title}</td><td>{src.description}</td>
-                  <td>{src.platform}</td><td>{src.published_date}</td>
-                  <td>{src.work_origin}</td><td>{src.work_status}</td>
-              <td>{src.work_width}x{src.work_height}</td><td><a href="{src.url}" target="_blank" rel="noopener noreferrer">Link</a></td>
-              <td>
-                <button type="submit">Refresh</button>
-              </td>
-          </tr>
+        <tr>
+            <td>{src.title}</td>
+            <td><CollapsibleText text={src.description}></CollapsibleText></td>
+            <td>{src.platform}</td><td>{src.published_date}</td>
+            <td>{src.work_origin}</td><td>{src.work_status}</td>
+            <td>{src.work_width}x{src.work_height}</td><td><a href="{src.url}" target="_blank" rel="noopener noreferrer">Link</a></td>
+{#if data.user}
+            <td><button type="submit">Refresh</button></td>
+{/if}
+        </tr>
         {/each}
       </tbody>
     </table>

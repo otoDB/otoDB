@@ -32,7 +32,7 @@ class WorkRelation(models.Model):
     def get_component_from_work(work: MediaWork):
         # TODO plenty of room for optimization here
         def get_works_from_relations(relations):
-            return (MediaWork.objects.filter(relation_A__in=relations) | MediaWork.objects.filter(relation_B__in=relations)).distinct()
+            return (MediaWork.active_objects.filter(relation_A__in=relations) | MediaWork.active_objects.filter(relation_B__in=relations)).distinct()
 
         component = WorkRelation.get_relations_including_works([work])
         works = get_works_from_relations(component)

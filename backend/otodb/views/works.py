@@ -31,13 +31,7 @@ class SourceSiteForm(forms.Form):
 
 class SourceCheckinForm(forms.Form):
     official = forms.BooleanField(label='Is this an official upload?', required=False)
-
-def get_work_by_id(work_id: int):
-    work = get_object_or_404(MediaWork, pk=work_id)
-    if work.moved_to is not None:
-        raise Exception('This work has been moved. Operation is invalid.')
-    return work
-    
+   
 def check_source_duplicates(info):
     query = WorkSource.objects.filter(platform=info['site'], source_id=info['id'])
     if query.exists():
@@ -48,7 +42,7 @@ def add_tags_to_work(work: MediaWork, info):
         work.tags.add(*info['tags'])
 
 def work(request: HttpRequest, work_id: int):
-    work = get_work_by_id(work_id)
+    work = MediaWork.active_objects.get(id=work_id)
     return render(request, "works/work.html", {'work':work})
 
 @login_required
@@ -68,7 +62,7 @@ def check_in_source(request: HttpRequest, source_id: int):
             if w_id := request.POST.get('work_id'):
                 work_id = int(w_id)
             if work_id > 0:
-                work = get_work_by_id(work_id)
+                work = MediaWork.active_objects.get(id=work_id)
                 title += f' for "{work.title}"'
             else:
                 work = MediaWork(title=src.title, description=src.description, thumbnail=src.thumbnail)
@@ -83,7 +77,7 @@ def check_in_source(request: HttpRequest, source_id: int):
             return redirect('otodb:work', work_id=work.id)
     else:
         form = SourceCheckinForm(initial={ 'official': not src.work_origin })
-        suggestions = MediaWork.objects.filter(title__icontains=src.title, moved_to__isnull=True)[:3]
+        suggestions = MediaWork.active_objects.filter(title__icontains=src.title)[:3]
 
     return render(request, 'works/check_in_source.html', {'form': form, 'source': src, 'title': title, 'suggestions': suggestions})
 
@@ -140,7 +134,7 @@ def new(request: HttpRequest):
             work_id = form.cleaned_data['work_id']
             work = None
             if work_id > 0:
-                work = get_work_by_id(work_id)
+                work = MediaWork.active_objects.get(id=work_id)
                 title = f'New source for "{work.title}"'
             try:
                 return save_source(work, link, is_reupload)
@@ -158,7 +152,7 @@ def new(request: HttpRequest):
         elif work_id := request.GET.get('work_id'):
             work_id = int(work_id)
             form = SourceSiteForm(initial={ 'work_id': work_id })    
-            work = get_work_by_id(work_id)
+            work = MediaWork.active_objects.get(id=work_id)
 
             title = f'New source for "{work.title}"'
         else:
@@ -168,7 +162,7 @@ def new(request: HttpRequest):
 
 @login_required
 def edit(request: HttpRequest, work_id: int):
-    work = get_work_by_id(work_id)
+    work = MediaWork.active_objects.get(id=work_id)
     relations = WorkRelation.get_relations_including_works([work])
 
     if request.method == 'POST':
@@ -185,7 +179,7 @@ def edit(request: HttpRequest, work_id: int):
 
 @login_required
 def edit_relations(request: HttpRequest, work_id: int):
-    work = get_work_by_id(work_id)
+    work = MediaWork.active_objects.get(id=work_id)
 
     if request.method == 'POST':
         try:
@@ -206,7 +200,7 @@ def edit_relations(request: HttpRequest, work_id: int):
 
 @login_required
 def set_tags(request: HttpRequest, work_id: int):
-    work = get_work_by_id(work_id)
+    work = MediaWork.active_objects.get(id=work_id)
 
     if request.method == 'POST':
         try:
@@ -232,8 +226,8 @@ def merge(request: HttpRequest):
             thumbnail = request.POST['thumbnail']
             rating = request.POST['rating']
 
-            work_a = MediaWork.objects.get(id=work_a, moved_to__isnull=True)
-            work_b = MediaWork.objects.get(id=work_b, moved_to__isnull=True)
+            work_a = MediaWork.active_objects.get(id=work_a)
+            work_b = MediaWork.active_objects.get(id=work_b)
 
             work_a.title = title
             work_a.description = description
@@ -287,7 +281,7 @@ def history(request: HttpRequest, work_id: int):
     return render(request, 'works/history.html', { 'work': work, 'history': history })
 
 def relations(request: HttpRequest, work_id: int):
-    work = get_work_by_id(work_id)
+    work = MediaWork.active_objects.get(id=work_id)
     relations, works = WorkRelation.get_component_from_work(work)
     d2 = '\n'.join(['direction: right'] + [f'''{w.id}: {w.title} {{
             shape: image

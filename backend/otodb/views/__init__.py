@@ -16,12 +16,12 @@ __all__ = ['lists', 'tags', 'users', 'works', 'songs']
 
 def index(request: HttpRequest):
     return render(request, "index.html", {
-        "random_work": MediaWork.objects.random()
+        "random_work": MediaWork.active_objects.random()
         }
     )
 
 SEARCH_TYPE_LOOKUP = {
-    "work": lambda q: MediaWork.objects.filter(title__icontains=q, moved_to__isnull=True),
+    "work": lambda q: MediaWork.active_objects.filter(title__icontains=q),
     "song": lambda q: MediaSong.objects.filter(title__icontains=q),
     "tag":  lambda q: TagWork.objects.filter(name__icontains=q, aliased_to__isnull=True)
 }
@@ -45,7 +45,7 @@ def query(request: HttpRequest, query_type: str):
             results = None
             match query_type:
                 case 'work':
-                    results = MediaWork.objects.filter(title__icontains=q, moved_to__isnull=True)
+                    results = MediaWork.active_objects.filter(title__icontains=q)
                     return render(request, "query/works.html", {'results': results})
                 case 'tag':
                     results = TagWork.objects.filter(name__icontains=q, aliased_to__isnull=True)

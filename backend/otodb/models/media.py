@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from simple_history.models import HistoricalRecords
-from tagulous.models import TagField
+from tagulous.models import TagField, TaggedManager
 
 from .enums import Rating
 from .tag import TagWork, TagSong
@@ -9,7 +9,7 @@ from otodb.account.models import Account
 
 import random
 
-class MediaBaseManager(models.Manager):
+class ActiveManager(models.Manager):
     def random(self):
         random_work = None
         work_ids = self.values_list('pk', flat=True)
@@ -18,6 +18,10 @@ class MediaBaseManager(models.Manager):
             if random_work.moved_to:
                 random_work = random_work.moved_to
             return random_work
+
+    def get_queryset(self):
+        return super().get_queryset().filter(moved_to__isnull=True)
+
 
 # allow setting a through table on tag fields
 TagField.forbidden_fields = tuple(
@@ -62,9 +66,10 @@ class MediaWork(models.Model):
 
     history = HistoricalRecords(m2m_fields=[tags])
 
-    objects = MediaBaseManager()
-
     moved_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+
+    objects = models.Manager()
+    active_objects = TaggedManager.cast_class(ActiveManager())
 
     def __str__(self):
         return self.title
@@ -88,7 +93,6 @@ class MediaSong(models.Model):
     )
 
     history = HistoricalRecords()
-    objects = MediaBaseManager()
 
     class Meta:
         verbose_name = ("Song")

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Section from "../../Section.svelte";
-	import SectionMenu from "../../SectionMenu.svelte";
 	import CollapsibleText from "./CollapsibleText.svelte";
     import * as m from '$lib/paraglide/messages.js';
 	import { base } from "$app/paths";
@@ -12,10 +11,8 @@
 	<title>{m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}</title>
 </svelte:head>
 
-<Section title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}>
-{#snippet menu()}
-<SectionMenu links={data.links} />
-{/snippet}
+<Section title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
+  menuLinks={data.links}>
     <div id="infobox">
       <img src={data.thumbnail} alt={data.title}>
       <div>
@@ -48,12 +45,10 @@
     </div>
 </Section>
 
-<Section title={m.extra_brave_tapir_skip()}>
-    {#snippet menu()}
-    <SectionMenu links={[
+<Section title={m.extra_brave_tapir_skip()}
+    menuLinks={[
         { pathname: "#TODO", title: m.helpful_away_jay_succeed() }
-        ]}/>
-    {/snippet}
+        ]}>
     <table class="w-full">
         <thead><tr>
             <th>{m.large_factual_octopus_exhale()}</th>

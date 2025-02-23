@@ -12,24 +12,18 @@ from .common import WorkSchema,WorkSourceSchema
 
 work_router = Router()
 
-def get_work_by_id(work_id: int):
-    work = get_object_or_404(MediaWork, pk=work_id)
-    if work.moved_to is not None:
-        raise Exception('This work has been moved. Operation is invalid.')
-    return work
-
 @work_router.get('work', response=WorkSchema)
 def work(request: HttpRequest, work_id: int):
-    work = get_work_by_id(work_id)
+    work = MediaWork.active_objects.get(id=work_id)
     return work
 
 @work_router.get('random', response=WorkSchema)
 def random(request: HttpRequest):
-    return MediaWork.objects.random()
+    return MediaWork.active_objects.random()
 
 @work_router.get('relations', response=str)
 def relations(request: HttpRequest, work_id: int):
-    work = get_work_by_id(work_id)
+    work = MediaWork.active_objects.get(id=work_id)
     relations, works = WorkRelation.get_component_from_work(work)
     d2 = '\n'.join(['direction: right'] + [f'''{w.id}: {w.title} {{
             shape: image
@@ -46,5 +40,5 @@ def relations(request: HttpRequest, work_id: int):
 
 @work_router.get('sources', response=List[WorkSourceSchema])
 def sources(request: HttpRequest, work_id: int):
-    work = get_work_by_id(work_id)
+    work = MediaWork.active_objects.get(id=work_id)
     return work.worksource_set

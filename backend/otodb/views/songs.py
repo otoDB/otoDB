@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from simple_history.utils import update_change_reason
 
+from otodb.common import get_diff
 from otodb.models import MediaSong, TagWork, TagSong, SongRelation
 from otodb.models.enums import WorkTagCategory, SongRelationTypes
 

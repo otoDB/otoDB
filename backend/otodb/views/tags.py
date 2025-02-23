@@ -18,7 +18,7 @@ class WorkTagEditForm(forms.ModelForm):
 
 def tag(request: HttpRequest, tag_slug: str, tag_type):
     tag = get_object_or_404(tag_type, slug=tag_slug)
-    works = MediaWork.objects.filter(tags__slug=tag_slug, moved_to__isnull=True)
+    works = MediaWork.active_objects.filter(tags__slug=tag_slug)
     paginator = Paginator(works, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -65,7 +65,7 @@ def alias(request: HttpRequest, tag_type):
                 if tag is not into:
                     tag.aliased_to = into
                     tag.save()
-                    for work in MediaWork.objects.filter(tags__id=tag.id, moved_to__isnull=True):
+                    for work in MediaWork.active_objects.filter(tags__id=tag.id):
                         work.tags.add(into)
                         work.tags.remove(tag)
                     for t in tag_type.objects.filter(aliased_to=tag):

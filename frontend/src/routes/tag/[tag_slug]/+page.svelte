@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Section from "../../Section.svelte";
-	import SectionMenu from "../../SectionMenu.svelte";
     import * as m from '$lib/paraglide/messages.js';
 	import { base } from "$app/paths";
     
@@ -11,10 +10,8 @@
 	<title>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}</title>
 </svelte:head>
 
-<Section title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}>
-    {#snippet menu()}
-    <SectionMenu links={data.links} />
-    {/snippet}
+<Section title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
+    menuLinks={data.links}>
 
     <div>
         <span>{m.empty_legal_chicken_taste()}</span>

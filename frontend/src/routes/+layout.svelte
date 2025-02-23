@@ -3,13 +3,9 @@
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import Header from './Header.svelte';
 	import '../app.css';
-	import { setToken } from '$lib/api.js';
 	import * as m from '$lib/paraglide/messages.js';
 	
 	let { data, children } = $props();
-
-	if (data?.user?.csrf)
-		setToken(data.user.csrf)
 </script>
 
 <ParaglideJS {i18n}>

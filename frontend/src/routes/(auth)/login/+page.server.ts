@@ -7,26 +7,22 @@ export const load: PageServerLoad = async ({cookies, fetch, locals}) => {
     if (locals.user)
         redirect(303, base);
 
-    const { response, data: csrf } = await client.GET('/api/auth/csrf', { fetch });
+    const { response } = await client.GET('/api/auth/csrf', { fetch });
     forwardCookies(cookies, response);
-    return {
-        csrf: csrf.csrf_token
-    };
 };
 
 export const actions = {
     default: async ({ cookies, request, fetch, locals }) => {
         const data = await request.formData();
         const username = data.get('username') as string,
-            password = data.get('password') as string,
-            csrf = data.get('csrf') as string;
+            password = data.get('password') as string;
 
         if (!username || !password)
             return fail(400, { username, missing: true });
 
 		const { response, error } = await client.POST('/api/auth/login', { fetch,
 			params: { query: { username, password } },
-			headers: { 'X-CSRFToken': csrf },
+			headers: { 'X-CSRFToken': cookies.get('csrftoken') }
         });
 		if (error) {
             cookies.delete('csrftoken', { path: '/' });

@@ -312,8 +312,8 @@ export interface components {
             /** Message */
             message: string;
         };
-        /** UserLogin */
-        UserLogin: {
+        /** UserLoginSchema */
+        UserLoginSchema: {
             /** User Id */
             user_id: number;
             /** Username */
@@ -527,7 +527,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserLogin"];
+                    "application/json": components["schemas"]["UserLoginSchema"];
                 };
             };
             /** @description Unauthorized */
@@ -556,7 +556,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserLogin"];
+                    "application/json": components["schemas"]["UserLoginSchema"];
                 };
             };
             /** @description Unauthorized */
@@ -607,7 +607,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserLogin"];
+                    "application/json": components["schemas"]["UserLoginSchema"];
                 };
             };
             /** @description Unauthorized */

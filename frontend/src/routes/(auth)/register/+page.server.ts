@@ -1,18 +1,14 @@
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { base } from "$app/paths";
-import client from "$lib/api";
-import { forwardCookies } from "$lib/api";
+import client, { forwardCookies } from "$lib/api";
 
 export const load: PageServerLoad = async ({cookies, fetch, locals}) => {
     if (locals.user)
         redirect(303, base);
 
-    const { response, data: csrf } = await client.GET('/api/auth/csrf', { fetch });
+    const { response } = await client.GET('/api/auth/csrf', { fetch });
     forwardCookies(cookies, response);
-    return {
-        csrf: csrf.csrf_token
-    };
 };
 
 export const actions = {
@@ -21,8 +17,7 @@ export const actions = {
         const username = data.get('username') as string,
             email = data.get('email') as string,
             password = data.get('password') as string,
-            confirm = data.get('confirm') as string,
-            csrf = data.get('csrf') as string;
+            confirm = data.get('confirm') as string;
 
         if (!username || !email || !password || !confirm)
             return fail(400, { username, email, missing: true });
@@ -31,7 +26,7 @@ export const actions = {
 
 		const { response, error } = await client.POST('/api/auth/register', {
 			params: { query: { username, password, email } },
-			headers: { 'X-CSRFToken': csrf },
+			headers: { 'X-CSRFToken': cookies.get('csrftoken') },
             fetch
         });
 		if (error) {

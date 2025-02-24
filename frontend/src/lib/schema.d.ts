@@ -363,6 +363,27 @@ export interface components {
             /** Thumbnail */
             thumbnail?: string | null;
         };
+        /** IDSchema */
+        IDSchema: {
+            /** Id */
+            id: number;
+        };
+        /** SlimWorkSchema */
+        SlimWorkSchema: {
+            /** ID */
+            id?: number | null;
+            /** Title */
+            title: string;
+            /** Thumbnail */
+            thumbnail?: string | null;
+        };
+        /** WorkRelationSchema */
+        WorkRelationSchema: {
+            A: components["schemas"]["IDSchema"];
+            B: components["schemas"]["IDSchema"];
+            /** Relation */
+            relation: number;
+        };
         /** WorkSourceSchema */
         WorkSourceSchema: {
             /** Platform */
@@ -692,7 +713,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": [
+                        components["schemas"]["WorkRelationSchema"][],
+                        components["schemas"]["SlimWorkSchema"][]
+                    ];
                 };
             };
         };

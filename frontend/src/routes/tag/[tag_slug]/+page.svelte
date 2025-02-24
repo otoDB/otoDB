@@ -2,6 +2,7 @@
 	import Section from "../../Section.svelte";
     import * as m from '$lib/paraglide/messages.js';
 	import { base } from "$app/paths";
+    import { WorkTagCategory, Rating } from "$lib/enums";
     
     let { data } = $props();
 </script>
@@ -19,7 +20,7 @@
         <span>{data.tag.name}</span>
     </div>
 
-    <h2>{m.mild_loud_shad_enchant({type: m.plane_awful_bobcat_spark(), name: data.tag.category})}</h2>
+    <h2>{m.mild_loud_shad_enchant({type: m.plane_awful_bobcat_spark(), name: WorkTagCategory[data.tag.category]()})}</h2>
     
     {#if data.tag.aliases.length}
     <h3>Also known as: {#each data.tag.aliases as alias, i}{alias}{#if i + 1 != data.tag.aliases.length}, {/if}{/each}.</h3>
@@ -64,7 +65,7 @@
             <tr>
                 <td><img src={work.thumbnail} alt={work.title} style="width:10rem;"></td>
                 <td><a href="{base}/work/{work.id}">{work.title} </a></td>
-                <td>{work.rating} </td>
+                <td>{Rating[work.rating]()} </td>
                 <td>{work.tags.map(t => t.name).join(', ')}</td>
             </tr>
             {/each}

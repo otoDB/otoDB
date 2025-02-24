@@ -4,6 +4,8 @@ otoDB is a community-driven website consisting of a collaborative user-managed d
 ## Backend Setup
 We recommend using `uv`.
 ```sh
+cd backend
+
 # Copy the base .env file
 cp .env.example .env
 
@@ -29,6 +31,11 @@ You may also need to change the domain of the default site (example.com) in the 
 ## Frontend Setup
 We recommend using `bun`. You can replace `bun` with `npm` below.
 ```sh
+cd frontend
+
+# Setup for default backend addresses in dev mode
+cp .env.example .env
+
 bun install
 
 bun run dev
@@ -40,11 +47,3 @@ To regenerate API types (the default dev backend is served on`http://127.0.0.1:8
 ```sh
 bunx openapi-typescript <server>/api/openapi.json -o src/lib/schema.d.ts
 ```
-<!-- ### Building
-```sh
-bun run build
-```
-
-You can preview the production build with `bun run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment. -->

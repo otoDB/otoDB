@@ -332,8 +332,6 @@ export interface components {
         TagWorkSchema: {
             /** Aliases */
             aliases: string[];
-            /** Category */
-            category: string;
             /** Children */
             children: components["schemas"]["TagWorkSchema"][];
             song?: components["schemas"]["SongSchema"] | null;
@@ -341,11 +339,14 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
         };
         /** WorkSchema */
         WorkSchema: {
-            /** Rating */
-            rating: string;
             /** Tags */
             tags: components["schemas"]["TagWorkSchema"][];
             /** ID */
@@ -354,17 +355,18 @@ export interface components {
             title: string;
             /** Description */
             description?: string | null;
+            /**
+             * Rating
+             * @default 0
+             */
+            rating: number;
             /** Thumbnail */
             thumbnail?: string | null;
         };
         /** WorkSourceSchema */
         WorkSourceSchema: {
             /** Platform */
-            platform: string;
-            /** Work Origin */
-            work_origin: string;
-            /** Work Status */
-            work_status: string;
+            platform: number;
             /** Url */
             url: string;
             /**
@@ -382,6 +384,16 @@ export interface components {
             title: string;
             /** Description */
             description?: string | null;
+            /**
+             * Work Origin
+             * @default 0
+             */
+            work_origin: number;
+            /**
+             * Work Status
+             * @default 0
+             */
+            work_status: number;
         };
         /** ProfileSchema */
         ProfileSchema: {

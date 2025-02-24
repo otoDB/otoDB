@@ -12,7 +12,7 @@
 
 <Section title={m.mild_loud_shad_enchant({ type: m.fuzzy_crazy_cobra_lead(), name: data.profile.username})}
     menuLinks={data.links}>    
-    <p>E-mail: {data.profile.email}</p>
+    <p>{m.mild_loud_shad_enchant({type: m.moving_funny_spider_feast(), name: data.profile.email})}</p>
     <p>Joined on {data.profile.date_created}</p>
 </Section>
 

@@ -2,7 +2,8 @@
 	import Section from "../../Section.svelte";
 	import CollapsibleText from "./CollapsibleText.svelte";
     import * as m from '$lib/paraglide/messages.js';
-	import { base } from "$app/paths";
+	import { Platform, Rating, WorkOrigin, WorkStatus } from '$lib/enums';
+    import { base } from "$app/paths";
     
     let { data } = $props();
 </script>
@@ -20,7 +21,7 @@
         <tbody>
             <tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.title}</td></tr>
             <tr><th>{m.clear_lucky_peacock_pick()}</th><td>{@html data.description}</td></tr>
-            <tr><th>{m.good_dark_bumblebee_spur()}</th><td>{data.rating}</td></tr>
+            <tr><th>{m.good_dark_bumblebee_spur()}</th><td>{Rating[data.rating]()}</td></tr>
         </tbody>
         </table>
 {#if data.user}
@@ -68,8 +69,8 @@
         <tr>
             <td class="whitespace-nowrap">{src.title}</td>
             <td><CollapsibleText text={src.description}></CollapsibleText></td>
-            <td>{src.platform}</td><td>{src.published_date}</td>
-            <td>{src.work_origin}</td><td>{src.work_status}</td>
+            <td>{Platform[src.platform]}</td><td>{src.published_date}</td>
+            <td>{WorkOrigin[src.work_origin]()}</td><td>{WorkStatus[src.work_status]()}</td>
             <td>{src.work_width}x{src.work_height}</td><td class="whitespace-nowrap"><a href={src.url} target="_blank" rel="noopener noreferrer">{m.noisy_moving_newt_belong()}</a></td>
 {#if data.user}
             <td><button type="submit" class="whitespace-nowrap">{m.mushy_proof_hornet_dig()}</button></td>

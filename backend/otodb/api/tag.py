@@ -28,4 +28,4 @@ def details(request: HttpRequest, tag_slug: str):
 @tag_router.get('works', response=list[WorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
-    return MediaWork.activeobjects.filter(tags__slug=tag_slug)
+    return MediaWork.active_objects.filter(tags__slug=tag_slug)

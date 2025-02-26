@@ -1,0 +1,19 @@
+[
+    {
+      "id": 1,
+      "condition": {
+        "urlFilter": "*://*.nicovideo.jp/*",
+        "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest"]
+      },
+      "action": {
+        "type": "modifyHeaders",
+        "requestHeaders": [
+          {
+            "operation": "set",
+            "header": "User-Agent",
+            "value": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+          }
+        ]
+      }
+    }
+  ]

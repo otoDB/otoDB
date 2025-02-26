@@ -1,16 +1,39 @@
 {
     "manifest_version": 3,
     "name": "otoDB",
-    "version": "1.0",
+    "version": "1.0.0",
     "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
 
     "content_scripts": [
       {
-        "matches": ["*://*.youtube.com/watch*", "*://*.bilibili.com/video*", "*://*.nicovideo.jp/watch*", "*://*.soundcloud.com/*"],
-        "js": ["main.js"],
+        "matches": [
+          "*://*.youtube.com/watch*",
+          "*://*.bilibili.com/video*",
+          "*://*.nicovideo.jp/*",
+          "*://*.soundcloud.com/*"
+        ],
+        "js": [
+          "database.js",
+          "niconico.js"
+        ],
         "css": ["style.css"]
       }
     ],
   
-    "host_permissions": ["*://127.0.0.1/*"]
+    "permissions": [
+      "declarativeNetRequestWithHostAccess"
+    ],
+    "host_permissions": [
+      "*://127.0.0.1/*",
+      "*://*.nicovideo.jp/*"
+    ],
+    "declarative_net_request": {
+      "rule_resources": [
+        {
+          "id": "ruleset",
+          "enabled": true,
+          "path": "rules.json"
+        }
+      ]
+    }
 }

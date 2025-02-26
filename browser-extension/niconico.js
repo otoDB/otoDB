@@ -79,7 +79,7 @@
                     const commentCount = data?.video?.count?.comment || "0";
                     const mylistCount = data?.video?.count?.mylist || "0";
                     const likeCount = data?.video?.count?.like || "0";
-                    const duration = data?.video?.duration || "0";
+                    const duration = data?.video?.duration || "--:--";
                     el.querySelector('.count.view .value').innerText = viewCount.toLocaleString();
                     el.querySelector('.count.comment .value').innerText = commentCount.toLocaleString();
                     el.querySelector('.count.mylist .value').innerText = mylistCount.toLocaleString();

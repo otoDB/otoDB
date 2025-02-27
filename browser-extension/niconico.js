@@ -138,6 +138,19 @@
             <div class="balloon recent active" data-message="" style="display:none"></div>
             `;
             const existingTime = thumbBox.querySelector('.itemTime');
+            existingTime.innerHTML = `
+            <span class="video_uploaded">
+                <span class="time">${rssItem.pubDate.toLocaleString('ja-JP', { 
+                    timeZone: 'Asia/Tokyo',
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric'
+                })}</span>
+                <span class="separate">投稿</span>
+            </span>
+            `;
             thumbBox.innerHTML = '';
             thumbBox.appendChild(existingTime);
             thumbBox.appendChild(thumbWrap);

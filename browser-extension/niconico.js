@@ -133,7 +133,7 @@
                         >
                     </a>
                 </div>
-                <span class="videoLength"></span>
+                <span class="videoLength">-:--</span>
             </div>
             <div class="balloon recent active" data-message="" style="display:none"></div>
             `;

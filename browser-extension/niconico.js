@@ -84,7 +84,7 @@
                     el.querySelector('.count.comment .value').innerText = commentCount.toLocaleString();
                     el.querySelector('.count.mylist .value').innerText = mylistCount.toLocaleString();
                     el.querySelector('.count.like .value').innerText = likeCount.toLocaleString();
-                    el.querySelector('.videoLength').innerText = new Date(duration * 1000).toISOString().substring(11, 19).replace(/^[0:]+/, '')
+                    el.querySelector('.videoLength').innerText = new Date(duration * 1000).toISOString().substring(11, 19).replace(/^00:0?|^0/, '');
                 }
             } catch (error) {
                 console.error("Error processing server response request:", error);

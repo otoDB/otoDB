@@ -37,9 +37,14 @@
     window.fetch = async function(...args) {
         const response = await originalFetch(...args);
         if (response.ok && response.headers.get('Content-Type').split(';')[0] === 'application/json') {
-            const clonedResponse = response.clone();
-            const data = await clonedResponse.json();
+            const clonedResponseText = response.clone();
+            const clonedResponseJson = response.clone();
             try {
+                const text = await clonedResponseText.text();
+                if (!text) {
+                    return response;
+                }
+                const data = await clonedResponseJson.json();
                 const result = tryUncensor(data);
                 return new Response(JSON.stringify(result), {
                     status: response.status,
@@ -48,6 +53,9 @@
                 });
             } catch (e) {
                 console.error("Error attempting to modify data in fetch():", e);
+                const rawResponse = response.clone();
+                const rawText = await rawResponse.text();
+                console.error("Raw response body:", rawText);
             }
         }
         return response;

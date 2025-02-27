@@ -22,8 +22,8 @@
     const originalJSONParse = JSON.parse;
     const originalFetch = window.fetch;
 
-    JSON.parse = function(text, reviver) {
-        let result = originalJSONParse.call(JSON, text, reviver);
+    JSON.parse = function(...args) {
+        let result = originalJSONParse.call(JSON, ...args);
         if (result && typeof result === 'object') {
             try {
                 result = tryUncensor(result);

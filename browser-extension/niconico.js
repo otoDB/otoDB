@@ -70,7 +70,7 @@
             }
             index++;
         }
-        for (const request of pendingRequests) {
+        for (const [index, request] of pendingRequests.entries()) {
             try {
                 const el = request.sensitiveEl;
                 const data = await getServerResponseJson(request.url);
@@ -88,6 +88,11 @@
                 }
             } catch (error) {
                 console.error("Error processing server response request:", error);
+                // If the first request is the one that failed, back off making any more requests
+                if (index === 0) {
+                    console.warn("First server response request failed, stopping further requests");
+                    break;
+                }
             }
         }    
     }
@@ -95,9 +100,6 @@
     async function getServerResponseJson(url) {
         if (!url) return;
         const res = await fetch(url);
-        if (!res.ok) {
-            throw new Error(`Failed to fetch URL for server response: ${res.status} ${res.statusText}`);
-        }
         const text = await res.text();
         const parser = new DOMParser();
         const htmlDoc = parser.parseFromString(text, 'text/html');
@@ -105,8 +107,13 @@
         if (!jsonStr) {
             throw new Error("No server response JSON found");
         }
-        const data = JSON.parse(jsonStr);
-        return data?.['data']?.['response'];
+        const payload = JSON.parse(jsonStr);
+        const response = payload?.data?.response;
+        const errorCode = response?.errorCode;
+        if (errorCode && !response?.video && ["FORBIDDEN"].includes(errorCode.toUpperCase())) {
+            throw new Error("Server response JSON indicates an error");
+        }
+        return response;
     }
 
     function replaceSensitiveEl(sensitiveItemEl, rssItem) {

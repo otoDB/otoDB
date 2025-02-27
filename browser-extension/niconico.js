@@ -145,8 +145,8 @@
                     year: 'numeric',
                     month: 'numeric',
                     day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric'
+                    hour: '2-digit',
+                    minute: '2-digit'
                 })}</span>
                 <span class="separate">投稿</span>
             </span>

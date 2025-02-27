@@ -9,7 +9,7 @@
         } else {
             const result = {};
             for (const key in obj) {
-                if (key === 'requireSensitiveMasking') {
+                if ((key === 'requireSensitiveMasking' || key === 'sensitive') && obj[key] instanceof Boolean) {
                     result[key] = false;
                 } else {
                     result[key] = tryUncensor(obj[key]);

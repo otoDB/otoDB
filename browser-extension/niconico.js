@@ -118,7 +118,7 @@
         sensitiveItemEl.setAttribute('data-nicoad-video', '');
         sensitiveItemEl.setAttribute('data-nicoad-decorated', '1');
 
-        const thumbBox = sensitiveItemEl.querySelector('.videoList01Wrap');
+        const thumbBox = sensitiveItemEl.querySelector('img.thumb').closest('div');
         if (thumbBox) {
             const thumbWrap = document.createElement('div');
             thumbWrap.className = 'uadWrap';

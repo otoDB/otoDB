@@ -12,11 +12,28 @@
           "*://*.nicovideo.jp/*",
           "*://*.soundcloud.com/*"
         ],
-        "js": [
-          "database.js",
-          "niconico.js"
-        ],
+        "js": ["database.js"],
         "css": ["style.css"]
+      },
+      {
+        "matches": [
+          "*://*.nicovideo.jp/*"
+        ],
+        "js": ["niconico.js"]
+      },
+      {
+        "matches": [
+          "*://*.nicovideo.jp/*"
+        ],
+        "js": ["injector.js"],
+        "run_at": "document_start"
+      }
+    ],
+
+    "web_accessible_resources": [
+      {
+        "resources": ["injected.js"],
+        "matches": ["*://*.nicovideo.jp/*"]
       }
     ],
   

@@ -1,5 +1,4 @@
 from django.db import models
-from django.urls import reverse
 
 from .media import MediaWork, MediaSong
 

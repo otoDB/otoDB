@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import field_validator, ValidationInfo
+from pydantic import field_validator
 
 from ninja import Schema, ModelSchema, Field
 
@@ -30,7 +30,7 @@ class TagWorkSchema(ModelSchema):
 
     @field_validator("aliases", mode="before", check_fields=False)
     @classmethod
-    def platform_str(cls, value) -> str:
+    def aliases_str(cls, value) -> str:
         return [tag.name for tag in value]
 
 class TagWorkDetailsSchema(Schema):

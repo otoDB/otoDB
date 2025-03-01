@@ -1,3 +1,5 @@
+from typing import Self
+
 from django.urls import reverse
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -72,6 +74,31 @@ class TagWork(TagModel):
     def get_song(self):
         if hasattr(self, 'mediasong'):
             return self.mediasong
+
+    @staticmethod
+    def alias(from_tags: list[Self], into_tag: Self):
+        for tag in from_tags:
+            if tag is not into_tag:
+                tag.aliased_to = into_tag
+                tag.save()
+                for work in tag.works:
+                    work.tags.add(into_tag)
+                    work.tags.remove(tag)
+                for t in TagWork.objects.filter(aliased_to=tag):
+                    t.aliased_to = into_tag
+                    t.save()
+                for t in TagWork.objects.filter(parent=tag):
+                    t.parent = into_tag
+                    t.save()
+                if into_tag.parent is None:
+                    into_tag.parent = tag.parent
+                if tag.category == WorkTagCategory.SONG:
+                    song = tag.mediasong
+                    song.work_tag = into_tag
+                    song.save()
+                    
+        into_tag.save()
+
 
 class TagSong(TagModel):
     objects = LowerCaseTagModelManager()

@@ -20,39 +20,29 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
     if (relations.length === 0)
         return;
 
-    // D2.js Currently has issues with unicode among other things
-    const placeholderTitle = (id: string, n: number) => {
-        const s = `!WT_${id}`;
-        return s + '_'.repeat(Math.max(0, n - s.length));
-    };
-    const placeholderRelation = n => `____REL_${n}`;
-    const placeholderLink = n => `https://@WL_${n}`;
+    // TODO temporary workaround https://github.com/terrastruct/d2/issues/2357
+    const placeholderLink = (n: number) => `https://@WL_${n}`;
 
     const source = `direction: right
     ${
-        works.map(w => `${w.id}: ${placeholderTitle(w.id, w.title.length)} {
+        works.map(w => `${w.id}: ${w.title} {
              shape: image
              icon: ${w.thumbnail}
-             link: ${placeholderLink(w.id)}
+             link: ${placeholderLink(w.id!)}
              ${+params.work_id === w.id ? 'style: { font-color: red }' : ''}
         }`).join('\n')
     }
     ${
-        relations.map((r, i) => `${r.A.id} -> ${r.B.id}: ${placeholderRelation(i)}`).join('\n')
+        relations.map(r => `${r.A.id} -> ${r.B.id}: ${WorkRelationTypes[r.relation]()}`).join('\n')
     }`;
     
     const result = await d2.compile(source);
-    let svg = await d2.render(result.diagram);
+    let svg = await d2.render(result.diagram, { ...result.renderOptions, darkThemeID: 200, noXMLTag: true});
 
-    svg = svg.slice(38); // kill XML processor tag
     svg = svg.replace(/<!\[CDATA\[.*?]]>/gs, '<![CDATA[.appendix-icon{display:none;}]]>');
 
-    for (const work of works) {
-        svg = svg.replace(placeholderTitle(work.id, work.title.length), work.title);
-        svg = svg.replace(placeholderLink(work.id), `${base}/work/${work.id}`);
-    }
-    for (let i = 0; i < relations.length; i++)
-        svg = svg.replace(placeholderRelation(i), WorkRelationTypes[relations[i].relation]());
+    for (const work of works)
+        svg = svg.replace(placeholderLink(work.id!), `${base}/work/${work.id}`);
 
     return {
         relations_svg: svg

@@ -1,3 +1,5 @@
+from typing import Self
+
 from django.db import models
 from django.urls import reverse
 from simple_history.models import HistoricalRecords
@@ -58,7 +60,7 @@ class MediaWork(models.Model):
 
     tags = TagField(
         to=TagWork,
-        related_name="work_tags",
+        related_name="works",
         through=TagWorkInstance
     )
 
@@ -80,6 +82,41 @@ class MediaWork(models.Model):
 
     def get_absolute_url(self):
         return reverse('otodb:work', kwargs={ 'work_id': self.id })
+    
+    @staticmethod
+    # Points work_B to work_A
+    def merge(to_work: Self, from_work: Self, title: str, description: str, thumbnail: str, rating: int):
+        to_work.title = title
+        to_work.description = description
+        to_work.thumbnail = thumbnail 
+        to_work.rating = rating
+        to_work.tags.add(*from_work.tags.all())
+        to_work.save()
+
+        for src in from_work.worksource_set.all():
+            src.media = to_work
+            src.save()
+
+        for item in from_work.poolitem_set.all():
+            item.work = to_work
+            item.save()
+
+        for relation in from_work.relation_A.all():
+            if relation.B.id == to_work.id:
+                relation.delete()
+            else:
+                relation.A = to_work
+                relation.save()
+
+        for relation in from_work.relation_B.all():
+            if relation.A.id == to_work.id:
+                relation.delete()
+            else:
+                relation.B = to_work
+                relation.save()
+
+        from_work.moved_to = to_work
+        from_work.save()
 
 class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)

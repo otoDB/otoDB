@@ -32,7 +32,6 @@ class Pool(models.Model):
         work = MediaWork.active_objects.get(id=work_id)
         PoolItem.objects.create(work=work, description='', order=order, pool=self)
 
-
 class PoolItem(models.Model):
     work = models.ForeignKey(MediaWork, blank=False, null=False, on_delete=models.CASCADE)
     pool = models.ForeignKey(Pool, on_delete=models.CASCADE, blank=False, null=False)

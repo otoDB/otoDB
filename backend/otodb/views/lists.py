@@ -133,7 +133,9 @@ def list_import(request: HttpRequest):
             info = playlist_info(url)
             list_ = Pool(name=info['title'], description=info['description'], author=request.user)
 
-            # TODO temp until we decide on access control schemes
+            # IMPORTANT!!!
+            # DO NOT TOUCH THIS CODE. BEHAVIOR FROZEN FOR DJANGO FRONTEND
+            # INSTEAD MAKE ALL ADJUSTMENTS TO api/list.py:import_ext(...)
             from concurrent.futures import ProcessPoolExecutor
             with ProcessPoolExecutor() as executor:
                 infos = executor.map(video_info_wrapped, info['entries'])
@@ -143,13 +145,12 @@ def list_import(request: HttpRequest):
             from otodb.models import WorkSource, MediaWork, TagWork, TagWorkInstance
             from otodb.models.enums import WorkOrigin
             from datetime import date
-            from .works import check_source_duplicates
             for vid_info in infos:
                 if 'failed' in vid_info:
                     list_.description += f'\nFailed to fetch {vid_info['failed']}'
                     continue
 
-                src = check_source_duplicates(vid_info)
+                src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
                 if not src: # src does not exist
                     work = MediaWork(title=vid_info['title'], description=vid_info['description'], thumbnail=vid_info['thumb'])
                     src = WorkSource(media=work, title=vid_info['title'], description=vid_info['description'],

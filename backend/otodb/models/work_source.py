@@ -3,6 +3,7 @@ from django.db import models
 from .enums import Platform, WorkOrigin, WorkStatus
 from .media import MediaWork
 
+from otodb.common import video_info
 
 class WorkSource(models.Model):
     media = models.ForeignKey(MediaWork, on_delete=models.CASCADE, null=True)
@@ -32,3 +33,12 @@ class WorkSource(models.Model):
     class Meta:
         verbose_name = ("Media Source")
         verbose_name_plural = ("Media Sources")
+
+    def refresh(self):
+        info = video_info(self.url)
+        self.title = info['title']
+        self.description = info['description']
+        self.thumbnail = info.get('thumb', None)
+        self.work_width = info['work_width']
+        self.work_height = info['work_height']
+        self.save()

@@ -16,8 +16,8 @@ class WorkTagEditForm(forms.ModelForm):
         model = TagWork
         fields = ['category', 'parent']
 
-def tag(request: HttpRequest, tag_slug: str, tag_type):
-    tag = get_object_or_404(tag_type, slug=tag_slug)
+def work_tag(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
     works = MediaWork.active_objects.filter(tags__slug=tag_slug)
     paginator = Paginator(works, 20)
     page_number = request.GET.get("page")
@@ -26,8 +26,8 @@ def tag(request: HttpRequest, tag_slug: str, tag_type):
     return render(request, "tags/tag.html", {"tag": tag, "works": page_obj})
 
 @login_required
-def edit(request: HttpRequest, tag_slug: str, tag_type):
-    tag = get_object_or_404(tag_type, slug=tag_slug)
+def work_edit(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
 
     if request.method == 'POST':
         form = WorkTagEditForm(request.POST, instance=tag)
@@ -50,38 +50,18 @@ def edit(request: HttpRequest, tag_slug: str, tag_type):
     return render(request, 'tags/edit.html', { 'tag': tag, 'form': form })
 
 @login_required
-def alias(request: HttpRequest, tag_type):
-    # alias tree is at most one layer deep
+def work_alias(request: HttpRequest):
     if request.method == 'POST':
         try:
             n = int(request.POST['size'])
             into = int(request.POST['into'])
-            tags = [tag_type.objects.get(name=request.POST[f'tag-{i}']) for i in range(n)]
+            tags = [TagWork.objects.get(name=request.POST[f'tag-{i}']) for i in range(n)]
             into = tags[into]
+            # alias tree is at most one layer deep
             if into.aliased_to:
                 into = into.aliased_to
 
-            for tag in tags:
-                if tag is not into:
-                    tag.aliased_to = into
-                    tag.save()
-                    for work in MediaWork.active_objects.filter(tags__id=tag.id):
-                        work.tags.add(into)
-                        work.tags.remove(tag)
-                    for t in tag_type.objects.filter(aliased_to=tag):
-                        t.aliased_to = into
-                        t.save()
-                    for t in tag_type.objects.filter(parent=tag):
-                        t.parent = into
-                        t.save()
-                    if into.parent is None:
-                        into.parent = tag.parent
-                    if tag.category == WorkTagCategory.SONG:
-                        song = tag.mediasong
-                        song.work_tag = into
-                        song.save()
-                        
-            into.save()
+            TagWork.alias(tags, into)
 
             return redirect('otodb:tag', tag_slug=into.slug)        
         except Exception as e:
@@ -89,9 +69,8 @@ def alias(request: HttpRequest, tag_type):
 
     return render(request, 'tags/alias.html')
 
-def history(request: HttpRequest, tag_slug: str, tag_type):
-    tag = get_object_or_404(tag_type, slug=tag_slug)
-
+def work_history(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
     history = []
     for record in tag.history.all().reverse():
         if history != []:
@@ -101,27 +80,6 @@ def history(request: HttpRequest, tag_slug: str, tag_type):
         history.append(record)
     history.reverse()
     return render(request, 'tags/history.html', { 'tag': tag, 'history': history })
-
-def work_tag(request: HttpRequest, tag_slug: str):
-    return tag(request, tag_slug, TagWork)
-
-def work_edit(request: HttpRequest, tag_slug: str):
-    return edit(request, tag_slug, TagWork)
-
-def work_alias(request: HttpRequest):
-    return alias(request, TagWork)
-
-def work_history(request: HttpRequest, tag_slug: str):
-    return history(request, tag_slug, TagWork)
-
-# def song_tag(request: HttpRequest, tag_slug: str):
-#     return tag(request, tag_id, TagSong)
-
-# def song_alias(request: HttpRequest):
-#     return alias(request, TagSong)
-
-# def song_history(request: HttpRequest, tag_slug: str):
-#     return history(request, tag_id, TagSong)
 
 class WikiPageForm(forms.ModelForm):
     # page = forms.CharField(widget=MDEWidget())
@@ -149,14 +107,12 @@ def new_wiki_page(request: HttpRequest, tag_slug: str):
 
     return render(request, 'tags/new_wiki_page.html', { 'tag': tag, 'form': form })
 
-
 def wiki_page(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, pk=tag_slug)
     if tag.wiki_page is None:
         return redirect('otodb:tag_new_wiki_page', tag_slug=tag.slug)
 
     return render(request, 'tags/wiki_page.html', { 'tag': tag })
-
 
 def edit_wiki_page(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, pk=tag_slug)

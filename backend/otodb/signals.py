@@ -1,10 +1,10 @@
-from django.db.models.signals import m2m_changed, post_delete
+from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
 from otodb.models import MediaWork, TagWork
 
 
-# IMPORTANT: maintain following invariants:
+# IMPORTANT: maintain following invariants: TODO Move to api logic instead. Try not to rely on signals
 # - aliased tags are NOT attached to any works, table joined to alias as soon as aliasing happens
 # - a tag that is aliased to another tag cannot itself be an alias target, all alias targets must have alised_to = null
 @receiver(m2m_changed, sender=MediaWork.tags.through)

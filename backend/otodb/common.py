@@ -1,5 +1,3 @@
-import diff_match_patch as dmp_mod
-
 import requests
 import json
 import html
@@ -7,16 +5,18 @@ import re
 from time import mktime
 from datetime import datetime
 
+import diff_match_patch as dmp_mod
+
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
 from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 
-from otodb.models import TagWork
-from otodb.models.enums import Platform
-
 from django.conf import settings
+
+from .models import TagWork
+from .models.enums import Platform
 
 def get_diff(delta):
     dmp = dmp_mod.diff_match_patch()
@@ -35,14 +35,15 @@ def get_diff(delta):
         return "".join(html)
         
     diffs_html = []
-
+    
     for change in delta.changes:
         match change.field:
             case 'tags':
                 # TODO make this not hardcoded...
                 old, new = set([c['work_tag'] for c in change.old]), set([c['work_tag'] for c in change.new])
                 old, new = old - new, new - old
-                changes = ['- ' + TagWork.objects.get(id=id_).slug for id_ in old] + ['+ ' + TagWork.objects.get(id=id_).slug for id_ in new]
+                changes = ['- ' + TagWork.objects.get(id=id_).slug for id_ in old] + [
+                    '+ ' + TagWork.objects.get(id=id_).slug for id_ in new]
                 diffs_html.append({'html': ('<br>').join(changes), 'field': change.field})
             case _:
                 old, new = change.old, change.new
@@ -114,6 +115,7 @@ def video_info(link):
         }
     if niconico_ie.suitable(link):
         info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+        print(info)
     else:
         info = ydl.extract_info(link, download=False)
         if info.get('_type') == 'playlist':

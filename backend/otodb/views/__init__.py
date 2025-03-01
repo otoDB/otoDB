@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 
-from otodb.models import MediaSong, MediaWork, Pool, TagWork
+from otodb.models import MediaSong, MediaWork, TagWork
 from otodb.common import reset_ydl
 
 from . import lists, tags, users, works, songs

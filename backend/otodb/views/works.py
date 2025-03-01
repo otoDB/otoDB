@@ -31,15 +31,6 @@ class SourceSiteForm(forms.Form):
 
 class SourceCheckinForm(forms.Form):
     official = forms.BooleanField(label='Is this an official upload?', required=False)
-   
-def check_source_duplicates(info):
-    query = WorkSource.objects.filter(platform=info['site'], source_id=info['id'])
-    if query.exists():
-        return query.first()
-
-def add_tags_to_work(work: MediaWork, info):
-    if 'tags' in info:
-        work.tags.add(*info['tags'])
 
 def work(request: HttpRequest, work_id: int):
     work = MediaWork.active_objects.get(id=work_id)
@@ -68,7 +59,7 @@ def check_in_source(request: HttpRequest, source_id: int):
                 work = MediaWork(title=src.title, description=src.description, thumbnail=src.thumbnail)
                 work.save()
             
-            add_tags_to_work(work, video_info(src.url))
+            work.tags.add(*video_info(src.url).get('tags',[]))
 
             src.media = work
             src.work_origin = WorkOrigin(is_reupload)
@@ -86,7 +77,10 @@ def save_source(work: MediaWork, link: str, is_reupload: bool):
     if info['site'] is None:
         raise Exception('Site not supported')
 
-    src = check_source_duplicates(info)
+    try:
+        src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
+    except WorkSource.DoesNotExist:
+        src = None
     if not src: # src does not exist
         src = WorkSource(media=work, title=info['title'], description=info['description'],
             url=info['url'], platform=info['site'], source_id=info['id'],
@@ -103,24 +97,16 @@ def save_source(work: MediaWork, link: str, is_reupload: bool):
             return redirect('otodb:work', work_id=work.id)
 
     if work:
-        add_tags_to_work(work, info)
+        work.tags.add(*info.get('tags',[]))
         return redirect('otodb:work', work_id=work.id)
     else:
         return redirect('otodb:work_check_in_source', source_id=src.id)
 
 @login_required
 def refresh_source(request: HttpRequest, source_id: int):
-    src = get_object_or_404(WorkSource, pk=source_id)
-
     if request.method == 'POST':
-        info = video_info(src.url)
-        src.title=info['title']
-        src.description=info['description']
-        src.thumbnail=info.get('thumb', None)
-        src.work_width = info['work_width']
-        src.work_height = info['work_height']
-        src.save()
-
+        src = get_object_or_404(WorkSource, pk=source_id)
+        src.refresh()
     return redirect('otodb:work', work_id=src.media.id)
 
 @login_required
@@ -218,48 +204,12 @@ def set_tags(request: HttpRequest, work_id: int):
 def merge(request: HttpRequest):
     if request.method == 'POST':
         try:
-            work_a = request.POST['left']
-            work_b = request.POST['right']
+            work_a = MediaWork.active_objects.get(id=request.POST['left'])
+            work_b = MediaWork.active_objects.get(id=request.POST['right'])
 
-            title = request.POST['title']
-            description = request.POST['description']
-            thumbnail = request.POST['thumbnail']
-            rating = request.POST['rating']
-
-            work_a = MediaWork.active_objects.get(id=work_a)
-            work_b = MediaWork.active_objects.get(id=work_b)
-
-            work_a.title = title
-            work_a.description = description
-            work_a.thumbnail = thumbnail 
-            work_a.rating = rating
-            work_a.tags.add(*work_b.tags.all())
-            work_a.save()
-
-            for src in work_b.worksource_set.all():
-                src.media = work_a
-                src.save()
-
-            for item in work_b.poolitem_set.all():
-                item.work = work_a
-                item.save()
-
-            for relation in work_b.relation_A.all():
-                if relation.B.id == work_a.id:
-                    relation.delete()
-                else:
-                    relation.A = work_a
-                    relation.save()
-
-            for relation in work_b.relation_B.all():
-                if relation.A.id == work_a.id:
-                    relation.delete()
-                else:
-                    relation.B = work_a
-                    relation.save()
-
-            work_b.moved_to = work_a
-            work_b.save()
+            MediaWork.merge(work_a, work_b,
+                request.POST['title'], request.POST['description'],
+                request.POST['thumbnail'], request.POST['rating'])
 
             return redirect('otodb:work', work_id=work_a.id)        
         except Exception as e:

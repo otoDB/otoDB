@@ -4,23 +4,6 @@
  */
 
 export interface paths {
-    "/api/query_video": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Query Video */
-        get: operations["otodb_api_query_video"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/auth/csrf": {
         parameters: {
             query?: never;
@@ -106,6 +89,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/query_external": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Query External */
+        get: operations["otodb_api_work_query_external"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search */
+        get: operations["otodb_api_work_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/work": {
         parameters: {
             query?: never;
@@ -115,7 +132,8 @@ export interface paths {
         };
         /** Work */
         get: operations["otodb_api_work_work"];
-        put?: never;
+        /** Update Work */
+        put: operations["otodb_api_work_update_work"];
         post?: never;
         delete?: never;
         options?: never;
@@ -157,6 +175,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/relation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Relation */
+        put: operations["otodb_api_work_update_relation"];
+        /** Create Relation */
+        post: operations["otodb_api_work_create_relation"];
+        /** Delete Relation */
+        delete: operations["otodb_api_work_delete_relation"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/sources": {
         parameters: {
             query?: never;
@@ -168,6 +205,77 @@ export interface paths {
         get: operations["otodb_api_work_sources"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/refresh_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh Source */
+        post: operations["otodb_api_work_refresh_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Merge Works */
+        post: operations["otodb_api_work_merge_works"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** New Source From Url */
+        post: operations["otodb_api_work_new_source_from_url"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/assign_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign Source To Work
+         * @description Leave out work_id if creating new work from source.
+         */
+        post: operations["otodb_api_work_assign_source_to_work"];
         delete?: never;
         options?: never;
         head?: never;
@@ -208,6 +316,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profile/work_in_my_lists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Work In Lists */
+        get: operations["otodb_api_profile_work_in_lists"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/list/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search */
+        get: operations["otodb_api_list_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/list/list": {
         parameters: {
             query?: never;
@@ -217,9 +359,12 @@ export interface paths {
         };
         /** List */
         get: operations["otodb_api_list_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
+        /** Update */
+        put: operations["otodb_api_list_update"];
+        /** New */
+        post: operations["otodb_api_list_new"];
+        /** Delete */
+        delete: operations["otodb_api_list_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -242,6 +387,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/list/work_in_pool": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Work In Pool */
+        get: operations["otodb_api_list_work_in_pool"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/list/toggle_work": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Toggle */
+        put: operations["otodb_api_list_toggle"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/list/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Ext */
+        post: operations["otodb_api_list_import_ext"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search */
+        get: operations["otodb_api_tag_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tag/tag": {
         parameters: {
             query?: never;
@@ -251,7 +464,8 @@ export interface paths {
         };
         /** Tag */
         get: operations["otodb_api_tag_tag"];
-        put?: never;
+        /** Update */
+        put: operations["otodb_api_tag_update"];
         post?: never;
         delete?: never;
         options?: never;
@@ -293,31 +507,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/alias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Alias Tags */
+        post: operations["otodb_api_tag_alias_tags"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** VideoQuery */
-        VideoQuery: {
-            /** Rel */
-            rel: string;
-            /** Tags */
-            tags: [
-                string,
-                string
-            ][];
-        };
-        /** Error */
-        Error: {
-            /** Message */
-            message: string;
-        };
         /** UserLoginSchema */
         UserLoginSchema: {
             /** User Id */
             user_id: number;
             /** Username */
             username: string;
+        };
+        /** Error */
+        Error: {
+            /** Message */
+            message: string;
+        };
+        /** ExternalQuery */
+        ExternalQuery: {
+            /** Work Id */
+            work_id: number;
+            /** Tags */
+            tags: components["schemas"]["TagWorkSchema"][];
         };
         /** SongSchema */
         SongSchema: {
@@ -345,6 +573,26 @@ export interface components {
              */
             category: number;
         };
+        /** Input */
+        Input: {
+            /**
+             * Limit
+             * @default 100
+             */
+            limit: number;
+            /**
+             * Offset
+             * @default 0
+             */
+            offset: number;
+        };
+        /** PagedWorkSchema */
+        PagedWorkSchema: {
+            /** Items */
+            items: components["schemas"]["WorkSchema"][];
+            /** Count */
+            count: number;
+        };
         /** WorkSchema */
         WorkSchema: {
             /** Tags */
@@ -362,6 +610,25 @@ export interface components {
             rating: number;
             /** Thumbnail */
             thumbnail?: string | null;
+        };
+        /** WorkEditSchema */
+        WorkEditSchema: {
+            /** Works */
+            works: [
+                number,
+                number
+            ];
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /** Thumbnail */
+            thumbnail?: string | null;
+            /**
+             * Rating
+             * @default 0
+             */
+            rating: number;
         };
         /** IDSchema */
         IDSchema: {
@@ -381,6 +648,8 @@ export interface components {
         WorkRelationSchema: {
             A: components["schemas"]["IDSchema"];
             B: components["schemas"]["IDSchema"];
+            /** Id */
+            id: number | null;
             /** Relation */
             relation: number;
         };
@@ -443,18 +712,55 @@ export interface components {
             /** ID */
             id?: number | null;
         };
-        /** Input */
-        Input: {
+        /** PagedListSchema */
+        PagedListSchema: {
+            /** Items */
+            items: components["schemas"]["ListSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** ListInSchema */
+        ListInSchema: {
             /**
-             * Limit
-             * @default 100
+             * Update Description
+             * @default []
              */
-            limit: number;
+            update_description: [
+                number,
+                string
+            ][];
             /**
-             * Offset
-             * @default 0
+             * Swap
+             * @default []
              */
-            offset: number;
+            swap: [
+                number,
+                number
+            ][];
+            /**
+             * Delete
+             * @default []
+             */
+            delete: number[];
+            /**
+             * Insert At
+             * @default []
+             */
+            insert_at: [
+                number,
+                components["schemas"]["ListItemInSchema"]
+            ][];
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+        };
+        /** ListItemInSchema */
+        ListItemInSchema: {
+            /** Work Id */
+            work_id: number;
+            /** Description */
+            description?: string | null;
         };
         /** ListItemSchema */
         ListItemSchema: {
@@ -469,19 +775,29 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** PagedTagWorkSchema */
+        PagedTagWorkSchema: {
+            /** Items */
+            items: components["schemas"]["TagWorkSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** TagInSchema */
+        TagInSchema: {
+            /** Parent Slug */
+            parent_slug: string | null;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
+        };
         /** TagWorkDetailsSchema */
         TagWorkDetailsSchema: {
             /** Tree */
             tree: components["schemas"]["TagWorkSchema"][];
             /** Wiki Page */
             wiki_page: string | null;
-        };
-        /** PagedWorkSchema */
-        PagedWorkSchema: {
-            /** Items */
-            items: components["schemas"]["WorkSchema"][];
-            /** Count */
-            count: number;
         };
     };
     responses: never;
@@ -492,38 +808,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    otodb_api_query_video: {
-        parameters: {
-            query: {
-                platform: string;
-                id: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VideoQuery"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
     otodb_api_auth_csrf: {
         parameters: {
             query?: never;
@@ -654,6 +938,53 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_query_external: {
+        parameters: {
+            query: {
+                platform: string;
+                id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalQuery"];
+                };
+            };
+        };
+    };
+    otodb_api_work_search: {
+        parameters: {
+            query: {
+                query: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedWorkSchema"];
+                };
+            };
+        };
+    };
     otodb_api_work_work: {
         parameters: {
             query: {
@@ -673,6 +1004,31 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["WorkSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_work_update_work: {
+        parameters: {
+            query: {
+                work_id: number;
+                reason: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkEditSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -721,6 +1077,70 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_update_relation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkRelationSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_create_relation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkRelationSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_delete_relation: {
+        parameters: {
+            query: {
+                relation_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_work_sources: {
         parameters: {
             query: {
@@ -739,6 +1159,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkSourceSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_work_refresh_source: {
+        parameters: {
+            query: {
+                source_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_merge_works: {
+        parameters: {
+            query: {
+                from_work_id: number;
+                to_work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkEditSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_new_source_from_url: {
+        parameters: {
+            query: {
+                url: string;
+                is_reupload: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    otodb_api_work_assign_source_to_work: {
+        parameters: {
+            query: {
+                source_id: number;
+                work_id: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
                 };
             };
         };
@@ -787,6 +1307,55 @@ export interface operations {
             };
         };
     };
+    otodb_api_profile_work_in_lists: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": [
+                        components["schemas"]["ListSchema"],
+                        boolean
+                    ][];
+                };
+            };
+        };
+    };
+    otodb_api_list_search: {
+        parameters: {
+            query: {
+                query: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedListSchema"];
+                };
+            };
+        };
+    };
     otodb_api_list_list: {
         parameters: {
             query: {
@@ -806,6 +1375,72 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ListSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_list_update: {
+        parameters: {
+            query: {
+                list_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ListInSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_list_new: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ListInSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_list_delete: {
+        parameters: {
+            query: {
+                list_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -833,6 +1468,92 @@ export interface operations {
             };
         };
     };
+    otodb_api_list_work_in_pool: {
+        parameters: {
+            query: {
+                list_id: number;
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_list_toggle: {
+        parameters: {
+            query: {
+                list_id: number;
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_list_import_ext: {
+        parameters: {
+            query: {
+                url: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_search: {
+        parameters: {
+            query: {
+                query: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedTagWorkSchema"];
+                };
+            };
+        };
+    };
     otodb_api_tag_tag: {
         parameters: {
             query: {
@@ -852,6 +1573,30 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TagWorkSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_tag_update: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagInSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -898,6 +1643,30 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PagedWorkSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_tag_alias_tags: {
+        parameters: {
+            query: {
+                into_tag: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string[];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

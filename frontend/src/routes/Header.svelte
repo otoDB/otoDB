@@ -12,6 +12,11 @@
 			<li aria-current={page.url.pathname === `${base}/` ? 'page' : undefined}>
 				<a href="{base}/">{m.fine_late_chicken_quiz()}</a>
 			</li>
+			<li>
+				<form tagert="_self" method="get" action="{base}/work/search">
+					<input type="text" name="query" placeholder="{m.mean_top_antelope_love()}...">
+				</form>
+			</li>
 			<hr>
 			{#if !user}
 			<li aria-current={page.url.pathname === `${base}/login` ? 'page' : undefined}>
@@ -21,6 +26,9 @@
 				<a href="{base}/register">{m.blue_whole_camel_type()}</a>
 			</li>
 			{:else}
+			<li aria-current={page.url.pathname === `${base}/work/add` ? 'page' : undefined}>
+				<a href="{base}/work/add">Add a work...</a>
+			</li>
 			<li aria-current={page.url.pathname === `${base}/profile/${user.user_id}` ? 'page' : undefined}>
 				<a href="{base}/profile/{user.user_id}">{m.petty_basic_sheep_win()}</a>
 			</li>
@@ -44,12 +52,8 @@
 		background-color: var(--otodb-faint-bg);
 		border: 1px solid var(--otodb-faint-content);
 		max-width: 8rem;
-		&> form {
+		& form > input {
 			width: 100%;
-			display: flex;
-			&> input {
-				max-width: 4rem;
-			}
 		}
 		&> ul {
 			list-style-type: none;

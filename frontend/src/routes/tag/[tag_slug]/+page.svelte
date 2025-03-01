@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Section from "../../Section.svelte";
     import * as m from '$lib/paraglide/messages.js';
-	import { base } from "$app/paths";
     import { WorkTagCategory, Rating } from "$lib/enums";
-    
+    import WorkCard from "$lib/WorkCard.svelte";
+
     let { data } = $props();
 </script>
 
@@ -59,18 +59,11 @@
 
 <Section title="Works tagged with {data.tag.name}">
     {#if data.works.items.length}
-    <table>
-        <thead><tr><th>Thumbnail</th><th>Title</th><th>Rating</th><th>Tags</th></tr></thead><tbody>
-            {#each data.works.items as work}
-            <tr>
-                <td><img src={work.thumbnail} alt={work.title} style="width:10rem;"></td>
-                <td><a href="{base}/work/{work.id}">{work.title} </a></td>
-                <td>{Rating[work.rating]()} </td>
-                <td>{work.tags.map(t => t.name).join(', ')}</td>
-            </tr>
-            {/each}
-        </tbody>
-    </table>
+    <div class="flex flex-wrap gap-3">
+        {#each data.works.items as work}
+        <WorkCard {work} />
+        {/each}
+    </div>
     {:else}
     <p>This tag is an orphan.</p>
     {/if}
@@ -79,4 +72,3 @@
 <Section title={m.same_broad_haddock_pinch()}>
     include 'comments.html' with object=tag 
 </Section>
-   

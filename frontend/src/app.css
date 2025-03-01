@@ -51,6 +51,15 @@ tbody > tr:nth-of-type(odd) {
 	background-color: var(--otodb-fainter-bg);
 }
 
+th, td {
+	padding: .1rem .2rem;
+	border: 1px var(--otodb-faint-bg) solid;
+}
+
+input[type="text"], input[type="password"], textarea {
+	background-color: var(--otodb-bg-color);
+}
+
 input[type="submit"], input[type="button"], select, button {
     border: 1px solid white;
     outline: none;

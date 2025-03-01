@@ -3,7 +3,8 @@
 	import CollapsibleText from "./CollapsibleText.svelte";
     import * as m from '$lib/paraglide/messages.js';
 	import { Platform, Rating, WorkOrigin, WorkStatus } from '$lib/enums';
-    import { base } from "$app/paths";
+	import WorkTag from "$lib/WorkTag.svelte";
+	import { base } from "$app/paths";
     
     let { data } = $props();
 </script>
@@ -40,7 +41,7 @@
         </div>
         <ul id="work-tags">
             {#each data.tags as tag}
-                <li><a href="{base}/tag/{tag.slug}">{tag.name}</a></li>
+                <li><WorkTag {tag}/></li>
             {/each}
         </ul>
     </div>
@@ -48,7 +49,7 @@
 
 <Section title={m.extra_brave_tapir_skip()}
     menuLinks={[
-        { pathname: "#TODO", title: m.helpful_away_jay_succeed() }
+        { pathname: `work/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }
         ]}>
     <table class="w-full">
         <thead><tr>
@@ -59,7 +60,7 @@
             <th>{m.large_polite_otter_thrive()}</th>
             <th>{m.civil_trick_oryx_clap()}</th>
             <th>{m.big_dry_seahorse_succeed()}</th>
-            <th class="whitespace-nowrap">{m.noisy_moving_newt_belong()}</th>
+            <th>{m.noisy_moving_newt_belong()}</th>
 {#if data.user}
             <th>{m.mushy_proof_hornet_dig()}</th>
 {/if}
@@ -70,7 +71,7 @@
             <td class="whitespace-nowrap">{src.title}</td>
             <td><CollapsibleText text={src.description}></CollapsibleText></td>
             <td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-            <td>{WorkOrigin[src.work_origin]()}</td><td>{WorkStatus[src.work_status]()}</td>
+            <td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td>
             <td>{src.work_width}x{src.work_height}</td><td class="whitespace-nowrap"><a href={src.url} target="_blank" rel="noopener noreferrer">{m.noisy_moving_newt_belong()}</a></td>
 {#if data.user}
             <td><button type="submit" class="whitespace-nowrap">{m.mushy_proof_hornet_dig()}</button></td>
@@ -95,15 +96,16 @@
     grid-column: 1 / span 2;
     border-top: var(--otodb-faint-content) 1px solid;
     margin-top: 2rem;
+    padding-top: 1rem;
     display: flex;
-    gap: .3rem 2rem;
+    gap: .3rem 1rem;
     flex-wrap: wrap;
     list-style: none;
     &> li {
         margin: 0;
     }
 }
-table > tbody > tr > th {
-    white-space: nowrap;
+th {
+        white-space: nowrap;
 }
 </style>

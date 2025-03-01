@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from "../../Section.svelte";
     import * as m from '$lib/paraglide/messages.js';
-    import { WorkTagCategory, Rating } from "$lib/enums";
+    import { WorkTagCategory } from "$lib/enums";
     import WorkCard from "$lib/WorkCard.svelte";
 
     let { data } = $props();
@@ -32,7 +32,7 @@
     {@html data.wiki_page}
     {:else}
     <p>
-        This tag does not yet have a wiki page. <a href="#TODO">Go create one...</a>
+        This tag does not yet have a wiki page.
     </p>
     {/if}
 </Section>

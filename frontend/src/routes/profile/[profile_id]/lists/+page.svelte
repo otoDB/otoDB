@@ -13,6 +13,10 @@
 
 <Section title={m.mild_loud_shad_enchant({ type: m.fuzzy_crazy_cobra_lead(), name: data.profile.username})}
   menuLinks={data.links}>
+{#if data.user?.username === data.profile.username}
+<a href="{base}/list/new">Make a new list...</a>
+<a href="{base}/list/import">Import list...</a>
+{/if}
     <ul>
         {#each data.lists as list}
         <li><a href="{base}/list/{list.id}">{list.name}</a></li>

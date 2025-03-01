@@ -7,9 +7,9 @@
 </script>
 
 <svelte:head>
-    <title>Merge</title>
+    <title>Alias Tags</title>
 </svelte:head>
 
-<Section title="Merge">
+<Section title="Alias Tags">
 
 </Section>

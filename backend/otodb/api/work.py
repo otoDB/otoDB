@@ -98,7 +98,6 @@ def refresh_source(request: HttpRequest, source_id: int):
     return
 
 class WorkEditSchema(ModelSchema):
-    works: tuple[int, int]
     class Meta:
         model = MediaWork
         fields = ['title', 'description', 'thumbnail', 'rating']
@@ -137,7 +136,8 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool):
             url=info['url'], platform=info['site'], source_id=info['id'],
             published_date=date.fromtimestamp(info['timestamp']),
             work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
-            work_width=info.get('work_width', None), work_height=info.get('work_height', None))
+            work_width=info.get('work_width', None), work_height=info.get('work_height', None),
+            added_by=request.user)
         src.save()
 
     return src.id

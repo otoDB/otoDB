@@ -82,7 +82,6 @@ def work_history(request: HttpRequest, tag_slug: str):
     return render(request, 'tags/history.html', { 'tag': tag, 'history': history })
 
 class WikiPageForm(forms.ModelForm):
-    # page = forms.CharField(widget=MDEWidget())
     class Meta:
         model = WikiPage
         fields = ['page']

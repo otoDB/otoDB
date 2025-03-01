@@ -40,6 +40,7 @@ export const WorkStatus = [
 ];
 
 export const Platform = [
+    "Invalid",
     "YouTube",
     "Niconico",
     "Bilibili",

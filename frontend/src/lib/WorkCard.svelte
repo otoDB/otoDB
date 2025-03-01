@@ -5,7 +5,7 @@
     const { work, width = 200 } = $props();
 </script>
 
-<div class="card relative">
+<div class="card relative" style="width:{width}px;">
     <div style="width:{width}px;height:{200/16*9}px;" class="overflow-hidden">
         <a href="{base}/work/{work.id}">
             <img src={work.thumbnail} alt={work.title}>

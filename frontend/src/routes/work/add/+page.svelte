@@ -31,7 +31,7 @@ Currently accepted sites:
         </tr>
         <tr>
             <th><label for="origin">Is this an official upload?</label></th>
-            <td><input type="checkbox" name="origin" checked={form?.origin ?? ''}></td>
+            <td><input type="checkbox" name="origin" checked={form?.origin ?? !data.title}></td>
         </tr>
     </tbody>
     </table>

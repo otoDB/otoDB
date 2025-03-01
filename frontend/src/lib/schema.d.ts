@@ -273,7 +273,7 @@ export interface paths {
         put?: never;
         /**
          * Assign Source To Work
-         * @description Leave out work_id if creating new work from source.
+         * @description Pass in work_id=-1 if creating new work from source.
          */
         post: operations["otodb_api_work_assign_source_to_work"];
         delete?: never;
@@ -1244,7 +1244,7 @@ export interface operations {
         parameters: {
             query: {
                 source_id: number;
-                work_id: number | null;
+                work_id: number;
             };
             header?: never;
             path?: never;

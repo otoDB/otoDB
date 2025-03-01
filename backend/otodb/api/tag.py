@@ -12,6 +12,7 @@ from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema
 tag_router = Router()
 
 @tag_router.get('search', response=list[TagWorkSchema])
+@paginate
 def search(request: HttpRequest, query: str):
     return TagWork.objects.filter(name__icontains=query, aliased_to__isnull=True)
 

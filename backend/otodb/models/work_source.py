@@ -28,7 +28,7 @@ class WorkSource(models.Model):
     thumbnail = models.URLField(null=True, blank=False)
 
     def __str__(self) -> str:
-        return f'#{self.media.id} - {self.url}'
+        return f'#{self.media.id} - {self.url}' if self.media else self.title
 
     class Meta:
         verbose_name = ("Media Source")

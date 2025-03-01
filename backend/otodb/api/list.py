@@ -19,6 +19,7 @@ from .common import ListSchema, ListItemSchema
 list_router = Router()
 
 @list_router.get('search', response=List[ListSchema])
+@paginate
 def search(request: HttpRequest, query: str):
     return Pool.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
 

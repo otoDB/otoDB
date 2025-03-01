@@ -9,6 +9,7 @@ from simple_history.utils import update_change_reason
 
 from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
+from ninja.pagination import paginate
 
 from otodb.common import video_info
 from otodb.models import MediaWork, WorkRelation, WorkSource
@@ -28,6 +29,7 @@ def query_external(request: HttpRequest, platform: str, id: str):
     return { 'tags': work.media.tags, 'work_id': work.media.id }
 
 @work_router.get('search', response=List[WorkSchema])
+@paginate
 def search(request: HttpRequest, query: str):
     return MediaWork.active_objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
 
@@ -140,12 +142,12 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool):
 
     return src.id
 
-@work_router.post('assign_source', auth=django_auth, description='Leave out work_id if creating new work from source.')
-def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | None):
-    src = get_object_or_404(WorkSource, id=work_id)
+@work_router.post('assign_source', auth=django_auth, description='Pass in work_id=-1 if creating new work from source.', response=int)
+def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int):
+    src = get_object_or_404(WorkSource, id=source_id)
     info = video_info(src.url) # Hopefully still available!
     
-    if work_id:
+    if work_id != -1:
         work = get_object_or_404(MediaWork.active_objects, id=work_id)
     else:
         work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)

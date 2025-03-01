@@ -29,10 +29,13 @@ def login_endpoint(request, username: str, password: str):
         return { 'user_id': user.id, 'username': user.username }
     return 401, {'message': 'Login failed.'}
 
-@auth_router.get("/status", response={ 200: UserLoginSchema, 401: Error })
+class UserStatusSchema(UserLoginSchema):
+    level: int
+
+@auth_router.get("/status", response={ 200: UserStatusSchema, 401: Error })
 def status(request):
     if request.user.is_authenticated:
-        return { 'user_id': request.user.id, 'username': request.user.username }
+        return { 'user_id': request.user.id, 'username': request.user.username, 'level': request.user.level }
     return 401, {'message': 'Not logged in.'}
 
 @auth_router.post("/logout", auth=django_auth)

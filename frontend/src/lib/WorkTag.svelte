@@ -4,9 +4,9 @@
     const { tag } = $props();
 </script>
 
-<a href="{base}/tag/{tag.slug}" class="rounded-full border border-solid px-2 border-{
-    ['white', 'indigo', 'orange', 'yellow', 'red', 'cyan'][tag.category]
-}-600">{tag.name}</a>
+<a href="{base}/tag/{tag.slug}" class="rounded-full border border-solid px-2 {
+    ['border-white-600', 'border-indigo-600', 'border-orange-600', 'border-yellow-600', 'border-red-600', 'border-cyan-600'][tag.category]
+}">{tag.name}</a>
 
 <style>
 

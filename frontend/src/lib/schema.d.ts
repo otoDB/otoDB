@@ -333,6 +333,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profile/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Submissions */
+        get: operations["otodb_api_profile_submissions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/list/search": {
         parameters: {
             query?: never;
@@ -524,6 +541,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/song": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Song */
+        post: operations["otodb_api_tag_song"];
+        /** Delete Song */
+        delete: operations["otodb_api_tag_delete_song"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/wiki_page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Wiki Page */
+        get: operations["otodb_api_tag_wiki_page"];
+        put?: never;
+        /** Edit Wiki Page */
+        post: operations["otodb_api_tag_edit_wiki_page"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -540,6 +593,15 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** UserStatusSchema */
+        UserStatusSchema: {
+            /** User Id */
+            user_id: number;
+            /** Username */
+            username: string;
+            /** Level */
+            level: number;
+        };
         /** ExternalQuery */
         ExternalQuery: {
             /** Work Id */
@@ -549,6 +611,8 @@ export interface components {
         };
         /** SongSchema */
         SongSchema: {
+            /** ID */
+            id?: number | null;
             /** Title */
             title: string;
             /** Bpm */
@@ -613,11 +677,6 @@ export interface components {
         };
         /** WorkEditSchema */
         WorkEditSchema: {
-            /** Works */
-            works: [
-                number,
-                number
-            ];
             /** Title */
             title: string;
             /** Description */
@@ -684,6 +743,8 @@ export interface components {
              * @default 0
              */
             work_status: number;
+            /** Thumbnail */
+            thumbnail?: string | null;
         };
         /** ProfileSchema */
         ProfileSchema: {
@@ -712,6 +773,49 @@ export interface components {
             /** ID */
             id?: number | null;
         };
+        /** PagedSourceSubmissionSchema */
+        PagedSourceSubmissionSchema: {
+            /** Items */
+            items: components["schemas"]["SourceSubmissionSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** SourceSubmissionSchema */
+        SourceSubmissionSchema: {
+            /** Platform */
+            platform: number;
+            /** Url */
+            url: string;
+            /**
+             * Published Date
+             * Format: date
+             */
+            published_date: string;
+            /** ID */
+            id?: number | null;
+            /** Work Width */
+            work_width?: number | null;
+            /** Work Height */
+            work_height?: number | null;
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Work Origin
+             * @default 0
+             */
+            work_origin: number;
+            /**
+             * Work Status
+             * @default 0
+             */
+            work_status: number;
+            /** Thumbnail */
+            thumbnail?: string | null;
+            /** Media */
+            media: number | null;
+        };
         /** PagedListSchema */
         PagedListSchema: {
             /** Items */
@@ -721,6 +825,24 @@ export interface components {
         };
         /** ListInSchema */
         ListInSchema: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+        };
+        /** ListItemInSchema */
+        ListItemInSchema: {
+            /** Work Id */
+            work_id: number;
+            /** Description */
+            description?: string | null;
+        };
+        /** ListUpdateSchema */
+        ListUpdateSchema: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
             /**
              * Update Description
              * @default []
@@ -750,17 +872,6 @@ export interface components {
                 number,
                 components["schemas"]["ListItemInSchema"]
             ][];
-            /** Name */
-            name: string;
-            /** Description */
-            description?: string | null;
-        };
-        /** ListItemInSchema */
-        ListItemInSchema: {
-            /** Work Id */
-            work_id: number;
-            /** Description */
-            description?: string | null;
         };
         /** ListItemSchema */
         ListItemSchema: {
@@ -798,6 +909,15 @@ export interface components {
             tree: components["schemas"]["TagWorkSchema"][];
             /** Wiki Page */
             wiki_page: string | null;
+        };
+        /** SongInSchema */
+        SongInSchema: {
+            /** Title */
+            title: string;
+            /** Bpm */
+            bpm: number;
+            /** Author */
+            author: string;
         };
     };
     responses: never;
@@ -873,7 +993,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserLoginSchema"];
+                    "application/json": components["schemas"]["UserStatusSchema"];
                 };
             };
             /** @description Unauthorized */
@@ -1332,6 +1452,30 @@ export interface operations {
             };
         };
     };
+    otodb_api_profile_submissions: {
+        parameters: {
+            query: {
+                user_id: number;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedSourceSubmissionSchema"];
+                };
+            };
+        };
+    };
     otodb_api_list_search: {
         parameters: {
             query: {
@@ -1389,7 +1533,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ListInSchema"];
+                "application/json": components["schemas"]["ListUpdateSchema"];
             };
         };
         responses: {
@@ -1420,7 +1564,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": number;
+                };
             };
         };
     };
@@ -1526,7 +1672,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": number;
+                };
             };
         };
     };
@@ -1660,6 +1808,91 @@ export interface operations {
                 "application/json": string[];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_song: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SongInSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_delete_song: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_wiki_page: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_edit_wiki_page: {
+        parameters: {
+            query: {
+                tag_slug: string;
+                md: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

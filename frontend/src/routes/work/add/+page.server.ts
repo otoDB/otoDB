@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 }
 
 export const actions = {
-    default: async ({ request, fetch, url }) => {
+    default: async ({ request, fetch, url, locals }) => {
         const data = await request.formData();
         const link = data.get('url') as string,
             is_official = !!data.get('origin');
@@ -31,9 +31,14 @@ export const actions = {
         if (error)
             return fail(400, { url: link, origin: is_official, failed: true });
 
-        const { data: final_work_id } = await client.POST('/api/work/assign_source', { fetch, params: { query: {
-            source_id: source_id, work_id: (work && !isNaN(+work)) ? +work : null
-        }}});
-        redirect(303, `${base}/work/${+final_work_id}`);
+        if (work && !isNaN(+work)) {
+            const { data: final_work_id } = await client.POST('/api/work/assign_source', { fetch, params: { query: {
+                source_id: source_id, work_id: +work
+            }}});
+            redirect(303, `${base}/work/${+final_work_id!}`);
+        }
+        else {
+            redirect(303, `${base}/profile/${locals.user.user_id}/submissions`);
+        }
     }
 } satisfies Actions;

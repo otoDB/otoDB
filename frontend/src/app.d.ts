@@ -7,7 +7,8 @@ declare global {
 			user: {
 				csrf: string
 				user_id: number
-				username: string
+				username: string,
+				level: int
 			}
 		}
 		// interface PageData {}

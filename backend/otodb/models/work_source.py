@@ -3,6 +3,7 @@ from django.db import models
 from .enums import Platform, WorkOrigin, WorkStatus
 from .media import MediaWork
 
+from otodb.account.models import Account
 from otodb.common import video_info
 
 class WorkSource(models.Model):
@@ -26,6 +27,8 @@ class WorkSource(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
     thumbnail = models.URLField(null=True, blank=False)
+
+    added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return f'#{self.media.id} - {self.url}' if self.media else self.title

@@ -41,23 +41,24 @@ class ListItemInSchema(ModelSchema):
         fields = ['description']
 
 class ListInSchema(ModelSchema):
+    class Meta:
+        model = Pool
+        fields = ['name', 'description']
+
+class ListUpdateSchema(ListInSchema):
     # Diffs applied in this exact order: Update Description -> Swaps -> Delete -> Insert
     update_description: List[tuple[int, str]] = []
     swap: List[tuple[int, int]] = [] # moves order tuple[0] -> tuple[1] 
     delete: List[int] = [] # delete at index
     insert_at: List[tuple[int, ListItemInSchema]] = [] # insert before index tuple[0]
 
-    class Meta:
-        model = Pool
-        fields = ['name', 'description']
-
-@list_router.post('list', auth=django_auth)
+@list_router.post('list', auth=django_auth, response=int)
 def new(request: HttpRequest, payload: ListInSchema):
     lst = Pool.objects.create(author=request.user, **payload.dict())
     return lst.id
 
 @list_router.put('list', auth=django_auth)
-def update(request: HttpRequest, list_id: int, payload: ListInSchema):
+def update(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
     lst = get_object_or_404(Pool, id=list_id)
     for attr, value in payload.dict().items():
         setattr(lst, attr, value)
@@ -127,7 +128,7 @@ def video_info_wrapped(url):
     except:
         return {'failed': url}
 
-@list_router.post('import', auth=django_auth)
+@list_router.post('import', auth=django_auth, response=int)
 def import_ext(request: HttpRequest, url: str):
     info = playlist_info(url)
     list_ = Pool(name=info['title'], description=info['description'], author=request.user)
@@ -168,4 +169,4 @@ def import_ext(request: HttpRequest, url: str):
     TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True) # bulk_create does not handle M2M so we do this manually
     WorkSource.objects.bulk_create(new_sources)
     PoolItem.objects.bulk_create(pool_items)
-    return
+    return list_.id

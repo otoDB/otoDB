@@ -35,6 +35,9 @@
 			<li aria-current={page.url.pathname === `${base}/profile/${user.user_id}/lists` ? 'page' : undefined}>
 				<a href="{base}/profile/{user.user_id}/lists">{m.jumpy_honest_mole_exhale()}</a>
 			</li>
+			<li aria-current={page.url.pathname === `${base}/profile/${user.user_id}/submissions` ? 'page' : undefined}>
+				<a href="{base}/profile/{user.user_id}/submissions">My Submissions</a>
+			</li>
 			<li aria-current={page.url.pathname === `${base}/logout` ? 'page' : undefined}>
 				<a href="{base}/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload>{m.best_front_swallow_play()}</a>
 			</li>
@@ -44,6 +47,9 @@
 </header>
 
 <style>
+	li[aria-current='page'] > a {
+		color: var(--otodb-faint-content);
+	}
 	nav {
 		display: flex;
 		flex-direction: column;
@@ -51,7 +57,7 @@
 		gap: 1rem;
 		background-color: var(--otodb-faint-bg);
 		border: 1px solid var(--otodb-faint-content);
-		max-width: 8rem;
+		max-width: 8.5rem;
 		& form > input {
 			width: 100%;
 		}

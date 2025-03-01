@@ -43,7 +43,17 @@ bun run dev
 bun run dev -- --open
 ```
 
-To regenerate API types (the default dev backend is served on`http://127.0.0.1:8000`.), you can replace `bunx` with `npx`:
+To regenerate API types (the default dev backend is served on `http://127.0.0.1:8000`.), you can replace `bunx` with `npx`:
 ```sh
-bunx openapi-typescript <server>/api/openapi.json -o src/lib/schema.d.ts
+cd frontend
+
+bunx openapi-typescript http://127.0.0.1:8000/api/openapi.json -o src/lib/schema.d.ts
+```
+
+Whenever you make a request through the client, you have to inject SvelteKit's `fetch` as follows (otherwise cookies will not be passed along):
+```ts
+                                                             vvvvv
+const { data, error } = await client.GET('/api/work/work', { fetch, params: { query: {
+    work_id: +params.work_id
+}}});
 ```

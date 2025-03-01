@@ -27,7 +27,7 @@ Currently accepted sites:
     <tbody>
         <tr>
             <th><label for="url">URL</label></th>
-            <td><input type="text" name="url" value={form?.url ?? ''}></td>
+            <td><input required type="text" name="url" value={form?.url ?? ''}></td>
         </tr>
         <tr>
             <th><label for="origin">Is this an official upload?</label></th>

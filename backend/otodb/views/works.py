@@ -72,7 +72,7 @@ def check_in_source(request: HttpRequest, source_id: int):
 
     return render(request, 'works/check_in_source.html', {'form': form, 'source': src, 'title': title, 'suggestions': suggestions})
 
-def save_source(work: MediaWork, link: str, is_reupload: bool):
+def save_source(work: MediaWork, link: str, is_reupload: bool, user):
     info = video_info(link)
     if info['site'] is None:
         raise Exception('Site not supported')
@@ -86,7 +86,8 @@ def save_source(work: MediaWork, link: str, is_reupload: bool):
             url=info['url'], platform=info['site'], source_id=info['id'],
             published_date=date.fromtimestamp(info['timestamp']),
             work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
-            work_width=info.get('work_width',None), work_height=info.get('work_height',None))
+            work_width=info.get('work_width',None), work_height=info.get('work_height',None),
+            added_by=user)
         src.save()
     elif src.media: # src exists and is already bound to a work
         if not work:
@@ -123,7 +124,7 @@ def new(request: HttpRequest):
                 work = MediaWork.active_objects.get(id=work_id)
                 title = f'New source for "{work.title}"'
             try:
-                return save_source(work, link, is_reupload)
+                return save_source(work, link, is_reupload, request.user)
             except Exception as e:
                 # FIXME potentially dangerous to send this to client if a deeper exception is caught (e.g. from the DB)
                 form.add_error(None, 'Error: ' + str(e))
@@ -131,7 +132,7 @@ def new(request: HttpRequest):
         if url := request.GET.get('url'):
             form = SourceSiteForm(initial={ 'link': url })
             try:
-                return save_source(None, url, False)
+                return save_source(None, url, False, request.user)
             except Exception as e:
                 # FIXME potentially dangerous to send this to client if a deeper exception is caught (e.g. from the DB)
                 form.add_error(None, 'Error: ' + str(e))

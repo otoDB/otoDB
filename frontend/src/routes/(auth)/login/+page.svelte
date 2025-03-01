@@ -18,11 +18,11 @@
 		  <tbody>
 			  <tr>
 				  <th><label for="username">{m.careful_cozy_elk_dare()}</label></th>
-				  <td><input type="text" name="username" value={form?.username ?? ''}></td>
+				  <td><input required type="text" name="username" value={form?.username ?? ''}></td>
 			  </tr>
 			  <tr>
 				  <th><label for="password">{m.vexed_merry_niklas_greet()}</label></th>
-				  <td><input type="password" name="password"></td>
+				  <td><input required type="password" name="password"></td>
 			  </tr>
 		  </tbody>
 		  </table>

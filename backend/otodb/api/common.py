@@ -18,7 +18,7 @@ class ProfileSchema(ModelSchema):
 class SongSchema(ModelSchema):
     class Meta:
         model = MediaSong
-        fields = ['title', 'bpm', 'author']
+        fields = ['id', 'title', 'bpm', 'author']
 
 class TagWorkSchema(ModelSchema):
     aliases: list[str]
@@ -45,7 +45,8 @@ class WorkSourceSchema(ModelSchema):
             'published_date', 'id',
             'work_width', 'work_height',
             'title', 'description',
-            'work_origin', 'work_status'
+            'work_origin', 'work_status',
+            'thumbnail'
         ]
 
 class WorkSchema(ModelSchema):

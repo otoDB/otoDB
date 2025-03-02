@@ -2,8 +2,10 @@
 	import client from "./api";
 	import { debounce } from "./ui";
 
-
-    let { value = $bindable(''), ...props} = $props();
+    interface Props {
+        value: string;
+    }
+    let { value = $bindable(''), ...props}: Props = $props();
     
     let suggestions: string[] = $state([]);
 

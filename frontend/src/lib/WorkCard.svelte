@@ -1,8 +1,13 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import type { components } from './schema';
 	import WorkTag from './WorkTag.svelte';
 
-    const { work, width = 200 } = $props();
+    interface Props {
+        work: components['schemas']['WorkSchema'];
+        width: number;
+    };
+    const { work, width = 200 }: Props = $props();
 </script>
 
 <div class="card relative" style="width:{width}px;">

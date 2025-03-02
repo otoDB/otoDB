@@ -15,11 +15,11 @@ import Section from "../../Section.svelte";
     <p class="whitespace-pre-wrap">{data.list.description}</p>
 </Section>
 <Section title="Entries">
-    <ol>
+    <ol class="list-decimal">
     {#each data.entries.items as entry}
     <li>
         <div style="display: flex; gap: 1rem;align-items:flex-start;">
-            <img style="max-width:10rem" src={entry.work.thumbnail} alt={entry.work.title}>
+            <a href="{base}/work/{entry.work.id}"><img style="max-width:10rem" src={entry.work.thumbnail} alt={entry.work.title}></a>
             <div><a href="{base}/work/{entry.work.id}">{entry.work.title}</a><p>{entry.description}</p></div>
         </div>
     </li>

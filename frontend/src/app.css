@@ -32,10 +32,6 @@ hr {
 	color: var(--otodb-content-color);
 }
 
-img {
-	width: 100%;
-}
-
 body {
     margin: 0;
 	background-color: var(--otodb-bg-color);
@@ -82,12 +78,4 @@ ins {
 
 del {
 	background-color: var(--otodb-del);
-}
-
-ol {
-	list-style-type: decimal;
-}
-
-ul {
-	list-style-type: disc;
 }

@@ -5,6 +5,7 @@
 	import { enhance } from "$app/forms";
 	import { base } from "$app/paths";
 	import type { PageProps } from "../$types";
+	import WorkTagField from "$lib/WorkTagField.svelte";
 
     let { data, form }: PageProps = $props();
     let category = $state(form?.category ?? data.tag?.category);
@@ -31,7 +32,7 @@
         </tr>
         <tr>
             <th><label for="parent">Parent</label></th>
-            <td><input type="text" name="parent" value={form?.parent_slug ?? data.parent_slug ?? ''}></td>
+            <td><WorkTagField name="parent" value={form?.parent_slug ?? data.parent_slug ?? ''}/></td>
         </tr>
     </tbody>
     </table>

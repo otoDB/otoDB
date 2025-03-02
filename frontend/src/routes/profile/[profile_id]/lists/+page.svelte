@@ -17,7 +17,7 @@
 <a href="{base}/list/new">Make a new list...</a>
 <a href="{base}/list/import">Import list...</a>
 {/if}
-    <ul>
+    <ul class="list-disc">
         {#each data.lists as list}
         <li><a href="{base}/list/{list.id}">{list.name}</a></li>
         {:else}

@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import type { components } from './schema';
 
-    const { tag } = $props();
+    interface Props {
+        tag: components['schemas']['TagWorkSchema'];
+    }
+    const { tag }: Props = $props();
 </script>
 
 <a href="{base}/tag/{tag.slug}" class="rounded-full border border-solid px-2 {

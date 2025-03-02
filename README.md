@@ -50,10 +50,12 @@ cd frontend
 bunx openapi-typescript http://127.0.0.1:8000/api/openapi.json -o src/lib/schema.d.ts
 ```
 
-Whenever you make a request through the client, you have to inject SvelteKit's `fetch` as follows (otherwise cookies will not be passed along):
+Whenever you make a request on the server-side of the metaframework through the API client, you have to inject SvelteKit's `fetch` as follows (otherwise cookies will not be passed along):
 ```ts
-                                                             vvvvv
-const { data, error } = await client.GET('/api/work/work', { fetch, params: { query: {
-    work_id: +params.work_id
-}}});
+                                                     vvvvv
+export const load: PageServerLoad = async ({ params, fetch }) => {
+                                                                 vvvvv
+    const { data, error } = await client.GET('/api/work/work', { fetch, params: { query: {
+        work_id: +params.work_id
+    }}});
 ```

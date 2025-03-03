@@ -4,9 +4,33 @@
     import * as m from '$lib/paraglide/messages.js';
 	import { Platform, Rating, WorkOrigin, WorkStatus } from '$lib/enums';
 	import WorkTag from "$lib/WorkTag.svelte";
-	import { base } from "$app/paths";
+	import client from "$lib/api";
+	import type { components } from "$lib/schema";
+	import RefreshButton from "../RefreshButton.svelte";
     
     let { data } = $props();
+
+    let userLists: [components["schemas"]["ListSchema"], boolean][] = $state([]), userListsFetched = false, userListsShown = $state(false);
+    const showLists = async () => {
+        if (!userListsFetched) {
+            const { error, data: lists } = await client.GET('/api/profile/work_in_my_lists', { fetch, params: { query: { work_id: data.id! }}});
+            if (error)
+                ; // TODO
+            userLists = lists;
+            userListsFetched = true;
+            userListsShown = true;
+        }
+        else {
+            userListsShown = !userListsShown;
+        }
+    };
+    const toggleWork = async (list_id: number) => {
+        const { error, data: state } = await client.PUT('/api/list/toggle_work', { fetch, params: { query: { list_id, work_id: data.id! } }});
+        if (!error) {
+            const list = userLists.find(el => el[0].id === list_id)!;
+            list[1] = !list[1];
+        }
+    }
 </script>
 
 <svelte:head>
@@ -32,7 +56,14 @@
             <tr>
                 <th>{m.stale_loose_squid_cut()}</th>
                 <td>
-                    <button>Add/Remove...</button>
+                    <button onclick={showLists}>Add/Remove...</button>
+                    {#if userListsShown}
+                    <table class="absolute"><tbody>
+                    {#each userLists as list}
+                        <tr><td>{list[0].name}</td><td><input type="checkbox" checked={list[1]} oninput={() => { toggleWork(list[0].id); }}></td></tr>
+                    {/each}
+                    </tbody></table>
+                    {/if}
                 </td>
             </tr>
         </tbody>
@@ -74,7 +105,7 @@
             <td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td>
             <td>{src.work_width}x{src.work_height}</td><td class="whitespace-nowrap"><a href={src.url} target="_blank" rel="noopener noreferrer">{m.noisy_moving_newt_belong()}</a></td>
 {#if data.user}
-            <td><button type="submit" class="whitespace-nowrap">{m.mushy_proof_hornet_dig()}</button></td>
+<td><RefreshButton source={src}/></td>
 {/if}
         </tr>
         {/each}

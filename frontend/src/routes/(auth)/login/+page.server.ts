@@ -24,10 +24,8 @@ export const actions = {
 			params: { query: { username, password } },
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') }
         });
-		if (error) {
-            cookies.delete('csrftoken', { path: '/' });
+		if (error)
             return fail(400, { username, failed: true });
-        }
         
         forwardCookies(cookies, response);
 

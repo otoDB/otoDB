@@ -1,16 +1,18 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import client from "./api";
 	import type { components } from "./schema";
-	import { debounce } from "./ui";
+	import { clickOutside, debounce } from "./ui";
+	import { base } from "$app/paths";
 
     let input: string = $state('');
     interface Props {
-        value: components['schemas']['WorkSchema'] | null;
-        oninput: Function | null;
+        value: components['schemas']['WorkSchema'] | null | undefined;
+        oninput: Function | undefined;
     }
-    let { value = $bindable(null), oninput = null, ...props}: Props = $props();
+    let { value = $bindable(undefined), oninput = undefined, ...props}: Props = $props();
     
-    let suggestions: any[] = $state([]);
+    let suggestions: components['schemas']['WorkSchema'][] = $state([]);
     let locked_in = $state(false);
 
     const search = async () => {
@@ -22,18 +24,22 @@
         suggestions = data.items;
     };
 
+    onMount(() => {
+        if (value) {
+            input = value.title;
+            locked_in = true;
+        }
+    });
 </script>
 
-<svelte:window onclick={() => { suggestions = []; }}></svelte:window>
-
-<span onclick={e => { e.stopPropagation(); }} role="none">
+<span role="none">
     <input type="text" oninput={debounce(search)} disabled={locked_in} bind:value={input}>
-    <input type="number" hidden bind:value={value} {...props}>
+    <input type="number" hidden value={value?.id ?? -1} {...props}>
     {#if locked_in}
-        <img class="w-45" src={value.thumbnail} alt={value.title}>
-        <button type="button" onclick={() => { value = null; locked_in = false; if (oninput) oninput(); }}>Change</button>
+    <button type="button" onclick={() => { value = null; locked_in = false; if (oninput) oninput(); }}>Change</button>
+    <a target="_blank" href="{base}/work/{value?.id}"><img class="w-56" src={value?.thumbnail} alt={value?.title}></a>
     {/if}
-    <ul class="absolute">
+    <ul class="absolute" use:clickOutside onOutclick={() => { suggestions = []; }}>
         {#each suggestions as v}
             <li><a href={null} onclick={() => { value = v; input = v.title; suggestions = []; locked_in = true; if (oninput) oninput(); }}>{v.title}</a></li>
         {/each}

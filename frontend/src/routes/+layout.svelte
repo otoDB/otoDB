@@ -37,36 +37,6 @@
 main {
 	margin: 0 auto;
 	width: 100%;
-/*	
-	& > menu {
-		display: flex;
-		margin: 0;
-		margin-top: -.5rem;
-		gap: .3rem;
-		& a {
-			background-color: var(--otodb-faint-bg);
-			  border: 1px solid var(--otodb-faint-content);
-			border-bottom: none;
-			padding: .2rem .2rem 0 .2rem;
-		}
-		& > a.current::after {
-			content: '';
-			width: 100%;
-			height: 2px;
-			background-color:  var(--otodb-faint-bg);
-			display: block;
-			position: relative;
-			bottom: -.1rem;
-			width: calc(100% + .4rem);
-			left: -.2rem;
-		}
-	}
-	
-	& > menu.right {
-		margin-left: auto;
-		margin-right: 0;
-		width: max-content;
-	} */
 }
 
 footer {

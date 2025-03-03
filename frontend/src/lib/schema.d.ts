@@ -282,6 +282,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/reject_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Source */
+        post: operations["otodb_api_work_reject_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/unbound": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Unbound Sources */
+        get: operations["otodb_api_work_get_unbound_sources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile/profile": {
         parameters: {
             query?: never;
@@ -712,8 +746,26 @@ export interface components {
             /** Relation */
             relation: number;
         };
+        /** ProfileSchema */
+        ProfileSchema: {
+            /** Username */
+            username: string;
+            /** Email Address */
+            email: string;
+            /**
+             * Level
+             * @default 20
+             */
+            level: number;
+            /**
+             * Date Created
+             * Format: date-time
+             */
+            date_created?: string;
+        };
         /** WorkSourceSchema */
         WorkSourceSchema: {
+            added_by: components["schemas"]["ProfileSchema"];
             /** Platform */
             platform: number;
             /** Url */
@@ -745,23 +797,8 @@ export interface components {
             work_status: number;
             /** Thumbnail */
             thumbnail?: string | null;
-        };
-        /** ProfileSchema */
-        ProfileSchema: {
-            /** Username */
-            username: string;
-            /** Email Address */
-            email: string;
-            /**
-             * Level
-             * @default 20
-             */
-            level: number;
-            /**
-             * Date Created
-             * Format: date-time
-             */
-            date_created?: string;
+            /** Rejection Reason */
+            rejection_reason?: string | null;
         };
         /** ListSchema */
         ListSchema: {
@@ -782,6 +819,7 @@ export interface components {
         };
         /** SourceSubmissionSchema */
         SourceSubmissionSchema: {
+            added_by: components["schemas"]["ProfileSchema"];
             /** Platform */
             platform: number;
             /** Url */
@@ -813,6 +851,8 @@ export interface components {
             work_status: number;
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Rejection Reason */
+            rejection_reason?: string | null;
             /** Media */
             media: number | null;
         };
@@ -1383,10 +1423,53 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_reject_source: {
+        parameters: {
+            query: {
+                source_id: number;
+                reason: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_get_unbound_sources: {
+        parameters: {
+            query: {
+                pending: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkSourceSchema"][];
+                };
+            };
+        };
+    };
     otodb_api_profile_profile: {
         parameters: {
             query: {
-                user_id: number;
+                username: string;
             };
             header?: never;
             path?: never;
@@ -1408,7 +1491,7 @@ export interface operations {
     otodb_api_profile_lists: {
         parameters: {
             query: {
-                user_id: number;
+                username: string;
             };
             header?: never;
             path?: never;
@@ -1455,7 +1538,7 @@ export interface operations {
     otodb_api_profile_submissions: {
         parameters: {
             query: {
-                user_id: number;
+                username: string;
                 limit?: number;
                 offset?: number;
             };
@@ -1631,7 +1714,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": boolean;
+                };
             };
         };
     };

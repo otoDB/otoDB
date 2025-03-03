@@ -1,6 +1,6 @@
 <script lang="ts">
 	import client from "./api";
-	import { debounce } from "./ui";
+	import { clickOutside, debounce } from "./ui";
 
     interface Props {
         value: string;
@@ -20,11 +20,9 @@
 
 </script>
 
-<svelte:window onclick={() => { suggestions = []; }}></svelte:window>
-
-<span onclick={e => { e.stopPropagation(); }} role="none">
+<span role="none">
     <input type="text" oninput={debounce(search)} bind:value={value} {...props}>
-    <ul class="absolute">
+    <ul class="absolute" use:clickOutside onOutclick={() => { suggestions = []; }}>
         {#each suggestions as t}
             <li><a href={null} onclick={() => { value = t; suggestions = []; }}>{t}</a></li>
         {/each}

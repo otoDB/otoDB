@@ -60,3 +60,18 @@ export const SongRelationTypes = [
     m.light_caring_deer_coax,
     m.spry_muddy_sloth_radiate
 ]
+
+export const UserLevel = {
+    ANONYMOUS: 0,
+    RESTRICTED: 10,
+    MEMBER: 20,
+    MODERATOR: 40,
+    ADMIN: 50,
+    OWNER: 100,
+    0: 'Anonymous',
+    10: 'Restricted',
+    20: 'Member',
+    40: 'Moderator',
+    50: 'Admin',
+    100: 'Owner'
+}

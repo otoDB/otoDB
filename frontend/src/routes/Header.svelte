@@ -2,42 +2,41 @@
 	import { page } from '$app/state';
 	import { base } from '$app/paths';
 	import * as m from '$lib/paraglide/messages.js';
+	import { UserLevel } from '$lib/enums';
 
 	let { user } = $props();
 </script>
 
+{#snippet link(pathname: string, title: string)}
+<li aria-current={page.url.pathname === `${base}${pathname}` ? 'page' : undefined}>
+	<a href={`${base}${pathname}`}>{title}</a>
+</li>
+{/snippet}
+
 <header>
 	<nav>
 		<ul>
-			<li aria-current={page.url.pathname === `${base}/` ? 'page' : undefined}>
-				<a href="{base}/">{m.fine_late_chicken_quiz()}</a>
-			</li>
+			{@render link('/', m.fine_late_chicken_quiz())}
 			<li>
-				<form tagert="_self" method="get" action="{base}/work/search">
+				<form target="_self" method="get" action="{base}/work/search">
 					<input type="text" name="query" placeholder="{m.mean_top_antelope_love()}...">
 				</form>
 			</li>
+			{#if user?.level >= UserLevel.MODERATOR}
+			<hr>
+			{@render link('/tag/alias', 'Alias tags')}
+			{@render link('/work/merge', 'Merge works')}
+			{@render link('/work/approve', 'Check-in')}
+			{/if}
 			<hr>
 			{#if !user}
-			<li aria-current={page.url.pathname === `${base}/login` ? 'page' : undefined}>
-				<a href="{base}/login">{m.inner_stale_anteater_walk()}</a>
-			</li>
-			<li aria-current={page.url.pathname === `${base}/register` ? 'page' : undefined}>
-				<a href="{base}/register">{m.blue_whole_camel_type()}</a>
-			</li>
+			{@render link('/login', m.inner_stale_anteater_walk())}
+			{@render link('/register', m.blue_whole_camel_type())}
 			{:else}
-			<li aria-current={page.url.pathname === `${base}/work/add` ? 'page' : undefined}>
-				<a href="{base}/work/add">Add a work...</a>
-			</li>
-			<li aria-current={page.url.pathname === `${base}/profile/${user.user_id}` ? 'page' : undefined}>
-				<a href="{base}/profile/{user.user_id}">{m.petty_basic_sheep_win()}</a>
-			</li>
-			<li aria-current={page.url.pathname === `${base}/profile/${user.user_id}/lists` ? 'page' : undefined}>
-				<a href="{base}/profile/{user.user_id}/lists">{m.jumpy_honest_mole_exhale()}</a>
-			</li>
-			<li aria-current={page.url.pathname === `${base}/profile/${user.user_id}/submissions` ? 'page' : undefined}>
-				<a href="{base}/profile/{user.user_id}/submissions">My Submissions</a>
-			</li>
+			{@render link('/work/add', 'Add a work...')}
+			{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
+			{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
+			{@render link(`/profile/${user.username}/submissions`, 'My Submissions')}
 			<li aria-current={page.url.pathname === `${base}/logout` ? 'page' : undefined}>
 				<a href="{base}/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload>{m.best_front_swallow_play()}</a>
 			</li>

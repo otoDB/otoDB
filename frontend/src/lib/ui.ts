@@ -6,3 +6,19 @@ export const debounce = (callback: Function, wait = 300) => {
         timeout = setTimeout(() => callback(...args), wait);
     };
 };
+
+export const clickOutside = (node: HTMLElement) => {
+    const handleClick = (event: MouseEvent) => {
+        if (!node.contains(event.target as Node)) {
+            node.dispatchEvent(new CustomEvent("Outclick"));
+        }
+    };
+  
+    document.addEventListener("click", handleClick, true);
+  
+    return {
+        destroy() {
+            document.removeEventListener("click", handleClick, true);
+        }
+    };
+}

@@ -1,4 +1,5 @@
 from typing import Optional
+from functools import wraps
 
 from pydantic import field_validator
 
@@ -38,6 +39,7 @@ class TagWorkDetailsSchema(Schema):
     wiki_page: Optional[str]
 
 class WorkSourceSchema(ModelSchema):
+    added_by: ProfileSchema
     class Meta:
         model = WorkSource
         fields = [
@@ -46,7 +48,7 @@ class WorkSourceSchema(ModelSchema):
             'work_width', 'work_height',
             'title', 'description',
             'work_origin', 'work_status',
-            'thumbnail'
+            'thumbnail', 'rejection_reason'
         ]
 
 class WorkSchema(ModelSchema):
@@ -66,3 +68,18 @@ class ListSchema(ModelSchema):
     class Meta:
         model = Pool
         fields = ['name', 'description', 'id']
+
+def perm_decorator_ctor(uf):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(request, *args, **kwargs):
+            if uf(request.user):
+                return f(request, *args, **kwargs)
+            else:
+                return 403
+        return wrapper
+    return decorator
+
+user_is_trusted = perm_decorator_ctor(lambda user: user.level > Account.Levels.RESTRICTED)
+user_is_moderator = perm_decorator_ctor(lambda user: user.is_moderator)
+user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)

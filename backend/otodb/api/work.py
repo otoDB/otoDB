@@ -15,7 +15,7 @@ from otodb.common import video_info
 from otodb.models import MediaWork, WorkRelation, WorkSource
 from otodb.models.enums import WorkOrigin, Platform
 
-from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema
+from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_moderator
 
 work_router = Router()
 
@@ -25,7 +25,7 @@ class ExternalQuery(Schema):
 
 @work_router.get('query_external', response=ExternalQuery)
 def query_external(request: HttpRequest, platform: str, id: str):
-    work = get_object_or_404(WorkSource, platform=Platform.from_str(platform), source_id=id)
+    work = get_object_or_404(WorkSource.active_objects, platform=Platform.from_str(platform), source_id=id)
     return { 'tags': work.media.tags, 'work_id': work.media.id }
 
 @work_router.get('search', response=List[WorkSchema])
@@ -65,11 +65,13 @@ def relations(request: HttpRequest, work_id: int):
     return 200, (relations, works)
 
 @work_router.post('relation', auth=django_auth)
+@user_is_trusted
 def create_relation(request: HttpRequest, payload: WorkRelationSchema):
     rel = WorkRelation.create(A_id=payload.A.id, B_id=payload.B.id, relation=payload.relation)
     return rel.id
 
 @work_router.put('relation', auth=django_auth)
+@user_is_trusted
 def update_relation(request: HttpRequest, payload: WorkRelationSchema):
     if payload.id is None:
         return 400
@@ -81,6 +83,7 @@ def update_relation(request: HttpRequest, payload: WorkRelationSchema):
     return
 
 @work_router.delete('relation', auth=django_auth)
+@user_is_trusted
 def delete_relation(request: HttpRequest, relation_id: int):
     rel = get_object_or_404(WorkRelation, id=relation_id)
     rel.delete()
@@ -93,7 +96,7 @@ def sources(request: HttpRequest, work_id: int):
 
 @work_router.post('refresh_source', auth=django_auth)
 def refresh_source(request: HttpRequest, source_id: int):
-    src = get_object_or_404(WorkSource, id=source_id)
+    src = get_object_or_404(WorkSource.active_objects, id=source_id)
     src.refresh()
     return
 
@@ -103,6 +106,7 @@ class WorkEditSchema(ModelSchema):
         fields = ['title', 'description', 'thumbnail', 'rating']
 
 @work_router.post('merge', auth=django_auth)
+@user_is_moderator
 def merge_works(request:HttpRequest, from_work_id: int, to_work_id: int, payload: WorkEditSchema):
     MediaWork.merge(
         get_object_or_404(MediaWork.active_objects, id=to_work_id),
@@ -115,6 +119,7 @@ def merge_works(request:HttpRequest, from_work_id: int, to_work_id: int, payload
     return
 
 @work_router.put('work', auth=django_auth)
+@user_is_trusted
 def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, reason: str):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     for attr, value in payload.dict().items():
@@ -124,6 +129,7 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
     return
 
 @work_router.post('source', auth=django_auth, response={200: int, 400: Error})
+@user_is_trusted
 def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool):
     info = video_info(url)
     if info['site'] is None:
@@ -143,8 +149,11 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool):
     return src.id
 
 @work_router.post('assign_source', auth=django_auth, description='Pass in work_id=-1 if creating new work from source.', response=int)
+@user_is_moderator
 def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int):
-    src = get_object_or_404(WorkSource, id=source_id)
+    src = get_object_or_404(WorkSource.active_objects, id=source_id)
+    assert(src.media is None and src.rejection_reason is None)
+
     info = video_info(src.url) # Hopefully still available!
     
     if work_id != -1:
@@ -157,3 +166,16 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int):
     src.media = work
     src.save()
     return work.id
+
+@work_router.post('reject_source', auth=django_auth)
+@user_is_moderator
+def reject_source(request: HttpRequest, source_id: int, reason: str):
+    src = get_object_or_404(WorkSource.active_objects, id=source_id)
+    src.rejection_reason = request.user.username + ': ' + reason
+    src.save()
+    return
+
+@work_router.get('unbound', auth=django_auth, response=List[WorkSourceSchema])
+@user_is_moderator
+def get_unbound_sources(request: HttpRequest, pending: bool):
+    return WorkSource.objects.filter(media__isnull=True, rejection_reason__isnull=pending)

@@ -78,10 +78,10 @@ class TagWork(TagModel):
     @staticmethod
     def alias(from_tags: list[Self], into_tag: Self):
         for tag in from_tags:
-            if tag is not into_tag:
+            if tag.id != into_tag.id:
                 tag.aliased_to = into_tag
                 tag.save()
-                for work in tag.works:
+                for work in tag.works.all():
                     work.tags.add(into_tag)
                     work.tags.remove(tag)
                 for t in TagWork.objects.filter(aliased_to=tag):

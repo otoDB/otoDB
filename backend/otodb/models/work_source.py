@@ -6,6 +6,10 @@ from .media import MediaWork
 from otodb.account.models import Account
 from otodb.common import video_info
 
+class ActiveManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(rejection_reason__isnull=True)
+
 class WorkSource(models.Model):
     media = models.ForeignKey(MediaWork, on_delete=models.CASCADE, null=True)
     platform = models.IntegerField(choices=Platform.choices)
@@ -29,7 +33,11 @@ class WorkSource(models.Model):
     thumbnail = models.URLField(null=True, blank=False)
 
     added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
+    rejection_reason = models.CharField(max_length=1000, null=True, blank=False)
 
+    objects = models.Manager()
+    active_objects = ActiveManager()
+    
     def __str__(self) -> str:
         return f'#{self.media.id} - {self.url}' if self.media else self.title
 

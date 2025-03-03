@@ -160,6 +160,8 @@ def list_import(request: HttpRequest):
                         work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None))
                     new_works.append(work)
                     new_sources.append(src)
+                elif src.rejection_reason is not None:
+                    continue
                 else:
                     work = src.media
 

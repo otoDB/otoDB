@@ -16,18 +16,18 @@ from .common import ListSchema, ProfileSchema, WorkSourceSchema
 profile_router = Router()
 
 @profile_router.get('profile', response=ProfileSchema)
-def profile(request: HttpRequest, user_id: int):
-    user = get_object_or_404(Account, id=user_id)
+def profile(request: HttpRequest, username: str):
+    user = get_object_or_404(Account, username=username)
     return user
 
 @profile_router.get('lists', response=List[ListSchema])
-def lists(request: HttpRequest, user_id: int):
-    user = get_object_or_404(Account, id=user_id)
+def lists(request: HttpRequest, username: str):
+    user = get_object_or_404(Account, username=username)
     return user.pool_set
 
 @profile_router.get('work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth)
 def work_in_lists(request: HttpRequest, work_id: int):
-    return [(lst, lst.wowrk_in_pool(work_id).exists()) for lst in request.user.pool_set.all()]
+    return [(lst, lst.work_in_pool(work_id).exists()) for lst in request.user.pool_set.all()]
 
 class SourceSubmissionSchema(WorkSourceSchema):
     media: int | None
@@ -38,6 +38,6 @@ class SourceSubmissionSchema(WorkSourceSchema):
 
 @profile_router.get('submissions', response=List[SourceSubmissionSchema])
 @paginate
-def submissions(request: HttpRequest, user_id: int):
-    user = get_object_or_404(Account, id=user_id)
+def submissions(request: HttpRequest, username: str):
+    user = get_object_or_404(Account, username=username)
     return user.worksource_set.all()

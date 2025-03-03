@@ -29,25 +29,24 @@ export SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt
 You may also need to change the domain of the default site (example.com) in the admin panel.
 
 ## Frontend Setup
-We recommend using `bun`. You can replace `bun` with `npm` below.
 ```sh
 cd frontend
 
 # Setup for default backend addresses in dev mode
 cp .env.example .env
 
-bun install
+npm install
 
-bun run dev
+npm run dev
 # or start the server and open the app in a new browser tab
-bun run dev -- --open
+npm run dev -- --open
 ```
 
-To regenerate API types (the default dev backend is served on `http://127.0.0.1:8000`.), you can replace `bunx` with `npx`:
+To regenerate API types (the default dev backend is served on `http://127.0.0.1:8000`):
 ```sh
 cd frontend
 
-bunx openapi-typescript http://127.0.0.1:8000/api/openapi.json -o src/lib/schema.d.ts
+npx openapi-typescript http://127.0.0.1:8000/api/openapi.json -o src/lib/schema.d.ts
 ```
 
 Whenever you make a request on the server-side of the metaframework through the API client, you have to inject SvelteKit's `fetch` as follows (otherwise cookies will not be passed along):

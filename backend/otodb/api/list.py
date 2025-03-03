@@ -95,7 +95,7 @@ def update(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
     
     return
 
-@list_router.get('work_in_pool')
+@list_router.get('work_in_pool', response=bool)
 def work_in_pool(request: HttpRequest, list_id: int, work_id: int):
     lst = get_object_or_404(Pool, pk=list_id)
     return lst.work_in_pool(work_id)
@@ -109,9 +109,10 @@ def toggle(request: HttpRequest, list_id: int, work_id: int):
     if entries := lst.work_in_pool(work_id):
         for entry in entries:
             entry.delete()
+        return False
     else:
         lst.add_work(work_id)
-    return
+        return True
 
 @list_router.delete('list', auth=django_auth)
 def delete(request: HttpRequest, list_id: int):
@@ -156,6 +157,8 @@ def import_ext(request: HttpRequest, url: str):
                 work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None))
             new_works.append(work)
             new_sources.append(src)
+        elif src.rejection_reason is not None:
+            continue
         else:
             work = src.media
 

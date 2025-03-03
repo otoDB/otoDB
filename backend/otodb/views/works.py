@@ -38,7 +38,7 @@ def work(request: HttpRequest, work_id: int):
 
 @login_required
 def check_in_source(request: HttpRequest, source_id: int):
-    src = get_object_or_404(WorkSource, pk=source_id)
+    src = get_object_or_404(WorkSource.active_objects, pk=source_id)
     title = f'Checking-in source "{src.title}"'
     suggestions = None # used in case we want to prompt adding source to an existing work instead of a new work
     work_id = -1
@@ -89,6 +89,8 @@ def save_source(work: MediaWork, link: str, is_reupload: bool, user):
             work_width=info.get('work_width',None), work_height=info.get('work_height',None),
             added_by=user)
         src.save()
+    elif src.rejection_reason is not None:
+        raise Exception('This source has already been rejected.')
     elif src.media: # src exists and is already bound to a work
         if not work:
             return redirect('otodb:work', work_id=src.media.id)
@@ -106,7 +108,7 @@ def save_source(work: MediaWork, link: str, is_reupload: bool, user):
 @login_required
 def refresh_source(request: HttpRequest, source_id: int):
     if request.method == 'POST':
-        src = get_object_or_404(WorkSource, pk=source_id)
+        src = get_object_or_404(WorkSource.active_objects, pk=source_id)
         src.refresh()
     return redirect('otodb:work', work_id=src.media.id)
 

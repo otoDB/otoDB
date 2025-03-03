@@ -8,7 +8,7 @@ from ninja.pagination import paginate
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage
 from otodb.models.enums import WorkTagCategory
 
-from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema
+from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted
 
 tag_router = Router()
 
@@ -19,7 +19,7 @@ def search(request: HttpRequest, query: str):
 
 @tag_router.get('tag', response=TagWorkSchema)
 def tag(request: HttpRequest, tag_slug: str):
-    tag = get_object_or_404(TagWork, slug=tag_slug)
+    tag = get_object_or_404(TagWork, slug=tag_slug, aliased_to__isnull=True)
     return tag
 
 @tag_router.get('details', response=TagWorkDetailsSchema)
@@ -36,9 +36,10 @@ def works(request: HttpRequest, tag_slug: str):
     return MediaWork.active_objects.filter(tags__slug=tag_slug)
 
 @tag_router.post('alias', auth=django_auth)
+@user_is_trusted
 def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str):
-    tags = get_list_or_404(slug__in=from_tags)
-    into = get_object_or_404(slug=into_tag)
+    tags = get_list_or_404(TagWork, slug__in=from_tags)
+    into = get_object_or_404(TagWork, slug=into_tag)
     assert(into.aliased_to is None)
     
     TagWork.alias(tags, into)
@@ -51,6 +52,7 @@ class TagInSchema(ModelSchema):
         fields = ['category']
 
 @tag_router.put('tag', auth=django_auth)
+@user_is_trusted
 def update(request: HttpRequest, tag_slug: str, payload: TagInSchema):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     assert(not(tag.category == WorkTagCategory.SONG and payload.category != WorkTagCategory.SONG))
@@ -70,6 +72,7 @@ class SongInSchema(ModelSchema):
         fields = ['title', 'bpm', 'author']
 
 @tag_router.post('song', auth=django_auth)
+@user_is_trusted
 def song(request: HttpRequest, tag_slug: str, payload: SongInSchema):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     if tag.mediasong:
@@ -85,6 +88,7 @@ def song(request: HttpRequest, tag_slug: str, payload: SongInSchema):
     return
 
 @tag_router.delete('song', auth=django_auth)
+@user_is_trusted
 def delete_song(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     tag.mediasong.delete()
@@ -99,6 +103,7 @@ def wiki_page(request: HttpRequest, tag_slug: str):
         return tag.wiki_page.page
 
 @tag_router.post('wiki_page', auth=django_auth)
+@user_is_trusted
 def edit_wiki_page(request: HttpRequest, tag_slug: str, md: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     if tag.wiki_page:

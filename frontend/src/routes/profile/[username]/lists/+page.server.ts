@@ -5,7 +5,7 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
     const { data: lists } = await client.GET('/api/profile/lists', { fetch,
         params: {
             query: {
-                user_id: +params.profile_id
+                username: params.username
             }
         }
     });

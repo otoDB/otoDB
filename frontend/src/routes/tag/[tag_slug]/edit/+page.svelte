@@ -3,8 +3,7 @@
     import * as m from '$lib/paraglide/messages.js';
     import { WorkTagCategory } from "$lib/enums";
 	import { enhance } from "$app/forms";
-	import { base } from "$app/paths";
-	import type { PageProps } from "../$types";
+	import type { PageProps } from "./$types";
 	import WorkTagField from "$lib/WorkTagField.svelte";
 
     let { data, form }: PageProps = $props();

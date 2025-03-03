@@ -1,7 +1,7 @@
 import client from "$lib/api";
-import type { PageServerLoad } from "./$types";
+import type { LayoutServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ fetch, params }) => {
+export const load: LayoutServerLoad = async ({ fetch, params }) => {
     const { data, error } = await client.GET('/api/list/list', { fetch,
         params: {
             query: {

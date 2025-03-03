@@ -1,6 +1,6 @@
 import * as m from '$lib/paraglide/messages.js';
 import client from "$lib/api";
-import type { LayoutServerLoad } from '../../$types';
+import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params, fetch }) => {
     const { data, error } = await client.GET('/api/tag/tag', { params: {

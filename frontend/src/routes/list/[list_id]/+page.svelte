@@ -12,7 +12,11 @@ import Section from "../../Section.svelte";
 </svelte:head>
 
 <Section title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name})}>
+    <h3>By: <a href="{base}/profile/{data.list?.author.username}">{data.list?.author.username}</a></h3>
     <p class="whitespace-pre-wrap">{data.list.description}</p>
+    {#if data.list?.author.username == data.user?.username }
+    <a href="{base}/list/{data.list.id}/edit">Edit this list...</a>
+    {/if}
 </Section>
 <Section title="Entries">
     <ol class="list-decimal">
@@ -29,6 +33,6 @@ import Section from "../../Section.svelte";
     </ol>
 </Section>
 
-<Section title={m.mushy_proof_hornet_dig()}>
+<Section title={m.same_broad_haddock_pinch()}>
     include 'comments.html' with object=view_user
 </Section>

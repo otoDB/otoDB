@@ -29,10 +29,9 @@ export const actions = {
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') },
             fetch
         });
-		if (error) {
-            cookies.delete('csrftoken', { path: '/' });
+		if (error)
             return fail(400, { username, failed: true });
-        }
+        
         forwardCookies(cookies, response);
         
         const status = await client.GET('/api/auth/status', { fetch });

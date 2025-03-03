@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Section from "../../Section.svelte";
-	import type { PageProps } from "../add/$types";
+	import type { PageProps } from "./$types";
   import * as m from '$lib/paraglide/messages.js';
 	import { enhance } from "$app/forms";
 

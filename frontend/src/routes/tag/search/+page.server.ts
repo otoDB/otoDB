@@ -1,5 +1,5 @@
 import client from "$lib/api";
-import type { PageServerLoad } from "../../$types";
+import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
     const query = url.searchParams.get('query') ?? '';

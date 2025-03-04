@@ -7,16 +7,13 @@ import { WorkRelationTypes } from "$lib/enums";
 const d2 = new D2();
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
-    const { data, error } = await client.GET('/api/work/relations', { params: {
+    const { data } = await client.GET('/api/work/relations', { params: {
         query: {
             work_id: +params.work_id
         }
     }, fetch });
-
-    if (error)
-        return; // TODO
     
-    const [relations, works] = data;
+    const [relations, works] = data!;
     if (relations.length === 0)
         return;
 

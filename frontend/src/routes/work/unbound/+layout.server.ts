@@ -9,8 +9,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 
     return {
         links: [
-            { pathname: `work/approve`, title: "Pending sources" },
-            { pathname: `work/approve/rejected`, title: "Rejected sources" }
+            { pathname: `work/unbound`, title: "Pending sources" },
+            { pathname: `work/unbound/rejected`, title: "Rejected sources" }
         ]
     };
 };

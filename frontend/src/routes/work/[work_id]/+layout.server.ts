@@ -1,15 +1,19 @@
 import type { LayoutServerLoad } from "./$types";
 import * as m from '$lib/paraglide/messages.js';
 import client from "$lib/api";
+import { error } from "@sveltejs/kit";
 
 export const load: LayoutServerLoad = async ({ params, fetch }) => {
-    const { data, error } = await client.GET('/api/work/work', { params: {
+    if (isNaN(+params.work_id))
+        error(400, { message: 'Bad request' });
+
+    const { data, error: e } = await client.GET('/api/work/work', { params: {
         query: {
             work_id: +params.work_id
         }
     }, fetch });
-    if (error)
-        return; // TODO
+    if (e)
+        error(404, { message: 'Not found' });
 
     return {
         links: [

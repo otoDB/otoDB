@@ -7,7 +7,6 @@
 	import { goto } from "$app/navigation";
 	import { base } from "$app/paths";
 
-    let { data }: PageProps = $props();
     let tags = $state([]), selected = $state('');
 
     const submit = async () => {
@@ -22,6 +21,7 @@
 </svelte:head>
 
 <Section title="Alias Tags">
+Start by giving a space-delimited list of tags.
 <WorkTagsField class="w-full" bind:value={tags}/>
 {#if tags.length}
 into
@@ -31,7 +31,7 @@ into
         <option value={t}>{t}</option>
         {/each}
     </select>
-    <input type="submit">
+    <input type="submit" disabled={selected === ''}>
 </form>
 {/if}
 </Section>

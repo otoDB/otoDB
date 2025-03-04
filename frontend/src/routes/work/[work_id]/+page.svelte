@@ -13,10 +13,8 @@
     let userLists: [components["schemas"]["ListSchema"], boolean][] = $state([]), userListsFetched = false, userListsShown = $state(false);
     const showLists = async () => {
         if (!userListsFetched) {
-            const { error, data: lists } = await client.GET('/api/profile/work_in_my_lists', { fetch, params: { query: { work_id: data.id! }}});
-            if (error)
-                ; // TODO
-            userLists = lists;
+            const { data: lists } = await client.GET('/api/profile/work_in_my_lists', { fetch, params: { query: { work_id: data.id! }}});
+            userLists = lists!;
             userListsFetched = true;
             userListsShown = true;
         }

@@ -1,4 +1,4 @@
-import { fail, redirect, type Actions } from "@sveltejs/kit";
+import { error, fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import client from "$lib/api";
 import { base } from "$app/paths";
@@ -6,13 +6,13 @@ import { base } from "$app/paths";
 export const load: PageServerLoad = async ({ fetch, url }) => {
     const work = url.searchParams.get('for_work');
     if (work && !isNaN(+work)) {
-        const { data, error } = await client.GET('/api/work/work', { params: {
+        const { data, error: e } = await client.GET('/api/work/work', { params: {
             query: {
                 work_id: +work
             }
         }, fetch });
-        if (error)
-            return; // TODO
+        if (e)
+            error(404, { message: 'Not found' });
 
         return {
             title: data.title

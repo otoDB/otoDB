@@ -17,6 +17,7 @@
 	<nav>
 		<ul>
 			{@render link('/', m.fine_late_chicken_quiz())}
+			{@render link('/work/random', 'Random work')}
 			<li>
 				<form target="_self" method="get" action="{base}/work/search">
 					<input type="text" name="query" placeholder="{m.mean_top_antelope_love()}...">
@@ -26,7 +27,7 @@
 			<hr>
 			{@render link('/tag/alias', 'Alias tags')}
 			{@render link('/work/merge', 'Merge works')}
-			{@render link('/work/approve', 'Check-in')}
+			{@render link('/work/unbound', 'Bind sources')}
 			{/if}
 			<hr>
 			{#if !user}

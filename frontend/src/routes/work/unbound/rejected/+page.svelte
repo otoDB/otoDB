@@ -27,6 +27,8 @@
             <a href={src.url} target="_blank" rel="noopener noreferrer"><img src={src.thumbnail} alt={src.title} class="w-50 float-right clear-both"></a>
         </span>
     </li>
+    {:else}
+    <li>There are no rejected sources.</li>
     {/each}
 </ul>
 </Section>

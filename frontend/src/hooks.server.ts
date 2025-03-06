@@ -1,9 +1,15 @@
 import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { i18n } from '$lib/i18n';
 import { PUBLIC_BACKEND_URL_INTERNAL } from '$env/static/public';
 import client from '$lib/api';
-const handleParaglide: Handle = i18n.handle();
+import { paraglideMiddleware } from '$lib/paraglide/server';
+
+const handleParaglide: Handle = ({ event, resolve }) =>
+  paraglideMiddleware(event.request, ({ locale }) => {
+    return resolve(event, {
+      transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)
+    });
+  });
 
 const handleAuth: Handle = async ({event, resolve}) => {
   const session = event.cookies.get('sessionid'),

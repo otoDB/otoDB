@@ -2,7 +2,7 @@
 	import { base } from "$app/paths";
 import Section from "../../Section.svelte";
 	import type { PageProps } from "./$types";
-    import * as m from '$lib/paraglide/messages.js';
+    import { m } from '$lib/paraglide/messages.js';
 
     let { data }: PageProps = $props();
 </script>

@@ -3,7 +3,7 @@
 	import Section from "../../Section.svelte";
 	import type { PageProps } from "./$types";
 	let { form }: PageProps = $props();
-    import * as m from '$lib/paraglide/messages.js';
+    import { m } from '$lib/paraglide/messages.js';
 </script>
 
 <svelte:head>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from "../../Section.svelte";
 	import CollapsibleText from "./CollapsibleText.svelte";
-    import * as m from '$lib/paraglide/messages.js';
+    import { m } from '$lib/paraglide/messages.js';
 	import { Platform, Rating, WorkOrigin, WorkStatus } from '$lib/enums';
 	import WorkTag from "$lib/WorkTag.svelte";
 	import client from "$lib/api";

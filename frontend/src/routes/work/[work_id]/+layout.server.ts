@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from "./$types";
-import * as m from '$lib/paraglide/messages.js';
+import { m } from '$lib/paraglide/messages.js';
 import client from "$lib/api";
 import { error } from "@sveltejs/kit";
 

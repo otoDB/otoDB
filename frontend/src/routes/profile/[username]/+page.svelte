@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from "../../Section.svelte";
 	import type { PageProps } from "./$types";
-    import * as m from '$lib/paraglide/messages.js';
+    import { m } from '$lib/paraglide/messages.js';
 	import { UserLevel } from "$lib/enums";
 
     let { data }: PageProps = $props();

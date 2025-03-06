@@ -22,7 +22,7 @@
 		"@tailwindcss/vite": "^4.0.9",
 		"eslint": "^9.21.0",
 		"eslint-config-prettier": "^10.0.2",
-		"eslint-plugin-svelte": "^2.46.1",
+		"eslint-plugin-svelte": "^3.0.3",
 		"globals": "^15.15.0",
 		"openapi-typescript": "^7.6.1",
 		"prettier": "^3.5.3",
@@ -37,7 +37,7 @@
 		"vite": "^6.2.0"
 	},
 	"dependencies": {
-		"@inlang/paraglide-sveltekit": "^0.15.5",
+		"@inlang/paraglide-js": "^2.0.0-beta.26",
 		"@sveltejs/adapter-node": "^5.2.12",
 		"@terrastruct/d2": "^0.1.21",
 		"openapi-fetch": "^0.13.4",

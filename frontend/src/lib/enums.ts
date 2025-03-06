@@ -1,4 +1,4 @@
-import * as m from '$lib/paraglide/messages.js';
+import { m } from '$lib/paraglide/messages.js';
 
 export const WorkTagCategory = [
     m.fresh_lower_rook_trip, 

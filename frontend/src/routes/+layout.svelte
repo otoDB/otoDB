@@ -1,30 +1,26 @@
 <script lang="ts">
-	import { i18n } from '$lib/i18n';
-	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import Header from './Header.svelte';
 	import '../app.css';
-	import * as m from '$lib/paraglide/messages.js';
+	import { m } from '$lib/paraglide/messages.js';
 	
 	let { data, children } = $props();
 </script>
 
-<ParaglideJS {i18n}>
-	<span class="absolute top-20 left-40 italic font-mono select-none">
+<div class="app">
+	<address class="absolute top-20 left-40 italic font-mono select-none">
 		{m.glad_born_mouse_taste()}
-	</span>
+	</address>
+	
+	<Header user={data.user}></Header>
 
-	<div class="app">
-		<Header user={data.user}></Header>
+	<main>
+		{@render children()}
+	</main>
 
-		<main>
-			{@render children()}
-		</main>
-
-		<footer>
-			{m.glad_born_mouse_taste()} Pre-alpha
-		</footer>
-	</div>
-</ParaglideJS>
+	<footer>
+		{m.glad_born_mouse_taste()} Pre-alpha
+	</footer>
+</div>
 
 <style>
 .app {

@@ -5,7 +5,7 @@ import client from '$lib/api';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 
 const handleParaglide: Handle = ({ event, resolve }) =>
-  paraglideMiddleware(event.request, ({ locale }) => {
+  paraglideMiddleware(event.request.clone(), ({ locale }) => {
     return resolve(event, {
       transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)
     });

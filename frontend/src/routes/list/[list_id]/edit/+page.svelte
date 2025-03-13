@@ -4,10 +4,50 @@
     import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from "$app/forms";
 	import WorkField from "$lib/WorkField.svelte";
+	import { debounce } from "$lib/ui";
+	import client from "$lib/api";
 
     let { data, form }: PageProps = $props();
 
-    let list = $state(data.list), entries = $state(data.entries.items);
+    let counter = data.entries?.items.length;
+
+    let entries = $state(data.entries!.items.map((el, i) => Object.assign({}, el, {ui_id: i})));
+    
+    let entries_copy = [...entries];
+
+    let source: HTMLElement | null = $state(null), target: HTMLElement | null = $state(null);
+
+    function dragenter(e) {
+        target = e.target;
+
+        const tgt = e.target!.closest('tr'),
+            src = source?.closest('tr');
+
+            
+        if (src && tgt) {
+            entries = entries_copy;
+            const from = entries.findIndex(e => e.ui_id === +src.dataset.idx!), to = Array.from(tgt.parentNode.children).indexOf(tgt);
+            entries.splice(to, 0, entries.splice(from, 1)[0]);
+        }
+    }
+    
+    function ondragstart(e) {
+        source = e.target;
+        e.dataTransfer!.effectAllowed = 'move';
+    }
+
+    function ondragend(e) {
+        const src = source?.closest('tr');
+        const from = entries_copy.findIndex(e => e.ui_id === +src.dataset.idx!), to = entries.findIndex(e => e.ui_id === +src.dataset.idx!);
+        client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
+            move: [[from, to]],
+            delete: [], insert_at: [], update_description: [], update_work: []
+        }});
+        
+        source = null;
+        target = null;
+        entries_copy = [...entries];
+    }
 </script>
 
 <svelte:head>
@@ -26,8 +66,8 @@
 <Section title="Entries">
     <form method="POST" use:enhance>
         <table><tbody>
-            {#each entries as entry, i}
-            <tr><th>{i+1}</th><td>
+            {#each entries as entry, i (entry.ui_id)}
+            <tr ondragenter={debounce(dragenter, 50)} data-idx={entry.ui_id}><th>{i+1}</th><td><div class="pl-5 pr-5 border select-none" draggable="true" {ondragstart} {ondragend} role="none">=</div></td><td>
                 <WorkField value={entry.work}/>
             </td><td><textarea value={entry.description}></textarea></td></tr>
             {/each}

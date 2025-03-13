@@ -438,6 +438,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/list/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Items */
+        put: operations["otodb_api_list_update_items"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/list/work_in_pool": {
         parameters: {
             query?: never;
@@ -870,6 +887,19 @@ export interface components {
             /** Description */
             description?: string | null;
         };
+        /** ListItemSchema */
+        ListItemSchema: {
+            work: components["schemas"]["WorkSchema"];
+            /** Description */
+            description?: string | null;
+        };
+        /** PagedListItemSchema */
+        PagedListItemSchema: {
+            /** Items */
+            items: components["schemas"]["ListItemSchema"][];
+            /** Count */
+            count: number;
+        };
         /** ListItemInSchema */
         ListItemInSchema: {
             /** Work Id */
@@ -879,10 +909,14 @@ export interface components {
         };
         /** ListUpdateSchema */
         ListUpdateSchema: {
-            /** Name */
-            name: string;
-            /** Description */
-            description?: string | null;
+            /**
+             * Update Work
+             * @default []
+             */
+            update_work: [
+                number,
+                number
+            ][];
             /**
              * Update Description
              * @default []
@@ -892,10 +926,10 @@ export interface components {
                 string
             ][];
             /**
-             * Swap
+             * Move
              * @default []
              */
-            swap: [
+            move: [
                 number,
                 number
             ][];
@@ -912,19 +946,6 @@ export interface components {
                 number,
                 components["schemas"]["ListItemInSchema"]
             ][];
-        };
-        /** ListItemSchema */
-        ListItemSchema: {
-            work: components["schemas"]["WorkSchema"];
-            /** Description */
-            description?: string | null;
-        };
-        /** PagedListItemSchema */
-        PagedListItemSchema: {
-            /** Items */
-            items: components["schemas"]["ListItemSchema"][];
-            /** Count */
-            count: number;
         };
         /** PagedTagWorkSchema */
         PagedTagWorkSchema: {
@@ -1616,7 +1637,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ListUpdateSchema"];
+                "application/json": components["schemas"]["ListInSchema"];
             };
         };
         responses: {
@@ -1694,6 +1715,30 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PagedListItemSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_list_update_items: {
+        parameters: {
+            query: {
+                list_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ListUpdateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

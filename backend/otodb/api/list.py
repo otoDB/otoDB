@@ -83,7 +83,7 @@ def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
     for (a, b) in payload.move:
         items.get(order=a).to(b)
 
-    PoolItem.objects.filter(id__in=payload.delete)
+    items.filter(order__in=payload.delete).delete()
 
     for i, item in payload.insert_at:
         item = PoolItem(work_id=item.work_id, description=item.description).create()

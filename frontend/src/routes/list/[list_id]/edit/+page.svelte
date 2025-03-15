@@ -6,14 +6,13 @@
 	import WorkField from "$lib/WorkField.svelte";
 	import { debounce } from "$lib/ui";
 	import client from "$lib/api";
+	import type { components } from "$lib/schema";
 
     let { data, form }: PageProps = $props();
 
-    let counter = data.entries?.items.length;
-
     let entries = $state(data.entries!.items.map((el, i) => Object.assign({}, el, {ui_id: i})));
     
-    let entries_copy = [...entries]; // not $state on purpose
+    let entries_copy = entries; // not $state on purpose
 
     let source: HTMLElement | null = $state(null), target: HTMLElement | null = $state(null);
 
@@ -23,7 +22,6 @@
         const tgt = e.target!.closest('tr'),
             src = source?.closest('tr');
 
-            
         if (src && tgt) {
             entries = entries_copy;
             const from = entries.findIndex(e => e.ui_id === +src.dataset.idx!), to = Array.from(tgt.parentNode.children).indexOf(tgt);
@@ -36,18 +34,17 @@
         e.dataTransfer!.effectAllowed = 'move';
     }
 
-    function ondragend(e) {
+    async function ondragend(e) {
         const src = source?.closest('tr');
         // FIXME this seems slow and unnecessary?
         const from = entries_copy.findIndex(e => e.ui_id === +src.dataset.idx!), to = entries.findIndex(e => e.ui_id === +src.dataset.idx!);
-        client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
+        await client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
             move: [[from, to]],
             delete: [], insert_at: [], update_description: [], update_work: []
         }});
-        
         source = null;
         target = null;
-        entries_copy = [...entries];
+        entries_copy = entries;
     }
 
     async function update_description(el) {
@@ -57,12 +54,24 @@
         }});
     }
 
-    async function update_work(el: HTMLElement, work) {
+    async function update_work(el: HTMLElement, work: components['schemas']['WorkSchema']) {
         if (work) {
             await client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
-                update_work: [[+el.closest('tr')!.dataset.ridx!, work.id]],
+                update_work: [[+el.closest('tr')!.dataset.ridx!, work.id!]],
                 update_description: [], move: [], delete: [], insert_at: []
             }});
+        }
+    }
+
+    async function delete_item(el) {
+        const i = +el.target.closest('tr')!.dataset.ridx!;
+        const { error } = await client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
+            delete: [i],
+            update_work: [], update_description: [], move: [], insert_at: []
+        }});
+        if (!error) {
+            entries.splice(i, 1);
+            entries_copy = entries;
         }
     }
 </script>
@@ -85,7 +94,7 @@
         {#each entries as entry, i (entry.ui_id)}
         <tr ondragenter={debounce(dragenter, 50)} data-idx={entry.ui_id} data-ridx={i}><th>{i+1}</th><td><div class="pl-5 pr-5 border select-none" draggable="true" {ondragstart} {ondragend} role="none">=</div></td><td>
             <WorkField value={entry.work} oninput={update_work}/>
-        </td><td><textarea value={entry.description} oninput={debounce(update_description)}></textarea></td></tr>
+        </td><td><textarea value={entry.description} oninput={debounce(update_description)}></textarea></td><td><button type="button" onclick={delete_item}>Remove</button></td></tr>
         {/each}
     </tbody></table>
 </Section>

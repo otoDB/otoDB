@@ -6,7 +6,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
-from ninja import Router, ModelSchema
+from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
@@ -45,54 +45,50 @@ class ListInSchema(ModelSchema):
         model = Pool
         fields = ['name', 'description']
 
-class ListUpdateSchema(ListInSchema):
-    # Diffs applied in this exact order: Update Description -> Swaps -> Delete -> Insert
-    update_description: List[tuple[int, str]] = []
-    swap: List[tuple[int, int]] = [] # moves order tuple[0] -> tuple[1] 
-    delete: List[int] = [] # delete at index
-    insert_at: List[tuple[int, ListItemInSchema]] = [] # insert before index tuple[0]
-
 @list_router.post('list', auth=django_auth, response=int)
 def new(request: HttpRequest, payload: ListInSchema):
     lst = Pool.objects.create(author=request.user, **payload.dict())
     return lst.id
 
 @list_router.put('list', auth=django_auth)
-def update(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
+def update(request: HttpRequest, list_id: int, payload: ListInSchema):
     lst = get_object_or_404(Pool, id=list_id)
-    for attr, value in payload.dict().items():
-        setattr(lst, attr, value)
+    if lst.author != request.user:
+        return 401
+
+    lst.name = payload.name
+    lst.description = payload.description
     lst.save()
 
-    items = [*lst.poolitem_set.order_by('order')]
-    to_create, to_delete = [], []
+class ListUpdateSchema(Schema):
+    # Diffs applied in this exact order: WorkIDs -> Descriptions -> Moves -> Delete -> Insert
+    update_work: List[tuple[int, int]] = []
+    update_description: List[tuple[int, str]] = []
+    move: List[tuple[int, int]] = [] # [(from, to)]
+    delete: List[int] = [] # delete at index
+    insert_at: List[tuple[int, ListItemInSchema]] = [] # insert before index tuple[0]
+
+@list_router.put('items', auth=django_auth)
+def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
+    lst = get_object_or_404(Pool, id=list_id)
+
+    items = lst.poolitem_set
     
-    assert(all(it[0] < len(items) for it in payload.update_description))
+    for (i, new_work) in payload.update_work:
+        items.filter(order=i).update(work_id=new_work)
+    
     for (i, new_desc) in payload.update_description:
-        items[i].description = new_desc
-        items[i].save()
+        items.filter(order=i).update(description=new_desc)
 
-    assert(all(it < len(items) for its in payload.swap for it in its))
-    for (a, b) in payload.swap:
-        items[a].order = b, items[b].order = a
-        items[a], items[b] = items[b], items[a]
+    for (a, b) in payload.move:
+        items.get(order=a).to(b)
 
-    assert(all(it < len(items) for it in payload.delete))
-    for i in payload.delete:
-        for after in items[i:]:
-            after.order -= 1
-        to_delete.append(items.pop(i).id)
+    PoolItem.objects.filter(id__in=payload.delete)
 
     for i, item in payload.insert_at:
-        for after in items[i:]:
-            after.order += 1
-        to_create.append(PoolItem(work_id=item.work_id, description=item.description,
-            order=min(len(to_create) + len(items), i)))
+        item = PoolItem(work_id=item.work_id, description=item.description).create()
+        item.to(i)
 
-    PoolItem.objects.filter(id__in=to_delete).delete()
-    PoolItem.objects.bulk_create(to_create)
-    PoolItem.objects.bulk_update(items, ['order'])
-    
     return
 
 @list_router.get('work_in_pool', response=bool)
@@ -145,7 +141,7 @@ def import_ext(request: HttpRequest, url: str):
             continue
 
         try:
-            src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
+            src = WorkSource.objects.get(platform=vid_info['site'], source_id=vid_info['id'])
         except WorkSource.DoesNotExist:
             src = None
         if not src:
@@ -154,7 +150,8 @@ def import_ext(request: HttpRequest, url: str):
                 url=vid_info['url'], platform=vid_info['site'], source_id=vid_info['id'],
                 published_date=date.fromtimestamp(vid_info['timestamp']),
                 work_origin=WorkOrigin(False), thumbnail=vid_info.get('thumb', None),
-                work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None))
+                work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None),
+                added_by=request.user)
             new_works.append(work)
             new_sources.append(src)
         elif src.rejection_reason is not None:
@@ -163,7 +160,7 @@ def import_ext(request: HttpRequest, url: str):
             work = src.media
 
         new_tag_instances.extend([TagWorkInstance(work=work, work_tag=TagWork.objects.get_or_create(name=t)[0]) for t in vid_info['tags']])
-        pool_items.append(PoolItem(work=work, description='', order=i, pool=list_))
+        pool_items.append(PoolItem(work=work, description='', pool=list_))
 
         i += 1
 

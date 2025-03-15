@@ -17,7 +17,7 @@ class ListImportForm(forms.Form):
 
 def list(request: HttpRequest, list_id: int):
     list_ = get_object_or_404(Pool, pk=list_id)
-    works = list_.poolitem_set.select_related('work').order_by('order')
+    works = list_.poolitem_set.select_related('work')
     paginator = Paginator(works, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -47,7 +47,7 @@ def edit(request: HttpRequest, list_id: int):
     if list_.author != request.user:
         return redirect('otodb:list', list_id=list_.id)
 
-    works = list_.poolitem_set.select_related('work').order_by('order')
+    works = list_.poolitem_set.select_related('work')
     page_size = 20
     paginator = Paginator(works, page_size)
     page_number = request.GET.get("page") or request.POST.get("page") or 1
@@ -56,6 +56,7 @@ def edit(request: HttpRequest, list_id: int):
     error = None
     if request.method == 'POST':
         list_form = ListForm(request.POST, instance=list_)
+        # I think this is almost certainly broken, and I don't want to bother fixing it -- lach
         if list_form.has_changed() and list_form.is_valid():
             name = list_form.cleaned_data['name']
             desc = list_form.cleaned_data['description']
@@ -67,18 +68,12 @@ def edit(request: HttpRequest, list_id: int):
             new_entries = [(i, int(request.POST[f'work-{i}']), request.POST[f'desc-{i}']) for i in range(sz)]
             old_entries = page_obj
 
-            # this may fail, so we do this first
             n_previous = (int(page_number) - 1) * page_size
-            new_entries = [PoolItem(work_id=wk, description=desc, order=i + n_previous, pool=list_) for (i, wk, desc) in new_entries]
-            # old must go first, querysets are lazy
-            for entry in old_entries: entry.delete()
-
-            entries_after_page = list_.poolitem_set.filter(order__gte=n_previous)
-            for item in entries_after_page:
-                item.order += sz - page_size
-            PoolItem.objects.bulk_update(entries_after_page, ['order'])
-            
-            PoolItem.objects.bulk_create(new_entries)
+            for entry in old_entries:
+                entry.delete()
+            for (i, wk, desc) in new_entries:
+                item = PoolItem(work_id=wk, description=desc, pool=list_).create()
+                item.to(i + n_previous)
 
             return redirect('otodb:list', list_id=list_.id)
         except Exception as e:
@@ -150,14 +145,18 @@ def list_import(request: HttpRequest):
                     list_.description += f'\nFailed to fetch {vid_info['failed']}'
                     continue
 
-                src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
+                try:
+                    src = WorkSource.objects.get(platform=vid_info['site'], source_id=vid_info['id'])
+                except WorkSource.DoesNotExist:
+                    src = None
                 if not src: # src does not exist
                     work = MediaWork(title=vid_info['title'], description=vid_info['description'], thumbnail=vid_info['thumb'])
                     src = WorkSource(media=work, title=vid_info['title'], description=vid_info['description'],
                         url=vid_info['url'], platform=vid_info['site'], source_id=vid_info['id'],
                         published_date=date.fromtimestamp(vid_info['timestamp']),
                         work_origin=WorkOrigin(False), thumbnail=vid_info.get('thumb', None),
-                        work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None))
+                        work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None),
+                        added_by=request.user)
                     new_works.append(work)
                     new_sources.append(src)
                 elif src.rejection_reason is not None:
@@ -166,7 +165,7 @@ def list_import(request: HttpRequest):
                     work = src.media
 
                 new_tag_instances.extend([TagWorkInstance(work=work, work_tag=TagWork.objects.get_or_create(name=t)[0]) for t in vid_info['tags']])
-                pool_items.append(PoolItem(work=work, description='', order=i, pool=list_))
+                pool_items.append(PoolItem(work=work, description='', pool=list_))
 
                 i += 1
 

@@ -115,7 +115,6 @@ def video_info(link):
         }
     if niconico_ie.suitable(link):
         info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
-        print(info)
     else:
         info = ydl.extract_info(link, download=False)
         if info.get('_type') == 'playlist':

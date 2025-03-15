@@ -25,8 +25,8 @@ class WorkSource(models.Model):
         choices=WorkStatus.choices,
         default=WorkStatus.AVAILABLE
     )
-    work_width = models.IntegerField(null=True, blank=True)
-    work_height = models.IntegerField(null=True, blank=True)
+    work_width = models.PositiveIntegerField(null=True, blank=True)
+    work_height = models.PositiveIntegerField(null=True, blank=True)
 
     title = models.CharField(max_length=1000, null=False, blank=False)
     description = models.TextField(null=True, blank=True)

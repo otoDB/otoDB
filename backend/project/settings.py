@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'otodb.account',
     'simple_history',
     'tagulous',
+    'ordered_model',
  
     'django.contrib.sites',
     'django_comments_xtd',

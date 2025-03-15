@@ -5,6 +5,8 @@
 	import { clickOutside, debounce } from "./ui";
 	import { base } from "$app/paths";
 
+    let self: HTMLElement;
+
     let input: string = $state('');
     interface Props {
         value: components['schemas']['WorkSchema'] | null | undefined;
@@ -32,16 +34,16 @@
     });
 </script>
 
-<span role="none">
+<span role="none" bind:this={self}>
     <input type="text" oninput={debounce(search)} disabled={locked_in} bind:value={input}>
     <input type="number" hidden value={value?.id ?? -1} {...props}>
     {#if locked_in}
-    <button type="button" onclick={() => { value = null; locked_in = false; if (oninput) oninput(); }}>Change</button>
+    <button type="button" onclick={() => { value = null; locked_in = false; if (oninput) oninput(self, null); }}>Change</button>
     <a target="_blank" href="{base}/work/{value?.id}"><img class="w-56" src={value?.thumbnail} alt={value?.title}></a>
     {/if}
     <ul class="absolute" use:clickOutside onOutclick={() => { suggestions = []; }}>
         {#each suggestions as v}
-            <li><a href={null} onclick={() => { value = v; input = v.title; suggestions = []; locked_in = true; if (oninput) oninput(); }}>{v.title}</a></li>
+            <li><a href={null} onclick={() => { value = v; input = v.title; suggestions = []; locked_in = true; if (oninput) oninput(self, v); }}>{v.title}</a></li>
         {/each}
     </ul>
 </span>

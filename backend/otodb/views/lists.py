@@ -56,6 +56,7 @@ def edit(request: HttpRequest, list_id: int):
     error = None
     if request.method == 'POST':
         list_form = ListForm(request.POST, instance=list_)
+        # I think this is almost certainly broken, and I don't want to bother fixing it -- lach
         if list_form.has_changed() and list_form.is_valid():
             name = list_form.cleaned_data['name']
             desc = list_form.cleaned_data['description']
@@ -144,14 +145,18 @@ def list_import(request: HttpRequest):
                     list_.description += f'\nFailed to fetch {vid_info['failed']}'
                     continue
 
-                src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
+                try:
+                    src = WorkSource.objects.get(platform=vid_info['site'], source_id=vid_info['id'])
+                except WorkSource.DoesNotExist:
+                    src = None
                 if not src: # src does not exist
                     work = MediaWork(title=vid_info['title'], description=vid_info['description'], thumbnail=vid_info['thumb'])
                     src = WorkSource(media=work, title=vid_info['title'], description=vid_info['description'],
                         url=vid_info['url'], platform=vid_info['site'], source_id=vid_info['id'],
                         published_date=date.fromtimestamp(vid_info['timestamp']),
                         work_origin=WorkOrigin(False), thumbnail=vid_info.get('thumb', None),
-                        work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None))
+                        work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None),
+                        added_by=request.user)
                     new_works.append(work)
                     new_sources.append(src)
                 elif src.rejection_reason is not None:

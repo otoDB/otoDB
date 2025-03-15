@@ -13,7 +13,7 @@
 
     let entries = $state(data.entries!.items.map((el, i) => Object.assign({}, el, {ui_id: i})));
     
-    let entries_copy = [...entries];
+    let entries_copy = [...entries]; // not $state on purpose
 
     let source: HTMLElement | null = $state(null), target: HTMLElement | null = $state(null);
 
@@ -38,6 +38,7 @@
 
     function ondragend(e) {
         const src = source?.closest('tr');
+        // FIXME this seems slow and unnecessary?
         const from = entries_copy.findIndex(e => e.ui_id === +src.dataset.idx!), to = entries.findIndex(e => e.ui_id === +src.dataset.idx!);
         client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
             move: [[from, to]],
@@ -47,6 +48,22 @@
         source = null;
         target = null;
         entries_copy = [...entries];
+    }
+
+    async function update_description(el) {
+        await client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
+            update_description: [[+el.target.closest('tr').dataset.ridx, el.target.value]],
+            move: [], delete: [], insert_at: [], update_work: []
+        }});
+    }
+
+    async function update_work(el: HTMLElement, work) {
+        if (work) {
+            await client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
+                update_work: [[+el.closest('tr')!.dataset.ridx!, work.id]],
+                update_description: [], move: [], delete: [], insert_at: []
+            }});
+        }
     }
 </script>
 
@@ -64,14 +81,11 @@
     </form>
 </Section>
 <Section title="Entries">
-    <form method="POST" use:enhance>
-        <table><tbody>
-            {#each entries as entry, i (entry.ui_id)}
-            <tr ondragenter={debounce(dragenter, 50)} data-idx={entry.ui_id}><th>{i+1}</th><td><div class="pl-5 pr-5 border select-none" draggable="true" {ondragstart} {ondragend} role="none">=</div></td><td>
-                <WorkField value={entry.work}/>
-            </td><td><textarea value={entry.description}></textarea></td></tr>
-            {/each}
-        </tbody></table>
-        <input type="submit">
-    </form>
+    <table><tbody>
+        {#each entries as entry, i (entry.ui_id)}
+        <tr ondragenter={debounce(dragenter, 50)} data-idx={entry.ui_id} data-ridx={i}><th>{i+1}</th><td><div class="pl-5 pr-5 border select-none" draggable="true" {ondragstart} {ondragend} role="none">=</div></td><td>
+            <WorkField value={entry.work} oninput={update_work}/>
+        </td><td><textarea value={entry.description} oninput={debounce(update_description)}></textarea></td></tr>
+        {/each}
+    </tbody></table>
 </Section>

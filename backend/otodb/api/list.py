@@ -74,14 +74,14 @@ def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
 
     items = lst.poolitem_set
     
-    for (i, new_work) in payload.update_description:
-        items[i].update(work_id=new_work)
+    for (i, new_work) in payload.update_work:
+        items.filter(order=i).update(work_id=new_work)
     
     for (i, new_desc) in payload.update_description:
-        items[i].update(description=new_desc)
+        items.filter(order=i).update(description=new_desc)
 
     for (a, b) in payload.move:
-        items[i].to(description=new_desc)
+        items.get(order=a).to(b)
 
     PoolItem.objects.filter(id__in=payload.delete)
 
@@ -141,7 +141,7 @@ def import_ext(request: HttpRequest, url: str):
             continue
 
         try:
-            src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
+            src = WorkSource.objects.get(platform=vid_info['site'], source_id=vid_info['id'])
         except WorkSource.DoesNotExist:
             src = None
         if not src:
@@ -150,7 +150,8 @@ def import_ext(request: HttpRequest, url: str):
                 url=vid_info['url'], platform=vid_info['site'], source_id=vid_info['id'],
                 published_date=date.fromtimestamp(vid_info['timestamp']),
                 work_origin=WorkOrigin(False), thumbnail=vid_info.get('thumb', None),
-                work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None))
+                work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None),
+                added_by=request.user)
             new_works.append(work)
             new_sources.append(src)
         elif src.rejection_reason is not None:

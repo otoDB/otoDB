@@ -3,10 +3,9 @@
 	import type { PageProps } from "./$types";
     import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from "$app/forms";
-	import WorkField from "$lib/WorkField.svelte";
 	import { debounce } from "$lib/ui";
 	import client from "$lib/api";
-	import type { components } from "$lib/schema";
+	import { base } from "$app/paths";
 
     let { data, form }: PageProps = $props();
 
@@ -54,15 +53,6 @@
         }});
     }
 
-    async function update_work(el: HTMLElement, work: components['schemas']['WorkSchema']) {
-        if (work) {
-            await client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
-                update_work: [[+el.closest('tr')!.dataset.ridx!, work.id!]],
-                update_description: [], move: [], delete: [], insert_at: []
-            }});
-        }
-    }
-
     async function delete_item(el) {
         const i = +el.target.closest('tr')!.dataset.ridx!;
         const { error } = await client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
@@ -93,7 +83,8 @@
     <table><tbody>
         {#each entries as entry, i (entry.ui_id)}
         <tr ondragenter={debounce(dragenter, 50)} data-idx={entry.ui_id} data-ridx={i}><th>{i+1}</th><td><div class="pl-5 pr-5 border select-none" draggable="true" {ondragstart} {ondragend} role="none">=</div></td><td>
-            <WorkField value={entry.work} oninput={update_work}/>
+            <a target="_blank" href="{base}/work/{entry.work.id}"><img class="w-56" src={entry.work.thumbnail} alt={entry.work.title}></a>
+            <h3><a target="_blank" href="{base}/work/{entry.work.id}">{entry.work.title}</a></h3>
         </td><td><textarea value={entry.description} oninput={debounce(update_description)}></textarea></td><td><button type="button" onclick={delete_item}>Remove</button></td></tr>
         {/each}
     </tbody></table>

@@ -16,6 +16,7 @@ import Section from "../../Section.svelte";
     <p class="whitespace-pre-wrap">{data.list.description}</p>
     {#if data.list?.author.username == data.user?.username }
     <a href="{base}/list/{data.list.id}/edit">Edit this list...</a>
+    <a href="{base}/list/{data.list.id}/delete" data-sveltekit-preload-data="tap">Delete this list...</a>
     {/if}
 </Section>
 <Section title="Entries">

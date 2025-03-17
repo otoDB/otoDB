@@ -76,7 +76,6 @@
     </form>
 </Section>
 <Section title="Entries">
-    {JSON.stringify(entries.map(e=>e.work.title))}
     <table><tbody>
         {#each entries as entry, i (entry.ui_id)}
         <tr ondragenter={debounce(dragenter, 50)} data-ridx={i}><th>{i+1}</th><td><div class="pl-5 pr-5 border select-none" draggable="true" {ondragstart} {ondragend} role="none">=</div></td><td>

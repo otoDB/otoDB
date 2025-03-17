@@ -13,37 +13,33 @@
     
     let entries_copy = entries; // not $state on purpose
 
-    let source: HTMLElement | null = $state(null), target: HTMLElement | null = $state(null);
+    let source: number | null = null, target: number | null = null;
 
     function dragenter(e) {
-        target = e.target;
-
-        const tgt = e.target!.closest('tr'),
-            src = source?.closest('tr');
-
-        if (src && tgt) {
-            entries = entries_copy;
-            const from = entries.findIndex(e => e.ui_id === +src.dataset.idx!), to = Array.from(tgt.parentNode.children).indexOf(tgt);
-            entries.splice(to, 0, entries.splice(from, 1)[0]);
+        target = e.target.closest('tr').dataset.ridx;
+        if (source && target) {
+            entries = [...entries_copy];
+            if (source != target) {
+                entries.splice(target, 0, entries.splice(source, 1)[0]);
+            }
         }
     }
     
     function ondragstart(e) {
-        source = e.target;
+        source = e.target.closest('tr').dataset.ridx;
         e.dataTransfer!.effectAllowed = 'move';
     }
 
     async function ondragend(e) {
-        const src = source?.closest('tr');
-        // FIXME this seems slow and unnecessary?
-        const from = entries_copy.findIndex(e => e.ui_id === +src.dataset.idx!), to = entries.findIndex(e => e.ui_id === +src.dataset.idx!);
-        await client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
-            move: [[from, to]],
-            delete: [], insert_at: [], update_description: [], update_work: []
-        }});
-        source = null;
-        target = null;
-        entries_copy = entries;
+        if (source && target && source != target) {
+            await client.PUT('/api/list/items', { fetch, params: { query: { list_id: data.list.id! } }, body: {
+                move: [[source, target]],
+                delete: [], insert_at: [], update_description: [], update_work: []
+            }});
+            source = null;
+            target = null;
+            entries_copy = [...entries];
+        }
     }
 
     async function update_description(el) {
@@ -80,9 +76,10 @@
     </form>
 </Section>
 <Section title="Entries">
+    {JSON.stringify(entries.map(e=>e.work.title))}
     <table><tbody>
         {#each entries as entry, i (entry.ui_id)}
-        <tr ondragenter={debounce(dragenter, 50)} data-idx={entry.ui_id} data-ridx={i}><th>{i+1}</th><td><div class="pl-5 pr-5 border select-none" draggable="true" {ondragstart} {ondragend} role="none">=</div></td><td>
+        <tr ondragenter={debounce(dragenter, 50)} data-ridx={i}><th>{i+1}</th><td><div class="pl-5 pr-5 border select-none" draggable="true" {ondragstart} {ondragend} role="none">=</div></td><td>
             <a target="_blank" href="{base}/work/{entry.work.id}"><img class="w-56" src={entry.work.thumbnail} alt={entry.work.title}></a>
             <h3><a target="_blank" href="{base}/work/{entry.work.id}">{entry.work.title}</a></h3>
         </td><td><textarea value={entry.description} oninput={debounce(update_description)}></textarea></td><td><button type="button" onclick={delete_item}>Remove</button></td></tr>

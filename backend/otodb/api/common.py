@@ -14,7 +14,7 @@ class Error(Schema):
 class ProfileSchema(ModelSchema):
     class Meta:
         model = Account
-        fields = ['username', 'email', 'level', 'date_created']
+        fields = ['id', 'username', 'level', 'date_created']
 
 class SongSchema(ModelSchema):
     class Meta:
@@ -27,7 +27,7 @@ class TagWorkSchema(ModelSchema):
     song: Optional[SongSchema] = Field(None, alias='get_song')
     class Meta:
         model = TagWork
-        fields = ['name', 'slug', 'category']
+        fields = ['id', 'name', 'slug', 'category']
 
     @field_validator("aliases", mode="before", check_fields=False)
     @classmethod

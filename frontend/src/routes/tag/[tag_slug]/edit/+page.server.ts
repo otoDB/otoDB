@@ -55,5 +55,6 @@ export const actions = {
             tag_slug: params.tag_slug!,
             md: data.get('md') as string
         }}});
+        redirect(303, `${base}/tag/${params.tag_slug}`);
     }
 } satisfies Actions;

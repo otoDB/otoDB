@@ -5,9 +5,12 @@
 	import { enhance } from "$app/forms";
 	import type { PageProps } from "./$types";
 	import WorkTagField from "$lib/WorkTagField.svelte";
+    import Markdown from "svelte-exmarkdown";
 
     let { data, form }: PageProps = $props();
+    
     let category = $state(form?.category ?? data.tag?.category);
+    let md = $state(data.wiki_page);
 </script>
 
 <svelte:head>
@@ -52,7 +55,12 @@
 
 <Section title="Wiki page">
 <form action="?/wiki_page" method="POST" use:enhance>
-    <textarea required name="md" class="block w-full" value={data.wiki_page ?? ''}></textarea>
+    <div class="grid grid-cols-2 gap-3">
+        <textarea required name="md" bind:value={md}></textarea>
+        <div id="md-preview">
+            <Markdown {md}/>
+        </div>
+    </div>
     <input type="submit"/>
 </form>
 </Section>

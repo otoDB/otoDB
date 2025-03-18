@@ -1,6 +1,5 @@
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.middleware.csrf import get_token
 from django.contrib.auth import authenticate, login, logout
 from ninja import Schema, Router
 from ninja.security import django_auth

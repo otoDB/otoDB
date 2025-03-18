@@ -9,7 +9,8 @@
 
     let tags = $state([]), selected = $state('');
 
-    const submit = async () => {
+    const submit = async (e: SubmitEvent) => {
+        e.preventDefault();
         const { error } = await client.POST('/api/tag/alias', { fetch, params: { query: { into_tag: selected } }, body: tags});
         if (!error)
             goto(`${base}/tag/${selected}`);

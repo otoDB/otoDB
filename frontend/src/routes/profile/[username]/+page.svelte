@@ -19,5 +19,5 @@
 </Section>
 
 <Section title={m.same_broad_haddock_pinch()}>
-    <CommentTree comments={data.comments}/>
+    <CommentTree comments={data.comments} user={data.user ?? null} model="account" pk={data.profile.id!}/>
 </Section>

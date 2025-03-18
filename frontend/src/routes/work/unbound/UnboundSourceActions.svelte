@@ -20,12 +20,14 @@
     let reason = $state(''),
         menu = $state('new'),
         candidate = $state(-1);
-    const accept = async () => {
+    const accept = async (e: SubmitEvent) => {
+        e.preventDefault();
         const { error, data: w  } = await client.POST('/api/work/assign_source', { params: { query: { source_id: source.id, work_id: candidate } } });
         if (w)
             goto(`${base}/work/${w}`)
     },
-    reject = async () => {
+    reject = async (e: SubmitEvent) => {
+        e.preventDefault();
         const { error } = await client.POST('/api/work/reject_source', { params: { query: { source_id: source.id, reason: reason} } });
         invalidateAll();
     };

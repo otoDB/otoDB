@@ -37,8 +37,7 @@ export const commentClient = {
                 comments.filter(e => !e.is_removed).map(({is_removed, permalink, user_avatar, user_url, allow_reply, submit_date, ...keep}) => ({time: new Date((+submit_date) * 1000), ...keep})),
                 e => e.level
             )).toSorted((a,b)=>b[0]-a[0]).map(v => v[1]);
-            let grouped_by_parent = keep.map(v => Object.groupBy(v, c => c.parent_id));
-            keep.slice(1).forEach((_, i) => keep[i + 1] = keep[i + 1].map(c => ({...c, children: grouped_by_parent[i][c.id] ?? []})));
+            keep.slice(1).forEach((_, i) => keep[i + 1] = keep[i + 1].map(c => ({...c, children: keep[i]?.filter(e => e.parent_id === c.id) ?? []})));
             return keep.at(-1);
         }
     },

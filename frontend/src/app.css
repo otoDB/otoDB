@@ -79,3 +79,12 @@ ins {
 del {
 	background-color: var(--otodb-del);
 }
+
+@layer base {
+	ul {
+		@apply list-inside list-disc;
+	}
+	ol {
+		@apply list-inside list-decimal;
+	}
+}

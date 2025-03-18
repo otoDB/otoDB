@@ -15,7 +15,7 @@
 
 <header>
 	<nav>
-		<ul>
+		<ul class="list-none">
 			{@render link('/', m.fine_late_chicken_quiz())}
 			{@render link('/work/random', 'Random work')}
 			<li>

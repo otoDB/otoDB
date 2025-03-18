@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django_comments_xtd',
     'django_comments',
+    'rest_framework',
+
     'corsheaders',
 ]
 
@@ -100,8 +102,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'project.wsgi.application'
-# ASGI_APPLICATION = 'project.asgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -151,25 +151,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = "account.Account"
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
-# LANGUAGE_CODE = 'en-us'
-
-# TIME_ZONE = os.environ.get('OTODB_TIME_ZONE', 'UTC')
-
-# USE_I18N = True
-
-# LANGUAGES = [
-#     ("en", _("English")),
-#     ("ja", _("Japanese")),
-#     ("zh", _("Chinese")),
-#     ("kr", _("Korean")),
-# ]
-
-# USE_TZ = True
 
 STORAGES = {
     "default": {
@@ -229,6 +210,8 @@ COMMENTS_XTD_APP_MODEL_OPTIONS = {
         'who_can_post': 'users'
     }
 }
+
+COMMENTS_XTD_API_DATETIME_FORMAT = "U"
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [

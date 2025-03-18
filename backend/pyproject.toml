@@ -21,6 +21,7 @@ dependencies = [
     "django-markdownfield>=0.11.0",
     "django-debug-toolbar>=5.0.1",
     "django-ordered-model>=3.7.4",
+    "djangorestframework>=3.15.2",
 ]
 
 [tool.ruff]

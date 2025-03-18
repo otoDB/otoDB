@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { base } from "$app/paths";
-import Section from "../../Section.svelte";
+    import Section from "$lib/Section.svelte";
 	import type { PageProps } from "./$types";
     import { m } from '$lib/paraglide/messages.js';
+    import CommentTree from "$lib/CommentTree.svelte";
 
     let { data }: PageProps = $props();
 </script>
@@ -35,5 +36,5 @@ import Section from "../../Section.svelte";
 </Section>
 
 <Section title={m.same_broad_haddock_pinch()}>
-    include 'comments.html' with object=view_user
+    <CommentTree comments={data.comments}/>
 </Section>

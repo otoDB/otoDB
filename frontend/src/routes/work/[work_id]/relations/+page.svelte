@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Section from "../../../Section.svelte";
+	import Section from "$lib/Section.svelte";
     import { m } from '$lib/paraglide/messages.js';
     
     let { data } = $props();

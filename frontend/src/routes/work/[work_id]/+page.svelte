@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Section from "../../Section.svelte";
+	import Section from "$lib/Section.svelte";
 	import CollapsibleText from "./CollapsibleText.svelte";
     import { m } from '$lib/paraglide/messages.js';
 	import { Platform, Rating, WorkOrigin, WorkStatus } from '$lib/enums';
@@ -7,6 +7,7 @@
 	import client from "$lib/api";
 	import type { components } from "$lib/schema";
 	import RefreshButton from "../RefreshButton.svelte";
+	import CommentTree from "$lib/CommentTree.svelte";
     
     let { data } = $props();
 
@@ -111,7 +112,7 @@
     </table>
 </Section>
 <Section title={m.same_broad_haddock_pinch()}>
-     include 'comments.html' with object=work 
+    <CommentTree comments={data.comments}/>
 </Section>
 
 <style>

@@ -1,4 +1,4 @@
-import client from "$lib/api";
+import client, { commentClient } from "$lib/api";
 import type { PageServerLoad } from "./$types";
 
 
@@ -9,8 +9,11 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         }
     }, fetch });
 
+    const comments = await commentClient.GET('mediawork', +params.work_id, fetch);
+
     return {
-        sources: data 
+        sources: data,
+        comments  
     };
 };
 

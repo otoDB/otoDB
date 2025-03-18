@@ -5,10 +5,9 @@ import { browser } from "$app/environment";
 import type { Cookies } from "@sveltejs/kit";
 import setCookie from "set-cookie-parser";
 
-const client = createClient<paths>({ baseUrl: 
-   browser ? PUBLIC_BACKEND_URL_EXTERNAL : PUBLIC_BACKEND_URL_INTERNAL,
-   credentials: 'include'
-});
+const backend = browser ? PUBLIC_BACKEND_URL_EXTERNAL : PUBLIC_BACKEND_URL_INTERNAL;
+
+const client = createClient<paths>({ baseUrl: backend, credentials: 'include' });
 export default client;
 
 export const setToken = (token: string) => {
@@ -24,4 +23,31 @@ export const setToken = (token: string) => {
 export const forwardCookies = (cookies: Cookies, response: Response) => {
     for (const { name, value, expires, maxAge, sameSite } of setCookie.parse(response.headers.getSetCookie()))
         cookies.set(name, value, {path: '/', expires, maxAge, sameSite});
+};
+
+type CommentModels = 'mediawork' | 'account' | 'pool' | 'tagwork';
+
+export const commentClient = {
+    GET: async (model: CommentModels, pk: number, fetch, opts?) => {
+        const comments = await (await fetch(`${backend}comments/api/${model === 'account' ? 'account-account' : `otodb-${model}`}/${pk}/`, { ...opts, method: 'GET' })).json();
+        if (comments.length === 0)
+            return [];
+        else {
+            let keep = Object.entries(Object.groupBy(
+                comments.filter(e => !e.is_removed).map(({is_removed, permalink, user_avatar, user_url, allow_reply, submit_date, ...keep}) => ({time: new Date((+submit_date) * 1000), ...keep})),
+                e => e.level
+            )).toSorted((a,b)=>b[0]-a[0]).map(v => v[1]);
+            let grouped_by_parent = keep.map(v => Object.groupBy(v, c => c.parent_id));
+            keep.slice(1).forEach((_, i) => keep[i + 1] = keep[i + 1].map(c => ({...c, children: grouped_by_parent[i][c.id] ?? []})));
+            return keep.at(-1);
+        }
+    },
+    POST: async (model: CommentModels, pk: number, comment: string, fetch, opts?) => (await fetch(`${backend}comments/api/comment/`, { ...opts, method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            content_type: model === 'account' ? 'otodb.account.account' : `otodb.${model}`,
+            object_pk: pk.toString(),
+            comment,
+        })
+    })).json()
 };

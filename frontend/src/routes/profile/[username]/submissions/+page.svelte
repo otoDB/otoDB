@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { base } from "$app/paths";
-	import Section from "../../../Section.svelte";
+	import Section from "$lib/Section.svelte";
 	import type { PageProps } from "./$types";
     import { m } from '$lib/paraglide/messages.js';
 	import { Platform, WorkOrigin, WorkStatus } from "$lib/enums";

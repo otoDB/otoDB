@@ -1,8 +1,9 @@
 <script lang="ts">
-	import Section from "../../Section.svelte";
+	import Section from "$lib/Section.svelte";
     import { m } from '$lib/paraglide/messages.js';
     import { WorkTagCategory } from "$lib/enums";
     import WorkCard from "$lib/WorkCard.svelte";
+	import CommentTree from "$lib/CommentTree.svelte";
 
     let { data } = $props();
 </script>
@@ -70,5 +71,5 @@
 </Section>
 
 <Section title={m.same_broad_haddock_pinch()}>
-    include 'comments.html' with object=tag 
+    <CommentTree comments={data.comments}/>
 </Section>

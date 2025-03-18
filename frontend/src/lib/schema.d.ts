@@ -678,6 +678,8 @@ export interface components {
             /** Children */
             children: components["schemas"]["TagWorkSchema"][];
             song?: components["schemas"]["SongSchema"] | null;
+            /** ID */
+            id?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -765,10 +767,10 @@ export interface components {
         };
         /** ProfileSchema */
         ProfileSchema: {
+            /** ID */
+            id?: number | null;
             /** Username */
             username: string;
-            /** Email Address */
-            email: string;
             /**
              * Level
              * @default 20

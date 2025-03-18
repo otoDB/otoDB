@@ -2,7 +2,7 @@
 	import { setLocale } from '$lib/paraglide/runtime';
 	import { m } from '$lib/paraglide/messages.js';
 	
-	import Section from './Section.svelte';
+	import Section from '$lib/Section.svelte';
 	import { base } from '$app/paths';
 
     let { data } = $props();

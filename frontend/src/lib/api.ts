@@ -25,7 +25,7 @@ export const forwardCookies = (cookies: Cookies, response: Response) => {
         cookies.set(name, value, {path: '/', expires, maxAge, sameSite});
 };
 
-type CommentModels = 'mediawork' | 'account' | 'pool' | 'tagwork';
+export type CommentModels = 'mediawork' | 'account' | 'pool' | 'tagwork';
 
 export const commentClient = {
     GET: async (model: CommentModels, pk: number, fetch, opts?) => {
@@ -41,12 +41,14 @@ export const commentClient = {
             return keep.at(-1);
         }
     },
-    POST: async (model: CommentModels, pk: number, comment: string, fetch, opts?) => (await fetch(`${backend}comments/api/comment/`, { ...opts, method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    POST: async (model: CommentModels, pk: number, comment: string, reply_to: number, user, fetch, opts?) => (await fetch(`${backend}comments/api/comment/`, { ...opts, method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': user.csrf },
         body: new URLSearchParams({
             content_type: model === 'account' ? 'otodb.account.account' : `otodb.${model}`,
             object_pk: pk.toString(),
-            comment,
-        })
+            comment, reply_to: reply_to.toString(),
+            name: '', email: 'a@a.co' // will be discarded
+        }),
+        credentials: 'include'
     })).json()
 };

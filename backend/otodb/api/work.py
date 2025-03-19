@@ -11,7 +11,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info
-from otodb.models import MediaWork, WorkRelation, WorkSource
+from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote
 from otodb.models.enums import Platform
 
 from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_moderator

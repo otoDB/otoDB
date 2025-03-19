@@ -32,7 +32,7 @@
     });
 
     const updateValue = () => {
-        value = textarea.value.split(' ').filter(char => char !== ' ' && char !== '');
+        value = [...new Set(textarea.value.split(' ').map(s => s.trim()).filter(str => str.length !== 0))];
     };
 </script>
 

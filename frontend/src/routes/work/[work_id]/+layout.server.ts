@@ -18,6 +18,7 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
     return {
         links: [
             { pathname: `work/${params.work_id}`, title: m.grand_merry_fly_succeed() + " " + params.work_id },
+            { pathname: `work/${params.work_id}/tags`, title: m.empty_legal_chicken_taste() },
             { pathname: `work/${params.work_id}/relations`, title: m.alive_these_jay_pick() },
             { pathname: `work/${params.work_id}/edit`, title: m.minor_crisp_cobra_list() }
         ],

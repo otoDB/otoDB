@@ -37,8 +37,6 @@ class TagWorkInstance(models.Model):
     work = models.ForeignKey("MediaWork", on_delete=models.CASCADE)
     work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 
-    mean_score = models.FloatField(null=False, blank=False, default=0.0)
-
     song_used_as_source = models.BooleanField(null=False, default=False)
     instance_imported_from_source = models.BooleanField(null=False, default=False)
 
@@ -48,6 +46,16 @@ class TagWorkVote(models.Model):
     score = models.FloatField(null=False, blank=False)
 
     tag_instance = models.ForeignKey(TagWorkInstance, on_delete=models.CASCADE, null=True)
+    
+    class Meta:
+        unique_together = (("user", "tag_instance"),)
+        constraints = [
+            models.CheckConstraint(
+                name="tagwork_vote_in_pn_1",
+                check=models.Q(score__gte=-1, score__lte=1),
+                violation_error_message="TagWork vote score must be in [-1, 1]",
+            ),
+        ]
 
 class MediaWork(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)

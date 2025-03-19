@@ -1,6 +1,13 @@
 import { base } from "$app/paths";
 import client from "$lib/api";
 import { fail, redirect, type Actions } from "@sveltejs/kit";
+import type { PageServerLoad } from "./$types";
+import { UserLevel } from "$lib/enums";
+
+export const load: PageServerLoad = async ({ locals }) => {
+    if (!locals.user || locals.user.level < UserLevel.MEMBER)
+        redirect(303, `${base}/login`);
+};
 
 export const actions = {
     default: async ({ request, fetch }) => {

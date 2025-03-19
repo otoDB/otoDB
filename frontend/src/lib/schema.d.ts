@@ -141,6 +141,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/tag_scores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Tag Scores */
+        get: operations["otodb_api_work_get_tag_scores"];
+        /** Vote Tags */
+        put: operations["otodb_api_work_vote_tags"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/random": {
         parameters: {
             query?: never;
@@ -742,6 +760,24 @@ export interface components {
              */
             rating: number;
         };
+        /** TagWorkInstanceSchema */
+        TagWorkInstanceSchema: {
+            /** Tag Slug */
+            tag_slug: string;
+            /** N Votes */
+            n_votes: number;
+            /** Score */
+            score: number;
+            /** User Score */
+            user_score: number | null;
+        };
+        /** TagWorkVoteSchema */
+        TagWorkVoteSchema: {
+            /** Tag Slug */
+            tag_slug: string;
+            /** Score */
+            score: number;
+        };
         /** IDSchema */
         IDSchema: {
             /** Id */
@@ -902,13 +938,6 @@ export interface components {
             /** Count */
             count: number;
         };
-        /** ListItemInSchema */
-        ListItemInSchema: {
-            /** Work Id */
-            work_id: number;
-            /** Description */
-            description?: string | null;
-        };
         /** ListUpdateSchema */
         ListUpdateSchema: {
             /**
@@ -940,14 +969,6 @@ export interface components {
              * @default []
              */
             delete: number[];
-            /**
-             * Insert At
-             * @default []
-             */
-            insert_at: [
-                number,
-                components["schemas"]["ListItemInSchema"]
-            ][];
         };
         /** PagedTagWorkSchema */
         PagedTagWorkSchema: {
@@ -1203,6 +1224,52 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["WorkEditSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_get_tag_scores: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagWorkInstanceSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_work_vote_tags: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagWorkVoteSchema"][];
             };
         };
         responses: {

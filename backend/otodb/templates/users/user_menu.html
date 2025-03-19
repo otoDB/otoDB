@@ -1,6 +1,0 @@
-<menu class="right">
-	{% url 'otodb:login' as l_url %}
-	{% url 'otodb:register' as r_url %}
-	<a href="{{ l_url }}" {% if request.path == l_url %}class="current"{% endif %}>Login</a>
-	<a href="{{ r_url }}" {% if request.path == r_url %}class="current"{% endif %}>Register</a>
-</menu>

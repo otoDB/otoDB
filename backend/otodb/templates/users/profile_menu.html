@@ -1,6 +1,0 @@
-<menu class="right">
-	{% url 'otodb:profile' view_user.id as u_url %}
-	{% url 'otodb:profile_lists' view_user.id as ul_url %}
-	<a href="{{ u_url }}" {% if request.path == u_url %}class="current"{% endif %}>User {{ view_user.id }}</a>
-	<a href="{{ ul_url }}" {% if request.path == ul_url %}class="current"{% endif %}>Lists</a>
-</menu>

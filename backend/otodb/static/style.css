@@ -4,8 +4,6 @@
 	--otodb-faint-bg: color-mix(in hsl, var(--otodb-bg-color) 90%, var(--otodb-content-color));
 	--otodb-fainter-bg: color-mix(in hsl, var(--otodb-bg-color) 80%, var(--otodb-content-color));
 	--otodb-faint-content: color-mix(in hsl, var(--otodb-bg-color) 12.5%, var(--otodb-content-color));
-	--otodb-ins: color-mix(in hsl, var(--otodb-faint-bg) 35%, green);
-	--otodb-del: color-mix(in hsl, var(--otodb-faint-bg) 35%, red);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -50,25 +48,6 @@ body::after {
 	left: 10rem;
 	font-style: italic;
 	font-family: mono;
-}
-
-nav {
-	display: flex;
-	flex-direction: column;
-	padding: 2rem 1rem;
-	gap: 1rem;
-	background-color: var(--otodb-faint-bg);;
-	border: 1px solid var(--otodb-faint-content);
-	max-width: 8rem;
-}
-
-nav > form {
-	width: 100%;
-	display: flex;
-}
-
-nav > form > input {
-	max-width: 4rem;
 }
 
 main {
@@ -132,24 +111,4 @@ tbody > tr:nth-of-type(odd) {
 input[type="submit"], input[type="button"], select, button {
     border: 1px solid white;
     outline: none;
-}
-
-.query-results:empty {
-	display: none;
-}
-
-.query-results {
-	position: absolute;
-	background-color: var(--otodb-fainter-bg);
-	border: 1px var(--otodb-faint-content) solid;
-	max-height: 15rem;
-	overflow-y: scroll;
-}
-
-ins {
-	background-color: var(--otodb-ins);
-}
-
-del {
-	background-color: var(--otodb-del);
 }

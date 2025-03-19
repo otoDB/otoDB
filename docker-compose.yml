@@ -18,7 +18,7 @@ services:
     command: >
       sh -c "python _setup.py &&
       python manage.py collectstatic --noinput &&
-      python manage.py runserver 0.0.0.0:8000"
+      granian --interface wsgi project.wsgi:application --host 0.0.0.0"
     ports:
       - "${HOST_PORT:-8000}:8000"
     env_file:

@@ -1,12 +1,11 @@
-import { base } from "$app/paths";
 import client from "$lib/api";
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { UserLevel } from "$lib/enums";
+import userLevelGuard from "$lib/route_guard";
 
-export const load: PageServerLoad = async ({ params, fetch, locals }) => {
-    if (!locals.user || locals.user.level < UserLevel.MEMBER)
-        redirect(303, `${base}/login`);
+export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
+    userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
 
     const { data } = await client.GET('/api/work/sources', { params: {
         query: {
@@ -42,6 +41,6 @@ export const actions = {
 
         if (error)
             return fail(400, { title, description, rating, thumbnail, reason, failed: true });
-        redirect(303, `${base}/work/${params.work_id}`);
+        redirect(303, `/work/${params.work_id}`);
     }
 } satisfies Actions;

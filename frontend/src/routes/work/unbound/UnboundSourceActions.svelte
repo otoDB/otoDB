@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto, invalidateAll } from "$app/navigation";
-	import { base } from "$app/paths";
 	import client from "$lib/api";
 	import type { components } from "$lib/schema";
 	import WorkCard from "$lib/WorkCard.svelte";
@@ -24,7 +23,7 @@
         e.preventDefault();
         const { error, data: w  } = await client.POST('/api/work/assign_source', { params: { query: { source_id: source.id, work_id: candidate } } });
         if (w)
-            goto(`${base}/work/${w}`)
+            goto(`/work/${w}`)
     },
     reject = async (e: SubmitEvent) => {
         e.preventDefault();

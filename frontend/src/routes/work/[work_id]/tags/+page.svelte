@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto, invalidateAll } from "$app/navigation";
-	import { base } from "$app/paths";
 	import client from "$lib/api.js";
 	import { m } from "$lib/paraglide/messages";
 	import Section from "$lib/Section.svelte";
@@ -19,10 +18,8 @@
         tag.user_score = new_vote;
 
         const original_tag = data.tags.find(t => t.slug === tag.slug)!;
-        if (original_tag && original_tag.user_score !== null) {
+        if (original_tag && original_tag.user_score !== null)
             tag.score = original_tag.score - original_tag.user_score / original_tag.n_votes + new_vote / original_tag.n_votes;
-            console.log(original_tag.user_score)
-        }
         else {
             tag.score = (original_tag.score * original_tag.n_votes + new_vote) / (original_tag.n_votes + 1);
             original_tag.n_votes++;
@@ -36,7 +33,7 @@
     const submit_new_tags = async (e: SubmitEvent) => {
         e.preventDefault();
         await client.PUT('/api/work/tag_scores', { fetch, params: { query: { work_id: +data.id! }}, body: new_tags.map(t => ({ tag_slug: t, score: 1 }))});
-        goto(`${base}/work/${data.id}`, { invalidateAll: true });
+        goto(`/work/${data.id}`, { invalidateAll: true });
     };
 </script>
 

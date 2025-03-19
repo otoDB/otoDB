@@ -5,7 +5,6 @@
 	import WorkTagsField from "$lib/WorkTagsField.svelte";
 	import client from "$lib/api";
 	import { goto } from "$app/navigation";
-	import { base } from "$app/paths";
 
     let tags = $state([]), selected = $state('');
 
@@ -13,7 +12,7 @@
         e.preventDefault();
         const { error } = await client.POST('/api/tag/alias', { fetch, params: { query: { into_tag: selected } }, body: tags});
         if (!error)
-            goto(`${base}/tag/${selected}`);
+            goto(`/tag/${selected}`);
     };
 </script>
 

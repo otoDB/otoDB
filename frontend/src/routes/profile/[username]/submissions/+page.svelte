@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { base } from "$app/paths";
 	import Section from "$lib/Section.svelte";
 	import type { PageProps } from "./$types";
     import { m } from '$lib/paraglide/messages.js';
@@ -16,7 +15,7 @@
 <Section title={m.mild_loud_shad_enchant({ type: m.fuzzy_crazy_cobra_lead(), name: data.profile.username})}
   menuLinks={data.links}>
 {#if data.user?.username === data.profile.username}
-<a href="{base}/work/add">Add a work...</a>
+<a href="/work/add">Add a work...</a>
 {/if}
 
 <h2>Pending</h2>
@@ -101,7 +100,7 @@
     <tbody>
         {#each data.approved as src}
         <tr>
-            <td class="whitespace-nowrap"><a href="{base}/work/{src.media}">{src.title}</a></td>
+            <td class="whitespace-nowrap"><a href="/work/{src.media}">{src.title}</a></td>
             <td>{Platform[src.platform]}</td><td>{src.published_date}</td>
             <td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td>
             <td class="whitespace-nowrap"><a href={src.url} target="_blank" rel="noopener noreferrer">{m.noisy_moving_newt_belong()}</a></td>

@@ -3,7 +3,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 	
 	import Section from '$lib/Section.svelte';
-	import { base } from '$app/paths';
 
     let { data } = $props();
 </script>
@@ -29,7 +28,7 @@
 	</p>
 
 	<div>
-		<h2>Random work: <a href="{base}/work/{data.work.data.id}">{data.work.data.title}</a> </h2><img style="width:25rem;" src={data.work.data.thumbnail} alt={data.work.data.title}/>
+		<h2>Random work: <a href="/work/{data.work.data.id}">{data.work.data.title}</a> </h2><img style="width:25rem;" src={data.work.data.thumbnail} alt={data.work.data.title}/>
 	</div>
 </Section>
 

@@ -3,7 +3,6 @@
 	import type { PageProps } from "./$types";
     import { m } from '$lib/paraglide/messages.js';
 	import { Platform, WorkOrigin } from "$lib/enums";
-	import { base } from "$app/paths";
 	import UnboundSourceActions from "./UnboundSourceActions.svelte";
 	import RefreshButton from "../RefreshButton.svelte";
 
@@ -20,7 +19,7 @@
     <li>
         <span>
             <h3><a href="{src.url}" target="_blank" rel="noopener noreferrer">{src.title}</a></h3>
-            <h4>Requested by: <a href="{base}/profile/{src.added_by.username}">{src.added_by.username}</a></h4>
+            <h4>Requested by: <a href="/profile/{src.added_by.username}">{src.added_by.username}</a></h4>
             <h4>{Platform[src.platform]} {src.published_date}</h4>
             <h4>Claimed origin: {WorkOrigin[src.work_origin]()}</h4>
             <RefreshButton source={src}/>

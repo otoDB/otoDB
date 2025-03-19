@@ -1,12 +1,11 @@
 import { error, fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import client from "$lib/api";
-import { base } from "$app/paths";
 import { UserLevel } from "$lib/enums";
+import userLevelGuard from "$lib/route_guard";
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
-    if (!locals.user || locals.user.level < UserLevel.MEMBER)
-        redirect(303, `${base}/login`);
+    userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
     
     const work = url.searchParams.get('for_work');
     if (work && !isNaN(+work)) {
@@ -39,13 +38,13 @@ export const actions = {
             const { data: final_work_id } = await client.POST('/api/work/assign_source', { fetch, params: { query: {
                 source_id: source_id, work_id: +work
             }}});
-            redirect(303, `${base}/work/${+final_work_id!}`);
+            redirect(303, `/work/${+final_work_id!}`);
         }
         else {
             if (locals.user.level >= UserLevel.MODERATOR)
-                redirect(303, `${base}/work/unbound`);
+                redirect(303, '/work/unbound');
             else
-                redirect(303, `${base}/profile/${locals.user.username}/submissions`);
+                redirect(303, `/profile/${locals.user.username}/submissions`);
         }
     }
 } satisfies Actions;

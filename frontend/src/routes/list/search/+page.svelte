@@ -2,7 +2,7 @@
 	import Section from "$lib/Section.svelte";
 	import type { PageProps } from "./$types";
     import { m } from '$lib/paraglide/messages.js';
-	import { base } from "$app/paths";
+	
 
     let { data }: PageProps = $props();
 </script>
@@ -22,7 +22,7 @@
 
     <ul>
         {#each data.results.items as list}
-        <li><a href="{base}/list/{list.id}">{list.name}</a></li>
+        <li><a href="/list/{list.id}">{list.name}</a></li>
         {/each}
     </ul>
 </Section>

@@ -84,7 +84,6 @@ class Account(AbstractBaseUser):
         return self.level >= self.Levels.OWNER
 
     def has_perm(self, perm, obj=None):
-        # TODO: Implement object-level permissions
         return True
 
     def has_perms(self, perms):

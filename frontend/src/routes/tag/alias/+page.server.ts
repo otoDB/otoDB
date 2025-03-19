@@ -1,9 +1,7 @@
-import { base } from "$app/paths";
-import { redirect } from "@sveltejs/kit";
 import { UserLevel } from "$lib/enums";
 import type { PageServerLoad } from "../../work/unbound/$types";
+import userLevelGuard from "$lib/route_guard";
 
-export const load: PageServerLoad = async ({ locals }) => {
-    if (!locals.user || locals.user.level < UserLevel.MODERATOR)
-        redirect(303, base);
+export const load: PageServerLoad = async ({ locals, url }) => {
+    userLevelGuard(locals.user, UserLevel.MODERATOR, url.pathname);
 };

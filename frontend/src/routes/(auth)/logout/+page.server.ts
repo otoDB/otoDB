@@ -1,11 +1,10 @@
 import client from "$lib/api";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { base } from "$app/paths";
 
 export const load: PageServerLoad = async ({ request, cookies, fetch, locals }) => {
 	if (!locals.user)
-		redirect(303, base);
+		redirect(303, '/');
 
 	const { error } = await client.POST('/api/auth/logout', { fetch });
 
@@ -14,5 +13,5 @@ export const load: PageServerLoad = async ({ request, cookies, fetch, locals }) 
 		cookies.delete('sessionid', {path: '/'});
 	}
 
-	redirect(303, base);
+	redirect(303, '/');
 }

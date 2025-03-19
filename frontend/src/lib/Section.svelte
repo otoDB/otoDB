@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { base } from "$app/paths";
 	import { page } from "$app/state";
     interface Props {
         title: string;
@@ -13,7 +12,7 @@
     <ul>
         {#each menuLinks as {pathname, title}}
         <li aria-current={page.url.pathname.endsWith(encodeURI(pathname))}>
-            <a href="{base}/{pathname}">{title}</a>
+            <a href="/{pathname}">{title}</a>
         </li>
         {/each}
     </ul>

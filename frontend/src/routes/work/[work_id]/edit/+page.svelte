@@ -15,7 +15,11 @@
         rating: number  = $state(form?.rating ?? data.rating!),
         thumbnail: string = $state(form?.thumbnail ?? data.thumbnail!);
 
-    let relations: { swapped: boolean, work: components['schemas']['WorkSchema'], relation: number }[] = $state([]);
+    let relations: { swapped: boolean, work: components['schemas']['WorkSchema'] | null, relation: number }[] = $state(data.relations[0].map(({ A, B, relation }) => ({
+        swapped: A.id === data.id,
+        work: data.relations[1].find(e => e.id === (A.id === data.id ? B.id : A.id)),
+        relation
+    })));
     const delete_relation = (i: number) => async () => {
         await client.DELETE('/api/work/relation', { fetch, params: { query: { A: relations[i].work.id!, B: data.id! }}});
         relations.splice(i, 1);
@@ -97,7 +101,7 @@
     <tr>
         <td>{#if !relation.swapped}<WorkField bind:value={relation.work} oninput={post_relation(i)}/>{:else}This work{/if}</td>
         <td>is a</td>
-        <td><select name="relation" bind:value={relation.relation}>
+        <td><select name="relation" bind:value={relation.relation} onchange={post_relation(i)}>
             {#each WorkRelationTypes as rel, j}
             <option value={j}>{rel()}</option>
             {/each}

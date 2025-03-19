@@ -5,7 +5,6 @@
 	import { enhance } from "$app/forms";
 	import { debounce } from "$lib/ui";
 	import client from "$lib/api";
-	import { base } from "$app/paths";
 
     let { data, form }: PageProps = $props();
 
@@ -79,8 +78,8 @@
     <table><tbody>
         {#each entries as entry, i (entry.ui_id)}
         <tr ondragenter={debounce(dragenter, 50)} data-ridx={i}><th>{i+1}</th><td><div class="pl-5 pr-5 border select-none" draggable="true" {ondragstart} {ondragend} role="none">=</div></td><td>
-            <a target="_blank" href="{base}/work/{entry.work.id}"><img class="w-56" src={entry.work.thumbnail} alt={entry.work.title}></a>
-            <h3><a target="_blank" href="{base}/work/{entry.work.id}">{entry.work.title}</a></h3>
+            <a target="_blank" href="/work/{entry.work.id}"><img class="w-56" src={entry.work.thumbnail} alt={entry.work.title}></a>
+            <h3><a target="_blank" href="/work/{entry.work.id}">{entry.work.title}</a></h3>
         </td><td><textarea value={entry.description} oninput={debounce(update_description)}></textarea></td><td><button type="button" onclick={delete_item}>Remove</button></td></tr>
         {/each}
     </tbody></table>

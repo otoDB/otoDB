@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { base } from '$app/paths';
 	import { m } from '$lib/paraglide/messages.js';
 	import { UserLevel } from '$lib/enums';
 
@@ -8,8 +7,8 @@
 </script>
 
 {#snippet link(pathname: string, title: string)}
-<li aria-current={page.url.pathname === `${base}${pathname}` ? 'page' : undefined}>
-	<a href={`${base}${pathname}`}>{title}</a>
+<li aria-current={page.url.pathname === pathname ? 'page' : undefined}>
+	<a href={pathname}>{title}</a>
 </li>
 {/snippet}
 
@@ -19,7 +18,7 @@
 			{@render link('/', m.fine_late_chicken_quiz())}
 			{@render link('/work/random', 'Random work')}
 			<li>
-				<form target="_self" method="get" action="{base}/work/search">
+				<form target="_self" method="get" action="/work/search">
 					<input type="text" name="query" placeholder="{m.mean_top_antelope_love()}...">
 				</form>
 			</li>
@@ -38,8 +37,8 @@
 			{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
 			{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
 			{@render link(`/profile/${user.username}/submissions`, 'My Submissions')}
-			<li aria-current={page.url.pathname === `${base}/logout` ? 'page' : undefined}>
-				<a href="{base}/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload>{m.best_front_swallow_play()}</a>
+			<li aria-current={page.url.pathname === `/logout` ? 'page' : undefined}>
+				<a href="/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload>{m.best_front_swallow_play()}</a>
 			</li>
 			{/if}
 		</ul>

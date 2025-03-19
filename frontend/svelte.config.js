@@ -8,11 +8,7 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter(),
-		paths: {
-			base: '/staging', // TODO
-			relative:  false
-		}
+		adapter: adapter()
 	},
 };
 

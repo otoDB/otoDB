@@ -1,7 +1,6 @@
 import type { PageServerLoad } from "./$types";
 import client from "$lib/api";
 import { D2 } from '@terrastruct/d2';
-import { base } from "$app/paths";
 import { WorkRelationTypes } from "$lib/enums";
 
 const d2 = new D2();
@@ -39,7 +38,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
     svg = svg.replace(/<!\[CDATA\[.*?]]>/gs, '<![CDATA[.appendix-icon{display:none;}]]>');
 
     for (const work of works)
-        svg = svg.replace(placeholderLink(work.id!), `${base}/work/${work.id}`);
+        svg = svg.replace(placeholderLink(work.id!), `/work/${work.id}`);
 
     return {
         relations_svg: svg

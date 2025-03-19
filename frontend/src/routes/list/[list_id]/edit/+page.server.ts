@@ -1,12 +1,11 @@
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { base } from "$app/paths";
 import client from "$lib/api";
 
 export const load: PageServerLoad = async ({ params, parent }) => {
     const data = await parent();
     if (!data.user || data.list?.author?.username !== data.user?.username)
-        redirect(303, `${base}/list/${params.list_id}`);
+        redirect(303, `/list/${params.list_id}`);
 }
 
 export const actions = {
@@ -21,6 +20,6 @@ export const actions = {
         if (error)
             return fail(400, { name, description, failed: true });
 
-        redirect(303, `${base}/list/${params.list_id}`);
+        redirect(303, `/list/${params.list_id}`);
     }
 } satisfies Actions;

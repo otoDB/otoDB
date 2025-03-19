@@ -18,7 +18,7 @@ def upload_youtube_cookies(request: HttpRequest):
                 for chunk in request.FILES['file'].chunks():
                     destination.write(chunk)
             reset_ydl(settings.YOUTUBE_COOKIES_FILE)
-            return redirect('otodb:index')
+            return redirect('/')
     else:
         form = UploadForm()
 

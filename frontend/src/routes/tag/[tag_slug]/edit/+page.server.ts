@@ -1,12 +1,11 @@
-import { base } from "$app/paths";
 import client from "$lib/api";
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { UserLevel } from "$lib/enums";
+import userLevelGuard from "$lib/route_guard";
 
-export const load: PageServerLoad = async ({ params, fetch, locals }) => {
-    if (!locals.user || locals.user.level < UserLevel.MEMBER)
-        redirect(303, `${base}/login`);
+export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
+    userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
 
     const [{ data: wiki_page }, { data: details }] = await Promise.all([client.GET('/api/tag/wiki_page', { fetch, params: { query: {
         tag_slug: params.tag_slug
@@ -46,7 +45,7 @@ export const actions = {
                 title, author, bpm: +bpm
             }});
         }
-        redirect(303, `${base}/tag/${params.tag_slug}`);
+        redirect(303, `/tag/${params.tag_slug}`);
     },
     delete_song: async ({ request, fetch, params }) => {
         await client.DELETE('/api/tag/song', { fetch, params: { query: {
@@ -59,6 +58,6 @@ export const actions = {
             tag_slug: params.tag_slug!,
             md: data.get('md') as string
         }}});
-        redirect(303, `${base}/tag/${params.tag_slug}`);
+        redirect(303, `/tag/${params.tag_slug}`);
     }
 } satisfies Actions;

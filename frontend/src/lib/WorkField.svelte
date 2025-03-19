@@ -3,7 +3,6 @@
 	import client from "./api";
 	import type { components } from "./schema";
 	import { clickOutside, debounce } from "./ui";
-	import { base } from "$app/paths";
 
     let self: HTMLElement;
 
@@ -39,7 +38,7 @@
     <input type="number" hidden value={value?.id ?? -1} {...props}>
     {#if locked_in}
     <button type="button" onclick={() => { value = null; locked_in = false; if (oninput) oninput(self, null); }}>Change</button>
-    <a target="_blank" href="{base}/work/{value?.id}"><img class="w-56" src={value?.thumbnail} alt={value?.title}></a>
+    <a target="_blank" href="/work/{value?.id}"><img class="w-56" src={value?.thumbnail} alt={value?.title}></a>
     {/if}
     <ul class="absolute" use:clickOutside onOutclick={() => { suggestions = []; }}>
         {#each suggestions as v}

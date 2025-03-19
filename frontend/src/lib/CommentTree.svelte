@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { base } from '$app/paths';
 	import { commentClient, type CommentModels } from './api';
 
     interface Props {
@@ -31,7 +30,7 @@
 
 {#snippet comment(data, this_component)}
 <div class="comment">
-    <h4><a href="{base}/profile/{data.user_name}">{data.user_name}</a> @ {data.time}</h4>
+    <h4><a href="/profile/{data.user_name}">{data.user_name}</a> @ {data.time}</h4>
     <p>{data.comment}</p>
 {#if user}
     <label class="reply">

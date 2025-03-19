@@ -1,12 +1,11 @@
-import { base } from "$app/paths";
 import client from "$lib/api";
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { UserLevel } from "$lib/enums";
+import userLevelGuard from "$lib/route_guard";
 
-export const load: PageServerLoad = async ({ locals }) => {
-    if (!locals.user || locals.user.level < UserLevel.MODERATOR)
-        redirect(303, base);
+export const load: PageServerLoad = async ({ locals, url }) => {
+    userLevelGuard(locals.user, UserLevel.MODERATOR, url.pathname);
 };
 
 export const actions = {
@@ -33,6 +32,6 @@ export const actions = {
         if (error)
             return fail(400);
 
-        redirect(303, `${base}/work/${+A!}`);
+        redirect(303, `/work/${+A!}`);
     }
 } satisfies Actions;

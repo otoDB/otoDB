@@ -1,11 +1,10 @@
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { base } from "$app/paths";
 import client, { forwardCookies } from "$lib/api";
 
 export const load: PageServerLoad = async ({cookies, fetch, locals}) => {
     if (locals.user)
-        redirect(303, base);
+        redirect(303, '/');
 
     const { response } = await client.GET('/api/auth/csrf', { fetch });
     forwardCookies(cookies, response);

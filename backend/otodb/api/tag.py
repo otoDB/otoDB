@@ -96,12 +96,6 @@ def delete_song(request: HttpRequest, tag_slug: str):
     tag.save()
     return
 
-@tag_router.get('wiki_page', auth=django_auth)
-def wiki_page(request: HttpRequest, tag_slug: str):
-    tag = get_object_or_404(TagWork, slug=tag_slug)
-    if tag.wiki_page:
-        return tag.wiki_page.page
-
 @tag_router.post('wiki_page', auth=django_auth)
 @user_is_trusted
 def edit_wiki_page(request: HttpRequest, tag_slug: str, md: str):

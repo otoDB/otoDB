@@ -4,11 +4,11 @@ otodb.net {
 		file_server
 	}
 
-	handle_path /admin* {
+	handle /admin/* {
 		reverse_proxy backend:8000
 	}
 
-	handle_path /api* {
+	handle /api/* {
 		reverse_proxy backend:8000
 	}
 

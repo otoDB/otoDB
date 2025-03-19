@@ -43,7 +43,7 @@ class TagWorkInstanceSchema(Schema):
     score: float
     user_score: int | None
 
-@work_router.get('tag_scores', response=List[TagWorkInstanceSchema])
+@work_router.get('tag_scores', response=List[TagWorkInstanceSchema], auth=django_auth)
 @user_is_trusted
 def get_tag_scores(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
@@ -59,7 +59,7 @@ class TagWorkVoteSchema(Schema):
     tag_slug: str
     score: int
 
-@work_router.put('tag_scores')
+@work_router.put('tag_scores', auth=django_auth)
 @user_is_trusted
 def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchema]):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)

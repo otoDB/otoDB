@@ -2,8 +2,12 @@ import { error, fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import client from "$lib/api";
 import { base } from "$app/paths";
+import { UserLevel } from "$lib/enums";
 
-export const load: PageServerLoad = async ({ fetch, url }) => {
+export const load: PageServerLoad = async ({ fetch, url, locals }) => {
+    if (!locals.user || locals.user.level < UserLevel.MEMBER)
+        redirect(303, `${base}/login`);
+    
     const work = url.searchParams.get('for_work');
     if (work && !isNaN(+work)) {
         const { data, error: e } = await client.GET('/api/work/work', { params: {

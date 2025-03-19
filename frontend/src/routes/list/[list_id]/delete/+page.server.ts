@@ -5,7 +5,7 @@ import client from "$lib/api";
 
 export const load: PageServerLoad = async ({ params, parent, fetch }) => {
     const data = await parent();
-    if (data.list?.author?.username !== data.user?.username)
+    if (!data.user || data.list?.author?.username !== data.user?.username)
         redirect(303, `${base}/list/${params.list_id}`);
     
     if (data.list.id) {

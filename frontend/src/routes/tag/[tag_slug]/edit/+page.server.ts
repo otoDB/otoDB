@@ -2,8 +2,12 @@ import { base } from "$app/paths";
 import client from "$lib/api";
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import { UserLevel } from "$lib/enums";
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, fetch, locals }) => {
+    if (!locals.user || locals.user.level < UserLevel.MEMBER)
+        redirect(303, `${base}/login`);
+
     const [{ data: wiki_page }, { data: details }] = await Promise.all([client.GET('/api/tag/wiki_page', { fetch, params: { query: {
         tag_slug: params.tag_slug
     }}}), client.GET('/api/tag/details', { fetch, params: { query: {

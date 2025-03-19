@@ -94,7 +94,6 @@ class SlimWorkSchema(ModelSchema):
 class WorkRelationSchema(ModelSchema):
     A: IDSchema
     B: IDSchema
-    id: int | None
     class Meta:
         model = WorkRelation
         fields = ['relation']
@@ -107,28 +106,29 @@ def relations(request: HttpRequest, work_id: int):
 
 @work_router.post('relation', auth=django_auth)
 @user_is_trusted
-def create_relation(request: HttpRequest, payload: WorkRelationSchema):
-    rel = WorkRelation.objects.create(A_id=payload.A.id, B_id=payload.B.id, relation=payload.relation)
-    return rel.id
-
-@work_router.put('relation', auth=django_auth)
-@user_is_trusted
-def update_relation(request: HttpRequest, payload: WorkRelationSchema):
-    if payload.id is None:
-        return 400
-    rel = get_object_or_404(WorkRelation, id=payload.id)
-    rel.A = get_object_or_404(MediaWork.active_objects, id=payload.A.id)
-    rel.B = get_object_or_404(MediaWork.active_objects, id=payload.B.id)
-    rel.relation = payload.relation
-    rel.save()
+def relation(request: HttpRequest, payload: WorkRelationSchema):
+    A = MediaWork.active_objects.get(id=payload.A.id)
+    B = MediaWork.active_objects.get(id=payload.B.id)
+    try:
+        rel = WorkRelation.objects.get(A, B)
+        rel.A = A
+        rel.B = B
+        rel.relation = payload.relation
+        rel.save()
+    except WorkRelation.DoesNotExist:
+        rel = WorkRelation.objects.create(A=A, B=B, relation=payload.relation)
     return
 
 @work_router.delete('relation', auth=django_auth)
 @user_is_trusted
-def delete_relation(request: HttpRequest, relation_id: int):
-    rel = get_object_or_404(WorkRelation, id=relation_id)
+def delete_relation(request: HttpRequest, A: int, B: int):
+    A = MediaWork.active_objects.get(id=payload.A.id)
+    B = MediaWork.active_objects.get(id=payload.B.id)
+    rel = WorkRelation.objects.get(A, B)
     rel.delete()
     return
+
+
 
 @work_router.get('sources', response=List[WorkSourceSchema])
 def sources(request: HttpRequest, work_id: int):

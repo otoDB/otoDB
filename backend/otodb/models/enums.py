@@ -47,13 +47,13 @@ class Platform(models.IntegerChoices):
         return None
 
 class WorkRelationTypes(models.IntegerChoices):
-    SEQUEL      = 1, "Sequel"
-    RESPECT     = 2, "Respect"
-    COLLAB_PART = 3, "Collab Part"
-    SAMPLE      = 4, "Sample"
+    SEQUEL      = 0, "Sequel"
+    RESPECT     = 1, "Respect"
+    COLLAB_PART = 2, "Collab Part"
+    SAMPLE      = 3, "Sample"
 
 class SongRelationTypes(models.IntegerChoices):
-    REMIX    = 1, "Remix"
-    REMASTER = 2, "Remaster"
-    MEDLEY   = 3, "Medley"
-    SEQUEL   = 4, "Sequel"
+    REMIX    = 0, "Remix"
+    REMASTER = 1, "Remaster"
+    MEDLEY   = 2, "Medley"
+    SEQUEL   = 3, "Sequel"

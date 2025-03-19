@@ -19,8 +19,8 @@ services:
       sh -c "python _setup.py &&
       python manage.py collectstatic --noinput &&
       granian --interface wsgi project.wsgi:application --host 0.0.0.0"
-    ports:
-      - "${HOST_PORT:-8000}:8000"
+    expose:
+      - "8000"
     env_file:
       - .env
     environment:
@@ -29,6 +29,7 @@ services:
       OTODB_DB_PORT: "5432"
     volumes:
       - ./backend:/app
+      - /mnt/otodb-block/static:/app/static  # Mount to specific location
     working_dir: /app
     depends_on:
       - db
@@ -41,9 +42,29 @@ services:
         OTODB_FRONTEND_DOMAIN: ${OTODB_FRONTEND_DOMAIN}
     environment:
       - OTODB_FRONTEND_DOMAIN=${OTODB_FRONTEND_DOMAIN}
-    ports:
-      - "5173:5173"
+    expose:
+      - "5173"
     restart: always
+
+  caddy:
+    image: caddy:2.9-alpine
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - /mnt/otodb-block/static:/srv/static
+    depends_on:
+      - backend
+      - frontend
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

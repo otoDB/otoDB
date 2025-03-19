@@ -1,0 +1,15 @@
+otodb.net {
+	handle /static/* {
+		root * /srv/static
+		file_server
+	}
+
+	handle_path /staging* {
+		uri strip_prefix /staging
+		reverse_proxy frontend:5173
+	}
+
+	handle /* {
+		reverse_proxy backend:8000
+	}
+}

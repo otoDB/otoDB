@@ -61,12 +61,11 @@ def update(request: HttpRequest, list_id: int, payload: ListInSchema):
     lst.save()
 
 class ListUpdateSchema(Schema):
-    # Diffs applied in this exact order: WorkIDs -> Descriptions -> Moves -> Delete -> Insert
+    # Diffs applied in this exact order: WorkIDs -> Descriptions -> Moves -> Delete
     update_work: List[tuple[int, int]] = []
     update_description: List[tuple[int, str]] = []
     move: List[tuple[int, int]] = [] # [(from, to)]
     delete: List[int] = [] # delete at index
-    insert_at: List[tuple[int, ListItemInSchema]] = [] # insert before index tuple[0]
 
 @list_router.put('items', auth=django_auth)
 def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
@@ -84,10 +83,6 @@ def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
         items.get(order=a).to(b)
 
     items.filter(order__in=payload.delete).delete()
-
-    for i, item in payload.insert_at:
-        item = PoolItem(work_id=item.work_id, description=item.description).create()
-        item.to(i)
 
     return
 

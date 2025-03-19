@@ -21,7 +21,7 @@
     {/if}
 </Section>
 <Section title="Entries">
-    <ol class="list-decimal">
+    <ol class="list-decimal list-outside">
     {#each data.entries.items as entry}
     <li>
         <div style="display: flex; gap: 1rem;align-items:flex-start;">

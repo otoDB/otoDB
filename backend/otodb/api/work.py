@@ -3,7 +3,7 @@ from typing import List
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, Avg, Count
 
 from simple_history.utils import update_change_reason
 
@@ -12,7 +12,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info
-from otodb.models import MediaWork, WorkRelation, WorkSource
+from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote
 from otodb.models.enums import WorkOrigin, Platform
 
 from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_moderator
@@ -37,6 +37,48 @@ def search(request: HttpRequest, query: str):
 def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     return work
+
+class TagWorkInstanceSchema(Schema):
+    tag_slug: str
+    n_votes: int
+    score: float
+    user_score: int | None
+
+@work_router.get('tag_scores', response=List[TagWorkInstanceSchema])
+@user_is_trusted
+def get_tag_scores(request: HttpRequest, work_id: int):
+    work = get_object_or_404(MediaWork.active_objects, id=work_id)
+    user_votes = TagWorkVote.objects.filter(user=request.user, tag_instance__in=work.tagworkinstance_set.all())
+    return [{
+        'tag_slug': instance.work_tag.slug,
+        'score': instance.avg_score,
+        'n_votes': instance.n_votes,
+        'user_score': user_votes.filter(tag_instance=instance).values_list('score', flat=True).first()
+        } for instance in work.tagworkinstance_set.annotate(avg_score=Avg('tagworkvote__score', default=0), n_votes=Count('tagworkvote')).all()]
+
+class TagWorkVoteSchema(Schema):
+    tag_slug: str
+    score: int
+
+@work_router.put('tag_scores')
+@user_is_trusted
+def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchema]):
+    work = get_object_or_404(MediaWork.active_objects, id=work_id)
+
+    for vote in payload:
+        vote.score = max(-1, min(1, vote.score)) # zero trust
+
+    work.tags.add(*[v.tag_slug for v in payload])
+
+    for vote in payload:
+        tag_instance = work.tagworkinstance_set.get(work_tag__slug=vote.tag_slug)
+        if v := tag_instance.tagworkvote_set.filter(user=request.user).first():
+            v.score = vote.score
+            v.save()
+        else:
+            TagWorkVote.objects.create(tag_instance=tag_instance, user=request.user, score=vote.score)
+
+    return 200
 
 @work_router.get('random', response=WorkSchema)
 def random(request: HttpRequest):
@@ -67,7 +109,7 @@ def relations(request: HttpRequest, work_id: int):
 @work_router.post('relation', auth=django_auth)
 @user_is_trusted
 def create_relation(request: HttpRequest, payload: WorkRelationSchema):
-    rel = WorkRelation.create(A_id=payload.A.id, B_id=payload.B.id, relation=payload.relation)
+    rel = WorkRelation.objects.create(A_id=payload.A.id, B_id=payload.B.id, relation=payload.relation)
     return rel.id
 
 @work_router.put('relation', auth=django_auth)

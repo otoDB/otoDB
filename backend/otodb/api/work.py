@@ -122,13 +122,11 @@ def relation(request: HttpRequest, payload: WorkRelationSchema):
 @work_router.delete('relation', auth=django_auth)
 @user_is_trusted
 def delete_relation(request: HttpRequest, A: int, B: int):
-    A = MediaWork.active_objects.get(id=payload.A.id)
-    B = MediaWork.active_objects.get(id=payload.B.id)
-    rel = WorkRelation.objects.get(A, B)
+    a = MediaWork.active_objects.get(id=A)
+    b = MediaWork.active_objects.get(id=B)
+    rel = WorkRelation.objects.get(a, b)
     rel.delete()
     return
-
-
 
 @work_router.get('sources', response=List[WorkSourceSchema])
 def sources(request: HttpRequest, work_id: int):

@@ -55,8 +55,6 @@
     {#each comments as c}
     {@render comment(c, comment)}
     {/each}
-{:else}
-    <h4>No comments!</h4>
 {/if}
 {#if user}
 <h4>Post a new comment:</h4>

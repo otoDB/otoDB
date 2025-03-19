@@ -6,7 +6,7 @@ from .media import MediaWork, MediaSong
 from .enums import WorkRelationTypes, SongRelationTypes
 
 class BidirectionalManager(models.Manager):
-    def get(A, B):
+    def get(self, A, B):
         try:
             return super().get(A=A, B=B)
         except ObjectDoesNotExist:

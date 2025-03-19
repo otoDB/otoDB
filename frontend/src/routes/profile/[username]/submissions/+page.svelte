@@ -18,7 +18,8 @@
 {#if data.user?.username === data.profile.username}
 <a href="{base}/work/add">Add a work...</a>
 {/if}
-  <h2>Pending</h2>
+
+<h2>Pending</h2>
 {#if data.pending?.length}
 <table class="w-full">
     <thead><tr>
@@ -48,6 +49,41 @@
 {:else}
 <p>No pending submissions.</p>
 {/if}
+
+<h2>Rejected</h2>
+{#if data.rejected?.length}
+<table class="w-full">
+    <thead><tr>
+        <th>{m.large_factual_octopus_exhale()}</th>
+        <th>Rejection reason</th>
+        <th>{m.sour_swift_sparrow_spin()}</th>
+        <th>{m.super_agent_pigeon_aim()}</th>
+        <th>{m.large_polite_otter_thrive()}</th>
+        <th>{m.noisy_moving_newt_belong()}</th>
+{#if data.user}
+        <th>{m.mushy_proof_hornet_dig()}</th>
+{/if}
+    </tr></thead>
+<tbody>
+    {#each data.rejected as src}
+    <tr>
+        <td class="whitespace-nowrap">{src.title}</td>
+        <td class="whitespace-nowrap">{src.rejection_reason}</td>
+        <td>{Platform[src.platform]}</td><td>{src.published_date}</td>
+        <td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+        <td class="whitespace-nowrap"><a href={src.url} target="_blank" rel="noopener noreferrer">{m.noisy_moving_newt_belong()}</a></td>
+{#if data.user}
+<td><RefreshButton source={src}/></td>
+{/if}
+    </tr>
+    {/each}
+  </tbody>
+</table>
+{:else}
+<p>No rejected submissions.</p>
+{/if}
+
+
 <h2>Approved</h2>
 {#if data.approved?.length}
         <table class="w-full">

@@ -11,6 +11,7 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
     });
     return {
         approved: submissions?.items.filter(s => s.media),
-        pending: submissions?.items.filter(s => !s.media)
+        pending: submissions?.items.filter(s => !s.media && !s.rejection_reason),
+        rejected: submissions?.items.filter(s => s.rejection_reason)
     };
 }

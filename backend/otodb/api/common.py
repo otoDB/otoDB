@@ -65,6 +65,7 @@ class ListItemSchema(ModelSchema):
 
 class ListSchema(ModelSchema):
     author: ProfileSchema
+    pending_items: list[WorkSourceSchema]
     class Meta:
         model = Pool
         fields = ['name', 'description', 'id']

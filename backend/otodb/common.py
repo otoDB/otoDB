@@ -113,40 +113,43 @@ def video_info(link):
             'thumbnail': 'thumb',
             'timestamp':  'timestamp'
         }
-    if niconico_ie.suitable(link):
-        info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
-    else:
-        info = ydl.extract_info(link, download=False)
-        if info.get('_type') == 'playlist':
-            info = info['entries'][0] # TODO need some work...
-        resolutions = [(f['width'], f['height']) for f in info['formats'] if 'width' in f and f['width'] is not None]
-        info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
+    try:
+        if niconico_ie.suitable(link):
+            info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+        else:
+            info = ydl.extract_info(link, download=False)
+            if info.get('_type') == 'playlist':
+                info = info['entries'][0] # TODO need some work...
+            resolutions = [(f['width'], f['height']) for f in info['formats'] if 'width' in f and f['width'] is not None]
+            info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
 
-    info['extractor'] = Platform.from_str(info['extractor'])
+        info['extractor'] = Platform.from_str(info['extractor'])
 
-    match info['extractor']:
-        case Platform.YOUTUBE:
-            info['webpage_url'] = make_video_url['youtube'](info['id'])
-        case Platform.BILIBILI:
-            chapter_mark = info['id'].find('_')
-            if chapter_mark != -1:
-                info['id'] = info['id'][:chapter_mark]
-            title_chapter_mark = info['title'].find(' p01') # TODO this is far from perfect
-            if chapter_mark != -1:
-                info['title'] = info['title'][:title_chapter_mark]
-            info['webpage_url'] = make_video_url['bilibili'](info['id'])
-            info['tags'] = [tag[3:-1] if tag.startswith('发现《') and tag.endswith('》') else tag for tag in info['tags']]
-        case Platform.NICONICO:
-            info['webpage_url'] = make_video_url['niconico'](info['id'])
-        case Platform.SOUNDCLOUD:
-            pass # TODO
-    
-    for c in ['?', '/']: # drop query strings and subdirectories
-        i = info['id'].find(c)
-        if i != -1:
-            info['id'] = info['id'][:i]
+        match info['extractor']:
+            case Platform.YOUTUBE:
+                info['webpage_url'] = make_video_url['youtube'](info['id'])
+            case Platform.BILIBILI:
+                chapter_mark = info['id'].find('_')
+                if chapter_mark != -1:
+                    info['id'] = info['id'][:chapter_mark]
+                title_chapter_mark = info['title'].find(' p01') # TODO this is far from perfect
+                if chapter_mark != -1:
+                    info['title'] = info['title'][:title_chapter_mark]
+                info['webpage_url'] = make_video_url['bilibili'](info['id'])
+                info['tags'] = [tag[3:-1] if tag.startswith('发现《') and tag.endswith('》') else tag for tag in info['tags']]
+            case Platform.NICONICO:
+                info['webpage_url'] = make_video_url['niconico'](info['id'])
+            case Platform.SOUNDCLOUD:
+                pass # TODO
+        
+        for c in ['?', '/']: # drop query strings and subdirectories
+            i = info['id'].find(c)
+            if i != -1:
+                info['id'] = info['id'][:i]
 
-    return { keys[key]: info[key] for key in keys if key in info }
+        return { keys[key]: info[key] for key in keys if key in info }
+    except:
+        return None
 
 def playlist_info(link):
     keys = {

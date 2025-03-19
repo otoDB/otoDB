@@ -426,8 +426,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List */
-        get: operations["otodb_api_list_list"];
+        /** Lst */
+        get: operations["otodb_api_list_lst"];
         /** Update */
         put: operations["otodb_api_list_update"];
         /** New */
@@ -864,6 +864,8 @@ export interface components {
             description?: string | null;
             /** ID */
             id?: number | null;
+            /** Pending Items */
+            pending_items: number[];
         };
         /** PagedSourceSubmissionSchema */
         PagedSourceSubmissionSchema: {
@@ -1673,7 +1675,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_list_list: {
+    otodb_api_list_lst: {
         parameters: {
             query: {
                 list_id: number;

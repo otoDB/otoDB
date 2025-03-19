@@ -24,7 +24,7 @@
         e.preventDefault();
         const comment = (new FormData(e.target)).get('comment')?.toString();
         if (comment) {
-            await commentClient.POST(model, pk, comment, reply_to.id, user, fetch);
+            await commentClient.POST(model, pk, comment, reply_to?.id ?? 0, user, fetch);
             reply_form.querySelector('textarea[name="comment"]')!.value = '';
             invalidateAll();
             reply_to = null;

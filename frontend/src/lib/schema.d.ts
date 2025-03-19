@@ -201,10 +201,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update Relation */
-        put: operations["otodb_api_work_update_relation"];
-        /** Create Relation */
-        post: operations["otodb_api_work_create_relation"];
+        put?: never;
+        /** Relation */
+        post: operations["otodb_api_work_relation"];
         /** Delete Relation */
         delete: operations["otodb_api_work_delete_relation"];
         options?: never;
@@ -796,8 +795,6 @@ export interface components {
         WorkRelationSchema: {
             A: components["schemas"]["IDSchema"];
             B: components["schemas"]["IDSchema"];
-            /** Id */
-            id: number | null;
             /** Relation */
             relation: number;
         };
@@ -858,14 +855,14 @@ export interface components {
         /** ListSchema */
         ListSchema: {
             author: components["schemas"]["ProfileSchema"];
+            /** Pending Items */
+            pending_items: components["schemas"]["WorkSourceSchema"][];
             /** Name */
             name: string;
             /** Description */
             description?: string | null;
             /** ID */
             id?: number | null;
-            /** Pending Items */
-            pending_items: number[];
         };
         /** PagedSourceSubmissionSchema */
         PagedSourceSubmissionSchema: {
@@ -1329,29 +1326,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_update_relation: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WorkRelationSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_create_relation: {
+    otodb_api_work_relation: {
         parameters: {
             query?: never;
             header?: never;
@@ -1376,7 +1351,8 @@ export interface operations {
     otodb_api_work_delete_relation: {
         parameters: {
             query: {
-                relation_id: number;
+                A: number;
+                B: number;
             };
             header?: never;
             path?: never;

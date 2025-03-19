@@ -1,14 +1,24 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from .media import MediaWork, MediaSong
 
 from .enums import WorkRelationTypes, SongRelationTypes
 
+class BidirectionalManager(models.Manager):
+    def get(A, B):
+        try:
+            return super().get(A=A, B=B)
+        except ObjectDoesNotExist:
+            return super().get(B=A, A=B)
+
 
 class WorkRelation(models.Model):
     A = models.ForeignKey(MediaWork, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_A')
     B = models.ForeignKey(MediaWork, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_B')
     relation = models.IntegerField(choices=WorkRelationTypes.choices)
+
+    objects = BidirectionalManager()
 
     def __str__(self) -> str:
         return f'{self.A.id} -> {self.B.id}: {WorkRelationTypes(self.relation).label}'

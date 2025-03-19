@@ -3,14 +3,44 @@
     import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from "$app/forms";
 	import type { PageProps } from "../$types";
-	import { Platform, Rating, WorkOrigin } from "$lib/enums";
+	import { Platform, Rating, WorkOrigin, WorkRelationTypes } from "$lib/enums";
 	import CollapsibleText from "../CollapsibleText.svelte";
+	import WorkField from "$lib/WorkField.svelte";
+	import client from "$lib/api";
+	import type { components } from "$lib/schema";
 
     let { data, form }: PageProps = $props();
     let title: string = $state(form?.title ?? data.title!),
         description: string = $state(form?.description ?? data.description!),
         rating: number  = $state(form?.rating ?? data.rating!),
         thumbnail: string = $state(form?.thumbnail ?? data.thumbnail!);
+
+    let relations: { swapped: boolean, work: components['schemas']['WorkSchema'], relation: number }[] = $state([]);
+    const delete_relation = (i: number) => async () => {
+        await client.DELETE('/api/work/relation', { fetch, params: { query: { A: relations[i].work.id!, B: data.id! }}});
+        relations.splice(i, 1);
+    };
+    const swap_relation = (i: number) => async () => {
+        await client.POST('/api/work/relation', { fetch, body: {
+            A: { id: relations[i].swapped ? relations[i].work.id! : data.id! },
+            B: { id: !relations[i].swapped ? relations[i].work.id! : data.id! },
+            relation: relations[i].relation
+        }});
+        relations[i].swapped = !relations[i].swapped;
+    };
+    const post_relation = (i: number) => async () => {
+        const r = relations[i];
+        relations = relations.filter((rel, j) => rel.work.id !== r.work.id || j === i);
+        if (r.work.id) {
+            await client.POST('/api/work/relation', { fetch, body: {
+                A: { id: !r.swapped ? r.work.id! : data.id! },
+                B: { id: r.swapped ? r.work.id! : data.id! },
+                relation: r.relation
+            }});
+        }
+        else
+            await client.DELETE('/api/work/relation', { fetch, params: { query: { A: r.work.id!, B: data.id! }}});
+    };
 </script>
 
 <svelte:head>
@@ -61,8 +91,21 @@
 </Section>
 
 <Section title="Relations">
-<form action="?/relations" method="POST" use:enhance>
-    TODO
-    <input type="submit"/>
-</form>
+<button type="button" onclick={() => {relations.push({ swapped: false, work: null, relation: 0 })}}>Add Relation</button>
+<table><tbody>
+    {#each relations as relation, i}
+    <tr>
+        <td>{#if !relation.swapped}<WorkField bind:value={relation.work} oninput={post_relation(i)}/>{:else}This work{/if}</td>
+        <td>is a</td>
+        <td><select name="relation" bind:value={relation.relation}>
+            {#each WorkRelationTypes as rel, j}
+            <option value={j}>{rel()}</option>
+            {/each}
+        </select></td>
+        <td>of</td><td>{#if relation.swapped}<WorkField bind:value={relation.work} oninput={post_relation(i)}/>{:else}this work{/if}</td>
+        <td><button type="button" onclick={swap_relation(i)}>Swap</button></td>
+        <td><button type="button" onclick={delete_relation(i)}>Delete</button></td>
+    </tr>
+    {/each}
+</tbody></table>
 </Section>

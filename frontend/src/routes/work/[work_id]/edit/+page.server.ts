@@ -37,9 +37,5 @@ export const actions = {
         if (error)
             return fail(400, { title, description, rating, thumbnail, reason, failed: true });
         redirect(303, `${base}/work/${params.work_id}`);
-    },
-    relations: async ({ request, fetch, params }) => {
-        const data = await request.formData();
-        // todo
     }
 } satisfies Actions;

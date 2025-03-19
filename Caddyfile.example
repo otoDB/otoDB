@@ -4,12 +4,19 @@ otodb.net {
 		file_server
 	}
 
-	handle_path /staging* {
-		uri strip_prefix /staging
-		reverse_proxy frontend:5173
+	handle_path /admin* {
+		reverse_proxy backend:8000
+	}
+
+	handle_path /api* {
+		reverse_proxy backend:8000
+	}
+
+	handle_path /static* {
+		reverse_proxy backend:8000
 	}
 
 	handle /* {
-		reverse_proxy backend:8000
+		reverse_proxy frontend:5173
 	}
 }

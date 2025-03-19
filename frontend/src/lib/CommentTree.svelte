@@ -60,7 +60,7 @@
 {#if !reply_to}
 <h4>Posting new comment:</h4>
 {:else}
-<h4>Replying to {reply_to.user_name}: "{reply_to.comment}":</h4>
+<h4>Replying to {reply_to.user_name}: "{reply_to.comment}": <a href={null} onclick={() => reply_to = null}>Don't reply...</a></h4>
 {/if}
 <form onsubmit={post}>
     <textarea name="comment"></textarea>

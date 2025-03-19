@@ -1,14 +1,14 @@
 otodb.net {
-	handle /static/* {
+	handle_path /static/* {
 		root * /srv/static
 		file_server
 	}
 
-	handle /admin/* {
+	handle /admin* {
 		reverse_proxy backend:8000
 	}
 
-	handle /api/* {
+	handle /api* {
 		reverse_proxy backend:8000
 	}
 

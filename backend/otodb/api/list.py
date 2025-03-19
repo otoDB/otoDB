@@ -1,5 +1,4 @@
 from typing import List
-from datetime import date
 from concurrent.futures import ProcessPoolExecutor
 
 from django.http import HttpRequest
@@ -11,8 +10,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info, playlist_info
-from otodb.models import Pool, PoolItem, WorkSource, MediaWork, TagWork, TagWorkInstance
-from otodb.models.enums import WorkOrigin
+from otodb.models import Pool, PoolItem, WorkSource, TagWork, TagWorkInstance
 
 from .common import ListSchema, ListItemSchema
 
@@ -24,7 +22,7 @@ def search(request: HttpRequest, query: str):
     return Pool.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
 
 @list_router.get('list', response=ListSchema)
-def list(request: HttpRequest, list_id: int):
+def lst(request: HttpRequest, list_id: int):
     list_ = get_object_or_404(Pool, pk=list_id)
     return list_
 
@@ -113,55 +111,30 @@ def delete(request: HttpRequest, list_id: int):
     lst.delete()
     return
 
-# TODO eliminate code that relies on throw behavior of video_info
-def video_info_wrapped(url):
-    try:
-        return video_info(url)
-    except:
-        return {'failed': url}
-
 @list_router.post('import', auth=django_auth, response=int)
 def import_ext(request: HttpRequest, url: str):
     info = playlist_info(url)
-    list_ = Pool(name=info['title'], description=info['description'], author=request.user)
+    list_ = Pool.objects.create(name=info['title'], description=info['description'], author=request.user)
 
     with ProcessPoolExecutor() as executor:
-        infos = executor.map(video_info_wrapped, info['entries'])
+        infos = executor.map(video_info, info['entries'])
 
-    new_works, new_tag_instances, new_sources, pool_items = [], [], [], []
-    i = 0
-    for vid_info in infos:
-        if 'failed' in vid_info:
-            list_.description += f'\nFailed to fetch {vid_info['failed']}'
+    new_tag_instances, pool_items = [], []
+    for i, vid_info in enumerate(list(infos)):
+        if vid_info is None:
+            list_.description += f'\nFailed to fetch {info['entries'][i]}'
             continue
 
-        try:
-            src = WorkSource.objects.get(platform=vid_info['site'], source_id=vid_info['id'])
-        except WorkSource.DoesNotExist:
-            src = None
-        if not src:
-            work = MediaWork(title=vid_info['title'], description=vid_info['description'], thumbnail=vid_info['thumb'])
-            src = WorkSource(media=work, title=vid_info['title'], description=vid_info['description'],
-                url=vid_info['url'], platform=vid_info['site'], source_id=vid_info['id'],
-                published_date=date.fromtimestamp(vid_info['timestamp']),
-                work_origin=WorkOrigin(False), thumbnail=vid_info.get('thumb', None),
-                work_width=vid_info.get('work_width',None), work_height=vid_info.get('work_height',None),
-                added_by=request.user)
-            new_works.append(work)
-            new_sources.append(src)
-        elif src.rejection_reason is not None:
+        src = WorkSource.from_url(vid_info['url'], user=request.user, is_reupload=False, info=vid_info)
+        if src.rejection_reason is not None:
             continue
+        elif src.media is None:
+            list_.pending_items.add(src)
         else:
             work = src.media
+            new_tag_instances.extend([TagWorkInstance(work=work, work_tag=TagWork.objects.get_or_create(name=t)[0]) for t in vid_info['tags']])
+            pool_items.append(PoolItem(work=work, description='', pool=list_))
 
-        new_tag_instances.extend([TagWorkInstance(work=work, work_tag=TagWork.objects.get_or_create(name=t)[0]) for t in vid_info['tags']])
-        pool_items.append(PoolItem(work=work, description='', pool=list_))
-
-        i += 1
-
-    list_.save()
-    MediaWork.objects.bulk_create(new_works)
     TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True) # bulk_create does not handle M2M so we do this manually
-    WorkSource.objects.bulk_create(new_sources)
     PoolItem.objects.bulk_create(pool_items)
     return list_.id

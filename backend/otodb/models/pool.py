@@ -13,6 +13,8 @@ class Pool(models.Model):
 
     author = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
 
+    pending_items = models.ManyToManyField('WorkSource')
+
     def __str__(self) -> str:
         return f'{self.name}'
 

@@ -1,4 +1,3 @@
-from datetime import date
 from typing import List
 
 from django.http import HttpRequest
@@ -12,8 +11,8 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info
-from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote
-from otodb.models.enums import WorkOrigin, Platform
+from otodb.models import MediaWork, WorkRelation, WorkSource
+from otodb.models.enums import Platform
 
 from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_moderator
 
@@ -173,22 +172,11 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
 @work_router.post('source', auth=django_auth, response={200: int, 400: Error})
 @user_is_trusted
 def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool):
-    info = video_info(url)
-    if info['site'] is None:
-        return 400, {'message': 'Site not supported'}
-
-    try:
-        src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
-    except WorkSource.DoesNotExist:
-        src = WorkSource(media=None, title=info['title'], description=info['description'],
-            url=info['url'], platform=info['site'], source_id=info['id'],
-            published_date=date.fromtimestamp(info['timestamp']),
-            work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
-            work_width=info.get('work_width', None), work_height=info.get('work_height', None),
-            added_by=request.user)
-        src.save()
-
-    return src.id
+    src = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
+    if src is not None:
+        return src.id
+    else:
+        return 400, {'message': "Bad request, is the URL correct?"}
 
 @work_router.post('assign_source', auth=django_auth, description='Pass in work_id=-1 if creating new work from source.', response=int)
 @user_is_moderator
@@ -207,6 +195,11 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int):
 
     src.media = work
     src.save()
+
+    for pool in src.pool_set.all():
+        pool.add_work(work.id)
+        pool.pending_items.remove(src)
+
     return work.id
 
 @work_router.post('reject_source', auth=django_auth)

@@ -1,3 +1,4 @@
+from datetime import date
 from django.db import models
 
 from .enums import Platform, WorkOrigin, WorkStatus
@@ -53,3 +54,23 @@ class WorkSource(models.Model):
         self.work_width = info['work_width']
         self.work_height = info['work_height']
         self.save()
+
+    # Gets the source registered at the url if it exists, otherwise register as pending
+    @staticmethod
+    def from_url(url, user, is_reupload, info=None):
+        if info is None:
+            info = video_info(url)
+        
+        if info['site'] is None:
+            return None
+
+        try:
+            src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
+        except WorkSource.DoesNotExist:
+            src = WorkSource.objects.create(media=None, title=info['title'], description=info['description'],
+                url=info['url'], platform=info['site'], source_id=info['id'],
+                published_date=date.fromtimestamp(info['timestamp']),
+                work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
+                work_width=info.get('work_width', None), work_height=info.get('work_height', None),
+                added_by=user)
+        return src

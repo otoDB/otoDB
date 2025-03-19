@@ -42,7 +42,10 @@ export const actions = {
             redirect(303, `${base}/work/${+final_work_id!}`);
         }
         else {
-            redirect(303, `${base}/profile/${locals.user.username}/submissions`);
+            if (locals.user.level >= UserLevel.MODERATOR)
+                redirect(303, `${base}/work/unbound`);
+            else
+                redirect(303, `${base}/profile/${locals.user.username}/submissions`);
         }
     }
 } satisfies Actions;

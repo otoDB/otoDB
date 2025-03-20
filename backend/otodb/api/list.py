@@ -1,4 +1,5 @@
 from typing import List
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 
 from django.http import HttpRequest
@@ -116,7 +117,7 @@ def import_ext(request: HttpRequest, url: str):
     info = playlist_info(url)
     list_ = Pool.objects.create(name=info['title'], description=info['description'], author=request.user)
 
-    with ProcessPoolExecutor() as executor:
+    with ProcessPoolExecutor(mp_context=multiprocessing.get_context("fork")) as executor:
         infos = executor.map(video_info, info['entries'])
 
     new_tag_instances, pool_items = [], []

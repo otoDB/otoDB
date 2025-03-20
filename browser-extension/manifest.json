@@ -41,7 +41,6 @@
       "declarativeNetRequestWithHostAccess"
     ],
     "host_permissions": [
-      "*://127.0.0.1/*",
       "*://*.nicovideo.jp/*"
     ],
     "declarative_net_request": {

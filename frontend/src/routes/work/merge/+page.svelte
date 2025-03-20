@@ -102,6 +102,6 @@
     <textarea hidden value={work[selecting.description].description} name="description"></textarea>
     <input hidden type="text" value={work[selecting.thumbnail].thumbnail} name="thumbnail">
     <input hidden type="number" name="rating" value={work[selecting.rating].rating}>
-    <input type="submit" disabled={!!work[0] && !!work[1]}/>
+    <input type="submit" disabled={!work[0] || !work[1]}/>
 </form>
 </Section>

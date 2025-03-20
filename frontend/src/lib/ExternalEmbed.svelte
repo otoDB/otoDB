@@ -15,5 +15,5 @@ let { src }: Props = $props();
 {:else if src.platform === 2}
 <iframe src="https://embed.nicovideo.jp/watch/{src.source_id}" allowfullscreen scrolling="no" allow="encrypted-media;" title="Niconico Player"></iframe>
 {:else if src.platform === 3}
-<iframe src="//player.bilibili.com/player.html?isOutside=true&bvid={src.source_id}}&p=1" scrolling="no" frameborder="no" allowfullscreen title="bilibili Player"></iframe>
+<iframe src="//player.bilibili.com/player.html?isOutside=true&bvid={src.source_id}&p=1" scrolling="no" frameborder="no" allowfullscreen title="bilibili Player"></iframe>
 {/if}

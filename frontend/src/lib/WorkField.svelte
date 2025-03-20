@@ -25,10 +25,14 @@
         suggestions = data.items;
     };
 
-    onMount(() => {
+    $effect(() => {
         if (value) {
             input = value.title;
             locked_in = true;
+        }
+        else {
+            locked_in = false;
+            input = '';
         }
     });
 </script>
@@ -50,5 +54,6 @@
 <style>
     ul {
         background-color: var(--otodb-bg-color);
+        z-index: 10;
     }
 </style>

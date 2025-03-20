@@ -8,6 +8,7 @@
 	import WorkField from "$lib/WorkField.svelte";
 	import client from "$lib/api";
 	import type { components } from "$lib/schema";
+	import WorkCard from "$lib/WorkCard.svelte";
 
     let { data, form }: PageProps = $props();
     let title: string = $state(form?.title ?? data.title!),
@@ -15,7 +16,7 @@
         rating: number  = $state(form?.rating ?? data.rating!),
         thumbnail: string = $state(form?.thumbnail ?? data.thumbnail!);
 
-    let relations: { swapped: boolean, work: components['schemas']['WorkSchema'] | null, relation: number }[] = $state(data.relations[0].map(({ A, B, relation }) => ({
+    let relations: { swapped: boolean, work: components['schemas']['WorkSchema'] | null, relation: number }[] = $state(data.relations[0].filter(({ A, B, relation }) => A.id === data.id || B.id === data.id).map(({ A, B, relation }) => ({
         swapped: A.id === data.id,
         work: data.relations[1].find(e => e.id === (A.id === data.id ? B.id : A.id)),
         relation
@@ -23,14 +24,6 @@
     const delete_relation = (i: number) => async () => {
         await client.DELETE('/api/work/relation', { fetch, params: { query: { A: relations[i].work.id!, B: data.id! }}});
         relations.splice(i, 1);
-    };
-    const swap_relation = (i: number) => async () => {
-        await client.POST('/api/work/relation', { fetch, body: {
-            A: { id: relations[i].swapped ? relations[i].work.id! : data.id! },
-            B: { id: !relations[i].swapped ? relations[i].work.id! : data.id! },
-            relation: relations[i].relation
-        }});
-        relations[i].swapped = !relations[i].swapped;
     };
     const post_relation = (i: number) => async () => {
         const r = relations[i];
@@ -42,8 +35,18 @@
                 relation: r.relation
             }});
         }
-        else
-            await client.DELETE('/api/work/relation', { fetch, params: { query: { A: r.work.id!, B: data.id! }}});
+    };
+    const swap_relation = (i: number) => async () => {
+        relations[i].swapped = !relations[i].swapped;
+        await post_relation(i)();
+    };
+    let new_work = $state(null);
+    const add_new_work = async () => {
+        if (new_work) {
+            relations.push({ swapped: false, work: new_work, relation: 0 });
+            await (post_relation(relations.length - 1))();
+            new_work = null;
+        }
     };
 </script>
 
@@ -95,18 +98,21 @@
 </Section>
 
 <Section title="Relations">
-<button type="button" onclick={() => {relations.push({ swapped: false, work: null, relation: 0 })}}>Add Relation</button>
+    <div class="grid grid-cols-2 gap-3 w-fit">
+        <WorkField bind:value={new_work}></WorkField>
+        <button onclick={add_new_work} disabled={!new_work}>Add</button>
+    </div>
 <table><tbody>
     {#each relations as relation, i}
     <tr>
-        <td>{#if !relation.swapped}<WorkField bind:value={relation.work} oninput={post_relation(i)}/>{:else}This work{/if}</td>
+        <td>{#if !relation.swapped}<WorkCard work={relation.work!}/>{:else}This work{/if}</td>
         <td>is a</td>
         <td><select name="relation" bind:value={relation.relation} onchange={post_relation(i)}>
             {#each WorkRelationTypes as rel, j}
             <option value={j}>{rel()}</option>
             {/each}
         </select></td>
-        <td>of</td><td>{#if relation.swapped}<WorkField bind:value={relation.work} oninput={post_relation(i)}/>{:else}this work{/if}</td>
+        <td>of</td><td>{#if relation.swapped}<WorkCard work={relation.work!}/>{:else}this work{/if}</td>
         <td><button type="button" onclick={swap_relation(i)}>Swap</button></td>
         <td><button type="button" onclick={delete_relation(i)}>Delete</button></td>
     </tr>

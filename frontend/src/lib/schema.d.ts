@@ -634,8 +634,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Wiki Page */
-        get: operations["otodb_api_tag_wiki_page"];
+        get?: never;
         put?: never;
         /** Edit Wiki Page */
         post: operations["otodb_api_tag_edit_wiki_page"];
@@ -851,6 +850,8 @@ export interface components {
             thumbnail?: string | null;
             /** Rejection Reason */
             rejection_reason?: string | null;
+            /** Source Id */
+            source_id: string;
         };
         /** ListSchema */
         ListSchema: {
@@ -907,6 +908,8 @@ export interface components {
             thumbnail?: string | null;
             /** Rejection Reason */
             rejection_reason?: string | null;
+            /** Source Id */
+            source_id: string;
             /** Media */
             media: number | null;
         };
@@ -2020,26 +2023,6 @@ export interface operations {
         };
     };
     otodb_api_tag_delete_song: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_wiki_page: {
         parameters: {
             query: {
                 tag_slug: string;

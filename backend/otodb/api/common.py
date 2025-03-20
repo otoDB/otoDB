@@ -48,7 +48,8 @@ class WorkSourceSchema(ModelSchema):
             'work_width', 'work_height',
             'title', 'description',
             'work_origin', 'work_status',
-            'thumbnail', 'rejection_reason'
+            'thumbnail', 'rejection_reason',
+            'source_id'
         ]
 
 class WorkSchema(ModelSchema):

@@ -10,7 +10,7 @@
 
     let tags = $state(data.tags);
 
-    const set_score = (new_vote: number, tag) => async (e: InputEvent) => {
+    const set_score = (new_vote: number, tag) => async (e) => {
         e.preventDefault();
         await client.PUT('/api/work/tag_scores', { fetch, params: { query: { work_id: +data.id }}, body: [
             { score: new_vote, tag_slug: tag.slug }
@@ -46,9 +46,9 @@
         <td><WorkTag {tag}/></td>
         <td>{tag.score} (from {tag.n_votes} votes)</td>
         <td>
-            <span class="rating" data-checked={tag.user_score === -1} onclick={set_score(-1, tag)} role="none"></span>
-            <span class="rating" data-checked={tag.user_score !== null} onclick={set_score(0, tag)} role="none"></span>
-            <span class="rating" data-checked={tag.user_score === 1} onclick={set_score(1, tag)} role="none"></span>
+            <button class="rating" data-checked={tag.user_score === -1} onclick={set_score(-1, tag)} aria-label="-1"></button>
+            <button class="rating" data-checked={tag.user_score !== null} onclick={set_score(0, tag)} aria-label="0"></button>
+            <button class="rating" data-checked={tag.user_score === 1} onclick={set_score(1, tag)} aria-label="+1"></button>
         </td>
     </tr>
 {/each}
@@ -62,7 +62,7 @@
 </Section>
 
 <style>
-span.rating {
+button.rating {
     background-color: var(--otodb-bg-color);
     border: 1px var(--otodb-content-color) solid;
     width: 1rem;

@@ -32,6 +32,6 @@ export const actions = {
         if (error)
             return fail(400);
 
-        redirect(303, `/work/${+A!}`);
+        redirect(303, `/work/${+B!}`);
     }
 } satisfies Actions;

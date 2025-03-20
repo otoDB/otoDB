@@ -8,6 +8,7 @@
 	import type { components } from "$lib/schema";
 	import RefreshButton from "../RefreshButton.svelte";
 	import CommentTree from "$lib/CommentTree.svelte";
+	import ExternalEmbed from "$lib/ExternalEmbed.svelte";
     
     let { data } = $props();
 
@@ -30,6 +31,8 @@
             list[1] = !list[1];
         }
     }
+
+    let cover_select = $state(-1);
 </script>
 
 <svelte:head>
@@ -39,7 +42,19 @@
 <Section title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
   menuLinks={data.links}>
     <div id="infobox">
-      <img src={data.thumbnail} alt={data.title}>
+    <div>
+        {#if cover_select === -1}
+        <img src={data.thumbnail} alt={data.title}>
+        {:else}
+        <ExternalEmbed src={data.sources[cover_select]}/>
+        {/if}
+        <label><input hidden type="radio" name="cover_select" value={-1} bind:group={cover_select}>Thumbnail</label>
+        {#each data.sources as s, i}
+        {#if s.work_origin === 0}
+        <label><input hidden type="radio" name="cover_select" value={i} bind:group={cover_select}>{Platform[s.platform]}</label>
+        {/if}
+        {/each}
+    </div>
       <div>
         <table>
         <tbody>
@@ -137,5 +152,16 @@
 }
 th {
         white-space: nowrap;
+}
+label:has(>input[name="cover_select"]) {
+    padding: .5rem 1rem;
+    display: inline-block;
+    background-color: var(--otodb-bg-color);
+    border: 1px solid var(--otodb-content-color);
+}
+label:has(>input[name="cover_select"]:checked) {
+    background-color: var(--otodb-content-color);
+    border: 1px solid var(--otodb-bg-color);
+    color: var(--otodb-bg-color);
 }
 </style>

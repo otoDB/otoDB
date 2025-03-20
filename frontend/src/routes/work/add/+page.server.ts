@@ -34,9 +34,14 @@ export const actions = {
         if (error)
             return fail(400, { url: link, origin: is_official, failed: true });
 
-        if (locals.user.level >= UserLevel.MODERATOR)
-            redirect(303, '/work/unbound');
-        else
-            redirect(303, `/profile/${locals.user.username}/submissions`);
+        if (work && !isNaN(+work)) {
+            redirect(303, `/work/${+work}`);
+        }
+        else {
+            if (locals.user.level >= UserLevel.MODERATOR)
+                redirect(303, '/work/unbound');
+            else
+                redirect(303, `/profile/${locals.user.username}/submissions`);
+        }
     }
 } satisfies Actions;

@@ -4,9 +4,25 @@ import client from "$lib/api";
 import { UserLevel } from "$lib/enums";
 import userLevelGuard from "$lib/route_guard";
 
+const next_redirect = (user: App.Locals['user']) => {
+    if (user.level >= UserLevel.MODERATOR)
+        redirect(303, '/work/unbound');
+    else
+        redirect(303, `/profile/${user.username}/submissions`);
+}
+
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
     userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
     
+    const link = url.searchParams.get('url');
+    if (link) {
+        const { error: err } = await client.POST('/api/work/source', { fetch, params: { query: { url: link, is_reupload: false }} });
+        if (err) 
+            error(400, err);
+        else
+            next_redirect(locals.user);
+    }
+
     const work = url.searchParams.get('for_work');
     if (work && !isNaN(+work)) {
         const { data, error: e } = await client.GET('/api/work/work', { params: {
@@ -34,14 +50,9 @@ export const actions = {
         if (error)
             return fail(400, { url: link, origin: is_official, failed: true });
 
-        if (work && !isNaN(+work)) {
+        if (work && !isNaN(+work))
             redirect(303, `/work/${+work}`);
-        }
-        else {
-            if (locals.user.level >= UserLevel.MODERATOR)
-                redirect(303, '/work/unbound');
-            else
-                redirect(303, `/profile/${locals.user.username}/submissions`);
-        }
+        else
+            next_redirect(locals.user);
     }
 } satisfies Actions;

@@ -41,6 +41,16 @@ body {
 	align-items: flex-start;
 }
 
+nav {
+	display: flex;
+	flex-direction: column;
+	padding: 2rem 1rem;
+	gap: 1rem;
+	background-color: var(--otodb-faint-bg);;
+	border: 1px solid var(--otodb-faint-content);
+	max-width: 8rem;
+}
+
 body::after {
 	content: 'the otomad/ytpmv database';
 	position: absolute;

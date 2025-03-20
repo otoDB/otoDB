@@ -1444,6 +1444,7 @@ export interface operations {
             query: {
                 url: string;
                 is_reupload: boolean;
+                work_id?: number | null;
             };
             header?: never;
             path?: never;

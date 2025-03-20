@@ -44,6 +44,7 @@ def logout_endpoint(request):
 
 @auth_router.post("/register", response={ 200:UserLoginSchema, 401: Error })
 def register(request, username: str, password: str, email: str):
-    user = Account.objects.create_user(username, email, password=password)
-    login(request, user)
-    return { 'user_id': user.id, 'username': user.username }
+    # user = Account.objects.create_user(username, email, password=password)
+    # login(request, user)
+    # return { 'user_id': user.id, 'username': user.username }
+    pass

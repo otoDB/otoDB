@@ -11,7 +11,7 @@
 </svelte:head>
 
 <Section title={m.blue_whole_camel_type()}>
-	<form method="POST" use:enhance>
+	<!-- <form method="POST" use:enhance>
 		{#if form?.missing}<p class="error">All fields are required.</p>{/if}
         {#if form?.failed}<p class="error">Authentication failed!</p>{/if}
 		<table>
@@ -35,5 +35,6 @@
 		</tbody>
 		</table>
 		<input type="submit" value={m.blue_whole_camel_type()}/>
-	</form>
+	</form> -->
+	Registration is currently unavailable.
 </Section>

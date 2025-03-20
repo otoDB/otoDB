@@ -50,7 +50,7 @@
         {/if}
         <label><input hidden type="radio" name="cover_select" value={-1} bind:group={cover_select}>Thumbnail</label>
         {#each data.sources as s, i}
-        <label><input hidden type="radio" name="cover_select" value={i} bind:group={cover_select}>{Platform[s.platform]}{s.work_origin === 0 ? '' : ' ' + WorkOrigin[s.work_origin]}</label>
+        <label><input hidden type="radio" name="cover_select" value={i} bind:group={cover_select}>{Platform[s.platform]}{s.work_origin === 0 ? '' : ' ' + WorkOrigin[s.work_origin]()}</label>
         {/each}
     </div>
       <div>

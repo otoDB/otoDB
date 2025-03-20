@@ -173,7 +173,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
     assert(src.media is None and src.rejection_reason is None)
 
-    if work_id and work_id != -1:
+    if work_id:
         work = get_object_or_404(MediaWork.active_objects, id=work_id)
         work.tags.add(*info.get('tags', []))
         src.media = work

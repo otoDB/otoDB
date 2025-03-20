@@ -30,7 +30,7 @@ export const actions = {
             is_official = !!data.get('origin');
         const work = url.searchParams.get('for_work');
 
-        const { error, data: source_id } = await client.POST('/api/work/source', { fetch, params: { query: { url: link, is_reupload: !is_official, for_work: work ? +work : null }} });
+        const { error } = await client.POST('/api/work/source', { fetch, params: { query: { url: link, is_reupload: !is_official, work_id: work ? +work : null }} });
         if (error)
             return fail(400, { url: link, origin: is_official, failed: true });
 

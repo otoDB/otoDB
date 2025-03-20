@@ -125,7 +125,7 @@ def import_ext(request: HttpRequest, url: str):
             list_.description += f'\nFailed to fetch {info['entries'][i]}'
             continue
 
-        src = WorkSource.from_url(vid_info['url'], user=request.user, is_reupload=False, info=vid_info)
+        src, _ = WorkSource.from_url(vid_info['url'], user=request.user, is_reupload=False, info=vid_info)
         if src.rejection_reason is not None:
             continue
         elif src.media is None:

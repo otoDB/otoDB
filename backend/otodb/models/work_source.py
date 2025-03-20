@@ -73,4 +73,4 @@ class WorkSource(models.Model):
                 work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
                 work_width=info.get('work_width', None), work_height=info.get('work_height', None),
                 added_by=user)
-        return src
+        return src, info

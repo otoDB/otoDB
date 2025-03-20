@@ -1,5 +1,5 @@
 const main = async ({inject, div, div_ready, query}) => {
-    const OTODB_URL = `http://127.0.0.1:8000`;
+    const OTODB_URL = `https://otodb.net`;
 
     // 1. temp interface
     if (!div) {
@@ -21,28 +21,31 @@ const main = async ({inject, div, div_ready, query}) => {
     div.appendChild(status);
 
     // 2. ping endpoint 
-    const response = await fetch(`${OTODB_URL}/api/query_video?${new URLSearchParams(query)}`,
+    const response = await fetch(`${OTODB_URL}/api/work/query_external?${new URLSearchParams(query)}`,
         { mode: 'cors' }
     ).catch(r => { status.innerText = 'Cannot reach the database.'; });
 
     // 3. update interface with response
     if (response.ok) {
         status.remove();
-        const { tags, rel } = await response.json();
-        tags.forEach(([tag, rel]) => {
+        const { work_id, tags } = await response.json();
+        tags.forEach((tag) => {
             let a = document.createElement('A');
-            a.innerText = tag;
-            a.href = `${OTODB_URL}${rel}`;
+            a.innerText = tag.name;
+            a.href = `${OTODB_URL}/tag/${tag.slug}`;
+            a.target = '_blank';
             div.appendChild(a);
         });
-        link.innerText = "View this work on otoDB"
-        link.href = `${OTODB_URL}${rel}`
+        link.innerText = "View this work on otoDB";
+        link.href = `${OTODB_URL}/work/${work_id}`;
+        link.target = '_blank';
     }
     else if (response.status === 404) {
         status.innerText = 'This work is not in the database.';
         let add = document.createElement('A');
         add.innerText = "Add this work to otoDB...";
-        add.href = `${OTODB_URL}/works/new?${new URLSearchParams({ url: window.location.toString() })}`;
+        add.href = `${OTODB_URL}/work/add?${new URLSearchParams({ url: window.location.toString() })}`;
+        add.target = '_blank';
         div.appendChild(add);    
     }
     else status.innerText = 'Cannot reach the database.';

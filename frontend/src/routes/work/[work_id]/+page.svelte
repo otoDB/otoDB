@@ -50,9 +50,7 @@
         {/if}
         <label><input hidden type="radio" name="cover_select" value={-1} bind:group={cover_select}>Thumbnail</label>
         {#each data.sources as s, i}
-        {#if s.work_origin === 0}
-        <label><input hidden type="radio" name="cover_select" value={i} bind:group={cover_select}>{Platform[s.platform]}</label>
-        {/if}
+        <label><input hidden type="radio" name="cover_select" value={i} bind:group={cover_select}>{Platform[s.platform]}{s.work_origin === 0 ? '' : ' ' + WorkOrigin[s.work_origin]}</label>
         {/each}
     </div>
       <div>
@@ -154,7 +152,7 @@ th {
         white-space: nowrap;
 }
 label:has(>input[name="cover_select"]) {
-    padding: .5rem 1rem;
+    padding: .2rem .5rem;
     display: inline-block;
     background-color: var(--otodb-bg-color);
     border: 1px solid var(--otodb-content-color);

@@ -15,12 +15,6 @@ services:
 
   backend:
     build: ./backend
-    command: >
-      sh -c "python _setup.py &&
-      python manage.py collectstatic --noinput &&
-      granian --interface wsgi project.wsgi:application --host 0.0.0.0"
-    expose:
-      - "8000"
     env_file:
       - .env
     environment:
@@ -43,8 +37,6 @@ services:
         OTODB_FRONTEND_DOMAIN: ${OTODB_FRONTEND_DOMAIN}
     environment:
       - OTODB_FRONTEND_DOMAIN=${OTODB_FRONTEND_DOMAIN}
-    expose:
-      - "5173"
     restart: always
 
   caddy:

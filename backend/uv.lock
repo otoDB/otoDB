@@ -113,16 +113,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-bitfield"
-version = "2.2.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "six" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/1a/fc/872e9c94107a7ed3b9534c76be29cdc6697cc27332075fccc384e8c30b93/django-bitfield-2.2.0.tar.gz", hash = "sha256:1b21262acc4ec0af3f82ed04498a056cd9d5452532ac02771e004835a34e0b1b", size = 17365 }
-
-[[package]]
 name = "django-comments-xtd"
 version = "2.10.2"
 source = { registry = "https://pypi.org/simple" }
@@ -321,7 +311,6 @@ source = { virtual = "." }
 dependencies = [
     { name = "diff-match-patch" },
     { name = "django" },
-    { name = "django-bitfield" },
     { name = "django-comments-xtd" },
     { name = "django-cors-headers" },
     { name = "django-debug-toolbar" },
@@ -343,7 +332,6 @@ dependencies = [
 requires-dist = [
     { name = "diff-match-patch", specifier = ">=20241021" },
     { name = "django", specifier = ">=5.1.4" },
-    { name = "django-bitfield", specifier = ">=2.2.0" },
     { name = "django-comments-xtd", specifier = ">=2.10.1" },
     { name = "django-cors-headers", specifier = ">=4.6.0" },
     { name = "django-debug-toolbar", specifier = ">=5.0.1" },

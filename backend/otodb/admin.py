@@ -1,5 +1,3 @@
-from bitfield import BitField
-from bitfield.forms import BitFieldCheckboxSelectMultiple
 from django import forms
 from django.contrib import admin
 
@@ -11,7 +9,6 @@ from .models import (
     WorkSource,
 )
 
-
 class MediaSourceInline(admin.TabularInline):
     model = WorkSource
     extra = 0
@@ -19,9 +16,6 @@ class MediaSourceInline(admin.TabularInline):
 
 class TagWorkAdmin(admin.ModelAdmin):
     readonly_fields = ('display_name',)
-    formfield_overrides = {
-        BitField: {'widget': BitFieldCheckboxSelectMultiple},
-    }
 
 class MediaAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs) -> None:

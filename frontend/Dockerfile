@@ -1,9 +1,8 @@
-FROM node:22-alpine AS base
+FROM oven/bun AS base
 WORKDIR /app
 
-RUN corepack enable pnpm
 COPY package.json .
-RUN pnpm install
+RUN bun install
 
 COPY . .
 
@@ -12,8 +11,8 @@ ENV OTODB_FRONTEND_DOMAIN=${OTODB_FRONTEND_DOMAIN}
 ENV PUBLIC_BACKEND_URL_EXTERNAL=https://${OTODB_FRONTEND_DOMAIN}/
 ENV PUBLIC_BACKEND_URL_INTERNAL=http://backend:8000/
 
-RUN pnpm run prepare
-RUN pnpm run build
+RUN bun run prepare
+RUN bun run build
 
 FROM base AS build
 WORKDIR /app

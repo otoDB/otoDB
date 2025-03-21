@@ -12,8 +12,10 @@ RUN apt-get update && \
 COPY pyproject.toml ./
 
 RUN pip install --upgrade pip
-RUN pip install . && pip install psycopg2-binary
+RUN pip install .
+RUN pip install psycopg[binary]
 
 COPY . .
 
 EXPOSE 8000
+CMD ["sh", "-c", "python _setup.py && python manage.py collectstatic --noinput && granian --interface wsgi project.wsgi:application --host 0.0.0.0"]

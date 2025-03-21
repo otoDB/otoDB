@@ -8,9 +8,8 @@
 
     let { data, form }: PageProps = $props();
 
-    let entries = $state(data.entries!.items.map((el, i) => Object.assign({}, el, {ui_id: i})));
-    
-    let entries_copy = entries; // not $state on purpose
+    let entries_copy = data.entries!.items.map((el, i) => Object.assign({}, el, {ui_id: i}));
+    let entries = $state(entries_copy);
 
     let source: number | null = null, target: number | null = null;
 
@@ -56,7 +55,7 @@
         }});
         if (!error) {
             entries.splice(i, 1);
-            entries_copy = entries;
+            entries_copy = [...entries];
         }
     }
 </script>

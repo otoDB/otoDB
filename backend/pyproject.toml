@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "diff-match-patch>=20241021",
-    "django-bitfield>=2.2.0",
     "django-comments-xtd>=2.10.1",
     "django-cors-headers>=4.6.0",
     "django-model-utils>=5.0.0",

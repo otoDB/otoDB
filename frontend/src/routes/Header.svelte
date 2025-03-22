@@ -22,13 +22,15 @@
 					<input type="text" name="query" placeholder="{m.mean_top_antelope_love()}...">
 				</form>
 			</li>
-			{#if user?.level >= UserLevel.MODERATOR}
-			<hr>
+		</ul>
+		{#if user?.level >= UserLevel.MODERATOR}
+		<ul>
 			{@render link('/tag/alias', 'Alias tags')}
 			{@render link('/work/merge', 'Merge works')}
 			{@render link('/work/unbound', 'Bind sources')}
-			{/if}
-			<hr>
+			</ul>
+		{/if}
+		<ul>
 			{#if !user}
 			{@render link('/login', m.inner_stale_anteater_walk())}
 			{@render link('/register', m.blue_whole_camel_type())}
@@ -52,10 +54,7 @@
 	nav {
 		display: flex;
 		flex-direction: column;
-		padding: 2rem 1rem;
 		gap: 1rem;
-		background-color: var(--otodb-faint-bg);
-		border: 1px solid var(--otodb-faint-content);
 		max-width: 8.5rem;
 		& form > input {
 			width: 100%;
@@ -65,10 +64,9 @@
 			&> li > a {
 				text-decoration: none;
 			}
-			&> hr {
-				margin-top: .5rem;
-				margin-bottom: .5rem;
-			}
+			padding: 1rem 1rem;
+			background-color: var(--otodb-faint-bg);
+			border: 1px solid var(--otodb-faint-content);
 		}
 	}
 </style>

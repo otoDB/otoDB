@@ -14,7 +14,7 @@ from otodb.common import video_info
 from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote
 from otodb.models.enums import Platform
 
-from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_moderator
+from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_moderator, RelationSchema, post_relation
 
 work_router = Router()
 
@@ -83,22 +83,12 @@ def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchem
 def random(request: HttpRequest):
     return MediaWork.active_objects.random()
 
-class IDSchema(Schema):
-    id: int
-
 class SlimWorkSchema(ModelSchema):
     class Meta:
         model = MediaWork
         fields = ['id', 'title', 'thumbnail']
 
-class WorkRelationSchema(ModelSchema):
-    A: IDSchema
-    B: IDSchema
-    class Meta:
-        model = WorkRelation
-        fields = ['relation']
-
-@work_router.get('relations', response=tuple[list[WorkRelationSchema], list[SlimWorkSchema]])
+@work_router.get('relations', response=tuple[list[RelationSchema], list[SlimWorkSchema]])
 def relations(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     relations, works = WorkRelation.get_component_from_work(work)
@@ -106,17 +96,8 @@ def relations(request: HttpRequest, work_id: int):
 
 @work_router.post('relation', auth=django_auth)
 @user_is_trusted
-def relation(request: HttpRequest, payload: WorkRelationSchema):
-    A = MediaWork.active_objects.get(id=payload.A.id)
-    B = MediaWork.active_objects.get(id=payload.B.id)
-    try:
-        rel = WorkRelation.objects.get(A, B)
-        rel.A = A
-        rel.B = B
-        rel.relation = payload.relation
-        rel.save()
-    except WorkRelation.DoesNotExist:
-        rel = WorkRelation.objects.create(A=A, B=B, relation=payload.relation)
+def relation(request: HttpRequest, payload: RelationSchema):
+    post_relation(MediaWork, payload)
     return
 
 @work_router.delete('relation', auth=django_auth)

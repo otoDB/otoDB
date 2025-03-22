@@ -2,7 +2,7 @@
 	import Section from "$lib/Section.svelte";
 	import type { PageProps } from "./$types";
     import { m } from '$lib/paraglide/messages.js';
-	import WorkTagsField from "$lib/WorkTagsField.svelte";
+	import TagsField from "$lib/TagsField.svelte";
 	import client from "$lib/api";
 	import { goto } from "$app/navigation";
 
@@ -12,7 +12,7 @@
         e.preventDefault();
         const { error } = await client.POST('/api/tag/alias', { fetch, params: { query: { into_tag: selected } }, body: tags});
         if (!error)
-            goto(`/tag/${selected}`);
+            goto(`/tag/${selected}`, { invalidateAll: true });
     };
 </script>
 
@@ -22,7 +22,7 @@
 
 <Section title="Alias Tags">
 Start by giving a space-delimited list of tags.
-<WorkTagsField class="w-full" bind:value={tags}/>
+<TagsField type="work" class="w-full" bind:value={tags}/>
 {#if tags.length}
 into
 <form onsubmit={submit}>

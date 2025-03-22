@@ -36,21 +36,16 @@ export const actions = {
             return fail(400, { category, parent_slug, failed: true });
 
         if (+category == 2) {
-            const title = data.get('song') as string,
-                author = data.get('category') as string,
+            const title = data.get('song_title') as string,
+                author = data.get('song_author') as string,
                 bpm = data.get('song_bpm') as string;
-            client.POST('/api/tag/song', { fetch, params: { query: {
+            await client.POST('/api/tag/song', { fetch, params: { query: {
                 tag_slug: params.tag_slug!
             }}, body: {
                 title, author, bpm: +bpm
             }});
         }
         redirect(303, `/tag/${params.tag_slug}`);
-    },
-    delete_song: async ({ request, fetch, params }) => {
-        await client.DELETE('/api/tag/song', { fetch, params: { query: {
-            tag_slug: params.tag_slug!
-        }}});
     },
     wiki_page: async ({ request, fetch, params }) => {
         const data = await request.formData();

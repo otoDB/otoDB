@@ -4,7 +4,7 @@
 	import { m } from "$lib/paraglide/messages";
 	import Section from "$lib/Section.svelte";
 	import WorkTag from "$lib/WorkTag.svelte";
-	import WorkTagsField from "$lib/WorkTagsField.svelte";
+	import TagsField from "$lib/TagsField.svelte";
 
     let { data } = $props();
 
@@ -56,7 +56,7 @@
 
 <h3>Add more tags...</h3>
 <form onsubmit={submit_new_tags}>
-    <div><WorkTagsField class="w-full" bind:value={new_tags} /></div>
+    <div><TagsField type="work" class="w-full" bind:value={new_tags} /></div>
     <input type="submit">
 </form>
 </Section>

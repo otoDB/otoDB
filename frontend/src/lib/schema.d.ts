@@ -609,6 +609,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/song_search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Song Search */
+        get: operations["otodb_api_tag_song_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tag/song": {
         parameters: {
             query?: never;
@@ -620,8 +637,58 @@ export interface paths {
         put?: never;
         /** Song */
         post: operations["otodb_api_tag_song"];
-        /** Delete Song */
-        delete: operations["otodb_api_tag_delete_song"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/song_relations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Song Relations */
+        get: operations["otodb_api_tag_song_relations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/song_relation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Song Relation */
+        post: operations["otodb_api_tag_song_relation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/song_tag_search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Song Tag Search */
+        get: operations["otodb_api_tag_song_tag_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -634,10 +701,28 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Wiki Page */
+        get: operations["otodb_api_tag_wiki_page"];
         put?: never;
         /** Edit Wiki Page */
         post: operations["otodb_api_tag_edit_wiki_page"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/song_tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Song Tags */
+        post: operations["otodb_api_tag_song_tags"];
         delete?: never;
         options?: never;
         head?: never;
@@ -678,6 +763,10 @@ export interface components {
         };
         /** SongSchema */
         SongSchema: {
+            /** Work Tag */
+            work_tag: string;
+            /** Tags */
+            tags: components["schemas"]["TagSongSchema"][];
             /** ID */
             id?: number | null;
             /** Title */
@@ -686,6 +775,24 @@ export interface components {
             bpm: number;
             /** Author */
             author: string;
+        };
+        /** TagSongSchema */
+        TagSongSchema: {
+            /** Aliases */
+            aliases: string[];
+            /** Children */
+            children: components["schemas"]["TagSongSchema"][];
+            /** ID */
+            id?: number | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
         };
         /** TagWorkSchema */
         TagWorkSchema: {
@@ -776,10 +883,14 @@ export interface components {
             /** Score */
             score: number;
         };
-        /** IDSchema */
-        IDSchema: {
-            /** Id */
-            id: number;
+        /** RelationSchema */
+        RelationSchema: {
+            /** A  Id */
+            A__id: number;
+            /** B  Id */
+            B__id: number;
+            /** Relation */
+            relation: number;
         };
         /** SlimWorkSchema */
         SlimWorkSchema: {
@@ -789,13 +900,6 @@ export interface components {
             title: string;
             /** Thumbnail */
             thumbnail?: string | null;
-        };
-        /** WorkRelationSchema */
-        WorkRelationSchema: {
-            A: components["schemas"]["IDSchema"];
-            B: components["schemas"]["IDSchema"];
-            /** Relation */
-            relation: number;
         };
         /** ProfileSchema */
         ProfileSchema: {
@@ -995,6 +1099,13 @@ export interface components {
             tree: components["schemas"]["TagWorkSchema"][];
             /** Wiki Page */
             wiki_page: string | null;
+        };
+        /** PagedSongSchema */
+        PagedSongSchema: {
+            /** Items */
+            items: components["schemas"]["SongSchema"][];
+            /** Count */
+            count: number;
         };
         /** SongInSchema */
         SongInSchema: {
@@ -1322,7 +1433,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": [
-                        components["schemas"]["WorkRelationSchema"][],
+                        components["schemas"]["RelationSchema"][],
                         components["schemas"]["SlimWorkSchema"][]
                     ];
                 };
@@ -1338,7 +1449,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["WorkRelationSchema"];
+                "application/json": components["schemas"]["RelationSchema"];
             };
         };
         responses: {
@@ -1999,6 +2110,30 @@ export interface operations {
             };
         };
     };
+    otodb_api_tag_song_search: {
+        parameters: {
+            query: {
+                query: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedSongSchema"];
+                };
+            };
+        };
+    };
     otodb_api_tag_song: {
         parameters: {
             query: {
@@ -2023,7 +2158,78 @@ export interface operations {
             };
         };
     };
-    otodb_api_tag_delete_song: {
+    otodb_api_tag_song_relations: {
+        parameters: {
+            query: {
+                song_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": [
+                        components["schemas"]["RelationSchema"][],
+                        components["schemas"]["SongSchema"][]
+                    ];
+                };
+            };
+        };
+    };
+    otodb_api_tag_song_relation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelationSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_song_tag_search: {
+        parameters: {
+            query: {
+                query: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedTagWorkSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_tag_wiki_page: {
         parameters: {
             query: {
                 tag_slug: string;
@@ -2054,6 +2260,30 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_song_tags: {
+        parameters: {
+            query: {
+                song_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string[];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

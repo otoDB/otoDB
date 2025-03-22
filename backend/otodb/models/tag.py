@@ -114,7 +114,7 @@ class TagSong(TagModel):
         super().save(*args, **kwargs)
 
     category = models.IntegerField(choices=SongTagCategory.choices, default=SongTagCategory.GENERAL)
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
 

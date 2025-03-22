@@ -7,17 +7,17 @@
 
     let input: string = $state('');
     interface Props {
-        value: components['schemas']['WorkSchema'] | null | undefined;
+        value: components['schemas']['SongSchema'] | null | undefined;
         oninput: Function | undefined;
     }
     let { value = $bindable(undefined), oninput = undefined, ...props}: Props = $props();
     
-    let suggestions: components['schemas']['WorkSchema'][] = $state([]);
+    let suggestions: components['schemas']['SongSchema'][] = $state([]);
     let locked_in = $state(false);
 
     const search = async () => {
         if (input === '') { suggestions = []; return; }
-        const { data } =  await client.GET('/api/work/search', {
+        const { data } =  await client.GET('/api/tag/song_search', {
             params: { query: { query: input, limit: 10 } }
         });
         if (!data) return;
@@ -37,11 +37,12 @@
 </script>
 
 <span role="none" bind:this={self}>
-    <input type="text" oninput={debounce(search)} disabled={locked_in} bind:value={input}>
     <input type="number" hidden value={value?.id ?? -1} {...props}>
     {#if locked_in}
     <button type="button" onclick={() => { value = null; locked_in = false; if (oninput) oninput(self, null); }}>Change</button>
-    <a target="_blank" href="/work/{value?.id}"><img class="w-56" src={value?.thumbnail} alt={value?.title}></a>
+    <a target="_blank" href="/tag/{value?.work_tag}">{value?.title}</a>
+    {:else}
+    <input type="text" oninput={debounce(search)} disabled={locked_in} bind:value={input}>
     {/if}
     <ul class="absolute" use:clickOutside onOutclick={() => { suggestions = []; }}>
         {#each suggestions as v}

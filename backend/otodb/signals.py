@@ -4,16 +4,24 @@ from django.dispatch import receiver
 from django_comments.signals import comment_will_be_posted
 from django_comments_xtd.signals import should_request_be_authorized
 
-from otodb.models import MediaWork, TagWork
+from otodb.models import MediaWork, MediaSong, TagWork, TagSong
 
 
-# IMPORTANT: maintain following invariants: TODO Move to api logic instead. Try not to rely on signals
+# IMPORTANT: maintain following invariants:
 # - aliased tags are NOT attached to any works, table joined to alias as soon as aliasing happens
 # - a tag that is aliased to another tag cannot itself be an alias target, all alias targets must have alised_to = null
 @receiver(m2m_changed, sender=MediaWork.tags.through)
-def on_add_remove_tag_main(sender, instance, action, pk_set, **kwargs):
+def on_add_remove_tag_work(sender, instance, action, pk_set, **kwargs):
     if action == 'post_add':
         for tag in TagWork.objects.filter(id__in=pk_set):
+            if tag.aliased_to:
+                instance.tags.remove(tag)
+                instance.tags.add(tag.aliased_to)
+
+@receiver(m2m_changed, sender=MediaSong.tags.through)
+def on_add_remove_tag_song(sender, instance, action, pk_set, **kwargs):
+    if action == 'post_add':
+        for tag in TagSong.objects.filter(id__in=pk_set):
             if tag.aliased_to:
                 instance.tags.remove(tag)
                 instance.tags.add(tag.aliased_to)

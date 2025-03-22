@@ -4,14 +4,17 @@
 
     interface Props {
         value: string;
+        type: 'work' | 'song';
     }
-    let { value = $bindable(''), ...props}: Props = $props();
+    let { value = $bindable(''), type, ...props}: Props = $props();
+
+    const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
     
     let suggestions: string[] = $state([]);
 
     const search = async () => {
         if (value === '') { suggestions = []; return; }
-        const { data } =  await client.GET('/api/tag/search', {
+        const { data } =  await client.GET(endpoint, {
             params: { query: { query: value, limit: 10 } }
         });
         if (!data) return;

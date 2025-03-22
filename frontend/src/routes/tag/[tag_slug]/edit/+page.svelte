@@ -4,7 +4,7 @@
     import { SongRelationTypes, WorkTagCategory } from "$lib/enums";
 	import { enhance } from "$app/forms";
 	import type { PageProps } from "./$types";
-	import WorkTagField from "$lib/WorkTagField.svelte";
+	import TagField from "$lib/TagField.svelte";
     import Markdown from "svelte-exmarkdown";
 	import RelationEditor from "$lib/RelationEditor.svelte";
 
@@ -38,7 +38,7 @@
         </tr>
         <tr>
             <th><label for="parent">Parent</label></th>
-            <td><WorkTagField name="parent" value={form?.parent_slug ?? data.parent_slug ?? ''}/></td>
+            <td><TagField type="work" name="parent" value={form?.parent_slug ?? data.parent_slug ?? ''}/></td>
         </tr>
     </tbody>
     </table>

@@ -4,6 +4,7 @@
     import { WorkTagCategory } from "$lib/enums";
     import WorkCard from "$lib/WorkCard.svelte";
 	import CommentTree from "$lib/CommentTree.svelte";
+	import SongTag from "$lib/SongTag.svelte";
 
     let { data } = $props();
 </script>
@@ -17,7 +18,7 @@
 
     <div>
         <span>{m.empty_legal_chicken_taste()}</span>
-        {#each data.tree as node, i} > <a href={node.slug}>{node.name}</a> > {:else} > {/each}
+        {#each data.tree as node} > <a href={node.slug}>{node.name}</a> > {:else} > {/each}
         <span>{data.tag.name}</span>
     </div>
 
@@ -39,12 +40,22 @@
 </Section>
 
 {#if data.tag.song}
-<Section title="Song: {data.tag.song.title}">
+<Section title="Song: {data.tag.song.title}" menuLinks={data.song_links}>
     <table><tbody>
         <tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.tag.song.title}</td></tr>
         <tr><th>BPM</th><td>{data.tag.song.bpm}</td></tr>
         <tr><th>{m.crisp_red_canary_tickle()}</th><td>{data.tag.song.author}</td></tr>
     </tbody></table>
+    {#if data.tag?.song.tags.length}
+    <ul id="song-tags">
+        {#each data.tag?.song.tags as tag}
+            <li><SongTag {tag}/></li>
+        {/each}
+    </ul>
+    {/if}
+    {#if data.song_relation_svg}
+    {@html data.song_relation_svg}
+    {/if}
 </Section>
 {/if}
 
@@ -73,3 +84,19 @@
 <Section title={m.same_broad_haddock_pinch()}>
     <CommentTree comments={data.comments} user={data.user ?? null} model="tagwork" pk={data.tag.id!}/>
 </Section>
+
+<style>
+#song-tags {
+    grid-column: 1 / span 2;
+    border-top: var(--otodb-faint-content) 1px solid;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    display: flex;
+    gap: .3rem 1rem;
+    flex-wrap: wrap;
+    list-style: none;
+    &> li {
+        margin: 0;
+    }
+}
+</style>

@@ -1,9 +1,15 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import client from "./api";
-	import type { components } from "./schema";
 	import { clickOutside, debounce } from "./ui";
 
-    let { value = $bindable([]), ...props} = $props();
+    interface Props {
+        value: any[];
+        type: 'work' | 'song';
+    }
+    let { value = $bindable([]), type, ...props}: Props = $props();
+
+    const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
     
     let textarea: HTMLTextAreaElement;
     let suggestions: string[] = $state([]);
@@ -24,7 +30,7 @@
     const search = debounce(async () => {
         const query = getWordAtPos(textarea.value, textarea.selectionStart).word;
         if (query === '') { suggestions = []; return; }
-        const { data } =  await client.GET('/api/tag/search', {
+        const { data } =  await client.GET(endpoint, {
             params: { query: { query, limit: 10 } }
         });
         if (!data) return;
@@ -34,6 +40,11 @@
     const updateValue = () => {
         value = [...new Set(textarea.value.split(' ').map(s => s.trim()).filter(str => str.length !== 0))];
     };
+
+    onMount(() => {
+        if (value)
+            textarea.value = value.join(' ');
+    });
 </script>
 
 <span role="none">

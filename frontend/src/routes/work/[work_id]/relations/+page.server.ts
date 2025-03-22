@@ -16,29 +16,23 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
     if (relations.length === 0)
         return;
 
-    // TODO temporary workaround https://github.com/terrastruct/d2/issues/2357
-    const placeholderLink = (n: number) => `https://@WL_${n}`;
-
     const source = `direction: right
     ${
         works.map(w => `${w.id}: ${w.title} {
              shape: image
              icon: ${w.thumbnail}
-             link: ${placeholderLink(w.id!)}
+             link: ${`/work/${w.id}`}
              ${+params.work_id === w.id ? 'style: { font-color: red }' : ''}
         }`).join('\n')
     }
     ${
-        relations.map(r => `${r.A.id} -> ${r.B.id}: ${WorkRelationTypes[r.relation]()}`).join('\n')
+        relations.map(r => `${r.A__id} -> ${r.B__id}: ${WorkRelationTypes[r.relation]()}`).join('\n')
     }`;
     
     const result = await d2.compile(source);
     let svg = await d2.render(result.diagram, { ...result.renderOptions, darkThemeID: 200, noXMLTag: true});
 
-    svg = svg.replace(/<!\[CDATA\[.*?]]>/gs, '<![CDATA[.appendix-icon{display:none;}]]>');
-
-    for (const work of works)
-        svg = svg.replace(placeholderLink(work.id!), `/work/${work.id}`);
+    svg = svg.replace(/\.appendix-icon {.*?}/gs, '.appendix-icon{display:none;}');
 
     return {
         relations_svg: svg

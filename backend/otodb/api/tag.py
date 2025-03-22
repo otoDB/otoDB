@@ -5,10 +5,10 @@ from ninja import Router, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
-from otodb.models import TagWork, MediaWork, MediaSong, WikiPage
+from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong
 from otodb.models.enums import WorkTagCategory
 
-from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted
+from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema
 
 tag_router = Router()
 
@@ -55,7 +55,8 @@ class TagInSchema(ModelSchema):
 @user_is_trusted
 def update(request: HttpRequest, tag_slug: str, payload: TagInSchema):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    assert(not(tag.category == WorkTagCategory.SONG and payload.category != WorkTagCategory.SONG))
+    if tag.category == WorkTagCategory.SONG and payload.category != WorkTagCategory.SONG:
+        tag.mediasong.delete()
     tag.category = payload.category
     if payload.parent_slug:
         parent = get_object_or_404(TagWork, slug=payload.parent_slug)
@@ -66,6 +67,11 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema):
     tag.save()
     return
 
+@tag_router.get('song_search', response=list[SongSchema])
+@paginate
+def song_search(request: HttpRequest, query: str):
+    return MediaSong.objects.filter(title__icontains=query)
+
 class SongInSchema(ModelSchema):
     class Meta:
         model = MediaSong
@@ -75,25 +81,47 @@ class SongInSchema(ModelSchema):
 @user_is_trusted
 def song(request: HttpRequest, tag_slug: str, payload: SongInSchema):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    if tag.mediasong:
+    try:
         song = tag.mediasong
         song.title = payload.title
         song.bpm = payload.bpm
         song.author = payload.author
         song.save()
-    else:
+    except MediaSong.DoesNotExist:
         tag.category = WorkTagCategory.SONG
         tag.save()
         song = MediaSong.objects.create(work_tag=tag, **payload.dict())
     return
 
-@tag_router.delete('song', auth=django_auth)
+@tag_router.get('song_relations', response=tuple[list[RelationSchema], list[SongSchema]])
+def song_relations(request: HttpRequest, song_id: int):
+    song = get_object_or_404(MediaSong.objects, id=song_id)
+    relations, songs = SongRelation.get_component_from_song(song)
+    return 200, (relations, songs)
+
+@tag_router.post('song_relation', auth=django_auth)
 @user_is_trusted
-def delete_song(request: HttpRequest, tag_slug: str):
+def song_relation(request: HttpRequest, payload: RelationSchema):
+    post_relation(MediaSong, payload)
+    return
+
+@tag_router.get('song_tag_search', response=list[TagWorkSchema])
+@paginate
+def song_tag_search(request: HttpRequest, query: str):
+    return TagSong.objects.filter(name__icontains=query, aliased_to__isnull=True)
+
+
+@tag_router.get('wiki_page', auth=django_auth)
+def wiki_page(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    tag.mediasong.delete()
-    tag.category = WorkTagCategory.GENERAL
-    tag.save()
+    if tag.wiki_page:
+        return tag.wiki_page.page
+
+@tag_router.post('song_tags', auth=django_auth)
+@user_is_trusted
+def song_tags(request: HttpRequest, song_id: int, tags: list[str]):
+    song = get_object_or_404(MediaSong.objects, id=song_id)
+    song.tags.set(tags)
     return
 
 @tag_router.post('wiki_page', auth=django_auth)

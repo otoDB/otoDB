@@ -1,16 +1,18 @@
 <script lang="ts">
 	import Section from "$lib/Section.svelte";
     import { m } from '$lib/paraglide/messages.js';
-    import { WorkTagCategory } from "$lib/enums";
+    import { SongRelationTypes, WorkTagCategory } from "$lib/enums";
 	import { enhance } from "$app/forms";
 	import type { PageProps } from "./$types";
 	import WorkTagField from "$lib/WorkTagField.svelte";
     import Markdown from "svelte-exmarkdown";
+	import RelationEditor from "$lib/RelationEditor.svelte";
 
     let { data, form }: PageProps = $props();
     
     let category = $state(form?.category ?? data.tag?.category);
     let md = $state(data.wiki_page);
+
 </script>
 
 <svelte:head>
@@ -21,12 +23,14 @@
     menuLinks={data.links}>
 <form method="POST" use:enhance action="?/edit">
     {#if form?.failed}<p class="error">Failed!</p>{/if}
+    {#if data.tag.category === 2 && category !== 2}
+    <p class="text-red-500">Changing the category will delete all related information about the song, including tags and relations!</p>
+    {/if}
     <table>
     <tbody>
         <tr>
-            <!-- disable if song -->
             <th><label for="category">{m.plane_awful_bobcat_spark()}</label></th>
-            <td><select name="category" bind:value={category} disabled={data.tag?.category == 2}>
+            <td><select name="category" bind:value={category}>
                 {#each WorkTagCategory as cat, i}
                 <option value={i}>{cat()}</option>
                 {/each}
@@ -38,11 +42,7 @@
         </tr>
     </tbody>
     </table>
-    {#if data.tag?.category === 2}
-    <p>To change the cateogry, <button formaction="?/delete_song">delete the associated song</button>.</p>
-    {/if}
     {#if category === 2}
-    <h2>Song Information</h2>
     <table><tbody>
         <tr><th><label for="song_title">Title</label></th><td><input type="text" name="song_title" value="{data.tag?.song?.title ?? ''}"></td></tr>
         <tr><th><label for="song_author">Author</label></th><td><input type="text" name="song_author" value={data.tag?.song?.author ?? ''}></td></tr>
@@ -52,6 +52,12 @@
     <input type="submit"/>
 </form>
 </Section>
+
+{#if category === 2 && data.tag.category === 2}
+<Section title="Song: {data.tag?.song.title}" menuLinks={data.song_links}>
+    <RelationEditor init_relations={data.song_relations} obj_type="song" this_id={data.tag.song?.id!}></RelationEditor>
+</Section>
+{/if}
 
 <Section title="Wiki page">
 <form action="?/wiki_page" method="POST" use:enhance>

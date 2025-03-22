@@ -50,13 +50,15 @@ class WorkRelation(models.Model):
             component = WorkRelation.get_relations_including_works(works)
             works = get_works_from_relations(component)
             if last_size == len(works):
-                return component, works
+                return component.values("relation", "A__id", "B__id"), works
 
 class SongRelation(models.Model):
     A = models.ForeignKey(MediaSong, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_A')
     B = models.ForeignKey(MediaSong, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_B')
     relation = models.IntegerField(choices=SongRelationTypes.choices)
 
+    objects = BidirectionalManager()
+    
     def __str__(self) -> str:
         return f'{self.A.id} -->|{SongRelationTypes(self.relation).label}| {self.B.id}'
 
@@ -87,4 +89,4 @@ class SongRelation(models.Model):
             component = SongRelation.get_relations_including_songs(songs)
             songs = get_songs_from_relations(component)
             if last_size == len(songs):
-                return component, songs
+                return component.values("relation", "A__id", "B__id"), songs

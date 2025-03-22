@@ -7,7 +7,7 @@
     const { tag }: Props = $props();
 </script>
 
-<a href="/song_tag/{tag.slug}" class="rounded-full border border-solid px-2 {
+<a href="/tag/song/{tag.slug}" class="rounded-full border border-solid px-2 {
     ['border-white-600', 'border-indigo-600', 'border-orange-600', 'border-yellow-600', 'border-red-600'][tag.category]
 }">{tag.name}</a>
 

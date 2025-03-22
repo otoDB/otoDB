@@ -60,9 +60,6 @@ class TagWork(TagModel):
             ("manage_tags", "Can manage tags"),
         ]
 
-    def get_absolute_url(self):
-        return reverse('otodb:tag', kwargs={ 'tag_slug': self.slug })
-
     def get_tree(self):
         tree = []
         curr = self
@@ -132,7 +129,30 @@ class TagSong(TagModel):
             ("manage_tags", "Can manage tags"),
         ]
 
-    def get_absolute_url(self):
-        return reverse('otodb:tag_song', kwargs={ 'tag_slug': self.slug })
+    def get_tree(self):
+        tree = []
+        curr = self
+        while curr is not None:
+            tree.append(curr)
+            curr = curr.parent
+        return reversed(tree)
 
-
+    @staticmethod
+    def alias(from_tags: list[Self], into_tag: Self):
+        for tag in from_tags:
+            if tag.id != into_tag.id:
+                tag.aliased_to = into_tag
+                tag.save()
+                for work in tag.works.all():
+                    work.tags.add(into_tag)
+                    work.tags.remove(tag)
+                for t in TagSong.objects.filter(aliased_to=tag):
+                    t.aliased_to = into_tag
+                    t.save()
+                for t in TagSong.objects.filter(parent=tag):
+                    t.parent = into_tag
+                    t.save()
+                if into_tag.parent is None:
+                    into_tag.parent = tag.parent
+                    
+        into_tag.save()

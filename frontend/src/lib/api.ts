@@ -25,7 +25,7 @@ export const forwardCookies = (cookies: Cookies, response: Response) => {
         cookies.set(name, value, {path: '/', expires, maxAge, sameSite});
 };
 
-export type CommentModels = 'mediawork' | 'account' | 'pool' | 'tagwork';
+export type CommentModels = 'mediawork' | 'account' | 'pool' | 'tagwork' | 'tagsong';
 
 export const commentClient = {
     GET: async (model: CommentModels, pk: number, fetch, opts?) => {

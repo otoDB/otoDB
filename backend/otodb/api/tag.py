@@ -1,14 +1,14 @@
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
-from ninja import Router, ModelSchema
+from ninja import Router, ModelSchema, Schema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong
 from otodb.models.enums import WorkTagCategory
 
-from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema
+from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema
 
 tag_router = Router()
 
@@ -45,11 +45,9 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str):
     TagWork.alias(tags, into)
     return
 
-class TagInSchema(ModelSchema):
+class TagInSchema(Schema):
     parent_slug: str | None
-    class Meta:
-        model = TagWork
-        fields = ['category']
+    category: int
 
 @tag_router.put('tag', auth=django_auth)
 @user_is_trusted
@@ -67,6 +65,25 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema):
     tag.save()
     return
 
+@tag_router.get('wiki_page', auth=django_auth)
+def wiki_page(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    if tag.wiki_page:
+        return tag.wiki_page.page
+
+@tag_router.post('wiki_page', auth=django_auth)
+@user_is_trusted
+def edit_wiki_page(request: HttpRequest, tag_slug: str, md: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    if tag.wiki_page:
+        page = tag.wiki_page
+        page.page = md
+        page.save()
+    else:
+        tag.wiki_page = WikiPage.objects.create(page=md)
+        tag.save()
+    return
+
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate
 def song_search(request: HttpRequest, query: str):
@@ -80,7 +97,7 @@ class SongInSchema(ModelSchema):
 @tag_router.post('song', auth=django_auth)
 @user_is_trusted
 def song(request: HttpRequest, tag_slug: str, payload: SongInSchema):
-    tag = get_object_or_404(TagWork, slug=tag_slug)
+    tag = get_object_or_404(TagSong, slug=tag_slug)
     try:
         song = tag.mediasong
         song.title = payload.title
@@ -105,17 +122,10 @@ def song_relation(request: HttpRequest, payload: RelationSchema):
     post_relation(MediaSong, payload)
     return
 
-@tag_router.get('song_tag_search', response=list[TagWorkSchema])
+@tag_router.get('song_tag_search', response=list[TagSongSchema])
 @paginate
 def song_tag_search(request: HttpRequest, query: str):
     return TagSong.objects.filter(name__icontains=query, aliased_to__isnull=True)
-
-
-@tag_router.get('wiki_page', auth=django_auth)
-def wiki_page(request: HttpRequest, tag_slug: str):
-    tag = get_object_or_404(TagWork, slug=tag_slug)
-    if tag.wiki_page:
-        return tag.wiki_page.page
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted
@@ -124,15 +134,31 @@ def song_tags(request: HttpRequest, song_id: int, tags: list[str]):
     song.tags.set(tags)
     return
 
-@tag_router.post('wiki_page', auth=django_auth)
+@tag_router.get('song_tag', response=TagSongSchema)
+def song_tag(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagSong, slug=tag_slug, aliased_to__isnull=True)
+    return tag
+
+@tag_router.get('song_tag_details', response=list[str])
+def song_tag_details(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagSong, slug=tag_slug)
+    return list(tag.get_tree())[:-1]
+
+@tag_router.put('song_tag', auth=django_auth)
 @user_is_trusted
-def edit_wiki_page(request: HttpRequest, tag_slug: str, md: str):
-    tag = get_object_or_404(TagWork, slug=tag_slug)
-    if tag.wiki_page:
-        page = tag.wiki_page
-        page.page = md
-        page.save()
+def update_song_tag(request: HttpRequest, tag_slug: str, payload: TagInSchema):
+    tag = get_object_or_404(TagSong, slug=tag_slug)
+    tag.category = payload.category
+    if payload.parent_slug:
+        parent = get_object_or_404(TagSong, slug=payload.parent_slug)
+        assert(tag.id != t.id for t in parent.get_tree())
+        tag.parent = parent
     else:
-        tag.wiki_page = WikiPage.objects.create(page=md)
-        tag.save()
+        tag.parent = None
+    tag.save()
     return
+
+@tag_router.get('songs', response=list[SongSchema])
+@paginate
+def songs(request: HttpRequest, tag_slug: str):
+    return MediaSong.objects.filter(tags__slug=tag_slug)

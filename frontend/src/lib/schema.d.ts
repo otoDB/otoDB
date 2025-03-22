@@ -609,6 +609,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/wiki_page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Wiki Page */
+        get: operations["otodb_api_tag_wiki_page"];
+        put?: never;
+        /** Edit Wiki Page */
+        post: operations["otodb_api_tag_edit_wiki_page"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tag/song_search": {
         parameters: {
             query?: never;
@@ -694,24 +712,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/tag/wiki_page": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Wiki Page */
-        get: operations["otodb_api_tag_wiki_page"];
-        put?: never;
-        /** Edit Wiki Page */
-        post: operations["otodb_api_tag_edit_wiki_page"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/tag/song_tags": {
         parameters: {
             query?: never;
@@ -723,6 +723,58 @@ export interface paths {
         put?: never;
         /** Song Tags */
         post: operations["otodb_api_tag_song_tags"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/song_tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Song Tag */
+        get: operations["otodb_api_tag_song_tag"];
+        /** Update Song Tag */
+        put: operations["otodb_api_tag_update_song_tag"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/song_tag_details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Song Tag Details */
+        get: operations["otodb_api_tag_song_tag_details"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/songs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Songs */
+        get: operations["otodb_api_tag_songs"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1087,10 +1139,7 @@ export interface components {
         TagInSchema: {
             /** Parent Slug */
             parent_slug: string | null;
-            /**
-             * Category
-             * @default 0
-             */
+            /** Category */
             category: number;
         };
         /** TagWorkDetailsSchema */
@@ -1115,6 +1164,13 @@ export interface components {
             bpm: number;
             /** Author */
             author: string;
+        };
+        /** PagedTagSongSchema */
+        PagedTagSongSchema: {
+            /** Items */
+            items: components["schemas"]["TagSongSchema"][];
+            /** Count */
+            count: number;
         };
     };
     responses: never;
@@ -2110,6 +2166,47 @@ export interface operations {
             };
         };
     };
+    otodb_api_tag_wiki_page: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_edit_wiki_page: {
+        parameters: {
+            query: {
+                tag_slug: string;
+                md: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_tag_song_search: {
         parameters: {
             query: {
@@ -2224,49 +2321,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedTagWorkSchema"];
+                    "application/json": components["schemas"]["PagedTagSongSchema"];
                 };
-            };
-        };
-    };
-    otodb_api_tag_wiki_page: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_edit_wiki_page: {
-        parameters: {
-            query: {
-                tag_slug: string;
-                md: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };
@@ -2291,6 +2347,98 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    otodb_api_tag_song_tag: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagSongSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_tag_update_song_tag: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagInSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_song_tag_details: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    otodb_api_tag_songs: {
+        parameters: {
+            query: {
+                tag_slug: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedSongSchema"];
+                };
             };
         };
     };

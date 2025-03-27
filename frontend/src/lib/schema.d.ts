@@ -937,10 +937,10 @@ export interface components {
         };
         /** RelationSchema */
         RelationSchema: {
-            /** A  Id */
-            A__id: number;
-            /** B  Id */
-            B__id: number;
+            /** A Id */
+            A_id: number;
+            /** B Id */
+            B_id: number;
             /** Relation */
             relation: number;
         };

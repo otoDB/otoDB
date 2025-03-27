@@ -30,7 +30,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
             }`).join('\n')
         }
         ${
-            relations.map(r => `${r.A__id} -> ${r.B__id}: ${SongRelationTypes[r.relation]()}`).join('\n')
+            relations.map(r => `${r.A_id} -> ${r.B_id}: ${SongRelationTypes[r.relation]()}`).join('\n')
         }`;
         
         const result = await d2.compile(source);

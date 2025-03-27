@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         }`).join('\n')
     }
     ${
-        relations.map(r => `${r.A__id} -> ${r.B__id}: ${WorkRelationTypes[r.relation]()}`).join('\n')
+        relations.map(r => `${r.A_id} -> ${r.B_id}: ${WorkRelationTypes[r.relation]()}`).join('\n')
     }`;
     
     const result = await d2.compile(source);

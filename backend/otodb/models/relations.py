@@ -35,22 +35,16 @@ class WorkRelation(models.Model):
             ),
         ]
 
-    def get_relations_including_works(works):
-        return WorkRelation.objects.filter(A__in=works) | WorkRelation.objects.filter(B__in=works)
-
-    def get_component_from_work(work: MediaWork):
-        # TODO plenty of room for optimization here
-        def get_works_from_relations(relations):
-            return (MediaWork.active_objects.filter(relation_A__in=relations) | MediaWork.active_objects.filter(relation_B__in=relations)).distinct()
-
-        component = WorkRelation.get_relations_including_works([work])
-        works = get_works_from_relations(component)
-        while True:
-            last_size = len(works)
-            component = WorkRelation.get_relations_including_works(works)
-            works = get_works_from_relations(component)
-            if last_size == len(works):
-                return component.values("relation", "A__id", "B__id"), works
+    def get_component(work_id: int):
+        return WorkRelation.objects.select_related('A', 'B').raw('''
+            WITH RECURSIVE component AS (
+                SELECT "otodb_workrelation"."id", "otodb_workrelation"."A_id", "otodb_workrelation"."B_id", "otodb_workrelation"."relation" FROM "otodb_workrelation" WHERE "otodb_workrelation"."A_id" = %s OR "otodb_workrelation"."B_id" = %s
+                UNION
+                SELECT r.id, r."A_id", r."B_id", r.relation FROM otodb_workrelation r
+                JOIN component c ON c."A_id" = r."B_id" OR c."B_id" = r."A_id"
+            )
+            SELECT * FROM component;
+        ''', [work_id, work_id])
 
 class SongRelation(models.Model):
     A = models.ForeignKey(MediaSong, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_A')
@@ -74,19 +68,13 @@ class SongRelation(models.Model):
             ),
         ]
 
-    def get_relations_including_songs(songs):
-        return SongRelation.objects.filter(A__in=songs) | SongRelation.objects.filter(B__in=songs)
-
-    def get_component_from_song(song: MediaSong):
-        # TODO plenty of room for optimization here
-        def get_songs_from_relations(relations):
-            return (MediaSong.objects.filter(relation_A__in=relations) | MediaSong.objects.filter(relation_B__in=relations)).distinct()
-
-        component = SongRelation.get_relations_including_songs([song])
-        songs = get_songs_from_relations(component)
-        while True:
-            last_size = len(songs)
-            component = SongRelation.get_relations_including_songs(songs)
-            songs = get_songs_from_relations(component)
-            if last_size == len(songs):
-                return component.values("relation", "A__id", "B__id"), songs
+    def get_component(song_id: int):
+        return SongRelation.objects.select_related('A', 'B').raw('''
+            WITH RECURSIVE component AS (
+                SELECT "otodb_songrelation"."id", "otodb_songrelation"."A_id", "otodb_songrelation"."B_id", "otodb_songrelation"."relation" FROM "otodb_songrelation" WHERE "otodb_songrelation"."A_id" = %s OR "otodb_songrelation"."B_id" = %s
+                UNION
+                SELECT r.id, r."A_id", r."B_id", r.relation FROM otodb_songrelation r
+                JOIN component c ON c."A_id" = r."B_id" OR c."B_id" = r."A_id"
+            )
+            SELECT * FROM component;
+        ''', [song_id, song_id])

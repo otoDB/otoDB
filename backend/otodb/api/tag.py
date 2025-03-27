@@ -113,8 +113,8 @@ def song(request: HttpRequest, tag_slug: str, payload: SongInSchema):
 @tag_router.get('song_relations', response=tuple[list[RelationSchema], list[SongSchema]])
 def song_relations(request: HttpRequest, song_id: int):
     song = get_object_or_404(MediaSong.objects, id=song_id)
-    relations, songs = SongRelation.get_component_from_song(song)
-    return 200, (relations, songs)
+    relations = SongRelation.get_component(song.id)
+    return 200, (relations, {s.id: s for r in relations for s in (r.A, r.B)}.values())
 
 @tag_router.post('song_relation', auth=django_auth)
 @user_is_trusted

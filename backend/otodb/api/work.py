@@ -91,8 +91,8 @@ class SlimWorkSchema(ModelSchema):
 @work_router.get('relations', response=tuple[list[RelationSchema], list[SlimWorkSchema]])
 def relations(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
-    relations, works = WorkRelation.get_component_from_work(work)
-    return 200, (relations, works)
+    relations = WorkRelation.get_component(work.id)
+    return 200, (relations, {w.id: w for r in relations for w in (r.A, r.B)}.values())
 
 @work_router.post('relation', auth=django_auth)
 @user_is_trusted

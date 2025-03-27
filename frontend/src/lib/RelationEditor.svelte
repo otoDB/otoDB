@@ -17,9 +17,9 @@ let { this_id, init_relations, obj_type }: Props = $props()
 
 const endpoint = obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation';
 
-let relations: { swapped: boolean, item: any | null, relation: number }[] = $state(init_relations[0].filter(({ A__id, B__id }) => A__id === this_id || B__id === this_id).map(({ A__id, B__id, relation }) => ({
-        swapped: A__id === this_id,
-        item: init_relations[1].find(e => e.id === (A__id === this_id ? B__id : A__id)),
+let relations: { swapped: boolean, item: any | null, relation: number }[] = $state(init_relations[0].filter(({ A_id, B_id }) => A_id === this_id || B_id === this_id).map(({ A_id, B_id, relation }) => ({
+        swapped: A_id === this_id,
+        item: init_relations[1].find(e => e.id === (A_id === this_id ? B_id : A_id)),
         relation
     })));
     const delete_relation = (i: number) => async () => {
@@ -31,8 +31,8 @@ let relations: { swapped: boolean, item: any | null, relation: number }[] = $sta
         relations = relations.filter((rel, j) => rel.item.id !== r.item.id || j === i);
         if (r.item.id) {
             await client.POST(endpoint, { fetch, body: {
-                A__id: !r.swapped ? r.item.id : this_id!,
-                B__id: r.swapped ? r.item.id : this_id!,
+                A_id: !r.swapped ? r.item.id : this_id!,
+                B_id: r.swapped ? r.item.id : this_id!,
                 relation: r.relation
             }});
         }

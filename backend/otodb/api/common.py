@@ -106,16 +106,16 @@ user_is_moderator = perm_decorator_ctor(lambda user: user.is_moderator)
 user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
 
 class RelationSchema(Schema):
-    A__id: int
-    B__id: int
+    A_id: int
+    B_id: int
     relation: int
 
 def post_relation(cls, payload: RelationSchema):
     assert(cls is MediaWork or cls is MediaSong)
     manager = cls.active_objects if cls is MediaWork else cls.objects
     rel_cls = WorkRelation if cls is MediaWork else SongRelation
-    A = manager.get(id=payload.A__id)
-    B = manager.get(id=payload.B__id)
+    A = manager.get(id=payload.A_id)
+    B = manager.get(id=payload.B_id)
     try:
         rel = rel_cls.objects.get(A, B)
         rel.A = A

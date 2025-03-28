@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"name": "otodb",
+			"path": "."
+		},
+		{
+			"name": "browser-extension",
+			"path": "browser-extension"
+		},
+		{
+			"name": "frontend",
+			"path": "frontend"
+		},
+		{
+			"name": "backend",
+			"path": "backend"
+		},
+	],
+	"extensions": {
+		"recommendations": [
+			"editorconfig.editorconfig",
+			"esbenp.prettier-vscode",
+		]
+	},
+}

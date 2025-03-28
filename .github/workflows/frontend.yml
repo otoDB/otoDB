@@ -25,8 +25,8 @@ jobs:
       - run: npx prettier --check .
       - run: npx eslint .
 
-  build_docker_app:
-    name: Build Docker image (App)
+  build_docker:
+    name: Build Docker image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

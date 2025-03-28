@@ -5,7 +5,11 @@
 	--otodb-content-color: black;
 	--otodb-faint-bg: color-mix(in hsl, var(--otodb-bg-color) 90%, var(--otodb-content-color));
 	--otodb-fainter-bg: color-mix(in hsl, var(--otodb-bg-color) 80%, var(--otodb-content-color));
-	--otodb-faint-content: color-mix(in hsl, var(--otodb-bg-color) 12.5%, var(--otodb-content-color));
+	--otodb-faint-content: color-mix(
+		in hsl,
+		var(--otodb-bg-color) 12.5%,
+		var(--otodb-content-color)
+	);
 	--otodb-ins: color-mix(in hsl, var(--otodb-faint-bg) 35%, green);
 	--otodb-del: color-mix(in hsl, var(--otodb-faint-bg) 35%, red);
 }
@@ -18,7 +22,7 @@
 }
 
 html {
-    scroll-behavior: smooth;
+	scroll-behavior: smooth;
 	color: var(--otodb-content-color);
 }
 
@@ -33,7 +37,7 @@ hr {
 }
 
 body {
-    margin: 0;
+	margin: 0;
 	background-color: var(--otodb-bg-color);
 	padding: 12rem 3rem 5rem 3rem;
 	font-size: smaller;
@@ -47,18 +51,24 @@ tbody > tr:nth-of-type(odd) {
 	background-color: var(--otodb-fainter-bg);
 }
 
-th, td {
-	padding: .1rem .2rem;
+th,
+td {
+	padding: 0.1rem 0.2rem;
 	border: 1px var(--otodb-faint-bg) solid;
 }
 
-input[type="text"], input[type="password"], textarea {
+input[type='text'],
+input[type='password'],
+textarea {
 	background-color: var(--otodb-bg-color);
 }
 
-input[type="submit"], input[type="button"], select, button {
-    border: 1px solid white;
-    outline: none;
+input[type='submit'],
+input[type='button'],
+select,
+button {
+	border: 1px solid white;
+	outline: none;
 }
 
 .query-results {

@@ -1,15 +1,16 @@
-import client from "$lib/api";
-import type { PageServerLoad } from "./$types";
+import client from '$lib/api';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
-    const { data: lists } = await client.GET('/api/profile/lists', { fetch,
-        params: {
-            query: {
-                username: params.username
-            }
-        }
-    });
-    return {
-        lists
-    };
-}
+	const { data: lists } = await client.GET('/api/profile/lists', {
+		fetch,
+		params: {
+			query: {
+				username: params.username
+			}
+		}
+	});
+	return {
+		lists
+	};
+};

@@ -5,11 +5,11 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			user: {
-				csrf: string
-				user_id: number
-				username: string,
-				level: int
-			}
+				csrf: string;
+				user_id: number;
+				username: string;
+				level: int;
+			};
 		}
 		// interface PageData {}
 		// interface PageState {}
@@ -17,7 +17,7 @@ declare global {
 	}
 	namespace svelteHTML {
 		interface HTMLAttributes<T> {
-			'onOutclick'?: () => void;
+			onOutclick?: () => void;
 		}
 	}
 }

@@ -1,9 +1,12 @@
-import client from "$lib/api";
-import { error } from "@sveltejs/kit";
-import type { PageServerLoad } from "./$types";
+import client from '$lib/api';
+import { error } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, locals }) => {
-    const { data, error: e } = await client.GET('/api/work/unbound', { fetch, params: { query: { pending: false }}});
-    if (e) error(404, { message: 'Not found' });
-    return { sources: data };
+	const { data, error: e } = await client.GET('/api/work/unbound', {
+		fetch,
+		params: { query: { pending: false } }
+	});
+	if (e) error(404, { message: 'Not found' });
+	return { sources: data };
 };

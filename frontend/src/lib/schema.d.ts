@@ -4,2442 +4,2430 @@
  */
 
 export interface paths {
-    "/api/auth/csrf": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Csrf */
-        get: operations["otodb_api_auth_csrf"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Login Endpoint */
-        post: operations["otodb_api_auth_login_endpoint"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Status */
-        get: operations["otodb_api_auth_status"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Logout Endpoint */
-        post: operations["otodb_api_auth_logout_endpoint"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/auth/register": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Register */
-        post: operations["otodb_api_auth_register"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/query_external": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Query External */
-        get: operations["otodb_api_work_query_external"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search */
-        get: operations["otodb_api_work_search"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/work": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Work */
-        get: operations["otodb_api_work_work"];
-        /** Update Work */
-        put: operations["otodb_api_work_update_work"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/tag_scores": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Tag Scores */
-        get: operations["otodb_api_work_get_tag_scores"];
-        /** Vote Tags */
-        put: operations["otodb_api_work_vote_tags"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/random": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Random */
-        get: operations["otodb_api_work_random"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/relations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Relations */
-        get: operations["otodb_api_work_relations"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/relation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Relation */
-        post: operations["otodb_api_work_relation"];
-        /** Delete Relation */
-        delete: operations["otodb_api_work_delete_relation"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/sources": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Sources */
-        get: operations["otodb_api_work_sources"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/refresh_source": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Refresh Source */
-        post: operations["otodb_api_work_refresh_source"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/merge": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Merge Works */
-        post: operations["otodb_api_work_merge_works"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/source": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** New Source From Url */
-        post: operations["otodb_api_work_new_source_from_url"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/assign_source": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Assign Source To Work
-         * @description Pass in work_id=-1 if creating new work from source.
-         */
-        post: operations["otodb_api_work_assign_source_to_work"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/reject_source": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Reject Source */
-        post: operations["otodb_api_work_reject_source"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/unbound": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Unbound Sources */
-        get: operations["otodb_api_work_get_unbound_sources"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/profile/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Profile */
-        get: operations["otodb_api_profile_profile"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/profile/lists": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Lists */
-        get: operations["otodb_api_profile_lists"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/profile/work_in_my_lists": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Work In Lists */
-        get: operations["otodb_api_profile_work_in_lists"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/profile/submissions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Submissions */
-        get: operations["otodb_api_profile_submissions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/list/search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search */
-        get: operations["otodb_api_list_search"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/list/list": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Lst */
-        get: operations["otodb_api_list_lst"];
-        /** Update */
-        put: operations["otodb_api_list_update"];
-        /** New */
-        post: operations["otodb_api_list_new"];
-        /** Delete */
-        delete: operations["otodb_api_list_delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/list/entries": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Entries */
-        get: operations["otodb_api_list_entries"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/list/items": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Update Items */
-        put: operations["otodb_api_list_update_items"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/list/work_in_pool": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Work In Pool */
-        get: operations["otodb_api_list_work_in_pool"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/list/toggle_work": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Toggle */
-        put: operations["otodb_api_list_toggle"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/list/import": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Import Ext */
-        post: operations["otodb_api_list_import_ext"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Search */
-        get: operations["otodb_api_tag_search"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/tag": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Tag */
-        get: operations["otodb_api_tag_tag"];
-        /** Update */
-        put: operations["otodb_api_tag_update"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/details": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Details */
-        get: operations["otodb_api_tag_details"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/works": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Works */
-        get: operations["otodb_api_tag_works"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/alias": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Alias Tags */
-        post: operations["otodb_api_tag_alias_tags"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/wiki_page": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Wiki Page */
-        get: operations["otodb_api_tag_wiki_page"];
-        put?: never;
-        /** Edit Wiki Page */
-        post: operations["otodb_api_tag_edit_wiki_page"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/song_search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Song Search */
-        get: operations["otodb_api_tag_song_search"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/song": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Song */
-        post: operations["otodb_api_tag_song"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/song_relations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Song Relations */
-        get: operations["otodb_api_tag_song_relations"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/song_relation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Song Relation */
-        post: operations["otodb_api_tag_song_relation"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/song_tag_search": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Song Tag Search */
-        get: operations["otodb_api_tag_song_tag_search"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/song_tags": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Song Tags */
-        post: operations["otodb_api_tag_song_tags"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/song_tag": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Song Tag */
-        get: operations["otodb_api_tag_song_tag"];
-        /** Update Song Tag */
-        put: operations["otodb_api_tag_update_song_tag"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/song_tag_details": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Song Tag Details */
-        get: operations["otodb_api_tag_song_tag_details"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/songs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Songs */
-        get: operations["otodb_api_tag_songs"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+	'/api/auth/csrf': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Csrf */
+		get: operations['otodb_api_auth_csrf'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/auth/login': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Login Endpoint */
+		post: operations['otodb_api_auth_login_endpoint'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/auth/status': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Status */
+		get: operations['otodb_api_auth_status'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/auth/logout': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Logout Endpoint */
+		post: operations['otodb_api_auth_logout_endpoint'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/auth/register': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Register */
+		post: operations['otodb_api_auth_register'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/query_external': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Query External */
+		get: operations['otodb_api_work_query_external'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/search': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Search */
+		get: operations['otodb_api_work_search'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/work': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Work */
+		get: operations['otodb_api_work_work'];
+		/** Update Work */
+		put: operations['otodb_api_work_update_work'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/tag_scores': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Get Tag Scores */
+		get: operations['otodb_api_work_get_tag_scores'];
+		/** Vote Tags */
+		put: operations['otodb_api_work_vote_tags'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/random': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Random */
+		get: operations['otodb_api_work_random'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/relations': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Relations */
+		get: operations['otodb_api_work_relations'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/relation': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Relation */
+		post: operations['otodb_api_work_relation'];
+		/** Delete Relation */
+		delete: operations['otodb_api_work_delete_relation'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/sources': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Sources */
+		get: operations['otodb_api_work_sources'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/refresh_source': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Refresh Source */
+		post: operations['otodb_api_work_refresh_source'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/merge': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Merge Works */
+		post: operations['otodb_api_work_merge_works'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/source': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** New Source From Url */
+		post: operations['otodb_api_work_new_source_from_url'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/assign_source': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Assign Source To Work
+		 * @description Pass in work_id=-1 if creating new work from source.
+		 */
+		post: operations['otodb_api_work_assign_source_to_work'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/reject_source': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Reject Source */
+		post: operations['otodb_api_work_reject_source'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/work/unbound': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Get Unbound Sources */
+		get: operations['otodb_api_work_get_unbound_sources'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/profile/profile': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Profile */
+		get: operations['otodb_api_profile_profile'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/profile/lists': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Lists */
+		get: operations['otodb_api_profile_lists'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/profile/work_in_my_lists': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Work In Lists */
+		get: operations['otodb_api_profile_work_in_lists'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/profile/submissions': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Submissions */
+		get: operations['otodb_api_profile_submissions'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/list/search': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Search */
+		get: operations['otodb_api_list_search'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/list/list': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Lst */
+		get: operations['otodb_api_list_lst'];
+		/** Update */
+		put: operations['otodb_api_list_update'];
+		/** New */
+		post: operations['otodb_api_list_new'];
+		/** Delete */
+		delete: operations['otodb_api_list_delete'];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/list/entries': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Entries */
+		get: operations['otodb_api_list_entries'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/list/items': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/** Update Items */
+		put: operations['otodb_api_list_update_items'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/list/work_in_pool': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Work In Pool */
+		get: operations['otodb_api_list_work_in_pool'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/list/toggle_work': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		/** Toggle */
+		put: operations['otodb_api_list_toggle'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/list/import': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Import Ext */
+		post: operations['otodb_api_list_import_ext'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/search': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Search */
+		get: operations['otodb_api_tag_search'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/tag': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Tag */
+		get: operations['otodb_api_tag_tag'];
+		/** Update */
+		put: operations['otodb_api_tag_update'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/details': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Details */
+		get: operations['otodb_api_tag_details'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/works': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Works */
+		get: operations['otodb_api_tag_works'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/alias': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Alias Tags */
+		post: operations['otodb_api_tag_alias_tags'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/wiki_page': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Wiki Page */
+		get: operations['otodb_api_tag_wiki_page'];
+		put?: never;
+		/** Edit Wiki Page */
+		post: operations['otodb_api_tag_edit_wiki_page'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/song_search': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Song Search */
+		get: operations['otodb_api_tag_song_search'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/song': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Song */
+		post: operations['otodb_api_tag_song'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/song_relations': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Song Relations */
+		get: operations['otodb_api_tag_song_relations'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/song_relation': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Song Relation */
+		post: operations['otodb_api_tag_song_relation'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/song_tag_search': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Song Tag Search */
+		get: operations['otodb_api_tag_song_tag_search'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/song_tags': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Song Tags */
+		post: operations['otodb_api_tag_song_tags'];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/song_tag': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Song Tag */
+		get: operations['otodb_api_tag_song_tag'];
+		/** Update Song Tag */
+		put: operations['otodb_api_tag_update_song_tag'];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/song_tag_details': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Song Tag Details */
+		get: operations['otodb_api_tag_song_tag_details'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	'/api/tag/songs': {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Songs */
+		get: operations['otodb_api_tag_songs'];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        /** UserLoginSchema */
-        UserLoginSchema: {
-            /** User Id */
-            user_id: number;
-            /** Username */
-            username: string;
-        };
-        /** Error */
-        Error: {
-            /** Message */
-            message: string;
-        };
-        /** UserStatusSchema */
-        UserStatusSchema: {
-            /** User Id */
-            user_id: number;
-            /** Username */
-            username: string;
-            /** Level */
-            level: number;
-        };
-        /** ExternalQuery */
-        ExternalQuery: {
-            /** Work Id */
-            work_id: number;
-            /** Tags */
-            tags: components["schemas"]["TagWorkSchema"][];
-        };
-        /** SongSchema */
-        SongSchema: {
-            /** Work Tag */
-            work_tag: string;
-            /** Tags */
-            tags: components["schemas"]["TagSongSchema"][];
-            /** ID */
-            id?: number | null;
-            /** Title */
-            title: string;
-            /** Bpm */
-            bpm: number;
-            /** Author */
-            author: string;
-        };
-        /** TagSongSchema */
-        TagSongSchema: {
-            /** Aliases */
-            aliases: string[];
-            /** Children */
-            children: components["schemas"]["TagSongSchema"][];
-            /** ID */
-            id?: number | null;
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-            /**
-             * Category
-             * @default 0
-             */
-            category: number;
-        };
-        /** TagWorkSchema */
-        TagWorkSchema: {
-            /** Aliases */
-            aliases: string[];
-            /** Children */
-            children: components["schemas"]["TagWorkSchema"][];
-            song?: components["schemas"]["SongSchema"] | null;
-            /** ID */
-            id?: number | null;
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-            /**
-             * Category
-             * @default 0
-             */
-            category: number;
-        };
-        /** Input */
-        Input: {
-            /**
-             * Limit
-             * @default 100
-             */
-            limit: number;
-            /**
-             * Offset
-             * @default 0
-             */
-            offset: number;
-        };
-        /** PagedWorkSchema */
-        PagedWorkSchema: {
-            /** Items */
-            items: components["schemas"]["WorkSchema"][];
-            /** Count */
-            count: number;
-        };
-        /** WorkSchema */
-        WorkSchema: {
-            /** Tags */
-            tags: components["schemas"]["TagWorkSchema"][];
-            /** ID */
-            id?: number | null;
-            /** Title */
-            title: string;
-            /** Description */
-            description?: string | null;
-            /**
-             * Rating
-             * @default 0
-             */
-            rating: number;
-            /** Thumbnail */
-            thumbnail?: string | null;
-        };
-        /** WorkEditSchema */
-        WorkEditSchema: {
-            /** Title */
-            title: string;
-            /** Description */
-            description?: string | null;
-            /** Thumbnail */
-            thumbnail?: string | null;
-            /**
-             * Rating
-             * @default 0
-             */
-            rating: number;
-        };
-        /** TagWorkInstanceSchema */
-        TagWorkInstanceSchema: {
-            /** Tag Slug */
-            tag_slug: string;
-            /** N Votes */
-            n_votes: number;
-            /** Score */
-            score: number;
-            /** User Score */
-            user_score: number | null;
-        };
-        /** TagWorkVoteSchema */
-        TagWorkVoteSchema: {
-            /** Tag Slug */
-            tag_slug: string;
-            /** Score */
-            score: number;
-        };
-        /** RelationSchema */
-        RelationSchema: {
-            /** A Id */
-            A_id: number;
-            /** B Id */
-            B_id: number;
-            /** Relation */
-            relation: number;
-        };
-        /** SlimWorkSchema */
-        SlimWorkSchema: {
-            /** ID */
-            id?: number | null;
-            /** Title */
-            title: string;
-            /** Thumbnail */
-            thumbnail?: string | null;
-        };
-        /** ProfileSchema */
-        ProfileSchema: {
-            /** ID */
-            id?: number | null;
-            /** Username */
-            username: string;
-            /**
-             * Level
-             * @default 20
-             */
-            level: number;
-            /**
-             * Date Created
-             * Format: date-time
-             */
-            date_created?: string;
-        };
-        /** WorkSourceSchema */
-        WorkSourceSchema: {
-            added_by: components["schemas"]["ProfileSchema"];
-            /** Platform */
-            platform: number;
-            /** Url */
-            url: string;
-            /**
-             * Published Date
-             * Format: date
-             */
-            published_date: string;
-            /** ID */
-            id?: number | null;
-            /** Work Width */
-            work_width?: number | null;
-            /** Work Height */
-            work_height?: number | null;
-            /** Title */
-            title: string;
-            /** Description */
-            description?: string | null;
-            /**
-             * Work Origin
-             * @default 0
-             */
-            work_origin: number;
-            /**
-             * Work Status
-             * @default 0
-             */
-            work_status: number;
-            /** Thumbnail */
-            thumbnail?: string | null;
-            /** Rejection Reason */
-            rejection_reason?: string | null;
-            /** Source Id */
-            source_id: string;
-        };
-        /** ListSchema */
-        ListSchema: {
-            author: components["schemas"]["ProfileSchema"];
-            /** Pending Items */
-            pending_items: components["schemas"]["WorkSourceSchema"][];
-            /** Name */
-            name: string;
-            /** Description */
-            description?: string | null;
-            /** ID */
-            id?: number | null;
-        };
-        /** PagedSourceSubmissionSchema */
-        PagedSourceSubmissionSchema: {
-            /** Items */
-            items: components["schemas"]["SourceSubmissionSchema"][];
-            /** Count */
-            count: number;
-        };
-        /** SourceSubmissionSchema */
-        SourceSubmissionSchema: {
-            added_by: components["schemas"]["ProfileSchema"];
-            /** Platform */
-            platform: number;
-            /** Url */
-            url: string;
-            /**
-             * Published Date
-             * Format: date
-             */
-            published_date: string;
-            /** ID */
-            id?: number | null;
-            /** Work Width */
-            work_width?: number | null;
-            /** Work Height */
-            work_height?: number | null;
-            /** Title */
-            title: string;
-            /** Description */
-            description?: string | null;
-            /**
-             * Work Origin
-             * @default 0
-             */
-            work_origin: number;
-            /**
-             * Work Status
-             * @default 0
-             */
-            work_status: number;
-            /** Thumbnail */
-            thumbnail?: string | null;
-            /** Rejection Reason */
-            rejection_reason?: string | null;
-            /** Source Id */
-            source_id: string;
-            /** Media */
-            media: number | null;
-        };
-        /** PagedListSchema */
-        PagedListSchema: {
-            /** Items */
-            items: components["schemas"]["ListSchema"][];
-            /** Count */
-            count: number;
-        };
-        /** ListInSchema */
-        ListInSchema: {
-            /** Name */
-            name: string;
-            /** Description */
-            description?: string | null;
-        };
-        /** ListItemSchema */
-        ListItemSchema: {
-            work: components["schemas"]["WorkSchema"];
-            /** Description */
-            description?: string | null;
-        };
-        /** PagedListItemSchema */
-        PagedListItemSchema: {
-            /** Items */
-            items: components["schemas"]["ListItemSchema"][];
-            /** Count */
-            count: number;
-        };
-        /** ListUpdateSchema */
-        ListUpdateSchema: {
-            /**
-             * Update Work
-             * @default []
-             */
-            update_work: [
-                number,
-                number
-            ][];
-            /**
-             * Update Description
-             * @default []
-             */
-            update_description: [
-                number,
-                string
-            ][];
-            /**
-             * Move
-             * @default []
-             */
-            move: [
-                number,
-                number
-            ][];
-            /**
-             * Delete
-             * @default []
-             */
-            delete: number[];
-        };
-        /** PagedTagWorkSchema */
-        PagedTagWorkSchema: {
-            /** Items */
-            items: components["schemas"]["TagWorkSchema"][];
-            /** Count */
-            count: number;
-        };
-        /** TagInSchema */
-        TagInSchema: {
-            /** Parent Slug */
-            parent_slug: string | null;
-            /** Category */
-            category: number;
-        };
-        /** TagWorkDetailsSchema */
-        TagWorkDetailsSchema: {
-            /** Tree */
-            tree: components["schemas"]["TagWorkSchema"][];
-            /** Wiki Page */
-            wiki_page: string | null;
-        };
-        /** PagedSongSchema */
-        PagedSongSchema: {
-            /** Items */
-            items: components["schemas"]["SongSchema"][];
-            /** Count */
-            count: number;
-        };
-        /** SongInSchema */
-        SongInSchema: {
-            /** Title */
-            title: string;
-            /** Bpm */
-            bpm: number;
-            /** Author */
-            author: string;
-        };
-        /** PagedTagSongSchema */
-        PagedTagSongSchema: {
-            /** Items */
-            items: components["schemas"]["TagSongSchema"][];
-            /** Count */
-            count: number;
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+	schemas: {
+		/** UserLoginSchema */
+		UserLoginSchema: {
+			/** User Id */
+			user_id: number;
+			/** Username */
+			username: string;
+		};
+		/** Error */
+		Error: {
+			/** Message */
+			message: string;
+		};
+		/** UserStatusSchema */
+		UserStatusSchema: {
+			/** User Id */
+			user_id: number;
+			/** Username */
+			username: string;
+			/** Level */
+			level: number;
+		};
+		/** ExternalQuery */
+		ExternalQuery: {
+			/** Work Id */
+			work_id: number;
+			/** Tags */
+			tags: components['schemas']['TagWorkSchema'][];
+		};
+		/** SongSchema */
+		SongSchema: {
+			/** Work Tag */
+			work_tag: string;
+			/** Tags */
+			tags: components['schemas']['TagSongSchema'][];
+			/** ID */
+			id?: number | null;
+			/** Title */
+			title: string;
+			/** Bpm */
+			bpm: number;
+			/** Author */
+			author: string;
+		};
+		/** TagSongSchema */
+		TagSongSchema: {
+			/** Aliases */
+			aliases: string[];
+			/** Children */
+			children: components['schemas']['TagSongSchema'][];
+			/** ID */
+			id?: number | null;
+			/** Name */
+			name: string;
+			/** Slug */
+			slug: string;
+			/**
+			 * Category
+			 * @default 0
+			 */
+			category: number;
+		};
+		/** TagWorkSchema */
+		TagWorkSchema: {
+			/** Aliases */
+			aliases: string[];
+			/** Children */
+			children: components['schemas']['TagWorkSchema'][];
+			song?: components['schemas']['SongSchema'] | null;
+			/** ID */
+			id?: number | null;
+			/** Name */
+			name: string;
+			/** Slug */
+			slug: string;
+			/**
+			 * Category
+			 * @default 0
+			 */
+			category: number;
+		};
+		/** Input */
+		Input: {
+			/**
+			 * Limit
+			 * @default 100
+			 */
+			limit: number;
+			/**
+			 * Offset
+			 * @default 0
+			 */
+			offset: number;
+		};
+		/** PagedWorkSchema */
+		PagedWorkSchema: {
+			/** Items */
+			items: components['schemas']['WorkSchema'][];
+			/** Count */
+			count: number;
+		};
+		/** WorkSchema */
+		WorkSchema: {
+			/** Tags */
+			tags: components['schemas']['TagWorkSchema'][];
+			/** ID */
+			id?: number | null;
+			/** Title */
+			title: string;
+			/** Description */
+			description?: string | null;
+			/**
+			 * Rating
+			 * @default 0
+			 */
+			rating: number;
+			/** Thumbnail */
+			thumbnail?: string | null;
+		};
+		/** WorkEditSchema */
+		WorkEditSchema: {
+			/** Title */
+			title: string;
+			/** Description */
+			description?: string | null;
+			/** Thumbnail */
+			thumbnail?: string | null;
+			/**
+			 * Rating
+			 * @default 0
+			 */
+			rating: number;
+		};
+		/** TagWorkInstanceSchema */
+		TagWorkInstanceSchema: {
+			/** Tag Slug */
+			tag_slug: string;
+			/** N Votes */
+			n_votes: number;
+			/** Score */
+			score: number;
+			/** User Score */
+			user_score: number | null;
+		};
+		/** TagWorkVoteSchema */
+		TagWorkVoteSchema: {
+			/** Tag Slug */
+			tag_slug: string;
+			/** Score */
+			score: number;
+		};
+		/** RelationSchema */
+		RelationSchema: {
+			/** A Id */
+			A_id: number;
+			/** B Id */
+			B_id: number;
+			/** Relation */
+			relation: number;
+		};
+		/** SlimWorkSchema */
+		SlimWorkSchema: {
+			/** ID */
+			id?: number | null;
+			/** Title */
+			title: string;
+			/** Thumbnail */
+			thumbnail?: string | null;
+		};
+		/** ProfileSchema */
+		ProfileSchema: {
+			/** ID */
+			id?: number | null;
+			/** Username */
+			username: string;
+			/**
+			 * Level
+			 * @default 20
+			 */
+			level: number;
+			/**
+			 * Date Created
+			 * Format: date-time
+			 */
+			date_created?: string;
+		};
+		/** WorkSourceSchema */
+		WorkSourceSchema: {
+			added_by: components['schemas']['ProfileSchema'];
+			/** Platform */
+			platform: number;
+			/** Url */
+			url: string;
+			/**
+			 * Published Date
+			 * Format: date
+			 */
+			published_date: string;
+			/** ID */
+			id?: number | null;
+			/** Work Width */
+			work_width?: number | null;
+			/** Work Height */
+			work_height?: number | null;
+			/** Title */
+			title: string;
+			/** Description */
+			description?: string | null;
+			/**
+			 * Work Origin
+			 * @default 0
+			 */
+			work_origin: number;
+			/**
+			 * Work Status
+			 * @default 0
+			 */
+			work_status: number;
+			/** Thumbnail */
+			thumbnail?: string | null;
+			/** Rejection Reason */
+			rejection_reason?: string | null;
+			/** Source Id */
+			source_id: string;
+		};
+		/** ListSchema */
+		ListSchema: {
+			author: components['schemas']['ProfileSchema'];
+			/** Pending Items */
+			pending_items: components['schemas']['WorkSourceSchema'][];
+			/** Name */
+			name: string;
+			/** Description */
+			description?: string | null;
+			/** ID */
+			id?: number | null;
+		};
+		/** PagedSourceSubmissionSchema */
+		PagedSourceSubmissionSchema: {
+			/** Items */
+			items: components['schemas']['SourceSubmissionSchema'][];
+			/** Count */
+			count: number;
+		};
+		/** SourceSubmissionSchema */
+		SourceSubmissionSchema: {
+			added_by: components['schemas']['ProfileSchema'];
+			/** Platform */
+			platform: number;
+			/** Url */
+			url: string;
+			/**
+			 * Published Date
+			 * Format: date
+			 */
+			published_date: string;
+			/** ID */
+			id?: number | null;
+			/** Work Width */
+			work_width?: number | null;
+			/** Work Height */
+			work_height?: number | null;
+			/** Title */
+			title: string;
+			/** Description */
+			description?: string | null;
+			/**
+			 * Work Origin
+			 * @default 0
+			 */
+			work_origin: number;
+			/**
+			 * Work Status
+			 * @default 0
+			 */
+			work_status: number;
+			/** Thumbnail */
+			thumbnail?: string | null;
+			/** Rejection Reason */
+			rejection_reason?: string | null;
+			/** Source Id */
+			source_id: string;
+			/** Media */
+			media: number | null;
+		};
+		/** PagedListSchema */
+		PagedListSchema: {
+			/** Items */
+			items: components['schemas']['ListSchema'][];
+			/** Count */
+			count: number;
+		};
+		/** ListInSchema */
+		ListInSchema: {
+			/** Name */
+			name: string;
+			/** Description */
+			description?: string | null;
+		};
+		/** ListItemSchema */
+		ListItemSchema: {
+			work: components['schemas']['WorkSchema'];
+			/** Description */
+			description?: string | null;
+		};
+		/** PagedListItemSchema */
+		PagedListItemSchema: {
+			/** Items */
+			items: components['schemas']['ListItemSchema'][];
+			/** Count */
+			count: number;
+		};
+		/** ListUpdateSchema */
+		ListUpdateSchema: {
+			/**
+			 * Update Work
+			 * @default []
+			 */
+			update_work: [number, number][];
+			/**
+			 * Update Description
+			 * @default []
+			 */
+			update_description: [number, string][];
+			/**
+			 * Move
+			 * @default []
+			 */
+			move: [number, number][];
+			/**
+			 * Delete
+			 * @default []
+			 */
+			delete: number[];
+		};
+		/** PagedTagWorkSchema */
+		PagedTagWorkSchema: {
+			/** Items */
+			items: components['schemas']['TagWorkSchema'][];
+			/** Count */
+			count: number;
+		};
+		/** TagInSchema */
+		TagInSchema: {
+			/** Parent Slug */
+			parent_slug: string | null;
+			/** Category */
+			category: number;
+		};
+		/** TagWorkDetailsSchema */
+		TagWorkDetailsSchema: {
+			/** Tree */
+			tree: components['schemas']['TagWorkSchema'][];
+			/** Wiki Page */
+			wiki_page: string | null;
+		};
+		/** PagedSongSchema */
+		PagedSongSchema: {
+			/** Items */
+			items: components['schemas']['SongSchema'][];
+			/** Count */
+			count: number;
+		};
+		/** SongInSchema */
+		SongInSchema: {
+			/** Title */
+			title: string;
+			/** Bpm */
+			bpm: number;
+			/** Author */
+			author: string;
+		};
+		/** PagedTagSongSchema */
+		PagedTagSongSchema: {
+			/** Items */
+			items: components['schemas']['TagSongSchema'][];
+			/** Count */
+			count: number;
+		};
+	};
+	responses: never;
+	parameters: never;
+	requestBodies: never;
+	headers: never;
+	pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    otodb_api_auth_csrf: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_auth_login_endpoint: {
-        parameters: {
-            query: {
-                username: string;
-                password: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserLoginSchema"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    otodb_api_auth_status: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserStatusSchema"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    otodb_api_auth_logout_endpoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_auth_register: {
-        parameters: {
-            query: {
-                username: string;
-                password: string;
-                email: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserLoginSchema"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    otodb_api_work_query_external: {
-        parameters: {
-            query: {
-                platform: string;
-                id: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExternalQuery"];
-                };
-            };
-        };
-    };
-    otodb_api_work_search: {
-        parameters: {
-            query: {
-                query: string;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedWorkSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_work_work: {
-        parameters: {
-            query: {
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WorkSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_work_update_work: {
-        parameters: {
-            query: {
-                work_id: number;
-                reason: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WorkEditSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_get_tag_scores: {
-        parameters: {
-            query: {
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TagWorkInstanceSchema"][];
-                };
-            };
-        };
-    };
-    otodb_api_work_vote_tags: {
-        parameters: {
-            query: {
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TagWorkVoteSchema"][];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_random: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WorkSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_work_relations: {
-        parameters: {
-            query: {
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": [
-                        components["schemas"]["RelationSchema"][],
-                        components["schemas"]["SlimWorkSchema"][]
-                    ];
-                };
-            };
-        };
-    };
-    otodb_api_work_relation: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RelationSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_delete_relation: {
-        parameters: {
-            query: {
-                A: number;
-                B: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_sources: {
-        parameters: {
-            query: {
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WorkSourceSchema"][];
-                };
-            };
-        };
-    };
-    otodb_api_work_refresh_source: {
-        parameters: {
-            query: {
-                source_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_merge_works: {
-        parameters: {
-            query: {
-                from_work_id: number;
-                to_work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WorkEditSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_new_source_from_url: {
-        parameters: {
-            query: {
-                url: string;
-                is_reupload: boolean;
-                work_id?: number | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": number;
-                };
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    otodb_api_work_assign_source_to_work: {
-        parameters: {
-            query: {
-                source_id: number;
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": number;
-                };
-            };
-        };
-    };
-    otodb_api_work_reject_source: {
-        parameters: {
-            query: {
-                source_id: number;
-                reason: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_get_unbound_sources: {
-        parameters: {
-            query: {
-                pending: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WorkSourceSchema"][];
-                };
-            };
-        };
-    };
-    otodb_api_profile_profile: {
-        parameters: {
-            query: {
-                username: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProfileSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_profile_lists: {
-        parameters: {
-            query: {
-                username: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListSchema"][];
-                };
-            };
-        };
-    };
-    otodb_api_profile_work_in_lists: {
-        parameters: {
-            query: {
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": [
-                        components["schemas"]["ListSchema"],
-                        boolean
-                    ][];
-                };
-            };
-        };
-    };
-    otodb_api_profile_submissions: {
-        parameters: {
-            query: {
-                username: string;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedSourceSubmissionSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_list_search: {
-        parameters: {
-            query: {
-                query: string;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedListSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_list_lst: {
-        parameters: {
-            query: {
-                list_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_list_update: {
-        parameters: {
-            query: {
-                list_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ListInSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_list_new: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ListInSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": number;
-                };
-            };
-        };
-    };
-    otodb_api_list_delete: {
-        parameters: {
-            query: {
-                list_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_list_entries: {
-        parameters: {
-            query: {
-                list_id: number;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedListItemSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_list_update_items: {
-        parameters: {
-            query: {
-                list_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ListUpdateSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_list_work_in_pool: {
-        parameters: {
-            query: {
-                list_id: number;
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": boolean;
-                };
-            };
-        };
-    };
-    otodb_api_list_toggle: {
-        parameters: {
-            query: {
-                list_id: number;
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_list_import_ext: {
-        parameters: {
-            query: {
-                url: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": number;
-                };
-            };
-        };
-    };
-    otodb_api_tag_search: {
-        parameters: {
-            query: {
-                query: string;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedTagWorkSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_tag_tag: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TagWorkSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_tag_update: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TagInSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_details: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TagWorkDetailsSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_tag_works: {
-        parameters: {
-            query: {
-                tag_slug: string;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedWorkSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_tag_alias_tags: {
-        parameters: {
-            query: {
-                into_tag: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": string[];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_wiki_page: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_edit_wiki_page: {
-        parameters: {
-            query: {
-                tag_slug: string;
-                md: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_song_search: {
-        parameters: {
-            query: {
-                query: string;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedSongSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_tag_song: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SongInSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_song_relations: {
-        parameters: {
-            query: {
-                song_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": [
-                        components["schemas"]["RelationSchema"][],
-                        components["schemas"]["SongSchema"][]
-                    ];
-                };
-            };
-        };
-    };
-    otodb_api_tag_song_relation: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RelationSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_song_tag_search: {
-        parameters: {
-            query: {
-                query: string;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedTagSongSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_tag_song_tags: {
-        parameters: {
-            query: {
-                song_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": string[];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_song_tag: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TagSongSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_tag_update_song_tag: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TagInSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_song_tag_details: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": string[];
-                };
-            };
-        };
-    };
-    otodb_api_tag_songs: {
-        parameters: {
-            query: {
-                tag_slug: string;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedSongSchema"];
-                };
-            };
-        };
-    };
+	otodb_api_auth_csrf: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_auth_login_endpoint: {
+		parameters: {
+			query: {
+				username: string;
+				password: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['UserLoginSchema'];
+				};
+			};
+			/** @description Unauthorized */
+			401: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Error'];
+				};
+			};
+		};
+	};
+	otodb_api_auth_status: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['UserStatusSchema'];
+				};
+			};
+			/** @description Unauthorized */
+			401: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Error'];
+				};
+			};
+		};
+	};
+	otodb_api_auth_logout_endpoint: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_auth_register: {
+		parameters: {
+			query: {
+				username: string;
+				password: string;
+				email: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['UserLoginSchema'];
+				};
+			};
+			/** @description Unauthorized */
+			401: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Error'];
+				};
+			};
+		};
+	};
+	otodb_api_work_query_external: {
+		parameters: {
+			query: {
+				platform: string;
+				id: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ExternalQuery'];
+				};
+			};
+		};
+	};
+	otodb_api_work_search: {
+		parameters: {
+			query: {
+				query: string;
+				limit?: number;
+				offset?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PagedWorkSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_work_work: {
+		parameters: {
+			query: {
+				work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WorkSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_work_update_work: {
+		parameters: {
+			query: {
+				work_id: number;
+				reason: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['WorkEditSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_work_get_tag_scores: {
+		parameters: {
+			query: {
+				work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['TagWorkInstanceSchema'][];
+				};
+			};
+		};
+	};
+	otodb_api_work_vote_tags: {
+		parameters: {
+			query: {
+				work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['TagWorkVoteSchema'][];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_work_random: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WorkSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_work_relations: {
+		parameters: {
+			query: {
+				work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': [
+						components['schemas']['RelationSchema'][],
+						components['schemas']['SlimWorkSchema'][]
+					];
+				};
+			};
+		};
+	};
+	otodb_api_work_relation: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['RelationSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_work_delete_relation: {
+		parameters: {
+			query: {
+				A: number;
+				B: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_work_sources: {
+		parameters: {
+			query: {
+				work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WorkSourceSchema'][];
+				};
+			};
+		};
+	};
+	otodb_api_work_refresh_source: {
+		parameters: {
+			query: {
+				source_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_work_merge_works: {
+		parameters: {
+			query: {
+				from_work_id: number;
+				to_work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['WorkEditSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_work_new_source_from_url: {
+		parameters: {
+			query: {
+				url: string;
+				is_reupload: boolean;
+				work_id?: number | null;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': number;
+				};
+			};
+			/** @description Bad Request */
+			400: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['Error'];
+				};
+			};
+		};
+	};
+	otodb_api_work_assign_source_to_work: {
+		parameters: {
+			query: {
+				source_id: number;
+				work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': number;
+				};
+			};
+		};
+	};
+	otodb_api_work_reject_source: {
+		parameters: {
+			query: {
+				source_id: number;
+				reason: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_work_get_unbound_sources: {
+		parameters: {
+			query: {
+				pending: boolean;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['WorkSourceSchema'][];
+				};
+			};
+		};
+	};
+	otodb_api_profile_profile: {
+		parameters: {
+			query: {
+				username: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ProfileSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_profile_lists: {
+		parameters: {
+			query: {
+				username: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ListSchema'][];
+				};
+			};
+		};
+	};
+	otodb_api_profile_work_in_lists: {
+		parameters: {
+			query: {
+				work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': [components['schemas']['ListSchema'], boolean][];
+				};
+			};
+		};
+	};
+	otodb_api_profile_submissions: {
+		parameters: {
+			query: {
+				username: string;
+				limit?: number;
+				offset?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PagedSourceSubmissionSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_list_search: {
+		parameters: {
+			query: {
+				query: string;
+				limit?: number;
+				offset?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PagedListSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_list_lst: {
+		parameters: {
+			query: {
+				list_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['ListSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_list_update: {
+		parameters: {
+			query: {
+				list_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ListInSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_list_new: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ListInSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': number;
+				};
+			};
+		};
+	};
+	otodb_api_list_delete: {
+		parameters: {
+			query: {
+				list_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_list_entries: {
+		parameters: {
+			query: {
+				list_id: number;
+				limit?: number;
+				offset?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PagedListItemSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_list_update_items: {
+		parameters: {
+			query: {
+				list_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['ListUpdateSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_list_work_in_pool: {
+		parameters: {
+			query: {
+				list_id: number;
+				work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': boolean;
+				};
+			};
+		};
+	};
+	otodb_api_list_toggle: {
+		parameters: {
+			query: {
+				list_id: number;
+				work_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_list_import_ext: {
+		parameters: {
+			query: {
+				url: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': number;
+				};
+			};
+		};
+	};
+	otodb_api_tag_search: {
+		parameters: {
+			query: {
+				query: string;
+				limit?: number;
+				offset?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PagedTagWorkSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_tag_tag: {
+		parameters: {
+			query: {
+				tag_slug: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['TagWorkSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_tag_update: {
+		parameters: {
+			query: {
+				tag_slug: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['TagInSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_tag_details: {
+		parameters: {
+			query: {
+				tag_slug: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['TagWorkDetailsSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_tag_works: {
+		parameters: {
+			query: {
+				tag_slug: string;
+				limit?: number;
+				offset?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PagedWorkSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_tag_alias_tags: {
+		parameters: {
+			query: {
+				into_tag: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': string[];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_tag_wiki_page: {
+		parameters: {
+			query: {
+				tag_slug: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_tag_edit_wiki_page: {
+		parameters: {
+			query: {
+				tag_slug: string;
+				md: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_tag_song_search: {
+		parameters: {
+			query: {
+				query: string;
+				limit?: number;
+				offset?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PagedSongSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_tag_song: {
+		parameters: {
+			query: {
+				tag_slug: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['SongInSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_tag_song_relations: {
+		parameters: {
+			query: {
+				song_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': [
+						components['schemas']['RelationSchema'][],
+						components['schemas']['SongSchema'][]
+					];
+				};
+			};
+		};
+	};
+	otodb_api_tag_song_relation: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['RelationSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_tag_song_tag_search: {
+		parameters: {
+			query: {
+				query: string;
+				limit?: number;
+				offset?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PagedTagSongSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_tag_song_tags: {
+		parameters: {
+			query: {
+				song_id: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': string[];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_tag_song_tag: {
+		parameters: {
+			query: {
+				tag_slug: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['TagSongSchema'];
+				};
+			};
+		};
+	};
+	otodb_api_tag_update_song_tag: {
+		parameters: {
+			query: {
+				tag_slug: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				'application/json': components['schemas']['TagInSchema'];
+			};
+		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_tag_song_tag_details: {
+		parameters: {
+			query: {
+				tag_slug: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': string[];
+				};
+			};
+		};
+	};
+	otodb_api_tag_songs: {
+		parameters: {
+			query: {
+				tag_slug: string;
+				limit?: number;
+				offset?: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					'application/json': components['schemas']['PagedSongSchema'];
+				};
+			};
+		};
+	};
 }

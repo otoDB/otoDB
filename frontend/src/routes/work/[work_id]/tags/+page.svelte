@@ -55,6 +55,7 @@
 		<thead>
 			<tr><th>Tag</th><th>Rating</th><th>User Rating</th></tr>
 		</thead><tbody>
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each tags as tag}
 				<tr>
 					<td><WorkTag {tag} /></td>

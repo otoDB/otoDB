@@ -4,6 +4,7 @@
 
 	interface Props {
 		comments: any;
+		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
 		model: CommentModels;
 		pk: number;
@@ -42,6 +43,7 @@
 	</div>
 	{#if data.children?.length}
 		<div class="ml-3">
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each data.children as child}
 				{@render this_component(child, this_component)}
 			{/each}
@@ -51,6 +53,7 @@
 
 <div>
 	{#if comments.length}
+		<!-- eslint-disable-next-line svelte/require-each-key -->
 		{#each comments as c}
 			{@render comment(c, comment)}
 		{/each}

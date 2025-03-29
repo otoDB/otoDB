@@ -39,7 +39,7 @@ export const commentClient = {
 		).json();
 		if (comments.length === 0) return [];
 		else {
-			let keep = Object.entries(
+			const keep = Object.entries(
 				Object.groupBy(
 					comments
 						.filter((e) => !e.is_removed)

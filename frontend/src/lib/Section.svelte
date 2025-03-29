@@ -10,6 +10,7 @@
 {#if menuLinks}
 	<menu>
 		<ul>
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each menuLinks as { pathname, title }}
 				<li aria-current={page.url.pathname.endsWith(encodeURI(pathname))}>
 					<a href="/{pathname}">{title}</a>

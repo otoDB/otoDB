@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const debounce = (callback: Function, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
 	return (...args: any[]) => {

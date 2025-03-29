@@ -33,6 +33,7 @@
 </Section>
 <Section title="Entries">
 	<ol class="list-outside list-decimal">
+		<!-- eslint-disable-next-line svelte/require-each-key -->
 		{#each data.entries.items as entry}
 			<li class="ml-5 p-2">
 				<div style="display: flex; gap: 1rem;align-items:flex-start;">
@@ -59,6 +60,7 @@
 {#if data.list.pending_items.length}
 	<Section title="Pending entries">
 		<ul class="pending">
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each data.list.pending_items as src}
 				<li>
 					<span>

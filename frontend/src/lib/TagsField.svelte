@@ -73,6 +73,7 @@
 			suggestions = [];
 		}}
 	>
+		<!-- eslint-disable-next-line svelte/require-each-key -->
 		{#each suggestions as t}
 			<li>
 				<a

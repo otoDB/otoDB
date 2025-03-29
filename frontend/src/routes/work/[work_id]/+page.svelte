@@ -68,6 +68,7 @@
 					bind:group={cover_select}
 				/>Thumbnail</label
 			>
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each data.sources as s, i}
 				<label
 					><input
@@ -86,6 +87,7 @@
 			<table>
 				<tbody>
 					<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.title}</td></tr>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					<tr><th>{m.clear_lucky_peacock_pick()}</th><td>{@html data.description}</td></tr
 					>
 					<tr><th>{m.good_dark_bumblebee_spur()}</th><td>{Rating[data.rating]()}</td></tr>
@@ -102,6 +104,7 @@
 								{#if userListsShown}
 									<table class="absolute">
 										<tbody>
+											<!-- eslint-disable-next-line svelte/require-each-key -->
 											{#each userLists as list}
 												<tr
 													><td>{list[0].name}</td><td
@@ -125,6 +128,7 @@
 			{/if}
 		</div>
 		<ul id="work-tags">
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each data.tags as tag}
 				<li><WorkTag {tag} /></li>
 			{/each}
@@ -153,6 +157,7 @@
 			</tr></thead
 		>
 		<tbody>
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each data.sources as src}
 				<tr>
 					<td class="whitespace-nowrap">{src.title}</td>

@@ -7,9 +7,9 @@
 </script>
 
 {#snippet link(pathname: string, title: string)}
-<li aria-current={page.url.pathname === pathname ? 'page' : undefined}>
-	<a href={pathname}>{title}</a>
-</li>
+	<li aria-current={page.url.pathname === pathname ? 'page' : undefined}>
+		<a href={pathname}>{title}</a>
+	</li>
 {/snippet}
 
 <header>
@@ -19,29 +19,31 @@
 			{@render link('/work/random', 'Random work')}
 			<li>
 				<form target="_self" method="get" action="/work/search">
-					<input type="text" name="query" placeholder="{m.mean_top_antelope_love()}...">
+					<input type="text" name="query" placeholder="{m.mean_top_antelope_love()}..." />
 				</form>
 			</li>
 		</ul>
 		{#if user?.level >= UserLevel.MODERATOR}
-		<ul>
-			{@render link('/tag/alias', 'Alias tags')}
-			{@render link('/work/merge', 'Merge works')}
-			{@render link('/work/unbound', 'Bind sources')}
+			<ul>
+				{@render link('/tag/alias', 'Alias tags')}
+				{@render link('/work/merge', 'Merge works')}
+				{@render link('/work/unbound', 'Bind sources')}
 			</ul>
 		{/if}
 		<ul>
 			{#if !user}
-			{@render link('/login', m.inner_stale_anteater_walk())}
-			{@render link('/register', m.blue_whole_camel_type())}
+				{@render link('/login', m.inner_stale_anteater_walk())}
+				{@render link('/register', m.blue_whole_camel_type())}
 			{:else}
-			{@render link('/work/add', 'Add a work...')}
-			{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
-			{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
-			{@render link(`/profile/${user.username}/submissions`, 'My Submissions')}
-			<li aria-current={page.url.pathname === `/logout` ? 'page' : undefined}>
-				<a href="/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload>{m.best_front_swallow_play()}</a>
-			</li>
+				{@render link('/work/add', 'Add a work...')}
+				{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
+				{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
+				{@render link(`/profile/${user.username}/submissions`, 'My Submissions')}
+				<li aria-current={page.url.pathname === `/logout` ? 'page' : undefined}>
+					<a href="/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload
+						>{m.best_front_swallow_play()}</a
+					>
+				</li>
 			{/if}
 		</ul>
 	</nav>
@@ -59,9 +61,9 @@
 		& form > input {
 			width: 100%;
 		}
-		&> ul {
+		& > ul {
 			list-style-type: none;
-			&> li > a {
+			& > li > a {
 				text-decoration: none;
 			}
 			padding: 1rem 1rem;

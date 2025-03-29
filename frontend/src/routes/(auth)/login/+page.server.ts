@@ -1,35 +1,32 @@
-import { fail, redirect, type Actions } from "@sveltejs/kit";
-import type { PageServerLoad } from "./$types";
-import client, { forwardCookies } from "$lib/api";
+import { fail, redirect, type Actions } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import client, { forwardCookies } from '$lib/api';
 
-export const load: PageServerLoad = async ({cookies, fetch, locals, url}) => {
-    if (locals.user)
-        redirect(303, url.searchParams.get('from') ?? '/');
+export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
+	if (locals.user) redirect(303, url.searchParams.get('from') ?? '/');
 
-    const { response } = await client.GET('/api/auth/csrf', { fetch });
-    forwardCookies(cookies, response);
+	const { response } = await client.GET('/api/auth/csrf', { fetch });
+	forwardCookies(cookies, response);
 };
 
 export const actions = {
-    default: async ({ cookies, request, fetch, locals }) => {
-        const data = await request.formData();
-        const username = data.get('username') as string,
-            password = data.get('password') as string;
+	default: async ({ cookies, request, fetch, locals }) => {
+		const data = await request.formData();
+		const username = data.get('username') as string,
+			password = data.get('password') as string;
 
-        if (!username || !password)
-            return fail(400, { username, missing: true });
+		if (!username || !password) return fail(400, { username, missing: true });
 
-		const { response, error } = await client.POST('/api/auth/login', { fetch,
+		const { response, error } = await client.POST('/api/auth/login', {
+			fetch,
 			params: { query: { username, password } },
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') }
-        });
-		if (error)
-            return fail(400, { username, failed: true });
-        
-        forwardCookies(cookies, response);
+		});
+		if (error) return fail(400, { username, failed: true });
 
-        const status = await client.GET('/api/auth/status', { fetch });
-        if (status.data)
-            locals.user = { csrf: cookies.get('csrftoken')!, ...status.data };
-    }
+		forwardCookies(cookies, response);
+
+		const status = await client.GET('/api/auth/status', { fetch });
+		if (status.data) locals.user = { csrf: cookies.get('csrftoken')!, ...status.data };
+	}
 } satisfies Actions;

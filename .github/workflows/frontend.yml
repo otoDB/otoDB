@@ -16,14 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-          node-version-file: frontend/.node-version
-      - run: npm ci
-      - run: npx prettier --check .
-      - run: npx eslint .
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install
+      - run: bunx prettier --check .
+      - run: bunx eslint .
 
   build_docker:
     name: Build Docker image

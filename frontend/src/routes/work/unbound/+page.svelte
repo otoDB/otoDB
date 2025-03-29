@@ -15,6 +15,7 @@
 
 <Section title="Pending sources" menuLinks={data.links}>
 	<ul>
+		<!-- eslint-disable-next-line svelte/require-each-key -->
 		{#each data.sources as src}
 			<li>
 				<span>

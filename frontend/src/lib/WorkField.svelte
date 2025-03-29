@@ -8,6 +8,7 @@
 	let input: string = $state('');
 	interface Props {
 		value: components['schemas']['WorkSchema'] | null | undefined;
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 		oninput: Function | undefined;
 	}
 	let { value = $bindable(undefined), oninput = undefined, ...props }: Props = $props();
@@ -61,6 +62,7 @@
 			suggestions = [];
 		}}
 	>
+		<!-- eslint-disable-next-line svelte/require-each-key -->
 		{#each suggestions as v}
 			<li>
 				<a

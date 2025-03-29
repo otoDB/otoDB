@@ -16,6 +16,7 @@ export default ts.config(
 	...svelte.configs['flat/prettier'],
 	{
 		rules: {
+			"@typescript-eslint/no-explicit-any": [1],
 			'@typescript-eslint/no-unused-vars': [1]
 		}
 	},

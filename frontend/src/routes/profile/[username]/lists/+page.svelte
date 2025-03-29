@@ -27,6 +27,7 @@
 		<a href="/list/import">Import list...</a>
 	{/if}
 	<ul class="list-disc">
+		<!-- eslint-disable-next-line svelte/require-each-key -->
 		{#each data.lists as list}
 			<li><a href="/list/{list.id}">{list.name}</a></li>
 		{:else}

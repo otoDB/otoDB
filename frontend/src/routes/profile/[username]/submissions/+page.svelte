@@ -44,6 +44,7 @@
 				</tr></thead
 			>
 			<tbody>
+				<!-- eslint-disable-next-line svelte/require-each-key -->
 				{#each data.pending as src}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
@@ -82,6 +83,7 @@
 				</tr></thead
 			>
 			<tbody>
+				<!-- eslint-disable-next-line svelte/require-each-key -->
 				{#each data.rejected as src}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
@@ -121,6 +123,7 @@
 				</tr></thead
 			>
 			<tbody>
+				<!-- eslint-disable-next-line svelte/require-each-key -->
 				{#each data.approved as src}
 					<tr>
 						<td class="whitespace-nowrap"

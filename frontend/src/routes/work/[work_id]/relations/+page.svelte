@@ -16,6 +16,7 @@
 	menuLinks={data.links}
 >
 	{#if data.relations_svg}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html data.relations_svg}
 	{:else}
 		<p>This work does not have any relations.</p>

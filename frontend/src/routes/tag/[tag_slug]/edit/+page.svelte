@@ -41,6 +41,7 @@
 					<th><label for="category">{m.plane_awful_bobcat_spark()}</label></th>
 					<td
 						><select name="category" bind:value={category}>
+							<!-- eslint-disable-next-line svelte/require-each-key -->
 							{#each WorkTagCategory as cat, i}
 								<option value={i}>{cat()}</option>
 							{/each}
@@ -101,7 +102,7 @@
 		<RelationEditor
 			init_relations={data.song_relations}
 			obj_type="song"
-			this_id={data.tag.song?.id!}
+			this_id={data.tag.song?.id}
 		></RelationEditor>
 	</Section>
 {/if}

@@ -57,6 +57,7 @@
 						<thead>
 							<tr><th></th><th>Work</th></tr>
 						</thead><tbody>
+							<!-- eslint-disable-next-line svelte/require-each-key -->
 							{#each suggestions as work}
 								<tr>
 									<td

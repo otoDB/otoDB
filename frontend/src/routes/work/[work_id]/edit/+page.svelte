@@ -41,6 +41,7 @@
 				<tr
 					><th><label for="rating">Rating</label></th><td
 						><select name="rating" bind:value={rating}>
+							<!-- eslint-disable-next-line svelte/require-each-key -->
 							{#each Rating as r, i}<option value={i}>{r()}</option>{/each}</select
 						></td
 					></tr
@@ -68,6 +69,7 @@
 				</tr></thead
 			>
 			<tbody>
+				<!-- eslint-disable-next-line svelte/require-each-key -->
 				{#each data.sources! as src}
 					<tr>
 						<td

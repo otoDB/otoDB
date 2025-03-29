@@ -40,7 +40,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 			.map(
 				(s) => `${s.id}: ${s.title} {
                 link: ${`/tag/${s.work_tag}`}
-                ${+data.tag.song?.id! === s.id ? 'style: { font-color: red }' : ''}
+                ${+data.tag.song?.id === s.id ? 'style: { font-color: red }' : ''}
             }`
 			)
 			.join('\n')}

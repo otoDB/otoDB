@@ -1,0 +1,27 @@
+name: CI for Backend
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  build_docker:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # - uses: hadolint/hadolint-action@v3.1.0
+      #   with:
+      #     dockerfile: web/Dockerfile
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v5
+        with:
+          push: false
+          context: backend
+          file: backend/Dockerfile

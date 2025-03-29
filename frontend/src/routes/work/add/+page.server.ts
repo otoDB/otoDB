@@ -1,58 +1,61 @@
-import { error, fail, redirect, type Actions } from "@sveltejs/kit";
-import type { PageServerLoad } from "./$types";
-import client from "$lib/api";
-import { UserLevel } from "$lib/enums";
-import userLevelGuard from "$lib/route_guard";
+import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import client from '$lib/api';
+import { UserLevel } from '$lib/enums';
+import userLevelGuard from '$lib/route_guard';
 
 const next_redirect = (user: App.Locals['user']) => {
-    if (user.level >= UserLevel.MODERATOR)
-        redirect(303, '/work/unbound');
-    else
-        redirect(303, `/profile/${user.username}/submissions`);
-}
+	if (user.level >= UserLevel.MODERATOR) redirect(303, '/work/unbound');
+	else redirect(303, `/profile/${user.username}/submissions`);
+};
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
-    userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
-    
-    const link = url.searchParams.get('url');
-    if (link) {
-        const { error: err } = await client.POST('/api/work/source', { fetch, params: { query: { url: link, is_reupload: false }} });
-        if (err) 
-            error(400, err);
-        else
-            next_redirect(locals.user);
-    }
+	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
 
-    const work = url.searchParams.get('for_work');
-    if (work && !isNaN(+work)) {
-        const { data, error: e } = await client.GET('/api/work/work', { params: {
-            query: {
-                work_id: +work
-            }
-        }, fetch });
-        if (e)
-            error(404, { message: 'Not found' });
+	const link = url.searchParams.get('url');
+	if (link) {
+		const { error: err } = await client.POST('/api/work/source', {
+			fetch,
+			params: { query: { url: link, is_reupload: false } }
+		});
+		if (err) error(400, err);
+		else next_redirect(locals.user);
+	}
 
-        return {
-            title: data.title
-        };
-    }
-}
+	const work = url.searchParams.get('for_work');
+	if (work && !isNaN(+work)) {
+		const { data, error: e } = await client.GET('/api/work/work', {
+			params: {
+				query: {
+					work_id: +work
+				}
+			},
+			fetch
+		});
+		if (e) error(404, { message: 'Not found' });
+
+		return {
+			title: data.title
+		};
+	}
+};
 
 export const actions = {
-    default: async ({ request, fetch, url, locals }) => {
-        const data = await request.formData();
-        const link = data.get('url') as string,
-            is_official = !!data.get('origin');
-        const work = url.searchParams.get('for_work');
+	default: async ({ request, fetch, url, locals }) => {
+		const data = await request.formData();
+		const link = data.get('url') as string,
+			is_official = !!data.get('origin');
+		const work = url.searchParams.get('for_work');
 
-        const { error } = await client.POST('/api/work/source', { fetch, params: { query: { url: link, is_reupload: !is_official, work_id: work ? +work : null }} });
-        if (error)
-            return fail(400, { url: link, origin: is_official, failed: true });
+		const { error } = await client.POST('/api/work/source', {
+			fetch,
+			params: {
+				query: { url: link, is_reupload: !is_official, work_id: work ? +work : null }
+			}
+		});
+		if (error) return fail(400, { url: link, origin: is_official, failed: true });
 
-        if (work && !isNaN(+work))
-            redirect(303, `/work/${+work}`);
-        else
-            next_redirect(locals.user);
-    }
+		if (work && !isNaN(+work)) redirect(303, `/work/${+work}`);
+		else next_redirect(locals.user);
+	}
 } satisfies Actions;

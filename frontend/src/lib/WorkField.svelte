@@ -62,7 +62,7 @@
 			suggestions = [];
 		}}
 	>
-		{#each suggestions as v (v)}
+		{#each suggestions as v, i (i)}
 			<li>
 				<a
 					href={null}

@@ -24,7 +24,7 @@
 >
 	<div>
 		<span>{m.empty_legal_chicken_taste()}</span>
-		{#each data.tree as node (node)}
+		{#each data.tree as node, i (i)}
 			> <a href={node.slug}>{node.name}</a> >
 		{:else}
 			>
@@ -67,7 +67,7 @@
 		</table>
 		{#if data.tag?.song.tags.length}
 			<ul id="song-tags">
-				{#each data.tag?.song.tags as tag (tag)}
+				{#each data.tag?.song.tags as tag, i (i)}
 					<li><SongTag {tag} /></li>
 				{/each}
 			</ul>
@@ -82,7 +82,7 @@
 {#if data.tag.children.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<ul>
-			{#each data.tag.children as tag (tag)}
+			{#each data.tag.children as tag, i (i)}
 				<li><a href={tag.slug}>{tag.name}</a></li>
 			{/each}
 		</ul>
@@ -92,7 +92,7 @@
 <Section title="Works tagged with {data.tag.name}">
 	{#if data.works.items.length}
 		<div class="flex flex-wrap gap-3">
-			{#each data.works.items as work (work)}
+			{#each data.works.items as work, i (i)}
 				<WorkCard {work} />
 			{/each}
 		</div>

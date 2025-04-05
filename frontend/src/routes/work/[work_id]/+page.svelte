@@ -103,7 +103,7 @@
 								{#if userListsShown}
 									<table class="absolute">
 										<tbody>
-											{#each userLists as list (list)}
+											{#each userLists as list, i (i)}
 												<tr
 													><td>{list[0].name}</td><td
 														><input
@@ -126,7 +126,7 @@
 			{/if}
 		</div>
 		<ul id="work-tags">
-			{#each data.tags as tag (tag)}
+			{#each data.tags as tag, i (i)}
 				<li><WorkTag {tag} /></li>
 			{/each}
 		</ul>
@@ -154,7 +154,7 @@
 			</tr></thead
 		>
 		<tbody>
-			{#each data.sources as src (src)}
+			{#each data.sources as src, i (i)}
 				<tr>
 					<td class="whitespace-nowrap">{src.title}</td>
 					<td><CollapsibleText text={src.description}></CollapsibleText></td>

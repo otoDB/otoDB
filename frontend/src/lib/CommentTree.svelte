@@ -43,7 +43,7 @@
 	</div>
 	{#if data.children?.length}
 		<div class="ml-3">
-			{#each data.children as child (child)}
+			{#each data.children as child, i (i)}
 				{@render this_component(child, this_component)}
 			{/each}
 		</div>
@@ -52,7 +52,7 @@
 
 <div>
 	{#if comments.length}
-		{#each comments as c (c)}
+		{#each comments as c, i (i)}
 			{@render comment(c, comment)}
 		{/each}
 	{/if}

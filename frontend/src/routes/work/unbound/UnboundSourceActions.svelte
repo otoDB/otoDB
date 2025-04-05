@@ -57,7 +57,7 @@
 						<thead>
 							<tr><th></th><th>Work</th></tr>
 						</thead><tbody>
-							{#each suggestions as work (work)}
+							{#each suggestions as work, i (i)}
 								<tr>
 									<td
 										><input

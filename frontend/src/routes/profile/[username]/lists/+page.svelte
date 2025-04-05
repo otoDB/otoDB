@@ -27,7 +27,7 @@
 		<a href="/list/import">Import list...</a>
 	{/if}
 	<ul class="list-disc">
-		{#each data.lists as list (list)}
+		{#each data.lists as list, i (i)}
 			<li><a href="/list/{list.id}">{list.name}</a></li>
 		{:else}
 			<li>This user has no lists!</li>

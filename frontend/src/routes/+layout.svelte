@@ -1,41 +1,31 @@
 <script lang="ts">
-	import Header from './Header.svelte';
 	import '../app.css';
+	import Header from '../lib/SideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 
 	let { data, children } = $props();
 </script>
 
-<div class="app">
-	<address class="absolute top-20 left-40 font-mono italic select-none">
-		{m.glad_born_mouse_taste()}
-	</address>
+<div>
+	<header class="col-span-2 px-32 py-16">
+		<address class="font-mono text-2xl italic">
+			<a href="/" class="no-underline">
+				{m.glad_born_mouse_taste()}
+			</a>
+		</address>
+	</header>
 
-	<Header user={data.user}></Header>
-
-	<main>
-		{@render children()}
-	</main>
-
-	<footer>
-		{m.glad_born_mouse_taste()} Pre-alpha
-	</footer>
+	<div class="mx-auto flex w-full gap-x-4 px-4">
+		<div class="w-[256px] flex-shrink-0">
+			<Header user={data.user}></Header>
+		</div>
+		<div class="flex-grow">
+			<main>
+				{@render children()}
+			</main>
+			<footer>
+				{m.glad_born_mouse_taste()} Pre-alpha
+			</footer>
+		</div>
+	</div>
 </div>
-
-<style>
-	.app {
-		display: grid;
-		grid-template-columns: max-content 1fr;
-		align-items: flex-start;
-		column-gap: 1rem;
-	}
-
-	main {
-		margin: 0 auto;
-		width: 100%;
-	}
-
-	footer {
-		grid-column: 2;
-	}
-</style>

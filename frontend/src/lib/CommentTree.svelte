@@ -43,8 +43,7 @@
 	</div>
 	{#if data.children?.length}
 		<div class="ml-3">
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.children as child}
+			{#each data.children as child (child)}
 				{@render this_component(child, this_component)}
 			{/each}
 		</div>
@@ -53,8 +52,7 @@
 
 <div>
 	{#if comments.length}
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each comments as c}
+		{#each comments as c (c)}
 			{@render comment(c, comment)}
 		{/each}
 	{/if}

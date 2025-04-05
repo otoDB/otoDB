@@ -44,8 +44,7 @@
 				</tr></thead
 			>
 			<tbody>
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.pending as src}
+				{#each data.pending as src (src)}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
@@ -83,8 +82,7 @@
 				</tr></thead
 			>
 			<tbody>
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.rejected as src}
+				{#each data.rejected as src (src)}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
 						<td class="whitespace-nowrap">{src.rejection_reason}</td>
@@ -123,8 +121,7 @@
 				</tr></thead
 			>
 			<tbody>
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.approved as src}
+				{#each data.approved as src (src)}
 					<tr>
 						<td class="whitespace-nowrap"
 							><a href="/work/{src.media}">{src.title}</a></td

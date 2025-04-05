@@ -72,8 +72,7 @@
 </div>
 <table>
 	<tbody>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each relations as relation, i}
+		{#each relations as relation, i (i)}
 			<tr>
 				<td
 					>{#if !relation.swapped}{#if obj_type === 'work'}<WorkCard
@@ -89,8 +88,7 @@
 						bind:value={relation.relation}
 						onchange={post_relation(i)}
 					>
-						<!-- eslint-disable-next-line svelte/require-each-key -->
-						{#each obj_type === 'work' ? WorkRelationTypes : SongRelationTypes as rel, j}
+						{#each obj_type === 'work' ? WorkRelationTypes : SongRelationTypes as rel, j (j)}
 							<option value={j}>{rel()}</option>
 						{/each}
 					</select></td

@@ -28,8 +28,7 @@
 	</form>
 
 	<ul>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each data.results.items as list}
+		{#each data.results.items as list (list)}
 			<li><a href="/list/{list.id}">{list.name}</a></li>
 		{/each}
 	</ul>

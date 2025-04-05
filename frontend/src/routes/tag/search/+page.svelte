@@ -29,7 +29,7 @@
 	</form>
 
 	<div class="flex flex-wrap gap-3">
-		{#each data.results.items as tag (tag)}
+		{#each data.results.items as tag, i (i)}
 			<WorkTag {tag} />
 		{/each}
 	</div>

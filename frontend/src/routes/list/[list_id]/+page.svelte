@@ -33,7 +33,7 @@
 </Section>
 <Section title="Entries">
 	<ol class="list-outside list-decimal">
-		{#each data.entries.items as entry (entry)}
+		{#each data.entries.items as entry, i (i)}
 			<li class="ml-5 p-2">
 				<div style="display: flex; gap: 1rem;align-items:flex-start;">
 					<a href="/work/{entry.work.id}"
@@ -59,7 +59,7 @@
 {#if data.list.pending_items.length}
 	<Section title="Pending entries">
 		<ul class="pending">
-			{#each data.list.pending_items as src (src)}
+			{#each data.list.pending_items as src, i (i)}
 				<li>
 					<span>
 						<h3>

@@ -17,7 +17,7 @@
 >
 	<div>
 		<span>Song tag</span>
-		{#each data.tree as node (node)}
+		{#each data.tree as node, i (i)}
 			> <a href={node.slug}>{node.name}</a> >
 		{:else}
 			>
@@ -43,7 +43,7 @@
 {#if data.tag.children.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<ul>
-			{#each data.tag.children as tag (tag)}
+			{#each data.tag.children as tag, i (i)}
 				<li><a href={tag.slug}>{tag.name}</a></li>
 			{/each}
 		</ul>
@@ -61,7 +61,7 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each data.songs.items as song (song)}
+				{#each data.songs.items as song, i (i)}
 					<tr>
 						<td><a href="/tag/{song.work_tag}">{song.title}</a></td>
 						<td>{song.bpm}</td>

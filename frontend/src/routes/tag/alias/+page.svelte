@@ -31,7 +31,7 @@
 		into
 		<form onsubmit={submit}>
 			<select name="" bind:value={selected}>
-				{#each tags as t (t)}
+				{#each tags as t, i (i)}
 					<option value={t}>{t}</option>
 				{/each}
 			</select>

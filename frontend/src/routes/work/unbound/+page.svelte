@@ -15,7 +15,7 @@
 
 <Section title="Pending sources" menuLinks={data.links}>
 	<ul>
-		{#each data.sources as src (src)}
+		{#each data.sources as src, i (i)}
 			<li>
 				<span>
 					<h3>

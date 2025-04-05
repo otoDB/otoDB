@@ -44,7 +44,7 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each data.pending as src (src)}
+				{#each data.pending as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
@@ -82,7 +82,7 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each data.rejected as src (src)}
+				{#each data.rejected as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
 						<td class="whitespace-nowrap">{src.rejection_reason}</td>
@@ -121,7 +121,7 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each data.approved as src (src)}
+				{#each data.approved as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap"
 							><a href="/work/{src.media}">{src.title}</a></td

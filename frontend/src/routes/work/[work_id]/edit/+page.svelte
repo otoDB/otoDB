@@ -69,7 +69,7 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each data.sources! as src (src)}
+				{#each data.sources! as src, i (i)}
 					<tr>
 						<td
 							><button

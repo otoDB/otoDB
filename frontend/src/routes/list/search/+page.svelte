@@ -28,7 +28,7 @@
 	</form>
 
 	<ul>
-		{#each data.results.items as list (list)}
+		{#each data.results.items as list, i (i)}
 			<li><a href="/list/{list.id}">{list.name}</a></li>
 		{/each}
 	</ul>

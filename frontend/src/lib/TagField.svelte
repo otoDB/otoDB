@@ -34,8 +34,7 @@
 			suggestions = [];
 		}}
 	>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each suggestions as t}
+		{#each suggestions as t (t)}
 			<li>
 				<a
 					href={null}

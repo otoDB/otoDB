@@ -61,8 +61,7 @@
 			suggestions = [];
 		}}
 	>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each suggestions as v}
+		{#each suggestions as v (v)}
 			<li>
 				<a
 					href={null}

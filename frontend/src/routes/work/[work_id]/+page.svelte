@@ -68,8 +68,7 @@
 					bind:group={cover_select}
 				/>Thumbnail</label
 			>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.sources as s, i}
+			{#each data.sources as s, i (i)}
 				<label
 					><input
 						hidden
@@ -104,8 +103,7 @@
 								{#if userListsShown}
 									<table class="absolute">
 										<tbody>
-											<!-- eslint-disable-next-line svelte/require-each-key -->
-											{#each userLists as list}
+											{#each userLists as list (list)}
 												<tr
 													><td>{list[0].name}</td><td
 														><input
@@ -128,8 +126,7 @@
 			{/if}
 		</div>
 		<ul id="work-tags">
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.tags as tag}
+			{#each data.tags as tag (tag)}
 				<li><WorkTag {tag} /></li>
 			{/each}
 		</ul>
@@ -157,8 +154,7 @@
 			</tr></thead
 		>
 		<tbody>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.sources as src}
+			{#each data.sources as src (src)}
 				<tr>
 					<td class="whitespace-nowrap">{src.title}</td>
 					<td><CollapsibleText text={src.description}></CollapsibleText></td>

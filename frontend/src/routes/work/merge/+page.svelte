@@ -179,8 +179,7 @@
 							disabled={!work[0].work || selecting.rating != 0}
 							bind:value={work[0].rating}
 						>
-							<!-- eslint-disable-next-line svelte/require-each-key -->
-							{#each Rating as r, i}<option value={i}>{r()}</option>{/each}
+							{#each Rating as r, i (i)}<option value={i}>{r()}</option>{/each}
 						</select></td
 					>
 					<td
@@ -204,8 +203,7 @@
 							disabled={!work[1].work || selecting.rating != 1}
 							bind:value={work[1].rating}
 						>
-							<!-- eslint-disable-next-line svelte/require-each-key -->
-							{#each Rating as r, i}<option value={i}>{r()}</option>{/each}
+							{#each Rating as r, i (i)}<option value={i}>{r()}</option>{/each}
 						</select></td
 					>
 					<th>Rating</th></tr

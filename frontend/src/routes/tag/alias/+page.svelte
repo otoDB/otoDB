@@ -31,8 +31,7 @@
 		into
 		<form onsubmit={submit}>
 			<select name="" bind:value={selected}>
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each tags as t}
+				{#each tags as t (t)}
 					<option value={t}>{t}</option>
 				{/each}
 			</select>

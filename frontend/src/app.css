@@ -23,7 +23,12 @@
 
 html {
 	scroll-behavior: smooth;
+	overflow-y: scroll;
 	color: var(--otodb-content-color);
+}
+
+body {
+	font-size: smaller;
 }
 
 a {
@@ -34,13 +39,6 @@ a {
 hr {
 	width: 100%;
 	color: var(--otodb-content-color);
-}
-
-body {
-	margin: 0;
-	background-color: var(--otodb-bg-color);
-	padding: 12rem 3rem 5rem 3rem;
-	font-size: smaller;
 }
 
 thead {
@@ -77,6 +75,7 @@ button {
 	border: 1px var(--otodb-faint-content) solid;
 	max-height: 15rem;
 	overflow-y: scroll;
+
 	> :empty {
 		display: none;
 	}
@@ -94,6 +93,7 @@ del {
 	ul {
 		@apply list-inside list-disc;
 	}
+
 	ol {
 		@apply list-inside list-decimal;
 	}

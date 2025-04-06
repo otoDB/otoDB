@@ -55,8 +55,7 @@
 		<thead>
 			<tr><th>Tag</th><th>Rating</th><th>User Rating</th></tr>
 		</thead><tbody>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each tags as tag}
+			{#each tags as tag, i (i)}
 				<tr>
 					<td><WorkTag {tag} /></td>
 					<td>{tag.score} (from {tag.n_votes} votes)</td>

@@ -33,8 +33,7 @@
 					<th><label for="category">{m.plane_awful_bobcat_spark()}</label></th>
 					<td
 						><select name="category" bind:value={category}>
-							<!-- eslint-disable-next-line svelte/require-each-key -->
-							{#each SongTagCategory as cat, i}
+							{#each SongTagCategory as cat, i (i)}
 								<option value={i}>{cat()}</option>
 							{/each}
 						</select></td

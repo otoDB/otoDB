@@ -17,8 +17,7 @@
 	</div>
 	<a href="/work/{work.id}">{work.title}</a>
 	<div class="tags absolute z-1 hidden w-full flex-wrap gap-1">
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each work.tags as tag}
+		{#each work.tags as tag, i (i)}
 			<WorkTag {tag} />
 		{/each}
 	</div>

@@ -17,8 +17,7 @@
 >
 	<div>
 		<span>Song tag</span>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each data.tree as node}
+		{#each data.tree as node, i (i)}
 			> <a href={node.slug}>{node.name}</a> >
 		{:else}
 			>
@@ -35,8 +34,7 @@
 
 	{#if data.tag.aliases.length}
 		<h3>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			Also known as: {#each data.tag.aliases as alias, i}{alias}{#if i + 1 != data.tag.aliases.length},
+			Also known as: {#each data.tag.aliases as alias, i (i)}{alias}{#if i + 1 != data.tag.aliases.length},
 				{/if}{/each}.
 		</h3>
 	{/if}
@@ -45,8 +43,7 @@
 {#if data.tag.children.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<ul>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.tag.children as tag}
+			{#each data.tag.children as tag, i (i)}
 				<li><a href={tag.slug}>{tag.name}</a></li>
 			{/each}
 		</ul>
@@ -64,8 +61,7 @@
 				</tr></thead
 			>
 			<tbody>
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.songs.items as song}
+				{#each data.songs.items as song, i (i)}
 					<tr>
 						<td><a href="/tag/{song.work_tag}">{song.title}</a></td>
 						<td>{song.bpm}</td>

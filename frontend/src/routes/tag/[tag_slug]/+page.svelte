@@ -24,8 +24,7 @@
 >
 	<div>
 		<span>{m.empty_legal_chicken_taste()}</span>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each data.tree as node}
+		{#each data.tree as node, i (i)}
 			> <a href={node.slug}>{node.name}</a> >
 		{:else}
 			>
@@ -42,8 +41,7 @@
 
 	{#if data.tag.aliases.length}
 		<h3>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			Also known as: {#each data.tag.aliases as alias, i}{alias}{#if i + 1 != data.tag.aliases.length},
+			Also known as: {#each data.tag.aliases as alias, i (i)}{alias}{#if i + 1 != data.tag.aliases.length},
 				{/if}{/each}.
 		</h3>
 	{/if}
@@ -69,8 +67,7 @@
 		</table>
 		{#if data.tag?.song.tags.length}
 			<ul id="song-tags">
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.tag?.song.tags as tag}
+				{#each data.tag?.song.tags as tag, i (i)}
 					<li><SongTag {tag} /></li>
 				{/each}
 			</ul>
@@ -85,8 +82,7 @@
 {#if data.tag.children.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<ul>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.tag.children as tag}
+			{#each data.tag.children as tag, i (i)}
 				<li><a href={tag.slug}>{tag.name}</a></li>
 			{/each}
 		</ul>
@@ -96,8 +92,7 @@
 <Section title="Works tagged with {data.tag.name}">
 	{#if data.works.items.length}
 		<div class="flex flex-wrap gap-3">
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.works.items as work}
+			{#each data.works.items as work, i (i)}
 				<WorkCard {work} />
 			{/each}
 		</div>

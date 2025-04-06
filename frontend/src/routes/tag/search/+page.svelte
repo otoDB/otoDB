@@ -29,8 +29,7 @@
 	</form>
 
 	<div class="flex flex-wrap gap-3">
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each data.results.items as tag}
+		{#each data.results.items as tag, i (i)}
 			<WorkTag {tag} />
 		{/each}
 	</div>

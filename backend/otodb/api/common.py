@@ -12,16 +12,18 @@ class Error(Schema):
     message: str
 
 class ProfileSchema(ModelSchema):
+    id: int
     class Meta:
         model = Account
-        fields = ['id', 'username', 'level', 'date_created']
+        fields = ['username', 'level', 'date_created']
 
 class TagSongSchema(ModelSchema):
+    id: int
     aliases: list[str]
     children: list['TagSongSchema']
     class Meta:
         model = TagSong
-        fields = ['id', 'name', 'slug', 'category']
+        fields = ['name', 'slug', 'category']
 
     @field_validator("aliases", mode="before", check_fields=False)
     @classmethod
@@ -29,11 +31,12 @@ class TagSongSchema(ModelSchema):
         return [tag.name for tag in value]
 
 class SongSchema(ModelSchema):
+    id: int
     work_tag: str
     tags: list[TagSongSchema]
     class Meta:
         model = MediaSong
-        fields = ['id', 'title', 'bpm', 'author', 'tags']
+        fields = ['title', 'bpm', 'author', 'tags']
 
     @field_validator("work_tag", mode="before", check_fields=False)
     @classmethod
@@ -41,12 +44,13 @@ class SongSchema(ModelSchema):
         return value.slug
 
 class TagWorkSchema(ModelSchema):
+    id: int
     aliases: list[str]
     children: list['TagWorkSchema']
     song: Optional[SongSchema] = Field(None, alias='get_song')
     class Meta:
         model = TagWork
-        fields = ['id', 'name', 'slug', 'category']
+        fields = ['name', 'slug', 'category']
 
     @field_validator("aliases", mode="before", check_fields=False)
     @classmethod
@@ -58,12 +62,13 @@ class TagWorkDetailsSchema(Schema):
     wiki_page: Optional[str]
 
 class WorkSourceSchema(ModelSchema):
+    id: int
     added_by: ProfileSchema
     class Meta:
         model = WorkSource
         fields = [
             'platform', 'url',
-            'published_date', 'id',
+            'published_date',
             'work_width', 'work_height',
             'title', 'description',
             'work_origin', 'work_status',
@@ -72,10 +77,11 @@ class WorkSourceSchema(ModelSchema):
         ]
 
 class WorkSchema(ModelSchema):
+    id: int
     tags: list[TagWorkSchema]
     class Meta:
         model = MediaWork
-        fields = ['id', 'title', 'description', 'rating', 'thumbnail', 'rating']
+        fields = ['title', 'description', 'rating', 'thumbnail', 'rating']
 
 class ListItemSchema(ModelSchema):
     work: WorkSchema
@@ -84,11 +90,12 @@ class ListItemSchema(ModelSchema):
         fields = ['description']
 
 class ListSchema(ModelSchema):
+    id: int
     author: ProfileSchema
     pending_items: list[WorkSourceSchema]
     class Meta:
         model = Pool
-        fields = ['name', 'description', 'id']
+        fields = ['name', 'description']
 
 def perm_decorator_ctor(uf):
     def decorator(f):

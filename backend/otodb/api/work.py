@@ -84,9 +84,10 @@ def random(request: HttpRequest):
     return MediaWork.active_objects.random()
 
 class SlimWorkSchema(ModelSchema):
+    id: int
     class Meta:
         model = MediaWork
-        fields = ['id', 'title', 'thumbnail']
+        fields = ['title', 'thumbnail']
 
 @work_router.get('relations', response=tuple[list[RelationSchema], list[SlimWorkSchema]])
 def relations(request: HttpRequest, work_id: int):
@@ -165,19 +166,19 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_
     else:
         return 400, {'message': "Bad request, is the URL correct?"}
 
-@work_router.post('assign_source', auth=django_auth, description='Pass in work_id=-1 if creating new work from source.', response=int)
+@work_router.post('assign_source', auth=django_auth, description='Omit work_id if creating new work from source.', response=int)
 @user_is_moderator
-def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int):
+def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | None = None):
     src = get_object_or_404(WorkSource.active_objects, id=source_id)
     assert(src.media is None and src.rejection_reason is None)
 
     info = video_info(src.url) # Hopefully still available!
-    
+
     if work_id != -1:
         work = get_object_or_404(MediaWork.active_objects, id=work_id)
     else:
         work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
-    
+
     work.tags.add(*info.get('tags', []))
 
     src.media = work

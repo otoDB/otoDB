@@ -290,7 +290,7 @@ export interface paths {
 		put?: never;
 		/**
 		 * Assign Source To Work
-		 * @description Pass in work_id=-1 if creating new work from source.
+		 * @description Omit work_id if creating new work from source.
 		 */
 		post: operations['otodb_api_work_assign_source_to_work'];
 		delete?: never;
@@ -815,12 +815,12 @@ export interface components {
 		};
 		/** SongSchema */
 		SongSchema: {
+			/** Id */
+			id: number;
 			/** Work Tag */
 			work_tag: string;
 			/** Tags */
 			tags: components['schemas']['TagSongSchema'][];
-			/** ID */
-			id?: number | null;
 			/** Title */
 			title: string;
 			/** Bpm */
@@ -830,12 +830,12 @@ export interface components {
 		};
 		/** TagSongSchema */
 		TagSongSchema: {
+			/** Id */
+			id: number;
 			/** Aliases */
 			aliases: string[];
 			/** Children */
 			children: components['schemas']['TagSongSchema'][];
-			/** ID */
-			id?: number | null;
 			/** Name */
 			name: string;
 			/** Slug */
@@ -848,13 +848,13 @@ export interface components {
 		};
 		/** TagWorkSchema */
 		TagWorkSchema: {
+			/** Id */
+			id: number;
 			/** Aliases */
 			aliases: string[];
 			/** Children */
 			children: components['schemas']['TagWorkSchema'][];
 			song?: components['schemas']['SongSchema'] | null;
-			/** ID */
-			id?: number | null;
 			/** Name */
 			name: string;
 			/** Slug */
@@ -887,10 +887,10 @@ export interface components {
 		};
 		/** WorkSchema */
 		WorkSchema: {
+			/** Id */
+			id: number;
 			/** Tags */
 			tags: components['schemas']['TagWorkSchema'][];
-			/** ID */
-			id?: number | null;
 			/** Title */
 			title: string;
 			/** Description */
@@ -946,8 +946,8 @@ export interface components {
 		};
 		/** SlimWorkSchema */
 		SlimWorkSchema: {
-			/** ID */
-			id?: number | null;
+			/** Id */
+			id: number;
 			/** Title */
 			title: string;
 			/** Thumbnail */
@@ -955,8 +955,8 @@ export interface components {
 		};
 		/** ProfileSchema */
 		ProfileSchema: {
-			/** ID */
-			id?: number | null;
+			/** Id */
+			id: number;
 			/** Username */
 			username: string;
 			/**
@@ -972,6 +972,8 @@ export interface components {
 		};
 		/** WorkSourceSchema */
 		WorkSourceSchema: {
+			/** Id */
+			id: number;
 			added_by: components['schemas']['ProfileSchema'];
 			/** Platform */
 			platform: number;
@@ -982,8 +984,6 @@ export interface components {
 			 * Format: date
 			 */
 			published_date: string;
-			/** ID */
-			id?: number | null;
 			/** Work Width */
 			work_width?: number | null;
 			/** Work Height */
@@ -1011,6 +1011,8 @@ export interface components {
 		};
 		/** ListSchema */
 		ListSchema: {
+			/** Id */
+			id: number;
 			author: components['schemas']['ProfileSchema'];
 			/** Pending Items */
 			pending_items: components['schemas']['WorkSourceSchema'][];
@@ -1018,8 +1020,6 @@ export interface components {
 			name: string;
 			/** Description */
 			description?: string | null;
-			/** ID */
-			id?: number | null;
 		};
 		/** PagedSourceSubmissionSchema */
 		PagedSourceSubmissionSchema: {
@@ -1030,6 +1030,8 @@ export interface components {
 		};
 		/** SourceSubmissionSchema */
 		SourceSubmissionSchema: {
+			/** Id */
+			id: number;
 			added_by: components['schemas']['ProfileSchema'];
 			/** Platform */
 			platform: number;
@@ -1040,8 +1042,6 @@ export interface components {
 			 * Format: date
 			 */
 			published_date: string;
-			/** ID */
-			id?: number | null;
 			/** Work Width */
 			work_width?: number | null;
 			/** Work Height */
@@ -1634,7 +1634,7 @@ export interface operations {
 		parameters: {
 			query: {
 				source_id: number;
-				work_id: number;
+				work_id?: number | null;
 			};
 			header?: never;
 			path?: never;

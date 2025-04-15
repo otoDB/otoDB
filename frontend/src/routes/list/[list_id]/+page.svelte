@@ -53,7 +53,6 @@
 			<li>This list has no entries!</li>
 		{/each}
 	</ol>
-	{JSON.stringify()}
 </Section>
 
 {#if data.list.pending_items.length}

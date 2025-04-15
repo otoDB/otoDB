@@ -33,11 +33,10 @@
 		if (source && target && source != target) {
 			await client.PUT('/api/list/items', {
 				fetch,
-				params: { query: { list_id: data.list.id! } },
+				params: { query: { list_id: data.list.id } },
 				body: {
 					move: [[source, target]],
 					delete: [],
-					insert_at: [],
 					update_description: [],
 					update_work: []
 				}
@@ -51,12 +50,11 @@
 	async function update_description(el) {
 		await client.PUT('/api/list/items', {
 			fetch,
-			params: { query: { list_id: data.list.id! } },
+			params: { query: { list_id: data.list.id } },
 			body: {
 				update_description: [[+el.target.closest('tr').dataset.ridx, el.target.value]],
 				move: [],
 				delete: [],
-				insert_at: [],
 				update_work: []
 			}
 		});
@@ -66,7 +64,7 @@
 		const i = +el.target.closest('tr')!.dataset.ridx!;
 		const { error } = await client.PUT('/api/list/items', {
 			fetch,
-			params: { query: { list_id: data.list.id! } },
+			params: { query: { list_id: data.list.id } },
 			body: {
 				delete: [i],
 				update_work: [],

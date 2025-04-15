@@ -29,7 +29,7 @@
 	const delete_relation = (i: number) => async () => {
 		await client.DELETE(endpoint, {
 			fetch,
-			params: { query: { A: relations[i].item.id!, B: this_id } }
+			params: { query: { A: relations[i].item.id, B: this_id } }
 		});
 		relations.splice(i, 1);
 	};

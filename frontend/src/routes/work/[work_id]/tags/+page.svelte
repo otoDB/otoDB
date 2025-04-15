@@ -40,7 +40,7 @@
 		e.preventDefault();
 		await client.PUT('/api/work/tag_scores', {
 			fetch,
-			params: { query: { work_id: +data.id! } },
+			params: { query: { work_id: +data.id } },
 			body: new_tags.map((t) => ({ tag_slug: t, score: 1 }))
 		});
 		goto(`/work/${data.id}`, { invalidateAll: true });

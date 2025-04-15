@@ -20,7 +20,7 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 					fetch,
 					params: {
 						query: {
-							song_id: +data.song.id!
+							song_id: +data.song.id
 						}
 					}
 				})

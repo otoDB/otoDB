@@ -106,7 +106,7 @@
 		comments={data.comments}
 		user={data.user ?? null}
 		model="tagwork"
-		pk={data.tag.id!}
+		pk={data.tag.id}
 	/>
 </Section>
 

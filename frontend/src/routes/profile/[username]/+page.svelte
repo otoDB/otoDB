@@ -33,6 +33,6 @@
 		comments={data.comments}
 		user={data.user ?? null}
 		model="account"
-		pk={data.profile.id!}
+		pk={data.profile.id}
 	/>
 </Section>

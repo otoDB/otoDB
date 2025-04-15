@@ -80,6 +80,6 @@
 		comments={data.comments}
 		user={data.user ?? null}
 		model="tagsong"
-		pk={data.tag.id!}
+		pk={data.tag.id}
 	/>
 </Section>

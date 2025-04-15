@@ -95,6 +95,6 @@
 </Section>
 
 <Section title="Relations">
-	<RelationEditor init_relations={data.relations} obj_type="work" this_id={data.id!}
+	<RelationEditor init_relations={data.relations} obj_type="work" this_id={data.id}
 	></RelationEditor>
 </Section>

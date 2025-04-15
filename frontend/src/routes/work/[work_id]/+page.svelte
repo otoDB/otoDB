@@ -19,7 +19,7 @@
 		if (!userListsFetched) {
 			const { data: lists } = await client.GET('/api/profile/work_in_my_lists', {
 				fetch,
-				params: { query: { work_id: data.id! } }
+				params: { query: { work_id: data.id } }
 			});
 			userLists = lists!;
 			userListsFetched = true;
@@ -31,7 +31,7 @@
 	const toggleWork = async (list_id: number) => {
 		const { error, data: state } = await client.PUT('/api/list/toggle_work', {
 			fetch,
-			params: { query: { list_id, work_id: data.id! } }
+			params: { query: { list_id, work_id: data.id } }
 		});
 		if (!error) {
 			const list = userLists.find((el) => el[0].id === list_id)!;
@@ -176,12 +176,7 @@
 	</table>
 </Section>
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree
-		comments={data.comments}
-		user={data.user ?? null}
-		model="mediawork"
-		pk={data.id!}
-	/>
+	<CommentTree comments={data.comments} user={data.user ?? null} model="mediawork" pk={data.id} />
 </Section>
 
 <style>

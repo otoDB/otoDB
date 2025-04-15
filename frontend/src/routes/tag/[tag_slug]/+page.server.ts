@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		})
 	]);
 
-	const comments = await commentClient.GET('tagwork', data.tag.id!, fetch);
+	const comments = await commentClient.GET('tagwork', data.tag.id, fetch);
 
 	const song_relation_svg = data.song_relations
 		? await (async () => {

@@ -10,7 +10,7 @@
 	const submit_tags = async () => {
 		await client.POST('/api/tag/song_tags', {
 			fetch,
-			params: { query: { song_id: +data.tag.song!.id! } },
+			params: { query: { song_id: +data.tag.song!.id } },
 			body: tags
 		});
 		goto(`/tag/${data.tag.slug}`, { invalidateAll: true });

@@ -93,12 +93,7 @@
 {/if}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree
-		comments={data.comments}
-		user={data.user ?? null}
-		model="pool"
-		pk={data.list.id!}
-	/>
+	<CommentTree comments={data.comments} user={data.user ?? null} model="pool" pk={data.list.id} />
 </Section>
 
 <style>

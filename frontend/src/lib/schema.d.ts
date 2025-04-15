@@ -689,7 +689,8 @@ export interface paths {
 		put?: never;
 		/** Song Relation */
 		post: operations['otodb_api_tag_song_relation'];
-		delete?: never;
+		/** Delete Relation */
+		delete: operations['otodb_api_tag_delete_relation'];
 		options?: never;
 		head?: never;
 		patch?: never;
@@ -2280,6 +2281,27 @@ export interface operations {
 				'application/json': components['schemas']['RelationSchema'];
 			};
 		};
+		responses: {
+			/** @description OK */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+		};
+	};
+	otodb_api_tag_delete_relation: {
+		parameters: {
+			query: {
+				A: number;
+				B: number;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
 		responses: {
 			/** @description OK */
 			200: {

@@ -122,6 +122,15 @@ def song_relation(request: HttpRequest, payload: RelationSchema):
     post_relation(MediaSong, payload)
     return
 
+@tag_router.delete('song_relation', auth=django_auth)
+@user_is_trusted
+def delete_relation(request: HttpRequest, A: int, B: int):
+    a = MediaSong.active_objects.get(id=A)
+    b = MediaSong.active_objects.get(id=B)
+    rel = SongRelation.objects.get(a, b)
+    rel.delete()
+    return
+
 @tag_router.get('song_tag_search', response=list[TagSongSchema])
 @paginate
 def song_tag_search(request: HttpRequest, query: str):

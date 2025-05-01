@@ -1,6 +1,5 @@
 from typing import Self
 
-from django.urls import reverse
 from django.db import models
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagModel, TagModelManager
@@ -123,8 +122,8 @@ class TagSong(TagModel):
         return self.name
 
     class Meta:
-        verbose_name = ("Tag")
-        verbose_name_plural = ("Tags")
+        verbose_name = ("Song Tag")
+        verbose_name_plural = ("Song Tags")
         permissions = [
             ("manage_tags", "Can manage tags"),
         ]

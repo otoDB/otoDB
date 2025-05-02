@@ -29,8 +29,11 @@ def query_external(request: HttpRequest, platform: str, id: str):
 
 @work_router.get('search', response=List[WorkSchema])
 @paginate
-def search(request: HttpRequest, query: str):
-    return MediaWork.active_objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
+def search(request: HttpRequest, query: str, tags: str):
+    qs =  MediaWork.active_objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
+    for tag in tags.split():
+        qs = qs.filter(tags=tag)
+    return qs
 
 @work_router.get('work', response=WorkSchema)
 def work(request: HttpRequest, work_id: int):

@@ -3,6 +3,7 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkCard from '$lib/WorkCard.svelte';
+	import TagsField from '$lib/TagsField.svelte';
 
 	let { data }: PageProps = $props();
 </script>
@@ -26,6 +27,9 @@
 			placeholder="{m.mean_top_antelope_love()}..."
 			value={data.query}
 		/>
+		<input type="submit" />
+		<h4>Tags:</h4>
+		<TagsField type="work" name="tags" value={data.query_tags} />
 	</form>
 
 	<div class="flex flex-wrap gap-3">

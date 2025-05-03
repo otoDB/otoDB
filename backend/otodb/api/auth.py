@@ -1,10 +1,11 @@
+from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import authenticate, login, logout
 from ninja import Schema, Router
 from ninja.security import django_auth
 
-from otodb.account.models import Account
+from otodb.account.models import Account, Invitation
 
 from .common import Error
 
@@ -43,8 +44,11 @@ def logout_endpoint(request):
     return {'message': 'Logged out'}
 
 @auth_router.post("/register", response={ 200:UserLoginSchema, 401: Error })
-def register(request, username: str, password: str, email: str):
-    # user = Account.objects.create_user(username, email, password=password)
-    # login(request, user)
-    # return { 'user_id': user.id, 'username': user.username }
-    pass
+def register(request, username: str, password: str, email: str, invite: str):
+    if invite := get_object_or_404(Invitation, secret=invite):
+        invite.delete()
+    else:
+        return 401, {'message': 'Invalid invite.'}
+    user = Account.objects.create_user(username, email, password=password)
+    login(request, user)
+    return { 'user_id': user.id, 'username': user.username }

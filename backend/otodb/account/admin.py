@@ -1,11 +1,15 @@
+import string
+
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
+from django.utils.crypto import get_random_string
+from django.shortcuts import redirect
 
-from otodb.account.models import Account
+from otodb.account.models import Account, Invitation
 
 
 class UserCreationForm(forms.ModelForm):
@@ -74,8 +78,13 @@ class UserAdmin(BaseUserAdmin):
     ordering = ["username"]
     filter_horizontal = []
 
+class InvitationAdmin(admin.ModelAdmin):
+    def add_view(self, request, form_url="", extra_context=None):
+        Invitation.objects.create(secret=get_random_string(16, string.ascii_letters+string.digits))
+        return redirect('admin:account_invitation_changelist')
 
 admin.site.register(Account, UserAdmin)
+admin.site.register(Invitation, InvitationAdmin)
 # Since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 admin.site.unregister(Group)

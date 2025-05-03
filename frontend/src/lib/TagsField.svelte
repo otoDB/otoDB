@@ -4,7 +4,7 @@
 	import { clickOutside, debounce } from './ui';
 
 	interface Props {
-		value: any[];
+		value: any[] | string;
 		type: 'work' | 'song';
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
@@ -52,7 +52,14 @@
 	};
 
 	onMount(() => {
-		if (value) textarea.value = value.join(' ');
+		if (value) {
+			if (value instanceof Array) {
+				textarea.value = value.join(' ');
+			} else {
+				textarea.value = value;
+				value = [];
+			}
+		}
 	});
 </script>
 
@@ -63,6 +70,7 @@
 			search();
 		}}
 		onclick={search}
+		name={props.name}
 		bind:this={textarea}
 		{...props}
 	></textarea>
@@ -95,5 +103,6 @@
 <style>
 	ul {
 		background-color: var(--otodb-bg-color);
+		z-index: 1;
 	}
 </style>

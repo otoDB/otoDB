@@ -105,6 +105,7 @@ class Account(AbstractBaseUser):
 
 class Invitation(models.Model):
     secret = models.CharField(max_length=127, unique=True)
+    level = models.IntegerField(choices=Account.Levels)
 
     def __str__(self):
         return self.secret

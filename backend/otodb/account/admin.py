@@ -7,7 +7,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.utils.crypto import get_random_string
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 
 from otodb.account.models import Account, Invitation
 
@@ -78,10 +78,28 @@ class UserAdmin(BaseUserAdmin):
     ordering = ["username"]
     filter_horizontal = []
 
+
+class AddInvitationForm(forms.ModelForm):
+    class Meta:
+        model = Invitation
+        fields = ["level"]
+
 class InvitationAdmin(admin.ModelAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            kwargs['form'] = AddInvitationForm
+        return super().get_form(request, obj, **kwargs)
+
     def add_view(self, request, form_url="", extra_context=None):
-        Invitation.objects.create(secret=get_random_string(16, string.ascii_letters+string.digits))
-        return redirect('admin:account_invitation_changelist')
+        if request.method == "POST":
+            form = AddInvitationForm(request.POST)
+            if form.is_valid():
+                Invitation.objects.create(
+                    secret=get_random_string(16, string.ascii_letters+string.digits),
+                    level=form.cleaned_data['level']
+                    )
+                return redirect('admin:account_invitation_changelist')
+        return super().add_view(request, form_url, extra_context)
 
 admin.site.register(Account, UserAdmin)
 admin.site.register(Invitation, InvitationAdmin)

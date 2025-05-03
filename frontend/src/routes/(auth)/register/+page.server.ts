@@ -13,6 +13,7 @@ export const actions = {
 	default: async ({ cookies, request, fetch, locals }) => {
 		const data = await request.formData();
 		const username = data.get('username') as string,
+			invite = data.get('invite') as string,
 			email = data.get('email') as string,
 			password = data.get('password') as string,
 			confirm = data.get('confirm') as string;
@@ -22,7 +23,7 @@ export const actions = {
 		else if (password != confirm) return fail(400, { username, email, unmatch: true });
 
 		const { response, error } = await client.POST('/api/auth/register', {
-			params: { query: { username, password, email } },
+			params: { query: { username, password, email, invite } },
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') },
 			fetch
 		});

@@ -102,3 +102,9 @@ class Account(AbstractBaseUser):
     def get_absolute_url(self):
         return reverse('otodb:profile', kwargs={ 'user_id': self.id })
 
+
+class Invitation(models.Model):
+    secret = models.CharField(max_length=127, unique=True)
+
+    def __str__(self):
+        return self.secret

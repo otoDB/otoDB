@@ -1285,6 +1285,7 @@ export interface operations {
                 username: string;
                 password: string;
                 email: string;
+                invite: string;
             };
             header?: never;
             path?: never;

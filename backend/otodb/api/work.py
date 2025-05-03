@@ -174,7 +174,7 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
 
     info = video_info(src.url) # Hopefully still available!
 
-    if work_id != -1:
+    if work_id is not None:
         work = get_object_or_404(MediaWork.active_objects, id=work_id)
     else:
         work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)

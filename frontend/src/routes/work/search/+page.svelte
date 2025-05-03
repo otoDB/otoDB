@@ -26,10 +26,9 @@
 			name="query"
 			placeholder="{m.mean_top_antelope_love()}..."
 			value={data.query}
-			class="block"
 		/>
+		<input type="submit" />
 		<h4>Tags:</h4>
-
 		<TagsField type="work" name="tags" value={data.query_tags} />
 	</form>
 

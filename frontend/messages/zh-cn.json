@@ -1,6 +1,5 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "您好，来自zh-cn的{name}！",
 	"glad_born_mouse_taste": "音MAD数据库",
 	"large_factual_octopus_exhale": "标题",
 	"clear_lucky_peacock_pick": "简介",

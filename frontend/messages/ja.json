@@ -1,6 +1,5 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "こんにちは、jaの{name}さん！",
 	"glad_born_mouse_taste": "音MADデータベース",
 	"large_factual_octopus_exhale": "タイトル",
 	"clear_lucky_peacock_pick": "説明文",

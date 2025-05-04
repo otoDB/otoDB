@@ -54,7 +54,7 @@
 	<table>
 		<thead>
 			<tr
-				><th>{m.empty_legal_chicken_taste()}</th><th>{m.good_dark_bumblebee_spur()}</th><th
+				><th>{m.empty_legal_chicken_taste()}</th><th>{m.brave_tiny_meerkat_engage()}</th><th
 					>{m.sunny_deft_puffin_scoop()}</th
 				></tr
 			>

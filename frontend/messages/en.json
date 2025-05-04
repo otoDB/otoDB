@@ -1,6 +1,5 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from en!",
 	"glad_born_mouse_taste": "the otomad/ytpmv database",
 	"large_factual_octopus_exhale": "Title",
 	"clear_lucky_peacock_pick": "Description",
@@ -76,7 +75,7 @@
 	"inner_solid_toad_zap": "Post",
 	"left_watery_jellyfish_grip": "This work does not have any relations.",
 	"patient_male_ox_praise": "Add more tags...",
-	"sunny_deft_puffin_scoop": "Your Rating",
+	"sunny_deft_puffin_scoop": "Your Score",
 	"wide_just_gull_glow": "Update Reason",
 	"tame_dirty_goldfish_flow": "This tag does not yet have a wiki page.",
 	"quiet_super_kangaroo_kiss": "Works tagged with {tag}",
@@ -125,5 +124,6 @@
 	"front_smart_hound_fold": "Pending entries",
 	"less_green_angelfish_hunt": "Swap",
 	"grand_vexed_snail_ripple": "is a",
-	"clean_best_kangaroo_achieve": "of"
+	"clean_best_kangaroo_achieve": "of",
+	"brave_tiny_meerkat_engage": "Score"
 }

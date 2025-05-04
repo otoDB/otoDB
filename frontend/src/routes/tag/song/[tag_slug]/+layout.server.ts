@@ -25,7 +25,10 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 
 	return {
 		links: [
-			{ pathname: `tag/song/${params.tag_slug}`, title: 'Song Tag' + ' ' + params.tag_slug },
+			{
+				pathname: `tag/song/${params.tag_slug}`,
+				title: m.dull_plain_angelfish_cuddle() + ' ' + params.tag_slug
+			},
 			{ pathname: `tag/song/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }
 		],
 		tag: data,

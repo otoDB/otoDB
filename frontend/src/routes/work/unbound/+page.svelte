@@ -10,10 +10,10 @@
 </script>
 
 <svelte:head>
-	<title>Pending sources</title>
+	<title>{m.suave_gray_stork_type()}</title>
 </svelte:head>
 
-<Section title="Pending sources" menuLinks={data.links}>
+<Section title={m.suave_gray_stork_type()} menuLinks={data.links}>
 	<ul>
 		{#each data.sources as src, i (i)}
 			<li>
@@ -22,12 +22,16 @@
 						<a href={src.url} target="_blank" rel="noopener noreferrer">{src.title}</a>
 					</h3>
 					<h4>
-						Requested by: <a href="/profile/{src.added_by.username}"
-							>{src.added_by.username}</a
-						>
+						{m.swift_sweet_anaconda_hurl()}
+						<a href="/profile/{src.added_by.username}">{src.added_by.username}</a>
 					</h4>
 					<h4>{Platform[src.platform]} {src.published_date}</h4>
-					<h4>Claimed origin: {WorkOrigin[src.work_origin]()}</h4>
+					<h4>
+						{m.mild_loud_shad_enchant({
+							type: m.large_polite_otter_thrive(),
+							name: WorkOrigin[src.work_origin]()
+						})}
+					</h4>
 					<RefreshButton source={src} />
 					<UnboundSourceActions source={src} />
 				</span>
@@ -42,7 +46,7 @@
 				</span>
 			</li>
 		{:else}
-			<li>There are no pending sources.</li>
+			<li>{m.moving_such_seal_hug()}</li>
 		{/each}
 	</ul>
 </Section>

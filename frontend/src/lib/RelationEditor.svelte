@@ -2,6 +2,7 @@
 	import { invalidate } from '$app/navigation';
 	import client from './api';
 	import { SongRelationTypes, WorkRelationTypes } from './enums';
+	import { m } from './paraglide/messages';
 	import type { components } from './schema';
 	import SongField from './SongField.svelte';
 	import WorkCard from './WorkCard.svelte';
@@ -68,7 +69,7 @@
 	{:else if obj_type === 'song'}
 		<SongField bind:value={new_item} />
 	{/if}
-	<button onclick={add_new_item} disabled={!new_item}>Add</button>
+	<button onclick={add_new_item} disabled={!new_item}>{m.swift_dry_gecko_boost()}</button>
 </div>
 <table>
 	<tbody>
@@ -81,7 +82,7 @@
 								>{relation.item.title}</a
 							>{/if}{:else}This {#if obj_type === 'work'}work{:else if obj_type === 'song'}song{/if}{/if}</td
 				>
-				<td>is a</td>
+				<td>{m.grand_vexed_snail_ripple()}</td>
 				<td
 					><select
 						name="relation"
@@ -93,15 +94,23 @@
 						{/each}
 					</select></td
 				>
-				<td>of</td><td
+				<td>{m.clean_best_kangaroo_achieve()}</td><td
 					>{#if relation.swapped}{#if obj_type === 'work'}<WorkCard
 								work={relation.item}
 							/>{:else if obj_type === 'song'}<a href="/tag/{relation.item.work_tag}"
 								>{relation.item.title}</a
 							>{/if}{:else}this {#if obj_type === 'work'}work{:else if obj_type === 'song'}song{/if}{/if}</td
 				>
-				<td><button type="button" onclick={swap_relation(i)}>Swap</button></td>
-				<td><button type="button" onclick={delete_relation(i)}>Delete</button></td>
+				<td
+					><button type="button" onclick={swap_relation(i)}
+						>{m.less_green_angelfish_hunt()}</button
+					></td
+				>
+				<td
+					><button type="button" onclick={delete_relation(i)}
+						>{m.even_alert_grebe_taste()}</button
+					></td
+				>
 			</tr>
 		{/each}
 	</tbody>

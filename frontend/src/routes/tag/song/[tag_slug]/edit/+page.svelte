@@ -9,24 +9,14 @@
 	let { data, form }: PageProps = $props();
 
 	let category = $state(form?.category ?? data.tag?.category);
-	let md = $state(data.wiki_page);
 </script>
-
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.empty_legal_chicken_taste(),
-			name: data.tag.name
-		})}</title
-	>
-</svelte:head>
 
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
 	menuLinks={data.links}
 >
 	<form method="POST" use:enhance action="?/edit">
-		{#if form?.failed}<p class="error">Failed!</p>{/if}
+		{#if form?.failed}<p class="error">{m.green_due_javelina_pop()}</p>{/if}
 		<table>
 			<tbody>
 				<tr>
@@ -40,7 +30,7 @@
 					>
 				</tr>
 				<tr>
-					<th><label for="parent">Parent</label></th>
+					<th><label for="parent">{m.away_crisp_blackbird_twist()}</label></th>
 					<td
 						><TagField
 							type="song"

@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import client from './api';
 	import { clickOutside, debounce } from './ui';
+	import { m } from './paraglide/messages';
 
 	interface Props {
 		value: any[] | string;
@@ -69,8 +70,8 @@
 			updateValue();
 			search();
 		}}
+		placeholder={m.petty_fuzzy_fox_ask()}
 		onclick={search}
-		name={props.name}
 		bind:this={textarea}
 		{...props}
 	></textarea>

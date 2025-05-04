@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
+	import { m } from '$lib/paraglide/messages';
 	import type { components } from '$lib/schema';
 	import WorkCard from '$lib/WorkCard.svelte';
 
@@ -42,17 +43,17 @@
 	<div>
 		<label>
 			<input type="radio" value="new" bind:group={menu} />
-			Accept
+			{m.lucky_bold_hornet_push()}
 		</label>
 
 		<label>
 			<input type="radio" value="reject" bind:group={menu} />
-			Reject
+			{m.alive_blue_marlin_push()}
 		</label>
 		<div>
 			{#if menu === 'new'}
 				<form onsubmit={accept}>
-					Attaching to...
+					{m.cute_neat_gull_greet()}
 					<table>
 						<thead>
 							<tr><th></th><th>Work</th></tr>
@@ -71,7 +72,7 @@
 							{/each}
 							<tr>
 								<td><input type="radio" value={-1} bind:group={candidate} /></td>
-								<td>New work</td>
+								<td>{m.careful_red_cow_evoke()}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -79,12 +80,15 @@
 				</form>
 			{:else}
 				<form onsubmit={reject}>
-					<label>Reason: <input type="text" bind:value={reason} required /></label>
+					<label
+						>{m.weary_spicy_fly_attend()}
+						<input type="text" bind:value={reason} required /></label
+					>
 					<input type="submit" />
 				</form>
 			{/if}
 		</div>
 	</div>
 {:else}
-	<h4><a href={null} onclick={unfold}>&gt; Actions</a></h4>
+	<h4><a href={null} onclick={unfold}>&gt; {m.awake_patient_fireant_pout()}</a></h4>
 {/if}

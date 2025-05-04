@@ -1,6 +1,5 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "您好，来自zh-cn的{name}！",
 	"glad_born_mouse_taste": "音MAD数据库",
 	"large_factual_octopus_exhale": "标题",
 	"clear_lucky_peacock_pick": "简介",
@@ -60,5 +59,6 @@
 	"light_caring_deer_coax": "组曲",
 	"bold_polite_myna_delight": "Remaster",
 	"antsy_north_reindeer_radiate": "Remix",
-	"mean_top_antelope_love": "搜索"
+	"mean_top_antelope_love": "搜索",
+	"hello_world": "您好，来自zh-cn的{name}！"
 }

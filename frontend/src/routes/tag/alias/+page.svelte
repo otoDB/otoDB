@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import TagsField from '$lib/TagsField.svelte';
 	import client from '$lib/api';
@@ -21,14 +20,13 @@
 </script>
 
 <svelte:head>
-	<title>Alias Tags</title>
+	<title>{m.front_maroon_hamster_urge()}</title>
 </svelte:head>
 
-<Section title="Alias Tags">
-	Start by giving a space-delimited list of tags.
+<Section title={m.front_maroon_hamster_urge()}>
 	<TagsField type="work" class="w-full" bind:value={tags} />
 	{#if tags.length}
-		into
+		{m.male_gross_angelfish_reap()}
 		<form onsubmit={submit}>
 			<select name="" bind:value={selected}>
 				{#each tags as t, i (i)}

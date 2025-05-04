@@ -54,10 +54,10 @@
 </script>
 
 <svelte:head>
-	<title>Merge Works</title>
+	<title>{m.heroic_same_wasp_conquer()}</title>
 </svelte:head>
 
-<Section title="Merge Works">
+<Section title={m.heroic_same_wasp_conquer()}>
 	<form method="POST">
 		<table>
 			<tbody>
@@ -66,14 +66,14 @@
 					<td>
 						<WorkField bind:value={work[0].work} oninput={() => updateInfo(0)} />
 					</td>
-					<td>Keep Left</td><td>Keep Right</td>
+					<td></td><td></td>
 					<td>
 						<WorkField bind:value={work[1].work} oninput={() => updateInfo(1)} />
 					</td>
 					<th></th></tr
 				>
 				<tr
-					><th>Title</th>
+					><th>{m.large_factual_octopus_exhale()}</th>
 					<td
 						><input
 							type="text"
@@ -104,10 +104,10 @@
 							bind:value={work[1].title}
 						/></td
 					>
-					<th>Title</th></tr
+					<th>{m.large_factual_octopus_exhale()}</th></tr
 				>
 				<tr
-					><th>Description</th>
+					><th>{m.clear_lucky_peacock_pick()}</th>
 					<td
 						><textarea
 							disabled={!work[0].work || selecting.description !== 0}
@@ -136,10 +136,10 @@
 							bind:value={work[1].description}
 						></textarea></td
 					>
-					<th>Description</th></tr
+					<th>{m.clear_lucky_peacock_pick()}</th></tr
 				>
 				<tr
-					><th>Thumbnail</th>
+					><th>{m.heroic_ideal_orangutan_aid()}</th>
 					<td
 						><input
 							type="text"
@@ -170,10 +170,10 @@
 							bind:value={work[1].thumbnail}
 						/><img class="w-15" src={work[1].thumbnail} alt={work[1].title} /></td
 					>
-					<th>Thumbnail</th></tr
+					<th>{m.heroic_ideal_orangutan_aid()}</th></tr
 				>
 				<tr
-					><th>Rating</th>
+					><th>{m.good_dark_bumblebee_spur()}</th>
 					<td
 						><select
 							disabled={!work[0].work || selecting.rating != 0}
@@ -206,7 +206,7 @@
 							{#each Rating as r, i (i)}<option value={i}>{r()}</option>{/each}
 						</select></td
 					>
-					<th>Rating</th></tr
+					<th>{m.good_dark_bumblebee_spur()}</th></tr
 				>
 			</tbody>
 		</table>

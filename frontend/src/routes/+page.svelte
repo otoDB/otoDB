@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { setLocale } from '$lib/paraglide/runtime';
 	import { m } from '$lib/paraglide/messages.js';
 
 	import Section from '$lib/Section.svelte';
@@ -13,23 +12,13 @@
 </svelte:head>
 
 <Section title={m.fine_late_chicken_quiz()}>
-	<p>Welcome to the otomad/ytpmv database... We'll make more progress here soon.</p>
-	<p>
-		Here is i18n in action:
-		{m.hello_world({ name: data.user ? data.user.username : 'Guest' })}
-		<br />
-		Click here (look at the URL bar!):
-		<button onclick={() => setLocale('en')}>English</button>
-		<button onclick={() => setLocale('ja')}>日本語</button>
-		<button onclick={() => setLocale('ko')}>한국인</button>
-		<button onclick={() => setLocale('zh-cn')}>简体中文</button>
-	</p>
-
+	<p>{m.silly_main_reindeer_chop()}</p>
 	<div>
-		<h2>Random work: <a href="/work/{data.random.id}">{data.random.title}</a></h2>
+		<h2>
+			{m.mild_loud_shad_enchant({ type: m.fuzzy_chunky_niklas_peek(), name: '' })}<a
+				href="/work/{data.random.id}">{data.random.title}</a
+			>
+		</h2>
 		<img style="width:25rem;" src={data.random.thumbnail} alt={data.random.title} />
 	</div>
 </Section>
-
-<style>
-</style>

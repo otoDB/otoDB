@@ -8,11 +8,19 @@
 </script>
 
 <svelte:head>
-	<title>New work source{data.title ? ' for ' + data.title : ''}</title>
+	<title
+		>{data.title
+			? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: data.title })
+			: m.helpful_away_jay_succeed()}</title
+	>
 </svelte:head>
 
-<Section title="New work source{data.title ? ' for ' + data.title : ''}">
-	<p>Currently accepted sites:</p>
+<Section
+	title={data.title
+		? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: data.title })
+		: m.helpful_away_jay_succeed()}
+>
+	<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 	<ul>
 		<li>YouTube</li>
 		<li>Niconico</li>
@@ -28,7 +36,7 @@
 					<td><input required type="text" name="url" value={form?.url ?? ''} /></td>
 				</tr>
 				<tr>
-					<th><label for="origin">Is this an official upload?</label></th>
+					<th><label for="origin">{m.watery_fuzzy_fireant_thrive()}</label></th>
 					<td
 						><input
 							type="checkbox"

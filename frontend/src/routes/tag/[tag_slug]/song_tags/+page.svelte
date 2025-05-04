@@ -3,6 +3,7 @@
 	import client from '$lib/api';
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let { data } = $props();
 
@@ -17,7 +18,13 @@
 	};
 </script>
 
-<Section title="Song: {data.tag.song!.title}" menuLinks={data.song_links}>
+<Section
+	title={m.mild_loud_shad_enchant({
+		type: m.grand_nice_pony_belong(),
+		name: data.tag.song!.title
+	})}
+	menuLinks={data.song_links}
+>
 	<TagsField type="song" class="w-full" bind:value={tags} />
 	<input type="submit" onclick={submit_tags} />
 </Section>

@@ -8,15 +8,6 @@
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.fuzzy_crazy_cobra_lead(),
-			name: data.profile.username
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.mild_loud_shad_enchant({
 		type: m.fuzzy_crazy_cobra_lead(),
@@ -25,10 +16,10 @@
 	menuLinks={data.links}
 >
 	{#if data.user?.username === data.profile.username}
-		<a href="/work/add">Add a work...</a>
+		<a href="/work/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}
 
-	<h2>Pending</h2>
+	<h2>{m.such_actual_okapi_dare()}</h2>
 	{#if data.pending?.length}
 		<table class="w-full">
 			<thead
@@ -62,16 +53,16 @@
 			</tbody>
 		</table>
 	{:else}
-		<p>No pending submissions.</p>
+		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 
-	<h2>Rejected</h2>
+	<h2>{m.stale_vexed_hare_pray()}</h2>
 	{#if data.rejected?.length}
 		<table class="w-full">
 			<thead
 				><tr>
 					<th>{m.large_factual_octopus_exhale()}</th>
-					<th>Rejection reason</th>
+					<th>{m.weary_spicy_fly_attend()}</th>
 					<th>{m.sour_swift_sparrow_spin()}</th>
 					<th>{m.super_agent_pigeon_aim()}</th>
 					<th>{m.large_polite_otter_thrive()}</th>
@@ -101,10 +92,10 @@
 			</tbody>
 		</table>
 	{:else}
-		<p>No rejected submissions.</p>
+		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 
-	<h2>Approved</h2>
+	<h2>{m.spare_few_kudu_learn()}</h2>
 	{#if data.approved?.length}
 		<table class="w-full">
 			<thead
@@ -143,6 +134,6 @@
 			</tbody>
 		</table>
 	{:else}
-		<p>No approved submissions.</p>
+		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 </Section>

@@ -22,16 +22,19 @@
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
 >
-	<h3>By: <a href="/profile/{data.list?.author.username}">{data.list?.author.username}</a></h3>
+	<h3>
+		{m.curly_safe_lynx_fond()}
+		<a href="/profile/{data.list?.author.username}">{data.list?.author.username}</a>
+	</h3>
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
 	{#if data.list?.author.username == data.user?.username}
-		<a href="/list/{data.list.id}/edit">Edit this list...</a>
+		<a href="/list/{data.list.id}/edit">{m.sunny_steep_termite_trust()}</a>
 		<a href="/list/{data.list.id}/delete" data-sveltekit-preload-data="tap"
-			>Delete this list...</a
+			>{m.key_sea_chicken_boost()}</a
 		>
 	{/if}
 </Section>
-<Section title="Entries">
+<Section title={m.bald_clear_marlin_grasp()}>
 	<ol class="list-outside list-decimal">
 		{#each data.entries.items as entry, i (i)}
 			<li class="ml-5 p-2">
@@ -50,13 +53,13 @@
 				</div>
 			</li>
 		{:else}
-			<li>This list has no entries!</li>
+			<li>{m.hour_flat_finch_zoom()}</li>
 		{/each}
 	</ol>
 </Section>
 
 {#if data.list.pending_items.length}
-	<Section title="Pending entries">
+	<Section title={m.front_smart_hound_fold()}>
 		<ul class="pending">
 			{#each data.list.pending_items as src, i (i)}
 				<li>
@@ -68,7 +71,12 @@
 						</h3>
 						<h4>{Platform[src.platform]} {src.published_date}</h4>
 						{#if src.rejection_reason}
-							<p class="text-red-400">Rejected: {src.rejection_reason}</p>
+							<p class="text-red-400">
+								{m.mild_loud_shad_enchant({
+									type: m.weary_spicy_fly_attend(),
+									name: src.rejection_reason
+								})}
+							</p>
 						{:else}
 							<RefreshButton source={src} />
 							{#if data.user && data.user?.level >= UserLevel.MODERATOR}

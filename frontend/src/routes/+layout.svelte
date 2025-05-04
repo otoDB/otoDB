@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import { setLocale } from '$lib/paraglide/runtime';
+	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import Header from '../lib/SideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 
@@ -29,7 +29,7 @@
 					{m.glad_born_mouse_taste()} Alpha
 				</span>
 				<span>
-					<select onchange={(e) => setLocale(e.target.value)}>
+					<select onchange={(e) => setLocale(e.target.value)} value={getLocale()}>
 						<option value="en">English</option>
 						<option value="ja">日本語</option>
 						<option value="ko">한국인</option>

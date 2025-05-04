@@ -80,6 +80,7 @@ class UserAdmin(BaseUserAdmin):
 
 
 class AddInvitationForm(forms.ModelForm):
+    bulk = forms.IntegerField(initial=1, min_value=1)
     class Meta:
         model = Invitation
         fields = ["level"]
@@ -88,16 +89,20 @@ class InvitationAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         if obj is None:
             kwargs['form'] = AddInvitationForm
-        return super().get_form(request, obj, **kwargs)
+        form = super().get_form(request, obj, **kwargs)
+        if obj is None:
+            form.base_fields['level'].initial = 20
+        return form
 
     def add_view(self, request, form_url="", extra_context=None):
         if request.method == "POST":
             form = AddInvitationForm(request.POST)
             if form.is_valid():
-                Invitation.objects.create(
-                    secret=get_random_string(16, string.ascii_letters+string.digits),
-                    level=form.cleaned_data['level']
-                    )
+                for _ in range(form.cleaned_data['bulk']):
+                    Invitation.objects.create(
+                        secret=get_random_string(16, string.ascii_letters+string.digits),
+                        level=form.cleaned_data['level']
+                        )
                 return redirect('admin:account_invitation_changelist')
         return super().add_view(request, form_url, extra_context)
 

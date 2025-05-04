@@ -142,7 +142,11 @@
 					</td><td
 						><textarea value={entry.description} oninput={debounce(update_description)}
 						></textarea></td
-					><td><button type="button" onclick={delete_item}>Remove</button></td></tr
+					><td
+						><button type="button" onclick={delete_item}
+							>{m.even_alert_grebe_taste()}</button
+						></td
+					></tr
 				>
 			{/each}
 		</tbody>

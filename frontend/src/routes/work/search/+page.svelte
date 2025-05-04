@@ -27,14 +27,20 @@
 			placeholder="{m.mean_top_antelope_love()}..."
 			value={data.query}
 		/>
-		<input type="submit" />
-		<h4>Tags:</h4>
-		<TagsField type="work" name="tags" value={data.query_tags} />
+		<input type="submit" value={m.mean_top_antelope_love()} />
+		<h4>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: '' })}</h4>
+		<TagsField type="work" name="tags" value={data.query_tags} class="w-full" />
 	</form>
-
+	<hr />
 	<div class="flex flex-wrap gap-3">
 		{#each data.results.items as work, i (i)}
 			<WorkCard {work} />
 		{/each}
 	</div>
 </Section>
+
+<style>
+	hr {
+		margin: 1rem 0;
+	}
+</style>

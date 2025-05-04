@@ -66,7 +66,7 @@
 					name="cover_select"
 					value={-1}
 					bind:group={cover_select}
-				/>Thumbnail</label
+				/>{m.heroic_ideal_orangutan_aid()}</label
 			>
 			{#each data.sources as s, i (i)}
 				<label
@@ -99,7 +99,7 @@
 						<tr>
 							<th>{m.stale_loose_squid_cut()}</th>
 							<td>
-								<button onclick={showLists}>Add/Remove...</button>
+								<button onclick={showLists}>{m.proud_every_goat_affirm()}</button>
 								{#if userListsShown}
 									<table class="absolute">
 										<tbody>

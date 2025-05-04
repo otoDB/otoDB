@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { commentClient, type CommentModels } from './api';
+	import { m } from './paraglide/messages';
 
 	interface Props {
 		comments: any;
@@ -25,7 +26,7 @@
 {#snippet reply(reply_to: number)}
 	<form onsubmit={post(reply_to)}>
 		<textarea class="block" name="comment"></textarea>
-		<input type="submit" />
+		<input type="submit" value={m.inner_solid_toad_zap()} />
 	</form>
 {/snippet}
 
@@ -35,7 +36,7 @@
 		<p>{data.comment}</p>
 		{#if user}
 			<label class="reply">
-				Reply
+				{m.kind_brief_earthworm_dash()}
 				<input type="checkbox" />
 				{@render reply(data.id)}
 			</label>
@@ -57,7 +58,7 @@
 		{/each}
 	{/if}
 	{#if user}
-		<h4>Post a new comment:</h4>
+		<h4>{m.mild_loud_shad_enchant({ type: m.weak_safe_cat_mix(), name: '' })}</h4>
 		{@render reply(0)}
 	{/if}
 </div>

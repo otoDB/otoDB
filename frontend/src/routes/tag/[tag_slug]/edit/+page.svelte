@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { SongRelationTypes, WorkTagCategory } from '$lib/enums';
+	import { WorkTagCategory } from '$lib/enums';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	import TagField from '$lib/TagField.svelte';
@@ -14,15 +14,6 @@
 	let md = $state(data.wiki_page);
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.empty_legal_chicken_taste(),
-			name: data.tag.name
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
 	menuLinks={data.links}
@@ -31,8 +22,7 @@
 		{#if form?.failed}<p class="error">Failed!</p>{/if}
 		{#if data.tag.category === 2 && category !== 2}
 			<p class="text-red-500">
-				Changing the category will delete all related information about the song, including
-				tags and relations!
+				{m.front_game_porpoise_pout()}
 			</p>
 		{/if}
 		<table>
@@ -48,7 +38,7 @@
 					>
 				</tr>
 				<tr>
-					<th><label for="parent">Parent</label></th>
+					<th><label for="parent">{m.away_crisp_blackbird_twist()}</label></th>
 					<td
 						><TagField
 							type="work"
@@ -63,7 +53,8 @@
 			<table>
 				<tbody>
 					<tr
-						><th><label for="song_title">Title</label></th><td
+						><th><label for="song_title">{m.large_factual_octopus_exhale()}</label></th
+						><td
 							><input
 								type="text"
 								name="song_title"
@@ -72,7 +63,7 @@
 						></tr
 					>
 					<tr
-						><th><label for="song_author">Author</label></th><td
+						><th><label for="song_author">{m.crisp_red_canary_tickle()}</label></th><td
 							><input
 								type="text"
 								name="song_author"
@@ -97,7 +88,13 @@
 </Section>
 
 {#if category === 2 && data.tag.category === 2}
-	<Section title="Song: {data.tag?.song.title}" menuLinks={data.song_links}>
+	<Section
+		title={m.mild_loud_shad_enchant({
+			type: m.grand_nice_pony_belong(),
+			name: data.tag!.song!.title
+		})}
+		menuLinks={data.song_links}
+	>
 		<RelationEditor
 			init_relations={data.song_relations}
 			obj_type="song"
@@ -106,7 +103,7 @@
 	</Section>
 {/if}
 
-<Section title="Wiki page">
+<Section title={m.curly_zesty_pelican_aim()}>
 	<form action="?/wiki_page" method="POST" use:enhance>
 		<div class="grid grid-cols-2 gap-3">
 			<textarea required name="md" bind:value={md}></textarea>

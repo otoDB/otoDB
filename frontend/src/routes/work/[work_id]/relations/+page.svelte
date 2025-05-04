@@ -5,12 +5,6 @@
 	let { data } = $props();
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
 	menuLinks={data.links}
@@ -19,6 +13,6 @@
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html data.relations_svg}
 	{:else}
-		<p>This work does not have any relations.</p>
+		<p>{m.left_watery_jellyfish_grip()}</p>
 	{/if}
 </Section>

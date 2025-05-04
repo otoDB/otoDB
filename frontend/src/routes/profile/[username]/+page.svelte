@@ -8,15 +8,6 @@
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.fuzzy_crazy_cobra_lead(),
-			name: data.profile.username
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.mild_loud_shad_enchant({
 		type: m.fuzzy_crazy_cobra_lead(),
@@ -24,8 +15,13 @@
 	})}
 	menuLinks={data.links}
 >
-	<p>{UserLevel[data.profile?.level]}</p>
-	<p>Joined on {data.profile.date_created}</p>
+	<p>{UserLevel[data.profile?.level]()}</p>
+	<p>
+		{m.mild_loud_shad_enchant({
+			type: m.sharp_witty_jackdaw_treat(),
+			name: data.profile.date_created
+		})}
+	</p>
 </Section>
 
 <Section title={m.same_broad_haddock_pinch()}>

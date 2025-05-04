@@ -9,15 +9,6 @@
 	let { data } = $props();
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.empty_legal_chicken_taste(),
-			name: data.tag.name
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
 	menuLinks={data.links}
@@ -52,12 +43,18 @@
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html data.wiki_page}
 	{:else}
-		<p>This tag does not yet have a wiki page.</p>
+		<p>{m.tame_dirty_goldfish_flow()}</p>
 	{/if}
 </Section>
 
 {#if data.tag.song}
-	<Section title="Song: {data.tag.song.title}" menuLinks={data.song_links}>
+	<Section
+		title={m.mild_loud_shad_enchant({
+			type: m.grand_nice_pony_belong(),
+			name: data.tag.song.title
+		})}
+		menuLinks={data.song_links}
+	>
 		<table>
 			<tbody>
 				<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.tag.song.title}</td></tr>
@@ -89,7 +86,7 @@
 	</Section>
 {/if}
 
-<Section title="Works tagged with {data.tag.name}">
+<Section title={m.quiet_super_kangaroo_kiss({ tag: data.tag.name })}>
 	{#if data.works.items.length}
 		<div class="flex flex-wrap gap-3">
 			{#each data.works.items as work, i (i)}

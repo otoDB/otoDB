@@ -14,12 +14,6 @@
 		thumbnail: string = $state(form?.thumbnail ?? data.thumbnail!);
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
 	menuLinks={data.links}
@@ -29,17 +23,17 @@
 		<table class="inline">
 			<tbody>
 				<tr
-					><th><label for="title">Title</label></th><td
+					><th><label for="title">{m.large_factual_octopus_exhale()}</label></th><td
 						><input required type="text" name="title" bind:value={title} /></td
 					></tr
 				>
 				<tr
-					><th><label for="description">Description</label></th><td
+					><th><label for="description">{m.clear_lucky_peacock_pick()}</label></th><td
 						><textarea name="description" bind:value={description}></textarea></td
 					></tr
 				>
 				<tr
-					><th><label for="rating">Rating</label></th><td
+					><th><label for="rating">{m.good_dark_bumblebee_spur()}</label></th><td
 						><select name="rating" bind:value={rating}>
 							{#each Rating as r, i (i)}<option value={i}>{r()}</option
 								>{/each}</select
@@ -47,12 +41,12 @@
 					></tr
 				>
 				<tr
-					><th><label for="thumbnail">Thumbnail</label></th><td
+					><th><label for="thumbnail">{m.heroic_ideal_orangutan_aid()}</label></th><td
 						><input type="text" required name="thumbnail" bind:value={thumbnail} /></td
 					></tr
 				>
 				<tr
-					><th><label for="reason">Update Reason</label></th><td
+					><th><label for="reason">{m.wide_just_gull_glow()}</label></th><td
 						><input type="text" required name="reason" value={form?.reason ?? ''} /></td
 					></tr
 				>
@@ -94,7 +88,7 @@
 	</form>
 </Section>
 
-<Section title="Relations">
+<Section title={m.alive_these_jay_pick()}>
 	<RelationEditor init_relations={data.relations} obj_type="work" this_id={data.id}
 	></RelationEditor>
 </Section>

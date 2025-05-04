@@ -15,7 +15,7 @@
 <nav class="w-full">
 	<ul class="list-none">
 		{@render link('/', m.fine_late_chicken_quiz())}
-		{@render link('/work/random', 'Random work')}
+		{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		<li>
 			<form target="_self" method="get" action="/work/search">
 				<input type="text" name="query" placeholder="{m.mean_top_antelope_love()}..." />
@@ -24,9 +24,9 @@
 	</ul>
 	{#if user?.level >= UserLevel.MODERATOR}
 		<ul>
-			{@render link('/tag/alias', 'Alias tags')}
-			{@render link('/work/merge', 'Merge works')}
-			{@render link('/work/unbound', 'Bind sources')}
+			{@render link('/tag/alias', m.front_maroon_hamster_urge())}
+			{@render link('/work/merge', m.heroic_same_wasp_conquer())}
+			{@render link('/work/unbound', m.tense_small_firefox_lock())}
 		</ul>
 	{/if}
 	<ul>
@@ -34,10 +34,10 @@
 			{@render link('/login', m.inner_stale_anteater_walk())}
 			{@render link('/register', m.blue_whole_camel_type())}
 		{:else}
-			{@render link('/work/add', 'Add a work...')}
+			{@render link('/work/add', m.fluffy_crisp_horse_imagine())}
 			{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
 			{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
-			{@render link(`/profile/${user.username}/submissions`, 'My Submissions')}
+			{@render link(`/profile/${user.username}/submissions`, m.flaky_gross_marlin_evoke())}
 			<li aria-current={page.url.pathname === `/logout` ? 'page' : undefined}>
 				<a href="/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload
 					>{m.best_front_swallow_play()}</a

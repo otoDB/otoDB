@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import { setLocale } from '$lib/paraglide/runtime';
 	import Header from '../lib/SideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 
@@ -24,8 +25,26 @@
 				{@render children()}
 			</main>
 			<footer>
-				{m.glad_born_mouse_taste()} Pre-alpha
+				<span>
+					{m.glad_born_mouse_taste()} Alpha
+				</span>
+				<span>
+					<select onchange={(e) => setLocale(e.target.value)}>
+						<option value="en">English</option>
+						<option value="ja">日本語</option>
+						<option value="ko">한국인</option>
+						<option value="zh-cn">简体中文</option>
+					</select>
+				</span>
 			</footer>
 		</div>
 	</div>
 </div>
+
+<style>
+	footer {
+		display: flex;
+		width: 100%;
+		justify-content: space-between;
+	}
+</style>

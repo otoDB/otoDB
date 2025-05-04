@@ -48,10 +48,10 @@ export const UserLevel = {
 	MODERATOR: 40,
 	ADMIN: 50,
 	OWNER: 100,
-	0: 'Anonymous',
-	10: 'Restricted',
-	20: 'Member',
-	40: 'Moderator',
-	50: 'Admin',
-	100: 'Owner'
+	0: m.heroic_busy_shrimp_lend,
+	10: m.fancy_formal_falcon_quell,
+	20: m.drab_alive_midge_edit,
+	40: m.tasty_spry_firefox_fall,
+	50: m.silly_blue_felix_amuse,
+	100: m.tangy_formal_lionfish_tap
 };

@@ -12,8 +12,8 @@
 
 <Section title={m.inner_stale_anteater_walk()}>
 	<form method="POST" use:enhance>
-		{#if form?.missing}<p class="error">All fields are required.</p>{/if}
-		{#if form?.failed}<p class="error">Authentication failed!</p>{/if}
+		{#if form?.missing}<p class="error">{m.tiny_round_shark_express()}</p>{/if}
+		{#if form?.failed}<p class="error">{m.careful_lost_jaguar_dart()}</p>{/if}
 		<table>
 			<tbody>
 				<tr>

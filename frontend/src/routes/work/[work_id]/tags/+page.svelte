@@ -53,7 +53,11 @@
 >
 	<table>
 		<thead>
-			<tr><th>Tag</th><th>Rating</th><th>User Rating</th></tr>
+			<tr
+				><th>{m.empty_legal_chicken_taste()}</th><th>{m.good_dark_bumblebee_spur()}</th><th
+					>{m.sunny_deft_puffin_scoop()}</th
+				></tr
+			>
 		</thead><tbody>
 			{#each tags as tag, i (i)}
 				<tr>
@@ -84,7 +88,7 @@
 		</tbody>
 	</table>
 
-	<h3>Add more tags...</h3>
+	<h3>{m.patient_male_ox_praise()}</h3>
 	<form onsubmit={submit_new_tags}>
 		<div><TagsField type="work" class="w-full" bind:value={new_tags} /></div>
 		<input type="submit" />

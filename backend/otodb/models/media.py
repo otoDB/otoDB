@@ -9,21 +9,9 @@ from .enums import Rating
 from .tag import TagWork, TagSong
 from otodb.account.models import Account
 
-import random
-
 class ActiveManager(models.Manager):
-    def random(self):
-        random_work = None
-        work_ids = self.values_list('pk', flat=True)
-        if work_ids:
-            random_work = self.get(pk=random.choice(work_ids))
-            if random_work.moved_to:
-                random_work = random_work.moved_to
-            return random_work
-
     def get_queryset(self):
         return super().get_queryset().filter(moved_to__isnull=True)
-
 
 # allow setting a through table on tag fields
 TagField.forbidden_fields = tuple(

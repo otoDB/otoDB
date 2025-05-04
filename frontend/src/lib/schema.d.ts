@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Statistics */
+        get: operations["otodb_api_statistics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/csrf": {
         parameters: {
             query?: never;
@@ -1182,6 +1199,24 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    otodb_api_statistics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_auth_csrf: {
         parameters: {
             query?: never;
@@ -1456,7 +1491,9 @@ export interface operations {
     };
     otodb_api_work_random: {
         parameters: {
-            query?: never;
+            query?: {
+                n?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1469,7 +1506,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["WorkSchema"];
+                    "application/json": components["schemas"]["WorkSchema"][];
                 };
             };
         };

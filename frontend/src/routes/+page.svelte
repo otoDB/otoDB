@@ -19,8 +19,8 @@
 			{m.fuzzy_chunky_niklas_peek()}
 		</h2>
 		<div class="flex gap-2">
-			{#each data.random as w,i (i)}
-			<WorkCard work={w} />
+			{#each data.random as w, i (i)}
+				<WorkCard work={w} />
 			{/each}
 		</div>
 	</div>

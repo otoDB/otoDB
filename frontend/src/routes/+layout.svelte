@@ -3,6 +3,7 @@
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import Header from '../lib/SideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { navigating } from '$app/state';
 
 	let { data, children } = $props();
 </script>
@@ -28,6 +29,9 @@
 				<span>
 					{m.glad_born_mouse_taste()} Alpha
 				</span>
+				{#if navigating.to}
+					<span id="loading-indicator"></span>
+				{/if}
 				<span>
 					<select onchange={(e) => setLocale(e.target.value)} value={getLocale()}>
 						<option value="en">English</option>
@@ -46,5 +50,23 @@
 		display: flex;
 		width: 100%;
 		justify-content: space-between;
+	}
+	@keyframes loading-dot {
+		0% {
+			content: '.';
+		}
+		33% {
+			content: '..';
+		}
+		66% {
+			content: '...';
+		}
+		100% {
+			content: '.';
+		}
+	}
+	#loading-indicator::after {
+		content: '.';
+		animation: loading-dot 0.4s infinite;
 	}
 </style>

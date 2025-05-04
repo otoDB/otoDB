@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { UserLevel } from '$lib/enums';
 
-	let { user } = $props();
+	let { user, stats } = $props();
 </script>
 
 {#snippet link(pathname: string, title: string)}
@@ -44,6 +44,20 @@
 				>
 			</li>
 		{/if}
+	</ul>
+	<ul>
+		<li class="flex justify-between">
+			<span>{m.grand_merry_fly_succeed()}</span><span>{stats[0]}</span>
+		</li>
+		<li class="flex justify-between">
+			<span>{m.empty_legal_chicken_taste()}</span><span>{stats[1]}</span>
+		</li>
+		<li class="flex justify-between">
+			<span>{m.grand_nice_pony_belong()}</span><span>{stats[2]}</span>
+		</li>
+		<li class="flex justify-between">
+			<span>{m.stale_loose_squid_cut()}</span><span>{stats[3]}</span>
+		</li>
 	</ul>
 </nav>
 

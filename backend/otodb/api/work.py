@@ -83,9 +83,9 @@ def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchem
 
     return 200
 
-@work_router.get('random', response=WorkSchema)
-def random(request: HttpRequest):
-    return MediaWork.active_objects.random()
+@work_router.get('random', response=list[WorkSchema])
+def random(request: HttpRequest, n: int = 1):
+    return MediaWork.active_objects.order_by("?")[:n]
 
 class SlimWorkSchema(ModelSchema):
     id: int

@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 
 	import Section from '$lib/Section.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
 
 	let { data } = $props();
 </script>
@@ -13,12 +14,14 @@
 
 <Section title={m.fine_late_chicken_quiz()}>
 	<p>{m.silly_main_reindeer_chop()}</p>
-	<div>
+	<div class="mt-2">
 		<h2>
-			{m.mild_loud_shad_enchant({ type: m.fuzzy_chunky_niklas_peek(), name: '' })}<a
-				href="/work/{data.random.id}">{data.random.title}</a
-			>
+			{m.fuzzy_chunky_niklas_peek()}
 		</h2>
-		<img style="width:25rem;" src={data.random.thumbnail} alt={data.random.title} />
+		<div class="flex gap-2">
+			{#each data.random as w,i (i)}
+			<WorkCard work={w} />
+			{/each}
+		</div>
 	</div>
 </Section>

@@ -137,3 +137,11 @@
 		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 </Section>
+
+<style>
+	h2 {
+		font-size: larger;
+		margin: 1rem 0 .5rem 0;
+		font-weight: 600;
+	}
+</style>

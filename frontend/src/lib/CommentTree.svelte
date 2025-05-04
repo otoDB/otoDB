@@ -56,6 +56,8 @@
 		{#each comments as c, i (i)}
 			{@render comment(c, comment)}
 		{/each}
+	{:else}
+	There are currently no comments.
 	{/if}
 	{#if user}
 		<h4>{m.mild_loud_shad_enchant({ type: m.weak_safe_cat_mix(), name: '' })}</h4>

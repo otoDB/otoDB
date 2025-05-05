@@ -13,4 +13,4 @@ Refer to respective readme for the setup each division.
 
 ## License
 
-[GNU Affero General Public License](./LICENSE)
+[GNU Affero General Public License v3.0](./LICENSE)

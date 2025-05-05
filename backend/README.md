@@ -18,5 +18,3 @@ uv run manage.py runserver
 ```
 
 Be careful: the script `_clear.py` deletes the database.
-
-### Project

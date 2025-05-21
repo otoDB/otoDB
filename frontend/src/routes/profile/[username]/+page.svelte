@@ -17,10 +17,7 @@
 >
 	<p>{UserLevel[data.profile?.level]()}</p>
 	<p>
-		{m.mild_loud_shad_enchant({
-			type: m.sharp_witty_jackdaw_treat(),
-			name: data.profile.date_created
-		})}
+		{m.sharp_witty_jackdaw_treat({date: new Date(data.profile.date_created).toLocaleDateString() })}
 	</p>
 </Section>
 

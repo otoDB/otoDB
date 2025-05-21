@@ -2,7 +2,9 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
+	import { isSOV, isSVO } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 
 	let { source } = $props();
@@ -53,10 +55,12 @@
 		<div>
 			{#if menu === 'new'}
 				<form onsubmit={accept}>
+					{#if isSVO(getLocale())}
 					{m.cute_neat_gull_greet()}
+					{/if}
 					<table>
 						<thead>
-							<tr><th></th><th>Work</th></tr>
+							<tr><th></th><th>{m.grand_merry_fly_succeed()}</th></tr>
 						</thead><tbody>
 							{#each suggestions as work, i (i)}
 								<tr>
@@ -76,7 +80,10 @@
 							</tr>
 						</tbody>
 					</table>
-					<input type="submit" />
+					{#if isSOV(getLocale())}
+					{m.cute_neat_gull_greet()}
+					{/if}
+					<input type="submit" class="block" />
 				</form>
 			{:else}
 				<form onsubmit={reject}>

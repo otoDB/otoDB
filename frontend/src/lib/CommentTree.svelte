@@ -18,6 +18,7 @@
 		const comment = new FormData(e.target).get('comment')?.toString();
 		if (comment) {
 			await commentClient.POST(model, pk, comment, reply_to, user, fetch);
+			document.querySelectorAll('.reply-checkbox').forEach((e) => (e.checked = false));
 			invalidateAll();
 		}
 	};
@@ -30,14 +31,15 @@
 	</form>
 {/snippet}
 
-{#snippet comment(data, this_component)}
+{#snippet comment(data, this_component, depth: number)}
 	<div class="comment">
 		<h4><a href="/profile/{data.user_name}">{data.user_name}</a> @ {data.time}</h4>
 		<p>{data.comment}</p>
-		{#if user}
+		<!-- TODO: design decision -- allow deeper nested comments? check COMMENTS_XTD_MAX_THREAD_LEVEL on backend -->
+		{#if user && depth < 3}
 			<label class="reply">
 				{m.kind_brief_earthworm_dash()}
-				<input type="checkbox" />
+				<input type="checkbox" class="reply-checkbox" />
 				{@render reply(data.id)}
 			</label>
 		{/if}
@@ -45,7 +47,7 @@
 	{#if data.children?.length}
 		<div class="ml-3">
 			{#each data.children as child, i (i)}
-				{@render this_component(child, this_component)}
+				{@render this_component(child, this_component, depth + 1)}
 			{/each}
 		</div>
 	{/if}
@@ -54,7 +56,7 @@
 <div>
 	{#if comments.length}
 		{#each comments as c, i (i)}
-			{@render comment(c, comment)}
+			{@render comment(c, comment, 0)}
 		{/each}
 	{:else}
 		{m.new_basic_dove_love()}

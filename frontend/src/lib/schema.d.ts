@@ -799,6 +799,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/post/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Profile */
+        get: operations["otodb_api_post_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1189,6 +1206,14 @@ export interface components {
             items: components["schemas"]["TagSongSchema"][];
             /** Count */
             count: number;
+        };
+        /** PostSchema */
+        PostSchema: {
+            added_by: components["schemas"]["ProfileSchema"];
+            /** Title */
+            title: string;
+            /** Post Rendered */
+            post_rendered: string;
         };
     };
     responses: never;
@@ -2499,6 +2524,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PagedSongSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_post_profile: {
+        parameters: {
+            query: {
+                post_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostSchema"];
                 };
             };
         };

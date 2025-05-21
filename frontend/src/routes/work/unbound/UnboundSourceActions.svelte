@@ -56,7 +56,7 @@
 			{#if menu === 'new'}
 				<form onsubmit={accept}>
 					{#if isSVO(getLocale())}
-					{m.cute_neat_gull_greet()}
+						{m.cute_neat_gull_greet()}
 					{/if}
 					<table>
 						<thead>
@@ -81,7 +81,7 @@
 						</tbody>
 					</table>
 					{#if isSOV(getLocale())}
-					{m.cute_neat_gull_greet()}
+						{m.cute_neat_gull_greet()}
 					{/if}
 					<input type="submit" class="block" />
 				</form>

@@ -17,7 +17,9 @@
 >
 	<p>{UserLevel[data.profile?.level]()}</p>
 	<p>
-		{m.sharp_witty_jackdaw_treat({date: new Date(data.profile.date_created).toLocaleDateString() })}
+		{m.sharp_witty_jackdaw_treat({
+			date: new Date(data.profile.date_created).toLocaleDateString()
+		})}
 	</p>
 </Section>
 

@@ -146,6 +146,9 @@ def video_info(link):
             i = info['id'].find(c)
             if i != -1:
                 info['id'] = info['id'][:i]
+        
+        if 'tags' in info:
+            info['tags'] = [tag.replace(' ', '_') for tag in info['tags']]
 
         return { keys[key]: info[key] for key in keys if key in info }
     except:

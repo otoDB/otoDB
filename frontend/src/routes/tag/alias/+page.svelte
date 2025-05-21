@@ -30,7 +30,7 @@
 	{#if tags.length}
 		<form onsubmit={submit}>
 			{#if isSVO(getLocale())}
-			{m.male_gross_angelfish_reap()}
+				{m.male_gross_angelfish_reap()}
 			{/if}
 			<select name="" bind:value={selected}>
 				{#each tags as t, i (i)}
@@ -38,9 +38,9 @@
 				{/each}
 			</select>
 			{#if isSOV(getLocale())}
-			{m.male_gross_angelfish_reap()}
+				{m.male_gross_angelfish_reap()}
 			{/if}
-			<input type="submit" disabled={selected === ''} class="block"/>
+			<input type="submit" disabled={selected === ''} class="block" />
 		</form>
 	{/if}
 </Section>

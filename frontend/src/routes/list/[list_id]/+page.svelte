@@ -6,6 +6,8 @@
 	import { Platform, UserLevel, WorkOrigin } from '$lib/enums';
 	import RefreshButton from '../../work/RefreshButton.svelte';
 	import UnboundSourceActions from '../../work/unbound/UnboundSourceActions.svelte';
+	import { isSOV, isSVO } from '$lib/ui';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	let { data }: PageProps = $props();
 </script>
@@ -23,8 +25,13 @@
 	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
 >
 	<h3>
+		{#if isSVO(getLocale())}
 		{m.curly_safe_lynx_fond()}
+		{/if}
 		<a href="/profile/{data.list?.author.username}">{data.list?.author.username}</a>
+		{#if isSOV(getLocale())}
+		{m.curly_safe_lynx_fond()}
+		{/if}
 	</h3>
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
 	{#if data.list?.author.username == data.user?.username}

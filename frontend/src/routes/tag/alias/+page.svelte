@@ -4,6 +4,8 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import client from '$lib/api';
 	import { goto } from '$app/navigation';
+	import { isSOV, isSVO } from '$lib/ui';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	let tags = $state([]),
 		selected = $state('');
@@ -26,14 +28,19 @@
 <Section title={m.front_maroon_hamster_urge()}>
 	<TagsField type="work" class="w-full" bind:value={tags} />
 	{#if tags.length}
-		{m.male_gross_angelfish_reap()}
 		<form onsubmit={submit}>
+			{#if isSVO(getLocale())}
+			{m.male_gross_angelfish_reap()}
+			{/if}
 			<select name="" bind:value={selected}>
 				{#each tags as t, i (i)}
 					<option value={t}>{t}</option>
 				{/each}
 			</select>
-			<input type="submit" disabled={selected === ''} />
+			{#if isSOV(getLocale())}
+			{m.male_gross_angelfish_reap()}
+			{/if}
+			<input type="submit" disabled={selected === ''} class="block"/>
 		</form>
 	{/if}
 </Section>

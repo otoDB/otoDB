@@ -10,6 +10,11 @@
 		var(--otodb-bg-color) 12.5%,
 		var(--otodb-content-color)
 	);
+	--otodb-fainter-content: color-mix(
+		in hsl,
+		var(--otodb-bg-color) 30%,
+		var(--otodb-content-color)
+	);
 	--otodb-ins: color-mix(in hsl, var(--otodb-faint-bg) 35%, green);
 	--otodb-del: color-mix(in hsl, var(--otodb-faint-bg) 35%, red);
 }
@@ -67,6 +72,9 @@ select,
 button {
 	border: 1px solid white;
 	outline: none;
+	&:disabled {
+		color: var(--otodb-fainter-content);
+	}
 }
 
 .query-results {

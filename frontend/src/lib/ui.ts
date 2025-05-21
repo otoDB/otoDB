@@ -22,3 +22,6 @@ export const clickOutside = (node: HTMLElement) => {
 		}
 	};
 };
+
+export const isSVO = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'en' || lang === 'zh-cn';
+export const isSOV = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'ko' || lang === 'ja';

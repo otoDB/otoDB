@@ -12,6 +12,7 @@ from .models import (
     SongRelation,
     TagWorkInstance,
     TagWorkVote,
+    Post,
 )
 
 class MediaSourceInline(admin.TabularInline):
@@ -77,3 +78,4 @@ admin.site.register(TagSong, TagWorkAdmin)
 admin.site.register(MediaWork, MediaWorkAdmin)
 admin.site.register(MediaSong, MediaSongAdmin)
 admin.site.register(TagWorkInstance, TagWorkInstanceAdmin)
+admin.site.register(Post)

@@ -3,11 +3,11 @@ import { UserLevel } from './enums';
 
 const userLevelGuard = (
 	user: App.Locals['user'],
-	userlevel = UserLevel.MEMBER,
-	from: string,
+	userLevel = UserLevel.MEMBER,
+	from: string | null = null,
 	to = '/login'
 ) => {
-	if (!user || user.level < UserLevel.MEMBER)
+	if (!user || user.level < userLevel)
 		redirect(303, to === '/login' && from ? `${to}?from=${from}` : to);
 };
 

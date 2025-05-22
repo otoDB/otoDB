@@ -7,11 +7,16 @@ from django.utils import timezone
 
 
 class AccountManager(BaseUserManager):
+    def get_by_natural_key(self, username):
+        return self.get(username__iexact=username)
+
     def create_user(self, username, email, password=None, **extra_fields):
         if not username:
             raise ValueError("Users must have a username")
         if not email:
             raise ValueError("Users must have an email address")
+        if not self.filter(username__iexact=username).empty():
+            raise ValueError("This username is already taken")
         username = User.normalize_username(username)
         user: Account = self.model(
             username=username,
@@ -23,6 +28,8 @@ class AccountManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, email, password=None, **extra_fields):
+        if not self.filter(username__iexact=username).empty():
+            raise ValueError("This username is already taken")
         user: Account = self.create_user(username, email, password, **extra_fields)
         user.email_activated = True
         user.level = Account.Levels.OWNER

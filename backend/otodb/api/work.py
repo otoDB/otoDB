@@ -13,6 +13,7 @@ from ninja.pagination import paginate
 from otodb.common import video_info
 from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote
 from otodb.models.enums import Platform
+from otodb.account.models import Account
 
 from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_moderator, RelationSchema, post_relation
 
@@ -153,21 +154,25 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
     update_change_reason(work, reason)
     return
 
-@work_router.post('source', auth=django_auth, response={200: int, 400: Error})
+@work_router.post('source', auth=django_auth, response={200: int | None, 400: Error})
 @user_is_trusted
 def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_id: int | None = None):
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
     assert(src.media is None and src.rejection_reason is None)
 
-    if work_id:
-        work = get_object_or_404(MediaWork.active_objects, id=work_id)
+    has_work = work_id or request.user.level >= Account.Levels.MODERATOR
+    if has_work:
+        if work_id:
+            work = get_object_or_404(MediaWork.active_objects, id=work_id)
+        else:
+            work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
         work.tags.add(*info.get('tags', []))
         src.media = work
         src.save()
 
-    if src is not None:
-        return src.id
-    else:
+    if src.media is not None:
+        return src.media.id
+    elif src is None:
         return 400, {'message': "Bad request, is the URL correct?"}
 
 @work_router.post('assign_source', auth=django_auth, description='Omit work_id if creating new work from source.', response=int)

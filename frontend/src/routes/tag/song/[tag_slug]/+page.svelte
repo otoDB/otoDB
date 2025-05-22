@@ -30,7 +30,10 @@
 
 	{#if data.tag.aliases.length}
 		<h3>
-			{m.mild_loud_shad_enchant({ type: m.tiny_sharp_lark_fall(), name: data.tag.aliases.join(', ') })}
+			{m.mild_loud_shad_enchant({
+				type: m.tiny_sharp_lark_fall(),
+				name: data.tag.aliases.join(', ')
+			})}
 		</h3>
 	{/if}
 </Section>

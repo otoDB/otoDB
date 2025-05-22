@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const tags = url.searchParams.get('tags') ?? '';
 	const { data } = await client.GET('/api/work/search', {
 		fetch,
-		params: { query: { query: query, tags: tags } }
+		params: { query: { query: query, tags: tags, limit: 20, offset: 0 } }
 	});
 	return {
 		query: query,

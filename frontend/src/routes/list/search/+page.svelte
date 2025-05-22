@@ -2,8 +2,19 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
+	import client from '$lib/api';
 
 	let { data }: PageProps = $props();
+	const batch_size = 20;
+	let results = $state(data.results!.items);
+	
+	const getNextBatch = async () => {
+		const { data: d } = await client.GET('/api/list/search', {
+			fetch,
+			params: { query: { query: data.query, limit: batch_size, offset: results.length } }
+		});
+		results = results.concat(d!.items);
+	};
 </script>
 
 <svelte:head>
@@ -28,8 +39,12 @@
 	</form>
 
 	<ul>
-		{#each data.results.items as list, i (i)}
+		{#each results as list, i (i)}
 			<li><a href="/list/{list.id}">{list.name}</a></li>
 		{/each}
 	</ul>
+
+	{#if results.length < data.results!.count}
+	<button class="p-2 center block	mx-auto mt-5" onclick={getNextBatch}>Fetch more...</button>
+	{/if}
 </Section>

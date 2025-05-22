@@ -4,6 +4,7 @@ import html
 import re
 from time import mktime
 from datetime import datetime
+import unicodedata
 
 import diff_match_patch as dmp_mod
 
@@ -148,7 +149,7 @@ def video_info(link):
                 info['id'] = info['id'][:i]
         
         if 'tags' in info:
-            info['tags'] = [tag.replace(' ', '_') for tag in info['tags']]
+            info['tags'] = [unicodedata.normalize('NFKD', tag.replace(' ', '_')) for tag in info['tags']]
 
         return { keys[key]: info[key] for key in keys if key in info }
     except:

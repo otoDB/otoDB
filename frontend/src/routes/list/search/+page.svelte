@@ -3,10 +3,11 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import client from '$lib/api';
+	import { enhance } from '$app/forms';
 
 	let { data }: PageProps = $props();
 	const batch_size = 20;
-	let results = $state(data.results!.items);
+	let results = $derived(data.results!.items);
 
 	const getNextBatch = async () => {
 		const { data: d } = await client.GET('/api/list/search', {
@@ -29,7 +30,7 @@
 		{ title: m.stale_loose_squid_cut(), pathname: 'list/search' }
 	]}
 >
-	<form target="_self" method="get" use:enhance>
+	<form target="_self" method="get">
 		<input
 			type="text"
 			name="query"

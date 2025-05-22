@@ -38,7 +38,7 @@
 			params: { query: { query, limit: 10 } }
 		});
 		if (!data) return;
-		suggestions = data.items.map((tag) => tag.slug);
+		suggestions = data.items.map((tag) => tag.name);
 	});
 
 	const updateValue = () => {

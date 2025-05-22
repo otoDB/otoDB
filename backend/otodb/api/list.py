@@ -11,7 +11,8 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info, playlist_info
-from otodb.models import Pool, PoolItem, WorkSource, TagWork, TagWorkInstance
+from otodb.models import Pool, PoolItem, WorkSource, TagWork, TagWorkInstance, MediaWork
+from otodb.account.models import Account
 
 from .common import ListSchema, ListItemSchema
 
@@ -129,12 +130,17 @@ def import_ext(request: HttpRequest, url: str):
         src, _ = WorkSource.from_url(vid_info['url'], user=request.user, is_reupload=False, info=vid_info)
         if src.rejection_reason is not None:
             continue
-        elif src.media is None:
-            list_.pending_items.add(src)
-        else:
-            work = src.media
+        elif src.media is not None or request.user.level >= Account.Levels.MODERATOR:
+            if src.media is not None:
+                work = src.media
+            else:
+                work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
+                src.media = work
+                src.save()
             new_tag_instances.extend([TagWorkInstance(work=work, work_tag=TagWork.objects.get_or_create(name=t)[0]) for t in vid_info['tags']])
             pool_items.append(PoolItem(work=work, description='', pool=list_))
+        elif src.media is None:
+            list_.pending_items.add(src)
 
     TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True) # bulk_create does not handle M2M so we do this manually
     PoolItem.objects.bulk_create(pool_items)

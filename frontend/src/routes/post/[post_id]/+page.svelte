@@ -16,5 +16,10 @@
 </Section>
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree comments={data.comments} user={data.user ?? null} model="post" pk={+data.post_id} />
+	<CommentTree
+		comments={data.comments}
+		user={data.user ?? null}
+		model="post"
+		pk={+data.post_id}
+	/>
 </Section>

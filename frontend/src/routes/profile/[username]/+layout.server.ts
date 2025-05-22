@@ -18,7 +18,7 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 		links: [
 			{
 				pathname: `profile/${params.username}`,
-				title: m.frail_maroon_tadpole_inspire() + ' ' + params.username
+				title: m.frail_maroon_tadpole_inspire() + ' ' + data.username
 			},
 			{ pathname: `profile/${params.username}/lists`, title: m.stale_loose_squid_cut() },
 			{

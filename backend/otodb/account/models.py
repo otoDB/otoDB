@@ -15,7 +15,7 @@ class AccountManager(BaseUserManager):
             raise ValueError("Users must have a username")
         if not email:
             raise ValueError("Users must have an email address")
-        if not self.filter(username__iexact=username).empty():
+        if self.filter(username__iexact=username).exists():
             raise ValueError("This username is already taken")
         username = User.normalize_username(username)
         user: Account = self.model(
@@ -28,7 +28,7 @@ class AccountManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, email, password=None, **extra_fields):
-        if not self.filter(username__iexact=username).empty():
+        if self.filter(username__iexact=username).exists():
             raise ValueError("This username is already taken")
         user: Account = self.create_user(username, email, password, **extra_fields)
         user.email_activated = True

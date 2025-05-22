@@ -5,7 +5,7 @@
 	import { m } from './paraglide/messages';
 
 	interface Props {
-		value: any[] | string;
+		value: string[];
 		type: 'work' | 'song';
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
@@ -54,12 +54,7 @@
 
 	onMount(() => {
 		if (value) {
-			if (value instanceof Array) {
-				textarea.value = value.join(' ');
-			} else {
-				textarea.value = value;
-				value = [];
-			}
+			textarea.value = value.join(' ');
 		}
 	});
 </script>

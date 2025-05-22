@@ -21,7 +21,7 @@
 			params: { query: { query: value, limit: 10 } }
 		});
 		if (!data) return;
-		suggestions = data.items.map((tag) => tag.slug);
+		suggestions = data.items.map((tag) => tag.name);
 	};
 </script>
 

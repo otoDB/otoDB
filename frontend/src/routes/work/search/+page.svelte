@@ -9,8 +9,8 @@
 
 	let { data }: PageProps = $props();
 	const batch_size = 20;
-	let results = $state(data.results!.items);
-	let tags = $state(data.query_tags.split(' '));
+	let results = $derived(data.results!.items);
+	let tags = $derived(data.query_tags.split(' '));
 
 	const getNextBatch = async () => {
 		const { data: d } = await client.GET('/api/work/search', {
@@ -40,7 +40,7 @@
 		{ title: m.stale_loose_squid_cut(), pathname: 'list/search' }
 	]}
 >
-	<form target="_self" method="get" use:enhance>
+	<form target="_self" method="get">
 		<input
 			type="text"
 			name="query"

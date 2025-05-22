@@ -3,8 +3,19 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkTag from '$lib/WorkTag.svelte';
+	import client from '$lib/api';
 
 	let { data }: PageProps = $props();
+	const batch_size = 20;
+	let results = $state(data.results!.items);
+	
+	const getNextBatch = async () => {
+		const { data: d } = await client.GET('/api/tag/search', {
+			fetch,
+			params: { query: { query: data.query, limit: batch_size, offset: results.length } }
+		});
+		results = results.concat(d!.items);
+	};
 </script>
 
 <svelte:head>
@@ -29,8 +40,12 @@
 	</form>
 
 	<div class="flex flex-wrap gap-3">
-		{#each data.results.items as tag, i (i)}
+		{#each results as tag, i (i)}
 			<WorkTag {tag} />
 		{/each}
 	</div>
+
+	{#if results.length < data.results!.count}
+	<button class="p-2 center block	mx-auto mt-5" onclick={getNextBatch}>Fetch more...</button>
+	{/if}
 </Section>

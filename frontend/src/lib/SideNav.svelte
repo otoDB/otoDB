@@ -25,7 +25,7 @@
 	{#if user?.level >= UserLevel.ADMIN}
 	<ul>
 		<li>
-			<a href="/admin" data-sveltekit-reload>Admin</a>
+			<a href="/admin" data-sveltekit-reload>Admin View</a>
 		</li>
 	</ul>
 	{/if}

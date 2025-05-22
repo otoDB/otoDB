@@ -8,7 +8,7 @@
 	let { data }: PageProps = $props();
 	const batch_size = 20;
 	let results = $state(data.results!.items);
-	
+
 	const getNextBatch = async () => {
 		const { data: d } = await client.GET('/api/tag/search', {
 			fetch,
@@ -46,6 +46,6 @@
 	</div>
 
 	{#if results.length < data.results!.count}
-	<button class="p-2 center block	mx-auto mt-5" onclick={getNextBatch}>Fetch more...</button>
+		<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}>Fetch more...</button>
 	{/if}
 </Section>

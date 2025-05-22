@@ -9,11 +9,18 @@
 	let { data }: PageProps = $props();
 	const batch_size = 20;
 	let results = $state(data.results!.items);
-	
+
 	const getNextBatch = async () => {
 		const { data: d } = await client.GET('/api/work/search', {
 			fetch,
-			params: { query: { query: data.query, tags: data.query_tags, limit: batch_size, offset: results.length } }
+			params: {
+				query: {
+					query: data.query,
+					tags: data.query_tags,
+					limit: batch_size,
+					offset: results.length
+				}
+			}
 		});
 		results = results.concat(d!.items);
 	};
@@ -49,7 +56,7 @@
 		{/each}
 	</div>
 	{#if results.length < data.results!.count}
-	<button class="p-2 center block	mx-auto mt-5" onclick={getNextBatch}>Fetch more...</button>
+		<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}>Fetch more...</button>
 	{/if}
 </Section>
 

@@ -23,11 +23,11 @@
 		</li>
 	</ul>
 	{#if user?.level >= UserLevel.ADMIN}
-	<ul>
-		<li>
-			<a href="/admin" data-sveltekit-reload>Admin View</a>
-		</li>
-	</ul>
+		<ul>
+			<li>
+				<a href="/admin" data-sveltekit-reload>Admin View</a>
+			</li>
+		</ul>
 	{/if}
 	{#if user?.level >= UserLevel.MODERATOR}
 		<ul>

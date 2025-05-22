@@ -13,7 +13,7 @@
 {/snippet}
 
 <nav class="w-full">
-	<ul class="list-none">
+	<ul>
 		{@render link('/', m.fine_late_chicken_quiz())}
 		{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		<li>
@@ -22,6 +22,13 @@
 			</form>
 		</li>
 	</ul>
+	{#if user?.level >= UserLevel.ADMIN}
+	<ul>
+		<li>
+			<a href="/admin" data-sveltekit-reload>Admin</a>
+		</li>
+	</ul>
+	{/if}
 	{#if user?.level >= UserLevel.MODERATOR}
 		<ul>
 			{@render link('/tag/alias', m.front_maroon_hamster_urge())}
@@ -64,7 +71,7 @@
 
 <style>
 	li[aria-current='page'] > a {
-		color: var(--otodb-faint-content);
+		color: var(--otodb-fainter-content);
 	}
 	nav {
 		display: flex;

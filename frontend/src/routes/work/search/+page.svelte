@@ -5,10 +5,12 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import TagsField from '$lib/TagsField.svelte';
 	import client from '$lib/api';
+	import { enhance } from '$app/forms';
 
 	let { data }: PageProps = $props();
 	const batch_size = 20;
 	let results = $state(data.results!.items);
+	let tags = $state(data.query_tags.split(' '));
 
 	const getNextBatch = async () => {
 		const { data: d } = await client.GET('/api/work/search', {
@@ -16,7 +18,7 @@
 			params: {
 				query: {
 					query: data.query,
-					tags: data.query_tags,
+					tags: tags.join(' '),
 					limit: batch_size,
 					offset: results.length
 				}
@@ -38,7 +40,7 @@
 		{ title: m.stale_loose_squid_cut(), pathname: 'list/search' }
 	]}
 >
-	<form tagert="_self" method="get">
+	<form target="_self" method="get" use:enhance>
 		<input
 			type="text"
 			name="query"
@@ -47,7 +49,7 @@
 		/>
 		<input type="submit" value={m.mean_top_antelope_love()} />
 		<h4>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: '' })}</h4>
-		<TagsField type="work" name="tags" value={data.query_tags} class="w-full" />
+		<TagsField type="work" name="tags" bind:value={tags} class="w-full" />
 	</form>
 	<hr />
 	<div class="flex flex-wrap gap-3">

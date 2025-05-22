@@ -29,7 +29,7 @@
 		{ title: m.stale_loose_squid_cut(), pathname: 'list/search' }
 	]}
 >
-	<form tagert="_self" method="get">
+	<form target="_self" method="get" use:enhance>
 		<input
 			type="text"
 			name="query"

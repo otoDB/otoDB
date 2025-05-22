@@ -32,8 +32,7 @@
 
 	{#if data.tag.aliases.length}
 		<h3>
-			Also known as: {#each data.tag.aliases as alias, i (i)}{alias}{#if i + 1 != data.tag.aliases.length},
-				{/if}{/each}.
+			{m.mild_loud_shad_enchant({ type: 'Also known as', name: data.tag.aliases.join(', ') })}
 		</h3>
 	{/if}
 

@@ -17,12 +17,12 @@ profile_router = Router()
 
 @profile_router.get('profile', response=ProfileSchema)
 def profile(request: HttpRequest, username: str):
-    user = get_object_or_404(Account, username=username)
+    user = get_object_or_404(Account, username__iexact=username)
     return user
 
 @profile_router.get('lists', response=List[ListSchema])
 def lists(request: HttpRequest, username: str):
-    user = get_object_or_404(Account, username=username)
+    user = get_object_or_404(Account, username__iexact=username)
     return user.pool_set
 
 @profile_router.get('work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth)
@@ -39,5 +39,5 @@ class SourceSubmissionSchema(WorkSourceSchema):
 @profile_router.get('submissions', response=List[SourceSubmissionSchema])
 @paginate
 def submissions(request: HttpRequest, username: str):
-    user = get_object_or_404(Account, username=username)
+    user = get_object_or_404(Account, username__iexact=username)
     return user.worksource_set.all()

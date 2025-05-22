@@ -26,7 +26,7 @@
 
 {#snippet reply(reply_to: number)}
 	<form onsubmit={post(reply_to)}>
-		<textarea class="block" name="comment"></textarea>
+		<textarea class="block w-full" name="comment"></textarea>
 		<input type="submit" value={m.inner_solid_toad_zap()} />
 	</form>
 {/snippet}

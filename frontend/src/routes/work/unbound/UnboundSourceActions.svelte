@@ -27,7 +27,12 @@
 			e.preventDefault();
 			const { error, data: w } = await client.POST('/api/work/assign_source', {
 				fetch,
-				params: { query: { source_id: source.id, work_id: candidate === -1 ? undefined : candidate } }
+				params: {
+					query: {
+						source_id: source.id,
+						work_id: candidate === -1 ? undefined : candidate
+					}
+				}
 			});
 			if (w) goto(`/work/${w}`, { invalidateAll: true });
 		},

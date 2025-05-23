@@ -5,6 +5,7 @@ from django_comments.signals import comment_will_be_posted
 from django_comments_xtd.signals import should_request_be_authorized
 
 from otodb.models import MediaWork, MediaSong, TagWork, TagSong
+from otodb.account.models import Account
 
 
 # IMPORTANT: maintain following invariants:
@@ -35,5 +36,7 @@ def check_comments_logged_in(sender, comment, request, **kwargs):
 # for some reason django_comments_xtd allows request to specify name and email even when authenticated
 @receiver(comment_will_be_posted)
 def unbastardize_poster_info(sender, comment, request, **kwargs):
+    if request.user.level < Account.Levels.MEMBER:
+        return False # Discard
     comment['user_name'] = request.user.username
     comment['user_email'] = request.user.email

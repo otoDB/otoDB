@@ -152,7 +152,8 @@ export interface paths {
         /** Update Work */
         put: operations["otodb_api_work_update_work"];
         post?: never;
-        delete?: never;
+        /** Delete Work */
+        delete: operations["otodb_api_work_delete_work"];
         options?: never;
         head?: never;
         patch?: never;
@@ -239,6 +240,23 @@ export interface paths {
         get: operations["otodb_api_work_sources"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/unbind_source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unbind Sources */
+        post: operations["otodb_api_work_unbind_sources"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1469,6 +1487,26 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_delete_work: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_work_get_tag_scores: {
         parameters: {
             query: {
@@ -1624,6 +1662,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["WorkSourceSchema"][];
                 };
+            };
+        };
+    };
+    otodb_api_work_unbind_sources: {
+        parameters: {
+            query: {
+                source_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

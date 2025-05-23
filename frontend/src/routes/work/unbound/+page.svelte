@@ -5,8 +5,15 @@
 	import { Platform, WorkOrigin } from '$lib/enums';
 	import UnboundSourceActions from './UnboundSourceActions.svelte';
 	import RefreshButton from '../RefreshButton.svelte';
+	import { invalidate, invalidateAll } from '$app/navigation';
 
 	let { data }: PageProps = $props();
+
+	let actions = Array(data.sources.length).fill(undefined);
+	const submit = async () => {
+		await Promise.all(actions.map(a => a.submit()));
+		invalidateAll();
+	}
 </script>
 
 <svelte:head>
@@ -14,10 +21,20 @@
 </svelte:head>
 
 <Section title={m.suave_gray_stork_type()} menuLinks={data.links}>
-	<ul>
+	<input type="submit" onclick={submit}/>
+	{#if data.sources.length}
+	<table class="w-full">
+		<thead><tr>
+			<th>{m.knotty_due_hamster_wave()}</th>
+			<th>{m.heroic_ideal_orangutan_aid()}</th>
+			<th>No Action</th>
+			<th>{m.lucky_bold_hornet_push()}</th>
+			<th>{m.alive_blue_marlin_push()}</th>
+		</tr></thead>
+		<tbody>
 		{#each data.sources as src, i (i)}
-			<li>
-				<span>
+			<tr>
+				<td>
 					<h3>
 						<a href={src.url} target="_blank" rel="noopener noreferrer">{src.title}</a>
 					</h3>
@@ -33,9 +50,8 @@
 						})}
 					</h4>
 					<RefreshButton source={src} />
-					<UnboundSourceActions source={src} />
-				</span>
-				<span>
+				</td>
+				<td>
 					<a href={src.url} target="_blank" rel="noopener noreferrer"
 						><img
 							src={src.thumbnail}
@@ -43,20 +59,12 @@
 							class="float-right clear-both w-50"
 						/></a
 					>
-				</span>
-			</li>
-		{:else}
-			<li>{m.moving_such_seal_hug()}</li>
+				</td>
+				<UnboundSourceActions source={src} bind:this={actions[i]} />
+			</tr>
 		{/each}
-	</ul>
+	</tbody></table>
+	{:else}
+	<h3>{m.moving_such_seal_hug()}</h3>
+	{/if}
 </Section>
-
-<style>
-	ul > li {
-		display: flex;
-		background-color: var(--otodb-fainter-bg);
-		justify-content: space-between;
-		margin: 1rem 0;
-		padding: 1rem;
-	}
-</style>

@@ -18,7 +18,7 @@
 	</header>
 
 	<div class="mx-auto flex w-full gap-x-4 px-4">
-		<div class="w-[256px] flex-shrink-0">
+		<div class="flex-shrink-0">
 			<Header user={data.user} stats={data.stats}></Header>
 		</div>
 		<div class="flex-grow">

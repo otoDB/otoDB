@@ -43,7 +43,7 @@
 	<ol class="list-outside list-decimal">
 		{#each data.entries.items as entry, i (i)}
 			<li class="mx-5 my-3 p-2">
-				<span class="inline-flex gap-1 items-start">
+				<span class="inline-flex items-start gap-1">
 					<a href="/work/{entry.work.id}"
 						><img
 							style="max-width:10rem"
@@ -109,7 +109,8 @@
 		justify-content: space-between;
 		margin: 1rem 0;
 	}
-	ul > li, ol > li {
+	ul > li,
+	ol > li {
 		background-color: var(--otodb-fainter-bg);
 		padding: 1rem;
 	}

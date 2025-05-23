@@ -87,7 +87,7 @@ export const commentClient = {
 					'X-CSRFToken': user.csrf
 				},
 				body: new URLSearchParams({
-					content_type: model === 'account' ? 'otodb.account.account' : `otodb.${model}`,
+					content_type: model === 'account' ? 'account.account' : `otodb.${model}`,
 					object_pk: pk.toString(),
 					comment,
 					reply_to: reply_to.toString(),

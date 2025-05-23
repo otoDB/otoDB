@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { commentClient, type CommentModels } from './api';
+	import { UserLevel } from './enums';
 	import { m } from './paraglide/messages';
 
 	interface Props {
@@ -22,6 +23,8 @@
 			invalidateAll();
 		}
 	};
+
+	const can_comment = true//user && user.level >= UserLevel.MEMBER;
 </script>
 
 {#snippet reply(reply_to: number)}
@@ -36,7 +39,7 @@
 		<h4><a href="/profile/{data.user_name}">{data.user_name}</a> @ {data.time}</h4>
 		<p>{data.comment}</p>
 		<!-- TODO: design decision -- allow deeper nested comments? check COMMENTS_XTD_MAX_THREAD_LEVEL on backend -->
-		{#if user && depth < 3}
+		{#if can_comment && depth < 3}
 			<label class="reply">
 				{m.kind_brief_earthworm_dash()}
 				<input type="checkbox" class="reply-checkbox" />
@@ -61,7 +64,7 @@
 	{:else}
 		{m.new_basic_dove_love()}
 	{/if}
-	{#if user}
+	{#if can_comment}
 		<h4>{m.mild_loud_shad_enchant({ type: m.weak_safe_cat_mix(), name: '' })}</h4>
 		{@render reply(0)}
 	{/if}

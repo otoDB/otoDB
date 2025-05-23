@@ -9,15 +9,18 @@ from markdownfield.validators import VALIDATOR_STANDARD
 
 from .enums import WorkTagCategory, SongTagCategory
 
+def name_cleaner(s):
+    return s.lower().replace('・', '')
+
 class LowerCaseTagModelManager(TagModelManager):
     def get_or_create(self, *args, **kwargs):
         if 'name' in kwargs:
-            kwargs['name'] = kwargs['name'].lower()
+            kwargs['name'] = name_cleaner(kwargs['name'])
         return super().get_or_create(*args, **kwargs)
 
     def get(self, *args, **kwargs):
         if 'name' in kwargs:
-            kwargs['name'] = kwargs['name'].lower()
+            kwargs['name'] = name_cleaner(kwargs['name'])
         return super().get(*args, **kwargs)
 
 class WikiPage(models.Model):
@@ -36,7 +39,7 @@ class TagWork(TagModel):
 
     def save(self, *args, **kwargs):
         if self.name:
-            self.name = self.name.lower()
+            self.name = name_cleaner(self.name)
         super().save(*args, **kwargs)
 
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
@@ -106,7 +109,7 @@ class TagSong(TagModel):
 
     def save(self, *args, **kwargs):
         if self.name:
-            self.name = self.name.lower()
+            self.name = name_cleaner(self.name)
         super().save(*args, **kwargs)
 
     category = models.IntegerField(choices=SongTagCategory.choices, default=SongTagCategory.GENERAL)

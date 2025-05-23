@@ -3,9 +3,7 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { Platform, UserLevel, WorkOrigin } from '$lib/enums';
-	import RefreshButton from '../../work/RefreshButton.svelte';
-	import UnboundSourceActions from '../../work/unbound/UnboundSourceActions.svelte';
+	import { Platform } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/ui';
 	import { getLocale } from '$lib/paraglide/runtime';
 
@@ -44,8 +42,8 @@
 <Section title={m.bald_clear_marlin_grasp()}>
 	<ol class="list-outside list-decimal">
 		{#each data.entries.items as entry, i (i)}
-			<li class="ml-5 p-2">
-				<div style="display: flex; gap: 1rem;align-items:flex-start;">
+			<li class="mx-5 my-3 p-2">
+				<span class="inline-flex gap-1 items-start">
 					<a href="/work/{entry.work.id}"
 						><img
 							style="max-width:10rem"
@@ -57,7 +55,7 @@
 						<a href="/work/{entry.work.id}">{entry.work.title}</a>
 						<p>{entry.description}</p>
 					</div>
-				</div>
+				</span>
 			</li>
 		{:else}
 			<li>{m.hour_flat_finch_zoom()}</li>
@@ -67,7 +65,7 @@
 
 {#if data.list.pending_items.length}
 	<Section title={m.front_smart_hound_fold()}>
-		<ul class="pending">
+		<ul>
 			{#each data.list.pending_items as src, i (i)}
 				<li>
 					<span>
@@ -84,11 +82,6 @@
 									name: src.rejection_reason
 								})}
 							</p>
-						{:else}
-							<RefreshButton source={src} />
-							{#if data.user && data.user?.level >= UserLevel.MODERATOR}
-								<UnboundSourceActions source={src} />
-							{/if}
 						{/if}
 					</span>
 					<span>
@@ -111,11 +104,13 @@
 </Section>
 
 <style>
-	ul.pending > li {
+	ul > li {
 		display: flex;
-		background-color: var(--otodb-fainter-bg);
 		justify-content: space-between;
 		margin: 1rem 0;
+	}
+	ul > li, ol > li {
+		background-color: var(--otodb-fainter-bg);
 		padding: 1rem;
 	}
 </style>

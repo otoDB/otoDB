@@ -8,7 +8,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		fetch,
 		params: { query: { query: query, tags: tags, limit: 20, offset: 0 } }
 	});
-	console.log("yes")
 	return {
 		query: query,
 		query_tags: tags,

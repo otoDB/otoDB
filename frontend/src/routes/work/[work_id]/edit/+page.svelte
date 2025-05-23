@@ -6,12 +6,32 @@
 	import { Platform, Rating, WorkOrigin, WorkRelationTypes } from '$lib/enums';
 	import CollapsibleText from '../CollapsibleText.svelte';
 	import RelationEditor from '$lib/RelationEditor.svelte';
+	import client from '$lib/api';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	let { data, form }: PageProps = $props();
 	let title: string = $state(form?.title ?? data.title!),
 		description: string = $state(form?.description ?? data.description!),
 		rating: number = $state(form?.rating ?? data.rating!),
 		thumbnail: string = $state(form?.thumbnail ?? data.thumbnail!);
+	const del = async () => {
+		if (confirm('Are you sure? This will unbind all sources currently bound to this work.')) {
+			await client.DELETE('/api/work/work', {
+				fetch,
+				params: { query: { work_id: data.id } }
+			});
+			goto('/work/unbound');
+		}
+	};
+	const unbind = async (source_id: number) => {
+		if (data.sources?.length === 1) {
+			if (!confirm('This is the only source. Unbinding will delete the work entirely.'))
+				return;
+		}
+		await client.POST('/api/work/unbind_source', { fetch, params: { query: { source_id } } });
+		if (data.sources?.length === 1) goto('/work/unbound');
+		else invalidateAll();
+	};
 </script>
 
 <Section
@@ -60,6 +80,9 @@
 					<th>{m.clear_lucky_peacock_pick()}</th>
 					<th>{m.sour_swift_sparrow_spin()}</th>
 					<th>{m.large_polite_otter_thrive()}</th>
+					<th>{m.super_agent_pigeon_aim()}</th>
+					<th>{m.noisy_moving_newt_belong()}</th>
+					<th>Unbind</th>
 				</tr></thead
 			>
 			<tbody>
@@ -79,6 +102,14 @@
 						<td><CollapsibleText text={src.description}></CollapsibleText></td>
 						<td>{Platform[src.platform]}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+						<td>{src.published_date}</td>
+						<td class="whitespace-nowrap"
+							><a href={src.url} target="_blank" rel="noopener noreferrer"
+								>{m.noisy_moving_newt_belong()}</a
+							></td
+						>
+						<td><button type="button" onclick={() => unbind(src.id)}>Unbind</button></td
+						>
 					</tr>
 				{/each}
 			</tbody>
@@ -86,6 +117,7 @@
 		<br />
 		<input type="submit" />
 	</form>
+	<button onclick={del}>Delete this work</button>
 </Section>
 
 <Section title={m.alive_these_jay_pick()}>

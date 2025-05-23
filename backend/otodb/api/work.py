@@ -42,6 +42,12 @@ def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     return work
 
+@work_router.delete('work')
+def delete_work(request: HttpRequest, work_id: int):
+    work = get_object_or_404(MediaWork.active_objects, id=work_id)
+    work.worksource_set.update(media=None)
+    work.delete()
+
 class TagWorkInstanceSchema(Schema):
     tag_slug: str
     n_votes: int
@@ -119,6 +125,14 @@ def delete_relation(request: HttpRequest, A: int, B: int):
 def sources(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     return work.worksource_set
+
+@work_router.post('unbind_source')
+def unbind_sources(request: HttpRequest, source_id: int):
+    src = get_object_or_404(WorkSource.active_objects, id=source_id)
+    if src.media.worksource_set.count() == 1:
+        src.media.delete()
+    src.media = None
+    src.save()
 
 @work_router.post('refresh_source', auth=django_auth)
 def refresh_source(request: HttpRequest, source_id: int):

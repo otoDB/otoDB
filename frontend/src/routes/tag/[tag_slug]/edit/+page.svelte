@@ -16,7 +16,10 @@
 	let md = $state(data.wiki_page);
 
 	const removeAlias = async (alias: string) => {
-		await client.DELETE('/api/tag/alias', { fetch, params: { query: { tag_slug: data.tag.slug, alias}}});
+		await client.DELETE('/api/tag/alias', {
+			fetch,
+			params: { query: { tag_slug: data.tag.slug, alias } }
+		});
 		invalidateAll();
 	};
 </script>
@@ -95,14 +98,18 @@
 </Section>
 
 {#if data.tag.aliases.length}
-	<Section
-		title={"Aliases"}
-	>
-	<table><tbody>
-		{#each data.tag.aliases as a, i (i)}
-		<tr><td>{a}</td><td><button onclick={() => removeAlias(a)}>Remove alias</button></td></tr>
-		{/each}
-	</tbody></table>
+	<Section title={'Aliases'}>
+		<table>
+			<tbody>
+				{#each data.tag.aliases as a, i (i)}
+					<tr
+						><td>{a}</td><td
+							><button onclick={() => removeAlias(a)}>Remove alias</button></td
+						></tr
+					>
+				{/each}
+			</tbody>
+		</table>
 	</Section>
 {/if}
 

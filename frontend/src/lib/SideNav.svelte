@@ -14,6 +14,7 @@
 
 <nav class="w-full">
 	<ul>
+		<li>Menu</li>
 		{@render link('/', m.fine_late_chicken_quiz())}
 		{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		<li>
@@ -24,19 +25,22 @@
 	</ul>
 	{#if user?.level >= UserLevel.ADMIN}
 		<ul>
-			<li>
+		<li>Admin Menu</li>
+		<li>
 				<a href="/admin" data-sveltekit-reload>Admin View</a>
 			</li>
 		</ul>
 	{/if}
 	{#if user?.level >= UserLevel.MODERATOR}
 		<ul>
+			<li>Moderator Menu</li>
 			{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 			{@render link('/work/merge', m.heroic_same_wasp_conquer())}
 			{@render link('/work/unbound', m.tense_small_firefox_lock())}
 		</ul>
 	{/if}
 	<ul>
+		<li>User Menu</li>
 		{#if !user}
 			{@render link('/login', m.inner_stale_anteater_walk())}
 			{@render link('/register', m.blue_whole_camel_type())}
@@ -46,7 +50,7 @@
 			{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
 			{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
 			{@render link(`/profile/${user.username}/submissions`, m.flaky_gross_marlin_evoke())}
-			<li aria-current={page.url.pathname === `/logout` ? 'page' : undefined}>
+			<li aria-current={page.url.pathname === `/logout` ? 'page' : undefined} class="mt-3">
 				<a href="/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload
 					>{m.best_front_swallow_play()}</a
 				>
@@ -54,6 +58,7 @@
 		{/if}
 	</ul>
 	<ul>
+		<li>Database Statistics</li>
 		<li class="flex justify-between">
 			<span>{m.grand_merry_fly_succeed()}</span><span>{stats[0]}</span>
 		</li>
@@ -82,10 +87,15 @@
 		}
 		& > ul {
 			list-style-type: none;
-			& > li > a {
+			&> li:first-child {
+				border-bottom: 1px solid var(--otodb-faint-content);
+				margin-bottom: .5rem;
+				font-size: smaller;
+			}
+			&> li > a {
 				text-decoration: none;
 			}
-			padding: 1rem 1rem;
+			padding: .25rem .5rem .5rem .5rem;
 			background-color: var(--otodb-faint-bg);
 			border: 1px solid var(--otodb-faint-content);
 		}

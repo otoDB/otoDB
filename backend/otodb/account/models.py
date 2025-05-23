@@ -97,9 +97,7 @@ class Account(AbstractBaseUser):
         return all(self.has_perm(p) for p in perms)
 
     def has_module_perms(self, app_label):
-        if self.is_owner and app_label == "account":
-            return True
-        if self.is_staff and app_label != "account":
+        if self.is_staff:
             return True
         return False
 
@@ -115,4 +113,4 @@ class Invitation(models.Model):
     level = models.IntegerField(choices=Account.Levels)
 
     def __str__(self):
-        return self.secret
+        return f'{Account.Levels(self.level).label} - {self.secret}'

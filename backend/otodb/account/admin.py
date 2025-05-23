@@ -49,6 +49,7 @@ class UserChangeForm(forms.ModelForm):
     """
 
     password = ReadOnlyPasswordHashField()
+    level = forms.ChoiceField(choices=[c for c in Account.Levels.choices if c[0] < Account.Levels.ADMIN], initial=Account.Levels.MEMBER)
 
     class Meta:
         model = Account
@@ -77,15 +78,23 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ["username", "email"]
     ordering = ["username"]
     filter_horizontal = []
-
+    
+    def has_change_permission(self, request, obj=None):
+        if obj is None:
+            return True
+        return request.user.level > obj.level
 
 class AddInvitationForm(forms.ModelForm):
     bulk = forms.IntegerField(initial=1, min_value=1)
+    level = forms.ChoiceField(choices=[c for c in Account.Levels.choices if c[0] < Account.Levels.ADMIN], initial=Account.Levels.MEMBER)
     class Meta:
         model = Invitation
         fields = ["level"]
 
 class InvitationAdmin(admin.ModelAdmin):
+    def has_change_permission(self, request, obj=None):
+        return False
+
     def get_form(self, request, obj=None, **kwargs):
         if obj is None:
             kwargs['form'] = AddInvitationForm

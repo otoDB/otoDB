@@ -620,7 +620,8 @@ export interface paths {
         put?: never;
         /** Alias Tags */
         post: operations["otodb_api_tag_alias_tags"];
-        delete?: never;
+        /** Remove Alias */
+        delete: operations["otodb_api_tag_remove_alias"];
         options?: never;
         head?: never;
         patch?: never;
@@ -806,8 +807,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Profile */
-        get: operations["otodb_api_post_profile"];
+        /** Post */
+        get: operations["otodb_api_post_post"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1690,7 +1691,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": number | null;
                 };
             };
             /** @description Bad Request */
@@ -2231,6 +2232,27 @@ export interface operations {
             };
         };
     };
+    otodb_api_tag_remove_alias: {
+        parameters: {
+            query: {
+                tag_slug: string;
+                alias: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_tag_wiki_page: {
         parameters: {
             query: {
@@ -2528,7 +2550,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_post_profile: {
+    otodb_api_post_post: {
         parameters: {
             query: {
                 post_id: number;

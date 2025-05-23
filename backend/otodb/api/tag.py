@@ -45,6 +45,12 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str):
     TagWork.alias(tags, into)
     return
 
+@tag_router.delete('alias', auth=django_auth)
+@user_is_trusted
+def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    tag.aliases.filter(name=alias).update(aliased_to=None)
+
 class TagInSchema(Schema):
     parent_slug: str | None
     category: int

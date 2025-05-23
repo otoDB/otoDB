@@ -7,11 +7,18 @@
 	import TagField from '$lib/TagField.svelte';
 	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
+	import client from '$lib/api';
+	import { invalidateAll } from '$app/navigation';
 
 	let { data, form }: PageProps = $props();
 
 	let category = $state(form?.category ?? data.tag?.category);
 	let md = $state(data.wiki_page);
+
+	const removeAlias = async (alias: string) => {
+		await client.DELETE('/api/tag/alias', { fetch, params: { query: { tag_slug: data.tag.slug, alias}}});
+		invalidateAll();
+	};
 </script>
 
 <Section
@@ -86,6 +93,18 @@
 		<input type="submit" />
 	</form>
 </Section>
+
+{#if data.tag.aliases.length}
+	<Section
+		title={"Aliases"}
+	>
+	<table><tbody>
+		{#each data.tag.aliases as a, i (i)}
+		<tr><td>{a}</td><td><button onclick={() => removeAlias(a)}>Remove alias</button></td></tr>
+		{/each}
+	</tbody></table>
+	</Section>
+{/if}
 
 {#if category === 2 && data.tag.category === 2}
 	<Section

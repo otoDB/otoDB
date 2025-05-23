@@ -1,3 +1,5 @@
+import unicodedata
+
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
@@ -15,7 +17,7 @@ tag_router = Router()
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str):
-    return TagWork.objects.filter(name__icontains=query, aliased_to__isnull=True)
+    return TagWork.objects.filter(name__icontains=unicodedata.normalize('NFKD', query), aliased_to__isnull=True)
 
 @tag_router.get('tag', response=TagWorkSchema)
 def tag(request: HttpRequest, tag_slug: str):
@@ -140,7 +142,7 @@ def delete_relation(request: HttpRequest, A: int, B: int):
 @tag_router.get('song_tag_search', response=list[TagSongSchema])
 @paginate
 def song_tag_search(request: HttpRequest, query: str):
-    return TagSong.objects.filter(name__icontains=query, aliased_to__isnull=True)
+    return TagSong.objects.filter(name__icontains=unicodedata.normalize('NFKD', query), aliased_to__isnull=True)
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted

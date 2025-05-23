@@ -55,7 +55,7 @@ class TagWorkSchema(ModelSchema):
     @field_validator("aliases", mode="before", check_fields=False)
     @classmethod
     def aliases_str(cls, value) -> str:
-        return [tag.name for tag in value]
+        return [tag.slug for tag in value]
 
 class TagWorkDetailsSchema(Schema):
     tree: list[TagWorkSchema]

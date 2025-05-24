@@ -1,5 +1,7 @@
 from typing import Self
 
+import nh3
+
 from django.db import models
 from django.urls import reverse
 from simple_history.models import HistoricalRecords
@@ -113,6 +115,10 @@ class MediaWork(models.Model):
 
         from_work.moved_to = to_work
         from_work.save()
+    
+    def save(self, *args, **kwargs):
+        self.description = nh3.clean(self.description)
+        super().save(*args, **kwargs)
 
 class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)

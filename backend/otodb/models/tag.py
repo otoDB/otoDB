@@ -57,13 +57,6 @@ class TagWork(TagModel):
     def __str__(self):
         return self.name
 
-    class Meta:
-        verbose_name = ("Work Tag")
-        verbose_name_plural = ("Work Tags")
-        permissions = [
-            ("manage_tags", "Can manage tags"),
-        ]
-
     def get_tree(self):
         tree = []
         curr = self
@@ -125,13 +118,6 @@ class TagSong(TagModel):
 
     def __str__(self):
         return self.name
-
-    class Meta:
-        verbose_name = ("Song Tag")
-        verbose_name_plural = ("Song Tags")
-        permissions = [
-            ("manage_tags", "Can manage tags"),
-        ]
 
     def get_tree(self):
         tree = []

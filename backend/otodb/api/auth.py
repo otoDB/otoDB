@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
@@ -43,10 +44,15 @@ def logout_endpoint(request):
     logout(request)
     return {'message': 'Logged out'}
 
-@auth_router.post("/register", response={ 200:UserLoginSchema, 401: Error })
+@auth_router.post("/register", response={ 200:UserLoginSchema, 401: Error, 409: Error })
 def register(request, username: str, password: str, email: str, invite: str):
-    invite = get_object_or_404(Invitation, secret=invite)
-    user = Account.objects.create_user(username, email, password=password, level=invite.level)
-    invite.delete()
-    login(request, user)
-    return { 'user_id': user.id, 'username': user.username }
+    invite_res = get_object_or_404(Invitation, secret=invite)
+    try:
+        user = Account.objects.create_user(username, email, password=password, level=invite_res.level)
+        invite_res.delete()
+        login(request, user)
+        return { 'user_id': user.id, 'username': user.username }
+    except IntegrityError:
+        return 409, {'message': 'This username is already taken'}
+    except ValueError:
+        return 400, {'message': 'A validation error occured'}

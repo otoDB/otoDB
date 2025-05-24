@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import client from '$lib/api';
 import { UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
+import { m } from '$lib/paraglide/messages';
 
 const next_redirect = (user: App.Locals['user']) => {};
 
@@ -60,10 +61,16 @@ export const actions = {
 				url: link,
 				origin: is_official,
 				failed: true,
-				message: 'A work with this source already exists'
+				message: m.work_conflict()
 			});
 		}
-		if (error) return fail(400, { url: link, origin: is_official, failed: true });
+		if (error)
+			return fail(400, {
+				url: link,
+				origin: is_official,
+				failed: true,
+				message: m.careful_lost_jaguar_dart()
+			});
 
 		if (work && !isNaN(+work)) redirect(303, `/work/${+work}`);
 		if (work_id) redirect(303, `/work/${work_id}`);

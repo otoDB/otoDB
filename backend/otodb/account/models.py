@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from django.urls import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
-from django.db import models
+from django.db import IntegrityError, models
 from django.utils import timezone
 
 
@@ -16,7 +16,7 @@ class AccountManager(BaseUserManager):
         if not email:
             raise ValueError("Users must have an email address")
         if self.filter(username__iexact=username).exists():
-            raise ValueError("This username is already taken")
+            raise IntegrityError("This username is already taken")
         username = User.normalize_username(username)
         user: Account = self.model(
             username=username,

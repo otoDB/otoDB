@@ -28,7 +28,7 @@
 		<li>SoundCloud</li>
 	</ul>
 	<form method="POST" use:enhance>
-		{#if form?.failed}<p class="error">Failed!</p>{/if}
+		{#if form?.failed}<p class="error">{form.message}</p>{/if}
 		<table>
 			<tbody>
 				<tr>

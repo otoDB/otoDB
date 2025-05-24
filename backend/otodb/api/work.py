@@ -38,7 +38,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
     else:
         qs = MediaWork.active_objects.filter(worksource__source_id=query) | qs
         if query.startswith("https"):
-            qs = MediaWork.active_objects.filter(worksource__url=query) | qs            
+            qs = MediaWork.active_objects.filter(worksource__url=query) | qs
     return qs.distinct()
 
 @work_router.get('work', response=WorkSchema)
@@ -172,11 +172,14 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
     update_change_reason(work, reason)
     return
 
-@work_router.post('source', auth=django_auth, response={200: int | None, 400: Error})
+@work_router.post('source', auth=django_auth, response={200: int | None, 400: Error, 409: Error})
 @user_is_trusted
 def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_id: int | None = None):
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
-    assert(src.media is None and src.rejection_reason is None)
+    if src.media is not None:
+        return 409, {'message': "Conflict, a work with this source already exists."}
+    if src.rejection_reason is not None:
+        return 400, {'message': "Bad Request, This source has already been rejected"}
 
     has_work = work_id or request.user.level >= Account.Levels.MODERATOR
     if has_work:

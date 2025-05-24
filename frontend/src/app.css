@@ -73,7 +73,9 @@ select,
 button {
 	border: 1px solid white;
 	outline: none;
+	background-color: var(--otodb-faint-bg);
 	&:disabled {
+		background-color: var(--otodb-bg-color) !important;
 		color: var(--otodb-fainter-content);
 	}
 	&:hover {

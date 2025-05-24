@@ -56,7 +56,7 @@
 				fetch,
 				params: { query: { query: data.sources[i].title } }
 			});
-			if (similar) suggestions = similar.items;
+			if (similar) suggestions[i] = similar.items;
 			loaded[i] = true;
 		}
 	};

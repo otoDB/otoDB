@@ -4,7 +4,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api';
-	import { enhance } from '$app/forms';
 	import { WorkTagCategory } from '$lib/enums';
 
 	let { data }: PageProps = $props();
@@ -39,8 +38,8 @@
 			placeholder="{m.mean_top_antelope_love()}..."
 			value={data.query}
 		/>
-		<select name="category">
-			<option value="-1">All</option>
+		<select name="category" value={data.category}>
+			<option value={-1}>All</option>
 			{#each WorkTagCategory as cat, i (i)}
 				<option value={i}>{cat()}</option>
 			{/each}

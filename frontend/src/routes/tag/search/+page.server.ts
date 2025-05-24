@@ -3,12 +3,14 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
 	const query = url.searchParams.get('query') ?? '';
+	const category = parseInt(url.searchParams.get('category') ?? '', 10) ?? -1;
 	const { data } = await client.GET('/api/tag/search', {
 		fetch,
-		params: { query: { query: query, limit: 20, offset: 0 } }
+		params: { query: { query: query, limit: 20, offset: 0, category } }
 	});
 	return {
-		query: query,
+		query,
+		category,
 		results: data
 	};
 };

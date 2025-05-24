@@ -5,7 +5,6 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import TagsField from '$lib/TagsField.svelte';
 	import client from '$lib/api';
-	import { enhance } from '$app/forms';
 
 	let { data }: PageProps = $props();
 	const batch_size = 20;

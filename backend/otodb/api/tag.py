@@ -16,8 +16,11 @@ tag_router = Router()
 
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
-def search(request: HttpRequest, query: str):
-    return TagWork.objects.filter(name__icontains=unicodedata.normalize('NFKD', query), aliased_to__isnull=True)
+def search(request: HttpRequest, query: str, category: int | None = None):
+    qs = TagWork.objects.filter(name__icontains=unicodedata.normalize('NFKD', query), aliased_to__isnull=True)
+    if category is not None and category != -1:
+        qs = qs.filter(category=category)
+    return qs
 
 @tag_router.get('tag', response=TagWorkSchema)
 def tag(request: HttpRequest, tag_slug: str):

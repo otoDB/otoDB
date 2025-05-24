@@ -143,6 +143,8 @@ def video_info(link):
                 info['webpage_url'] = make_video_url['niconico'](info['id'])
             case Platform.SOUNDCLOUD:
                 pass # TODO
+            case _:
+                return None
         
         for c in ['?', '/']: # drop query strings and subdirectories
             i = info['id'].find(c)
@@ -173,6 +175,8 @@ def playlist_info(link):
             pass
         case 'BilibiliFavoritesList':
             pass
+        # soundcloud?
+        # a platform can also have multiple sorts of playlists that call different extractors
 
     info['entries'] = [entry['url'] for entry in info['entries']]
     

@@ -39,7 +39,7 @@
 			value={data.query}
 		/>
 		<select name="category" value={data.category}>
-			<option value={-1}>All</option>
+			<option value={-1}>{m.keen_soft_crow_relish()}</option>
 			{#each WorkTagCategory as cat, i (i)}
 				<option value={i}>{cat()}</option>
 			{/each}

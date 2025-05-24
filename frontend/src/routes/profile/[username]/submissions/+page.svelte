@@ -8,24 +8,26 @@
 
 	let { data }: PageProps = $props();
 	let results = $state(data.submissions!.items);
+	let page = $state(0);
 
 	let approved = $derived(results.filter((s) => s.media));
 	let pending = $derived(results.filter((s) => !s.media && !s.rejection_reason));
 	let rejected = $derived(results.filter((s) => s.rejection_reason));
 
-	const getNextBatch = async () => {
-		const { data: d } = await client.GET('/api/profile/submissions', {
-			fetch,
-			params: {
-				query: {
-					username: data.profile.username,
-					limit: data.batch_size,
-					offset: results.length
+	$effect(() => {
+		client
+			.GET('/api/profile/submissions', {
+				fetch,
+				params: {
+					query: {
+						username: data.profile.username,
+						limit: data.batch_size,
+						offset: page * data.batch_size
+					}
 				}
-			}
-		});
-		results = results.concat(d!.items);
-	};
+			})
+			.then(({ data }) => (results = data.items));
+	});
 </script>
 
 <Section
@@ -37,11 +39,6 @@
 >
 	{#if data.user?.username === data.profile.username}
 		<a href="/work/add">{m.fluffy_crisp_horse_imagine()}</a>
-	{/if}
-	{#if results.length < data.submissions!.count}
-		<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}
-			>{m.red_pink_bear_play()}</button
-		>
 	{/if}
 	<h2>{m.such_actual_okapi_dare()}</h2>
 	{#if pending?.length}
@@ -160,6 +157,16 @@
 	{:else}
 		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
+	{#if data.submissions?.count}
+		<div class="flex justify-center gap-2">
+			{#each Array(Math.ceil(data.submissions?.count / data.batch_size)).fill(undefined) as _, i (i)}
+				<label class="inline-block border p-2">
+					<input type="radio" value={i} bind:group={page} hidden />
+					{i + 1}
+				</label>
+			{/each}
+		</div>
+	{/if}
 </Section>
 
 <style>
@@ -167,5 +174,9 @@
 		font-size: larger;
 		margin: 1rem 0 0.5rem 0;
 		font-weight: 600;
+	}
+	label:has(input:checked) {
+		background-color: var(--otodb-content-color);
+		color: var(--otodb-bg-color);
 	}
 </style>

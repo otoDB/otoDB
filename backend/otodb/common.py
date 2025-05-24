@@ -122,7 +122,8 @@ def video_info(link):
             if info.get('_type') == 'playlist':
                 info = info['entries'][0] # TODO need some work...
             resolutions = [(f['width'], f['height']) for f in info['formats'] if 'width' in f and f['width'] is not None]
-            info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
+            if resolutions:
+                info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
 
         info['extractor'] = Platform.from_str(info['extractor'])
 

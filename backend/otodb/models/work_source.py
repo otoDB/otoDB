@@ -51,9 +51,11 @@ class WorkSource(models.Model):
         self.title = info['title']
         self.description = info['description']
         self.thumbnail = info.get('thumb', None)
-        self.work_width = info['work_width']
-        self.work_height = info['work_height']
+        self.work_width = info.get('work_width', None) or self.work_width
+        self.work_height = info.get('work_height', None) or self.work_width
         self.save()
+        if self.media:
+            self.media.tags.add(*info.get('tags', []))
 
     # Gets the source registered at the url if it exists, otherwise register as pending
     @staticmethod

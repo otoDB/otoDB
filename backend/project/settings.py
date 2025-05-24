@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'simple_history',
     'tagulous',
     'ordered_model',
- 
+
     'django.contrib.sites',
     'django_comments_xtd',
     'django_comments',

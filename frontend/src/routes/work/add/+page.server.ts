@@ -44,12 +44,25 @@ export const actions = {
 			is_official = !!data.get('origin');
 		const work = url.searchParams.get('for_work');
 
-		const { data: work_id, error } = await client.POST('/api/work/source', {
+		const {
+			data: work_id,
+			error,
+			response
+		} = await client.POST('/api/work/source', {
 			fetch,
 			params: {
 				query: { url: link, is_reupload: !is_official, work_id: work ? +work : null }
 			}
 		});
+
+		if (response.status === 409) {
+			return fail(409, {
+				url: link,
+				origin: is_official,
+				failed: true,
+				message: 'A work with this source already exists'
+			});
+		}
 		if (error) return fail(400, { url: link, origin: is_official, failed: true });
 
 		if (work && !isNaN(+work)) redirect(303, `/work/${+work}`);

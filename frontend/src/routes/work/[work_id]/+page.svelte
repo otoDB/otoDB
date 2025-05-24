@@ -207,6 +207,12 @@
 		display: inline-block;
 		background-color: var(--otodb-bg-color);
 		border: 1px solid var(--otodb-content-color);
+		&:hover {
+			background-color: var(--otodb-fainter-bg);
+		}
+		&:active {
+			background-color: var(--otodb-faint-bg);
+		}
 	}
 	label:has(> input[name='cover_select']:checked) {
 		background-color: var(--otodb-content-color);

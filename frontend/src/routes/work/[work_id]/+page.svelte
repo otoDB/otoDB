@@ -55,33 +55,37 @@
 	<div id="infobox">
 		<div>
 			{#if cover_select === -1}
-				<img src={data.thumbnail} alt={data.title} class="w-[480px] h-[270px] object-cover"/>
+				<img
+					src={data.thumbnail}
+					alt={data.title}
+					class="h-[270px] w-[480px] object-cover"
+				/>
 			{:else}
 				<ExternalEmbed width={480} height={270} src={data.sources[cover_select]} />
 			{/if}
 			<div class="my-2">
-			<label
-				><input
-					hidden
-					type="radio"
-					name="cover_select"
-					value={-1}
-					bind:group={cover_select}
-				/>{m.heroic_ideal_orangutan_aid()}</label
-			>
-			{#each data.sources as s, i (i)}
 				<label
 					><input
 						hidden
 						type="radio"
 						name="cover_select"
-						value={i}
+						value={-1}
 						bind:group={cover_select}
-					/>{Platform[s.platform]}{s.work_origin === 0
-						? ''
-						: ' ' + WorkOrigin[s.work_origin]()}</label
+					/>{m.heroic_ideal_orangutan_aid()}</label
 				>
-			{/each}
+				{#each data.sources as s, i (i)}
+					<label
+						><input
+							hidden
+							type="radio"
+							name="cover_select"
+							value={i}
+							bind:group={cover_select}
+						/>{Platform[s.platform]}{s.work_origin === 0
+							? ''
+							: ' ' + WorkOrigin[s.work_origin]()}</label
+					>
+				{/each}
 			</div>
 		</div>
 		<div>

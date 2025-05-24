@@ -90,7 +90,7 @@
 
 <Section title={m.quiet_super_kangaroo_kiss({ tag: data.tag.name })}>
 	{#if data.works.items.length}
-		<div class="flex flex-wrap gap-3">
+		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.works.items as work, i (i)}
 				<WorkCard {work} />
 			{/each}

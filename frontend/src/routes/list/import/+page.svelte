@@ -23,6 +23,7 @@
 		<li>YouTube Playlists</li>
 		<li>Niconico Mylists</li>
 		<li>Bilibili Playlists</li>
+		<li>SoundCloud Playlists</li>
 	</ul>
 	<form use:enhance method="POST">
 		{#if form?.failed}<p class="error">Failed!</p>{/if}

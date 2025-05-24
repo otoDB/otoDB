@@ -105,7 +105,7 @@ class SongInSchema(ModelSchema):
 @tag_router.post('song', auth=django_auth)
 @user_is_trusted
 def song(request: HttpRequest, tag_slug: str, payload: SongInSchema):
-    tag = get_object_or_404(TagSong, slug=tag_slug)
+    tag = get_object_or_404(TagWork, slug=tag_slug)
     try:
         song = tag.mediasong
         song.title = payload.title

@@ -10,7 +10,7 @@ from markdownfield.validators import VALIDATOR_STANDARD
 from .enums import WorkTagCategory, SongTagCategory, LanguageTypes
 
 def name_cleaner(s):
-    return s.lower().replace('・', '')
+    return s.lower()
 
 class LowerCaseTagModelManager(TagModelManager):
     def get_or_create(self, *args, **kwargs):

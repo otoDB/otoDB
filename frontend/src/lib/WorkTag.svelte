@@ -9,7 +9,7 @@
 
 <a
 	href="/tag/{tag.slug}"
-	class="rounded-full border border-solid px-2 {[
+	class="rounded-full border border-2 border-solid px-2 {[
 		'border-white-600',
 		'border-indigo-600',
 		'border-orange-600',
@@ -20,4 +20,7 @@
 >
 
 <style>
+	a {
+		text-decoration: none;
+	}
 </style>

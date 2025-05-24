@@ -38,6 +38,7 @@
 			value={data.query}
 		/>
 	</form>
+	<hr class="my-5" />
 
 	<ul>
 		{#each results as list, i (i)}

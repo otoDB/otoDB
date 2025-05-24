@@ -9,12 +9,12 @@
 
 <a
 	href="/tag/{tag.slug}"
-	class="rounded-full border border-2 border-solid px-2 {[
+	class="rounded-full border-2 border-solid px-2 {[
 		'border-white-600',
 		'border-indigo-600',
-		'border-orange-600',
-		'border-yellow-600',
 		'border-cyan-600',
+		'border-orange-900',
+		'border-yellow-400',
 		'border-red-600'
 	][tag.category]}">{tag.name}</a
 >

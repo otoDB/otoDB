@@ -119,7 +119,7 @@
 		<br />
 		<input type="submit" />
 	</form>
-	<button onclick={del}>{m.awake_patient_fireant_pout()}</button>
+	<button onclick={del}>{m.suave_less_deer_grip()}</button>
 </Section>
 
 <Section title={m.alive_these_jay_pick()}>

@@ -3,7 +3,6 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import client from '$lib/api';
-	import { enhance } from '$app/forms';
 
 	let { data }: PageProps = $props();
 	const batch_size = 20;

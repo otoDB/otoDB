@@ -2154,6 +2154,7 @@ export interface operations {
         parameters: {
             query: {
                 query: string;
+                category?: number | null;
                 limit?: number;
                 offset?: number;
             };

@@ -3,11 +3,31 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { Platform } from '$lib/enums';
+	import { Platform, WorkOrigin } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/ui';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import client from '$lib/api';
+	import type { components } from '$lib/schema';
+	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
 
 	let { data }: PageProps = $props();
+
+	let current = $state(0);
+	let select = $state(-1);
+	let sources: components['schemas']['WorkSourceSchema'][] | undefined = $state();
+
+	$effect(() => {
+		client
+			.GET('/api/work/sources', {
+				fetch,
+				params: { query: { work_id: data.entries.items[current].work.id } }
+			})
+			.then(({ data }) => {
+				sources = data;
+				select = 0;
+			});
+	});
 </script>
 
 <svelte:head>
@@ -39,29 +59,45 @@
 		>
 	{/if}
 </Section>
+
+{#if data.entries?.items.length && sources && sources.length && select >= 0 && select < sources.length}
+	<Section title={m.mealy_soft_myna_talk()}>
+		<ExternalEmbed src={sources[select]} />
+		<div class="my-2">
+			{#each sources as s, i (i)}
+				<label
+					><input
+						hidden
+						type="radio"
+						name="cover_select"
+						value={i}
+						bind:group={select}
+					/>{Platform[s.platform]}{s.work_origin === 0
+						? ''
+						: ' ' + WorkOrigin[s.work_origin]()}</label
+				>
+			{/each}
+		</div>
+	</Section>
+{/if}
 <Section title={m.bald_clear_marlin_grasp()}>
-	<ol class="list-outside list-decimal">
-		{#each data.entries.items as entry, i (i)}
-			<li class="mx-5 my-3 p-2">
-				<span class="inline-flex items-start gap-1">
-					<a href="/work/{entry.work.id}"
-						><img
-							style="max-width:10rem"
-							src={entry.work.thumbnail}
-							alt={entry.work.title}
-						/></a
-					>
-					<div>
-						<a href="/work/{entry.work.id}">{entry.work.title}</a>
+	<div class="flex w-full">
+		<ol class="mr-5 w-full list-outside list-decimal">
+			{#each data.entries.items as entry, i (i)}
+				<li class="mx-5 w-full p-1">
+					<label class="inline-flex w-full items-start gap-5">
+						<input class="hidden" type="radio" value={i} bind:group={current} />
+						<WorkCard work={entry.work} />
 						<p>{entry.description}</p>
-					</div>
-				</span>
-			</li>
-		{:else}
-			<li>{m.hour_flat_finch_zoom()}</li>
-		{/each}
-	</ol>
+					</label>
+				</li>
+			{:else}
+				<li>{m.hour_flat_finch_zoom()}</li>
+			{/each}
+		</ol>
+	</div>
 </Section>
+
 
 {#if data.list.pending_items.length}
 	<Section title={m.front_smart_hound_fold()}>
@@ -110,8 +146,29 @@
 		margin: 1rem 0;
 	}
 	ul > li,
-	ol > li {
-		background-color: var(--otodb-fainter-bg);
+	ol > li > label {
+		background-color: var(--otodb-bg-color);
 		padding: 1rem;
+		cursor: grab;
+		&:has(>input:checked) {
+			background-color: var(--otodb-fainter-bg);
+		}
+	}
+	label:has(> input[name='cover_select']) {
+		padding: 0.2rem 0.5rem;
+		display: inline-block;
+		background-color: var(--otodb-bg-color);
+		border: 1px solid var(--otodb-content-color);
+		&:hover {
+			background-color: var(--otodb-fainter-bg);
+		}
+		&:active {
+			background-color: var(--otodb-faint-bg);
+		}
+	}
+	label:has(> input[name='cover_select']:checked) {
+		background-color: var(--otodb-content-color);
+		border: 1px solid var(--otodb-bg-color);
+		color: var(--otodb-bg-color);
 	}
 </style>

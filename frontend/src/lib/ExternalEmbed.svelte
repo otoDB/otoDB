@@ -4,15 +4,17 @@
 
 	interface Props {
 		src: components['schemas']['WorkSourceSchema'];
+		width: number;
+		height: number;
 	}
 
-	let { src }: Props = $props();
+	let { src, width = 560, height = 315 }: Props = $props();
 </script>
 
 {#if src.platform === 1}
 	<iframe
-		width="560"
-		height="315"
+		{width}
+		{height}
 		src="https://www.youtube-nocookie.com/embed/{src.source_id}"
 		title="YouTube video player"
 		frameborder="0"
@@ -22,6 +24,8 @@
 	></iframe>
 {:else if src.platform === 2}
 	<iframe
+		{width}
+		{height}
 		src="https://embed.nicovideo.jp/watch/{src.source_id}"
 		allowfullscreen
 		scrolling="no"
@@ -30,6 +34,8 @@
 	></iframe>
 {:else if src.platform === 3}
 	<iframe
+		{width}
+		{height}
 		src="//player.bilibili.com/player.html?isOutside=true&bvid={src.source_id}&p=1"
 		scrolling="no"
 		frameborder="no"

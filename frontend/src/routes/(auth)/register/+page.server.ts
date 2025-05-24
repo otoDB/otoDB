@@ -1,6 +1,7 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import client, { forwardCookies } from '$lib/api';
+import { m } from '$lib/paraglide/messages.js';
 
 export const load: PageServerLoad = async ({ cookies, fetch, locals }) => {
 	if (locals.user) redirect(303, '/');
@@ -27,6 +28,14 @@ export const actions = {
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') },
 			fetch
 		});
+
+		if (response.status === 409) {
+			return fail(409, {
+				username,
+				failed: true,
+				message: m.username_conflict(),
+			});
+		}
 		if (error) return fail(400, { username, failed: true });
 
 		forwardCookies(cookies, response);

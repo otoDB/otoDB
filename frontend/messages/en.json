@@ -145,5 +145,7 @@
 	"tired_real_gazelle_evoke": "This is the only source. Unbinding will delete the work entirely.",
 	"keen_soft_crow_relish": "All",
 	"mealy_soft_myna_talk": "Player",
-	"simple_less_marlin_enchant": "Not Applicable"
+	"simple_less_marlin_enchant": "Not Applicable",
+	"username_conflict": "This username is already taken.",
+	"work_conflict": "A source already exists for this work."
 }

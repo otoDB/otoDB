@@ -42,7 +42,7 @@ class WorkRelation(models.Model):
                 SELECT "otodb_workrelation"."id", "otodb_workrelation"."A_id", "otodb_workrelation"."B_id", "otodb_workrelation"."relation" FROM "otodb_workrelation" WHERE "otodb_workrelation"."A_id" = %s OR "otodb_workrelation"."B_id" = %s
                 UNION
                 SELECT r.id, r."A_id", r."B_id", r.relation FROM otodb_workrelation r
-                JOIN component c ON c."A_id" = r."B_id" OR c."B_id" = r."A_id"
+                JOIN component c ON c."A_id" = r."B_id" OR c."B_id" = r."A_id" OR c."A_id" = r."A_id" OR c."B_id" = r."B_id"
             )
             SELECT * FROM component;
         ''', [work_id, work_id]))
@@ -77,7 +77,7 @@ class SongRelation(models.Model):
                 SELECT "otodb_songrelation"."id", "otodb_songrelation"."A_id", "otodb_songrelation"."B_id", "otodb_songrelation"."relation" FROM "otodb_songrelation" WHERE "otodb_songrelation"."A_id" = %s OR "otodb_songrelation"."B_id" = %s
                 UNION
                 SELECT r.id, r."A_id", r."B_id", r.relation FROM otodb_songrelation r
-                JOIN component c ON c."A_id" = r."B_id" OR c."B_id" = r."A_id"
+                JOIN component c ON c."A_id" = r."B_id" OR c."B_id" = r."A_id" OR c."A_id" = r."A_id" OR c."B_id" = r."B_id"
             )
             SELECT * FROM component;
         ''', [song_id, song_id]))

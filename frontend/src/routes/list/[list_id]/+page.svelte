@@ -98,7 +98,6 @@
 	</div>
 </Section>
 
-
 {#if data.list.pending_items.length}
 	<Section title={m.front_smart_hound_fold()}>
 		<ul>
@@ -150,7 +149,7 @@
 		background-color: var(--otodb-bg-color);
 		padding: 1rem;
 		cursor: grab;
-		&:has(>input:checked) {
+		&:has(> input:checked) {
 			background-color: var(--otodb-fainter-bg);
 		}
 	}

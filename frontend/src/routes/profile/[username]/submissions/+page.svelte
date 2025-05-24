@@ -4,8 +4,28 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { Platform, WorkOrigin, WorkStatus } from '$lib/enums';
 	import RefreshButton from '../../../work/RefreshButton.svelte';
+	import client from '$lib/api';
 
 	let { data }: PageProps = $props();
+	let results = $state(data.submissions!.items);
+
+	let approved = $derived(results.filter((s) => s.media));
+	let pending = $derived(results.filter((s) => !s.media && !s.rejection_reason));
+	let rejected = $derived(results.filter((s) => s.rejection_reason));
+
+	const getNextBatch = async () => {
+		const { data: d } = await client.GET('/api/profile/submissions', {
+			fetch,
+			params: {
+				query: {
+					username: data.profile.username,
+					limit: data.batch_size,
+					offset: results.length
+				}
+			}
+		});
+		results = results.concat(d!.items);
+	};
 </script>
 
 <Section
@@ -18,9 +38,13 @@
 	{#if data.user?.username === data.profile.username}
 		<a href="/work/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}
-
+	{#if results.length < data.submissions!.count}
+		<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}
+			>{m.red_pink_bear_play()}</button
+		>
+	{/if}
 	<h2>{m.such_actual_okapi_dare()}</h2>
-	{#if data.pending?.length}
+	{#if pending?.length}
 		<table class="w-full">
 			<thead
 				><tr>
@@ -35,7 +59,7 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each data.pending as src, i (i)}
+				{#each pending as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
@@ -57,7 +81,7 @@
 	{/if}
 
 	<h2>{m.stale_vexed_hare_pray()}</h2>
-	{#if data.rejected?.length}
+	{#if rejected?.length}
 		<table class="w-full">
 			<thead
 				><tr>
@@ -73,7 +97,7 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each data.rejected as src, i (i)}
+				{#each rejected as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
 						<td class="whitespace-nowrap">{src.rejection_reason}</td>
@@ -96,7 +120,7 @@
 	{/if}
 
 	<h2>{m.spare_few_kudu_learn()}</h2>
-	{#if data.approved?.length}
+	{#if approved?.length}
 		<table class="w-full">
 			<thead
 				><tr>
@@ -112,7 +136,7 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each data.approved as src, i (i)}
+				{#each approved as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap"
 							><a href="/work/{src.media}">{src.title}</a></td

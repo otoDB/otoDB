@@ -34,7 +34,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
     qs =  MediaWork.active_objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
     if tags:
         for tag in tags.split():
-            qs = qs.filter(tags=tag)
+            qs = qs.filter(tags=unicodedata.normalize('NFKD', tag))
     else:
         qs = MediaWork.active_objects.filter(worksource__source_id=query) | qs
         if query.startswith("https"):

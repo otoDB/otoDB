@@ -7,13 +7,12 @@
 	import { WorkTagCategory } from '$lib/enums';
 
 	let { data }: PageProps = $props();
-	const batch_size = 20;
 	let results = $derived(data.results!.items);
 
 	const getNextBatch = async () => {
 		const { data: d } = await client.GET('/api/tag/search', {
 			fetch,
-			params: { query: { query: data.query, limit: batch_size, offset: results.length } }
+			params: { query: { query: data.query, limit: data.batch_size, offset: results.length } }
 		});
 		results = results.concat(d!.items);
 	};

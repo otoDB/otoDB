@@ -7,7 +7,6 @@
 	import client from '$lib/api';
 
 	let { data }: PageProps = $props();
-	const batch_size = 20;
 	let results = $derived(data.results!.items);
 	let tags = $derived(data.query_tags.split(' '));
 
@@ -18,7 +17,7 @@
 				query: {
 					query: data.query,
 					tags: tags.join(' '),
-					limit: batch_size,
+					limit: data.batch_size,
 					offset: results.length
 				}
 			}

@@ -85,7 +85,7 @@
 		<ol class="mr-5 w-full list-outside list-decimal">
 			{#each data.entries.items as entry, i (i)}
 				<li class="mx-5 w-full p-1">
-					<label class="inline-flex w-full items-start gap-5">
+					<label class="grid grid-cols-[15rem_1fr] gap-5">
 						<input class="hidden" type="radio" value={i} bind:group={current} />
 						<WorkCard work={entry.work} />
 						<p>{entry.description}</p>

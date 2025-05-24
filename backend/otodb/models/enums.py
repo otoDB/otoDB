@@ -69,16 +69,17 @@ class SongConnectionTypes(models.IntegerChoices):
     VGMDB         = 0, "VGMdb"
     VOCADB        = 1, "VocaDB"
     DISCOGS       = 2, "Discogs"
-    RATEYOURMUSIC = 3, "Rate Your Music"
-    REMYWIKI      = 4, "RemyWiki"
-    ZENIUS        = 5, "Zenius -I- vanisher.com"
+    MUSICBRAINZ   = 3, "MusicBrainz"
+    RATEYOURMUSIC = 4, "Rate Your Music"
+    REMYWIKI      = 5, "RemyWiki"
+    ZENIUS        = 6, "Zenius -I- vanisher.com"
 
 class TagWorkConnectionTypes(models.IntegerChoices):
     OTOMADWIKI    = 1, "otomad.wiki"
     OTOMADFANDOM  = 2, "Otomad Wiki 2"
 
     NICOPEDIA     = 3, "Niconico Encyclopedia"
-    KNOWYOURMEME  = 4, "KnowYourMeme"
+    PIXIV_DICT    = 4, "Pixiv Dictionary"
     WIKIPEDIA     = 5, "Wikipedia"
     NAMUWIKI      = 6, "Namu Wiki"
 

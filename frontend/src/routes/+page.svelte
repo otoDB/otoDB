@@ -15,7 +15,7 @@
 <Section title={m.fine_late_chicken_quiz()}>
 	<p>{m.silly_main_reindeer_chop()}</p>
 	<hr class="my-3" />
-	<div class="flex flex-wrap gap-2">
+	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 		{#each data.random as w, i (i)}
 			<WorkCard work={w} />
 		{/each}

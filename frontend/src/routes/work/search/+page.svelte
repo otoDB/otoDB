@@ -52,7 +52,7 @@
 		<TagsField type="work" name="tags" bind:value={tags} class="w-full" />
 	</form>
 	<hr />
-	<div class="flex flex-wrap gap-3">
+	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 		{#each results as work, i (i)}
 			<WorkCard {work} />
 		{/each}

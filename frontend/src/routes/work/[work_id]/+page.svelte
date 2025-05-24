@@ -55,10 +55,11 @@
 	<div id="infobox">
 		<div>
 			{#if cover_select === -1}
-				<img src={data.thumbnail} alt={data.title} />
+				<img src={data.thumbnail} alt={data.title} class="w-[480px] h-[270px] object-cover"/>
 			{:else}
-				<ExternalEmbed src={data.sources[cover_select]} />
+				<ExternalEmbed width={480} height={270} src={data.sources[cover_select]} />
 			{/if}
+			<div class="my-2">
 			<label
 				><input
 					hidden
@@ -81,6 +82,7 @@
 						: ' ' + WorkOrigin[s.work_origin]()}</label
 				>
 			{/each}
+			</div>
 		</div>
 		<div>
 			<table>

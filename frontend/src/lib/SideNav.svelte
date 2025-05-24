@@ -16,6 +16,9 @@
 	<ul>
 		<li>{m.clean_kind_stork_affirm()}</li>
 		{@render link('/', m.fine_late_chicken_quiz())}
+		{@render link('/work/search', m.grand_merry_fly_succeed())}
+		{@render link('/tag/search', m.empty_legal_chicken_taste())}
+		{@render link('/list/search', m.stale_loose_squid_cut())}
 		{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		<li>
 			<form target="_self" method="get" action="/work/search">
@@ -50,7 +53,7 @@
 			{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
 			{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
 			{@render link(`/profile/${user.username}/submissions`, m.flaky_gross_marlin_evoke())}
-			<li aria-current={page.url.pathname === `/logout` ? 'page' : undefined} class="mt-3">
+			<li aria-current={page.url.pathname === `/logout` ? 'page' : undefined} class="mt-5">
 				<a href="/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload
 					>{m.best_front_swallow_play()}</a
 				>

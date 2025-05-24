@@ -68,7 +68,7 @@
 
 <Section title={m.suave_gray_stork_type()} menuLinks={data.links}>
 	{#if data.sources.length}
-		<input type="submit" onclick={submit} />
+		<input type="submit" onclick={submit} class="text-l float-right p-2" />
 		<table class="w-full">
 			<thead
 				><tr>
@@ -111,7 +111,6 @@
 									class="float-right clear-both w-50"
 								/></a
 							>
-							{JSON.stringify(actions[i].menu)}
 						</td>
 						<td>
 							<label>

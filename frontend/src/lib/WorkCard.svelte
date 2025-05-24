@@ -16,7 +16,7 @@
 		</a>
 	</div>
 	<a href="/work/{work.id}">{work.title}</a>
-	<div class="tags absolute z-1 hidden w-full flex-wrap gap-1">
+	<div class="tags absolute z-1 hidden w-full flex-wrap gap-1 p-1">
 		{#each work.tags as tag, i (i)}
 			<WorkTag {tag} />
 		{/each}

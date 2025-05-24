@@ -34,6 +34,7 @@ html {
 
 body {
 	font-size: smaller;
+	background-color: var(--otodb-bg-color);
 }
 
 a {
@@ -74,6 +75,12 @@ button {
 	outline: none;
 	&:disabled {
 		color: var(--otodb-fainter-content);
+	}
+	&:hover {
+		background-color: var(--otodb-fainter-bg);
+	}
+	&:active {
+		background-color: var(--otodb-bg-color);
 	}
 }
 

@@ -5,6 +5,7 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api';
 	import { enhance } from '$app/forms';
+	import { WorkTagCategory } from '$lib/enums';
 
 	let { data }: PageProps = $props();
 	const batch_size = 20;
@@ -38,7 +39,16 @@
 			placeholder="{m.mean_top_antelope_love()}..."
 			value={data.query}
 		/>
+		<select name="category">
+			<option value="-1">All</option>
+			{#each WorkTagCategory as cat, i (i)}
+				<option value={i}>{cat()}</option>
+			{/each}
+		</select>
+		<input type="submit" value={m.mean_top_antelope_love()} />
 	</form>
+
+	<hr class="my-5" />
 
 	<div class="flex flex-wrap gap-3">
 		{#each results as tag, i (i)}

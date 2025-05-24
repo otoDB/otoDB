@@ -40,6 +40,16 @@
 		scrolling="no"
 		frameborder="no"
 		allowfullscreen
-		title="bilibili Player"
+		title="Bilibili Player"
+	></iframe>
+{:else if src.platform === 4}
+	<iframe
+		title="SoundCloud Player"
+		{width}
+		{height}
+		scrolling="no"
+		frameborder="no"
+		allow="autoplay"
+		src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{src.source_id}&visual=true"
 	></iframe>
 {/if}

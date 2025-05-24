@@ -10,7 +10,7 @@
 
 <div class="group relative row-span-2 grid grid-rows-subgrid gap-0 bg-[var(--otodb-bg-color))]">
 	<a href="/work/{work.id}" class="flex h-full items-center">
-		<img src={work.thumbnail} alt={work.title} class="w-full aspect-video object-cover" />
+		<img src={work.thumbnail} alt={work.title} class="aspect-video w-full object-cover" />
 	</a>
 	<a href="/work/{work.id}" class="my-2 line-clamp-2 self-center px-4">{work.title}</a>
 	<div

@@ -168,7 +168,9 @@
 					<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td
 						class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td
 					>
-					<td>{#if src.work_width}{src.work_width}x{src.work_height}{:else}{m.simple_less_marlin_enchant()}{/if}</td><td class="whitespace-nowrap"
+					<td
+						>{#if src.work_width}{src.work_width}x{src.work_height}{:else}{m.simple_less_marlin_enchant()}{/if}</td
+					><td class="whitespace-nowrap"
 						><a href={src.url} target="_blank" rel="noopener noreferrer"
 							>{m.noisy_moving_newt_belong()}</a
 						></td

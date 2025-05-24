@@ -57,3 +57,45 @@ class SongRelationTypes(models.IntegerChoices):
     REMASTER = 1, "Remaster"
     MEDLEY   = 2, "Medley"
     SEQUEL   = 3, "Sequel"
+
+class ProfileConnectionTypes(models.IntegerChoices):
+    NICONICO  = 0, "Niconico"
+    YOUTUBE   = 1, "YouTube"
+    BILIBILI  = 2, "Bilibili"
+    X         = 3, "X"
+    BLUESKY   = 4, "Bluesky"
+
+class SongConnectionTypes(models.IntegerChoices):
+    VGMDB         = 0, "VGMdb"
+    VOCADB        = 1, "VocaDB"
+    DISCOGS       = 2, "Discogs"
+    RATEYOURMUSIC = 3, "Rate Your Music"
+    REMYWIKI      = 4, "RemyWiki"
+    ZENIUS        = 5, "Zenius -I- vanisher.com"
+
+class TagWorkConnectionTypes(models.IntegerChoices):
+    OTOMADWIKI    = 1, "otomad.wiki"
+    OTOMADFANDOM  = 2, "Otomad Wiki 2"
+
+    NICOPEDIA     = 3, "Niconico Encyclopedia"
+    KNOWYOURMEME  = 4, "KnowYourMeme"
+    WIKIPEDIA     = 5, "Wikipedia"
+    NAMUWIKI      = 6, "Namu Wiki"
+
+    ANIKORE       = 7, "AniKore"
+    BANGUMI       = 8, "Bangumi"
+    ANIDB         = 9, "AniDB"
+    MYANIMELIST   = 10, "MyAnimeList"
+    # ANILIST       = 11, "AniList"
+    # KITSU         = 12, "Kitsu"
+    # ANIMEPLANET   = 13, "Anime-Planet"
+
+    # LETTERBOXD    = 14, "Letterboxd"
+    # IMDB          = 15, "IMDb"
+
+    # VNDB          = 16, "vndb"
+    # EROGAMESCAPE  = 17, "ErogameScape"
+
+    WEBSITE       = 0, "Website"
+
+

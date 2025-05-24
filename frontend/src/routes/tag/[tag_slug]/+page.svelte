@@ -5,8 +5,24 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import SongTag from '$lib/SongTag.svelte';
+	import client from '$lib/api.js';
 
 	let { data } = $props();
+	let results = $state(data.works!.items);
+
+	const getNextBatch = async () => {
+		const { data: d } = await client.GET('/api/tag/works', {
+			fetch,
+			params: {
+				query: {
+					tag_slug: data.tag.slug,
+					limit: data.batch_size,
+					offset: results.length
+				}
+			}
+		});
+		results = results.concat(d!.items);
+	};
 </script>
 
 <Section
@@ -39,7 +55,7 @@
 		</h3>
 	{/if}
 
-	<hr />
+	<hr class="my-2" />
 
 	{#if data.wiki_page}
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -89,12 +105,17 @@
 {/if}
 
 <Section title={m.quiet_super_kangaroo_kiss({ tag: data.tag.name })}>
-	{#if data.works.items.length}
+	{#if results}
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
-			{#each data.works.items as work, i (i)}
+			{#each results as work, i (i)}
 				<WorkCard {work} />
 			{/each}
 		</div>
+		{#if results.length < data.works!.count}
+			<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}
+				>{m.red_pink_bear_play()}</button
+			>
+		{/if}
 	{:else}
 		<p>This tag is an orphan.</p>
 	{/if}

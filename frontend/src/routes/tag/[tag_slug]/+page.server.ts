@@ -9,6 +9,8 @@ const d2 = new D2();
 export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 	const data = await parent();
 
+	const batch_size = 20;
+
 	const [{ data: details }, { data: works }] = await Promise.all([
 		client.GET('/api/tag/details', {
 			fetch,
@@ -22,7 +24,9 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 			fetch,
 			params: {
 				query: {
-					tag_slug: params.tag_slug
+					tag_slug: params.tag_slug,
+					limit: batch_size,
+					offset: 0
 				}
 			}
 		})
@@ -65,6 +69,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		...details,
 		works,
 		comments,
-		song_relation_svg
+		song_relation_svg,
+		batch_size
 	};
 };

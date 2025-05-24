@@ -33,7 +33,7 @@ export const actions = {
 			return fail(409, {
 				username,
 				failed: true,
-				message: m.username_conflict(),
+				message: m.username_conflict()
 			});
 		}
 		if (error) return fail(400, { username, failed: true });

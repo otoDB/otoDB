@@ -98,4 +98,9 @@ class TagWorkConnectionTypes(models.IntegerChoices):
 
     WEBSITE       = 0, "Website"
 
-
+class LanguageTypes(models.IntegerChoices):
+    NOT_APPLICABLE     = 0, "N/A"
+    ENGLISH            = 1, "en"
+    JAPANESE           = 2, "ja"
+    SIMPLIFIED_CHINESE = 3, "zh-cn"
+    KOREAN             = 4, "ko"

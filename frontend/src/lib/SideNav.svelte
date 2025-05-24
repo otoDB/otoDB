@@ -25,8 +25,8 @@
 	</ul>
 	{#if user?.level >= UserLevel.ADMIN}
 		<ul>
-		<li>{m.mellow_pink_starfish_cuddle()}</li>
-		<li>
+			<li>{m.mellow_pink_starfish_cuddle()}</li>
+			<li>
 				<a href="/admin" data-sveltekit-reload>{m.simple_few_sheep_lend()}</a>
 			</li>
 		</ul>
@@ -87,15 +87,15 @@
 		}
 		& > ul {
 			list-style-type: none;
-			&> li:first-child {
+			& > li:first-child {
 				border-bottom: 1px solid var(--otodb-faint-content);
-				margin-bottom: .5rem;
+				margin-bottom: 0.5rem;
 				font-size: smaller;
 			}
-			&> li > a {
+			& > li > a {
 				text-decoration: none;
 			}
-			padding: .25rem .5rem .5rem .5rem;
+			padding: 0.25rem 0.5rem 0.5rem 0.5rem;
 			background-color: var(--otodb-faint-bg);
 			border: 1px solid var(--otodb-faint-content);
 		}

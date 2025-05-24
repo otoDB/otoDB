@@ -7,7 +7,7 @@ from tagulous.models import TagModel, TagModelManager
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
 
-from .enums import WorkTagCategory, SongTagCategory
+from .enums import WorkTagCategory, SongTagCategory, LanguageTypes
 
 def name_cleaner(s):
     return s.lower().replace('・', '')
@@ -26,6 +26,7 @@ class LowerCaseTagModelManager(TagModelManager):
 class WikiPage(models.Model):
     page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_STANDARD, null=False)
     page_rendered = RenderedMarkdownField()
+    lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
 
     history = HistoricalRecords()
 
@@ -46,6 +47,7 @@ class TagWork(TagModel):
     wiki_page = models.OneToOneField(WikiPage, on_delete=models.SET_NULL, null=True, blank=True)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
+    lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
     history = HistoricalRecords()
 
     @property

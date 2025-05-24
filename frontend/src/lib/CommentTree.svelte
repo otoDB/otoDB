@@ -24,7 +24,7 @@
 		}
 	};
 
-	const can_comment = true//user && user.level >= UserLevel.MEMBER;
+	const can_comment = user && user.level >= UserLevel.MEMBER;
 </script>
 
 {#snippet reply(reply_to: number)}

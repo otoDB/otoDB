@@ -104,7 +104,9 @@
 				{#each data.tag.aliases as a, i (i)}
 					<tr
 						><td>{a}</td><td
-							><button onclick={() => removeAlias(a)}>{m.that_true_owl_embrace()}</button></td
+							><button onclick={() => removeAlias(a)}
+								>{m.that_true_owl_embrace()}</button
+							></td
 						></tr
 					>
 				{/each}

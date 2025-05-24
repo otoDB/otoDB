@@ -47,6 +47,8 @@
 	</div>
 
 	{#if results.length < data.results!.count}
-		<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}>{m.red_pink_bear_play()}</button>
+		<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}
+			>{m.red_pink_bear_play()}</button
+		>
 	{/if}
 </Section>

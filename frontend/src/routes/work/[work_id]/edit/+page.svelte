@@ -25,8 +25,7 @@
 	};
 	const unbind = async (source_id: number) => {
 		if (data.sources?.length === 1) {
-			if (!confirm(m.tired_real_gazelle_evoke()))
-				return;
+			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
 		await client.POST('/api/work/unbind_source', { fetch, params: { query: { source_id } } });
 		if (data.sources?.length === 1) goto('/work/unbound');
@@ -108,7 +107,10 @@
 								>{m.noisy_moving_newt_belong()}</a
 							></td
 						>
-						<td><button type="button" onclick={() => unbind(src.id)}>{m.sour_lime_shad_edit()}</button></td
+						<td
+							><button type="button" onclick={() => unbind(src.id)}
+								>{m.sour_lime_shad_edit()}</button
+							></td
 						>
 					</tr>
 				{/each}

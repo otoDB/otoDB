@@ -15,7 +15,7 @@
 		rating: number = $state(form?.rating ?? data.rating!),
 		thumbnail: string = $state(form?.thumbnail ?? data.thumbnail!);
 	const del = async () => {
-		if (confirm('Are you sure? This will unbind all sources currently bound to this work.')) {
+		if (confirm(m.mad_brief_falcon_pop())) {
 			await client.DELETE('/api/work/work', {
 				fetch,
 				params: { query: { work_id: data.id } }
@@ -25,7 +25,7 @@
 	};
 	const unbind = async (source_id: number) => {
 		if (data.sources?.length === 1) {
-			if (!confirm('This is the only source. Unbinding will delete the work entirely.'))
+			if (!confirm(m.tired_real_gazelle_evoke()))
 				return;
 		}
 		await client.POST('/api/work/unbind_source', { fetch, params: { query: { source_id } } });

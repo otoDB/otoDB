@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 			query: {
 				username: params.username,
 				limit: batch_size,
-				offset: 0,
+				offset: 0
 			}
 		}
 	});

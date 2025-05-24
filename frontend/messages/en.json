@@ -129,6 +129,7 @@
 	"new_basic_dove_love": "There are currently no comments.",
 	"bald_ideal_gadfly_jest": "Feedback for Alpha",
 	"tiny_sharp_lark_fall": "Also known as",
+	"awake_patient_fireant_pout": "No Action",
 	"red_pink_bear_play": "Load more...",
 	"clean_kind_stork_affirm": "Menu",
 	"mellow_pink_starfish_cuddle": "Admin Menu",
@@ -140,5 +141,6 @@
 	"sour_lime_shad_edit": "Unbind",
 	"that_true_owl_embrace": "Remove alias",
 	"alive_lofty_opossum_laugh": "Aliases",
-	"awake_patient_fireant_pout": "No Action"
+	"mad_brief_falcon_pop": "Are you sure? This will unbind all sources currently bound to this work.",
+	"tired_real_gazelle_evoke": "This is the only source. Unbinding will delete the work entirely."
 }

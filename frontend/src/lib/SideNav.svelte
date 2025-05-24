@@ -14,7 +14,7 @@
 
 <nav class="w-full">
 	<ul>
-		<li>Menu</li>
+		<li>{m.clean_kind_stork_affirm()}</li>
 		{@render link('/', m.fine_late_chicken_quiz())}
 		{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		<li>
@@ -25,22 +25,22 @@
 	</ul>
 	{#if user?.level >= UserLevel.ADMIN}
 		<ul>
-		<li>Admin Menu</li>
+		<li>{m.mellow_pink_starfish_cuddle()}</li>
 		<li>
-				<a href="/admin" data-sveltekit-reload>Admin View</a>
+				<a href="/admin" data-sveltekit-reload>{m.simple_few_sheep_lend()}</a>
 			</li>
 		</ul>
 	{/if}
 	{#if user?.level >= UserLevel.MODERATOR}
 		<ul>
-			<li>Moderator Menu</li>
+			<li>{m.these_bold_gorilla_flip()}</li>
 			{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 			{@render link('/work/merge', m.heroic_same_wasp_conquer())}
 			{@render link('/work/unbound', m.tense_small_firefox_lock())}
 		</ul>
 	{/if}
 	<ul>
-		<li>User Menu</li>
+		<li>{m.maroon_least_pony_evoke()}</li>
 		{#if !user}
 			{@render link('/login', m.inner_stale_anteater_walk())}
 			{@render link('/register', m.blue_whole_camel_type())}
@@ -58,7 +58,7 @@
 		{/if}
 	</ul>
 	<ul>
-		<li>Database Statistics</li>
+		<li>{m.white_helpful_lion_rise()}</li>
 		<li class="flex justify-between">
 			<span>{m.grand_merry_fly_succeed()}</span><span>{stats[0]}</span>
 		</li>

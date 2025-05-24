@@ -108,7 +108,7 @@
 								>{m.noisy_moving_newt_belong()}</a
 							></td
 						>
-						<td><button type="button" onclick={() => unbind(src.id)}>Unbind</button></td
+						<td><button type="button" onclick={() => unbind(src.id)}>{m.sour_lime_shad_edit()}</button></td
 						>
 					</tr>
 				{/each}
@@ -117,7 +117,7 @@
 		<br />
 		<input type="submit" />
 	</form>
-	<button onclick={del}>Delete this work</button>
+	<button onclick={del}>{m.awake_patient_fireant_pout()}</button>
 </Section>
 
 <Section title={m.alive_these_jay_pick()}>

@@ -98,13 +98,13 @@
 </Section>
 
 {#if data.tag.aliases.length}
-	<Section title={'Aliases'}>
+	<Section title={m.alive_lofty_opossum_laugh()}>
 		<table>
 			<tbody>
 				{#each data.tag.aliases as a, i (i)}
 					<tr
 						><td>{a}</td><td
-							><button onclick={() => removeAlias(a)}>Remove alias</button></td
+							><button onclick={() => removeAlias(a)}>{m.that_true_owl_embrace()}</button></td
 						></tr
 					>
 				{/each}

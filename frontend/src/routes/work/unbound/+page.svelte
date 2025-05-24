@@ -74,7 +74,7 @@
 				><tr>
 					<th>{m.knotty_due_hamster_wave()}</th>
 					<th>{m.heroic_ideal_orangutan_aid()}</th>
-					<th>No Action</th>
+					<th>{m.awake_patient_fireant_pout()}</th>
 					<th>{m.lucky_bold_hornet_push()}</th>
 					<th>{m.alive_blue_marlin_push()}</th>
 				</tr></thead
@@ -121,7 +121,7 @@
 									value="none"
 									bind:group={actions[i].menu}
 								/>
-								No action
+								{m.awake_patient_fireant_pout()}
 							</label>
 						</td>
 						<td>

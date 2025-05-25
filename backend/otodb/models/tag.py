@@ -23,13 +23,6 @@ class LowerCaseTagModelManager(TagModelManager):
             kwargs['name'] = name_cleaner(kwargs['name'])
         return super().get(*args, **kwargs)
 
-class WikiPage(models.Model):
-    page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_STANDARD, null=False)
-    page_rendered = RenderedMarkdownField()
-    lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
-
-    history = HistoricalRecords()
-
 def _get_tree(node):
     tree = []
     curr = node
@@ -73,7 +66,6 @@ class TagWork(TagModel):
         super().save(*args, **kwargs)
 
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
-    wiki_page = models.OneToOneField(WikiPage, on_delete=models.SET_NULL, null=True, blank=True)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
@@ -96,9 +88,26 @@ class TagWork(TagModel):
     def alias(from_tags: list[Self], into_tag: Self):
         _alias(from_tags, into_tag)
 
+    @property
+    def lang_prefs(self):
+        q = self.tagworklangpreference_set.all()
+        for alias in self.aliases.all():
+            q |= alias.tagworklangpreference_set.all()
+        return q.distinct()
+
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
     tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
+
+class WikiPage(models.Model):
+    tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
+    page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_STANDARD, null=False)
+    page_rendered = RenderedMarkdownField()
+    lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
+
+    history = HistoricalRecords()
+    class Meta:
+        unique_together = (("tag", "lang"),)
 
 class TagSong(TagModel):
     objects = LowerCaseTagModelManager()

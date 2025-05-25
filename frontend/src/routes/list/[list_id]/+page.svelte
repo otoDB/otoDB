@@ -76,21 +76,23 @@
 	</Section>
 {/if}
 <Section title={m.bald_clear_marlin_grasp()}>
-	<div class="flex w-full">
-		<ol class="mr-5 w-full list-outside list-decimal">
-			{#each data.entries.items as entry, i (i)}
-				<li class="mx-5 w-full p-1">
-					<label class="grid grid-cols-[15rem_1fr] gap-5">
-						<input class="hidden" type="radio" value={i} bind:group={current} />
-						<WorkCard work={entry.work} />
-						<p>{entry.description}</p>
-					</label>
-				</li>
-			{:else}
-				<li>{m.hour_flat_finch_zoom()}</li>
-			{/each}
-		</ol>
-	</div>
+	{#if data.entries?.items.length}
+		<div class="flex w-full">
+			<ol class="mr-5 w-full list-outside list-decimal">
+				{#each data.entries.items as entry, i (i)}
+					<li class="mx-5 w-full p-1">
+						<label class="grid grid-cols-[15rem_1fr] gap-5">
+							<input class="hidden" type="radio" value={i} bind:group={current} />
+							<WorkCard work={entry.work} />
+							<p>{entry.description}</p>
+						</label>
+					</li>
+				{/each}
+			</ol>
+		</div>
+	{:else}
+		<h3>{m.hour_flat_finch_zoom()}</h3>
+	{/if}
 </Section>
 
 {#if data.list.pending_items.length}

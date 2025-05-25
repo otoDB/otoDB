@@ -1,11 +1,13 @@
 import client from '$lib/api';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { UserLevel } from '$lib/enums';
+import { Languages, UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 
-export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
+export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {
 	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+
+	const p = await parent();
 
 	const [{ data: wiki_page }, { data: details }] = await Promise.all([
 		client.GET('/api/tag/wiki_page', {
@@ -28,7 +30,8 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
 
 	return {
 		wiki_page,
-		parent_slug: details?.tree[0]?.slug
+		parent_slug: details?.tree[0]?.slug,
+		details
 	};
 };
 
@@ -80,7 +83,8 @@ export const actions = {
 			params: {
 				query: {
 					tag_slug: params.tag_slug!,
-					md: data.get('md') as string
+					md: data.get('md') as string,
+					lang: Languages[data.get('lang')]
 				}
 			}
 		});

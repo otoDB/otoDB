@@ -34,7 +34,7 @@ class WorkSource(models.Model):
     thumbnail = models.URLField(null=True, blank=False)
 
     added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
-    rejection_reason = models.CharField(max_length=1000, null=True, blank=False)
+    rejection_reason = models.CharField(max_length=1000, null=True, blank=True)
 
     objects = models.Manager()
     active_objects = ActiveManager()

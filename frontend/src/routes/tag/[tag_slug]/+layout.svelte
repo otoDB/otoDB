@@ -7,7 +7,7 @@
 	<title
 		>{m.mild_loud_shad_enchant({
 			type: m.empty_legal_chicken_taste(),
-			name: data.tag.name
+			name: data.display_name
 		})}</title
 	>
 </svelte:head>

@@ -402,6 +402,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profile/connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Connection */
+        get: operations["otodb_api_profile_connection"];
+        /** Edit Connection */
+        put: operations["otodb_api_profile_edit_connection"];
+        post?: never;
+        /** Delete Connection */
+        delete: operations["otodb_api_profile_delete_connection"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile/work_in_my_lists": {
         parameters: {
             query?: never;
@@ -645,6 +664,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/lang_pref": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Add Lang Pref */
+        put: operations["otodb_api_tag_add_lang_pref"];
+        post?: never;
+        /** Del Lang Pref */
+        delete: operations["otodb_api_tag_del_lang_pref"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tag/wiki_page": {
         parameters: {
             query?: never;
@@ -658,6 +695,25 @@ export interface paths {
         /** Edit Wiki Page */
         post: operations["otodb_api_tag_edit_wiki_page"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Connection */
+        get: operations["otodb_api_tag_connection"];
+        /** Edit Connection */
+        put: operations["otodb_api_tag_edit_connection"];
+        post?: never;
+        /** Delete Connection */
+        delete: operations["otodb_api_tag_delete_connection"];
         options?: never;
         head?: never;
         patch?: never;
@@ -818,6 +874,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/song_connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Song Connection */
+        get: operations["otodb_api_tag_song_connection"];
+        /** Edit Song Connection */
+        put: operations["otodb_api_tag_edit_song_connection"];
+        post?: never;
+        /** Delete Song Connection */
+        delete: operations["otodb_api_tag_delete_song_connection"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/post": {
         parameters: {
             query?: never;
@@ -886,8 +961,6 @@ export interface components {
         TagSongSchema: {
             /** Id */
             id: number;
-            /** Aliases */
-            aliases: string[];
             /** Children */
             children: components["schemas"]["TagSongSchema"][];
             /** Name */
@@ -900,6 +973,16 @@ export interface components {
              */
             category: number;
         };
+        /** TagWorkLangPreferenceSchema */
+        TagWorkLangPreferenceSchema: {
+            /** Tag */
+            tag: string;
+            /**
+             * Lang
+             * @default 0
+             */
+            lang: number;
+        };
         /** TagWorkSchema */
         TagWorkSchema: {
             /** Id */
@@ -909,6 +992,8 @@ export interface components {
             /** Children */
             children: components["schemas"]["TagWorkSchema"][];
             song?: components["schemas"]["SongSchema"] | null;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
             /** Name */
             name: string;
             /** Slug */
@@ -1075,6 +1160,13 @@ export interface components {
             /** Description */
             description?: string | null;
         };
+        /** ConnectionSchema */
+        ConnectionSchema: {
+            /** Site */
+            site: number;
+            /** Content Id */
+            content_id: string;
+        };
         /** PagedSourceSubmissionSchema */
         PagedSourceSubmissionSchema: {
             /** Items */
@@ -1201,7 +1293,29 @@ export interface components {
             /** Tree */
             tree: components["schemas"]["TagWorkSchema"][];
             /** Wiki Page */
-            wiki_page: string | null;
+            wiki_page: components["schemas"]["WikiPageSchema"][];
+            /** Aliases */
+            aliases: components["schemas"]["TagWorkSchema"][];
+        };
+        /** WikiPageSchema */
+        WikiPageSchema: {
+            /** Page Rendered */
+            page_rendered: string;
+            /**
+             * Lang
+             * @default 0
+             */
+            lang: number;
+        };
+        /** WikiPageMDSchema */
+        WikiPageMDSchema: {
+            /** Page */
+            page: string;
+            /**
+             * Lang
+             * @default 0
+             */
+            lang: number;
         };
         /** PagedSongSchema */
         PagedSongSchema: {
@@ -1383,6 +1497,15 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1761,6 +1884,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     otodb_api_work_assign_source_to_work: {
@@ -1870,6 +2002,73 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ListSchema"][];
                 };
+            };
+        };
+    };
+    otodb_api_profile_connection: {
+        parameters: {
+            query: {
+                username: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_profile_edit_connection: {
+        parameters: {
+            query: {
+                username: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectionSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_profile_delete_connection: {
+        parameters: {
+            query: {
+                username: string;
+                site: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2312,10 +2511,11 @@ export interface operations {
             };
         };
     };
-    otodb_api_tag_wiki_page: {
+    otodb_api_tag_add_lang_pref: {
         parameters: {
             query: {
                 tag_slug: string;
+                lang: number;
             };
             header?: never;
             path?: never;
@@ -2332,11 +2532,122 @@ export interface operations {
             };
         };
     };
+    otodb_api_tag_del_lang_pref: {
+        parameters: {
+            query: {
+                tag_slug: string;
+                lang: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_wiki_page: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WikiPageMDSchema"][];
+                };
+            };
+        };
+    };
     otodb_api_tag_edit_wiki_page: {
         parameters: {
             query: {
                 tag_slug: string;
+                lang: number;
                 md: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_connection: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_tag_edit_connection: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectionSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_delete_connection: {
+        parameters: {
+            query: {
+                tag_slug: string;
+                site: number;
             };
             header?: never;
             path?: never;
@@ -2606,6 +2917,73 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PagedSongSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_tag_song_connection: {
+        parameters: {
+            query: {
+                song_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_tag_edit_song_connection: {
+        parameters: {
+            query: {
+                song_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectionSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_delete_song_connection: {
+        parameters: {
+            query: {
+                song_id: number;
+                site: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

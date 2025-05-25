@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { WorkTagCategory } from '$lib/enums';
+	import { LanguageNames, Languages, WorkTagCategory } from '$lib/enums';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	import TagField from '$lib/TagField.svelte';
@@ -9,16 +9,42 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
 	import { invalidateAll } from '$app/navigation';
+	import { getLocale, locales } from '$lib/paraglide/runtime';
 
 	let { data, form }: PageProps = $props();
 
 	let category = $state(form?.category ?? data.tag?.category);
-	let md = $state(data.wiki_page);
+	let wikiView = $state(getLocale());
+	let mds = $state(
+		Object.fromEntries(
+			locales.map((lang) => [
+				lang,
+				data.wiki_page?.find((p) => p.lang === Languages[lang])?.page ?? ''
+			])
+		)
+	);
+
+	let tagLangPrefs = $state(
+		Object.fromEntries(
+			locales.map((l) => [
+				l,
+				data.tag.lang_prefs.find(({ lang }) => lang === Languages[l])?.tag ?? null
+			])
+		)
+	);
 
 	const removeAlias = async (alias: string) => {
 		await client.DELETE('/api/tag/alias', {
 			fetch,
 			params: { query: { tag_slug: data.tag.slug, alias } }
+		});
+		invalidateAll();
+	};
+
+	const submitLangPref = async (lang: number, tag_slug: string) => {
+		await client.PUT('/api/tag/lang_pref', {
+			fetch,
+			params: { query: { lang, tag_slug } }
 		});
 		invalidateAll();
 	};
@@ -97,13 +123,46 @@
 	</form>
 </Section>
 
-{#if data.tag.aliases.length}
+{#if data.details.aliases.length}
 	<Section title={m.alive_lofty_opossum_laugh()}>
 		<table>
+			<thead>
+				<tr
+					><th>Name</th>
+					{#each locales as locale, i (i)}
+						<th>{LanguageNames[locale]} Display</th>
+					{/each}
+					<th>{m.that_true_owl_embrace()}</th></tr
+				>
+			</thead>
 			<tbody>
-				{#each data.tag.aliases as a, i (i)}
+				<tr
+					><td>{data.tag.name}</td>
+					{#each locales as locale, i (i)}
+						<td
+							><input
+								type="radio"
+								bind:group={tagLangPrefs[locale]}
+								value={data.tag.name}
+								onclick={() => submitLangPref(Languages[locale], data.tag.slug)}
+							/>{#if tagLangPrefs[locale] === null}[Auto]{/if}</td
+						>
+					{/each}<td>{m.simple_less_marlin_enchant()}</td></tr
+				>
+				{#each data.details.aliases as a, i (i)}
 					<tr
-						><td>{a}</td><td
+						><td>{a.name}</td>
+						{#each locales as locale, i (i)}
+							<td
+								><input
+									type="radio"
+									bind:group={tagLangPrefs[locale]}
+									value={a.name}
+									onclick={() => submitLangPref(Languages[locale], a.slug)}
+								/></td
+							>
+						{/each}
+						<td
 							><button onclick={() => removeAlias(a)}
 								>{m.that_true_owl_embrace()}</button
 							></td
@@ -132,13 +191,46 @@
 {/if}
 
 <Section title={m.curly_zesty_pelican_aim()}>
+	<div class="my-2">
+		{#each locales as locale, i (i)}
+			<label class="wiki-lang-tab">
+				<input type="radio" bind:group={wikiView} value={locale} />
+				{LanguageNames[locale]}
+			</label>
+		{/each}
+	</div>
+
 	<form action="?/wiki_page" method="POST" use:enhance>
+		<input type="text" hidden value={wikiView} name="lang" />
 		<div class="grid grid-cols-2 gap-3">
-			<textarea required name="md" bind:value={md}></textarea>
+			<textarea required name="md" bind:value={mds[wikiView]}></textarea>
 			<div id="md-preview">
-				<Markdown {md} />
+				<Markdown md={mds[wikiView]} />
 			</div>
 		</div>
 		<input type="submit" />
 	</form>
 </Section>
+
+<style>
+	label.wiki-lang-tab {
+		padding: 0.2rem 0.5rem;
+		display: inline-block;
+		background-color: var(--otodb-bg-color);
+		border: 1px solid var(--otodb-content-color);
+		&:hover {
+			background-color: var(--otodb-fainter-bg);
+		}
+		&:active {
+			background-color: var(--otodb-faint-bg);
+		}
+		& > input {
+			display: none;
+		}
+		&:has(> input:checked) {
+			background-color: var(--otodb-content-color);
+			border: 1px solid var(--otodb-bg-color);
+			color: var(--otodb-bg-color);
+		}
+	}
+</style>

@@ -141,7 +141,9 @@
 
 <Section
 	title={m.extra_brave_tapir_skip()}
-	menuLinks={[{ pathname: `work/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]}
+	menuLinks={data.user
+		? [{ pathname: `work/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]
+		: []}
 >
 	<table class="w-full">
 		<thead

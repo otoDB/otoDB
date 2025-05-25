@@ -2,8 +2,9 @@ import type { LayoutServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages.js';
 import client from '$lib/api';
 import { error } from '@sveltejs/kit';
+import { userLevelCheck } from '$lib/route_guard';
 
-export const load: LayoutServerLoad = async ({ params, fetch }) => {
+export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
 
 	const { data, error: e } = await client.GET('/api/work/work', {
@@ -16,15 +17,26 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 	});
 	if (e) error(404, { message: 'Not found' });
 
+	const loggedOut = userLevelCheck(locals.user);
+
 	return {
 		links: [
 			{
 				pathname: `work/${params.work_id}`,
 				title: m.grand_merry_fly_succeed() + ' ' + params.work_id
 			},
-			{ pathname: `work/${params.work_id}/tags`, title: m.empty_legal_chicken_taste() },
+			...(loggedOut
+				? []
+				: [
+						{
+							pathname: `work/${params.work_id}/tags`,
+							title: m.empty_legal_chicken_taste()
+						}
+					]),
 			{ pathname: `work/${params.work_id}/relations`, title: m.alive_these_jay_pick() },
-			{ pathname: `work/${params.work_id}/edit`, title: m.minor_crisp_cobra_list() }
+			...(loggedOut
+				? []
+				: [{ pathname: `work/${params.work_id}/edit`, title: m.minor_crisp_cobra_list() }])
 		],
 		...data
 	};

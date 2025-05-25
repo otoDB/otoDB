@@ -91,6 +91,7 @@
 
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
+	menuLinks={data.links}
 >
 	<form use:enhance method="POST">
 		<table>

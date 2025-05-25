@@ -177,6 +177,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/toggle_sample": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Toggle Sample */
+        put: operations["otodb_api_work_toggle_sample"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/random": {
         parameters: {
             query?: never;
@@ -1066,6 +1083,8 @@ export interface components {
             score: number;
             /** User Score */
             user_score: number | null;
+            /** Sample */
+            sample: boolean;
         };
         /** TagWorkVoteSchema */
         TagWorkVoteSchema: {
@@ -1666,6 +1685,27 @@ export interface operations {
                 "application/json": components["schemas"]["TagWorkVoteSchema"][];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_toggle_sample: {
+        parameters: {
+            query: {
+                work_id: number;
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

@@ -45,6 +45,13 @@
 		});
 		goto(`/work/${data.id}`, { invalidateAll: true });
 	};
+
+	const toggle_sample = async (tag_slug: string) => {
+		await client.PUT('/api/work/toggle_sample', {
+			fetch,
+			params: { query: { work_id: data.id, tag_slug } }
+		});
+	};
 </script>
 
 <Section
@@ -56,7 +63,7 @@
 			<tr
 				><th>{m.empty_legal_chicken_taste()}</th><th>{m.brave_tiny_meerkat_engage()}</th><th
 					>{m.sunny_deft_puffin_scoop()}</th
-				></tr
+				><th>Used as sample</th></tr
 			>
 		</thead><tbody>
 			{#each tags as tag, i (i)}
@@ -83,6 +90,16 @@
 							aria-label="+1"
 						></button>
 					</td>
+					<!-- 2 - Song -->
+					<td
+						>{#if tag.category === 2}
+							<input
+								type="checkbox"
+								onclick={() => toggle_sample(tag.slug)}
+								checked={tag.sample}
+							/>
+						{:else}{m.simple_less_marlin_enchant()}{/if}</td
+					>
 				</tr>
 			{/each}
 		</tbody>

@@ -96,12 +96,12 @@
 		<table>
 			<tbody>
 				<tr
-					><th><label for="name">Name</label></th><td
+					><th><label for="name">{m.large_factual_octopus_exhale()}</label></th><td
 						><input type="text" name="name" value={form?.name ?? data.list?.name} /></td
 					></tr
 				>
 				<tr
-					><th><label for="description">Description</label></th><td
+					><th><label for="description">{m.clear_lucky_peacock_pick()}</label></th><td
 						><textarea
 							name="description"
 							value={form?.description ?? data.list?.description}
@@ -111,6 +111,9 @@
 			</tbody>
 		</table>
 		<input type="submit" />
+	</form>
+	<form action="/list/{data.list.id}/delete">
+		<button data-sveltekit-preload-data="tap">{m.key_sea_chicken_boost()}</button>
 	</form>
 </Section>
 <Section title="Entries">

@@ -47,7 +47,8 @@ def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     return work
 
-@work_router.delete('work')
+@work_router.delete('work', auth=django_auth)
+@user_is_moderator
 def delete_work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     work.worksource_set.update(media=None)
@@ -131,7 +132,8 @@ def sources(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     return work.worksource_set
 
-@work_router.post('unbind_source')
+@work_router.post('unbind_source', auth=django_auth)
+@user_is_moderator
 def unbind_sources(request: HttpRequest, source_id: int):
     src = get_object_or_404(WorkSource.active_objects, id=source_id)
     if src.media.worksource_set.count() == 1:

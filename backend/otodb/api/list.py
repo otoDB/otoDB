@@ -54,7 +54,7 @@ def new(request: HttpRequest, payload: ListInSchema):
 def update(request: HttpRequest, list_id: int, payload: ListInSchema):
     lst = get_object_or_404(Pool, id=list_id)
     if lst.author != request.user:
-        return 401
+        return 403
 
     lst.name = payload.name
     lst.description = payload.description
@@ -95,7 +95,7 @@ def work_in_pool(request: HttpRequest, list_id: int, work_id: int):
 def toggle(request: HttpRequest, list_id: int, work_id: int):
     lst = get_object_or_404(Pool, pk=list_id)
     if lst.author != request.user:
-        return 401
+        return 403
 
     if entries := lst.work_in_pool(work_id):
         for entry in entries:
@@ -109,7 +109,7 @@ def toggle(request: HttpRequest, list_id: int, work_id: int):
 def delete(request: HttpRequest, list_id: int):
     lst = get_object_or_404(Pool, id=list_id)
     if lst.author != request.user:
-        return 401
+        return 403
     lst.delete()
     return
 

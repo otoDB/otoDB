@@ -6,6 +6,7 @@ from time import mktime
 from datetime import datetime
 import unicodedata
 
+import nh3
 import diff_match_patch as dmp_mod
 
 from yt_dlp import YoutubeDL
@@ -154,6 +155,8 @@ def video_info(link):
         if 'tags' in info:
             info['tags'] = [unicodedata.normalize('NFKD', tag.replace(' ', '_')) for tag in info['tags']]
 
+        info['description'] = nh3.clean(info['description'])
+
         return { keys[key]: info[key] for key in keys if key in info }
     except:
         return None
@@ -177,6 +180,7 @@ def playlist_info(link):
             pass
         # soundcloud?
         # a platform can also have multiple sorts of playlists that call different extractors
+        # TODO fail for unsupported playlist types
 
     info['entries'] = [entry['url'] for entry in info['entries']]
     

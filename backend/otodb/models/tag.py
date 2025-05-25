@@ -30,6 +30,35 @@ class WikiPage(models.Model):
 
     history = HistoricalRecords()
 
+def _get_tree(node):
+    tree = []
+    curr = node
+    while curr is not None:
+        tree.append(curr)
+        curr = curr.parent
+    return reversed(tree)
+
+def _alias(from_tags, into_tag):
+    is_work = isinstance(into_tag, TagWork)
+    model = TagWork if is_work else TagSong
+    for tag in from_tags:
+        if tag.id != into_tag.id:
+            tag.aliased_to = into_tag
+            tag.save()
+            for work in (tag.works if is_work else tag.songs).all():
+                work.tags.add(into_tag)
+                work.tags.remove(tag)
+            for t in model.objects.filter(aliased_to=tag):
+                t.aliased_to = into_tag
+                t.save()
+            for t in model.objects.filter(parent=tag):
+                t.parent = into_tag
+                t.save()
+            if into_tag.parent is None:
+                into_tag.parent = tag.parent
+                
+    into_tag.save()
+
 class TagWork(TagModel):
     objects = LowerCaseTagModelManager()
 
@@ -47,7 +76,6 @@ class TagWork(TagModel):
     wiki_page = models.OneToOneField(WikiPage, on_delete=models.SET_NULL, null=True, blank=True)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
-    lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
     history = HistoricalRecords()
 
     @property
@@ -58,12 +86,7 @@ class TagWork(TagModel):
         return self.name
 
     def get_tree(self):
-        tree = []
-        curr = self
-        while curr is not None:
-            tree.append(curr)
-            curr = curr.parent
-        return reversed(tree)
+        return _get_tree(self)
 
     def get_song(self):
         if hasattr(self, 'mediasong'):
@@ -71,28 +94,11 @@ class TagWork(TagModel):
 
     @staticmethod
     def alias(from_tags: list[Self], into_tag: Self):
-        for tag in from_tags:
-            if tag.id != into_tag.id:
-                tag.aliased_to = into_tag
-                tag.save()
-                for work in tag.works.all():
-                    work.tags.add(into_tag)
-                    work.tags.remove(tag)
-                for t in TagWork.objects.filter(aliased_to=tag):
-                    t.aliased_to = into_tag
-                    t.save()
-                for t in TagWork.objects.filter(parent=tag):
-                    t.parent = into_tag
-                    t.save()
-                if into_tag.parent is None:
-                    into_tag.parent = tag.parent
-                if tag.category == WorkTagCategory.SONG:
-                    song = tag.mediasong
-                    song.work_tag = into_tag
-                    song.save()
-                    
-        into_tag.save()
+        _alias(from_tags, into_tag)
 
+class TagWorkLangPreference(models.Model):
+    lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
+    tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
 
 class TagSong(TagModel):
     objects = LowerCaseTagModelManager()
@@ -120,29 +126,12 @@ class TagSong(TagModel):
         return self.name
 
     def get_tree(self):
-        tree = []
-        curr = self
-        while curr is not None:
-            tree.append(curr)
-            curr = curr.parent
-        return reversed(tree)
+        return _get_tree(self)
 
     @staticmethod
     def alias(from_tags: list[Self], into_tag: Self):
-        for tag in from_tags:
-            if tag.id != into_tag.id:
-                tag.aliased_to = into_tag
-                tag.save()
-                for work in tag.works.all():
-                    work.tags.add(into_tag)
-                    work.tags.remove(tag)
-                for t in TagSong.objects.filter(aliased_to=tag):
-                    t.aliased_to = into_tag
-                    t.save()
-                for t in TagSong.objects.filter(parent=tag):
-                    t.parent = into_tag
-                    t.save()
-                if into_tag.parent is None:
-                    into_tag.parent = tag.parent
-                    
-        into_tag.save()
+        _alias(from_tags, into_tag)
+
+class TagSongLangPreference(models.Model):
+    lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
+    tag = models.ForeignKey(TagSong, null=False, blank=False, on_delete=models.CASCADE)

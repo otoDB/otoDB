@@ -54,9 +54,6 @@
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
 	{#if data.list?.author.username == data.user?.username}
 		<a href="/list/{data.list.id}/edit">{m.sunny_steep_termite_trust()}</a>
-		<a href="/list/{data.list.id}/delete" data-sveltekit-preload-data="tap"
-			>{m.key_sea_chicken_boost()}</a
-		>
 	{/if}
 </Section>
 

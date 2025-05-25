@@ -51,7 +51,7 @@
 			</ul>
 		</div>
 	{/if}
-	{#if user?.level >= UserLevel.MODERATOR}
+	{#if user?.level >= UserLevel.EDITOR}
 		<div
 			class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2"
 		>

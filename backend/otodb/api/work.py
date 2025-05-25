@@ -12,7 +12,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info
-from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote
+from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance
 from otodb.models.enums import Platform
 from otodb.account.models import Account
 
@@ -59,6 +59,7 @@ class TagWorkInstanceSchema(Schema):
     n_votes: int
     score: float
     user_score: int | None
+    sample: bool
 
 @work_router.get('tag_scores', response=List[TagWorkInstanceSchema], auth=django_auth)
 @user_is_trusted
@@ -69,7 +70,8 @@ def get_tag_scores(request: HttpRequest, work_id: int):
         'tag_slug': instance.work_tag.slug,
         'score': instance.avg_score,
         'n_votes': instance.n_votes,
-        'user_score': user_votes.filter(tag_instance=instance).values_list('score', flat=True).first()
+        'user_score': user_votes.filter(tag_instance=instance).values_list('score', flat=True).first(),
+        'sample': instance.song_used_as_source
         } for instance in work.tagworkinstance_set.annotate(avg_score=Avg('tagworkvote__score', default=0), n_votes=Count('tagworkvote')).all()]
 
 class TagWorkVoteSchema(Schema):
@@ -95,6 +97,14 @@ def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchem
             TagWorkVote.objects.create(tag_instance=tag_instance, user=request.user, score=vote.score)
 
     return 200
+
+
+@work_router.put('toggle_sample', auth=django_auth)
+@user_is_trusted
+def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
+    instance = get_object_or_404(TagWorkInstance, work_id=work_id, work_tag__slug=tag_slug)
+    instance.song_used_as_source = not instance.song_used_as_source
+    instance.save()
 
 @work_router.get('random', response=list[WorkSchema])
 def random(request: HttpRequest, n: int = 1):

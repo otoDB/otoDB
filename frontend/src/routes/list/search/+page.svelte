@@ -38,11 +38,21 @@
 	</form>
 	<hr class="my-5" />
 
-	<ul>
-		{#each results as list, i (i)}
-			<li><a href="/list/{list.id}">{list.name}</a></li>
-		{/each}
-	</ul>
+	<table class="w-full">
+		<thead>
+			<tr>
+				<th>{m.large_factual_octopus_exhale()}</th>
+				<th>{m.crisp_red_canary_tickle()}</th>
+			</tr>
+		</thead><tbody>
+			{#each results as list, i (i)}
+				<tr>
+					<td><a href="/list/{list.id}">{list.name}</a></td>
+					<td><a href="/profile/{list.author.username}">{list.author.username}</a></td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
 
 	{#if results.length < data.results!.count}
 		<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}

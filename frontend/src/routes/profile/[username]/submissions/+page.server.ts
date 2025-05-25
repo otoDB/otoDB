@@ -2,7 +2,7 @@ import client from '$lib/api';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
-	const batch_size = 20;
+	const batch_size = 80;
 	const { data: submissions } = await client.GET('/api/profile/submissions', {
 		fetch,
 		params: {

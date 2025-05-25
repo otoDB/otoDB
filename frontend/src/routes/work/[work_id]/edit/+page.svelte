@@ -81,7 +81,7 @@
 					<th>{m.large_polite_otter_thrive()}</th>
 					<th>{m.super_agent_pigeon_aim()}</th>
 					<th>{m.noisy_moving_newt_belong()}</th>
-					<th>Unbind</th>
+					<th>{m.sour_lime_shad_edit()}</th>
 				</tr></thead
 			>
 			<tbody>

@@ -41,6 +41,7 @@
 
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
+	menuLinks={data.links}
 >
 	<h3>
 		{#if isSVO(getLocale())}
@@ -52,12 +53,6 @@
 		{/if}
 	</h3>
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
-	{#if data.list?.author.username == data.user?.username}
-		<a href="/list/{data.list.id}/edit">{m.sunny_steep_termite_trust()}</a>
-		<a href="/list/{data.list.id}/delete" data-sveltekit-preload-data="tap"
-			>{m.key_sea_chicken_boost()}</a
-		>
-	{/if}
 </Section>
 
 {#if data.entries?.items.length && sources && sources.length && select >= 0 && select < sources.length}
@@ -81,21 +76,23 @@
 	</Section>
 {/if}
 <Section title={m.bald_clear_marlin_grasp()}>
-	<div class="flex w-full">
-		<ol class="mr-5 w-full list-outside list-decimal">
-			{#each data.entries.items as entry, i (i)}
-				<li class="mx-5 w-full p-1">
-					<label class="grid grid-cols-[15rem_1fr] gap-5">
-						<input class="hidden" type="radio" value={i} bind:group={current} />
-						<WorkCard work={entry.work} />
-						<p>{entry.description}</p>
-					</label>
-				</li>
-			{:else}
-				<li>{m.hour_flat_finch_zoom()}</li>
-			{/each}
-		</ol>
-	</div>
+	{#if data.entries?.items.length}
+		<div class="flex w-full">
+			<ol class="mr-5 w-full list-outside list-decimal">
+				{#each data.entries.items as entry, i (i)}
+					<li class="mx-5 w-full p-1">
+						<label class="grid grid-cols-[15rem_1fr] gap-5">
+							<input class="hidden" type="radio" value={i} bind:group={current} />
+							<WorkCard work={entry.work} />
+							<p>{entry.description}</p>
+						</label>
+					</li>
+				{/each}
+			</ol>
+		</div>
+	{:else}
+		<h3>{m.hour_flat_finch_zoom()}</h3>
+	{/if}
 </Section>
 
 {#if data.list.pending_items.length}

@@ -158,7 +158,7 @@
 		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 	{#if data.submissions?.count}
-		<div class="flex justify-center gap-2">
+		<div class="mt-3 flex justify-center gap-2">
 			{#each Array(Math.ceil(data.submissions?.count / data.batch_size)).fill(undefined) as _, i (i)}
 				<label class="inline-block border p-2">
 					<input type="radio" value={i} bind:group={page} hidden />

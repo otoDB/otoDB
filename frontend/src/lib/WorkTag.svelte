@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Languages } from './enums';
+	import { getLocale } from './paraglide/runtime';
 	import type { components } from './schema';
 
 	interface Props {
@@ -16,7 +18,8 @@
 		'border-orange-900',
 		'border-yellow-400',
 		'border-red-600'
-	][tag.category]}">{tag.name}</a
+	][tag.category]}"
+	>{tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.tag ?? tag.name}</a
 >
 
 <style>

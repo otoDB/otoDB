@@ -14,7 +14,7 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import SongTag from '$lib/SongTag.svelte';
 	import client from '$lib/api.js';
-	import { getLocale, locales } from '$lib/paraglide/runtime.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	let { data } = $props();
 	let results = $state(data.works!.items);
@@ -22,7 +22,7 @@
 		data.display_name === data.tag.name
 			? data.tag.aliases
 			: [data.tag.name, ...data.tag.aliases.filter((a) => a !== data.display_name)];
-	let wikiView = $state(getLocale());
+	let wikiView = $state(getLocale() ?? undefined);
 
 	const getNextBatch = async () => {
 		const { data: d } = await client.GET('/api/tag/works', {
@@ -86,18 +86,19 @@
 
 	<hr class="my-2" />
 
-	<div class="my-2">
-		{#each locales as locale, i (i)}
-			<label class="wiki-lang-tab">
-				<input type="radio" bind:group={wikiView} value={locale} />
-				{LanguageNames[locale]}
-			</label>
-		{/each}
-	</div>
-
-	{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])?.page_rendered}
+	{#if data.wiki_page && data.wiki_page.length}
+		<div class="my-2">
+			{#each data.wiki_page as page, i (i)}
+				<label class="wiki-lang-tab">
+					<input type="radio" bind:group={wikiView} value={Languages[page.lang]} />
+					{LanguageNames[Languages[page.lang]]}
+				</label>
+			{/each}
+		</div>
+		{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])?.page_rendered}
+		{/if}
 	{:else}
 		<p>{m.tame_dirty_goldfish_flow()}</p>
 	{/if}

@@ -4,7 +4,7 @@ import userLevelGuard from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
-	userLevelGuard(locals.user, UserLevel.MODERATOR, url.pathname);
+	userLevelGuard(locals.user, UserLevel.EDITOR, url.pathname);
 
 	return {
 		links: [

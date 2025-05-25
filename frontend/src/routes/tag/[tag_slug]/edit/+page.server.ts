@@ -7,9 +7,7 @@ import userLevelGuard from '$lib/route_guard';
 export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {
 	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
 
-	const p = await parent();
-
-	const [{ data: wiki_page }, { data: details }] = await Promise.all([
+	const [{ data: wiki_page }, { data: details }, { data: connections }] = await Promise.all([
 		client.GET('/api/tag/wiki_page', {
 			fetch,
 			params: {
@@ -25,13 +23,34 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 					tag_slug: params.tag_slug
 				}
 			}
+		}),
+		client.GET('/api/tag/connection', {
+			fetch,
+			params: {
+				query: {
+					tag_slug: params.tag_slug
+				}
+			}
 		})
 	]);
+
+	const p = await parent();
+	// FIXME This is kind of waterfall but whatever...
+	const song_connections = p.tag.song
+		? (
+				await client.GET('/api/tag/song_connection', {
+					fetch,
+					params: { query: { song_id: p.tag.song.id } }
+				})
+			).data
+		: null;
 
 	return {
 		wiki_page,
 		parent_slug: details?.tree[0]?.slug,
-		details
+		details,
+		connections,
+		song_connections
 	};
 };
 

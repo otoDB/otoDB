@@ -16,7 +16,7 @@ from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWo
 from otodb.models.enums import Platform
 from otodb.account.models import Account
 
-from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_moderator, RelationSchema, post_relation
+from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
 
 work_router = Router()
 
@@ -48,7 +48,7 @@ def work(request: HttpRequest, work_id: int):
     return work
 
 @work_router.delete('work', auth=django_auth)
-@user_is_moderator
+@user_is_editor
 def delete_work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     work.worksource_set.update(media=None)
@@ -143,7 +143,7 @@ def sources(request: HttpRequest, work_id: int):
     return work.worksource_set
 
 @work_router.post('unbind_source', auth=django_auth)
-@user_is_moderator
+@user_is_editor
 def unbind_sources(request: HttpRequest, source_id: int):
     src = get_object_or_404(WorkSource.active_objects, id=source_id)
     if src.media.worksource_set.count() == 1:
@@ -163,7 +163,7 @@ class WorkEditSchema(ModelSchema):
         fields = ['title', 'description', 'thumbnail', 'rating']
 
 @work_router.post('merge', auth=django_auth)
-@user_is_moderator
+@user_is_editor
 def merge_works(request:HttpRequest, from_work_id: int, to_work_id: int, payload: WorkEditSchema):
     MediaWork.merge(
         get_object_or_404(MediaWork.active_objects, id=to_work_id),
@@ -194,7 +194,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_
     if src.rejection_reason is not None:
         return 400, {'message': "Bad Request, This source has already been rejected"}
 
-    has_work = work_id or request.user.level >= Account.Levels.MODERATOR
+    has_work = work_id or request.user.level >= Account.Levels.EDITOR
     if has_work:
         if work_id:
             work = get_object_or_404(MediaWork.active_objects, id=work_id)
@@ -210,7 +210,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_
         return 400, {'message': "Bad request, is the URL correct?"}
 
 @work_router.post('assign_source', auth=django_auth, description='Omit work_id if creating new work from source.', response=int)
-@user_is_moderator
+@user_is_editor
 def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | None = None):
     src = get_object_or_404(WorkSource.active_objects, id=source_id)
     assert(src.media is None and src.rejection_reason is None)
@@ -234,7 +234,7 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
     return work.id
 
 @work_router.post('reject_source', auth=django_auth)
-@user_is_moderator
+@user_is_editor
 def reject_source(request: HttpRequest, source_id: int, reason: str):
     src = get_object_or_404(WorkSource.active_objects, id=source_id)
     src.rejection_reason = request.user.username + ': ' + reason
@@ -242,6 +242,6 @@ def reject_source(request: HttpRequest, source_id: int, reason: str):
     return
 
 @work_router.get('unbound', auth=django_auth, response=List[WorkSourceSchema])
-@user_is_moderator
+@user_is_editor
 def get_unbound_sources(request: HttpRequest, pending: bool):
     return WorkSource.objects.filter(media__isnull=True, rejection_reason__isnull=pending)

@@ -130,7 +130,7 @@ def import_ext(request: HttpRequest, url: str):
         src, _ = WorkSource.from_url(vid_info['url'], user=request.user, is_reupload=False, info=vid_info)
         if src.rejection_reason is not None:
             continue
-        elif src.media is not None or request.user.level >= Account.Levels.MODERATOR:
+        elif src.media is not None or request.user.level >= Account.Levels.EDITOR:
             if src.media is not None:
                 work = src.media
             else:

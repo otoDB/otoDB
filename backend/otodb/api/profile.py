@@ -11,7 +11,6 @@ from ninja.pagination import paginate
 
 from otodb.account.models import Account
 from otodb.models import ProfileConnection
-from otodb.models.enums import ProfileConnectionTypes
 
 from .common import ListSchema, ProfileSchema, WorkSourceSchema, ConnectionSchema
 
@@ -34,18 +33,20 @@ def connection(request: HttpRequest, username: str):
 
 @profile_router.put('connection', auth=django_auth)
 def edit_connection(request: HttpRequest, username: str, payload: ConnectionSchema):
+    stripped = payload.content_id.strip()
+    assert(stripped != '')
     user = get_object_or_404(Account, username__iexact=username)
     if user != request.user:
         return 403
     ProfileConnection.objects.update_or_create(profile=user, site=payload.site,
-        defaults={ 'content_id': payload.content_id })
+        defaults={ 'content_id': stripped })
 
 @profile_router.delete('connection', auth=django_auth)
 def delete_connection(request: HttpRequest, username: str, site: int):
     user = get_object_or_404(Account, username__iexact=username)
-    if user != request.user:
+    if user.id != request.user.id:
         return 403
-    ProfileConnection.objects.get(profile=user, site=site).delete()
+    ProfileConnection.objects.filter(profile=user, site=site).delete()
 
 @profile_router.get('work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth)
 def work_in_lists(request: HttpRequest, work_id: int):

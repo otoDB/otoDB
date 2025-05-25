@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import { UserLevel } from '$lib/enums';
+	import { ProfileConnectionTypes, ProfileConnectionLink, UserLevel } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
 
 	let { data }: PageProps = $props();
@@ -21,6 +21,18 @@
 			date: new Date(data.profile.date_created).toLocaleDateString()
 		})}
 	</p>
+
+	{#if data.connections}
+		<ul>
+			{#each data.connections as s, i (i)}
+				<li>
+					<a href={ProfileConnectionLink[s.site](s.content_id)}>
+						{ProfileConnectionTypes[s.site]}
+					</a>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 </Section>
 
 <Section title={m.same_broad_haddock_pinch()}>

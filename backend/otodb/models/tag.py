@@ -90,14 +90,18 @@ class TagWork(TagModel):
 
     @property
     def lang_prefs(self):
+        if self.aliased_to:
+            return self.aliased_to.lang_prefs
         q = self.tagworklangpreference_set.all()
         for alias in self.aliases.all():
-            q |= alias.tagworklangpreference_set.all()
+            q |= alias.tagworklangpreference_set.all()            
         return q.distinct()
 
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
     tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
+    class Meta:
+        unique_together = (("tag", "lang"),)
 
 class WikiPage(models.Model):
     tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)

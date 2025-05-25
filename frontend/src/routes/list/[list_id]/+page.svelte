@@ -41,6 +41,7 @@
 
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
+	menuLinks={data.links}
 >
 	<h3>
 		{#if isSVO(getLocale())}
@@ -52,9 +53,6 @@
 		{/if}
 	</h3>
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
-	{#if data.list?.author.username == data.user?.username}
-		<a href="/list/{data.list.id}/edit">{m.sunny_steep_termite_trust()}</a>
-	{/if}
 </Section>
 
 {#if data.entries?.items.length && sources && sources.length && select >= 0 && select < sources.length}

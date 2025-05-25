@@ -6,7 +6,12 @@ from pydantic import field_validator
 from ninja import Schema, ModelSchema, Field
 
 from otodb.account.models import Account
-from otodb.models import MediaWork, WorkSource, TagWork, TagSong, Pool, PoolItem, MediaSong, WorkRelation, SongRelation
+from otodb.models import (
+    MediaWork, WorkSource, MediaSong,
+    TagWork, TagSong,
+    Pool, PoolItem,
+    WorkRelation, SongRelation
+)
 
 class Error(Schema):
     message: str
@@ -132,3 +137,7 @@ def post_relation(cls, payload: RelationSchema):
     except rel_cls.DoesNotExist:
         rel = rel_cls.objects.create(A=A, B=B, relation=payload.relation)
     return
+
+class ConnectionSchema(Schema):
+    site: int
+    content_id: str

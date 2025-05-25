@@ -7,10 +7,10 @@ from ninja import Router, ModelSchema, Schema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
-from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong
+from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection
 from otodb.models.enums import WorkTagCategory
 
-from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema
+from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
 
 tag_router = Router()
 
@@ -94,6 +94,24 @@ def edit_wiki_page(request: HttpRequest, tag_slug: str, md: str):
         tag.wiki_page = WikiPage.objects.create(page=md)
         tag.save()
     return
+
+@tag_router.get('connection', response=list[ConnectionSchema])
+def connection(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    return tag.tagworkconnection_set
+
+@tag_router.put('connection', auth=django_auth)
+@user_is_trusted
+def edit_connection(request: HttpRequest, tag_slug: str, payload: ConnectionSchema):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    TagWorkConnection.objects.update_or_create(tag=tag, site=payload.site,
+        defaults={ 'content_id': payload.content_id })
+
+@tag_router.delete('connection', auth=django_auth)
+@user_is_trusted
+def delete_connection(request: HttpRequest, tag_slug: str, site: int):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    TagWorkConnection.objects.get(tag=tag, site=site).delete()
 
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate
@@ -182,3 +200,21 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: TagInSchema):
 @paginate
 def songs(request: HttpRequest, tag_slug: str):
     return MediaSong.objects.filter(tags__slug=tag_slug)
+
+@tag_router.get('song_connection', response=list[ConnectionSchema])
+def song_connection(request: HttpRequest, song_id: int):
+    song = get_object_or_404(MediaSong.objects, id=song_id)
+    return song.mediasongconnection_set
+
+@tag_router.put('song_connection', auth=django_auth)
+@user_is_trusted
+def edit_song_connection(request: HttpRequest, song_id: int, payload: ConnectionSchema):
+    song = get_object_or_404(MediaSong.objects, id=song_id)
+    MediaSongConnection.objects.update_or_create(song=song, site=payload.site,
+        defaults={ 'content_id': payload.content_id })
+
+@tag_router.delete('song_connection', auth=django_auth)
+@user_is_trusted
+def delete_song_connection(request: HttpRequest, song_id: int, site: int):
+    song = get_object_or_404(MediaSong.objects, id=song_id)
+    MediaSongConnection.objects.get(song=song, site=site).delete()

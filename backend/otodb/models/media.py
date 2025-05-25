@@ -128,7 +128,7 @@ class MediaSong(models.Model):
 
     tags = TagField(
         to=TagSong,
-        related_name="song_tags"
+        related_name="songs"
     )
 
     history = HistoricalRecords()

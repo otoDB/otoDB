@@ -117,42 +117,50 @@
 		<button data-sveltekit-preload-data="tap">{m.key_sea_chicken_boost()}</button>
 	</form>
 </Section>
-<Section title="Entries">
-	<table>
-		<tbody>
-			{#each entries as entry, i (entry.ui_id)}
-				<tr ondragenter={debounce(dragenter, 50)} data-ridx={i}
-					><th>{i + 1}</th><td
-						><div
-							class="border pr-5 pl-5 select-none"
-							draggable="true"
-							{ondragstart}
-							{ondragend}
-							role="none"
-						>
-							=
-						</div></td
-					><td>
-						<a target="_blank" href="/work/{entry.work.id}"
-							><img
-								class="w-56"
-								src={entry.work.thumbnail}
-								alt={entry.work.title}
-							/></a
-						>
-						<h3>
-							<a target="_blank" href="/work/{entry.work.id}">{entry.work.title}</a>
-						</h3>
-					</td><td
-						><textarea value={entry.description} oninput={debounce(update_description)}
-						></textarea></td
-					><td
-						><button type="button" onclick={delete_item}
-							>{m.even_alert_grebe_taste()}</button
-						></td
-					></tr
-				>
-			{/each}
-		</tbody>
-	</table>
+<Section title={m.bald_clear_marlin_grasp()}>
+	{#if entries.length}
+		<table>
+			<tbody>
+				{#each entries as entry, i (entry.ui_id)}
+					<tr ondragenter={debounce(dragenter, 50)} data-ridx={i}
+						><th>{i + 1}</th><td
+							><div
+								class="border pr-5 pl-5 select-none"
+								draggable="true"
+								{ondragstart}
+								{ondragend}
+								role="none"
+							>
+								=
+							</div></td
+						><td>
+							<a target="_blank" href="/work/{entry.work.id}"
+								><img
+									class="w-56"
+									src={entry.work.thumbnail}
+									alt={entry.work.title}
+								/></a
+							>
+							<h3>
+								<a target="_blank" href="/work/{entry.work.id}"
+									>{entry.work.title}</a
+								>
+							</h3>
+						</td><td
+							><textarea
+								value={entry.description}
+								oninput={debounce(update_description)}
+							></textarea></td
+						><td
+							><button type="button" onclick={delete_item}
+								>{m.even_alert_grebe_taste()}</button
+							></td
+						></tr
+					>
+				{/each}
+			</tbody>
+		</table>
+	{:else}
+		<h3>{m.hour_flat_finch_zoom()}</h3>
+	{/if}
 </Section>

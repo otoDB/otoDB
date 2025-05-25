@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import Optional, Annotated
 from functools import wraps
 
 from pydantic import field_validator
 
-from ninja import Schema, ModelSchema, Field
+from ninja import Schema, ModelSchema, Field, Query
 
 from otodb.account.models import Account
 from otodb.models import (
@@ -126,7 +126,7 @@ def perm_decorator_ctor(uf):
     return decorator
 
 user_is_trusted = perm_decorator_ctor(lambda user: user.level > Account.Levels.RESTRICTED)
-user_is_moderator = perm_decorator_ctor(lambda user: user.is_moderator)
+user_is_editor = perm_decorator_ctor(lambda user: user.is_editor)
 user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
 
 class RelationSchema(Schema):
@@ -152,4 +152,4 @@ def post_relation(cls, payload: RelationSchema):
 
 class ConnectionSchema(Schema):
     site: int
-    content_id: str
+    content_id: Annotated[str, Query(min_length=1)]

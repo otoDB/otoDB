@@ -5,7 +5,7 @@ import { UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	userLevelGuard(locals.user, UserLevel.MODERATOR, url.pathname);
+	userLevelGuard(locals.user, UserLevel.EDITOR, url.pathname);
 };
 
 export const actions = {

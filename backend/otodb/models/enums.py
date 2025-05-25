@@ -76,6 +76,8 @@ class SongConnectionTypes(models.IntegerChoices):
     SILENTBLUE    = 21, "Silent Blue"
     ZENIUS        = 22, "Zenius -I- vanisher.com"
 
+    NNDMEDLEYWIKI = 30, "NND Medley Wiki"
+
 class TagWorkConnectionTypes(models.IntegerChoices):
     OTOMADWIKI    = 1, "otomad.wiki"
     OTOMADFANDOM  = 2, "Otomad Wiki 2"

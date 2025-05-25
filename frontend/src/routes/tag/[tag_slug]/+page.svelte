@@ -1,7 +1,15 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { LanguageNames, Languages, WorkTagCategory } from '$lib/enums';
+	import {
+		LanguageNames,
+		Languages,
+		SongConnectionLink,
+		SongConnectionTypes,
+		TagWorkConnectionLink,
+		TagWorkConnectionTypes,
+		WorkTagCategory
+	} from '$lib/enums';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import SongTag from '$lib/SongTag.svelte';
@@ -64,6 +72,18 @@
 		</h3>
 	{/if}
 
+	{#if data.connections}
+		<ul>
+			{#each data.connections as s, i (i)}
+				<li>
+					<a href={TagWorkConnectionLink[s.site](s.content_id)}>
+						{TagWorkConnectionTypes[s.site]}
+					</a>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+
 	<hr class="my-2" />
 
 	<div class="my-2">
@@ -98,6 +118,17 @@
 				<tr><th>{m.crisp_red_canary_tickle()}</th><td>{data.tag.song.author}</td></tr>
 			</tbody>
 		</table>
+		{#if data.song_connections}
+			<ul>
+				{#each data.song_connections as s, i (i)}
+					<li>
+						<a href={SongConnectionLink[s.site](s.content_id)}>
+							{SongConnectionTypes[s.site]}
+						</a>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 		{#if data.tag?.song.tags.length}
 			<ul id="song-tags">
 				{#each data.tag?.song.tags as tag, i (i)}

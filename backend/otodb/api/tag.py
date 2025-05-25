@@ -114,15 +114,17 @@ def connection(request: HttpRequest, tag_slug: str):
 @tag_router.put('connection', auth=django_auth)
 @user_is_trusted
 def edit_connection(request: HttpRequest, tag_slug: str, payload: ConnectionSchema):
+    stripped = payload.content_id.strip()
+    assert(stripped != '')
     tag = get_object_or_404(TagWork, slug=tag_slug)
     TagWorkConnection.objects.update_or_create(tag=tag, site=payload.site,
-        defaults={ 'content_id': payload.content_id })
+        defaults={ 'content_id': stripped })
 
 @tag_router.delete('connection', auth=django_auth)
 @user_is_trusted
 def delete_connection(request: HttpRequest, tag_slug: str, site: int):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    TagWorkConnection.objects.get(tag=tag, site=site).delete()
+    TagWorkConnection.objects.filter(tag=tag, site=site).delete()
 
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate
@@ -220,12 +222,14 @@ def song_connection(request: HttpRequest, song_id: int):
 @tag_router.put('song_connection', auth=django_auth)
 @user_is_trusted
 def edit_song_connection(request: HttpRequest, song_id: int, payload: ConnectionSchema):
+    stripped = payload.content_id.strip()
+    assert(stripped != '')
     song = get_object_or_404(MediaSong.objects, id=song_id)
     MediaSongConnection.objects.update_or_create(song=song, site=payload.site,
-        defaults={ 'content_id': payload.content_id })
+        defaults={ 'content_id': stripped })
 
 @tag_router.delete('song_connection', auth=django_auth)
 @user_is_trusted
 def delete_song_connection(request: HttpRequest, song_id: int, site: int):
     song = get_object_or_404(MediaSong.objects, id=song_id)
-    MediaSongConnection.objects.get(song=song, site=site).delete()
+    MediaSongConnection.objects.filter(song=song, site=site).delete()

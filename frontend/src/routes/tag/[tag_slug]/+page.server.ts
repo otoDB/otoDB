@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 
 	const batch_size = 20;
 
-	const [{ data: details }, { data: works }] = await Promise.all([
+	const [{ data: details }, { data: works }, { data: connections }] = await Promise.all([
 		client.GET('/api/tag/details', {
 			fetch,
 			params: {
@@ -27,6 +27,14 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 					tag_slug: params.tag_slug,
 					limit: batch_size,
 					offset: 0
+				}
+			}
+		}),
+		client.GET('/api/tag/connection', {
+			fetch,
+			params: {
+				query: {
+					tag_slug: params.tag_slug
 				}
 			}
 		})
@@ -65,11 +73,22 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 			})()
 		: null;
 
+	const song_connections = data.tag.song
+		? (
+				await client.GET('/api/tag/song_connection', {
+					fetch,
+					params: { query: { song_id: data.tag.song.id } }
+				})
+			).data
+		: null;
+
 	return {
 		...details,
 		works,
 		comments,
 		song_relation_svg,
-		batch_size
+		batch_size,
+		connections,
+		song_connections
 	};
 };

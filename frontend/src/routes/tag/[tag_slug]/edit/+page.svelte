@@ -1,7 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { LanguageNames, Languages, WorkTagCategory } from '$lib/enums';
+	import {
+		LanguageNames,
+		Languages,
+		SongConnectionTypes,
+		TagWorkConnectionTypes,
+		WorkTagCategory
+	} from '$lib/enums';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	import TagField from '$lib/TagField.svelte';
@@ -10,6 +16,7 @@
 	import client from '$lib/api';
 	import { invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { debounce } from '$lib/ui';
 
 	let { data, form }: PageProps = $props();
 
@@ -47,6 +54,33 @@
 			params: { query: { lang, tag_slug } }
 		});
 		invalidateAll();
+	};
+
+	const update_connection = async (e) => {
+		const el = e.target;
+		if (el.value.trim() === '')
+			await client.DELETE('/api/tag/connection', {
+				fetch,
+				params: { query: { site: +el.name, tag_slug: data.tag.slug } }
+			});
+		else
+			await client.PUT('/api/tag/connection', {
+				body: { content_id: el.value.trim(), site: +el.name },
+				params: { query: { tag_slug: data.tag.slug } }
+			});
+	};
+	const update_song_connection = async (e) => {
+		const el = e.target;
+		if (el.value.trim() === '')
+			await client.DELETE('/api/tag/song_connection', {
+				fetch,
+				params: { query: { site: +el.name, song_id: data.tag.song?.id } }
+			});
+		else
+			await client.PUT('/api/tag/song_connection', {
+				body: { content_id: el.value.trim(), site: +el.name },
+				params: { query: { song_id: data.tag.song?.id } }
+			});
 	};
 </script>
 
@@ -174,22 +208,6 @@
 	</Section>
 {/if}
 
-{#if category === 2 && data.tag.category === 2}
-	<Section
-		title={m.mild_loud_shad_enchant({
-			type: m.grand_nice_pony_belong(),
-			name: data.tag!.song!.title
-		})}
-		menuLinks={data.song_links}
-	>
-		<RelationEditor
-			init_relations={data.song_relations}
-			obj_type="song"
-			this_id={data.tag.song?.id}
-		></RelationEditor>
-	</Section>
-{/if}
-
 <Section title={m.curly_zesty_pelican_aim()}>
 	<div class="my-2">
 		{#each locales as locale, i (i)}
@@ -211,6 +229,77 @@
 		<input type="submit" />
 	</form>
 </Section>
+
+<Section title="Connections">
+	<table>
+		<thead>
+			<tr>
+				<td>Site</td>
+				<td>ID</td>
+			</tr>
+		</thead><tbody>
+			{#each Object.keys(TagWorkConnectionTypes)
+				.filter((e) => !isNaN(e))
+				.toSorted() as s, i (i)}
+				<tr>
+					<td>{TagWorkConnectionTypes[s]}</td>
+					<td
+						><input
+							type="text"
+							name={s}
+							value={data.connections?.find(({ site }) => site === +s)?.content_id ??
+								''}
+							oninput={debounce(update_connection)}
+						/></td
+					></tr
+				>
+			{/each}
+		</tbody>
+	</table>
+</Section>
+{#if category === 2 && data.tag.category === 2}
+	<Section
+		title={m.mild_loud_shad_enchant({
+			type: m.grand_nice_pony_belong(),
+			name: data.tag!.song!.title
+		})}
+		menuLinks={data.song_links}
+	>
+		<RelationEditor
+			init_relations={data.song_relations}
+			obj_type="song"
+			this_id={data.tag.song?.id}
+		></RelationEditor>
+	</Section>
+
+	<Section title="Song Connections">
+		<table>
+			<thead>
+				<tr>
+					<td>Site</td>
+					<td>ID</td>
+				</tr>
+			</thead><tbody>
+				{#each Object.keys(SongConnectionTypes)
+					.filter((e) => !isNaN(e))
+					.toSorted() as s, i (i)}
+					<tr>
+						<td>{SongConnectionTypes[s]}</td>
+						<td
+							><input
+								type="text"
+								name={s}
+								value={data.song_connections?.find(({ site }) => site === +s)
+									?.content_id ?? ''}
+								oninput={debounce(update_song_connection)}
+							/></td
+						></tr
+					>
+				{/each}
+			</tbody>
+		</table>
+	</Section>
+{/if}
 
 <style>
 	label.wiki-lang-tab {

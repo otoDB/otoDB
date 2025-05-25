@@ -41,7 +41,7 @@ class Account(AbstractBaseUser):
         ANONYMOUS = 0
         RESTRICTED = 10
         MEMBER = 20
-        MODERATOR = 40
+        EDITOR = 40
         ADMIN = 50
         OWNER = 100
 
@@ -75,8 +75,8 @@ class Account(AbstractBaseUser):
         super(Account, self).save(*args, **kwargs)
 
     @property
-    def is_moderator(self):
-        return self.level >= self.Levels.MODERATOR
+    def is_editor(self):
+        return self.level >= self.Levels.EDITOR
 
     @property
     def is_staff(self):

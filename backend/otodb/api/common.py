@@ -8,7 +8,7 @@ from ninja import Schema, ModelSchema, Field
 from otodb.account.models import Account
 from otodb.models import (
     MediaWork, WorkSource, MediaSong,
-    TagWork, TagSong, TagWorkLangPreference,
+    TagWork, TagSong, TagWorkLangPreference, WikiPage,
     Pool, PoolItem,
     WorkRelation, SongRelation
 )
@@ -31,20 +31,14 @@ class TagWorkLangPreferenceSchema(ModelSchema):
     @field_validator("tag", mode="before", check_fields=False)
     @classmethod
     def tag_slug(cls, value) -> str:
-        return value.slug
+        return value.name
 
 class TagSongSchema(ModelSchema):
     id: int
-    aliases: list[str]
     children: list['TagSongSchema']
     class Meta:
         model = TagSong
         fields = ['name', 'slug', 'category']
-
-    @field_validator("aliases", mode="before", check_fields=False)
-    @classmethod
-    def aliases_str(cls, value) -> str:
-        return [tag.name for tag in value]
 
 class SongSchema(ModelSchema):
     id: int
@@ -74,9 +68,15 @@ class TagWorkSchema(ModelSchema):
     def aliases_str(cls, value) -> list[str]:
         return [tag.slug for tag in value]
 
+class WikiPageSchema(ModelSchema):
+    class Meta:
+        model = WikiPage
+        fields = ['page_rendered', 'lang']
+
 class TagWorkDetailsSchema(Schema):
     tree: list[TagWorkSchema]
-    wiki_page: Optional[str]
+    wiki_page: list[WikiPageSchema]
+    aliases: list[TagWorkSchema]
 
 class WorkSourceSchema(ModelSchema):
     id: int

@@ -10,7 +10,7 @@ from ninja.pagination import paginate
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference
 from otodb.models.enums import WorkTagCategory
 
-from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
+from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema, WikiPageSchema
 
 tag_router = Router()
 
@@ -32,7 +32,8 @@ def details(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     return {
         'tree': list(tag.get_tree())[:-1],
-        'wiki_page': tag.wiki_page and tag.wiki_page.page_rendered
+        'wiki_page': tag.wikipage_set,
+        'aliases': tag.aliases
     }
 
 @tag_router.get('works', response=list[WorkSchema])
@@ -60,7 +61,8 @@ def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
 @user_is_trusted
 def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    TagWorkLangPreference.objects.update_or_create(tag=tag, lang=lang)
+    tag.lang_prefs.filter(lang=lang).delete()
+    TagWorkLangPreference.objects.create(tag=tag, lang=lang)
 
 @tag_router.delete('lang_pref', auth=django_auth)
 @user_is_trusted
@@ -88,16 +90,21 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema):
     tag.save()
     return
 
-@tag_router.get('wiki_page', auth=django_auth)
-def wiki_page(request: HttpRequest, tag_slug: str, lang: int):
-    page = get_object_or_404(WikiPage, tag__slug=tag_slug, lang=lang)
-    return page.page
+class WikiPageMDSchema(ModelSchema):
+    class Meta:
+        model = WikiPage
+        fields = ['page', 'lang']
+
+@tag_router.get('wiki_page', auth=django_auth, response=list[WikiPageMDSchema])
+def wiki_page(request: HttpRequest, tag_slug: str):
+    pages = get_list_or_404(WikiPage, tag__slug=tag_slug)
+    return pages
 
 @tag_router.post('wiki_page', auth=django_auth)
 @user_is_trusted
 def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    WikiPage.objects.update_or_create(tag=tag, lang=lang, page=md)
+    WikiPage.objects.update_or_create(tag=tag, lang=lang, defaults={'page':md})
 
 @tag_router.get('connection', response=list[ConnectionSchema])
 def connection(request: HttpRequest, tag_slug: str):

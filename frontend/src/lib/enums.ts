@@ -55,3 +55,27 @@ export const UserLevel = {
 	50: m.silly_blue_felix_amuse,
 	100: m.tangy_formal_lionfish_tap
 };
+
+export const Languages = {
+	NOT_APPLICABLE: 0,
+	en: 1,
+	ja: 2,
+	'zh-cn': 3,
+	ko: 4,
+	0: 'Not Applicable',
+	1: 'en',
+	2: 'ja',
+	3: 'zh-cn',
+	4: 'ko'
+};
+
+export const LanguageNames = {
+	en: 'English',
+	ja: '日本語',
+	'zh-cn': '简体中文',
+	ko: '한국인',
+	English: 'en',
+	日本語: 'ja',
+	简体中文: 'zh-cn',
+	한국인: 'ko'
+};

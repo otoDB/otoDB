@@ -8,7 +8,7 @@ from ninja import Schema, ModelSchema, Field
 from otodb.account.models import Account
 from otodb.models import (
     MediaWork, WorkSource, MediaSong,
-    TagWork, TagSong,
+    TagWork, TagSong, TagWorkLangPreference,
     Pool, PoolItem,
     WorkRelation, SongRelation
 )
@@ -21,6 +21,17 @@ class ProfileSchema(ModelSchema):
     class Meta:
         model = Account
         fields = ['username', 'level', 'date_created']
+
+class TagWorkLangPreferenceSchema(ModelSchema):
+    tag: str
+    class Meta:
+        model = TagWorkLangPreference
+        fields = ['lang']
+
+    @field_validator("tag", mode="before", check_fields=False)
+    @classmethod
+    def tag_slug(cls, value) -> str:
+        return value.slug
 
 class TagSongSchema(ModelSchema):
     id: int
@@ -53,13 +64,14 @@ class TagWorkSchema(ModelSchema):
     aliases: list[str]
     children: list['TagWorkSchema']
     song: Optional[SongSchema] = Field(None, alias='get_song')
+    lang_prefs: list[TagWorkLangPreferenceSchema]
     class Meta:
         model = TagWork
         fields = ['name', 'slug', 'category']
 
     @field_validator("aliases", mode="before", check_fields=False)
     @classmethod
-    def aliases_str(cls, value) -> str:
+    def aliases_str(cls, value) -> list[str]:
         return [tag.slug for tag in value]
 
 class TagWorkDetailsSchema(Schema):

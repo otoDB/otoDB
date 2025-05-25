@@ -1,4 +1,5 @@
 from typing import List
+import unicodedata
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404

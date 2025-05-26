@@ -74,12 +74,33 @@ class TagInSchema(Schema):
     parent_slug: str | None
     category: int
 
+class SongInSchema(ModelSchema):
+    class Meta:
+        model = MediaSong
+        fields = ['title', 'bpm', 'author']
+
 @tag_router.put('tag', auth=django_auth)
 @user_is_trusted
-def update(request: HttpRequest, tag_slug: str, payload: TagInSchema):
+def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_payload: SongInSchema | None = None):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     if tag.category == WorkTagCategory.SONG and payload.category != WorkTagCategory.SONG:
         tag.mediasong.delete()
+    elif tag.category != WorkTagCategory.SONG and payload.category == WorkTagCategory.SONG:
+        song_payload.title = song_payload.title.strip()
+        song_payload.author = song_payload.author.strip()
+        assert(song_payload.title)
+        assert(song_payload.author)
+        try:
+            song = tag.mediasong
+            song.title = song_payload.title
+            song.bpm = song_payload.bpm
+            song.author = song_payload.author
+            song.save()
+        except MediaSong.DoesNotExist:
+            tag.category = WorkTagCategory.SONG
+            tag.save()
+            song = MediaSong.objects.create(work_tag=tag, **song_payload.dict())
+
     tag.category = payload.category
     if payload.parent_slug:
         parent = get_object_or_404(TagWork, slug=payload.parent_slug)
@@ -130,31 +151,6 @@ def delete_connection(request: HttpRequest, tag_slug: str, site: int):
 @paginate
 def song_search(request: HttpRequest, query: str):
     return MediaSong.objects.filter(title__icontains=query)
-
-class SongInSchema(ModelSchema):
-    class Meta:
-        model = MediaSong
-        fields = ['title', 'bpm', 'author']
-
-@tag_router.post('song', auth=django_auth)
-@user_is_trusted
-def song(request: HttpRequest, tag_slug: str, payload: SongInSchema):
-    payload.title = payload.title.strip()
-    payload.author = payload.author.strip()
-    assert(payload.title)
-    assert(payload.author)
-    tag = get_object_or_404(TagWork, slug=tag_slug)
-    try:
-        song = tag.mediasong
-        song.title = payload.title
-        song.bpm = payload.bpm
-        song.author = payload.author
-        song.save()
-    except MediaSong.DoesNotExist:
-        tag.category = WorkTagCategory.SONG
-        tag.save()
-        song = MediaSong.objects.create(work_tag=tag, **payload.dict())
-    return
 
 @tag_router.get('song_relations', response=tuple[list[RelationSchema], list[SongSchema]])
 def song_relations(request: HttpRequest, song_id: int):

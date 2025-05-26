@@ -60,25 +60,17 @@ export const actions = {
 		const category = data.get('category') as string,
 			parent_slug = data.get('parent') as string;
 
-		if (+category == 2) {
-			const title = data.get('song_title') as string,
-				author = data.get('song_author') as string,
-				bpm = data.get('song_bpm') as string;
-			const { error } = await client.POST('/api/tag/song', {
-				fetch,
-				params: {
-					query: {
-						tag_slug: params.tag_slug!
+		const title = data.get('song_title') as string,
+			author = data.get('song_author') as string,
+			bpm = data.get('song_bpm') as string;
+		const song =
+			+category === 2
+				? {
+						title,
+						author,
+						bpm: +bpm
 					}
-				},
-				body: {
-					title,
-					author,
-					bpm: +bpm
-				}
-			});
-			if (error) return fail(400, { category, parent_slug, failed: true });
-		}
+				: null;
 
 		const { error } = await client.PUT('/api/tag/tag', {
 			fetch,
@@ -88,8 +80,11 @@ export const actions = {
 				}
 			},
 			body: {
-				category: +category,
-				parent_slug
+				payload: {
+					category: +category,
+					parent_slug
+				},
+				song_payload: song
 			}
 		});
 

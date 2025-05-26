@@ -60,6 +60,26 @@ export const actions = {
 		const category = data.get('category') as string,
 			parent_slug = data.get('parent') as string;
 
+		if (+category == 2) {
+			const title = data.get('song_title') as string,
+				author = data.get('song_author') as string,
+				bpm = data.get('song_bpm') as string;
+			const { error } = await client.POST('/api/tag/song', {
+				fetch,
+				params: {
+					query: {
+						tag_slug: params.tag_slug!
+					}
+				},
+				body: {
+					title,
+					author,
+					bpm: +bpm
+				}
+			});
+			if (error) return fail(400, { category, parent_slug, failed: true });
+		}
+
 		const { error } = await client.PUT('/api/tag/tag', {
 			fetch,
 			params: {
@@ -75,24 +95,6 @@ export const actions = {
 
 		if (error) return fail(400, { category, parent_slug, failed: true });
 
-		if (+category == 2) {
-			const title = data.get('song_title') as string,
-				author = data.get('song_author') as string,
-				bpm = data.get('song_bpm') as string;
-			await client.POST('/api/tag/song', {
-				fetch,
-				params: {
-					query: {
-						tag_slug: params.tag_slug!
-					}
-				},
-				body: {
-					title,
-					author,
-					bpm: +bpm
-				}
-			});
-		}
 		redirect(303, `/tag/${params.tag_slug}`);
 	},
 	wiki_page: async ({ request, fetch, params }) => {

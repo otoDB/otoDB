@@ -17,6 +17,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { debounce } from '$lib/ui';
+	import type { components } from '$lib/schema';
 
 	let { data, form }: PageProps = $props();
 
@@ -40,10 +41,10 @@
 		)
 	);
 
-	const removeAlias = async (alias: string) => {
+	const removeAlias = async (alias: components['schemas']['TagWorkSchema']) => {
 		await client.DELETE('/api/tag/alias', {
 			fetch,
-			params: { query: { tag_slug: data.tag.slug, alias } }
+			params: { query: { tag_slug: data.tag.slug, alias: alias.slug } }
 		});
 		invalidateAll();
 	};

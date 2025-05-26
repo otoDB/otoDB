@@ -18,10 +18,16 @@
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
-	const aliases =
-		$derived(data.display_name === data.tag.name
-			? data.aliases?.map(a => a.name)
-			: [data.tag.name, ...(data.aliases?.filter((a) => a.name !== data.display_name).map(a => a.name) ?? [])]);
+	const aliases = $derived(
+		data.display_name === data.tag.name
+			? data.aliases?.map((a) => a.name)
+			: [
+					data.tag.name,
+					...(data.aliases
+						?.filter((a) => a.name !== data.display_name)
+						.map((a) => a.name) ?? [])
+				]
+	);
 	let wikiView = $state(getLocale() ?? undefined);
 
 	const getNextBatch = async () => {

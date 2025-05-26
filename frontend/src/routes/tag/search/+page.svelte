@@ -13,7 +13,14 @@
 	const getNextBatch = async () => {
 		const { data: d } = await client.GET('/api/tag/search', {
 			fetch,
-			params: { query: { query: data.query, limit: data.batch_size, offset: results.length, category: category } }
+			params: {
+				query: {
+					query: data.query,
+					limit: data.batch_size,
+					offset: results.length,
+					category: category
+				}
+			}
 		});
 		results = results.concat(d!.items);
 	};

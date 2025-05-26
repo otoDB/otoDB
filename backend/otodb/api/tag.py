@@ -55,7 +55,7 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str):
 @user_is_trusted
 def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    tag.aliases.filter(name=alias).update(aliased_to=None)
+    tag.aliases.filter(slug=alias).update(aliased_to=None)
 
 @tag_router.put('lang_pref', auth=django_auth)
 @user_is_trusted

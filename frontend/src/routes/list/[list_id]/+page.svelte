@@ -145,7 +145,7 @@
 	ol > li > label {
 		background-color: var(--otodb-bg-color);
 		padding: 1rem;
-		cursor: grab;
+		cursor: pointer;
 		&:has(> input:checked) {
 			background-color: var(--otodb-fainter-bg);
 		}

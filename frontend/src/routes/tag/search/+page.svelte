@@ -8,11 +8,12 @@
 
 	let { data }: PageProps = $props();
 	let results = $derived(data.results!.items);
+	let category = $state(data.category);
 
 	const getNextBatch = async () => {
 		const { data: d } = await client.GET('/api/tag/search', {
 			fetch,
-			params: { query: { query: data.query, limit: data.batch_size, offset: results.length } }
+			params: { query: { query: data.query, limit: data.batch_size, offset: results.length, category: category } }
 		});
 		results = results.concat(d!.items);
 	};
@@ -37,7 +38,7 @@
 			placeholder="{m.mean_top_antelope_love()}..."
 			value={data.query}
 		/>
-		<select name="category" value={data.category}>
+		<select name="category" bind:value={category}>
 			<option value={-1}>{m.keen_soft_crow_relish()}</option>
 			{#each WorkTagCategory as cat, i (i)}
 				<option value={i}>{cat()}</option>

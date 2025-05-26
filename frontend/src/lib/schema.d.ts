@@ -753,23 +753,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/tag/song": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Song */
-        post: operations["otodb_api_tag_song"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/tag/song_relations": {
         parameters: {
             query?: never;
@@ -1298,6 +1281,15 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** SongInSchema */
+        SongInSchema: {
+            /** Title */
+            title: string;
+            /** Bpm */
+            bpm: number;
+            /** Author */
+            author: string;
+        };
         /** TagInSchema */
         TagInSchema: {
             /** Parent Slug */
@@ -1340,15 +1332,6 @@ export interface components {
             items: components["schemas"]["SongSchema"][];
             /** Count */
             count: number;
-        };
-        /** SongInSchema */
-        SongInSchema: {
-            /** Title */
-            title: string;
-            /** Bpm */
-            bpm: number;
-            /** Author */
-            author: string;
         };
         /** PagedTagSongSchema */
         PagedTagSongSchema: {
@@ -2445,7 +2428,10 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TagInSchema"];
+                "application/json": {
+                    payload: components["schemas"]["TagInSchema"];
+                    song_payload?: components["schemas"]["SongInSchema"] | null;
+                };
             };
         };
         responses: {
@@ -2723,30 +2709,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PagedSongSchema"];
                 };
-            };
-        };
-    };
-    otodb_api_tag_song: {
-        parameters: {
-            query: {
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SongInSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

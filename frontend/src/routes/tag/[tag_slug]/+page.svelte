@@ -20,8 +20,8 @@
 	let results = $state(data.works!.items);
 	const aliases =
 		data.display_name === data.tag.name
-			? data.tag.aliases
-			: [data.tag.name, ...data.tag.aliases.filter((a) => a !== data.display_name)];
+			? data.aliases
+			: [data.tag.name, ...(data.aliases?.filter((a) => a.name !== data.display_name) ?? [])];
 	let wikiView = $state(getLocale() ?? undefined);
 
 	const getNextBatch = async () => {

@@ -55,18 +55,12 @@ class SongSchema(ModelSchema):
 
 class TagWorkSchema(ModelSchema):
     id: int
-    aliases: list[str]
     children: list['TagWorkSchema']
     song: Optional[SongSchema] = Field(None, alias='get_song')
     lang_prefs: list[TagWorkLangPreferenceSchema]
     class Meta:
         model = TagWork
         fields = ['name', 'slug', 'category']
-
-    @field_validator("aliases", mode="before", check_fields=False)
-    @classmethod
-    def aliases_str(cls, value) -> list[str]:
-        return [tag.slug for tag in value]
 
 class WikiPageSchema(ModelSchema):
     class Meta:

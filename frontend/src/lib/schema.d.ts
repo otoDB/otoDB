@@ -1004,8 +1004,6 @@ export interface components {
         TagWorkSchema: {
             /** Id */
             id: number;
-            /** Aliases */
-            aliases: string[];
             /** Children */
             children: components["schemas"]["TagWorkSchema"][];
             song?: components["schemas"]["SongSchema"] | null;

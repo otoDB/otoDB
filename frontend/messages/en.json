@@ -145,7 +145,14 @@
 	"tired_real_gazelle_evoke": "This is the only source. Unbinding will delete the work entirely.",
 	"keen_soft_crow_relish": "All",
 	"mealy_soft_myna_talk": "Player",
-	"simple_less_marlin_enchant": "Not Applicable",
-	"username_conflict": "This username is already taken.",
-	"work_conflict": "A source already exists for this work."
+	"simple_less_marlin_enchant": "N/A",
+	"red_raw_duck_evoke": "This username is already taken.",
+	"sour_loud_baboon_dance": "A source already exists for this work.",
+	"jumpy_spry_canary_scoop": "Connections",
+	"loose_tame_dingo_talk": "Song Connections",
+	"bad_sour_jay_attend": "Site",
+	"acidic_brave_halibut_heart": "Used as sample",
+	"brave_caring_ocelot_treat": "(from {votes} votes)",
+	"mellow_upper_finch_drip": "Display",
+	"factual_house_antelope_arise": "[Default]"
 }

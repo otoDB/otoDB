@@ -163,9 +163,9 @@
 		<table>
 			<thead>
 				<tr
-					><th>Name</th>
+					><th>{m.alive_lofty_opossum_laugh()}</th>
 					{#each locales as locale, i (i)}
-						<th>{LanguageNames[locale]} Display</th>
+						<th>{LanguageNames[locale]} {m.mellow_upper_finch_drip()}</th>
 					{/each}
 					<th>{m.that_true_owl_embrace()}</th></tr
 				>
@@ -180,7 +180,7 @@
 								bind:group={tagLangPrefs[locale]}
 								value={data.tag.name}
 								onclick={() => submitLangPref(Languages[locale], data.tag.slug)}
-							/>{#if tagLangPrefs[locale] === null}[Auto]{/if}</td
+							/>{#if tagLangPrefs[locale] === null}{m.factual_house_antelope_arise()}{/if}</td
 						>
 					{/each}<td>{m.simple_less_marlin_enchant()}</td></tr
 				>
@@ -231,11 +231,11 @@
 	</form>
 </Section>
 
-<Section title="Connections">
+<Section title={m.jumpy_spry_canary_scoop()}>
 	<table>
 		<thead>
 			<tr>
-				<td>Site</td>
+				<td>{m.bad_sour_jay_attend()}</td>
 				<td>ID</td>
 			</tr>
 		</thead><tbody>
@@ -273,11 +273,11 @@
 		></RelationEditor>
 	</Section>
 
-	<Section title="Song Connections">
+	<Section title={m.loose_tame_dingo_talk()}>
 		<table>
 			<thead>
 				<tr>
-					<td>Site</td>
+					<td>{m.bad_sour_jay_attend()}</td>
 					<td>ID</td>
 				</tr>
 			</thead><tbody>

@@ -63,13 +63,13 @@
 			<tr
 				><th>{m.empty_legal_chicken_taste()}</th><th>{m.brave_tiny_meerkat_engage()}</th><th
 					>{m.sunny_deft_puffin_scoop()}</th
-				><th>Used as sample</th></tr
+				><th>{m.acidic_brave_halibut_heart()}</th></tr
 			>
 		</thead><tbody>
 			{#each tags as tag, i (i)}
 				<tr>
 					<td><WorkTag {tag} /></td>
-					<td>{tag.score} (from {tag.n_votes} votes)</td>
+					<td>{tag.score} {m.brave_caring_ocelot_treat({ votes: tag.n_votes })}</td>
 					<td>
 						<button
 							class="rating"

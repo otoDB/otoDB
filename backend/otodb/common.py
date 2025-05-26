@@ -113,7 +113,8 @@ def video_info(link):
             'webpage_url': 'url',
             'id': 'id',
             'thumbnail': 'thumb',
-            'timestamp':  'timestamp'
+            'timestamp':  'timestamp',
+            'uploader_id': 'uploader_id'
         }
     try:
         if niconico_ie.suitable(link):

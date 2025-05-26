@@ -32,6 +32,7 @@ class WorkSource(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
     thumbnail = models.URLField(null=True, blank=False)
+    uploader_id = models.CharField(max_length=1000, null=False, blank=False)
 
     added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
     rejection_reason = models.CharField(max_length=1000, null=True, blank=True)
@@ -50,9 +51,10 @@ class WorkSource(models.Model):
         info = video_info(self.url)
         self.title = info['title']
         self.description = info['description']
-        self.thumbnail = info.get('thumb', None)
-        self.work_width = info.get('work_width', None) or self.work_width
-        self.work_height = info.get('work_height', None) or self.work_width
+        self.uploader_id = info['uploader_id']
+        self.thumbnail = info.get('thumb', self.thumbnail)
+        self.work_width = info.get('work_width', self.work_width)
+        self.work_height = info.get('work_height', self.work_height) 
         self.save()
         if self.media:
             self.media.tags.add(*info.get('tags', []))

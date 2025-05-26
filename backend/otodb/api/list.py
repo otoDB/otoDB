@@ -137,7 +137,12 @@ def import_ext(request: HttpRequest, url: str):
                 work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
                 src.media = work
                 src.save()
-            new_tag_instances.extend([TagWorkInstance(work=work, work_tag=TagWork.objects.get_or_create(name=t)[0]) for t in vid_info['tags']])
+            for t in vid_info['tags']:
+                tt, _ = TagWork.objects.get_or_create(name=t)
+                if tt.aliased_to:
+                    tt = tt.aliased_to
+                new_tag_instances.append(TagWorkInstance(work=work, work_tag=tt))
+
             pool_items.append(PoolItem(work=work, description='', pool=list_))
         elif src.media is None:
             list_.pending_items.add(src)

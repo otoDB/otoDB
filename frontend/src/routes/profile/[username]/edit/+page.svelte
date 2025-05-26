@@ -31,11 +31,11 @@
 >
 	...
 </Section>
-<Section title="Connections">
+<Section title={m.jumpy_spry_canary_scoop()}>
 	<table>
 		<thead>
 			<tr>
-				<td>Site</td>
+				<td>{m.bad_sour_jay_attend()}</td>
 				<td>ID</td>
 			</tr>
 		</thead><tbody>

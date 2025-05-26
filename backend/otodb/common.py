@@ -99,7 +99,8 @@ def get_niconico_geoblocked(sm):
             'webpage_url': clean_url,
             'id': video['id'],
             'thumbnail': video['thumbnail'].get('ogp', video['thumbnail']['url']),
-            'timestamp': int(mktime(datetime.fromisoformat(video['registeredAt']).timetuple()))
+            'timestamp': int(mktime(datetime.fromisoformat(video['registeredAt']).timetuple())),
+            'uploader_id': res['owner']['id']
         }
 
 def video_info(link):

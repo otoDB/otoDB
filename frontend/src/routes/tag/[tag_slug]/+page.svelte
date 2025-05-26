@@ -17,11 +17,11 @@
 	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	let { data } = $props();
-	let results = $state(data.works!.items);
+	let results = $derived(data.works!.items);
 	const aliases =
-		data.display_name === data.tag.name
-			? data.aliases
-			: [data.tag.name, ...(data.aliases?.filter((a) => a.name !== data.display_name) ?? [])];
+		$derived(data.display_name === data.tag.name
+			? data.aliases?.map(a => a.name)
+			: [data.tag.name, ...(data.aliases?.filter((a) => a.name !== data.display_name).map(a => a.name) ?? [])]);
 	let wikiView = $state(getLocale() ?? undefined);
 
 	const getNextBatch = async () => {

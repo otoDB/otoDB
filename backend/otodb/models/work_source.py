@@ -49,15 +49,18 @@ class WorkSource(models.Model):
 
     def refresh(self):
         info = video_info(self.url)
-        self.title = info['title']
-        self.description = info['description']
-        self.uploader_id = info['uploader_id']
-        self.thumbnail = info.get('thumb', self.thumbnail)
-        self.work_width = info.get('work_width', self.work_width)
-        self.work_height = info.get('work_height', self.work_height) 
-        self.save()
-        if self.media:
-            self.media.tags.add(*info.get('tags', []))
+        if info:
+            self.title = info['title']
+            self.description = info['description']
+            self.uploader_id = info['uploader_id']
+            self.thumbnail = info.get('thumb', self.thumbnail)
+            self.work_width = info.get('work_width', self.work_width)
+            self.work_height = info.get('work_height', self.work_height) 
+            self.save()
+            if self.media:
+                self.media.tags.add(*info.get('tags', []))
+        else:
+            self.work_status = WorkStatus.DOWN
 
     # Gets the source registered at the url if it exists, otherwise register as pending
     @staticmethod

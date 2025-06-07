@@ -12,7 +12,6 @@ export const WorkTagCategory = [
 export const SongTagCategory = [
 	m.fresh_lower_rook_trip,
 	m.cozy_awful_mule_enrich,
-	m.next_bland_goldfish_heart,
 	m.crisp_red_canary_tickle,
 	m.sad_next_jaguar_renew
 ];
@@ -81,25 +80,28 @@ export const LanguageNames = {
 };
 
 export const ProfileConnectionTypes = {
-	Niconico: 0,
-	YouTube: 1,
-	Bilibili: 2,
-	X: 3,
-	Bluesky: 4,
+	Website: 0,
+	Niconico: 1,
+	YouTube: 2,
+	Bilibili: 3,
+	X: 4,
+	Bluesky: 5,
 
-	0: 'Niconico',
-	1: 'YouTube',
-	2: 'Bilibili',
-	3: 'X',
-	4: 'Bluesky'
+	0: 'Website',
+	1: 'Niconico',
+	2: 'YouTube',
+	3: 'Bilibili',
+	4: 'Twitter',
+	5: 'Bluesky'
 };
 
 export const ProfileConnectionLink = {
-	0: (id: string) => `https://www.nicovideo.jp/user/${id}/`,
-	1: (id: string) => `https://www.youtube.com/${id}`,
-	2: (id: string) => `https://space.bilibili.com/${id}`,
-	3: (id: string) => `https://twitter.com/${id}/`,
-	4: (id: string) => `https://bsky.app/profile/${id}`
+	0: (id: string) => id,
+	1: (id: string) => `https://www.nicovideo.jp/user/${id}/`,
+	2: (id: string) => `https://www.youtube.com/${id}`,
+	3: (id: string) => `https://space.bilibili.com/${id}`,
+	4: (id: string) => `https://twitter.com/${id}/`,
+	5: (id: string) => `https://bsky.app/profile/${id}`
 };
 
 export const SongConnectionTypes = {
@@ -138,6 +140,9 @@ export const SongConnectionLink = {
 };
 
 export const TagWorkConnectionTypes = {
+	WEBSITE: 0,
+	0: 'Website',
+
 	OTOMADWIKI: 1,
 	1: 'otomad.wiki',
 	OTOMADFANDOM: 2,
@@ -153,22 +158,10 @@ export const TagWorkConnectionTypes = {
 	23: 'Namu Wiki',
 	KNOWYOURMEME: 24,
 	24: 'Know Your Meme',
-
-	ANIKORE: 40,
-	40: 'AniKore',
-	BANGUMI: 41,
-	41: 'Bangumi',
-	ANIDB: 42,
-	42: 'AniDB',
-	MYANIMELIST: 43,
-	43: 'MyAnimeList',
-
-	WEBSITE: 0,
-	0: 'Website'
 };
 
 export const TagWorkConnectionLink = {
-	0: (id: string) => `https://${id}`,
+	0: (id: string) => id,
 	1: (id: string) => `https://otomad.wiki/${id}`,
 	2: (id: string) => `https://otomad.fandom.com/ja/wiki/${id}`,
 	20: (id: string) => `https://dic.nicovideo.jp/a/${id}`,
@@ -176,8 +169,38 @@ export const TagWorkConnectionLink = {
 	22: (id: string) => `https://en.wikipedia.org/wiki/${id}`,
 	23: (id: string) => `https://namu.wiki/w/${id}`,
 	24: (id: string) => `https://knowyourmeme.com/memes/subcultures/${id}`,
-	40: (id: string) => `https://www.anikore.jp/anime/${id}/`,
-	41: (id: string) => `https://bangumi.tv/subject/${id}`,
-	42: (id: string) => `https://anidb.net/anime/${id}`,
-	43: (id: string) => `https://myanimelist.net/anime/${id}`
+};
+
+export const SourceConnetionTypes = {
+	ANIKORE: 1,
+	1: 'AniKore',
+	BANGUMI: 2,
+	2: 'Bangumi',
+	ANIDB: 3,
+	3: 'AniDB',
+	MYANIMELIST: 4,
+	4: 'MyAnimeList',
+    ANILIST: 5,
+	5: 'AniList',
+    KITSU: 6,
+	6: 'Kitsu',
+    ANIMEPLANET: 7,
+	7: 'Anime-Planet',
+
+    IMDB: 20,
+	20: 'IMDb',
+    LETTERBOXD: 21,
+	21: 'Letterboxd',
+
+    VNDB: 40,
+	40: 'vndb',
+    EROGAMESCAPE: 41,
+	41: 'ErogameScape',
+};
+
+export const SourceConnectionLink = {
+	1: (id: string) => `https://www.anikore.jp/anime/${id}/`,
+	2: (id: string) => `https://bangumi.tv/subject/${id}`,
+	3: (id: string) => `https://anidb.net/anime/${id}`,
+	4: (id: string) => `https://myanimelist.net/anime/${id}`
 };

@@ -3,7 +3,7 @@ from django.db import models
 
 class WorkTagCategory(models.IntegerChoices):
     GENERAL   = 0, "General"
-    LANGUAGE  = 1, "Language"
+    EVENT     = 1, "Event"
     SONG      = 2, "Song"
     SOURCE    = 3, "Source"
     CREATOR   = 4, "Creator"
@@ -12,9 +12,8 @@ class WorkTagCategory(models.IntegerChoices):
 class SongTagCategory(models.IntegerChoices):
     GENERAL   = 0, "General"
     GENRE     = 1, "Genre"
-    LANGUAGE  = 2, "Language"
-    AUTHOR    = 3, "Author"
-    META      = 4, "Meta"
+    AUTHOR    = 2, "Author"
+    META      = 3, "Meta"
 
 class Rating(models.IntegerChoices):
     GENERAL      = 0, "General"
@@ -59,11 +58,13 @@ class SongRelationTypes(models.IntegerChoices):
     SEQUEL   = 3, "Sequel"
 
 class ProfileConnectionTypes(models.IntegerChoices):
-    NICONICO  = 0, "Niconico"
-    YOUTUBE   = 1, "YouTube"
-    BILIBILI  = 2, "Bilibili"
-    X         = 3, "X"
-    BLUESKY   = 4, "Bluesky"
+    WEBSITE   = 0, "Website"
+
+    NICONICO  = 1, "Niconico"
+    YOUTUBE   = 2, "YouTube"
+    BILIBILI  = 3, "Bilibili"
+    TWITTER   = 4, "Twitter"
+    BLUESKY   = 5, "Bluesky"
 
 class SongConnectionTypes(models.IntegerChoices):
     VGMDB         = 0, "VGMdb"
@@ -88,21 +89,20 @@ class TagWorkConnectionTypes(models.IntegerChoices):
     NAMUWIKI      = 23, "Namu Wiki"
     KNOWYOURMEME  = 24, "Know Your Meme"
 
-    ANIKORE       = 40, "AniKore"
-    BANGUMI       = 41, "Bangumi"
-    ANIDB         = 42, "AniDB"
-    MYANIMELIST   = 43, "MyAnimeList"
-    # ANILIST       = 11, "AniList"
-    # KITSU         = 12, "Kitsu"
-    # ANIMEPLANET   = 13, "Anime-Planet"
+class SourceConnectionTypes(models.IntegerChoices):
+    ANIKORE       = 1, "AniKore"
+    BANGUMI       = 2, "Bangumi"
+    ANIDB         = 3, "AniDB"
+    MYANIMELIST   = 4, "MyAnimeList"
+    ANILIST       = 5, "AniList"
+    KITSU         = 6, "Kitsu"
+    ANIMEPLANET   = 7, "Anime-Planet"
 
-    # LETTERBOXD    = 14, "Letterboxd"
-    # IMDB          = 15, "IMDb"
+    IMDB          = 20, "IMDb"
+    LETTERBOXD    = 21, "Letterboxd"
 
-    # VNDB          = 16, "vndb"
-    # EROGAMESCAPE  = 17, "ErogameScape"
-
-    WEBSITE       = 0, "Website"
+    VNDB          = 40, "vndb"
+    EROGAMESCAPE  = 41, "ErogameScape"
 
 class LanguageTypes(models.IntegerChoices):
     NOT_APPLICABLE     = 0, "N/A"

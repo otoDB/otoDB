@@ -86,6 +86,7 @@ make_video_url = {
     }
 
 niconico_meta_re = re.compile(r"<meta name=\"server-response\" content=\"([ -~]*?)\" \/>")
+hashtag_re = re.compile(r'#(\w+)')
 
 def get_niconico_geoblocked(sm):
     clean_url = make_video_url['niconico'](sm)
@@ -138,6 +139,7 @@ def video_info(link):
         match info['extractor']:
             case Platform.YOUTUBE:
                 info['webpage_url'] = make_video_url['youtube'](info['id'])
+                info['tags'].extend(hashtag_re.findall(info['description']))
             case Platform.BILIBILI:
                 chapter_mark = info['id'].find('_')
                 if chapter_mark != -1:

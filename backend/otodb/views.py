@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 
-from otodb.common import reset_ydl
+from otodb.common import reset_cookies
 
 class UploadForm(forms.Form):
     file = forms.FileField()
@@ -17,7 +17,7 @@ def upload_cookies(request: HttpRequest):
             with open(settings.COOKIES_FILE, "ab+") as destination:
                 for chunk in request.FILES['file'].chunks():
                     destination.write(chunk)
-            reset_ydl(settings.COOKIES_FILE)
+            reset_cookies(settings.COOKIES_FILE)
             return redirect('/')
     else:
         form = UploadForm()

@@ -5,6 +5,7 @@ import re
 from time import mktime
 from datetime import datetime
 import unicodedata
+from http.cookiejar import MozillaCookieJar
 
 import nh3
 import diff_match_patch as dmp_mod
@@ -60,9 +61,13 @@ ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_fl
 for e in (YoutubeTabIE, NiconicoPlaylistIE, BilibiliFavoritesListIE, SoundcloudPlaylistIE):
     ydl_playlist.add_info_extractor(e)
 
-ydl, niconico_ie = None, None
-def reset_ydl(cookie_file=settings.COOKIES_FILE):
-    global ydl, niconico_ie
+ydl, niconico_ie, jar = None, None, None
+def reset_cookies(cookie_file=settings.COOKIES_FILE):
+    global ydl, niconico_ie, jar
+
+    jar = MozillaCookieJar(cookie_file)
+    jar.load()
+
     opts = { 'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True }
     if cookie_file:
         opts['cookiefile'] = cookie_file
@@ -72,7 +77,7 @@ def reset_ydl(cookie_file=settings.COOKIES_FILE):
     for e in (YoutubeIE, NiconicoIE, BiliBiliIE, SoundcloudIE):
         ydl.add_info_extractor(e)
 
-reset_ydl()
+reset_cookies()
 
 make_video_url = {
     'youtube': lambda s: f'https://youtu.be/{s}',
@@ -84,7 +89,7 @@ niconico_meta_re = re.compile(r"<meta name=\"server-response\" content=\"([ -~]*
 
 def get_niconico_geoblocked(sm):
     clean_url = make_video_url['niconico'](sm)
-    r = requests.get(clean_url, headers={'User-Agent': 'Twitterbot/1.0', 'Accept-Language': 'ja'})
+    r = requests.get(clean_url, headers={'User-Agent': 'Twitterbot/1.0', 'Accept-Language': 'ja'}, cookies=jar)
     if r.ok:
         res = json.loads(html.unescape(niconico_meta_re.search(r.text).group(1)))['data']['response']
         video = res['video']

@@ -8,10 +8,10 @@ export const debounce = (callback: Function, wait = 300) => {
 };
 
 export const once = (fn) => {
-    return function (event) {
-        if (fn) fn.call(this, event);
-        fn = null;
-    };
+	return function (event) {
+		if (fn) fn.call(this, event);
+		fn = null;
+	};
 };
 
 export const clickOutside = (node: HTMLElement) => {

@@ -8,7 +8,6 @@
 
 	let { data }: PageProps = $props();
 	let results = $derived(data.results!.items);
-	let tags = $derived(data.query_tags.split(' '));
 
 	let fetching = $state(false);
 	const getNextBatch = async () => {
@@ -18,7 +17,7 @@
 			params: {
 				query: {
 					query: data.query,
-					tags: tags.join(' '),
+					tags: data.query_tags,
 					limit: data.batch_size,
 					offset: results.length
 				}
@@ -37,8 +36,8 @@
 	title={m.mean_top_antelope_love()}
 	menuLinks={[
 		{ title: m.grand_merry_fly_succeed(), pathname: 'work/search' },
-		{ title: m.empty_legal_chicken_taste(), pathname: 'tag/search' },
-		{ title: m.stale_loose_squid_cut(), pathname: 'list/search' }
+		{ title: m.empty_legal_chicken_taste(), pathname: `tag/search?query=${data.query}` },
+		{ title: m.stale_loose_squid_cut(), pathname: `list/search?query=${data.query}` }
 	]}
 >
 	<form target="_self" method="get">
@@ -50,7 +49,7 @@
 		/>
 		<input type="submit" value={m.mean_top_antelope_love()} />
 		<h4>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: '' })}</h4>
-		<TagsField type="work" name="tags" bind:value={tags} class="w-full" />
+		<TagsField type="work" name="tags" value={data.query_tags.split(' ')} class="w-full" />
 	</form>
 	<hr />
 	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">

@@ -7,10 +7,10 @@ from ninja import Router, ModelSchema, Schema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
-from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference
-from otodb.models.enums import WorkTagCategory
+from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkSourceConnection, TagWorkCreatorConnection
+from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes
 
-from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema, WikiPageSchema
+from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
 
 tag_router = Router()
 
@@ -100,6 +100,10 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
             tag.category = WorkTagCategory.SONG
             tag.save()
             song = MediaSong.objects.create(work_tag=tag, **song_payload.dict())
+    elif tag.category == WorkTagCategory.CREATOR and payload.category != WorkTagCategory.CREATOR:
+        TagWorkCreatorConnection.objects.filter(tag=tag).delete()
+    elif tag.category == WorkTagCategory.SOURCE and payload.category != WorkTagCategory.SOURCE:
+        TagWorkSourceConnection.objects.filter(tag=tag).delete()
 
     tag.category = payload.category
     if payload.parent_slug:
@@ -125,27 +129,53 @@ def wiki_page(request: HttpRequest, tag_slug: str):
 @user_is_trusted
 def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    WikiPage.objects.update_or_create(tag=tag, lang=lang, defaults={'page':md})
+    try:
+        wp = WikiPage.objects.get(tag=tag, lang=lang)
+        wp.page = md
+        wp.save() # Cannot use update_or_create here because the rendered page doesn't get rendered
+    except WikiPage.DoesNotExist:
+        WikiPage.objects.create(tag=tag, lang=lang, defaults={'page':md})
 
-@tag_router.get('connection', response=list[ConnectionSchema])
+@tag_router.get('connection', response=tuple[list[ConnectionSchema], list[ConnectionSchema] | None])
 def connection(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    return tag.tagworkconnection_set
+    cs = tag.tagworkconnection_set.all()
+    if tag.category == WorkTagCategory.SOURCE:
+        return 200, (cs, tag.tagworksourceconnection_set.all())
+    elif tag.category == WorkTagCategory.CREATOR:
+        return 200, (cs, tag.tagworkcreatorconnection_set.all())
+    return 200, (cs, None)
 
 @tag_router.put('connection', auth=django_auth)
 @user_is_trusted
-def edit_connection(request: HttpRequest, tag_slug: str, payload: ConnectionSchema):
-    stripped = payload.content_id.strip()
-    assert(stripped != '')
+def edit_connections(request: HttpRequest, tag_slug: str, payload: list[ConnectionSchema], t: int):
+    Type = [
+        TagWorkConnection,        # GENERAL
+        None,                     # EVENT
+        MediaSongConnection,      # SONG
+        TagWorkSourceConnection,  # SOURCE
+        TagWorkCreatorConnection, # CREATOR
+        None                      # META
+    ][t]
+    assert(Type is not None)
+    for connection in payload:
+        connection.content_id = connection.content_id.strip()
+        assert(connection.content_id != '')
+        if Type is TagWorkCreatorConnection:
+            assert(connection.site != ProfileConnectionTypes.WEBSITE) # Should be in general connection instead)
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    TagWorkConnection.objects.update_or_create(tag=tag, site=payload.site,
-        defaults={ 'content_id': stripped })
-
-@tag_router.delete('connection', auth=django_auth)
-@user_is_trusted
-def delete_connection(request: HttpRequest, tag_slug: str, site: int):
-    tag = get_object_or_404(TagWork, slug=tag_slug)
-    TagWorkConnection.objects.filter(tag=tag, site=site).delete()
+    if Type is MediaSongConnection:
+        song = tag.mediasong
+        assert(song is not None)
+        Type.objects.filter(song=song).delete()
+        for connection in payload:
+            MediaSongConnection.objects.create(song=song, site=connection.site,
+                content_id=connection.content_id)
+    else:
+        Type.objects.filter(tag=tag).delete()
+        for connection in payload:
+            Type.objects.create(tag=tag, site=connection.site,
+                content_id=connection.content_id)
 
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate
@@ -218,18 +248,3 @@ def songs(request: HttpRequest, tag_slug: str):
 def song_connection(request: HttpRequest, song_id: int):
     song = get_object_or_404(MediaSong.objects, id=song_id)
     return song.mediasongconnection_set
-
-@tag_router.put('song_connection', auth=django_auth)
-@user_is_trusted
-def edit_song_connection(request: HttpRequest, song_id: int, payload: ConnectionSchema):
-    stripped = payload.content_id.strip()
-    assert(stripped != '')
-    song = get_object_or_404(MediaSong.objects, id=song_id)
-    MediaSongConnection.objects.update_or_create(song=song, site=payload.site,
-        defaults={ 'content_id': stripped })
-
-@tag_router.delete('song_connection', auth=django_auth)
-@user_is_trusted
-def delete_song_connection(request: HttpRequest, song_id: int, site: int):
-    song = get_object_or_404(MediaSong.objects, id=song_id)
-    MediaSongConnection.objects.filter(song=song, site=site).delete()

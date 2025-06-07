@@ -4,7 +4,17 @@
 	import {
 		LanguageNames,
 		Languages,
+		ProfileConnectionLink,
+		ProfileConnectionParsers,
+		ProfileConnectionTypes,
+		SongConnectionLink,
+		SongConnectionParsers,
 		SongConnectionTypes,
+		SourceConnectionLink,
+		SourceConnectionParsers,
+		SourceConnectionTypes,
+		TagWorkConnectionLink,
+		TagWorkConnectionParsers,
 		TagWorkConnectionTypes,
 		WorkTagCategory
 	} from '$lib/enums';
@@ -14,9 +24,8 @@
 	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { debounce } from '$lib/ui';
 	import type { components } from '$lib/schema';
 
 	let { data, form }: PageProps = $props();
@@ -57,31 +66,62 @@
 		invalidateAll();
 	};
 
-	const update_connection = async (e) => {
-		const el = e.target;
-		if (el.value.trim() === '')
-			await client.DELETE('/api/tag/connection', {
-				fetch,
-				params: { query: { site: +el.name, tag_slug: data.tag.slug } }
-			});
-		else
-			await client.PUT('/api/tag/connection', {
-				body: { content_id: el.value.trim(), site: +el.name },
-				params: { query: { tag_slug: data.tag.slug } }
-			});
-	};
-	const update_song_connection = async (e) => {
-		const el = e.target;
-		if (el.value.trim() === '')
-			await client.DELETE('/api/tag/song_connection', {
-				fetch,
-				params: { query: { site: +el.name, song_id: data.tag.song?.id } }
-			});
-		else
-			await client.PUT('/api/tag/song_connection', {
-				body: { content_id: el.value.trim(), site: +el.name },
-				params: { query: { song_id: data.tag.song?.id } }
-			});
+	let urls = $state(
+		[
+			...data.connections[0]?.map(({ site, content_id }) =>
+				TagWorkConnectionLink[site](content_id)
+			),
+			...(data.connections[1]?.map(({ site, content_id }) =>
+				(data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink)[site](
+					content_id
+				)
+			) ?? [])
+		].join('\n') ?? ''
+	);
+	const update_connections = async (e: SubmitEvent) => {
+		e.preventDefault();
+		let parsers = Object.entries(TagWorkConnectionParsers);
+		const n_general_parsers = parsers.length;
+		if (category === 2 && data.tag.category === 2)
+			parsers = [...parsers, ...Object.entries(SongConnectionParsers)];
+		else if (category === 3 && data.tag.category === 3)
+			parsers = [...parsers, ...Object.entries(SourceConnectionParsers)];
+		else if (category === 4 && data.tag.category === 4)
+			parsers = [...parsers, ...Array.from(ProfileConnectionParsers.entries()).slice(1)];
+		const connections = [...new Set(urls.split('\n'))]
+			.filter((x) => x.trim() !== '')
+			.map((url) =>
+				parsers
+					.map((p, i) => ({
+						site: +p[0],
+						content_id: p[1](url),
+						t: i >= n_general_parsers ? category : 0
+					}))
+					.filter((v) => !!v.content_id)
+					.at(-1)
+			)
+			.filter((v) => !!v);
+		console.log(connections);
+
+		let pings = [
+			client.PUT('/api/tag/connection', {
+				body: connections
+					.filter((c) => c.t === 0)
+					.map(({ content_id, site }) => ({ content_id: content_id, site })),
+				params: { query: { tag_slug: data.tag.slug, t: 0 } }
+			})
+		];
+		if (category === data.tag.category && category >= 2 && category <= 4)
+			pings.push(
+				client.PUT('/api/tag/connection', {
+					body: connections
+						.filter((c) => c.t === category)
+						.map(({ content_id, site }) => ({ content_id, site })),
+					params: { query: { tag_slug: data.tag.slug, t: category } }
+				})
+			);
+		await Promise.all(pings);
+		goto(`/tag/${data.tag.slug}`, { invalidateAll: true });
 	};
 </script>
 
@@ -232,31 +272,49 @@
 </Section>
 
 <Section title={m.jumpy_spry_canary_scoop()}>
-	<table>
-		<thead>
-			<tr>
-				<td>{m.bad_sour_jay_attend()}</td>
-				<td>ID</td>
-			</tr>
-		</thead><tbody>
-			{#each Object.keys(TagWorkConnectionTypes)
-				.filter((e) => !isNaN(e))
-				.toSorted() as s, i (i)}
-				<tr>
-					<td>{TagWorkConnectionTypes[s]}</td>
-					<td
-						><input
-							type="text"
-							name={s}
-							value={data.connections?.find(({ site }) => site === +s)?.content_id ??
-								''}
-							oninput={debounce(update_connection)}
-						/></td
-					></tr
-				>
-			{/each}
-		</tbody>
-	</table>
+	<details>
+		<summary>{m.fit_noble_niklas_build()}</summary>
+		<table>
+			<tbody>
+				{#each Object.keys(TagWorkConnectionTypes).filter((e) => !isNaN(e)) as k}
+					<tr
+						><td>{TagWorkConnectionTypes[k]}</td><td
+							><code>{TagWorkConnectionLink[k]('<code>')}</code></td
+						></tr
+					>
+				{/each}
+				{#if category === 2 && data.tag.category === 2}
+					{#each Object.keys(SongConnectionTypes).filter((e) => !isNaN(e)) as k}
+						<tr
+							><td>{SongConnectionTypes[k]}</td><td
+								><code>{SongConnectionLink[k]('<code>')}</code></td
+							></tr
+						>
+					{/each}
+				{:else if category === 3 && data.tag.category === 3}
+					{#each Object.keys(SourceConnectionTypes).filter((e) => !isNaN(e)) as k}
+						<tr
+							><td>{SourceConnectionTypes[k]}</td><td
+								><code>{SourceConnectionLink[k]('<code>')}</code></td
+							></tr
+						>
+					{/each}
+				{:else if category === 4 && data.tag.category === 4}
+					{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e) && +e !== 0) as k}
+						<tr
+							><td>{ProfileConnectionTypes[k]}</td><td
+								><code>{ProfileConnectionLink[k]('<code>')}</code></td
+							></tr
+						>
+					{/each}
+				{/if}
+			</tbody>
+		</table>
+	</details>
+	<form onsubmit={update_connections}>
+		<textarea bind:value={urls} class="w-full"> </textarea>
+		<input type="submit" />
+	</form>
 </Section>
 {#if category === 2 && data.tag.category === 2}
 	<Section
@@ -271,34 +329,6 @@
 			obj_type="song"
 			this_id={data.tag.song?.id}
 		></RelationEditor>
-	</Section>
-
-	<Section title={m.loose_tame_dingo_talk()}>
-		<table>
-			<thead>
-				<tr>
-					<td>{m.bad_sour_jay_attend()}</td>
-					<td>ID</td>
-				</tr>
-			</thead><tbody>
-				{#each Object.keys(SongConnectionTypes)
-					.filter((e) => !isNaN(e))
-					.toSorted() as s, i (i)}
-					<tr>
-						<td>{SongConnectionTypes[s]}</td>
-						<td
-							><input
-								type="text"
-								name={s}
-								value={data.song_connections?.find(({ site }) => site === +s)
-									?.content_id ?? ''}
-								oninput={debounce(update_song_connection)}
-							/></td
-						></tr
-					>
-				{/each}
-			</tbody>
-		</table>
 	</Section>
 {/if}
 

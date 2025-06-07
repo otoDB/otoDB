@@ -10,7 +10,9 @@
 	let results = $derived(data.results!.items);
 	let tags = $derived(data.query_tags.split(' '));
 
+	let fetching = $state(false);
 	const getNextBatch = async () => {
+		fetching = true;
 		const { data: d } = await client.GET('/api/work/search', {
 			fetch,
 			params: {
@@ -23,6 +25,7 @@
 			}
 		});
 		results = results.concat(d!.items);
+		fetching = false;
 	};
 </script>
 
@@ -55,7 +58,7 @@
 			<WorkCard {work} />
 		{/each}
 	</div>
-	{#if results.length < data.results!.count}
+	{#if !fetching && results.length < data.results!.count}
 		<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}
 			>{m.red_pink_bear_play()}</button
 		>

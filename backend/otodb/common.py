@@ -61,7 +61,7 @@ for e in (YoutubeTabIE, NiconicoPlaylistIE, BilibiliFavoritesListIE, SoundcloudP
     ydl_playlist.add_info_extractor(e)
 
 ydl, niconico_ie = None, None
-def reset_ydl(cookie_file=settings.YOUTUBE_COOKIES_FILE):
+def reset_ydl(cookie_file=settings.COOKIES_FILE):
     global ydl, niconico_ie
     opts = { 'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True }
     if cookie_file:

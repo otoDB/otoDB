@@ -30,7 +30,9 @@
 	);
 	let wikiView = $state(getLocale() ?? undefined);
 
+	let fetching = $state(false);
 	const getNextBatch = async () => {
+		fetching = true;
 		const { data: d } = await client.GET('/api/tag/works', {
 			fetch,
 			params: {
@@ -42,6 +44,7 @@
 			}
 		});
 		results = results.concat(d!.items);
+		fetching = false;
 	};
 </script>
 
@@ -167,7 +170,7 @@
 				<WorkCard {work} />
 			{/each}
 		</div>
-		{#if results.length < data.works!.count}
+		{#if !fetching && results.length < data.works!.count}
 			<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}
 				>{m.red_pink_bear_play()}</button
 			>

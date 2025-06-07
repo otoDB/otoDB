@@ -7,6 +7,13 @@ export const debounce = (callback: Function, wait = 300) => {
 	};
 };
 
+export const once = (fn) => {
+    return function (event) {
+        if (fn) fn.call(this, event);
+        fn = null;
+    };
+};
+
 export const clickOutside = (node: HTMLElement) => {
 	const handleClick = (event: MouseEvent) => {
 		if (!node.contains(event.target as Node)) {

@@ -1,9 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	interface Props {
-		title: string;
-		menuLinks: { title: string; pathname: string }[] | null;
-	}
 	let { title, children, menuLinks = null } = $props();
 </script>
 

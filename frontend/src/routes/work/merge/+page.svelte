@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkField from '$lib/WorkField.svelte';
 	import type { components } from '$lib/schema';
@@ -49,8 +48,6 @@
 		thumbnail: 0,
 		rating: 0
 	});
-
-	let { form }: PageProps = $props();
 </script>
 
 <svelte:head>

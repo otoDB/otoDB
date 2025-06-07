@@ -1,7 +1,6 @@
 import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import { userLevelCheck } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
 
 export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {

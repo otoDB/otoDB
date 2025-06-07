@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import client from '$lib/api.js';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';

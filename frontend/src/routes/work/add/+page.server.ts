@@ -9,15 +9,8 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
 
 	const link = url.searchParams.get('url');
-	if (link) {
-		const { error: err } = await client.POST('/api/work/source', {
-			fetch,
-			params: { query: { url: link, is_reupload: false } }
-		});
-		if (err) error(400, err);
-	}
-
 	const work = url.searchParams.get('for_work');
+	let title = null;
 	if (work && !isNaN(+work)) {
 		const { data, error: e } = await client.GET('/api/work/work', {
 			params: {
@@ -28,11 +21,12 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 			fetch
 		});
 		if (e) error(404, { message: 'Not found' });
-
-		return {
-			title: data.title
-		};
+		title = data.title;
 	}
+	return {
+		title,
+		link
+	};
 };
 
 export const actions = {

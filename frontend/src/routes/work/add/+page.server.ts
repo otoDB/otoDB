@@ -5,8 +5,6 @@ import { UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
 
-const next_redirect = (user: App.Locals['user']) => {};
-
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
 
@@ -17,7 +15,6 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 			params: { query: { url: link, is_reupload: false } }
 		});
 		if (err) error(400, err);
-		else next_redirect(locals.user);
 	}
 
 	const work = url.searchParams.get('for_work');
@@ -61,7 +58,7 @@ export const actions = {
 				url: link,
 				origin: is_official,
 				failed: true,
-				message: m.work_conflict()
+				message: m.sour_loud_baboon_dance()
 			});
 		}
 		if (error)

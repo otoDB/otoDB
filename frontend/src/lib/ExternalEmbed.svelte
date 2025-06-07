@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Platform } from './enums';
 	import type { components } from './schema';
 
 	interface Props {

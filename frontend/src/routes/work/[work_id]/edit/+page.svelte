@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from '../$types';
-	import { Platform, Rating, WorkOrigin, WorkRelationTypes } from '$lib/enums';
+	import { Platform, Rating, WorkOrigin } from '$lib/enums';
 	import CollapsibleText from '../CollapsibleText.svelte';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';

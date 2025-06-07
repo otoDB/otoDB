@@ -49,7 +49,7 @@
 		<summary>{m.fit_noble_niklas_build()}</summary>
 		<table>
 			<tbody>
-				{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e)) as k}
+				{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 					<tr
 						><td>{ProfileConnectionTypes[k]}</td><td
 							><code>{ProfileConnectionLink[k]('<code>')}</code></td

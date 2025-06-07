@@ -26,8 +26,8 @@
 <Section
 	title={m.mean_top_antelope_love()}
 	menuLinks={[
-		{ title: m.grand_merry_fly_succeed(), pathname: 'work/search' },
-		{ title: m.empty_legal_chicken_taste(), pathname: 'tag/search' },
+		{ title: m.grand_merry_fly_succeed(), pathname: `work/search?query=${data.query}` },
+		{ title: m.empty_legal_chicken_taste(), pathname: `tag/search?query=${data.query}` },
 		{ title: m.stale_loose_squid_cut(), pathname: 'list/search' }
 	]}
 >

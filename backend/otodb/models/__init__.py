@@ -4,4 +4,4 @@ from .tag import TagWork, TagSong, WikiPage, TagWorkLangPreference
 from .work_source import WorkSource
 from .relations import WorkRelation, SongRelation
 from .posts import Post
-from .connection import ProfileConnection, MediaSongConnection, TagWorkConnection
+from .connection import ProfileConnection, MediaSongConnection, TagWorkConnection, TagWorkSourceConnection, TagWorkCreatorConnection

@@ -30,6 +30,7 @@
 		border: 1px solid var(--otodb-faint-content);
 		padding: 0 1rem 1rem 1rem;
 		margin-bottom: 1rem;
+		overflow: hidden;
 		& > h1 {
 			font-size: x-large;
 			font-weight: 600;

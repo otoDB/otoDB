@@ -428,11 +428,10 @@ export interface paths {
         };
         /** Connection */
         get: operations["otodb_api_profile_connection"];
-        /** Edit Connection */
-        put: operations["otodb_api_profile_edit_connection"];
+        /** Edit Connections */
+        put: operations["otodb_api_profile_edit_connections"];
         post?: never;
-        /** Delete Connection */
-        delete: operations["otodb_api_profile_delete_connection"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -726,11 +725,10 @@ export interface paths {
         };
         /** Connection */
         get: operations["otodb_api_tag_connection"];
-        /** Edit Connection */
-        put: operations["otodb_api_tag_edit_connection"];
+        /** Edit Connections */
+        put: operations["otodb_api_tag_edit_connections"];
         post?: never;
-        /** Delete Connection */
-        delete: operations["otodb_api_tag_delete_connection"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -883,11 +881,9 @@ export interface paths {
         };
         /** Song Connection */
         get: operations["otodb_api_tag_song_connection"];
-        /** Edit Song Connection */
-        put: operations["otodb_api_tag_edit_song_connection"];
+        put?: never;
         post?: never;
-        /** Delete Song Connection */
-        delete: operations["otodb_api_tag_delete_song_connection"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2048,7 +2044,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_profile_edit_connection: {
+    otodb_api_profile_edit_connections: {
         parameters: {
             query: {
                 username: string;
@@ -2059,30 +2055,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ConnectionSchema"];
+                "application/json": components["schemas"]["ConnectionSchema"][];
             };
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_profile_delete_connection: {
-        parameters: {
-            query: {
-                username: string;
-                site: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -2638,15 +2613,19 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ConnectionSchema"][];
+                    "application/json": [
+                        components["schemas"]["ConnectionSchema"][],
+                        components["schemas"]["ConnectionSchema"][] | null
+                    ];
                 };
             };
         };
     };
-    otodb_api_tag_edit_connection: {
+    otodb_api_tag_edit_connections: {
         parameters: {
             query: {
                 tag_slug: string;
+                t: number;
             };
             header?: never;
             path?: never;
@@ -2654,30 +2633,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ConnectionSchema"];
+                "application/json": components["schemas"]["ConnectionSchema"][];
             };
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_delete_connection: {
-        parameters: {
-            query: {
-                tag_slug: string;
-                site: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -2939,51 +2897,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ConnectionSchema"][];
                 };
-            };
-        };
-    };
-    otodb_api_tag_edit_song_connection: {
-        parameters: {
-            query: {
-                song_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConnectionSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_delete_song_connection: {
-        parameters: {
-            query: {
-                song_id: number;
-                site: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

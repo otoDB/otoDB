@@ -32,21 +32,17 @@ def connection(request: HttpRequest, username: str):
     return user.profileconnection_set
 
 @profile_router.put('connection', auth=django_auth)
-def edit_connection(request: HttpRequest, username: str, payload: ConnectionSchema):
-    stripped = payload.content_id.strip()
-    assert(stripped != '')
+def edit_connections(request: HttpRequest, username: str, payload: List[ConnectionSchema]):
+    for connection in payload:
+        connection.content_id = connection.content_id.strip()
+        assert(connection.content_id != '')
     user = get_object_or_404(Account, username__iexact=username)
     if user != request.user:
         return 403
-    ProfileConnection.objects.update_or_create(profile=user, site=payload.site,
-        defaults={ 'content_id': stripped })
-
-@profile_router.delete('connection', auth=django_auth)
-def delete_connection(request: HttpRequest, username: str, site: int):
-    user = get_object_or_404(Account, username__iexact=username)
-    if user.id != request.user.id:
-        return 403
-    ProfileConnection.objects.filter(profile=user, site=site).delete()
+    ProfileConnection.objects.filter(profile=user).delete()
+    for connection in payload:
+        ProfileConnection.objects.create(profile=user, site=connection.site,
+            content_id=connection.content_id)
 
 @profile_router.get('work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth)
 def work_in_lists(request: HttpRequest, work_id: int):

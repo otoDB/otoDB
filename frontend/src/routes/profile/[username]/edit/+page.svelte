@@ -1,24 +1,37 @@
-<script>
+<script lang="ts">
+	import { goto } from '$app/navigation';
 	import client from '$lib/api.js';
-	import { ProfileConnectionTypes } from '$lib/enums';
+	import {
+		ProfileConnectionLink,
+		ProfileConnectionParsers,
+		ProfileConnectionTypes
+	} from '$lib/enums';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
-	import { debounce } from '$lib/ui.js';
 
 	let { data } = $props();
 
-	const update_connection = async (e) => {
-		const el = e.target;
-		if (el.value.trim() === '')
-			await client.DELETE('/api/profile/connection', {
-				fetch,
-				params: { query: { site: +el.name, username: data.user.username } }
-			});
-		else
-			await client.PUT('/api/profile/connection', {
-				body: { content_id: el.value.trim(), site: +el.name },
-				params: { query: { username: data.user.username } }
-			});
+	let urls = $state(
+		data.connections
+			?.map(({ site, content_id }) => ProfileConnectionLink[site](content_id))
+			.join('\n') ?? ''
+	);
+
+	const update_connections = async (e: SubmitEvent) => {
+		e.preventDefault();
+		const connections = [...new Set(urls.split('\n'))]
+			.filter((x) => x.trim() !== '')
+			.map((url) =>
+				ProfileConnectionParsers.map((p, i) => ({ site: i, content_id: p(url) }))
+					.filter((v) => !!v.content_id)
+					.at(-1)
+			)
+			.filter((v) => !!v);
+		await client.PUT('/api/profile/connection', {
+			body: connections,
+			params: { query: { username: data.user.username } }
+		});
+		goto(`/profile/${data.user.username}`, { invalidateAll: true });
 	};
 </script>
 
@@ -32,29 +45,22 @@
 	...
 </Section>
 <Section title={m.jumpy_spry_canary_scoop()}>
-	<table>
-		<thead>
-			<tr>
-				<td>{m.bad_sour_jay_attend()}</td>
-				<td>ID</td>
-			</tr>
-		</thead><tbody>
-			{#each Object.keys(ProfileConnectionTypes)
-				.filter((e) => !isNaN(e))
-				.toSorted() as s, i (i)}
-				<tr>
-					<td>{ProfileConnectionTypes[s]}</td>
-					<td
-						><input
-							type="text"
-							name={s}
-							value={data.connections?.find(({ site }) => site === +s)?.content_id ??
-								''}
-							oninput={debounce(update_connection)}
-						/></td
+	<details>
+		<summary>{m.fit_noble_niklas_build()}</summary>
+		<table>
+			<tbody>
+				{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e)) as k}
+					<tr
+						><td>{ProfileConnectionTypes[k]}</td><td
+							><code>{ProfileConnectionLink[k]('<code>')}</code></td
+						></tr
 					>
-				</tr>
-			{/each}
-		</tbody>
-	</table>
+				{/each}
+			</tbody>
+		</table>
+	</details>
+	<form onsubmit={update_connections}>
+		<textarea bind:value={urls} class="w-full"> </textarea>
+		<input type="submit" />
+	</form>
 </Section>

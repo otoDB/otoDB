@@ -4,8 +4,12 @@
 	import {
 		LanguageNames,
 		Languages,
+		ProfileConnectionLink,
+		ProfileConnectionTypes,
 		SongConnectionLink,
 		SongConnectionTypes,
+		SourceConnectionLink,
+		SourceConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
 		WorkTagCategory
@@ -28,7 +32,11 @@
 						.map((a) => a.name) ?? [])
 				]
 	);
-	let wikiView = $state(getLocale() ?? undefined);
+	let wikiView = $state(
+		Languages[data.wiki_page?.find(({ lang }) => lang === Languages[getLocale()])?.lang] ??
+			Languages[data.wiki_page?.at(0)?.lang] ??
+			undefined
+	);
 
 	let fetching = $state(false);
 	const getNextBatch = async () => {
@@ -83,20 +91,35 @@
 
 	{#if data.connections}
 		<ul>
-			{#each data.connections as s, i (i)}
+			{#each data.connections[0] as s, i (i)}
 				<li>
 					<a href={TagWorkConnectionLink[s.site](s.content_id)}>
 						{TagWorkConnectionTypes[s.site]}
 					</a>
 				</li>
 			{/each}
+			{#if data.connections[1]}
+				{#each data.connections[1] as s, i (i)}
+					<li>
+						<a
+							href={(data.tag.category === 3
+								? SourceConnectionLink
+								: ProfileConnectionLink)[s.site](s.content_id)}
+						>
+							{(data.tag.category === 3
+								? SourceConnectionTypes
+								: ProfileConnectionTypes)[s.site]}
+						</a>
+					</li>
+				{/each}
+			{/if}
 		</ul>
 	{/if}
 
 	<hr class="my-2" />
 
 	{#if data.wiki_page && data.wiki_page.length}
-		<div class="my-2">
+		<div class="float-right clear-left my-2">
 			{#each data.wiki_page as page, i (i)}
 				<label class="wiki-lang-tab">
 					<input type="radio" bind:group={wikiView} value={Languages[page.lang]} />

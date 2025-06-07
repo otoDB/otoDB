@@ -7,6 +7,7 @@ from ninja import Router, ModelSchema, Schema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
+from otodb.common import NFKC
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkSourceConnection, TagWorkCreatorConnection
 from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes
 
@@ -17,7 +18,7 @@ tag_router = Router()
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, category: int | None = None):
-    qs = TagWork.objects.filter(name__icontains=unicodedata.normalize('NFKD', query), aliased_to__isnull=True)
+    qs = TagWork.objects.filter(name__icontains=NFKC(query), aliased_to__isnull=True)
     if category is not None and category != -1:
         qs = qs.filter(category=category)
     return qs
@@ -134,7 +135,7 @@ def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
         wp.page = md
         wp.save() # Cannot use update_or_create here because the rendered page doesn't get rendered
     except WikiPage.DoesNotExist:
-        WikiPage.objects.create(tag=tag, lang=lang, defaults={'page':md})
+        WikiPage.objects.create(tag=tag, lang=lang, page=md)
 
 @tag_router.get('connection', response=tuple[list[ConnectionSchema], list[ConnectionSchema] | None])
 def connection(request: HttpRequest, tag_slug: str):
@@ -206,7 +207,7 @@ def delete_relation(request: HttpRequest, A: int, B: int):
 @tag_router.get('song_tag_search', response=list[TagSongSchema])
 @paginate
 def song_tag_search(request: HttpRequest, query: str):
-    return TagSong.objects.filter(name__icontains=unicodedata.normalize('NFKD', query), aliased_to__isnull=True)
+    return TagSong.objects.filter(name__icontains=NFKC(query), aliased_to__isnull=True)
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted

@@ -21,6 +21,9 @@ from django.conf import settings
 from .models import TagWork
 from .models.enums import Platform
 
+def NFKC(s: str):
+    return unicodedata.normalize('NFKC', s)
+
 def get_diff(delta):
     dmp = dmp_mod.diff_match_patch()
 
@@ -162,7 +165,7 @@ def video_info(link):
                 info['id'] = info['id'][:i]
         
         if 'tags' in info:
-            info['tags'] = [unicodedata.normalize('NFKD', tag.replace(' ', '_')) for tag in info['tags']]
+            info['tags'] = [NFKC(tag.replace(' ', '_')) for tag in info['tags']]
 
         info['description'] = nh3.clean(info['description'])
 

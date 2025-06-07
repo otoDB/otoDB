@@ -90,15 +90,16 @@
 			parsers = [...parsers, ...Array.from(ProfileConnectionParsers.entries()).slice(1)];
 		const connections = [...new Set(urls.split('\n'))]
 			.filter((x) => x.trim() !== '')
-			.map((url) =>
-				parsers
-					.map((p, i) => ({
-						site: +p[0],
-						content_id: p[1](url),
-						t: i >= n_general_parsers ? category : 0
-					}))
-					.filter((v) => !!v.content_id)
-					.at(-1)
+			.map(
+				(url) =>
+					parsers
+						.map((p, i) => ({
+							site: +p[0],
+							content_id: p[1](url),
+							t: i >= n_general_parsers ? category : 0
+						}))
+						.filter((v) => !!v.content_id)
+						.at(-1) // !!! Attention here
 			)
 			.filter((v) => !!v);
 		console.log(connections);

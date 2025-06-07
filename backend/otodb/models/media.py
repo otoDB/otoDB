@@ -28,7 +28,7 @@ class TagWorkInstance(models.Model):
     work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 
     song_used_as_source = models.BooleanField(null=False, default=False)
-    instance_imported_from_source = models.BooleanField(null=False, default=False)
+    instance_imported_from_source = models.BooleanField(null=False, default=True)
 
 
 class TagWorkVote(models.Model):

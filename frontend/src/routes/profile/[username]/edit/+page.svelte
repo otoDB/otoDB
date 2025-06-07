@@ -21,10 +21,11 @@
 		e.preventDefault();
 		const connections = [...new Set(urls.split('\n'))]
 			.filter((x) => x.trim() !== '')
-			.map((url) =>
-				ProfileConnectionParsers.map((p, i) => ({ site: i, content_id: p(url) }))
-					.filter((v) => !!v.content_id)
-					.at(-1)
+			.map(
+				(url) =>
+					ProfileConnectionParsers.map((p, i) => ({ site: i, content_id: p(url) }))
+						.filter((v) => !!v.content_id)
+						.at(-1) // !!! Attention here
 			)
 			.filter((v) => !!v);
 		await client.PUT('/api/profile/connection', {

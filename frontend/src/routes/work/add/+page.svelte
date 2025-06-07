@@ -33,7 +33,14 @@
 			<tbody>
 				<tr>
 					<th><label for="url">URL</label></th>
-					<td><input required type="text" name="url" value={form?.url ?? data.link ?? ''} /></td>
+					<td
+						><input
+							required
+							type="text"
+							name="url"
+							value={form?.url ?? data.link ?? ''}
+						/></td
+					>
 				</tr>
 				<tr>
 					<th><label for="origin">{m.watery_fuzzy_fireant_thrive()}</label></th>

@@ -59,6 +59,7 @@ class WorkSource(models.Model):
             self.save()
             if self.media:
                 self.media.tags.add(*info.get('tags', []))
+                self.media.tagworkinstance_set.filter(work_tag__in=info.get('tags', [])).update(instance_imported_from_source=True)
         else:
             self.work_status = WorkStatus.DOWN
 

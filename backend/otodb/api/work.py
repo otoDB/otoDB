@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Annotated
 import unicodedata
 
 from django.http import HttpRequest
@@ -7,11 +7,12 @@ from django.db.models import Q, Avg, Count
 
 from simple_history.utils import update_change_reason
 
+from pydantic import AfterValidator
 from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
-from otodb.common import video_info
+from otodb.common import video_info, NFKC
 from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance
 from otodb.models.enums import Platform
 from otodb.account.models import Account
@@ -35,7 +36,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
     qs =  MediaWork.active_objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
     if tags:
         for tag in tags.split():
-            qs = qs.filter(tags=unicodedata.normalize('NFKD', tag))
+            qs = qs.filter(tags=NFKC(tag))
     else:
         qs = MediaWork.active_objects.filter(worksource__source_id=query) | qs
         if query.startswith("https"):
@@ -75,7 +76,7 @@ def get_tag_scores(request: HttpRequest, work_id: int):
         } for instance in work.tagworkinstance_set.annotate(avg_score=Avg('tagworkvote__score', default=0), n_votes=Count('tagworkvote')).all()]
 
 class TagWorkVoteSchema(Schema):
-    tag_slug: str
+    tag_slug: Annotated[str, AfterValidator(NFKC)]
     score: int
 
 @work_router.put('tag_scores', auth=django_auth)
@@ -223,6 +224,7 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
         work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
 
     work.tags.add(*info.get('tags', []))
+    work.tagworkinstance_set.filter(work_tag__in=info.get('tags', [])).update(instance_imported_from_source=True)
 
     src.media = work
     src.save()

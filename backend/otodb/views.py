@@ -10,16 +10,16 @@ class UploadForm(forms.Form):
     file = forms.FileField()
 
 @staff_member_required
-def upload_youtube_cookies(request: HttpRequest):
+def upload_cookies(request: HttpRequest):
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
-            with open(settings.YOUTUBE_COOKIES_FILE, "wb+") as destination:
+            with open(settings.COOKIES_FILE, "ab+") as destination:
                 for chunk in request.FILES['file'].chunks():
                     destination.write(chunk)
-            reset_ydl(settings.YOUTUBE_COOKIES_FILE)
+            reset_ydl(settings.COOKIES_FILE)
             return redirect('/')
     else:
         form = UploadForm()
 
-    return render(request, 'upload_youtube_cookies.html', { 'form': form })
+    return render(request, 'upload_cookies.html', { 'form': form })

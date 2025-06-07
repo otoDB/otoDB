@@ -6,5 +6,5 @@ from .api import api
 app_name = "otodb"
 urlpatterns = [
     path("api/", api.urls),
-    path("chores/youtube_cookies", views.upload_youtube_cookies, name="upload_youtube_cookies"),
+    path("chores/cookies", views.upload_cookies, name="upload_cookies"),
 ]

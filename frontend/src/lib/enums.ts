@@ -157,7 +157,7 @@ export const TagWorkConnectionTypes = {
 	NAMUWIKI: 23,
 	23: 'Namu Wiki',
 	KNOWYOURMEME: 24,
-	24: 'Know Your Meme',
+	24: 'Know Your Meme'
 };
 
 export const TagWorkConnectionLink = {
@@ -168,7 +168,7 @@ export const TagWorkConnectionLink = {
 	21: (id: string) => `https://dic.pixiv.net/a/${id}/`,
 	22: (id: string) => `https://en.wikipedia.org/wiki/${id}`,
 	23: (id: string) => `https://namu.wiki/w/${id}`,
-	24: (id: string) => `https://knowyourmeme.com/memes/subcultures/${id}`,
+	24: (id: string) => `https://knowyourmeme.com/memes/subcultures/${id}`
 };
 
 export const SourceConnetionTypes = {
@@ -180,22 +180,22 @@ export const SourceConnetionTypes = {
 	3: 'AniDB',
 	MYANIMELIST: 4,
 	4: 'MyAnimeList',
-    ANILIST: 5,
+	ANILIST: 5,
 	5: 'AniList',
-    KITSU: 6,
+	KITSU: 6,
 	6: 'Kitsu',
-    ANIMEPLANET: 7,
+	ANIMEPLANET: 7,
 	7: 'Anime-Planet',
 
-    IMDB: 20,
+	IMDB: 20,
 	20: 'IMDb',
-    LETTERBOXD: 21,
+	LETTERBOXD: 21,
 	21: 'Letterboxd',
 
-    VNDB: 40,
+	VNDB: 40,
 	40: 'vndb',
-    EROGAMESCAPE: 41,
-	41: 'ErogameScape',
+	EROGAMESCAPE: 41,
+	41: 'ErogameScape'
 };
 
 export const SourceConnectionLink = {

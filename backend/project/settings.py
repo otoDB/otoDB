@@ -27,7 +27,14 @@ if not DEBUG and 'OTODB_SECRET_KEY' not in os.environ:
     exit(1)
 
 SECRET_KEY = os.environ.get('OTODB_SECRET_KEY', '1145141919')
+
 COOKIES_FILE = os.environ.get('OTODB_COOKIES_FILE')
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = os.environ.get('OTODB_EMAIL_HOST')
+EMAIL_PORT = os.environ.get('OTODB_EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('OTODB_EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD =os.environ.get('OTODB_EMAIL_HOST_PASSWORD')
 
 ALLOWED_HOSTS = [
     host.strip()

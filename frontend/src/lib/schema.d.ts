@@ -2768,6 +2768,7 @@ export interface operations {
         parameters: {
             query: {
                 query: string;
+                tags?: string | null;
                 limit?: number;
                 offset?: number;
             };

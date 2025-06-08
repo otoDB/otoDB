@@ -10,7 +10,7 @@
 
 	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
 
-	let suggestions: string[] = $state([]);
+	let suggestions = $state([]);
 
 	const search = async () => {
 		if (value === '') {
@@ -21,31 +21,44 @@
 			params: { query: { query: value, limit: 10 } }
 		});
 		if (!data) return;
-		suggestions = data.items.map((tag) => tag.slug);
+		suggestions = data.items;
 	};
 </script>
 
 <span role="none">
 	<input type="text" oninput={debounce(search)} bind:value {...props} />
-	<ul
-		class="absolute"
-		use:clickOutside
-		onOutclick={() => {
-			suggestions = [];
-		}}
-	>
-		{#each suggestions as t, i (i)}
-			<li>
-				<a
-					href={null}
-					onclick={() => {
-						value = t;
-						suggestions = [];
-					}}>{t}</a
+	{#if suggestions.length}
+		<ul
+			class="absolute list-none px-1"
+			use:clickOutside
+			onOutclick={() => {
+				suggestions = [];
+			}}
+		>
+			{#each suggestions as t, i (i)}
+				<li
+					class="bg-[var(--otodb-fainter-bg)] p-1 px-2 py-1 hover:bg-[var(--otodb-faint-bg)]"
 				>
-			</li>
-		{/each}
-	</ul>
+					<a
+						class="cursor-pointer"
+						href={null}
+						onclick={() => {
+							value = t.slug;
+							suggestions = [];
+						}}
+						>{t.name}
+						{#if t.slug !== t.name}<address>
+								({t.slug}
+								<!-- TODO extend lang prefs to song tags -->
+								{#if type === 'work'}, {t.lang_prefs
+										.map((p) => p.tag)
+										.join(', ')}{/if})
+							</address>{/if}</a
+					>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 </span>
 
 <style>

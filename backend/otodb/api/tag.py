@@ -1,6 +1,9 @@
+from typing import Annotated
+
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
+from pydantic import AfterValidator
 from ninja import Router, ModelSchema, Schema
 from ninja.security import django_auth
 from ninja.pagination import paginate
@@ -16,10 +19,10 @@ tag_router = Router()
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, category: int | None = None):
-    qs = TagWork.objects.filter(name__icontains=NFKC(query), aliased_to__isnull=True)
+    qs = TagWork.objects.filter(name__icontains=NFKC(query))
     if category is not None and category != -1:
         qs = qs.filter(category=category)
-    return qs
+    return list(set([t.aliased_to if t.aliased_to else t for t in qs]))
 
 @tag_router.get('tag', response=TagWorkSchema)
 def tag(request: HttpRequest, tag_slug: str):
@@ -178,8 +181,14 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
 
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate
-def song_search(request: HttpRequest, query: str):
-    return MediaSong.objects.filter(title__icontains=query)
+def song_search(request: HttpRequest, query: str, tags: str | None = None):
+    qs = MediaSong.objects.filter(title__icontains=query)
+    if tags:
+        for tag in tags.split():
+            qs = qs.filter(tags=NFKC(tag))
+    elif query.isdigit():
+            qs = MediaSong.objects.filter(id=int(query)) | qs
+    return qs.distinct()
 
 @tag_router.get('song_relations', response=tuple[list[RelationSchema], list[SongSchema]])
 def song_relations(request: HttpRequest, song_id: int):
@@ -209,7 +218,7 @@ def song_tag_search(request: HttpRequest, query: str):
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted
-def song_tags(request: HttpRequest, song_id: int, tags: list[str]):
+def song_tags(request: HttpRequest, song_id: int, tags: list[Annotated[str, AfterValidator(NFKC)]]):
     song = get_object_or_404(MediaSong.objects, id=song_id)
     song.tags.set(tags)
     return

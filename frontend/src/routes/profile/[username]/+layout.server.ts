@@ -25,7 +25,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 				pathname: `profile/${params.username}/submissions`,
 				title: m.active_front_anteater_cry()
 			},
-			...(params.username !== locals.user.username
+			...(params.username !== locals.user?.username
 				? []
 				: [
 						{

@@ -54,6 +54,13 @@
 		results = results.concat(d!.items);
 		fetching = false;
 	};
+
+	const ext_cat_types = data.tag.category === 3
+								? SourceConnectionTypes
+								: ProfileConnectionTypes;
+ 	const ext_cat_links = data.tag.category === 3
+								? SourceConnectionLink
+								: ProfileConnectionLink;
 </script>
 
 <Section
@@ -93,6 +100,7 @@
 		<ul>
 			{#each data.connections[0] as s, i (i)}
 				<li>
+					<img src="/connection_favicons/{Object.entries(TagWorkConnectionTypes).find(([_,v])=>v===s.site)[0]}.png" alt={TagWorkConnectionTypes[s.site]} class="inline size-4">
 					<a href={TagWorkConnectionLink[s.site](s.content_id)}>
 						{TagWorkConnectionTypes[s.site]}
 					</a>
@@ -101,14 +109,11 @@
 			{#if data.connections[1]}
 				{#each data.connections[1] as s, i (i)}
 					<li>
+						<img src="/connection_favicons/{Object.entries(ext_cat_types).find(([_,v])=>v===s.site)[0]}.png" alt={ext_cat_types[s.site]} class="inline size-4">
 						<a
-							href={(data.tag.category === 3
-								? SourceConnectionLink
-								: ProfileConnectionLink)[s.site](s.content_id)}
+							href={ext_cat_links[s.site](s.content_id)}
 						>
-							{(data.tag.category === 3
-								? SourceConnectionTypes
-								: ProfileConnectionTypes)[s.site]}
+							{ext_cat_types[s.site]}
 						</a>
 					</li>
 				{/each}
@@ -154,7 +159,8 @@
 		{#if data.song_connections}
 			<ul>
 				{#each data.song_connections as s, i (i)}
-					<li>
+				<li>
+						<img src="/connection_favicons/{Object.entries(SongConnectionTypes).find(([_,v])=>v===s.site)[0]}.png" alt={SongConnectionTypes[s.site]} class="inline size-4">
 						<a href={SongConnectionLink[s.site](s.content_id)}>
 							{SongConnectionTypes[s.site]}
 						</a>

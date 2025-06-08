@@ -27,7 +27,13 @@
 		<ul>
 			{#each data.connections as s, i (i)}
 				<li>
-					<img src="/connection_favicons/{Object.entries(ProfileConnectionTypes).find(([_,v])=>v===s.site)[0]}.png" alt={ProfileConnectionTypes[s.site]} class="inline size-4">
+					<img
+						src="/connection_favicons/{Object.entries(ProfileConnectionTypes).find(
+							([_, v]) => v === s.site
+						)[0]}.png"
+						alt={ProfileConnectionTypes[s.site]}
+						class="inline size-4"
+					/>
 					<a href={ProfileConnectionLink[s.site](s.content_id)}>
 						{ProfileConnectionTypes[s.site]}
 					</a>

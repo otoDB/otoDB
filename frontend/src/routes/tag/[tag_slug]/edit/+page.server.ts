@@ -149,7 +149,7 @@ export const actions = {
 			)
 			.filter((v) => !!v);
 
-		let pings = [
+		const pings = [
 			client.PUT('/api/tag/connection', {
 				fetch,
 				body: connections

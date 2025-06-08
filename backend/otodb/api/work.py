@@ -2,7 +2,7 @@ from typing import List, Annotated
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, Avg, Count
+from django.db.models import Q, Avg, Count, Value
 
 from simple_history.utils import update_change_reason
 
@@ -37,11 +37,15 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
         for tag in tags.split():
             qs = qs.filter(tags=NFKC(tag))
     else:
-        qs = MediaWork.active_objects.filter(worksource__source_id=query) | qs
+        qs = qs.annotate(priority=Value(100))
+        qs = MediaWork.active_objects.filter(worksource__source_id=query).annotate(priority=Value(2)) | qs
         if query.startswith("https"):
-            qs = MediaWork.active_objects.filter(worksource__url=query) | qs
+            qs = MediaWork.active_objects.filter(worksource__url=query).annotate(priority=Value(1)) | qs
         if query.isdigit():
-            qs = MediaWork.active_objects.filter(id=int(query)) | qs
+            qs = MediaWork.active_objects.filter(id=int(query)).annotate(
+                priority=Value(0)
+            ) | qs
+        qs = qs.order_by('priority')
     return qs.distinct()
 
 @work_router.get('work', response=WorkSchema)

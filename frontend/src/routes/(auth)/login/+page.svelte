@@ -33,6 +33,9 @@
 				</tr>
 			</tbody>
 		</table>
+		<address>
+			<a href="/reset_password">{m.zippy_tense_raven_favor()}</a>
+		</address>
 		<input type="submit" value={m.inner_stale_anteater_walk()} />
 	</form>
 </Section>

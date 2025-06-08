@@ -7,7 +7,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.utils.crypto import get_random_string
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 
 from otodb.account.models import Account, Invitation
 

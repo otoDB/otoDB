@@ -1,0 +1,52 @@
+import { fail, redirect, type Actions } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import client, { forwardCookies } from '$lib/api';
+
+export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
+	if (!locals.user) {
+		const token = url.searchParams.get('token');
+		if (token) {
+			const { data: good } = await client.GET('/api/auth/reset_password', {
+				fetch,
+				params: { query: { token } }
+			});
+			if (!good) redirect(303, '/');
+		}
+
+		const { response } = await client.GET('/api/auth/csrf', { fetch });
+		forwardCookies(cookies, response);
+		return { token };
+	}
+};
+
+export const actions = {
+	reset: async ({ request, fetch }) => {
+		const data = await request.formData();
+		const password = data.get('password') as string,
+			confirm = data.get('confirm') as string,
+			token = data.get('token') as string;
+
+		if (!password || !confirm) return fail(400, { missing: true });
+		else if (password != confirm) return fail(400, { unmatch: true });
+
+		const { error } = await client.POST('/api/auth/reset_password', {
+			params: { query: { password, token } },
+			fetch
+		});
+
+		if (!error) redirect(303, '/logout');
+	},
+	request: async ({ request, fetch }) => {
+		const data = await request.formData();
+		const email = data.get('email') as string;
+
+		if (!email) return fail(400, { missing: true });
+
+		await client.PUT('/api/auth/reset_password', {
+			params: { query: { email } },
+			fetch
+		});
+
+		return { success: true };
+	}
+} satisfies Actions;

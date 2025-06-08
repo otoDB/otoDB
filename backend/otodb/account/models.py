@@ -60,6 +60,8 @@ class Account(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     date_created = models.DateTimeField(default=timezone.now)
 
+    reset_token = models.CharField(max_length=127, unique=True, null=True)
+
     objects = AccountManager()
 
     USERNAME_FIELD = "username"

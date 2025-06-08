@@ -32,13 +32,11 @@ def connection(request: HttpRequest, username: str):
     return user.profileconnection_set
 
 @profile_router.put('connection', auth=django_auth)
-def edit_connections(request: HttpRequest, username: str, payload: List[ConnectionSchema]):
+def edit_connections(request: HttpRequest, payload: List[ConnectionSchema]):
     for connection in payload:
         connection.content_id = connection.content_id.strip()
         assert(connection.content_id != '')
-    user = get_object_or_404(Account, username__iexact=username)
-    if user != request.user:
-        return 403
+    user = request.user
     ProfileConnection.objects.filter(profile=user).delete()
     for connection in payload:
         ProfileConnection.objects.create(profile=user, site=connection.site,

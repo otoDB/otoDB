@@ -20,7 +20,7 @@
 	})}
 	menuLinks={data.links}
 >
-	...
+	<a href="/reset_password">{m.true_tough_butterfly_sew()}</a>
 </Section>
 <Section title={m.jumpy_spry_canary_scoop()}>
 	<details>

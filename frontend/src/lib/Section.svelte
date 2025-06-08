@@ -33,7 +33,7 @@
 		}
 		&::after {
 			/* Clearfix */
-			content: "";
+			content: '';
 			display: block;
 			clear: both;
 		}

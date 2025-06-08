@@ -35,6 +35,7 @@ export const actions = {
 			)
 			.filter((v) => !!v);
 		await client.PUT('/api/profile/connection', {
+			fetch,
 			body: connections,
 			params: { query: { username: params.username! } }
 		});

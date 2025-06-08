@@ -4,6 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { ProfileConnectionTypes, ProfileConnectionLink, UserLevel } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import { x } from '@inlang/paraglide-js/urlpattern-polyfill';
 
 	let { data }: PageProps = $props();
 </script>
@@ -26,6 +27,7 @@
 		<ul>
 			{#each data.connections as s, i (i)}
 				<li>
+					<img src="/connection_favicons/{Object.entries(ProfileConnectionTypes).find(([_,v])=>v===s.site)[0]}.png" alt={ProfileConnectionTypes[s.site]} class="inline size-4">
 					<a href={ProfileConnectionLink[s.site](s.content_id)}>
 						{ProfileConnectionTypes[s.site]}
 					</a>

@@ -8,10 +8,9 @@
 
 {#snippet link(pathname: string, title: string)}
 	<li>
-		<!-- TODO: Remove important -->
 		<a
 			href={pathname}
-			class="!no-underline aria-[current=page]:!text-[var(--otodb-fainter-content)]"
+			class="no-underline aria-[current=page]:text-[var(--otodb-fainter-content)]"
 			aria-current={page.url.pathname === pathname ? 'page' : undefined}>{title}</a
 		>
 	</li>
@@ -44,7 +43,7 @@
 			</div>
 			<ul class="list-none space-y-0.5">
 				<li>
-					<a href="/admin" data-sveltekit-reload class="!no-underline"
+					<a href="/admin" data-sveltekit-reload class="no-underline"
 						>{m.simple_few_sheep_lend()}</a
 					>
 				</li>
@@ -90,7 +89,7 @@
 						href="/logout"
 						data-sveltekit-preload-data="tap"
 						data-sveltekit-reload
-						class="!no-underline">{m.best_front_swallow_play()}</a
+						class="no-underline">{m.best_front_swallow_play()}</a
 					>
 				</li>
 			{/if}

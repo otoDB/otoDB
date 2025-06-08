@@ -5,16 +5,12 @@
 		LanguageNames,
 		Languages,
 		ProfileConnectionLink,
-		ProfileConnectionParsers,
 		ProfileConnectionTypes,
 		SongConnectionLink,
-		SongConnectionParsers,
 		SongConnectionTypes,
 		SourceConnectionLink,
-		SourceConnectionParsers,
 		SourceConnectionTypes,
 		TagWorkConnectionLink,
-		TagWorkConnectionParsers,
 		TagWorkConnectionTypes,
 		WorkTagCategory
 	} from '$lib/enums';
@@ -24,7 +20,7 @@
 	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
 
@@ -78,52 +74,6 @@
 			) ?? [])
 		].join('\n') ?? ''
 	);
-	const update_connections = async (e: SubmitEvent) => {
-		e.preventDefault();
-		let parsers = Object.entries(TagWorkConnectionParsers);
-		const n_general_parsers = parsers.length;
-		if (category === 2 && data.tag.category === 2)
-			parsers = [...parsers, ...Object.entries(SongConnectionParsers)];
-		else if (category === 3 && data.tag.category === 3)
-			parsers = [...parsers, ...Object.entries(SourceConnectionParsers)];
-		else if (category === 4 && data.tag.category === 4)
-			parsers = [...parsers, ...Array.from(ProfileConnectionParsers.entries()).slice(1)];
-		const connections = [...new Set(urls.split('\n'))]
-			.filter((x) => x.trim() !== '')
-			.map(
-				(url) =>
-					parsers
-						.map((p, i) => ({
-							site: +p[0],
-							content_id: p[1](url),
-							t: i >= n_general_parsers ? category : 0
-						}))
-						.filter((v) => !!v.content_id)
-						.at(-1) // !!! Attention here
-			)
-			.filter((v) => !!v);
-		console.log(connections);
-
-		let pings = [
-			client.PUT('/api/tag/connection', {
-				body: connections
-					.filter((c) => c.t === 0)
-					.map(({ content_id, site }) => ({ content_id: content_id, site })),
-				params: { query: { tag_slug: data.tag.slug, t: 0 } }
-			})
-		];
-		if (category === data.tag.category && category >= 2 && category <= 4)
-			pings.push(
-				client.PUT('/api/tag/connection', {
-					body: connections
-						.filter((c) => c.t === category)
-						.map(({ content_id, site }) => ({ content_id, site })),
-					params: { query: { tag_slug: data.tag.slug, t: category } }
-				})
-			);
-		await Promise.all(pings);
-		goto(`/tag/${data.tag.slug}`, { invalidateAll: true });
-	};
 </script>
 
 <Section
@@ -312,8 +262,8 @@
 			</tbody>
 		</table>
 	</details>
-	<form onsubmit={update_connections}>
-		<textarea bind:value={urls} class="w-full"> </textarea>
+	<form action="?/connections" method="POST" use:enhance>
+		<textarea bind:value={urls} name="urls" class="w-full"> </textarea>
 		<input type="submit" />
 	</form>
 </Section>

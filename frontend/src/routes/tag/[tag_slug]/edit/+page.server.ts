@@ -1,7 +1,14 @@
 import client from '$lib/api';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { Languages, UserLevel } from '$lib/enums';
+import {
+	Languages,
+	ProfileConnectionParsers,
+	SongConnectionParsers,
+	SourceConnectionParsers,
+	TagWorkConnectionParsers,
+	UserLevel
+} from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 
 export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {
@@ -100,10 +107,68 @@ export const actions = {
 				query: {
 					tag_slug: params.tag_slug!,
 					md: data.get('md') as string,
-					lang: Languages[data.get('lang')]
+					lang: Languages[data.get('lang') as string]
 				}
 			}
 		});
+		redirect(303, `/tag/${params.tag_slug}`);
+	},
+	connections: async ({ request, fetch, params }) => {
+		const data = await request.formData();
+		const { data: tag, error: e } = await client.GET('/api/tag/tag', {
+			params: {
+				query: {
+					tag_slug: params.tag_slug!
+				}
+			},
+			fetch
+		});
+		if (e) fail(400);
+
+		const urls = (data.get('urls') as string) ?? '';
+		const category = tag.category;
+
+		let parsers = Object.entries(TagWorkConnectionParsers);
+		const n_general_parsers = parsers.length;
+		if (category === 2) parsers = [...parsers, ...Object.entries(SongConnectionParsers)];
+		else if (category === 3) parsers = [...parsers, ...Object.entries(SourceConnectionParsers)];
+		else if (category === 4)
+			parsers = [...parsers, ...Array.from(ProfileConnectionParsers.entries()).slice(1)];
+		const connections = [...new Set(urls.split('\n'))]
+			.filter((x) => x.trim() !== '')
+			.map(
+				(url) =>
+					parsers
+						.map((p, i) => ({
+							site: +p[0],
+							content_id: p[1](url),
+							t: i >= n_general_parsers ? category : 0
+						}))
+						.filter((v) => !!v.content_id)
+						.at(-1) // !!! Attention here
+			)
+			.filter((v) => !!v);
+
+		let pings = [
+			client.PUT('/api/tag/connection', {
+				fetch,
+				body: connections
+					.filter((c) => c.t === 0)
+					.map(({ content_id, site }) => ({ content_id: content_id, site })),
+				params: { query: { tag_slug: params.tag_slug!, t: 0 } }
+			})
+		];
+		if (category >= 2 && category <= 4)
+			pings.push(
+				client.PUT('/api/tag/connection', {
+					fetch,
+					body: connections
+						.filter((c) => c.t === category)
+						.map(({ content_id, site }) => ({ content_id, site })),
+					params: { query: { tag_slug: params.tag_slug!, t: category } }
+				})
+			);
+		await Promise.all(pings);
 		redirect(303, `/tag/${params.tag_slug}`);
 	}
 } satisfies Actions;

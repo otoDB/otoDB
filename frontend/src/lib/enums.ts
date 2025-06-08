@@ -251,10 +251,10 @@ export const SourceConnectionLink = {
 	6: (id: string) => `https://kitsu.io/anime/${id}`,
 	7: (id: string) => `https://www.anime-planet.com/anime/${id}`,
 	20: (id: string) => `https://www.imdb.com/title/${id}/`,
-	21: (id: string) =>
-		`https://erogamescape.dyndns.org/~ap2/ero/toukei_kaiseki/game.php?game=${id}`,
-	40: (id: string) => `https://vndb.org/${id}`,
-	41: (id: string) => `https://letterboxd.com/film/${id}/`
+	21: (id: string) => `https://vndb.org/${id}`,
+	40: (id: string) => `https://letterboxd.com/film/${id}/`,
+	41: (id: string) =>
+		`https://erogamescape.dyndns.org/~ap2/ero/toukei_kaiseki/game.php?game=${id}`
 };
 
 export const SourceConnectionParsers = {

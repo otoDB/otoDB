@@ -40,6 +40,8 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
         qs = MediaWork.active_objects.filter(worksource__source_id=query) | qs
         if query.startswith("https"):
             qs = MediaWork.active_objects.filter(worksource__url=query) | qs
+        if query.isdigit():
+            qs = MediaWork.active_objects.filter(id=int(query)) | qs
     return qs.distinct()
 
 @work_router.get('work', response=WorkSchema)

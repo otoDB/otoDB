@@ -13,7 +13,7 @@
 	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
 
 	let textarea: HTMLTextAreaElement;
-	let suggestions: string[] = $state([]);
+	let suggestions = $state([]);
 
 	const getWordAtPos = (str: string, pos: number) => {
 		let start = [...str.slice(0, pos)].reverse().join('').search(/\s/g);
@@ -38,7 +38,7 @@
 			params: { query: { query, limit: 10 } }
 		});
 		if (!data) return;
-		suggestions = data.items.map((tag) => tag.slug);
+		suggestions = data.items;
 	});
 
 	const updateValue = () => {
@@ -70,30 +70,41 @@
 		bind:this={textarea}
 		{...props}
 	></textarea>
-	<ul
-		class="absolute"
-		use:clickOutside
-		onOutclick={() => {
-			suggestions = [];
-		}}
-	>
-		{#each suggestions as t, i (i)}
-			<li>
-				<a
-					href={null}
-					onclick={() => {
-						textarea.value = replaceWordAtPos(
-							textarea.value,
-							textarea.selectionStart,
-							t + ' '
-						);
-						suggestions = [];
-						updateValue();
-					}}>{t}</a
-				>
-			</li>
-		{/each}
-	</ul>
+	{#if suggestions.length}
+		<ul
+			class="absolute list-none"
+			use:clickOutside
+			onOutclick={() => {
+				suggestions = [];
+			}}
+		>
+			{#each suggestions as t, i (i)}
+				<li class="bg-[var(--otodb-fainter-bg)] px-2 py-1 hover:bg-[var(--otodb-faint-bg)]">
+					<a
+						class="cursor-pointer"
+						href={null}
+						onclick={() => {
+							textarea.value = replaceWordAtPos(
+								textarea.value,
+								textarea.selectionStart,
+								t.slug + ' '
+							);
+							suggestions = [];
+							updateValue();
+						}}
+						>{t.name}
+						{#if t.slug !== t.name}<address>
+								({t.slug}
+								<!-- TODO extend lang prefs to song tags -->
+								{#if type === 'work'}, {t.lang_prefs
+										.map((p) => p.tag)
+										.join(', ')}{/if})
+							</address>{/if}</a
+					>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 </span>
 
 <style>

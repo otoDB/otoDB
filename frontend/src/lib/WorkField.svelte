@@ -55,28 +55,36 @@
 			><img class="w-56" src={value?.thumbnail} alt={value?.title} /></a
 		>
 	{/if}
-	<ul
-		class="absolute"
-		use:clickOutside
-		onOutclick={() => {
-			suggestions = [];
-		}}
-	>
-		{#each suggestions as v, i (i)}
-			<li>
-				<a
-					href={null}
-					onclick={() => {
-						value = v;
-						input = v.title;
-						suggestions = [];
-						locked_in = true;
-						if (oninput) oninput(self, v);
-					}}>{v.title}</a
-				>
-			</li>
-		{/each}
-	</ul>
+	{#if suggestions.length}
+		<table
+			class="absolute px-1"
+			use:clickOutside
+			onOutclick={() => {
+				suggestions = [];
+			}}
+		>
+			<tbody>
+				{#each suggestions as v, i (i)}
+					<tr class="w bg-[var(--otodb-fainter-bg)] p-1 hover:bg-[var(--otodb-faint-bg)]">
+						<td><img class="w-20" src={v.thumbnail} alt={v.title} /></td>
+						<td
+							><a
+								class="cursor-pointer"
+								href={null}
+								onclick={() => {
+									value = v;
+									input = v.title;
+									suggestions = [];
+									locked_in = true;
+									if (oninput) oninput(self, v);
+								}}>{v.title} ({v.id})</a
+							>
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/if}
 </span>
 
 <style>

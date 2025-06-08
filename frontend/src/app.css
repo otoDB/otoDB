@@ -42,14 +42,6 @@ hr {
 	color: var(--otodb-content-color);
 }
 
-thead {
-	background-color: var(--otodb-bg-color);
-}
-
-tbody > tr:nth-of-type(odd) {
-	background-color: var(--otodb-fainter-bg);
-}
-
 th,
 td {
 	padding: 0.1rem 0.2rem;
@@ -103,14 +95,18 @@ del {
 }
 
 @layer base {
+	thead {
+		background-color: var(--otodb-bg-color);
+	}
+	tbody > tr:nth-of-type(odd) {
+		background-color: var(--otodb-fainter-bg);
+	}
 	ul {
 		@apply list-inside list-disc;
 	}
-
 	ol {
 		@apply list-inside list-decimal;
 	}
-
 	a {
 		color: var(--otodb-content-color);
 		text-decoration: underline 1px;

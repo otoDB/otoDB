@@ -1,5 +1,6 @@
 from typing import Annotated
 
+from django.db.models import Value
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
@@ -187,7 +188,9 @@ def song_search(request: HttpRequest, query: str, tags: str | None = None):
         for tag in tags.split():
             qs = qs.filter(tags=NFKC(tag))
     elif query.isdigit():
-            qs = MediaSong.objects.filter(id=int(query)) | qs
+        qs = qs.annotate(priority=Value(100))
+        qs = MediaSong.objects.filter(id=int(query)).annotate(priority=Value(0)) | qs
+        qs = qs.order_by('priority')
     return qs.distinct()
 
 @tag_router.get('song_relations', response=tuple[list[RelationSchema], list[SongSchema]])

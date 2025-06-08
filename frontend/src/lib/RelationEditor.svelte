@@ -96,10 +96,10 @@
 	<tbody>
 		{#each relations as relation, i (i)}
 			<tr>
-				<td>{@render work(relation, !relation.swapped)}</td>
+				<td class="w-64">{@render work(relation, !relation.swapped)}</td>
 				<td>{m.grand_vexed_snail_ripple()}</td>
 				{#if invert_subordinate_phrase}
-					<td>{@render work(relation, relation.swapped)}</td>
+					<td class="w-64">{@render work(relation, relation.swapped)}</td>
 					<td>{m.clean_best_kangaroo_achieve()}</td>
 					<td
 						><select
@@ -125,7 +125,7 @@
 						</select></td
 					>
 					<td>{m.clean_best_kangaroo_achieve()}</td>
-					<td>{@render work(relation, relation.swapped)}</td>
+					<td class="w-64">{@render work(relation, relation.swapped)}</td>
 				{/if}
 				<td
 					><button type="button" onclick={swap_relation(i)}

@@ -14,6 +14,7 @@
 	<form method="POST" use:enhance>
 		{#if form?.missing}<p class="error">{m.tiny_round_shark_express()}</p>{/if}
 		{#if form?.failed}<p class="error">{form.message}</p>{/if}
+		{#if form?.unmatch}<p class="error">{m.front_clean_termite_treat()}</p>{/if}
 		<table>
 			<tbody>
 				<tr>
@@ -40,7 +41,7 @@
 					<td><input required type="password" name="password" /></td>
 				</tr>
 				<tr>
-					<th><label for="username">{m.lofty_pretty_maggot_hope()}</label></th>
+					<th><label for="confirm">{m.lofty_pretty_maggot_hope()}</label></th>
 					<td><input required type="password" name="confirm" /></td>
 				</tr>
 			</tbody>

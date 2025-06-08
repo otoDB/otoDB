@@ -106,6 +106,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/reset_password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Validate Reset Token */
+        get: operations["otodb_api_auth_validate_reset_token"];
+        /** Send Reset Password Token */
+        put: operations["otodb_api_auth_send_reset_password_token"];
+        /** Reset Password */
+        post: operations["otodb_api_auth_reset_password"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/query_external": {
         parameters: {
             query?: never;
@@ -1511,6 +1530,69 @@ export interface operations {
             };
         };
     };
+    otodb_api_auth_validate_reset_token: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+        };
+    };
+    otodb_api_auth_send_reset_password_token: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_auth_reset_password: {
+        parameters: {
+            query: {
+                password: string;
+                token?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_work_query_external: {
         parameters: {
             query: {
@@ -2046,9 +2128,7 @@ export interface operations {
     };
     otodb_api_profile_edit_connections: {
         parameters: {
-            query: {
-                username: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;

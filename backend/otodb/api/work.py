@@ -38,15 +38,15 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
             qs = qs.filter(tags=NFKC(tag))
     else:
         qs = qs.annotate(priority=Value(100))
-        qs = MediaWork.active_objects.filter(worksource__source_id=query).annotate(priority=Value(2)) | qs
+        qs = MediaWork.active_objects.filter(worksource__source_id=query).annotate(priority=Value(2)).union(qs)
         if query.startswith("https"):
-            qs = MediaWork.active_objects.filter(worksource__url=query).annotate(priority=Value(1)) | qs
+            qs = MediaWork.active_objects.filter(worksource__url=query).annotate(priority=Value(1)).union(qs)
         if query.isdigit():
             qs = MediaWork.active_objects.filter(id=int(query)).annotate(
                 priority=Value(0)
-            ) | qs
+            ).union(qs)
         qs = qs.order_by('priority')
-    return qs.distinct()
+    return qs
 
 @work_router.get('work', response=WorkSchema)
 def work(request: HttpRequest, work_id: int):

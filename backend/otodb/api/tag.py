@@ -189,9 +189,9 @@ def song_search(request: HttpRequest, query: str, tags: str | None = None):
             qs = qs.filter(tags=NFKC(tag))
     elif query.isdigit():
         qs = qs.annotate(priority=Value(100))
-        qs = MediaSong.objects.filter(id=int(query)).annotate(priority=Value(0)) | qs
+        qs = MediaSong.objects.filter(id=int(query)).annotate(priority=Value(0)).union(qs)
         qs = qs.order_by('priority')
-    return qs.distinct()
+    return qs
 
 @tag_router.get('song_relations', response=tuple[list[RelationSchema], list[SongSchema]])
 def song_relations(request: HttpRequest, song_id: int):

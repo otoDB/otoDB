@@ -110,7 +110,6 @@ del {
 		@apply list-inside list-decimal;
 	}
 
-
 	a {
 		color: var(--otodb-content-color); /* TODO: Remove */
 		text-decoration: underline 1px; /* TODO: Remove */

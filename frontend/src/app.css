@@ -37,11 +37,6 @@ body {
 	background-color: var(--otodb-bg-color);
 }
 
-a {
-	color: var(--otodb-content-color); /* TODO: Remove */
-	text-decoration: underline 1px; /* TODO: Remove */
-}
-
 hr {
 	width: 100%;
 	color: var(--otodb-content-color);
@@ -113,5 +108,11 @@ del {
 
 	ol {
 		@apply list-inside list-decimal;
+	}
+
+
+	a {
+		color: var(--otodb-content-color); /* TODO: Remove */
+		text-decoration: underline 1px; /* TODO: Remove */
 	}
 }

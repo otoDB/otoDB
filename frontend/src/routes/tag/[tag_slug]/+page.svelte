@@ -103,7 +103,11 @@
 						alt={TagWorkConnectionTypes[s.site]}
 						class="inline size-4"
 					/>
-					<a href={TagWorkConnectionLink[s.site](s.content_id)}>
+					<a
+						href={TagWorkConnectionLink[s.site](s.content_id)}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
 						{TagWorkConnectionTypes[s.site]}
 					</a>
 				</li>
@@ -118,7 +122,11 @@
 							alt={ext_cat_types[s.site]}
 							class="inline size-4"
 						/>
-						<a href={ext_cat_links[s.site](s.content_id)}>
+						<a
+							href={ext_cat_links[s.site](s.content_id)}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
 							{ext_cat_types[s.site]}
 						</a>
 					</li>
@@ -173,7 +181,11 @@
 							alt={SongConnectionTypes[s.site]}
 							class="inline size-4"
 						/>
-						<a href={SongConnectionLink[s.site](s.content_id)}>
+						<a
+							href={SongConnectionLink[s.site](s.content_id)}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
 							{SongConnectionTypes[s.site]}
 						</a>
 					</li>

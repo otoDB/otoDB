@@ -34,7 +34,11 @@
 						alt={ProfileConnectionTypes[s.site]}
 						class="inline size-4"
 					/>
-					<a href={ProfileConnectionLink[s.site](s.content_id)}>
+					<a
+						href={ProfileConnectionLink[s.site](s.content_id)}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
 						{ProfileConnectionTypes[s.site]}
 					</a>
 				</li>

@@ -112,7 +112,7 @@ del {
 	}
 
 	a {
-		color: var(--otodb-content-color); /* TODO: Remove */
-		text-decoration: underline 1px; /* TODO: Remove */
+		color: var(--otodb-content-color);
+		text-decoration: underline 1px;
 	}
 }

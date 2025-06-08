@@ -31,6 +31,12 @@
 		if (data.sources?.length === 1) goto('/work/unbound');
 		else invalidateAll();
 	};
+	const updateStatus = (source_id: number) => async (e) => {
+		await client.PUT('/api/work/source_origin', {
+			fetch,
+			params: { query: { source_id, status: e.target.value } }
+		});
+	};
 </script>
 
 <Section
@@ -100,7 +106,13 @@
 						<td class="whitespace-nowrap">{src.title}</td>
 						<td><CollapsibleText text={src.description}></CollapsibleText></td>
 						<td>{Platform[src.platform]}</td>
-						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+						<td class="whitespace-nowrap"
+							><select value={src.work_origin} onchange={updateStatus(src.id)}
+								>{#each WorkOrigin as w, i (i)}
+									<option value={i}>{w()}</option>
+								{/each}</select
+							></td
+						>
 						<td>{src.published_date}</td>
 						<td class="whitespace-nowrap"
 							><a href={src.url} target="_blank" rel="noopener noreferrer"

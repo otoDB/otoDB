@@ -88,7 +88,7 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
     tag = get_object_or_404(TagWork, slug=tag_slug)
     if tag.category == WorkTagCategory.SONG and payload.category != WorkTagCategory.SONG:
         tag.mediasong.delete()
-    elif tag.category != WorkTagCategory.SONG and payload.category == WorkTagCategory.SONG:
+    elif payload.category == WorkTagCategory.SONG:
         song_payload.title = song_payload.title.strip()
         song_payload.author = song_payload.author.strip()
         assert(song_payload.title)
@@ -101,7 +101,6 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
             song.save()
         except MediaSong.DoesNotExist:
             tag.category = WorkTagCategory.SONG
-            tag.save()
             song = MediaSong.objects.create(work_tag=tag, **song_payload.dict())
     elif tag.category == WorkTagCategory.CREATOR and payload.category != WorkTagCategory.CREATOR:
         TagWorkCreatorConnection.objects.filter(tag=tag).delete()

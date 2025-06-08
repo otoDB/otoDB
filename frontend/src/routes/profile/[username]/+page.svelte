@@ -24,7 +24,7 @@
 	</p>
 
 	{#if data.connections}
-		<ul>
+		<ul class="list-none">
 			{#each data.connections as s, i (i)}
 				<li>
 					<img

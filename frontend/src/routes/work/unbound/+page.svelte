@@ -60,6 +60,12 @@
 			loaded[i] = true;
 		}
 	};
+	const updateStatus = (source_id: number) => async (e) => {
+		await client.PUT('/api/work/source_origin', {
+			fetch,
+			params: { query: { source_id, status: e.target.value } }
+		});
+	};
 </script>
 
 <svelte:head>
@@ -98,8 +104,12 @@
 							<h4>
 								{m.mild_loud_shad_enchant({
 									type: m.large_polite_otter_thrive(),
-									name: WorkOrigin[src.work_origin]()
-								})}
+									name: ''
+								})}<select value={src.work_origin} onchange={updateStatus(src.id)}
+									>{#each WorkOrigin as w, i (i)}
+										<option value={i}>{w()}</option>
+									{/each}</select
+								>
 							</h4>
 							<RefreshButton source={src} />
 						</td>

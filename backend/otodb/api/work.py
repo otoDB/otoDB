@@ -13,7 +13,7 @@ from ninja.pagination import paginate
 
 from otodb.common import video_info, NFKC
 from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance
-from otodb.models.enums import Platform
+from otodb.models.enums import Platform, WorkOrigin
 from otodb.account.models import Account
 
 from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
@@ -149,6 +149,13 @@ def unbind_sources(request: HttpRequest, source_id: int):
     if src.media.worksource_set.count() == 1:
         src.media.delete()
     src.media = None
+    src.save()
+
+@work_router.put('source_origin', auth=django_auth)
+@user_is_editor
+def source_origin(request: HttpRequest, source_id: int, status: int):
+    src = get_object_or_404(WorkSource.active_objects, id=source_id)
+    src.work_origin = WorkOrigin(status).value
     src.save()
 
 @work_router.post('refresh_source', auth=django_auth)

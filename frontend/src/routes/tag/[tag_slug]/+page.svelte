@@ -93,7 +93,7 @@
 	{/if}
 
 	{#if data.connections}
-		<ul>
+		<ul class="list-none">
 			{#each data.connections[0] as s, i (i)}
 				<li>
 					<img
@@ -171,7 +171,7 @@
 			</tbody>
 		</table>
 		{#if data.song_connections}
-			<ul>
+			<ul class="list-none">
 				{#each data.song_connections as s, i (i)}
 					<li>
 						<img

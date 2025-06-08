@@ -299,6 +299,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/source_origin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Source Origin */
+        put: operations["otodb_api_work_source_origin"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/refresh_source": {
         parameters: {
             query?: never;
@@ -1891,6 +1908,27 @@ export interface operations {
         parameters: {
             query: {
                 source_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_source_origin: {
+        parameters: {
+            query: {
+                source_id: number;
+                status: number;
             };
             header?: never;
             path?: never;

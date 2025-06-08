@@ -97,9 +97,7 @@
 			{#each data.connections[0] as s, i (i)}
 				<li>
 					<img
-						src="/connection_favicons/{Object.entries(TagWorkConnectionTypes).find(
-							([_, v]) => v === s.site
-						)[0]}.png"
+						src="/connection_favicons/{TagWorkConnectionTypes[s.site]}.png"
 						alt={TagWorkConnectionTypes[s.site]}
 						class="inline size-4"
 					/>
@@ -116,9 +114,7 @@
 				{#each data.connections[1] as s, i (i)}
 					<li>
 						<img
-							src="/connection_favicons/{Object.entries(ext_cat_types).find(
-								([_, v]) => v === s.site
-							)[0]}.png"
+							src="/connection_favicons/{ext_cat_types[s.site]}.png"
 							alt={ext_cat_types[s.site]}
 							class="inline size-4"
 						/>
@@ -175,9 +171,7 @@
 				{#each data.song_connections as s, i (i)}
 					<li>
 						<img
-							src="/connection_favicons/{Object.entries(SongConnectionTypes).find(
-								([_, v]) => v === s.site
-							)[0]}.png"
+							src="/connection_favicons/{SongConnectionTypes[s.site]}.png"
 							alt={SongConnectionTypes[s.site]}
 							class="inline size-4"
 						/>

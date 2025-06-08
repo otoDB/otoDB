@@ -28,9 +28,7 @@
 			{#each data.connections as s, i (i)}
 				<li>
 					<img
-						src="/connection_favicons/{Object.entries(ProfileConnectionTypes).find(
-							([_, v]) => v === s.site
-						)[0]}.png"
+						src="/connection_favicons/{ProfileConnectionTypes[s.site]}.png"
 						alt={ProfileConnectionTypes[s.site]}
 						class="inline size-4"
 					/>

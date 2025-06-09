@@ -52,84 +52,100 @@
 	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
 	menuLinks={data.links}
 >
-	<div id="infobox">
-		<div>
-			{#if cover_select === -1}
-				<img
-					src={data.thumbnail}
-					alt={data.title}
-					class="h-[270px] w-[480px] object-cover"
-				/>
-			{:else}
-				<ExternalEmbed width={480} height={270} src={data.sources[cover_select]} />
-			{/if}
-			<div class="my-2">
-				<label
-					><input
-						hidden
-						type="radio"
-						name="cover_select"
-						value={-1}
-						bind:group={cover_select}
-					/>{m.heroic_ideal_orangutan_aid()}</label
-				>
-				{#each data.sources as s, i (i)}
+	<div>
+		<div class="flex w-full">
+			<div class="flex-shrink-0">
+				{#if cover_select === -1}
+					<img
+						src={data.thumbnail}
+						alt={data.title}
+						class="h-[270px] w-[480px] object-cover"
+					/>
+				{:else}
+					<ExternalEmbed width={480} height={270} src={data.sources[cover_select]} />
+				{/if}
+				<div class="my-2">
 					<label
 						><input
 							hidden
 							type="radio"
 							name="cover_select"
-							value={i}
+							value={-1}
 							bind:group={cover_select}
-						/>{Platform[s.platform]}{s.work_origin === 0
-							? ''
-							: ' ' + WorkOrigin[s.work_origin]()}</label
+						/>{m.heroic_ideal_orangutan_aid()}</label
 					>
-				{/each}
+					{#each data.sources as s, i (i)}
+						<label>
+							<input
+								hidden
+								type="radio"
+								name="cover_select"
+								value={i}
+								bind:group={cover_select}
+							/>
+							{Platform[s.platform]}{s.work_origin === 0
+								? ''
+								: ' ' + WorkOrigin[s.work_origin]()}
+						</label>
+					{/each}
+				</div>
 			</div>
-		</div>
-		<div>
-			<table>
-				<tbody>
-					<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.title}</td></tr>
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					<tr><th>{m.clear_lucky_peacock_pick()}</th><td>{@html data.description}</td></tr
-					>
-					<tr><th>{m.good_dark_bumblebee_spur()}</th><td>{Rating[data.rating]()}</td></tr>
-				</tbody>
-			</table>
-			{#if data.user}
-				<h2>{m.watery_sunny_seal_heal()}</h2>
-				<table>
-					<tbody>
-						<tr>
-							<th>{m.stale_loose_squid_cut()}</th>
-							<td>
-								<button onclick={showLists}>{m.proud_every_goat_affirm()}</button>
-								{#if userListsShown}
-									<table class="absolute">
-										<tbody>
-											{#each userLists as list, i (i)}
-												<tr
-													><td>{list[0].name}</td><td
-														><input
-															type="checkbox"
-															checked={list[1]}
-															oninput={() => {
-																toggleWork(list[0].id);
-															}}
-														/></td
-													></tr
-												>
-											{/each}
-										</tbody>
-									</table>
-								{/if}
-							</td>
-						</tr>
-					</tbody>
-				</table>
-			{/if}
+			<div class="ml-2 flex-grow">
+				<div>
+					<table class="w-full">
+						<tbody>
+							<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.title}</td></tr
+							>
+							<tr>
+								<th>{m.clear_lucky_peacock_pick()}</th>
+								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+								<td>{@html data.description}</td>
+							</tr>
+							<tr>
+								<th>{m.good_dark_bumblebee_spur()}</th>
+								<td>{Rating[data.rating]()}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				{#if data.user}
+					<div class="mt-2 w-full">
+						<h2>{m.watery_sunny_seal_heal()}</h2>
+						<table class="w-full">
+							<tbody>
+								<tr>
+									<th>{m.stale_loose_squid_cut()}</th>
+									<td>
+										<button onclick={showLists}>
+											{m.proud_every_goat_affirm()}
+										</button>
+										{#if userListsShown}
+											<table class="absolute">
+												<tbody>
+													{#each userLists as list, i (i)}
+														<tr>
+															<td>{list[0].name}</td>
+															<td>
+																<input
+																	type="checkbox"
+																	checked={list[1]}
+																	oninput={() => {
+																		toggleWork(list[0].id);
+																	}}
+																/>
+															</td>
+														</tr>
+													{/each}
+												</tbody>
+											</table>
+										{/if}
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				{/if}
+			</div>
 		</div>
 		<ul id="work-tags">
 			{#each data.tags as tag, i (i)}
@@ -190,12 +206,6 @@
 </Section>
 
 <style>
-	#infobox {
-		display: grid;
-		grid-template-columns: 1fr 2fr;
-		column-gap: 2rem;
-		align-items: center;
-	}
 	#work-tags {
 		grid-column: 1 / span 2;
 		border-top: var(--otodb-faint-content) 1px solid;

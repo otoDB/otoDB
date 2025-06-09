@@ -54,28 +54,36 @@
 	{:else}
 		<input type="text" oninput={debounce(search)} disabled={locked_in} bind:value={input} />
 	{/if}
-	<ul
-		class="absolute"
-		use:clickOutside
-		onOutclick={() => {
-			suggestions = [];
-		}}
-	>
-		{#each suggestions as v, i (i)}
-			<li>
-				<a
-					href={null}
-					onclick={() => {
-						value = v;
-						input = v.title;
-						suggestions = [];
-						locked_in = true;
-						if (oninput) oninput(self, v);
-					}}>{v.title}</a
-				>
-			</li>
-		{/each}
-	</ul>
+	{#if suggestions.length}
+		<table
+			class="absolute px-1"
+			use:clickOutside
+			onOutclick={() => {
+				suggestions = [];
+			}}
+		>
+			<tbody>
+				{#each suggestions as v, i (i)}
+					<tr class="w bg-[var(--otodb-fainter-bg)] p-1 hover:bg-[var(--otodb-faint-bg)]">
+						<td
+							><a
+								class="cursor-pointer"
+								href={null}
+								onclick={() => {
+									value = v;
+									input = v.title;
+									suggestions = [];
+									locked_in = true;
+									if (oninput) oninput(self, v);
+								}}>{v.title}</a
+							>
+						</td>
+						<td>{v.author}</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{/if}
 </span>
 
 <style>

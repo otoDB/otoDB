@@ -71,6 +71,9 @@
 				(data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink)[site](
 					content_id
 				)
+			) ?? []),
+			...(data.song_connections?.map(({ site, content_id }) =>
+				SongConnectionLink[site](content_id)
 			) ?? [])
 		].join('\n') ?? ''
 	);
@@ -148,6 +151,22 @@
 		<input type="submit" />
 	</form>
 </Section>
+
+{#if category === 2 && data.tag.category === 2}
+	<Section
+		title={m.mild_loud_shad_enchant({
+			type: m.grand_nice_pony_belong() + ' ' + m.alive_these_jay_pick(),
+			name: data.tag!.song!.title
+		})}
+		menuLinks={data.song_links}
+	>
+		<RelationEditor
+			init_relations={data.song_relations}
+			obj_type="song"
+			this_id={data.tag.song?.id}
+		></RelationEditor>
+	</Section>
+{/if}
 
 {#if data.details.aliases.length}
 	<Section title={m.alive_lofty_opossum_laugh()}>
@@ -267,21 +286,6 @@
 		<input type="submit" />
 	</form>
 </Section>
-{#if category === 2 && data.tag.category === 2}
-	<Section
-		title={m.mild_loud_shad_enchant({
-			type: m.grand_nice_pony_belong(),
-			name: data.tag!.song!.title
-		})}
-		menuLinks={data.song_links}
-	>
-		<RelationEditor
-			init_relations={data.song_relations}
-			obj_type="song"
-			this_id={data.tag.song?.id}
-		></RelationEditor>
-	</Section>
-{/if}
 
 <style>
 	label.wiki-lang-tab {

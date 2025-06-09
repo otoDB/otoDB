@@ -4,17 +4,29 @@
 
 We recommend using `uv`.
 
-```sh
-# Copy the base .env file
-cp .env.example .env
+1. Setup
 
-# Make necessary modifications to .env, e.g. add accepted hosts
+    ```sh
+    # Copy the base .env file
+    cp .env.example .env
 
-# Migrate changes and create admin account
-uv run _setup.py
+    # Migrate changes and create admin account
+    uv run _setup.py
 
-# Run
-uv run manage.py runserver
-```
+    # Run
+    uv run manage.py runserver
+    ```
 
-Be careful: the script `_clear.py` deletes the database.
+2. Generete `cookies.txt` by `yt-dlp` (i don't know how to), or browser extensions (e.g. [cookies.txt](https://addons.mozilla.org/ja/firefox/addon/cookies-txt/)) and place.
+
+    ```
+    # Netscape HTTP Cookie File
+    # https://curl.haxx.se/rfc/cookie_spec.html
+
+    ...
+    ```
+
+### Memo
+
+-   Default user username: `admin` and password: `admin`.
+-   Be careful: the script `_clear.py` deletes the database.

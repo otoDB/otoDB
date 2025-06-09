@@ -127,6 +127,8 @@ export const SongConnectionTypes = {
 	3: 'MusicBrainz',
 	RATEYOURMUSIC: 4,
 	4: 'Rate Your Music',
+	DOJINMUSICINFO: 5,
+	5: '同人音楽info',
 
 	REMYWIKI: 20,
 	20: 'RemyWiki',
@@ -145,27 +147,29 @@ export const SongConnectionLink = {
 	2: (id: string) => `https://www.discogs.com/master/${id}`,
 	3: (id: string) => `https://musicbrainz.org/recording/${id}`,
 	4: (id: string) => `https://rateyourmusic.com/song/${id}/`,
+	5: (id: string) => `https://www.dojin-music.info/song/${id}/`,
 	20: (id: string) => `https://remywiki.com/${id}`,
 	21: (id: string) => `https://silentblue.remywiki.com/${id}`,
 	22: (id: string) => `https://zenius-i-vanisher.com/v5.2/songdb.php?songid=${id}`,
 	30: (id: string) => `https://medley.bepis.io/wiki/${id}`
 };
 
-export const SongConnectionParsers = [
-	(link: string) => link.match(/^https?:\/\/vgmdb\.net\/album\/(\d+)(?:\/*)?$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/vocadb\.net\/S\/(\d+)(?:\/*)?$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/www\.discogs\.com\/master\/(\d+)(?:\/*)?$/)?.[1],
-	(link: string) =>
+export const SongConnectionParsers = {
+	0: (link: string) => link.match(/^https?:\/\/vgmdb\.net\/album\/(\d+)(?:\/*)?$/)?.[1],
+	1: (link: string) => link.match(/^https?:\/\/vocadb\.net\/S\/(\d+)(?:\/*)?$/)?.[1],
+	2: (link: string) => link.match(/^https?:\/\/www\.discogs\.com\/master\/(\d+)(?:\/*)?$/)?.[1],
+	3: (link: string) =>
 		link.match(/^https?:\/\/musicbrainz\.org\/recording\/([a-f0-9-]+)(?:\/*)?$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/rateyourmusic\.com\/song\/([^/]+)(?:\/+)?$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/silentblue\.remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
-	(link: string) =>
+	4: (link: string) => link.match(/^https?:\/\/rateyourmusic\.com\/song\/([^/]+)(?:\/+)?$/)?.[1],
+	5: (link: string) => link.match(/^https?:\/\/www.dojin-music\.info\/song\/(\d+)(?:\/+)?$/)?.[1],
+	20: (link: string) => link.match(/^https?:\/\/remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
+	21: (link: string) => link.match(/^https?:\/\/silentblue\.remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
+	22:(link: string) =>
 		link.match(
 			/^https?:\/\/zenius-i-vanisher\.com\/v5\.2\/songdb\.php\?songid=(\d+)(?:\/*)?$/
 		)?.[1],
-	(link: string) => link.match(/^https?:\/\/medley\.bepis\.io\/wiki\/(.+?)(?:\/*)?$/)?.[1]
-];
+	30: (link: string) => link.match(/^https?:\/\/medley\.bepis\.io\/wiki\/(.+?)(?:\/*)?$/)?.[1]
+};
 
 export const TagWorkConnectionTypes = {
 	WEBSITE: 0,

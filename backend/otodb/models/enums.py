@@ -72,6 +72,7 @@ class SongConnectionTypes(models.IntegerChoices):
     DISCOGS       = 2, "Discogs"
     MUSICBRAINZ   = 3, "MusicBrainz"
     RATEYOURMUSIC = 4, "Rate Your Music"
+    DOJINMUSIC    = 5, "dojin-music.info"
 
     REMYWIKI      = 20, "RemyWiki"
     SILENTBLUE    = 21, "Silent Blue"

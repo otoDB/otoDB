@@ -69,7 +69,7 @@
 	<div>
 		<span>{m.empty_legal_chicken_taste()}</span>
 		{#each data.tree as node, i (i)}
-			> <a href={node.slug}>{node.name}</a>
+			> <a href={node.slug}>{node.name}</a>&nbsp;
 		{/each}
 		>
 		<span>{data.display_name}</span>

@@ -13,7 +13,7 @@ from ninja.pagination import paginate
 
 from otodb.common import video_info, NFKC
 from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance
-from otodb.models.enums import Platform, WorkOrigin
+from otodb.models.enums import Platform, WorkOrigin, Rating
 from otodb.account.models import Account
 
 from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
@@ -114,7 +114,7 @@ def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
 
 @work_router.get('random', response=list[WorkSchema])
 def random(request: HttpRequest, n: int = 1):
-    return MediaWork.active_objects.order_by("?")[:n]
+    return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("?")[:n]
 
 class SlimWorkSchema(ModelSchema):
     id: int

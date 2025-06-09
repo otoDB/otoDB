@@ -35,7 +35,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
     qs =  MediaWork.active_objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
     if tags:
         for tag in tags.split():
-            qs = qs.filter(tags=NFKC(tag))
+            qs = qs.filter(tags__slug=NFKC(tag))
     else:
         qs = qs.annotate(priority=Value(100))
         qs = MediaWork.active_objects.filter(worksource__source_id=query).annotate(priority=Value(2)).union(qs)

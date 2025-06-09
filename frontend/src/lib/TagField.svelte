@@ -29,16 +29,14 @@
 	<input type="text" oninput={debounce(search)} bind:value {...props} />
 	{#if suggestions.length}
 		<ul
-			class="absolute list-none px-1"
+			class="absolute list-none"
 			use:clickOutside
 			onOutclick={() => {
 				suggestions = [];
 			}}
 		>
 			{#each suggestions as t, i (i)}
-				<li
-					class="bg-[var(--otodb-fainter-bg)] p-1 px-2 py-1 hover:bg-[var(--otodb-faint-bg)]"
-				>
+				<li class="bg-[var(--otodb-fainter-bg)] px-2 py-1 hover:bg-[var(--otodb-faint-bg)]">
 					<a
 						class="cursor-pointer"
 						href={null}
@@ -47,10 +45,11 @@
 							suggestions = [];
 						}}
 						>{t.name}
-						{#if t.slug !== t.name}<address>
-								({t.slug}
-								<!-- TODO extend lang prefs to song tags -->
-								{#if type === 'work'}, {t.lang_prefs
+						{#if t.slug !== t.name}<address class="inline">
+								({t.slug}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
+										'',
+										...t.lang_prefs
+									]
 										.map((p) => p.tag)
 										.join(', ')}{/if})
 							</address>{/if}</a

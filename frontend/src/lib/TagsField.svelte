@@ -93,10 +93,11 @@
 							updateValue();
 						}}
 						>{t.name}
-						{#if t.slug !== t.name}<address>
-								({t.slug}
-								<!-- TODO extend lang prefs to song tags -->
-								{#if type === 'work'}, {t.lang_prefs
+						{#if t.slug !== t.name}<address class="inline">
+								({t.slug}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
+										'',
+										...t.lang_prefs
+									]
 										.map((p) => p.tag)
 										.join(', ')}{/if})
 							</address>{/if}</a

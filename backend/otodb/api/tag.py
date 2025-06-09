@@ -185,7 +185,7 @@ def song_search(request: HttpRequest, query: str, tags: str | None = None):
     qs = MediaSong.objects.filter(title__icontains=query)
     if tags:
         for tag in tags.split():
-            qs = qs.filter(tags=NFKC(tag))
+            qs = qs.filter(tags__slug=NFKC(tag))
     elif query.isdigit():
         qs = qs.annotate(priority=Value(100))
         qs = MediaSong.objects.filter(id=int(query)).annotate(priority=Value(0)).union(qs)

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import client from './api';
+	import { m } from './paraglide/messages';
 	import type { components } from './schema';
 	import { clickOutside, debounce } from './ui';
 
@@ -49,7 +50,7 @@
 				value = null;
 				locked_in = false;
 				if (oninput) oninput(self, null);
-			}}>Change</button
+			}}>{m.quick_happy_trout_amuse()}</button
 		>
 		<a target="_blank" href="/work/{value?.id}"
 			><img class="w-56" src={value?.thumbnail} alt={value?.title} /></a

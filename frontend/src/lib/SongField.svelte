@@ -1,5 +1,6 @@
 <script lang="ts">
 	import client from './api';
+	import { m } from './paraglide/messages';
 	import type { components } from './schema';
 	import { clickOutside, debounce } from './ui';
 
@@ -48,7 +49,7 @@
 				value = null;
 				locked_in = false;
 				if (oninput) oninput(self, null);
-			}}>Change</button
+			}}>{m.quick_happy_trout_amuse()}</button
 		>
 		<a target="_blank" href="/tag/{value?.work_tag}">{value?.title}</a>
 	{:else}

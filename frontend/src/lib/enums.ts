@@ -147,7 +147,7 @@ export const SongConnectionLink = {
 	2: (id: string) => `https://www.discogs.com/master/${id}`,
 	3: (id: string) => `https://musicbrainz.org/recording/${id}`,
 	4: (id: string) => `https://rateyourmusic.com/song/${id}/`,
-	5: (id: string) => `https://www.dojin-music.info/song/${id}/`,
+	5: (id: string) => `https://www.dojin-music.info/song/${id}`,
 	20: (id: string) => `https://remywiki.com/${id}`,
 	21: (id: string) => `https://silentblue.remywiki.com/${id}`,
 	22: (id: string) => `https://zenius-i-vanisher.com/v5.2/songdb.php?songid=${id}`,
@@ -164,7 +164,7 @@ export const SongConnectionParsers = {
 	5: (link: string) => link.match(/^https?:\/\/www.dojin-music\.info\/song\/(\d+)(?:\/+)?$/)?.[1],
 	20: (link: string) => link.match(/^https?:\/\/remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
 	21: (link: string) => link.match(/^https?:\/\/silentblue\.remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
-	22:(link: string) =>
+	22: (link: string) =>
 		link.match(
 			/^https?:\/\/zenius-i-vanisher\.com\/v5\.2\/songdb\.php\?songid=(\d+)(?:\/*)?$/
 		)?.[1],

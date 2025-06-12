@@ -166,6 +166,8 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
         if Type is TagWorkCreatorConnection:
             assert(connection.site != ProfileConnectionTypes.WEBSITE) # Should be in general connection instead)
     tag = get_object_or_404(TagWork, slug=tag_slug)
+    if t != WorkTagCategory.GENERAL:
+        assert(t == tag.category)
     if Type is MediaSongConnection:
         song = tag.mediasong
         assert(song is not None)

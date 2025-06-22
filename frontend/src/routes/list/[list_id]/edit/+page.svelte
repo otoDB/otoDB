@@ -5,6 +5,7 @@
 	import { enhance } from '$app/forms';
 	import { debounce } from '$lib/ui';
 	import client from '$lib/api';
+	import { goto } from '$app/navigation';
 
 	let { data, form }: PageProps = $props();
 
@@ -78,6 +79,14 @@
 			entries_copy = [...entries];
 		}
 	}
+
+	const pull = async () => {
+		await client.POST('/api/list/pull_upstream', {
+			fetch,
+			params: { query: { list_id: data.list.id } }
+		});
+		goto(`/list/${data.list.id}`, { invalidateAll: true });
+	};
 </script>
 
 <svelte:head>
@@ -116,6 +125,9 @@
 	<form action="/list/{data.list.id}/delete">
 		<button data-sveltekit-preload-data="tap">{m.key_sea_chicken_boost()}</button>
 	</form>
+	{#if data.list.upstream}
+		<button onclick={pull}>Refresh from upstream</button>
+	{/if}
 </Section>
 <Section title={m.bald_clear_marlin_grasp()}>
 	{#if entries.length}

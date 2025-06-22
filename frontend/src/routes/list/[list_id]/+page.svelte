@@ -52,6 +52,9 @@
 			{m.curly_safe_lynx_fond()}
 		{/if}
 	</h3>
+	{#if data.list.upstream}
+		<address><a href={data.list.upstream}>Tracking upstream</a></address>
+	{/if}
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
 </Section>
 

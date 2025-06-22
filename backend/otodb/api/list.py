@@ -113,14 +113,11 @@ def delete(request: HttpRequest, list_id: int):
     lst.delete()
     return
 
-@list_router.post('import', auth=django_auth, response=int)
-def import_ext(request: HttpRequest, url: str):
-    info = playlist_info(url)
-    list_ = Pool.objects.create(name=info['title'], description=info['description'], author=request.user)
-    PoolUpstream.objects.create(pool=list_, upstream=url)
-
+def import_ext_into_pool(info, list_: Pool, user):
     with ProcessPoolExecutor(mp_context=multiprocessing.get_context("fork")) as executor:
         infos = executor.map(video_info, info['entries'])
+
+    old_entries = list_.poolitem_set.values_list('work__id', flat=True)
 
     new_tag_instances, pool_items = [], []
     for i, vid_info in enumerate(list(infos)):
@@ -128,12 +125,14 @@ def import_ext(request: HttpRequest, url: str):
             list_.description += f'\nFailed to fetch {info['entries'][i]}'
             continue
 
-        src, _ = WorkSource.from_url(vid_info['url'], user=request.user, is_reupload=False, info=vid_info)
+        src, _ = WorkSource.from_url(vid_info['url'], user=user, is_reupload=False, info=vid_info)
         if getattr(src, 'rejection', None):
             continue
-        elif src.media is not None or request.user.level >= Account.Levels.EDITOR:
+        elif src.media is not None or user.level >= Account.Levels.EDITOR:
             if src.media is not None:
                 work = src.media
+                if work.id in old_entries:
+                    continue
             else:
                 work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
                 src.media = work
@@ -148,6 +147,26 @@ def import_ext(request: HttpRequest, url: str):
         elif src.media is None:
             list_.pending_items.add(src)
 
-    TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True) # bulk_create does not handle M2M so we do this manually
+    list_.save()
+    # bulk_create does not handle M2M so we do this manually
+    TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True)
     PoolItem.objects.bulk_create(pool_items)
+
+@list_router.post('import', auth=django_auth, response=int)
+def import_ext(request: HttpRequest, url: str):
+    info = playlist_info(url)
+    list_ = Pool.objects.create(name=info['title'], description=info['description'], author=request.user)
+    PoolUpstream.objects.create(pool=list_, upstream=url)
+
+    import_ext_into_pool(info, list_, request.user)
+
     return list_.id
+
+@list_router.post('pull_upstream', auth=django_auth)
+def pull_upstream(request: HttpRequest, list_id: int):
+    lst = get_object_or_404(Pool, id=list_id)
+    if lst.author != request.user:
+        return 403
+
+    info = playlist_info(lst.poolupstream.upstream)
+    import_ext_into_pool(info, lst, request.user)

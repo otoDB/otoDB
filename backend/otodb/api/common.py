@@ -73,9 +73,10 @@ class TagWorkDetailsSchema(Schema):
     aliases: list[TagWorkSchema]
 
 class WorkSourceRejectionSchema(ModelSchema):
+    by: ProfileSchema
     class Meta:
         model = WorkSourceRejection
-        fields = ['reason', 'by']
+        fields = ['reason']
 
 class WorkSourceSchema(ModelSchema):
     id: int
@@ -109,9 +110,15 @@ class ListSchema(ModelSchema):
     id: int
     author: ProfileSchema
     pending_items: list[WorkSourceSchema]
+    upstream: str | None = Field(None, alias="poolupstream")
     class Meta:
         model = Pool
         fields = ['name', 'description']
+
+    @field_validator("upstream", mode="before", check_fields=False)
+    @classmethod
+    def upstream_str(cls, value) -> str:
+        return value.upstream
 
 def perm_decorator_ctor(uf):
     def decorator(f):

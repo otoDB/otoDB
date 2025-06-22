@@ -629,6 +629,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/list/pull_upstream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pull Upstream */
+        post: operations["otodb_api_list_pull_upstream"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tag/search": {
         parameters: {
             query?: never;
@@ -1143,10 +1160,9 @@ export interface components {
         };
         /** WorkSourceRejectionSchema */
         WorkSourceRejectionSchema: {
+            by: components["schemas"]["ProfileSchema"];
             /** Reason */
             reason: string;
-            /** By */
-            by: number;
         };
         /** WorkSourceSchema */
         WorkSourceSchema: {
@@ -1193,6 +1209,8 @@ export interface components {
             author: components["schemas"]["ProfileSchema"];
             /** Pending Items */
             pending_items: components["schemas"]["WorkSourceSchema"][];
+            /** Upstream */
+            upstream?: string | null;
             /** Name */
             name: string;
             /** Description */
@@ -2465,6 +2483,26 @@ export interface operations {
                 content: {
                     "application/json": number;
                 };
+            };
+        };
+    };
+    otodb_api_list_pull_upstream: {
+        parameters: {
+            query: {
+                list_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

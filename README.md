@@ -4,9 +4,9 @@ otoDB is a community-driven website consisting of a collaborative user-managed d
 
 ## Setup
 
-If you use VSCode, we recommend to open [workspace](./otodb.code-workspace).
+If you use VSCode, you can use the [workspace](./otodb.code-workspace).
 
-Refer to respective readme for the setup each division.
+Refer to respective README's for each component.
 
 -   [frontend](./frontend/README.md)
 -   [backend](./backend/README.md)

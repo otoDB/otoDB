@@ -69,7 +69,10 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
     global ydl, niconico_ie, jar
 
     jar = MozillaCookieJar(cookie_file)
-    jar.load()
+    try:
+        jar.load()
+    except OSError:
+        pass
 
     opts = { 'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True }
     if cookie_file:
@@ -195,10 +198,5 @@ def playlist_info(link):
         # TODO fail for unsupported playlist types
 
     info['entries'] = [entry['url'] for entry in info['entries']]
-    
-    if info['description'] != '':
-        info['description'] += '\n\n'
-
-    info['description'] += f'Extracted from {info['webpage_url']}'
 
     return { keys[key]: info[key] for key in keys if key in info }

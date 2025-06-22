@@ -44,3 +44,7 @@ class PoolItem(OrderedModel):
     class Meta(OrderedModel.Meta):
         verbose_name = 'List Entry'
         verbose_name_plural = 'List Entries'
+
+class PoolUpstream(models.Model):
+    pool = models.OneToOneField(Pool, null=False, on_delete=models.CASCADE)
+    upstream = models.URLField(null=False, blank=False)

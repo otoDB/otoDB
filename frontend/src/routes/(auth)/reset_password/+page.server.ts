@@ -27,14 +27,14 @@ export const actions = {
 			token = data.get('token') as string;
 
 		if (!password || !confirm) return fail(400, { missing: true });
-		else if (password != confirm) return fail(400, { unmatch: true });
+		else if (password != confirm) return fail(400, { mismatch: true });
 
 		const { error } = await client.POST('/api/auth/reset_password', {
 			params: { query: { password, token } },
 			fetch
 		});
 
-		if (!error) redirect(303, '/logout');
+		if (!error) return { reset_success: true };
 	},
 	request: async ({ request, fetch }) => {
 		const data = await request.formData();

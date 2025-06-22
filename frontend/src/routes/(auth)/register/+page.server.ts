@@ -21,7 +21,7 @@ export const actions = {
 
 		if (!username || !email || !password || !confirm)
 			return fail(400, { username, email, missing: true });
-		else if (password != confirm) return fail(400, { username, email, unmatch: true });
+		else if (password != confirm) return fail(400, { username, email, mismatch: true });
 
 		const { response, error } = await client.POST('/api/auth/register', {
 			params: { query: { username, password, email, invite } },

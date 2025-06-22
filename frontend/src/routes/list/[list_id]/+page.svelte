@@ -84,7 +84,13 @@
 						<label class="grid grid-cols-[15rem_1fr] gap-5">
 							<input class="hidden" type="radio" value={i} bind:group={current} />
 							<WorkCard work={entry.work} />
-							<p>{entry.description}</p>
+							{#if entry.description}
+								<p>{entry.description}</p>
+							{:else}
+								<p class="text-[var(--otodb-fainter-content)]">
+									[{m.simple_less_marlin_enchant()}]
+								</p>
+							{/if}
 						</label>
 					</li>
 				{/each}
@@ -107,11 +113,11 @@
 							>
 						</h3>
 						<h4>{Platform[src.platform]} {src.published_date}</h4>
-						{#if src.rejection_reason}
+						{#if src.rejection}
 							<p class="text-red-400">
 								{m.mild_loud_shad_enchant({
 									type: m.weary_spicy_fly_attend(),
-									name: src.rejection_reason
+									name: src.rejection.reason
 								})}
 							</p>
 						{/if}

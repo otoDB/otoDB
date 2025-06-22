@@ -33,7 +33,7 @@
 					<h4>
 						{m.mild_loud_shad_enchant({
 							type: m.weary_spicy_fly_attend(),
-							name: src.rejection_reason
+							name: src.rejection.reason
 						})}
 					</h4>
 				</span>

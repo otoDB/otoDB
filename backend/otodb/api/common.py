@@ -7,7 +7,7 @@ from ninja import Schema, ModelSchema, Field, Query
 
 from otodb.account.models import Account
 from otodb.models import (
-    MediaWork, WorkSource, MediaSong,
+    MediaWork, WorkSource, MediaSong, WorkSourceRejection,
     TagWork, TagSong, TagWorkLangPreference, WikiPage,
     Pool, PoolItem,
     WorkRelation, SongRelation
@@ -72,9 +72,15 @@ class TagWorkDetailsSchema(Schema):
     wiki_page: list[WikiPageSchema]
     aliases: list[TagWorkSchema]
 
+class WorkSourceRejectionSchema(ModelSchema):
+    class Meta:
+        model = WorkSourceRejection
+        fields = ['reason', 'by']
+
 class WorkSourceSchema(ModelSchema):
     id: int
     added_by: ProfileSchema
+    rejection: WorkSourceRejectionSchema | None = None
     class Meta:
         model = WorkSource
         fields = [
@@ -83,8 +89,7 @@ class WorkSourceSchema(ModelSchema):
             'work_width', 'work_height',
             'title', 'description',
             'work_origin', 'work_status',
-            'thumbnail', 'rejection_reason',
-            'source_id'
+            'thumbnail', 'source_id'
         ]
 
 class WorkSchema(ModelSchema):

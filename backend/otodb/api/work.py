@@ -12,7 +12,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info, NFKC
-from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance
+from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection
 from otodb.models.enums import Platform, WorkOrigin, Rating
 from otodb.account.models import Account
 
@@ -204,7 +204,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
     if src.media is not None:
         return 409, {'message': "Conflict, a work with this source already exists."}
-    if src.rejection_reason is not None:
+    if getattr(src, 'rejection', None):
         return 400, {'message': "Bad Request, This source has already been rejected"}
 
     has_work = work_id or request.user.level >= Account.Levels.EDITOR
@@ -226,7 +226,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_
 @user_is_editor
 def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | None = None):
     src = get_object_or_404(WorkSource.active_objects, id=source_id)
-    assert(src.media is None and src.rejection_reason is None)
+    assert(src.media is None and not getattr(src, 'rejection', None))
 
     info = video_info(src.url) # Hopefully still available!
 
@@ -251,11 +251,11 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
 @user_is_editor
 def reject_source(request: HttpRequest, source_id: int, reason: str):
     src = get_object_or_404(WorkSource.active_objects, id=source_id)
-    src.rejection_reason = request.user.username + ': ' + reason
+    src.rejection = WorkSourceRejection.objects.create(source=src, by=request.user, reason=reason)
     src.save()
     return
 
 @work_router.get('unbound', auth=django_auth, response=List[WorkSourceSchema])
 @user_is_editor
 def get_unbound_sources(request: HttpRequest, pending: bool):
-    return WorkSource.objects.filter(media__isnull=True, rejection_reason__isnull=pending)
+    return WorkSource.objects.filter(media__isnull=True, rejection__isnull=pending)

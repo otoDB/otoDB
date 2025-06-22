@@ -1141,11 +1141,19 @@ export interface components {
              */
             date_created?: string;
         };
+        /** WorkSourceRejectionSchema */
+        WorkSourceRejectionSchema: {
+            /** Reason */
+            reason: string;
+            /** By */
+            by: number;
+        };
         /** WorkSourceSchema */
         WorkSourceSchema: {
             /** Id */
             id: number;
             added_by: components["schemas"]["ProfileSchema"];
+            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
             /** Platform */
             platform: number;
             /** Url */
@@ -1175,8 +1183,6 @@ export interface components {
             work_status: number;
             /** Thumbnail */
             thumbnail?: string | null;
-            /** Rejection Reason */
-            rejection_reason?: string | null;
             /** Source Id */
             source_id: string;
         };
@@ -1211,6 +1217,7 @@ export interface components {
             /** Id */
             id: number;
             added_by: components["schemas"]["ProfileSchema"];
+            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
             /** Platform */
             platform: number;
             /** Url */
@@ -1240,8 +1247,6 @@ export interface components {
             work_status: number;
             /** Thumbnail */
             thumbnail?: string | null;
-            /** Rejection Reason */
-            rejection_reason?: string | null;
             /** Source Id */
             source_id: string;
             /** Media */

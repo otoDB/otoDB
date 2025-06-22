@@ -17,16 +17,9 @@ We recommend using `uv`.
     uv run manage.py runserver
     ```
 
-2. Generete `cookies.txt` by `yt-dlp` (i don't know how to), or browser extensions (e.g. [cookies.txt](https://addons.mozilla.org/ja/firefox/addon/cookies-txt/)) and place.
+2. Optionally provide a `cookies.txt` file in Netscape cookies.txt format for use when fetching information from external websites. You can also use browser extensions to extract them from a session (e.g. [cookies.txt](https://addons.mozilla.org/ja/firefox/addon/cookies-txt/)).
 
-    ```
-    # Netscape HTTP Cookie File
-    # https://curl.haxx.se/rfc/cookie_spec.html
+### Notes
 
-    ...
-    ```
-
-### Memo
-
--   Default user username: `admin` and password: `admin`.
+-   Default user username specified in .env.example: `admin` and password: `admin`.
 -   Be careful: the script `_clear.py` deletes the database.

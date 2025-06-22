@@ -9,7 +9,7 @@ from otodb.common import video_info
 
 class ActiveManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(rejection_reason__isnull=True)
+        return super().get_queryset().filter(rejection__isnull=True)
 
 class WorkSource(models.Model):
     media = models.ForeignKey(MediaWork, on_delete=models.CASCADE, null=True)
@@ -35,7 +35,6 @@ class WorkSource(models.Model):
     uploader_id = models.CharField(max_length=1000, null=False, blank=False)
 
     added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
-    rejection_reason = models.CharField(max_length=1000, null=True, blank=True)
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -82,3 +81,8 @@ class WorkSource(models.Model):
                 work_width=info.get('work_width', None), work_height=info.get('work_height', None),
                 added_by=user, uploader_id=info['uploader_id'])
         return src, info
+
+class WorkSourceRejection(models.Model):
+    source = models.OneToOneField(WorkSource, null=False, on_delete=models.CASCADE, related_name='rejection')
+    reason = models.CharField(max_length=1000, null=False, blank=False)
+    by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.RESTRICT)

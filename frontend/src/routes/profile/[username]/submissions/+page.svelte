@@ -11,8 +11,8 @@
 	let page = $state(0);
 
 	let approved = $derived(results.filter((s) => s.media));
-	let pending = $derived(results.filter((s) => !s.media && !s.rejection_reason));
-	let rejected = $derived(results.filter((s) => s.rejection_reason));
+	let pending = $derived(results.filter((s) => !s.media && !s.rejection));
+	let rejected = $derived(results.filter((s) => s.rejection));
 
 	$effect(() => {
 		client
@@ -97,7 +97,7 @@
 				{#each rejected as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
-						<td class="whitespace-nowrap">{src.rejection_reason}</td>
+						<td class="whitespace-nowrap">{src.rejection.reason}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
 						<td class="whitespace-nowrap"

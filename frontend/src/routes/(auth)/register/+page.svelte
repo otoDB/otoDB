@@ -14,7 +14,7 @@
 	<form method="POST" use:enhance>
 		{#if form?.missing}<p class="error">{m.tiny_round_shark_express()}</p>{/if}
 		{#if form?.failed}<p class="error">{form.message}</p>{/if}
-		{#if form?.unmatch}<p class="error">{m.front_clean_termite_treat()}</p>{/if}
+		{#if form?.mismatch}<p class="error">{m.front_clean_termite_treat()}</p>{/if}
 		<table>
 			<tbody>
 				<tr>

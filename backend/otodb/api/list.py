@@ -11,7 +11,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info, playlist_info
-from otodb.models import Pool, PoolItem, WorkSource, TagWork, TagWorkInstance, MediaWork
+from otodb.models import Pool, PoolItem, PoolUpstream, WorkSource, TagWork, TagWorkInstance, MediaWork
 from otodb.account.models import Account
 
 from .common import ListSchema, ListItemSchema
@@ -117,6 +117,7 @@ def delete(request: HttpRequest, list_id: int):
 def import_ext(request: HttpRequest, url: str):
     info = playlist_info(url)
     list_ = Pool.objects.create(name=info['title'], description=info['description'], author=request.user)
+    PoolUpstream.objects.create(pool=list_, upstream=url)
 
     with ProcessPoolExecutor(mp_context=multiprocessing.get_context("fork")) as executor:
         infos = executor.map(video_info, info['entries'])
@@ -128,7 +129,7 @@ def import_ext(request: HttpRequest, url: str):
             continue
 
         src, _ = WorkSource.from_url(vid_info['url'], user=request.user, is_reupload=False, info=vid_info)
-        if src.rejection_reason is not None:
+        if getattr(src, 'rejection', None):
             continue
         elif src.media is not None or request.user.level >= Account.Levels.EDITOR:
             if src.media is not None:

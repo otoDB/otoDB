@@ -119,13 +119,13 @@
 </Section>
 <Section title={m.bald_clear_marlin_grasp()}>
 	{#if entries.length}
-		<table>
+		<table class="w-full">
 			<tbody>
 				{#each entries as entry, i (entry.ui_id)}
 					<tr ondragenter={debounce(dragenter, 50)} data-ridx={i}
-						><th>{i + 1}</th><td
+						><th>{i + 1}</th><td class="w-10"
 							><div
-								class="border pr-5 pl-5 select-none"
+								class="w-10 border text-center select-none"
 								draggable="true"
 								{ondragstart}
 								{ondragend}
@@ -133,7 +133,7 @@
 							>
 								=
 							</div></td
-						><td>
+						><td class="w-56">
 							<a target="_blank" href="/work/{entry.work.id}"
 								><img
 									class="w-56"
@@ -148,6 +148,7 @@
 							</h3>
 						</td><td
 							><textarea
+								class="min-h-30 w-full"
 								value={entry.description}
 								oninput={debounce(update_description)}
 							></textarea></td

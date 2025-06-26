@@ -126,7 +126,7 @@
 		<button data-sveltekit-preload-data="tap">{m.key_sea_chicken_boost()}</button>
 	</form>
 	{#if data.list.upstream}
-		<button onclick={pull}>Refresh from upstream</button>
+		<button onclick={pull}>{m.honest_tiny_sparrow_gaze()}</button>
 	{/if}
 </Section>
 <Section title={m.bald_clear_marlin_grasp()}>

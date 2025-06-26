@@ -53,7 +53,7 @@
 		{/if}
 	</h3>
 	{#if data.list.upstream}
-		<address><a href={data.list.upstream}>Tracking upstream</a></address>
+		<address><a href={data.list.upstream}>{m.male_red_platypus_borrow()}</a></address>
 	{/if}
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
 </Section>

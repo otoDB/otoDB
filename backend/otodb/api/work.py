@@ -25,8 +25,15 @@ class ExternalQuery(Schema):
     tags: List[TagWorkSchema]
 
 @work_router.get('query_external', response=ExternalQuery)
-def query_external(request: HttpRequest, platform: str, id: str):
-    work = get_object_or_404(WorkSource.active_objects, platform=Platform.from_str(platform), source_id=id)
+def query_external(request: HttpRequest, url: str | None = None, platform: str | None = None, id: str | None = None):
+    if url:
+        work = get_object_or_404(WorkSource.active_objects, url=url)
+    elif platform and id:
+        work = get_object_or_404(WorkSource.active_objects, platform=Platform.from_str(platform), source_id=id)
+    else:
+        # TODO: raise a more specific error
+        raise ValueError("Either 'url' or both 'platform' and 'id' parameters must be provided")
+
     return { 'tags': work.media.tags, 'work_id': work.media.id }
 
 @work_router.get('search', response=List[WorkSchema])

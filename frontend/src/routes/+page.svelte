@@ -10,6 +10,7 @@
 <svelte:head>
 	<title>{m.fine_late_chicken_quiz()}</title>
 	<meta name="description" content={m.glad_born_mouse_taste()} />
+	<meta property="og:site_name" content="otodb.net" />
 </svelte:head>
 
 <Section title={m.fine_late_chicken_quiz()}>

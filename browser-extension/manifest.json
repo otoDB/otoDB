@@ -4,26 +4,31 @@
     "version": "1.0.0",
     "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
 
+	"action": {
+        "default_popup": "popup.html",
+        "default_title": "otoDB"
+    },
+
     "content_scripts": [
       {
         "matches": [
-          "*://*.youtube.com/watch*",
-          "*://*.bilibili.com/video*",
-          "*://*.nicovideo.jp/*",
-          "*://*.soundcloud.com/*"
+          "https://*.youtube.com/watch*",
+          "https://*.bilibili.com/video*",
+          "https://*.nicovideo.jp/*",
+          "https://*.soundcloud.com/*"
         ],
         "js": ["database.js"],
-        "css": ["style.css"]
+        "css": ["popup.css"]
       },
       {
         "matches": [
-          "*://*.nicovideo.jp/*"
+          "https://*.nicovideo.jp/*"
         ],
         "js": ["niconico.js"]
       },
       {
         "matches": [
-          "*://*.nicovideo.jp/*"
+          "https://*.nicovideo.jp/*"
         ],
         "js": ["injector.js"],
         "run_at": "document_start"
@@ -33,15 +38,17 @@
     "web_accessible_resources": [
       {
         "resources": ["injected.js"],
-        "matches": ["*://*.nicovideo.jp/*"]
+        "matches": ["https://*.nicovideo.jp/*"]
       }
     ],
-  
+
     "permissions": [
-      "declarativeNetRequestWithHostAccess"
+      "declarativeNetRequestWithHostAccess",
+	  "activeTab"
     ],
     "host_permissions": [
-      "*://*.nicovideo.jp/*"
+      "https://otodb.net/*",
+      "https://*.nicovideo.jp/*"
     ],
     "declarative_net_request": {
       "rule_resources": [

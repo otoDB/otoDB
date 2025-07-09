@@ -1,151 +1,118 @@
-const main = async ({inject, div, div_ready, query}) => {
-    const OTODB_URL = `https://otodb.net`;
+const OTODB_URL = `https://otodb.net`;
 
-    // 1. temp interface
-    if (!div) {
-        div = document.createElement('DIV');
-        div.id = 'otodb-tags';
-        inject(div);
-    }
-    else div.innerHTML = '';
-
-    if (div_ready) div_ready(div)
-
-    let link = document.createElement('A');
-    link.innerText = "otoDB";
-    link.href = `${OTODB_URL}`;
-    div.appendChild(link);
-
-    let status = document.createElement('P');
-    status.innerText = 'Fetching...';
-    div.appendChild(status);
-
-    // 2. ping endpoint 
-    const response = await fetch(`${OTODB_URL}/api/work/query_external?${new URLSearchParams(query)}`,
-        { mode: 'cors' }
-    ).catch(r => { status.innerText = 'Cannot reach the database.'; });
-
-    // 3. update interface with response
-    if (response.ok) {
-        status.remove();
-        const { work_id, tags } = await response.json();
-        tags.forEach((tag) => {
-            let a = document.createElement('A');
-            a.innerText = tag.name;
-            a.href = `${OTODB_URL}/tag/${tag.slug}`;
-            a.target = '_blank';
-            div.appendChild(a);
-        });
-        link.innerText = "View this work on otoDB";
-        link.href = `${OTODB_URL}/work/${work_id}`;
-        link.target = '_blank';
-    }
-    else if (response.status === 404) {
-        status.innerText = 'This work is not in the database.';
-        let add = document.createElement('A');
-        add.innerText = "Add this work to otoDB...";
-        add.href = `${OTODB_URL}/work/add?${new URLSearchParams({ url: window.location.toString() })}`;
-        add.target = '_blank';
-        div.appendChild(add);    
-    }
-    else status.innerText = 'Cannot reach the database.';
+const getSiteInfo = (url) => {
+	if (url.hostname.endsWith('youtube.com')) {
+		const match = url.href.match(/v=([a-zA-Z0-9_-]{11})/);
+		if (match) {
+			return {
+				platform: 'youtube',
+				id: match[1]
+			};
+		}
+	}
+	else if (url.hostname.endsWith('bilibili.com')) {
+		const match = url.href.match(/\/video\/(BV[a-zA-Z0-9]{10})\//);
+		if (match) {
+			return {
+				platform: 'bilibili',
+				id: match[1]
+			};
+		}
+	}
+	else if (url.hostname.endsWith('nicovideo.jp')) {
+		const match = url.href.match(/\/watch\/([ns]m[0-9]+)/);
+		if (match) {
+			return {
+				platform: 'niconico',
+				id: match[1]
+			};
+		}
+	}
+	else if (url.hostname.endsWith('soundcloud.com')) {
+		return {
+			url: `${url.protocol}//${url.hostname}${url.pathname}`
+		};
+	}
 };
 
-const wait_for_target = (get_target, mutation_props, mutation_host = document) => new Promise(resolve => {
-    let t = get_target([]);
-    if (t) return resolve(t);
+const updateUI = (container, status) => {
+    container.innerHTML = '';
 
-    const observer = new MutationObserver((records, observer) => {
-        let target = get_target(records);
-        if (target) {
-            resolve(target);
-            observer.disconnect();
-        }
+    let mainLink = document.createElement('A');
+    mainLink.innerText = "otoDB";
+    mainLink.href = OTODB_URL;
+    mainLink.target = '_blank';
+    container.appendChild(mainLink);
+
+    let statusElement = document.createElement('P');
+    statusElement.innerText = status;
+    container.appendChild(statusElement);
+
+    return { mainLink, statusElement };
+};
+
+const displayResults = (container, work_id, tags, mainLink) => {
+    const { statusElement } = updateUI(container, '');
+    statusElement.remove();
+
+    // Update main link to point to the work
+    mainLink.innerText = "View this work on otoDB";
+    mainLink.href = `${OTODB_URL}/work/${work_id}`;
+
+    // Add tag links
+    tags.forEach((tag) => {
+        let tagLink = document.createElement('A');
+        tagLink.innerText = tag.name;
+        tagLink.href = `${OTODB_URL}/tag/${tag.slug}`;
+        tagLink.target = '_blank';
+        container.appendChild(tagLink);
     });
-    observer.observe(mutation_host , mutation_props);
-});
-
-const init = async () => {    
-    if (window.location.hostname.endsWith('youtube.com')) {
-        const get_query = () => ({
-            platform: 'youtube',
-            id: window.location.toString().match(/v=([a-zA-Z0-9_-]{11})/)[1]
-        });
-
-        const target = await wait_for_target(records => document.querySelector('ytd-watch-metadata #top-row'), { subtree: true, childList: true });
-        const div = await new Promise(resolve => main({
-            div_ready: resolve,
-            inject: node => target.insertAdjacentElement('afterend', node),
-            div: null,
-            query: get_query(),
-        }));
-        const spa_target = await wait_for_target(records => document.querySelector('#movie_player video'), { subtree: true, childList: true });
-
-        while (true) {
-            await wait_for_target(records => records.some(record => record.type === 'attributes' && record.attributeName === 'src'), { attributes: true }, spa_target);
-            main({
-                div: div,
-                query: get_query(),
-            });
-        }
-    }
-    else if (window.location.hostname.endsWith('bilibili.com')) {
-        const get_query = () => ({
-            platform: 'bilibili',
-            id: window.location.toString().match(/\/video\/(BV[a-zA-Z0-9]{10})\//)[1]
-        });
-        const get_div = () => new Promise(resolve => main({
-            div_ready: resolve,
-            // We put it outside #app -- the reactive (meta)-framework used fails if we insert unexpected nodes inside #app
-            inject: node => document.querySelector('#app').insertAdjacentElement('afterend', node),
-            div: null,
-            query: get_query(),
-        })), set_style = div => {
-            // TODO this is not ideal...
-            div.style.position = 'fixed';
-            div.style.bottom = 0;
-            div.style.zIndex = 1;
-        };
-
-        let div = await get_div();
-        set_style(div);
-        const spa_target = await wait_for_target(records => document.querySelector('video'), { subtree: true, childList: true });
-
-        while (true) {
-            await wait_for_target(records => records.some(record => record.type === 'attributes' && record.attributeName === 'src'), { attributes: true }, spa_target);
-            div.remove();
-            div = await get_div();
-            set_style(div);
-        }
-    }
-    else if (window.location.hostname.endsWith('nicovideo.jp')) {
-        const get_query = () => ({
-            platform: 'niconico',
-            id: window.location.toString().match(/\/watch\/(sm[0-9]+)/)[1]
-        });
-
-        const target = await wait_for_target(records => document.getElementsByClassName('grid-area_[meta]')[0]?.firstElementChild, { subtree: true, childList: true });
-        const div = await new Promise(resolve => main({
-            div_ready: resolve,
-            inject: node => target.insertAdjacentElement('afterend', node),
-            div: null,
-            query: get_query(),
-        }));
-        
-        while (true) {
-            const spa_target = await wait_for_target(records => document.querySelector('video'), { subtree: true, childList: true });
-            await wait_for_target(records => records.some(record => record.type === 'attributes' && record.attributeName === 'src'), { attributes: true }, spa_target);
-            main({
-                div: div,
-                query: get_query(),
-            });
-        }
-    }
-    else if (window.location.hostname.endsWith('soundcloud.com'))
-        ; // TODO
 };
 
-if (document.readyState === "complete" || document.readyState === "interactive")
-    init();
-else
-    document.addEventListener("DOMContentLoaded", init, false);
+const displayNotFound = (container, currentUrl) => {
+    const { statusElement } = updateUI(container, 'This work is not in the database.');
+
+    let addLink = document.createElement('A');
+    addLink.innerText = "Add this work to otoDB...";
+    addLink.href = `${OTODB_URL}/work/add?${new URLSearchParams({ url: currentUrl })}`;
+    addLink.target = '_blank';
+    container.appendChild(addLink);
+};
+
+const init = async () => {
+    const container = document.getElementById('otodb-tags');
+
+    try {
+        // Get current tab information
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const siteInfo = getSiteInfo(new URL(tab.url));
+
+        if (!siteInfo) {
+            updateUI(container, 'This site is not supported.');
+            return;
+        }
+
+        const { mainLink } = updateUI(container, 'Fetching...');
+
+        const response = await fetch(`${OTODB_URL}/api/work/query_external?${new URLSearchParams(siteInfo)}`, {
+            mode: 'cors'
+        });
+
+        if (response.ok) {
+            const { work_id, tags } = await response.json();
+            displayResults(container, work_id, tags, mainLink);
+        }
+        else if (response.status === 404) {
+            displayNotFound(container, tab.url);
+        }
+        else {
+            updateUI(container, 'Cannot reach the database.');
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        updateUI(container, 'An error occurred while fetching data.');
+    }
+};
+
+document.addEventListener('DOMContentLoaded', init);

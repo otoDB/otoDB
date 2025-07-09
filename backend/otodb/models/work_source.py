@@ -91,6 +91,7 @@ class WorkSource(models.Model):
                 if new_tags:
                     self.media.tagworkinstance_set.filter(work_tag__in=new_tags).update(instance_imported_from_source=True)
         else:
+            print(f"Failed to refresh WorkSource {self.pk} - {self.url}: No info found.")
             self.work_status = WorkStatus.DOWN
 
         self.save()

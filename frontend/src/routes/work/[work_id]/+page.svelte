@@ -93,7 +93,8 @@
 							<tr>
 								<th>{m.clear_lucky_peacock_pick()}</th>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								<td class="whitespace-pre-wrap">{@html data.description}</td>
+								<td><div class="description-cell">{@html data.description}</div></td
+								>
 							</tr>
 							<tr>
 								<th>{m.good_dark_bumblebee_spur()}</th>
@@ -212,6 +213,12 @@
 		& > li {
 			margin: 0;
 		}
+	}
+	.description-cell {
+		white-space: pre-wrap;
+		max-height: 15em;
+		overflow-y: auto;
+		word-wrap: break-word;
 	}
 	th {
 		white-space: nowrap;

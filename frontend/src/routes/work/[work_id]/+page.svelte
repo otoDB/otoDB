@@ -166,6 +166,7 @@
 				<th>{m.large_polite_otter_thrive()}</th>
 				<th>{m.civil_trick_oryx_clap()}</th>
 				<th>{m.big_dry_seahorse_succeed()}</th>
+				<th>{m.nice_tense_mule_grasp()}</th>
 				<th>{m.noisy_moving_newt_belong()}</th>
 				{#if data.user}
 					<th>{m.mushy_proof_hornet_dig()}</th>
@@ -187,7 +188,18 @@
 					>
 					<td
 						>{#if src.work_width}{src.work_width}x{src.work_height}{:else}{m.simple_less_marlin_enchant()}{/if}</td
-					><td class="whitespace-nowrap"
+					>
+					<td class="whitespace-nowrap">
+						{#if src.work_duration}
+							{Math.floor(src.work_duration / 60)}:{(
+								'0' +
+								(src.work_duration % 60)
+							).slice(-2)}
+						{:else}
+							{m.simple_less_marlin_enchant()}
+						{/if}
+					</td>
+					<td class="whitespace-nowrap"
 						><a href={src.url} target="_blank" rel="noopener noreferrer"
 							>{m.noisy_moving_newt_belong()}</a
 						></td

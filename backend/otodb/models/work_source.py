@@ -77,12 +77,19 @@ class WorkSource(models.Model):
                 self.info_payload = full_info
 
             if self.media:
+                from .tag import TagWork
                 new_tags = []
                 for tag in info.get('tags', []):
-                    tag_obj, created = self.media.tags.get_or_create(name=tag)
-                    if created:
-                        new_tags.append(tag_obj.id)
-                self.media.tagworkinstance_set.filter(work_tag__in=new_tags).update(instance_imported_from_source=True)
+                    try:
+                        tag_obj, created = TagWork.objects.get_or_create(name=tag)
+                        self.media.tags.add(tag_obj)
+                        if created:
+                            new_tags.append(tag_obj.pk)
+                    except Exception:
+                        tag_obj = TagWork.objects.get(name=tag)
+                        self.media.tags.add(tag_obj)
+                if new_tags:
+                    self.media.tagworkinstance_set.filter(work_tag__in=new_tags).update(instance_imported_from_source=True)
         else:
             self.work_status = WorkStatus.DOWN
 

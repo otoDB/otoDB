@@ -70,9 +70,14 @@ class MediaWorkAdmin(MediaAdmin):
 class MediaSongAdmin(MediaAdmin):
     inlines = [SongRelationAInline, SongRelationBInline]
 
-admin.site.register([
-    Pool, WorkSource
-])
+class WorkSourceAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'title', 'platform', 'work_status', 'published_date']
+    list_filter = ['work_status', 'platform', 'work_origin']
+    search_fields = ['title', 'url', 'uploader_id']
+    readonly_fields = ['info_payload']
+
+admin.site.register(WorkSource, WorkSourceAdmin)
+admin.site.register(Pool)
 admin.site.register(TagWork, TagWorkAdmin)
 admin.site.register(TagSong, TagWorkAdmin)
 admin.site.register(MediaWork, MediaWorkAdmin)

@@ -57,12 +57,14 @@ class WorkSource(models.Model):
         Args:
             use_cache: If True, use existing info_payload instead of requesting new data.
         """
+        full_info = None
+
         if use_cache and self.info_payload:
             info = process_video_info(self.info_payload, self.url)
         else:
             info, full_info = video_info(self.url)
 
-        if info and full_info:
+        if info:
             self.title = info['title']
             self.description = info['description']
             self.uploader_id = info['uploader_id']
@@ -71,7 +73,8 @@ class WorkSource(models.Model):
             self.work_height = info.get('work_height', self.work_height)
             self.work_duration = info.get('work_duration', self.work_duration)
 
-            self.info_payload = full_info
+            if full_info is not None:
+                self.info_payload = full_info
 
             if self.media:
                 new_tags = []

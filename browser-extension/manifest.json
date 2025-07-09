@@ -12,16 +12,6 @@
     "content_scripts": [
       {
         "matches": [
-          "https://*.youtube.com/watch*",
-          "https://*.bilibili.com/video*",
-          "https://*.nicovideo.jp/*",
-          "https://*.soundcloud.com/*"
-        ],
-        "js": ["database.js"],
-        "css": ["popup.css"]
-      },
-      {
-        "matches": [
           "https://*.nicovideo.jp/*"
         ],
         "js": ["niconico.js"]

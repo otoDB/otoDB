@@ -27,7 +27,7 @@
             const title = item.querySelector("title")?.textContent || "";
             const link = item.querySelector("link")?.textContent?.split("?")[0] || "";
             const pubDate = (new Date(item.querySelector("pubDate")?.textContent));
-          
+
             const descriptionEl = new DOMParser().parseFromString(item.querySelector("description")?.textContent || "", "text/html");
             let thumbnailUrl = descriptionEl.querySelector('.nico-thumbnail img')?.src || "";
             if (thumbnailUrl) {
@@ -38,9 +38,9 @@
                 description = decodeURIComponent(description);
             }
             const info = descriptionEl.querySelector('.nico-info')?.textContent || "";
-  
+
             const videoId = link.split("/").pop();
-          
+
             rssVideoData.push({ videoId, title, link, pubDate, thumbnailUrl, description, info });
         });
 
@@ -94,7 +94,7 @@
                     break;
                 }
             }
-        }    
+        }
     }
 
     async function getServerResponseJson(url) {
@@ -129,35 +129,70 @@
         if (thumbBox) {
             const thumbWrap = document.createElement('div');
             thumbWrap.className = 'uadWrap';
-            thumbWrap.innerHTML = `
-            <div class="itemThumbBox">
-                <div class="itemThumb" data-video-thumbnail="" data-id="${rssItem.videoId}">
-                    <a href="/watch/${rssItem.videoId}" class="itemThumbWrap" data-link="">
-                        <img
-                            class="thumb" src="${rssItem.thumbnailUrl}" alt="${rssItem.title}"
-                            data-thumbnail="" decoding="async" loading="lazy"
-                            onerror="if(this.src.endsWith('.M')) this.src = this.src.slice(0, -2);"
-                        >
-                    </a>
-                </div>
-                <span class="videoLength">-:--</span>
-            </div>
-            <div class="balloon recent active" data-message="" style="display:none"></div>
-            `;
+
+            const itemThumbBox = document.createElement('div');
+            itemThumbBox.className = 'itemThumbBox';
+
+            const itemThumb = document.createElement('div');
+            itemThumb.className = 'itemThumb';
+            itemThumb.setAttribute('data-video-thumbnail', '');
+            itemThumb.setAttribute('data-id', rssItem.videoId);
+
+            const thumbLink = document.createElement('a');
+            thumbLink.href = `/watch/${rssItem.videoId}`;
+            thumbLink.className = 'itemThumbWrap';
+            thumbLink.setAttribute('data-link', '');
+
+            const thumbImg = document.createElement('img');
+            thumbImg.className = 'thumb';
+            thumbImg.src = rssItem.thumbnailUrl;
+            thumbImg.alt = rssItem.title;
+            thumbImg.setAttribute('data-thumbnail', '');
+            thumbImg.setAttribute('decoding', 'async');
+            thumbImg.setAttribute('loading', 'lazy');
+            thumbImg.onerror = function() {
+                if(this.src.endsWith('.M')) this.src = this.src.slice(0, -2);
+            };
+
+            const videoLength = document.createElement('span');
+            videoLength.className = 'videoLength';
+            videoLength.textContent = '-:--';
+
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon recent active';
+            balloon.setAttribute('data-message', '');
+            balloon.style.display = 'none';
+
+            thumbLink.appendChild(thumbImg);
+            itemThumb.appendChild(thumbLink);
+            itemThumbBox.appendChild(itemThumb);
+            itemThumbBox.appendChild(videoLength);
+            thumbWrap.appendChild(itemThumbBox);
+            thumbWrap.appendChild(balloon);
+
             const existingTime = thumbBox.querySelector('.itemTime');
-            existingTime.innerHTML = `
-            <span class="video_uploaded">
-                <span class="time">${rssItem.pubDate.toLocaleString('ja-JP', { 
-                    timeZone: 'Asia/Tokyo',
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })}</span>
-                <span class="separate">投稿</span>
-            </span>
-            `;
+            const timeSpan = document.createElement('span');
+            timeSpan.textContent = rssItem.pubDate.toLocaleString('ja-JP', {
+                timeZone: 'Asia/Tokyo',
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const separateSpan = document.createElement('span');
+            separateSpan.className = 'separate';
+            separateSpan.textContent = '投稿';
+
+            const videoUploadedSpan = document.createElement('span');
+            videoUploadedSpan.className = 'video_uploaded';
+            videoUploadedSpan.appendChild(timeSpan);
+            videoUploadedSpan.appendChild(separateSpan);
+
+            existingTime.innerHTML = '';
+            existingTime.appendChild(videoUploadedSpan);
+
             thumbBox.innerHTML = '';
             thumbBox.appendChild(existingTime);
             thumbBox.appendChild(thumbWrap);
@@ -165,27 +200,64 @@
 
         const contentBox = sensitiveItemEl.querySelector('.itemContent');
         if (contentBox) {
-            contentBox.innerHTML = `
-            <p class="itemTitle">
-                <a title="${rssItem.title}" href="/watch/${rssItem.videoId}">${rssItem.title}</a>
-            </p>
-            <div class="wrap">
-                <p title="${rssItem.description}" class="itemDescription">${rssItem.description}</p>
-            </div>
-            <div class="itemData">
-                <ul class="list">
-                    <li class="count view">再生<span class="value">-</span></li>
-                    <li class="count comment">コメ<span class="value">-</span></li>
-                    <li class="count like">いいね！<span class="value">-</span></li>
-                    <li class="count mylist">マイ<span class="value">-</span></li>
-                </ul>
-            </div>
-            `;
+            contentBox.innerHTML = '';
+
+            const titleP = document.createElement('p');
+            titleP.className = 'itemTitle';
+
+            const titleLink = document.createElement('a');
+            titleLink.title = rssItem.title;
+            titleLink.href = `/watch/${rssItem.videoId}`;
+            titleLink.textContent = rssItem.title;
+
+            titleP.appendChild(titleLink);
+
+            const wrap = document.createElement('div');
+            wrap.className = 'wrap';
+
+            const descP = document.createElement('p');
+            descP.title = rssItem.description;
+            descP.className = 'itemDescription';
+            descP.textContent = rssItem.description;
+
+            wrap.appendChild(descP);
+
+            const itemData = document.createElement('div');
+            itemData.className = 'itemData';
+
+            const list = document.createElement('ul');
+            list.className = 'list';
+
+            function createCountItem(className, label) {
+                const li = document.createElement('li');
+                li.className = `count ${className}`;
+                li.textContent = label;
+
+                const span = document.createElement('span');
+                span.className = 'value';
+                span.textContent = '-';
+
+                li.appendChild(span);
+                return li;
+            }
+
+            list.appendChild(createCountItem('view', '再生'));
+            list.appendChild(createCountItem('comment', 'コメ'));
+            list.appendChild(createCountItem('like', 'いいね！'));
+            list.appendChild(createCountItem('mylist', 'マイ'));
+
+            itemData.appendChild(list);
+
+            contentBox.appendChild(titleP);
+            contentBox.appendChild(wrap);
+            contentBox.appendChild(itemData);
+
+			console.debug(`Replaced sensitive item with videoId: ${rssItem.videoId}, title: ${rssItem.title}`);
         }
 
         return sensitiveItemEl;
     }
-    
+
     if (document.readyState === "complete" || document.readyState === "interactive")
         init();
     else

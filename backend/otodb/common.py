@@ -135,7 +135,7 @@ def process_video_info(full_info, link=None):
             if not link:
                 return None
             link = make_video_url['niconico'](link) if not link.startswith('http') else link
-            max_res = max(full_info['video']['media']['domand']['videos'], key=lambda s: s['width'])
+            max_res = max(full_info['media']['domand']['videos'], key=lambda s: s['width'])
             info = {
                 'extractor': 'niconico',
                 'title': full_info['title'],

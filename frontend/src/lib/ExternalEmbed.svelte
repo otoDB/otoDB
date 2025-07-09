@@ -35,7 +35,7 @@
 	<iframe
 		{width}
 		{height}
-		src="//player.bilibili.com/player.html?isOutside=true&bvid={src.source_id}&p=1"
+		src="//player.bilibili.com/player.html?isOutside=true&bvid={src.source_id}&p=1&autoplay=false"
 		scrolling="no"
 		frameborder="no"
 		allowfullscreen

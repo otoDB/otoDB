@@ -37,6 +37,8 @@ class WorkSource(models.Model):
 
     added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
 
+    info_payload = models.JSONField(null=True, blank=True)
+
     objects = models.Manager()
     active_objects = ActiveManager()
 
@@ -49,8 +51,8 @@ class WorkSource(models.Model):
         ordering = ['-published_date']
 
     def refresh(self):
-        info = video_info(self.url)
-        if info:
+        info, full_info = video_info(self.url)
+        if info and full_info:
             self.title = info['title']
             self.description = info['description']
             self.uploader_id = info['uploader_id']
@@ -58,6 +60,8 @@ class WorkSource(models.Model):
             self.work_width = info.get('work_width', self.work_width)
             self.work_height = info.get('work_height', self.work_height)
             self.work_duration = info.get('work_duration', self.work_duration)
+
+            self.info_payload = full_info
 
             if self.media:
                 self.media.tags.add(*info.get('tags', []))
@@ -71,7 +75,7 @@ class WorkSource(models.Model):
     @staticmethod
     def from_url(url, user, is_reupload, info=None):
         if info is None:
-            info = video_info(url)
+            info, full_info = video_info(url)
 
         if info['site'] is None:
             return None
@@ -84,7 +88,8 @@ class WorkSource(models.Model):
                 published_date=date.fromtimestamp(info['timestamp']),
                 work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
                 work_width=info.get('work_width', None), work_height=info.get('work_height', None), work_duration=info.get('work_duration', None),
-                added_by=user, uploader_id=info['uploader_id'])
+                added_by=user, uploader_id=info['uploader_id'],
+                info_payload=full_info if full_info else None)
         return src, info
 
 class WorkSourceRejection(models.Model):

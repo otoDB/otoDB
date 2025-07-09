@@ -114,7 +114,8 @@ def get_niconico_geoblocked(sm):
             'thumbnail': video['thumbnail'].get('ogp', video['thumbnail']['url']),
             'timestamp': int(mktime(datetime.fromisoformat(video['registeredAt']).timetuple())),
             'uploader_id': res['owner']['id']
-        }
+        }, res
+    return None, None
 
 def video_info(link):
     keys = {
@@ -133,9 +134,11 @@ def video_info(link):
         }
     try:
         if niconico_ie.suitable(link):
-            info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+            info, full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
         else:
             info = ydl.extract_info(link, download=False)
+            full_info = info.copy()
+
             if info.get('_type') == 'playlist':
                 info = info['entries'][0] # TODO need some work...
             resolutions = [(f['width'], f['height']) for f in info['formats'] if 'width' in f and f['width'] is not None]
@@ -162,7 +165,7 @@ def video_info(link):
             case Platform.SOUNDCLOUD:
                 pass # TODO
             case _:
-                return None
+                return None, None
 
         for c in ['?', '/']: # drop query strings and subdirectories
             i = info['id'].find(c)
@@ -174,9 +177,9 @@ def video_info(link):
 
         info['description'] = nh3.clean(info['description'])
 
-        return { keys[key]: info[key] for key in keys if key in info }
+        return { keys[key]: info[key] for key in keys if key in info }, full_info
     except:
-        return None
+        return None, None
 
 def playlist_info(link):
     keys = {

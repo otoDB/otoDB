@@ -74,8 +74,12 @@ class WorkSource(models.Model):
             self.info_payload = full_info
 
             if self.media:
-                self.media.tags.add(*info.get('tags', []))
-                self.media.tagworkinstance_set.filter(work_tag__in=info.get('tags', [])).update(instance_imported_from_source=True)
+                new_tags = []
+                for tag in info.get('tags', []):
+                    tag_obj, created = self.media.tags.get_or_create(name=tag)
+                    if created:
+                        new_tags.append(tag_obj.id)
+                self.media.tagworkinstance_set.filter(work_tag__in=new_tags).update(instance_imported_from_source=True)
         else:
             self.work_status = WorkStatus.DOWN
 

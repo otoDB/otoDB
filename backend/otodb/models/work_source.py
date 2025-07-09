@@ -28,6 +28,7 @@ class WorkSource(models.Model):
     )
     work_width = models.PositiveIntegerField(null=True, blank=True)
     work_height = models.PositiveIntegerField(null=True, blank=True)
+    work_duration = models.PositiveIntegerField(null=True, blank=True)
 
     title = models.CharField(max_length=1000, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
@@ -38,13 +39,14 @@ class WorkSource(models.Model):
 
     objects = models.Manager()
     active_objects = ActiveManager()
-    
+
     def __str__(self) -> str:
-        return f'#{self.media.id} - {self.url}' if self.media else self.title
+        return f'#{self.media.pk} - {self.url}' if self.media else self.title
 
     class Meta:
         verbose_name = ("Media Source")
         verbose_name_plural = ("Media Sources")
+        ordering = ['-published_date']
 
     def refresh(self):
         info = video_info(self.url)
@@ -54,20 +56,23 @@ class WorkSource(models.Model):
             self.uploader_id = info['uploader_id']
             self.thumbnail = info.get('thumb', self.thumbnail)
             self.work_width = info.get('work_width', self.work_width)
-            self.work_height = info.get('work_height', self.work_height) 
-            self.save()
+            self.work_height = info.get('work_height', self.work_height)
+            self.work_duration = info.get('work_duration', self.work_duration)
+
             if self.media:
                 self.media.tags.add(*info.get('tags', []))
                 self.media.tagworkinstance_set.filter(work_tag__in=info.get('tags', [])).update(instance_imported_from_source=True)
         else:
             self.work_status = WorkStatus.DOWN
 
+        self.save()
+
     # Gets the source registered at the url if it exists, otherwise register as pending
     @staticmethod
     def from_url(url, user, is_reupload, info=None):
         if info is None:
             info = video_info(url)
-        
+
         if info['site'] is None:
             return None
 
@@ -78,7 +83,7 @@ class WorkSource(models.Model):
                 url=info['url'], platform=info['site'], source_id=info['id'],
                 published_date=date.fromtimestamp(info['timestamp']),
                 work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
-                work_width=info.get('work_width', None), work_height=info.get('work_height', None),
+                work_width=info.get('work_width', None), work_height=info.get('work_height', None), work_duration=info.get('work_duration', None),
                 added_by=user, uploader_id=info['uploader_id'])
         return src, info
 

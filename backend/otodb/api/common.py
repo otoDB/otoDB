@@ -87,7 +87,7 @@ class WorkSourceSchema(ModelSchema):
         fields = [
             'platform', 'url',
             'published_date',
-            'work_width', 'work_height',
+            'work_width', 'work_height', 'work_duration',
             'title', 'description',
             'work_origin', 'work_status',
             'thumbnail', 'source_id'

@@ -39,9 +39,9 @@ def get_diff(delta):
             elif op == dmp.DIFF_EQUAL:
                 html.append("<span>%s</span>" % text)
         return "".join(html)
-        
+
     diffs_html = []
-    
+
     for change in delta.changes:
         match change.field:
             case 'tags':
@@ -55,7 +55,7 @@ def get_diff(delta):
                 old, new = change.old, change.new
                 diff_field = dmp.diff_main(str(old), str(new))
                 dmp.diff_cleanupSemantic(diff_field)
-                 
+
                 diffs_html.append({'html': diff_prettyHtml(diff_field).replace('&para;', ''), 'field': change.field})
 
     return diffs_html
@@ -108,6 +108,7 @@ def get_niconico_geoblocked(sm):
             'tags': [x['name'] for x in res['tag']['items']],
             'width': max_res['width'],
             'height': max_res['height'],
+            'duration': video['duration'],
             'webpage_url': clean_url,
             'id': video['id'],
             'thumbnail': video['thumbnail'].get('ogp', video['thumbnail']['url']),
@@ -123,11 +124,12 @@ def video_info(link):
             'tags': 'tags',
             'width': 'work_width',
             'height': 'work_height',
+            'duration': 'work_duration',
             'webpage_url': 'url',
             'id': 'id',
             'thumbnail': 'thumb',
             'timestamp':  'timestamp',
-            'uploader_id': 'uploader_id'
+            'uploader_id': 'uploader_id',
         }
     try:
         if niconico_ie.suitable(link):
@@ -161,12 +163,12 @@ def video_info(link):
                 pass # TODO
             case _:
                 return None
-        
+
         for c in ['?', '/']: # drop query strings and subdirectories
             i = info['id'].find(c)
             if i != -1:
                 info['id'] = info['id'][:i]
-        
+
         if 'tags' in info:
             info['tags'] = [NFKC(tag.replace(' ', '_')) for tag in info['tags']]
 

@@ -16,7 +16,38 @@
 	</li>
 {/snippet}
 
-<nav class="flex w-full flex-col gap-y-2">
+<nav class="flex w-full min-w-64 flex-col gap-y-2">
+	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)]">
+		<form target="_self" method="get" action="/work/search" class="flex w-full">
+			<input
+				type="text"
+				name="query"
+				placeholder="{m.mean_top_antelope_love()}..."
+				class="flex-auto px-2 py-1"
+			/>
+			<button
+				type="submit"
+				class="px-1 hover:bg-[var(--otodb-content-bg)]"
+				style="border: none !important;"
+				aria-label="Search"
+			>
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<circle cx="11" cy="11" r="8" />
+					<path d="m21 21-4.35-4.35" />
+				</svg>
+			</button>
+		</form>
+	</div>
+
 	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2">
 		<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
 			{m.clean_kind_stork_affirm()}
@@ -28,11 +59,6 @@
 			{@render link('/list/search', m.stale_loose_squid_cut())}
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		</ul>
-		<div class="mt-2">
-			<form target="_self" method="get" action="/work/search" class="w-full">
-				<input type="text" name="query" placeholder="{m.mean_top_antelope_love()}..." />
-			</form>
-		</div>
 	</div>
 	{#if user?.level >= UserLevel.ADMIN}
 		<div

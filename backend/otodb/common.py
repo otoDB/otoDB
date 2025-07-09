@@ -138,8 +138,8 @@ def process_video_info(full_info, link=None):
             max_res = max(full_info['media']['domand']['videos'], key=lambda s: s['width'])
             info = {
                 'extractor': 'niconico',
-                'title': full_info['title'],
-                'description': full_info['description'],
+                'title': full_info['video']['title'],
+                'description': full_info['video']['description'],
                 'tags': [x['name'] for x in full_info['tag']['items']],
                 'width': max_res['width'],
                 'height': max_res['height'],

@@ -49,7 +49,7 @@ def _alias(from_tags, into_tag):
                 t.save()
             if into_tag.parent is None:
                 into_tag.parent = tag.parent
-                
+
     into_tag.save()
 
 class TagWork(TagModel):
@@ -59,6 +59,21 @@ class TagWork(TagModel):
         protect_all = True
         case_sensitive = False
         force_lowercase = True
+
+    class Meta:
+        ordering = [
+            models.Case(
+                models.When(category=1, then=models.Value(0)),  # EVENT
+                models.When(category=4, then=models.Value(1)),  # CREATOR
+                models.When(category=3, then=models.Value(2)),  # SOURCE
+                models.When(category=2, then=models.Value(3)),  # SONG
+                models.When(category=0, then=models.Value(4)),  # GENERAL
+                models.When(category=5, then=models.Value(5)),  # META
+                default=models.Value(99),
+                output_field=models.IntegerField()
+            ),
+            'name'
+        ]
 
     def save(self, *args, **kwargs):
         if self.name:
@@ -94,7 +109,7 @@ class TagWork(TagModel):
             return self.aliased_to.lang_prefs
         q = self.tagworklangpreference_set.all()
         for alias in self.aliases.all():
-            q |= alias.tagworklangpreference_set.all()            
+            q |= alias.tagworklangpreference_set.all()
         return q.distinct()
 
 class TagWorkLangPreference(models.Model):

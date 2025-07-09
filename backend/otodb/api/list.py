@@ -72,10 +72,10 @@ def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
     lst = get_object_or_404(Pool, id=list_id)
 
     items = lst.poolitem_set
-    
+
     for (i, new_work) in payload.update_work:
         items.filter(order=i).update(work_id=new_work)
-    
+
     for (i, new_desc) in payload.update_description:
         items.filter(order=i).update(description=new_desc)
 
@@ -115,7 +115,7 @@ def delete(request: HttpRequest, list_id: int):
 
 def import_ext_into_pool(info, list_: Pool, user):
     with ProcessPoolExecutor(mp_context=multiprocessing.get_context("fork")) as executor:
-        infos = executor.map(video_info, info['entries'])
+        infos = executor.map(lambda url: video_info(url)[0], info['entries'])
 
     old_entries = list_.poolitem_set.values_list('work__id', flat=True)
 

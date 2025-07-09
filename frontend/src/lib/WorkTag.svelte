@@ -17,7 +17,7 @@
 		'border-fuchsia-400', // SONG
 		'border-lime-600', // SOURCE
 		'border-red-600', // CREATOR
-		'border-orange-500' // META
+		'border-amber-400' // META
 	][tag.category]}"
 	>{tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.tag ?? tag.name}</a
 >

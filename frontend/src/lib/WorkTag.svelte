@@ -14,7 +14,7 @@
 	class="rounded-full border-2 border-solid px-2 {[
 		'border-gray-300', // GENERAL
 		'border-cyan-600', // EVENT
-		'border-b-fuchsia-400', // SONG
+		'border-fuchsia-400', // SONG
 		'border-lime-600', // SOURCE
 		'border-red-600', // CREATOR
 		'border-orange-500' // META

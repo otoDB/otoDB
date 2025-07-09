@@ -202,19 +202,21 @@ def process_video_info(full_info, link=None):
         return None
 
 def video_info(link):
-    try:
-        if niconico_ie.suitable(link):
-            full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
-            if full_info:
-                info = process_video_info(full_info, link)
-                return info, full_info
-        else:
-            full_info = ydl.extract_info(link, download=False)
-            info = process_video_info(full_info)
-            return info, full_info
-    except Exception as e:
-        print(f"Error extracting video info from {link}: {e}")
-        return None, None
+	try:
+		if niconico_ie.suitable(link):
+			full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+			if full_info:
+				info = process_video_info(full_info, link)
+				return info, full_info
+			else:
+				return None, None
+		else:
+			full_info = ydl.extract_info(link, download=False)
+			info = process_video_info(full_info)
+			return info, full_info
+	except Exception as e:
+		print(f"Error extracting video info from {link}: {e}")
+		return None, None
 
 def playlist_info(link):
     keys = {

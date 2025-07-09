@@ -42,12 +42,6 @@
 	let cover_select = $state(-1);
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
 	menuLinks={data.links}

@@ -1,0 +1,38 @@
+body {
+	width: 640px;
+	min-height: 128px;
+	margin: 0;
+	padding: 0;
+}
+
+#otodb-tags {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	font-size: 15px;
+	padding: 1rem;
+	color: white;
+	background-color: black;
+}
+
+#otodb-tags a {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-decoration: none;
+	background-color: darkslategray;
+	border-radius: 2rem;
+	padding: 0.4rem 1rem;
+	color: white;
+	text-align: center;
+	white-space: nowrap;
+}
+
+#otodb-tags a:first-child {
+	background-color: slategray;
+}
+
+#otodb-tags a:hover {
+	opacity: 0.8;
+}

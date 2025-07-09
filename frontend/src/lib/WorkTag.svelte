@@ -12,12 +12,12 @@
 <a
 	href="/tag/{tag.slug}"
 	class="rounded-full border-2 border-solid px-2 {[
-		'border-white-600',
-		'border-indigo-600',
-		'border-cyan-600',
-		'border-orange-900',
-		'border-yellow-400',
-		'border-red-600'
+		'border-gray-300', // GENERAL
+		'border-cyan-600', // EVENT
+		'border-b-fuchsia-400', // SONG
+		'border-lime-600', // SOURCE
+		'border-red-600', // CREATOR
+		'border-orange-500' // META
 	][tag.category]}"
 	>{tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.tag ?? tag.name}</a
 >

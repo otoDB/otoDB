@@ -93,7 +93,7 @@
 							<tr>
 								<th>{m.clear_lucky_peacock_pick()}</th>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								<td>{@html data.description}</td>
+								<td class="whitespace-pre-wrap">{@html data.description}</td>
 							</tr>
 							<tr>
 								<th>{m.good_dark_bumblebee_spur()}</th>

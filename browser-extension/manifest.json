@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
 
-	"action": {
+    "action": {
         "default_popup": "popup.html",
         "default_title": "otoDB"
     },
@@ -34,7 +34,7 @@
 
     "permissions": [
       "declarativeNetRequestWithHostAccess",
-	  "activeTab"
+      "activeTab"
     ],
     "host_permissions": [
       "https://otodb.net/*",
@@ -48,5 +48,11 @@
           "path": "rules.json"
         }
       ]
+    },
+
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "717c1436-7545-4acd-bed8-a473bac7698b"
+        }
     }
 }

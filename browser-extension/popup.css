@@ -1,38 +1,81 @@
 body {
-	width: 640px;
-	min-height: 128px;
-	margin: 0;
-	padding: 0;
+    width: 640px;
+    height: 400px;
+    margin: 0;
+    padding: 0;
+    background-color: black;
+    color: white;
+    font-family: system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-#otodb-tags {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-	font-size: 15px;
-	padding: 1rem;
-	color: white;
-	background-color: black;
+#otodb-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: black;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
 }
 
-#otodb-tags a {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	text-decoration: none;
-	background-color: darkslategray;
-	border-radius: 2rem;
-	padding: 0.4rem 1rem;
-	color: white;
-	text-align: center;
-	white-space: nowrap;
+#otodb-header #main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background-color: slategray;
+    border-radius: 2rem;
+    padding: 0.4rem 1rem;
+    color: white;
+    font-size: 15px;
+    font-weight: 500;
 }
 
-#otodb-tags a:first-child {
-	background-color: slategray;
+#otodb-header #main:hover {
+    opacity: 0.8;
 }
 
-#otodb-tags a:hover {
-	opacity: 0.8;
+#status {
+    font-size: 14px;
+    color: #ccc;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+#status:not(:empty) {
+    padding: 1rem;
+    min-height: 20px;
+}
+
+#results {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 15px;
+    padding: 1rem;
+    flex: 1;
+    overflow-y: auto;
+    align-content: flex-start;
+}
+
+#results a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background-color: darkslategray;
+    border-radius: 2rem;
+    padding: 0.4rem 1rem;
+    color: white;
+    text-align: center;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+    height: fit-content;
+}
+
+#results a:hover {
+    opacity: 0.8;
 }

@@ -99,23 +99,8 @@ def get_niconico_geoblocked(sm):
     r = requests.get(clean_url, headers={'User-Agent': 'Twitterbot/1.0', 'Accept-Language': 'ja'}, cookies=jar)
     if r.ok:
         res = json.loads(html.unescape(niconico_meta_re.search(r.text).group(1)))['data']['response']
-        video = res['video']
-        max_res = max(res['media']['domand']['videos'], key=lambda s: s['width'])
-        return {
-            'extractor': 'niconico',
-            'title': video['title'],
-            'description': video['description'],
-            'tags': [x['name'] for x in res['tag']['items']],
-            'width': max_res['width'],
-            'height': max_res['height'],
-            'duration': video['duration'],
-            'webpage_url': clean_url,
-            'id': video['id'],
-            'thumbnail': video['thumbnail'].get('ogp', video['thumbnail']['url']),
-            'timestamp': int(mktime(datetime.fromisoformat(video['registeredAt']).timetuple())),
-            'uploader_id': res['owner']['id']
-        }, res
-    return None, None
+        return res
+    return None
 
 def video_info(link):
     keys = {
@@ -134,7 +119,24 @@ def video_info(link):
         }
     try:
         if niconico_ie.suitable(link):
-            info, full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+            full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+            if full_info:
+                link = make_video_url['niconico'](link)
+                max_res = max(full_info['video']['media']['domand']['videos'], key=lambda s: s['width'])
+                info = {
+                    'extractor': 'niconico',
+                    'title': full_info['title'],
+                    'description': full_info['description'],
+                    'tags': [x['name'] for x in full_info['tag']['items']],
+                    'width': max_res['width'],
+                    'height': max_res['height'],
+                    'duration': full_info['video']['duration'],
+                    'webpage_url': link,
+                    'id': full_info['video']['id'],
+                    'thumbnail': full_info['video']['thumbnail'].get('ogp', full_info['video']['thumbnail']['url']),
+                    'timestamp': int(mktime(datetime.fromisoformat(full_info['video']['registeredAt']).timetuple())),
+                    'uploader_id': full_info['owner']['id']
+                }
         else:
             info = ydl.extract_info(link, download=False)
             full_info = info.copy()

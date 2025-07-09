@@ -51,13 +51,13 @@
 	<meta property="og:description" content={data.description} />
 	<meta property="og:image" content={data.thumbnail} />
 	<meta property="og:type" content="website" />
-	<meta property="og:url" content={`https://otodb.org/work/${data.id}`} />
+	<meta property="og:url" content={`https://otodb.net/work/${data.id}`} />
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={data.title} />
 	<meta name="twitter:description" content={data.description} />
 	<meta name="twitter:image" content={data.thumbnail} />
 	<meta name="theme-color" content="#ffffff" />
-	<link rel="canonical" href={`https://otodb.org/work/${data.id}`} />
+	<link rel="canonical" href={`https://otodb.net/work/${data.id}`} />
 </svelte:head>
 
 <Section

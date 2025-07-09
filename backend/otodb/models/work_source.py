@@ -5,7 +5,7 @@ from .enums import Platform, WorkOrigin, WorkStatus
 from .media import MediaWork
 
 from otodb.account.models import Account
-from otodb.common import video_info
+from otodb.common import video_info, process_video_info
 
 class ActiveManager(models.Manager):
     def get_queryset(self):
@@ -50,8 +50,18 @@ class WorkSource(models.Model):
         verbose_name_plural = ("Media Sources")
         ordering = ['-published_date']
 
-    def refresh(self):
-        info, full_info = video_info(self.url)
+    def refresh(self, use_cache=False):
+        """
+        Refresh work source information.
+
+        Args:
+            use_cache: If True, use existing info_payload instead of requesting new data.
+        """
+        if use_cache and self.info_payload:
+            info = process_video_info(self.info_payload, self.url)
+        else:
+            info, full_info = video_info(self.url)
+
         if info and full_info:
             self.title = info['title']
             self.description = info['description']

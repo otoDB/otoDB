@@ -102,53 +102,67 @@ def get_niconico_geoblocked(sm):
         return res
     return None
 
-def video_info(link):
+def process_video_info(full_info, link=None):
+    """
+    Process raw video info from yt-dlp or niconico API into standardized format.
+
+    Args:
+        full_info: Raw info dict from extractor
+        link: Original URL (optional, used for niconico processing)
+
+    Returns:
+        Processed info dict or None if processing fails
+    """
     keys = {
-            'extractor': 'site',
-            'title': 'title',
-            'description': 'description',
-            'tags': 'tags',
-            'width': 'work_width',
-            'height': 'work_height',
-            'duration': 'work_duration',
-            'webpage_url': 'url',
-            'id': 'id',
-            'thumbnail': 'thumb',
-            'timestamp':  'timestamp',
-            'uploader_id': 'uploader_id',
-        }
+        'extractor': 'site',
+        'title': 'title',
+        'description': 'description',
+        'tags': 'tags',
+        'width': 'work_width',
+        'height': 'work_height',
+        'duration': 'work_duration',
+        'webpage_url': 'url',
+        'id': 'id',
+        'thumbnail': 'thumb',
+        'timestamp': 'timestamp',
+        'uploader_id': 'uploader_id',
+    }
+
     try:
-        if niconico_ie.suitable(link):
-            full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
-            if full_info:
-                link = make_video_url['niconico'](link)
-                max_res = max(full_info['video']['media']['domand']['videos'], key=lambda s: s['width'])
-                info = {
-                    'extractor': 'niconico',
-                    'title': full_info['title'],
-                    'description': full_info['description'],
-                    'tags': [x['name'] for x in full_info['tag']['items']],
-                    'width': max_res['width'],
-                    'height': max_res['height'],
-                    'duration': full_info['video']['duration'],
-                    'webpage_url': link,
-                    'id': full_info['video']['id'],
-                    'thumbnail': full_info['video']['thumbnail'].get('ogp', full_info['video']['thumbnail']['url']),
-                    'timestamp': int(mktime(datetime.fromisoformat(full_info['video']['registeredAt']).timetuple())),
-                    'uploader_id': full_info['owner']['id']
-                }
+        # Handle niconico special case
+        if 'video' in full_info and 'tag' in full_info:
+            # This is a niconico geoblocked response
+            if not link:
+                return None
+            link = make_video_url['niconico'](link) if not link.startswith('http') else link
+            max_res = max(full_info['video']['media']['domand']['videos'], key=lambda s: s['width'])
+            info = {
+                'extractor': 'niconico',
+                'title': full_info['title'],
+                'description': full_info['description'],
+                'tags': [x['name'] for x in full_info['tag']['items']],
+                'width': max_res['width'],
+                'height': max_res['height'],
+                'duration': full_info['video']['duration'],
+                'webpage_url': link,
+                'id': full_info['video']['id'],
+                'thumbnail': full_info['video']['thumbnail'].get('ogp', full_info['video']['thumbnail']['url']),
+                'timestamp': int(mktime(datetime.fromisoformat(full_info['video']['registeredAt']).timetuple())),
+                'uploader_id': full_info['owner']['id']
+            }
         else:
-            info = ydl.extract_info(link, download=False)
-            full_info = info.copy()
+            # Standard yt-dlp response
+            info = full_info.copy()
 
             if info.get('_type') == 'playlist':
-                info = info['entries'][0] # TODO need some work...
+                info = info['entries'][0]  # TODO need some work...
             resolutions = [(f['width'], f['height']) for f in info['formats'] if 'width' in f and f['width'] is not None]
             if resolutions:
                 info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
 
         info['extractor'] = Platform.from_str(info['extractor'])
 
+        # Platform-specific processing
         match info['extractor']:
             case Platform.YOUTUBE:
                 info['webpage_url'] = make_video_url['youtube'](info['id'])
@@ -157,7 +171,7 @@ def video_info(link):
                 chapter_mark = info['id'].find('_')
                 if chapter_mark != -1:
                     info['id'] = info['id'][:chapter_mark]
-                title_chapter_mark = info['title'].find(' p01') # TODO this is far from perfect
+                title_chapter_mark = info['title'].find(' p01')  # TODO this is far from perfect
                 if chapter_mark != -1:
                     info['title'] = info['title'][:title_chapter_mark]
                 info['webpage_url'] = make_video_url['bilibili'](info['id'])
@@ -165,22 +179,41 @@ def video_info(link):
             case Platform.NICONICO:
                 info['webpage_url'] = make_video_url['niconico'](info['id'])
             case Platform.SOUNDCLOUD:
-                pass # TODO
+                pass  # TODO
             case _:
-                return None, None
+                return None
 
-        for c in ['?', '/']: # drop query strings and subdirectories
+        # Clean up ID
+        for c in ['?', '/']:  # drop query strings and subdirectories
             i = info['id'].find(c)
             if i != -1:
                 info['id'] = info['id'][:i]
 
+        # Process tags
         if 'tags' in info:
             info['tags'] = [NFKC(tag.replace(' ', '_')) for tag in info['tags']]
 
+        # Clean description
         info['description'] = nh3.clean(info['description'])
 
-        return { keys[key]: info[key] for key in keys if key in info }, full_info
-    except:
+        return {keys[key]: info[key] for key in keys if key in info}
+    except Exception as e:
+        print(f"Error processing video info: {e}")
+        return None
+
+def video_info(link):
+    try:
+        if niconico_ie.suitable(link):
+            full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+            if full_info:
+                info = process_video_info(full_info, link)
+                return info, full_info
+        else:
+            full_info = ydl.extract_info(link, download=False)
+            info = process_video_info(full_info)
+            return info, full_info
+    except Exception as e:
+        print(f"Error extracting video info from {link}: {e}")
         return None, None
 
 def playlist_info(link):

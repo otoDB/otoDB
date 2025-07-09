@@ -176,7 +176,11 @@
 			{#each data.sources as src, i (i)}
 				<tr>
 					<td class="whitespace-nowrap">{src.title}</td>
-					<td><CollapsibleText text={src.description}></CollapsibleText></td>
+					<td
+						><div class="description-cell">
+							<CollapsibleText text={src.description}></CollapsibleText>
+						</div></td
+					>
 					<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 					<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td
 						class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td

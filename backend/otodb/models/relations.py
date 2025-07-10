@@ -22,7 +22,7 @@ class WorkRelation(models.Model):
     objects = BidirectionalManager()
 
     def __str__(self) -> str:
-        return f'{self.A.id} -> {self.B.id}: {WorkRelationTypes(self.relation).label}'
+        return f'{self.A.pk} -> {self.B.pk}: {WorkRelationTypes(self.relation).label}'
 
     class Meta:
         verbose_name = 'Work relation'
@@ -36,6 +36,7 @@ class WorkRelation(models.Model):
             ),
         ]
 
+    @staticmethod
     def get_component(work_id: int):
         query = list(WorkRelation.objects.raw('''
             WITH RECURSIVE component AS (
@@ -55,9 +56,9 @@ class SongRelation(models.Model):
     relation = models.IntegerField(choices=SongRelationTypes.choices)
 
     objects = BidirectionalManager()
-    
+
     def __str__(self) -> str:
-        return f'{self.A.id} -->|{SongRelationTypes(self.relation).label}| {self.B.id}'
+        return f'{self.A.pk} -->|{SongRelationTypes(self.relation).label}| {self.B.pk}'
 
     class Meta:
         verbose_name = 'Song relation'
@@ -70,7 +71,7 @@ class SongRelation(models.Model):
                 violation_error_message="A must be different from B",
             ),
         ]
-
+    @staticmethod
     def get_component(song_id: int):
         query = list(SongRelation.objects.raw('''
             WITH RECURSIVE component AS (

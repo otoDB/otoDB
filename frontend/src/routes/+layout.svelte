@@ -37,9 +37,9 @@
 						{m.glad_born_mouse_taste()} Alpha
 					</span>
 					<div class="social-links">
-						<a href="irc://irc.rizon.net/#otodb">#otodb @ Rizon</a>
-						/
 						<a href="mailto:contact@otodb.net">contact@otodb.net</a>
+						/
+						<a href="irc://irc.rizon.net/#otodb">#otodb @ Rizon</a>
 					</div>
 				</div>
 				<div class="footer-right">

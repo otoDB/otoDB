@@ -39,6 +39,7 @@ class Platform(models.IntegerChoices):
     BILIBILI   = 3, "Bilibili"
     SOUNDCLOUD = 4, "SoundCloud"
 
+    @staticmethod
     def from_str(s):
         for choice, string in Platform.choices:
             if string.lower() == s.lower():

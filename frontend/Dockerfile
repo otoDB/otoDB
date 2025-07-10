@@ -28,6 +28,4 @@ COPY --from=prerelease /app/build .
 
 EXPOSE 5173/tcp
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 CMD curl -f http://localhost:5173/ || exit 1
-
 ENTRYPOINT [ "sh", "-c", "PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 bun ./" ]

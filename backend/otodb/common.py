@@ -98,8 +98,9 @@ def get_niconico_geoblocked(sm):
     clean_url = make_video_url['niconico'](sm)
     r = requests.get(clean_url, headers={'User-Agent': 'Twitterbot/1.0', 'Accept-Language': 'ja'}, cookies=jar)
     if r.ok:
-        res = json.loads(html.unescape(niconico_meta_re.search(r.text).group(1)))['data']['response']
-        return res
+        if match := niconico_meta_re.search(r.text):
+            res = json.loads(html.unescape(match.group(1)))['data']['response']
+            return res
     return None
 
 def process_video_info(full_info, link=None):
@@ -202,21 +203,21 @@ def process_video_info(full_info, link=None):
         return None
 
 def video_info(link):
-	try:
-		if niconico_ie.suitable(link):
-			full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
-			if full_info:
-				info = process_video_info(full_info, link)
-				return info, full_info
-			else:
-				return None, None
-		else:
-			full_info = ydl.extract_info(link, download=False)
-			info = process_video_info(full_info)
-			return info, full_info
-	except Exception as e:
-		print(f"Error extracting video info from {link}: {e}")
-		return None, None
+    try:
+        if niconico_ie.suitable(link):
+            full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+            if full_info:
+                info = process_video_info(full_info, link)
+                return info, full_info
+            else:
+                return None, None
+        else:
+            full_info = ydl.extract_info(link, download=False)
+            info = process_video_info(full_info)
+            return info, full_info
+    except Exception as e:
+        print(f"Error extracting video info from {link}: {e}")
+        return None, None
 
 def playlist_info(link):
     keys = {

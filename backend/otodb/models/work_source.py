@@ -102,6 +102,10 @@ class WorkSource(models.Model):
         if info is None:
             info, full_info = video_info(url)
 
+        if info is None:
+            print(f"Failed to get video info for URL: {url}")
+            return None
+
         if info['site'] is None:
             return None
 

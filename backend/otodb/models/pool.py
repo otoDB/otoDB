@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 from django.urls import reverse
 
@@ -15,6 +17,10 @@ class Pool(models.Model):
 
     pending_items = models.ManyToManyField('WorkSource')
 
+    if TYPE_CHECKING:
+        from django.db.models import QuerySet
+        poolitem_set: QuerySet['PoolItem']
+
     def __str__(self) -> str:
         return f'{self.name}'
 
@@ -23,7 +29,7 @@ class Pool(models.Model):
         verbose_name_plural = 'Lists'
 
     def get_absolute_url(self):
-        return reverse('otodb:list', kwargs={ 'list_id': self.id })
+        return reverse('otodb:list', kwargs={ 'list_id': self.pk })
 
     def work_in_pool(self, work_id: int):
         return self.poolitem_set.filter(work_id=work_id)

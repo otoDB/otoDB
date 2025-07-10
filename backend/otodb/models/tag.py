@@ -1,4 +1,4 @@
-from typing import Self
+from typing import TYPE_CHECKING
 
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -8,6 +8,11 @@ from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
 
 from .enums import WorkTagCategory, SongTagCategory, LanguageTypes
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+    from .connection import TagWorkConnection, TagWorkSourceConnection, TagWorkCreatorConnection
+    from .media import MediaSong
 
 def name_cleaner(s):
     return s.lower()
@@ -55,6 +60,14 @@ def _alias(from_tags, into_tag):
 class TagWork(TagModel):
     objects = LowerCaseTagModelManager()
 
+    if TYPE_CHECKING:
+        tagworkconnection_set: QuerySet['TagWorkConnection']
+        tagworksourceconnection_set: QuerySet['TagWorkSourceConnection']
+        tagworkcreatorconnection_set: QuerySet['TagWorkCreatorConnection']
+        tagworklangpreference_set: QuerySet['TagWorkLangPreference']
+        aliases: QuerySet['TagWork']
+        mediasong: 'MediaSong | None'
+
     class TagMeta:
         protect_all = True
         case_sensitive = False
@@ -96,11 +109,11 @@ class TagWork(TagModel):
         return _get_tree(self)
 
     def get_song(self):
-        if hasattr(self, 'mediasong'):
+        if self.mediasong is not None:
             return self.mediasong
 
     @staticmethod
-    def alias(from_tags: list[Self], into_tag: Self):
+    def alias(from_tags: list['TagWork'], into_tag: 'TagWork'):
         _alias(from_tags, into_tag)
 
     @property
@@ -120,7 +133,7 @@ class TagWorkLangPreference(models.Model):
 
 class WikiPage(models.Model):
     tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
-    page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_STANDARD, null=False)
+    page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_STANDARD, null=False) # type: ignore
     page_rendered = RenderedMarkdownField()
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
 
@@ -157,7 +170,7 @@ class TagSong(TagModel):
         return _get_tree(self)
 
     @staticmethod
-    def alias(from_tags: list[Self], into_tag: Self):
+    def alias(from_tags: list['TagSong'], into_tag: 'TagSong'):
         _alias(from_tags, into_tag)
 
 class TagSongLangPreference(models.Model):

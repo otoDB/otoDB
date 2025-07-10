@@ -27,20 +27,27 @@
 				{@render children()}
 			</main>
 			<footer>
-				<span>
-					{m.glad_born_mouse_taste()} Alpha
-				</span>
-				{#if navigating.to}
-					<span id="loading-indicator"></span>
-				{/if}
-				<span>
+				<div class="footer-left">
+					{#if navigating.to}
+						<span id="loading-indicator"></span>
+					{/if}
+				</div>
+				<div class="footer-center">
+					<span>
+						{m.glad_born_mouse_taste()} Alpha
+					</span>
+					<div class="social-links">
+						<a href="irc://irc.rizon.net/#otodb">#otodb @ Rizon</a>
+					</div>
+				</div>
+				<div class="footer-right">
 					<select onchange={(e) => setLocale(e.target.value)} value={getLocale()}>
 						<option value="en">{LanguageNames['en']}</option>
 						<option value="ja">{LanguageNames['ja']}</option>
 						<option value="ko">{LanguageNames['ko']}</option>
 						<option value="zh-cn">{LanguageNames['zh-cn']}</option>
 					</select>
-				</span>
+				</div>
 			</footer>
 		</div>
 	</div>
@@ -51,8 +58,38 @@
 		display: flex;
 		width: 100%;
 		justify-content: space-between;
+		align-items: center;
 		margin-bottom: 2rem;
 	}
+
+	.footer-left,
+	.footer-right {
+		flex: 1;
+	}
+
+	.footer-center {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.footer-right {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.social-links a {
+		border-bottom: 1px dotted var(--otodb-content-color);
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.social-links a:hover {
+		opacity: 0.7;
+	}
+
 	@keyframes loading-dot {
 		0% {
 			content: '.';

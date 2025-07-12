@@ -24,6 +24,7 @@ dependencies = [
     "granian>=2.1.0",
     "psycopg[binary]>=3.2.6",
     "nh3>=0.2.21",
+    "furl>=2.1.4",
 ]
 
 [tool.ruff]

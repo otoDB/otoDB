@@ -11,8 +11,10 @@
 </svelte:head>
 
 <Section title={data.post.title}>
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html data.post.post_rendered}
+	<div class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto max-w-4xl">
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html data.post.post_rendered}
+	</div>
 </Section>
 
 <Section title={m.same_broad_haddock_pinch()}>

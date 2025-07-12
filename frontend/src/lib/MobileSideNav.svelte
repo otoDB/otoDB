@@ -62,6 +62,7 @@
 		</div>
 		<ul class="mt-4 list-none space-y-4">
 			{@render link('/', m.fine_late_chicken_quiz())}
+			{@render link('/post/2', m.noble_fine_iguana_pull())}
 			{@render link('/work/search', m.grand_merry_fly_succeed())}
 			{@render link('/tag/search', m.empty_legal_chicken_taste())}
 			{@render link('/list/search', m.stale_loose_squid_cut())}

@@ -63,7 +63,7 @@
 		</div>
 	</div>
 
-	<header class="relative col-span-2 px-48 py-16">
+	<header class="relative col-span-2 px-6 py-16 md:px-48">
 		<address class="font-mono text-2xl italic">
 			<a href="/" class="no-underline!">
 				{m.glad_born_mouse_taste()}

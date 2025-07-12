@@ -3,7 +3,7 @@
 :root {
 	--otodb-bg-color: white;
 	--otodb-content-color: black;
-	--otodb-faint-bg: color-mix(in hsl, var(--otodb-bg-color) 90%, var(--otodb-content-color));
+	--otodb-faint-bg: color-mix(in hsl, color-mix(in hsl, var(--otodb-bg-color) 90%, var(--otodb-content-color)) 80%, transparent);
 	--otodb-fainter-bg: color-mix(in hsl, var(--otodb-bg-color) 80%, var(--otodb-content-color));
 	--otodb-faint-content: color-mix(
 		in hsl,
@@ -35,6 +35,9 @@ html {
 body {
 	font-size: smaller;
 	background-color: var(--otodb-bg-color);
+	background-image: url('/aniki-bg.png'), url('/aniki-right.png');
+	background-repeat: no-repeat, no-repeat;
+	background-position: top left, top right;
 }
 
 hr {
@@ -52,7 +55,7 @@ input[type='text'],
 input[type='password'],
 input[type='email'],
 textarea {
-	background-color: var(--otodb-bg-color);
+	background-color: color-mix(in hsl, var(--otodb-bg-color) 80%, transparent);
 }
 
 input[type='submit'],

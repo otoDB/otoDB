@@ -5,7 +5,7 @@ from simple_history.models import HistoricalRecords
 from tagulous.models import TagModel, TagModelManager
 
 from markdownfield.models import MarkdownField, RenderedMarkdownField
-from markdownfield.validators import VALIDATOR_STANDARD
+from markdownfield.validators import VALIDATOR_CLASSY
 
 from .enums import WorkTagCategory, SongTagCategory, LanguageTypes
 
@@ -133,7 +133,7 @@ class TagWorkLangPreference(models.Model):
 
 class WikiPage(models.Model):
     tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
-    page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_STANDARD, null=False) # type: ignore
+    page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_CLASSY, null=False) # type: ignore
     page_rendered = RenderedMarkdownField()
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
 

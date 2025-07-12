@@ -63,18 +63,16 @@ def register(request, username: str, password: str, email: str, invite: str):
     except ValueError:
         return 400, {'message': 'A validation error occured'}
 
-@auth_router.get("/reset_password", response=bool)
-def validate_reset_token(request, token: str):
-    return Account.objects.filter(reset_token=token).exists()
-
 @auth_router.post("/reset_password")
 def reset_password(request, password: str, token: str | None = None):
     assert(password)
-    if user := request.user:
+    user = request.user
+    if user.is_authenticated:
         assert(not token)
     else:
         assert(token)
         user = get_object_or_404(Account, reset_token=token)
+        user.reset_token = None
     user.set_password(password)
     user.save()
 
@@ -85,7 +83,7 @@ def send_reset_password_token(request, email: str):
         user.reset_token = get_random_string(120, string.ascii_letters+string.digits)
         user.save()
         send_mail(
-            "[otodb] Reset Your Password",
+            "[otodb.net] Reset Your Password",
             f"""
 Hello {user.username},
 

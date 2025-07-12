@@ -50,7 +50,7 @@
 		</div>
 	</div>
 
-	<header class="col-span-2 px-32 py-16">
+	<header class="col-span-2 px-48 py-16">
 		<address class="font-mono text-2xl italic">
 			<a href="/" class="no-underline!">
 				{m.glad_born_mouse_taste()}

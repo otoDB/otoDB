@@ -5,14 +5,6 @@ import client, { forwardCookies } from '$lib/api';
 export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
 	if (!locals.user) {
 		const token = url.searchParams.get('token');
-		if (token) {
-			const { data: good } = await client.GET('/api/auth/reset_password', {
-				fetch,
-				params: { query: { token } }
-			});
-			if (!good) redirect(303, '/');
-		}
-
 		const { response } = await client.GET('/api/auth/csrf', { fetch });
 		forwardCookies(cookies, response);
 		return { token };

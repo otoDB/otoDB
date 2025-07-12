@@ -101,6 +101,7 @@
 					</div>
 				</div>
 				<div class="footer-right">
+					<img src="/connection_favicons/Website.png" alt="Language" class="size-4" />
 					<select onchange={(e) => setLocale(e.target.value)} value={getLocale()}>
 						<option value="en">{LanguageNames['en']}</option>
 						<option value="ja">{LanguageNames['ja']}</option>

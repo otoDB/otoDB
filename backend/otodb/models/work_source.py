@@ -7,6 +7,8 @@ from .media import MediaWork
 from otodb.account.models import Account
 from otodb.common import video_info, process_video_info
 
+from furl import furl
+
 class ActiveManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(rejection__isnull=True)
@@ -99,7 +101,13 @@ class WorkSource(models.Model):
     # Gets the source registered at the url if it exists, otherwise register as pending
     @staticmethod
     def from_url(url, user, is_reupload, info=None):
+        full_info = None
+
         if info is None:
+            if "list=" in url:
+                f = furl(url)
+                f.remove(["list"])
+                url = f.url
             info, full_info = video_info(url)
 
         if info is None:
@@ -118,7 +126,7 @@ class WorkSource(models.Model):
                 work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
                 work_width=info.get('work_width', None), work_height=info.get('work_height', None), work_duration=info.get('work_duration', None),
                 added_by=user, uploader_id=info['uploader_id'],
-                info_payload=full_info if full_info else None)
+                info_payload=full_info)
         return src, info
 
 class WorkSourceRejection(models.Model):

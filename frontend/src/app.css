@@ -28,13 +28,6 @@
 		--otodb-bg-color: black;
 		--otodb-content-color: white;
 	}
-	body {
-		background-image: url('/aniki-bg.png'), url('/aniki-right.png');
-		background-repeat: no-repeat, no-repeat;
-		background-position:
-			top left,
-			top right;
-	}
 }
 
 html {

@@ -8,6 +8,8 @@
 	import { LanguageNames } from '$lib/enums';
 	import clsx from 'clsx';
 
+	import { background } from '$lib/stores/theme';
+
 	let { data, children } = $props();
 
 	let isMobileNavOpen = $state(false);
@@ -20,6 +22,17 @@
 </script>
 
 <div>
+	<div class="-z-50 contents">
+		{#if $background === 'aniki'}
+			<div
+				style:background-image="url('/aniki-bg.png'), url('/aniki-right.png')"
+				style:background-position="left top, right top"
+				style:background-repeat="no-repeat, no-repeat"
+				class="fixed inset-0"
+			></div>
+		{/if}
+	</div>
+
 	<!-- Mobile navigation -->
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
@@ -50,7 +63,7 @@
 		</div>
 	</div>
 
-	<header class="col-span-2 px-48 py-16">
+	<header class="relative col-span-2 px-48 py-16">
 		<address class="font-mono text-2xl italic">
 			<a href="/" class="no-underline!">
 				{m.glad_born_mouse_taste()}
@@ -58,7 +71,7 @@
 		</address>
 	</header>
 
-	<div class="mx-auto flex w-full gap-x-4 px-4">
+	<div class="relative mx-auto flex w-full gap-x-4 px-4">
 		<!-- Enough-width navigation -->
 		<div class="hidden md:block">
 			<Header user={data.user} stats={data.stats}></Header>

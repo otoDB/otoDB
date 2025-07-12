@@ -111,6 +111,7 @@
 					`/profile/${user.username}/submissions`,
 					m.flaky_gross_marlin_evoke()
 				)}
+				{@render link(`/profile/${user.username}/settings`, m.orange_born_seal_ascend())}
 				<li
 					aria-current={page.url.pathname === `/logout` ? 'page' : undefined}
 					class="mt-5"

@@ -2,14 +2,54 @@
 	import '../app.css';
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import Header from '../lib/SideNav.svelte';
+	import MobileSideNav from '../lib/MobileSideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
 	import { LanguageNames } from '$lib/enums';
+	import clsx from 'clsx';
 
 	let { data, children } = $props();
+
+	let isMobileNavOpen = $state(false);
+	function toggleMobileNav() {
+		isMobileNavOpen = !isMobileNavOpen;
+	}
+	function closeMobileNav() {
+		isMobileNavOpen = false;
+	}
 </script>
 
 <div>
+	<!-- Mobile navigation -->
+	<div class="contents md:hidden">
+		<!-- Hamburger button -->
+		<button
+			class={clsx('fixed bottom-[32px] left-[32px] z-[3] h-[64px] w-[64px]  ', {
+				invisible: isMobileNavOpen
+			})}
+			onclick={toggleMobileNav}
+		>
+			<!-- TODO: Use icon! -->
+			<div class="white place-self-center text-2xl">☰</div>
+		</button>
+		<!-- Cover -->
+		<div
+			tabindex={-1}
+			role="button"
+			class={clsx('fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen })}
+			onclick={closeMobileNav}
+		></div>
+		<!-- Menu -->
+		<div
+			class={clsx('fixed top-0 left-0 z-[2] h-full transition-transform duration-75', {
+				'-translate-x-full': !isMobileNavOpen
+			})}
+		>
+			<MobileSideNav user={data.user} close={closeMobileNav} className="h-full"
+			></MobileSideNav>
+		</div>
+	</div>
+
 	<header class="col-span-2 px-32 py-16">
 		<address class="font-mono text-2xl italic">
 			<a href="/" class="no-underline!">
@@ -19,7 +59,8 @@
 	</header>
 
 	<div class="mx-auto flex w-full gap-x-4 px-4">
-		<div class="flex-shrink-0">
+		<!-- Enough-width navigation -->
+		<div class="hidden md:block">
 			<Header user={data.user} stats={data.stats}></Header>
 		</div>
 		<div class="flex-grow">

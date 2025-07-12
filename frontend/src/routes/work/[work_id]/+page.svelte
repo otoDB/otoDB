@@ -59,28 +59,35 @@
 					<ExternalEmbed width={480} height={270} src={data.sources[cover_select]} />
 				{/if}
 				<div class="my-2">
-					<label
-						><input
-							hidden
-							type="radio"
-							name="cover_select"
-							value={-1}
-							bind:group={cover_select}
-						/>{m.heroic_ideal_orangutan_aid()}</label
+					<a
+						href={data.thumbnail}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="cover_select"
+						class:selected={cover_select === -1}
+						onclick={(e) => {
+							e.preventDefault();
+							cover_select = -1;
+						}}
 					>
+						{m.heroic_ideal_orangutan_aid()}
+					</a>
 					{#each data.sources as s, i (i)}
-						<label>
-							<input
-								hidden
-								type="radio"
-								name="cover_select"
-								value={i}
-								bind:group={cover_select}
-							/>
+						<a
+							href={s.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="cover_select"
+							class:selected={cover_select === i}
+							onclick={(e) => {
+								e.preventDefault();
+								cover_select = i;
+							}}
+						>
 							{Platform[s.platform]}{s.work_origin === 0
 								? ''
 								: ' ' + WorkOrigin[s.work_origin]()}
-						</label>
+						</a>
 					{/each}
 				</div>
 			</div>
@@ -239,21 +246,22 @@
 	th {
 		white-space: nowrap;
 	}
-	label:has(> input[name='cover_select']) {
+	.cover_select {
 		padding: 0.2rem 0.5rem;
 		display: inline-block;
 		background-color: var(--otodb-bg-color);
 		border: 1px solid var(--otodb-content-color);
+		text-decoration: none;
 		&:hover {
 			background-color: var(--otodb-fainter-bg);
 		}
 		&:active {
 			background-color: var(--otodb-faint-bg);
 		}
-	}
-	label:has(> input[name='cover_select']:checked) {
-		background-color: var(--otodb-content-color);
-		border: 1px solid var(--otodb-bg-color);
-		color: var(--otodb-bg-color);
+		&.selected {
+			background-color: var(--otodb-content-color);
+			border: 1px solid var(--otodb-bg-color);
+			color: var(--otodb-bg-color);
+		}
 	}
 </style>

@@ -91,9 +91,13 @@
 						{m.glad_born_mouse_taste()} Alpha
 					</span>
 					<div class="social-links">
-						<a href="mailto:contact@otodb.net">contact@otodb.net</a>
+						<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>
+						/
+						<a href="https://twitter.com/otoDBnet">Twitter</a>
 						/
 						<a href="irc://irc.rizon.net/#otodb">#otodb @ Rizon</a>
+						/
+						<a href="mailto:contact@otodb.net">contact@otodb.net</a>
 					</div>
 				</div>
 				<div class="footer-right">

@@ -11,15 +11,16 @@
 </svelte:head>
 
 <Section title={m.true_tough_butterfly_sew()}>
-	{#if data.token || data.user}
+	{#if form?.reset_success}
+		<p>{m.stock_jolly_crocodile_cheer()}</p>
+	{:else if data.token || data.user}
 		<form method="POST" use:enhance action="?/reset">
-			<input hidden type="text" name="token" value={data.token} />
 			{#if form?.missing}<p class="error">{m.tiny_round_shark_express()}</p>{/if}
 			{#if form?.mismatch}<p class="error">{m.front_clean_termite_treat()}</p>{/if}
 			<table>
 				<tbody>
 					<tr>
-						<th><label for="password">New password</label></th>
+						<th><label for="password">{m.factual_lazy_puma_delight()}</label></th>
 						<td><input required type="password" name="password" /></td>
 					</tr>
 					<tr>
@@ -28,6 +29,7 @@
 					</tr>
 				</tbody>
 			</table>
+			<input hidden type="text" name="token" value={data.token} />
 			<input type="submit" />
 		</form>
 	{:else if form?.success}

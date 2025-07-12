@@ -115,12 +115,12 @@ def delete(request: HttpRequest, list_id: int):
 
 def import_ext_into_pool(info, list_: Pool, user):
     with ProcessPoolExecutor(mp_context=multiprocessing.get_context("fork")) as executor:
-        infos = executor.map(lambda url: video_info(url)[0], info['entries'])
+        infos = executor.map(video_info, info['entries'])
 
     old_entries = list_.poolitem_set.values_list('work__id', flat=True)
 
     new_tag_instances, pool_items = [], []
-    for i, vid_info in enumerate(list(infos)):
+    for i, (vid_info, _) in enumerate(list(infos)):
         if vid_info is None:
             list_.description += f'\nFailed to fetch {info['entries'][i]}'
             continue

@@ -6,6 +6,8 @@ import { m } from '$lib/paraglide/messages';
 export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 	if (isNaN(+params.list_id)) error(400, { message: 'Bad request' });
 
+	const batch_size = 20;
+
 	const { data, error: e } = await client.GET('/api/list/list', {
 		fetch,
 		params: {
@@ -20,11 +22,14 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 		fetch,
 		params: {
 			query: {
-				list_id: +params.list_id
+				list_id: +params.list_id,
+				limit: batch_size,
+				offset: 0
 			}
 		}
 	});
 	return {
+		batch_size,
 		list: data,
 		entries,
 		links: [

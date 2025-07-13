@@ -10,8 +10,12 @@
 	import type { components } from '$lib/schema';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
+	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 
 	let { data }: PageProps = $props();
+
+	let entries = $derived(data.entries!.items);
+	let pending_items = $derived(data.pending_items!.items);
 
 	let current = $state(0);
 	let select = $state(-1);
@@ -21,7 +25,7 @@
 		client
 			.GET('/api/work/sources', {
 				fetch,
-				params: { query: { work_id: data.entries.items[current].work.id } }
+				params: { query: { work_id: entries[current].work.id } }
 			})
 			.then(({ data }) => {
 				sources = data;
@@ -58,7 +62,7 @@
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
 </Section>
 
-{#if data.entries?.items.length && sources && sources.length && select >= 0 && select < sources.length}
+{#if entries.length && sources && sources.length && select >= 0 && select < sources.length}
 	<Section title={m.mealy_soft_myna_talk()}>
 		<ExternalEmbed src={sources[select]} />
 		<div class="my-2">
@@ -79,10 +83,10 @@
 	</Section>
 {/if}
 <Section title={m.bald_clear_marlin_grasp()}>
-	{#if data.entries?.items.length}
+	{#if entries.length}
 		<div class="flex w-full">
 			<ol class="mr-5 w-full list-outside list-decimal">
-				{#each data.entries.items as entry, i (i)}
+				{#each entries as entry, i (i)}
 					<li class="mx-5 w-full p-1">
 						<label class="grid grid-cols-[15rem_1fr] gap-5">
 							<input class="hidden" type="radio" value={i} bind:group={current} />
@@ -99,15 +103,30 @@
 				{/each}
 			</ol>
 		</div>
+		<LoadMoreButton
+			fetchNextBatch={() =>
+				client.GET('/api/list/entries', {
+					fetch,
+					params: {
+						query: {
+							list_id: data.list.id,
+							limit: data.batch_size,
+							offset: entries.length
+						}
+					}
+				})}
+			maxCount={data.entries!.count}
+			bind:results={entries}
+		/>
 	{:else}
 		<h3>{m.hour_flat_finch_zoom()}</h3>
 	{/if}
 </Section>
 
-{#if data.list.pending_items.length}
+{#if pending_items.length}
 	<Section title={m.front_smart_hound_fold()}>
 		<ul>
-			{#each data.list.pending_items as src, i (i)}
+			{#each pending_items as src, i (i)}
 				<li>
 					<span>
 						<h3>
@@ -137,6 +156,21 @@
 				</li>
 			{/each}
 		</ul>
+		<LoadMoreButton
+			fetchNextBatch={() =>
+				client.GET('/api/list/pending', {
+					fetch,
+					params: {
+						query: {
+							list_id: data.list.id,
+							limit: data.batch_size,
+							offset: pending_items.length
+						}
+					}
+				})}
+			maxCount={data.pending_items!.count}
+			bind:results={pending_items}
+		/>
 	</Section>
 {/if}
 

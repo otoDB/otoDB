@@ -113,8 +113,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Validate Reset Token */
-        get: operations["otodb_api_auth_validate_reset_token"];
+        get?: never;
         /** Send Reset Password Token */
         put: operations["otodb_api_auth_send_reset_password_token"];
         /** Reset Password */
@@ -553,6 +552,23 @@ export interface paths {
         };
         /** Entries */
         get: operations["otodb_api_list_entries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/list/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pending */
+        get: operations["otodb_api_list_pending"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1183,6 +1199,8 @@ export interface components {
             work_width?: number | null;
             /** Work Height */
             work_height?: number | null;
+            /** Work Duration */
+            work_duration?: number | null;
             /** Title */
             title: string;
             /** Description */
@@ -1207,8 +1225,6 @@ export interface components {
             /** Id */
             id: number;
             author: components["schemas"]["ProfileSchema"];
-            /** Pending Items */
-            pending_items: components["schemas"]["WorkSourceSchema"][];
             /** Upstream */
             upstream?: string | null;
             /** Name */
@@ -1249,6 +1265,8 @@ export interface components {
             work_width?: number | null;
             /** Work Height */
             work_height?: number | null;
+            /** Work Duration */
+            work_duration?: number | null;
             /** Title */
             title: string;
             /** Description */
@@ -1294,6 +1312,13 @@ export interface components {
         PagedListItemSchema: {
             /** Items */
             items: components["schemas"]["ListItemSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** PagedWorkSourceSchema */
+        PagedWorkSourceSchema: {
+            /** Items */
+            items: components["schemas"]["WorkSourceSchema"][];
             /** Count */
             count: number;
         };
@@ -1570,28 +1595,6 @@ export interface operations {
             };
         };
     };
-    otodb_api_auth_validate_reset_token: {
-        parameters: {
-            query: {
-                token: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": boolean;
-                };
-            };
-        };
-    };
     otodb_api_auth_send_reset_password_token: {
         parameters: {
             query: {
@@ -1635,9 +1638,10 @@ export interface operations {
     };
     otodb_api_work_query_external: {
         parameters: {
-            query: {
-                platform: string;
-                id: string;
+            query?: {
+                url?: string | null;
+                platform?: string | null;
+                id?: string | null;
             };
             header?: never;
             path?: never;
@@ -2392,6 +2396,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PagedListItemSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_list_pending: {
+        parameters: {
+            query: {
+                list_id: number;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedWorkSourceSchema"];
                 };
             };
         };

@@ -12,7 +12,9 @@
 
 <Section title={m.orange_born_seal_ascend()}>
 	<h2 class="mt-8 text-lg">{m.acidic_sound_opossum_bump()}</h2>
-	<div class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+	<div
+		class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+	>
 		<button onclick={changeBackground('none')}>
 			<div class="h-48 bg-black"></div>
 			<div class="py-2 text-lg">{m.grassy_noble_walrus_wish()}</div>

@@ -28,7 +28,7 @@
 				style:background-image="url('/aniki-bg.png'), url('/aniki-right.png')"
 				style:background-position="left top, right top"
 				style:background-repeat="no-repeat, no-repeat"
-				class="fixed inset-0"
+				class="absolute inset-0"
 			></div>
 		{/if}
 	</div>

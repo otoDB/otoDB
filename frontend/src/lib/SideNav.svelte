@@ -44,6 +44,7 @@
 		</div>
 		<ul class="list-none space-y-0.5">
 			{@render link('/', m.fine_late_chicken_quiz())}
+			{@render link('/post/2', m.noble_fine_iguana_pull())}
 			{@render link('/work/search', m.grand_merry_fly_succeed())}
 			{@render link('/tag/search', m.empty_legal_chicken_taste())}
 			{@render link('/list/search', m.stale_loose_squid_cut())}
@@ -93,6 +94,7 @@
 				{@render link('/work/add', m.fluffy_crisp_horse_imagine())}
 				{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
 				{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
+				{@render link(`/profile/${user.username}/settings`, m.orange_born_seal_ascend())}
 				{@render link(
 					`/profile/${user.username}/submissions`,
 					m.flaky_gross_marlin_evoke()

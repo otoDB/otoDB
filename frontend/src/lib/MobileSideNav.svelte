@@ -2,12 +2,11 @@
 	import { page } from '$app/state';
 	import { m } from '$lib/paraglide/messages.js';
 	import { UserLevel } from '$lib/enums';
-	import clsx from 'clsx';
 
 	let {
-		className,
 		user,
-		close
+		close,
+		...props
 	}: {
 		className?: string;
 		user: {
@@ -34,10 +33,10 @@
 {/snippet}
 
 <nav
-	class={clsx(
-		className,
+	class={[
+		props.className,
 		'flex w-full flex-col gap-y-2 overflow-y-scroll bg-[var(--otodb-faint-bg)] px-8 py-16'
-	)}
+	]}
 >
 	<div class="mb-8 border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)]">
 		<form target="_self" method="get" action="/work/search" class="flex w-full">
@@ -67,6 +66,7 @@
 		</div>
 		<ul class="mt-4 list-none space-y-4">
 			{@render link('/', m.fine_late_chicken_quiz())}
+			{@render link('/post/2', m.noble_fine_iguana_pull())}
 			{@render link('/work/search', m.grand_merry_fly_succeed())}
 			{@render link('/tag/search', m.empty_legal_chicken_taste())}
 			{@render link('/list/search', m.stale_loose_squid_cut())}
@@ -116,6 +116,7 @@
 					`/profile/${user.username}/submissions`,
 					m.flaky_gross_marlin_evoke()
 				)}
+				{@render link(`/profile/${user.username}/settings`, m.orange_born_seal_ascend())}
 				<li
 					aria-current={page.url.pathname === `/logout` ? 'page' : undefined}
 					class="mt-8"

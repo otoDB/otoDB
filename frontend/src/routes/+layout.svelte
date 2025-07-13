@@ -6,7 +6,8 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
 	import { LanguageNames } from '$lib/enums';
-	import clsx from 'clsx';
+
+	import { background } from '$lib/stores/theme';
 
 	let { data, children } = $props();
 
@@ -20,13 +21,25 @@
 </script>
 
 <div>
+	<div class="-z-50 contents">
+		{#if $background === 'aniki'}
+			<div
+				style:background-image="url('/aniki-bg.png'), url('/aniki-right.png')"
+				style:background-position="left top, right top"
+				style:background-repeat="no-repeat, no-repeat"
+				class="absolute inset-0"
+			></div>
+		{/if}
+	</div>
+
 	<!-- Mobile navigation -->
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
 		<button
-			class={clsx('fixed bottom-[32px] left-[32px] z-[3] h-[64px] w-[64px]  ', {
-				invisible: isMobileNavOpen
-			})}
+			class={[
+				'fixed bottom-[32px] left-[32px] z-[3] h-[64px] w-[64px]',
+				{ invisible: isMobileNavOpen }
+			]}
 			onclick={toggleMobileNav}
 		>
 			<!-- TODO: Use icon! -->
@@ -36,21 +49,24 @@
 		<div
 			tabindex={-1}
 			role="button"
-			class={clsx('fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen })}
+			class={['fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen }]}
 			onclick={closeMobileNav}
 		></div>
 		<!-- Menu -->
 		<div
-			class={clsx('fixed top-0 left-0 z-[2] h-full transition-transform duration-75', {
-				'-translate-x-full': !isMobileNavOpen
-			})}
+			class={[
+				'fixed top-0 left-0 z-[2] h-full transition-transform duration-75',
+				{
+					'-translate-x-full': !isMobileNavOpen
+				}
+			]}
 		>
 			<MobileSideNav user={data.user} close={closeMobileNav} className="h-full"
 			></MobileSideNav>
 		</div>
 	</div>
 
-	<header class="col-span-2 px-48 py-16">
+	<header class="relative col-span-2 px-6 py-16 md:px-48">
 		<address class="font-mono text-2xl italic">
 			<a href="/" class="no-underline!">
 				{m.glad_born_mouse_taste()}
@@ -58,7 +74,7 @@
 		</address>
 	</header>
 
-	<div class="mx-auto flex w-full gap-x-4 px-4">
+	<div class="relative mx-auto flex w-full gap-x-4 px-4">
 		<!-- Enough-width navigation -->
 		<div class="hidden md:block">
 			<Header user={data.user} stats={data.stats}></Header>
@@ -78,12 +94,17 @@
 						{m.glad_born_mouse_taste()} Alpha
 					</span>
 					<div class="social-links">
-						<a href="mailto:contact@otodb.net">contact@otodb.net</a>
+						<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>
+						/
+						<a href="https://twitter.com/otoDBnet">Twitter</a>
 						/
 						<a href="irc://irc.rizon.net/#otodb">#otodb @ Rizon</a>
+						/
+						<a href="mailto:contact@otodb.net">contact@otodb.net</a>
 					</div>
 				</div>
 				<div class="footer-right">
+					<img src="/connection_favicons/Website.png" alt="Language" class="size-4" />
 					<select onchange={(e) => setLocale(e.target.value)} value={getLocale()}>
 						<option value="en">{LanguageNames['en']}</option>
 						<option value="ja">{LanguageNames['ja']}</option>

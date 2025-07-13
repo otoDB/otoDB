@@ -109,7 +109,6 @@ class ListItemSchema(ModelSchema):
 class ListSchema(ModelSchema):
     id: int
     author: ProfileSchema
-    pending_items: list[WorkSourceSchema]
     upstream: str | None = Field(None, alias="poolupstream")
     class Meta:
         model = Pool

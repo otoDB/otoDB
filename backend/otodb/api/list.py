@@ -14,7 +14,7 @@ from otodb.common import video_info, playlist_info
 from otodb.models import Pool, PoolItem, PoolUpstream, WorkSource, TagWork, TagWorkInstance, MediaWork
 from otodb.account.models import Account
 
-from .common import ListSchema, ListItemSchema
+from .common import ListSchema, ListItemSchema, WorkSourceSchema
 
 list_router = Router()
 
@@ -33,6 +33,12 @@ def lst(request: HttpRequest, list_id: int):
 def entries(request: HttpRequest, list_id: int):
     list_ = get_object_or_404(Pool, pk=list_id)
     return list_.poolitem_set.order_by('order')
+
+@list_router.get('pending', response=List[WorkSourceSchema])
+@paginate
+def pending(request: HttpRequest, list_id: int):
+    list_ = get_object_or_404(Pool, pk=list_id)
+    return list_.pending_items.all()
 
 class ListItemInSchema(ModelSchema):
     work_id: int

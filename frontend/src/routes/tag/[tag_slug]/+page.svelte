@@ -19,6 +19,7 @@
 	import SongTag from '$lib/SongTag.svelte';
 	import client from '$lib/api.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -38,10 +39,8 @@
 			undefined
 	);
 
-	let fetching = $state(false);
-	const getNextBatch = async () => {
-		fetching = true;
-		const { data: d } = await client.GET('/api/tag/works', {
+	const fetchNextBatch = () =>
+		client.GET('/api/tag/works', {
 			fetch,
 			params: {
 				query: {
@@ -51,9 +50,6 @@
 				}
 			}
 		});
-		results = results.concat(d!.items);
-		fetching = false;
-	};
 
 	const ext_cat_types = data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes;
 	const ext_cat_links = data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink;
@@ -216,11 +212,7 @@
 				<WorkCard {work} />
 			{/each}
 		</div>
-		{#if !fetching && results.length < data.works!.count}
-			<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}
-				>{m.red_pink_bear_play()}</button
-			>
-		{/if}
+		<LoadMoreButton bind:results maxCount={data.works!.count} {fetchNextBatch} />
 	{:else}
 		<p>This tag is an orphan.</p>
 	{/if}

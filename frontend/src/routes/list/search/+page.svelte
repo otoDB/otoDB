@@ -3,20 +3,16 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import client from '$lib/api';
+	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 
 	let { data }: PageProps = $props();
 	let results = $derived(data.results!.items);
 
-	let fetching = $state(false);
-	const getNextBatch = async () => {
-		fetching = true;
-		const { data: d } = await client.GET('/api/list/search', {
+	const fetchNextBatch = () =>
+		client.GET('/api/list/search', {
 			fetch,
 			params: { query: { query: data.query, limit: data.batch_size, offset: results.length } }
 		});
-		results = results.concat(d!.items);
-		fetching = false;
-	};
 </script>
 
 <svelte:head>
@@ -56,10 +52,5 @@
 			{/each}
 		</tbody>
 	</table>
-
-	{#if !fetching && results.length < data.results!.count}
-		<button class="center mx-auto mt-5 block p-2" onclick={getNextBatch}
-			>{m.red_pink_bear_play()}</button
-		>
-	{/if}
+	<LoadMoreButton bind:results maxCount={data.results!.count} {fetchNextBatch} />
 </Section>

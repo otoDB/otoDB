@@ -46,8 +46,8 @@
 	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
 	menuLinks={data.links}
 >
-	<div>
-		<div class="flex w-full">
+	<div class="@container">
+		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="flex-shrink-0">
 				{#if cover_select === -1}
 					<img
@@ -95,16 +95,18 @@
 				<div>
 					<table class="w-full">
 						<tbody>
-							<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.title}</td></tr
-							>
 							<tr>
-								<th>{m.clear_lucky_peacock_pick()}</th>
+								<th class="w-24">{m.large_factual_octopus_exhale()}</th>
+								<td>{data.title}</td>
+							</tr>
+							<tr>
+								<th class="w-24">{m.clear_lucky_peacock_pick()}</th>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								<td><div class="description-cell">{@html data.description}</div></td
 								>
 							</tr>
 							<tr>
-								<th>{m.good_dark_bumblebee_spur()}</th>
+								<th class="w-24">{m.good_dark_bumblebee_spur()}</th>
 								<td>{Rating[data.rating]()}</td>
 							</tr>
 						</tbody>
@@ -116,7 +118,7 @@
 						<table class="w-full">
 							<tbody>
 								<tr>
-									<th>{m.stale_loose_squid_cut()}</th>
+									<th class="w-24">{m.stale_loose_squid_cut()}</th>
 									<td>
 										<button onclick={showLists}>
 											{m.proud_every_goat_affirm()}

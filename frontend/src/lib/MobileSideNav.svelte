@@ -33,7 +33,12 @@
 	</li>
 {/snippet}
 
-<nav class={clsx(className, 'flex w-full flex-col gap-y-2 bg-[var(--otodb-faint-bg)] px-8 py-16')}>
+<nav
+	class={clsx(
+		className,
+		'flex w-full flex-col gap-y-2 overflow-y-scroll bg-[var(--otodb-faint-bg)] px-8 py-16'
+	)}
+>
 	<div class="mb-8 border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)]">
 		<form target="_self" method="get" action="/work/search" class="flex w-full">
 			<input
@@ -113,7 +118,7 @@
 				)}
 				<li
 					aria-current={page.url.pathname === `/logout` ? 'page' : undefined}
-					class="mt-5"
+					class="mt-8"
 				>
 					<a
 						href="/logout"

@@ -6,7 +6,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
 	import { LanguageNames } from '$lib/enums';
-	import clsx from 'clsx';
 
 	import { background } from '$lib/stores/theme';
 
@@ -37,9 +36,10 @@
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
 		<button
-			class={clsx('fixed bottom-[32px] left-[32px] z-[3] h-[64px] w-[64px]  ', {
-				invisible: isMobileNavOpen
-			})}
+			class={[
+				'fixed bottom-[32px] left-[32px] z-[3] h-[64px] w-[64px]',
+				{ invisible: isMobileNavOpen }
+			]}
 			onclick={toggleMobileNav}
 		>
 			<!-- TODO: Use icon! -->
@@ -49,14 +49,17 @@
 		<div
 			tabindex={-1}
 			role="button"
-			class={clsx('fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen })}
+			class={['fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen }]}
 			onclick={closeMobileNav}
 		></div>
 		<!-- Menu -->
 		<div
-			class={clsx('fixed top-0 left-0 z-[2] h-full transition-transform duration-75', {
-				'-translate-x-full': !isMobileNavOpen
-			})}
+			class={[
+				'fixed top-0 left-0 z-[2] h-full transition-transform duration-75',
+				{
+					'-translate-x-full': !isMobileNavOpen
+				}
+			]}
 		>
 			<MobileSideNav user={data.user} close={closeMobileNav} className="h-full"
 			></MobileSideNav>

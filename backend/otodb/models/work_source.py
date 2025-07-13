@@ -7,8 +7,6 @@ from .media import MediaWork
 from otodb.account.models import Account
 from otodb.common import video_info, process_video_info
 
-from furl import furl
-
 class ActiveManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(rejection__isnull=True)
@@ -104,10 +102,6 @@ class WorkSource(models.Model):
         full_info = None
 
         if info is None:
-            if "list=" in url:
-                f = furl(url)
-                f.remove(["list"])
-                url = f.url
             info, full_info = video_info(url)
 
         if info is None:

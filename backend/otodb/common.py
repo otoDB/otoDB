@@ -7,6 +7,7 @@ from datetime import datetime
 import unicodedata
 from http.cookiejar import MozillaCookieJar
 
+from furl import furl
 import nh3
 import diff_match_patch as dmp_mod
 
@@ -64,9 +65,9 @@ ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_fl
 for e in (YoutubeTabIE, NiconicoPlaylistIE, BilibiliFavoritesListIE, SoundcloudPlaylistIE):
     ydl_playlist.add_info_extractor(e)
 
-ydl, niconico_ie, jar = None, None, None
+ydl, jar = None, None
 def reset_cookies(cookie_file=settings.COOKIES_FILE):
-    global ydl, niconico_ie, jar
+    global ydl, jar
 
     jar = MozillaCookieJar(cookie_file)
     try:
@@ -78,7 +79,6 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
     if cookie_file:
         opts['cookiefile'] = cookie_file
     ydl = YoutubeDL(opts, auto_init=False)
-    niconico_ie = ydl.get_info_extractor(NiconicoIE.ie_key())
 
     for e in (YoutubeIE, NiconicoIE, BiliBiliIE, SoundcloudIE):
         ydl.add_info_extractor(e)
@@ -204,14 +204,20 @@ def process_video_info(full_info, link=None):
 
 def video_info(link):
     try:
-        if niconico_ie.suitable(link):
-            full_info = get_niconico_geoblocked(niconico_ie.get_temp_id(link))
+        if NiconicoIE.suitable(link):
+            full_info = get_niconico_geoblocked(NiconicoIE.get_temp_id(link))
             if full_info:
                 info = process_video_info(full_info, link)
                 return info, full_info
             else:
                 return None, None
         else:
+            if not YoutubeIE.suitable(link) and YoutubeTabIE.suitable(link):
+                f = furl(link)
+                f.remove(["list"])
+                link = f.url
+                assert(YoutubeIE.suitable(link))
+                
             full_info = ydl.extract_info(link, download=False)
             info = process_video_info(full_info)
             return info, full_info

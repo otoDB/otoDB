@@ -172,30 +172,30 @@
 			<div
 				class={[
 					'w-full border px-4 py-2',
-					src.work_status !== 1
+					src.work_status !== 0
 						? 'bg-[var(--otodb-fainter-bg)] text-[var(--otodb-fainter-content)]'
 						: ''
 				]}
 			>
+				<div class="text-lg">
+					<strong>
+						<a
+							href={src.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class={[
+								src.work_status !== 0 ? 'text-[var(--otodb-fainter-content)]' : ''
+							]}
+						>
+							{Platform[src.platform]}
+							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
+							-
+							{src.title}
+						</a>
+					</strong>
+				</div>
+
 				<div class="mt-2 flex flex-wrap gap-x-2">
-					<div>
-						{m.sour_swift_sparrow_spin()}:
-						<strong>
-							<a
-								href={src.url}
-								target="_blank"
-								rel="noopener noreferrer"
-								class={[
-									src.work_status !== 1
-										? 'text-[var(--otodb-fainter-content)]'
-										: ''
-								]}
-							>
-								{Platform[src.platform]}
-								{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
-							</a>
-						</strong>
-					</div>
 					<div>
 						{m.super_agent_pigeon_aim()}:
 						<strong>

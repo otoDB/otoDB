@@ -167,19 +167,33 @@
 		? [{ pathname: `work/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]
 		: []}
 >
-	<div class="mt-2 flex w-full flex-col gap-y-4 border px-4 py-2">
+	<div class="mt-2 flex w-full flex-col gap-y-4">
 		{#each sources as src, i (i)}
-			<div class="w-full">
-				<div class="text-lg">
-					<a href={src.url} target="_blank" rel="noopener noreferrer">
-						{src.title}
-					</a>
-				</div>
+			<div
+				class={[
+					'w-full border px-4 py-2',
+					src.work_status !== 1
+						? 'bg-[var(--otodb-fainter-bg)] text-[var(--otodb-fainter-content)]'
+						: ''
+				]}
+			>
 				<div class="mt-2 flex flex-wrap gap-x-2">
 					<div>
 						{m.sour_swift_sparrow_spin()}:
 						<strong>
-							{Platform[src.platform]}
+							<a
+								href={src.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class={[
+									src.work_status !== 1
+										? 'text-[var(--otodb-fainter-content)]'
+										: ''
+								]}
+							>
+								{Platform[src.platform]}
+								{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
+							</a>
 						</strong>
 					</div>
 					<div>

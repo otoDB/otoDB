@@ -12,6 +12,8 @@
 
 	let { data } = $props();
 
+	const sources = data.sources || [];
+
 	let userLists: [components['schemas']['ListSchema'], boolean][] = $state([]),
 		userListsFetched = false,
 		userListsShown = $state(false);
@@ -72,7 +74,7 @@
 					>
 						{m.heroic_ideal_orangutan_aid()}
 					</a>
-					{#each data.sources as s, i (i)}
+					{#each sources as s, i (i)}
 						<a
 							href={s.url}
 							target="_blank"
@@ -165,62 +167,91 @@
 		? [{ pathname: `work/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]
 		: []}
 >
-	<table class="w-full">
-		<thead
-			><tr>
-				<th>{m.large_factual_octopus_exhale()}</th>
-				<th>{m.clear_lucky_peacock_pick()}</th>
-				<th>{m.sour_swift_sparrow_spin()}</th>
-				<th>{m.super_agent_pigeon_aim()}</th>
-				<th>{m.large_polite_otter_thrive()}</th>
-				<th>{m.civil_trick_oryx_clap()}</th>
-				<th>{m.big_dry_seahorse_succeed()}</th>
-				<th>{m.nice_tense_mule_grasp()}</th>
-				<th>{m.noisy_moving_newt_belong()}</th>
+	<div class="mt-2 flex w-full flex-col gap-y-4">
+		{#each sources as src, i (i)}
+			<div
+				class={[
+					'w-full border px-4 py-2',
+					src.work_status !== 0
+						? 'bg-[var(--otodb-fainter-bg)] text-[var(--otodb-fainter-content)]'
+						: ''
+				]}
+			>
+				<div class="text-lg">
+					<strong>
+						<a
+							href={src.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class={[
+								src.work_status !== 0 ? 'text-[var(--otodb-fainter-content)]' : ''
+							]}
+						>
+							{Platform[src.platform]}
+							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
+							-
+							{src.title}
+						</a>
+					</strong>
+				</div>
+
+				<div class="mt-2 flex flex-wrap gap-x-2">
+					<div>
+						{m.super_agent_pigeon_aim()}:
+						<strong>
+							<date>
+								{src.published_date}
+							</date>
+						</strong>
+					</div>
+					<div>
+						{m.large_polite_otter_thrive()}:
+						<strong>
+							{WorkOrigin[src.work_origin]()}
+						</strong>
+					</div>
+					<div>
+						{m.civil_trick_oryx_clap()}:
+						<strong>{WorkStatus[src.work_status]()}</strong>
+					</div>
+					<div>
+						{m.big_dry_seahorse_succeed()}:
+						<strong>
+							{#if src.work_width}
+								{src.work_width}x{src.work_height}
+							{:else}
+								{m.simple_less_marlin_enchant()}
+							{/if}
+						</strong>
+					</div>
+					<div>
+						{m.nice_tense_mule_grasp()}:
+						<strong>
+							{#if src.work_duration}
+								{Math.floor(src.work_duration / 60)}:{(
+									'0' +
+									(src.work_duration % 60)
+								).slice(-2)}
+							{:else}
+								{m.simple_less_marlin_enchant()}
+							{/if}
+						</strong>
+					</div>
+					<div></div>
+				</div>
+				<div class="mt-2">
+					<CollapsibleText text={src.description}></CollapsibleText>
+				</div>
 				{#if data.user}
-					<th>{m.mushy_proof_hornet_dig()}</th>
+					<div class="mt-2 flex justify-end">
+						<RefreshButton source={src} />
+					</div>
 				{/if}
-			</tr></thead
-		>
-		<tbody>
-			{#each data.sources as src, i (i)}
-				<tr>
-					<td class="whitespace-nowrap">{src.title}</td>
-					<td
-						><div class="description-cell">
-							<CollapsibleText text={src.description}></CollapsibleText>
-						</div></td
-					>
-					<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-					<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td
-						class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td
-					>
-					<td
-						>{#if src.work_width}{src.work_width}x{src.work_height}{:else}{m.simple_less_marlin_enchant()}{/if}</td
-					>
-					<td class="whitespace-nowrap">
-						{#if src.work_duration}
-							{Math.floor(src.work_duration / 60)}:{(
-								'0' +
-								(src.work_duration % 60)
-							).slice(-2)}
-						{:else}
-							{m.simple_less_marlin_enchant()}
-						{/if}
-					</td>
-					<td class="whitespace-nowrap"
-						><a href={src.url} target="_blank" rel="noopener noreferrer"
-							>{m.noisy_moving_newt_belong()}</a
-						></td
-					>
-					{#if data.user}
-						<td><RefreshButton source={src} /></td>
-					{/if}
-				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</div>
+		{/each}
+	</div>
 </Section>
+
 <Section title={m.same_broad_haddock_pinch()}>
 	<CommentTree comments={data.comments} user={data.user ?? null} model="mediawork" pk={data.id} />
 </Section>

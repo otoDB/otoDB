@@ -12,8 +12,6 @@
 
 	let { data } = $props();
 
-	const sources = data.sources || [];
-
 	let userLists: [components['schemas']['ListSchema'], boolean][] = $state([]),
 		userListsFetched = false,
 		userListsShown = $state(false);
@@ -74,7 +72,7 @@
 					>
 						{m.heroic_ideal_orangutan_aid()}
 					</a>
-					{#each sources as s, i (i)}
+					{#each data.sources as s, i (i)}
 						<a
 							href={s.url}
 							target="_blank"
@@ -168,7 +166,7 @@
 		: []}
 >
 	<div class="mt-2 flex w-full flex-col gap-y-4">
-		{#each sources as src, i (i)}
+		{#each data.sources as src, i (i)}
 			<div
 				class={[
 					'w-full border px-4 py-2',

@@ -140,6 +140,8 @@
 						><th><label for="song_bpm">BPM</label></th><td
 							><input
 								type="number"
+								step="any"
+								min="0"
 								name="song_bpm"
 								value={data.tag?.song?.bpm ?? 100}
 							/></td

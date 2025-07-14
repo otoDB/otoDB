@@ -12,7 +12,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info, NFKC
-from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection
+from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection, TagWork
 from otodb.models.enums import Platform, WorkOrigin, Rating
 from otodb.account.models import Account
 
@@ -99,7 +99,14 @@ def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchem
     for vote in payload:
         vote.score = max(-1, min(1, vote.score)) # zero trust
 
-    work.tags.add(*[v.tag_slug for v in payload])
+    tags = []
+    for v in payload:
+        try:
+            tags.append(TagWork.objects.get(slug=v.tag_slug))
+        except TagWork.DoesNotExist:
+            tags.append(TagWork.objects.create(name=v.tag_slug))
+
+    work.tags.add(*tags)
 
     for vote in payload:
         tag_instance = work.tagworkinstance_set.get(work_tag__slug=vote.tag_slug)

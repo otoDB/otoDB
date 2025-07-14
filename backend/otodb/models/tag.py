@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from django.db import models
 from simple_history.models import HistoricalRecords
-from tagulous.models import TagModel, TagModelManager
+from tagulous.models import BaseTagModel, TagModelManager
 
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_CLASSY
@@ -27,6 +27,24 @@ class LowerCaseTagModelManager(TagModelManager):
         if 'name' in kwargs:
             kwargs['name'] = name_cleaner(kwargs['name'])
         return super().get(*args, **kwargs)
+
+class OtodbTagModel(BaseTagModel):
+    """
+    Abstract base class for tag models
+    """
+
+    name = models.CharField(unique=True, max_length=255)
+    slug = models.SlugField(unique=True, max_length=50)
+    count = models.IntegerField(
+        default=0, help_text="Internal counter of how many times this tag is in use"
+    )
+    protected = models.BooleanField(
+        default=False, help_text="Will not be deleted when the count reaches 0"
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ("name",)
 
 def _get_tree(node):
     tree = []
@@ -57,7 +75,7 @@ def _alias(from_tags, into_tag):
 
     into_tag.save()
 
-class TagWork(TagModel):
+class TagWork(OtodbTagModel):
     objects = LowerCaseTagModelManager()
 
     if TYPE_CHECKING:
@@ -141,7 +159,7 @@ class WikiPage(models.Model):
     class Meta:
         unique_together = (("tag", "lang"),)
 
-class TagSong(TagModel):
+class TagSong(OtodbTagModel):
     objects = LowerCaseTagModelManager()
 
     class TagMeta:

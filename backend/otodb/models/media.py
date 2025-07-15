@@ -7,7 +7,7 @@ from django.urls import reverse
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagField, TaggedManager
 
-from .enums import Rating
+from .enums import Rating, WorkTagCategory, Role
 from .tag import TagWork, TagSong
 from otodb.account.models import Account
 
@@ -34,7 +34,35 @@ class TagWorkInstance(models.Model):
     work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 
     used_as_source = models.BooleanField(null=False, default=False)
+    creator_roles = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Creator role bitmask"
+    )
     instance_imported_from_source = models.BooleanField(null=False, default=True)
+
+    def get_creator_roles(self) -> list[int]:
+        if self.creator_roles is None or self.work_tag.category != WorkTagCategory.CREATOR:
+            return []
+
+        roles = []
+        for role in Role:
+            if self.creator_roles & role.value:
+                roles.append(role.value)
+        return roles
+
+    def set_creator_roles(self, roles: list[Role | int]):
+        if self.work_tag.category != WorkTagCategory.CREATOR:
+            self.creator_roles = None
+            return
+
+        role_value = 0
+        for role in roles:
+            if isinstance(role, Role):
+                role_value |= role.value
+            else:
+                role_value |= role
+        self.creator_roles = role_value if role_value > 0 else None
 
 
 class TagWorkVote(models.Model):

@@ -195,6 +195,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/creator_roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Update Creator Roles */
+        post: operations["otodb_api_work_update_creator_roles"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/toggle_sample": {
         parameters: {
             query?: never;
@@ -1131,6 +1148,8 @@ export interface components {
             user_score: number | null;
             /** Sample */
             sample: boolean;
+            /** Creator Roles */
+            creator_roles: number[];
         };
         /** TagWorkVoteSchema */
         TagWorkVoteSchema: {
@@ -1138,6 +1157,15 @@ export interface components {
             tag_slug: string;
             /** Score */
             score: number;
+        };
+        /** CreatorRolesUpdateSchema */
+        CreatorRolesUpdateSchema: {
+            /** Work Id */
+            work_id: number;
+            /** Tag Slug */
+            tag_slug: string;
+            /** Creator Roles */
+            creator_roles: number[];
         };
         /** RelationSchema */
         RelationSchema: {
@@ -1786,6 +1814,28 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["TagWorkVoteSchema"][];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_update_creator_roles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatorRolesUpdateSchema"];
             };
         };
         responses: {

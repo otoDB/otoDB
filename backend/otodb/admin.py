@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.db import models
 
 from .models import (
     MediaSong,
@@ -73,31 +74,47 @@ class MediaWorkAdmin(MediaAdmin):
     list_display = ['pk', 'title', 'rating', 'sources_count', 'tag_count', 'creator_count', 'source_count', 'song_count', 'general_count', 'added_by']
     search_fields = ['title']
 
-    @admin.display(description='Sources #')
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.annotate(
+            sources_count_annotation=models.Count('worksource', distinct=True),
+            tag_count_annotation=models.Count('tags', distinct=True),
+            creator_count_annotation=models.Count('tags', filter=models.Q(tags__category=4), distinct=True),
+            source_count_annotation=models.Count('tags', filter=models.Q(tags__category=3), distinct=True),
+            song_count_annotation=models.Count('tags', filter=models.Q(tags__category=2), distinct=True),
+            general_count_annotation=models.Count('tags', filter=models.Q(tags__category=0), distinct=True),
+            earliest_history_user=models.Subquery(
+                queryset.model.history.filter(id=models.OuterRef('id'))
+                .order_by('history_date')
+                .values('history_user')[:1]
+            )
+        )
+
+    @admin.display(description='Sources #', ordering='sources_count_annotation')
     def sources_count(self, obj):
-        return obj.worksource_set.count()
+        return obj.sources_count_annotation
 
-    @admin.display(description='Total tags')
+    @admin.display(description='Total tags', ordering='tag_count_annotation')
     def tag_count(self, obj):
-        return obj.tags.count()
+        return obj.tag_count_annotation
 
-    @admin.display(description='Creator tag #')
+    @admin.display(description='Creator tag #', ordering='creator_count_annotation')
     def creator_count(self, obj):
-        return obj.tags.filter(category=4).count()
+        return obj.creator_count_annotation
 
-    @admin.display(description='Source tag #')
+    @admin.display(description='Source tag #', ordering='source_count_annotation')
     def source_count(self, obj):
-        return obj.tags.filter(category=3).count()
+        return obj.source_count_annotation
 
-    @admin.display(description='Song tag #')
+    @admin.display(description='Song tag #', ordering='song_count_annotation')
     def song_count(self, obj):
-        return obj.tags.filter(category=2).count()
+        return obj.song_count_annotation
 
-    @admin.display(description='General tag #')
+    @admin.display(description='General tag #', ordering='general_count_annotation')
     def general_count(self, obj):
-        return obj.tags.filter(category=0).count()
+        return obj.general_count_annotation
 
-    @admin.display(description='Added by')
+    @admin.display(description='Added by', ordering='earliest_history_user')
     def added_by(self, obj):
         earliest_record = obj.history.order_by('history_date').first()
         if earliest_record and earliest_record.history_user:

@@ -45,11 +45,10 @@
 				<tr>
 					<th><label for="origin">{m.watery_fuzzy_fireant_thrive()}</label></th>
 					<td
-						><input
-							type="checkbox"
-							name="origin"
-							checked={form?.origin ?? !data.title}
-						/></td
+						><select name="origin" value={form?.origin ?? !data.title}
+							><option value={true}>Yes</option><option value={false}>No</option
+							></select
+						></td
 					>
 				</tr>
 			</tbody>

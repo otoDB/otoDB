@@ -113,6 +113,11 @@ class Account(AbstractBaseUser):
 class Invitation(models.Model):
     secret = models.CharField(max_length=127, unique=True)
     level = models.IntegerField(choices=Account.Levels)
+    created_by = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='created_invitations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    used_by = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='used_invitation', null=True, blank=True)
+    used_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f'{Account.Levels(self.level).label} - {self.secret}'
+        status = "Used" if self.used_by is not None else "Available"
+        return f'{Account.Levels(self.level).label} - {self.secret} ({status})'

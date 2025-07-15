@@ -123,7 +123,7 @@
 					>
 					<td>
 						{#if tag.category === 4}
-							<div class="creator-roles">
+							<div>
 								{#each Object.keys(Role).filter((e) => !isNaN(e)) as k, i (i)}
 									<label>
 										<input

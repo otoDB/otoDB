@@ -124,13 +124,18 @@
 					<td>
 						{#if tag.category === 4}
 							<div class="creator-roles">
-								{#each Object.entries(Role) as [key, value]}
+								{#each Object.entries(Role) as [, value] (value)}
 									{#if typeof value === 'number'}
-										<input
-											type="checkbox"
-											checked={tag.creator_roles?.includes(value) || false}
-											onchange={() => toggle_creator_role(tag.slug, value)}
-										/>
+										<label>
+											<input
+												type="checkbox"
+												checked={tag.creator_roles?.includes(value) ||
+													false}
+												onchange={() =>
+													toggle_creator_role(tag.slug, value)}
+											/>
+											<!-- {Role[value as keyof typeof Role]} -->
+										</label>
 									{/if}
 								{/each}
 							</div>

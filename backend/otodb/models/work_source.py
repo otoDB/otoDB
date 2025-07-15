@@ -33,7 +33,7 @@ class WorkSource(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
     thumbnail = models.URLField(null=True, blank=False)
-    uploader_id = models.CharField(max_length=1000, null=False, blank=False)
+    uploader_id = models.CharField(max_length=1000, null=True, blank=False)
 
     added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
 

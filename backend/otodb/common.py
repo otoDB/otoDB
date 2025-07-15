@@ -149,7 +149,7 @@ def process_video_info(full_info, link=None):
                 'id': full_info['video']['id'],
                 'thumbnail': full_info['video']['thumbnail'].get('ogp', full_info['video']['thumbnail']['url']),
                 'timestamp': int(mktime(datetime.fromisoformat(full_info['video']['registeredAt']).timetuple())),
-                'uploader_id': full_info['owner']['id']
+                'uploader_id': full_info['owner']['id'] if full_info['owner'] else 0
             }
         else:
             # Standard yt-dlp response

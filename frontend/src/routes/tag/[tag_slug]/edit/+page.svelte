@@ -147,6 +147,16 @@
 							/></td
 						></tr
 					>
+					<tr
+						><th><label for="song_bpm_mixed">{m.tasty_male_tadpole_glow()}</label></th
+						><td
+							><input
+								type="checkbox"
+								name="song_bpm_mixed"
+								checked={data.tag?.song?.bpm_mixed ?? false}
+							/></td
+						></tr
+					>
 				</tbody>
 			</table>
 		{/if}

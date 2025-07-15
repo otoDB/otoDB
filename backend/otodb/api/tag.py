@@ -50,7 +50,7 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str):
     tags = get_list_or_404(TagWork, slug__in=from_tags)
     into = get_object_or_404(TagWork, slug=into_tag)
     assert(into.aliased_to is None)
-    
+
     TagWork.alias(tags, into)
     return
 
@@ -80,7 +80,7 @@ class TagInSchema(Schema):
 class SongInSchema(ModelSchema):
     class Meta:
         model = MediaSong
-        fields = ['title', 'bpm', 'author']
+        fields = ['title', 'bpm', 'bpm_mixed', 'author']
 
 @tag_router.put('tag', auth=django_auth)
 @user_is_trusted

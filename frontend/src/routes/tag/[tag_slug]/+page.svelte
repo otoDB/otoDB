@@ -101,7 +101,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{TagWorkConnectionTypes[s.site]}
+						{TagWorkConnectionLink[s.site](s.content_id)}
 					</a>
 				</li>
 			{/each}
@@ -118,7 +118,7 @@
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{ext_cat_types[s.site]}
+							{ext_cat_links[s.site](s.content_id)}
 						</a>
 					</li>
 				{/each}
@@ -175,7 +175,7 @@
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{SongConnectionTypes[s.site]}
+							{SongConnectionLink[s.site](s.content_id)}
 						</a>
 					</li>
 				{/each}

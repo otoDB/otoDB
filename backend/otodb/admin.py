@@ -70,6 +70,33 @@ class MediaAdmin(admin.ModelAdmin):
 class MediaWorkAdmin(MediaAdmin):
     inlines = [MediaSourceInline, WorkRelationAInline, WorkRelationBInline, TagWorkInstanceInline]
 
+    list_display = ['pk', 'title', 'rating', 'sources_count', 'tag_count', 'creator_count', 'source_count', 'song_count', 'general_count']
+    search_fields = ['title']
+
+    @admin.display(description='Sources #')
+    def sources_count(self, obj):
+        return obj.worksource_set.count()
+
+    @admin.display(description='Total tags')
+    def tag_count(self, obj):
+        return obj.tags.count()
+
+    @admin.display(description='Creator tag #')
+    def creator_count(self, obj):
+        return obj.tags.filter(category=4).count()
+
+    @admin.display(description='Source tag #')
+    def source_count(self, obj):
+        return obj.tags.filter(category=3).count()
+
+    @admin.display(description='Song tag #')
+    def song_count(self, obj):
+        return obj.tags.filter(category=2).count()
+
+    @admin.display(description='General tag #')
+    def general_count(self, obj):
+        return obj.tags.filter(category=0).count()
+
 class MediaSongAdmin(MediaAdmin):
     inlines = [SongRelationAInline, SongRelationBInline]
 

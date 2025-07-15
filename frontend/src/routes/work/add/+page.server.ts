@@ -33,7 +33,7 @@ export const actions = {
 	default: async ({ request, fetch, url, locals }) => {
 		const data = await request.formData();
 		const link = data.get('url') as string,
-			is_official = !!data.get('origin');
+			is_official = data.get('origin') === 'true';
 		const work = url.searchParams.get('for_work');
 
 		const {

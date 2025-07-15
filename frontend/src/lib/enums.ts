@@ -200,7 +200,7 @@ export const TagWorkConnectionLink = {
 	21: (id: string) => `https://dic.pixiv.net/a/${id}/`,
 	22: (id: string) => `https://en.wikipedia.org/wiki/${id}`,
 	23: (id: string) => `https://namu.wiki/w/${id}`,
-	24: (id: string) => `https://knowyourmeme.com/memes/subcultures/${id}`
+	24: (id: string) => `https://knowyourmeme.com/memes/${id}`
 };
 
 export const TagWorkConnectionParsers = {
@@ -216,7 +216,7 @@ export const TagWorkConnectionParsers = {
 	23: (link: string) =>
 		link.match(/^https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)(?:\/)?$/)?.[1],
 	24: (link: string) =>
-		link.match(/^https?:\/\/knowyourmeme\.com\/memes\/subcultures\/([^/?#]+)(?:\/)?$/)?.[1]
+		link.match(/^https?:\/\/knowyourmeme\.com\/memes\/([^/?#]+)(?:\/)?$/)?.[1]
 };
 
 export const SourceConnectionTypes = {

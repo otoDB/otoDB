@@ -78,7 +78,7 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ["username", "email"]
     ordering = ["username"]
     filter_horizontal = []
-    
+
     def has_change_permission(self, request, obj=None):
         if obj is None:
             return True
@@ -92,6 +92,12 @@ class AddInvitationForm(forms.ModelForm):
         fields = ["level"]
 
 class InvitationAdmin(admin.ModelAdmin):
+    list_display = ['secret', 'get_level_display', 'created_by', 'created_at', 'used_by', 'used_at']
+    list_filter = ['level', 'created_at', 'used_at']
+    search_fields = ['created_by', 'used_by']
+    readonly_fields = ['secret', 'created_by', 'created_at', 'used_by', 'used_at']
+    ordering = ['-created_at']
+
     def has_change_permission(self, request, obj=None):
         return False
 
@@ -110,8 +116,9 @@ class InvitationAdmin(admin.ModelAdmin):
                 for _ in range(form.cleaned_data['bulk']):
                     Invitation.objects.create(
                         secret=get_random_string(16, string.ascii_letters+string.digits),
-                        level=form.cleaned_data['level']
-                        )
+                        level=form.cleaned_data['level'],
+                        created_by=request.user,
+                    )
                 return redirect('admin:account_invitation_changelist')
         return super().add_view(request, form_url, extra_context)
 

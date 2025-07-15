@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.utils.crypto import get_random_string
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.models import Session
@@ -51,11 +52,14 @@ def logout_endpoint(request):
 
 @auth_router.post("/register", response={ 200:UserLoginSchema, 401: Error, 409: Error })
 def register(request, username: str, password: str, email: str, invite: str):
-    invite_res = get_object_or_404(Invitation, secret=invite)
+    invite_res = get_object_or_404(Invitation, secret=invite, used_by__isnull=True)
     assert(password)
     try:
         user = Account.objects.create_user(username, email, password=password, level=invite_res.level)
-        invite_res.delete()
+        invite_res.used_by = user
+        invite_res.used_at = timezone.now()
+        invite_res.save()
+
         login(request, user)
         return { 'user_id': user.id, 'username': user.username }
     except IntegrityError:

@@ -37,7 +37,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{ProfileConnectionTypes[s.site]}
+						{ProfileConnectionLink[s.site](s.content_id)}
 					</a>
 				</li>
 			{/each}

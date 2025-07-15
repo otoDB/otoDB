@@ -215,8 +215,7 @@ export const TagWorkConnectionParsers = {
 		link.match(/^https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)(?:\/)?$/)?.[1],
 	23: (link: string) =>
 		link.match(/^https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)(?:\/)?$/)?.[1],
-	24: (link: string) =>
-		link.match(/^https?:\/\/knowyourmeme\.com\/memes\/([^/?#]+)(?:\/)?$/)?.[1]
+	24: (link: string) => link.match(/^https?:\/\/knowyourmeme\.com\/memes\/([^/?#]+)(?:\/)?$/)?.[1]
 };
 
 export const SourceConnectionTypes = {

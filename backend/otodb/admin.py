@@ -70,7 +70,7 @@ class MediaAdmin(admin.ModelAdmin):
 class MediaWorkAdmin(MediaAdmin):
     inlines = [MediaSourceInline, WorkRelationAInline, WorkRelationBInline, TagWorkInstanceInline]
 
-    list_display = ['pk', 'title', 'rating', 'sources_count', 'tag_count', 'creator_count', 'source_count', 'song_count', 'general_count']
+    list_display = ['pk', 'title', 'rating', 'sources_count', 'tag_count', 'creator_count', 'source_count', 'song_count', 'general_count', 'added_by']
     search_fields = ['title']
 
     @admin.display(description='Sources #')
@@ -96,6 +96,13 @@ class MediaWorkAdmin(MediaAdmin):
     @admin.display(description='General tag #')
     def general_count(self, obj):
         return obj.tags.filter(category=0).count()
+
+    @admin.display(description='Added by')
+    def added_by(self, obj):
+        earliest_record = obj.history.order_by('history_date').first()
+        if earliest_record and earliest_record.history_user:
+            return earliest_record.history_user
+        return '[Unknown]'
 
 class MediaSongAdmin(MediaAdmin):
     inlines = [SongRelationAInline, SongRelationBInline]

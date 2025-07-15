@@ -72,7 +72,7 @@
 				>
 				<tr
 					><th><label for="reason">{m.wide_just_gull_glow()}</label></th><td
-						><input type="text" required name="reason" value={form?.reason ?? ''} /></td
+						><input type="text" name="reason" value={form?.reason ?? ''} /></td
 					></tr
 				>
 			</tbody>

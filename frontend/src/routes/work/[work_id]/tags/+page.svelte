@@ -90,9 +90,9 @@
 							aria-label="+1"
 						></button>
 					</td>
-					<!-- 2 - Song -->
+					<!-- 2 - Song, 4 - Creator -->
 					<td
-						>{#if tag.category === 2}
+						>{#if tag.category === 2 || tag.category === 4}
 							<input
 								type="checkbox"
 								onclick={() => toggle_sample(tag.slug)}

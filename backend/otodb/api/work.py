@@ -84,7 +84,7 @@ def get_tag_scores(request: HttpRequest, work_id: int):
         'score': instance.avg_score,
         'n_votes': instance.n_votes,
         'user_score': user_votes.filter(tag_instance=instance).values_list('score', flat=True).first(),
-        'sample': instance.song_used_as_source
+        'sample': instance.used_as_source
         } for instance in work.tagworkinstance_set.annotate(avg_score=Avg('tagworkvote__score', default=0), n_votes=Count('tagworkvote')).all()]
 
 class TagWorkVoteSchema(Schema):
@@ -123,7 +123,7 @@ def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchem
 @user_is_trusted
 def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
     instance = get_object_or_404(TagWorkInstance, work_id=work_id, work_tag__slug=tag_slug)
-    instance.song_used_as_source = not instance.song_used_as_source
+    instance.used_as_source = not instance.used_as_source
     instance.save()
 
 @work_router.get('random', response=list[WorkSchema])

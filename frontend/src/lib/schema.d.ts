@@ -1019,6 +1019,11 @@ export interface components {
             title: string;
             /** Bpm */
             bpm: number;
+            /**
+             * Bpm Mixed
+             * @default false
+             */
+            bpm_mixed: boolean;
             /** Author */
             author: string;
         };
@@ -1367,6 +1372,11 @@ export interface components {
             title: string;
             /** Bpm */
             bpm: number;
+            /**
+             * Bpm Mixed
+             * @default false
+             */
+            bpm_mixed: boolean;
             /** Author */
             author: string;
         };

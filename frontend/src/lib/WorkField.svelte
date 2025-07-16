@@ -58,7 +58,7 @@
 	{/if}
 	{#if suggestions.length}
 		<table
-			class="absolute px-1"
+			class="absolute z-1 px-1"
 			use:clickOutside
 			onOutclick={() => {
 				suggestions = [];

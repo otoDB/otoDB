@@ -72,7 +72,7 @@
 	></textarea>
 	{#if suggestions.length}
 		<ul
-			class="absolute list-none"
+			class="absolute z-1 list-none"
 			use:clickOutside
 			onOutclick={() => {
 				suggestions = [];

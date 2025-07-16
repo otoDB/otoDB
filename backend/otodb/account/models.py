@@ -2,16 +2,21 @@ from typing import TYPE_CHECKING
 
 from django.urls import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
-from django.db import models
+from django.db import IntegrityError, models
 from django.utils import timezone
 
 
 class AccountManager(BaseUserManager):
+    def get_by_natural_key(self, username):
+        return self.get(username__iexact=username)
+
     def create_user(self, username, email, password=None, **extra_fields):
         if not username:
             raise ValueError("Users must have a username")
         if not email:
             raise ValueError("Users must have an email address")
+        if self.filter(username__iexact=username).exists():
+            raise IntegrityError("This username is already taken")
         username = User.normalize_username(username)
         user: Account = self.model(
             username=username,
@@ -23,6 +28,8 @@ class AccountManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, email, password=None, **extra_fields):
+        if self.filter(username__iexact=username).exists():
+            raise ValueError("This username is already taken")
         user: Account = self.create_user(username, email, password, **extra_fields)
         user.email_activated = True
         user.level = Account.Levels.OWNER
@@ -34,7 +41,7 @@ class Account(AbstractBaseUser):
         ANONYMOUS = 0
         RESTRICTED = 10
         MEMBER = 20
-        MODERATOR = 40
+        EDITOR = 40
         ADMIN = 50
         OWNER = 100
 
@@ -53,6 +60,8 @@ class Account(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     date_created = models.DateTimeField(default=timezone.now)
 
+    reset_token = models.CharField(max_length=127, unique=True, null=True)
+
     objects = AccountManager()
 
     USERNAME_FIELD = "username"
@@ -68,8 +77,8 @@ class Account(AbstractBaseUser):
         super(Account, self).save(*args, **kwargs)
 
     @property
-    def is_moderator(self):
-        return self.level >= self.Levels.MODERATOR
+    def is_editor(self):
+        return self.level >= self.Levels.EDITOR
 
     @property
     def is_staff(self):
@@ -90,9 +99,7 @@ class Account(AbstractBaseUser):
         return all(self.has_perm(p) for p in perms)
 
     def has_module_perms(self, app_label):
-        if self.is_owner and app_label == "account":
-            return True
-        if self.is_staff and app_label != "account":
+        if self.is_staff:
             return True
         return False
 
@@ -102,3 +109,15 @@ class Account(AbstractBaseUser):
     def get_absolute_url(self):
         return reverse('otodb:profile', kwargs={ 'user_id': self.id })
 
+
+class Invitation(models.Model):
+    secret = models.CharField(max_length=127, unique=True)
+    level = models.IntegerField(choices=Account.Levels)
+    created_by = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='created_invitations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    used_by = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='used_invitation', null=True, blank=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        status = "Used" if self.used_by is not None else "Available"
+        return f'{Account.Levels(self.level).label} - {self.secret} ({status})'

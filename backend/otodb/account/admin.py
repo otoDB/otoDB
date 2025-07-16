@@ -1,11 +1,15 @@
+import string
+
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
+from django.utils.crypto import get_random_string
+from django.shortcuts import redirect
 
-from otodb.account.models import Account
+from otodb.account.models import Account, Invitation
 
 
 class UserCreationForm(forms.ModelForm):
@@ -45,6 +49,7 @@ class UserChangeForm(forms.ModelForm):
     """
 
     password = ReadOnlyPasswordHashField()
+    level = forms.ChoiceField(choices=[c for c in Account.Levels.choices if c[0] < Account.Levels.ADMIN], initial=Account.Levels.MEMBER)
 
     class Meta:
         model = Account
@@ -74,8 +79,51 @@ class UserAdmin(BaseUserAdmin):
     ordering = ["username"]
     filter_horizontal = []
 
+    def has_change_permission(self, request, obj=None):
+        if obj is None:
+            return True
+        return request.user.level > obj.level
+
+class AddInvitationForm(forms.ModelForm):
+    bulk = forms.IntegerField(initial=1, min_value=1)
+    level = forms.ChoiceField(choices=[c for c in Account.Levels.choices if c[0] < Account.Levels.ADMIN], initial=Account.Levels.MEMBER)
+    class Meta:
+        model = Invitation
+        fields = ["level"]
+
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = ['secret', 'get_level_display', 'created_by', 'created_at', 'used_by', 'used_at']
+    list_filter = ['level', 'created_at', 'used_at']
+    search_fields = ['created_by', 'used_by']
+    readonly_fields = ['secret', 'created_by', 'created_at', 'used_by', 'used_at']
+    ordering = ['-created_at']
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            kwargs['form'] = AddInvitationForm
+        form = super().get_form(request, obj, **kwargs)
+        if obj is None:
+            form.base_fields['level'].initial = 20
+        return form
+
+    def add_view(self, request, form_url="", extra_context=None):
+        if request.method == "POST":
+            form = AddInvitationForm(request.POST)
+            if form.is_valid():
+                for _ in range(form.cleaned_data['bulk']):
+                    Invitation.objects.create(
+                        secret=get_random_string(16, string.ascii_letters+string.digits),
+                        level=form.cleaned_data['level'],
+                        created_by=request.user,
+                    )
+                return redirect('admin:account_invitation_changelist')
+        return super().add_view(request, form_url, extra_context)
 
 admin.site.register(Account, UserAdmin)
+admin.site.register(Invitation, InvitationAdmin)
 # Since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
 admin.site.unregister(Group)

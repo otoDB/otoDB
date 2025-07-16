@@ -4,18 +4,31 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { Platform, WorkOrigin, WorkStatus } from '$lib/enums';
 	import RefreshButton from '../../../work/RefreshButton.svelte';
+	import client from '$lib/api';
 
 	let { data }: PageProps = $props();
-</script>
+	let results = $state(data.submissions!.items);
+	let page = $state(0);
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.fuzzy_crazy_cobra_lead(),
-			name: data.profile.username
-		})}</title
-	>
-</svelte:head>
+	let approved = $derived(results.filter((s) => s.media));
+	let pending = $derived(results.filter((s) => !s.media && !s.rejection));
+	let rejected = $derived(results.filter((s) => s.rejection));
+
+	$effect(() => {
+		client
+			.GET('/api/profile/submissions', {
+				fetch,
+				params: {
+					query: {
+						username: data.profile.username,
+						limit: data.batch_size,
+						offset: page * data.batch_size
+					}
+				}
+			})
+			.then(({ data }) => (results = data.items));
+	});
+</script>
 
 <Section
 	title={m.mild_loud_shad_enchant({
@@ -25,11 +38,10 @@
 	menuLinks={data.links}
 >
 	{#if data.user?.username === data.profile.username}
-		<a href="/work/add">Add a work...</a>
+		<a href="/work/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}
-
-	<h2>Pending</h2>
-	{#if data.pending?.length}
+	<h2>{m.such_actual_okapi_dare()}</h2>
+	{#if pending?.length}
 		<table class="w-full">
 			<thead
 				><tr>
@@ -44,8 +56,7 @@
 				</tr></thead
 			>
 			<tbody>
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.pending as src}
+				{#each pending as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
@@ -63,16 +74,16 @@
 			</tbody>
 		</table>
 	{:else}
-		<p>No pending submissions.</p>
+		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 
-	<h2>Rejected</h2>
-	{#if data.rejected?.length}
+	<h2>{m.stale_vexed_hare_pray()}</h2>
+	{#if rejected?.length}
 		<table class="w-full">
 			<thead
 				><tr>
 					<th>{m.large_factual_octopus_exhale()}</th>
-					<th>Rejection reason</th>
+					<th>{m.weary_spicy_fly_attend()}</th>
 					<th>{m.sour_swift_sparrow_spin()}</th>
 					<th>{m.super_agent_pigeon_aim()}</th>
 					<th>{m.large_polite_otter_thrive()}</th>
@@ -83,11 +94,10 @@
 				</tr></thead
 			>
 			<tbody>
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.rejected as src}
+				{#each rejected as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap">{src.title}</td>
-						<td class="whitespace-nowrap">{src.rejection_reason}</td>
+						<td class="whitespace-nowrap">{src.rejection.reason}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
 						<td class="whitespace-nowrap"
@@ -103,11 +113,11 @@
 			</tbody>
 		</table>
 	{:else}
-		<p>No rejected submissions.</p>
+		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 
-	<h2>Approved</h2>
-	{#if data.approved?.length}
+	<h2>{m.spare_few_kudu_learn()}</h2>
+	{#if approved?.length}
 		<table class="w-full">
 			<thead
 				><tr>
@@ -123,8 +133,7 @@
 				</tr></thead
 			>
 			<tbody>
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.approved as src}
+				{#each approved as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap"
 							><a href="/work/{src.media}">{src.title}</a></td
@@ -146,6 +155,28 @@
 			</tbody>
 		</table>
 	{:else}
-		<p>No approved submissions.</p>
+		<p>{m.moving_such_seal_hug()}</p>
+	{/if}
+	{#if data.submissions?.count}
+		<div class="mt-3 flex justify-center gap-2">
+			{#each Array(Math.ceil(data.submissions?.count / data.batch_size)).fill(undefined) as _, i (i)}
+				<label class="inline-block border p-2">
+					<input type="radio" value={i} bind:group={page} hidden />
+					{i + 1}
+				</label>
+			{/each}
+		</div>
 	{/if}
 </Section>
+
+<style>
+	h2 {
+		font-size: larger;
+		margin: 1rem 0 0.5rem 0;
+		font-weight: 600;
+	}
+	label:has(input:checked) {
+		background-color: var(--otodb-content-color);
+		color: var(--otodb-bg-color);
+	}
+</style>

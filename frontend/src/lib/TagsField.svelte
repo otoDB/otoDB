@@ -2,9 +2,10 @@
 	import { onMount } from 'svelte';
 	import client from './api';
 	import { clickOutside, debounce } from './ui';
+	import { m } from './paraglide/messages';
 
 	interface Props {
-		value: any[];
+		value: string[];
 		type: 'work' | 'song';
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
@@ -12,7 +13,7 @@
 	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
 
 	let textarea: HTMLTextAreaElement;
-	let suggestions: string[] = $state([]);
+	let suggestions = $state([]);
 
 	const getWordAtPos = (str: string, pos: number) => {
 		let start = [...str.slice(0, pos)].reverse().join('').search(/\s/g);
@@ -37,7 +38,7 @@
 			params: { query: { query, limit: 10 } }
 		});
 		if (!data) return;
-		suggestions = data.items.map((tag) => tag.slug);
+		suggestions = data.items;
 	});
 
 	const updateValue = () => {
@@ -52,7 +53,9 @@
 	};
 
 	onMount(() => {
-		if (value) textarea.value = value.join(' ');
+		if (value) {
+			textarea.value = value.join(' ');
+		}
 	});
 </script>
 
@@ -62,39 +65,52 @@
 			updateValue();
 			search();
 		}}
+		placeholder={m.petty_fuzzy_fox_ask()}
 		onclick={search}
 		bind:this={textarea}
 		{...props}
 	></textarea>
-	<ul
-		class="absolute"
-		use:clickOutside
-		onOutclick={() => {
-			suggestions = [];
-		}}
-	>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each suggestions as t}
-			<li>
-				<a
-					href={null}
-					onclick={() => {
-						textarea.value = replaceWordAtPos(
-							textarea.value,
-							textarea.selectionStart,
-							t + ' '
-						);
-						suggestions = [];
-						updateValue();
-					}}>{t}</a
-				>
-			</li>
-		{/each}
-	</ul>
+	{#if suggestions.length}
+		<ul
+			class="absolute z-1 list-none"
+			use:clickOutside
+			onOutclick={() => {
+				suggestions = [];
+			}}
+		>
+			{#each suggestions as t, i (i)}
+				<li class="bg-[var(--otodb-fainter-bg)] px-2 py-1 hover:bg-[var(--otodb-faint-bg)]">
+					<a
+						class="cursor-pointer"
+						href={null}
+						onclick={() => {
+							textarea.value = replaceWordAtPos(
+								textarea.value,
+								textarea.selectionStart,
+								t.slug + ' '
+							);
+							suggestions = [];
+							updateValue();
+						}}
+						>{t.name}
+						{#if t.slug !== t.name}<address class="inline">
+								({t.slug}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
+										'',
+										...t.lang_prefs
+									]
+										.map((p) => p.tag)
+										.join(', ')}{/if})
+							</address>{/if}</a
+					>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 </span>
 
 <style>
 	ul {
 		background-color: var(--otodb-bg-color);
+		z-index: 1;
 	}
 </style>

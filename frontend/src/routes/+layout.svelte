@@ -1,41 +1,175 @@
 <script lang="ts">
-	import Header from './Header.svelte';
 	import '../app.css';
+	import { getLocale, setLocale } from '$lib/paraglide/runtime';
+	import Header from '../lib/SideNav.svelte';
+	import MobileSideNav from '../lib/MobileSideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { navigating } from '$app/state';
+	import { LanguageNames } from '$lib/enums';
+
+	import { background } from '$lib/stores/theme';
 
 	let { data, children } = $props();
+
+	let isMobileNavOpen = $state(false);
+	function toggleMobileNav() {
+		isMobileNavOpen = !isMobileNavOpen;
+	}
+	function closeMobileNav() {
+		isMobileNavOpen = false;
+	}
 </script>
 
-<div class="app">
-	<address class="absolute top-20 left-40 font-mono italic select-none">
-		{m.glad_born_mouse_taste()}
-	</address>
+<div>
+	<div class="-z-50 contents">
+		{#if $background === 'aniki'}
+			<div
+				style:background-image="url('/aniki-bg.png'), url('/aniki-right.png')"
+				style:background-position="left top, right top"
+				style:background-repeat="no-repeat, no-repeat"
+				class="absolute inset-0"
+			></div>
+		{/if}
+	</div>
 
-	<Header user={data.user}></Header>
+	<!-- Mobile navigation -->
+	<div class="contents md:hidden">
+		<!-- Hamburger button -->
+		<button
+			class={[
+				'fixed bottom-[32px] left-[32px] z-[3] h-[64px] w-[64px]',
+				{ invisible: isMobileNavOpen }
+			]}
+			onclick={toggleMobileNav}
+		>
+			<!-- TODO: Use icon! -->
+			<div class="white place-self-center text-2xl">☰</div>
+		</button>
+		<!-- Cover -->
+		<div
+			tabindex={-1}
+			role="button"
+			class={['fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen }]}
+			onclick={closeMobileNav}
+		></div>
+		<!-- Menu -->
+		<div
+			class={[
+				'fixed top-0 left-0 z-[2] h-full transition-transform duration-75',
+				{
+					'-translate-x-full': !isMobileNavOpen
+				}
+			]}
+		>
+			<MobileSideNav user={data.user} close={closeMobileNav} className="h-full"
+			></MobileSideNav>
+		</div>
+	</div>
 
-	<main>
-		{@render children()}
-	</main>
+	<header class="relative col-span-2 px-6 py-16 md:px-48">
+		<address class="font-mono text-2xl italic">
+			<a href="/" class="no-underline!">
+				{m.glad_born_mouse_taste()}
+			</a>
+		</address>
+	</header>
 
-	<footer>
-		{m.glad_born_mouse_taste()} Pre-alpha
-	</footer>
+	<div class="relative mx-auto flex w-full gap-x-4 px-4">
+		<!-- Enough-width navigation -->
+		<div class="hidden md:block">
+			<Header user={data.user} stats={data.stats}></Header>
+		</div>
+		<div class="flex-grow">
+			<main>
+				{@render children()}
+			</main>
+			<footer>
+				<div class="footer-left">
+					{#if navigating.to}
+						<span id="loading-indicator"></span>
+					{/if}
+				</div>
+				<div class="footer-center">
+					<span>
+						{m.glad_born_mouse_taste()} Alpha
+					</span>
+					<div class="social-links">
+						<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>
+						/
+						<a href="https://twitter.com/otoDBnet">Twitter</a>
+						/
+						<a href="irc://irc.rizon.net/#otodb">#otodb @ Rizon</a>
+						/
+						<a href="mailto:contact@otodb.net">contact@otodb.net</a>
+					</div>
+				</div>
+				<div class="footer-right">
+					<img src="/connection_favicons/Website.png" alt="Language" class="size-4" />
+					<select onchange={(e) => setLocale(e.target.value)} value={getLocale()}>
+						<option value="en">{LanguageNames['en']}</option>
+						<option value="ja">{LanguageNames['ja']}</option>
+						<option value="ko">{LanguageNames['ko']}</option>
+						<option value="zh-cn">{LanguageNames['zh-cn']}</option>
+					</select>
+				</div>
+			</footer>
+		</div>
+	</div>
 </div>
 
 <style>
-	.app {
-		display: grid;
-		grid-template-columns: max-content 1fr;
-		align-items: flex-start;
-		column-gap: 1rem;
-	}
-
-	main {
-		margin: 0 auto;
-		width: 100%;
-	}
-
 	footer {
-		grid-column: 2;
+		display: flex;
+		width: 100%;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
+	}
+
+	.footer-left,
+	.footer-right {
+		flex: 1;
+	}
+
+	.footer-center {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.footer-right {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.social-links a {
+		border-bottom: 1px dotted var(--otodb-content-color);
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.social-links a:hover {
+		opacity: 0.7;
+	}
+
+	@keyframes loading-dot {
+		0% {
+			content: '.';
+		}
+		33% {
+			content: '..';
+		}
+		66% {
+			content: '...';
+		}
+		100% {
+			content: '.';
+		}
+	}
+	#loading-indicator::after {
+		content: '.';
+		animation: loading-dot 0.4s infinite;
 	}
 </style>

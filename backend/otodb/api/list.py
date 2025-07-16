@@ -11,9 +11,10 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info, playlist_info
-from otodb.models import Pool, PoolItem, WorkSource, TagWork, TagWorkInstance
+from otodb.models import Pool, PoolItem, PoolUpstream, WorkSource, TagWork, TagWorkInstance, MediaWork
+from otodb.account.models import Account
 
-from .common import ListSchema, ListItemSchema
+from .common import ListSchema, ListItemSchema, WorkSourceSchema
 
 list_router = Router()
 
@@ -32,6 +33,12 @@ def lst(request: HttpRequest, list_id: int):
 def entries(request: HttpRequest, list_id: int):
     list_ = get_object_or_404(Pool, pk=list_id)
     return list_.poolitem_set.order_by('order')
+
+@list_router.get('pending', response=List[WorkSourceSchema])
+@paginate
+def pending(request: HttpRequest, list_id: int):
+    list_ = get_object_or_404(Pool, pk=list_id)
+    return list_.pending_items.all()
 
 class ListItemInSchema(ModelSchema):
     work_id: int
@@ -53,7 +60,7 @@ def new(request: HttpRequest, payload: ListInSchema):
 def update(request: HttpRequest, list_id: int, payload: ListInSchema):
     lst = get_object_or_404(Pool, id=list_id)
     if lst.author != request.user:
-        return 401
+        return 403
 
     lst.name = payload.name
     lst.description = payload.description
@@ -71,10 +78,10 @@ def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
     lst = get_object_or_404(Pool, id=list_id)
 
     items = lst.poolitem_set
-    
+
     for (i, new_work) in payload.update_work:
         items.filter(order=i).update(work_id=new_work)
-    
+
     for (i, new_desc) in payload.update_description:
         items.filter(order=i).update(description=new_desc)
 
@@ -94,7 +101,7 @@ def work_in_pool(request: HttpRequest, list_id: int, work_id: int):
 def toggle(request: HttpRequest, list_id: int, work_id: int):
     lst = get_object_or_404(Pool, pk=list_id)
     if lst.author != request.user:
-        return 401
+        return 403
 
     if entries := lst.work_in_pool(work_id):
         for entry in entries:
@@ -108,34 +115,64 @@ def toggle(request: HttpRequest, list_id: int, work_id: int):
 def delete(request: HttpRequest, list_id: int):
     lst = get_object_or_404(Pool, id=list_id)
     if lst.author != request.user:
-        return 401
+        return 403
     lst.delete()
     return
+
+def import_ext_into_pool(info, list_: Pool, user):
+    with ProcessPoolExecutor(mp_context=multiprocessing.get_context("fork")) as executor:
+        infos = executor.map(video_info, info['entries'])
+
+    old_entries = list_.poolitem_set.values_list('work__id', flat=True)
+
+    new_tag_instances, pool_items = [], []
+    for i, (vid_info, _) in enumerate(list(infos)):
+        if vid_info is None:
+            list_.description += f'\nFailed to fetch {info['entries'][i]}'
+            continue
+
+        src, _ = WorkSource.from_url(vid_info['url'], user=user, is_reupload=False, info=vid_info)
+        if getattr(src, 'rejection', None):
+            continue
+        elif src.media is not None or user.level >= Account.Levels.EDITOR:
+            if src.media is not None:
+                work = src.media
+                if work.id in old_entries:
+                    continue
+            else:
+                work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
+                src.media = work
+                src.save()
+            for t in vid_info['tags']:
+                tt, _ = TagWork.objects.get_or_create(name=t)
+                if tt.aliased_to:
+                    tt = tt.aliased_to
+                new_tag_instances.append(TagWorkInstance(work=work, work_tag=tt, instance_imported_from_source=True))
+
+            pool_items.append(PoolItem(work=work, description='', pool=list_))
+        elif src.media is None:
+            list_.pending_items.add(src)
+
+    list_.save()
+    # bulk_create does not handle M2M so we do this manually
+    TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True)
+    PoolItem.objects.bulk_create(pool_items)
 
 @list_router.post('import', auth=django_auth, response=int)
 def import_ext(request: HttpRequest, url: str):
     info = playlist_info(url)
     list_ = Pool.objects.create(name=info['title'], description=info['description'], author=request.user)
+    PoolUpstream.objects.create(pool=list_, upstream=url)
 
-    with ProcessPoolExecutor(mp_context=multiprocessing.get_context("fork")) as executor:
-        infos = executor.map(video_info, info['entries'])
+    import_ext_into_pool(info, list_, request.user)
 
-    new_tag_instances, pool_items = [], []
-    for i, vid_info in enumerate(list(infos)):
-        if vid_info is None:
-            list_.description += f'\nFailed to fetch {info['entries'][i]}'
-            continue
-
-        src, _ = WorkSource.from_url(vid_info['url'], user=request.user, is_reupload=False, info=vid_info)
-        if src.rejection_reason is not None:
-            continue
-        elif src.media is None:
-            list_.pending_items.add(src)
-        else:
-            work = src.media
-            new_tag_instances.extend([TagWorkInstance(work=work, work_tag=TagWork.objects.get_or_create(name=t)[0]) for t in vid_info['tags']])
-            pool_items.append(PoolItem(work=work, description='', pool=list_))
-
-    TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True) # bulk_create does not handle M2M so we do this manually
-    PoolItem.objects.bulk_create(pool_items)
     return list_.id
+
+@list_router.post('pull_upstream', auth=django_auth)
+def pull_upstream(request: HttpRequest, list_id: int):
+    lst = get_object_or_404(Pool, id=list_id)
+    if lst.author != request.user:
+        return 403
+
+    info = playlist_info(lst.poolupstream.upstream)
+    import_ext_into_pool(info, lst, request.user)

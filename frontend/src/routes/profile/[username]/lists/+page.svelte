@@ -23,15 +23,14 @@
 	menuLinks={data.links}
 >
 	{#if data.user?.username === data.profile.username}
-		<a href="/list/new">Make a new list...</a>
-		<a href="/list/import">Import list...</a>
+		<a href="/list/new">{m.plane_inner_chipmunk_race()}</a>
+		<a href="/list/import">{m.proof_heroic_rat_cuddle()}</a>
 	{/if}
 	<ul class="list-disc">
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each data.lists as list}
+		{#each data.lists as list, i (i)}
 			<li><a href="/list/{list.id}">{list.name}</a></li>
 		{:else}
-			<li>This user has no lists!</li>
+			<li>{m.quiet_stout_haddock_persist()}</li>
 		{/each}
 	</ul>
 </Section>

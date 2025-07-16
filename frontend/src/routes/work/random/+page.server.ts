@@ -4,6 +4,6 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch }) => {
 	const { data: random } = await client.GET('/api/work/random', { fetch });
-	if (random) redirect(303, `/work/${random.id}`);
+	if (random) redirect(303, `/work/${random[0].id}`);
 	else redirect(303, '/');
 };

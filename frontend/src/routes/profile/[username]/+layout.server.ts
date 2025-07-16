@@ -3,7 +3,7 @@ import client from '$lib/api';
 import { m } from '$lib/paraglide/messages.js';
 import { error } from '@sveltejs/kit';
 
-export const load: LayoutServerLoad = async ({ params, fetch }) => {
+export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 	const { data, error: e } = await client.GET('/api/profile/profile', {
 		fetch,
 		params: {
@@ -18,10 +18,21 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 		links: [
 			{
 				pathname: `profile/${params.username}`,
-				title: m.frail_maroon_tadpole_inspire() + ' ' + params.username
+				title: m.frail_maroon_tadpole_inspire() + ' ' + data.username
 			},
 			{ pathname: `profile/${params.username}/lists`, title: m.stale_loose_squid_cut() },
-			{ pathname: `profile/${params.username}/submissions`, title: 'Submissions' }
+			{
+				pathname: `profile/${params.username}/submissions`,
+				title: m.active_front_anteater_cry()
+			},
+			...(params.username !== locals.user?.username
+				? []
+				: [
+						{
+							pathname: `profile/${params.username}/edit`,
+							title: m.minor_crisp_cobra_list()
+						}
+					])
 		],
 		profile: data
 	};

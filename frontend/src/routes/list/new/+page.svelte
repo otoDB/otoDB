@@ -8,27 +8,27 @@
 </script>
 
 <svelte:head>
-	<title>New List</title>
+	<title>{m.plane_inner_chipmunk_race()}</title>
 </svelte:head>
 
 <Section
-	title="New List"
+	title={m.plane_inner_chipmunk_race()}
 	menuLinks={[
-		{ pathname: 'list/new', title: 'New' },
-		{ pathname: 'list/import', title: 'Import' }
+		{ pathname: 'list/new', title: m.swift_dry_gecko_boost() },
+		{ pathname: 'list/import', title: m.kind_tiny_lemur_praise() }
 	]}
 >
 	<form use:enhance method="POST">
-		{#if form?.failed}<p class="error">Failed!</p>{/if}
+		{#if form?.failed}<p class="error">{m.green_due_javelina_pop()}</p>{/if}
 		<table>
 			<tbody>
 				<tr
-					><th><label for="name">Name</label></th><td
+					><th><label for="name">{m.large_factual_octopus_exhale()}</label></th><td
 						><input type="text" name="name" value={form?.name ?? ''} /></td
 					></tr
 				>
 				<tr
-					><th><label for="description">Description</label></th><td
+					><th><label for="description">{m.clear_lucky_peacock_pick()}</label></th><td
 						><textarea name="description" value={form?.description ?? ''}
 						></textarea></td
 					></tr

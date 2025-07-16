@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { commentClient, type CommentModels } from './api';
+	import { UserLevel } from './enums';
+	import { m } from './paraglide/messages';
 
 	interface Props {
 		comments: any;
@@ -17,35 +19,38 @@
 		const comment = new FormData(e.target).get('comment')?.toString();
 		if (comment) {
 			await commentClient.POST(model, pk, comment, reply_to, user, fetch);
+			document.querySelectorAll('.reply-checkbox').forEach((e) => (e.checked = false));
 			invalidateAll();
 		}
 	};
+
+	const can_comment = user && user.level >= UserLevel.MEMBER;
 </script>
 
 {#snippet reply(reply_to: number)}
 	<form onsubmit={post(reply_to)}>
-		<textarea class="block" name="comment"></textarea>
-		<input type="submit" />
+		<textarea class="block w-full" name="comment"></textarea>
+		<input type="submit" value={m.inner_solid_toad_zap()} />
 	</form>
 {/snippet}
 
-{#snippet comment(data, this_component)}
+{#snippet comment(data, this_component, depth: number)}
 	<div class="comment">
 		<h4><a href="/profile/{data.user_name}">{data.user_name}</a> @ {data.time}</h4>
 		<p>{data.comment}</p>
-		{#if user}
+		<!-- TODO: design decision -- allow deeper nested comments? check COMMENTS_XTD_MAX_THREAD_LEVEL on backend -->
+		{#if can_comment && depth < 3}
 			<label class="reply">
-				Reply
-				<input type="checkbox" />
+				{m.kind_brief_earthworm_dash()}
+				<input type="checkbox" class="reply-checkbox" />
 				{@render reply(data.id)}
 			</label>
 		{/if}
 	</div>
 	{#if data.children?.length}
 		<div class="ml-3">
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.children as child}
-				{@render this_component(child, this_component)}
+			{#each data.children as child, i (i)}
+				{@render this_component(child, this_component, depth + 1)}
 			{/each}
 		</div>
 	{/if}
@@ -53,13 +58,14 @@
 
 <div>
 	{#if comments.length}
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each comments as c}
-			{@render comment(c, comment)}
+		{#each comments as c, i (i)}
+			{@render comment(c, comment, 0)}
 		{/each}
+	{:else}
+		{m.new_basic_dove_love()}
 	{/if}
-	{#if user}
-		<h4>Post a new comment:</h4>
+	{#if can_comment}
+		<h4>{m.mild_loud_shad_enchant({ type: m.weak_safe_cat_mix(), name: '' })}</h4>
 		{@render reply(0)}
 	{/if}
 </div>

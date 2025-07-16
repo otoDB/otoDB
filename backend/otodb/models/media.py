@@ -1,4 +1,6 @@
-from typing import Self
+from typing import TYPE_CHECKING, cast
+
+import nh3
 
 from django.db import models
 from django.urls import reverse
@@ -9,26 +11,20 @@ from .enums import Rating
 from .tag import TagWork, TagSong
 from otodb.account.models import Account
 
-import random
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+    from .work_source import WorkSource
+    from .pool import PoolItem
+    from .relations import WorkRelation
 
 class ActiveManager(models.Manager):
-    def random(self):
-        random_work = None
-        work_ids = self.values_list('pk', flat=True)
-        if work_ids:
-            random_work = self.get(pk=random.choice(work_ids))
-            if random_work.moved_to:
-                random_work = random_work.moved_to
-            return random_work
-
     def get_queryset(self):
         return super().get_queryset().filter(moved_to__isnull=True)
 
-
 # allow setting a through table on tag fields
-TagField.forbidden_fields = tuple(
+TagField.forbidden_fields = cast(tuple, tuple(
     v for v in TagField.forbidden_fields if v != "through"
-)
+))
 
 class TagWorkInstance(models.Model):
     class Meta:
@@ -37,8 +33,8 @@ class TagWorkInstance(models.Model):
     work = models.ForeignKey("MediaWork", on_delete=models.CASCADE)
     work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 
-    song_used_as_source = models.BooleanField(null=False, default=False)
-    instance_imported_from_source = models.BooleanField(null=False, default=False)
+    used_as_source = models.BooleanField(null=False, default=False)
+    instance_imported_from_source = models.BooleanField(null=False, default=True)
 
 
 class TagWorkVote(models.Model):
@@ -46,7 +42,7 @@ class TagWorkVote(models.Model):
     score = models.FloatField(null=False, blank=False)
 
     tag_instance = models.ForeignKey(TagWorkInstance, on_delete=models.CASCADE, null=True)
-    
+
     class Meta:
         unique_together = (("user", "tag_instance"),)
         constraints = [
@@ -58,6 +54,13 @@ class TagWorkVote(models.Model):
         ]
 
 class MediaWork(models.Model):
+    if TYPE_CHECKING:
+        worksource_set: QuerySet['WorkSource']
+        poolitem_set: QuerySet['PoolItem']
+        relation_A: QuerySet['WorkRelation']
+        relation_B: QuerySet['WorkRelation']
+        tagworkinstance_set: QuerySet['TagWorkInstance']
+
     title = models.CharField(max_length=1000, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
 
@@ -89,14 +92,14 @@ class MediaWork(models.Model):
         verbose_name_plural = ("Works")
 
     def get_absolute_url(self):
-        return reverse('otodb:work', kwargs={ 'work_id': self.id })
-    
+        return reverse('otodb:work', kwargs={ 'work_id': self.pk })
+
     @staticmethod
     # Points work_B to work_A
-    def merge(to_work: Self, from_work: Self, title: str, description: str, thumbnail: str, rating: int):
+    def merge(to_work: 'MediaWork', from_work: 'MediaWork', title: str, description: str, thumbnail: str, rating: int):
         to_work.title = title
         to_work.description = description
-        to_work.thumbnail = thumbnail 
+        to_work.thumbnail = thumbnail
         to_work.rating = rating
         to_work.tags.add(*from_work.tags.all())
         to_work.save()
@@ -110,14 +113,14 @@ class MediaWork(models.Model):
             item.save()
 
         for relation in from_work.relation_A.all():
-            if relation.B.id == to_work.id:
+            if relation.B.pk == to_work.pk:
                 relation.delete()
             else:
                 relation.A = to_work
                 relation.save()
 
         for relation in from_work.relation_B.all():
-            if relation.A.id == to_work.id:
+            if relation.A.pk == to_work.pk:
                 relation.delete()
             else:
                 relation.B = to_work
@@ -125,6 +128,11 @@ class MediaWork(models.Model):
 
         from_work.moved_to = to_work
         from_work.save()
+
+    def save(self, *args, **kwargs):
+        if self.description:
+            self.description = nh3.clean(self.description)
+        super().save(*args, **kwargs)
 
 class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)
@@ -134,7 +142,7 @@ class MediaSong(models.Model):
 
     tags = TagField(
         to=TagSong,
-        related_name="song_tags"
+        related_name="songs"
     )
 
     history = HistoricalRecords()

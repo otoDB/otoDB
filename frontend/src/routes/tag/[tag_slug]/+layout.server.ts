@@ -2,8 +2,11 @@ import { m } from '$lib/paraglide/messages.js';
 import client from '$lib/api';
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
+import { userLevelCheck } from '$lib/route_guard';
+import { getLocale } from '$lib/paraglide/runtime';
+import { Languages } from '$lib/enums';
 
-export const load: LayoutServerLoad = async ({ params, fetch }) => {
+export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 	const { data, error: e } = await client.GET('/api/tag/tag', {
 		params: {
 			query: {
@@ -20,7 +23,7 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 					fetch,
 					params: {
 						query: {
-							song_id: +data.song.id!
+							song_id: +data.song.id
 						}
 					}
 				})
@@ -33,19 +36,33 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 				pathname: `tag/${params.tag_slug}`,
 				title: m.empty_legal_chicken_taste() + ' ' + params.tag_slug
 			},
-			{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }
+			...(userLevelCheck(locals.user)
+				? []
+				: [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }])
 		],
 		song_links: data.song
 			? [
-					{ pathname: `tag/${params.tag_slug}`, title: 'Song' + ' ' + data.song.title },
 					{
-						pathname: `tag/${params.tag_slug}/song_tags`,
-						title: m.empty_legal_chicken_taste()
+						pathname: `tag/${params.tag_slug}`,
+						title: m.grand_nice_pony_belong() + ' ' + data.song.title
 					},
-					{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }
+					...(userLevelCheck(locals.user)
+						? []
+						: [
+								{
+									pathname: `tag/${params.tag_slug}/song_tags`,
+									title: m.empty_legal_chicken_taste()
+								},
+								{
+									pathname: `tag/${params.tag_slug}/edit`,
+									title: m.minor_crisp_cobra_list()
+								}
+							])
 				]
 			: null,
 		tag: data,
-		song_relations
+		song_relations,
+		display_name:
+			data.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.tag ?? data.name
 	};
 };

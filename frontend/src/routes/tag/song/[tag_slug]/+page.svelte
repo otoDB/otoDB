@@ -7,18 +7,13 @@
 	let { data } = $props();
 </script>
 
-<svelte:head>
-	<title>{m.mild_loud_shad_enchant({ type: 'Song Tag', name: data.tag.name })}</title>
-</svelte:head>
-
 <Section
-	title={m.mild_loud_shad_enchant({ type: 'Song Tag', name: data.tag.name })}
+	title={m.mild_loud_shad_enchant({ type: m.dull_plain_angelfish_cuddle(), name: data.tag.name })}
 	menuLinks={data.links}
 >
 	<div>
-		<span>Song tag</span>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each data.tree as node}
+		<span>{m.dull_plain_angelfish_cuddle()}</span>
+		{#each data.tree as node, i (i)}
 			> <a href={node.slug}>{node.name}</a> >
 		{:else}
 			>
@@ -32,21 +27,12 @@
 			name: SongTagCategory[data.tag.category]()
 		})}
 	</h2>
-
-	{#if data.tag.aliases.length}
-		<h3>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			Also known as: {#each data.tag.aliases as alias, i}{alias}{#if i + 1 != data.tag.aliases.length},
-				{/if}{/each}.
-		</h3>
-	{/if}
 </Section>
 
 {#if data.tag.children.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<ul>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.tag.children as tag}
+			{#each data.tag.children as tag, i (i)}
 				<li><a href={tag.slug}>{tag.name}</a></li>
 			{/each}
 		</ul>
@@ -58,14 +44,13 @@
 		<table>
 			<thead
 				><tr>
-					<th>Title</th>
+					<th>{m.large_factual_octopus_exhale()}</th>
 					<th>BPM</th>
-					<th>Author</th>
+					<th>{m.crisp_red_canary_tickle()}</th>
 				</tr></thead
 			>
 			<tbody>
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.songs.items as song}
+				{#each data.songs.items as song, i (i)}
 					<tr>
 						<td><a href="/tag/{song.work_tag}">{song.title}</a></td>
 						<td>{song.bpm}</td>
@@ -75,7 +60,7 @@
 			</tbody>
 		</table>
 	{:else}
-		<p>This tag is an orphan.</p>
+		<p>{m.drab_main_husky_dazzle()}</p>
 	{/if}
 </Section>
 
@@ -84,6 +69,6 @@
 		comments={data.comments}
 		user={data.user ?? null}
 		model="tagsong"
-		pk={data.tag.id!}
+		pk={data.tag.id}
 	/>
 </Section>

@@ -3,11 +3,35 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { Platform, UserLevel, WorkOrigin } from '$lib/enums';
-	import RefreshButton from '../../work/RefreshButton.svelte';
-	import UnboundSourceActions from '../../work/unbound/UnboundSourceActions.svelte';
+	import { Platform, WorkOrigin } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/ui';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import client from '$lib/api';
+	import type { components } from '$lib/schema';
+	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 
 	let { data }: PageProps = $props();
+
+	let entries = $derived(data.entries!.items);
+	let pending_items = $derived(data.pending_items!.items);
+
+	let current = $state(0);
+	let select = $state(-1);
+	let sources: components['schemas']['WorkSourceSchema'][] | undefined = $state();
+
+	$effect(() => {
+		client
+			.GET('/api/work/sources', {
+				fetch,
+				params: { query: { work_id: entries[current].work.id } }
+			})
+			.then(({ data }) => {
+				sources = data;
+				select = 0;
+			});
+	});
 </script>
 
 <svelte:head>
@@ -21,47 +45,88 @@
 
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
+	menuLinks={data.links}
 >
-	<h3>By: <a href="/profile/{data.list?.author.username}">{data.list?.author.username}</a></h3>
-	<p class="whitespace-pre-wrap">{data.list.description}</p>
-	{#if data.list?.author.username == data.user?.username}
-		<a href="/list/{data.list.id}/edit">Edit this list...</a>
-		<a href="/list/{data.list.id}/delete" data-sveltekit-preload-data="tap"
-			>Delete this list...</a
-		>
+	<h3>
+		{#if isSVO(getLocale())}
+			{m.curly_safe_lynx_fond()}
+		{/if}
+		<a href="/profile/{data.list?.author.username}">{data.list?.author.username}</a>
+		{#if isSOV(getLocale())}
+			{m.curly_safe_lynx_fond()}
+		{/if}
+	</h3>
+	{#if data.list.upstream}
+		<address><a href={data.list.upstream}>{m.male_red_platypus_borrow()}</a></address>
 	{/if}
-</Section>
-<Section title="Entries">
-	<ol class="list-outside list-decimal">
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each data.entries.items as entry}
-			<li class="ml-5 p-2">
-				<div style="display: flex; gap: 1rem;align-items:flex-start;">
-					<a href="/work/{entry.work.id}"
-						><img
-							style="max-width:10rem"
-							src={entry.work.thumbnail}
-							alt={entry.work.title}
-						/></a
-					>
-					<div>
-						<a href="/work/{entry.work.id}">{entry.work.title}</a>
-						<p>{entry.description}</p>
-					</div>
-				</div>
-			</li>
-		{:else}
-			<li>This list has no entries!</li>
-		{/each}
-	</ol>
-	{JSON.stringify()}
+	<p class="whitespace-pre-wrap">{data.list.description}</p>
 </Section>
 
-{#if data.list.pending_items.length}
-	<Section title="Pending entries">
-		<ul class="pending">
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.list.pending_items as src}
+{#if entries.length && sources && sources.length && select >= 0 && select < sources.length}
+	<Section title={m.mealy_soft_myna_talk()}>
+		<ExternalEmbed src={sources[select]} />
+		<div class="my-2">
+			{#each sources as s, i (i)}
+				<label
+					><input
+						hidden
+						type="radio"
+						name="cover_select"
+						value={i}
+						bind:group={select}
+					/>{Platform[s.platform]}{s.work_origin === 0
+						? ''
+						: ' ' + WorkOrigin[s.work_origin]()}</label
+				>
+			{/each}
+		</div>
+	</Section>
+{/if}
+<Section title={m.bald_clear_marlin_grasp()}>
+	{#if entries.length}
+		<div class="flex w-full">
+			<ol class="mr-5 w-full list-outside list-decimal">
+				{#each entries as entry, i (i)}
+					<li class="mx-5 w-full p-1">
+						<label class="grid grid-cols-[15rem_1fr] gap-5">
+							<input class="hidden" type="radio" value={i} bind:group={current} />
+							<WorkCard work={entry.work} />
+							{#if entry.description}
+								<p>{entry.description}</p>
+							{:else}
+								<p class="text-[var(--otodb-fainter-content)]">
+									[{m.simple_less_marlin_enchant()}]
+								</p>
+							{/if}
+						</label>
+					</li>
+				{/each}
+			</ol>
+		</div>
+		<LoadMoreButton
+			fetchNextBatch={() =>
+				client.GET('/api/list/entries', {
+					fetch,
+					params: {
+						query: {
+							list_id: data.list.id,
+							limit: data.batch_size,
+							offset: entries.length
+						}
+					}
+				})}
+			maxCount={data.entries!.count}
+			bind:results={entries}
+		/>
+	{:else}
+		<h3>{m.hour_flat_finch_zoom()}</h3>
+	{/if}
+</Section>
+
+{#if pending_items.length}
+	<Section title={m.front_smart_hound_fold()}>
+		<ul>
+			{#each pending_items as src, i (i)}
 				<li>
 					<span>
 						<h3>
@@ -70,13 +135,13 @@
 							>
 						</h3>
 						<h4>{Platform[src.platform]} {src.published_date}</h4>
-						{#if src.rejection_reason}
-							<p class="text-red-400">Rejected: {src.rejection_reason}</p>
-						{:else}
-							<RefreshButton source={src} />
-							{#if data.user && data.user?.level >= UserLevel.MODERATOR}
-								<UnboundSourceActions source={src} />
-							{/if}
+						{#if src.rejection}
+							<p class="text-red-400">
+								{m.mild_loud_shad_enchant({
+									type: m.weary_spicy_fly_attend(),
+									name: src.rejection.reason
+								})}
+							</p>
 						{/if}
 					</span>
 					<span>
@@ -91,24 +156,58 @@
 				</li>
 			{/each}
 		</ul>
+		<LoadMoreButton
+			fetchNextBatch={() =>
+				client.GET('/api/list/pending', {
+					fetch,
+					params: {
+						query: {
+							list_id: data.list.id,
+							limit: data.batch_size,
+							offset: pending_items.length
+						}
+					}
+				})}
+			maxCount={data.pending_items!.count}
+			bind:results={pending_items}
+		/>
 	</Section>
 {/if}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree
-		comments={data.comments}
-		user={data.user ?? null}
-		model="pool"
-		pk={data.list.id!}
-	/>
+	<CommentTree comments={data.comments} user={data.user ?? null} model="pool" pk={data.list.id} />
 </Section>
 
 <style>
-	ul.pending > li {
+	ul > li {
 		display: flex;
-		background-color: var(--otodb-fainter-bg);
 		justify-content: space-between;
 		margin: 1rem 0;
+	}
+	ul > li,
+	ol > li > label {
+		background-color: var(--otodb-bg-color);
 		padding: 1rem;
+		cursor: pointer;
+		&:has(> input:checked) {
+			background-color: var(--otodb-fainter-bg);
+		}
+	}
+	label:has(> input[name='cover_select']) {
+		padding: 0.2rem 0.5rem;
+		display: inline-block;
+		background-color: var(--otodb-bg-color);
+		border: 1px solid var(--otodb-content-color);
+		&:hover {
+			background-color: var(--otodb-fainter-bg);
+		}
+		&:active {
+			background-color: var(--otodb-faint-bg);
+		}
+	}
+	label:has(> input[name='cover_select']:checked) {
+		background-color: var(--otodb-content-color);
+		border: 1px solid var(--otodb-bg-color);
+		color: var(--otodb-bg-color);
 	}
 </style>

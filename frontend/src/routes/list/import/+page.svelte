@@ -8,21 +8,22 @@
 </script>
 
 <svelte:head>
-	<title>Import List</title>
+	<title>{m.proof_heroic_rat_cuddle()}</title>
 </svelte:head>
 
 <Section
-	title="Import List"
+	title={m.proof_heroic_rat_cuddle()}
 	menuLinks={[
-		{ pathname: 'list/new', title: 'New' },
-		{ pathname: 'list/import', title: 'Import' }
+		{ pathname: 'list/new', title: m.swift_dry_gecko_boost() },
+		{ pathname: 'list/import', title: m.kind_tiny_lemur_praise() }
 	]}
 >
-	<p>Currently accepted types of lists:</p>
+	<p>{m.mild_loud_shad_enchant({ type: m.nimble_drab_gorilla_cut(), name: '' })}</p>
 	<ul>
 		<li>YouTube Playlists</li>
 		<li>Niconico Mylists</li>
 		<li>Bilibili Playlists</li>
+		<li>SoundCloud Playlists</li>
 	</ul>
 	<form use:enhance method="POST">
 		{#if form?.failed}<p class="error">Failed!</p>{/if}

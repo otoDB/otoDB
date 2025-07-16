@@ -7,6 +7,13 @@ export const debounce = (callback: Function, wait = 300) => {
 	};
 };
 
+export const once = (fn) => {
+	return function (event) {
+		if (fn) fn.call(this, event);
+		fn = null;
+	};
+};
+
 export const clickOutside = (node: HTMLElement) => {
 	const handleClick = (event: MouseEvent) => {
 		if (!node.contains(event.target as Node)) {
@@ -22,3 +29,6 @@ export const clickOutside = (node: HTMLElement) => {
 		}
 	};
 };
+
+export const isSVO = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'en' || lang === 'zh-cn';
+export const isSOV = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'ko' || lang === 'ja';

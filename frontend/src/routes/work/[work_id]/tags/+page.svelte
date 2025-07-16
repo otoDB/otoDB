@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import client from '$lib/api.js';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
@@ -40,10 +40,17 @@
 		e.preventDefault();
 		await client.PUT('/api/work/tag_scores', {
 			fetch,
-			params: { query: { work_id: +data.id! } },
+			params: { query: { work_id: +data.id } },
 			body: new_tags.map((t) => ({ tag_slug: t, score: 1 }))
 		});
 		goto(`/work/${data.id}`, { invalidateAll: true });
+	};
+
+	const toggle_sample = async (tag_slug: string) => {
+		await client.PUT('/api/work/toggle_sample', {
+			fetch,
+			params: { query: { work_id: data.id, tag_slug } }
+		});
 	};
 </script>
 
@@ -53,13 +60,16 @@
 >
 	<table>
 		<thead>
-			<tr><th>Tag</th><th>Rating</th><th>User Rating</th></tr>
+			<tr
+				><th>{m.empty_legal_chicken_taste()}</th><th>{m.brave_tiny_meerkat_engage()}</th><th
+					>{m.sunny_deft_puffin_scoop()}</th
+				><th>{m.acidic_brave_halibut_heart()}</th></tr
+			>
 		</thead><tbody>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each tags as tag}
+			{#each tags as tag, i (i)}
 				<tr>
 					<td><WorkTag {tag} /></td>
-					<td>{tag.score} (from {tag.n_votes} votes)</td>
+					<td>{tag.score} {m.brave_caring_ocelot_treat({ votes: tag.n_votes })}</td>
 					<td>
 						<button
 							class="rating"
@@ -80,12 +90,22 @@
 							aria-label="+1"
 						></button>
 					</td>
+					<!-- 2 - Song, 4 - Creator -->
+					<td
+						>{#if tag.category === 2 || tag.category === 4}
+							<input
+								type="checkbox"
+								onclick={() => toggle_sample(tag.slug)}
+								checked={tag.sample}
+							/>
+						{:else}{m.simple_less_marlin_enchant()}{/if}</td
+					>
 				</tr>
 			{/each}
 		</tbody>
 	</table>
 
-	<h3>Add more tags...</h3>
+	<h3>{m.patient_male_ox_praise()}</h3>
 	<form onsubmit={submit_new_tags}>
 		<div><TagsField type="work" class="w-full" bind:value={new_tags} /></div>
 		<input type="submit" />

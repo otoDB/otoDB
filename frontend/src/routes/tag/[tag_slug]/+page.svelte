@@ -1,36 +1,74 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { WorkTagCategory } from '$lib/enums';
+	import {
+		LanguageNames,
+		Languages,
+		ProfileConnectionLink,
+		ProfileConnectionTypes,
+		SongConnectionLink,
+		SongConnectionTypes,
+		SourceConnectionLink,
+		SourceConnectionTypes,
+		TagWorkConnectionLink,
+		TagWorkConnectionTypes,
+		WorkTagCategory
+	} from '$lib/enums';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import SongTag from '$lib/SongTag.svelte';
+	import client from '$lib/api.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
+	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 
 	let { data } = $props();
+	let results = $derived(data.works!.items);
+	const aliases = $derived(
+		data.display_name === data.tag.name
+			? data.aliases?.map((a) => a.name)
+			: [
+					data.tag.name,
+					...(data.aliases
+						?.filter((a) => a.name !== data.display_name)
+						.map((a) => a.name) ?? [])
+				]
+	);
+	let wikiView = $state(
+		Languages[data.wiki_page?.find(({ lang }) => lang === Languages[getLocale()])?.lang] ??
+			Languages[data.wiki_page?.at(0)?.lang] ??
+			undefined
+	);
+
+	const fetchNextBatch = () =>
+		client.GET('/api/tag/works', {
+			fetch,
+			params: {
+				query: {
+					tag_slug: data.tag.slug,
+					limit: data.batch_size,
+					offset: results.length
+				}
+			}
+		});
+
+	const ext_cat_types = data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes;
+	const ext_cat_links = data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink;
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.empty_legal_chicken_taste(),
-			name: data.tag.name
-		})}</title
-	>
-</svelte:head>
-
 <Section
-	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
+	title={m.mild_loud_shad_enchant({
+		type: m.empty_legal_chicken_taste(),
+		name: data.display_name
+	})}
 	menuLinks={data.links}
 >
 	<div>
 		<span>{m.empty_legal_chicken_taste()}</span>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each data.tree as node}
-			> <a href={node.slug}>{node.name}</a> >
-		{:else}
-			>
+		{#each data.tree as node, i (i)}
+			> <a href={node.slug}>{node.name}</a>&nbsp;
 		{/each}
-		<span>{data.tag.name}</span>
+		>
+		<span>{data.display_name}</span>
 	</div>
 
 	<h2>
@@ -40,26 +78,82 @@
 		})}
 	</h2>
 
-	{#if data.tag.aliases.length}
+	{#if aliases.length}
 		<h3>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			Also known as: {#each data.tag.aliases as alias, i}{alias}{#if i + 1 != data.tag.aliases.length},
-				{/if}{/each}.
+			{m.mild_loud_shad_enchant({
+				type: m.tiny_sharp_lark_fall(),
+				name: aliases.join(', ')
+			})}
 		</h3>
 	{/if}
 
-	<hr />
+	{#if data.connections}
+		<ul class="list-none">
+			{#each data.connections[0] as s, i (i)}
+				<li>
+					<img
+						src="/connection_favicons/{TagWorkConnectionTypes[s.site]}.png"
+						alt={TagWorkConnectionTypes[s.site]}
+						class="inline size-4"
+					/>
+					<a
+						href={TagWorkConnectionLink[s.site](s.content_id)}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{TagWorkConnectionLink[s.site](s.content_id)}
+					</a>
+				</li>
+			{/each}
+			{#if data.connections[1]}
+				{#each data.connections[1] as s, i (i)}
+					<li>
+						<img
+							src="/connection_favicons/{ext_cat_types[s.site]}.png"
+							alt={ext_cat_types[s.site]}
+							class="inline size-4"
+						/>
+						<a
+							href={ext_cat_links[s.site](s.content_id)}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							{ext_cat_links[s.site](s.content_id)}
+						</a>
+					</li>
+				{/each}
+			{/if}
+		</ul>
+	{/if}
 
-	{#if data.wiki_page}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html data.wiki_page}
+	<hr class="my-2" />
+
+	{#if data.wiki_page && data.wiki_page.length}
+		<div class="float-right clear-left my-2">
+			{#each data.wiki_page as page, i (i)}
+				<label class="wiki-lang-tab">
+					<input type="radio" bind:group={wikiView} value={Languages[page.lang]} />
+					{LanguageNames[Languages[page.lang]]}
+				</label>
+			{/each}
+		</div>
+		{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])?.page_rendered}
+		{/if}
 	{:else}
-		<p>This tag does not yet have a wiki page.</p>
+		<p>{m.tame_dirty_goldfish_flow()}</p>
 	{/if}
 </Section>
 
 {#if data.tag.song}
-	<Section title="Song: {data.tag.song.title}" menuLinks={data.song_links}>
+	<Section
+		title={m.mild_loud_shad_enchant({
+			type: m.grand_nice_pony_belong(),
+			name: data.tag.song.title
+		})}
+		menuLinks={data.song_links}
+	>
 		<table>
 			<tbody>
 				<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.tag.song.title}</td></tr>
@@ -67,10 +161,29 @@
 				<tr><th>{m.crisp_red_canary_tickle()}</th><td>{data.tag.song.author}</td></tr>
 			</tbody>
 		</table>
+		{#if data.song_connections}
+			<ul class="list-none">
+				{#each data.song_connections as s, i (i)}
+					<li>
+						<img
+							src="/connection_favicons/{SongConnectionTypes[s.site]}.png"
+							alt={SongConnectionTypes[s.site]}
+							class="inline size-4"
+						/>
+						<a
+							href={SongConnectionLink[s.site](s.content_id)}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							{SongConnectionLink[s.site](s.content_id)}
+						</a>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 		{#if data.tag?.song.tags.length}
 			<ul id="song-tags">
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each data.tag?.song.tags as tag}
+				{#each data.tag?.song.tags as tag, i (i)}
 					<li><SongTag {tag} /></li>
 				{/each}
 			</ul>
@@ -85,22 +198,21 @@
 {#if data.tag.children.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<ul>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.tag.children as tag}
+			{#each data.tag.children as tag, i (i)}
 				<li><a href={tag.slug}>{tag.name}</a></li>
 			{/each}
 		</ul>
 	</Section>
 {/if}
 
-<Section title="Works tagged with {data.tag.name}">
-	{#if data.works.items.length}
-		<div class="flex flex-wrap gap-3">
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each data.works.items as work}
+<Section title={m.quiet_super_kangaroo_kiss({ tag: data.display_name })}>
+	{#if results}
+		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
+			{#each results as work, i (i)}
 				<WorkCard {work} />
 			{/each}
 		</div>
+		<LoadMoreButton bind:results maxCount={data.works!.count} {fetchNextBatch} />
 	{:else}
 		<p>This tag is an orphan.</p>
 	{/if}
@@ -111,7 +223,7 @@
 		comments={data.comments}
 		user={data.user ?? null}
 		model="tagwork"
-		pk={data.tag.id!}
+		pk={data.tag.id}
 	/>
 </Section>
 
@@ -127,6 +239,26 @@
 		list-style: none;
 		& > li {
 			margin: 0;
+		}
+	}
+	label.wiki-lang-tab {
+		padding: 0.2rem 0.5rem;
+		display: inline-block;
+		background-color: var(--otodb-bg-color);
+		border: 1px solid var(--otodb-content-color);
+		&:hover {
+			background-color: var(--otodb-fainter-bg);
+		}
+		&:active {
+			background-color: var(--otodb-faint-bg);
+		}
+		& > input {
+			display: none;
+		}
+		&:has(> input:checked) {
+			background-color: var(--otodb-content-color);
+			border: 1px solid var(--otodb-bg-color);
+			color: var(--otodb-bg-color);
 		}
 	}
 </style>

@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		}
 	});
 
-	const comments = await commentClient.GET('tagsong', data.tag.id!, fetch);
+	const comments = await commentClient.GET('tagsong', data.tag.id, fetch);
 
 	return {
 		songs,

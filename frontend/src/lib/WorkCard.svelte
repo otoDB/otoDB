@@ -4,34 +4,22 @@
 
 	interface Props {
 		work: components['schemas']['WorkSchema'];
-		width: number;
 	}
-	const { work, width = 200 }: Props = $props();
+	const { work }: Props = $props();
 </script>
 
-<div class="card relative" style="width:{width}px;">
-	<div style="width:{width}px;height:{(200 / 16) * 9}px;" class="overflow-hidden">
-		<a href="/work/{work.id}">
-			<img src={work.thumbnail} alt={work.title} />
-		</a>
-	</div>
-	<a href="/work/{work.id}">{work.title}</a>
-	<div class="tags absolute z-1 hidden w-full flex-wrap gap-1">
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each work.tags as tag}
-			<WorkTag {tag} />
-		{/each}
-	</div>
+<div class="group relative row-span-2 grid grid-rows-subgrid gap-0 bg-[var(--otodb-bg-color))]">
+	<a href="/work/{work.id}" class="flex h-full items-center">
+		<img src={work.thumbnail} alt={work.title} class="aspect-video w-full object-cover" />
+	</a>
+	<a href="/work/{work.id}" class="my-2 line-clamp-2 self-center px-4">{work.title}</a>
+	{#if work.tags}
+		<div
+			class="absolute top-full z-1 hidden w-full flex-wrap gap-1 bg-[var(--otodb-bg-color))] p-2 group-hover:flex"
+		>
+			{#each work.tags as tag, i (i)}
+				<WorkTag {tag} />
+			{/each}
+		</div>
+	{/if}
 </div>
-
-<style>
-	.card {
-		background-color: var(--otodb-bg-color);
-		> .tags {
-			background-color: var(--otodb-bg-color);
-		}
-		&:hover > .tags {
-			display: flex;
-		}
-	}
-</style>

@@ -1,26 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	interface Props {
-		title: string;
-		menuLinks: { title: string; pathname: string }[] | null;
-	}
 	let { title, children, menuLinks = null } = $props();
 </script>
 
-{#if menuLinks}
-	<menu>
-		<ul>
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each menuLinks as { pathname, title }}
-				<li aria-current={page.url.pathname.endsWith(encodeURI(pathname))}>
-					<a href="/{pathname}">{title}</a>
-				</li>
-			{/each}
-		</ul>
-	</menu>
-{/if}
-
 <section>
+	{#if menuLinks}
+		<menu>
+			<ul>
+				{#each menuLinks as { pathname, title }, i (i)}
+					<li aria-current={page.url.pathname.endsWith(encodeURI(pathname))}>
+						<a href="/{pathname}">{title}</a>
+					</li>
+				{/each}
+			</ul>
+		</menu>
+	{/if}
+
 	<h1>{title}</h1>
 	{@render children()}
 </section>
@@ -31,18 +26,26 @@
 		border: 1px solid var(--otodb-faint-content);
 		padding: 0 1rem 1rem 1rem;
 		margin-bottom: 1rem;
+		position: relative;
 		& > h1 {
 			font-size: x-large;
 			font-weight: 600;
 			text-align: initial;
 		}
+		&::after {
+			/* Clearfix */
+			content: '';
+			display: block;
+			clear: both;
+		}
 	}
 	menu {
-		position: relative;
-		top: 1px;
+		position: absolute;
+		bottom: 100%;
+		right: -1px;
+		z-index: 1;
 		& > ul {
 			display: flex;
-			margin: -0.5rem 0 0 auto;
 			gap: 0.3rem;
 			width: max-content;
 			list-style: none;

@@ -2,6 +2,8 @@
 	import { invalidate } from '$app/navigation';
 	import client from './api';
 	import { SongRelationTypes, WorkRelationTypes } from './enums';
+	import { m } from './paraglide/messages';
+	import { getLocale } from './paraglide/runtime';
 	import type { components } from './schema';
 	import SongField from './SongField.svelte';
 	import WorkCard from './WorkCard.svelte';
@@ -29,7 +31,7 @@
 	const delete_relation = (i: number) => async () => {
 		await client.DELETE(endpoint, {
 			fetch,
-			params: { query: { A: relations[i].item.id!, B: this_id } }
+			params: { query: { A: relations[i].item.id, B: this_id } }
 		});
 		relations.splice(i, 1);
 	};
@@ -60,6 +62,8 @@
 			new_item = null;
 		}
 	};
+
+	const invert_subordinate_phrase = getLocale() !== 'en';
 </script>
 
 <div class="grid w-fit grid-cols-2 gap-3">
@@ -68,42 +72,71 @@
 	{:else if obj_type === 'song'}
 		<SongField bind:value={new_item} />
 	{/if}
-	<button onclick={add_new_item} disabled={!new_item}>Add</button>
+	<button onclick={add_new_item} disabled={!new_item}>{m.swift_dry_gecko_boost()}</button>
 </div>
+
+{#snippet work(relation, swapped: boolean)}
+	{#if swapped}
+		{#if obj_type === 'work'}
+			<WorkCard work={relation.item} />
+		{:else if obj_type === 'song'}
+			<a href="/tag/{relation.item.work_tag}">{relation.item.title}</a>
+		{/if}
+	{:else}
+		{m.stout_frail_warbler_support()}
+		{#if obj_type === 'work'}
+			{m.grand_merry_fly_succeed()}
+		{:else if obj_type === 'song'}
+			{m.grand_nice_pony_belong()}
+		{/if}
+	{/if}
+{/snippet}
+
 <table>
 	<tbody>
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each relations as relation, i}
+		{#each relations as relation, i (i)}
 			<tr>
-				<td
-					>{#if !relation.swapped}{#if obj_type === 'work'}<WorkCard
-								work={relation.item}
-							/>{:else if obj_type === 'song'}<a href="/tag/{relation.item.work_tag}"
-								>{relation.item.title}</a
-							>{/if}{:else}This {#if obj_type === 'work'}work{:else if obj_type === 'song'}song{/if}{/if}</td
-				>
-				<td>is a</td>
-				<td
-					><select
-						name="relation"
-						bind:value={relation.relation}
-						onchange={post_relation(i)}
+				<td class="w-64">{@render work(relation, !relation.swapped)}</td>
+				<td>{m.grand_vexed_snail_ripple()}</td>
+				{#if invert_subordinate_phrase}
+					<td class="w-64">{@render work(relation, relation.swapped)}</td>
+					<td>{m.clean_best_kangaroo_achieve()}</td>
+					<td
+						><select
+							name="relation"
+							bind:value={relation.relation}
+							onchange={post_relation(i)}
+						>
+							{#each obj_type === 'work' ? WorkRelationTypes : SongRelationTypes as rel, j (j)}
+								<option value={j}>{rel()}</option>
+							{/each}
+						</select></td
 					>
-						<!-- eslint-disable-next-line svelte/require-each-key -->
-						{#each obj_type === 'work' ? WorkRelationTypes : SongRelationTypes as rel, j}
-							<option value={j}>{rel()}</option>
-						{/each}
-					</select></td
+				{:else}
+					<td
+						><select
+							name="relation"
+							bind:value={relation.relation}
+							onchange={post_relation(i)}
+						>
+							{#each obj_type === 'work' ? WorkRelationTypes : SongRelationTypes as rel, j (j)}
+								<option value={j}>{rel()}</option>
+							{/each}
+						</select></td
+					>
+					<td>{m.clean_best_kangaroo_achieve()}</td>
+					<td class="w-64">{@render work(relation, relation.swapped)}</td>
+				{/if}
+				<td
+					><button type="button" onclick={swap_relation(i)}
+						>{m.less_green_angelfish_hunt()}</button
+					></td
 				>
-				<td>of</td><td
-					>{#if relation.swapped}{#if obj_type === 'work'}<WorkCard
-								work={relation.item}
-							/>{:else if obj_type === 'song'}<a href="/tag/{relation.item.work_tag}"
-								>{relation.item.title}</a
-							>{/if}{:else}this {#if obj_type === 'work'}work{:else if obj_type === 'song'}song{/if}{/if}</td
+				<td
+					><button type="button" onclick={delete_relation(i)}
+						>{m.even_alert_grebe_taste()}</button
+					></td
 				>
-				<td><button type="button" onclick={swap_relation(i)}>Swap</button></td>
-				<td><button type="button" onclick={delete_relation(i)}>Delete</button></td>
 			</tr>
 		{/each}
 	</tbody>

@@ -5,6 +5,7 @@
 	import { enhance } from '$app/forms';
 	import { debounce } from '$lib/ui';
 	import client from '$lib/api';
+	import { goto } from '$app/navigation';
 
 	let { data, form }: PageProps = $props();
 
@@ -33,11 +34,10 @@
 		if (source && target && source != target) {
 			await client.PUT('/api/list/items', {
 				fetch,
-				params: { query: { list_id: data.list.id! } },
+				params: { query: { list_id: data.list.id } },
 				body: {
 					move: [[source, target]],
 					delete: [],
-					insert_at: [],
 					update_description: [],
 					update_work: []
 				}
@@ -51,12 +51,11 @@
 	async function update_description(el) {
 		await client.PUT('/api/list/items', {
 			fetch,
-			params: { query: { list_id: data.list.id! } },
+			params: { query: { list_id: data.list.id } },
 			body: {
 				update_description: [[+el.target.closest('tr').dataset.ridx, el.target.value]],
 				move: [],
 				delete: [],
-				insert_at: [],
 				update_work: []
 			}
 		});
@@ -66,7 +65,7 @@
 		const i = +el.target.closest('tr')!.dataset.ridx!;
 		const { error } = await client.PUT('/api/list/items', {
 			fetch,
-			params: { query: { list_id: data.list.id! } },
+			params: { query: { list_id: data.list.id } },
 			body: {
 				delete: [i],
 				update_work: [],
@@ -80,6 +79,14 @@
 			entries_copy = [...entries];
 		}
 	}
+
+	const pull = async () => {
+		await client.POST('/api/list/pull_upstream', {
+			fetch,
+			params: { query: { list_id: data.list.id } }
+		});
+		goto(`/list/${data.list.id}`, { invalidateAll: true });
+	};
 </script>
 
 <svelte:head>
@@ -93,17 +100,18 @@
 
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
+	menuLinks={data.links}
 >
 	<form use:enhance method="POST">
 		<table>
 			<tbody>
 				<tr
-					><th><label for="name">Name</label></th><td
+					><th><label for="name">{m.large_factual_octopus_exhale()}</label></th><td
 						><input type="text" name="name" value={form?.name ?? data.list?.name} /></td
 					></tr
 				>
 				<tr
-					><th><label for="description">Description</label></th><td
+					><th><label for="description">{m.clear_lucky_peacock_pick()}</label></th><td
 						><textarea
 							name="description"
 							value={form?.description ?? data.list?.description}
@@ -114,39 +122,58 @@
 		</table>
 		<input type="submit" />
 	</form>
+	<form action="/list/{data.list.id}/delete">
+		<button data-sveltekit-preload-data="tap">{m.key_sea_chicken_boost()}</button>
+	</form>
+	{#if data.list.upstream}
+		<button onclick={pull}>{m.honest_tiny_sparrow_gaze()}</button>
+	{/if}
 </Section>
-<Section title="Entries">
-	<table>
-		<tbody>
-			{#each entries as entry, i (entry.ui_id)}
-				<tr ondragenter={debounce(dragenter, 50)} data-ridx={i}
-					><th>{i + 1}</th><td
-						><div
-							class="border pr-5 pl-5 select-none"
-							draggable="true"
-							{ondragstart}
-							{ondragend}
-							role="none"
-						>
-							=
-						</div></td
-					><td>
-						<a target="_blank" href="/work/{entry.work.id}"
-							><img
-								class="w-56"
-								src={entry.work.thumbnail}
-								alt={entry.work.title}
-							/></a
-						>
-						<h3>
-							<a target="_blank" href="/work/{entry.work.id}">{entry.work.title}</a>
-						</h3>
-					</td><td
-						><textarea value={entry.description} oninput={debounce(update_description)}
-						></textarea></td
-					><td><button type="button" onclick={delete_item}>Remove</button></td></tr
-				>
-			{/each}
-		</tbody>
-	</table>
+<Section title={m.bald_clear_marlin_grasp()}>
+	{#if entries.length}
+		<table class="w-full">
+			<tbody>
+				{#each entries as entry, i (entry.ui_id)}
+					<tr ondragenter={debounce(dragenter, 50)} data-ridx={i}
+						><th>{i + 1}</th><td class="w-10"
+							><div
+								class="w-10 border text-center select-none"
+								draggable="true"
+								{ondragstart}
+								{ondragend}
+								role="none"
+							>
+								=
+							</div></td
+						><td class="w-56">
+							<a target="_blank" href="/work/{entry.work.id}"
+								><img
+									class="w-56"
+									src={entry.work.thumbnail}
+									alt={entry.work.title}
+								/></a
+							>
+							<h3>
+								<a target="_blank" href="/work/{entry.work.id}"
+									>{entry.work.title}</a
+								>
+							</h3>
+						</td><td
+							><textarea
+								class="min-h-30 w-full"
+								value={entry.description}
+								oninput={debounce(update_description)}
+							></textarea></td
+						><td
+							><button type="button" onclick={delete_item}
+								>{m.even_alert_grebe_taste()}</button
+							></td
+						></tr
+					>
+				{/each}
+			</tbody>
+		</table>
+	{:else}
+		<h3>{m.hour_flat_finch_zoom()}</h3>
+	{/if}
 </Section>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages.js';
-	const { text, cutoff = 25 } = $props();
+	const { text } = $props();
 </script>
 
 <label>

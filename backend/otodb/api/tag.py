@@ -110,7 +110,7 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
     tag.category = payload.category
     if payload.parent_slug:
         parent = get_object_or_404(TagWork, slug=payload.parent_slug)
-        assert(tag.id != t.id for t in parent.get_tree())
+        assert(all(tag.id != t.id for t in parent.get_tree()))
         tag.parent = parent
     else:
         tag.parent = None
@@ -244,7 +244,7 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: TagInSchema):
     tag.category = payload.category
     if payload.parent_slug:
         parent = get_object_or_404(TagSong, slug=payload.parent_slug)
-        assert(tag.id != t.id for t in parent.get_tree())
+        assert(all(tag.id != t.id for t in parent.get_tree()))
         tag.parent = parent
     else:
         tag.parent = None

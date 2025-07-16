@@ -130,6 +130,17 @@ def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
 def random(request: HttpRequest, n: int = 1):
     return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("?")[:n]
 
+@work_router.get('recent', response=list[WorkSchema])
+def recent(request: HttpRequest, n: int = 1):
+	sources = (
+    	WorkSource.active_objects
+			.select_related("media")
+    		.filter(media__rating=Rating.GENERAL).order_by('-published_date')
+            # .distinct('media')[:n] -- need postgres only
+        )[:n]
+
+	return 200, { s.media for s in sources }
+
 class SlimWorkSchema(ModelSchema):
     id: int
     class Meta:

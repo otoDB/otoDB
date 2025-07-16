@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	const source = `direction: right
     ${works
 		.map(
-			(w) => `${w.id}: "${w.title.replace('"', '\\"')}" {
+			(w) => `${w.id}: "${w.title.replaceAll('"', '\\"')}" {
              shape: image
              icon: ${w.thumbnail}
              link: ${`/work/${w.id}`}
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
     ${relations
 		.map((r) => `${r.A_id} -> ${r.B_id}: ${WorkRelationTypes[r.relation]()}`)
 		.join('\n')}`;
-
+		
 	const result = await d2.compile(source);
 	let svg = await d2.render(result.diagram, {
 		...result.renderOptions,
@@ -41,7 +41,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	});
 
 	svg = svg.replace(/\.appendix-icon {.*?}/gs, '.appendix-icon{display:none;}');
-
+	
 	return {
 		relations_svg: svg
 	};

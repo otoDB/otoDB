@@ -284,7 +284,7 @@
 		</table>
 	</details>
 	<form action="?/connections" method="POST" use:enhance>
-		<textarea bind:value={urls} name="urls" class="w-full"> </textarea>
+		<textarea bind:value={urls} name="urls" class="w-full" placeholder="Enter URLs on separate lines..."></textarea>
 		<input type="submit" />
 	</form>
 </Section>

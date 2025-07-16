@@ -2,9 +2,8 @@ name: CI for Frontend
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
+    paths:
+      - "frontend/**"
 
 defaults:
   run:

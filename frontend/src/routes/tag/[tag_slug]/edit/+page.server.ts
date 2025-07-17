@@ -72,7 +72,7 @@ export const actions = {
 			bpm = data.get('song_bpm') as string,
 			variable_bpm = !!data.get('song_variable_bpm');
 
-			const song =
+		const song =
 			+category === 2
 				? {
 						title,

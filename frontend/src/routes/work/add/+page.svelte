@@ -46,7 +46,8 @@
 					<th><label for="origin">{m.watery_fuzzy_fireant_thrive()}</label></th>
 					<td
 						><select name="origin" value={form?.origin ?? !data.title}
-							><option value={true}>{m.broad_large_squid_zoom()}</option><option value={false}>{m.great_lucky_goldfish_sail()}</option
+							><option value={true}>{m.broad_large_squid_zoom()}</option><option
+								value={false}>{m.great_lucky_goldfish_sail()}</option
 							></select
 						></td
 					>

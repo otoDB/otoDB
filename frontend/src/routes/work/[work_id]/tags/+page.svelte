@@ -125,13 +125,13 @@
 						{#if tag.category === 4}
 							<div>
 								{#each Object.keys(Role).filter((e) => !isNaN(e)) as k, i (i)}
-									<label>
+									<label class="role-label">
 										<input
+											class="hidden"
 											type="checkbox"
 											checked={tag.creator_roles?.includes(+k) || false}
 											onchange={() => toggle_creator_role(tag.slug, +k)}
-										/>
-										<!-- {Role[k as keyof typeof Role]} -->
+										/>{Role[k]}
 									</label>
 								{/each}
 							</div>
@@ -161,5 +161,16 @@
 		&[data-checked='true'] {
 			background-color: var(--otodb-faint-content);
 		}
+	}
+	label.role-label {
+		padding: 0 0.3rem;
+		margin: 0.1rem;
+		border: 1px solid var(--otodb-content-color);
+		&:has(input:checked) {
+			background-color: var(--otodb-content-color);
+			color: var(--color-otodb-bg-color);
+		}
+		color: var(--otodb-content-color);
+		background-color: var(--otodb-bg-color);
 	}
 </style>

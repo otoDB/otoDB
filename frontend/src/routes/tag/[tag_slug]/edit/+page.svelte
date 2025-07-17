@@ -148,7 +148,9 @@
 						></tr
 					>
 					<tr
-						><th><label for="song_variable_bpm">{m.tasty_male_tadpole_glow()}</label></th
+						><th
+							><label for="song_variable_bpm">{m.tasty_male_tadpole_glow()}</label
+							></th
 						><td
 							><input
 								type="checkbox"

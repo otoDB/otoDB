@@ -160,7 +160,13 @@
 		<table>
 			<tbody>
 				<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.tag.song.title}</td></tr>
-				<tr><th>BPM</th><td>{#if data.tag.song.variable_bpm}{m.glad_fresh_thrush_hack({bpm: data.tag.song.bpm})}{:else}{data.tag.song.bpm}{/if}</td></tr>
+				<tr
+					><th>BPM</th><td
+						>{#if data.tag.song.variable_bpm}{m.glad_fresh_thrush_hack({
+								bpm: data.tag.song.bpm
+							})}{:else}{data.tag.song.bpm}{/if}</td
+					></tr
+				>
 				<tr><th>{m.crisp_red_canary_tickle()}</th><td>{data.tag.song.author}</td></tr>
 			</tbody>
 		</table>

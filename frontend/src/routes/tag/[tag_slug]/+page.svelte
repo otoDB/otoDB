@@ -137,10 +137,12 @@
 				</label>
 			{/each}
 		</div>
+		<div class="prose prose-neutral prose-sm dark:prose-invert">
 		{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])?.page_rendered}
 		{/if}
+		</div>
 	{:else}
 		<p>{m.tame_dirty_goldfish_flow()}</p>
 	{/if}

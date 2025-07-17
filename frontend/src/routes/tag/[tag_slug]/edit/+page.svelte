@@ -235,7 +235,7 @@
 		<input type="text" hidden value={wikiView} name="lang" />
 		<div class="grid grid-cols-2 gap-3">
 			<textarea required name="md" bind:value={mds[wikiView]}></textarea>
-			<div id="md-preview">
+			<div class="prose prose-neutral prose-sm dark:prose-invert">
 				<Markdown md={mds[wikiView]} />
 			</div>
 		</div>

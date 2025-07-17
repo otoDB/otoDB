@@ -35,8 +35,54 @@
     };
 
     window.fetch = async function(...args) {
+        if (window.otodb_video_id_map && typeof args[0] === 'string') {
+			const { old: oldId, new: newId } = window.otodb_video_id_map;
+            const url = args[0];
+            const watchApiRegex = /https:\/\/www\.nicovideo\.jp\/api\/watch\/v3_guest\/.+/;
+            const match = url.match(watchApiRegex);
+
+            if (match) {
+                const embedUrl = `https://www.nicovideo.jp/watch/${oldId}`;
+                try {
+					const embedResponse = await originalFetch(embedUrl, { credentials: 'include' });
+                    if (!embedResponse.ok) return embedResponse;
+
+                    const embedHtml = await embedResponse.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(embedHtml, 'text/html');
+                    const metaTag = doc.querySelector('meta[name="server-response"]');
+
+                    if (metaTag) {
+                        const serverResponseJson = metaTag.getAttribute('content');
+						const responseData = originalJSONParse(serverResponseJson)?.data;
+						const data = {
+							meta: responseData.metadata,
+							data: responseData.response
+						};
+						return new Response(JSON.stringify(data), {
+							status: 200,
+							statusText: 'OK',
+							headers: { 'Content-Type': 'application/json' }
+						});
+                    }
+                } catch (e) {
+                    console.error("Error fetching or parsing embed page:", e);
+                }
+            }
+
+            if (
+                oldId
+                && newId
+                && oldId !== newId
+                && !url.startsWith('https://embed.nicovideo.jp/watch/')
+                && !url.startsWith('https://embed.nicovideo.jp/play/')
+            ) {
+                args[0] = url.replace(new RegExp(newId, 'g'), oldId);
+            }
+        }
+
         const response = await originalFetch(...args);
-        if (response.ok && response.headers.get('Content-Type').split(';')[0] === 'application/json') {
+        if (response.ok && response.headers.get('Content-Type')?.split(';')[0] === 'application/json') {
             const clonedResponseText = response.clone();
             const clonedResponseJson = response.clone();
             try {

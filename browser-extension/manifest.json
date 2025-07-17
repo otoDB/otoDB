@@ -18,6 +18,13 @@
       },
       {
         "matches": [
+          "https://embed.nicovideo.jp/watch/*"
+        ],
+        "js": ["niconico-embed.js"],
+        "run_at": "document_idle"
+      },
+      {
+        "matches": [
           "https://*.nicovideo.jp/*"
         ],
         "js": ["injector.js"],

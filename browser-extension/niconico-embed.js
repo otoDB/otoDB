@@ -20,7 +20,6 @@
             }
 
             try {
-                // Fetch the content of a working embed page.
                 const response = await fetch(workingEmbedUrl);
                 if (!response.ok) {
                     console.error('Could not fetch working embed page.');

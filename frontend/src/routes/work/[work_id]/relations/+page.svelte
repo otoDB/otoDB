@@ -10,7 +10,7 @@
 	menuLinks={data.links}
 >
 	{#if data.relations_svg}
-		<SVGViewer maxScale={10} height="600px" width="100%" svgClass="fill-transparent">
+		<SVGViewer maxScale={90} height="600px" width="100%" svgClass="fill-transparent">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html data.relations_svg}
 		</SVGViewer>

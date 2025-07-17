@@ -12,12 +12,12 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='historicalmediasong',
-            name='bpm_mixed',
+            name='variable_bpm',
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
             model_name='mediasong',
-            name='bpm_mixed',
+            name='variable_bpm',
             field=models.BooleanField(default=False),
         ),
     ]

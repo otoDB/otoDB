@@ -69,13 +69,16 @@ export const actions = {
 
 		const title = data.get('song_title') as string,
 			author = data.get('song_author') as string,
-			bpm = data.get('song_bpm') as string;
-		const song =
+			bpm = data.get('song_bpm') as string,
+			variable_bpm = !!data.get('song_variable_bpm');
+
+			const song =
 			+category === 2
 				? {
 						title,
 						author,
-						bpm: +bpm
+						bpm: +bpm,
+						variable_bpm
 					}
 				: null;
 

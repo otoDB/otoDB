@@ -137,7 +137,7 @@ class MediaWork(models.Model):
 class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)
     bpm = models.FloatField(null=False)
-    bpm_mixed = models.BooleanField(default=False, null=False)
+    variable_bpm = models.BooleanField(default=False, null=False)
     work_tag = models.OneToOneField(TagWork, null=False, on_delete=models.CASCADE)
     author = models.CharField(max_length=1000, null=False, blank=False)
 

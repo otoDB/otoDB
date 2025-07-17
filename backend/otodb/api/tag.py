@@ -82,7 +82,7 @@ class TagInSchema(Schema):
 class SongInSchema(ModelSchema):
     class Meta:
         model = MediaSong
-        fields = ['title', 'bpm', 'bpm_mixed', 'author']
+        fields = ['title', 'bpm', 'variable_bpm', 'author']
 
 @tag_router.put('tag', auth=django_auth)
 @user_is_trusted
@@ -96,10 +96,12 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
         assert(song_payload.title)
         assert(song_payload.author)
         try:
+            print(song_payload)
             song = tag.mediasong
             song.title = song_payload.title
             song.bpm = song_payload.bpm
             song.author = song_payload.author
+            song.variable_bpm = song_payload.variable_bpm
             song.save()
         except MediaSong.DoesNotExist:
             tag.category = WorkTagCategory.SONG

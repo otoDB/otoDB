@@ -1037,10 +1037,10 @@ export interface components {
             /** Bpm */
             bpm: number;
             /**
-             * Bpm Mixed
+             * Variable Bpm
              * @default false
              */
-            bpm_mixed: boolean;
+            variable_bpm: boolean;
             /** Author */
             author: string;
         };
@@ -1390,10 +1390,10 @@ export interface components {
             /** Bpm */
             bpm: number;
             /**
-             * Bpm Mixed
+             * Variable Bpm
              * @default false
              */
-            bpm_mixed: boolean;
+            variable_bpm: boolean;
             /** Author */
             author: string;
         };

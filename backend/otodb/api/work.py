@@ -130,6 +130,10 @@ def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
 def random(request: HttpRequest, n: int = 1):
     return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("?")[:n]
 
+@work_router.get('recent', response=list[WorkSchema])
+def recent(request: HttpRequest, n: int = 1):
+    return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("-id")[:n]
+
 class SlimWorkSchema(ModelSchema):
     id: int
     class Meta:

@@ -6,15 +6,6 @@
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.fuzzy_crazy_cobra_lead(),
-			name: data.profile.username
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.mild_loud_shad_enchant({
 		type: m.fuzzy_crazy_cobra_lead(),

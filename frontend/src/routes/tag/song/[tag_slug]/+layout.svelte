@@ -10,6 +10,11 @@
 			name: data.tag.name
 		})}</title
 	>
+    <meta property="og:title" content={data.tag.name} />
+	<meta name="twitter:title" content={data.tag.name} />
+
+	<link rel="canonical" href={`https://otodb.net/tag/song/${data.tag.slug}`} />
+	<meta property="og:url" content={`https://otodb.net/tag/song/${data.tag.slug}`} />
 </svelte:head>
 
 {@render children()}

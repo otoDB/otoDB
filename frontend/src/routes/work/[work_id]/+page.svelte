@@ -238,7 +238,9 @@
 				</div>
 				<div class="my-2">
 					<details>
-						<summary>{m.clear_lucky_peacock_pick()}</summary>{@html src.description}
+						<summary>{m.clear_lucky_peacock_pick()}</summary>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html src.description}
 					</details>
 				</div>
 			</div>

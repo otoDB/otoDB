@@ -20,6 +20,7 @@
 	import client from '$lib/api.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import { SVGViewer } from 'svelte-svg-viewer';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 
 	let { data } = $props();
@@ -133,7 +134,7 @@
 				</label>
 			{/each}
 		</div>
-		<div class="prose prose-neutral prose-sm dark:prose-invert">
+		<div class="prose prose-neutral prose-sm dark:prose-invert max-w-4xl">
 			{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])
@@ -193,8 +194,10 @@
 			</ul>
 		{/if}
 		{#if data.song_relation_svg}
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html data.song_relation_svg}
+			<SVGViewer maxScale={10} height="600px" width="100%" svgClass="fill-transparent">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html data.song_relation_svg}
+			</SVGViewer>
 		{/if}
 	</Section>
 {/if}

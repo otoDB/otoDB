@@ -60,6 +60,7 @@ def _alias(from_tags, into_tag):
     for tag in from_tags:
         if tag.id != into_tag.id:
             tag.aliased_to = into_tag
+            tag.parent = None
             tag.save()
             for work in (tag.works if is_work else tag.songs).all():
                 work.tags.add(into_tag)
@@ -70,8 +71,6 @@ def _alias(from_tags, into_tag):
             for t in model.objects.filter(parent=tag):
                 t.parent = into_tag
                 t.save()
-            if into_tag.parent is None:
-                into_tag.parent = tag.parent
 
     into_tag.save()
 

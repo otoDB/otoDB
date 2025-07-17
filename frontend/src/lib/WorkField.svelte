@@ -66,7 +66,7 @@
 		>
 			<tbody>
 				{#each suggestions as v, i (i)}
-					<tr class="w bg-[var(--otodb-fainter-bg)] p-1 hover:bg-[var(--otodb-faint-bg)]">
+					<tr class="w bg-otodb-fainter-bg hover:bg-otodb-faint-bg p-1">
 						<td><img class="w-20" src={v.thumbnail} alt={v.title} /></td>
 						<td
 							><a

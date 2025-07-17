@@ -20,6 +20,7 @@
 	import client from '$lib/api.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -91,9 +92,8 @@
 		<ul class="list-none">
 			{#each data.connections[0] as s, i (i)}
 				<li>
-					<img
-						src="/connection_favicons/{TagWorkConnectionTypes[s.site]}.png"
-						alt={TagWorkConnectionTypes[s.site]}
+					<ConnectionFavicon
+						type={TagWorkConnectionTypes[s.site]}
 						class="inline size-4"
 					/>
 					<a
@@ -108,9 +108,8 @@
 			{#if data.connections[1]}
 				{#each data.connections[1] as s, i (i)}
 					<li>
-						<img
-							src="/connection_favicons/{ext_cat_types[s.site]}.png"
-							alt={ext_cat_types[s.site]}
+						<ConnectionFavicon
+							type={ext_cat_types[s.site]}
 							class="inline size-4"
 						/>
 						<a
@@ -165,9 +164,8 @@
 			<ul class="list-none">
 				{#each data.song_connections as s, i (i)}
 					<li>
-						<img
-							src="/connection_favicons/{SongConnectionTypes[s.site]}.png"
-							alt={SongConnectionTypes[s.site]}
+						<ConnectionFavicon
+							type={SongConnectionTypes[s.site]}
 							class="inline size-4"
 						/>
 						<a

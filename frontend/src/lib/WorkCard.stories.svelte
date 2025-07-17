@@ -20,11 +20,14 @@
 			id: 1,
 			title: 'Sample Work',
 			thumbnail: thumbnail,
-			tags: [
-				{ id: 1, name: 'Tag1', slug: 'tag1', category: 0, children: [], lang_prefs: [] },
-				{ id: 2, name: 'Tag2', slug: 'tag2', category: 0, children: [], lang_prefs: [] },
-				{ id: 3, name: 'Tag3', slug: 'tag3', category: 0, children: [], lang_prefs: [] }
-			],
+			tags: [...new Array(3)].map((_, i) => ({
+				id: i,
+				name: 'Tag ' + i,
+				slug: 'tag_' + i,
+				category: 0,
+				children: [],
+				lang_prefs: []
+			})),
 			rating: 0
 		}
 	}}

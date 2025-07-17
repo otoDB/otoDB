@@ -45,10 +45,6 @@ html {
 	color: var(--otodb-content-color);
 }
 
-body {
-	font-size: smaller;
-}
-
 hr {
 	width: 100%;
 	color: var(--otodb-content-color);

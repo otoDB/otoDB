@@ -68,7 +68,7 @@
 
 	<header class="relative col-span-2 px-6 py-16 md:px-48">
 		<address class="font-mono text-2xl italic">
-			<a href="/" class="no-underline!">
+			<a href="/">
 				{m.glad_born_mouse_taste()}
 			</a>
 		</address>
@@ -145,8 +145,7 @@
 	}
 
 	.social-links a {
-		border-bottom: 1px dotted var(--otodb-content-color);
-		text-decoration: none;
+		text-decoration: underline dotted;
 		color: inherit;
 	}
 

@@ -51,7 +51,7 @@
 				if (oninput) oninput(self, null);
 			}}>{m.quick_happy_trout_amuse()}</button
 		>
-		<a target="_blank" href="/tag/{value?.work_tag}">{value?.title}</a>
+		<a target="_blank" href="/tag/{value?.work_tag}" class="underline">{value?.title}</a>
 	{:else}
 		<input type="text" oninput={debounce(search)} disabled={locked_in} bind:value={input} />
 	{/if}
@@ -76,8 +76,10 @@
 									suggestions = [];
 									locked_in = true;
 									if (oninput) oninput(self, v);
-								}}>{v.title}</a
+								}}
 							>
+								{v.title}
+							</a>
 						</td>
 						<td>{v.author}</td>
 					</tr>

@@ -61,9 +61,6 @@ html {
 		@apply list-inside list-decimal;
 	}
 
-	a {
-		text-decoration: underline 1px;
-	}
 
 	hr {
 		width: 100%;

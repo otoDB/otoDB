@@ -61,11 +61,16 @@
 						<td class="whitespace-nowrap">{src.title}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
-						<td class="whitespace-nowrap"
-							><a href={src.url} target="_blank" rel="noopener noreferrer"
-								>{m.noisy_moving_newt_belong()}</a
-							></td
-						>
+						<td class="whitespace-nowrap">
+							<a
+								href={src.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="underline"
+							>
+								{m.noisy_moving_newt_belong()}
+							</a>
+						</td>
 						{#if data.user}
 							<td><RefreshButton source={src} /></td>
 						{/if}
@@ -100,11 +105,16 @@
 						<td class="whitespace-nowrap">{src.rejection.reason}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
-						<td class="whitespace-nowrap"
-							><a href={src.url} target="_blank" rel="noopener noreferrer"
-								>{m.noisy_moving_newt_belong()}</a
-							></td
-						>
+						<td class="whitespace-nowrap">
+							<a
+								href={src.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="underline"
+							>
+								{m.noisy_moving_newt_belong()}
+							</a>
+						</td>
 						{#if data.user}
 							<td><RefreshButton source={src} /></td>
 						{/if}
@@ -135,18 +145,17 @@
 			<tbody>
 				{#each approved as src, i (i)}
 					<tr>
-						<td class="whitespace-nowrap"
-							><a href="/work/{src.media}">{src.title}</a></td
-						>
+						<td class="whitespace-nowrap">
+							<a href="/work/{src.media}" class="hover:underline">{src.title}</a>
+						</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td
-							class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td
-						>
-						<td class="whitespace-nowrap"
-							><a href={src.url} target="_blank" rel="noopener noreferrer"
-								>{m.noisy_moving_newt_belong()}</a
-							></td
-						>
+						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+						<td class="whitespace-nowrap">{WorkStatus[src.work_status]()} </td>
+						<td class="whitespace-nowrap">
+							<a href={src.url} target="_blank" rel="noopener noreferrer">
+								{m.noisy_moving_newt_belong()}
+							</a>
+						</td>
 						{#if data.user}
 							<td><RefreshButton source={src} /></td>
 						{/if}

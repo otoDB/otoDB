@@ -57,7 +57,9 @@
 		{/if}
 	</h3>
 	{#if data.list.upstream}
-		<address><a href={data.list.upstream}>{m.male_red_platypus_borrow()}</a></address>
+		<address>
+			<a href={data.list.upstream} class="hover:underline">{m.male_red_platypus_borrow()}</a>
+		</address>
 	{/if}
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
 </Section>
@@ -130,9 +132,9 @@
 				<li>
 					<span>
 						<h3>
-							<a href={src.url} target="_blank" rel="noopener noreferrer"
-								>{src.title}</a
-							>
+							<a href={src.url} target="_blank" rel="noopener noreferrer">
+								{src.title}
+							</a>
 						</h3>
 						<h4>{Platform[src.platform]} {src.published_date}</h4>
 						{#if src.rejection}
@@ -145,13 +147,13 @@
 						{/if}
 					</span>
 					<span>
-						<a href={src.url} target="_blank" rel="noopener noreferrer"
-							><img
+						<a href={src.url} target="_blank" rel="noopener noreferrer">
+							<img
 								src={src.thumbnail}
 								alt={src.title}
 								class="float-right clear-both w-50"
-							/></a
-						>
+							/>
+						</a>
 					</span>
 				</li>
 			{/each}

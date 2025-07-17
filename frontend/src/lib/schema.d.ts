@@ -1036,6 +1036,11 @@ export interface components {
             title: string;
             /** Bpm */
             bpm: number;
+            /**
+             * Variable Bpm
+             * @default false
+             */
+            variable_bpm: boolean;
             /** Author */
             author: string;
         };
@@ -1384,6 +1389,11 @@ export interface components {
             title: string;
             /** Bpm */
             bpm: number;
+            /**
+             * Variable Bpm
+             * @default false
+             */
+            variable_bpm: boolean;
             /** Author */
             author: string;
         };

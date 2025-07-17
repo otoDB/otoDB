@@ -10,6 +10,11 @@
 			name: data.profile.username
 		})}</title
 	>
+	<meta property="og:title" content={data.profile.username} />
+	<meta name="twitter:title" content={data.profile.username} />
+
+	<link rel="canonical" href={`https://otodb.net/profile/${data.profile.username}`} />
+	<meta property="og:url" content={`https://otodb.net/profile/${data.profile.username}`} />
 </svelte:head>
 
 {@render children()}

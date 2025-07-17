@@ -80,6 +80,7 @@ html {
 	input[type='password'],
 	input[type='email'],
 	textarea {
+		border: 1px solid color-mix(in hsl, var(--otodb-fainter-content) 60%, transparent);
 		background-color: color-mix(in hsl, var(--otodb-bg-color) 80%, transparent);
 	}
 

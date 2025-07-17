@@ -28,3 +28,11 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
         work_id: +params.work_id
     }}});
 ```
+
+### Storybook
+
+Component catalog.
+
+```
+bun run storybook
+```

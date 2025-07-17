@@ -2,7 +2,7 @@ from typing import Annotated
 
 from django.db.models import Value
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404, redirect
 
 from pydantic import AfterValidator
 from ninja import Router, ModelSchema, Schema
@@ -25,9 +25,11 @@ def search(request: HttpRequest, query: str, category: int | None = None):
         qs = qs.filter(category=category)
     return list(set([t.aliased_to if t.aliased_to else t for t in qs]))
 
-@tag_router.get('tag', response=TagWorkSchema)
+@tag_router.get('tag', response={ 200: TagWorkSchema, 300: str})
 def tag(request: HttpRequest, tag_slug: str):
-    tag = get_object_or_404(TagWork, slug=tag_slug, aliased_to__isnull=True)
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    if tag.aliased_to:
+        return 300, tag.aliased_to.slug
     return tag
 
 @tag_router.get('details', response=TagWorkDetailsSchema)

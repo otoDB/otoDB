@@ -3,21 +3,32 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { UserLevel } from '$lib/enums';
 
-	let { user, stats } = $props();
+	let {
+		user,
+		stats,
+		...props
+	}: {
+		user?: {
+			username: string;
+			level: number;
+		};
+		stats: [number, number, number, number];
+		width?: string;
+	} = $props();
 </script>
 
 {#snippet link(pathname: string, title: string)}
 	<li>
 		<a
 			href={pathname}
-			class="no-underline aria-[current=page]:text-[var(--otodb-fainter-content)]"
+			class="aria-[current=page]:text-otodb-fainter-content no-underline"
 			aria-current={page.url.pathname === pathname ? 'page' : undefined}>{title}</a
 		>
 	</li>
 {/snippet}
 
-<nav class="flex w-full min-w-64 flex-col gap-y-2">
-	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)]">
+<nav class="flex w-full min-w-64 flex-col gap-y-2" style:width={props?.width}>
+	<div class="border-otodb-faint-content bg-otodb-faint-bg border">
 		<form target="_self" method="get" action="/work/search" class="flex w-full">
 			<input
 				type="text"
@@ -27,7 +38,7 @@
 			/>
 			<button
 				type="submit"
-				class="px-1 hover:bg-[var(--otodb-content-bg)]"
+				class="hover:bg-otodb-content-bg px-1"
 				style="border: none !important;"
 				aria-label="Search"
 			>
@@ -38,8 +49,8 @@
 		</form>
 	</div>
 
-	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2">
-		<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
+	<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
+		<div class="border-otodb-faint-content mb-2 border-b text-xs">
 			{m.clean_kind_stork_affirm()}
 		</div>
 		<ul class="list-none space-y-0.5">
@@ -52,10 +63,8 @@
 		</ul>
 	</div>
 	{#if user?.level >= UserLevel.ADMIN}
-		<div
-			class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2"
-		>
-			<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
+		<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
+			<div class="border-otodb-faint-content mb-2 border-b text-xs">
 				{m.mellow_pink_starfish_cuddle()}
 			</div>
 			<ul class="list-none space-y-0.5">
@@ -68,10 +77,8 @@
 		</div>
 	{/if}
 	{#if user?.level >= UserLevel.EDITOR}
-		<div
-			class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2"
-		>
-			<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
+		<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
+			<div class="border-otodb-faint-content mb-2 border-b text-xs">
 				{m.these_bold_gorilla_flip()}
 			</div>
 			<ul class="list-none space-y-0.5">
@@ -81,8 +88,8 @@
 			</ul>
 		</div>
 	{/if}
-	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2">
-		<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
+	<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
+		<div class="border-otodb-faint-content mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
 		</div>
 		<ul class="list-none space-y-0.5">
@@ -113,8 +120,8 @@
 			{/if}
 		</ul>
 	</div>
-	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2">
-		<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
+	<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
+		<div class="border-otodb-faint-content mb-2 border-b text-xs">
 			{m.white_helpful_lion_rise()}
 		</div>
 		<div class="flex justify-between">

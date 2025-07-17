@@ -58,6 +58,7 @@
 		"@terrastruct/d2": "^0.1.23",
 		"openapi-fetch": "^0.13.5",
 		"set-cookie-parser": "^2.7.1",
-		"svelte-exmarkdown": "^4.0.3"
+		"svelte-exmarkdown": "^4.0.3",
+		"svelte-svg-viewer": "^0.2.1"
 	}
 }

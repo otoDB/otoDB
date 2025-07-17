@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import CollapsibleText from './CollapsibleText.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Platform, Rating, WorkOrigin, WorkStatus } from '$lib/enums';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -173,6 +172,11 @@
 					src.work_status !== 0 ? 'bg-otodb-fainter-bg text-otodb-fainter-content' : ''
 				]}
 			>
+				{#if data.user}
+					<span class="float-right mt-2">
+						<RefreshButton source={src} />
+					</span>
+				{/if}
 				<div class="text-lg">
 					<strong>
 						<a
@@ -231,16 +235,14 @@
 							{/if}
 						</strong>
 					</div>
-					<div></div>
 				</div>
-				<div class="mt-2">
-					<CollapsibleText text={src.description}></CollapsibleText>
+				<div class="my-2">
+					<details>
+						<summary>{m.clear_lucky_peacock_pick()}</summary>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html src.description}
+					</details>
 				</div>
-				{#if data.user}
-					<div class="mt-2 flex justify-end">
-						<RefreshButton source={src} />
-					</div>
-				{/if}
 			</div>
 		{/each}
 	</div>

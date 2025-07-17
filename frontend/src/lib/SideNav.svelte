@@ -3,7 +3,18 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { UserLevel } from '$lib/enums';
 
-	let { user, stats } = $props();
+	let {
+		user,
+		stats,
+		...props
+	}: {
+		user?: {
+			username: string;
+			level: number;
+		};
+		stats: [number, number, number, number];
+		width?: string;
+	} = $props();
 </script>
 
 {#snippet link(pathname: string, title: string)}
@@ -16,7 +27,7 @@
 	</li>
 {/snippet}
 
-<nav class="flex w-full min-w-64 flex-col gap-y-2">
+<nav class="flex w-full min-w-64 flex-col gap-y-2" style:width={props?.width}>
 	<div class="border-otodb-faint-content bg-otodb-faint-bg border">
 		<form target="_self" method="get" action="/work/search" class="flex w-full">
 			<input

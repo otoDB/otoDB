@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/sveltekit';
 import '../src/app.css';
+import { setLocale } from '../src/lib/paraglide/runtime';
 
 const preview: Preview = {
 	parameters: {
@@ -9,7 +10,31 @@ const preview: Preview = {
 				date: /Date$/i
 			}
 		}
-	}
+	},
+	globalTypes: {
+		lang: {
+			description: 'Language',
+			toolbar: {
+				icon: 'globe',
+				dynamicTitle: true,
+				items: [
+					{ value: 'en', title: 'en' },
+					{ value: 'ja', title: 'ja' },
+					{ value: 'ko', title: 'ko' },
+					{ value: 'zh-cn', title: 'zh-cn' }
+				]
+			}
+		}
+	},
+	initialGlobals: {
+		lang: 'en'
+	},
+	decorators: [
+		(story, ctx) => {
+			setLocale(ctx.globals?.lang || ctx.globals?.lang);
+			return story();
+		}
+	]
 };
 
 export default preview;

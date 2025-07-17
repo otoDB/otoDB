@@ -1,6 +1,16 @@
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
+@theme {
+	--color-otodb-bg-color: var(--otodb-bg-color);
+	--color-otodb-content-color: var(--otodb-content-color);
+	--color-otodb-faint-bg: var(--otodb-faint-bg);
+	--color-otodb-fainter-bg: var(--otodb-fainter-bg);
+	--color-otodb-faint-content: var(--otodb-faint-content);
+	--color-otodb-fainter-content: var(--otodb-fainter-content);
+	--color-otodb-content-bg: var(--otodb-content-bg);
+}
+
 :root {
 	--otodb-bg-color: white;
 	--otodb-content-color: black;

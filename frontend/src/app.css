@@ -42,14 +42,11 @@
 }
 
 html {
-	scroll-behavior: smooth;
-	overflow-y: scroll;
 	color: var(--otodb-content-color);
 }
 
 body {
 	font-size: smaller;
-	background-color: var(--otodb-bg-color);
 }
 
 hr {

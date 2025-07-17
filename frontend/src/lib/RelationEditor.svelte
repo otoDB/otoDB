@@ -57,8 +57,8 @@
 	let new_item = $state(null);
 	const add_new_item = async () => {
 		if (new_item) {
-			relations.push({ swapped: false, item: new_item, relation: 0 });
-			await post_relation(relations.length - 1)();
+			relations.unshift({ swapped: false, item: new_item, relation: 0 });
+			await post_relation(0)();
 			new_item = null;
 		}
 	};

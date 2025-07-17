@@ -277,3 +277,18 @@ export const SourceConnectionParsers = {
 			/^https?:\/\/erogamescape\.dyndns\.org\/~ap2\/ero\/toukei_kaiseki\/game\.php\?game=(\d+)$/
 		)?.[1]
 };
+
+export const Role = {
+	AUDIO: 1,
+	1: 'Audio',
+	VISUALS: 2,
+	2: 'Visuals',
+	DIRECTOR: 4,
+	4: 'Director',
+	MUSIC: 8,
+	8: 'Music',
+	ARTWORK: 16,
+	16: 'Artwork',
+	THANKS: 32,
+	32: 'Special Thanks'
+};

@@ -5,6 +5,7 @@
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import TagsField from '$lib/TagsField.svelte';
+	import { Role } from '$lib/enums';
 
 	let { data } = $props();
 
@@ -32,6 +33,25 @@
 			tag.n_votes = original_tag.n_votes;
 			original_tag.user_score = new_vote;
 			original_tag.score = tag.score;
+		}
+	};
+
+	const toggle_creator_role = async (tag_slug: string, role_value: number) => {
+		const tag = tags.find((t) => t.slug === tag_slug);
+		if (!tag || tag.category !== 4) return; // Creator tags only
+
+		const current_roles = tag.creator_roles || [];
+		const new_roles = current_roles.includes(role_value)
+			? current_roles.filter((r: number) => r !== role_value)
+			: [...current_roles, role_value];
+
+		const response = await client.POST('/api/work/creator_roles', {
+			fetch,
+			body: { work_id: +data.id, tag_slug, creator_roles: new_roles }
+		});
+
+		if (response.response.ok) {
+			tag.creator_roles = new_roles;
 		}
 	};
 
@@ -63,7 +83,8 @@
 			<tr
 				><th>{m.empty_legal_chicken_taste()}</th><th>{m.brave_tiny_meerkat_engage()}</th><th
 					>{m.sunny_deft_puffin_scoop()}</th
-				><th>{m.acidic_brave_halibut_heart()}</th></tr
+				><th>{m.acidic_brave_halibut_heart()}</th>
+				<th>{m.broad_wide_lemming_hint()}</th></tr
 			>
 		</thead><tbody>
 			{#each tags as tag, i (i)}
@@ -100,6 +121,24 @@
 							/>
 						{:else}{m.simple_less_marlin_enchant()}{/if}</td
 					>
+					<td>
+						{#if tag.category === 4}
+							<div>
+								{#each Object.keys(Role).filter((e) => !isNaN(e)) as k, i (i)}
+									<label class="role-label">
+										<input
+											class="hidden"
+											type="checkbox"
+											checked={tag.creator_roles?.includes(+k) || false}
+											onchange={() => toggle_creator_role(tag.slug, +k)}
+										/>{Role[k]}
+									</label>
+								{/each}
+							</div>
+						{:else}
+							{m.simple_less_marlin_enchant()}
+						{/if}
+					</td>
 				</tr>
 			{/each}
 		</tbody>
@@ -122,5 +161,16 @@
 		&[data-checked='true'] {
 			background-color: var(--otodb-faint-content);
 		}
+	}
+	label.role-label {
+		padding: 0 0.3rem;
+		margin: 0.1rem;
+		border: 1px solid var(--otodb-content-color);
+		&:has(input:checked) {
+			background-color: var(--otodb-content-color);
+			color: var(--color-otodb-bg-color);
+		}
+		color: var(--otodb-content-color);
+		background-color: var(--otodb-bg-color);
 	}
 </style>

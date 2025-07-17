@@ -5,6 +5,3 @@ yarn.lock
 
 # Generated code
 src/lib/schema.d.ts
-
-# Fink has its own formatting
-messages/

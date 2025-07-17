@@ -112,3 +112,11 @@ class LanguageTypes(models.IntegerChoices):
     JAPANESE           = 2, "ja"
     SIMPLIFIED_CHINESE = 3, "zh-cn"
     KOREAN             = 4, "ko"
+
+class Role(models.IntegerChoices):
+	AUDIO = 1, "Audio"
+	VISUALS = 2, "Visuals"
+	DIRECTOR = 4, "Director"
+	MUSIC = 8, "Music"
+	ARTWORK = 16, "Artwork"
+	THANKS = 32, "Special Thanks"

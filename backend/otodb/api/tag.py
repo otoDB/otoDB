@@ -2,7 +2,7 @@ from typing import Annotated
 
 from django.db.models import Value
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404, redirect
 
 from pydantic import AfterValidator
 from ninja import Router, ModelSchema, Schema
@@ -25,9 +25,11 @@ def search(request: HttpRequest, query: str, category: int | None = None):
         qs = qs.filter(category=category)
     return list(set([t.aliased_to if t.aliased_to else t for t in qs]))
 
-@tag_router.get('tag', response=TagWorkSchema)
+@tag_router.get('tag', response={ 200: TagWorkSchema, 300: str})
 def tag(request: HttpRequest, tag_slug: str):
-    tag = get_object_or_404(TagWork, slug=tag_slug, aliased_to__isnull=True)
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    if tag.aliased_to:
+        return 300, tag.aliased_to.slug
     return tag
 
 @tag_router.get('details', response=TagWorkDetailsSchema)
@@ -50,7 +52,7 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str):
     tags = get_list_or_404(TagWork, slug__in=from_tags)
     into = get_object_or_404(TagWork, slug=into_tag)
     assert(into.aliased_to is None)
-    
+
     TagWork.alias(tags, into)
     return
 
@@ -80,7 +82,7 @@ class TagInSchema(Schema):
 class SongInSchema(ModelSchema):
     class Meta:
         model = MediaSong
-        fields = ['title', 'bpm', 'author']
+        fields = ['title', 'bpm', 'variable_bpm', 'author']
 
 @tag_router.put('tag', auth=django_auth)
 @user_is_trusted
@@ -94,10 +96,12 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
         assert(song_payload.title)
         assert(song_payload.author)
         try:
+            print(song_payload)
             song = tag.mediasong
             song.title = song_payload.title
             song.bpm = song_payload.bpm
             song.author = song_payload.author
+            song.variable_bpm = song_payload.variable_bpm
             song.save()
         except MediaSong.DoesNotExist:
             tag.category = WorkTagCategory.SONG

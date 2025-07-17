@@ -42,7 +42,7 @@
 			bind:value={urls}
 			name="urls"
 			class="w-full"
-			placeholder="Enter URLs on separate lines..."
+			placeholder={m.close_any_racoon_cut()}
 		></textarea>
 		<input type="submit" />
 	</form>

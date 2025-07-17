@@ -23,7 +23,7 @@
 	<hr class="my-4" />
 
 	<div class="w-full">
-		<h2 class="mb-4 px-4 text-2xl">{m.fuzzy_chunky_niklas_peek()}</h2>
+		<h2 class="mb-4 text-xl">{m.fuzzy_chunky_niklas_peek()}</h2>
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.random as w, i (i)}
 				<WorkCard work={w} />
@@ -34,7 +34,7 @@
 	<hr class="my-4" />
 
 	<div class="w-full">
-		<h2 class="mb-4 px-4 text-2xl">{m.big_long_squirrel_kiss()}</h2>
+		<h2 class="mb-4 text-xl">{m.big_long_squirrel_kiss()}</h2>
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.recent as w, i (i)}
 				<WorkCard work={w} />

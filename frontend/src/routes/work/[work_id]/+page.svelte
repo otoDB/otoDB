@@ -173,7 +173,7 @@
 				]}
 			>
 				{#if data.user}
-					<span class="mt-2 float-right">
+					<span class="float-right mt-2">
 						<RefreshButton source={src} />
 					</span>
 				{/if}
@@ -237,7 +237,9 @@
 					</div>
 				</div>
 				<div class="my-2">
-					<details><summary>{m.clear_lucky_peacock_pick()}</summary>{@html src.description}</details>
+					<details>
+						<summary>{m.clear_lucky_peacock_pick()}</summary>{@html src.description}
+					</details>
 				</div>
 			</div>
 		{/each}

@@ -103,7 +103,11 @@
 							></td
 						>
 						<td class="whitespace-nowrap">{src.title}</td>
-						<td><details><summary>[{m.tough_early_sparrow_bask()}]</summary>{src.description}</details></td>
+						<td
+							><details>
+								<summary>[{m.tough_early_sparrow_bask()}]</summary>{src.description}
+							</details></td
+						>
 						<td>{Platform[src.platform]}</td>
 						<td class="whitespace-nowrap"
 							><select value={src.work_origin} onchange={updateStatus(src.id)}

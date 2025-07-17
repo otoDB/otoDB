@@ -19,6 +19,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	if (relations.length === 0) return;
 
 	const source = `direction: right
+	style: { fill: transparent }
     ${works
 		.map(
 			(w) => `${w.id}: "${w.title.replaceAll('"', '\\"')}" {

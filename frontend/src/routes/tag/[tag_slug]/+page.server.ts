@@ -48,6 +48,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 				if (relations.length === 0) return null;
 
 				const source = `direction: right
+	    style: { fill: transparent }
         ${songs
 			.map(
 				(s) => `${s.id}: "${s.title.replaceAll('"', '\\"')}" {

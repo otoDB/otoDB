@@ -20,6 +20,7 @@
 	import client from '$lib/api.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import { SVGViewer } from 'svelte-svg-viewer';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -198,8 +199,10 @@
 			</ul>
 		{/if}
 		{#if data.song_relation_svg}
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html data.song_relation_svg}
+			<SVGViewer maxScale={10} height="600px" width="100%" svgClass="fill-transparent">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html data.song_relation_svg}
+			</SVGViewer>
 		{/if}
 	</Section>
 {/if}

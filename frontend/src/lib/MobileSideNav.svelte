@@ -23,7 +23,7 @@
 	<li>
 		<a
 			href={pathname}
-			class="text-xl no-underline aria-[current=page]:text-otodb-fainter-content"
+			class="aria-[current=page]:text-otodb-fainter-content text-xl no-underline"
 			aria-current={page.url.pathname === pathname ? 'page' : undefined}
 			onclick={close}
 		>
@@ -35,10 +35,10 @@
 <nav
 	class={[
 		props.className,
-		'flex w-full flex-col gap-y-2 overflow-y-scroll bg-otodb-faint-bg px-8 py-16'
+		'bg-otodb-faint-bg flex w-full flex-col gap-y-2 overflow-y-scroll px-8 py-16'
 	]}
 >
-	<div class="mb-8 border border-otodb-faint-content bg-otodb-faint-bg">
+	<div class="border-otodb-faint-content bg-otodb-faint-bg mb-8 border">
 		<form target="_self" method="get" action="/work/search" class="flex w-full">
 			<input
 				type="text"
@@ -48,7 +48,7 @@
 			/>
 			<button
 				type="submit"
-				class="px-1 hover:bg-otodb-content-bg"
+				class="hover:bg-otodb-content-bg px-1"
 				style="border: none !important;"
 				aria-label="Search"
 				onclick={close}

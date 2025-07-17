@@ -65,7 +65,7 @@
 		>
 			<tbody>
 				{#each suggestions as v, i (i)}
-					<tr class="w bg-otodb-fainter-bg p-1 hover:bg-otodb-faint-bg">
+					<tr class="w bg-otodb-fainter-bg hover:bg-otodb-faint-bg p-1">
 						<td
 							><a
 								class="cursor-pointer"

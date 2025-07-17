@@ -7,7 +7,11 @@ import { getLocale } from '$lib/paraglide/runtime';
 import { Languages } from '$lib/enums';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
-	const { data, error: e, response } = await client.GET('/api/tag/tag', {
+	const {
+		data,
+		error: e,
+		response
+	} = await client.GET('/api/tag/tag', {
 		params: {
 			query: {
 				tag_slug: params.tag_slug!
@@ -16,8 +20,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		fetch
 	});
 
-	if (response.status === 300)
-		redirect(303, url.pathname.replace(params.tag_slug, e as string));
+	if (response.status === 300) redirect(303, url.pathname.replace(params.tag_slug, e as string));
 	else if (e) error(404, { message: 'Not found' });
 
 	const song_relations = data.song

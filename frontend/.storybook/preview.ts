@@ -1,6 +1,7 @@
 import type { Preview } from '@storybook/sveltekit';
 import '../src/app.css';
 import { setLocale } from '../src/lib/paraglide/runtime';
+import { withThemeByClassName } from '@storybook/addon-themes';
 
 const preview: Preview = {
 	parameters: {
@@ -33,7 +34,14 @@ const preview: Preview = {
 		(story, ctx) => {
 			setLocale(ctx.globals?.lang || ctx.globals?.lang);
 			return story();
-		}
+		},
+		withThemeByClassName({
+			themes: {
+				light: 'light',
+				dark: 'dark'
+			},
+			defaultTheme: 'dark'
+		})
 	]
 };
 

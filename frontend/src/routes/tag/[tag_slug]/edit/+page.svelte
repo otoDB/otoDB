@@ -147,6 +147,16 @@
 							/></td
 						></tr
 					>
+					<tr
+						><th><label for="song_variable_bpm">{m.tasty_male_tadpole_glow()}</label></th
+						><td
+							><input
+								type="checkbox"
+								name="song_variable_bpm"
+								checked={data.tag?.song?.variable_bpm ?? false}
+							/></td
+						></tr
+					>
 				</tbody>
 			</table>
 		{/if}
@@ -288,7 +298,7 @@
 			bind:value={urls}
 			name="urls"
 			class="w-full"
-			placeholder="Enter URLs on separate lines..."
+			placeholder={m.close_any_racoon_cut()}
 		></textarea>
 		<input type="submit" />
 	</form>

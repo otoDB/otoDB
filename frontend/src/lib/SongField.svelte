@@ -57,7 +57,7 @@
 	{/if}
 	{#if suggestions.length}
 		<table
-			class="absolute px-1"
+			class="absolute z-1 px-1"
 			use:clickOutside
 			onOutclick={() => {
 				suggestions = [];
@@ -65,7 +65,7 @@
 		>
 			<tbody>
 				{#each suggestions as v, i (i)}
-					<tr class="w bg-[var(--otodb-fainter-bg)] p-1 hover:bg-[var(--otodb-faint-bg)]">
+					<tr class="w bg-otodb-fainter-bg hover:bg-otodb-faint-bg p-1">
 						<td
 							><a
 								class="cursor-pointer"

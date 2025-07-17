@@ -2,7 +2,7 @@ from typing import List, Annotated
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, Avg, Count, Value
+from django.db.models import Q, Avg, Count, Value, OuterRef, Subquery
 
 from simple_history.utils import update_change_reason
 
@@ -148,6 +148,12 @@ def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
 @work_router.get('random', response=list[WorkSchema])
 def random(request: HttpRequest, n: int = 1):
     return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("?")[:n]
+
+@work_router.get('recent', response=list[WorkSchema])
+def recent(request: HttpRequest, n: int = 1):
+    return MediaWork.active_objects.annotate(
+        mod=Subquery(MediaWork.history.filter(id=OuterRef('id')).order_by('history_date').values('history_date')[:1])
+    ).order_by('-mod')[:n]
 
 class SlimWorkSchema(ModelSchema):
     id: int

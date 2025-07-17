@@ -29,14 +29,14 @@
 	<input type="text" oninput={debounce(search)} bind:value {...props} />
 	{#if suggestions.length}
 		<ul
-			class="absolute list-none"
+			class="absolute z-1 list-none"
 			use:clickOutside
 			onOutclick={() => {
 				suggestions = [];
 			}}
 		>
 			{#each suggestions as t, i (i)}
-				<li class="bg-[var(--otodb-fainter-bg)] px-2 py-1 hover:bg-[var(--otodb-faint-bg)]">
+				<li class="bg-otodb-fainter-bg hover:bg-otodb-faint-bg px-2 py-1">
 					<a
 						class="cursor-pointer"
 						href={null}

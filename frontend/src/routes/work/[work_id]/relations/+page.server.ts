@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	const source = `direction: right
     ${works
 		.map(
-			(w) => `${w.id}: "${w.title.replace('"', '\\"')}" {
+			(w) => `${w.id}: "${w.title.replaceAll('"', '\\"')}" {
              shape: image
              icon: ${w.thumbnail}
              link: ${`/work/${w.id}`}

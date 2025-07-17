@@ -23,5 +23,12 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# OpenAPI
+openapi.json
+
 # Paraglide
 src/lib/paraglide
+
+# Storybook
+*storybook.log
+storybook-static

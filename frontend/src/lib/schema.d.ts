@@ -246,6 +246,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent */
+        get: operations["otodb_api_work_recent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/relations": {
         parameters: {
             query?: never;
@@ -1036,6 +1053,11 @@ export interface components {
             title: string;
             /** Bpm */
             bpm: number;
+            /**
+             * Variable Bpm
+             * @default false
+             */
+            variable_bpm: boolean;
             /** Author */
             author: string;
         };
@@ -1395,6 +1417,11 @@ export interface components {
             title: string;
             /** Bpm */
             bpm: number;
+            /**
+             * Variable Bpm
+             * @default false
+             */
+            variable_bpm: boolean;
             /** Author */
             author: string;
         };
@@ -1870,6 +1897,28 @@ export interface operations {
         };
     };
     otodb_api_work_random: {
+        parameters: {
+            query?: {
+                n?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_work_recent: {
         parameters: {
             query?: {
                 n?: number;
@@ -2627,6 +2676,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TagWorkSchema"];
+                };
+            };
+            /** @description Multiple Choices */
+            300: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
                 };
             };
         };

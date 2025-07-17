@@ -13,11 +13,9 @@
 </script>
 
 {#if results.length < maxCount}
-	<button disabled={fetching}
-		class={[
-			'center mx-auto mt-5 block p-2',
-			{ 'text-otodb-fainter-content': fetching }
-		]}
+	<button
+		disabled={fetching}
+		class={['center mx-auto mt-5 block p-2', { 'text-otodb-fainter-content': fetching }]}
 		onclick={getNextBatch}>{m.red_pink_bear_play()}</button
 	>
 {/if}

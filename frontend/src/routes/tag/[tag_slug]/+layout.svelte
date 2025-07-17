@@ -10,7 +10,7 @@
 			name: data.display_name
 		})}</title
 	>
-    <meta property="og:title" content={data.display_name} />
+	<meta property="og:title" content={data.display_name} />
 	<meta name="twitter:title" content={data.display_name} />
 
 	<link rel="canonical" href={`https://otodb.net/tag/${data.tag.slug}`} />

@@ -10,7 +10,7 @@
 			name: data.list.name
 		})}</title
 	>
-    <meta property="og:title" content={data.list.name} />
+	<meta property="og:title" content={data.list.name} />
 	<meta name="twitter:title" content={data.list.name} />
 
 	<link rel="canonical" href={`https://otodb.net/list/${data.list.id}`} />

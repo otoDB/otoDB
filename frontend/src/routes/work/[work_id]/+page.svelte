@@ -171,7 +171,7 @@
 				class={[
 					'w-full border px-4 py-2',
 					src.work_status !== 0
-						? 'bg-[var(--otodb-fainter-bg)] text-[var(--otodb-fainter-content)]'
+						? 'bg-otodb-fainter-bg text-otodb-fainter-content'
 						: ''
 				]}
 			>
@@ -182,7 +182,7 @@
 							target="_blank"
 							rel="noopener noreferrer"
 							class={[
-								src.work_status !== 0 ? 'text-[var(--otodb-fainter-content)]' : ''
+								src.work_status !== 0 ? 'text-otodb-fainter-content' : ''
 							]}
 						>
 							{Platform[src.platform]}

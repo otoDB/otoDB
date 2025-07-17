@@ -10,14 +10,14 @@
 	<li>
 		<a
 			href={pathname}
-			class="no-underline aria-[current=page]:text-[var(--otodb-fainter-content)]"
+			class="aria-[current=page]:text-otodb-fainter-content no-underline"
 			aria-current={page.url.pathname === pathname ? 'page' : undefined}>{title}</a
 		>
 	</li>
 {/snippet}
 
 <nav class="flex w-full min-w-64 flex-col gap-y-2">
-	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)]">
+	<div class="border-otodb-faint-content border bg-[var(--otodb-faint-bg)]">
 		<form target="_self" method="get" action="/work/search" class="flex w-full">
 			<input
 				type="text"
@@ -27,7 +27,7 @@
 			/>
 			<button
 				type="submit"
-				class="px-1 hover:bg-[var(--otodb-content-bg)]"
+				class="hover:bg-otodb-content-bg px-1"
 				style="border: none !important;"
 				aria-label="Search"
 			>
@@ -38,7 +38,7 @@
 		</form>
 	</div>
 
-	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2">
+	<div class="border-otodb-faint-content border bg-[var(--otodb-faint-bg)] px-3 py-2">
 		<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
 			{m.clean_kind_stork_affirm()}
 		</div>
@@ -52,9 +52,7 @@
 		</ul>
 	</div>
 	{#if user?.level >= UserLevel.ADMIN}
-		<div
-			class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2"
-		>
+		<div class="border-otodb-faint-content border bg-[var(--otodb-faint-bg)] px-3 py-2">
 			<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
 				{m.mellow_pink_starfish_cuddle()}
 			</div>
@@ -68,9 +66,7 @@
 		</div>
 	{/if}
 	{#if user?.level >= UserLevel.EDITOR}
-		<div
-			class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2"
-		>
+		<div class="border-otodb-faint-content border bg-[var(--otodb-faint-bg)] px-3 py-2">
 			<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
 				{m.these_bold_gorilla_flip()}
 			</div>
@@ -81,7 +77,7 @@
 			</ul>
 		</div>
 	{/if}
-	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2">
+	<div class="border-otodb-faint-content border bg-[var(--otodb-faint-bg)] px-3 py-2">
 		<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
 		</div>
@@ -113,7 +109,7 @@
 			{/if}
 		</ul>
 	</div>
-	<div class="border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)] px-3 py-2">
+	<div class="border-otodb-faint-content border bg-[var(--otodb-faint-bg)] px-3 py-2">
 		<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
 			{m.white_helpful_lion_rise()}
 		</div>

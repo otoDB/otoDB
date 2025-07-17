@@ -58,7 +58,9 @@ ${nodes
 		<label>
 			Direction:
 			<select bind:value={direction}
-				><option value="LR">Horizontal</option><option value="TB">Vertical</option></select
+				><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
+					>{m.stout_jumpy_ox_feel()}</option
+				></select
 			>
 		</label>
 		{#each WorkRelationTypes as t, i}
@@ -68,7 +70,7 @@ ${nodes
 			</label>
 		{/each}
 		{#await svg}
-			Rendering...
+			{m.sunny_light_duck_surge()}
 		{:then s}
 			<SVGViewer
 				maxScale={90}

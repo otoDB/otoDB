@@ -48,7 +48,7 @@ class WorkSource(models.Model):
     class Meta:
         verbose_name = ("Media Source")
         verbose_name_plural = ("Media Sources")
-        ordering = ['-published_date']
+        ordering = ['work_status', 'work_origin', 'published_date']
 
     def refresh(self, use_cache=False):
         """

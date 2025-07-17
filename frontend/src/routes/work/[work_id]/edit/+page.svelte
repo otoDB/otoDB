@@ -4,7 +4,6 @@
 	import { enhance } from '$app/forms';
 	import type { PageProps } from '../$types';
 	import { Platform, Rating, WorkOrigin } from '$lib/enums';
-	import CollapsibleText from '../CollapsibleText.svelte';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -104,7 +103,7 @@
 							></td
 						>
 						<td class="whitespace-nowrap">{src.title}</td>
-						<td><CollapsibleText text={src.description}></CollapsibleText></td>
+						<td><details><summary>[{m.tough_early_sparrow_bask()}]</summary>{src.description}</details></td>
 						<td>{Platform[src.platform]}</td>
 						<td class="whitespace-nowrap"
 							><select value={src.work_origin} onchange={updateStatus(src.id)}

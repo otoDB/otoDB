@@ -137,7 +137,7 @@
 				</label>
 			{/each}
 		</div>
-		<div class="prose prose-neutral prose-sm dark:prose-invert">
+		<div class="prose prose-neutral prose-sm dark:prose-invert max-w-4xl">
 			{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])

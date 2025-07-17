@@ -59,6 +59,19 @@
 				'X-Access-Right-Key': accessRightKey
 			});
 
+			// Modify body to only request first output
+			if (init.body) {
+				try {
+					const bodyObj = JSON.parse(init.body);
+					if (Array.isArray(bodyObj.outputs) && bodyObj.outputs.length > 0) {
+						bodyObj.outputs = [bodyObj.outputs[0]];
+						init.body = JSON.stringify(bodyObj);
+					}
+				} catch (e) {
+					console.error("Error parsing request body for outputs:", e);
+				}
+			}
+
 			args[1] = init;
 		}
 

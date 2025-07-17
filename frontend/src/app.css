@@ -61,7 +61,6 @@ html {
 		@apply list-inside list-decimal;
 	}
 
-
 	hr {
 		width: 100%;
 		color: var(--otodb-content-color);

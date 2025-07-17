@@ -195,6 +195,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/creator_roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Update Creator Roles */
+        post: operations["otodb_api_work_update_creator_roles"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/toggle_sample": {
         parameters: {
             query?: never;
@@ -221,6 +238,23 @@ export interface paths {
         };
         /** Random */
         get: operations["otodb_api_work_random"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent */
+        get: operations["otodb_api_work_recent"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1019,6 +1053,11 @@ export interface components {
             title: string;
             /** Bpm */
             bpm: number;
+            /**
+             * Variable Bpm
+             * @default false
+             */
+            variable_bpm: boolean;
             /** Author */
             author: string;
         };
@@ -1131,6 +1170,8 @@ export interface components {
             user_score: number | null;
             /** Sample */
             sample: boolean;
+            /** Creator Roles */
+            creator_roles: number[];
         };
         /** TagWorkVoteSchema */
         TagWorkVoteSchema: {
@@ -1138,6 +1179,15 @@ export interface components {
             tag_slug: string;
             /** Score */
             score: number;
+        };
+        /** CreatorRolesUpdateSchema */
+        CreatorRolesUpdateSchema: {
+            /** Work Id */
+            work_id: number;
+            /** Tag Slug */
+            tag_slug: string;
+            /** Creator Roles */
+            creator_roles: number[];
         };
         /** RelationSchema */
         RelationSchema: {
@@ -1367,6 +1417,11 @@ export interface components {
             title: string;
             /** Bpm */
             bpm: number;
+            /**
+             * Variable Bpm
+             * @default false
+             */
+            variable_bpm: boolean;
             /** Author */
             author: string;
         };
@@ -1798,6 +1853,28 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_update_creator_roles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatorRolesUpdateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_work_toggle_sample: {
         parameters: {
             query: {
@@ -1820,6 +1897,28 @@ export interface operations {
         };
     };
     otodb_api_work_random: {
+        parameters: {
+            query?: {
+                n?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_work_recent: {
         parameters: {
             query?: {
                 n?: number;
@@ -2577,6 +2676,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TagWorkSchema"];
+                };
+            };
+            /** @description Multiple Choices */
+            300: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
                 };
             };
         };

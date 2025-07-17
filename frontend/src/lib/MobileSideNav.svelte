@@ -23,7 +23,7 @@
 	<li>
 		<a
 			href={pathname}
-			class="text-xl no-underline aria-[current=page]:text-[var(--otodb-fainter-content)]"
+			class="aria-[current=page]:text-otodb-fainter-content text-xl no-underline"
 			aria-current={page.url.pathname === pathname ? 'page' : undefined}
 			onclick={close}
 		>
@@ -35,10 +35,10 @@
 <nav
 	class={[
 		props.className,
-		'flex w-full flex-col gap-y-2 overflow-y-scroll bg-[var(--otodb-faint-bg)] px-8 py-16'
+		'bg-otodb-faint-bg flex w-full flex-col gap-y-2 overflow-y-scroll px-8 py-16'
 	]}
 >
-	<div class="mb-8 border border-[var(--otodb-faint-content)] bg-[var(--otodb-faint-bg)]">
+	<div class="border-otodb-faint-content bg-otodb-faint-bg mb-8 border">
 		<form target="_self" method="get" action="/work/search" class="flex w-full">
 			<input
 				type="text"
@@ -48,7 +48,7 @@
 			/>
 			<button
 				type="submit"
-				class="px-1 hover:bg-[var(--otodb-content-bg)]"
+				class="hover:bg-otodb-content-bg px-1"
 				style="border: none !important;"
 				aria-label="Search"
 				onclick={close}
@@ -61,7 +61,7 @@
 	</div>
 
 	<div class="mb-8">
-		<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
+		<div class="border-otodb-faint-content mb-2 border-b text-xs">
 			{m.clean_kind_stork_affirm()}
 		</div>
 		<ul class="mt-4 list-none space-y-4">
@@ -75,7 +75,7 @@
 	</div>
 	{#if user?.level >= UserLevel.ADMIN}
 		<div class="mb-8">
-			<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
+			<div class="border-otodb-faint-content mb-2 border-b text-xs">
 				{m.mellow_pink_starfish_cuddle()}
 			</div>
 			<ul class="mt-4 list-none space-y-4">
@@ -89,7 +89,7 @@
 	{/if}
 	{#if user?.level >= UserLevel.EDITOR}
 		<div class="mb-8">
-			<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
+			<div class="border-otodb-faint-content mb-2 border-b text-xs">
 				{m.these_bold_gorilla_flip()}
 			</div>
 			<ul class="mt-4 list-none space-y-4">
@@ -100,7 +100,7 @@
 		</div>
 	{/if}
 	<div>
-		<div class="border-[var(--otodb-faint-content)2 mb-2 border-b text-xs">
+		<div class="border-otodb-faint-content mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
 		</div>
 		<ul class="mt-4 list-none space-y-4">

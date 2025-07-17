@@ -94,7 +94,7 @@
 							{#if entry.description}
 								<p>{entry.description}</p>
 							{:else}
-								<p class="text-[var(--otodb-fainter-content)]">
+								<p class="text-otodb-fainter-content">
 									[{m.simple_less_marlin_enchant()}]
 								</p>
 							{/if}

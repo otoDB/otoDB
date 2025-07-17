@@ -170,9 +170,7 @@
 			<div
 				class={[
 					'w-full border px-4 py-2',
-					src.work_status !== 0
-						? 'bg-[var(--otodb-fainter-bg)] text-[var(--otodb-fainter-content)]'
-						: ''
+					src.work_status !== 0 ? 'bg-otodb-fainter-bg text-otodb-fainter-content' : ''
 				]}
 			>
 				<div class="text-lg">
@@ -181,9 +179,7 @@
 							href={src.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class={[
-								src.work_status !== 0 ? 'text-[var(--otodb-fainter-content)]' : ''
-							]}
+							class={[src.work_status !== 0 ? 'text-otodb-fainter-content' : '']}
 						>
 							{Platform[src.platform]}
 							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}

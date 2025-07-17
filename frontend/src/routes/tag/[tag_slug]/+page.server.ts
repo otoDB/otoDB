@@ -50,7 +50,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 				const source = `direction: right
         ${songs
 			.map(
-				(s) => `${s.id}: ${s.title} {
+				(s) => `${s.id}: "${s.title.replaceAll('"', '\\"')}" {
                 link: ${`/tag/${s.work_tag}`}
                 ${+data.tag.song?.id === s.id ? 'style: { font-color: red }' : ''}
             }`

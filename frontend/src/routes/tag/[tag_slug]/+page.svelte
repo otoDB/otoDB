@@ -136,10 +136,13 @@
 				</label>
 			{/each}
 		</div>
-		{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])?.page_rendered}
-		{/if}
+		<div class="prose prose-neutral prose-sm dark:prose-invert">
+			{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])
+					?.page_rendered}
+			{/if}
+		</div>
 	{:else}
 		<p>{m.tame_dirty_goldfish_flow()}</p>
 	{/if}
@@ -156,7 +159,13 @@
 		<table>
 			<tbody>
 				<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.tag.song.title}</td></tr>
-				<tr><th>BPM</th><td>{data.tag.song.bpm}</td></tr>
+				<tr
+					><th>BPM</th><td
+						>{#if data.tag.song.variable_bpm}{m.glad_fresh_thrush_hack({
+								bpm: data.tag.song.bpm
+							})}{:else}{data.tag.song.bpm}{/if}</td
+					></tr
+				>
 				<tr><th>{m.crisp_red_canary_tickle()}</th><td>{data.tag.song.author}</td></tr>
 			</tbody>
 		</table>

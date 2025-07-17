@@ -2,7 +2,7 @@ from typing import List, Annotated
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, Avg, Count, Value
+from django.db.models import Q, Avg, Count, Value, OuterRef, Subquery
 
 from simple_history.utils import update_change_reason
 
@@ -13,7 +13,7 @@ from ninja.pagination import paginate
 
 from otodb.common import video_info, NFKC
 from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection, TagWork
-from otodb.models.enums import Platform, WorkOrigin, Rating
+from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory
 from otodb.account.models import Account
 
 from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
@@ -73,6 +73,7 @@ class TagWorkInstanceSchema(Schema):
     score: float
     user_score: int | None
     sample: bool
+    creator_roles: List[int]
 
 @work_router.get('tag_scores', response=List[TagWorkInstanceSchema], auth=django_auth)
 @user_is_trusted
@@ -84,7 +85,8 @@ def get_tag_scores(request: HttpRequest, work_id: int):
         'score': instance.avg_score,
         'n_votes': instance.n_votes,
         'user_score': user_votes.filter(tag_instance=instance).values_list('score', flat=True).first(),
-        'sample': instance.used_as_source
+        'sample': instance.used_as_source,
+        'creator_roles': instance.get_creator_roles(),
         } for instance in work.tagworkinstance_set.annotate(avg_score=Avg('tagworkvote__score', default=0), n_votes=Count('tagworkvote')).all()]
 
 class TagWorkVoteSchema(Schema):
@@ -119,6 +121,23 @@ def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchem
     return 200
 
 
+class CreatorRolesUpdateSchema(Schema):
+	work_id: int
+	tag_slug: str
+	creator_roles: List[int]
+
+@work_router.post('creator_roles', auth=django_auth)
+@user_is_trusted
+def update_creator_roles(request: HttpRequest, payload: CreatorRolesUpdateSchema):
+	instance = get_object_or_404(TagWorkInstance, work_id=payload.work_id, work_tag__slug=payload.tag_slug)
+
+	if instance.work_tag.category == WorkTagCategory.CREATOR:
+		instance.set_creator_roles(payload.creator_roles)
+		instance.save()
+
+	return 200
+
+
 @work_router.put('toggle_sample', auth=django_auth)
 @user_is_trusted
 def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
@@ -129,6 +148,12 @@ def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
 @work_router.get('random', response=list[WorkSchema])
 def random(request: HttpRequest, n: int = 1):
     return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("?")[:n]
+
+@work_router.get('recent', response=list[WorkSchema])
+def recent(request: HttpRequest, n: int = 1):
+    return MediaWork.active_objects.annotate(
+        mod=Subquery(MediaWork.history.filter(id=OuterRef('id')).order_by('history_date').values('history_date')[:1])
+    ).order_by('-mod')[:n]
 
 class SlimWorkSchema(ModelSchema):
     id: int

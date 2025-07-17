@@ -19,10 +19,26 @@
 			<a href="/post/2">{m.noble_fine_iguana_pull()}</a>
 		</li>
 	</ul>
-	<hr class="my-3" />
-	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
-		{#each data.random as w, i (i)}
-			<WorkCard work={w} />
-		{/each}
+
+	<hr class="my-4" />
+
+	<div class="w-full">
+		<h2 class="mb-4 text-xl">{m.fuzzy_chunky_niklas_peek()}</h2>
+		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
+			{#each data.random as w, i (i)}
+				<WorkCard work={w} />
+			{/each}
+		</div>
+	</div>
+
+	<hr class="my-4" />
+
+	<div class="w-full">
+		<h2 class="mb-4 text-xl">{m.big_long_squirrel_kiss()}</h2>
+		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
+			{#each data.recent as w, i (i)}
+				<WorkCard work={w} />
+			{/each}
+		</div>
 	</div>
 </Section>

@@ -35,6 +35,33 @@
     };
 
     window.fetch = async function(...args) {
+		if (
+			typeof args[0] === 'string' &&
+			args[0].match(/^https:\/\/nvapi\.nicovideo\.jp\/v1\/watch\/[^/]+\/access-rights\/hls/) &&
+			window.location.hostname === 'embed.nicovideo.jp'
+		) {
+			let init = args[1] || {};
+			let accessRightKey = '';
+
+			if (init.headers) {
+				let headersObj = init.headers instanceof Headers
+					? init.headers
+					: new Headers(init.headers);
+				accessRightKey = headersObj.get('X-Access-Right-Key') || '';
+			}
+
+			// Overwrite headers with only the required ones
+			init.headers = new Headers({
+				'X-Frontend-Id': '6',
+				'X-Frontend-Version': '0',
+				'X-Niconico-Language': 'ja-jp',
+				'X-Request-With': 'nicovideo',
+				'X-Access-Right-Key': accessRightKey
+			});
+
+			args[1] = init;
+		}
+
         if (window.otodb_video_id_map && typeof args[0] === 'string') {
 			const { old: oldId, new: newId } = window.otodb_video_id_map;
             const url = args[0];

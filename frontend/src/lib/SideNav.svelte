@@ -21,7 +21,7 @@
 	<li>
 		<a
 			href={pathname}
-			class="aria-[current=page]:text-otodb-fainter-content"
+			class="aria-[current=page]:text-otodb-fainter-content no-underline"
 			aria-current={page.url.pathname === pathname ? 'page' : undefined}>{title}</a
 		>
 	</li>
@@ -69,7 +69,9 @@
 			</div>
 			<ul class="list-none space-y-0.5">
 				<li>
-					<a href="/admin" data-sveltekit-reload>{m.simple_few_sheep_lend()}</a>
+					<a href="/admin" data-sveltekit-reload class="no-underline"
+						>{m.simple_few_sheep_lend()}</a
+					>
 				</li>
 			</ul>
 		</div>
@@ -108,9 +110,12 @@
 					aria-current={page.url.pathname === `/logout` ? 'page' : undefined}
 					class="mt-5"
 				>
-					<a href="/logout" data-sveltekit-preload-data="tap" data-sveltekit-reload
-						>{m.best_front_swallow_play()}
-					</a>
+					<a
+						href="/logout"
+						data-sveltekit-preload-data="tap"
+						data-sveltekit-reload
+						class="no-underline">{m.best_front_swallow_play()}</a
+					>
 				</li>
 			{/if}
 		</ul>

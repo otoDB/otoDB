@@ -179,10 +179,7 @@
 							href={src.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class={[
-								'hover:underline',
-								src.work_status !== 0 ? 'text-otodb-fainter-content' : ''
-							]}
+							class={[src.work_status !== 0 ? 'text-otodb-fainter-content' : '']}
 						>
 							{Platform[src.platform]}
 							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}

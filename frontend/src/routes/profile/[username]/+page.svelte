@@ -36,7 +36,6 @@
 						href={ProfileConnectionLink[s.site](s.content_id)}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="hover:underline"
 					>
 						{ProfileConnectionLink[s.site](s.content_id)}
 					</a>

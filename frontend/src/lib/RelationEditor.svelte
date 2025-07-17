@@ -80,7 +80,7 @@
 		{#if obj_type === 'work'}
 			<WorkCard work={relation.item} />
 		{:else if obj_type === 'song'}
-			<a href="/tag/{relation.item.work_tag}" class="underline">{relation.item.title}</a>
+			<a href="/tag/{relation.item.work_tag}">{relation.item.title}</a>
 		{/if}
 	{:else}
 		{m.stout_frail_warbler_support()}

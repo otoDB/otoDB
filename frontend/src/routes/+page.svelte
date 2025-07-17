@@ -16,7 +16,7 @@
 	<p>{m.silly_main_reindeer_chop()}</p>
 	<ul>
 		<li>
-			<a href="/post/2" class="underline">{m.noble_fine_iguana_pull()}</a>
+			<a href="/post/2">{m.noble_fine_iguana_pull()}</a>
 		</li>
 	</ul>
 

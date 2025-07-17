@@ -46,14 +46,8 @@
 		</thead><tbody>
 			{#each results as list, i (i)}
 				<tr>
-					<td>
-						<a href="/list/{list.id}" class="hover:underline">{list.name}</a>
-					</td>
-					<td>
-						<a href="/profile/{list.author.username}" class="hover:underline">
-							{list.author.username}
-						</a>
-					</td>
+					<td><a href="/list/{list.id}">{list.name}</a></td>
+					<td><a href="/profile/{list.author.username}">{list.author.username}</a></td>
 				</tr>
 			{/each}
 		</tbody>

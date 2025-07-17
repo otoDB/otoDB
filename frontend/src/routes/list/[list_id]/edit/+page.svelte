@@ -146,21 +146,17 @@
 								=
 							</div></td
 						><td class="w-56">
-							<a target="_blank" href="/work/{entry.work.id}">
-								<img
+							<a target="_blank" href="/work/{entry.work.id}"
+								><img
 									class="w-56"
 									src={entry.work.thumbnail}
 									alt={entry.work.title}
-								/>
-							</a>
+								/></a
+							>
 							<h3>
-								<a
-									target="_blank"
-									href="/work/{entry.work.id}"
-									class="hover:underline"
+								<a target="_blank" href="/work/{entry.work.id}"
+									>{entry.work.title}</a
 								>
-									{entry.work.title}
-								</a>
 							</h3>
 						</td><td
 							><textarea

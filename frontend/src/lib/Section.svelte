@@ -59,6 +59,9 @@
 					border-bottom: none;
 					pointer-events: none;
 				}
+				& > a {
+					text-decoration: none;
+				}
 			}
 		}
 	}

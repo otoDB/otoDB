@@ -52,9 +52,9 @@
 				if (oninput) oninput(self, null);
 			}}>{m.quick_happy_trout_amuse()}</button
 		>
-		<a target="_blank" href="/work/{value?.id}" class="underline">
-			<img class="w-56" src={value?.thumbnail} alt={value?.title} />
-		</a>
+		<a target="_blank" href="/work/{value?.id}"
+			><img class="w-56" src={value?.thumbnail} alt={value?.title} /></a
+		>
 	{/if}
 	{#if suggestions.length}
 		<table

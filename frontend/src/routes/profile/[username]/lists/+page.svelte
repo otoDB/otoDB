@@ -23,12 +23,12 @@
 	menuLinks={data.links}
 >
 	{#if data.user?.username === data.profile.username}
-		<a href="/list/new" class="hover:underline">{m.plane_inner_chipmunk_race()}</a>
-		<a href="/list/import" class="hover:underline">{m.proof_heroic_rat_cuddle()}</a>
+		<a href="/list/new">{m.plane_inner_chipmunk_race()}</a>
+		<a href="/list/import">{m.proof_heroic_rat_cuddle()}</a>
 	{/if}
 	<ul class="list-disc">
 		{#each data.lists as list, i (i)}
-			<li><a href="/list/{list.id}" class="hover:underline">{list.name}</a></li>
+			<li><a href="/list/{list.id}">{list.name}</a></li>
 		{:else}
 			<li>{m.quiet_stout_haddock_persist()}</li>
 		{/each}

@@ -81,7 +81,7 @@
 			{#each suggestions as t, i (i)}
 				<li class="bg-otodb-fainter-bg hover:bg-otodb-faint-bg px-2 py-1">
 					<a
-						class="cursor-pointer underline"
+						class="cursor-pointer"
 						href={null}
 						onclick={() => {
 							textarea.value = replaceWordAtPos(

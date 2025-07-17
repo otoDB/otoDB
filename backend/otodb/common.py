@@ -86,7 +86,7 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 reset_cookies()
 
 make_video_url = {
-    'youtube': lambda s: f'https://youtu.be/{s}',
+    'youtube': lambda s: f'https://youtube.com/watch?v={s}',
     'niconico': lambda s: f'https://nicovideo.jp/watch/{s}',
     'bilibili': lambda s: f'https://www.bilibili.com/video/{s}/'
     }

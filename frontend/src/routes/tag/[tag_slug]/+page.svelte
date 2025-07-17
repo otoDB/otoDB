@@ -108,10 +108,7 @@
 			{#if data.connections[1]}
 				{#each data.connections[1] as s, i (i)}
 					<li>
-						<ConnectionFavicon
-							type={ext_cat_types[s.site]}
-							class="inline size-4"
-						/>
+						<ConnectionFavicon type={ext_cat_types[s.site]} class="inline size-4" />
 						<a
 							href={ext_cat_links[s.site](s.content_id)}
 							target="_blank"

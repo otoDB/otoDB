@@ -57,8 +57,8 @@
 			}
 		});
 
-	const ext_cat_types = data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes;
-	const ext_cat_links = data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink;
+	const ext_cat_types = $derived(data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes);
+	const ext_cat_links = $derived(data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink);
 
 	// Song Relation
 	let songs = data.song_relations?.[1]?.map((o) => ({ visited: false, ...o }));

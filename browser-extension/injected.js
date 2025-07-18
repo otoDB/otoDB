@@ -21,6 +21,7 @@
 
     const originalJSONParse = JSON.parse;
     const originalFetch = window.fetch;
+    const originalXMLHttpRequest = window.XMLHttpRequest;
 
     JSON.parse = function(...args) {
         let result = originalJSONParse.call(JSON, ...args);
@@ -32,6 +33,28 @@
             }
         }
         return result;
+    };
+
+    window.XMLHttpRequest = function() {
+        const xhr = new originalXMLHttpRequest();
+        const originalOpen = xhr.open;
+        const originalSend = xhr.send;
+
+        let targetUrl = '';
+
+        xhr.open = function(method, url, ...args) {
+            targetUrl = url;
+            return originalOpen.call(this, method, url, ...args);
+        };
+
+        xhr.send = function(...args) {
+            if (targetUrl && targetUrl.includes('delivery.domand.nicovideo.jp')) {
+                this.withCredentials = true;
+            }
+            return originalSend.call(this, ...args);
+        };
+
+        return xhr;
     };
 
 	window.fetch = async function(...args) {

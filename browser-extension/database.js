@@ -53,12 +53,16 @@ const displayResults = (work_id, tags) => {
 
     mainEl.innerText = "View on otoDB";
     mainEl.href = `${OTODB_URL}/work/${work_id}`;
+	mainEl.target = "_blank";
+	mainEl.rel = "noopener noreferrer";
 
     // Add tag links
     tags.forEach((tag) => {
         let tagLink = document.createElement('A');
         tagLink.innerText = tag.name;
         tagLink.href = `${OTODB_URL}/tag/${tag.slug}`;
+		tagLink.target = "_blank";
+		tagLink.rel = "noopener noreferrer";
 		tagLink.classList.add(`tag-category-${tag.category}`);
         resultsEl.appendChild(tagLink);
     });

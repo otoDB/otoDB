@@ -240,10 +240,10 @@ ${nodes
 				<input type="number" bind:value={deg} min="1" />
 			</label>
 			<label>
-				Direction:
+				{m.fair_aware_salmon_twist()}
 				<select bind:value={direction}
-					><option value="LR">{m.stout_jumpy_ox_feel()}</option><option value="TB"
-						>{m.top_front_ray_treasure()}</option
+					><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
+						>{m.stout_jumpy_ox_feel()}</option
 					></select
 				>
 			</label>

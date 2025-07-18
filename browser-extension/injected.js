@@ -84,6 +84,8 @@
 			init.credentials = 'include';
 
 			args[1] = init;
+			// Bogus parameter to denote that this is a request from extension
+			args[0] += '&_=1';
 
 			return originalFetch(...args);
 		}

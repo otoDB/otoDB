@@ -7,7 +7,7 @@
     // Runs in page context rather than extension context
     function inject() {
         (async () => {
-            const workingVideoId = 'sm39840712'; // Known working embed
+            const workingVideoId = 'sm1097445'; // Known working embed
             const workingEmbedUrl = `https://embed.nicovideo.jp/watch/${workingVideoId}`;
             const oldVideoIdMatch = window.location.pathname.match(/\/watch\/(sm\d+)/);
 

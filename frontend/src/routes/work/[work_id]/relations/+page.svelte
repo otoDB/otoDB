@@ -25,7 +25,7 @@ ${nodes
     click ${w.id} "${`/work/${w.id}`}"`
 	)
 	.join('\n')}
-    ${links.map((r) => `${r.A_id} -->|${WorkRelationTypes[r.relation]()}| ${r.B_id}`).join('\n')}`
+    ${links.map((r) => `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${WorkRelationTypes[r.relation]()}| ${r.B_id}`).join('\n')}`
 		);
 
 	let svg = $derived.by(() => {
@@ -44,6 +44,33 @@ ${nodes
 		if (works)
 			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'neutral' });
 	});
+
+	let svgContainer = $state<HTMLDivElement | undefined>(undefined);
+
+	function svgMouseOver(event: MouseEvent) {
+		const target = event.target as HTMLElement;
+		const node = target.closest('[id^="flowchart-"]');
+
+		if (node && svgContainer) {
+			// Extract numeric ID from node ID (e.g. "flowchart-1-0" -> "1")
+			const nodeId = node.id.split('-')[1];
+			if (nodeId) {
+				const links = svgContainer.querySelectorAll(`[id*="_${nodeId}_"]`);
+				links.forEach((link) => {
+					link.classList.add('highlighted');
+				});
+			}
+		}
+	}
+
+	function svgMouseOut() {
+		if (svgContainer) {
+			const highlightedLinks = svgContainer.querySelectorAll('.highlighted');
+			highlightedLinks.forEach((link) => {
+				link.classList.remove('highlighted');
+			});
+		}
+	}
 </script>
 
 <Section
@@ -72,15 +99,17 @@ ${nodes
 		{#await svg}
 			{m.sunny_light_duck_surge()}
 		{:then s}
-			<SVGViewer
-				maxScale={90}
-				height="600px"
-				width="100%"
-				svgClass="fill-transparent dark:fill-black"
-			>
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html s.svg}
-			</SVGViewer>
+			<div bind:this={svgContainer} on:mouseover={svgMouseOver} on:mouseout={svgMouseOut}>
+				<SVGViewer
+					maxScale={90}
+					height="600px"
+					width="100%"
+					svgClass="fill-transparent dark:fill-black"
+				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html s.svg}
+				</SVGViewer>
+			</div>
 		{/await}
 	{:else}
 		<p>{m.left_watery_jellyfish_grip()}</p>
@@ -98,5 +127,9 @@ ${nodes
 		}
 		color: var(--otodb-content-color);
 		background-color: var(--otodb-bg-color);
+	}
+	:global(.highlighted) {
+		stroke: #f00 !important;
+		stroke-width: 2px !important;
 	}
 </style>

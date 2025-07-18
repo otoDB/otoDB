@@ -4,6 +4,10 @@
     "version": "1.0.0",
     "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
 
+    "background": {
+        "scripts": ["background.js"]
+    },
+
     "action": {
         "default_popup": "popup.html",
         "default_title": "otoDB"
@@ -43,6 +47,7 @@
 
     "permissions": [
       "declarativeNetRequestWithHostAccess",
+	  "cookies",
       "activeTab"
     ],
     "host_permissions": [

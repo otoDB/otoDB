@@ -31,7 +31,7 @@
 
 				const img = doc.querySelector('img[src*="//img.cdn.nimg.jp/s/nicovideo/thumbnails/"]');
 				if (img) {
-					img.src = `https://nicovideo.cdn.nimg.jp/thumbnails/${window.otodb_video_id_numeric}/${window.otodb_video_id_numeric}.M`;
+					img.src = `https://nicovideo.cdn.nimg.jp/thumbnails/${window.otodb_video_id_numeric}/${window.otodb_video_id_numeric}`;
 				}
 				const videoInfoEl = doc.getElementById('rootElementId')?.lastElementChild?.lastElementChild?.lastElementChild;
 				if (videoInfoEl && videoInfoEl.querySelector('.shareButton')) {

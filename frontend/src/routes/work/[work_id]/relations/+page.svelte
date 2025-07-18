@@ -63,7 +63,7 @@ ${nodes
 				></select
 			>
 		</label>
-		{#each WorkRelationTypes as t, i}
+		{#each WorkRelationTypes as t, i (i)}
 			<label class="type-label">
 				<input type="checkbox" class="hidden" bind:checked={allowed_types[i]} />
 				{t()}

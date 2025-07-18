@@ -81,7 +81,7 @@ ${nodes
 		);
 
 	let svg = $derived.by(() => {
-		if (!songs) return;
+		if (!songs?.length) return;
 		const [nodes, links] = mermaid_BFS(
 			structuredClone(songs),
 			structuredClone(data.song_relations![0]),
@@ -234,7 +234,7 @@ ${nodes
 				{/each}
 			</ul>
 		{/if}
-		{#if data.song_relations}
+		{#if songs?.length}
 			<label>
 				Distance:
 				<input type="number" bind:value={deg} min="1" />
@@ -242,12 +242,12 @@ ${nodes
 			<label>
 				Direction:
 				<select bind:value={direction}
-					><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
-						>{m.stout_jumpy_ox_feel()}</option
+					><option value="LR">{m.stout_jumpy_ox_feel()}</option><option value="TB"
+						>{m.top_front_ray_treasure()}</option
 					></select
 				>
 			</label>
-			{#each SongRelationTypes as t, i}
+			{#each SongRelationTypes as t, i (i)}
 				<label class="type-label">
 					<input type="checkbox" class="hidden" bind:checked={allowed_types[i]} />
 					{t()}

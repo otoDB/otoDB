@@ -59,7 +59,7 @@
 
 	window.fetch = async function(...args) {
 		if (
-			window.otodb_video_id_map &&
+			window.otodb_video_id &&
 			typeof args[0] === 'string' &&
 			args[0].match(/^https:\/\/nvapi\.nicovideo\.jp\/v1\/watch\/[^/]+\/access-rights\/hls/) &&
 			window.location.hostname === 'embed.nicovideo.jp'
@@ -90,14 +90,14 @@
 			return originalFetch(...args);
 		}
 
-        if (window.otodb_video_id_map && typeof args[0] === 'string') {
-			const { old: oldId, new: newId } = window.otodb_video_id_map;
+        if (window.otodb_video_id && typeof args[0] === 'string') {
+			const newVideoId = window.otodb_video_id;
             const url = args[0];
             const watchApiRegex = /https:\/\/www\.nicovideo\.jp\/api\/watch\/v3_guest\/.+/;
             const match = url.match(watchApiRegex);
 
             if (match) {
-                const embedUrl = `https://www.nicovideo.jp/watch/${oldId}`;
+                const embedUrl = `https://www.nicovideo.jp/watch/${newVideoId}`;
                 try {
 					const embedResponse = await originalFetch(embedUrl, ...args.slice(1));
                     if (!embedResponse.ok) {

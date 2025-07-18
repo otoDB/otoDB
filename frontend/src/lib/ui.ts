@@ -34,12 +34,12 @@ export const isSVO = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'en' || la
 export const isSOV = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'ko' || lang === 'ja';
 
 export const mermaid_BFS = (ns, ls, start: number, distance: number, allowed_types: boolean[]) => {
-	let nodes = structuredClone(ns),
+	const nodes = structuredClone(ns),
 		links = structuredClone(ls);
 	let queue = [start];
 	for (let i = 0; i <= distance; i++) {
-		let next_queue = [];
-		for (let n of queue) {
+		const next_queue = [];
+		for (const n of queue) {
 			nodes.find((nn) => nn.id === n)!.visited = true;
 			next_queue.push(
 				...[

@@ -7,36 +7,37 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 
 	const batch_size = 20;
 
-	const [{ data: details }, { data: works }, { data: connections }] = await Promise.all([
-		client.GET('/api/tag/details', {
-			fetch,
-			params: {
-				query: {
-					tag_slug: params.tag_slug
+	const [{ data: details }, { data: works }, { data: connections }, comments] = await Promise.all(
+		[
+			client.GET('/api/tag/details', {
+				fetch,
+				params: {
+					query: {
+						tag_slug: params.tag_slug
+					}
 				}
-			}
-		}),
-		client.GET('/api/tag/works', {
-			fetch,
-			params: {
-				query: {
-					tag_slug: params.tag_slug,
-					limit: batch_size,
-					offset: 0
+			}),
+			client.GET('/api/tag/works', {
+				fetch,
+				params: {
+					query: {
+						tag_slug: params.tag_slug,
+						limit: batch_size,
+						offset: 0
+					}
 				}
-			}
-		}),
-		client.GET('/api/tag/connection', {
-			fetch,
-			params: {
-				query: {
-					tag_slug: params.tag_slug
+			}),
+			client.GET('/api/tag/connection', {
+				fetch,
+				params: {
+					query: {
+						tag_slug: params.tag_slug
+					}
 				}
-			}
-		})
-	]);
-
-	const comments = await commentClient.GET('tagwork', data.tag.id, fetch);
+			}),
+			commentClient.GET('tagwork', data.tag.id, fetch)
+		]
+	);
 
 	const song_relations = data.song_relations;
 

@@ -47,10 +47,10 @@ export const mermaid_BFS = (ns, ls, start: number, distance: number, allowed_typ
 						links
 							.filter(
 								(v) =>
+									allowed_types[v.relation] &&
 									(v.A_id === n || v.B_id === n) &&
 									(!nodes.find((w) => w.id === v.A_id).visited ||
-										!nodes.find((w) => w.id === v.B_id).visited) &&
-									allowed_types[v.relation]
+										!nodes.find((w) => w.id === v.B_id).visited)
 							)
 							.flatMap((v) => [v.A_id, v.B_id])
 					)
@@ -63,6 +63,7 @@ export const mermaid_BFS = (ns, ls, start: number, distance: number, allowed_typ
 		nodes.filter((v) => v.visited),
 		links.filter(
 			(v) =>
+				allowed_types[v.relation] &&
 				nodes.find((w) => w.id === v.A_id).visited &&
 				nodes.find((w) => w.id === v.B_id).visited
 		)

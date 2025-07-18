@@ -34,8 +34,9 @@
         return result;
     };
 
-    window.fetch = async function(...args) {
+	window.fetch = async function(...args) {
 		if (
+			window.otodb_video_id_map &&
 			typeof args[0] === 'string' &&
 			args[0].match(/^https:\/\/nvapi\.nicovideo\.jp\/v1\/watch\/[^/]+\/access-rights\/hls/) &&
 			window.location.hostname === 'embed.nicovideo.jp'
@@ -50,29 +51,18 @@
 				accessRightKey = headersObj.get('X-Access-Right-Key') || '';
 			}
 
-			// Overwrite headers with only the required ones
 			init.headers = new Headers({
 				'X-Frontend-Id': '6',
 				'X-Frontend-Version': '0',
 				'X-Niconico-Language': 'ja-jp',
+				'X-Access-Right-Key': accessRightKey,
 				'X-Request-With': 'nicovideo',
-				'X-Access-Right-Key': accessRightKey
 			});
-
-			// Modify body to only request first output
-			if (init.body) {
-				try {
-					const bodyObj = JSON.parse(init.body);
-					if (Array.isArray(bodyObj.outputs) && bodyObj.outputs.length > 0) {
-						bodyObj.outputs = [bodyObj.outputs[0]];
-						init.body = JSON.stringify(bodyObj);
-					}
-				} catch (e) {
-					console.error("Error parsing request body for outputs:", e);
-				}
-			}
+			init.credentials = 'include';
 
 			args[1] = init;
+
+			return originalFetch(...args);
 		}
 
         if (window.otodb_video_id_map && typeof args[0] === 'string') {

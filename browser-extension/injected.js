@@ -126,16 +126,6 @@
 
 				return originalFetch(...args);
             }
-
-            // if (
-            //     oldId
-            //     && newId
-            //     && oldId !== newId
-            //     && !url.startsWith('https://embed.nicovideo.jp/watch/')
-            //     && !url.startsWith('https://embed.nicovideo.jp/play/')
-            // ) {
-            //     args[0] = url.replace(new RegExp(newId, 'g'), oldId);
-            // }
         }
 
         const response = await originalFetch(...args);

@@ -4,6 +4,8 @@ import { PUBLIC_BACKEND_URL_INTERNAL, PUBLIC_BACKEND_URL_EXTERNAL } from '$env/s
 import { browser } from '$app/environment';
 import type { Cookies } from '@sveltejs/kit';
 import setCookie from 'set-cookie-parser';
+import { Languages } from './enums';
+import { getLocale } from './paraglide/runtime';
 
 const backend = browser ? PUBLIC_BACKEND_URL_EXTERNAL : PUBLIC_BACKEND_URL_INTERNAL;
 
@@ -98,3 +100,10 @@ export const commentClient = {
 			})
 		).json()
 };
+
+export const makeTagDisplayName = (name) => name.replaceAll('_', ' ');
+
+export const getTagDisplayName = (tag) =>
+	makeTagDisplayName(
+		tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.tag ?? tag.name
+	);

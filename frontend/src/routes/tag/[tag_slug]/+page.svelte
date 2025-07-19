@@ -17,7 +17,7 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import SongTag from '$lib/SongTag.svelte';
-	import client from '$lib/api.js';
+	import client, { getTagDisplayName, makeTagDisplayName } from '$lib/api.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import { SVGViewer } from 'svelte-svg-viewer';
@@ -26,19 +26,17 @@
 	import mermaid from 'mermaid';
 	import { mermaid_BFS } from '$lib/ui.js';
 	import { onMount } from 'svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
+
 	const aliases = $derived(
-		data.display_name === data.tag.name
-			? data.aliases?.map((a) => a.name)
-			: [
-					data.tag.name,
-					...(data.aliases
-						?.filter((a) => a.name !== data.display_name)
-						.map((a) => a.name) ?? [])
-				]
+		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])]
+			.map(makeTagDisplayName)
+			.filter((e) => e !== data.display_name)
 	);
+
 	let wikiView = $state(
 		Languages[data.wiki_page?.find(({ lang }) => lang === Languages[getLocale()])?.lang] ??
 			Languages[data.wiki_page?.at(0)?.lang] ??
@@ -57,8 +55,12 @@
 			}
 		});
 
-	const ext_cat_types = $derived(data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes);
-	const ext_cat_links = $derived(data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink);
+	const ext_cat_types = $derived(
+		data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes
+	);
+	const ext_cat_links = $derived(
+		data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink
+	);
 
 	// Song Relation
 	let songs = data.song_relations?.[1]?.map((o) => ({ visited: false, ...o }));
@@ -108,7 +110,7 @@ ${nodes
 	<div>
 		<span>{m.empty_legal_chicken_taste()}</span>
 		{#each data.tree as node, i (i)}
-			> <a href={node.slug}>{node.name}</a>&nbsp;
+			> <a href={node.slug}>{getTagDisplayName(node)}</a>&nbsp;
 		{/each}
 		>
 		<span>{data.display_name}</span>
@@ -125,7 +127,7 @@ ${nodes
 		<h3>
 			{m.mild_loud_shad_enchant({
 				type: m.tiny_sharp_lark_fall(),
-				name: aliases.join(', ')
+				name: aliases?.join(', ')
 			})}
 		</h3>
 	{/if}

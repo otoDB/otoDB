@@ -108,11 +108,12 @@ export const ProfileConnectionParsers = [
 	(link: string) =>
 		link.startsWith('http://') || link.startsWith('https://') ? link : undefined,
 	(link: string) => link.match(/^https?:\/\/www\.nicovideo\.jp\/user\/(\d+)\/?$/)?.[1],
-	(link: string) =>
-		link.match(/^https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?$/)?.[1],
+	(link: string) => link.match(/^https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?$/)?.[1],
 	(link: string) => link.match(/^https?:\/\/space\.bilibili\.com\/(\d+)\/?$/)?.[1],
 	(link: string) =>
-		link.match(/^https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?$/)?.[1],
+		link.match(
+			/^https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?$/
+		)?.[1],
 	(link: string) => link.match(/^https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)$/)?.[1]
 ];
 
@@ -211,8 +212,7 @@ export const TagWorkConnectionParsers = {
 		link.match(/^https?:\/\/otomad\.fandom\.com\/ja\/wiki\/([^/?#]+)\/?$/)?.[1],
 	20: (link: string) => link.match(/^https?:\/\/dic\.nicovideo\.jp\/a\/([^/?#]+)\/?$/)?.[1],
 	21: (link: string) => link.match(/^https?:\/\/dic\.pixiv\.net\/a\/([^/?#]+)\/?$/)?.[1],
-	22: (link: string) =>
-		link.match(/^https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)\/?$/)?.[1],
+	22: (link: string) => link.match(/^https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)\/?$/)?.[1],
 	23: (link: string) =>
 		link.match(/^https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)\/?$/)?.[1],
 	24: (link: string) => link.match(/^https?:\/\/knowyourmeme\.com\/memes\/([^/?#]+)\/?$/)?.[1]

@@ -59,10 +59,10 @@
 
 	window.fetch = async function(...args) {
 		if (
+			window.location.hostname === 'embed.nicovideo.jp' &&
 			window.otodb_video_id &&
 			typeof args[0] === 'string' &&
-			args[0].match(/^https:\/\/nvapi\.nicovideo\.jp\/v1\/watch\/[^/]+\/access-rights\/hls/) &&
-			window.location.hostname === 'embed.nicovideo.jp'
+			args[0].match(/^https:\/\/nvapi\.nicovideo\.jp\/v1\/watch\/[^/]+\/access-rights\/hls/)
 		) {
 			let init = args[1] || {};
 			let accessRightKey = '';
@@ -90,44 +90,42 @@
 			return originalFetch(...args);
 		}
 
-        if (window.otodb_video_id && typeof args[0] === 'string') {
-			const newVideoId = window.otodb_video_id;
-            const url = args[0];
-            const watchApiRegex = /https:\/\/www\.nicovideo\.jp\/api\/watch\/v3_guest\/.+/;
-            const match = url.match(watchApiRegex);
+        if (
+			window.location.hostname === 'embed.nicovideo.jp' &&
+			window.otodb_video_id &&
+			typeof args[0] === 'string' &&
+			args[0].match(/https:\/\/www\.nicovideo\.jp\/api\/watch\/v3_guest\/.+/)
+		) {
+			const embedUrl = `https://www.nicovideo.jp/watch/${window.otodb_video_id}`;
+			try {
+				const embedResponse = await originalFetch(embedUrl, ...args.slice(1));
+				if (!embedResponse.ok) {
+					return originalFetch(...args);
+				}
 
-            if (match) {
-                const embedUrl = `https://www.nicovideo.jp/watch/${newVideoId}`;
-                try {
-					const embedResponse = await originalFetch(embedUrl, ...args.slice(1));
-                    if (!embedResponse.ok) {
-						return originalFetch(...args);
-                    }
+				const embedHtml = await embedResponse.text();
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(embedHtml, 'text/html');
+				const metaTag = doc.querySelector('meta[name="server-response"]');
 
-                    const embedHtml = await embedResponse.text();
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(embedHtml, 'text/html');
-                    const metaTag = doc.querySelector('meta[name="server-response"]');
+				if (metaTag) {
+					const serverResponseJson = metaTag.getAttribute('content');
+					const responseData = originalJSONParse(serverResponseJson)?.data;
+					const data = {
+						meta: { status: 200 },
+						data: responseData.response
+					};
+					return new Response(JSON.stringify(data), {
+						status: 200,
+						statusText: 'OK',
+						headers: { 'Content-Type': 'application/json' }
+					});
+				}
+			} catch (e) {
+				console.error("Error fetching or parsing embed page:", e);
+			}
 
-                    if (metaTag) {
-                        const serverResponseJson = metaTag.getAttribute('content');
-						const responseData = originalJSONParse(serverResponseJson)?.data;
-						const data = {
-							meta: { status: 200 },
-							data: responseData.response
-						};
-						return new Response(JSON.stringify(data), {
-							status: 200,
-							statusText: 'OK',
-							headers: { 'Content-Type': 'application/json' }
-						});
-                    }
-                } catch (e) {
-                    console.error("Error fetching or parsing embed page:", e);
-                }
-
-				return originalFetch(...args);
-            }
+			return originalFetch(...args);
         }
 
         const response = await originalFetch(...args);

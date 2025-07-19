@@ -50,10 +50,10 @@ async function updateUserSessionRule() {
 			removeRuleIds,
 			addRules
 		});
-		console.debug('otoDB: DeclarativeNetRequest rules updated.');
+		console.debug('DeclarativeNetRequest rules updated.');
 
 	} catch (error) {
-		console.error('otoDB Error: Failed to update niconico cookie rules:', error);
+		console.error('Failed to update niconico cookie rules:', error);
 	}
 }
 

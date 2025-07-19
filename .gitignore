@@ -2,3 +2,4 @@
 .env
 Caddyfile
 docker-compose.dev.yml
+browser-extension/src/manifest.json

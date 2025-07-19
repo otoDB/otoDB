@@ -36,9 +36,8 @@ async function updateUserSessionRule() {
 					// Adding cookies likely causes the JWT token or some other auth mechanism to fail.
 					regexFilter: "^(https://nvapi\\.nicovideo\\.jp/.*&_\\=1$|https://(api|www|delivery\\.domand)\\.nicovideo\\.jp/.*$)",
 					requestDomains: [
-						'api.nicovideo.jp',
-						'nvapi.nicovideo.jp',
 						'www.nicovideo.jp',
+						'nvapi.nicovideo.jp',
 						'delivery.domand.nicovideo.jp'
 					],
 					resourceTypes: ['xmlhttprequest', 'media']

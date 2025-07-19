@@ -276,7 +276,7 @@ ${nodes
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<ul>
 			{#each data.tag.children as tag, i (i)}
-				<li><a href={tag.slug}>{tag.name}</a></li>
+				<li><WorkTag {tag} /></li>
 			{/each}
 		</ul>
 	</Section>

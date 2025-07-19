@@ -238,7 +238,7 @@ ${nodes
 		{/if}
 		{#if songs?.length}
 			<label>
-				Distance:
+				{m.just_grassy_mantis_slurp()}
 				<input type="number" bind:value={deg} min="1" />
 			</label>
 			<label>

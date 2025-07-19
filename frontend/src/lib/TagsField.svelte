@@ -8,6 +8,7 @@
 		value: string[];
 		class: string;
 		type: 'work' | 'song';
+		focusOnType?: boolean;
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
 
@@ -57,7 +58,19 @@
 		if (value) {
 			textarea.value = value.join(' ');
 		}
+
+		const autoFocus =  (e: KeyboardEvent) => {
+			if (props.focusOnType && textarea && /[a-zA-Z0-9]/.test(e.key)) {
+				textarea.focus();
+			}
+		}
+		addEventListener('keydown', autoFocus)
+
+		return(() => {
+			removeEventListener('keydown', autoFocus)
+		})
 	});
+
 </script>
 
 <span role="none">

@@ -26,7 +26,7 @@
 </svelte:head>
 
 <Section title={m.front_maroon_hamster_urge()}>
-	<TagsField type="work" class="w-full" bind:value={tags} />
+	<TagsField type="work" class="w-full" focusOnType bind:value={tags} />
 	{#if tags.length}
 		<form onsubmit={submit}>
 			{#if isSVO(getLocale())}

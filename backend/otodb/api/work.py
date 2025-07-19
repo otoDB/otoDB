@@ -239,7 +239,7 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
 
 @work_router.post('source', auth=django_auth, response={200: int | None, 400: Error, 409: Error})
 @user_is_trusted
-def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_id: int | None = None):
+def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, rating: int = 0, work_id: int | None = None):
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
     if src.media is not None:
         return 409, {'message': "Conflict, a work with this source already exists."}
@@ -251,7 +251,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, work_
         if work_id:
             work = get_object_or_404(MediaWork.active_objects, id=work_id)
         else:
-            work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
+            work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail, rating=rating)
         work.tags.add(*info.get('tags', []))
         src.media = work
         src.save()

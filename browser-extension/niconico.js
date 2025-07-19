@@ -251,8 +251,6 @@
             contentBox.appendChild(titleP);
             contentBox.appendChild(wrap);
             contentBox.appendChild(itemData);
-
-			console.debug(`Replaced sensitive item with videoId: ${rssItem.videoId}, title: ${rssItem.title}`);
         }
 
         return sensitiveItemEl;

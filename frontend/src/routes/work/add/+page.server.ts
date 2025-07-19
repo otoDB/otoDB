@@ -63,8 +63,11 @@ export const actions = {
 				message: m.careful_lost_jaguar_dart()
 			});
 
+		// New source to existing work flow
 		if (work && !isNaN(+work)) redirect(303, `/work/${+work}`);
-		if (work_id) redirect(303, `/work/${work_id}`);
+
+		// New source to new work flow
+		if (work_id) redirect(303, `/work/${work_id}/tags`);
 		else redirect(303, `/profile/${locals.user.username}/submissions`);
 	}
 } satisfies Actions;

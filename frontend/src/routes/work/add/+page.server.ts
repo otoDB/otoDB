@@ -10,6 +10,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 
 	const link = url.searchParams.get('url');
 	const work = url.searchParams.get('for_work');
+	const isNewWork = work === null;
 	let title = null;
 	if (work && !isNaN(+work)) {
 		const { data, error: e } = await client.GET('/api/work/work', {
@@ -25,7 +26,8 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 	}
 	return {
 		title,
-		link
+		link,
+		isNewWork
 	};
 };
 
@@ -33,7 +35,8 @@ export const actions = {
 	default: async ({ request, fetch, url, locals }) => {
 		const data = await request.formData();
 		const link = data.get('url') as string,
-			is_official = data.get('origin') === 'true';
+			is_official = data.get('origin') === 'true',
+			rating = data.get('rating');
 		const work = url.searchParams.get('for_work');
 
 		const {
@@ -43,7 +46,12 @@ export const actions = {
 		} = await client.POST('/api/work/source', {
 			fetch,
 			params: {
-				query: { url: link, is_reupload: !is_official, work_id: work ? +work : null }
+				query: {
+					url: link,
+					is_reupload: !is_official,
+					work_id: work ? +work : null,
+					rating: rating ? +rating : null
+				}
 			}
 		});
 

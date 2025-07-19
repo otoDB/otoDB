@@ -3,6 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
+	import { Rating } from '$lib/enums';
 
 	let { data, form }: PageProps = $props();
 </script>
@@ -52,6 +53,16 @@
 						></td
 					>
 				</tr>
+				{#if data.isNewWork}
+					<tr
+						><th><label for="rating">{m.good_dark_bumblebee_spur()}</label></th><td
+							><select name="rating">
+								{#each Rating as r, i (i)}<option value={i}>{r()}</option
+									>{/each}</select
+							></td
+						></tr
+					>
+				{/if}
 			</tbody>
 		</table>
 		<input type="submit" />

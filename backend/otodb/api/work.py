@@ -274,8 +274,10 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
     else:
         work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
 
+    # Add them first in case they don't exist
     work.tags.add(*info.get('tags', []))
-    work.tagworkinstance_set.filter(work_tag__in=info.get('tags', [])).update(instance_imported_from_source=True)
+    tags = TagWork.objects.filter(name__in=info.get('tags', []))
+    work.tagworkinstance_set.filter(work_tag__in=tags).update(instance_imported_from_source=True)
 
     src.media = work
     src.save()

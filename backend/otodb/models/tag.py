@@ -143,6 +143,15 @@ class TagWork(OtodbTagModel):
             q |= alias.tagworklangpreference_set.all()
         return q.distinct()
 
+    def can_be_deleted(self):
+        return not any([
+            self.works.exists(),
+            self.aliases.exists(),
+            self.wikipage_set.exists(),
+            self.tagworkconnection_set.exists(),
+            self.category != WorkTagCategory.GENERAL
+        ])
+
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
     tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)

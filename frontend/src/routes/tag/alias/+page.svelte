@@ -8,13 +8,14 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 
 	let tags = $state([]),
-		selected = $state('');
+		selected = $state(''),
+		del = $state(false);
 
 	const submit = async (e: SubmitEvent) => {
 		e.preventDefault();
 		const { error } = await client.POST('/api/tag/alias', {
 			fetch,
-			params: { query: { into_tag: selected } },
+			params: { query: { into_tag: selected, delete: del } },
 			body: tags
 		});
 		if (!error) goto(`/tag/${selected}`, { invalidateAll: true });
@@ -40,6 +41,14 @@
 			{#if isSOV(getLocale())}
 				{m.male_gross_angelfish_reap()}
 			{/if}
+
+			<label
+				>Behaviour: <select name="behaviour" bind:value={del}
+					><option value={false}>Keep tags as aliases</option><option value={true}
+						>Delete tags</option
+					></select
+				></label
+			>
 			<input type="submit" disabled={selected === ''} class="block" />
 		</form>
 	{/if}

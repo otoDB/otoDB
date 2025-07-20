@@ -49,7 +49,13 @@ def works(request: HttpRequest, tag_slug: str):
 @tag_router.post('alias', auth=django_auth)
 @user_is_trusted
 def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool):
-    tags = get_list_or_404(TagWork, slug__in=from_tags)
+    tags = []
+    for slug in from_tags:
+        try:
+            tags.append(TagWork.objects.get(slug=slug))
+        except TagWork.DoesNotExist:
+            tags.append(TagWork.objects.create(name=slug))      
+      
     into = get_object_or_404(TagWork, slug=into_tag)
     assert(into.aliased_to is None)
 

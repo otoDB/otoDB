@@ -7,7 +7,9 @@
 	import { isSOV, isSVO } from '$lib/ui';
 	import { getLocale } from '$lib/paraglide/runtime';
 
-	let tags = $state([]),
+	let { data } = $props();
+
+	let tags = $state(data.from),
 		selected = $state(''),
 		del = $state(false);
 

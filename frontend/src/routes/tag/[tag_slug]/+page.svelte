@@ -132,6 +132,10 @@ ${nodes
 		</h3>
 	{/if}
 
+	{#if data.tag.deprecated}
+		<h2>This tag has been deprecated. It will not be displayed under works.</h2>
+	{/if}
+
 	{#if data.connections}
 		<ul class="list-none">
 			{#each data.connections[0] as s, i (i)}

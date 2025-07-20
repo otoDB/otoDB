@@ -110,6 +110,7 @@ class TagWork(OtodbTagModel):
             self.name = name_cleaner(self.name)
         super().save(*args, **kwargs)
 
+    deprecated = models.BooleanField(default=False, null=False)
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')

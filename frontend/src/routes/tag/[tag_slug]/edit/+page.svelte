@@ -112,6 +112,16 @@
 						/></td
 					>
 				</tr>
+				<tr>
+					<th><label for="deprecated">Deprecated</label></th>
+					<td
+						><input
+							type="checkbox"
+							name="deprecated"
+							checked={form?.deprecated ?? data.tag.deprecated}
+						/></td
+					>
+				</tr>
 			</tbody>
 		</table>
 		{#if category === 2}

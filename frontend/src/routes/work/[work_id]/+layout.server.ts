@@ -7,7 +7,11 @@ import { userLevelCheck } from '$lib/route_guard';
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
 
-	const { data, error: e, response } = await client.GET('/api/work/work', {
+	const {
+		data,
+		error: e,
+		response
+	} = await client.GET('/api/work/work', {
 		params: {
 			query: {
 				work_id: +params.work_id

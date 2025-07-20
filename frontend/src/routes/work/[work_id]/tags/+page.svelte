@@ -77,6 +77,14 @@
 		callSavingToast(p);
 		await p;
 	};
+
+	const remove_tag = async (tag_slug: string) => {
+		await client.PUT('/api/work/remove_tag', {
+			fetch,
+			params: { query: { work_id: data.id, tag_slug } }
+		});
+		tags = tags.filter((tag) => tag.slug !== tag_slug);
+	};
 </script>
 
 <Section
@@ -89,7 +97,8 @@
 				><th>{m.empty_legal_chicken_taste()}</th><th>{m.brave_tiny_meerkat_engage()}</th><th
 					>{m.sunny_deft_puffin_scoop()}</th
 				><th>{m.acidic_brave_halibut_heart()}</th>
-				<th>{m.broad_wide_lemming_hint()}</th></tr
+				<th>{m.broad_wide_lemming_hint()}</th>
+				<th>{m.even_alert_grebe_taste()}</th></tr
 			>
 		</thead><tbody>
 			{#each tags as tag, i (i)}
@@ -143,6 +152,9 @@
 						{:else}
 							{m.simple_less_marlin_enchant()}
 						{/if}
+					</td>
+					<td>
+						<button onclick={() => remove_tag(tag.slug)}>X</button>
 					</td>
 				</tr>
 			{/each}

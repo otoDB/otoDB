@@ -48,12 +48,18 @@ def works(request: HttpRequest, tag_slug: str):
 
 @tag_router.post('alias', auth=django_auth)
 @user_is_trusted
-def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str):
+def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool):
     tags = get_list_or_404(TagWork, slug__in=from_tags)
     into = get_object_or_404(TagWork, slug=into_tag)
     assert(into.aliased_to is None)
 
     TagWork.alias(tags, into)
+    if delete:
+        for tag in tags:
+            tag.aliased_to = None
+            tag.save()
+            if tag.can_be_deleted():
+                tag.delete()
     return
 
 @tag_router.delete('alias', auth=django_auth)

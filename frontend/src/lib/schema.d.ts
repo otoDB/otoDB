@@ -1105,6 +1105,11 @@ export interface components {
              * @default 0
              */
             category: number;
+            /**
+             * Deprecated
+             * @default false
+             */
+            deprecated: boolean;
         };
         /** Input */
         Input: {
@@ -1431,6 +1436,8 @@ export interface components {
             parent_slug: string | null;
             /** Category */
             category: number;
+            /** Deprecated */
+            deprecated: boolean;
         };
         /** TagWorkDetailsSchema */
         TagWorkDetailsSchema: {

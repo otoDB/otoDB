@@ -200,8 +200,8 @@
 	</Section>
 {/if}
 
-{#if data.details.aliases.length}
-	<Section title={m.alive_lofty_opossum_laugh()}>
+<Section title={m.alive_lofty_opossum_laugh()}>
+	{#if data.details.aliases.length}
 		<table>
 			<thead>
 				<tr
@@ -248,8 +248,9 @@
 				{/each}
 			</tbody>
 		</table>
-	</Section>
-{/if}
+	{/if}
+	<a href="/tag/alias?from={data.tag.slug}">Add aliases...</a>
+</Section>
 
 <Section title={m.curly_zesty_pelican_aim()}>
 	<div class="my-2">

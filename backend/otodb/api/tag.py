@@ -25,7 +25,7 @@ def search(request: HttpRequest, query: str, category: int | None = None):
         qs = qs.filter(category=category)
     return list(set([t.aliased_to if t.aliased_to else t for t in qs]))
 
-@tag_router.get('tag', response={ 200: TagWorkSchema, 300: str})
+@tag_router.get('tag', response={ 200: TagWorkSchema, 300: str })
 def tag(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     if tag.aliased_to:

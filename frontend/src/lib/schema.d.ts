@@ -1760,6 +1760,15 @@ export interface operations {
                     "application/json": components["schemas"]["WorkSchema"];
                 };
             };
+            /** @description Multiple Choices */
+            300: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
         };
     };
     otodb_api_work_update_work: {

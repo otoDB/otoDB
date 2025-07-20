@@ -55,9 +55,11 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
         qs = qs.order_by('priority')
     return qs
 
-@work_router.get('work', response=WorkSchema)
+@work_router.get('work', response={ 200: WorkSchema, 300: int })
 def work(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork.active_objects, id=work_id)
+    work = get_object_or_404(MediaWork.objects, id=work_id)
+    if work.moved_to:
+        return 300, work.moved_to.id
     return work
 
 @work_router.delete('work', auth=django_auth)

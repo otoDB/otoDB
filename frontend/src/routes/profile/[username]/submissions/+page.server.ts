@@ -16,6 +16,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	});
 	return {
 		submissions,
-		page
+		page,
+		batch_size
 	};
 };

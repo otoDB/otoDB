@@ -161,7 +161,7 @@
 		<Pager
 			n_count={data.submissions.count}
 			page={data.page}
-			page_size={data.submissions.items.length}
+			page_size={data.batch_size}
 		/>
 	{/if}
 </Section>

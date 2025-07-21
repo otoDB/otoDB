@@ -158,6 +158,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/tags_needed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tags Needed */
+        get: operations["otodb_api_work_tags_needed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/work": {
         parameters: {
             query?: never;
@@ -1541,8 +1558,8 @@ export interface components {
             submit_date: string;
             /** Parent Id */
             parent_id: number;
-            /** Thread Id */
-            thread_id: number;
+            /** Index */
+            index: number;
         };
     };
     responses: never;
@@ -1781,6 +1798,29 @@ export interface operations {
             query: {
                 query: string;
                 tags?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedWorkSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_work_tags_needed: {
+        parameters: {
+            query?: {
                 limit?: number;
                 offset?: number;
             };

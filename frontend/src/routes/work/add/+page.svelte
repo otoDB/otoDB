@@ -3,8 +3,15 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
+	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
+
+	$effect(() => {
+		if (form?.failed) {
+			callErrorToast(form.message);
+		}
+	});
 </script>
 
 <svelte:head>
@@ -28,7 +35,6 @@
 		<li>SoundCloud</li>
 	</ul>
 	<form method="POST" use:enhance>
-		{#if form?.failed}<p class="error">{form.message}</p>{/if}
 		<table>
 			<tbody>
 				<tr>

@@ -6,6 +6,7 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import TagsField from '$lib/TagsField.svelte';
 	import { Role } from '$lib/enums';
+	import { callSavingToast } from '$lib/toast.js';
 
 	let { data } = $props();
 
@@ -45,10 +46,12 @@
 			? current_roles.filter((r: number) => r !== role_value)
 			: [...current_roles, role_value];
 
-		const response = await client.POST('/api/work/creator_roles', {
+		const p = client.POST('/api/work/creator_roles', {
 			fetch,
 			body: { work_id: +data.id, tag_slug, creator_roles: new_roles }
 		});
+		callSavingToast(p);
+		const response = await p;
 
 		if (response.response.ok) {
 			tag.creator_roles = new_roles;
@@ -67,10 +70,12 @@
 	};
 
 	const toggle_sample = async (tag_slug: string) => {
-		await client.PUT('/api/work/toggle_sample', {
+		const p = client.PUT('/api/work/toggle_sample', {
 			fetch,
 			params: { query: { work_id: data.id, tag_slug } }
 		});
+		callSavingToast(p);
+		await p;
 	};
 </script>
 

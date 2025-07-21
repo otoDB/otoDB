@@ -2,15 +2,22 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { m } from '$lib/paraglide/messages.js';
+	import { toast } from 'svelte-sonner';
 
 	let { source, ...props } = $props();
 	let clicked = $state(false);
 	const action = async () => {
 		clicked = true;
-		const { error } = await client.POST('/api/work/refresh_source', {
+		const p = client.POST('/api/work/refresh_source', {
 			fetch,
 			params: { query: { source_id: source.id } }
 		});
+		toast.promise(p, {
+			loading: m.only_moving_cat_hint(),
+			success: m.sound_careful_falcon_grow(),
+			error: m.green_due_javelina_pop()
+		});
+		const { error } = await props;
 		if (!error) invalidateAll();
 	};
 </script>

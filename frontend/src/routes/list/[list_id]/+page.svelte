@@ -11,10 +11,10 @@
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import Pager from '$lib/Pager.svelte';
 
 	let { data }: PageProps = $props();
 
-	let entries = $derived(data.entries!.items);
 	let pending_items = $derived(data.pending_items!.items);
 
 	let current = $state(0);
@@ -25,7 +25,7 @@
 		client
 			.GET('/api/work/sources', {
 				fetch,
-				params: { query: { work_id: entries[current].work.id } }
+				params: { query: { work_id: data.entries.items[current].work.id } }
 			})
 			.then(({ data }) => {
 				sources = data;
@@ -53,7 +53,7 @@
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
 </Section>
 
-{#if entries.length && sources && sources.length && select >= 0 && select < sources.length}
+{#if data.entries.items.length && sources && sources.length && select >= 0 && select < sources.length}
 	<Section title={m.mealy_soft_myna_talk()}>
 		<ExternalEmbed src={sources[select]} />
 		<div class="my-2">
@@ -74,10 +74,10 @@
 	</Section>
 {/if}
 <Section title={m.bald_clear_marlin_grasp()}>
-	{#if entries.length}
+	{#if data.entries?.items.length}
 		<div class="flex w-full">
 			<ol class="mr-5 w-full list-outside list-decimal">
-				{#each entries as entry, i (i)}
+				{#each data.entries.items as entry, i (i)}
 					<li class="mx-5 w-full p-1">
 						<label class="grid grid-cols-[15rem_1fr] gap-5">
 							<input class="hidden" type="radio" value={i} bind:group={current} />
@@ -94,21 +94,13 @@
 				{/each}
 			</ol>
 		</div>
-		<LoadMoreButton
-			fetchNextBatch={() =>
-				client.GET('/api/list/entries', {
-					fetch,
-					params: {
-						query: {
-							list_id: data.list.id,
-							limit: data.batch_size,
-							offset: entries.length
-						}
-					}
-				})}
-			maxCount={data.entries!.count}
-			bind:results={entries}
-		/>
+		{#if data.entries?.count}
+			<Pager
+				n_count={data.entries.count}
+				page={data.page}
+				page_size={data.entries.items.length}
+			/>
+		{/if}
 	{:else}
 		<h3>{m.hour_flat_finch_zoom()}</h3>
 	{/if}

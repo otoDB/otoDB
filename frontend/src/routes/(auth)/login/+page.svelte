@@ -4,6 +4,16 @@
 	import type { PageProps } from './$types';
 	let { form }: PageProps = $props();
 	import { m } from '$lib/paraglide/messages.js';
+	import { callErrorToast } from '$lib/toast';
+
+	$effect(() => {
+		if (form?.missing) {
+			callErrorToast(m.tiny_round_shark_express());
+		}
+		if (form?.failed) {
+			callErrorToast(m.careful_lost_jaguar_dart());
+		}
+	});
 </script>
 
 <svelte:head>
@@ -12,8 +22,6 @@
 
 <Section title={m.inner_stale_anteater_walk()}>
 	<form method="POST" use:enhance>
-		{#if form?.missing}<p class="error">{m.tiny_round_shark_express()}</p>{/if}
-		{#if form?.failed}<p class="error">{m.careful_lost_jaguar_dart()}</p>{/if}
 		<table>
 			<tbody>
 				<tr>

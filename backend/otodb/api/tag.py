@@ -20,7 +20,7 @@ tag_router = Router()
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, category: int | None = None):
-    qs = TagWork.objects.filter(name__icontains=NFKC(query))
+    qs = TagWork.objects.filter(name__icontains=NFKC(query), deprecated=False)
     if category is not None and category != -1:
         qs = qs.filter(category=category)
     return list(set([t.aliased_to if t.aliased_to else t for t in qs]))
@@ -78,6 +78,7 @@ def del_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
 class TagInSchema(Schema):
     parent_slug: str | None
     category: int
+    deprecated: bool
 
 class SongInSchema(ModelSchema):
     class Meta:
@@ -96,7 +97,6 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
         assert(song_payload.title)
         assert(song_payload.author)
         try:
-            print(song_payload)
             song = tag.mediasong
             song.title = song_payload.title
             song.bpm = song_payload.bpm
@@ -111,6 +111,7 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
     elif tag.category == WorkTagCategory.SOURCE and payload.category != WorkTagCategory.SOURCE:
         TagWorkSourceConnection.objects.filter(tag=tag).delete()
 
+    tag.deprecated = payload.deprecated
     tag.category = payload.category
     if payload.parent_slug:
         parent = get_object_or_404(TagWork, slug=payload.parent_slug)

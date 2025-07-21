@@ -60,7 +60,7 @@ class TagWorkSchema(ModelSchema):
     lang_prefs: list[TagWorkLangPreferenceSchema]
     class Meta:
         model = TagWork
-        fields = ['name', 'slug', 'category']
+        fields = ['name', 'slug', 'category', 'deprecated']
 
 class WikiPageSchema(ModelSchema):
     class Meta:
@@ -99,6 +99,10 @@ class WorkSchema(ModelSchema):
     class Meta:
         model = MediaWork
         fields = ['title', 'description', 'rating', 'thumbnail', 'rating']
+    @field_validator("tags", mode="before", check_fields=False)
+    @classmethod
+    def deprecation(cls, value) -> str:
+        return [t for t in value if not t.deprecated]
 
 class ListItemSchema(ModelSchema):
     work: WorkSchema

@@ -9,6 +9,7 @@
 	import { LanguageNames } from '$lib/enums';
 	import ConnectionFavicon from '../lib/ConnectionFavicon.svelte';
 	import { background } from '$lib/stores/theme';
+	import { clickOutside } from '$lib/ui';
 
 	let { data, children } = $props();
 
@@ -58,14 +59,11 @@
 			<div class="white place-self-center text-2xl">☰</div>
 		</button>
 		<!-- Cover -->
-		<div
-			tabindex={-1}
-			role="button"
-			class={['fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen }]}
-			onclick={closeMobileNav}
-		></div>
+		<div class={['fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen }]}></div>
 		<!-- Menu -->
 		<div
+			use:clickOutside
+			onOutclick={closeMobileNav}
 			class={[
 				'fixed top-0 left-0 z-[2] h-full transition-transform duration-75',
 				{

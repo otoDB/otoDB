@@ -72,32 +72,6 @@
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		</ul>
 	</div>
-	{#if user?.level >= UserLevel.ADMIN}
-		<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
-			<div class="border-otodb-faint-content mb-2 border-b text-xs">
-				{m.mellow_pink_starfish_cuddle()}
-			</div>
-			<ul class="list-none space-y-0.5">
-				<li>
-					<a href="/admin" data-sveltekit-reload class="no-underline"
-						>{m.simple_few_sheep_lend()}</a
-					>
-				</li>
-			</ul>
-		</div>
-	{/if}
-	{#if user?.level >= UserLevel.EDITOR}
-		<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
-			<div class="border-otodb-faint-content mb-2 border-b text-xs">
-				{m.these_bold_gorilla_flip()}
-			</div>
-			<ul class="list-none space-y-0.5">
-				{@render link('/tag/alias', m.front_maroon_hamster_urge())}
-				{@render link('/work/merge', m.heroic_same_wasp_conquer())}
-				{@render link('/work/unbound', m.tense_small_firefox_lock())}
-			</ul>
-		</div>
-	{/if}
 	<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
 		<div class="border-otodb-faint-content mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
@@ -118,7 +92,7 @@
 				)}
 				<li
 					aria-current={page.url.pathname === `/logout` ? 'page' : undefined}
-					class="mt-5"
+					class="mt-4"
 				>
 					<a
 						href="/logout"
@@ -130,6 +104,32 @@
 			{/if}
 		</ul>
 	</div>
+	{#if user?.level >= UserLevel.EDITOR}
+		<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
+			<div class="border-otodb-faint-content mb-2 border-b text-xs">
+				{m.these_bold_gorilla_flip()}
+			</div>
+			<ul class="list-none space-y-0.5">
+				{@render link('/tag/alias', m.front_maroon_hamster_urge())}
+				{@render link('/work/merge', m.heroic_same_wasp_conquer())}
+				{@render link('/work/unbound', m.tense_small_firefox_lock())}
+			</ul>
+		</div>
+	{/if}
+	{#if user?.level >= UserLevel.ADMIN}
+		<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
+			<div class="border-otodb-faint-content mb-2 border-b text-xs">
+				{m.mellow_pink_starfish_cuddle()}
+			</div>
+			<ul class="list-none space-y-0.5">
+				<li>
+					<a href="/admin" data-sveltekit-reload class="no-underline"
+						>{m.simple_few_sheep_lend()}</a
+					>
+				</li>
+			</ul>
+		</div>
+	{/if}
 	<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
 		<div class="border-otodb-faint-content mb-2 border-b text-xs">
 			{m.white_helpful_lion_rise()}

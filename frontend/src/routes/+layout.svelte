@@ -146,7 +146,7 @@
 	}
 
 	.social-links a {
-		border-bottom: 1px dotted var(--otodb-content-color);
+		border-bottom: 1px dotted var(--otodb-color-content-primary);
 		text-decoration: none;
 		color: inherit;
 	}

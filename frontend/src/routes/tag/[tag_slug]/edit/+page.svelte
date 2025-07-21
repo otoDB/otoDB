@@ -320,21 +320,21 @@
 	label.wiki-lang-tab {
 		padding: 0.2rem 0.5rem;
 		display: inline-block;
-		background-color: var(--otodb-bg-color);
-		border: 1px solid var(--otodb-content-color);
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px solid var(--otodb-color-content-primary);
 		&:hover {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 		&:active {
-			background-color: var(--otodb-faint-bg);
+			background-color: var(--otodb-color-bg-faint);
 		}
 		& > input {
 			display: none;
 		}
 		&:has(> input:checked) {
-			background-color: var(--otodb-content-color);
-			border: 1px solid var(--otodb-bg-color);
-			color: var(--otodb-bg-color);
+			background-color: var(--otodb-color-content-primary);
+			border: 1px solid var(--otodb-color-bg-primary);
+			color: var(--otodb-color-bg-primary);
 		}
 	}
 </style>

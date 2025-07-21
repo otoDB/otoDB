@@ -23,14 +23,14 @@
 	<li>
 		<a
 			href={pathname}
-			class="aria-[current=page]:text-otodb-fainter-content no-underline"
+			class="aria-[current=page]:text-otodb-content-fainter no-underline"
 			aria-current={page.url.pathname === pathname ? 'page' : undefined}>{title}</a
 		>
 	</li>
 {/snippet}
 
 <nav class="flex w-full min-w-64 flex-col gap-y-2" style:width={props?.width}>
-	<div class="border-otodb-faint-content bg-otodb-faint-bg border">
+	<div class="border-otodb-content-faint bg-otodb-bg-faint border">
 		<form target="_self" method="get" action="/{search_type}/search" class="flex w-full">
 			<select bind:value={search_type} class="pl-1">
 				<option value="work">{m.grand_merry_fly_succeed()}</option>
@@ -45,7 +45,7 @@
 			/>
 			<button
 				type="submit"
-				class="hover:bg-otodb-content-bg px-1"
+				class="hover:bg-otodb-content-primarypx-1"
 				style="border: none !important;"
 				aria-label="Search"
 			>
@@ -56,8 +56,8 @@
 		</form>
 	</div>
 
-	<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
-		<div class="border-otodb-faint-content mb-2 border-b text-xs">
+	<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.clean_kind_stork_affirm()}
 		</div>
 		<ul class="list-none space-y-0.5">
@@ -73,8 +73,8 @@
 		</ul>
 	</div>
 	{#if user?.level >= UserLevel.ADMIN}
-		<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
-			<div class="border-otodb-faint-content mb-2 border-b text-xs">
+		<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+			<div class="border-otodb-content-faint mb-2 border-b text-xs">
 				{m.mellow_pink_starfish_cuddle()}
 			</div>
 			<ul class="list-none space-y-0.5">
@@ -87,8 +87,8 @@
 		</div>
 	{/if}
 	{#if user?.level >= UserLevel.EDITOR}
-		<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
-			<div class="border-otodb-faint-content mb-2 border-b text-xs">
+		<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+			<div class="border-otodb-content-faint mb-2 border-b text-xs">
 				{m.these_bold_gorilla_flip()}
 			</div>
 			<ul class="list-none space-y-0.5">
@@ -98,8 +98,8 @@
 			</ul>
 		</div>
 	{/if}
-	<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
-		<div class="border-otodb-faint-content mb-2 border-b text-xs">
+	<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
 		</div>
 		<ul class="list-none space-y-0.5">
@@ -130,8 +130,8 @@
 			{/if}
 		</ul>
 	</div>
-	<div class="border-otodb-faint-content bg-otodb-faint-bg border px-3 py-2">
-		<div class="border-otodb-faint-content mb-2 border-b text-xs">
+	<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.white_helpful_lion_rise()}
 		</div>
 		<div class="flex justify-between">

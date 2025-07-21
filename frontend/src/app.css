@@ -2,56 +2,59 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-	--color-otodb-bg-color: var(--otodb-bg-color);
-	--color-otodb-content-color: var(--otodb-content-color);
-	--color-otodb-faint-bg: var(--otodb-faint-bg);
-	--color-otodb-fainter-bg: var(--otodb-fainter-bg);
-	--color-otodb-faint-content: var(--otodb-faint-content);
-	--color-otodb-fainter-content: var(--otodb-fainter-content);
-	--color-otodb-content-bg: var(--otodb-content-bg);
+	--color-otodb-bg-primary: var(--otodb-color-bg-primary);
+	--color-otodb-bg-faint: var(--otodb-color-bg-faint);
+	--color-otodb-bg-fainter: var(--otodb-color-bg-fainter);
+
+	--color-otodb-content-primary: var(--otodb-color-content-primary);
+	--color-otodb-content-faint: var(--otodb-color-content-faint);
+	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
 :root {
-	--otodb-bg-color: white;
-	--otodb-content-color: black;
-	--otodb-faint-bg: color-mix(
+	--otodb-color-bg-primary: white;
+	--otodb-color-content-primary: black;
+
+	--otodb-color-bg-faint: color-mix(
 		in hsl,
-		color-mix(in hsl, var(--otodb-bg-color) 90%, var(--otodb-content-color)) 80%,
+		color-mix(in hsl, var(--otodb-color-bg-primary) 90%, var(--otodb-color-content-primary)) 80%,
 		transparent
 	);
-	--otodb-fainter-bg: color-mix(in hsl, var(--otodb-bg-color) 80%, var(--otodb-content-color));
-	--otodb-faint-content: color-mix(
+	--otodb-color-bg-fainter: color-mix(
 		in hsl,
-		var(--otodb-bg-color) 12.5%,
-		var(--otodb-content-color)
+		var(--otodb-color-bg-primary) 80%,
+		var(--otodb-color-content-primary)
 	);
-	--otodb-fainter-content: color-mix(
+
+	--otodb-color-content-faint: color-mix(
 		in hsl,
-		var(--otodb-bg-color) 30%,
-		var(--otodb-content-color)
+		var(--otodb-color-bg-primary) 12.5%,
+		var(--otodb-color-content-primary)
 	);
-	--otodb-ins: color-mix(in hsl, var(--otodb-faint-bg) 35%, green);
-	--otodb-del: color-mix(in hsl, var(--otodb-faint-bg) 35%, red);
+	--otodb-color-content-fainter: color-mix(
+		in hsl,
+		var(--otodb-color-bg-primary) 30%,
+		var(--otodb-color-content-primary)
+	);
+
+	--otodb-color-ins: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, green);
+	--otodb-color-del: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, red);
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--otodb-bg-color: black;
-		--otodb-content-color: white;
+		--otodb-color-bg-primary: black;
+		--otodb-color-content-primary: white;
 	}
-}
-
-html {
-	color: var(--otodb-content-color);
 }
 
 @layer base {
 	thead {
-		background-color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-bg-primary);
 	}
 
 	tbody > tr:nth-of-type(odd) {
-		background-color: var(--otodb-fainter-bg);
+		background-color: var(--otodb-color-bg-fainter);
 	}
 
 	ul {
@@ -67,13 +70,13 @@ html {
 
 	hr {
 		width: 100%;
-		color: var(--otodb-content-color);
+		color: var(--otodb-color-content-primary);
 	}
 
 	th,
 	td {
 		padding: 0.1rem 0.2rem;
-		border: 1px var(--otodb-faint-bg) solid;
+		border: 1px var(--otodb-color-bg-faint) solid;
 	}
 
 	input[type='text'],
@@ -89,8 +92,8 @@ html {
 	input[type='url'],
 	input[type='week'],
 	textarea {
-		border: 1px solid color-mix(in hsl, var(--otodb-fainter-content) 60%, transparent);
-		background-color: color-mix(in hsl, var(--otodb-bg-color) 80%, transparent);
+		border: 1px solid color-mix(in hsl, var(--otodb-color-content-fainter) 60%, transparent);
+		background-color: color-mix(in hsl, var(--otodb-color-bg-primary) 80%, transparent);
 	}
 
 	input[type='submit'],
@@ -100,24 +103,24 @@ html {
 	button {
 		border: 1px solid white;
 		outline: none;
-		background-color: var(--otodb-faint-bg);
+		background-color: var(--otodb-color-bg-faint);
 		&:disabled {
-			background-color: var(--otodb-bg-color) !important;
-			color: var(--otodb-fainter-content);
+			background-color: var(--otodb-color-bg-primary) !important;
+			color: var(--otodb-color-content-fainter);
 		}
 		&:hover {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 		&:active {
-			background-color: var(--otodb-bg-color);
+			background-color: var(--otodb-color-bg-primary);
 		}
 	}
 
 	ins {
-		background-color: var(--otodb-ins);
+		background-color: var(--otodb-color-ins);
 	}
 
 	del {
-		background-color: var(--otodb-del);
+		background-color: var(--otodb-color-del);
 	}
 }

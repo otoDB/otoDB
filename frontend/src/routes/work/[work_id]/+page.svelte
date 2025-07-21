@@ -169,7 +169,7 @@
 			<div
 				class={[
 					'w-full border px-4 py-2',
-					src.work_status !== 0 ? 'bg-otodb-fainter-bg text-otodb-fainter-content' : ''
+					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : ''
 				]}
 			>
 				{#if data.user}
@@ -183,7 +183,7 @@
 							href={src.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class={[src.work_status !== 0 ? 'text-otodb-fainter-content' : '']}
+							class={[src.work_status !== 0 ? 'text-otodb-content-fainter' : '']}
 						>
 							{Platform[src.platform]}
 							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
@@ -255,7 +255,7 @@
 <style>
 	#work-tags {
 		grid-column: 1 / span 2;
-		border-top: var(--otodb-faint-content) 1px solid;
+		border-top: var(--otodb-color-content-faint) 1px solid;
 		margin-top: 2rem;
 		padding-top: 1rem;
 		display: flex;
@@ -278,19 +278,19 @@
 	.cover_select {
 		padding: 0.2rem 0.5rem;
 		display: inline-block;
-		background-color: var(--otodb-bg-color);
-		border: 1px solid var(--otodb-content-color);
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px solid var(--otodb-color-content-primary);
 		text-decoration: none;
 		&:hover {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 		&:active {
-			background-color: var(--otodb-faint-bg);
+			background-color: var(--otodb-color-bg-faint);
 		}
 		&.selected {
-			background-color: var(--otodb-content-color);
-			border: 1px solid var(--otodb-bg-color);
-			color: var(--otodb-bg-color);
+			background-color: var(--otodb-color-content-primary);
+			border: 1px solid var(--otodb-color-bg-primary);
+			color: var(--otodb-color-bg-primary);
 		}
 	}
 </style>

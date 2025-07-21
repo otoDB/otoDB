@@ -5,10 +5,16 @@
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	import TagField from '$lib/TagField.svelte';
+	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
 
 	let category = $state(form?.category ?? data.tag?.category);
+	$effect(() => {
+		if (form?.failed) {
+			callErrorToast(m.green_due_javelina_pop());
+		}
+	});
 </script>
 
 <Section
@@ -16,7 +22,6 @@
 	menuLinks={data.links}
 >
 	<form method="POST" use:enhance action="?/edit">
-		{#if form?.failed}<p class="error">{m.green_due_javelina_pop()}</p>{/if}
 		<table>
 			<tbody>
 				<tr>

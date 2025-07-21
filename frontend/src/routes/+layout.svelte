@@ -59,9 +59,7 @@
 			<div class="white place-self-center text-2xl">☰</div>
 		</button>
 		<!-- Cover -->
-		<div
-			class={['fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen }]}
-		></div>
+		<div class={['fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen }]}></div>
 		<!-- Menu -->
 		<div
 			use:clickOutside

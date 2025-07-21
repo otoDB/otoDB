@@ -168,7 +168,7 @@
 			<Pager
 				n_count={data.entries.count}
 				page={data.page}
-				page_size={data.entries.items.length}
+				page_size={data.batch_size}
 			/>
 		{/if}
 	{:else}

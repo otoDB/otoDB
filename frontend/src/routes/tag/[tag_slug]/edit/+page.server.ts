@@ -54,7 +54,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 
 	return {
 		wiki_page,
-		parent_slug: details?.tree[0]?.slug,
+		parent_slug: details?.tree.at(-1)?.slug,
 		details,
 		connections,
 		song_connections

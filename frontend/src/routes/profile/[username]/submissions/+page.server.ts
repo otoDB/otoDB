@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			query: {
 				username: params.username,
 				limit: batch_size,
-				offset: page * batch_size
+				offset: (page - 1) * batch_size
 			}
 		}
 	});

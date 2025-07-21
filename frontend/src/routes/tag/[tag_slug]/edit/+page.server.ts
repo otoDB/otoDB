@@ -65,7 +65,8 @@ export const actions = {
 	edit: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 		const category = data.get('category') as string,
-			parent_slug = data.get('parent') as string;
+			parent_slug = data.get('parent') as string,
+			deprecated = !!data.get('deprecated');
 
 		const title = data.get('song_title') as string,
 			author = data.get('song_author') as string,
@@ -92,13 +93,14 @@ export const actions = {
 			body: {
 				payload: {
 					category: +category,
-					parent_slug
+					parent_slug,
+					deprecated
 				},
 				song_payload: song
 			}
 		});
 
-		if (error) return fail(400, { category, parent_slug, failed: true });
+		if (error) return fail(400, { category, parent_slug, deprecated, failed: true });
 
 		redirect(303, `/tag/${params.tag_slug}`);
 	},

@@ -15,6 +15,8 @@
 		stats: [number, number, number, number];
 		width?: string;
 	} = $props();
+
+	let search_type = $state('work');
 </script>
 
 {#snippet link(pathname: string, title: string)}
@@ -29,7 +31,12 @@
 
 <nav class="flex w-full min-w-64 flex-col gap-y-2" style:width={props?.width}>
 	<div class="border-otodb-faint-content bg-otodb-faint-bg border">
-		<form target="_self" method="get" action="/work/search" class="flex w-full">
+		<form target="_self" method="get" action="/{search_type}/search" class="flex w-full">
+			<select bind:value={search_type} class="pl-1">
+				<option value="work">{m.grand_merry_fly_succeed()}</option>
+				<option value="tag">{m.empty_legal_chicken_taste()}</option>
+				<option value="list">{m.stale_loose_squid_cut()}</option>
+			</select>
 			<input
 				type="text"
 				name="query"

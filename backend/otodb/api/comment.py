@@ -11,6 +11,7 @@ from django.db.models.functions import Rank
 from django_comments_xtd.models import XtdComment
 
 from ninja import Router, Schema
+from ninja.throttling import AuthRateThrottle
 
 from otodb.account.models import Account
 from .common import user_is_trusted, ProfileSchema
@@ -36,7 +37,7 @@ def get(request: HttpRequest, model: Literal['mediawork', 'account', 'pool', 'ta
     # Use comprehension to force filter after annotate
     return [c for c in XtdComment.objects.filter(content_type=T, object_pk=pk).order_by('id').annotate(index=index) if not c.is_removed]
 
-@comment_router.post('comment')
+@comment_router.post('comment', throttle=[AuthRateThrottle('1/8s')])
 @user_is_trusted
 def post(request: HttpRequest, model: Literal['mediawork', 'account', 'pool', 'tagwork', 'tagsong', 'post'], pk: int, comment: str, parent_id: int = 0):
     T = ContentType.objects.get(model=model)

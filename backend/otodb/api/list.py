@@ -9,6 +9,7 @@ from django.db.models import Q
 from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
+from ninja.throttling import AuthRateThrottle
 
 from otodb.common import video_info, playlist_info
 from otodb.models import Pool, PoolItem, PoolUpstream, WorkSource, TagWork, TagWorkInstance, MediaWork
@@ -158,7 +159,7 @@ def import_ext_into_pool(info, list_: Pool, user):
     TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True)
     PoolItem.objects.bulk_create(pool_items)
 
-@list_router.post('import', auth=django_auth, response=int)
+@list_router.post('import', auth=django_auth, response=int, throttle=[AuthRateThrottle('3/30m')])
 def import_ext(request: HttpRequest, url: str):
     info = playlist_info(url)
     list_ = Pool.objects.create(name=info['title'], description=info['description'], author=request.user)

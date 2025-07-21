@@ -55,6 +55,11 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
         qs = qs.order_by('priority')
     return qs
 
+@work_router.get('tags_needed', response=List[WorkSchema])
+@paginate
+def tags_needed(request: HttpRequest):
+    return MediaWork.active_objects.annotate(ntags=Count('tags')).filter(ntags__lte=4)
+
 @work_router.get('work', response={ 200: WorkSchema, 300: int })
 def work(request: HttpRequest, work_id: int):
     work = get_object_or_404(MediaWork.objects, id=work_id)

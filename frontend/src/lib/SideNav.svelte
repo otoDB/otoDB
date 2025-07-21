@@ -64,6 +64,7 @@
 			{@render link('/', m.fine_late_chicken_quiz())}
 			{@render link('/post/2', m.noble_fine_iguana_pull())}
 			{@render link('/work/search', m.grand_merry_fly_succeed())}
+			{@render link('/work/tags_needed', 'Tags needed')}
 			{@render link('/tag/search', m.empty_legal_chicken_taste())}
 			{@render link('/list/search', m.stale_loose_squid_cut())}
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}

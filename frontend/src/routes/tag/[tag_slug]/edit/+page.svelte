@@ -23,6 +23,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
+	import { callErrorToast, callSavingToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
 
@@ -55,10 +56,12 @@
 	};
 
 	const submitLangPref = async (lang: number, tag_slug: string) => {
-		await client.PUT('/api/tag/lang_pref', {
+		const p = client.PUT('/api/tag/lang_pref', {
 			fetch,
 			params: { query: { lang, tag_slug } }
 		});
+		callSavingToast(p);
+		await p;
 		invalidateAll();
 	};
 
@@ -77,6 +80,12 @@
 			) ?? [])
 		].join('\n') ?? ''
 	);
+
+	$effect(() => {
+		if (form?.failed) {
+			callErrorToast(m.green_due_javelina_pop());
+		}
+	});
 </script>
 
 <Section
@@ -84,7 +93,6 @@
 	menuLinks={data.links}
 >
 	<form method="POST" use:enhance action="?/edit">
-		{#if form?.failed}<p class="error">Failed!</p>{/if}
 		{#if data.tag.category === 2 && category !== 2}
 			<p class="text-red-500">
 				{m.front_game_porpoise_pout()}

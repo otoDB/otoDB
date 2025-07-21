@@ -12,8 +12,8 @@
 {#if page_range.length > 1}
 	<div class="mt-3 flex justify-center gap-2">
 		{#if page_range[0] !== 1}
-		<a href="?page={1}">{1}</a>
-		...
+			<a href="?page={1}">{1}</a>
+			...
 		{/if}
 		{#each page_range as index, i (i)}
 			{#if index === page}
@@ -24,8 +24,8 @@
 		{/each}
 
 		{#if page_range.at(-1) !== n_pages}
-		...
-		<a href="?page={n_pages}">{n_pages}</a>
+			...
+			<a href="?page={n_pages}">{n_pages}</a>
 		{/if}
 	</div>
 {/if}

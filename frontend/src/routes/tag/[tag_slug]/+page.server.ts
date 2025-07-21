@@ -1,5 +1,4 @@
 import client from '$lib/api';
-import { commentClient } from '$lib/api';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch, parent }) => {
@@ -7,8 +6,8 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 
 	const batch_size = 20;
 
-	const [{ data: details }, { data: works }, { data: connections }, comments] = await Promise.all(
-		[
+	const [{ data: details }, { data: works }, { data: connections }, { data: comments }] =
+		await Promise.all([
 			client.GET('/api/tag/details', {
 				fetch,
 				params: {
@@ -35,9 +34,11 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 					}
 				}
 			}),
-			commentClient.GET('tagwork', data.tag.id, fetch)
-		]
-	);
+			client.GET('/api/comment/comments', {
+				fetch,
+				params: { query: { model: 'tagwork', pk: data.tag.id } }
+			})
+		]);
 
 	const song_relations = data.song_relations;
 

@@ -1009,6 +1009,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/comment/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["otodb_api_comment_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comment/comment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post */
+        post: operations["otodb_api_comment_post"];
+        /** Delete */
+        delete: operations["otodb_api_comment_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1489,6 +1524,23 @@ export interface components {
             title: string;
             /** Post Rendered */
             post_rendered: string;
+        };
+        /** CommentSchema */
+        CommentSchema: {
+            /** Id */
+            id: number;
+            /** Level */
+            level: number;
+            user: components["schemas"]["ProfileSchema"];
+            /** Comment */
+            comment: string;
+            /**
+             * Submit Date
+             * Format: date-time
+             */
+            submit_date: string;
+            /** Parent Id */
+            parent_id: number;
         };
     };
     responses: never;
@@ -3233,6 +3285,74 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PostSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_comment_get: {
+        parameters: {
+            query: {
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
+                pk: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommentSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_comment_post: {
+        parameters: {
+            query: {
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
+                pk: number;
+                comment: string;
+                parent_id?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_comment_delete: {
+        parameters: {
+            query: {
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
+                pk: number;
+                comment_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

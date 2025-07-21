@@ -63,7 +63,7 @@
 			{/if}
 		</div>
 		<div class="mb-3 flex items-end gap-2 align-bottom">
-			<p>#{data.id}</p>
+			<p>#{data.index}</p>
 			<h4><a href="/profile/{data.user.username}">{data.user.username}</a></h4>
 			<address class="text-otodb-fainter-content text-xs">{data.time}</address>
 		</div>

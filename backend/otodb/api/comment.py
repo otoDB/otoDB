@@ -5,6 +5,9 @@ from typing import Literal
 from django.http import HttpRequest
 from django.contrib.contenttypes.models import ContentType
 
+from django.db.models import Window, F
+from django.db.models.functions import Rank
+
 from django_comments_xtd.models import XtdComment
 
 from ninja import Router, Schema
@@ -21,11 +24,17 @@ class CommentSchema(Schema):
     comment: str
     submit_date: datetime
     parent_id: int
+    index: int
 
 @comment_router.get('comments', response=list[CommentSchema])
 def get(request: HttpRequest, model: Literal['mediawork', 'account', 'pool', 'tagwork', 'tagsong', 'post'], pk: int):
     T = ContentType.objects.get(model=model)
-    return XtdComment.objects.filter(content_type=T, object_pk=pk, is_removed=False).order_by('id')
+    index = Window(
+        expression=Rank(),
+        order_by='submit_date',
+    )
+    # Use comprehension to force filter after annotate
+    return [c for c in XtdComment.objects.filter(content_type=T, object_pk=pk).order_by('id').annotate(index=index) if not c.is_removed]
 
 @comment_router.post('comment')
 @user_is_trusted
@@ -51,6 +60,7 @@ def delete(request: HttpRequest, model: Literal['mediawork', 'account', 'pool', 
         id=comment_id
     )
     if request.user.level >= Account.Levels.ADMIN or comment.user == request.user:
-        comment.delete()
+        comment.is_removed = True
+        comment.save()
     else:
         return 403

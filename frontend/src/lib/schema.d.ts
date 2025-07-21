@@ -1541,6 +1541,8 @@ export interface components {
             submit_date: string;
             /** Parent Id */
             parent_id: number;
+            /** Thread Id */
+            thread_id: number;
         };
     };
     responses: never;

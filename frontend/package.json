@@ -55,6 +55,7 @@
 	},
 	"dependencies": {
 		"@inlang/paraglide-js": "^2.0.12",
+		"@thisux/sveltednd": "^0.0.20",
 		"mermaid": "^11.9.0",
 		"openapi-fetch": "^0.13.5",
 		"set-cookie-parser": "^2.7.1",

@@ -92,7 +92,7 @@
 				)}
 				<li
 					aria-current={page.url.pathname === `/logout` ? 'page' : undefined}
-					class="mt-5"
+					class="mt-4"
 				>
 					<a
 						href="/logout"

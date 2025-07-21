@@ -37,7 +37,7 @@
 <nav
 	class={[
 		props.className,
-		'bg-otodb-faint-bg flex w-full flex-col gap-y-2 overflow-y-scroll px-8 py-16'
+		'bg-otodb-faint-bg flex flex-col gap-y-2 overflow-y-scroll px-8 py-16'
 	]}
 >
 	<div class="border-otodb-faint-content bg-otodb-faint-bg mb-8 border">
@@ -67,7 +67,7 @@
 		</form>
 	</div>
 
-	<div class="mb-8">
+	<div>
 		<div class="border-otodb-faint-content mb-2 border-b text-xs">
 			{m.clean_kind_stork_affirm()}
 		</div>
@@ -80,7 +80,7 @@
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		</ul>
 	</div>
-	<div>
+	<div class="mt-8">
 		<div class="border-otodb-faint-content mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
 		</div>
@@ -100,7 +100,7 @@
 				{@render link(`/profile/${user.username}/settings`, m.orange_born_seal_ascend())}
 				<li
 					aria-current={page.url.pathname === `/logout` ? 'page' : undefined}
-					class="mt-8"
+					class="mt-4"
 				>
 					<a
 						href="/logout"
@@ -113,7 +113,7 @@
 		</ul>
 	</div>
 	{#if user?.level >= UserLevel.EDITOR}
-		<div class="mb-8">
+		<div class="mt-8">
 			<div class="border-otodb-faint-content mb-2 border-b text-xs">
 				{m.these_bold_gorilla_flip()}
 			</div>
@@ -125,7 +125,7 @@
 		</div>
 	{/if}
 	{#if user?.level >= UserLevel.ADMIN}
-		<div class="mb-8">
+		<div class="mt-8">
 			<div class="border-otodb-faint-content mb-2 border-b text-xs">
 				{m.mellow_pink_starfish_cuddle()}
 			</div>

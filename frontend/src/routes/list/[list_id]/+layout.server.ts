@@ -3,10 +3,11 @@ import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages';
 
-export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
+export const load: LayoutServerLoad = async ({ fetch, params, locals, url }) => {
 	if (isNaN(+params.list_id)) error(400, { message: 'Bad request' });
 
 	const batch_size = 20;
+	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 0;
 
 	const { data, error: e } = await client.GET('/api/list/list', {
 		fetch,
@@ -24,12 +25,13 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 			query: {
 				list_id: +params.list_id,
 				limit: batch_size,
-				offset: 0
+				offset: page * batch_size
 			}
 		}
 	});
 	return {
 		batch_size,
+		page,
 		list: data,
 		entries,
 		links: [

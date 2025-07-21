@@ -19,7 +19,7 @@
 				fetch,
 				params: { query: { work_id: data.id } }
 			});
-			goto('/work/unbound');
+			goto('/work/unbound', { invalidateAll: true });
 		}
 	};
 	const unbind = async (source_id: number) => {

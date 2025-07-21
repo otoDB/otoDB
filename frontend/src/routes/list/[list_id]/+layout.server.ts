@@ -7,7 +7,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals, url }) => 
 	if (isNaN(+params.list_id)) error(400, { message: 'Bad request' });
 
 	const batch_size = 20;
-	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 0;
+	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 
 	const { data, error: e } = await client.GET('/api/list/list', {
 		fetch,
@@ -31,7 +31,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals, url }) => 
 	});
 	return {
 		batch_size,
-		page,
+		page - 1,
 		list: data,
 		entries,
 		links: [

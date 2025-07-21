@@ -60,6 +60,7 @@
 		"openapi-fetch": "^0.13.5",
 		"set-cookie-parser": "^2.7.1",
 		"svelte-exmarkdown": "^4.0.3",
+		"svelte-sonner": "^1.0.5",
 		"svelte-svg-viewer": "^0.2.1"
 	}
 }

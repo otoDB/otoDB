@@ -4,6 +4,16 @@
 	import type { PageProps } from './$types';
 	let { data, form }: PageProps = $props();
 	import { m } from '$lib/paraglide/messages.js';
+	import { callErrorToast } from '$lib/toast';
+
+	$effect(() => {
+		if (form?.missing) {
+			callErrorToast(m.tiny_round_shark_express());
+		}
+		if (form?.mismatch) {
+			callErrorToast(m.front_clean_termite_treat());
+		}
+	});
 </script>
 
 <svelte:head>
@@ -15,8 +25,6 @@
 		<p>{m.stock_jolly_crocodile_cheer()}</p>
 	{:else if data.token || data.user}
 		<form method="POST" use:enhance action="?/reset">
-			{#if form?.missing}<p class="error">{m.tiny_round_shark_express()}</p>{/if}
-			{#if form?.mismatch}<p class="error">{m.front_clean_termite_treat()}</p>{/if}
 			<table>
 				<tbody>
 					<tr>
@@ -36,7 +44,6 @@
 		<p>{m.grand_lucky_halibut_chop()}</p>
 	{:else}
 		<form method="POST" use:enhance action="?/request">
-			{#if form?.missing}<p class="error">{m.tiny_round_shark_express()}</p>{/if}
 			<table>
 				<tbody>
 					<tr>

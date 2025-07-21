@@ -65,7 +65,7 @@
 			{@render link('/post/2', m.noble_fine_iguana_pull())}
 			{@render link('/work/search', m.grand_merry_fly_succeed())}
 			{#if user?.level >= UserLevel.MEMBER}
-				{@render link('/work/tags_needed', '> Tags needed')}
+				{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 			{/if}
 			{@render link('/tag/search', m.empty_legal_chicken_taste())}
 			{@render link('/list/search', m.stale_loose_squid_cut())}

@@ -12,7 +12,7 @@ class ActiveManager(models.Manager):
         return super().get_queryset().filter(rejection__isnull=True)
 
 class WorkSource(models.Model):
-    media = models.ForeignKey(MediaWork, on_delete=models.CASCADE, null=True)
+    media = models.ForeignKey(MediaWork, on_delete=models.CASCADE, null=True, blank=True)
     platform = models.IntegerField(choices=Platform.choices)
     source_id = models.CharField(max_length=1000)
 

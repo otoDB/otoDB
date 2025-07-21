@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import toast, { Toaster } from 'svelte-french-toast';
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import Header from '../lib/SideNav.svelte';
 	import MobileSideNav from '../lib/MobileSideNav.svelte';
@@ -7,7 +8,6 @@
 	import { navigating } from '$app/state';
 	import { LanguageNames } from '$lib/enums';
 	import ConnectionFavicon from '../lib/ConnectionFavicon.svelte';
-
 	import { background } from '$lib/stores/theme';
 
 	let { data, children } = $props();
@@ -20,6 +20,8 @@
 		isMobileNavOpen = false;
 	}
 </script>
+
+<Toaster />
 
 <div>
 	<div class="-z-50 contents">

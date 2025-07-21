@@ -21,8 +21,8 @@
 				params: {
 					query: {
 						username: data.profile.username,
-						limit: data.submissions?.items.length,
-						offset: data.page * data.submissions?.items.length
+						limit: data.batch_size,
+						offset: (data.page - 1) * data.batch_size
 					}
 				}
 			})

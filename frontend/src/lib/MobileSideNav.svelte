@@ -17,6 +17,8 @@
 		};
 		close: () => void;
 	} = $props();
+
+	let search_type = $state('work');
 </script>
 
 {#snippet link(pathname: string, title: string)}
@@ -39,7 +41,12 @@
 	]}
 >
 	<div class="border-otodb-faint-content bg-otodb-faint-bg mb-8 border">
-		<form target="_self" method="get" action="/work/search" class="flex w-full">
+		<form target="_self" method="get" action="/{search_type}/search" class="flex w-full">
+			<select bind:value={search_type} class="pl-1">
+				<option value="work">{m.grand_merry_fly_succeed()}</option>
+				<option value="tag">{m.empty_legal_chicken_taste()}</option>
+				<option value="list">{m.stale_loose_squid_cut()}</option>
+			</select>
 			<input
 				type="text"
 				name="query"

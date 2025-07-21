@@ -25,7 +25,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals, url }) => 
 			query: {
 				list_id: +params.list_id,
 				limit: batch_size,
-				offset: page * batch_size
+				offset: (page - 1) * batch_size
 			}
 		}
 	});

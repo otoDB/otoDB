@@ -3,7 +3,7 @@
 
 	const n_pages = $derived(Math.ceil(n_count / page_size));
 	const page_min = $derived(Math.max(1, page - window_size));
-	const page_max = $derived(Math.min(n_pages, page + window_size));
+	const page_max = $derived(Math.min(n_pages - 1, page + window_size));
 	const page_range = $derived(
 		Array.from({ length: page_max - page_min + 1 }, (_, i) => i + page_min)
 	);

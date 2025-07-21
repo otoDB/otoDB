@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import toast, { Toaster } from 'svelte-french-toast';
+	import { Toaster } from 'svelte-sonner';
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import Header from '../lib/SideNav.svelte';
 	import MobileSideNav from '../lib/MobileSideNav.svelte';
@@ -21,7 +21,16 @@
 	}
 </script>
 
-<Toaster />
+<Toaster
+	expand={true}
+	position="bottom-right"
+	toastOptions={{
+		unstyled: true,
+		classes: {
+			toast: 'bg-otodb-faint-bg text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
+		}
+	}}
+/>
 
 <div>
 	<div class="-z-50 contents">

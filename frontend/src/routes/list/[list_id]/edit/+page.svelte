@@ -8,6 +8,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { draggable, droppable } from '@thisux/sveltednd';
 	import Pager from '$lib/Pager.svelte';
+	import { callSavingToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
 
@@ -39,7 +40,7 @@
 	}
 
 	async function update_description(el) {
-		await client.PUT('/api/list/items', {
+		const p = client.PUT('/api/list/items', {
 			fetch,
 			params: { query: { list_id: data.list.id } },
 			body: {
@@ -51,6 +52,8 @@
 				update_work: []
 			}
 		});
+		callSavingToast(p);
+		await p;
 		invalidateAll();
 	}
 

@@ -8,6 +8,7 @@
 	import RefreshButton from '../RefreshButton.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
+	import { callSavingToast } from '$lib/toast';
 
 	let { data } = $props();
 
@@ -28,10 +29,12 @@
 		}
 	};
 	const toggleWork = async (list_id: number) => {
-		const { error, data: state } = await client.PUT('/api/list/toggle_work', {
+		const p = client.PUT('/api/list/toggle_work', {
 			fetch,
 			params: { query: { list_id, work_id: data.id } }
 		});
+		callSavingToast(p);
+		const { error } = await p;
 		if (!error) {
 			const list = userLists.find((el) => el[0].id === list_id)!;
 			list[1] = !list[1];

@@ -31,7 +31,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals, url }) => 
 	});
 	return {
 		batch_size,
-		page - 1,
+		page,
 		list: data,
 		entries,
 		links: [

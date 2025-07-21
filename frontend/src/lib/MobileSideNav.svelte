@@ -55,7 +55,7 @@
 			/>
 			<button
 				type="submit"
-				class="hover:bg-otodb-content-primarypx-1"
+				class="hover:bg-otodb-content-primary px-1"
 				style="border: none !important;"
 				aria-label="Search"
 				onclick={close}

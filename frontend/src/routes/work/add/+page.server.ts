@@ -36,6 +36,7 @@ export const actions = {
 		const data = await request.formData();
 		const link = data.get('url') as string,
 			is_official = data.get('origin') === 'true',
+			original_url = data.get('original_url'),
 			rating = data.get('rating');
 		const work = url.searchParams.get('for_work');
 
@@ -50,7 +51,8 @@ export const actions = {
 					url: link,
 					is_reupload: !is_official,
 					work_id: work ? +work : null,
-					rating: rating ? +rating : null
+					rating: rating ? +rating : null,
+					original_url
 				}
 			}
 		});

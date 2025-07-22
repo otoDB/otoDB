@@ -254,8 +254,13 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
 
 @work_router.post('source', auth=django_auth, response={200: int | None, 400: Error, 409: Error})
 @user_is_trusted
-def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, rating: int = 0, work_id: int | None = None):
+def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, rating: int = 0, work_id: int | None = None, original_url: str | None = None):
+
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
+
+    if (is_reupload and original_url):
+        original_src, original_info = WorkSource.from_url(original_url, user=request.user, is_reupload=False)
+
     if src.media is not None:
         return 409, {'message': "Conflict, a work with this source already exists."}
     if getattr(src, 'rejection', None):
@@ -270,6 +275,10 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
         work.tags.add(*info.get('tags', []))
         src.media = work
         src.save()
+        if (is_reupload and original_url):
+            work.tags.add(*original_info.get('tags', []))
+            original_src.media = work
+            original_src.save()
 
     if src.media is not None:
         return src.media.id

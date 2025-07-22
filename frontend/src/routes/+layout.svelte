@@ -28,7 +28,7 @@
 	toastOptions={{
 		unstyled: true,
 		classes: {
-			toast: 'bg-otodb-faint-bg text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
+			toast: 'bg-otodb-bg-faint text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
 		}
 	}}
 />

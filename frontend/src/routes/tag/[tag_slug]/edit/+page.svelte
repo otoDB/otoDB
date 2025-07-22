@@ -88,14 +88,16 @@
 	});
 
 	const del = async () => {
-		const { response } = await client.DELETE('/api/tag/tag', {fetch, params:{query:{tag_slug: data.tag.slug}}});
+		const { response } = await client.DELETE('/api/tag/tag', {
+			fetch,
+			params: { query: { tag_slug: data.tag.slug } }
+		});
 		if (response.ok) {
 			goto('/', { invalidateAll: true });
+		} else if (response.status === 400) {
+			callErrorToast(m.that_new_mayfly_spur());
 		}
-		else if (response.status === 400) {
-			// todo: show toast
-		}
-	}
+	};
 </script>
 
 <Section

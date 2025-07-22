@@ -110,9 +110,9 @@
 				{m.these_bold_gorilla_flip()}
 			</div>
 			<ul class="list-none space-y-0.5">
+				{@render link('/work/unbound', m.tense_small_firefox_lock())}
 				{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 				{@render link('/work/merge', m.heroic_same_wasp_conquer())}
-				{@render link('/work/unbound', m.tense_small_firefox_lock())}
 			</ul>
 		</div>
 	{/if}

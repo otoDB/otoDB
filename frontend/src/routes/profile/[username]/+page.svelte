@@ -37,7 +37,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{ProfileConnectionLink[s.site](s.content_id)}
+						{decodeURI(ProfileConnectionLink[s.site](s.content_id))}
 					</a>
 				</li>
 			{/each}

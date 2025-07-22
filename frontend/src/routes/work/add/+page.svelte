@@ -67,11 +67,8 @@
 				</tr>
 				{#if isReupload}
 					<tr>
-						<th
-							><label for="original_url">{m.crisp_steep_angelfish_bump()}</label
-							></th
-						>
-						<td><input type="text" name="original_url"/></td>
+						<th><label for="original_url">{m.crisp_steep_angelfish_bump()}</label></th>
+						<td><input type="text" name="original_url" /></td>
 					</tr>
 				{/if}
 				{#if data.isNewWork}

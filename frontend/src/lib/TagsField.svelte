@@ -59,18 +59,17 @@
 			textarea.value = value.join(' ');
 		}
 
-		const autoFocus =  (e: KeyboardEvent) => {
+		const autoFocus = (e: KeyboardEvent) => {
 			if (props.focusOnType && textarea && /[a-zA-Z0-9]/.test(e.key)) {
 				textarea.focus();
 			}
-		}
-		addEventListener('keydown', autoFocus)
+		};
+		addEventListener('keydown', autoFocus);
 
-		return(() => {
-			removeEventListener('keydown', autoFocus)
-		})
+		return () => {
+			removeEventListener('keydown', autoFocus);
+		};
 	});
-
 </script>
 
 <span role="none">

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PageProps } from '../../../$types';
+	import type { PageProps } from '../$types';
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 

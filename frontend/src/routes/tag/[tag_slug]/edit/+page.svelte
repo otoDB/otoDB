@@ -20,7 +20,7 @@
 	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
@@ -86,6 +86,16 @@
 			callErrorToast(m.green_due_javelina_pop());
 		}
 	});
+
+	const del = async () => {
+		const { response } = await client.DELETE('/api/tag/tag', {fetch, params:{query:{tag_slug: data.tag.slug}}});
+		if (response.ok) {
+			goto('/', { invalidateAll: true });
+		}
+		else if (response.status === 400) {
+			// todo: show toast
+		}
+	}
 </script>
 
 <Section
@@ -182,6 +192,7 @@
 		{/if}
 		<input type="submit" />
 	</form>
+	<button onclick={del}>Delete this tag</button>
 </Section>
 
 {#if category === 2 && data.tag.category === 2}

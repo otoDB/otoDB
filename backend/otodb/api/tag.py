@@ -64,9 +64,18 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
         for tag in tags:
             tag.aliased_to = None
             tag.save()
-            if tag.can_be_deleted():
+            if tag.can_be_deleted:
                 tag.delete()
     return
+
+@tag_router.delete('tag', auth=django_auth)
+@user_is_trusted
+def delete(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    if tag.can_be_deleted:
+        tag.delete()
+    else:
+        return 400
 
 @tag_router.delete('alias', auth=django_auth)
 @user_is_trusted

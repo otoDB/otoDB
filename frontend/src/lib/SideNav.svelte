@@ -72,7 +72,7 @@
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		</ul>
 	</div>
-	<div class="border-otodb-content-faint bg-otodb-faint-bg border px-3 py-2">
+	<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
 		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
 		</div>
@@ -106,7 +106,7 @@
 		</ul>
 	</div>
 	{#if user?.level >= UserLevel.EDITOR}
-		<div class="border-otodb-content-faint bg-otodb-faint-bg border px-3 py-2">
+		<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
 			<div class="border-otodb-content-faint mb-2 border-b text-xs">
 				{m.these_bold_gorilla_flip()}
 			</div>
@@ -118,7 +118,7 @@
 		</div>
 	{/if}
 	{#if user?.level >= UserLevel.ADMIN}
-		<div class="border-otodb-content-faint bg-otodb-faint-bg border px-3 py-2">
+		<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
 			<div class="border-otodb-content-faint mb-2 border-b text-xs">
 				{m.mellow_pink_starfish_cuddle()}
 			</div>
@@ -131,7 +131,7 @@
 			</ul>
 		</div>
 	{/if}
-	<div class="border-otodb-content-faint bg-otodb-faint-bg border px-3 py-2">
+	<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
 		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.white_helpful_lion_rise()}
 		</div>

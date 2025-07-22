@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../app.css';
+	import { Toaster } from 'svelte-sonner';
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import Header from '../lib/SideNav.svelte';
 	import MobileSideNav from '../lib/MobileSideNav.svelte';
@@ -7,8 +8,8 @@
 	import { navigating } from '$app/state';
 	import { LanguageNames } from '$lib/enums';
 	import ConnectionFavicon from '../lib/ConnectionFavicon.svelte';
-
 	import { background } from '$lib/stores/theme';
+	import { clickOutside } from '$lib/ui';
 
 	let { data, children } = $props();
 
@@ -20,6 +21,17 @@
 		isMobileNavOpen = false;
 	}
 </script>
+
+<Toaster
+	expand={true}
+	position="bottom-right"
+	toastOptions={{
+		unstyled: true,
+		classes: {
+			toast: 'bg-otodb-faint-bg text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
+		}
+	}}
+/>
 
 <div>
 	<div class="-z-50 contents">
@@ -47,14 +59,11 @@
 			<div class="white place-self-center text-2xl">☰</div>
 		</button>
 		<!-- Cover -->
-		<div
-			tabindex={-1}
-			role="button"
-			class={['fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen }]}
-			onclick={closeMobileNav}
-		></div>
+		<div class={['fixed inset-0 z-[1] bg-black/75', { invisible: !isMobileNavOpen }]}></div>
 		<!-- Menu -->
 		<div
+			use:clickOutside
+			onOutclick={closeMobileNav}
 			class={[
 				'fixed top-0 left-0 z-[2] h-full transition-transform duration-75',
 				{

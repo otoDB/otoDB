@@ -8,8 +8,8 @@
 		ProfileConnectionTypes,
 		SongConnectionLink,
 		SongConnectionTypes,
-		SourceConnectionLink,
-		SourceConnectionTypes,
+		MediaConnectionLink,
+		MediaConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
 		WorkTagCategory
@@ -56,10 +56,10 @@
 		});
 
 	const ext_cat_types = $derived(
-		data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes
+		data.tag.category === 6 ? MediaConnectionTypes : ProfileConnectionTypes
 	);
 	const ext_cat_links = $derived(
-		data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink
+		data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink
 	);
 
 	// Song Relation
@@ -149,7 +149,7 @@ ${nodes
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{TagWorkConnectionLink[s.site](s.content_id)}
+						{decodeURI(TagWorkConnectionLink[s.site](s.content_id))}
 					</a>
 				</li>
 			{/each}
@@ -227,7 +227,7 @@ ${nodes
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{SongConnectionLink[s.site](s.content_id)}
+							{decodeURI(SongConnectionLink[s.site](s.content_id))}
 						</a>
 					</li>
 				{/each}
@@ -278,11 +278,11 @@ ${nodes
 
 {#if data.tag.children.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
-		<ul>
+		<div class="flex flex-wrap gap-3">
 			{#each data.tag.children as tag, i (i)}
-				<li><WorkTag {tag} /></li>
+				<WorkTag {tag} />
 			{/each}
-		</ul>
+		</div>
 	</Section>
 {/if}
 

@@ -11,7 +11,7 @@ from .enums import WorkTagCategory, SongTagCategory, LanguageTypes
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
-    from .connection import TagWorkConnection, TagWorkSourceConnection, TagWorkCreatorConnection
+    from .connection import TagWorkConnection, TagWorkMediaConnection, TagWorkCreatorConnection
     from .media import MediaSong
 
 def name_cleaner(s):
@@ -58,6 +58,8 @@ def _alias(from_tags, into_tag):
     is_work = isinstance(into_tag, TagWork)
     model = TagWork if is_work else TagSong
     for tag in from_tags:
+        if tag.aliased_to:
+            tag = tag.aliased_to
         if tag.id != into_tag.id:
             tag.aliased_to = into_tag
             tag.parent = None
@@ -72,14 +74,12 @@ def _alias(from_tags, into_tag):
                 t.parent = into_tag
                 t.save()
 
-    into_tag.save()
-
 class TagWork(OtodbTagModel):
     objects = LowerCaseTagModelManager()
 
     if TYPE_CHECKING:
         tagworkconnection_set: QuerySet['TagWorkConnection']
-        tagworksourceconnection_set: QuerySet['TagWorkSourceConnection']
+        tagworkMediaConnection_set: QuerySet['TagWorkMediaConnection']
         tagworkcreatorconnection_set: QuerySet['TagWorkCreatorConnection']
         tagworklangpreference_set: QuerySet['TagWorkLangPreference']
         aliases: QuerySet['TagWork']
@@ -142,6 +142,18 @@ class TagWork(OtodbTagModel):
         for alias in self.aliases.all():
             q |= alias.tagworklangpreference_set.all()
         return q.distinct()
+
+    @property
+    def can_be_deleted(self):
+        # Maximal friction to avoid accidentally deleting any user-contributed data
+        return not any([
+            self.works.exists(),
+            self.aliased_to,
+            self.aliases.exists(),
+            self.wikipage_set.exists() and any([p.page.strip() != '' for p in self.wikipage_set]),
+            self.tagworkconnection_set.exists(),
+            self.category != WorkTagCategory.GENERAL
+        ])
 
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)

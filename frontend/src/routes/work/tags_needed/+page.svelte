@@ -4,6 +4,7 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import client from '$lib/api';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	let { data }: PageProps = $props();
 	let results = $derived(data.results!.items);
@@ -21,10 +22,10 @@
 </script>
 
 <svelte:head>
-	<title>Tags needed</title>
+	<title>{m.spry_late_kudu_assure()}</title>
 </svelte:head>
 
-<Section title="Tags needed">
+<Section title={m.spry_late_kudu_assure()}>
 	<hr />
 	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 		{#each results as work, i (i)}

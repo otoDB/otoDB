@@ -10,7 +10,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import NFKC
-from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkSourceConnection, TagWorkCreatorConnection
+from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection
 from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes
 
 from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
@@ -48,13 +48,34 @@ def works(request: HttpRequest, tag_slug: str):
 
 @tag_router.post('alias', auth=django_auth)
 @user_is_trusted
-def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str):
-    tags = get_list_or_404(TagWork, slug__in=from_tags)
+def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool):
+    tags = []
+    for slug in from_tags:
+        try:
+            tags.append(TagWork.objects.get(slug=slug))
+        except TagWork.DoesNotExist:
+            tags.append(TagWork.objects.create(name=slug))      
+      
     into = get_object_or_404(TagWork, slug=into_tag)
     assert(into.aliased_to is None)
 
     TagWork.alias(tags, into)
+    if delete:
+        for tag in tags:
+            tag.aliased_to = None
+            tag.save()
+            if tag.can_be_deleted:
+                tag.delete()
     return
+
+@tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})
+@user_is_trusted
+def delete(request: HttpRequest, tag_slug: str):
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    if tag.can_be_deleted:
+        tag.delete()
+    else:
+        return 400, None
 
 @tag_router.delete('alias', auth=django_auth)
 @user_is_trusted
@@ -108,8 +129,8 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
             song = MediaSong.objects.create(work_tag=tag, **song_payload.dict())
     elif tag.category == WorkTagCategory.CREATOR and payload.category != WorkTagCategory.CREATOR:
         TagWorkCreatorConnection.objects.filter(tag=tag).delete()
-    elif tag.category == WorkTagCategory.SOURCE and payload.category != WorkTagCategory.SOURCE:
-        TagWorkSourceConnection.objects.filter(tag=tag).delete()
+    elif tag.category == WorkTagCategory.MEDIA and payload.category != WorkTagCategory.MEDIA:
+        TagWorkMediaConnection.objects.filter(tag=tag).delete()
 
     tag.deprecated = payload.deprecated
     tag.category = payload.category
@@ -147,8 +168,8 @@ def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
 def connection(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     cs = tag.tagworkconnection_set.all()
-    if tag.category == WorkTagCategory.SOURCE:
-        return 200, (cs, tag.tagworksourceconnection_set.all())
+    if tag.category == WorkTagCategory.MEDIA:
+        return 200, (cs, tag.tagworkMediaConnection_set.all())
     elif tag.category == WorkTagCategory.CREATOR:
         return 200, (cs, tag.tagworkcreatorconnection_set.all())
     return 200, (cs, None)
@@ -160,7 +181,7 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
         TagWorkConnection,        # GENERAL
         None,                     # EVENT
         MediaSongConnection,      # SONG
-        TagWorkSourceConnection,  # SOURCE
+        TagWorkMediaConnection,  # SOURCE
         TagWorkCreatorConnection, # CREATOR
         None                      # META
     ][t]

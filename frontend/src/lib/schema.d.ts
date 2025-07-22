@@ -246,6 +246,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/remove_tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Remove Tag */
+        put: operations["otodb_api_work_remove_tag"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/random": {
         parameters: {
             query?: never;
@@ -742,7 +759,8 @@ export interface paths {
         /** Update */
         put: operations["otodb_api_tag_update"];
         post?: never;
-        delete?: never;
+        /** Delete */
+        delete: operations["otodb_api_tag_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2006,6 +2024,27 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_remove_tag: {
+        parameters: {
+            query: {
+                work_id: number;
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_work_random: {
         parameters: {
             query?: {
@@ -2826,6 +2865,26 @@ export interface operations {
             };
         };
     };
+    otodb_api_tag_delete: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_tag_details: {
         parameters: {
             query: {
@@ -2876,6 +2935,7 @@ export interface operations {
         parameters: {
             query: {
                 into_tag: string;
+                delete: boolean;
             };
             header?: never;
             path?: never;

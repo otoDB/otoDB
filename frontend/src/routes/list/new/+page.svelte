@@ -3,8 +3,15 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
+	import { callErrorToast } from '$lib/toast';
 
 	let { form }: PageProps = $props();
+
+	$effect(() => {
+		if (form?.failed) {
+			callErrorToast(m.green_due_javelina_pop());
+		}
+	});
 </script>
 
 <svelte:head>
@@ -19,7 +26,6 @@
 	]}
 >
 	<form use:enhance method="POST">
-		{#if form?.failed}<p class="error">{m.green_due_javelina_pop()}</p>{/if}
 		<table>
 			<tbody>
 				<tr

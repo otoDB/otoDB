@@ -262,7 +262,7 @@
 			</tbody>
 		</table>
 	{/if}
-	<a href="/tag/alias?from={data.tag.slug}">Add aliases...</a>
+	<a href="/tag/alias?from={data.tag.slug}">{m.weary_moving_swallow_chop()}</a>
 </Section>
 
 <Section title={m.curly_zesty_pelican_aim()}>

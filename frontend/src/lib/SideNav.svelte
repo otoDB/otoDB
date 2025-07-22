@@ -78,14 +78,15 @@
 		</div>
 		<ul class="list-none space-y-0.5">
 			{#if !user}
+				{@render link(`/settings`, m.orange_born_seal_ascend())}
 				{@render link('/login', m.inner_stale_anteater_walk())}
 				{@render link('/register', m.blue_whole_camel_type())}
 			{:else}
+				{@render link(`/settings`, m.orange_born_seal_ascend())}
 				{@render link('/post/1', m.bald_ideal_gadfly_jest())}
 				{@render link('/work/add', m.fluffy_crisp_horse_imagine())}
 				{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
 				{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
-				{@render link(`/profile/${user.username}/settings`, m.orange_born_seal_ascend())}
 				{@render link(
 					`/profile/${user.username}/submissions`,
 					m.flaky_gross_marlin_evoke()

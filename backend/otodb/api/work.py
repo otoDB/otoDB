@@ -152,12 +152,12 @@ def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
     instance.save()
 
 @work_router.put('remove_tag', auth=django_auth)
-@user_is_editor
+@user_is_trusted
 def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     tag = get_object_or_404(TagWork, slug=tag_slug)
     work.tags.remove(tag)
-    if tag.can_be_deleted():
+    if tag.can_be_deleted:
         tag.delete()
 
 @work_router.get('random', response=list[WorkSchema])

@@ -759,7 +759,8 @@ export interface paths {
         /** Update */
         put: operations["otodb_api_tag_update"];
         post?: never;
-        delete?: never;
+        /** Delete */
+        delete: operations["otodb_api_tag_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2854,6 +2855,26 @@ export interface operations {
                 };
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_delete: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

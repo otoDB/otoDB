@@ -143,11 +143,14 @@ class TagWork(OtodbTagModel):
             q |= alias.tagworklangpreference_set.all()
         return q.distinct()
 
+    @property
     def can_be_deleted(self):
+        # Maximal friction to avoid accidentally deleting any user-contributed data
         return not any([
             self.works.exists(),
+            self.aliased_to,
             self.aliases.exists(),
-            self.wikipage_set.exists(),
+            self.wikipage_set.exists() and any([p.page.strip() != '' for p in self.wikipage_set]),
             self.tagworkconnection_set.exists(),
             self.category != WorkTagCategory.GENERAL
         ])

@@ -257,13 +257,20 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
 def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, rating: int = 0, work_id: int | None = None, original_url: str | None = None):
 
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
+    if src.work_origin != WorkOrigin(is_reupload) :
+        src.work_origin = WorkOrigin(is_reupload)
+        src.save()
 
     # Bad url (main url)
     if src is None:
         return 400, {'message': "Bad request, is the URL correct?"}
 
+    original_src = None
     if (is_reupload and original_url):
         original_src, original_info = WorkSource.from_url(original_url, user=request.user, is_reupload=False)
+        if original_src.work_origin == WorkOrigin(is_reupload) :
+                original_src.work_origin = WorkOrigin(not is_reupload)
+                original_src.save()
         # Bad url (reupload) I think the function shouldn't go further if either fails
         if original_src is None:
             return 400, {'message': "Bad request, is the URL of the original upload correct?"}
@@ -271,12 +278,12 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
     if getattr(src, 'rejection', None) or getattr(original_src, 'rejection', None):
         return 400, {'message': "Bad Request, This source has already been rejected"}
     
-    if (src.media is not None and original_src.media is not None):
+    if getattr(src, 'media', None) and getattr(original_src, 'media', None):
         if (src.media.id == original_src.media.id):
             # Perfect match, no action required
             return src.media.id
         else:
-            # Needs adjustment: one source already exists
+            # Needs adjustment: each source has a different media
             MediaWork.merge(
                 get_object_or_404(MediaWork.active_objects, id=original_src.media.id),
                 get_object_or_404(MediaWork.active_objects, id=src.media.id),

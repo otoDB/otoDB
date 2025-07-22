@@ -20,7 +20,7 @@ tag_router = Router()
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, category: int | None = None):
-    qs = TagWork.objects.filter(name__icontains=NFKC(query), deprecated=False)
+    qs = TagWork.objects.filter(name__icontains=NFKC(query).replace(' ', '_'), deprecated=False)
     if category is not None and category != -1:
         qs = qs.filter(category=category)
     return list(set([t.aliased_to if t.aliased_to else t for t in qs]))
@@ -157,12 +157,17 @@ def wiki_page(request: HttpRequest, tag_slug: str):
 @user_is_trusted
 def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
+    empty = md.strip() == ''
     try:
         wp = WikiPage.objects.get(tag=tag, lang=lang)
-        wp.page = md
-        wp.save() # Cannot use update_or_create here because the rendered page doesn't get rendered
+        if empty:
+            wp.delete()
+        else:
+            wp.page = md
+            wp.save() # Cannot use update_or_create here because the rendered page doesn't get rendered
     except WikiPage.DoesNotExist:
-        WikiPage.objects.create(tag=tag, lang=lang, page=md)
+        if not empty:
+            WikiPage.objects.create(tag=tag, lang=lang, page=md)
 
 @tag_router.get('connection', response=tuple[list[ConnectionSchema], list[ConnectionSchema] | None])
 def connection(request: HttpRequest, tag_slug: str):

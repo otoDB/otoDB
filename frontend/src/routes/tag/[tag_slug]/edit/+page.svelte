@@ -8,8 +8,8 @@
 		ProfileConnectionTypes,
 		SongConnectionLink,
 		SongConnectionTypes,
-		SourceConnectionLink,
-		SourceConnectionTypes,
+		MediaConnectionLink,
+		MediaConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
 		WorkTagCategory
@@ -71,7 +71,7 @@
 				TagWorkConnectionLink[site](content_id)
 			),
 			...(data.connections[1]?.map(({ site, content_id }) =>
-				(data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink)[site](
+				(data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink)[site](
 					content_id
 				)
 			) ?? []),
@@ -307,11 +307,11 @@
 							></tr
 						>
 					{/each}
-				{:else if category === 3 && data.tag.category === 3}
-					{#each Object.keys(SourceConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
+				{:else if category === 6 && data.tag.category === 6}
+					{#each Object.keys(MediaConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
-							><td>{SourceConnectionTypes[k]}</td><td
-								><code>{SourceConnectionLink[k]('<code>')}</code></td
+							><td>{MediaConnectionTypes[k]}</td><td
+								><code>{MediaConnectionLink[k]('<code>')}</code></td
 							></tr
 						>
 					{/each}

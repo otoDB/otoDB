@@ -5,7 +5,7 @@ import {
 	Languages,
 	ProfileConnectionParsers,
 	SongConnectionParsers,
-	SourceConnectionParsers,
+	MediaConnectionParsers,
 	TagWorkConnectionParsers,
 	UserLevel
 } from '$lib/enums';
@@ -136,7 +136,7 @@ export const actions = {
 		let parsers = Object.entries(TagWorkConnectionParsers);
 		const n_general_parsers = parsers.length;
 		if (category === 2) parsers = [...parsers, ...Object.entries(SongConnectionParsers)];
-		else if (category === 3) parsers = [...parsers, ...Object.entries(SourceConnectionParsers)];
+		else if (category === 6) parsers = [...parsers, ...Object.entries(MediaConnectionParsers)];
 		else if (category === 4)
 			parsers = [...parsers, ...Array.from(ProfileConnectionParsers.entries()).slice(1)];
 		const connections = [...new Set(urls.split('\n'))]

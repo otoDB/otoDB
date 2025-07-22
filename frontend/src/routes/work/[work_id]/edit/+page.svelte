@@ -7,6 +7,7 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
+	import { callErrorToast, callSavingToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
 	let title: string = $state(form?.title ?? data.title!),
@@ -19,7 +20,7 @@
 				fetch,
 				params: { query: { work_id: data.id } }
 			});
-			goto('/work/unbound');
+			goto('/work/unbound', { invalidateAll: true });
 		}
 	};
 	const unbind = async (source_id: number) => {
@@ -31,11 +32,19 @@
 		else invalidateAll();
 	};
 	const updateStatus = (source_id: number) => async (e) => {
-		await client.PUT('/api/work/source_origin', {
+		const p = client.PUT('/api/work/source_origin', {
 			fetch,
 			params: { query: { source_id, status: e.target.value } }
 		});
+		callSavingToast(p);
+		await p;
 	};
+
+	$effect(() => {
+		if (form?.failed) {
+			callErrorToast(m.green_due_javelina_pop());
+		}
+	});
 </script>
 
 <Section
@@ -43,7 +52,6 @@
 	menuLinks={data.links}
 >
 	<form method="POST" use:enhance action="?/edit">
-		{#if form?.failed}<p class="error">Failed!</p>{/if}
 		<table class="inline">
 			<tbody>
 				<tr

@@ -6,7 +6,8 @@ export const WorkTagCategory = [
 	m.grand_nice_pony_belong,
 	m.knotty_due_hamster_wave,
 	m.empty_fresh_mare_jump,
-	m.sad_next_jaguar_renew
+	m.sad_next_jaguar_renew,
+	m.wise_keen_beaver_pick
 ];
 
 export const SongTagCategory = [
@@ -201,7 +202,7 @@ export const TagWorkConnectionLink = {
 	21: (id: string) => `https://dic.pixiv.net/a/${id}/`,
 	22: (id: string) => `https://en.wikipedia.org/wiki/${id}`,
 	23: (id: string) => `https://namu.wiki/w/${id}`,
-	24: (id: string) => `https://knowyourmeme.com/memes/${id}`
+	24: (id: string) => `https://knowyourmeme.com/${id}`
 };
 
 export const TagWorkConnectionParsers = {
@@ -215,10 +216,10 @@ export const TagWorkConnectionParsers = {
 	22: (link: string) => link.match(/^https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)\/?$/)?.[1],
 	23: (link: string) =>
 		link.match(/^https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)\/?$/)?.[1],
-	24: (link: string) => link.match(/^https?:\/\/knowyourmeme\.com\/memes\/([^/?#]+)\/?$/)?.[1]
+	24: (link: string) => link.match(/^https?:\/\/knowyourmeme\.com\/([^/?#]+)\/?$/)?.[1]
 };
 
-export const SourceConnectionTypes = {
+export const MediaConnectionTypes = {
 	ANIKORE: 1,
 	1: 'AniKore',
 	BANGUMI: 2,
@@ -245,7 +246,7 @@ export const SourceConnectionTypes = {
 	41: 'ErogameScape'
 };
 
-export const SourceConnectionLink = {
+export const MediaConnectionLink = {
 	1: (id: string) => `https://www.anikore.jp/anime/${id}/`,
 	2: (id: string) => `https://bangumi.tv/subject/${id}`,
 	3: (id: string) => `https://anidb.net/anime/${id}`,
@@ -260,7 +261,7 @@ export const SourceConnectionLink = {
 		`https://erogamescape.dyndns.org/~ap2/ero/toukei_kaiseki/game.php?game=${id}`
 };
 
-export const SourceConnectionParsers = {
+export const MediaConnectionParsers = {
 	1: (link: string) => link.match(/^https?:\/\/www\.anikore\.jp\/anime\/(\d+)\/?$/)?.[1],
 	2: (link: string) => link.match(/^https?:\/\/bangumi\.tv\/subject\/(\d+)\/?$/)?.[1],
 	3: (link: string) => link.match(/^https?:\/\/anidb\.net\/anime\/(\d+)\/?$/)?.[1],

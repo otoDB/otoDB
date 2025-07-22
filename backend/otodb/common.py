@@ -236,15 +236,18 @@ def playlist_info(link):
         return None
 
     match info['extractor_key']:
+        # Note: a platform may have multiple sorts of playlists that call different extractors
         case 'YoutubeTab':
             pass
         case 'NiconicoPlaylist':
             pass
         case 'BilibiliFavoritesList':
             pass
-        # soundcloud?
-        # a platform can also have multiple sorts of playlists that call different extractors
-        # TODO fail for unsupported playlist types
+        case 'SoundcloudPlaylist':
+            pass
+        case _:
+            return None
+
 
     info['entries'] = [entry['url'] for entry in info['entries']]
 

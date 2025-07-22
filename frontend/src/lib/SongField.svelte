@@ -65,7 +65,7 @@
 		>
 			<tbody>
 				{#each suggestions as v, i (i)}
-					<tr class="w bg-otodb-fainter-bg hover:bg-otodb-faint-bg p-1">
+					<tr class="w bg-otodb-bg-fainter hover:bg-otodb-bg-faint p-1">
 						<td
 							><a
 								class="cursor-pointer"
@@ -89,7 +89,7 @@
 
 <style>
 	ul {
-		background-color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-bg-primary);
 		z-index: 10;
 	}
 </style>

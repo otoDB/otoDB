@@ -5,7 +5,7 @@ import {
 	Languages,
 	ProfileConnectionParsers,
 	SongConnectionParsers,
-	SourceConnectionParsers,
+	MediaConnectionParsers,
 	TagWorkConnectionParsers,
 	UserLevel
 } from '$lib/enums';
@@ -54,7 +54,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 
 	return {
 		wiki_page,
-		parent_slug: details?.tree[0]?.slug,
+		parent_slug: details?.tree.at(-1)?.slug,
 		details,
 		connections,
 		song_connections
@@ -65,7 +65,8 @@ export const actions = {
 	edit: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 		const category = data.get('category') as string,
-			parent_slug = data.get('parent') as string;
+			parent_slug = data.get('parent') as string,
+			deprecated = !!data.get('deprecated');
 
 		const title = data.get('song_title') as string,
 			author = data.get('song_author') as string,
@@ -92,13 +93,14 @@ export const actions = {
 			body: {
 				payload: {
 					category: +category,
-					parent_slug
+					parent_slug,
+					deprecated
 				},
 				song_payload: song
 			}
 		});
 
-		if (error) return fail(400, { category, parent_slug, failed: true });
+		if (error) return fail(400, { category, parent_slug, deprecated, failed: true });
 
 		redirect(303, `/tag/${params.tag_slug}`);
 	},
@@ -134,7 +136,7 @@ export const actions = {
 		let parsers = Object.entries(TagWorkConnectionParsers);
 		const n_general_parsers = parsers.length;
 		if (category === 2) parsers = [...parsers, ...Object.entries(SongConnectionParsers)];
-		else if (category === 3) parsers = [...parsers, ...Object.entries(SourceConnectionParsers)];
+		else if (category === 6) parsers = [...parsers, ...Object.entries(MediaConnectionParsers)];
 		else if (category === 4)
 			parsers = [...parsers, ...Array.from(ProfileConnectionParsers.entries()).slice(1)];
 		const connections = [...new Set(urls.split('\n'))]

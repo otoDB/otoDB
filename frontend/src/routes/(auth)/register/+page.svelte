@@ -4,6 +4,19 @@
 	import type { PageProps } from './$types';
 	let { form }: PageProps = $props();
 	import { m } from '$lib/paraglide/messages.js';
+	import { callErrorToast } from '$lib/toast';
+
+	$effect(() => {
+		if (form?.missing) {
+			callErrorToast(m.tiny_round_shark_express());
+		}
+		if (form?.failed) {
+			callErrorToast(form.message);
+		}
+		if (form?.mismatch) {
+			callErrorToast(m.front_clean_termite_treat());
+		}
+	});
 </script>
 
 <svelte:head>
@@ -12,9 +25,6 @@
 
 <Section title={m.blue_whole_camel_type()}>
 	<form method="POST" use:enhance>
-		{#if form?.missing}<p class="error">{m.tiny_round_shark_express()}</p>{/if}
-		{#if form?.failed}<p class="error">{form.message}</p>{/if}
-		{#if form?.mismatch}<p class="error">{m.front_clean_termite_treat()}</p>{/if}
 		<table>
 			<tbody>
 				<tr>

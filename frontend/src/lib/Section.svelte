@@ -22,8 +22,8 @@
 
 <style>
 	section {
-		background-color: var(--otodb-faint-bg);
-		border: 1px solid var(--otodb-faint-content);
+		background-color: var(--otodb-color-bg-faint);
+		border: 1px solid var(--otodb-color-content-faint);
 		padding: 0 1rem 1rem 1rem;
 		margin-bottom: 1rem;
 		position: relative;
@@ -51,8 +51,8 @@
 			list-style: none;
 			flex-direction: row;
 			& > li {
-				background-color: var(--otodb-faint-bg);
-				border: 1px solid var(--otodb-faint-content);
+				background-color: var(--otodb-color-bg-faint);
+				border: 1px solid var(--otodb-color-content-faint);
 				padding-left: 0.2rem;
 				padding-right: 0.2rem;
 				&[aria-current='true'] {

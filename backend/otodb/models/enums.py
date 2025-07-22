@@ -8,6 +8,7 @@ class WorkTagCategory(models.IntegerChoices):
     SOURCE    = 3, "Source"
     CREATOR   = 4, "Creator"
     META      = 5, "Meta"
+    MEDIA     = 6, "Media"
 
 class SongTagCategory(models.IntegerChoices):
     GENERAL   = 0, "General"
@@ -91,7 +92,7 @@ class TagWorkConnectionTypes(models.IntegerChoices):
     NAMUWIKI      = 23, "Namu Wiki"
     KNOWYOURMEME  = 24, "Know Your Meme"
 
-class SourceConnectionTypes(models.IntegerChoices):
+class MediaConnectionTypes(models.IntegerChoices):
     ANIKORE       = 1, "AniKore"
     BANGUMI       = 2, "Bangumi"
     ANIDB         = 3, "AniDB"

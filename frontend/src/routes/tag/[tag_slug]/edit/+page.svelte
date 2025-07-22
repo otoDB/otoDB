@@ -8,8 +8,8 @@
 		ProfileConnectionTypes,
 		SongConnectionLink,
 		SongConnectionTypes,
-		SourceConnectionLink,
-		SourceConnectionTypes,
+		MediaConnectionLink,
+		MediaConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
 		WorkTagCategory
@@ -20,9 +20,10 @@
 	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
+	import { callErrorToast, callSavingToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
 
@@ -55,10 +56,12 @@
 	};
 
 	const submitLangPref = async (lang: number, tag_slug: string) => {
-		await client.PUT('/api/tag/lang_pref', {
+		const p = client.PUT('/api/tag/lang_pref', {
 			fetch,
 			params: { query: { lang, tag_slug } }
 		});
+		callSavingToast(p);
+		await p;
 		invalidateAll();
 	};
 
@@ -68,7 +71,7 @@
 				TagWorkConnectionLink[site](content_id)
 			),
 			...(data.connections[1]?.map(({ site, content_id }) =>
-				(data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink)[site](
+				(data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink)[site](
 					content_id
 				)
 			) ?? []),
@@ -77,6 +80,24 @@
 			) ?? [])
 		].join('\n') ?? ''
 	);
+
+	$effect(() => {
+		if (form?.failed) {
+			callErrorToast(m.green_due_javelina_pop());
+		}
+	});
+
+	const del = async () => {
+		const { response } = await client.DELETE('/api/tag/tag', {
+			fetch,
+			params: { query: { tag_slug: data.tag.slug } }
+		});
+		if (response.ok) {
+			goto('/', { invalidateAll: true });
+		} else if (response.status === 400) {
+			callErrorToast(m.that_new_mayfly_spur());
+		}
+	};
 </script>
 
 <Section
@@ -84,7 +105,6 @@
 	menuLinks={data.links}
 >
 	<form method="POST" use:enhance action="?/edit">
-		{#if form?.failed}<p class="error">Failed!</p>{/if}
 		{#if data.tag.category === 2 && category !== 2}
 			<p class="text-red-500">
 				{m.front_game_porpoise_pout()}
@@ -109,6 +129,16 @@
 							type="work"
 							name="parent"
 							value={form?.parent_slug ?? data.parent_slug ?? ''}
+						/></td
+					>
+				</tr>
+				<tr>
+					<th><label for="deprecated">Deprecated</label></th>
+					<td
+						><input
+							type="checkbox"
+							name="deprecated"
+							checked={form?.deprecated ?? data.tag.deprecated}
 						/></td
 					>
 				</tr>
@@ -164,6 +194,7 @@
 		{/if}
 		<input type="submit" />
 	</form>
+	<button onclick={del}>Delete this tag</button>
 </Section>
 
 {#if category === 2 && data.tag.category === 2}
@@ -182,8 +213,8 @@
 	</Section>
 {/if}
 
-{#if data.details.aliases.length}
-	<Section title={m.alive_lofty_opossum_laugh()}>
+<Section title={m.alive_lofty_opossum_laugh()}>
+	{#if data.details.aliases.length}
 		<table>
 			<thead>
 				<tr
@@ -230,8 +261,9 @@
 				{/each}
 			</tbody>
 		</table>
-	</Section>
-{/if}
+	{/if}
+	<a href="/tag/alias?from={data.tag.slug}">{m.weary_moving_swallow_chop()}</a>
+</Section>
 
 <Section title={m.curly_zesty_pelican_aim()}>
 	<div class="my-2">
@@ -246,7 +278,7 @@
 	<form action="?/wiki_page" method="POST" use:enhance>
 		<input type="text" hidden value={wikiView} name="lang" />
 		<div class="grid grid-cols-2 gap-3">
-			<textarea required name="md" bind:value={mds[wikiView]}></textarea>
+			<textarea name="md" bind:value={mds[wikiView]}></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
 				<Markdown md={mds[wikiView]} />
 			</div>
@@ -275,11 +307,11 @@
 							></tr
 						>
 					{/each}
-				{:else if category === 3 && data.tag.category === 3}
-					{#each Object.keys(SourceConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
+				{:else if category === 6 && data.tag.category === 6}
+					{#each Object.keys(MediaConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
-							><td>{SourceConnectionTypes[k]}</td><td
-								><code>{SourceConnectionLink[k]('<code>')}</code></td
+							><td>{MediaConnectionTypes[k]}</td><td
+								><code>{MediaConnectionLink[k]('<code>')}</code></td
 							></tr
 						>
 					{/each}
@@ -310,21 +342,21 @@
 	label.wiki-lang-tab {
 		padding: 0.2rem 0.5rem;
 		display: inline-block;
-		background-color: var(--otodb-bg-color);
-		border: 1px solid var(--otodb-content-color);
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px solid var(--otodb-color-content-primary);
 		&:hover {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 		&:active {
-			background-color: var(--otodb-faint-bg);
+			background-color: var(--otodb-color-bg-faint);
 		}
 		& > input {
 			display: none;
 		}
 		&:has(> input:checked) {
-			background-color: var(--otodb-content-color);
-			border: 1px solid var(--otodb-bg-color);
-			color: var(--otodb-bg-color);
+			background-color: var(--otodb-color-content-primary);
+			border: 1px solid var(--otodb-color-bg-primary);
+			color: var(--otodb-color-bg-primary);
 		}
 	}
 </style>

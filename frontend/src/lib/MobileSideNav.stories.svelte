@@ -1,57 +1,57 @@
 <script lang="ts" module>
-	import SideNav from './SideNav.svelte';
+	import MobileSideNav from './MobileSideNav.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { UserLevel } from '$lib/enums';
+	import { fn } from 'storybook/test';
 
 	const { Story } = defineMeta({
-		title: 'SideNav',
-		component: SideNav
+		title: 'MobileSideNav',
+		component: MobileSideNav,
+		args: {
+			close: fn()
+		}
 	});
-
-	const mockStats: [number, number, number, number] = [1234, 567, 89, 12];
 </script>
 
 <Story
 	name="Not Logged In"
 	args={{
-		width: '256px',
-		user: undefined,
-		stats: mockStats
+		user: undefined
 	}}
 />
 
 <Story
 	name="Member User"
 	args={{
-		width: '256px',
 		user: {
+			csrf: 'mock-csrf-token',
+			user_id: 1,
 			username: 'testuser',
 			level: UserLevel.MEMBER
-		},
-		stats: mockStats
+		}
 	}}
 />
 
 <Story
 	name="Editor User"
 	args={{
-		width: '256px',
 		user: {
+			csrf: 'mock-csrf-token',
+			user_id: 3,
 			username: 'editoruser',
 			level: UserLevel.EDITOR
-		},
-		stats: mockStats
+		}
 	}}
 />
 
 <Story
 	name="Admin User"
 	args={{
-		width: '256px',
 		user: {
+			csrf: 'mock-csrf-token',
+			user_id: 2,
 			username: 'adminuser',
 			level: UserLevel.ADMIN
-		},
-		stats: mockStats
+		}
 	}}
 />

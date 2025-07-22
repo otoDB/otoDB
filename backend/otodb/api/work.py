@@ -144,13 +144,21 @@ def update_creator_roles(request: HttpRequest, payload: CreatorRolesUpdateSchema
 
 	return 200
 
-
 @work_router.put('toggle_sample', auth=django_auth)
 @user_is_trusted
 def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
     instance = get_object_or_404(TagWorkInstance, work_id=work_id, work_tag__slug=tag_slug)
     instance.used_as_source = not instance.used_as_source
     instance.save()
+
+@work_router.put('remove_tag', auth=django_auth)
+@user_is_trusted
+def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
+    work = get_object_or_404(MediaWork.active_objects, id=work_id)
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    work.tags.remove(tag)
+    if tag.can_be_deleted:
+        tag.delete()
 
 @work_router.get('random', response=list[WorkSchema])
 def random(request: HttpRequest, n: int = 1):

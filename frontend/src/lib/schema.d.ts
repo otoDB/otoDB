@@ -1166,6 +1166,7 @@ export interface components {
             song?: components["schemas"]["SongSchema"] | null;
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
             /** Name */
             name: string;
             /** Slug */
@@ -2270,6 +2271,7 @@ export interface operations {
             query: {
                 url: string;
                 is_reupload: boolean;
+                rating?: number;
                 work_id?: number | null;
             };
             header?: never;

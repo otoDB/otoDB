@@ -15,7 +15,7 @@
 	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
 
 	let textarea: HTMLTextAreaElement;
-	let suggestions = $state([]);
+	let suggestions = $state<any[]>([]);
 
 	const getWordAtPos = (str: string, pos: number) => {
 		let start = [...str.slice(0, pos)].reverse().join('').search(/\s/g);
@@ -37,7 +37,7 @@
 			return;
 		}
 		const { data } = await client.GET(endpoint, {
-			params: { query: { query, limit: 10 } }
+			params: { query: { query, limit: 10, resolve_aliases: false } }
 		});
 		if (!data) return;
 		suggestions = data.items;
@@ -101,12 +101,12 @@
 							textarea.value = replaceWordAtPos(
 								textarea.value,
 								textarea.selectionStart,
-								t.slug + ' '
+								t.aliased_to !== null ? t.aliased_to.slug : t.slug + ' '
 							);
 							suggestions = [];
 							updateValue();
 						}}
-						>{t.name}
+						>{t.aliased_to !== null ? `${t.name} → ${t.aliased_to.name}` : t.name}
 						{#if t.slug !== t.name}<address class="inline">
 								({t.slug}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
 										'',

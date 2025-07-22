@@ -3,7 +3,7 @@ const fs = require('fs');
 const manifest = {
     "manifest_version": 3,
     "name": "otoDB",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
     "background": {
         "scripts": ["background.js"]

@@ -58,6 +58,7 @@ class TagWorkSchema(ModelSchema):
     children: list['TagWorkSchema']
     song: Optional[SongSchema] = Field(None, alias='get_song')
     lang_prefs: list[TagWorkLangPreferenceSchema]
+    aliased_to: Optional['TagWorkSchema']
     class Meta:
         model = TagWork
         fields = ['name', 'slug', 'category', 'deprecated']

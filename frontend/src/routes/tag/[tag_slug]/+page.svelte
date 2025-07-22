@@ -8,8 +8,8 @@
 		ProfileConnectionTypes,
 		SongConnectionLink,
 		SongConnectionTypes,
-		SourceConnectionLink,
-		SourceConnectionTypes,
+		MediaConnectionLink,
+		MediaConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
 		WorkTagCategory
@@ -56,10 +56,10 @@
 		});
 
 	const ext_cat_types = $derived(
-		data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes
+		data.tag.category === 6 ? MediaConnectionTypes : ProfileConnectionTypes
 	);
 	const ext_cat_links = $derived(
-		data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink
+		data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink
 	);
 
 	// Song Relation

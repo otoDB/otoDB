@@ -14,9 +14,10 @@
 		'border-gray-300', // GENERAL
 		'border-cyan-600', // EVENT
 		'border-fuchsia-400', // SONG
-		'border-lime-600', // SOURCE
+		'border-lime-800', // SOURCE
 		'border-red-600', // CREATOR
-		'border-amber-400' // META
+		'border-amber-400', // META
+		'border-fuchsia-900' // MEDIA
 	][tag.category]}">{getTagDisplayName(tag)}</a
 >
 

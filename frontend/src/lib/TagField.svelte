@@ -36,7 +36,7 @@
 			}}
 		>
 			{#each suggestions as t, i (i)}
-				<li class="bg-otodb-fainter-bg hover:bg-otodb-faint-bg px-2 py-1">
+				<li class="bg-otodb-bg-fainter hover:bg-otodb-bg-faint px-2 py-1">
 					<a
 						class="cursor-pointer"
 						href={null}
@@ -62,6 +62,6 @@
 
 <style>
 	ul {
-		background-color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-bg-primary);
 	}
 </style>

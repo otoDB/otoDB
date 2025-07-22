@@ -52,7 +52,7 @@
 		<!-- TODO: design decision -- allow deeper nested comments? check COMMENTS_XTD_MAX_THREAD_LEVEL on backend -->
 		<div class="float-right flex gap-2">
 			{#if can_comment && depth < 3}
-				<label class="bg-otodb-bg-color hover:bg-otodb-fainter-bg border-1">
+				<label class="bg-otodb-bg-primary hover:bg-otodb-bg-fainter border-1">
 					{m.kind_brief_earthworm_dash()}
 					<input type="checkbox" class="reply-toggle hidden" value={false} />
 				</label>
@@ -65,7 +65,7 @@
 		<div class="mb-3 flex items-end gap-2 align-bottom">
 			<p>#{data.index}</p>
 			<h4><a href="/profile/{data.user.username}">{data.user.username}</a></h4>
-			<address class="text-otodb-fainter-content text-xs">{data.time}</address>
+			<address class="text-otodb-content-fainter text-xs">{data.time}</address>
 		</div>
 		<p>{data.comment}</p>
 	</div>
@@ -99,7 +99,7 @@
 		display: flex;
 	}
 	div.comment {
-		background-color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-bg-primary);
 		padding: 0.5rem 1rem 0.8rem 1rem;
 		margin: 0.5rem 0;
 		&:has(input.reply-toggle:checked) + div > form.reply-form {

@@ -177,6 +177,6 @@
 
 <style>
 	:global(.drag-over) {
-		outline: 2px solid var(--otodb-content-color);
+		outline: 2px solid var(--otodb-color-content-primary);
 	}
 </style>

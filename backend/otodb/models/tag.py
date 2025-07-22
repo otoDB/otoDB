@@ -95,9 +95,9 @@ class TagWork(OtodbTagModel):
             models.Case(
                 models.When(category=1, then=models.Value(0)),     # EVENT
                 models.When(category=4, then=models.Value(10)),    # CREATOR
+                models.When(category=6, then=models.Value(11)),    # MEDIA
                 models.When(category=3, then=models.Value(20)),    # SOURCE
                 models.When(category=2, then=models.Value(30)),    # SONG
-                models.When(category=6, then=models.Value(31)),    # MEDIA
                 models.When(category=0, then=models.Value(40)),    # GENERAL
                 models.When(category=5, then=models.Value(1000)),  # META (always last)
                 default=models.Value(999),

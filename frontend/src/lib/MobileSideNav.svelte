@@ -75,6 +75,9 @@
 			{@render link('/', m.fine_late_chicken_quiz())}
 			{@render link('/post/2', m.noble_fine_iguana_pull())}
 			{@render link('/work/search', m.grand_merry_fly_succeed())}
+			{#if user?.level >= UserLevel.MEMBER}
+				{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
+			{/if}
 			{@render link('/tag/search', m.empty_legal_chicken_taste())}
 			{@render link('/list/search', m.stale_loose_squid_cut())}
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
@@ -118,9 +121,9 @@
 				{m.these_bold_gorilla_flip()}
 			</div>
 			<ul class="mt-4 list-none space-y-4">
+				{@render link('/work/unbound', m.tense_small_firefox_lock())}
 				{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 				{@render link('/work/merge', m.heroic_same_wasp_conquer())}
-				{@render link('/work/unbound', m.tense_small_firefox_lock())}
 			</ul>
 		</div>
 	{/if}

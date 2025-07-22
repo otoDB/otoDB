@@ -7,6 +7,7 @@
 	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
+	let isReupload = $state(form?.origin === false);
 
 	$effect(() => {
 		if (form?.failed) {
@@ -52,13 +53,27 @@
 				<tr>
 					<th><label for="origin">{m.watery_fuzzy_fireant_thrive()}</label></th>
 					<td
-						><select name="origin" value={form?.origin ?? !data.title}
+						><select
+							name="origin"
+							onchange={(e) => {
+								isReupload = (e.target as HTMLSelectElement).value == 'false';
+							}}
+							value={form?.origin ?? !data.title}
 							><option value={true}>{m.broad_large_squid_zoom()}</option><option
 								value={false}>{m.great_lucky_goldfish_sail()}</option
 							></select
 						></td
 					>
 				</tr>
+				{#if isReupload}
+					<tr>
+						<th
+							><label for="original_url">{m.crisp_steep_angelfish_bump()}</label
+							></th
+						>
+						<td><input type="text" name="original_url"/></td>
+					</tr>
+				{/if}
 				{#if data.isNewWork}
 					<tr
 						><th><label for="rating">{m.good_dark_bumblebee_spur()}</label></th><td

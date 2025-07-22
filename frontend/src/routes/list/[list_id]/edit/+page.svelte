@@ -5,64 +5,60 @@
 	import { enhance } from '$app/forms';
 	import { debounce } from '$lib/ui';
 	import client from '$lib/api';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { draggable, droppable } from '@thisux/sveltednd';
+	import Pager from '$lib/Pager.svelte';
+	import { callSavingToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
 
-	let entries_copy = data.entries!.items.map((el, i) => Object.assign({}, el, { ui_id: i }));
-	let entries = $state(entries_copy);
+	const offset = (data.page - 1) * data.batch_size;
 
-	let source: number | null = null,
-		target: number | null = null;
+	let entries = $derived(data.entries!.items.map((e, i) => Object.assign({}, e, { ui_id: i })));
 
-	function dragenter(e) {
-		target = e.target.closest('tr').dataset.ridx;
-		if (source && target) {
-			entries = [...entries_copy];
-			if (source != target) {
-				entries.splice(target, 0, entries.splice(source, 1)[0]);
-			}
-		}
-	}
+	async function handleDrop(state) {
+		const { draggedItem, targetContainer } = state;
+		const dragIndex = entries.findIndex((item) => item.ui_id === draggedItem[1].ui_id);
+		const dropIndex = parseInt(targetContainer ?? '0');
 
-	function ondragstart(e) {
-		source = e.target.closest('tr').dataset.ridx;
-		e.dataTransfer!.effectAllowed = 'move';
-	}
-
-	async function ondragend(e) {
-		if (source && target && source != target) {
+		if (dragIndex !== -1 && !isNaN(dropIndex) && dragIndex !== dropIndex) {
+			const [item] = entries.splice(dragIndex, 1);
+			entries.splice(dropIndex, 0, item);
+			entries = entries;
 			await client.PUT('/api/list/items', {
 				fetch,
 				params: { query: { list_id: data.list.id } },
 				body: {
-					move: [[source, target]],
+					move: [[dragIndex + offset, dropIndex + offset]],
 					delete: [],
 					update_description: [],
 					update_work: []
 				}
 			});
-			source = null;
-			target = null;
-			entries_copy = [...entries];
+			invalidateAll();
 		}
 	}
 
 	async function update_description(el) {
-		await client.PUT('/api/list/items', {
+		const p = client.PUT('/api/list/items', {
 			fetch,
 			params: { query: { list_id: data.list.id } },
 			body: {
-				update_description: [[+el.target.closest('tr').dataset.ridx, el.target.value]],
+				update_description: [
+					[+el.target.closest('tr').dataset.ridx + offset, el.target.value]
+				],
 				move: [],
 				delete: [],
 				update_work: []
 			}
 		});
+		callSavingToast(p);
+		await p;
+		invalidateAll();
 	}
 
 	async function delete_item(el) {
-		const i = +el.target.closest('tr')!.dataset.ridx!;
+		const i = +el.target.closest('tr')!.dataset.ridx! + offset;
 		const { error } = await client.PUT('/api/list/items', {
 			fetch,
 			params: { query: { list_id: data.list.id } },
@@ -76,8 +72,9 @@
 		});
 		if (!error) {
 			entries.splice(i, 1);
-			entries_copy = [...entries];
+			entries = entries;
 		}
+		invalidateAll();
 	}
 
 	const pull = async () => {
@@ -125,14 +122,20 @@
 		<table class="w-full">
 			<tbody>
 				{#each entries as entry, i (entry.ui_id)}
-					<tr ondragenter={debounce(dragenter, 50)} data-ridx={i}
+					<tr
+						class="svelte-dnd-touch-feedback"
+						use:droppable={{
+							container: i.toString(),
+							callbacks: { onDrop: handleDrop }
+						}}
+						data-ridx={i}
 						><th>{i + 1}</th><td class="w-10"
 							><div
-								class="w-10 border text-center select-none"
-								draggable="true"
-								{ondragstart}
-								{ondragend}
-								role="none"
+								class="svelte-dnd-touch-feedback w-10 cursor-move border text-center select-none"
+								use:draggable={{
+									container: i.toString(),
+									dragData: [i, entry]
+								}}
 							>
 								=
 							</div></td
@@ -164,7 +167,16 @@
 				{/each}
 			</tbody>
 		</table>
+		{#if data.entries?.count}
+			<Pager n_count={data.entries.count} page={data.page} page_size={data.batch_size} />
+		{/if}
 	{:else}
 		<h3>{m.hour_flat_finch_zoom()}</h3>
 	{/if}
 </Section>
+
+<style>
+	:global(.drag-over) {
+		outline: 2px solid var(--otodb-color-content-primary);
+	}
+</style>

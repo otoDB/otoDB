@@ -12,10 +12,6 @@ otodb.net {
 		reverse_proxy backend:8000
 	}
 
-	handle /comments/api* {
-		reverse_proxy backend:8000
-	}
-
 	handle /chores* {
 		reverse_proxy backend:8000
 	}

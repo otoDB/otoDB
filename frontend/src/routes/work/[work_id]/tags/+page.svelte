@@ -6,6 +6,7 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import TagsField from '$lib/TagsField.svelte';
 	import { Role } from '$lib/enums';
+	import { callSavingToast } from '$lib/toast.js';
 
 	let { data } = $props();
 
@@ -45,10 +46,12 @@
 			? current_roles.filter((r: number) => r !== role_value)
 			: [...current_roles, role_value];
 
-		const response = await client.POST('/api/work/creator_roles', {
+		const p = client.POST('/api/work/creator_roles', {
 			fetch,
 			body: { work_id: +data.id, tag_slug, creator_roles: new_roles }
 		});
+		callSavingToast(p);
+		const response = await p;
 
 		if (response.response.ok) {
 			tag.creator_roles = new_roles;
@@ -67,10 +70,20 @@
 	};
 
 	const toggle_sample = async (tag_slug: string) => {
-		await client.PUT('/api/work/toggle_sample', {
+		const p = client.PUT('/api/work/toggle_sample', {
 			fetch,
 			params: { query: { work_id: data.id, tag_slug } }
 		});
+		callSavingToast(p);
+		await p;
+	};
+
+	const remove_tag = async (tag_slug: string) => {
+		await client.PUT('/api/work/remove_tag', {
+			fetch,
+			params: { query: { work_id: data.id, tag_slug } }
+		});
+		tags = tags.filter((tag) => tag.slug !== tag_slug);
 	};
 </script>
 
@@ -84,7 +97,8 @@
 				><th>{m.empty_legal_chicken_taste()}</th><th>{m.brave_tiny_meerkat_engage()}</th><th
 					>{m.sunny_deft_puffin_scoop()}</th
 				><th>{m.acidic_brave_halibut_heart()}</th>
-				<th>{m.broad_wide_lemming_hint()}</th></tr
+				<th>{m.broad_wide_lemming_hint()}</th>
+				<th>{m.even_alert_grebe_taste()}</th></tr
 			>
 		</thead><tbody>
 			{#each tags as tag, i (i)}
@@ -139,6 +153,9 @@
 							{m.simple_less_marlin_enchant()}
 						{/if}
 					</td>
+					<td>
+						<button onclick={() => remove_tag(tag.slug)}>X</button>
+					</td>
 				</tr>
 			{/each}
 		</tbody>
@@ -153,24 +170,24 @@
 
 <style>
 	button.rating {
-		background-color: var(--otodb-bg-color);
-		border: 1px var(--otodb-content-color) solid;
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px var(--otodb-color-content-primary) solid;
 		width: 1rem;
 		height: 1rem;
 		display: inline-block;
 		&[data-checked='true'] {
-			background-color: var(--otodb-faint-content);
+			background-color: var(--otodb-color-content-faint);
 		}
 	}
 	label.role-label {
 		padding: 0 0.3rem;
 		margin: 0.1rem;
-		border: 1px solid var(--otodb-content-color);
+		border: 1px solid var(--otodb-color-content-primary);
 		&:has(input:checked) {
-			background-color: var(--otodb-content-color);
-			color: var(--color-otodb-bg-color);
+			background-color: var(--otodb-color-content-primary);
+			color: var(--color-otodb-bg-primary);
 		}
-		color: var(--otodb-content-color);
-		background-color: var(--otodb-bg-color);
+		color: var(--otodb-color-content-primary);
+		background-color: var(--otodb-color-bg-primary);
 	}
 </style>

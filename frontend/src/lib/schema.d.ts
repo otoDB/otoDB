@@ -158,6 +158,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/tags_needed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tags Needed */
+        get: operations["otodb_api_work_tags_needed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/work": {
         parameters: {
             query?: never;
@@ -222,6 +239,23 @@ export interface paths {
         get?: never;
         /** Toggle Sample */
         put: operations["otodb_api_work_toggle_sample"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/remove_tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Remove Tag */
+        put: operations["otodb_api_work_remove_tag"];
         post?: never;
         delete?: never;
         options?: never;
@@ -725,7 +759,8 @@ export interface paths {
         /** Update */
         put: operations["otodb_api_tag_update"];
         post?: never;
-        delete?: never;
+        /** Delete */
+        delete: operations["otodb_api_tag_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1009,6 +1044,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/comment/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["otodb_api_comment_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comment/comment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post */
+        post: operations["otodb_api_comment_post"];
+        /** Delete */
+        delete: operations["otodb_api_comment_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1105,6 +1175,11 @@ export interface components {
              * @default 0
              */
             category: number;
+            /**
+             * Deprecated
+             * @default false
+             */
+            deprecated: boolean;
         };
         /** Input */
         Input: {
@@ -1431,6 +1506,8 @@ export interface components {
             parent_slug: string | null;
             /** Category */
             category: number;
+            /** Deprecated */
+            deprecated: boolean;
         };
         /** TagWorkDetailsSchema */
         TagWorkDetailsSchema: {
@@ -1482,6 +1559,25 @@ export interface components {
             title: string;
             /** Post Rendered */
             post_rendered: string;
+        };
+        /** CommentSchema */
+        CommentSchema: {
+            /** Id */
+            id: number;
+            /** Level */
+            level: number;
+            user: components["schemas"]["ProfileSchema"];
+            /** Comment */
+            comment: string;
+            /**
+             * Submit Date
+             * Format: date-time
+             */
+            submit_date: string;
+            /** Parent Id */
+            parent_id: number;
+            /** Index */
+            index: number;
         };
     };
     responses: never;
@@ -1740,6 +1836,29 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_tags_needed: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedWorkSchema"];
+                };
+            };
+        };
+    };
     otodb_api_work_work: {
         parameters: {
             query: {
@@ -1758,6 +1877,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkSchema"];
+                };
+            };
+            /** @description Multiple Choices */
+            300: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
                 };
             };
         };
@@ -1876,6 +2004,27 @@ export interface operations {
         };
     };
     otodb_api_work_toggle_sample: {
+        parameters: {
+            query: {
+                work_id: number;
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_remove_tag: {
         parameters: {
             query: {
                 work_id: number;
@@ -2716,6 +2865,26 @@ export interface operations {
             };
         };
     };
+    otodb_api_tag_delete: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_tag_details: {
         parameters: {
             query: {
@@ -2766,6 +2935,7 @@ export interface operations {
         parameters: {
             query: {
                 into_tag: string;
+                delete: boolean;
             };
             header?: never;
             path?: never;
@@ -3217,6 +3387,74 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PostSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_comment_get: {
+        parameters: {
+            query: {
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
+                pk: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommentSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_comment_post: {
+        parameters: {
+            query: {
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
+                pk: number;
+                comment: string;
+                parent_id?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_comment_delete: {
+        parameters: {
+            query: {
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
+                pk: number;
+                comment_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

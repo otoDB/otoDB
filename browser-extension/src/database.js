@@ -76,6 +76,8 @@ const displayNotFound = (currentUrl) => {
     let addLink = document.createElement('A');
     addLink.innerText = "Add this work to otoDB...";
     addLink.href = `${OTODB_URL}/work/add?${new URLSearchParams({ url: currentUrl })}`;
+	addLink.target = "_blank";
+	addLink.rel = "noopener noreferrer";
     resultsContainer.appendChild(addLink);
 };
 

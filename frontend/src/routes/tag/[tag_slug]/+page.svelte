@@ -8,8 +8,8 @@
 		ProfileConnectionTypes,
 		SongConnectionLink,
 		SongConnectionTypes,
-		SourceConnectionLink,
-		SourceConnectionTypes,
+		MediaConnectionLink,
+		MediaConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
 		WorkTagCategory
@@ -56,10 +56,10 @@
 		});
 
 	const ext_cat_types = $derived(
-		data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes
+		data.tag.category === 6 ? MediaConnectionTypes : ProfileConnectionTypes
 	);
 	const ext_cat_links = $derived(
-		data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink
+		data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink
 	);
 
 	// Song Relation
@@ -132,6 +132,10 @@ ${nodes
 		</h3>
 	{/if}
 
+	{#if data.tag.deprecated}
+		<h2>This tag has been deprecated. It will not be displayed under works.</h2>
+	{/if}
+
 	{#if data.connections}
 		<ul class="list-none">
 			{#each data.connections[0] as s, i (i)}
@@ -145,7 +149,7 @@ ${nodes
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{TagWorkConnectionLink[s.site](s.content_id)}
+						{decodeURI(TagWorkConnectionLink[s.site](s.content_id))}
 					</a>
 				</li>
 			{/each}
@@ -223,7 +227,7 @@ ${nodes
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{SongConnectionLink[s.site](s.content_id)}
+							{decodeURI(SongConnectionLink[s.site](s.content_id))}
 						</a>
 					</li>
 				{/each}
@@ -238,7 +242,7 @@ ${nodes
 		{/if}
 		{#if songs?.length}
 			<label>
-				Distance:
+				{m.just_grassy_mantis_slurp()}
 				<input type="number" bind:value={deg} min="1" />
 			</label>
 			<label>
@@ -274,11 +278,11 @@ ${nodes
 
 {#if data.tag.children.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
-		<ul>
+		<div class="flex flex-wrap gap-3">
 			{#each data.tag.children as tag, i (i)}
-				<li><WorkTag {tag} /></li>
+				<WorkTag {tag} />
 			{/each}
-		</ul>
+		</div>
 	</Section>
 {/if}
 
@@ -307,7 +311,7 @@ ${nodes
 <style>
 	#song-tags {
 		grid-column: 1 / span 2;
-		border-top: var(--otodb-faint-content) 1px solid;
+		border-top: var(--otodb-color-content-faint) 1px solid;
 		margin-top: 1rem;
 		padding-top: 1rem;
 		display: flex;
@@ -321,32 +325,32 @@ ${nodes
 	label.wiki-lang-tab {
 		padding: 0.2rem 0.5rem;
 		display: inline-block;
-		background-color: var(--otodb-bg-color);
-		border: 1px solid var(--otodb-content-color);
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px solid var(--otodb-color-content-primary);
 		&:hover {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 		&:active {
-			background-color: var(--otodb-faint-bg);
+			background-color: var(--otodb-color-bg-faint);
 		}
 		& > input {
 			display: none;
 		}
 		&:has(> input:checked) {
-			background-color: var(--otodb-content-color);
-			border: 1px solid var(--otodb-bg-color);
-			color: var(--otodb-bg-color);
+			background-color: var(--otodb-color-content-primary);
+			border: 1px solid var(--otodb-color-bg-primary);
+			color: var(--otodb-color-bg-primary);
 		}
 	}
 	label.type-label {
 		padding: 0 0.3rem;
 		margin: 0.1rem;
-		border: 1px solid var(--otodb-content-color);
+		border: 1px solid var(--otodb-color-content-primary);
 		&:has(input:checked) {
-			background-color: var(--otodb-content-color);
-			color: var(--color-otodb-bg-color);
+			background-color: var(--otodb-color-content-primary);
+			color: var(--color-otodb-bg-primary);
 		}
-		color: var(--otodb-content-color);
-		background-color: var(--otodb-bg-color);
+		color: var(--otodb-color-content-primary);
+		background-color: var(--otodb-color-bg-primary);
 	}
 </style>

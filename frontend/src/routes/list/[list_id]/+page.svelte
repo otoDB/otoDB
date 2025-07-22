@@ -11,10 +11,10 @@
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import Pager from '$lib/Pager.svelte';
 
 	let { data }: PageProps = $props();
 
-	let entries = $derived(data.entries!.items);
 	let pending_items = $derived(data.pending_items!.items);
 
 	let current = $state(0);
@@ -25,7 +25,7 @@
 		client
 			.GET('/api/work/sources', {
 				fetch,
-				params: { query: { work_id: entries[current].work.id } }
+				params: { query: { work_id: data.entries.items[current].work.id } }
 			})
 			.then(({ data }) => {
 				sources = data;
@@ -53,7 +53,7 @@
 	<p class="whitespace-pre-wrap">{data.list.description}</p>
 </Section>
 
-{#if entries.length && sources && sources.length && select >= 0 && select < sources.length}
+{#if data.entries.items.length && sources && sources.length && select >= 0 && select < sources.length}
 	<Section title={m.mealy_soft_myna_talk()}>
 		<ExternalEmbed src={sources[select]} />
 		<div class="my-2">
@@ -74,10 +74,10 @@
 	</Section>
 {/if}
 <Section title={m.bald_clear_marlin_grasp()}>
-	{#if entries.length}
+	{#if data.entries?.items.length}
 		<div class="flex w-full">
 			<ol class="mr-5 w-full list-outside list-decimal">
-				{#each entries as entry, i (i)}
+				{#each data.entries.items as entry, i (i)}
 					<li class="mx-5 w-full p-1">
 						<label class="grid grid-cols-[15rem_1fr] gap-5">
 							<input class="hidden" type="radio" value={i} bind:group={current} />
@@ -85,7 +85,7 @@
 							{#if entry.description}
 								<p>{entry.description}</p>
 							{:else}
-								<p class="text-otodb-fainter-content">
+								<p class="text-otodb-content-fainter">
 									[{m.simple_less_marlin_enchant()}]
 								</p>
 							{/if}
@@ -94,21 +94,9 @@
 				{/each}
 			</ol>
 		</div>
-		<LoadMoreButton
-			fetchNextBatch={() =>
-				client.GET('/api/list/entries', {
-					fetch,
-					params: {
-						query: {
-							list_id: data.list.id,
-							limit: data.batch_size,
-							offset: entries.length
-						}
-					}
-				})}
-			maxCount={data.entries!.count}
-			bind:results={entries}
-		/>
+		{#if data.entries?.count}
+			<Pager n_count={data.entries.count} page={data.page} page_size={data.batch_size} />
+		{/if}
 	{:else}
 		<h3>{m.hour_flat_finch_zoom()}</h3>
 	{/if}
@@ -177,28 +165,28 @@
 	}
 	ul > li,
 	ol > li > label {
-		background-color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-bg-primary);
 		padding: 1rem;
 		cursor: pointer;
 		&:has(> input:checked) {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 	}
 	label:has(> input[name='cover_select']) {
 		padding: 0.2rem 0.5rem;
 		display: inline-block;
-		background-color: var(--otodb-bg-color);
-		border: 1px solid var(--otodb-content-color);
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px solid var(--otodb-color-content-primary);
 		&:hover {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 		&:active {
-			background-color: var(--otodb-faint-bg);
+			background-color: var(--otodb-color-bg-faint);
 		}
 	}
 	label:has(> input[name='cover_select']:checked) {
-		background-color: var(--otodb-content-color);
-		border: 1px solid var(--otodb-bg-color);
-		color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-content-primary);
+		border: 1px solid var(--otodb-color-bg-primary);
+		color: var(--otodb-color-bg-primary);
 	}
 </style>

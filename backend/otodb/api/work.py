@@ -55,9 +55,16 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
         qs = qs.order_by('priority')
     return qs
 
-@work_router.get('work', response=WorkSchema)
+@work_router.get('tags_needed', response=List[WorkSchema])
+@paginate
+def tags_needed(request: HttpRequest):
+    return MediaWork.active_objects.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False))).filter(ntags__lte=4)
+
+@work_router.get('work', response={ 200: WorkSchema, 300: int })
 def work(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork.active_objects, id=work_id)
+    work = get_object_or_404(MediaWork.objects, id=work_id)
+    if work.moved_to:
+        return 300, work.moved_to.id
     return work
 
 @work_router.delete('work', auth=django_auth)
@@ -137,13 +144,21 @@ def update_creator_roles(request: HttpRequest, payload: CreatorRolesUpdateSchema
 
 	return 200
 
-
 @work_router.put('toggle_sample', auth=django_auth)
 @user_is_trusted
 def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
     instance = get_object_or_404(TagWorkInstance, work_id=work_id, work_tag__slug=tag_slug)
     instance.used_as_source = not instance.used_as_source
     instance.save()
+
+@work_router.put('remove_tag', auth=django_auth)
+@user_is_trusted
+def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
+    work = get_object_or_404(MediaWork.active_objects, id=work_id)
+    tag = get_object_or_404(TagWork, slug=tag_slug)
+    work.tags.remove(tag)
+    if tag.can_be_deleted:
+        tag.delete()
 
 @work_router.get('random', response=list[WorkSchema])
 def random(request: HttpRequest, n: int = 1):
@@ -274,8 +289,10 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
     else:
         work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
 
+    # Add them first in case they don't exist
     work.tags.add(*info.get('tags', []))
-    work.tagworkinstance_set.filter(work_tag__in=info.get('tags', [])).update(instance_imported_from_source=True)
+    tags = TagWork.objects.filter(name__in=info.get('tags', []))
+    work.tagworkinstance_set.filter(work_tag__in=tags).update(instance_imported_from_source=True)
 
     src.media = work
     src.save()

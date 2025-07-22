@@ -11,7 +11,7 @@ from .enums import WorkTagCategory, SongTagCategory, LanguageTypes
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
-    from .connection import TagWorkConnection, TagWorkSourceConnection, TagWorkCreatorConnection
+    from .connection import TagWorkConnection, TagWorkMediaConnection, TagWorkCreatorConnection
     from .media import MediaSong
 
 def name_cleaner(s):
@@ -58,6 +58,8 @@ def _alias(from_tags, into_tag):
     is_work = isinstance(into_tag, TagWork)
     model = TagWork if is_work else TagSong
     for tag in from_tags:
+        if tag.aliased_to:
+            tag = tag.aliased_to
         if tag.id != into_tag.id:
             tag.aliased_to = into_tag
             tag.parent = None
@@ -72,14 +74,12 @@ def _alias(from_tags, into_tag):
                 t.parent = into_tag
                 t.save()
 
-    into_tag.save()
-
 class TagWork(OtodbTagModel):
     objects = LowerCaseTagModelManager()
 
     if TYPE_CHECKING:
         tagworkconnection_set: QuerySet['TagWorkConnection']
-        tagworksourceconnection_set: QuerySet['TagWorkSourceConnection']
+        tagworkmediaconnection_set: QuerySet['TagWorkMediaConnection']
         tagworkcreatorconnection_set: QuerySet['TagWorkCreatorConnection']
         tagworklangpreference_set: QuerySet['TagWorkLangPreference']
         aliases: QuerySet['TagWork']
@@ -93,13 +93,14 @@ class TagWork(OtodbTagModel):
     class Meta:
         ordering = [
             models.Case(
-                models.When(category=1, then=models.Value(0)),  # EVENT
-                models.When(category=4, then=models.Value(1)),  # CREATOR
-                models.When(category=3, then=models.Value(2)),  # SOURCE
-                models.When(category=2, then=models.Value(3)),  # SONG
-                models.When(category=0, then=models.Value(4)),  # GENERAL
-                models.When(category=5, then=models.Value(5)),  # META
-                default=models.Value(99),
+                models.When(category=1, then=models.Value(0)),     # EVENT
+                models.When(category=4, then=models.Value(10)),    # CREATOR
+                models.When(category=6, then=models.Value(11)),    # MEDIA
+                models.When(category=3, then=models.Value(20)),    # SOURCE
+                models.When(category=2, then=models.Value(30)),    # SONG
+                models.When(category=0, then=models.Value(40)),    # GENERAL
+                models.When(category=5, then=models.Value(1000)),  # META (always last)
+                default=models.Value(999),
                 output_field=models.IntegerField()
             ),
             'name'
@@ -110,6 +111,7 @@ class TagWork(OtodbTagModel):
             self.name = name_cleaner(self.name)
         super().save(*args, **kwargs)
 
+    deprecated = models.BooleanField(default=False, null=False)
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
@@ -141,6 +143,18 @@ class TagWork(OtodbTagModel):
         for alias in self.aliases.all():
             q |= alias.tagworklangpreference_set.all()
         return q.distinct()
+
+    @property
+    def can_be_deleted(self):
+        # Maximal friction to avoid accidentally deleting any user-contributed data
+        return not any([
+            self.works.exists(),
+            self.aliased_to,
+            self.aliases.exists(),
+            self.wikipage_set.exists() and any([p.page.strip() != '' for p in self.wikipage_set]),
+            self.tagworkconnection_set.exists(),
+            self.category != WorkTagCategory.GENERAL
+        ])
 
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)

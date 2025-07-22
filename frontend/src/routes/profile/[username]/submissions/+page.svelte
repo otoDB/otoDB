@@ -5,10 +5,10 @@
 	import { Platform, WorkOrigin, WorkStatus } from '$lib/enums';
 	import RefreshButton from '../../../work/RefreshButton.svelte';
 	import client from '$lib/api';
+	import Pager from '$lib/Pager.svelte';
 
 	let { data }: PageProps = $props();
-	let results = $state(data.submissions!.items);
-	let page = $state(0);
+	let results = $derived(data.submissions!.items);
 
 	let approved = $derived(results.filter((s) => s.media));
 	let pending = $derived(results.filter((s) => !s.media && !s.rejection));
@@ -22,7 +22,7 @@
 					query: {
 						username: data.profile.username,
 						limit: data.batch_size,
-						offset: page * data.batch_size
+						offset: (data.page - 1) * data.batch_size
 					}
 				}
 			})
@@ -158,14 +158,7 @@
 		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 	{#if data.submissions?.count}
-		<div class="mt-3 flex justify-center gap-2">
-			{#each Array(Math.ceil(data.submissions?.count / data.batch_size)).fill(undefined) as _, i (i)}
-				<label class="inline-block border p-2">
-					<input type="radio" value={i} bind:group={page} hidden />
-					{i + 1}
-				</label>
-			{/each}
-		</div>
+		<Pager n_count={data.submissions.count} page={data.page} page_size={data.batch_size} />
 	{/if}
 </Section>
 
@@ -174,9 +167,5 @@
 		font-size: larger;
 		margin: 1rem 0 0.5rem 0;
 		font-weight: 600;
-	}
-	label:has(input:checked) {
-		background-color: var(--otodb-content-color);
-		color: var(--otodb-bg-color);
 	}
 </style>

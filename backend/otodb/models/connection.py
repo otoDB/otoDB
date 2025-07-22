@@ -3,7 +3,7 @@ from django.db import models
 from .media import MediaSong
 from .tag import TagWork
 from otodb.account.models import Account
-from .enums import ProfileConnectionTypes, SongConnectionTypes, TagWorkConnectionTypes, SourceConnectionTypes
+from .enums import ProfileConnectionTypes, SongConnectionTypes, TagWorkConnectionTypes, MediaConnectionTypes
 
 class ProfileConnection(models.Model):
     profile = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -26,9 +26,9 @@ class TagWorkConnection(models.Model):
     class Meta:
         unique_together = (("tag", "site", "content_id"),)
 
-class TagWorkSourceConnection(models.Model):
+class TagWorkMediaConnection(models.Model):
     tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
-    site = models.IntegerField(choices=SourceConnectionTypes.choices)
+    site = models.IntegerField(choices=MediaConnectionTypes.choices)
     content_id = models.CharField(max_length=1000)
     class Meta:
         unique_together = (("tag", "site", "content_id"),)

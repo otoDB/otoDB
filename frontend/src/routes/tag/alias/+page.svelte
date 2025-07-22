@@ -46,8 +46,8 @@
 
 			<label
 				>Behaviour: <select name="behaviour" bind:value={del}
-					><option value={false}>Keep tags as aliases</option><option value={true}
-						>Delete tags</option
+					><option value={false}>{m.dirty_lazy_mammoth_empower()}</option><option
+						value={true}>{m.real_born_goat_snap()}</option
 					></select
 				></label
 			>

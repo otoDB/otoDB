@@ -11,7 +11,7 @@ from .enums import WorkTagCategory, SongTagCategory, LanguageTypes
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
-    from .connection import TagWorkConnection, TagWorkSourceConnection, TagWorkCreatorConnection
+    from .connection import TagWorkConnection, TagWorkMediaConnection, TagWorkCreatorConnection
     from .media import MediaSong
 
 def name_cleaner(s):
@@ -79,7 +79,7 @@ class TagWork(OtodbTagModel):
 
     if TYPE_CHECKING:
         tagworkconnection_set: QuerySet['TagWorkConnection']
-        tagworksourceconnection_set: QuerySet['TagWorkSourceConnection']
+        tagworkMediaConnection_set: QuerySet['TagWorkMediaConnection']
         tagworkcreatorconnection_set: QuerySet['TagWorkCreatorConnection']
         tagworklangpreference_set: QuerySet['TagWorkLangPreference']
         aliases: QuerySet['TagWork']

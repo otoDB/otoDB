@@ -1,13 +1,10 @@
 <script lang="ts">
 	import '../app.css';
 	import { Toaster } from 'svelte-sonner';
-	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import Header from '../lib/SideNav.svelte';
 	import MobileSideNav from '../lib/MobileSideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
-	import { LanguageNames } from '$lib/enums';
-	import ConnectionFavicon from '../lib/ConnectionFavicon.svelte';
 	import { background } from '$lib/stores/theme';
 	import { clickOutside } from '$lib/ui';
 
@@ -113,15 +110,7 @@
 						<a href="mailto:contact@otodb.net">contact@otodb.net</a>
 					</div>
 				</div>
-				<div class="footer-right">
-					<ConnectionFavicon type="Website" class="size-4" />
-					<select onchange={(e) => setLocale(e.target.value)} value={getLocale()}>
-						<option value="en">{LanguageNames['en']}</option>
-						<option value="ja">{LanguageNames['ja']}</option>
-						<option value="ko">{LanguageNames['ko']}</option>
-						<option value="zh-cn">{LanguageNames['zh-cn']}</option>
-					</select>
-				</div>
+				<div class="footer-right"></div>
 			</footer>
 		</div>
 	</div>

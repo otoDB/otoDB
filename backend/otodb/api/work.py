@@ -258,20 +258,50 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
 
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
 
+    # Bad url (main url)
+    if src is None:
+        return 400, {'message': "Bad request, is the URL correct?"}
+
     if (is_reupload and original_url):
         original_src, original_info = WorkSource.from_url(original_url, user=request.user, is_reupload=False)
+        # Bad url (reupload) I think the function shouldn't go further if either fails
+        if original_src is None:
+            return 400, {'message': "Bad request, is the URL of the original upload correct?"}
 
-    if src.media is not None:
-        return 409, {'message': "Conflict, a work with this source already exists."}
-    if getattr(src, 'rejection', None):
+    if getattr(src, 'rejection', None) or getattr(original_src, 'rejection', None):
         return 400, {'message': "Bad Request, This source has already been rejected"}
+    
+    if (src.media is not None and original_src.media is not None):
+        if (src.media.id == original_src.media.id):
+            # Perfect match, no action required
+            return src.media.id
+        else:
+            # Needs adjustment: one source already exists
+            MediaWork.merge(
+                get_object_or_404(MediaWork.active_objects, id=original_src.media.id),
+                get_object_or_404(MediaWork.active_objects, id=src.media.id),
+                original_src.title,
+                original_src.description,
+                original_src.thumbnail,
+                rating
+            )
+            return original_src.media.id
+        
+    # === Scenarios where either one source or both are missing === #
 
+    # If the work does not exist and you are not an editor, you are left with "orphan"
+    # sources to be processed and accepted later by an editor.
     has_work = work_id or request.user.level >= Account.Levels.EDITOR
     if has_work:
         if work_id:
             work = get_object_or_404(MediaWork.active_objects, id=work_id)
+        elif src.media is not None:
+            work = get_object_or_404(MediaWork.active_objects, id=src.media.id)
+        elif original_src is not None and original_src.media is not None:
+            work = get_object_or_404(MediaWork.active_objects, id=original_src.media.id)
         else:
             work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail, rating=rating)
+
         work.tags.add(*info.get('tags', []))
         src.media = work
         src.save()
@@ -282,8 +312,6 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
 
     if src.media is not None:
         return src.media.id
-    elif src is None:
-        return 400, {'message': "Bad request, is the URL correct?"}
 
 @work_router.post('assign_source', auth=django_auth, description='Omit work_id if creating new work from source.', response=int)
 @user_is_editor

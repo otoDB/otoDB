@@ -169,7 +169,7 @@ def connection(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     cs = tag.tagworkconnection_set.all()
     if tag.category == WorkTagCategory.MEDIA:
-        return 200, (cs, tag.tagworkMediaConnection_set.all())
+        return 200, (cs, tag.tagworkmediaconnection_set.all())
     elif tag.category == WorkTagCategory.CREATOR:
         return 200, (cs, tag.tagworkcreatorconnection_set.all())
     return 200, (cs, None)

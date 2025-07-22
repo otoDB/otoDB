@@ -79,7 +79,7 @@ class TagWork(OtodbTagModel):
 
     if TYPE_CHECKING:
         tagworkconnection_set: QuerySet['TagWorkConnection']
-        tagworkMediaConnection_set: QuerySet['TagWorkMediaConnection']
+        tagworkmediaconnection_set: QuerySet['TagWorkMediaConnection']
         tagworkcreatorconnection_set: QuerySet['TagWorkCreatorConnection']
         tagworklangpreference_set: QuerySet['TagWorkLangPreference']
         aliases: QuerySet['TagWork']

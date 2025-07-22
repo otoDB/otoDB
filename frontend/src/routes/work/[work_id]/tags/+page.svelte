@@ -170,24 +170,24 @@
 
 <style>
 	button.rating {
-		background-color: var(--otodb-bg-color);
-		border: 1px var(--otodb-content-color) solid;
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px var(--otodb-color-content-primary) solid;
 		width: 1rem;
 		height: 1rem;
 		display: inline-block;
 		&[data-checked='true'] {
-			background-color: var(--otodb-faint-content);
+			background-color: var(--otodb-color-content-faint);
 		}
 	}
 	label.role-label {
 		padding: 0 0.3rem;
 		margin: 0.1rem;
-		border: 1px solid var(--otodb-content-color);
+		border: 1px solid var(--otodb-color-content-primary);
 		&:has(input:checked) {
-			background-color: var(--otodb-content-color);
-			color: var(--color-otodb-bg-color);
+			background-color: var(--otodb-color-content-primary);
+			color: var(--color-otodb-bg-primary);
 		}
-		color: var(--otodb-content-color);
-		background-color: var(--otodb-bg-color);
+		color: var(--otodb-color-content-primary);
+		background-color: var(--otodb-color-bg-primary);
 	}
 </style>

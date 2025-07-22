@@ -85,7 +85,7 @@
 							{#if entry.description}
 								<p>{entry.description}</p>
 							{:else}
-								<p class="text-otodb-fainter-content">
+								<p class="text-otodb-content-fainter">
 									[{m.simple_less_marlin_enchant()}]
 								</p>
 							{/if}
@@ -165,28 +165,28 @@
 	}
 	ul > li,
 	ol > li > label {
-		background-color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-bg-primary);
 		padding: 1rem;
 		cursor: pointer;
 		&:has(> input:checked) {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 	}
 	label:has(> input[name='cover_select']) {
 		padding: 0.2rem 0.5rem;
 		display: inline-block;
-		background-color: var(--otodb-bg-color);
-		border: 1px solid var(--otodb-content-color);
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px solid var(--otodb-color-content-primary);
 		&:hover {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 		&:active {
-			background-color: var(--otodb-faint-bg);
+			background-color: var(--otodb-color-bg-faint);
 		}
 	}
 	label:has(> input[name='cover_select']:checked) {
-		background-color: var(--otodb-content-color);
-		border: 1px solid var(--otodb-bg-color);
-		color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-content-primary);
+		border: 1px solid var(--otodb-color-bg-primary);
+		color: var(--otodb-color-bg-primary);
 	}
 </style>

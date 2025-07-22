@@ -13,7 +13,7 @@
 <div
 	class={[
 		props.class,
-		'group bg-otodb-bg-color relative row-span-2 grid grid-rows-subgrid gap-0'
+		'group bg-otodb-bg-primary relative row-span-2 grid grid-rows-subgrid gap-0'
 	]}
 >
 	<a href="/work/{work.id}" class="flex h-full items-center">
@@ -23,14 +23,14 @@
 	<!-- Caller can choose to not supply tags -->
 	{#if work.tags}
 		<div
-			class="bg-otodb-bg-color absolute top-full z-1 hidden w-full flex-wrap gap-1 p-2 px-4 group-hover:flex"
+			class="bg-otodb-bg-primary absolute top-full z-1 hidden w-full flex-wrap gap-1 p-2 px-4 group-hover:flex"
 		>
 			{#if work.tags.length > 0}
 				{#each work.tags as tag, i (i)}
 					<WorkTag {tag} />
 				{/each}
 			{:else}
-				<span class="text-otodb-fainter-content">{m.mild_patchy_jaguar_trust()}</span>
+				<span class="text-otodb-content-fainter">{m.mild_patchy_jaguar_trust()}</span>
 			{/if}
 		</div>
 	{/if}

@@ -25,7 +25,7 @@
 	<li>
 		<a
 			href={pathname}
-			class="aria-[current=page]:text-otodb-fainter-content text-xl no-underline"
+			class="aria-[current=page]:text-otodb-content-fainter text-xl no-underline"
 			aria-current={page.url.pathname === pathname ? 'page' : undefined}
 			onclick={close}
 		>
@@ -37,10 +37,10 @@
 <nav
 	class={[
 		props.className,
-		'bg-otodb-faint-bg flex flex-col gap-y-2 overflow-y-scroll px-8 py-16'
+		'bg-otodb-bg-faint flex flex-col gap-y-2 overflow-y-scroll px-8 py-16'
 	]}
 >
-	<div class="border-otodb-faint-content bg-otodb-faint-bg mb-8 border">
+	<div class="border-otodb-content-faint bg-otodb-bg-faint mb-8 border">
 		<form target="_self" method="get" action="/{search_type}/search" class="flex w-full">
 			<select bind:value={search_type} class="pl-1">
 				<option value="work">{m.grand_merry_fly_succeed()}</option>
@@ -55,7 +55,7 @@
 			/>
 			<button
 				type="submit"
-				class="hover:bg-otodb-content-bg px-1"
+				class="hover:bg-otodb-content-primary px-1"
 				style="border: none !important;"
 				aria-label="Search"
 				onclick={close}
@@ -68,7 +68,7 @@
 	</div>
 
 	<div>
-		<div class="border-otodb-faint-content mb-2 border-b text-xs">
+		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.clean_kind_stork_affirm()}
 		</div>
 		<ul class="mt-4 list-none space-y-4">
@@ -84,7 +84,7 @@
 		</ul>
 	</div>
 	<div class="mt-8">
-		<div class="border-otodb-faint-content mb-2 border-b text-xs">
+		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
 		</div>
 		<ul class="mt-4 list-none space-y-4">
@@ -117,7 +117,7 @@
 	</div>
 	{#if user?.level >= UserLevel.EDITOR}
 		<div class="mt-8">
-			<div class="border-otodb-faint-content mb-2 border-b text-xs">
+			<div class="border-otodb-content-faint mb-2 border-b text-xs">
 				{m.these_bold_gorilla_flip()}
 			</div>
 			<ul class="mt-4 list-none space-y-4">
@@ -129,7 +129,7 @@
 	{/if}
 	{#if user?.level >= UserLevel.ADMIN}
 		<div class="mt-8">
-			<div class="border-otodb-faint-content mb-2 border-b text-xs">
+			<div class="border-otodb-content-faint mb-2 border-b text-xs">
 				{m.mellow_pink_starfish_cuddle()}
 			</div>
 			<ul class="mt-4 list-none space-y-4">

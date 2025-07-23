@@ -1,3 +1,4 @@
+import { browser } from '$app/environment';
 import client from './api';
 import { Languages } from './enums';
 import { setLocale } from './paraglide/runtime';
@@ -82,4 +83,12 @@ export const set_lang = async (lang, logged_in) => {
 		});
 	}
 	setLocale(lang);
+};
+
+export const get_prefs = () => {
+	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
+};
+
+export const update_prefs = (opts) => {
+	if (browser) localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), ...opts }));
 };

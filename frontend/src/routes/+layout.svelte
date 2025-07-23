@@ -5,9 +5,8 @@
 	import MobileSideNav from '../lib/MobileSideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
-	import { clickOutside, set_lang } from '$lib/ui';
+	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
 	import { LanguageNames, Themes } from '$lib/enums';
-	import { browser } from '$app/environment';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
 
@@ -36,7 +35,7 @@
 <div>
 	<div
 		class="bg-marker bg-otodb-bg-primary fixed h-full w-full {Themes[
-			(data.user?.prefs?.theme ?? (browser ? +localStorage.getItem('background') : 0)) || 0
+			data.user?.prefs?.theme ?? +get_prefs()?.theme ?? 0
 		]}"
 	></div>
 	<!-- Mobile navigation -->

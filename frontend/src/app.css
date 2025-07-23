@@ -12,12 +12,7 @@
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
-@custom-variant dark (@media (prefers-color-scheme: dark), &:where(.dark, .dark *));
-
-html:has(> body > div > div > div.dark) {
-	--otodb-color-bg-primary: black;
-	--otodb-color-content-primary: white;
-}
+@custom-variant dark (@media (prefers-color-scheme: dark), &:where(.dark, .dark *), &:has(div.bg-marker.dark));
 
 :root {
 	--otodb-color-bg-primary: white;

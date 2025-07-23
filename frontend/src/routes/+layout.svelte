@@ -109,7 +109,10 @@
 				</div>
 				<div class="footer-right">
 					<ConnectionFavicon type="Website" class="size-4" />
-					<select onchange={(e) => set_lang(e.target.value, !!data.user)} value={getLocale()}>
+					<select
+						onchange={(e) => set_lang(e.target.value, !!data.user)}
+						value={getLocale()}
+					>
 						<option value="en">{LanguageNames['en']}</option>
 						<option value="ja">{LanguageNames['ja']}</option>
 						<option value="ko">{LanguageNames['ko']}</option>

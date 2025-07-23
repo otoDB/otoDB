@@ -5,8 +5,9 @@
 	import MobileSideNav from '../lib/MobileSideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
-	import { background } from '$lib/stores/theme';
 	import { clickOutside } from '$lib/ui';
+	import { Themes } from '$lib/enums';
+	import { browser } from '$app/environment';
 
 	let { data, children } = $props();
 
@@ -31,17 +32,11 @@
 />
 
 <div>
-	<div class="-z-50 contents">
-		{#if $background === 'aniki'}
-			<div
-				style:background-image="url('/aniki-bg.png'), url('/aniki-right.png')"
-				style:background-position="left top, right top"
-				style:background-repeat="no-repeat, no-repeat"
-				class="absolute inset-0"
-			></div>
-		{/if}
-	</div>
-
+	<div
+		class="bg-otodb-bg-primary fixed h-full w-full {Themes[
+			(data.user?.prefs?.theme ?? (browser ? +localStorage.getItem('background') : 0)) || 0
+		]}"
+	></div>
 	<!-- Mobile navigation -->
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->

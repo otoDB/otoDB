@@ -1,4 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
+
+import type { components } from '$lib/schema';
+
 // for information about these interfaces
 declare global {
 	namespace App {
@@ -9,6 +12,7 @@ declare global {
 				user_id: number;
 				username: string;
 				level: int;
+				prefs: components['schemas']['UserPreferencesSchema']?;
 			};
 		}
 		// interface PageData {}

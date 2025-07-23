@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
+@import './themes.css';
 
 @theme {
 	--color-otodb-bg-primary: var(--otodb-color-bg-primary);
@@ -11,9 +12,20 @@
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
+@custom-variant dark (@media (prefers-color-scheme: dark), &:where(.dark, .dark *));
+
+html:has(> body > div > div > div.dark) {
+	--otodb-color-bg-primary: black;
+	--otodb-color-content-primary: white;
+}
+
 :root {
 	--otodb-color-bg-primary: white;
 	--otodb-color-content-primary: black;
+	@variant dark {
+		--otodb-color-bg-primary: black;
+		--otodb-color-content-primary: white;
+	}
 
 	--otodb-color-bg-faint: color-mix(
 		in hsl,
@@ -39,13 +51,6 @@
 
 	--otodb-color-ins: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, green);
 	--otodb-color-del: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, red);
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		--otodb-color-bg-primary: black;
-		--otodb-color-content-primary: white;
-	}
 }
 
 @layer base {

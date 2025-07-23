@@ -35,7 +35,7 @@
 
 <div>
 	<div
-		class="bg-otodb-bg-primary fixed h-full w-full {Themes[
+		class="bg-marker bg-otodb-bg-primary fixed h-full w-full {Themes[
 			(data.user?.prefs?.theme ?? (browser ? +localStorage.getItem('background') : 0)) || 0
 		]}"
 	></div>

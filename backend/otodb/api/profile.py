@@ -61,7 +61,7 @@ class SubmissionsFilterSchema(FilterSchema):
 @profile_router.get('submissions', response=List[SourceSubmissionSchema])
 @paginate
 def submissions(request: HttpRequest, username: str, filters: SubmissionsFilterSchema = Query(...),
-    order: Literal['id', '-id', 'published_date', '-published_date'] | None = 'id'
+    order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id'
     ):
     user = get_object_or_404(Account, username__iexact=username)
     submissions = user.worksource_set.all()

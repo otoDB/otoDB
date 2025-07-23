@@ -54,9 +54,6 @@ class SourceSubmissionSchema(WorkSourceSchema):
         return value.id if value is not None else None
 
 class SubmissionsFilterSchema(FilterSchema):
-    # name: str | None = None
-    # author: str | None = None
-    # created_after: datetime = None
     platform: int | None = None
     origin: int | None = Field(None, q='work_origin')
     status: int | None = Field(None, q='work_status')

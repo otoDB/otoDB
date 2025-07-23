@@ -6,7 +6,7 @@
 	import { LanguageNames, ThemeNames, Themes } from '$lib/enums';
 	import client from '$lib/api';
 	import { invalidateAll } from '$app/navigation';
-	import { set_lang } from '$lib/ui.js';
+	import { set_lang, update_prefs } from '$lib/ui.js';
 
 	let { data } = $props();
 
@@ -15,7 +15,7 @@
 			await client.POST('/api/profile/prefs', { fetch, body: { theme, language: null } });
 			invalidateAll();
 		} else {
-			localStorage.setItem('background', theme);
+			update_prefs({ theme });
 			location.reload();
 		}
 	}

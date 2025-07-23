@@ -35,7 +35,7 @@
 <div>
 	<div
 		class="bg-marker bg-otodb-bg-primary fixed h-full w-full {Themes[
-			data.user?.prefs?.theme ?? +get_prefs()?.theme ?? 0
+			data.user?.prefs?.theme ?? +get_prefs()?.theme
 		]}"
 	></div>
 	<!-- Mobile navigation -->

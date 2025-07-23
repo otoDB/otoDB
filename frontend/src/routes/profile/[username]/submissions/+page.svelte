@@ -197,7 +197,12 @@
 		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 	{#if data.submissions?.count}
-		<Pager n_count={data.submissions.count} page={data.page} page_size={data.batch_size} base_url={page.url} />
+		<Pager
+			n_count={data.submissions.count}
+			page={data.page}
+			page_size={data.batch_size}
+			base_url={page.url}
+		/>
 	{/if}
 </Section>
 

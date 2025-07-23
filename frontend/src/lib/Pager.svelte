@@ -8,11 +8,11 @@
 		Array.from({ length: page_max - page_min + 1 }, (_, i) => i + page_min)
 	);
 	const url = (page: number) => {
-		if (!base_url) return `?page=${page}`
+		if (!base_url) return `?page=${page}`;
 		const u = new URL(base_url);
 		u.searchParams.set('page', page.toString());
 		return u.href;
-	}
+	};
 </script>
 
 {#if page_range.length > 1}

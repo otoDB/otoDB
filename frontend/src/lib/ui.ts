@@ -1,3 +1,7 @@
+import client from './api';
+import { Languages } from './enums';
+import { setLocale } from './paraglide/runtime';
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const debounce = (callback: Function, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -68,4 +72,12 @@ export const mermaid_BFS = (ns, ls, start: number, distance: number, allowed_typ
 				nodes.find((w) => w.id === v.B_id).visited
 		)
 	];
+};
+
+export const set_lang = async (lang) => {
+	await client.POST('/api/profile/prefs', {
+		fetch,
+		body: { theme: null, language: Languages[lang] }
+	});
+	setLocale(lang);
 };

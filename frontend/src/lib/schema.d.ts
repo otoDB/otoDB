@@ -574,6 +574,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profile/prefs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Prefs */
+        post: operations["otodb_api_profile_set_prefs"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/list/search": {
         parameters: {
             query?: never;
@@ -1095,6 +1112,13 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** UserPreferencesSchema */
+        UserPreferencesSchema: {
+            /** Language */
+            language: number | null;
+            /** Theme */
+            theme: number | null;
+        };
         /** UserStatusSchema */
         UserStatusSchema: {
             /** User Id */
@@ -1103,6 +1127,7 @@ export interface components {
             username: string;
             /** Level */
             level: number;
+            prefs?: components["schemas"]["UserPreferencesSchema"] | null;
         };
         /** ExternalQuery */
         ExternalQuery: {
@@ -2510,6 +2535,28 @@ export interface operations {
             };
         };
     };
+    otodb_api_profile_set_prefs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserPreferencesSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_list_search: {
         parameters: {
             query: {
@@ -2878,6 +2925,13 @@ export interface operations {
         responses: {
             /** @description OK */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

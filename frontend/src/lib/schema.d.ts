@@ -1389,6 +1389,15 @@ export interface components {
             /** Content Id */
             content_id: string;
         };
+        /** SubmissionsFilterSchema */
+        SubmissionsFilterSchema: {
+            /** Platform */
+            platform?: number | null;
+            /** Origin */
+            origin?: number | null;
+            /** Status */
+            status?: number | null;
+        };
         /** PagedSourceSubmissionSchema */
         PagedSourceSubmissionSchema: {
             /** Items */
@@ -2515,6 +2524,10 @@ export interface operations {
         parameters: {
             query: {
                 username: string;
+                platform?: number | null;
+                origin?: number | null;
+                status?: number | null;
+                order?: ("id" | "-id" | "published_date" | "-published_date") | null;
                 limit?: number;
                 offset?: number;
             };

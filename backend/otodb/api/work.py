@@ -255,70 +255,98 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
 @work_router.post('source', auth=django_auth, response={200: int | None, 400: Error, 409: Error})
 @user_is_trusted
 def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, rating: int = 0, work_id: int | None = None, original_url: str | None = None):
+    """Creates a new source and, for editors, performs auto-validation as well as Work creation
+    
+    The usage scenarios are as follows:
+    - For non-editors:
+        - Adding a new source leaves it in the approval queue, without creating a Work;
+        - If `work_id` is provided, or either of the original/reupload Source already has a Work, the new sources are added to it;
+        - Adding an existing source redirects to it, no matter the drift;
+    - For editors:
+        - (everything a user can do)
+        - Adding a new source creates a new media;
+        - Having a perfect match redirects to the media;
+        - Any drift (wrong reupload status, wrong rating status) is corrected;
+        - If both have different Works, a merge is performed.
+    """
+
+    is_editor = request.user.level >= Account.Levels.EDITOR
+
+    # === Source retrieval, common to all flows ===
 
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
-    if src.work_origin != WorkOrigin(is_reupload) :
-        src.work_origin = WorkOrigin(is_reupload)
-        src.save()
+    original_src, original_info = WorkSource.from_url(original_url, user=request.user, is_reupload=False)\
+        if original_url else None, None
 
-    # Bad url (main url)
-    if src is None:
+    if src is None or original_url and original_src is None:
         return 400, {'message': "Bad request, is the URL correct?"}
-
-    original_src = None
-    if (is_reupload and original_url):
-        original_src, original_info = WorkSource.from_url(original_url, user=request.user, is_reupload=False)
-        if original_src.work_origin == WorkOrigin(is_reupload) :
-                original_src.work_origin = WorkOrigin(not is_reupload)
-                original_src.save()
-        # Bad url (reupload) I think the function shouldn't go further if either fails
-        if original_src is None:
-            return 400, {'message': "Bad request, is the URL of the original upload correct?"}
 
     if getattr(src, 'rejection', None) or getattr(original_src, 'rejection', None):
         return 400, {'message': "Bad Request, This source has already been rejected"}
     
-    if getattr(src, 'media', None) and getattr(original_src, 'media', None):
-        if (src.media.id == original_src.media.id):
-            # Perfect match, no action required
-            return src.media.id
-        else:
-            # Needs adjustment: each source has a different media
-            MediaWork.merge(
-                get_object_or_404(MediaWork.active_objects, id=original_src.media.id),
-                get_object_or_404(MediaWork.active_objects, id=src.media.id),
-                original_src.title,
-                original_src.description,
-                original_src.thumbnail,
-                rating
-            )
-            return original_src.media.id
         
-    # === Scenarios where either one source or both are missing === #
+    # === Work check: no work, and not editor ===
 
-    # If the work does not exist and you are not an editor, you are left with "orphan"
-    # sources to be processed and accepted later by an editor.
-    has_work = work_id or request.user.level >= Account.Levels.EDITOR
-    if has_work:
-        if work_id:
-            work = get_object_or_404(MediaWork.active_objects, id=work_id)
-        elif src.media is not None:
-            work = get_object_or_404(MediaWork.active_objects, id=src.media.id)
-        elif original_src is not None and original_src.media is not None:
-            work = get_object_or_404(MediaWork.active_objects, id=original_src.media.id)
-        else:
-            work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail, rating=rating)
+    none_have_work = not work_id and not getattr(src, 'media', None) and not getattr(src, 'media', None)
+    if none_have_work and request.user.level < Account.Levels.EDITOR:
+        return
+    
+    # === Work check: both have  Works ===
 
+    all_have_work = getattr(src, 'media', None) and getattr(original_src, 'media', None)
+    if all_have_work and (src.media.id == original_src.media.id or not is_editor):
+        return src.media.id
+
+    # === Work check: editor flow or existing work found in request/sources ===
+
+    if work_id:
+        work = get_object_or_404(MediaWork.active_objects, id=work_id)
+    elif src.media:
+        work = get_object_or_404(MediaWork.active_objects, id=src.media.id)
+    elif original_src and original_src.media is not None:
+        work = get_object_or_404(MediaWork.active_objects, id=original_src.media.id)
+    else:
+        work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail, rating=rating)
+
+    sync_work_source(work, src, info, is_editor)
+    if (original_src):
+        sync_work_source(work, original_src, original_info, is_editor)
+
+    if (is_editor):
+        if (work.rating != rating): 
+            work.rating = rating
+            work.save()
+        if (src.work_origin != WorkOrigin(is_reupload)): 
+            src.work_origin = WorkOrigin(is_reupload)
+            src.save()
+        if (original_src and original_src.work_origin != WorkOrigin.AUTHOR):
+            original_src.work_origin = WorkOrigin.AUTHOR
+            original_src.save()
+
+    return work.id
+
+def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
+    """Syncs source data to its work
+    
+    - Syncs tags and assigns the source to a work if orphan source;
+    - Merges the work if `can_merge` is passed and the source has an existing, different work id.
+    - Does nothing if the source is already assigned to the work;
+    """
+
+    if not src.media:
         work.tags.add(*info.get('tags', []))
         src.media = work
         src.save()
-        if (is_reupload and original_url):
-            work.tags.add(*original_info.get('tags', []))
-            original_src.media = work
-            original_src.save()
+    elif can_merge and src.media.id != work.id:
+        MediaWork.merge(
+            from_work=src.media,
+            to_work=work,
+            title=work.title,
+            description=work.description,
+            thumbnail=work.thumbnail,
+            rating=work.rating
+        )
 
-    if src.media is not None:
-        return src.media.id
 
 @work_router.post('assign_source', auth=django_auth, description='Omit work_id if creating new work from source.', response=int)
 @user_is_editor

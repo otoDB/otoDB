@@ -5,6 +5,7 @@
 	import { Platform, WorkOrigin, WorkStatus } from '$lib/enums';
 	import RefreshButton from '../../../work/RefreshButton.svelte';
 	import Pager from '$lib/Pager.svelte';
+	import { page } from '$app/state';
 
 	let { data }: PageProps = $props();
 	let results = $derived(data.submissions!.items);
@@ -196,7 +197,7 @@
 		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 	{#if data.submissions?.count}
-		<Pager n_count={data.submissions.count} page={data.page} page_size={data.batch_size} />
+		<Pager n_count={data.submissions.count} page={data.page} page_size={data.batch_size} base_url={page.url} />
 	{/if}
 </Section>
 

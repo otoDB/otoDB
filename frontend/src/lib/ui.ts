@@ -74,10 +74,12 @@ export const mermaid_BFS = (ns, ls, start: number, distance: number, allowed_typ
 	];
 };
 
-export const set_lang = async (lang) => {
-	await client.POST('/api/profile/prefs', {
-		fetch,
-		body: { theme: null, language: Languages[lang] }
-	});
+export const set_lang = async (lang, logged_in) => {
+	if (logged_in) {
+		await client.POST('/api/profile/prefs', {
+			fetch,
+			body: { theme: null, language: Languages[lang] }
+		});
+	}
 	setLocale(lang);
 };

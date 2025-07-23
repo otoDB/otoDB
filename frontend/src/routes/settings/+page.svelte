@@ -27,7 +27,7 @@
 		{#each ['en', 'ja', 'ko', 'zh-cn'] as const as key (key)}
 			<button
 				aria-pressed={getLocale() === key}
-				onclick={() => set_lang(key)}
+				onclick={() => set_lang(key, !!data.user)}
 				class="bg-otodb-bg-faint aria-pressed:bg-otodb-bg-fainter hover:bg-otodb-bg-fainter mb-2 cursor-pointer px-4 py-4 text-lg"
 			>
 				{LanguageNames[key]}

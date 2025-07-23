@@ -5,8 +5,10 @@
 	import MobileSideNav from '../lib/MobileSideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
-	import { background } from '$lib/stores/theme';
-	import { clickOutside } from '$lib/ui';
+	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
+	import { LanguageNames, Themes } from '$lib/enums';
+	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	let { data, children } = $props();
 
@@ -31,17 +33,11 @@
 />
 
 <div>
-	<div class="-z-50 contents">
-		{#if $background === 'aniki'}
-			<div
-				style:background-image="url('/aniki-bg.png'), url('/aniki-right.png')"
-				style:background-position="left top, right top"
-				style:background-repeat="no-repeat, no-repeat"
-				class="absolute inset-0"
-			></div>
-		{/if}
-	</div>
-
+	<div
+		class="bg-marker bg-otodb-bg-primary fixed h-full w-full {Themes[
+			data.user?.prefs?.theme ?? +get_prefs()?.theme
+		]}"
+	></div>
 	<!-- Mobile navigation -->
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
@@ -110,7 +106,18 @@
 						<a href="mailto:contact@otodb.net">contact@otodb.net</a>
 					</div>
 				</div>
-				<div class="footer-right"></div>
+				<div class="footer-right">
+					<ConnectionFavicon type="Website" class="size-4" />
+					<select
+						onchange={(e) => set_lang(e.target.value, !!data.user)}
+						value={getLocale()}
+					>
+						<option value="en">{LanguageNames['en']}</option>
+						<option value="ja">{LanguageNames['ja']}</option>
+						<option value="ko">{LanguageNames['ko']}</option>
+						<option value="zh-cn">{LanguageNames['zh-cn']}</option>
+					</select>
+				</div>
 			</footer>
 		</div>
 	</div>

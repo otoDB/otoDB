@@ -10,9 +10,9 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.account.models import Account
-from otodb.models import ProfileConnection
+from otodb.models import ProfileConnection, UserPreferences
 
-from .common import ListSchema, ProfileSchema, WorkSourceSchema, ConnectionSchema
+from .common import ListSchema, ProfileSchema, WorkSourceSchema, ConnectionSchema, UserPreferencesSchema
 
 profile_router = Router()
 
@@ -58,3 +58,11 @@ class SourceSubmissionSchema(WorkSourceSchema):
 def submissions(request: HttpRequest, username: str):
     user = get_object_or_404(Account, username__iexact=username)
     return user.worksource_set.all()
+
+@profile_router.post('prefs', auth=django_auth)
+def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
+    prefs, _ = UserPreferences.objects.get_or_create(user=request.user)
+    for attr, value in payload.dict().items():
+        if value is not None:
+            setattr(prefs, attr, value)
+    prefs.save()

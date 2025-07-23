@@ -121,3 +121,7 @@ class Role(models.IntegerChoices):
 	MUSIC = 8, "Music"
 	ARTWORK = 16, "Artwork"
 	THANKS = 32, "Special Thanks"
+
+class ThemePref(models.IntegerChoices):
+    DEFAULT = 0, "Default"
+    ANIKI   = 1, "Aniki"

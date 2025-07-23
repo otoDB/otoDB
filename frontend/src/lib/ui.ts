@@ -85,10 +85,14 @@ export const set_lang = async (lang, logged_in) => {
 	setLocale(lang);
 };
 
-export const get_prefs = () => {
+interface Prefs {
+	theme: string | undefined;
+}
+
+export const get_prefs = (): Prefs | undefined => {
 	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
 
-export const update_prefs = (opts) => {
+export const update_prefs = (opts: Prefs) => {
 	if (browser) localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), ...opts }));
 };

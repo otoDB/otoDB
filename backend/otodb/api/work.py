@@ -162,7 +162,7 @@ def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
 
 @work_router.get('random', response=list[WorkSchema])
 def random(request: HttpRequest, n: int = 1):
-    return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("?")[:n]
+    return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("?")[:min(n,20)]
 
 @work_router.get('recent', response=list[WorkSchema])
 def recent(request: HttpRequest, n: int = 1):

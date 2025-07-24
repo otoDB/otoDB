@@ -2,7 +2,7 @@ from typing import List, Annotated
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, Avg, Count, Value, OuterRef, Subquery
+from django.db.models import Q, Avg, Count, Value, OuterRef, Subquery, Case, When, IntegerField
 
 from simple_history.utils import update_change_reason
 
@@ -38,22 +38,30 @@ def query_external(request: HttpRequest, url: str | None = None, platform: str |
 
 @work_router.get('search', response=List[WorkSchema])
 @paginate
-def search(request: HttpRequest, query: str, tags: str | None = None):
-    qs =  MediaWork.active_objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
+def search(query: str, tags: str | None = None):
+    search_id = int(query) if query.isdigit() else -1
+    qs = MediaWork.active_objects.annotate(
+        priority=Case(
+            When(id=search_id, then=Value(0)),
+            When(worksource__url=query, then=Value(1)),
+            When(worksource__source_id=query, then=Value(2)),
+            When(Q(title__icontains=query) | Q(description__icontains=query), then=Value(100)),
+            default=Value(1000),
+            output_field=IntegerField()
+        )
+    )
+    
+    q = Q(title__icontains=query) | Q(description__icontains=query)
     if tags:
         for tag in tags.split():
-            qs = qs.filter(tags__slug=NFKC(tag))
+            q = q & Q(tags__slug=NFKC(tag))
     else:
-        qs = qs.annotate(priority=Value(100))
-        qs = MediaWork.active_objects.filter(worksource__source_id=query).annotate(priority=Value(2)).union(qs)
+        q = q | Q(worksource__source_id=query)
         if query.startswith("https"):
-            qs = MediaWork.active_objects.filter(worksource__url=query).annotate(priority=Value(1)).union(qs)
-        if query.isdigit():
-            qs = MediaWork.active_objects.filter(id=int(query)).annotate(
-                priority=Value(0)
-            ).union(qs)
-        qs = qs.order_by('priority')
-    return qs
+            q = q | Q(worksource__url=query)
+        if search_id > 0:
+            q = q | Q(id=search_id)
+    return qs.filter(q).distinct().order_by('priority')
 
 @work_router.get('tags_needed', response=List[WorkSchema])
 @paginate

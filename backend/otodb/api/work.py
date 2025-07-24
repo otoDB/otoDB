@@ -38,7 +38,7 @@ def query_external(request: HttpRequest, url: str | None = None, platform: str |
 
 @work_router.get('search', response=List[WorkSchema])
 @paginate
-def search(query: str, tags: str | None = None):
+def search(request: HttpRequest, query: str, tags: str | None = None):
     search_id = int(query) if query.isdigit() else -1
     qs = MediaWork.active_objects.annotate(
         priority=Case(

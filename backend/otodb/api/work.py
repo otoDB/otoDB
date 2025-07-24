@@ -40,17 +40,6 @@ def query_external(request: HttpRequest, url: str | None = None, platform: str |
 @paginate
 def search(request: HttpRequest, query: str, tags: str | None = None):
     search_id = int(query) if query.isdigit() else -1
-    qs = MediaWork.active_objects.annotate(
-        priority=Case(
-            When(id=search_id, then=Value(0)),
-            When(worksource__url=query, then=Value(1)),
-            When(worksource__source_id=query, then=Value(2)),
-            When(Q(title__icontains=query) | Q(description__icontains=query), then=Value(100)),
-            default=Value(1000),
-            output_field=IntegerField()
-        )
-    )
-    
     q = Q(title__icontains=query) | Q(description__icontains=query)
     if tags:
         for tag in tags.split():
@@ -61,7 +50,17 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
             q = q | Q(worksource__url=query)
         if search_id > 0:
             q = q | Q(id=search_id)
-    return qs.filter(q).distinct().order_by('priority')
+
+    return MediaWork.active_objects.filter(q).annotate(
+        priority=Case(
+            When(id=search_id, then=Value(0)),
+            When(worksource__url=query, then=Value(1)),
+            When(worksource__source_id=query, then=Value(2)),
+            When(Q(title__icontains=query) | Q(description__icontains=query), then=Value(100)),
+            default=Value(1000),
+            output_field=IntegerField()
+        )
+    ).order_by('priority')
 
 @work_router.get('tags_needed', response=List[WorkSchema])
 @paginate

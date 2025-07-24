@@ -38,7 +38,7 @@ def query_external(request: HttpRequest, url: str | None = None, platform: str |
 
 @work_router.get('search', response=List[WorkSchema])
 @paginate
-def search(request: HttpRequest, query: str, tags: str | None = None):
+def search(query: str, tags: str | None = None):
     search_id = int(query) if query.isdigit() else -1
     q = Q(title__icontains=query) | Q(description__icontains=query)
     if tags:
@@ -50,7 +50,6 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
             q = q | Q(worksource__url=query)
         if search_id > 0:
             q = q | Q(id=search_id)
-
     return MediaWork.active_objects.filter(q).annotate(
         priority=Case(
             When(id=search_id, then=Value(0)),
@@ -60,7 +59,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
             default=Value(1000),
             output_field=IntegerField()
         )
-    ).order_by('priority')
+    ).order_by('priority').distinct()
 
 @work_router.get('tags_needed', response=List[WorkSchema])
 @paginate

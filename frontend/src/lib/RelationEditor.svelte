@@ -30,10 +30,10 @@
 			}))
 	);
 	const delete_relation = (i: number) => async () => {
-		relations.splice(i, 1);
+		const w = relations.splice(i, 1)[0];
 		await client.DELETE(endpoint, {
 			fetch,
-			params: { query: { A: relations[i].item.id, B: this_id } }
+			params: { query: { A: w.item.id, B: this_id } }
 		});
 	};
 	const post_relation = (i: number, notify: boolean) => async () => {

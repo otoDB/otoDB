@@ -4,8 +4,27 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 
 	import { LanguageNames } from '$lib/enums';
-	import { set_lang, theme } from '$lib/ui.js';
+	import { set_lang, theme, type Theme } from '$lib/ui.js';
+	import client from '$lib/api.js';
 	let { data } = $props();
+
+	const changeTheme = async (nt: Theme) => {
+		theme.set(nt);
+		if (data.user) {
+			await client.POST('/api/profile/prefs', {
+				fetch,
+				body: {
+					theme: {
+						auto: 0,
+						'light-simple': 1,
+						'dark-simple': 2,
+						'dark-aniki': 3
+					}[nt],
+					language: null
+				}
+			});
+		}
+	};
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>
@@ -29,25 +48,25 @@
 		class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 	>
 		<button
-			onclick={() => theme.set('auto')}
+			onclick={() => changeTheme('auto')}
 			class={['py-2 text-lg', { 'bg-otodb-bg-fainter': $theme === 'auto' }]}
 		>
 			{m.misty_muddy_sparrow_work()}
 		</button>
 		<button
-			onclick={() => theme.set('light-simple')}
+			onclick={() => changeTheme('light-simple')}
 			class={['py-2 text-lg', { 'bg-otodb-bg-fainter': $theme === 'light-simple' }]}
 		>
 			{m.vexed_away_spider_skip()}
 		</button>
 		<button
-			onclick={() => theme.set('dark-simple')}
+			onclick={() => changeTheme('dark-simple')}
 			class={['py-2 text-lg', { 'bg-otodb-bg-fainter': $theme === 'dark-simple' }]}
 		>
 			{m.late_that_eagle_care()}
 		</button>
 		<button
-			onclick={() => theme.set('dark-aniki')}
+			onclick={() => changeTheme('dark-aniki')}
 			class={['py-2 text-lg', { 'bg-otodb-bg-fainter': $theme === 'dark-aniki' }]}
 		>
 			{m.next_ago_opossum_swim()}

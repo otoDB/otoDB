@@ -38,6 +38,8 @@
 @custom-variant dark {
 	&:where([data-theme^='dark'] *) {
 		@slot;
+		--otodb-color-bg-primary: black;
+		--otodb-color-content-primary: white;
 	}
 
 	@media (prefers-color-scheme: dark) {

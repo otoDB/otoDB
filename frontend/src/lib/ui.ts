@@ -94,14 +94,13 @@ export const get_prefs = (): Prefs | undefined => {
 	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
 
+export const updateLocalPreference = async (opts: Partial<Prefs>) => {
+	if (browser) localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), ...opts }));
+};
+
 export type Theme = 'auto' | 'light-simple' | 'dark-simple' | 'dark-aniki';
 export const theme = writable<Theme>('auto');
 
-theme.subscribe((value) => {
-	if (!browser) return;
-	localStorage.setItem('otodb-theme', value);
+theme.subscribe(async (value) => {
+	updateLocalPreference({ theme: value });
 });
-
-export const updateLocalPreference = (opts: Prefs) => {
-	if (browser) localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), ...opts }));
-};

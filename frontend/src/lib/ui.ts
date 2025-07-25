@@ -2,6 +2,7 @@ import { browser } from '$app/environment';
 import client from './api';
 import { Languages } from './enums';
 import { setLocale } from './paraglide/runtime';
+import { writable } from 'svelte/store';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const debounce = (callback: Function, wait = 300) => {
@@ -93,6 +94,14 @@ export const get_prefs = (): Prefs | undefined => {
 	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
 
-export const update_prefs = (opts: Prefs) => {
+export type Theme = 'auto' | 'light-simple' | 'dark-simple' | 'dark-aniki';
+export const theme = writable<Theme>('auto');
+
+theme.subscribe((value) => {
+	if (!browser) return;
+	localStorage.setItem('otodb-theme', value);
+});
+
+export const updateLocalPreference = (opts: Prefs) => {
 	if (browser) localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), ...opts }));
 };

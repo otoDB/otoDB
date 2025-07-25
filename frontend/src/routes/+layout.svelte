@@ -5,8 +5,8 @@
 	import MobileSideNav from '../lib/MobileSideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
-	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
-	import { LanguageNames, Themes } from '$lib/enums';
+	import { clickOutside, set_lang, theme } from '$lib/ui';
+	import { LanguageNames } from '$lib/enums';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
 
@@ -32,12 +32,21 @@
 	}}
 />
 
-<div>
-	<div
-		class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full {Themes[
-			data.user?.prefs?.theme ?? +get_prefs()?.theme
-		]}"
-	></div>
+<div
+	class="text-otodb-content-primary bg-otodb-bg-primary min-h-screen text-sm"
+	data-theme={$theme}
+>
+	<div class="-z-50 contents">
+		{#if $theme === 'dark-aniki'}
+			<div
+				style:background-image="url('/aniki-bg.png'), url('/aniki-right.png')"
+				style:background-position="left top, right top"
+				style:background-repeat="no-repeat, no-repeat"
+				class="absolute inset-0"
+			></div>
+		{/if}
+	</div>
+
 	<!-- Mobile navigation -->
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->

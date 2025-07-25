@@ -12,11 +12,34 @@
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
-@custom-variant dark (@media (prefers-color-scheme: dark), &:where(.dark, .dark *), &:has(div.bg-marker.dark));
+@custom-variant dark {
+	&:has([data-theme^='dark'] *) {
+		@slot;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		&:has([data-theme='auto'] *) {
+			@slot;
+		}
+	}
+}
+
+@custom-variant light {
+	&:has([data-theme^='light'] *) {
+		@slot;
+	}
+
+	@media (prefers-color-scheme: light) {
+		&:has([data-theme='auto'] *) {
+			@slot;
+		}
+	}
+}
 
 :root {
 	--otodb-color-bg-primary: white;
 	--otodb-color-content-primary: black;
+
 	@variant dark {
 		--otodb-color-bg-primary: black;
 		--otodb-color-content-primary: white;

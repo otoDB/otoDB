@@ -1,7 +1,7 @@
-import type { Preview } from '@storybook/sveltekit';
-import '../src/app.css';
+import type { Preview, SvelteRenderer } from '@storybook/sveltekit';
 import { setLocale } from '../src/lib/paraglide/runtime';
-import { withThemeByClassName } from '@storybook/addon-themes';
+import { withThemeByDataAttribute } from '@storybook/addon-themes';
+import '../src/app.css';
 
 const preview: Preview = {
 	parameters: {
@@ -35,12 +35,12 @@ const preview: Preview = {
 			setLocale(ctx.globals?.lang || ctx.globals?.lang);
 			return story();
 		},
-		withThemeByClassName({
+		withThemeByDataAttribute<SvelteRenderer>({
+			defaultTheme: 'dark',
 			themes: {
 				light: 'light',
 				dark: 'dark'
-			},
-			defaultTheme: 'dark'
+			}
 		})
 	]
 };

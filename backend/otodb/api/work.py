@@ -275,8 +275,9 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
     # === Source retrieval, common to all flows ===
 
     src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
+
     original_src, original_info = WorkSource.from_url(original_url, user=request.user, is_reupload=False)\
-        if original_url else None, None
+        if original_url else (None, None)
 
     if src is None or original_url and original_src is None:
         return 400, {'message': "Bad request, is the URL correct?"}

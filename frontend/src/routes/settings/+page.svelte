@@ -1,24 +1,11 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, setLocale } from '$lib/paraglide/runtime';
+	import { getLocale } from '$lib/paraglide/runtime';
 
-	import { LanguageNames, ThemeNames, Themes } from '$lib/enums';
-	import client from '$lib/api';
-	import { invalidateAll } from '$app/navigation';
-	import { set_lang, update_prefs } from '$lib/ui.js';
-
+	import { LanguageNames } from '$lib/enums';
+	import { set_lang, theme } from '$lib/ui.js';
 	let { data } = $props();
-
-	async function changeBackground(theme) {
-		if (data.user) {
-			await client.POST('/api/profile/prefs', { fetch, body: { theme, language: null } });
-			invalidateAll();
-		} else {
-			update_prefs({ theme });
-			location.reload();
-		}
-	}
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>
@@ -41,10 +28,29 @@
 	<div
 		class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 	>
-		{#each Themes as _, i (i)}
-			<button onclick={() => changeBackground(i)} class="py-2 text-lg">
-				{ThemeNames[i]()}
-			</button>
-		{/each}
+		<button
+			onclick={() => theme.set('auto')}
+			class={['py-2 text-lg', { 'bg-otodb-bg-fainter': $theme === 'auto' }]}
+		>
+			{m.misty_muddy_sparrow_work()}
+		</button>
+		<button
+			onclick={() => theme.set('light-simple')}
+			class={['py-2 text-lg', { 'bg-otodb-bg-fainter': $theme === 'light-simple' }]}
+		>
+			{m.vexed_away_spider_skip()}
+		</button>
+		<button
+			onclick={() => theme.set('dark-simple')}
+			class={['py-2 text-lg', { 'bg-otodb-bg-fainter': $theme === 'dark-simple' }]}
+		>
+			{m.late_that_eagle_care()}
+		</button>
+		<button
+			onclick={() => theme.set('dark-aniki')}
+			class={['py-2 text-lg', { 'bg-otodb-bg-fainter': $theme === 'dark-aniki' }]}
+		>
+			{m.next_ago_opossum_swim()}
+		</button>
 	</div>
 </Section>

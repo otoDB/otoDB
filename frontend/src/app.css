@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
-@import './themes.css';
 
 @theme {
 	--color-otodb-bg-primary: var(--otodb-color-bg-primary);
@@ -12,39 +11,55 @@
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
+:root:has([data-theme^='light']) {
+	--otodb-color-bg-primary: white;
+	--otodb-color-content-primary: black;
+}
+
+@media (prefers-color-scheme: light) {
+	:root:has([data-theme='auto']) {
+		--otodb-color-bg-primary: white;
+		--otodb-color-content-primary: black;
+	}
+}
+
+:root:has([data-theme^='dark']) {
+	--otodb-color-bg-primary: black;
+	--otodb-color-content-primary: white;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:has([data-theme='auto']) {
+		--otodb-color-bg-primary: black;
+		--otodb-color-content-primary: white;
+	}
+}
+
 @custom-variant dark {
-	&:has([data-theme^='dark'] *) {
+	&:where([data-theme^='dark'] *) {
 		@slot;
 	}
 
 	@media (prefers-color-scheme: dark) {
-		&:has([data-theme='auto'] *) {
+		&:where([data-theme='auto'] *) {
 			@slot;
 		}
 	}
 }
 
 @custom-variant light {
-	&:has([data-theme^='light'] *) {
+	&:where([data-theme^='light'] *) {
 		@slot;
 	}
 
 	@media (prefers-color-scheme: light) {
-		&:has([data-theme='auto'] *) {
+		&:where([data-theme='auto'] *) {
 			@slot;
 		}
 	}
 }
 
 :root {
-	--otodb-color-bg-primary: white;
-	--otodb-color-content-primary: black;
-
-	@variant dark {
-		--otodb-color-bg-primary: black;
-		--otodb-color-content-primary: white;
-	}
-
 	--otodb-color-bg-faint: color-mix(
 		in hsl,
 		color-mix(in hsl, var(--otodb-color-bg-primary) 90%, var(--otodb-color-content-primary)) 80%,

@@ -60,7 +60,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
             default=Value(1000),
             output_field=IntegerField()
         )
-    ).order_by('priority').distinct()
+    ).order_by('priority', '-id').distinct()
 
 @work_router.get('tags_needed', response=List[WorkSchema])
 @paginate

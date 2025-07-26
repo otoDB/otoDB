@@ -5,3 +5,4 @@ from .work_source import WorkSource, WorkSourceRejection
 from .relations import WorkRelation, SongRelation
 from .posts import Post
 from .connection import ProfileConnection, MediaSongConnection, TagWorkConnection, TagWorkMediaConnection, TagWorkCreatorConnection
+from .prefs import UserPreferences

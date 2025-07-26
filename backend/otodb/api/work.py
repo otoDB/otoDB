@@ -278,7 +278,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
 
     original_src, original_info = WorkSource.from_url(original_url, user=request.user, is_reupload=False)\
         if original_url else (None, None)
-
+    
     if src is None or original_url and original_src is None:
         return 400, {'message': "Bad request, is the URL correct?"}
 
@@ -288,7 +288,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
         
     # === Work check: no work, and not editor ===
 
-    none_have_work = not work_id and not getattr(src, 'media', None) and not getattr(src, 'media', None)
+    none_have_work = not work_id and not getattr(src, 'media', None) and not getattr(original_src, 'media', None)
     if none_have_work and request.user.level < Account.Levels.EDITOR:
         return
     
@@ -313,16 +313,19 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
     if (original_src):
         sync_work_source(work, original_src, original_info, is_editor)
 
+    # update_fields is necessary here because previous merges will change
+    # the "media" field in a way that's not tracked by the current
+    # object.
     if (is_editor):
         if (work.rating != rating): 
             work.rating = rating
-            work.save()
+            work.save(update_fields=['rating'])
         if (src.work_origin != WorkOrigin(is_reupload)): 
             src.work_origin = WorkOrigin(is_reupload)
-            src.save()
+            src.save(update_fields=['work_origin'])
         if (original_src and original_src.work_origin != WorkOrigin.AUTHOR):
             original_src.work_origin = WorkOrigin.AUTHOR
-            original_src.save()
+            original_src.save(update_fields=['work_origin'])
 
     return work.id
 

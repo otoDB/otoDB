@@ -123,8 +123,6 @@ class WorkTest(TestCase):
     def test_must_add_new_source_to_provided_work_id_updating_rating_as_editor(self):
         res = self.upload_src(user=self.editor)
         self.assertEqual(res.json(), 1)
-        self.assertEqual(MediaWork.objects.all().count(), 1)
-        self.assertEqual(WorkSource.objects.all().count(), 1)
 
         self.mock_video_info.return_value = fuzz_video_infos(self.v_info)
 
@@ -134,6 +132,26 @@ class WorkTest(TestCase):
         self.assertEqual(work.rating, Rating.EXPLICIT)
         self.assertEqual(MediaWork.objects.all().count(), 1)
         self.assertEqual(WorkSource.objects.all().count(), 2)
+
+    def test_must_add_new_source_based_on_priority_as_member(self):
+        vid1 = self.v_info
+        vid2 = fuzz_video_infos(self.v_info)
+        vid3 = fuzz_video_infos(self.v_info)
+
+        self.mock_video_info.return_value = vid1
+        res = self.upload_src(user=self.editor)
+        self.assertEqual(res.json(), 1)
+        self.mock_video_info.return_value = vid2
+        res = self.upload_src(user=self.editor)
+        self.assertEqual(res.json(), 2)
+
+        self.mock_video_info.side_effect = [vid2, vid3]
+
+        res = self.upload_src(work_id=1, is_reupload=True, has_original=True, user=self.member)
+        self.assertEqual(res.json(), 1)
+        self.assertEqual(MediaWork.objects.all().count(), 2)
+        self.assertEqual(WorkSource.objects.filter(media=1).count(), 2)
+        self.assertEqual(WorkSource.objects.filter(media=2).count(), 1)
 
     def test_must_add_to_work_id_as_member_if_provided_and_none_have_work(self):
         res = self.upload_src(user=self.editor)

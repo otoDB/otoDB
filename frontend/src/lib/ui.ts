@@ -102,5 +102,7 @@ export type Theme = 'auto' | 'light-simple' | 'dark-simple' | 'dark-aniki';
 export const theme = writable<Theme>('auto');
 
 theme.subscribe(async (value) => {
+	if (browser) document.querySelector('html')?.setAttribute('data-theme', value);
+
 	updateLocalPreference({ theme: value });
 });

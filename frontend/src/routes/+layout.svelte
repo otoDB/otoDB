@@ -32,10 +32,7 @@
 	}}
 />
 
-<div
-	class="text-otodb-content-primary bg-otodb-bg-primary min-h-screen text-sm"
-	data-theme={$theme}
->
+<div class="bg-otodb-bg-primary min-h-screen">
 	<div class="-z-50 contents">
 		{#if $theme === 'dark-aniki'}
 			<div

@@ -264,17 +264,20 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
 def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, rating: int = 0, work_id: int | None = None, original_url: str | None = None):
     """Creates a new source and, for editors, performs auto-validation as well as Work creation
     
+    The priority for redirections/merging is:.
+
     The usage scenarios are as follows:
     - For non-editors:
         - Adding a new source leaves it in the approval queue, without creating a Work;
-        - If `work_id` is provided, or either of the original/reupload Source already has a Work, the new sources are added to it;
-        - Adding an existing source redirects to it, no matter the drift;
+        - If `work_id` is provided, or either of the original/reupload Source already has a Work, the new sources are added to them;
+            - If two out of three elements have works, the third element is added based on priority: `work_id` > `url` > `original_url`;
+        - Adding an existing source redirects to the corresponding work;
+        - Adding multiple sources, each with a different work, redirects based on priority: `work_id` > `url` > `original_url`;
+        - For existing sources/works, corrections (`rating`/`is_reupload`) are ignored; 
     - For editors:
-        - (everything a user can do)
-        - Adding a new source creates a new media;
-        - Having a perfect match redirects to the media;
-        - Any drift (wrong reupload status, wrong rating status) is corrected;
-        - If both have different Works, a merge is performed.
+        - Adding a new source creates a new Work;
+        - For existing sources/works, corrections (`rating`/`is_reupload`) are applied;
+        - If any or all of `work_id`/`url`/`original_url` have different Works, a merge is performed based on priority: `work_id` > `url` > `original_url.
     """
 
     is_editor = request.user.level >= Account.Levels.EDITOR

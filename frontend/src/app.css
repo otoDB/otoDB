@@ -11,29 +11,25 @@
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
-:root[data-theme^='light'],
-:root:has([data-theme^='light']) {
+:root[data-theme^='light'] {
 	--otodb-color-bg-primary: white;
 	--otodb-color-content-primary: black;
 }
 
 @media (prefers-color-scheme: light) {
-	:root[data-theme='auto'],
-	:root:has([data-theme='auto']) {
+	:root[data-theme='auto'] {
 		--otodb-color-bg-primary: white;
 		--otodb-color-content-primary: black;
 	}
 }
 
-:root[data-theme^='dark'],
-:root:has([data-theme^='dark']) {
+:root[data-theme^='dark'] {
 	--otodb-color-bg-primary: black;
 	--otodb-color-content-primary: white;
 }
 
 @media (prefers-color-scheme: dark) {
-	:root[data-theme='auto'],
-	:root:has([data-theme='auto']) {
+	:root[data-theme='auto'] {
 		--otodb-color-bg-primary: black;
 		--otodb-color-content-primary: white;
 	}

@@ -293,3 +293,7 @@ export const Role = {
 	THANKS: 32,
 	32: 'Special Thanks'
 };
+
+export const Themes = ['default', 'aniki dark'].map((t) => 'theme-' + t);
+
+export const ThemeNames = [m.grassy_noble_walrus_wish, m.next_ago_opossum_swim];

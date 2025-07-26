@@ -17,11 +17,11 @@
 </script>
 
 <svelte:head>
-	<title
-		>{data.title
+	<title>
+		{data.title
 			? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: data.title })
-			: m.helpful_away_jay_succeed()}</title
-	>
+			: m.helpful_away_jay_succeed()}
+	</title>
 </svelte:head>
 
 <Section
@@ -36,34 +36,39 @@
 		<li>Bilibili</li>
 		<li>SoundCloud</li>
 	</ul>
-	<form method="POST" use:enhance>
+	<form method="POST" use:enhance class="mt-4">
 		<table>
 			<tbody>
 				<tr>
-					<th><label for="url">URL</label></th>
-					<td
-						><input
+					<th class="w-min whitespace-nowrap">
+						<label for="url">URL</label>
+					</th>
+					<td class="w-full">
+						<input
 							required
 							type="text"
 							name="url"
 							value={form?.url ?? data.link ?? ''}
-						/></td
-					>
+							class="w-full"
+						/>
+					</td>
 				</tr>
 				<tr>
-					<th><label for="origin">{m.watery_fuzzy_fireant_thrive()}</label></th>
-					<td
-						><select
+					<th class="w-min whitespace-nowrap">
+						<label for="origin">{m.watery_fuzzy_fireant_thrive()}</label>
+					</th>
+					<td class="w-full">
+						<select 
 							name="origin"
 							onchange={(e) => {
 								isReupload = (e.target as HTMLSelectElement).value == 'false';
 							}}
 							value={form?.origin ?? !data.title}
-							><option value={true}>{m.broad_large_squid_zoom()}</option><option
-								value={false}>{m.great_lucky_goldfish_sail()}</option
-							></select
-						></td
-					>
+						>
+							<option value={true}>{m.broad_large_squid_zoom()}</option>
+							<option value={false}>{m.great_lucky_goldfish_sail()}</option>
+						</select>
+					</td>
 				</tr>
 				{#if isReupload}
 					<tr>
@@ -83,6 +88,6 @@
 				{/if}
 			</tbody>
 		</table>
-		<input type="submit" />
+		<input class="mt-4" type="submit" />
 	</form>
 </Section>

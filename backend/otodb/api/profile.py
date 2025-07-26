@@ -1,18 +1,18 @@
-from typing import List
+from typing import List, Literal
 
 from pydantic import field_validator
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
-from ninja import Router
+from ninja import Router, FilterSchema, Query, Field
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.account.models import Account
-from otodb.models import ProfileConnection
+from otodb.models import ProfileConnection, UserPreferences
 
-from .common import ListSchema, ProfileSchema, WorkSourceSchema, ConnectionSchema
+from .common import ListSchema, ProfileSchema, WorkSourceSchema, ConnectionSchema, UserPreferencesSchema
 
 profile_router = Router()
 
@@ -53,8 +53,26 @@ class SourceSubmissionSchema(WorkSourceSchema):
     def work_id(cls, value) -> str:
         return value.id if value is not None else None
 
+class SubmissionsFilterSchema(FilterSchema):
+    platform: int | None = None
+    origin: int | None = Field(None, q='work_origin')
+    status: int | None = Field(None, q='work_status')
+
 @profile_router.get('submissions', response=List[SourceSubmissionSchema])
 @paginate
-def submissions(request: HttpRequest, username: str):
+def submissions(request: HttpRequest, username: str, filters: SubmissionsFilterSchema = Query(...),
+    order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id'
+    ):
     user = get_object_or_404(Account, username__iexact=username)
-    return user.worksource_set.all()
+    submissions = user.worksource_set.all()
+    submissions = filters.filter(submissions)
+    submissions = submissions.order_by(order)
+    return submissions
+
+@profile_router.post('prefs', auth=django_auth)
+def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
+    prefs, _ = UserPreferences.objects.get_or_create(user=request.user)
+    for attr, value in payload.dict().items():
+        if value is not None:
+            setattr(prefs, attr, value)
+    prefs.save()

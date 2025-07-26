@@ -8,13 +8,13 @@ from django.utils.crypto import get_random_string
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.sessions.models import Session
-from ninja import Schema, Router
+
+from ninja import Schema, Router, Field
 from ninja.security import django_auth
 
 from otodb.account.models import Account, Invitation
 
-from .common import Error
+from .common import Error, UserPreferencesSchema
 
 auth_router = Router()
 
@@ -38,11 +38,14 @@ def login_endpoint(request, username: str, password: str):
 
 class UserStatusSchema(UserLoginSchema):
     level: int
+    user_id: int = Field(..., alias='id')
+    username: str
+    prefs: UserPreferencesSchema | None = None
 
 @auth_router.get("/status", response={ 200: UserStatusSchema, 401: Error })
 def status(request):
     if request.user.is_authenticated:
-        return { 'user_id': request.user.id, 'username': request.user.username, 'level': request.user.level }
+        return request.user
     return 401, {'message': 'Not logged in.'}
 
 @auth_router.post("/logout", auth=django_auth)

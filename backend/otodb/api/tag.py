@@ -11,7 +11,7 @@ from ninja.pagination import paginate
 
 from otodb.common import NFKC
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection
-from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes
+from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes, LanguageTypes
 
 from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
 
@@ -91,14 +91,14 @@ def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
 @user_is_trusted
 def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    tag.lang_prefs.filter(lang=lang).delete()
+    tag.lang_prefs.filter(lang=LanguageTypes(lang).value).delete()
     TagWorkLangPreference.objects.create(tag=tag, lang=lang)
 
 @tag_router.delete('lang_pref', auth=django_auth)
 @user_is_trusted
 def del_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    TagWorkLangPreference.objects.get(tag=tag, lang=lang).delete()
+    TagWorkLangPreference.objects.get(tag=tag, lang=LanguageTypes(lang).value).delete()
 
 class TagInSchema(Schema):
     parent_slug: str | None
@@ -163,7 +163,7 @@ def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     empty = md.strip() == ''
     try:
-        wp = WikiPage.objects.get(tag=tag, lang=lang)
+        wp = WikiPage.objects.get(tag=tag, lang=LanguageTypes(lang).value)
         if empty:
             wp.delete()
         else:
@@ -171,7 +171,7 @@ def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
             wp.save() # Cannot use update_or_create here because the rendered page doesn't get rendered
     except WikiPage.DoesNotExist:
         if not empty:
-            WikiPage.objects.create(tag=tag, lang=lang, page=md)
+            WikiPage.objects.create(tag=tag, lang=LanguageTypes(lang).value, page=md)
 
 @tag_router.get('connection', response=tuple[list[ConnectionSchema], list[ConnectionSchema] | None])
 def connection(request: HttpRequest, tag_slug: str):

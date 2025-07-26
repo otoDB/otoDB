@@ -5,26 +5,9 @@
 
 	import { LanguageNames } from '$lib/enums';
 	import { set_lang, theme, type Theme } from '$lib/ui.js';
-	import client from '$lib/api.js';
 	let { data } = $props();
 
-	const changeTheme = async (nt: Theme) => {
-		theme.set(nt);
-		if (data.user) {
-			await client.POST('/api/profile/prefs', {
-				fetch,
-				body: {
-					theme: {
-						auto: 0,
-						'light-simple': 1,
-						'dark-simple': 2,
-						'dark-aniki': 3
-					}[nt],
-					language: null
-				}
-			});
-		}
-	};
+	const changeTheme = (nt: Theme) => theme.set(nt);
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>

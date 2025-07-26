@@ -58,7 +58,7 @@
 						<label for="origin">{m.watery_fuzzy_fireant_thrive()}</label>
 					</th>
 					<td class="w-full">
-						<select 
+						<select
 							name="origin"
 							onchange={(e) => {
 								isReupload = (e.target as HTMLSelectElement).value == 'false';

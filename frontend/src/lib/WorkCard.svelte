@@ -23,12 +23,19 @@
 	<!-- Caller can choose to not supply tags -->
 	{#if work.tags}
 		<div
-			class="bg-otodb-bg-primary absolute top-full z-1 hidden w-full flex-wrap gap-1 p-2 px-4 group-hover:flex"
+			class="bg-otodb-bg-primary flex-wrapp-2 absolute top-full z-1 hidden w-full px-4 py-2 group-hover:block"
 		>
 			{#if work.tags.length > 0}
-				{#each work.tags as tag, i (i)}
-					<WorkTag {tag} />
-				{/each}
+				<div class="flex flex-wrap items-center gap-1">
+					{#each work.tags.slice(0, 8) as tag, i (i)}
+						<WorkTag {tag} />
+					{/each}
+					{#if work.tags.length > 8}
+						<span class="px-1 text-sm">
+							{m.icy_each_pigeon_transform({ count: work.tags.length - 8 })}
+						</span>
+					{/if}
+				</div>
 			{:else}
 				<span class="text-otodb-content-fainter">{m.mild_patchy_jaguar_trust()}</span>
 			{/if}

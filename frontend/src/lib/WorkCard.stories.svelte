@@ -1,10 +1,7 @@
 <script lang="ts" module>
 	import WorkCard from './WorkCard.svelte';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import { type ComponentProps } from 'svelte';
 	import thumbnail from '../stories/assets/thumbnail_1280x720.jpg';
-
-	type WorkCardProps = ComponentProps<typeof WorkCard>;
 
 	const { Story } = defineMeta({
 		title: 'WorkCard',
@@ -26,7 +23,32 @@
 				slug: 'tag_' + i,
 				category: 0,
 				children: [],
-				lang_prefs: []
+				lang_prefs: [],
+				deprecated: false,
+				songs: []
+			})),
+			rating: 0
+		}
+	}}
+/>
+
+<Story
+	name="Too Many Tags"
+	args={{
+		class: 'w-64',
+		work: {
+			id: 1,
+			title: 'Sample Work',
+			thumbnail: thumbnail,
+			tags: [...new Array(12)].map((_, i) => ({
+				id: i,
+				name: 'Tag ' + i,
+				slug: 'tag_' + i,
+				category: 0,
+				children: [],
+				lang_prefs: [],
+				deprecated: false,
+				songs: []
 			})),
 			rating: 0
 		}

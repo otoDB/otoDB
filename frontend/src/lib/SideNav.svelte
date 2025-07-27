@@ -30,9 +30,9 @@
 {/snippet}
 
 <nav class="flex w-full min-w-64 flex-col gap-y-2" style:width={props?.width}>
-	<div class="border-otodb-content-faint bg-otodb-bg-faint border">
+	<div>
 		<form target="_self" method="get" action="/{search_type}/search" class="flex w-full">
-			<select bind:value={search_type} class="pl-1">
+			<select bind:value={search_type} class="bg-otodb-bg-primary/75 flex-shrink-0 pl-1">
 				<option value="work">{m.grand_merry_fly_succeed()}</option>
 				<option value="tag">{m.empty_legal_chicken_taste()}</option>
 				<option value="list">{m.stale_loose_squid_cut()}</option>
@@ -41,13 +41,12 @@
 				type="text"
 				name="query"
 				placeholder="{m.mean_top_antelope_love()}..."
-				class="flex-auto px-2 py-1"
+				class="bg-otodb-bg-primary/75 border-otodb-content-primary flex-grow px-2 py-1"
 			/>
 			<button
 				type="submit"
-				class="hover:bg-otodb-content-primary px-1"
-				style="border: none !important;"
 				aria-label="Search"
+				class="bg-otodb-bg-primary/75 hover:bg-otodb-bg-fainter/75 flex-shrink-0 px-2"
 			>
 				<svg class="h-[16px] w-[16px]">
 					<use href="/search.svg#img"></use>
@@ -56,7 +55,7 @@
 		</form>
 	</div>
 
-	<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+	<div class="border-otodb-content-faint bg-otodb-bg-primary/75 border px-3 py-2">
 		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.clean_kind_stork_affirm()}
 		</div>
@@ -72,7 +71,7 @@
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		</ul>
 	</div>
-	<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+	<div class="border-otodb-content-faint bg-otodb-bg-primary/75 border px-3 py-2">
 		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
 		</div>
@@ -106,7 +105,7 @@
 		</ul>
 	</div>
 	{#if user?.level >= UserLevel.EDITOR}
-		<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+		<div class="border-otodb-content-faint bg-otodb-bg-primary/75 border px-3 py-2">
 			<div class="border-otodb-content-faint mb-2 border-b text-xs">
 				{m.these_bold_gorilla_flip()}
 			</div>
@@ -118,7 +117,7 @@
 		</div>
 	{/if}
 	{#if user?.level >= UserLevel.ADMIN}
-		<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+		<div class="border-otodb-content-faint bg-otodb-bg-primary/75 border px-3 py-2">
 			<div class="border-otodb-content-faint mb-2 border-b text-xs">
 				{m.mellow_pink_starfish_cuddle()}
 			</div>
@@ -131,7 +130,7 @@
 			</ul>
 		</div>
 	{/if}
-	<div class="border-otodb-content-faint bg-otodb-bg-faint border px-3 py-2">
+	<div class="border-otodb-content-faint bg-otodb-bg-primary/75 border px-3 py-2">
 		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.white_helpful_lion_rise()}
 		</div>

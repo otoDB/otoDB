@@ -43,7 +43,7 @@
 		<!-- Hamburger button -->
 		<button
 			class={[
-				'fixed bottom-[32px] left-[32px] z-[3] h-[64px] w-[64px]',
+				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-[3] h-[64px] w-[64px]',
 				{ invisible: isMobileNavOpen }
 			]}
 			onclick={toggleMobileNav}

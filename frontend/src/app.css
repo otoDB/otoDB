@@ -17,6 +17,7 @@
 :root {
 	--otodb-color-bg-primary: white;
 	--otodb-color-content-primary: black;
+
 	@variant dark {
 		--otodb-color-bg-primary: black;
 		--otodb-color-content-primary: white;
@@ -24,8 +25,8 @@
 
 	--otodb-color-bg-faint: color-mix(
 		in hsl,
-		color-mix(in hsl, var(--otodb-color-bg-primary) 90%, var(--otodb-color-content-primary)) 80%,
-		transparent
+		var(--otodb-color-bg-primary) 90%,
+		var(--otodb-color-content-primary)
 	);
 	--otodb-color-bg-fainter: color-mix(
 		in hsl,

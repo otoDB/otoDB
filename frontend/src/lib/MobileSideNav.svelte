@@ -37,7 +37,7 @@
 <nav
 	class={[
 		props.className,
-		'bg-otodb-bg-faint flex flex-col gap-y-2 overflow-y-scroll px-8 py-16'
+		'bg-otodb-bg-primary/75 flex flex-col gap-y-2 overflow-y-scroll px-8 py-16'
 	]}
 >
 	<div class="border-otodb-content-faint bg-otodb-bg-faint mb-8 border">

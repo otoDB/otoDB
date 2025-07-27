@@ -3,66 +3,25 @@
 	let { title, children, menuLinks = null } = $props();
 </script>
 
-<section>
+<section
+	class="bg-otodb-bg-primary/75 border-otodb-content-primary relative mb-1 mb-4 border px-8 py-6"
+>
 	{#if menuLinks}
-		<menu>
-			<ul>
+		<menu class="absolute right-0 right-[-1px] bottom-full">
+			<ul class="flex list-none gap-2">
 				{#each menuLinks as { pathname, title }, i (i)}
-					<li aria-current={page.url.pathname.endsWith(encodeURI(pathname))}>
-						<a href="/{pathname}">{title}</a>
+					<li
+						aria-current={page.url.pathname.endsWith(encodeURI(pathname))}
+						class="bg-otodb-bg-primary/75 border-otodb-content-primary border px-2 aria-current:border-b-0"
+					>
+						<a href="/{pathname}" class="no-underline">{title}</a>
 					</li>
 				{/each}
 			</ul>
 		</menu>
 	{/if}
 
-	<h1>{title}</h1>
+	<h1 class="mb-2 text-2xl font-bold">{title}</h1>
+
 	{@render children()}
 </section>
-
-<style>
-	section {
-		background-color: var(--otodb-color-bg-faint);
-		border: 1px solid var(--otodb-color-content-faint);
-		padding: 0 1rem 1rem 1rem;
-		margin-bottom: 1rem;
-		position: relative;
-		& > h1 {
-			font-size: x-large;
-			font-weight: 600;
-			text-align: initial;
-		}
-		&::after {
-			/* Clearfix */
-			content: '';
-			display: block;
-			clear: both;
-		}
-	}
-	menu {
-		position: absolute;
-		bottom: 100%;
-		right: -1px;
-		z-index: 1;
-		& > ul {
-			display: flex;
-			gap: 0.3rem;
-			width: max-content;
-			list-style: none;
-			flex-direction: row;
-			& > li {
-				background-color: var(--otodb-color-bg-faint);
-				border: 1px solid var(--otodb-color-content-faint);
-				padding-left: 0.2rem;
-				padding-right: 0.2rem;
-				&[aria-current='true'] {
-					border-bottom: none;
-					pointer-events: none;
-				}
-				& > a {
-					text-decoration: none;
-				}
-			}
-		}
-	}
-</style>

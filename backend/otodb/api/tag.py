@@ -13,11 +13,11 @@ from otodb.common import NFKC
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection
 from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes, LanguageTypes
 
-from .common import TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
+from .common import TagWorkSchema, ThinTagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
 
 tag_router = Router()
 
-@tag_router.get('search', response=list[TagWorkSchema])
+@tag_router.get('search', response=list[ThinTagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, resolve_aliases: bool = True, category: int | None = None):
     qs = TagWork.objects.filter(name__icontains=NFKC(query).replace(' ', '_'), deprecated=False)

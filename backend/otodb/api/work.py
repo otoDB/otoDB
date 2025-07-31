@@ -16,13 +16,13 @@ from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWo
 from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory
 from otodb.account.models import Account
 
-from .common import WorkSchema, ThinWorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
+from .common import WorkSchema, ThinWorkSchema, WorkSourceSchema, Error, ThinTagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
 
 work_router = Router()
 
 class ExternalQuery(Schema):
     work_id: int
-    tags: List[TagWorkSchema]
+    tags: List[ThinTagWorkSchema]
 
 @work_router.get('query_external', response=ExternalQuery)
 def query_external(request: HttpRequest, url: str | None = None, platform: str | None = None, id: str | None = None):

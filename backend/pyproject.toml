@@ -21,7 +21,7 @@ dependencies = [
     "django-debug-toolbar>=5.0.1",
     "django-ordered-model>=3.7.4",
     "granian>=2.1.0",
-    "psycopg[binary]>=3.2.6",
+    "psycopg[binary,pool]>=3.2.6",
     "nh3>=0.2.21",
     "furl>=2.1.4",
 ]

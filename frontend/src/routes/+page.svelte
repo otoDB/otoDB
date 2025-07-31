@@ -9,7 +9,10 @@
 
 <svelte:head>
 	<title>{m.fine_late_chicken_quiz()}</title>
-	<meta name="description" content={m.glad_born_mouse_taste()} />
+	<meta
+		name="description"
+		content={m.mild_loud_shad_enchant({ type: 'otoDB', name: m.glad_born_mouse_taste() })}
+	/>
 </svelte:head>
 
 <Section title={m.fine_late_chicken_quiz()}>

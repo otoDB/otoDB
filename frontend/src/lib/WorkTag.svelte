@@ -10,7 +10,7 @@
 
 <a
 	href="/tag/{tag.slug}"
-	class="rounded-full border-2 border-solid px-2 {[
+	class="rounded-xl border-2 border-solid px-2 {[
 		'border-gray-300', // GENERAL
 		'border-cyan-600', // EVENT
 		'border-fuchsia-400', // SONG

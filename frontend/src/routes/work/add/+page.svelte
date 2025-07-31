@@ -7,7 +7,7 @@
 	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
-	let isReupload = $derived(form?.origin === false || data.title);
+	let isReupload = $derived(Boolean(form?.origin === false || data.title));
 
 	$effect(() => {
 		if (form?.failed) {

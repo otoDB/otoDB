@@ -62,6 +62,13 @@ class TagWorkSchema(ModelSchema):
         model = TagWork
         fields = ['name', 'slug', 'category', 'deprecated']
 
+class ThinTagWorkSchema(ModelSchema):
+    id: int
+    lang_prefs: list[TagWorkLangPreferenceSchema]
+    class Meta:
+        model = TagWork
+        fields = ['name', 'slug', 'category', 'deprecated']
+
 class WikiPageSchema(ModelSchema):
     class Meta:
         model = WikiPage
@@ -103,6 +110,13 @@ class WorkSchema(ModelSchema):
     @classmethod
     def deprecation(cls, value) -> str:
         return [t for t in value if not t.deprecated]
+
+class ThinWorkSchema(ModelSchema):
+    id: int
+    tags: list[ThinTagWorkSchema]
+    class Meta:
+        model = MediaWork
+        fields = ['title', 'thumbnail']
 
 class ListItemSchema(ModelSchema):
     work: WorkSchema

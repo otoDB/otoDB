@@ -21,7 +21,10 @@
 	}
 </script>
 
-<a href="#content" class="absolute z-50 opacity-0 transform-[translateY(-100%)] focus:transform-none focus:opacity-100">
+<a
+	href="#content"
+	class="absolute z-50 transform-[translateY(-100%)] opacity-0 focus:transform-none focus:opacity-100"
+>
 	{m.round_extra_impala_fry()}
 </a>
 

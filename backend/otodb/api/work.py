@@ -16,7 +16,7 @@ from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWo
 from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory
 from otodb.account.models import Account
 
-from .common import WorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
+from .common import WorkSchema, ThinWorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
 
 work_router = Router()
 
@@ -36,7 +36,7 @@ def query_external(request: HttpRequest, url: str | None = None, platform: str |
 
     return { 'tags': work.media.tags, 'work_id': work.media.id }
 
-@work_router.get('search', response=List[WorkSchema])
+@work_router.get('search', response=List[ThinWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, tags: str | None = None):
     search_id = int(query) if query.isdigit() else -1
@@ -62,7 +62,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
         )
     ).order_by('priority', '-id').distinct()
 
-@work_router.get('tags_needed', response=List[WorkSchema])
+@work_router.get('tags_needed', response=List[ThinWorkSchema])
 @paginate
 def tags_needed(request: HttpRequest):
     return MediaWork.active_objects.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False))).filter(ntags__lte=4)
@@ -167,11 +167,11 @@ def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
     if tag.can_be_deleted:
         tag.delete()
 
-@work_router.get('random', response=list[WorkSchema])
+@work_router.get('random', response=list[ThinWorkSchema])
 def random(request: HttpRequest, n: int = 1):
     return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("?")[:min(n,20)]
 
-@work_router.get('recent', response=list[WorkSchema])
+@work_router.get('recent', response=list[ThinWorkSchema])
 def recent(request: HttpRequest, n: int = 1):
     return MediaWork.active_objects.annotate(
         mod=Subquery(MediaWork.history.filter(id=OuterRef('id')).order_by('history_date').values('history_date')[:1])

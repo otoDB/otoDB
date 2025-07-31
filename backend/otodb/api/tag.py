@@ -13,7 +13,7 @@ from otodb.common import NFKC
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection
 from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes, LanguageTypes
 
-from .common import TagWorkSchema, WorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
+from .common import TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
 
 tag_router = Router()
 
@@ -41,7 +41,7 @@ def details(request: HttpRequest, tag_slug: str):
         'aliases': tag.aliases
     }
 
-@tag_router.get('works', response=list[WorkSchema])
+@tag_router.get('works', response=list[ThinWorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
     return MediaWork.active_objects.filter(tags__slug=tag_slug)

@@ -299,7 +299,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
     # === Work check: no work, and not editor ===
 
     none_have_work = not work_id and not getattr(src, 'media', None) and not getattr(original_src, 'media', None)
-    if none_have_work and request.user.level < Account.Levels.EDITOR:
+    if none_have_work and not is_editor:
         return
     
     # === Work check: both have  Works ===

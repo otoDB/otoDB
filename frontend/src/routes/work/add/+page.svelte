@@ -7,7 +7,7 @@
 	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
-	let isReupload = $state(form?.origin === false || data.title);
+	let isReupload = $derived(form?.origin === false || data.title);
 
 	$effect(() => {
 		if (form?.failed) {
@@ -58,13 +58,7 @@
 						<label for="origin">{m.watery_fuzzy_fireant_thrive()}</label>
 					</th>
 					<td class="w-full">
-						<select
-							name="origin"
-							onchange={(e) => {
-								isReupload = (e.target as HTMLSelectElement).value == 'false';
-							}}
-							value={form?.origin ?? !data.title}
-						>
+						<select bind:value={isReupload}>
 							<option value={true}>{m.broad_large_squid_zoom()}</option>
 							<option value={false}>{m.great_lucky_goldfish_sail()}</option>
 						</select>

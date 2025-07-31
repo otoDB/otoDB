@@ -113,7 +113,7 @@ class MediaWork(models.Model):
     active_objects = TaggedManager.cast_class(ActiveManager())
 
     def __str__(self):
-        return self.title
+        return f'{self.id}: {self.title}'
 
     class Meta:
         verbose_name = ("Work")

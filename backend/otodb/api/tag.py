@@ -19,11 +19,15 @@ tag_router = Router()
 
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
-def search(request: HttpRequest, query: str, category: int | None = None):
+def search(request: HttpRequest, query: str, resolve_aliases: bool = True, category: int | None = None):
     qs = TagWork.objects.filter(name__icontains=NFKC(query).replace(' ', '_'), deprecated=False)
     if category is not None and category != -1:
         qs = qs.filter(category=category)
-    return list(set([t.aliased_to if t.aliased_to else t for t in qs]))
+    
+    if resolve_aliases:
+        return list(set([t.aliased_to if t.aliased_to else t for t in qs]))
+    else:
+        return list(set(qs))
 
 @tag_router.get('tag', response={ 200: TagWorkSchema, 300: str })
 def tag(request: HttpRequest, tag_slug: str):

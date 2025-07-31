@@ -23,7 +23,7 @@
 	<!-- Caller can choose to not supply tags -->
 	{#if work.tags}
 		<div
-			class="bg-otodb-bg-primary flex-wrapp-2 absolute top-full z-1 hidden w-full px-4 py-2 group-hover:block"
+			class="bg-otodb-bg-primary flex-wrap absolute top-full z-1 hidden w-full px-4 py-2 group-hover:block"
 		>
 			{#if work.tags.length > 0}
 				<div class="flex flex-wrap items-center gap-1">

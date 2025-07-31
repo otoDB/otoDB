@@ -20,4 +20,4 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 RUN apt-get update && apt-get install -y ca-certificates
 
 EXPOSE 8000
-CMD ["sh", "-c", "uv run _setup.py && uv run manage.py collectstatic --noinput && uv run granian --interface wsgi project.wsgi:application --host 0.0.0.0"]
+CMD ["sh", "-c", "uv run _setup.py && uv run manage.py collectstatic --noinput && uv run granian --interface wsgi project.wsgi:application --host 0.0.0.0 --workers 4"]

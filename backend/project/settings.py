@@ -125,16 +125,15 @@ DATABASE = {
 }
 
 if DATABASE_BACKEND == 'postgresql' and os.environ.get('OTODB_DB_SERVICE') and os.environ.get('OTODB_DB_PASSFILE'):
-    DATABASE['OPTIONS'] = {
-        'service': os.environ['OTODB_DB_SERVICE'],
-        'passfile': os.environ['OTODB_DB_PASSFILE'],
-    }
+    DATABASE['OPTIONS']['service'] = os.environ['OTODB_DB_SERVICE']
+    DATABASE['OPTIONS']['passfile'] = os.environ['OTODB_DB_PASSFILE']
 elif DATABASE_BACKEND == 'postgresql':
     DATABASE['NAME'] = os.environ['OTODB_DB_NAME']
     DATABASE['USER'] = os.environ['OTODB_DB_USER']
     DATABASE['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
     DATABASE['HOST'] = os.environ['OTODB_DB_HOST']
     DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
+    DATABASE['OPTIONS']['pool'] = True
 else:
     DATABASE['NAME'] = BASE_DIR / f'{os.environ.get("OTODB_DB_NAME", "db")}.sqlite3'
 

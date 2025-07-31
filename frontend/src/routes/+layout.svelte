@@ -21,6 +21,8 @@
 	}
 </script>
 
+<a href="#content" class="absolute opacity-0 z-50 focus:opacity-100">{m.round_extra_impala_fry()}</a>
+
 <Toaster
 	expand={true}
 	position="bottom-right"
@@ -83,7 +85,7 @@
 			<Header user={data.user} stats={data.stats}></Header>
 		</div>
 		<div class="flex-grow">
-			<main>
+			<main id="content">
 				{@render children()}
 			</main>
 			<footer>

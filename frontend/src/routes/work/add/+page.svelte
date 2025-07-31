@@ -7,7 +7,7 @@
 	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
-	let isOriginal = $derived(Boolean(form?.origin || !data.title));
+	let isOriginal = $derived(Boolean(form?.origin ?? !data.title));
 
 	$effect(() => {
 		if (form?.failed) {

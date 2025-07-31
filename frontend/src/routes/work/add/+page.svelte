@@ -58,7 +58,7 @@
 						<label for="origin">{m.watery_fuzzy_fireant_thrive()}</label>
 					</th>
 					<td class="w-full">
-						<select bind:value={isReupload}>
+						<select name="origin" bind:value={isReupload}>
 							<option value={true}>{m.broad_large_squid_zoom()}</option>
 							<option value={false}>{m.great_lucky_goldfish_sail()}</option>
 						</select>

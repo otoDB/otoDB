@@ -4,15 +4,15 @@
 </script>
 
 <section
-	class="bg-otodb-bg-primary/75 border-otodb-content-primary relative mb-1 mb-4 border px-8 py-6"
+	class="bg-otodb-bg-faint/75 border-otodb-content-primary relative mb-1 mb-4 border px-5 pt-3 pb-6"
 >
 	{#if menuLinks}
-		<menu class="absolute right-0 right-[-1px] bottom-full">
+		<menu class="absolute right-[-1px] bottom-full">
 			<ul class="flex list-none gap-2">
 				{#each menuLinks as { pathname, title }, i (i)}
 					<li
 						aria-current={page.url.pathname.endsWith(encodeURI(pathname))}
-						class="bg-otodb-bg-primary/75 border-otodb-content-primary border px-2 aria-current:border-b-0"
+						class="bg-otodb-bg-faint/75 border-otodb-content-primary border px-2 aria-current:border-b-0"
 					>
 						<a href="/{pathname}" class="no-underline">{title}</a>
 					</li>

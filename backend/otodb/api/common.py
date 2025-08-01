@@ -66,6 +66,7 @@ class TagWorkSchema(ModelSchema):
 class ThinTagWorkSchema(ModelSchema):
     id: int
     lang_prefs: list[TagWorkLangPreferenceSchema]
+    aliased_to: Optional['ThinTagWorkSchema']
     class Meta:
         model = TagWork
         fields = ['name', 'slug', 'category', 'deprecated']

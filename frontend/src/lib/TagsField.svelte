@@ -88,12 +88,12 @@
 							textarea.value = replaceWordAtPos(
 								textarea.value,
 								textarea.selectionStart,
-								t.aliased_to !== null ? t.aliased_to.slug : t.slug + ' '
+								t.aliased_to ? t.aliased_to.slug : t.slug + ' '
 							);
 							suggestions = [];
 							updateValue();
 						}}
-						>{t.aliased_to !== null ? `${t.name} → ${t.aliased_to.name}` : t.name}
+						>{t.aliased_to ? `${t.name} → ${t.aliased_to.name}` : t.name}
 						{#if t.slug !== t.name}<address class="inline">
 								({t.slug}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
 										'',

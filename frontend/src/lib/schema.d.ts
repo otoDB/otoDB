@@ -426,7 +426,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** New Source From Url */
+        /**
+         * New Source From Url
+         * @description Creates a new source and, for editors, performs auto-validation as well as Work creation
+         *
+         *     The priority for redirections/merging is:.
+         *
+         *     The usage scenarios are as follows:
+         *     - For non-editors:
+         *         - Adding a new source leaves it in the approval queue, without creating a Work;
+         *         - If `work_id` is provided, or either of the original/reupload Source already has a Work, the new sources are added to them;
+         *             - If two out of three elements have works, the third element is added based on priority: `work_id` > `url` > `original_url`;
+         *         - Adding an existing source redirects to the corresponding work;
+         *         - Adding multiple sources, each with a different work, redirects based on priority: `work_id` > `url` > `original_url`;
+         *         - For existing sources/works, corrections (`rating`/`is_reupload`) are ignored;
+         *     - For editors:
+         *         - Adding a new source creates a new Work;
+         *         - For existing sources/works, corrections (`rating`/`is_reupload`) are applied;
+         *         - If any or all of `work_id`/`url`/`original_url` have different Works, a merge is performed based on priority: `work_id` > `url` > `original_url.
+         */
         post: operations["otodb_api_work_new_source_from_url"];
         delete?: never;
         options?: never;
@@ -1136,42 +1154,6 @@ export interface components {
             /** Tags */
             tags: components["schemas"]["TagWorkSchema"][];
         };
-        /** SongSchema */
-        SongSchema: {
-            /** Id */
-            id: number;
-            /** Work Tag */
-            work_tag: string;
-            /** Tags */
-            tags: components["schemas"]["TagSongSchema"][];
-            /** Title */
-            title: string;
-            /** Bpm */
-            bpm: number;
-            /**
-             * Variable Bpm
-             * @default false
-             */
-            variable_bpm: boolean;
-            /** Author */
-            author: string;
-        };
-        /** TagSongSchema */
-        TagSongSchema: {
-            /** Id */
-            id: number;
-            /** Children */
-            children: components["schemas"]["TagSongSchema"][];
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-            /**
-             * Category
-             * @default 0
-             */
-            category: number;
-        };
         /** TagWorkLangPreferenceSchema */
         TagWorkLangPreferenceSchema: {
             /** Tag */
@@ -1186,9 +1168,6 @@ export interface components {
         TagWorkSchema: {
             /** Id */
             id: number;
-            /** Children */
-            children: components["schemas"]["TagWorkSchema"][];
-            song?: components["schemas"]["SongSchema"] | null;
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
@@ -1220,12 +1199,23 @@ export interface components {
              */
             offset: number;
         };
-        /** PagedWorkSchema */
-        PagedWorkSchema: {
+        /** PagedThinWorkSchema */
+        PagedThinWorkSchema: {
             /** Items */
-            items: components["schemas"]["WorkSchema"][];
+            items: components["schemas"]["ThinWorkSchema"][];
             /** Count */
             count: number;
+        };
+        /** ThinWorkSchema */
+        ThinWorkSchema: {
+            /** Id */
+            id: number;
+            /** Tags */
+            tags: components["schemas"]["TagWorkSchema"][];
+            /** Title */
+            title: string;
+            /** Thumbnail */
+            thumbnail?: string | null;
         };
         /** WorkSchema */
         WorkSchema: {
@@ -1520,6 +1510,67 @@ export interface components {
             items: components["schemas"]["TagWorkSchema"][];
             /** Count */
             count: number;
+        };
+        /** FatTagWorkSchema */
+        FatTagWorkSchema: {
+            /** Id */
+            id: number;
+            /** Children */
+            children: components["schemas"]["TagWorkSchema"][];
+            song?: components["schemas"]["SongSchema"] | null;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
+            /**
+             * Deprecated
+             * @default false
+             */
+            deprecated: boolean;
+        };
+        /** SongSchema */
+        SongSchema: {
+            /** Id */
+            id: number;
+            /** Work Tag */
+            work_tag: string;
+            /** Tags */
+            tags: components["schemas"]["TagSongSchema"][];
+            /** Title */
+            title: string;
+            /** Bpm */
+            bpm: number;
+            /**
+             * Variable Bpm
+             * @default false
+             */
+            variable_bpm: boolean;
+            /** Author */
+            author: string;
+        };
+        /** TagSongSchema */
+        TagSongSchema: {
+            /** Id */
+            id: number;
+            /** Children */
+            children: components["schemas"]["TagSongSchema"][];
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
         };
         /** SongInSchema */
         SongInSchema: {
@@ -1866,7 +1917,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedWorkSchema"];
+                    "application/json": components["schemas"]["PagedThinWorkSchema"];
                 };
             };
         };
@@ -1889,7 +1940,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedWorkSchema"];
+                    "application/json": components["schemas"]["PagedThinWorkSchema"];
                 };
             };
         };
@@ -2097,7 +2148,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["WorkSchema"][];
+                    "application/json": components["schemas"]["ThinWorkSchema"][];
                 };
             };
         };
@@ -2119,7 +2170,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["WorkSchema"][];
+                    "application/json": components["schemas"]["ThinWorkSchema"][];
                 };
             };
         };
@@ -2307,6 +2358,7 @@ export interface operations {
                 is_reupload: boolean;
                 rating?: number;
                 work_id?: number | null;
+                original_url?: string | null;
             };
             header?: never;
             path?: never;
@@ -2848,6 +2900,7 @@ export interface operations {
         parameters: {
             query: {
                 query: string;
+                resolve_aliases?: boolean;
                 category?: number | null;
                 limit?: number;
                 offset?: number;
@@ -2886,7 +2939,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TagWorkSchema"];
+                    "application/json": components["schemas"]["FatTagWorkSchema"];
                 };
             };
             /** @description Multiple Choices */
@@ -2995,7 +3048,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedWorkSchema"];
+                    "application/json": components["schemas"]["PagedThinWorkSchema"];
                 };
             };
         };

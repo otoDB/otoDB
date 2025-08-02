@@ -55,18 +55,18 @@ class SongSchema(ModelSchema):
 
 class TagWorkSchema(ModelSchema):
     id: int
-    children: list['TagWorkSchema']
-    song: Optional[SongSchema] = Field(None, alias='get_song')
     lang_prefs: list[TagWorkLangPreferenceSchema]
     aliased_to: Optional['TagWorkSchema']
     class Meta:
         model = TagWork
         fields = ['name', 'slug', 'category', 'deprecated']
 
-class ThinTagWorkSchema(ModelSchema):
+class FatTagWorkSchema(ModelSchema):
     id: int
+    children: list[TagWorkSchema]
+    song: Optional[SongSchema] = Field(None, alias='get_song')
     lang_prefs: list[TagWorkLangPreferenceSchema]
-    aliased_to: Optional['ThinTagWorkSchema']
+    aliased_to: Optional[TagWorkSchema]
     class Meta:
         model = TagWork
         fields = ['name', 'slug', 'category', 'deprecated']
@@ -115,7 +115,7 @@ class WorkSchema(ModelSchema):
 
 class ThinWorkSchema(ModelSchema):
     id: int
-    tags: list[ThinTagWorkSchema]
+    tags: list[TagWorkSchema]
     class Meta:
         model = MediaWork
         fields = ['title', 'thumbnail']

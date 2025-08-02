@@ -13,11 +13,11 @@ from otodb.common import NFKC
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection
 from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes, LanguageTypes
 
-from .common import TagWorkSchema, ThinTagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
+from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
 
 tag_router = Router()
 
-@tag_router.get('search', response=list[ThinTagWorkSchema])
+@tag_router.get('search', response=list[TagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, resolve_aliases: bool = True, category: int | None = None):
     qs = TagWork.objects.filter(name__icontains=NFKC(query).replace(' ', '_'), deprecated=False)
@@ -29,7 +29,7 @@ def search(request: HttpRequest, query: str, resolve_aliases: bool = True, categ
     else:
         return list(set(qs))
 
-@tag_router.get('tag', response={ 200: TagWorkSchema, 300: str })
+@tag_router.get('tag', response={ 200: FatTagWorkSchema, 300: str })
 def tag(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     if tag.aliased_to:

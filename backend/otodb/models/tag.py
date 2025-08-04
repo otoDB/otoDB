@@ -34,7 +34,7 @@ class OtodbTagModel(BaseTagModel):
     """
 
     name = models.CharField(unique=True, max_length=255)
-    slug = models.SlugField(unique=True, max_length=50)
+    slug = models.SlugField(unique=True, max_length=50, allow_unicode=True)
     count = models.IntegerField(
         default=0, help_text="Internal counter of how many times this tag is in use"
     )

@@ -10,7 +10,7 @@ from simple_history.utils import update_change_reason
 from ninja import Router, Schema
 from ninja.pagination import paginate
 
-from .common import ProfileSchema
+from .common import ProfileSchema, user_is_editor
 
 history_router = Router()
 
@@ -26,3 +26,13 @@ class HistorySchema(Schema):
 @paginate
 def history(request: HttpRequest, pk: int, model: Literal['mediawork', 'mediasong', 'tagwork', 'tagsong', 'wikipage']):
     return ContentType.objects.get(model=model).model_class().history.filter(id=pk).order_by('-history_date')
+
+@history_router.get('user', response=list[HistorySchema])
+@paginate
+def user(request: HttpRequest, username: str):
+    return []
+
+@history_router.post('rollback')
+@user_is_editor
+def rollback(request: HttpRequest, pk: int, model: Literal['mediawork', 'mediasong', 'tagwork', 'tagsong', 'wikipage']):
+    return 0

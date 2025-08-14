@@ -173,9 +173,7 @@ def random(request: HttpRequest, n: int = 1):
 
 @work_router.get('recent', response=list[ThinWorkSchema])
 def recent(request: HttpRequest, n: int = 1):
-    return MediaWork.active_objects.annotate(
-        mod=Subquery(MediaWork.history.filter(id=OuterRef('id')).order_by('history_date').values('history_date')[:1])
-    ).order_by('-mod')[:n]
+    return MediaWork.active_objects.order_by('-id')[:max(n, 20)]
 
 class SlimWorkSchema(ModelSchema):
     id: int

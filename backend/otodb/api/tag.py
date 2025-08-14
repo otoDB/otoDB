@@ -1,5 +1,6 @@
 from typing import Annotated
 
+from django.db import transaction
 from django.db.models import Value
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404, redirect
@@ -112,8 +113,9 @@ class SongInSchema(ModelSchema):
 
 @tag_router.put('tag', auth=django_auth)
 @user_is_trusted
+@transaction.atomic
 def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_payload: SongInSchema | None = None):
-    tag = get_object_or_404(TagWork, slug=tag_slug)
+    tag = get_object_or_404(TagWork.objects.select_related('mediasong').select_for_update(), slug=tag_slug)
     if tag.category == WorkTagCategory.SONG and payload.category != WorkTagCategory.SONG:
         tag.mediasong.delete()
     elif payload.category == WorkTagCategory.SONG:
@@ -274,8 +276,9 @@ def song_tag_details(request: HttpRequest, tag_slug: str):
 
 @tag_router.put('song_tag', auth=django_auth)
 @user_is_trusted
+@transaction.atomic
 def update_song_tag(request: HttpRequest, tag_slug: str, payload: TagInSchema):
-    tag = get_object_or_404(TagSong, slug=tag_slug)
+    tag = get_object_or_404(TagSong.objects.select_for_update(), slug=tag_slug)
     tag.category = payload.category
     if payload.parent_slug:
         parent = get_object_or_404(TagSong, slug=payload.parent_slug)

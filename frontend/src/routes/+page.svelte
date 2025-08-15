@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { ModelNames } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	import Section from '$lib/Section.svelte';
 	import SongTag from '$lib/SongTag.svelte';
+	import { isSOV, isSVO } from '$lib/ui.js';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 
@@ -67,8 +69,14 @@
 							{:else if c.model === 'tagsong'}
 								<SongTag tag={c.instance} />
 							{/if}
-						</td><td
-							>{m.curly_safe_lynx_fond()} <a href="/profile/{c.user}">{c.user}</a></td
+						</td><td>
+							{#if isSVO(getLocale())}
+								{m.curly_safe_lynx_fond()}
+							{/if}
+							<a href="/profile/{c.user}">{c.user}</a>
+							{#if isSOV(getLocale())}
+								{m.curly_safe_lynx_fond()}
+							{/if}</td
 						></tr
 					>
 				{/each}

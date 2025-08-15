@@ -3,9 +3,8 @@ from datetime import datetime
 from typing import Literal
 
 from django.http import HttpRequest
-from django.contrib.contenttypes.models import ContentType
 
-from django.db.models import Window, F
+from django.db.models import Window
 from django.db.models.functions import Rank
 
 from django_comments_xtd.models import XtdComment
@@ -13,10 +12,21 @@ from django_comments_xtd.models import XtdComment
 from ninja import Router, Schema
 from ninja.throttling import AuthRateThrottle
 
+from otodb.models import MediaWork, Pool, TagWork, TagSong, Post
 from otodb.account.models import Account
 from .common import user_is_trusted, ProfileSchema
 
 comment_router = Router()
+
+model_classes_with_comments = {
+    'mediawork': MediaWork,
+    'account': Account,
+    'pool': Pool,
+    'tagwork': TagWork,
+    'tagsong': TagSong,
+    'post': Post
+}
+models_with_comments = model_classes_with_comments.keys()
 
 class CommentSchema(Schema):
     id: int
@@ -28,8 +38,8 @@ class CommentSchema(Schema):
     index: int
 
 @comment_router.get('comments', response=list[CommentSchema])
-def get(request: HttpRequest, model: Literal['mediawork', 'account', 'pool', 'tagwork', 'tagsong', 'post'], pk: int):
-    T = ContentType.objects.get(model=model)
+def get(request: HttpRequest, model: Literal[*models_with_comments], pk: int):
+    T = model_classes_with_comments[model]
     index = Window(
         expression=Rank(),
         order_by='submit_date',
@@ -39,8 +49,8 @@ def get(request: HttpRequest, model: Literal['mediawork', 'account', 'pool', 'ta
 
 @comment_router.post('comment', throttle=[AuthRateThrottle('1/8s')])
 @user_is_trusted
-def post(request: HttpRequest, model: Literal['mediawork', 'account', 'pool', 'tagwork', 'tagsong', 'post'], pk: int, comment: str, parent_id: int = 0):
-    T = ContentType.objects.get(model=model)
+def post(request: HttpRequest, model: Literal[*models_with_comments], pk: int, comment: str, parent_id: int = 0):
+    T = model_classes_with_comments[model]
     XtdComment.objects.create(
         content_type=T,
         object_pk=pk,
@@ -52,8 +62,8 @@ def post(request: HttpRequest, model: Literal['mediawork', 'account', 'pool', 't
 
 @comment_router.delete('comment')
 @user_is_trusted
-def delete(request: HttpRequest, model: Literal['mediawork', 'account', 'pool', 'tagwork', 'tagsong', 'post'], pk: int, comment_id: int):
-    T = ContentType.objects.get(model=model)
+def delete(request: HttpRequest, model: Literal[*models_with_comments], pk: int, comment_id: int):
+    T = model_classes_with_comments[model]
     comment = XtdComment.objects.get(
         content_type=T,
         object_pk=pk,

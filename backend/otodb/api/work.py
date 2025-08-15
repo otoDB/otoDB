@@ -2,7 +2,7 @@ from typing import List, Annotated
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, Avg, Count, Value, OuterRef, Subquery, Case, When, IntegerField
+from django.db.models import Q, Avg, Count, Value, Case, When, IntegerField
 
 from simple_history.utils import update_change_reason
 

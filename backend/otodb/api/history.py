@@ -5,6 +5,7 @@ from datetime import datetime
 
 import diff_match_patch as dmp_mod
 
+from django.views.decorators.cache import cache_page
 from django.db.models import Value, F
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
@@ -13,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from ninja import Router, Schema, Field
 from ninja.pagination import paginate
 from ninja.security import django_auth
+from ninja.decorators import decorate_view
 
 from otodb.models import MediaWork, MediaSong, TagWork, TagSong, WikiPage
 from otodb.account.models import Account
@@ -135,11 +137,12 @@ def history(request: HttpRequest, pk: int | str, model: Literal[*models_with_his
     return results
 
 @history_router.get('recent', response=list[HistoryExtSchema])
+@decorate_view(cache_page(60 * 60)) # every hour
 @paginate
 def recent(request: HttpRequest):
     return resolve_instance_id(get_combined_history_queryset().order_by('-history_date'))
 
-@history_router.get('user', response=list[HistoryExtSchema], auth=django_auth)
+@history_router.get('user', response=list[HistoryExtSchema])
 @paginate
 def user(request: HttpRequest, username: str):
     return resolve_instance_id(get_combined_history_queryset(history_user=request.user).order_by('-history_date'))

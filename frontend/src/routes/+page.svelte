@@ -1,8 +1,11 @@
 <script lang="ts">
+	import { ModelNames } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
 
 	import Section from '$lib/Section.svelte';
+	import SongTag from '$lib/SongTag.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
 
 	let { data } = $props();
 </script>
@@ -43,5 +46,33 @@
 				<WorkCard work={w} />
 			{/each}
 		</div>
+	</div>
+
+	<hr class="my-4" />
+
+	<div class="w-full">
+		<h2 class="mb-4 text-xl">{m.sea_cute_beaver_file()}</h2>
+		<table class="w-full">
+			<tbody>
+				{#each data.changes as c, i (i)}
+					<tr
+						><td>{new Date(c.date).toLocaleString()}</td><td
+							>{ModelNames[c.model]()}:
+							{#if c.model === 'mediawork'}
+								<a href="/work/{c.instance.id}">{c.instance.title}</a>
+							{:else if c.model === 'mediasong'}
+								<a href="/tag/{c.instance.work_tag}">{c.instance.title}</a>
+							{:else if c.model === 'tagwork' || c.model === 'wikipage'}
+								<WorkTag tag={c.instance} />
+							{:else if c.model === 'tagsong'}
+								<SongTag tag={c.instance} />
+							{/if}
+						</td><td
+							>{m.curly_safe_lynx_fond()} <a href="/profile/{c.user}">{c.user}</a></td
+						></tr
+					>
+				{/each}
+			</tbody>
+		</table>
 	</div>
 </Section>

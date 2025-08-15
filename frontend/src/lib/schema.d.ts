@@ -1114,6 +1114,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/history/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** History */
+        get: operations["otodb_api_history_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent */
+        get: operations["otodb_api_history_recent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** User */
+        get: operations["otodb_api_history_user"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/rollback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rollback */
+        post: operations["otodb_api_history_rollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1664,6 +1732,59 @@ export interface components {
             parent_id: number;
             /** Index */
             index: number;
+        };
+        /** DeltaSchema */
+        DeltaSchema: {
+            /** Html */
+            html: string;
+            /** Field */
+            field: string;
+        };
+        /** HistorySchema */
+        HistorySchema: {
+            /** Id */
+            id: number;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+            /** User */
+            user: string;
+            /** Reason */
+            reason: string | null;
+            /** Delta */
+            delta: components["schemas"]["DeltaSchema"][];
+        };
+        /** PagedHistorySchema */
+        PagedHistorySchema: {
+            /** Items */
+            items: components["schemas"]["HistorySchema"][];
+            /** Count */
+            count: number;
+        };
+        /** HistoryExtSchema */
+        HistoryExtSchema: {
+            /** Id */
+            id: number;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+            /** User */
+            user: string;
+            /** Model */
+            model: string;
+            /** Instance */
+            instance: components["schemas"]["ThinWorkSchema"] | components["schemas"]["SongSchema"] | components["schemas"]["TagWorkSchema"] | components["schemas"]["TagSongSchema"];
+        };
+        /** PagedHistoryExtSchema */
+        PagedHistoryExtSchema: {
+            /** Items */
+            items: components["schemas"]["HistoryExtSchema"][];
+            /** Count */
+            count: number;
         };
     };
     responses: never;
@@ -3564,6 +3685,99 @@ export interface operations {
                 model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
                 pk: number;
                 comment_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_history_history: {
+        parameters: {
+            query: {
+                pk: number | string;
+                model: "mediawork" | "mediasong" | "tagwork" | "tagsong" | "wikipage";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedHistorySchema"];
+                };
+            };
+        };
+    };
+    otodb_api_history_recent: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedHistoryExtSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_history_user: {
+        parameters: {
+            query: {
+                username: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedHistoryExtSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_history_rollback: {
+        parameters: {
+            query: {
+                model: "mediawork" | "mediasong" | "tagwork" | "tagsong" | "wikipage";
+                history_id: number;
             };
             header?: never;
             path?: never;

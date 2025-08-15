@@ -5,7 +5,7 @@ from datetime import datetime
 
 import diff_match_patch as dmp_mod
 
-from django.db.models import Value
+from django.db.models import Value, F
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
 
@@ -16,7 +16,7 @@ from ninja.security import django_auth
 from otodb.models import MediaWork, MediaSong, TagWork, TagSong, WikiPage
 from otodb.account.models import Account
 
-from .common import user_is_editor
+from .common import user_is_editor, ThinWorkSchema, SongSchema, TagWorkSchema, TagSongSchema
 
 history_router = Router()
 
@@ -29,17 +29,34 @@ model_classes_with_history = {
 }
 models_with_history = model_classes_with_history.keys()
 
-class SmallHistorySchema(Schema):
+class HistoryExtSchema(Schema):
     history_id: int
     history_date: datetime
     history_user__username: str
     model: str
+    instance: ThinWorkSchema | SongSchema | TagWorkSchema | TagSongSchema
 
-history_querysets = [c.history.order_by().annotate(
+def get_history_querysets(**kwargs):
+    return [c.history.order_by().filter(**kwargs).annotate(
         model=Value(c._meta.model_name),
-    ).values(*SmallHistorySchema.model_fields.keys()) for c in model_classes_with_history.values()]
+        instance=F('id')
+    ).values(*HistoryExtSchema.model_fields.keys()) for c in model_classes_with_history.values()]
 
-combined_history_queryset = history_querysets[0].union(*history_querysets[1:])
+def get_combined_history_queryset(**kwargs):
+    qs = get_history_querysets(**kwargs)
+    return qs[0].union(*qs[1:])
+
+def resolve_instance_id(qs):
+    qqs = []
+    for q in qs:
+        try:
+            q['instance'] = model_classes_with_history[q['model']].objects.get(id=q['instance'])
+            if q['model'] == 'wikipage':
+                q['instance'] = q['instance'].tag
+            qqs.append(q)
+        except model_classes_with_history[q['model']].DoesNotExist:
+            pass            
+    return qqs
 
 dmp = dmp_mod.diff_match_patch()
 def get_diff(delta):
@@ -59,19 +76,18 @@ def get_diff(delta):
     diffs_html = []
 
     for change in delta.changes:
-        # match change.field:
-        #     case 'tags':
-        #         # TODO make this not hardcoded...
-        #         old, new = set([c['work_tag'] for c in change.old]), set([c['work_tag'] for c in change.new])
-        #         old, new = old - new, new - old
-        #         changes = ['- ' + TagWork.objects.get(id=id_).slug for id_ in old] + ['+ ' + TagWork.objects.get(id=id_).slug for id_ in new]
-        #         diffs_html.append({'html': ('<br>').join(changes), 'field': change.field})
-        #     case _:
-        old, new = change.old, change.new
-        diff_field = dmp.diff_main(str(old), str(new))
-        dmp.diff_cleanupSemantic(diff_field)
+        if 'tag' in change.field:
+            field = [f for f in (change.old + change.new)[0].keys() if 'tag' in f][0]
+            old, new = {c[field] for c in change.old}, {c[field] for c in change.new}
+            old, new = old - new, new - old
+            changes = ['- ' + t for t in TagWork.objects.filter(id__in=old).values_list('slug', flat=True)] + ['+ ' + t for t in TagWork.objects.filter(id__in=new).values_list('slug',flat=True)]
+            diffs_html.append({'html': ('<br>').join(changes), 'field': change.field})
+        else:
+            old, new = change.old, change.new
+            diff_field = dmp.diff_main(str(old), str(new))
+            dmp.diff_cleanupSemantic(diff_field)
 
-        diffs_html.append({'html': diff_prettyHtml(diff_field).replace('&para;', ''), 'field': change.field})
+            diffs_html.append({'html': diff_prettyHtml(diff_field).replace('&para;', ''), 'field': change.field})
 
     return diffs_html
 
@@ -102,6 +118,7 @@ def get_history_dict(historical):
 @paginate(pass_parameter='pagination_info')
 def history(request: HttpRequest, pk: int, model: Literal[*models_with_history], **kwargs):
     historicals = model_classes_with_history[model].objects.get(id=pk).history.order_by('-history_date')[:kwargs['pagination_info'].limit + 1]
+    historicals = [*historicals]
     assert(historicals)
 
     results = []
@@ -114,15 +131,15 @@ def history(request: HttpRequest, pk: int, model: Literal[*models_with_history],
 
     return results
 
-@history_router.get('user', response=list[SmallHistorySchema])
+@history_router.get('recent', response=list[HistoryExtSchema])
 @paginate
 def recent(request: HttpRequest):
-    return combined_history_queryset.order_by('-history_date')
+    return resolve_instance_id(get_combined_history_queryset.order_by('-history_date'))
 
-@history_router.get('user', response=list[SmallHistorySchema], auth=django_auth)
+@history_router.get('user', response=list[HistoryExtSchema], auth=django_auth)
 @paginate
 def user(request: HttpRequest, username: str):
-    return combined_history_queryset.filter(history_user=request.user).order_by('-history_date')
+    return resolve_instance_id(get_combined_history_queryset(history_user=request.user).order_by('-history_date'))
 
 @history_router.post('rollback', auth=django_auth)
 @user_is_editor

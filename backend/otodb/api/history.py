@@ -47,7 +47,7 @@ def get_history_querysets(**kwargs):
 
 def get_combined_history_queryset(**kwargs):
     qs = get_history_querysets(**kwargs)
-    return qs[0].union(*qs[1:])
+    return qs[0].union(*qs[1:], all=True)
 
 def resolve_instance_id(qs):
     qqs = []

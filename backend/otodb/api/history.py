@@ -8,6 +8,7 @@ import diff_match_patch as dmp_mod
 from django.db.models import Value, F
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
+from django.shortcuts import get_object_or_404
 
 from ninja import Router, Schema
 from ninja.pagination import paginate
@@ -116,8 +117,12 @@ def get_history_dict(historical):
     response=list[HistorySchema]
 )
 @paginate(pass_parameter='pagination_info')
-def history(request: HttpRequest, pk: int, model: Literal[*models_with_history], **kwargs):
-    historicals = model_classes_with_history[model].objects.get(id=pk).history.order_by('-history_date')[:kwargs['pagination_info'].limit + 1]
+def history(request: HttpRequest, pk: int | str, model: Literal[*models_with_history], **kwargs):
+    if model == 'tagwork':
+        obj = get_object_or_404(model_classes_with_history[model], slug=pk)
+    else:
+        obj = get_object_or_404(model_classes_with_history[model], id=pk)
+    historicals = obj.history.order_by('-history_date')[:kwargs['pagination_info'].limit + 1]
     historicals = [*historicals]
     assert(historicals)
 

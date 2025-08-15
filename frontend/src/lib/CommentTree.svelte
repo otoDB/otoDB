@@ -65,7 +65,9 @@
 		<div class="mb-3 flex items-end gap-2 align-bottom">
 			<p>#{data.index}</p>
 			<h4><a href="/profile/{data.user.username}">{data.user.username}</a></h4>
-			<address class="text-otodb-content-fainter text-xs">{data.time}</address>
+			<address class="text-otodb-content-fainter text-xs">
+				{data.time.toLocaleString()}
+			</address>
 		</div>
 		<p>{data.comment}</p>
 	</div>

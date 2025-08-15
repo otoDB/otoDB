@@ -53,7 +53,7 @@ def resolve_history_instance_id(f):
     def act(*args, **kwargs):
         qs = f(*args, **kwargs)
         qqs = []
-        for q in qs:
+        for q in qs['items']:
             try:
                 q['instance'] = model_classes_with_history[q['model']].objects.get(id=q['instance'])
                 if q['model'] == 'wikipage':
@@ -61,7 +61,7 @@ def resolve_history_instance_id(f):
                 qqs.append(q)
             except model_classes_with_history[q['model']].DoesNotExist:
                 pass            
-        return qqs
+        return { 'items': qqs, 'count': qs['count'] }
     return act
 
 dmp = dmp_mod.diff_match_patch()

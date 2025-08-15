@@ -37,7 +37,7 @@ export const makeCommentTree = (comments: components['schemas']['CommentSchema']
 		const keep = Object.entries(
 			Object.groupBy(
 				comments.map(({ submit_date, ...rest }) => ({
-					time: new Date(Date.parse(submit_date)),
+					time: new Date(submit_date),
 					...rest
 				})),
 				(e) => e.level

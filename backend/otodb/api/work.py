@@ -2,7 +2,7 @@ from typing import List, Annotated
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, Avg, Count, Value, OuterRef, Subquery, Case, When, IntegerField
+from django.db.models import Q, Avg, Count, Value, Case, When, IntegerField
 
 from simple_history.utils import update_change_reason
 
@@ -173,9 +173,7 @@ def random(request: HttpRequest, n: int = 1):
 
 @work_router.get('recent', response=list[ThinWorkSchema])
 def recent(request: HttpRequest, n: int = 1):
-    return MediaWork.active_objects.annotate(
-        mod=Subquery(MediaWork.history.filter(id=OuterRef('id')).order_by('history_date').values('history_date')[:1])
-    ).order_by('-mod')[:n]
+    return MediaWork.active_objects.order_by('-id')[:min(n, 20)]
 
 class SlimWorkSchema(ModelSchema):
     id: int

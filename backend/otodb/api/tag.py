@@ -3,7 +3,7 @@ from typing import Annotated
 from django.db import transaction
 from django.db.models import Value
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, get_list_or_404, redirect
+from django.shortcuts import get_object_or_404, get_list_or_404
 
 from pydantic import AfterValidator
 from ninja import Router, ModelSchema, Schema

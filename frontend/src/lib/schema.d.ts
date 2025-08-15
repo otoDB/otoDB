@@ -1742,17 +1742,17 @@ export interface components {
         };
         /** HistorySchema */
         HistorySchema: {
-            /** History Id */
-            history_id: number;
+            /** Id */
+            id: number;
             /**
-             * History Date
+             * Date
              * Format: date-time
              */
-            history_date: string;
-            /** History User */
-            history_user: string;
-            /** History Change Reason */
-            history_change_reason: string | null;
+            date: string;
+            /** User */
+            user: string;
+            /** Reason */
+            reason: string | null;
             /** Delta */
             delta: components["schemas"]["DeltaSchema"][];
         };
@@ -1765,15 +1765,15 @@ export interface components {
         };
         /** HistoryExtSchema */
         HistoryExtSchema: {
-            /** History Id */
-            history_id: number;
+            /** Id */
+            id: number;
             /**
-             * History Date
+             * Date
              * Format: date-time
              */
-            history_date: string;
-            /** History User  Username */
-            history_user__username: string;
+            date: string;
+            /** User */
+            user: string;
             /** Model */
             model: string;
             /** Instance */

@@ -173,7 +173,7 @@ def random(request: HttpRequest, n: int = 1):
 
 @work_router.get('recent', response=list[ThinWorkSchema])
 def recent(request: HttpRequest, n: int = 1):
-    return MediaWork.active_objects.order_by('-id')[:max(n, 20)]
+    return MediaWork.active_objects.order_by('-id')[:min(n, 20)]
 
 class SlimWorkSchema(ModelSchema):
     id: int

@@ -10,14 +10,14 @@ from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
-from ninja import Router, Schema
+from ninja import Router, Schema, Field
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
 from otodb.models import MediaWork, MediaSong, TagWork, TagSong, WikiPage
 from otodb.account.models import Account
 
-from .common import user_is_editor, ThinWorkSchema, SongSchema, TagWorkSchema, TagSongSchema
+from .common import user_is_staff, ThinWorkSchema, SongSchema, TagWorkSchema, TagSongSchema
 
 history_router = Router()
 
@@ -31,17 +31,17 @@ model_classes_with_history = {
 models_with_history = model_classes_with_history.keys()
 
 class HistoryExtSchema(Schema):
-    history_id: int
-    history_date: datetime
-    history_user__username: str
+    id: int = Field(..., alias='history_id')
+    date: datetime = Field(..., alias='history_date')
+    user: str = Field(..., alias='history_user__username')
     model: str
     instance: ThinWorkSchema | SongSchema | TagWorkSchema | TagSongSchema
 
 def get_history_querysets(**kwargs):
-    return [c.history.order_by().filter(**kwargs).annotate(
+    return [c.history.order_by().filter(history_user__isnull=False, **kwargs).annotate(
         model=Value(c._meta.model_name),
         instance=F('id')
-    ).values(*HistoryExtSchema.model_fields.keys()) for c in model_classes_with_history.values()]
+    ).values('history_id', 'history_date', 'history_user__username', 'model', 'instance') for c in model_classes_with_history.values()]
 
 def get_combined_history_queryset(**kwargs):
     qs = get_history_querysets(**kwargs)
@@ -97,10 +97,10 @@ class DeltaSchema(Schema):
     field: str
 
 class HistorySchema(Schema):
-    history_id: int
-    history_date: datetime
-    history_user: str
-    history_change_reason: str | None
+    id: int = Field(..., alias='history_id')
+    date: datetime = Field(..., alias='history_date')
+    user: str = Field(..., alias='history_user')
+    reason: str | None = Field(..., alias='history_change_reason')
     delta: list[DeltaSchema]
 
 def get_history_dict(historical):
@@ -113,9 +113,7 @@ def get_history_dict(historical):
     d['history_user'] = Account.objects.get(id=d['history_user']).username
     return d
 
-@history_router.get('history',
-    response=list[HistorySchema]
-)
+@history_router.get('history', response=list[HistorySchema])
 @paginate(pass_parameter='pagination_info')
 def history(request: HttpRequest, pk: int | str, model: Literal[*models_with_history], **kwargs):
     if model == 'tagwork':
@@ -139,7 +137,7 @@ def history(request: HttpRequest, pk: int | str, model: Literal[*models_with_his
 @history_router.get('recent', response=list[HistoryExtSchema])
 @paginate
 def recent(request: HttpRequest):
-    return resolve_instance_id(get_combined_history_queryset.order_by('-history_date'))
+    return resolve_instance_id(get_combined_history_queryset().order_by('-history_date'))
 
 @history_router.get('user', response=list[HistoryExtSchema], auth=django_auth)
 @paginate
@@ -147,6 +145,6 @@ def user(request: HttpRequest, username: str):
     return resolve_instance_id(get_combined_history_queryset(history_user=request.user).order_by('-history_date'))
 
 @history_router.post('rollback', auth=django_auth)
-@user_is_editor
+@user_is_staff # for now
 def rollback(request: HttpRequest, model: Literal[*models_with_history], history_id: int):
     model_classes_with_history[model].history.get(history_id=history_id).instance.save()

@@ -49,7 +49,11 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			{ pathname: `work/${params.work_id}/relations`, title: m.alive_these_jay_pick() },
 			...(loggedOut
 				? []
-				: [{ pathname: `work/${params.work_id}/edit`, title: m.minor_crisp_cobra_list() }])
+				: [{ pathname: `work/${params.work_id}/edit`, title: m.minor_crisp_cobra_list() }]),
+			{
+				pathname: `work/${params.work_id}/history`,
+				title: m.giant_away_scallop_hike()
+			}
 		],
 		...data
 	};

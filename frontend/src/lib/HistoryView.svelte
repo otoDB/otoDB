@@ -12,15 +12,16 @@
 		{#each historicals as entry, i (i)}
 			<tr
 				><td>
-					<a href="/profile/{entry.history_user}">{entry.history_user}</a>
+					<a href="/profile/{entry.user}">{entry.user}</a>
 				</td><td>
-					{new Date(entry.history_date).toLocaleDateString()}
+					{new Date(entry.date).toLocaleDateString()}
 				</td><td
 					>{#each entry.delta as d, i (i)}<div class="flex flex-row gap-2 p-2">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							<span>{d.field}:</span>{@html d.html}
 						</div>{/each}</td
 				><td>
-					{entry.history_reason}
+					{entry.reason}
 				</td></tr
 			>
 		{/each}

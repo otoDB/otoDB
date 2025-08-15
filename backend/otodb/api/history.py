@@ -1,11 +1,11 @@
 from typing import Literal
 from itertools import pairwise
+from functools import wraps
 
 from datetime import datetime
 
 import diff_match_patch as dmp_mod
 
-from django.views.decorators.cache import cache_page
 from django.db.models import Value, F
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
@@ -14,7 +14,6 @@ from django.shortcuts import get_object_or_404
 from ninja import Router, Schema, Field
 from ninja.pagination import paginate
 from ninja.security import django_auth
-from ninja.decorators import decorate_view
 
 from otodb.models import MediaWork, MediaSong, TagWork, TagSong, WikiPage
 from otodb.account.models import Account
@@ -49,17 +48,21 @@ def get_combined_history_queryset(**kwargs):
     qs = get_history_querysets(**kwargs)
     return qs[0].union(*qs[1:], all=True)
 
-def resolve_instance_id(qs):
-    qqs = []
-    for q in qs:
-        try:
-            q['instance'] = model_classes_with_history[q['model']].objects.get(id=q['instance'])
-            if q['model'] == 'wikipage':
-                q['instance'] = q['instance'].tag
-            qqs.append(q)
-        except model_classes_with_history[q['model']].DoesNotExist:
-            pass            
-    return qqs
+def resolve_history_instance_id(f):
+    @wraps(f)
+    def act(*args, **kwargs):
+        qs = f(*args, **kwargs)
+        qqs = []
+        for q in qs:
+            try:
+                q['instance'] = model_classes_with_history[q['model']].objects.get(id=q['instance'])
+                if q['model'] == 'wikipage':
+                    q['instance'] = q['instance'].tag
+                qqs.append(q)
+            except model_classes_with_history[q['model']].DoesNotExist:
+                pass            
+        return qqs
+    return act
 
 dmp = dmp_mod.diff_match_patch()
 def get_diff(delta):
@@ -140,15 +143,16 @@ def history(request: HttpRequest, pk: int | str, model: Literal[*models_with_his
     return results
 
 @history_router.get('recent', response=list[HistoryExtSchema])
-@decorate_view(cache_page(60 * 60)) # every hour
+@resolve_history_instance_id
 @paginate
 def recent(request: HttpRequest):
-    return resolve_instance_id(get_combined_history_queryset().order_by('-history_date'))
+    return get_combined_history_queryset().order_by('-history_date')
 
 @history_router.get('user', response=list[HistoryExtSchema])
+@resolve_history_instance_id
 @paginate
 def user(request: HttpRequest, username: str):
-    return resolve_instance_id(get_combined_history_queryset(history_user=request.user).order_by('-history_date'))
+    return get_combined_history_queryset(history_user=request.user).order_by('-history_date')
 
 @history_router.post('rollback', auth=django_auth)
 @user_is_staff # for now

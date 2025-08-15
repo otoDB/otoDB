@@ -112,7 +112,10 @@ def get_history_dict(historical):
         'history_user',
         'history_change_reason'
     ]) | {'delta': []}
-    d['history_user'] = Account.objects.get(id=d['history_user']).username
+    if d['history_user']:
+        d['history_user'] = Account.objects.get(id=d['history_user']).username
+    else:
+        d['history_user'] = Account.objects.get(id=1).username
     return d
 
 @history_router.get('history', response=list[HistorySchema])

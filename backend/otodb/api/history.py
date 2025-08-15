@@ -8,20 +8,38 @@ import diff_match_patch as dmp_mod
 from django.db.models import Value
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
-from django.contrib.contenttypes.models import ContentType
 
 from ninja import Router, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
+from otodb.models import MediaWork, MediaSong, TagWork, TagSong, WikiPage
 from otodb.account.models import Account
 
 from .common import user_is_editor
 
 history_router = Router()
 
-models_with_history = ['mediawork', 'mediasong', 'tagwork', 'tagsong', 'wikipage']
-model_classes_with_history = [ContentType.objects.get(model=m).model_class() for m in models_with_history]
+model_classes_with_history = {
+    'mediawork': MediaWork,
+    'mediasong': MediaSong,
+    'tagwork': TagWork,
+    'tagsong': TagSong,
+    'wikipage': WikiPage
+}
+models_with_history = model_classes_with_history.keys()
+
+class SmallHistorySchema(Schema):
+    history_id: int
+    history_date: datetime
+    history_user__username: str
+    model: str
+
+history_querysets = [c.history.order_by().annotate(
+        model=Value(c._meta.model_name),
+    ).values(*SmallHistorySchema.model_fields.keys()) for c in model_classes_with_history.values()]
+
+combined_history_queryset = history_querysets[0].union(*history_querysets[1:])
 
 dmp = dmp_mod.diff_match_patch()
 def get_diff(delta):
@@ -37,7 +55,7 @@ def get_diff(delta):
             elif op == dmp.DIFF_EQUAL:
                 html.append("<span>%s</span>" % text)
         return "".join(html)
-        
+
     diffs_html = []
 
     for change in delta.changes:
@@ -52,7 +70,7 @@ def get_diff(delta):
         old, new = change.old, change.new
         diff_field = dmp.diff_main(str(old), str(new))
         dmp.diff_cleanupSemantic(diff_field)
-            
+
         diffs_html.append({'html': diff_prettyHtml(diff_field).replace('&para;', ''), 'field': change.field})
 
     return diffs_html
@@ -83,8 +101,7 @@ def get_history_dict(historical):
 )
 @paginate(pass_parameter='pagination_info')
 def history(request: HttpRequest, pk: int, model: Literal[*models_with_history], **kwargs):
-    historicals = ContentType.objects.get(model=model).model_class().objects.get(id=pk).history.order_by('-history_date')[:kwargs['pagination_info'].limit + 1]
-    historicals = [*historicals]
+    historicals = model_classes_with_history[model].objects.get(id=pk).history.order_by('-history_date')[:kwargs['pagination_info'].limit + 1]
     assert(historicals)
 
     results = []
@@ -97,28 +114,17 @@ def history(request: HttpRequest, pk: int, model: Literal[*models_with_history],
 
     return results
 
-class SmallHistorySchema(Schema):
-    history_id: int
-    history_date: datetime
-    history_user__username: str
-
 @history_router.get('user', response=list[SmallHistorySchema])
 @paginate
 def recent(request: HttpRequest):
-    sets = [c.history.order_by().annotate(
-        model=Value(c._meta.model_name)
-    ).values('history_id', 'history_date', 'history_user__username', 'model') for c in model_classes_with_history]
-    return sets[0].union(*sets[1:]).order_by('-history_date')
+    return combined_history_queryset.order_by('-history_date')
 
 @history_router.get('user', response=list[SmallHistorySchema], auth=django_auth)
 @paginate
 def user(request: HttpRequest, username: str):
-    sets = [c.history.filter(history_user=request.user).order_by().annotate(
-        model=Value(c._meta.model_name)
-    ).values('history_id', 'history_date', 'history_user__username', 'model') for c in model_classes_with_history]
-    return sets[0].union(*sets[1:]).order_by('-history_date')
+    return combined_history_queryset.filter(history_user=request.user).order_by('-history_date')
 
 @history_router.post('rollback', auth=django_auth)
 @user_is_editor
 def rollback(request: HttpRequest, model: Literal[*models_with_history], history_id: int):
-    ContentType.objects.get(model=model).model_class().history.get(history_id=history_id).instance.save()
+    model_classes_with_history[model].history.get(history_id=history_id).instance.save()

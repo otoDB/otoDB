@@ -115,7 +115,7 @@ class SongInSchema(ModelSchema):
 @user_is_trusted
 @transaction.atomic
 def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_payload: SongInSchema | None = None):
-    tag = get_object_or_404(TagWork.objects.select_related('mediasong').select_for_update(), slug=tag_slug)
+    tag = get_object_or_404(TagWork.objects.select_for_update(), slug=tag_slug)
     if tag.category == WorkTagCategory.SONG and payload.category != WorkTagCategory.SONG:
         tag.mediasong.delete()
     elif payload.category == WorkTagCategory.SONG:

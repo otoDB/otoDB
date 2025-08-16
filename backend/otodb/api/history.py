@@ -152,7 +152,7 @@ def recent(request: HttpRequest):
 @resolve_history_instance_id
 @paginate
 def user(request: HttpRequest, username: str):
-    return get_combined_history_queryset(history_user=request.user).order_by('-history_date')
+    return get_combined_history_queryset(history_user__username=username).order_by('-history_date')
 
 @history_router.post('rollback', auth=django_auth)
 @user_is_staff # for now

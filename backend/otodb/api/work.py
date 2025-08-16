@@ -43,7 +43,10 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
     q = Q(title__icontains=query) | Q(description__icontains=query)
     if tags:
         for tag in tags.split():
-            q = q & Q(tags__slug=NFKC(tag))
+            if tag[0] == '-':
+                q = q & ~Q(tags__slug=NFKC(tag[1:]))
+            else:
+                q = q & Q(tags__slug=NFKC(tag))
     else:
         q = q | Q(worksource__source_id=query)
         if query.startswith("https"):

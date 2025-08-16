@@ -237,3 +237,17 @@ OTODB_PROTECT_API_DOCS = os.environ.get('OTODB_PROTECT_API_DOCS', '').lower() ==
 NINJA_PAGINATION_PER_PAGE = 30
 NINJA_PAGINATION_MAX_PER_PAGE_SIZE = 30
 NINJA_PAGINATION_MAX_LIMIT = 30
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}

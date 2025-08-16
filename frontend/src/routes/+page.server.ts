@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 		}),
 		client.GET('/api/history/recent', {
 			fetch,
-			params: { query: { limit: 8, offset: 0 } }
+			params: { query: { limit: 16, offset: 0 } }
 		})
 	]);
 	if (randomWork.error || recentWork.error || recentChanges.error)

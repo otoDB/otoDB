@@ -5,6 +5,7 @@
 	interface Props {
 		value: string;
 		type: 'work' | 'song';
+		resolve_aliases?: boolean;
 	}
 	let { value = $bindable(''), type, ...props }: Props = $props();
 
@@ -18,7 +19,7 @@
 			return;
 		}
 		const { data } = await client.GET(endpoint, {
-			params: { query: { query: value, limit: 10 } }
+			params: { query: { query: value, limit: 10, resolve_aliases: props.resolve_aliases ?? true } }
 		});
 		if (!data) return;
 		suggestions = data.items;
@@ -41,10 +42,10 @@
 						class="cursor-pointer"
 						href={null}
 						onclick={() => {
-							value = t.slug;
+							value = t.aliased_to ? t.aliased_to.slug : t.slug;
 							suggestions = [];
 						}}
-						>{t.name}
+						>{t.aliased_to ? `${t.name} → ${t.aliased_to.name}` : t.name}
 						{#if t.slug !== t.name}<address class="inline">
 								({t.slug}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
 										'',

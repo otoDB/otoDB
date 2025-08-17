@@ -129,6 +129,7 @@
 							type="work"
 							name="parent"
 							value={form?.parent_slug ?? data.parent_slug ?? ''}
+							resolve_aliases={false}
 						/></td
 					>
 				</tr>

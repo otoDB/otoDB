@@ -2,6 +2,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models.query import prefetch_related_objects
 
+from simple_history.models import HistoricalRecords, HistoricForeignKey
+
 from .media import MediaWork, MediaSong
 
 from .enums import WorkRelationTypes, SongRelationTypes
@@ -15,9 +17,10 @@ class BidirectionalManager(models.Manager):
 
 
 class WorkRelation(models.Model):
-    A = models.ForeignKey(MediaWork, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_A')
-    B = models.ForeignKey(MediaWork, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_B')
+    A = HistoricForeignKey(MediaWork, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_A')
+    B = HistoricForeignKey(MediaWork, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_B')
     relation = models.IntegerField(choices=WorkRelationTypes.choices)
+    history = HistoricalRecords()
 
     objects = BidirectionalManager()
 
@@ -51,9 +54,10 @@ class WorkRelation(models.Model):
         return query
 
 class SongRelation(models.Model):
-    A = models.ForeignKey(MediaSong, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_A')
-    B = models.ForeignKey(MediaSong, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_B')
+    A = HistoricForeignKey(MediaSong, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_A')
+    B = HistoricForeignKey(MediaSong, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_B')
     relation = models.IntegerField(choices=SongRelationTypes.choices)
+    history = HistoricalRecords()
 
     objects = BidirectionalManager()
 

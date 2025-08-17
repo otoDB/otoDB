@@ -15,12 +15,12 @@
 
 	const submit = async (e: SubmitEvent) => {
 		e.preventDefault();
-		const { error } = await client.POST('/api/tag/alias', {
+		const { error, data } = await client.POST('/api/tag/alias', {
 			fetch,
 			params: { query: { into_tag: selected, delete: del } },
 			body: tags
 		});
-		if (!error) goto(`/tag/${selected}`, { invalidateAll: true });
+		if (!error) goto(`/tag/${data.merged_slug}`, { invalidateAll: true });
 	};
 </script>
 

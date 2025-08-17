@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Value
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
+from django.utils.text import slugify
 
 from pydantic import AfterValidator
 from ninja import Router, ModelSchema, Schema
@@ -55,13 +56,13 @@ def works(request: HttpRequest, tag_slug: str):
 @user_is_trusted
 def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool):
     tags = []
-    for slug in from_tags:
+    for tag_name in from_tags:
         try:
-            tags.append(TagWork.objects.get(slug=slug))
+            tags.append(TagWork.objects.get(slug=slugify(tag_name, True)))
         except TagWork.DoesNotExist:
-            tags.append(TagWork.objects.create(name=slug))      
-      
-    into = get_object_or_404(TagWork, slug=into_tag)
+            tags.append(TagWork.objects.create(name=tag_name))      
+  
+    into = get_object_or_404(TagWork, slug=slugify(into_tag, True))
     assert(into.aliased_to is None)
 
     TagWork.alias(tags, into)
@@ -71,7 +72,10 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
             tag.save()
             if tag.can_be_deleted:
                 tag.delete()
-    return
+
+    return {
+        'merged_slug': slugify(into_tag, True)
+    }
 
 @tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})
 @user_is_trusted

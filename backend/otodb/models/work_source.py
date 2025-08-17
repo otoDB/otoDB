@@ -1,5 +1,6 @@
 from datetime import date
 from django.db import models
+from simple_history.models import HistoricalRecords, HistoricForeignKey
 
 from .enums import Platform, WorkOrigin, WorkStatus
 from .media import MediaWork
@@ -12,7 +13,7 @@ class ActiveManager(models.Manager):
         return super().get_queryset().filter(rejection__isnull=True)
 
 class WorkSource(models.Model):
-    media = models.ForeignKey(MediaWork, on_delete=models.CASCADE, null=True, blank=True)
+    media = HistoricForeignKey(MediaWork, on_delete=models.CASCADE, null=True, blank=True)
     platform = models.IntegerField(choices=Platform.choices)
     source_id = models.CharField(max_length=1000)
 
@@ -41,6 +42,7 @@ class WorkSource(models.Model):
 
     objects = models.Manager()
     active_objects = ActiveManager()
+    history = HistoricalRecords()
 
     def __str__(self) -> str:
         return f'#{self.media.pk} - {self.url}' if self.media else self.title

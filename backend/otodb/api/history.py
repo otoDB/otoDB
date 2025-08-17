@@ -30,9 +30,9 @@ def union_qs(qss, **kwargs):
         return qss[0]
 
 model_classes_with_history = {
-    'mediawork': [('mediawork', 'id'), ('workrelation', 'A__id'), ('workrelation', 'B__id'), ('worksource', 'media__id')],
+    'mediawork': [('mediawork', 'id'), ('mediawork', 'moved_to__id'), ('workrelation', 'A__id'), ('workrelation', 'B__id'), ('worksource', 'media__id')],
     'mediasong': [('mediasong', 'id'), ('songrelation', 'A__id'), ('songrelation', 'B__id'), ('mediasongconnection', 'song__id')],
-    'tagwork': [('tagwork', 'id'), ('wikipage', 'tag__id'), ('tagworkconnection', 'tag__id'), ('tagworkmediaconnection', 'tag__id'), ('tagworkcreatorconnection', 'tag__id'), ('tagworklangpreference', 'tag__id')],
+    'tagwork': [('tagwork', 'id'), ('tagwork', 'aliased_to__id'), ('wikipage', 'tag__id'), ('tagworkconnection', 'tag__id'), ('tagworkmediaconnection', 'tag__id'), ('tagworkcreatorconnection', 'tag__id'), ('tagworklangpreference', 'tag__id')],
     'tagsong': [('tagsong', 'id')],
 }
 models_with_history = model_classes_with_history.keys()
@@ -113,6 +113,7 @@ class DeltaSchema(Schema):
 
 class HistorySchema(Schema):
     id: int = Field(..., alias='history_id')
+    model: str
     date: datetime = Field(..., alias='history_date')
     user: str = Field(..., alias='history_user')
     reason: str | None = Field(..., alias='history_change_reason')
@@ -123,8 +124,8 @@ def get_history_dict(historical):
         'history_id',
         'history_date',
         'history_user',
-        'history_change_reason'
-    ]) | {'delta': []}
+        'history_change_reason',
+    ]) | {'delta': [], 'model': historical.model}
     if d['history_user']:
         d['history_user'] = Account.objects.get(id=d['history_user']).username
     else:
@@ -168,5 +169,5 @@ def user(request: HttpRequest, username: str):
 
 @history_router.post('rollback', auth=django_auth)
 @user_is_staff # for now
-def rollback(request: HttpRequest, model: Literal[*models_with_history], history_id: int):
-    model_classes_with_history[model].history.get(history_id=history_id).instance.save()
+def rollback(request: HttpRequest, model: Literal[*model_classes_reverse.keys()], history_id: int):
+    ContentType.objects.get(model=model).model_class().history.get(history_id=history_id).instance.save()

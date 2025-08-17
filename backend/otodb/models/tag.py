@@ -145,16 +145,17 @@ class TagWork(OtodbTagModel):
         return q.distinct()
 
     @property
-    def can_be_deleted(self):
-        # Maximal friction to avoid accidentally deleting any user-contributed data
-        return not any([
-            self.works.exists(),
-            self.aliased_to,
-            self.aliases.exists(),
+    def unaliasable(self):
+        return any([
             self.wikipage_set.exists() and any([p.page.strip() != '' for p in self.wikipage_set]),
             self.tagworkconnection_set.exists(),
             self.category != WorkTagCategory.GENERAL
         ])
+
+    @property
+    def can_be_deleted(self):
+        # Maximal friction to avoid accidentally deleting any user-contributed data
+        return not any([self.unaliasable, self.works.exists(), self.aliased_to, self.aliases.exists()])
 
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)

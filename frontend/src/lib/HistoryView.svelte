@@ -1,7 +1,21 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
+	import client from './api';
+	import { UserLevel } from './enums';
 	import { m } from './paraglide/messages';
-
-	let { historicals } = $props();
+	import type { components } from './schema';
+	interface Props {
+		historicals: components['schemas']['HistorySchema'][];
+		user: components['schemas']['UserStatusSchema'] | null;
+	}
+	let { historicals, user = null }: Props = $props();
+	const rollback = async (entry) => {
+		await client.POST('/api/history/rollback', {
+			fetch,
+			params: { query: { history_id: entry.id, model: entry.model } }
+		});
+		invalidateAll();
+	};
 </script>
 
 <table class="w-full table-auto text-center">
@@ -9,7 +23,7 @@
 		<tr>
 			<th>{m.fuzzy_crazy_cobra_lead()}</th><th>Changed at</th><th>Changes</th><th
 				>{m.weary_spicy_fly_attend()}</th
-			>
+			>{#if user && user.level >= UserLevel.ADMIN}<th>{m.legal_mean_slug_link()}</th>{/if}
 		</tr>
 		{#each historicals as entry, i (i)}
 			<tr
@@ -24,7 +38,10 @@
 						</div>{/each}</td
 				><td>
 					{entry.reason}
-				</td></tr
+				</td>{#if user && user.level >= UserLevel.ADMIN}<td
+						><button onclick={() => rollback(entry)}>{m.legal_mean_slug_link()}</button
+						></td
+					>{/if}</tr
 			>
 		{/each}
 	</tbody>

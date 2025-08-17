@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ModelNames } from '$lib/enums.js';
+	import { HistoryModelNames } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 
@@ -59,12 +59,16 @@
 				{#each data.changes as c, i (i)}
 					<tr
 						><td>{new Date(c.date).toLocaleString()}</td><td
-							>{ModelNames[c.model]()}:
-							{#if c.model === 'mediawork'}
-								<a href="/work/{c.instance.id}">{c.instance.title}</a>
-							{:else if c.model === 'mediasong'}
-								<a href="/tag/{c.instance.work_tag}">{c.instance.title}</a>
-							{:else if c.model === 'tagwork' || c.model === 'wikipage'}
+							>{HistoryModelNames[c.model]()}:
+							{#if ['mediawork', 'workrelation', 'worksource'].includes(c.model)}
+								<a href="/work/{c.instance.id}"
+									>#{c.instance.id} - {c.instance.title}</a
+								>
+							{:else if ['mediasong', 'songrelation', 'mediasongconnection'].includes(c.model)}
+								<a href="/tag/{c.instance.work_tag}"
+									>#{c.instance.id} - {c.instance.title}</a
+								>
+							{:else if c.model.startsWith('tagwork') || c.model === 'wikipage'}
 								<WorkTag tag={c.instance} />
 							{:else if c.model === 'tagsong'}
 								<SongTag tag={c.instance} />

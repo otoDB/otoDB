@@ -10,43 +10,54 @@ from django.db.models import Value, F
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+from django.contrib.contenttypes.models import ContentType
 
 from ninja import Router, Schema, Field
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.models import MediaWork, MediaSong, TagWork, TagSong, WikiPage
+from otodb.models import TagWork
 from otodb.account.models import Account
 
 from .common import user_is_staff, ThinWorkSchema, SongSchema, TagWorkSchema, TagSongSchema
 
 history_router = Router()
 
+def union_qs(qss, **kwargs):
+    if len(qss) > 1:
+        return qss[0].union(*qss[1:], **kwargs)
+    else:
+        return qss[0]
+
 model_classes_with_history = {
-    'mediawork': MediaWork,
-    'mediasong': MediaSong,
-    'tagwork': TagWork,
-    'tagsong': TagSong,
-    'wikipage': WikiPage
+    'mediawork': [('mediawork', 'id'), ('workrelation', 'A__id'), ('workrelation', 'B__id'), ('worksource', 'media__id')],
+    'mediasong': [('mediasong', 'id'), ('songrelation', 'A__id'), ('songrelation', 'B__id'), ('mediasongconnection', 'song__id')],
+    'tagwork': [('tagwork', 'id'), ('wikipage', 'tag__id'), ('tagworkconnection', 'tag__id'), ('tagworkmediaconnection', 'tag__id'), ('tagworkcreatorconnection', 'tag__id'), ('tagworklangpreference', 'tag__id')],
+    'tagsong': [('tagsong', 'id')],
 }
 models_with_history = model_classes_with_history.keys()
+model_classes_reverse = {cc[0]: k for k, c in model_classes_with_history.items() for cc in c}
 
 class HistoryExtSchema(Schema):
     id: int = Field(..., alias='history_id')
     date: datetime = Field(..., alias='history_date')
     user: str = Field(..., alias='history_user__username')
     model: str
-    instance: ThinWorkSchema | SongSchema | TagWorkSchema | TagSongSchema
+    instance: SongSchema | ThinWorkSchema | TagWorkSchema | TagSongSchema
 
 def get_history_querysets(**kwargs):
-    return [c.history.order_by().filter(history_user__isnull=False, **kwargs).annotate(
-        model=Value(c._meta.model_name),
-        instance=F('id')
-    ).values('history_id', 'history_date', 'history_user__username', 'model', 'instance') for c in model_classes_with_history.values()]
+    return {model: union_qs([ContentType.objects.get(model=c).model_class().history.order_by().filter(history_user__isnull=False, **kwargs).annotate(
+        model=Value(c),
+        instance=F(key)
+    ).values('history_id', 'history_date', 'history_user__username', 'model', 'instance') for c, key in cc], all=True) for model, cc in model_classes_with_history.items()}
+
+def get_instance_history_querysets(pk):
+    return {model: [ContentType.objects.get(model=c).model_class().history.order_by().filter(history_user__isnull=False, **{key: pk}).annotate(
+        model=Value(c),
+    ) for c, key in cc] for model, cc in model_classes_with_history.items()}
 
 def get_combined_history_queryset(**kwargs):
-    qs = get_history_querysets(**kwargs)
-    return qs[0].union(*qs[1:], all=True)
+    return union_qs(list(get_history_querysets(**kwargs).values()), all=True)
 
 def resolve_history_instance_id(f):
     @wraps(f)
@@ -54,13 +65,12 @@ def resolve_history_instance_id(f):
         qs = f(*args, **kwargs)
         qqs = []
         for q in qs['items']:
+            instance_target_model = ContentType.objects.get(model=model_classes_reverse[q['model']]).model_class()
             try:
-                q['instance'] = model_classes_with_history[q['model']].objects.get(id=q['instance'])
-                if q['model'] == 'wikipage':
-                    q['instance'] = q['instance'].tag
+                q['instance'] = instance_target_model.objects.get(id=q['instance'])
                 qqs.append(q)
-            except model_classes_with_history[q['model']].DoesNotExist:
-                pass            
+            except instance_target_model.DoesNotExist:
+                pass
         return { 'items': qqs, 'count': qs['count'] }
     return act
 
@@ -124,21 +134,23 @@ def get_history_dict(historical):
 @history_router.get('history', response=list[HistorySchema])
 @paginate(pass_parameter='pagination_info')
 def history(request: HttpRequest, pk: int | str, model: Literal[*models_with_history], **kwargs):
-    if model == 'tagwork':
-        obj = get_object_or_404(model_classes_with_history[model], slug=pk)
-    else:
-        obj = get_object_or_404(model_classes_with_history[model], id=pk)
-    historicals = obj.history.order_by('-history_date')[:kwargs['pagination_info'].limit + 1]
-    historicals = [*historicals]
+    if model == 'tagwork' or model == 'tagsong':
+        pk = get_object_or_404(ContentType.objects.get(model=model).model_class().objects, slug=pk).pk
+    historicals = [list(qs.order_by('-history_date')[:kwargs['pagination_info'].limit]) for qs in get_instance_history_querysets(pk)[model]]
     assert(historicals)
 
     results = []
-    for a, b in pairwise(historicals):
-        delta = a.diff_against(b)
-        d = get_history_dict(a)
-        d['delta'] = get_diff(delta)
-        results.append(d)
-    results.append(get_history_dict(historicals[-1]))
+    for model in historicals:
+        for a in model:
+            b = a.prev_record
+            d = get_history_dict(a)
+            if b:
+                delta = a.diff_against(b)
+                d['delta'] = get_diff(delta)
+            else:
+                d['delta'] = [{'html': 'created', 'field': a.model }]
+            results.append(d)
+    results.sort(key=lambda x: x['history_date'], reverse=True)
 
     return results
 

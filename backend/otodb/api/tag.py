@@ -1,6 +1,7 @@
 from typing import Annotated
+from itertools import chain
 
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import Value
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
@@ -73,8 +74,36 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
             if tag.can_be_deleted:
                 tag.delete()
 
+    # carry over parent, category, wikipages, connections
+    # Precedence given to later entries
+    for tag in tags:
+        if tag.id != into.id:
+            if not into.parent:
+                into.parent = tag.parent
+            if into.category != WorkTagCategory.GENERAL:
+                into.category = tag.category
+            for p in tag.wikipage_set.all():
+                try:
+                    page = WikiPage.objects.get(tag=into, lang=p.lang)
+                    page.page += '\n\n'
+                    page.page += p.page
+                    page.save()
+                except WikiPage.DoesNotExist:
+                    WikiPage.objects.create(tag=into, lang=p.lang, page=p.page)
+                p.delete()
+            for c in chain([tag.tagworkconnection_set.all(), tag.tagworkmediaconnection_set.all(), tag.tagworkcreatorconnection_set.all()]):
+                try:
+                    c.tag = into
+                    c.save()
+                except IntegrityError as e:
+                    if 'unique constraint' in e.message:
+                        c.delete()
+                    else:
+                        raise e
+    into.save()
+
     return {
-        'merged_slug': slugify(into_tag, True)
+        'merged_slug': into.slug
     }
 
 @tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})

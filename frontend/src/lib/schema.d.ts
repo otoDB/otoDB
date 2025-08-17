@@ -1258,7 +1258,7 @@ export interface components {
         Input: {
             /**
              * Limit
-             * @default 100
+             * @default 30
              */
             limit: number;
             /**
@@ -1744,6 +1744,8 @@ export interface components {
         HistorySchema: {
             /** Id */
             id: number;
+            /** Model */
+            model: string;
             /**
              * Date
              * Format: date-time
@@ -1777,7 +1779,7 @@ export interface components {
             /** Model */
             model: string;
             /** Instance */
-            instance: components["schemas"]["ThinWorkSchema"] | components["schemas"]["SongSchema"] | components["schemas"]["TagWorkSchema"] | components["schemas"]["TagSongSchema"];
+            instance: components["schemas"]["SongSchema"] | components["schemas"]["ThinWorkSchema"] | components["schemas"]["TagWorkSchema"] | components["schemas"]["TagSongSchema"];
         };
         /** PagedHistoryExtSchema */
         PagedHistoryExtSchema: {
@@ -3705,7 +3707,7 @@ export interface operations {
         parameters: {
             query: {
                 pk: number | string;
-                model: "mediawork" | "mediasong" | "tagwork" | "tagsong" | "wikipage";
+                model: "mediawork" | "mediasong" | "tagwork" | "tagsong";
                 limit?: number;
                 offset?: number;
             };
@@ -3776,7 +3778,7 @@ export interface operations {
     otodb_api_history_rollback: {
         parameters: {
             query: {
-                model: "mediawork" | "mediasong" | "tagwork" | "tagsong" | "wikipage";
+                model: "mediawork" | "workrelation" | "worksource" | "mediasong" | "songrelation" | "mediasongconnection" | "tagwork" | "wikipage" | "tagworkconnection" | "tagworkmediaconnection" | "tagworkcreatorconnection" | "tagworklangpreference" | "tagsong";
                 history_id: number;
             };
             header?: never;

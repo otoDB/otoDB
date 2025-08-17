@@ -11,5 +11,5 @@
 	title={m.mild_loud_shad_enchant({ type: m.giant_away_scallop_hike(), name: data.title })}
 	menuLinks={data.links}
 >
-	<HistoryView historicals={data.history.items} />
+	<HistoryView historicals={data.history.items} user={data.user} />
 </Section>

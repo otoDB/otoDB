@@ -19,7 +19,9 @@
 			return;
 		}
 		const { data } = await client.GET(endpoint, {
-			params: { query: { query: value, limit: 10, resolve_aliases: props.resolve_aliases ?? true } }
+			params: {
+				query: { query: value, limit: 10, resolve_aliases: props.resolve_aliases ?? true }
+			}
 		});
 		if (!data) return;
 		suggestions = data.items;

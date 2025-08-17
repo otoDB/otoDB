@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from django.db import models
-from simple_history.models import HistoricalRecords
+from simple_history.models import HistoricalRecords, HistoricForeignKey
 from tagulous.models import BaseTagModel, TagModelManager
 
 from markdownfield.models import MarkdownField, RenderedMarkdownField
@@ -158,12 +158,13 @@ class TagWork(OtodbTagModel):
 
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
-    tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
+    tag = HistoricForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
+    history = HistoricalRecords()
     class Meta:
         unique_together = (("tag", "lang"),)
 
 class WikiPage(models.Model):
-    tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
+    tag = HistoricForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
     page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_CLASSY, null=False) # type: ignore
     page_rendered = RenderedMarkdownField()
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)

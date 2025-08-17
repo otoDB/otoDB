@@ -298,10 +298,18 @@ export const Themes = ['default', 'aniki dark'].map((t) => 'theme-' + t);
 
 export const ThemeNames = [m.grassy_noble_walrus_wish, m.next_ago_opossum_swim];
 
-export const ModelNames = {
+export const HistoryModelNames = {
 	mediawork: m.grand_merry_fly_succeed,
+	workrelation: m.grand_merry_fly_succeed,
+	worksource: m.grand_merry_fly_succeed,
 	mediasong: m.grand_nice_pony_belong,
+	songrelation: m.grand_nice_pony_belong,
+	mediasongconnection: m.grand_nice_pony_belong,
 	tagwork: m.empty_legal_chicken_taste,
-	tagsong: m.dull_plain_angelfish_cuddle,
-	wikipage: m.curly_zesty_pelican_aim
+	wikipage: m.curly_zesty_pelican_aim,
+	tagworkconnection: m.empty_legal_chicken_taste,
+	tagworkmediaconnection: m.empty_legal_chicken_taste,
+	tagworkcreatorconnection: m.empty_legal_chicken_taste,
+	tagworklangpreference: m.empty_legal_chicken_taste,
+	tagsong: m.dull_plain_angelfish_cuddle
 };

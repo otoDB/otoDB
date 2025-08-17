@@ -174,7 +174,7 @@ class MediaSong(models.Model):
         related_name="songs"
     )
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(m2m_fields=[tags])
 
     class Meta:
         verbose_name = ("Song")

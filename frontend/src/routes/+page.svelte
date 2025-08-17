@@ -61,9 +61,13 @@
 						><td>{new Date(c.date).toLocaleString()}</td><td
 							>{HistoryModelNames[c.model]()}:
 							{#if ['mediawork', 'workrelation', 'worksource'].includes(c.model)}
-								<a href="/work/{c.instance.id}">#{c.instance.id} - {c.instance.title}</a>
+								<a href="/work/{c.instance.id}"
+									>#{c.instance.id} - {c.instance.title}</a
+								>
 							{:else if ['mediasong', 'songrelation', 'mediasongconnection'].includes(c.model)}
-								<a href="/tag/{c.instance.work_tag}">#{c.instance.id} - {c.instance.title}</a>
+								<a href="/tag/{c.instance.work_tag}"
+									>#{c.instance.id} - {c.instance.title}</a
+								>
 							{:else if c.model.startsWith('tagwork') || c.model === 'wikipage'}
 								<WorkTag tag={c.instance} />
 							{:else if c.model === 'tagsong'}

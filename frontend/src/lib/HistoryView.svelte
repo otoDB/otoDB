@@ -7,7 +7,9 @@
 <table class="w-full table-auto text-center">
 	<tbody>
 		<tr>
-			<th>{m.fuzzy_crazy_cobra_lead()}</th><th>Changed at</th><th>Changes</th><th>{m.weary_spicy_fly_attend()}</th>
+			<th>{m.fuzzy_crazy_cobra_lead()}</th><th>Changed at</th><th>Changes</th><th
+				>{m.weary_spicy_fly_attend()}</th
+			>
 		</tr>
 		{#each historicals as entry, i (i)}
 			<tr

@@ -1,5 +1,4 @@
 from typing import Literal
-from itertools import pairwise
 from functools import wraps
 
 from datetime import datetime
@@ -59,20 +58,20 @@ def get_instance_history_querysets(pk):
 def get_combined_history_queryset(**kwargs):
     return union_qs(list(get_history_querysets(**kwargs).values()), all=True)
 
-def resolve_history_instance_id(f):
-    @wraps(f)
-    def act(*args, **kwargs):
-        qs = f(*args, **kwargs)
-        qqs = []
-        for q in qs['items']:
-            instance_target_model = ContentType.objects.get(model=model_classes_reverse[q['model']]).model_class()
-            try:
-                q['instance'] = instance_target_model.objects.get(id=q['instance'])
-                qqs.append(q)
-            except instance_target_model.DoesNotExist:
-                pass
-        return { 'items': qqs, 'count': qs['count'] }
-    return act
+def resolve_history_instance_id(qs, n: int):
+    qqs = []
+    i = 0
+    for q in qs:
+        if i >= n:
+            break
+        instance_target_model = ContentType.objects.get(model=model_classes_reverse[q['model']]).model_class()
+        try:
+            q['instance'] = instance_target_model.objects.get(id=q['instance'])
+            qqs.append(q)
+            i += 1
+        except instance_target_model.DoesNotExist:
+            pass
+    return qqs
 
 dmp = dmp_mod.diff_match_patch()
 def get_diff(delta):
@@ -156,16 +155,14 @@ def history(request: HttpRequest, pk: int | str, model: Literal[*models_with_his
     return results
 
 @history_router.get('recent', response=list[HistoryExtSchema])
-@resolve_history_instance_id
-@paginate
-def recent(request: HttpRequest):
-    return get_combined_history_queryset().order_by('-history_date')
+@paginate(pass_parameter='pagination_info')
+def recent(request: HttpRequest, **kwargs):
+    return resolve_history_instance_id(get_combined_history_queryset().order_by('-history_date'), kwargs['pagination_info'].limit)
 
 @history_router.get('user', response=list[HistoryExtSchema])
-@resolve_history_instance_id
-@paginate
-def user(request: HttpRequest, username: str):
-    return get_combined_history_queryset(history_user__username=username).order_by('-history_date')
+@paginate(pass_parameter='pagination_info')
+def user(request: HttpRequest, username: str, **kwargs):
+    return resolve_history_instance_id(get_combined_history_queryset(history_user__username=username).order_by('-history_date'), kwargs['pagination_info'].limit)
 
 @history_router.post('rollback', auth=django_auth)
 @user_is_staff # for now

@@ -44,9 +44,9 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
     if tags:
         for tag in tags.split():
             if tag[0] == '-':
-                q = q & ~Q(tags__slug=NFKC(tag[1:]))
+                q = q & ~Q(tags__slug=NFKC(tag[1:])) & ~Q(tags__aliased_to__slug=NFKC(tag[1:]))
             else:
-                q = q & Q(tags__slug=NFKC(tag))
+                q = q & Q(tags__slug=NFKC(tag)) & Q(tags__aliased_to__slug=NFKC(tag))
     else:
         q = q | Q(worksource__source_id=query)
         if query.startswith("https"):

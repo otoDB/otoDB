@@ -38,8 +38,6 @@ class WorkSource(models.Model):
 
     added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
 
-    info_payload = models.JSONField(null=True, blank=True)
-
     objects = models.Manager()
     active_objects = ActiveManager()
     history = HistoricalRecords()
@@ -61,8 +59,8 @@ class WorkSource(models.Model):
         """
         full_info = None
 
-        if use_cache and self.info_payload:
-            info = process_video_info(self.info_payload, self.url)
+        if use_cache and getattr(self, 'info_payload', None):
+            info = process_video_info(self.info_payload.payload, self.url)
         else:
             info, full_info = video_info(self.url)
 
@@ -76,7 +74,7 @@ class WorkSource(models.Model):
             self.work_duration = info.get('work_duration', self.work_duration)
 
             if full_info is not None:
-                self.info_payload = full_info
+                WorkSourceInfoPayload.objects.update_or_create(source=self, defaults={ 'payload': full_info })
 
             if self.media:
                 from .tag import TagWork
@@ -129,3 +127,7 @@ class WorkSourceRejection(models.Model):
     source = models.OneToOneField(WorkSource, null=False, on_delete=models.CASCADE, related_name='rejection')
     reason = models.CharField(max_length=1000, null=False, blank=False)
     by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.RESTRICT)
+
+class WorkSourceInfoPayload(models.Model):
+    source = models.OneToOneField(WorkSource, blank=False,null=False,on_delete=models.CASCADE, related_name='info_payload')
+    payload = models.JSONField(null=False, blank=False)

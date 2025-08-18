@@ -91,7 +91,7 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
                 except WikiPage.DoesNotExist:
                     WikiPage.objects.create(tag=into, lang=p.lang, page=p.page)
                 p.delete()
-            for c in chain([tag.tagworkconnection_set.all(), tag.tagworkmediaconnection_set.all(), tag.tagworkcreatorconnection_set.all()]):
+            for c in chain(tag.tagworkconnection_set.all(), tag.tagworkmediaconnection_set.all(), tag.tagworkcreatorconnection_set.all()):
                 try:
                     c.tag = into
                     c.save()

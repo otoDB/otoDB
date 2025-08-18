@@ -127,12 +127,12 @@ def import_ext_into_pool(info, list_: Pool, user):
     old_entries = list_.poolitem_set.values_list('work__id', flat=True)
 
     new_tag_instances, pool_items = [], []
-    for i, (vid_info, _) in enumerate(list(infos)):
+    for i, (vid_info, full_info) in enumerate(list(infos)):
         if vid_info is None:
             list_.description += f'\nFailed to fetch {info['entries'][i]}'
             continue
 
-        src, _ = WorkSource.from_url(vid_info['url'], user=user, is_reupload=False, info=vid_info)
+        src, _ = WorkSource.from_url(vid_info['url'], user=user, is_reupload=False, info=vid_info, full_info=full_info)
         if getattr(src, 'rejection', None):
             continue
         elif src.media is not None or user.level >= Account.Levels.EDITOR:

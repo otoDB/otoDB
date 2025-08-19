@@ -183,7 +183,7 @@
 												/></td
 											>
 											<td>
-												<WorkField value={actions[i].specify_target} />
+												<WorkField bind:value={actions[i].specify_target} />
 											</td>
 										</tr>
 									</tbody>

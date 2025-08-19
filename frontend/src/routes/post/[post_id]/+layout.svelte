@@ -1,15 +1,9 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
 	let { data, children } = $props();
 </script>
 
 <svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.stale_loose_squid_cut(),
-			name: data.post.title
-		})}</title
-	>
+	<title>{data.post.title}</title>
 	<meta property="og:title" content={data.post.title} />
 	<meta name="twitter:title" content={data.post.title} />
 

@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15
+    image: postgres:17
     restart: always
     env_file:
       - .env
@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${OTODB_DB_USER}
       POSTGRES_PASSWORD: ${OTODB_DB_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres17_data:/var/lib/postgresql/data
 
   backend:
     build: ./backend
@@ -56,6 +56,6 @@ services:
       - frontend
 
 volumes:
-  postgres_data:
+  postgres17_data:
   caddy_data:
   caddy_config:

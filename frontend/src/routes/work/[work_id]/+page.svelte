@@ -75,21 +75,23 @@
 						{m.heroic_ideal_orangutan_aid()}
 					</a>
 					{#each data.sources as s, i (i)}
-						<a
-							href={s.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="cover_select"
-							class:selected={cover_select === i}
-							onclick={(e) => {
-								e.preventDefault();
-								cover_select = i;
-							}}
-						>
-							{Platform[s.platform]}{s.work_origin === 0
-								? ''
-								: ' ' + WorkOrigin[s.work_origin]()}
-						</a>
+						{#if s.work_status !== 1}
+							<a
+								href={s.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="cover_select"
+								class:selected={cover_select === i}
+								onclick={(e) => {
+									e.preventDefault();
+									cover_select = i;
+								}}
+							>
+								{Platform[s.platform]}{s.work_origin === 0
+									? ''
+									: ' ' + WorkOrigin[s.work_origin]()}
+							</a>
+						{/if}
 					{/each}
 				</div>
 			</div>

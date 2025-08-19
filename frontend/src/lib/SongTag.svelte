@@ -10,7 +10,7 @@
 <a
 	href="/tag/song/{tag.slug}"
 	class="rounded-xl border border-solid px-2 {[
-		'border-white-600',
+		'border-gray-300',
 		'border-indigo-600',
 		'border-orange-600',
 		'border-yellow-600',

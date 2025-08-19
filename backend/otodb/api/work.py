@@ -369,7 +369,6 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
     src = get_object_or_404(WorkSource.active_objects, id=source_id)
     assert(src.media is None and not getattr(src, 'rejection', None))
 
-    info, _ = video_info(src.url) # Hopefully still available!
 
     if work_id is not None:
         work = get_object_or_404(MediaWork.active_objects, id=work_id)
@@ -377,9 +376,11 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
         work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
 
     # Add them first in case they don't exist
-    work.tags.add(*info.get('tags', []))
-    tags = TagWork.objects.filter(name__in=info.get('tags', []))
-    work.tagworkinstance_set.filter(work_tag__in=tags).update(instance_imported_from_source=True)
+    info, _ = video_info(src.url) # Hopefully still available!
+    if info:
+        work.tags.add(*info.get('tags', []))
+        tags = TagWork.objects.filter(name__in=info.get('tags', []))
+        work.tagworkinstance_set.filter(work_tag__in=tags).update(instance_imported_from_source=True)
 
     src.media = work
     src.save()

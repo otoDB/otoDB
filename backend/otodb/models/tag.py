@@ -156,6 +156,21 @@ class TagWork(OtodbTagModel):
     def can_be_deleted(self):
         # Maximal friction to avoid accidentally deleting any user-contributed data
         return not any([self.unaliasable, self.works.exists(), self.aliased_to, self.aliases.exists()])
+        
+    def get_children(self):
+        query = list(TagWork.objects.raw('''
+            WITH RECURSIVE descendants AS (
+                SELECT id, parent_id, name, slug, category
+                FROM otodb_tagwork WHERE id = %s
+                UNION 
+                SELECT n.id, n.parent_id, n.name, n.slug, n.category
+                FROM otodb_tagwork n
+                INNER JOIN descendants d ON n.parent_id = d.id
+                WHERE aliased_to_id IS NULL
+            )
+            SELECT * FROM descendants WHERE id != %s;
+        ''', [self.id, self.id]))
+        return query
 
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)

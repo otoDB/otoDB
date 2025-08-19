@@ -43,10 +43,29 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
     q = Q(title__icontains=query) | Q(description__icontains=query)
     if tags:
         for tag in tags.split():
-            if tag[0] == '-':
-                q = q & ~Q(tags__slug=NFKC(tag[1:])) & ~Q(tags__aliased_to__slug=NFKC(tag[1:]))
+            if tag[0] == '-' or tag[0] == '+':
+                try:
+                    t = TagWork.objects.get(slug=NFKC(tag[1:]))
+                    if t.aliased_to:
+                        t = t.aliased_to
+                except TagWork.DoesNotExist:
+                    return []
+                if tag[0] == '-':   # -: Negative search
+                    q = q & ~Q(tags=t)
+                elif tag[0] == '+': # +: Include all children
+                    children = t.get_children()
+                    sub_q = Q(tags=t)
+                    for tt in children:
+                        sub_q = sub_q | Q(tags=tt)
+                    q = q & sub_q
             else:
-                q = q & Q(tags__slug=NFKC(tag)) & Q(tags__aliased_to__slug=NFKC(tag))
+                try:
+                    t = TagWork.objects.get(slug=NFKC(tag))
+                    if t.aliased_to:
+                        t = t.aliased_to
+                    q = q & Q(tags=t)
+                except TagWork.DoesNotExist:
+                    return []
     else:
         q = q | Q(worksource__source_id=query)
         if query.startswith("https"):

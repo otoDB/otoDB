@@ -68,6 +68,7 @@
 			{/if}
 			{@render link('/tag/search', m.empty_legal_chicken_taste())}
 			{@render link('/list/search', m.stale_loose_squid_cut())}
+			{@render link('/post/3', 'FAQ')}
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		</ul>
 	</div>
@@ -110,6 +111,7 @@
 				{m.these_bold_gorilla_flip()}
 			</div>
 			<ul class="list-none space-y-0.5">
+				{@render link('/post/4', m.arable_direct_cougar_win())}
 				{@render link('/work/unbound', m.tense_small_firefox_lock())}
 				{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 				{@render link('/work/merge', m.heroic_same_wasp_conquer())}

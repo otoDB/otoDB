@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
+from itertools import chain
 
 from django.db import models
+from django.db.models import Value
 from simple_history.models import HistoricalRecords, HistoricForeignKey
 from tagulous.models import BaseTagModel, TagModelManager
 
@@ -48,14 +50,6 @@ class OtodbTagModel(BaseTagModel):
         abstract = True
         ordering = ("name",)
 
-def _get_tree(node):
-    model = type(node)
-    cte = CTE.recursive(lambda cte: model.objects.order_by().filter(id=node.id).values('id','parent_id', depth=models.Value(0, output_field=models.IntegerField())).union(
-        cte.join(model.objects.order_by(), id=cte.col.parent_id).values('id','parent_id',depth=cte.col.depth + models.Value(1, output_field=models.IntegerField())),
-        all=True
-    ))
-    return with_cte(cte, select=cte.join(model, id=cte.col.id).annotate(depth=cte.col.depth)).order_by('-depth')
-
 def _alias(from_tags, into_tag):
     is_work = isinstance(into_tag, TagWork)
     model = TagWork if is_work else TagSong
@@ -64,7 +58,6 @@ def _alias(from_tags, into_tag):
             tag = tag.aliased_to
         if tag.id != into_tag.id:
             tag.aliased_to = into_tag
-            tag.parent = None
             tag.save()
             for work in (tag.works if is_work else tag.songs).all():
                 work.tags.add(into_tag)
@@ -72,9 +65,44 @@ def _alias(from_tags, into_tag):
             for t in model.objects.filter(aliased_to=tag):
                 t.aliased_to = into_tag
                 t.save()
-            for t in model.objects.filter(parent=tag):
-                t.parent = into_tag
-                t.save()
+            if is_work:
+                # carry over parenthood, category, wikipages, connections
+                # Precedence given to later entries
+                for tp in TagWorkParenthood.objects.filter(parent=tag):
+                    if TagWorkParenthood.objects.filter(tag=tp.tag, parent=into_tag).exists():
+                        tp.delete()
+                    elif not into_tag.get_paths().filter(id=tp.tag.id).exists():
+                        tp.parent = into_tag
+                        tp.save()
+                for tp in TagWorkParenthood.objects.filter(tag=tag):
+                    if TagWorkParenthood.objects.filter(parent=tp.parent, tag=into_tag).exists():
+                        tp.delete()
+                    elif not into_tag.get_descendants().filter(id=tp.tag.id).exists():
+                        tp.tag = into_tag
+                        tp.save()
+                if into_tag.category != WorkTagCategory.GENERAL:
+                    into_tag.category = tag.category
+                for p in tag.wikipage_set.all():
+                    try:
+                        page = WikiPage.objects.get(tag=into_tag, lang=p.lang)
+                        page.page += '\n\n'
+                        page.page += p.page
+                        page.save()
+                    except WikiPage.DoesNotExist:
+                        WikiPage.objects.create(tag=into_tag, lang=p.lang, page=p.page)
+                    p.delete()
+                for c in chain(tag.tagworkconnection_set.all(), tag.tagworkmediaconnection_set.all(), tag.tagworkcreatorconnection_set.all()):
+                    if type(c).objects.filter(tag=into_tag,site=c.site,content_id=c.content_id).exists():
+                        c.delete()
+                    else:
+                        c.tag = into_tag
+                        c.save()
+            else:
+                for t in model.objects.filter(parent=tag):
+                    t.parent = into_tag
+                    t.save()
+
+    into_tag.save()
 
 class TagWork(OtodbTagModel):
     objects = LowerCaseTagModelManager()
@@ -95,14 +123,14 @@ class TagWork(OtodbTagModel):
     class Meta:
         ordering = [
             models.Case(
-                models.When(category=1, then=models.Value(0)),     # EVENT
-                models.When(category=4, then=models.Value(10)),    # CREATOR
-                models.When(category=6, then=models.Value(11)),    # MEDIA
-                models.When(category=3, then=models.Value(20)),    # SOURCE
-                models.When(category=2, then=models.Value(30)),    # SONG
-                models.When(category=0, then=models.Value(40)),    # GENERAL
-                models.When(category=5, then=models.Value(1000)),  # META (always last)
-                default=models.Value(999),
+                models.When(category=1, then=Value(0)),     # EVENT
+                models.When(category=4, then=Value(10)),    # CREATOR
+                models.When(category=6, then=Value(11)),    # MEDIA
+                models.When(category=3, then=Value(20)),    # SOURCE
+                models.When(category=2, then=Value(30)),    # SONG
+                models.When(category=0, then=Value(40)),    # GENERAL
+                models.When(category=5, then=Value(1000)),  # META (always last)
+                default=Value(999),
                 output_field=models.IntegerField()
             ),
             'name'
@@ -115,7 +143,6 @@ class TagWork(OtodbTagModel):
 
     deprecated = models.BooleanField(default=False, null=False)
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
 
@@ -125,9 +152,6 @@ class TagWork(OtodbTagModel):
 
     def __str__(self):
         return self.name
-
-    def get_tree(self):
-        return _get_tree(self)
 
     def get_song(self):
         if self.mediasong is not None:
@@ -158,13 +182,30 @@ class TagWork(OtodbTagModel):
     def can_be_deleted(self):
         # Maximal friction to avoid accidentally deleting any user-contributed data
         return not any([self.unaliasable, self.works.exists(), self.aliased_to, self.aliases.exists()])
-        
+
+    @property
+    def children(self):
+        return TagWork.objects.filter(childhood__parent=self, aliased_to__isnull=True).order_by()
+
     def get_descendants(self):
-        cte = CTE.recursive(lambda cte: TagWork.objects.order_by().filter(id=self.id).values('id', 'parent').union(
-            cte.join(TagWork.objects.order_by(), parent=cte.col.id, aliased_to__isnull=True).values('id', 'parent'),
+        cte = CTE.recursive(lambda cte: TagWork.objects.order_by().filter(id=self.id).values('id').union(
+            cte.join(TagWork.objects.order_by(), childhood__parent_id=cte.col.id, aliased_to__isnull=True).values('id'),
             all=True
         ))
-        return with_cte(cte, select=cte.join(TagWork, id=cte.col.id)).exclude(id=self.id).distinct()
+        return with_cte(cte, select=cte.join(TagWork, id=cte.col.id)).exclude(id=self.id).distinct().order_by()
+    
+    def get_paths(self):
+        cte = CTE.recursive(lambda cte: TagWork.objects.order_by().filter(id=self.id).values(
+            'id', 'slug',
+            fr=Value('', output_field=models.CharField()),
+        ).union(
+            cte.join(TagWork.objects.order_by(), parenthood__tag_id=cte.col.id, aliased_to__isnull=True).values(
+                'id', 'slug',
+                fr=cte.col.slug,
+            ),
+            all=True
+        ))
+        return with_cte(cte, select=cte.join(TagWork, id=cte.col.id).annotate(fr=cte.col.fr)).order_by()
 
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
@@ -209,7 +250,11 @@ class TagSong(OtodbTagModel):
         return self.name
 
     def get_tree(self):
-        return _get_tree(self)
+        cte = CTE.recursive(lambda cte: TagSong.objects.order_by().filter(id=self.id).values('id','parent_id', depth=Value(0, output_field=models.IntegerField())).union(
+            cte.join(TagSong.objects.order_by(), id=cte.col.parent_id).values('id','parent_id',depth=cte.col.depth + Value(1, output_field=models.IntegerField())),
+            all=True
+        ))
+        return with_cte(cte, select=cte.join(TagSong, id=cte.col.id).annotate(depth=cte.col.depth)).order_by('-depth')
 
     @staticmethod
     def alias(from_tags: list['TagSong'], into_tag: 'TagSong'):
@@ -218,3 +263,10 @@ class TagSong(OtodbTagModel):
 class TagSongLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
     tag = models.ForeignKey(TagSong, null=False, blank=False, on_delete=models.CASCADE)
+
+class TagWorkParenthood(models.Model):
+    tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE, related_name='childhood')
+    parent = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE, related_name='parenthood')
+    history = HistoricalRecords()
+    class Meta:
+        unique_together = (("tag", "parent"),)

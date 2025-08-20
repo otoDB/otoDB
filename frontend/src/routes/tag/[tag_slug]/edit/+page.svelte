@@ -15,7 +15,6 @@
 		WorkTagCategory
 	} from '$lib/enums';
 	import type { PageProps } from './$types';
-	import TagField from '$lib/TagField.svelte';
 	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
@@ -24,8 +23,11 @@
 	import type { components } from '$lib/schema';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
+	import TagsField from '$lib/TagsField.svelte';
 
 	let { data, form }: PageProps = $props();
+
+	let parents = $state(form?.parent_slugs ?? data.parents?.map((t) => t.slug) ?? []);
 
 	let category = $state(form?.category ?? data.tag?.category);
 	let wikiView = $state(getLocale());
@@ -124,14 +126,9 @@
 				</tr>
 				<tr>
 					<th><label for="parent">{m.away_crisp_blackbird_twist()}</label></th>
-					<td
-						><TagField
-							type="work"
-							name="parent"
-							value={form?.parent_slug ?? data.parent_slug ?? ''}
-							resolve_aliases={false}
-						/></td
-					>
+					<td>
+						<TagsField type="work" bind:value={parents} name="parents" />
+					</td>
 				</tr>
 				<tr>
 					<th><label for="deprecated">Deprecated</label></th>
@@ -276,7 +273,7 @@
 		{/each}
 	</div>
 
-	<form action="?/wiki_page" method="POST" use:dirtyEnhance>
+	<form action="?/wiki_page" method="POST" use:enhance>
 		<input type="text" hidden value={wikiView} name="lang" />
 		<div class="grid grid-cols-2 gap-3">
 			<textarea name="md" bind:value={mds[wikiView]}></textarea>

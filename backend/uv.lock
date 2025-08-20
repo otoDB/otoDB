@@ -155,6 +155,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-cte"
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f5/0c/c305d220c683fb69ccea94f3270a34b8eb8c4d8bdddd425f1d49608fc516/django_cte-2.0.0.tar.gz", hash = "sha256:24674655be4eaa1b091c19f256da7c2b134aa37a59914c6f902448139fe5d76a", size = 11216, upload-time = "2025-06-16T15:29:28.477Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/88/2f3510961fbfabe1441e69783ccca197a129a9705c539aaf019bf6d9fba5/django_cte-2.0.0-py3-none-any.whl", hash = "sha256:6de54525be8d9c8bd3d0a2d0422a733295f501bca0ae1c9351cf314d376e0111", size = 12975, upload-time = "2025-06-16T15:29:27.465Z" },
+]
+
+[[package]]
 name = "django-debug-toolbar"
 version = "5.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -373,6 +385,7 @@ dependencies = [
     { name = "django" },
     { name = "django-comments-xtd" },
     { name = "django-cors-headers" },
+    { name = "django-cte" },
     { name = "django-debug-toolbar" },
     { name = "django-markdownfield" },
     { name = "django-model-utils" },
@@ -396,6 +409,7 @@ requires-dist = [
     { name = "django", specifier = ">=5.1.4" },
     { name = "django-comments-xtd", specifier = ">=2.10.1" },
     { name = "django-cors-headers", specifier = ">=4.6.0" },
+    { name = "django-cte", specifier = ">=2.0.0" },
     { name = "django-debug-toolbar", specifier = ">=5.0.1" },
     { name = "django-markdownfield", specifier = ">=0.11.0" },
     { name = "django-model-utils", specifier = ">=5.0.0" },

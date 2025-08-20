@@ -5,14 +5,13 @@ from django.db import transaction, IntegrityError
 from django.db.models import Value
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
-from django.utils.text import slugify
 
 from pydantic import AfterValidator
 from ninja import Router, ModelSchema, Schema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
-from otodb.common import NFKC
+from otodb.common import clean_incoming_slug, clean_incoming_tag_name
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection
 from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes, LanguageTypes
 
@@ -23,7 +22,7 @@ tag_router = Router()
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, resolve_aliases: bool = True, category: int | None = None):
-    qs = TagWork.objects.filter(name__icontains=NFKC(query).replace(' ', '_'), deprecated=False)
+    qs = TagWork.objects.filter(name=clean_incoming_tag_name(query), deprecated=False)
     if category is not None and category != -1:
         qs = qs.filter(category=category)
     
@@ -59,11 +58,11 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
     tags = []
     for tag_name in from_tags:
         try:
-            tags.append(TagWork.objects.get(slug=slugify(tag_name, True)))
+            tags.append(TagWork.objects.get(slug=clean_incoming_slug(tag_name)))
         except TagWork.DoesNotExist:
             tags.append(TagWork.objects.create(name=tag_name))      
   
-    into = get_object_or_404(TagWork, slug=slugify(into_tag, True))
+    into = get_object_or_404(TagWork, slug=clean_incoming_slug(into_tag))
     assert(into.aliased_to is None)
 
     TagWork.alias(tags, into)
@@ -257,7 +256,7 @@ def song_search(request: HttpRequest, query: str, tags: str | None = None):
     qs = MediaSong.objects.filter(title__icontains=query)
     if tags:
         for tag in tags.split():
-            qs = qs.filter(tags__slug=NFKC(tag))
+            qs = qs.filter(tags__slug=clean_incoming_slug(tag))
     elif query.isdigit():
         qs = qs.annotate(priority=Value(100))
         qs = MediaSong.objects.filter(id=int(query)).annotate(priority=Value(0)).union(qs)
@@ -288,11 +287,11 @@ def delete_relation(request: HttpRequest, A: int, B: int):
 @tag_router.get('song_tag_search', response=list[TagSongSchema])
 @paginate
 def song_tag_search(request: HttpRequest, query: str):
-    return TagSong.objects.filter(name__icontains=NFKC(query), aliased_to__isnull=True)
+    return TagSong.objects.filter(name=clean_incoming_tag_name(query), aliased_to__isnull=True)
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted
-def song_tags(request: HttpRequest, song_id: int, tags: list[Annotated[str, AfterValidator(NFKC)]]):
+def song_tags(request: HttpRequest, song_id: int, tags: list[Annotated[str, AfterValidator(clean_incoming_tag_name)]]):
     song = get_object_or_404(MediaSong.objects, id=song_id)
     song.tags.set(tags)
     return

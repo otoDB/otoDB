@@ -52,7 +52,6 @@
 			]}
 			onclick={toggleMobileNav}
 		>
-			<!-- TODO: Use icon! -->
 			<div class="white place-self-center text-2xl">☰</div>
 		</button>
 		<!-- Cover -->

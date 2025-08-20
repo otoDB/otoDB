@@ -24,6 +24,7 @@ dependencies = [
     "psycopg[binary,pool]>=3.2.6",
     "nh3>=0.2.21",
     "furl>=2.1.4",
+    "django-cte>=2.0.0",
 ]
 
 [tool.ruff]

@@ -11,7 +11,7 @@ from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
-from otodb.common import video_info, NFKC
+from otodb.common import video_info, clean_incoming_slug
 from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection, TagWork
 from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory
 from otodb.account.models import Account
@@ -43,32 +43,34 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
     q = Q(title__icontains=query) | Q(description__icontains=query)
     if tags:
         for tag in tags.split():
-            if tag[0] in ['-', '+', '!']:
-                try:
-                    t = TagWork.objects.get(slug=NFKC(tag[1:]))
-                    if t.aliased_to:
-                        t = t.aliased_to
-                except TagWork.DoesNotExist:
-                    return []
-                if tag[0] == '-':   # -: Negative search
-                    q = q & ~Q(tags=t)
-                elif tag[0] in ['+', '!']:
-                    children = t.get_children()
-                    sub_q = Q(tags=t)
-                    for tt in children:
-                        sub_q = sub_q | Q(tags=tt)
-                    if tag[0] == '+': # +: Include all children
-                        q = q & sub_q
-                    elif tag[0] == '!': # +: Exclude all children
-                        q = q & ~sub_q
-            else:
-                try:
-                    t = TagWork.objects.get(slug=NFKC(tag))
-                    if t.aliased_to:
-                        t = t.aliased_to
-                    q = q & Q(tags=t)
-                except TagWork.DoesNotExist:
-                    return []
+            try:
+                match tag[0]:
+                    case '-' | '+' | '!':
+                        t = TagWork.objects.get(slug=clean_incoming_slug(tag[1:]))
+                        if t.aliased_to:
+                            t = t.aliased_to
+                        
+                        if tag[0] == '-':
+                            q = q & ~Q(tags=t)
+                        
+                        children = t.get_descendents()
+                        sub_q = Q(tags=t)
+                        for tt in children:
+                            sub_q = sub_q | Q(tags=tt)
+
+                        match tag[0]:
+                            case '+': # +: Include subtree
+                                q = q & sub_q
+                            case '!': # !: Exclude subtree
+                                q = q & ~sub_q
+                    case _:
+                        t = TagWork.objects.get(slug=clean_incoming_slug(tag))
+                        if t.aliased_to:
+                            t = t.aliased_to
+
+                        q = q & Q(tags=t)
+            except TagWork.DoesNotExist:
+                return []                
     else:
         q = q | Q(worksource__source_id=query)
         if query.startswith("https"):
@@ -129,7 +131,7 @@ def get_tag_scores(request: HttpRequest, work_id: int):
         } for instance in work.tagworkinstance_set.annotate(avg_score=Avg('tagworkvote__score', default=0), n_votes=Count('tagworkvote')).all()]
 
 class TagWorkVoteSchema(Schema):
-    tag_slug: Annotated[str, AfterValidator(NFKC)]
+    tag_slug: Annotated[str, AfterValidator(clean_incoming_slug)]
     score: int
 
 @work_router.put('tag_scores', auth=django_auth)

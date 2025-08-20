@@ -4,6 +4,8 @@ from django.db import models
 from simple_history.models import HistoricalRecords, HistoricForeignKey
 from tagulous.models import BaseTagModel, TagModelManager
 
+from django_cte import CTE, with_cte
+
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_CLASSY
 
@@ -47,12 +49,12 @@ class OtodbTagModel(BaseTagModel):
         ordering = ("name",)
 
 def _get_tree(node):
-    tree = []
-    curr = node
-    while curr is not None:
-        tree.append(curr)
-        curr = curr.parent
-    return reversed(tree)
+    model = type(node)
+    cte = CTE.recursive(lambda cte: model.objects.order_by().filter(id=node.id).values('id','parent_id', depth=models.Value(0, output_field=models.IntegerField())).union(
+        cte.join(model.objects.order_by(), id=cte.col.parent_id).values('id','parent_id',depth=cte.col.depth + models.Value(1, output_field=models.IntegerField())),
+        all=True
+    ))
+    return with_cte(cte, select=cte.join(model, id=cte.col.id).annotate(depth=cte.col.depth)).order_by('-depth')
 
 def _alias(from_tags, into_tag):
     is_work = isinstance(into_tag, TagWork)
@@ -157,20 +159,12 @@ class TagWork(OtodbTagModel):
         # Maximal friction to avoid accidentally deleting any user-contributed data
         return not any([self.unaliasable, self.works.exists(), self.aliased_to, self.aliases.exists()])
         
-    def get_children(self):
-        query = list(TagWork.objects.raw('''
-            WITH RECURSIVE descendants AS (
-                SELECT id, parent_id, name, slug, category
-                FROM otodb_tagwork WHERE id = %s
-                UNION 
-                SELECT n.id, n.parent_id, n.name, n.slug, n.category
-                FROM otodb_tagwork n
-                INNER JOIN descendants d ON n.parent_id = d.id
-                WHERE aliased_to_id IS NULL
-            )
-            SELECT * FROM descendants WHERE id != %s;
-        ''', [self.id, self.id]))
-        return query
+    def get_descendents(self):
+        cte = CTE.recursive(lambda cte: TagWork.objects.order_by().filter(id=self.id).values('id', 'parent').union(
+            cte.join(TagWork.objects.order_by(), parent=cte.col.id, aliased_to__isnull=True).values('id', 'parent'),
+            all=True
+        ))
+        return with_cte(cte, select=cte.join(TagWork, id=cte.col.id)).exclude(id=self.id).distinct()
 
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)

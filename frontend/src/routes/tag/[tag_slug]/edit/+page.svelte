@@ -14,7 +14,6 @@
 		TagWorkConnectionTypes,
 		WorkTagCategory
 	} from '$lib/enums';
-	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	import TagField from '$lib/TagField.svelte';
 	import Markdown from 'svelte-exmarkdown';
@@ -24,6 +23,7 @@
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { dirtyEnhance } from '$lib/ui';
 
 	let { data, form }: PageProps = $props();
 
@@ -104,7 +104,7 @@
 	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
 	menuLinks={data.links}
 >
-	<form method="POST" use:enhance action="?/edit">
+	<form method="POST" use:dirtyEnhance action="?/edit">
 		{#if data.tag.category === 2 && category !== 2}
 			<p class="text-red-500">
 				{m.front_game_porpoise_pout()}
@@ -276,7 +276,7 @@
 		{/each}
 	</div>
 
-	<form action="?/wiki_page" method="POST" use:enhance>
+	<form action="?/wiki_page" method="POST" use:dirtyEnhance>
 		<input type="text" hidden value={wikiView} name="lang" />
 		<div class="grid grid-cols-2 gap-3">
 			<textarea name="md" bind:value={mds[wikiView]}></textarea>
@@ -328,7 +328,7 @@
 			</tbody>
 		</table>
 	</details>
-	<form action="?/connections" method="POST" use:enhance>
+	<form action="?/connections" method="POST" use:dirtyEnhance>
 		<textarea
 			bind:value={urls}
 			name="urls"

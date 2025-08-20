@@ -273,7 +273,7 @@
 		{/each}
 	</div>
 
-	<form action="?/wiki_page" method="POST" use:enhance>
+	<form action="?/wiki_page" method="POST" use:dirtyEnhance>
 		<input type="text" hidden value={wikiView} name="lang" />
 		<div class="grid grid-cols-2 gap-3">
 			<textarea name="md" bind:value={mds[wikiView]}></textarea>

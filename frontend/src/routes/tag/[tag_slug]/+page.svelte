@@ -95,6 +95,23 @@ ${nodes
 		return get_svg_mermaid(nodes, links);
 	});
 
+	const paths = $derived.by(() => {
+		let queue = [[data.tag]];
+		const done = [];
+		while (queue.length) {
+			const path = queue.shift();
+			if (Object.hasOwn(data.paths[1], path[0].slug))
+				queue.push(
+					...data.paths[1][path[0].slug].map((next) => [
+						data.paths[0].find((t) => t.slug === next),
+						...path
+					])
+				);
+			else done.push(path);
+		}
+		return done;
+	});
+
 	onMount(() => {
 		if (songs)
 			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'neutral' });
@@ -109,12 +126,16 @@ ${nodes
 	menuLinks={data.links}
 >
 	<div>
-		<span>{m.empty_legal_chicken_taste()}</span>
-		{#each data.tree as node, i (i)}
-			> <a href={node.slug}>{getTagDisplayName(node)}</a>&nbsp;
+		{#each paths as path, i (i)}
+			<div>
+				<span>{m.empty_legal_chicken_taste()}</span>
+				{#each path as node, j (j)}
+					> {#if node.slug === data.tag.slug}{data.display_name}{:else}<a href={node.slug}
+							>{getTagDisplayName(node)}</a
+						>{/if}&nbsp;
+				{/each}
+			</div>
 		{/each}
-		>
-		<span>{data.display_name}</span>
 	</div>
 
 	<h2>

@@ -1,4 +1,4 @@
-from typing import Optional, Annotated
+from typing import Optional, Annotated, Dict
 from functools import wraps
 
 from pydantic import field_validator
@@ -78,7 +78,7 @@ class WikiPageSchema(ModelSchema):
         fields = ['page_rendered', 'lang']
 
 class TagWorkDetailsSchema(Schema):
-    tree: list[TagWorkSchema]
+    paths: tuple[list[TagWorkSchema], Dict[str,list[str]]]
     wiki_page: list[WikiPageSchema]
     aliases: list[TagWorkSchema]
 

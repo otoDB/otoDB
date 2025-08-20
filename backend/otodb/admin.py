@@ -45,7 +45,7 @@ class TagWorkInstanceInline(admin.TabularInline):
 class TagWorkAdmin(admin.ModelAdmin):
     readonly_fields = ('display_name',)
     search_fields = ['name', 'aliases__name']
-    list_display = ['name', 'display_name', 'category', 'parent', 'aliased_to']
+    list_display = ['name', 'display_name', 'category', 'aliased_to']
     list_filter = ['category', 'aliased_to']
 
 class TagWorkVoteInline(admin.TabularInline):

@@ -54,7 +54,9 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 
 	return {
 		wiki_page,
-		parent_slug: details?.tree.at(-1)?.slug,
+		parents: details?.paths[1][params.tag_slug]?.map((s) =>
+			details?.paths[0].find((t) => t.slug === s)
+		),
 		details,
 		connections,
 		song_connections
@@ -65,7 +67,7 @@ export const actions = {
 	edit: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 		const category = data.get('category') as string,
-			parent_slug = data.get('parent') as string,
+			parent_slugs = (data.get('parents') as string).split(/\s+/).filter((s) => s.length),
 			deprecated = !!data.get('deprecated');
 
 		const title = data.get('song_title') as string,
@@ -92,15 +94,15 @@ export const actions = {
 			},
 			body: {
 				payload: {
+					parent_slugs,
 					category: +category,
-					parent_slug,
 					deprecated
 				},
 				song_payload: song
 			}
 		});
 
-		if (error) return fail(400, { category, parent_slug, deprecated, failed: true });
+		if (error) return fail(400, { category, parent_slugs, deprecated, failed: true });
 
 		redirect(303, `/tag/${params.tag_slug}`);
 	},

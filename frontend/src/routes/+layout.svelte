@@ -21,7 +21,11 @@
 		isMobileNavOpen = false;
 	}
 	beforeNavigate(({ cancel, type }) => {
-		if (type !== 'form' && type !== 'goto' && Array.from(document.querySelectorAll('form')).some(isFormDirty))
+		if (
+			type !== 'form' &&
+			type !== 'goto' &&
+			Array.from(document.querySelectorAll('form')).some(isFormDirty)
+		)
 			if (!confirm('There is unsaved data on this page, are you sure you want to leave?'))
 				cancel();
 	});

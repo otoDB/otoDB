@@ -6,10 +6,10 @@ from time import mktime
 from datetime import datetime
 import unicodedata
 from http.cookiejar import MozillaCookieJar
+from django.utils.text import slugify
 
 from furl import furl
 import nh3
-import diff_match_patch as dmp_mod
 
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
@@ -19,47 +19,16 @@ from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 
 from django.conf import settings
 
-from .models import TagWork
 from .models.enums import Platform
 
 def NFKC(s: str):
     return unicodedata.normalize('NFKC', s)
 
-def get_diff(delta):
-    dmp = dmp_mod.diff_match_patch()
+def clean_incoming_tag_name(s: str):
+    return NFKC(s).lower().replace(' ','_')
 
-    def diff_prettyHtml(diffs):
-        html = []
-        for (op, data) in diffs:
-            text = (data.replace("&", "&amp;").replace("<", "&lt;")
-                        .replace(">", "&gt;").replace("\n", "&para;<br>"))
-            if op == dmp.DIFF_INSERT:
-                html.append("<ins>%s</ins>" % text)
-            elif op == dmp.DIFF_DELETE:
-                html.append("<del>%s</del>" % text)
-            elif op == dmp.DIFF_EQUAL:
-                html.append("<span>%s</span>" % text)
-        return "".join(html)
-
-    diffs_html = []
-
-    for change in delta.changes:
-        match change.field:
-            case 'tags':
-                # TODO make this not hardcoded...
-                old, new = set([c['work_tag'] for c in change.old]), set([c['work_tag'] for c in change.new])
-                old, new = old - new, new - old
-                changes = ['- ' + TagWork.objects.get(id=id_).slug for id_ in old] + [
-                    '+ ' + TagWork.objects.get(id=id_).slug for id_ in new]
-                diffs_html.append({'html': ('<br>').join(changes), 'field': change.field})
-            case _:
-                old, new = change.old, change.new
-                diff_field = dmp.diff_main(str(old), str(new))
-                dmp.diff_cleanupSemantic(diff_field)
-
-                diffs_html.append({'html': diff_prettyHtml(diff_field).replace('&para;', ''), 'field': change.field})
-
-    return diffs_html
+def clean_incoming_slug(s: str):
+    return slugify(clean_incoming_tag_name(s), True)
 
 ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True)
 for e in (YoutubeTabIE, NiconicoPlaylistIE, BilibiliFavoritesListIE, SoundcloudPlaylistIE):
@@ -192,7 +161,7 @@ def process_video_info(full_info, link=None):
 
         # Process tags
         if 'tags' in info:
-            info['tags'] = [NFKC(tag.replace(' ', '_')) for tag in info['tags']]
+            info['tags'] = [clean_incoming_tag_name(tag) for tag in info['tags']]
 
         # Clean description
         info['description'] = nh3.clean(info['description'])

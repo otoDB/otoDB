@@ -1,12 +1,21 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models.query import prefetch_related_objects
+from django.db.models import Q
+
+from django_cte import CTE, with_cte
 
 from simple_history.models import HistoricalRecords, HistoricForeignKey
 
 from .media import MediaWork, MediaSong
 
 from .enums import WorkRelationTypes, SongRelationTypes
+
+def _get_component(model, obj_id: int):
+    cte = CTE.recursive(lambda cte: model.objects.filter(Q(A_id=obj_id) | Q(B_id=obj_id)).union(
+        cte.join(model, Q(A_id=cte.col.B_id) | Q(B_id=cte.col.A_id) | Q(A_id=cte.col.A_id) | Q(B_id=cte.col.B_id)),
+    ))
+    relations = with_cte(cte, select=cte.join(model, id=cte.col.id)).select_related('A', 'B')
+    return relations
 
 class BidirectionalManager(models.Manager):
     def get(self, A, B):
@@ -41,17 +50,7 @@ class WorkRelation(models.Model):
 
     @staticmethod
     def get_component(work_id: int):
-        query = list(WorkRelation.objects.raw('''
-            WITH RECURSIVE component AS (
-                SELECT "otodb_workrelation"."id", "otodb_workrelation"."A_id", "otodb_workrelation"."B_id", "otodb_workrelation"."relation" FROM "otodb_workrelation" WHERE "otodb_workrelation"."A_id" = %s OR "otodb_workrelation"."B_id" = %s
-                UNION
-                SELECT r.id, r."A_id", r."B_id", r.relation FROM otodb_workrelation r
-                JOIN component c ON c."A_id" = r."B_id" OR c."B_id" = r."A_id" OR c."A_id" = r."A_id" OR c."B_id" = r."B_id"
-            )
-            SELECT * FROM component;
-        ''', [work_id, work_id]))
-        prefetch_related_objects(query, 'A', 'B')
-        return query
+        return _get_component(WorkRelation, work_id)
 
 class SongRelation(models.Model):
     A = HistoricForeignKey(MediaSong, null=False, blank=False, on_delete=models.CASCADE, related_name='relation_A')
@@ -77,14 +76,4 @@ class SongRelation(models.Model):
         ]
     @staticmethod
     def get_component(song_id: int):
-        query = list(SongRelation.objects.raw('''
-            WITH RECURSIVE component AS (
-                SELECT "otodb_songrelation"."id", "otodb_songrelation"."A_id", "otodb_songrelation"."B_id", "otodb_songrelation"."relation" FROM "otodb_songrelation" WHERE "otodb_songrelation"."A_id" = %s OR "otodb_songrelation"."B_id" = %s
-                UNION
-                SELECT r.id, r."A_id", r."B_id", r.relation FROM otodb_songrelation r
-                JOIN component c ON c."A_id" = r."B_id" OR c."B_id" = r."A_id" OR c."A_id" = r."A_id" OR c."B_id" = r."B_id"
-            )
-            SELECT * FROM component;
-        ''', [song_id, song_id]))
-        prefetch_related_objects(query, 'A', 'B')
-        return query
+        return _get_component(SongRelation, song_id)

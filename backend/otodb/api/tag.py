@@ -22,7 +22,7 @@ tag_router = Router()
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, resolve_aliases: bool = True, category: int | None = None):
-    qs = TagWork.objects.filter(name=clean_incoming_tag_name(query), deprecated=False)
+    qs = TagWork.objects.filter(name__contains=clean_incoming_tag_name(query), deprecated=False)
     if category is not None and category != -1:
         qs = qs.filter(category=category)
     
@@ -287,7 +287,7 @@ def delete_relation(request: HttpRequest, A: int, B: int):
 @tag_router.get('song_tag_search', response=list[TagSongSchema])
 @paginate
 def song_tag_search(request: HttpRequest, query: str):
-    return TagSong.objects.filter(name=clean_incoming_tag_name(query), aliased_to__isnull=True)
+    return TagSong.objects.filter(name__contains=clean_incoming_tag_name(query), aliased_to__isnull=True)
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted

@@ -239,16 +239,14 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
         assert(t == tag.category)
     if Type is MediaSongConnection:
         song = tag.mediasong
-        assert(song is not None)
-        Type.objects.filter(song=song).delete()
-        for connection in payload:
-            MediaSongConnection.objects.create(song=song, site=connection.site,
-                content_id=connection.content_id)
+        assert(song)
+        target = {'song': song}
     else:
-        Type.objects.filter(tag=tag).delete()
-        for connection in payload:
-            Type.objects.create(tag=tag, site=connection.site,
-                content_id=connection.content_id)
+        target = {'tag': tag}
+    Type.objects.filter(**target).exclude(site=connection.site, content_id=connection.content_id).delete()
+    for connection in payload:
+        if not Type.objects.filter(**target, site=connection.site, content_id=connection.content_id).exists():
+            Type.objects.create(site=connection.site, content_id=connection.content_id, **target)
 
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate

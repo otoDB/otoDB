@@ -52,17 +52,17 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
                         
                         if tag[0] == '-':
                             q = q & ~Q(tags=t)
-                        
-                        children = t.get_descendents()
-                        sub_q = Q(tags=t)
-                        for tt in children:
-                            sub_q = sub_q | Q(tags=tt)
+                        else:
+                            children = t.get_descendents()
+                            sub_q = Q(tags=t)
+                            for tt in children:
+                                sub_q = sub_q | Q(tags=tt)
 
-                        match tag[0]:
-                            case '+': # +: Include subtree
-                                q = q & sub_q
-                            case '!': # !: Exclude subtree
-                                q = q & ~sub_q
+                            match tag[0]:
+                                case '+': # +: Include subtree
+                                    q = q & sub_q
+                                case '!': # !: Exclude subtree
+                                    q = q & ~sub_q
                     case _:
                         t = TagWork.objects.get(slug=clean_incoming_slug(tag))
                         if t.aliased_to:

@@ -5,10 +5,11 @@
 	import MobileSideNav from '../lib/MobileSideNav.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
-	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
+	import { clickOutside, get_prefs, isFormDirty, set_lang } from '$lib/ui';
 	import { LanguageNames, Themes } from '$lib/enums';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { beforeNavigate } from '$app/navigation';
 
 	let { data, children } = $props();
 
@@ -19,6 +20,11 @@
 	function closeMobileNav() {
 		isMobileNavOpen = false;
 	}
+	beforeNavigate(({ cancel, type }) => {
+		if (type !== 'form' && Array.from(document.querySelectorAll('form')).some(isFormDirty))
+			if (!confirm('There is unsaved data on this page, are you sure you want to leave?'))
+				cancel();
+	});
 </script>
 
 <a href="#content" class="absolute z-50 transform-[translateY(-100%)] focus:transform-none">

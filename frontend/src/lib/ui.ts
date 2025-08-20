@@ -2,6 +2,7 @@ import { browser } from '$app/environment';
 import client from './api';
 import { Languages } from './enums';
 import { setLocale } from './paraglide/runtime';
+import { applyAction, enhance } from '$app/forms';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const debounce = (callback: Function, wait = 300) => {
@@ -95,4 +96,25 @@ export const get_prefs = (): Prefs | undefined => {
 
 export const update_prefs = (opts: Prefs) => {
 	if (browser) localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), ...opts }));
+};
+
+export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
+
+export const dirtyEnhance = (node: HTMLFormElement) => {
+	node.addEventListener('change', () => {
+		node.dataset.dirty = 'true';
+	});
+
+	return enhance(node, ({ cancel }) => {
+		if (Array.from(document.querySelectorAll('form')).some((f) => f !== node && isFormDirty(f)))
+			if (
+				!confirm(
+					'There is unsaved data in another form on this page, are you sure you want to submit?'
+				)
+			)
+				cancel();
+		return async ({ result }) => {
+			await applyAction(result);
+		};
+	});
 };

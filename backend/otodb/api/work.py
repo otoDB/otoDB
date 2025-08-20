@@ -53,7 +53,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
                         if tag[0] == '-':
                             q = q & ~Q(tags=t)
                         else:
-                            children = t.get_descendents()
+                            children = t.get_descendants()
                             sub_q = Q(tags=t)
                             for tt in children:
                                 sub_q = sub_q | Q(tags=tt)

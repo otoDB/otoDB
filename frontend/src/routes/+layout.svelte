@@ -110,7 +110,8 @@
 						{m.mild_loud_shad_enchant({
 							type: 'otoDB',
 							name: m.glad_born_mouse_taste()
-						})} Alpha {#if env.PUBLIC_OTODB_HASH} - {env.PUBLIC_OTODB_HASH}{/if}
+						})} Alpha {#if env.PUBLIC_OTODB_HASH}
+							- {env.PUBLIC_OTODB_HASH}{/if}
 					</span>
 					<div class="social-links">
 						<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>

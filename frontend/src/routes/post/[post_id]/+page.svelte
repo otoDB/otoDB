@@ -8,13 +8,19 @@
 
 	let { data } = $props();
 	let page = $derived.by(() => {
-		return data.post.post_rendered.replaceAll(/&lt;otodb-worktag\s*slug=\"(.+)\"\s*\/&gt;/g, '<otodb-worktag data-slug="$1" />');
-	})
+		return data.post.post_rendered.replaceAll(
+			/&lt;otodb-worktag\s*slug="(.+)"\s*\/&gt;/g,
+			'<otodb-worktag data-slug="$1" />'
+		);
+	});
 	onMount(() => {
-		document.querySelectorAll('.post-content otodb-worktag').forEach(el => {
-			client.GET('/api/tag/tag', {fetch, params:{query:{tag_slug: el.dataset.slug}}}).then(r => {
-				mount(WorkTag, { target: el, props: { tag: r.data! } });
-			}).catch(console.log);
+		document.querySelectorAll('.post-content otodb-worktag').forEach((el) => {
+			client
+				.GET('/api/tag/tag', { fetch, params: { query: { tag_slug: el.dataset.slug } } })
+				.then((r) => {
+					mount(WorkTag, { target: el, props: { tag: r.data! } });
+				})
+				.catch(console.log);
 		});
 	});
 </script>

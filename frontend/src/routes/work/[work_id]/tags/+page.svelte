@@ -5,7 +5,7 @@
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import TagsField from '$lib/TagsField.svelte';
-	import { Role } from '$lib/enums';
+	import { Role, WorkTagCategoriesSettableAsSource } from '$lib/enums';
 	import { callSavingToast } from '$lib/toast.js';
 
 	let { data } = $props();
@@ -95,7 +95,6 @@
 		<thead>
 			<tr
 				><th>{m.empty_legal_chicken_taste()}</th>
-				<!-- <th>{m.brave_tiny_meerkat_engage()}</th><th>{m.sunny_deft_puffin_scoop()}</th> -->
 				<th>{m.acidic_brave_halibut_heart()}</th>
 				<th>{m.broad_wide_lemming_hint()}</th>
 				<th>{m.even_alert_grebe_taste()}</th></tr
@@ -104,30 +103,8 @@
 			{#each tags as tag, i (i)}
 				<tr>
 					<td><WorkTag {tag} /></td>
-					<!-- <td>{tag.score} {m.brave_caring_ocelot_treat({ votes: tag.n_votes })}</td>
-					<td>
-						<button
-							class="rating"
-							data-checked={tag.user_score === -1}
-							onclick={set_score(-1, tag)}
-							aria-label="-1"
-						></button>
-						<button
-							class="rating"
-							data-checked={tag.user_score !== null}
-							onclick={set_score(0, tag)}
-							aria-label="0"
-						></button>
-						<button
-							class="rating"
-							data-checked={tag.user_score === 1}
-							onclick={set_score(1, tag)}
-							aria-label="+1"
-						></button>
-					</td> -->
-					<!-- 2 - Song, 4 - Creator -->
 					<td
-						>{#if tag.category === 2 || tag.category === 4}
+						>{#if WorkTagCategoriesSettableAsSource.includes(tag.category)}
 							<input
 								type="checkbox"
 								onclick={() => toggle_sample(tag.slug)}

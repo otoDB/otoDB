@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { getTagDisplayName } from './api';
+	import { WorkTagCategoriesSettableAsSource } from './enums';
 	import type { components } from './schema';
 
 	interface Props {
 		tag: components['schemas']['TagWorkSchema'];
 	}
 	const { tag }: Props = $props();
+
+	let overrideToSample = WorkTagCategoriesSettableAsSource.includes(tag.category) && tag?.sample;
 </script>
 
 <a
@@ -18,7 +21,7 @@
 		'border-red-600', // CREATOR
 		'border-amber-400', // META
 		'border-fuchsia-900' // MEDIA
-	][tag.category]}">{getTagDisplayName(tag)}</a
+	][overrideToSample ? 3 : tag.category]}">{getTagDisplayName(tag)}</a
 >
 
 <style>

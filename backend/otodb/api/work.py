@@ -108,28 +108,6 @@ def delete_work(request: HttpRequest, work_id: int):
     work.worksource_set.update(media=None)
     work.delete()
 
-class TagWorkInstanceSchema(Schema):
-    tag_slug: str
-    n_votes: int
-    score: float
-    user_score: int | None
-    sample: bool
-    creator_roles: List[int]
-
-@work_router.get('tag_scores', response=List[TagWorkInstanceSchema], auth=django_auth)
-@user_is_trusted
-def get_tag_scores(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork.active_objects, id=work_id)
-    user_votes = TagWorkVote.objects.filter(user=request.user, tag_instance__in=work.tagworkinstance_set.all())
-    return [{
-        'tag_slug': instance.work_tag.slug,
-        'score': instance.avg_score,
-        'n_votes': instance.n_votes,
-        'user_score': user_votes.filter(tag_instance=instance).values_list('score', flat=True).first(),
-        'sample': instance.used_as_source,
-        'creator_roles': instance.get_creator_roles(),
-        } for instance in work.tagworkinstance_set.annotate(avg_score=Avg('tagworkvote__score', default=0), n_votes=Count('tagworkvote')).all()]
-
 class TagWorkVoteSchema(Schema):
     tag_name: Annotated[str, AfterValidator(clean_incoming_tag_name)]
     score: int

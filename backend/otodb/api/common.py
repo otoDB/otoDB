@@ -12,6 +12,7 @@ from otodb.models import (
     Pool, PoolItem,
     WorkRelation, SongRelation
 )
+from otodb.models.enums import Role
 
 class Error(Schema):
     message: str
@@ -59,7 +60,7 @@ class TagWorkSchema(ModelSchema):
     aliased_to: Optional['TagWorkSchema']
     class Meta:
         model = TagWork
-        fields = ['name', 'slug', 'category', 'deprecated']
+        fields = ['name', 'slug', 'category']
 
 class FatTagWorkSchema(ModelSchema):
     id: int
@@ -102,20 +103,25 @@ class WorkSourceSchema(ModelSchema):
             'thumbnail', 'source_id'
         ]
 
+class TagWorkInstanceSchema(TagWorkSchema):
+    sample: bool
+    creator_roles: list[int] | None
+
+    @field_validator("creator_roles", mode="before", check_fields=False)
+    @classmethod
+    def roles(cls, value: int | None) -> list[int] | None:
+        return [r for r in Role if r & value] if value else None
+
 class WorkSchema(ModelSchema):
     id: int
-    tags: list[TagWorkSchema]
+    tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
     class Meta:
         model = MediaWork
-        fields = ['title', 'description', 'rating', 'thumbnail', 'rating']
-    @field_validator("tags", mode="before", check_fields=False)
-    @classmethod
-    def deprecation(cls, value) -> str:
-        return [t for t in value if not t.deprecated]
+        fields = ['title', 'description', 'rating', 'thumbnail']
 
 class ThinWorkSchema(ModelSchema):
     id: int
-    tags: list[TagWorkSchema]
+    tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
     class Meta:
         model = MediaWork
         fields = ['title', 'thumbnail']

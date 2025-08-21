@@ -79,7 +79,7 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
         if tag.id != into.id:
             if not into.parent:
                 into.parent = tag.parent
-            if into.category != WorkTagCategory.GENERAL:
+            if tag.category != WorkTagCategory.GENERAL and into.category == WorkTagCategory.GENERAL:
                 into.category = tag.category
             for p in tag.wikipage_set.all():
                 try:

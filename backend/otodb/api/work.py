@@ -11,7 +11,7 @@ from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
-from otodb.common import video_info, clean_incoming_slug
+from otodb.common import video_info, clean_incoming_tag_name, clean_incoming_slug
 from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection, TagWork
 from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory
 from otodb.account.models import Account
@@ -131,7 +131,7 @@ def get_tag_scores(request: HttpRequest, work_id: int):
         } for instance in work.tagworkinstance_set.annotate(avg_score=Avg('tagworkvote__score', default=0), n_votes=Count('tagworkvote')).all()]
 
 class TagWorkVoteSchema(Schema):
-    tag_slug: Annotated[str, AfterValidator(clean_incoming_slug)]
+    tag_name: Annotated[str, AfterValidator(clean_incoming_tag_name)]
     score: int
 
 @work_router.put('tag_scores', auth=django_auth)
@@ -145,14 +145,14 @@ def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchem
     tags = []
     for v in payload:
         try:
-            tags.append(TagWork.objects.get(slug=v.tag_slug))
+            tags.append(TagWork.objects.get(slug=v.tag_name))
         except TagWork.DoesNotExist:
-            tags.append(TagWork.objects.create(name=v.tag_slug))
+            tags.append(TagWork.objects.create(name=clean_incoming_slug(v.tag_name)))
 
     work.tags.add(*tags)
 
     for vote in payload:
-        tag_instance = work.tagworkinstance_set.get(work_tag__slug=vote.tag_slug)
+        tag_instance = work.tagworkinstance_set.get(work_tag__slug=clean_incoming_slug(vote.tag_name))
         if v := tag_instance.tagworkvote_set.filter(user=request.user).first():
             v.score = vote.score
             v.save()

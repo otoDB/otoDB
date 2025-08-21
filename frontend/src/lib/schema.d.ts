@@ -201,8 +201,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Tag Scores */
-        get: operations["otodb_api_work_get_tag_scores"];
+        get?: never;
         /** Vote Tags */
         put: operations["otodb_api_work_vote_tags"];
         post?: never;
@@ -1248,11 +1247,6 @@ export interface components {
              * @default 0
              */
             category: number;
-            /**
-             * Deprecated
-             * @default false
-             */
-            deprecated: boolean;
         };
         /** Input */
         Input: {
@@ -1274,12 +1268,33 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** TagWorkInstanceSchema */
+        TagWorkInstanceSchema: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
+            /** Sample */
+            sample: boolean;
+            /** Creator Roles */
+            creator_roles: number[] | null;
+        };
         /** ThinWorkSchema */
         ThinWorkSchema: {
             /** Id */
             id: number;
             /** Tags */
-            tags: components["schemas"]["TagWorkSchema"][];
+            tags: components["schemas"]["TagWorkInstanceSchema"][];
             /** Title */
             title: string;
             /** Thumbnail */
@@ -1290,7 +1305,7 @@ export interface components {
             /** Id */
             id: number;
             /** Tags */
-            tags: components["schemas"]["TagWorkSchema"][];
+            tags: components["schemas"]["TagWorkInstanceSchema"][];
             /** Title */
             title: string;
             /** Description */
@@ -1316,21 +1331,6 @@ export interface components {
              * @default 0
              */
             rating: number;
-        };
-        /** TagWorkInstanceSchema */
-        TagWorkInstanceSchema: {
-            /** Tag Slug */
-            tag_slug: string;
-            /** N Votes */
-            n_votes: number;
-            /** Score */
-            score: number;
-            /** User Score */
-            user_score: number | null;
-            /** Sample */
-            sample: boolean;
-            /** Creator Roles */
-            creator_roles: number[];
         };
         /** TagWorkVoteSchema */
         TagWorkVoteSchema: {
@@ -2148,28 +2148,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    otodb_api_work_get_tag_scores: {
-        parameters: {
-            query: {
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TagWorkInstanceSchema"][];
-                };
             };
         };
     };

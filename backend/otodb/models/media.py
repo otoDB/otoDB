@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, cast
 import nh3
 
 from django.db import models
+from django.db.models import Subquery, OuterRef
 from django.urls import reverse
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagField, TaggedManager
@@ -40,16 +41,6 @@ class TagWorkInstance(models.Model):
         help_text="Creator role bitmask"
     )
     instance_imported_from_source = models.BooleanField(null=False, default=True)
-
-    def get_creator_roles(self) -> list[int]:
-        if self.creator_roles is None or self.work_tag.category != WorkTagCategory.CREATOR:
-            return []
-
-        roles = []
-        for role in Role:
-            if self.creator_roles & role.value:
-                roles.append(role.value)
-        return roles
 
     def set_creator_roles(self, roles: list[Role | int]):
         if self.work_tag.category != WorkTagCategory.CREATOR:
@@ -161,6 +152,13 @@ class MediaWork(models.Model):
         if self.description:
             self.description = nh3.clean(self.description)
         super().save(*args, **kwargs)
+
+    @property
+    def tags_annotated(self):
+        return self.tags.filter(deprecated=False).annotate(
+            sample=Subquery(self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values('used_as_source')),
+            creator_roles=Subquery(self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values('creator_roles'))
+        )
 
 class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)

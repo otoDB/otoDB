@@ -10,6 +10,8 @@ export const WorkTagCategory = [
 	m.wise_keen_beaver_pick
 ];
 
+export const WorkTagCategoriesSettableAsSource = [2, 4, 6];
+
 export const SongTagCategory = [
 	m.fresh_lower_rook_trip,
 	m.cozy_awful_mule_enrich,

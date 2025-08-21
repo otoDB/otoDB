@@ -3,6 +3,7 @@ import client from './api';
 import { Languages } from './enums';
 import { setLocale } from './paraglide/runtime';
 import { applyAction, enhance } from '$app/forms';
+import { m } from './paraglide/messages';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const debounce = (callback: Function, wait = 300) => {
@@ -107,12 +108,7 @@ export const dirtyEnhance = (node: HTMLFormElement) => {
 
 	return enhance(node, ({ cancel }) => {
 		if (Array.from(document.querySelectorAll('form')).some((f) => f !== node && isFormDirty(f)))
-			if (
-				!confirm(
-					'There is unsaved data in another form on this page, are you sure you want to submit?'
-				)
-			)
-				cancel();
+			if (!confirm(m.active_lime_panther_buzz())) cancel();
 		return async ({ result }) => {
 			await applyAction(result);
 		};

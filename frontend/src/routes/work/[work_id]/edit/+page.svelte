@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
 	import type { PageProps } from '../$types';
 	import { Platform, Rating, WorkOrigin } from '$lib/enums';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { dirtyEnhance } from '$lib/ui';
 
 	let { data, form }: PageProps = $props();
 	let title: string = $state(form?.title ?? data.title!),
@@ -51,7 +51,7 @@
 	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
 	menuLinks={data.links}
 >
-	<form method="POST" use:enhance action="?/edit">
+	<form method="POST" use:dirtyEnhance action="?/edit">
 		<table class="inline">
 			<tbody>
 				<tr

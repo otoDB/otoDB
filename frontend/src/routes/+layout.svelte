@@ -26,8 +26,7 @@
 			type !== 'goto' &&
 			Array.from(document.querySelectorAll('form')).some(isFormDirty)
 		)
-			if (!confirm('There is unsaved data on this page, are you sure you want to leave?'))
-				cancel();
+			if (!confirm(m.raw_actual_mallard_exhale())) cancel();
 	});
 </script>
 

@@ -35,9 +35,9 @@ services:
       context: ./frontend
       args:
         OTODB_FRONTEND_DOMAIN: ${OTODB_FRONTEND_DOMAIN}
+        OTODB_HASH: ${OTODB_HASH}
     environment:
       - OTODB_FRONTEND_DOMAIN=${OTODB_FRONTEND_DOMAIN}
-      - OTODB_HASH=${OTODB_HASH}
     restart: always
 
   caddy:

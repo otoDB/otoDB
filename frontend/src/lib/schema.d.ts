@@ -1334,8 +1334,8 @@ export interface components {
         };
         /** TagWorkVoteSchema */
         TagWorkVoteSchema: {
-            /** Tag Slug */
-            tag_slug: string;
+            /** Tag Name */
+            tag_name: string;
             /** Score */
             score: number;
         };

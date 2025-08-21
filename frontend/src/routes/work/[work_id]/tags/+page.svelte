@@ -17,7 +17,7 @@
 		await client.PUT('/api/work/tag_scores', {
 			fetch,
 			params: { query: { work_id: +data.id } },
-			body: [{ score: new_vote, tag_slug: tag.slug }]
+			body: [{ score: new_vote, tag_name: tag.slug }]
 		});
 		tag.user_score = new_vote;
 
@@ -64,7 +64,7 @@
 		await client.PUT('/api/work/tag_scores', {
 			fetch,
 			params: { query: { work_id: +data.id } },
-			body: new_tags.map((t) => ({ tag_slug: t, score: 1 }))
+			body: new_tags.map((t) => ({ tag_name: t, score: 1 }))
 		});
 		goto(`/work/${data.id}`, { invalidateAll: true });
 	};

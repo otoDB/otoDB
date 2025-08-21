@@ -80,7 +80,7 @@ def _alias(from_tags, into_tag):
                     elif not into_tag.get_descendants().filter(id=tp.tag.id).exists():
                         tp.tag = into_tag
                         tp.save()
-                if into_tag.category != WorkTagCategory.GENERAL:
+                if tag.category != WorkTagCategory.GENERAL and into_tag.category == WorkTagCategory.GENERAL:
                     into_tag.category = tag.category
                 for p in tag.wikipage_set.all():
                     try:

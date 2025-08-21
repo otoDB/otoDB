@@ -37,6 +37,7 @@ services:
         OTODB_FRONTEND_DOMAIN: ${OTODB_FRONTEND_DOMAIN}
     environment:
       - OTODB_FRONTEND_DOMAIN=${OTODB_FRONTEND_DOMAIN}
+      - OTODB_HASH=${OTODB_HASH}
     restart: always
 
   caddy:

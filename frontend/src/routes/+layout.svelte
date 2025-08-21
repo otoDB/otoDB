@@ -10,6 +10,7 @@
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { beforeNavigate } from '$app/navigation';
+	import * as env from '$env/static/public';
 
 	let { data, children } = $props();
 
@@ -109,7 +110,7 @@
 						{m.mild_loud_shad_enchant({
 							type: 'otoDB',
 							name: m.glad_born_mouse_taste()
-						})} Alpha
+						})} Alpha {#if env.PUBLIC_OTODB_HASH} - {env.PUBLIC_OTODB_HASH}{/if}
 					</span>
 					<div class="social-links">
 						<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, setLocale } from '$lib/paraglide/runtime';
+	import { getLocale, locales, setLocale } from '$lib/paraglide/runtime';
 
 	import { LanguageNames, ThemeNames, Themes } from '$lib/enums';
 	import client from '$lib/api';
@@ -24,7 +24,7 @@
 <Section title={m.orange_born_seal_ascend()}>
 	<h2 class="text-lg">{m.hour_loud_squirrel_ascend()}</h2>
 	<div class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-4">
-		{#each ['en', 'ja', 'ko', 'zh-cn'] as const as key (key)}
+		{#each locales as key (key)}
 			<button
 				aria-pressed={getLocale() === key}
 				onclick={() => set_lang(key, !!data.user)}

@@ -1,18 +1,24 @@
 <script lang="ts">
 	import CommentTree from '$lib/CommentTree.svelte';
+	import LangSwitch from '$lib/LangSwitch.svelte';
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
+	import { LanguageNames, Languages } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { mount, onMount } from 'svelte';
 
 	let { data } = $props();
-	let page = $derived.by(() => {
-		return data.post.post_rendered.replaceAll(
-			/&lt;otodb-worktag\s*slug="(.+)"\s*\/&gt;/g,
-			'<otodb-worktag data-slug="$1" />'
-		);
-	});
+	let lang_view = $state(getLocale());
+	let page = $derived(
+		data.post.pages
+			.find((p) => p.lang === Languages[lang_view])
+			.page_rendered.replaceAll(
+				/&lt;otodb-worktag\s*slug="(.+)"\s*\/&gt;/g,
+				'<otodb-worktag data-slug="$1" />'
+			)
+	);
 	onMount(() => {
 		document.querySelectorAll('.post-content otodb-worktag').forEach((el) => {
 			client
@@ -26,6 +32,10 @@
 </script>
 
 <Section title={data.post.title}>
+	<LangSwitch
+		availableLanguages={data.post.pages.map((v) => Languages[v.lang])}
+		bind:value={lang_view}
+	/>
 	<div class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto max-w-4xl">
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html page}

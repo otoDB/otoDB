@@ -15,6 +15,7 @@ from .models import (
     TagWorkInstance,
     TagWorkVote,
     Post,
+    PostContent
 )
 
 class MediaSourceInline(admin.TabularInline):
@@ -135,6 +136,11 @@ class WorkSourceAdmin(admin.ModelAdmin):
     readonly_fields = ['info_payload']
     inlines = [WorkSourceRejectionInline]
 
+class PostContentInline(admin.TabularInline):
+    model = PostContent
+class PostAdmin(admin.ModelAdmin):
+    inlines = [PostContentInline]
+
 admin.site.register(WorkSource, WorkSourceAdmin)
 admin.site.register(Pool)
 admin.site.register(TagWork, TagWorkAdmin)
@@ -142,4 +148,4 @@ admin.site.register(TagSong, TagWorkAdmin)
 admin.site.register(MediaWork, MediaWorkAdmin)
 admin.site.register(MediaSong, MediaSongAdmin)
 admin.site.register(TagWorkInstance, TagWorkInstanceAdmin)
-admin.site.register(Post)
+admin.site.register(Post, PostAdmin)

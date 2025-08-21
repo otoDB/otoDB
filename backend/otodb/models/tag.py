@@ -270,3 +270,10 @@ class TagWorkParenthood(models.Model):
     history = HistoricalRecords()
     class Meta:
         unique_together = (("tag", "parent"),)
+        constraints = [
+            models.CheckConstraint(
+                name="tagwork_parenthood_nonreflexive",
+                condition=~models.Q(tag=models.F("parent")),
+                violation_error_message="tag cannot be own parent",
+            ),
+        ]

@@ -8,7 +8,7 @@
 	import { clickOutside, get_prefs, isFormDirty, set_lang } from '$lib/ui';
 	import { LanguageNames, Themes } from '$lib/enums';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import { getLocale } from '$lib/paraglide/runtime';
+	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { beforeNavigate } from '$app/navigation';
 	import * as env from '$env/static/public';
 
@@ -129,10 +129,9 @@
 						onchange={(e) => set_lang(e.target.value, !!data.user)}
 						value={getLocale()}
 					>
-						<option value="en">{LanguageNames['en']}</option>
-						<option value="ja">{LanguageNames['ja']}</option>
-						<option value="ko">{LanguageNames['ko']}</option>
-						<option value="zh-cn">{LanguageNames['zh-cn']}</option>
+						{#each locales as l, i (i)}
+							<option value={l}>{LanguageNames[l]}</option>
+						{/each}
 					</select>
 				</div>
 			</footer>

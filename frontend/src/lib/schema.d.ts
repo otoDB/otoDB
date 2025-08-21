@@ -1706,13 +1706,20 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** PostContentSchema */
+        PostContentSchema: {
+            /** Lang */
+            lang: number;
+            /** Page Rendered */
+            page_rendered: string;
+        };
         /** PostSchema */
         PostSchema: {
             added_by: components["schemas"]["ProfileSchema"];
+            /** Pages */
+            pages: components["schemas"]["PostContentSchema"][];
             /** Title */
             title: string;
-            /** Post Rendered */
-            post_rendered: string;
         };
         /** CommentSchema */
         CommentSchema: {

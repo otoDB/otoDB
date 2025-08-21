@@ -27,6 +27,7 @@
 	import { mermaid_BFS } from '$lib/ui.js';
 	import { onMount } from 'svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
+	import LangSwitch from '$lib/LangSwitch.svelte';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -37,7 +38,7 @@
 			.filter((e) => e !== data.display_name)
 	);
 
-	let wikiView = $state(
+	let wikiView = $derived(
 		Languages[data.wiki_page?.find(({ lang }) => lang === Languages[getLocale()])?.lang] ??
 			Languages[data.wiki_page?.at(0)?.lang] ??
 			undefined
@@ -174,12 +175,10 @@ ${nodes
 
 	{#if data.wiki_page && data.wiki_page.length}
 		<div class="float-right clear-left my-2">
-			{#each data.wiki_page as page, i (i)}
-				<label class="wiki-lang-tab">
-					<input type="radio" bind:group={wikiView} value={Languages[page.lang]} />
-					{LanguageNames[Languages[page.lang]]}
-				</label>
-			{/each}
+			<LangSwitch
+				availableLanguages={data.wiki_page.map((v) => Languages[v.lang])}
+				bind:value={wikiView}
+			/>
 		</div>
 		<div class="prose prose-neutral prose-sm dark:prose-invert max-w-4xl">
 			{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
@@ -320,26 +319,6 @@ ${nodes
 		list-style: none;
 		& > li {
 			margin: 0;
-		}
-	}
-	label.wiki-lang-tab {
-		padding: 0.2rem 0.5rem;
-		display: inline-block;
-		background-color: var(--otodb-color-bg-primary);
-		border: 1px solid var(--otodb-color-content-primary);
-		&:hover {
-			background-color: var(--otodb-color-bg-fainter);
-		}
-		&:active {
-			background-color: var(--otodb-color-bg-faint);
-		}
-		& > input {
-			display: none;
-		}
-		&:has(> input:checked) {
-			background-color: var(--otodb-color-content-primary);
-			border: 1px solid var(--otodb-color-bg-primary);
-			color: var(--otodb-color-bg-primary);
 		}
 	}
 	label.type-label {

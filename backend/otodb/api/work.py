@@ -145,9 +145,9 @@ def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchem
     tags = []
     for v in payload:
         try:
-            tags.append(TagWork.objects.get(slug=v.tag_name))
+            tags.append(TagWork.objects.get(slug=clean_incoming_slug(v.tag_name)))
         except TagWork.DoesNotExist:
-            tags.append(TagWork.objects.create(name=clean_incoming_slug(v.tag_name)))
+            tags.append(TagWork.objects.create(name=v.tag_name))
 
     work.tags.add(*tags)
 

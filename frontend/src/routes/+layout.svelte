@@ -154,7 +154,7 @@
 	}
 
 	.footer-center {
-		flex: 1;
+		flex: 3;
 		display: flex;
 		flex-direction: column;
 		align-items: center;

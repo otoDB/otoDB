@@ -7,10 +7,14 @@
 	import { LanguageNames, Languages } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { mount, onMount } from 'svelte';
+	import { mount, unmount } from 'svelte';
 
 	let { data } = $props();
-	let lang_view = $state(getLocale());
+	let lang_view = $derived(
+		data.post.pages.some((p) => p.lang === Languages[getLocale()])
+			? getLocale()
+			: Languages[data.post.pages[0].lang]
+	);
 	let page = $derived(
 		data.post.pages
 			.find((p) => p.lang === Languages[lang_view])
@@ -19,15 +23,20 @@
 				'<otodb-worktag data-slug="$1" />'
 			)
 	);
-	onMount(() => {
-		document.querySelectorAll('.post-content otodb-worktag').forEach((el) => {
-			client
-				.GET('/api/tag/tag', { fetch, params: { query: { tag_slug: el.dataset.slug } } })
-				.then((r) => {
-					mount(WorkTag, { target: el, props: { tag: r.data! } });
-				})
-				.catch(console.log);
-		});
+	$effect(() => {
+		page; // track dependency
+		const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag')).map(
+			(el) =>
+				client
+					.GET('/api/tag/tag', {
+						fetch,
+						params: { query: { tag_slug: el.dataset.slug } }
+					})
+					.then((r) => mount(WorkTag, { target: el, props: { tag: r.data! } }))
+		);
+		return () => {
+			tags.forEach((p) => p.then(unmount));
+		};
 	});
 </script>
 

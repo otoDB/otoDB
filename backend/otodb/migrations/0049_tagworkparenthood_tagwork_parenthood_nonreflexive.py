@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('otodb', '0046_tagworkparenthood_squashed_0048_alter_tagworkparenthood_unique_together_and_more'),
+        ('otodb', '0048_tagworkparenthood_squashed_0048_alter_tagworkparenthood_unique_together_and_more'),
     ]
 
     operations = [

@@ -28,6 +28,7 @@
 	import { onMount } from 'svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
+	import type { components } from '$lib/schema.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -96,20 +97,16 @@ ${nodes
 	});
 
 	const paths = $derived.by(() => {
-		let queue = [[data.tag]];
-		const done = [];
-		while (queue.length) {
-			const path = queue.shift();
-			if (Object.hasOwn(data.paths[1], path[0].slug))
-				queue.push(
-					...data.paths[1][path[0].slug].map((next) => [
-						data.paths[0].find((t) => t.slug === next),
-						...path
-					])
-				);
-			else done.push(path);
-		}
-		return done;
+		const get_paths = (node: string): components['schemas']['TagWorkSchema'][][] =>
+			Object.hasOwn(data.paths[1], node)
+				? data.paths[1][node].flatMap((next) =>
+						get_paths(next).map((p) => [
+							...p,
+							data.paths[0].find((t) => t.slug === node) ?? data.tag
+						])
+					)
+				: [[data.paths[0].find((t) => t.slug === node) ?? data.tag]];
+		return get_paths(data.tag.slug);
 	});
 
 	onMount(() => {

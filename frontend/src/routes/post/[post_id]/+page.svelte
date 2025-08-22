@@ -24,19 +24,20 @@
 			)
 	);
 	$effect(() => {
-		page; // track dependency
-		const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag')).map(
-			(el) =>
-				client
-					.GET('/api/tag/tag', {
-						fetch,
-						params: { query: { tag_slug: el.dataset.slug } }
-					})
-					.then((r) => mount(WorkTag, { target: el, props: { tag: r.data! } }))
-		);
-		return () => {
-			tags.forEach((p) => p.then(unmount));
-		};
+		if (page) {
+			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag')).map(
+				(el) =>
+					client
+						.GET('/api/tag/tag', {
+							fetch,
+							params: { query: { tag_slug: el.dataset.slug } }
+						})
+						.then((r) => mount(WorkTag, { target: el, props: { tag: r.data! } }))
+			);
+			return () => {
+				tags.forEach((p) => p.then(unmount));
+			};
+		}
 	});
 </script>
 

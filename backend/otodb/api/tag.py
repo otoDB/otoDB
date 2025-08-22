@@ -42,7 +42,7 @@ def tag(request: HttpRequest, tag_slug: str):
 def details(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     paths = tag.get_paths().exclude(fr='')
-    adj = {k: [vv[0] for vv in v] for k, v in groupby(paths.values_list('slug','fr'), lambda x: x[1])}
+    adj = {k: [vv[0] for vv in v] for k, v in groupby(paths.order_by('fr').values_list('slug','fr'), lambda x: x[1])}
     return {
         'paths': (paths.distinct(), adj),
         'wiki_page': tag.wikipage_set,

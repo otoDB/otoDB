@@ -16,11 +16,8 @@ def move_column_data(apps, schema_editor):
         )
 
 class Migration(migrations.Migration):
-
-    replaces = [('otodb', '0046_tagworkparenthood'), ('otodb', '0047_remove_historicaltagwork_parent_and_more'), ('otodb', '0048_alter_tagworkparenthood_unique_together_and_more')]
-
     dependencies = [
-        ('otodb', '0045_rename_info_payload_worksourceinfopayload_payload_and_more'),
+        ('otodb', '0047_alter_postcontent_unique_together'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

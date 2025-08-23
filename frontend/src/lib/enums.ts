@@ -313,5 +313,6 @@ export const HistoryModelNames = {
 	tagworkmediaconnection: m.empty_legal_chicken_taste,
 	tagworkcreatorconnection: m.empty_legal_chicken_taste,
 	tagworklangpreference: m.empty_legal_chicken_taste,
+	tagworkparenthood: m.empty_legal_chicken_taste,
 	tagsong: m.dull_plain_angelfish_cuddle
 };

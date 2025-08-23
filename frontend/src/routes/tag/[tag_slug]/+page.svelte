@@ -28,6 +28,7 @@
 	import { onMount } from 'svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
+	import type { components } from '$lib/schema.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -95,6 +96,19 @@ ${nodes
 		return get_svg_mermaid(nodes, links);
 	});
 
+	const paths = $derived.by(() => {
+		const get_paths = (node: string): components['schemas']['TagWorkSchema'][][] =>
+			Object.hasOwn(data.paths[1], node)
+				? data.paths[1][node].flatMap((next) =>
+						get_paths(next).map((p) => [
+							...p,
+							data.paths[0].find((t) => t.slug === node) ?? data.tag
+						])
+					)
+				: [[data.paths[0].find((t) => t.slug === node) ?? data.tag]];
+		return get_paths(data.tag.slug);
+	});
+
 	onMount(() => {
 		if (songs)
 			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'neutral' });
@@ -109,12 +123,16 @@ ${nodes
 	menuLinks={data.links}
 >
 	<div>
-		<span>{m.empty_legal_chicken_taste()}</span>
-		{#each data.tree as node, i (i)}
-			> <a href={node.slug}>{getTagDisplayName(node)}</a>&nbsp;
+		{#each paths as path, i (i)}
+			<div>
+				<span>{m.empty_legal_chicken_taste()}</span>
+				{#each path as node, j (j)}
+					> {#if node.slug === data.tag.slug}{data.display_name}{:else}<a href={node.slug}
+							>{getTagDisplayName(node)}</a
+						>{/if}&nbsp;
+				{/each}
+			</div>
 		{/each}
-		>
-		<span>{data.display_name}</span>
 	</div>
 
 	<h2>

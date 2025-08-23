@@ -1654,19 +1654,24 @@ export interface components {
             /** Author */
             author: string;
         };
-        /** TagInSchema */
-        TagInSchema: {
-            /** Parent Slug */
-            parent_slug: string | null;
+        /** WorkTagInSchema */
+        WorkTagInSchema: {
             /** Category */
             category: number;
             /** Deprecated */
             deprecated: boolean;
+            /** Parent Slugs */
+            parent_slugs: string[];
         };
         /** TagWorkDetailsSchema */
         TagWorkDetailsSchema: {
-            /** Tree */
-            tree: components["schemas"]["TagWorkSchema"][];
+            /** Paths */
+            paths: [
+                components["schemas"]["TagWorkSchema"][],
+                {
+                    [key: string]: string[];
+                }
+            ];
             /** Wiki Page */
             wiki_page: components["schemas"]["WikiPageSchema"][];
             /** Aliases */
@@ -1705,6 +1710,13 @@ export interface components {
             items: components["schemas"]["TagSongSchema"][];
             /** Count */
             count: number;
+        };
+        /** SongTagInSchema */
+        SongTagInSchema: {
+            /** Parent Slug */
+            parent_slug: string | null;
+            /** Category */
+            category: number;
         };
         /** PostContentSchema */
         PostContentSchema: {
@@ -3073,7 +3085,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    payload: components["schemas"]["TagInSchema"];
+                    payload: components["schemas"]["WorkTagInSchema"];
                     song_payload?: components["schemas"]["SongInSchema"] | null;
                 };
             };
@@ -3517,7 +3529,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TagInSchema"];
+                "application/json": components["schemas"]["SongTagInSchema"];
             };
         };
         responses: {

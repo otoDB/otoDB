@@ -1,7 +1,7 @@
 from typing import Annotated
-from itertools import chain
+from itertools import groupby
 
-from django.db import transaction, IntegrityError
+from django.db import transaction
 from django.db.models import Value
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
@@ -12,7 +12,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import clean_incoming_slug, clean_incoming_tag_name
-from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection
+from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection, TagWorkParenthood
 from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes, LanguageTypes
 
 from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
@@ -41,8 +41,10 @@ def tag(request: HttpRequest, tag_slug: str):
 @tag_router.get('details', response=TagWorkDetailsSchema)
 def details(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
+    paths = tag.get_paths().exclude(fr='')
+    adj = {k: [vv[0] for vv in v] for k, v in groupby(paths.order_by('fr').values_list('slug','fr'), lambda x: x[1])}
     return {
-        'tree': list(tag.get_tree())[:-1],
+        'paths': (paths.distinct(), adj),
         'wiki_page': tag.wikipage_set,
         'aliases': tag.aliases
     }
@@ -72,34 +74,6 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
             tag.save()
             if tag.can_be_deleted:
                 tag.delete()
-
-    # carry over parent, category, wikipages, connections
-    # Precedence given to later entries
-    for tag in tags:
-        if tag.id != into.id:
-            if not into.parent:
-                into.parent = tag.parent
-            if tag.category != WorkTagCategory.GENERAL and into.category == WorkTagCategory.GENERAL:
-                into.category = tag.category
-            for p in tag.wikipage_set.all():
-                try:
-                    page = WikiPage.objects.get(tag=into, lang=p.lang)
-                    page.page += '\n\n'
-                    page.page += p.page
-                    page.save()
-                except WikiPage.DoesNotExist:
-                    WikiPage.objects.create(tag=into, lang=p.lang, page=p.page)
-                p.delete()
-            for c in chain(tag.tagworkconnection_set.all(), tag.tagworkmediaconnection_set.all(), tag.tagworkcreatorconnection_set.all()):
-                try:
-                    c.tag = into
-                    c.save()
-                except IntegrityError as e:
-                    if 'unique constraint' in e.message:
-                        c.delete()
-                    else:
-                        raise e
-    into.save()
 
     return {
         'merged_slug': into.slug
@@ -133,10 +107,14 @@ def del_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
     tag = get_object_or_404(TagWork, slug=tag_slug)
     TagWorkLangPreference.objects.get(tag=tag, lang=LanguageTypes(lang).value).delete()
 
-class TagInSchema(Schema):
-    parent_slug: str | None
+class WorkTagInSchema(Schema):
     category: int
     deprecated: bool
+    parent_slugs: list[str] 
+
+class SongTagInSchema(Schema):
+    parent_slug: str | None
+    category: int
 
 class SongInSchema(ModelSchema):
     class Meta:
@@ -146,7 +124,7 @@ class SongInSchema(ModelSchema):
 @tag_router.put('tag', auth=django_auth)
 @user_is_trusted
 @transaction.atomic
-def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_payload: SongInSchema | None = None):
+def update(request: HttpRequest, tag_slug: str, payload: WorkTagInSchema, song_payload: SongInSchema | None = None):
     tag = get_object_or_404(TagWork.objects.select_for_update(), slug=tag_slug)
     if tag.category == WorkTagCategory.SONG and payload.category != WorkTagCategory.SONG:
         tag.mediasong.delete()
@@ -172,13 +150,15 @@ def update(request: HttpRequest, tag_slug: str, payload: TagInSchema, song_paylo
 
     tag.deprecated = payload.deprecated
     tag.category = payload.category
-    if payload.parent_slug:
-        parent = get_object_or_404(TagWork, slug=payload.parent_slug)
-        assert(all(tag.id != t.id for t in parent.get_tree()))
-        tag.parent = parent
-    else:
-        tag.parent = None
     tag.save()
+
+    ps = [get_object_or_404(TagWork, slug=s, aliased_to__isnull=True) for s in [clean_incoming_slug(p) for p in payload.parent_slugs]]
+    tag.childhood.exclude(parent__in=ps).delete()
+    desc = tag.get_descendants()
+    for p in ps:
+        if not TagWorkParenthood.objects.filter(tag=tag,parent=p).exists() and p not in desc:
+            TagWorkParenthood.objects.create(parent=p, tag=tag)
+
     return
 
 class WikiPageMDSchema(ModelSchema):
@@ -307,7 +287,7 @@ def song_tag_details(request: HttpRequest, tag_slug: str):
 @tag_router.put('song_tag', auth=django_auth)
 @user_is_trusted
 @transaction.atomic
-def update_song_tag(request: HttpRequest, tag_slug: str, payload: TagInSchema):
+def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchema):
     tag = get_object_or_404(TagSong.objects.select_for_update(), slug=tag_slug)
     tag.category = payload.category
     if payload.parent_slug:

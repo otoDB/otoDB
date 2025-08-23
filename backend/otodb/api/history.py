@@ -30,7 +30,7 @@ def union_qs(qss, **kwargs):
 model_classes_with_history = {
     'mediawork': [('mediawork', 'id'), ('mediawork', 'moved_to__id'), ('workrelation', 'A__id'), ('workrelation', 'B__id'), ('worksource', 'media__id')],
     'mediasong': [('mediasong', 'id'), ('songrelation', 'A__id'), ('songrelation', 'B__id'), ('mediasongconnection', 'song__id')],
-    'tagwork': [('tagwork', 'id'), ('tagwork', 'aliased_to__id'), ('wikipage', 'tag__id'), ('tagworkconnection', 'tag__id'), ('tagworkmediaconnection', 'tag__id'), ('tagworkcreatorconnection', 'tag__id'), ('tagworklangpreference', 'tag__id')],
+    'tagwork': [('tagwork', 'id'), ('tagwork', 'aliased_to__id'), ('wikipage', 'tag__id'), ('tagworkconnection', 'tag__id'), ('tagworkmediaconnection', 'tag__id'), ('tagworkcreatorconnection', 'tag__id'), ('tagworklangpreference', 'tag__id'), ('tagworkparenthood', 'tag__id')],
     'tagsong': [('tagsong', 'id')],
 }
 models_with_history = model_classes_with_history.keys()

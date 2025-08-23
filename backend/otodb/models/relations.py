@@ -14,6 +14,7 @@ def _get_component(model, obj_id: int):
     cte = CTE.recursive(lambda cte: model.objects.filter(Q(A_id=obj_id) | Q(B_id=obj_id)).union(
         cte.join(model, Q(A_id=cte.col.B_id) | Q(B_id=cte.col.A_id) | Q(A_id=cte.col.A_id) | Q(B_id=cte.col.B_id)),
     ))
+    # Note that we cannot use UNION ALL here because A-B will fetch each other forever.
     relations = with_cte(cte, select=cte.join(model, id=cte.col.id)).select_related('A', 'B')
     return relations
 

@@ -197,11 +197,11 @@ class TagWork(OtodbTagModel):
     def get_paths(self):
         cte = CTE.recursive(lambda cte: TagWork.objects.order_by().filter(id=self.id).values(
             'id', 'slug',
-            fr=Value('', output_field=models.CharField()),
+            fr=Value('', output_field=models.TextField()),
         ).union(
             cte.join(TagWork.objects.order_by(), parenthood__tag_id=cte.col.id, aliased_to__isnull=True).values(
                 'id', 'slug',
-                fr=cte.col.slug,
+                fr=models.functions.Cast(cte.col.slug, models.TextField()),
             ),
             all=True
         ))

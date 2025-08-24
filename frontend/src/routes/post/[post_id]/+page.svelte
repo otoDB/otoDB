@@ -20,7 +20,7 @@
 			.find((p) => p.lang === Languages[lang_view])
 			.page_rendered.replaceAll(
 				/&lt;otodb-worktag\s*slug="(.+?)"\s*\/&gt;/g,
-				'<otodb-worktag data-slug="$1" />'
+				'<otodb-worktag data-slug="$1"></otodb-worktag>'
 			)
 	);
 	$effect(() => {

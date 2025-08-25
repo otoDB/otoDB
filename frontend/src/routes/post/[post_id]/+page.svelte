@@ -45,7 +45,10 @@
 		availableLanguages={data.post.pages.map((v) => Languages[v.lang])}
 		bind:value={lang_view}
 	/>
-	Last updated: {new Date(page_object.modified).toLocaleString()}
+	{m.mild_loud_shad_enchant({
+		type: m.lower_full_opossum_bless(),
+		name: new Date(page_object.modified).toLocaleString()
+	})}
 	<div class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto max-w-4xl">
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html page}

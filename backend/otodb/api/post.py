@@ -13,7 +13,7 @@ post_router = Router()
 class PostContentSchema(ModelSchema):
     class Meta:
         model = PostContent
-        fields = ['lang', 'page_rendered']
+        fields = ['lang', 'page_rendered', 'modified']
 
 class PostSchema(ModelSchema):
     added_by: ProfileSchema

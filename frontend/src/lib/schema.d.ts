@@ -1724,6 +1724,11 @@ export interface components {
             lang: number;
             /** Page Rendered */
             page_rendered: string;
+            /**
+             * Modified
+             * Format: date-time
+             */
+            modified: string;
         };
         /** PostSchema */
         PostSchema: {
@@ -3775,7 +3780,7 @@ export interface operations {
     otodb_api_history_rollback: {
         parameters: {
             query: {
-                model: "mediawork" | "workrelation" | "worksource" | "mediasong" | "songrelation" | "mediasongconnection" | "tagwork" | "wikipage" | "tagworkconnection" | "tagworkmediaconnection" | "tagworkcreatorconnection" | "tagworklangpreference" | "tagsong";
+                model: "mediawork" | "workrelation" | "worksource" | "mediasong" | "songrelation" | "mediasongconnection" | "tagwork" | "wikipage" | "tagworkconnection" | "tagworkmediaconnection" | "tagworkcreatorconnection" | "tagworklangpreference" | "tagworkparenthood" | "tagsong";
                 history_id: number;
             };
             header?: never;

@@ -23,6 +23,8 @@ class PostContent(models.Model):
     page = MarkdownField(rendered_field='page_rendered', validator=VALIDATOR_CLASSY, null=False)
     page_rendered = RenderedMarkdownField()
     lang = models.IntegerField(choices=LanguageTypes.choices, null=False, blank=False)
+    modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         unique_together = (("post", "lang"),)
 

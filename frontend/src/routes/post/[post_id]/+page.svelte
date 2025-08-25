@@ -15,13 +15,12 @@
 			? getLocale()
 			: Languages[data.post.pages[0].lang]
 	);
+	let page_object = $derived(data.post.pages.find((p) => p.lang === Languages[lang_view]));
 	let page = $derived(
-		data.post.pages
-			.find((p) => p.lang === Languages[lang_view])
-			.page_rendered.replaceAll(
-				/&lt;otodb-worktag\s*slug="(.+?)"\s*\/&gt;/g,
-				'<otodb-worktag data-slug="$1"></otodb-worktag>'
-			)
+		page_object.page_rendered.replaceAll(
+			/&lt;otodb-worktag\s*slug="(.+?)"\s*\/&gt;/g,
+			'<otodb-worktag data-slug="$1"></otodb-worktag>'
+		)
 	);
 	$effect(() => {
 		if (page) {
@@ -46,6 +45,7 @@
 		availableLanguages={data.post.pages.map((v) => Languages[v.lang])}
 		bind:value={lang_view}
 	/>
+	Last updated: {new Date(page_object.modified).toLocaleString()}
 	<div class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto max-w-4xl">
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html page}

@@ -189,7 +189,7 @@ class TagWork(OtodbTagModel):
 
     def get_descendants(self):
         cte = CTE.recursive(lambda cte: TagWork.objects.order_by().filter(id=self.id).values('id').union(
-            cte.join(TagWork.objects.order_by(), childhood__parent_id=cte.col.id, aliased_to__isnull=True).values('id'),
+            cte.join(TagWork.objects.order_by(), childhood__parent_id=cte.col.id, aliased_to__isnull=True, deprecated=False).values('id'),
             all=True
         ))
         return with_cte(cte, select=cte.join(TagWork, id=cte.col.id)).exclude(id=self.id).distinct().order_by()
@@ -199,7 +199,7 @@ class TagWork(OtodbTagModel):
             'id', 'slug',
             fr=Value('', output_field=models.TextField()),
         ).union(
-            cte.join(TagWork.objects.order_by(), parenthood__tag_id=cte.col.id, aliased_to__isnull=True).values(
+            cte.join(TagWork.objects.order_by(), parenthood__tag_id=cte.col.id, aliased_to__isnull=True, deprecated=False).values(
                 'id', 'slug',
                 fr=models.functions.Cast(cte.col.slug, models.TextField()),
             ),

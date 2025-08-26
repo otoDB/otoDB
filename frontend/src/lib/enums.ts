@@ -283,17 +283,17 @@ export const MediaConnectionParsers = {
 
 export const Role = {
 	AUDIO: 1,
-	1: 'Audio',
+	1: m.weary_yummy_lobster_kick,
 	VISUALS: 2,
-	2: 'Visuals',
+	2: m.great_flaky_spider_comfort,
 	DIRECTOR: 4,
-	4: 'Director',
+	4: m.brief_slow_robin_fond,
 	MUSIC: 8,
-	8: 'Music',
+	8: m.known_green_jackal_jolt,
 	ARTWORK: 16,
-	16: 'Artwork',
+	16: m.weird_quaint_jan_dazzle,
 	THANKS: 32,
-	32: 'Special Thanks'
+	32: m.heavy_blue_parrot_mend
 };
 
 export const Themes = ['default', 'aniki dark'].map((t) => 'theme-' + t);
@@ -322,8 +322,8 @@ export const MediaType = {
 	SHOW: 2,
 	FILM: 4,
 	GAME: 8,
-	1: 'Anime',
-	2: 'Show',
-	4: 'Film',
-	8: 'Game'
+	1: m.sea_new_barbel_rest,
+	2: m.every_vivid_dolphin_dash,
+	4: m.drab_gaudy_fly_relish,
+	8: m.maroon_close_gorilla_bake
 };

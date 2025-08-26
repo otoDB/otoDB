@@ -121,7 +121,7 @@
 										type="checkbox"
 										checked={tag.creator_roles?.includes(+k) || false}
 										onchange={() => toggle_creator_role(tag.slug, +k)}
-									/>{Role[k]}
+									/>{Role[k]()}
 								</label>
 							{/each}
 						{:else}

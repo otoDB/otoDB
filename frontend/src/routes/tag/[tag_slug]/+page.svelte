@@ -144,7 +144,7 @@ ${nodes
 		{#if data.tag.category === 6 && data.tag.media_type?.length}
 			({#each data.tag.media_type as t, i (i)}{MediaType[
 					t
-				]}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
+				]()}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
 		{/if}
 	</h2>
 

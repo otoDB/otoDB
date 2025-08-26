@@ -12,7 +12,7 @@ from otodb.models import (
     Pool, PoolItem,
     WorkRelation, SongRelation
 )
-from otodb.models.enums import Role
+from otodb.models.enums import Role, MediaType
 
 class Error(Schema):
     message: str
@@ -66,11 +66,17 @@ class FatTagWorkSchema(ModelSchema):
     id: int
     children: list[TagWorkSchema]
     song: Optional[SongSchema] = Field(None, alias='get_song')
+    media_type: list[int] | None = None
     lang_prefs: list[TagWorkLangPreferenceSchema]
     aliased_to: Optional[TagWorkSchema]
     class Meta:
         model = TagWork
         fields = ['name', 'slug', 'category', 'deprecated']
+
+    @field_validator("media_type", mode="before", check_fields=False)
+    @classmethod
+    def types(cls, value: int | None) -> list[int] | None:
+        return [r for r in MediaType if r & value] if value else None
 
 class WikiPageSchema(ModelSchema):
     class Meta:

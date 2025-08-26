@@ -12,7 +12,8 @@
 		MediaConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
-		WorkTagCategory
+		WorkTagCategory,
+		MediaType
 	} from '$lib/enums';
 	import type { PageProps } from './$types';
 	import Markdown from 'svelte-exmarkdown';
@@ -140,11 +141,7 @@
 						/></td
 					>
 				</tr>
-			</tbody>
-		</table>
-		{#if category === 2}
-			<table>
-				<tbody>
+				{#if category === 2}
 					<tr
 						><th><label for="song_title">{m.large_factual_octopus_exhale()}</label></th
 						><td
@@ -187,9 +184,20 @@
 							/></td
 						></tr
 					>
-				</tbody>
-			</table>
-		{/if}
+				{:else if category === 6}
+					<tr>
+						<th>Media type</th>
+						<td>
+							<select name="media_type" multiple value={data.tag.media_type ?? []}>
+								{#each Object.keys(MediaType).filter((e) => !isNaN(e)) as t, i (i)}
+									<option value={+t}>{MediaType[t]}</option>
+								{/each}
+							</select>
+						</td>
+					</tr>
+				{/if}
+			</tbody>
+		</table>
 		<input type="submit" />
 	</form>
 	<button onclick={del}>Delete this tag</button>

@@ -190,7 +190,7 @@
 						<td>
 							<select name="media_type" multiple value={data.tag.media_type ?? []}>
 								{#each Object.keys(MediaType).filter((e) => !isNaN(e)) as t, i (i)}
-									<option value={+t}>{MediaType[t]}</option>
+									<option value={+t}>{MediaType[t]()}</option>
 								{/each}
 							</select>
 						</td>

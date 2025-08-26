@@ -114,18 +114,16 @@
 					>
 					<td>
 						{#if tag.category === 4}
-							<div>
-								{#each Object.keys(Role).filter((e) => !isNaN(e)) as k, i (i)}
-									<label class="role-label">
-										<input
-											class="hidden"
-											type="checkbox"
-											checked={tag.creator_roles?.includes(+k) || false}
-											onchange={() => toggle_creator_role(tag.slug, +k)}
-										/>{Role[k]}
-									</label>
-								{/each}
-							</div>
+							{#each Object.keys(Role).filter((e) => !isNaN(e)) as k, i (i)}
+								<label class="role-label">
+									<input
+										class="hidden"
+										type="checkbox"
+										checked={tag.creator_roles?.includes(+k) || false}
+										onchange={() => toggle_creator_role(tag.slug, +k)}
+									/>{Role[k]}
+								</label>
+							{/each}
 						{:else}
 							{m.simple_less_marlin_enchant()}
 						{/if}

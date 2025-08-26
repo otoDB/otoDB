@@ -111,6 +111,7 @@ class WorkTagInSchema(Schema):
     category: int
     deprecated: bool
     parent_slugs: list[str] 
+    media_type: list[int] | None = None
 
 class SongTagInSchema(Schema):
     parent_slug: str | None
@@ -128,7 +129,7 @@ def update(request: HttpRequest, tag_slug: str, payload: WorkTagInSchema, song_p
     tag = get_object_or_404(TagWork.objects.select_for_update(), slug=tag_slug)
     if tag.category == WorkTagCategory.SONG and payload.category != WorkTagCategory.SONG:
         tag.mediasong.delete()
-    elif payload.category == WorkTagCategory.SONG:
+    if payload.category == WorkTagCategory.SONG:
         song_payload.title = song_payload.title.strip()
         song_payload.author = song_payload.author.strip()
         assert(song_payload.title)
@@ -143,14 +144,21 @@ def update(request: HttpRequest, tag_slug: str, payload: WorkTagInSchema, song_p
         except MediaSong.DoesNotExist:
             tag.category = WorkTagCategory.SONG
             song = MediaSong.objects.create(work_tag=tag, **song_payload.dict())
-    elif tag.category == WorkTagCategory.CREATOR and payload.category != WorkTagCategory.CREATOR:
+    if tag.category == WorkTagCategory.CREATOR and payload.category != WorkTagCategory.CREATOR:
         TagWorkCreatorConnection.objects.filter(tag=tag).delete()
-    elif tag.category == WorkTagCategory.MEDIA and payload.category != WorkTagCategory.MEDIA:
+    if tag.category == WorkTagCategory.MEDIA and payload.category != WorkTagCategory.MEDIA:
         TagWorkMediaConnection.objects.filter(tag=tag).delete()
+        tag.set_media_type([])
+    if payload.category == WorkTagCategory.MEDIA:
+        if payload.media_type:
+            tag.category = payload.category
+            tag.set_media_type(payload.media_type)
 
     tag.deprecated = payload.deprecated
     tag.category = payload.category
     tag.save()
+    print(payload.media_type)
+    print(tag.media_type)
 
     ps = [get_object_or_404(TagWork, slug=s, aliased_to__isnull=True) for s in [clean_incoming_slug(p) for p in payload.parent_slugs]]
     tag.childhood.exclude(parent__in=ps).delete()

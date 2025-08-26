@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from itertools import chain
 
 from django.db import models
-from django.db.models import Value
+from django.db.models import Value, Q
 from simple_history.models import HistoricalRecords, HistoricForeignKey
 from tagulous.models import BaseTagModel, TagModelManager
 
@@ -11,7 +11,7 @@ from django_cte import CTE, with_cte
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_CLASSY
 
-from .enums import WorkTagCategory, SongTagCategory, LanguageTypes
+from .enums import WorkTagCategory, SongTagCategory, LanguageTypes, MediaType
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
@@ -145,6 +145,11 @@ class TagWork(OtodbTagModel):
     category = models.IntegerField(choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL)
     aliased_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases')
     history = HistoricalRecords()
+    media_type = models.IntegerField(
+            null=True,
+            blank=True,
+            help_text="Media type bitmask"
+        )
 
     @property
     def display_name(self):
@@ -156,6 +161,19 @@ class TagWork(OtodbTagModel):
     def get_song(self):
         if self.mediasong is not None:
             return self.mediasong
+
+    def set_media_type(self, types: list[MediaType | int]):
+        if self.category != WorkTagCategory.MEDIA:
+            self.media_type = None
+            return
+
+        type_value = 0
+        for t in types:
+            if isinstance(t, MediaType):
+                type_value |= t.value
+            else:
+                type_value |= t
+        self.media_type = type_value if type_value > 0 else None
 
     @staticmethod
     def alias(from_tags: list['TagWork'], into_tag: 'TagWork'):
@@ -273,7 +291,7 @@ class TagWorkParenthood(models.Model):
         constraints = [
             models.CheckConstraint(
                 name="tagwork_parenthood_nonreflexive",
-                condition=~models.Q(tag=models.F("parent")),
+                condition=~Q(tag=models.F("parent")),
                 violation_error_message="tag cannot be own parent",
             ),
         ]

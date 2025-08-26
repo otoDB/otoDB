@@ -12,7 +12,8 @@
 		MediaConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
-		WorkTagCategory
+		WorkTagCategory,
+		MediaType
 	} from '$lib/enums';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
@@ -140,6 +141,11 @@ ${nodes
 			type: m.plane_awful_bobcat_spark(),
 			name: WorkTagCategory[data.tag.category]()
 		})}
+		{#if data.tag.category === 6 && data.tag.media_type?.length}
+			({#each data.tag.media_type as t, i (i)}{MediaType[
+					t
+				]}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
+		{/if}
 	</h2>
 
 	{#if aliases.length}

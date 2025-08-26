@@ -125,3 +125,9 @@ class Role(models.IntegerChoices):
 class ThemePref(models.IntegerChoices):
     DEFAULT = 0, "Default"
     ANIKI   = 1, "Aniki"
+
+class MediaType(models.IntegerChoices):
+	ANIME = 1, "Anime"
+	SHOW = 2, "TV Show"
+	FILM = 4, "Film"
+	GAME = 8, "Game"

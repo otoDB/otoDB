@@ -1586,6 +1586,8 @@ export interface components {
             /** Children */
             children: components["schemas"]["TagWorkSchema"][];
             song?: components["schemas"]["SongSchema"] | null;
+            /** Media Type */
+            media_type?: number[] | null;
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
@@ -1662,6 +1664,8 @@ export interface components {
             deprecated: boolean;
             /** Parent Slugs */
             parent_slugs: string[];
+            /** Media Type */
+            media_type?: number[] | null;
         };
         /** TagWorkDetailsSchema */
         TagWorkDetailsSchema: {

@@ -75,6 +75,8 @@ export const actions = {
 			bpm = data.get('song_bpm') as string,
 			variable_bpm = !!data.get('song_variable_bpm');
 
+		const media_type = (data.getAll('media_type') as string[]).map((s) => +s);
+
 		const song =
 			+category === 2
 				? {
@@ -96,7 +98,8 @@ export const actions = {
 				payload: {
 					parent_slugs,
 					category: +category,
-					deprecated
+					deprecated,
+					media_type
 				},
 				song_payload: song
 			}

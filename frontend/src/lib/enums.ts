@@ -316,3 +316,14 @@ export const HistoryModelNames = {
 	tagworkparenthood: m.empty_legal_chicken_taste,
 	tagsong: m.dull_plain_angelfish_cuddle
 };
+
+export const MediaType = {
+	ANIME: 1,
+	SHOW: 2,
+	FILM: 4,
+	GAME: 8,
+	1: 'Anime',
+	2: 'Show',
+	4: 'Film',
+	8: 'Game'
+};

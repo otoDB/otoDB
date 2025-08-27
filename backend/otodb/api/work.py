@@ -89,7 +89,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None,
             default=Value(1000),
             output_field=IntegerField()
         ),
-        pub=Subquery(WorkSource.objects.filter(media_id=OuterRef('id')).order_by('published_date').values('published_date')),
+        pub=Subquery(WorkSource.objects.filter(media_id=OuterRef('id')).order_by('published_date').values('published_date')[:1]),
     ).order_by('priority', order).distinct()
 
 @work_router.get('tags_needed', response=List[ThinWorkSchema])

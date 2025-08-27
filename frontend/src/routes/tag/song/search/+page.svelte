@@ -2,24 +2,24 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api';
-	import { MediaType, WorkTagCategory } from '$lib/enums';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import TagsField from '$lib/TagsField.svelte';
 
 	let { data }: PageProps = $props();
 	let results = $derived(data.results!.items);
-	let category = $state(data.category);
 
 	const fetchNextBatch = () =>
 		client.GET('/api/tag/song_search', {
 			fetch,
-			params: {
+			params: {		
 				query: {
 					query: data.query,
+					tags: data.query_tags,
+					author: data.author,
 					limit: data.batch_size,
-					offset: results.length
+					offset: results.length,
+					bpm_range: data.bpm_range
 				}
 			}
 		});
@@ -63,9 +63,9 @@
 		<h4>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: '' })}</h4>
 		<TagsField type="song" name="tags" value={data.query_tags.split(' ')} class="w-full" />
 		<h4>BPM</h4>
-		<input type="number" step="any" min="0" name="bpm_min" value={data.bpm_min} />
+		<input type="number" step="any" min="0" name="bpm_min" value={data.bpm_range?.[0]} />
 		-
-		<input type="number" step="any" min="0" name="bpm_max" value={data.bpm_max} />
+		<input type="number" step="any" min="0" name="bpm_max" value={data.bpm_range?.[1]} />
 	</form>
 
 	<hr class="my-5" />

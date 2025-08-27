@@ -1,7 +1,15 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { Platform, Rating, WorkOrigin, WorkStatus } from '$lib/enums';
+	import {
+		Platform,
+		Rating,
+		WorkOrigin,
+		WorkStatus,
+		WorkTagCategoriesSettableAsSource,
+		WorkTagCategory,
+		WorkTagPresentationOrder
+	} from '$lib/enums';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api';
 	import type { components } from '$lib/schema';
@@ -155,11 +163,20 @@
 				{/if}
 			</div>
 		</div>
-		<ul id="work-tags">
-			{#each data.tags as tag, i (i)}
-				<li><WorkTag {tag} /></li>
-			{/each}
-		</ul>
+		<div class="border-t-1 flex flex-row gap-5 mt-2 flex-wrap">
+			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
+				<span class="border-l-1 px-3 mt-3">
+				<h5 class="my-2 font-bold">
+					{WorkTagCategory[cat[0]]()}
+				</h5>	
+					<ul id="work-tags">
+						{#each cat[1] as tag, j (j)}
+							<li><WorkTag {tag} /></li>
+						{/each}
+					</ul>
+				</span>
+				{/each}
+		</div>
 	</div>
 </Section>
 
@@ -260,9 +277,6 @@
 <style>
 	#work-tags {
 		grid-column: 1 / span 2;
-		border-top: var(--otodb-color-content-faint) 1px solid;
-		margin-top: 2rem;
-		padding-top: 1rem;
 		display: flex;
 		gap: 0.3rem 1rem;
 		flex-wrap: wrap;

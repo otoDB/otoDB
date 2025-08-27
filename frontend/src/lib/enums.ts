@@ -11,6 +11,7 @@ export const WorkTagCategory = [
 ];
 
 export const WorkTagCategoriesSettableAsSource = [2, 4, 6];
+export const WorkTagPresentationOrder = [4, 6, 3, 2, 0, 5];
 
 export const SongTagCategory = [
 	m.fresh_lower_rook_trip,

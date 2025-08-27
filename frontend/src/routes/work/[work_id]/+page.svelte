@@ -163,19 +163,19 @@
 				{/if}
 			</div>
 		</div>
-		<div class="border-t-1 flex flex-row gap-5 mt-2 flex-wrap">
+		<div class="mt-2 flex flex-row flex-wrap gap-5 border-t-1">
 			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
-				<span class="border-l-1 px-3 mt-3">
-				<h5 class="my-2 font-bold">
-					{WorkTagCategory[cat[0]]()}
-				</h5>	
+				<span class="mt-3 border-l-1 px-3">
+					<h5 class="my-2 font-bold">
+						{WorkTagCategory[cat[0]]()}
+					</h5>
 					<ul id="work-tags">
 						{#each cat[1] as tag, j (j)}
 							<li><WorkTag {tag} /></li>
 						{/each}
 					</ul>
 				</span>
-				{/each}
+			{/each}
 		</div>
 	</div>
 </Section>

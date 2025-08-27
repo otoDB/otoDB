@@ -26,6 +26,8 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		query: query,
 		query_tags: tags,
 		results: data,
-		batch_size
+		batch_size,
+		bpm_range,
+		author
 	};
 };

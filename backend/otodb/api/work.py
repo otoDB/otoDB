@@ -1,8 +1,8 @@
-from typing import List, Annotated
+from typing import List, Annotated, Literal
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, Avg, Count, Value, Case, When, IntegerField
+from django.db.models import Q, Count, Value, Case, When, IntegerField, Subquery, OuterRef
 
 from simple_history.utils import update_change_reason
 
@@ -38,7 +38,9 @@ def query_external(request: HttpRequest, url: str | None = None, platform: str |
 
 @work_router.get('search', response=List[ThinWorkSchema])
 @paginate
-def search(request: HttpRequest, query: str, tags: str | None = None):
+def search(request: HttpRequest, query: str, tags: str | None = None,
+    order: Literal['id', '-id', 'pub', '-pub'] | None = '-id'
+):
     search_id = int(query) if query.isdigit() else -1
     q = Q(title__icontains=query) | Q(description__icontains=query)
     if tags:
@@ -86,8 +88,9 @@ def search(request: HttpRequest, query: str, tags: str | None = None):
             When(Q(title__icontains=query) | Q(description__icontains=query), then=Value(100)),
             default=Value(1000),
             output_field=IntegerField()
-        )
-    ).order_by('priority', '-id').distinct()
+        ),
+        pub=Subquery(WorkSource.objects.filter(media_id=OuterRef('id')).order_by('published_date').values('published_date')),
+    ).order_by('priority', order).distinct()
 
 @work_router.get('tags_needed', response=List[ThinWorkSchema])
 @paginate

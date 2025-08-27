@@ -82,6 +82,12 @@ def _alias(from_tags, into_tag):
                         tp.save()
                 if tag.category != WorkTagCategory.GENERAL and into_tag.category == WorkTagCategory.GENERAL:
                     into_tag.category = tag.category
+                    if tag.cateogory == WorkTagCategory.MEDIA:
+                        into_tag.media_type = tag.media_type
+                    if tag.category == WorkTagCategory.SONG:
+                        s = tag.mediasong
+                        s.work_tag = into_tag
+                        s.save()
                 for p in tag.wikipage_set.all():
                     try:
                         page = WikiPage.objects.get(tag=into_tag, lang=p.lang)

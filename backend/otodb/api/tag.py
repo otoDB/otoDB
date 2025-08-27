@@ -1,13 +1,14 @@
 from typing import Annotated
 from itertools import groupby
+from functools import reduce
 
 from django.db import transaction
-from django.db.models import Value
+from django.db.models import Value, F, Q
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
 from pydantic import AfterValidator
-from ninja import Router, ModelSchema, Schema
+from ninja import Router, ModelSchema, Schema, Query
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
@@ -19,17 +20,29 @@ from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDeta
 
 tag_router = Router()
 
+def filter_tags_by_media_type(qs, media_type: list[int]):
+    return qs.annotate(mt=F('media_type').bitand(reduce(lambda a, b: a | b, media_type))).filter(Q(mt__gt=0))
+
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
-def search(request: HttpRequest, query: str, resolve_aliases: bool = True, category: int | None = None):
+def search(request: HttpRequest, query: str, resolve_aliases: bool = True, category: int | None = None, media_type: list[int] | None = Query(None)):
     qs = TagWork.objects.filter(name__contains=clean_incoming_tag_name(query), deprecated=False)
     if category is not None and category != -1:
         qs = qs.filter(category=category)
-    
+        if category == WorkTagCategory.MEDIA and media_type:
+            qs = filter_tags_by_media_type(qs, media_type)
+
+    qs_base = qs.filter(aliased_to__isnull=True).order_by()
     if resolve_aliases:
-        return list(set([t.aliased_to if t.aliased_to else t for t in qs]))
+        sub = TagWork.objects.filter(deprecated=False, category=category, id__in=qs.values('aliased_to__id'))
+        if category == WorkTagCategory.MEDIA and media_type:
+            sub = filter_tags_by_media_type(sub, media_type)
+
+        qs = qs_base.union(sub.order_by())
     else:
-        return list(set(qs))
+        qs = qs_base
+
+    return qs
 
 @tag_router.get('tag', response={ 200: FatTagWorkSchema, 300: str })
 def tag(request: HttpRequest, tag_slug: str):
@@ -157,8 +170,6 @@ def update(request: HttpRequest, tag_slug: str, payload: WorkTagInSchema, song_p
     tag.deprecated = payload.deprecated
     tag.category = payload.category
     tag.save()
-    print(payload.media_type)
-    print(tag.media_type)
 
     ps = [get_object_or_404(TagWork, slug=s, aliased_to__isnull=True) for s in [clean_incoming_slug(p) for p in payload.parent_slugs]]
     tag.childhood.exclude(parent__in=ps).delete()
@@ -238,8 +249,8 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
 
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate
-def song_search(request: HttpRequest, query: str, tags: str | None = None):
-    qs = MediaSong.objects.filter(title__icontains=query)
+def song_search(request: HttpRequest, query: str, author: str, tags: str | None = None, bpm_range: tuple[int,int] | None = Query(None)):
+    qs = MediaSong.objects.filter(title__icontains=query, author__icontains=author)
     if tags:
         for tag in tags.split():
             qs = qs.filter(tags__slug=clean_incoming_slug(tag))
@@ -247,6 +258,8 @@ def song_search(request: HttpRequest, query: str, tags: str | None = None):
         qs = qs.annotate(priority=Value(100))
         qs = MediaSong.objects.filter(id=int(query)).annotate(priority=Value(0)).union(qs)
         qs = qs.order_by('priority')
+    if bpm_range:
+        qs = qs.filter(bpm__gte=bpm_range[0], bpm__lte=bpm_range[1])
     return qs
 
 @tag_router.get('song_relations', response=tuple[list[RelationSchema], list[SongSchema]])

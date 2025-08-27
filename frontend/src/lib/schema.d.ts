@@ -2053,6 +2053,7 @@ export interface operations {
             query: {
                 query: string;
                 tags?: string | null;
+                order?: ("id" | "-id" | "pub" | "-pub") | null;
                 limit?: number;
                 offset?: number;
             };
@@ -3031,6 +3032,7 @@ export interface operations {
                 query: string;
                 resolve_aliases?: boolean;
                 category?: number | null;
+                media_type?: number[] | null;
                 limit?: number;
                 offset?: number;
             };
@@ -3368,6 +3370,7 @@ export interface operations {
         parameters: {
             query: {
                 query: string;
+                author: string;
                 tags?: string | null;
                 limit?: number;
                 offset?: number;
@@ -3376,7 +3379,14 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": [
+                    number,
+                    number
+                ] | null;
+            };
+        };
         responses: {
             /** @description OK */
             200: {

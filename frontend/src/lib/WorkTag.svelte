@@ -16,9 +16,8 @@
 	<a
 		href="/tag/{t.slug}"
 		class={['rounded-xl border-solid px-2', border ? 'border-2' : 'border-1']}
-		style="border-color: {WorkTagPresentationColours[
-			sample_override ? 3 : t.category
-		]};">{getTagDisplayName(t)}</a
+		style="border-color: {WorkTagPresentationColours[sample_override ? 3 : t.category]};"
+		>{getTagDisplayName(t)}</a
 	>
 {/snippet}
 

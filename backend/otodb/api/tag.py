@@ -3,7 +3,7 @@ from itertools import groupby
 from functools import reduce
 
 from django.db import transaction
-from django.db.models import Value, F, Q
+from django.db.models import Value, F, Q, Case, When
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
@@ -54,10 +54,15 @@ def tag(request: HttpRequest, tag_slug: str):
 @tag_router.get('details', response=TagWorkDetailsSchema)
 def details(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
+
+    primary_parent = [*tag.childhood.filter(primary=True).values_list('parent__slug', flat=True)]
+    primary_parent = primary_parent[0] if primary_parent else None
+
     paths = tag.get_paths().exclude(fr='')
     adj = {k: [vv[0] for vv in v] for k, v in groupby(paths.order_by('fr').values_list('slug','fr'), lambda x: x[1])}
     return {
         'paths': (paths.distinct(), adj),
+        'primary_parent': primary_parent,
         'wiki_page': tag.wikipage_set,
         'aliases': tag.aliases
     }
@@ -177,6 +182,11 @@ def update(request: HttpRequest, tag_slug: str, payload: WorkTagInSchema, song_p
     for p in ps:
         if not TagWorkParenthood.objects.filter(tag=tag,parent=p).exists() and p not in desc:
             TagWorkParenthood.objects.create(parent=p, tag=tag)
+    if ps:
+        tag.childhood.update(primary=Case(
+            When(parent=ps[0], then=Value(True)),
+            default=Value(False),
+        ))
 
     return
 

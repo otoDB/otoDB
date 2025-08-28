@@ -159,18 +159,22 @@
 				{/if}
 			</div>
 		</div>
-		<div class="mt-2 flex flex-row flex-wrap gap-5 border-t-1">
+		<div class="mt-2 flex flex-row flex-wrap gap-x-3 border-t-1">
 			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
 				<span
-					class="mt-4 border-l-2 px-3"
-					style="border-color: var(--color-{WorkTagPresentationColours[cat[0]]});"
+					class="mt-4 border-l-2 px-3 pb-2"
+					style="border-color: var(--color-{WorkTagPresentationColours[
+						cat[0]
+					]});background-color: color-mix(in hsl, var(--color-{WorkTagPresentationColours[
+						cat[0]
+					]}), transparent 90%);"
 				>
 					<h5 class="my-2 font-bold">
 						{WorkTagCategory[cat[0]]()}
 					</h5>
-					<ul id="work-tags">
+					<ul class="flex list-none flex-wrap gap-2">
 						{#each cat[1] as tag, j (j)}
-							<li><WorkTag {tag} /></li>
+							<li class="m-0"><WorkTag {tag} tree={true} /></li>
 						{/each}
 					</ul>
 				</span>
@@ -274,16 +278,6 @@
 </Section>
 
 <style>
-	#work-tags {
-		grid-column: 1 / span 2;
-		display: flex;
-		gap: 0.6rem 0.6rem;
-		flex-wrap: wrap;
-		list-style: none;
-		& > li {
-			margin: 0;
-		}
-	}
 	.description-cell {
 		white-space: pre-wrap;
 		max-height: 15em;

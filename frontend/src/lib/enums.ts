@@ -13,13 +13,13 @@ export const WorkTagCategory = [
 export const WorkTagCategoriesSettableAsSource = [2, 4, 6];
 export const WorkTagPresentationOrder = [4, 6, 3, 2, 0, 5];
 export const WorkTagPresentationColours = [
-	'gray-300',
-	'cyan-600',
-	'fuchsia-400',
-	'lime-600',
-	'red-600',
-	'amber-400',
-	'fuchsia-900'
+	'rgb(209,213,219)',
+	'rgb(8,145,178)',
+	'rgb(232,121,249)',
+	'rgb(101,163,13)',
+	'rgb(220,38,38)',
+	'rgb(251,191,36)',
+	'rgb(112,26,117)'
 ];
 
 export const SongTagCategory = [

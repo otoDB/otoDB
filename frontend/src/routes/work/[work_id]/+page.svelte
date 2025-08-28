@@ -163,11 +163,11 @@
 			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
-					style="border-color: var(--color-{WorkTagPresentationColours[
+					style="border-color: {WorkTagPresentationColours[
 						cat[0]
-					]});background-color: color-mix(in hsl, var(--color-{WorkTagPresentationColours[
+					]};background-color: color-mix(in hsl, {WorkTagPresentationColours[
 						cat[0]
-					]}), transparent 90%);"
+					]}, transparent 90%);"
 				>
 					<h5 class="my-2 font-bold">
 						{WorkTagCategory[cat[0]]()}

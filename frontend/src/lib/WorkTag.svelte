@@ -9,35 +9,54 @@
 	}
 	const { tag, tree = false }: Props = $props();
 
-	let overrideToSample = WorkTagCategoriesSettableAsSource.includes(tag.category) && tag?.sample;
+	let overrideToSample = (tag) =>
+		WorkTagCategoriesSettableAsSource.includes(tag.category) && tag?.sample;
 </script>
 
-{#snippet render_tag(t, border = true, sample_override = false)}
+{#snippet render_tag(t, border = true, sample_override = false, fade_out = false)}
 	<a
 		href="/tag/{t.slug}"
-		class={['rounded-xl border-solid px-2', border ? 'border-2' : 'border-1']}
+		class={[
+			'rounded-xl border-solid px-2',
+			border ? 'border-2' : 'border-1',
+			{ 'opacity-50': fade_out }
+		]}
 		style="border-color: {WorkTagPresentationColours[sample_override ? 3 : t.category]};"
 		>{getTagDisplayName(t)}</a
 	>
 {/snippet}
 
-{#if tree && tag.primary_path}
-	<ul class="flex list-none flex-col gap-1">
-		{#each tag.primary_path as t, i (i)}
-			<li class={['opacity-50', { "before:content-['↳']": i !== 0 }]}>
-				{@render render_tag(t, false)}
-			</li>
-		{/each}
-		<li class={{ "before:content-['↳']": tag.primary_path.length }}>
-			{@render render_tag(tag, false, overrideToSample)}
+{#snippet recur(this_snippet, tree)}
+	<ul class="my-0.5 list-none">
+		<li class="inline">
+			{@render render_tag(tree.node, false, overrideToSample(tree.node), !tree.real)}
 		</li>
+		{#if tree.children?.length}
+			{#each tree.children as t, i (i)}
+				<li>
+					{@render this_snippet(this_snippet, t)}
+				</li>
+			{/each}
+		{/if}
 	</ul>
+{/snippet}
+
+{#if tree}
+	{@render recur(recur, tag)}
 {:else}
-	{@render render_tag(tag, true, overrideToSample)}
+	{@render render_tag(tag, true, overrideToSample(tag))}
 {/if}
 
 <style>
 	a {
 		text-decoration: none;
+	}
+	ul > li > ul {
+		&::before {
+			content: '\21B3';
+		}
+		& > li > ul {
+			margin-left: 0.5rem;
+		}
 	}
 </style>

@@ -51,6 +51,33 @@
 	};
 
 	let cover_select = $state(-1);
+
+	const merge_paths = (paths) => {
+		const graph = new Map();
+		paths
+			.filter((p) => p.primary_path.length)
+			.forEach((path) =>
+				path.primary_path.forEach((p, i, a) => {
+					const next_node = (i + 1 === a.length ? path : a[i + 1]).slug;
+					if (graph.has(p.slug)) graph.get(p.slug).add(next_node);
+					else graph.set(p.slug, new Set([next_node]));
+				})
+			);
+		const traverse = (node) => ({
+			node: paths.flatMap((p) => [p, ...p.primary_path]).find((n) => n.slug === node),
+			real: paths.some((n) => n.slug === node),
+			children: Array.from(graph.get(node) ?? []).map((n) => traverse(n))
+		});
+		return [
+			...graph
+				.keys()
+				.filter((n) => !graph.values().some((s) => s.has(n)))
+				.map((v) => traverse(v, 0)),
+			...paths
+				.filter((p) => p.primary_path.length === 0)
+				.map((n) => ({ node: n, real: true }))
+		];
+	};
 </script>
 
 <Section
@@ -172,8 +199,8 @@
 					<h5 class="my-2 font-bold">
 						{WorkTagCategory[cat[0]]()}
 					</h5>
-					<ul class="flex list-none flex-wrap gap-2">
-						{#each cat[1] as tag, j (j)}
+					<ul class="flex list-none flex-wrap gap-2 md:items-end">
+						{#each merge_paths(cat[1]) as tag, j (j)}
 							<li class="m-0"><WorkTag {tag} tree={true} /></li>
 						{/each}
 					</ul>

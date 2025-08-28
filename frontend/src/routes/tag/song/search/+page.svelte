@@ -12,7 +12,7 @@
 	const fetchNextBatch = () =>
 		client.GET('/api/tag/song_search', {
 			fetch,
-			params: {		
+			params: {
 				query: {
 					query: data.query,
 					tags: data.query_tags,

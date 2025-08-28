@@ -12,6 +12,15 @@ export const WorkTagCategory = [
 
 export const WorkTagCategoriesSettableAsSource = [2, 4, 6];
 export const WorkTagPresentationOrder = [4, 6, 3, 2, 0, 5];
+export const WorkTagPresentationColours = [
+	'gray-300',
+	'cyan-600',
+	'fuchsia-400',
+	'lime-600',
+	'red-600',
+	'amber-400',
+	'fuchsia-900'
+];
 
 export const SongTagCategory = [
 	m.fresh_lower_rook_trip,

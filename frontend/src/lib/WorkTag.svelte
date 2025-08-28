@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getTagDisplayName } from './api';
-	import { WorkTagCategoriesSettableAsSource } from './enums';
+	import { WorkTagCategoriesSettableAsSource, WorkTagPresentationColours } from './enums';
 	import type { components } from './schema';
 
 	interface Props {
@@ -13,15 +13,10 @@
 
 <a
 	href="/tag/{tag.slug}"
-	class="rounded-xl border-2 border-solid px-2 {[
-		'border-gray-300', // GENERAL
-		'border-cyan-600', // EVENT
-		'border-fuchsia-400', // SONG
-		'border-lime-600', // SOURCE
-		'border-red-600', // CREATOR
-		'border-amber-400', // META
-		'border-fuchsia-900' // MEDIA
-	][overrideToSample ? 3 : tag.category]}">{getTagDisplayName(tag)}</a
+	class="rounded-xl border-2 border-solid px-2"
+	style="border-color: var(--color-{WorkTagPresentationColours[
+		overrideToSample ? 3 : tag.category
+	]});">{getTagDisplayName(tag)}</a
 >
 
 <style>

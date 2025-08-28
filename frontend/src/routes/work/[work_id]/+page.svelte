@@ -8,6 +8,7 @@
 		WorkStatus,
 		WorkTagCategoriesSettableAsSource,
 		WorkTagCategory,
+		WorkTagPresentationColours,
 		WorkTagPresentationOrder
 	} from '$lib/enums';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -81,10 +82,7 @@
 						}}
 					>
 						{m.heroic_ideal_orangutan_aid()}
-					</a>
-					{#each data.sources as s, i (i)}
-						{#if s.work_status !== 1}
-							<a
+					</a>{#each data.sources as s, i (i)}{#if s.work_status !== 1}<a
 								href={s.url}
 								target="_blank"
 								rel="noopener noreferrer"
@@ -98,9 +96,7 @@
 								{Platform[s.platform]}{s.work_origin === 0
 									? ''
 									: ' ' + WorkOrigin[s.work_origin]()}
-							</a>
-						{/if}
-					{/each}
+							</a>{/if}{/each}
 				</div>
 			</div>
 			<div class="ml-2 flex-grow">
@@ -165,7 +161,10 @@
 		</div>
 		<div class="mt-2 flex flex-row flex-wrap gap-5 border-t-1">
 			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
-				<span class="mt-3 border-l-1 px-3">
+				<span
+					class="mt-4 border-l-2 px-3"
+					style="border-color: var(--color-{WorkTagPresentationColours[cat[0]]});"
+				>
 					<h5 class="my-2 font-bold">
 						{WorkTagCategory[cat[0]]()}
 					</h5>
@@ -278,7 +277,7 @@
 	#work-tags {
 		grid-column: 1 / span 2;
 		display: flex;
-		gap: 0.3rem 1rem;
+		gap: 0.6rem 0.6rem;
 		flex-wrap: wrap;
 		list-style: none;
 		& > li {

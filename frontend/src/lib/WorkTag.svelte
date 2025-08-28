@@ -24,17 +24,11 @@
 {#if tree && tag.primary_path}
 	<ul class="flex list-none flex-col gap-1">
 		{#each tag.primary_path as t, i (i)}
-			<li
-				style="margin-left: calc(max({Math.max(0, i - 1)}rem / 2);"
-				class={['opacity-50', { "before:content-['↳']": i !== 0 }]}
-			>
+			<li class={['opacity-50', { "before:content-['↳']": i !== 0 }]}>
 				{@render render_tag(t, false)}
 			</li>
 		{/each}
-		<li
-			class={{ "before:content-['↳']": tag.primary_path.length }}
-			style="margin-left: calc({Math.max(tag.primary_path.length - 1, 0)}rem / 2);"
-		>
+		<li class={{ "before:content-['↳']": tag.primary_path.length }}>
 			{@render render_tag(tag, false, overrideToSample)}
 		</li>
 	</ul>

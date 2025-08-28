@@ -241,7 +241,7 @@ class TagWork(OtodbTagModel):
             ),
             all=True
         ))
-        return with_cte(cte, select=cte.join(TagWork, id=cte.col.id).annotate(depth=cte.col.depth)).order_by('depth').exclude(id=self.id)
+        return with_cte(cte, select=cte.join(TagWork, id=cte.col.id).annotate(depth=cte.col.depth)).order_by('-depth').exclude(id=self.id)
 
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)

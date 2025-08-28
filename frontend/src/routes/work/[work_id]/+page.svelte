@@ -50,7 +50,8 @@
 		}
 	};
 
-	let cover_select = $state(-1);
+	// Force dpendence on page route
+	let cover_select = $derived(data ? -1 : -1);
 
 	const merge_paths = (paths) => {
 		const graph = new Map();
@@ -74,7 +75,7 @@
 				.filter((n) => !graph.values().some((s) => s.has(n)))
 				.map((v) => traverse(v, 0)),
 			...paths
-				.filter((p) => p.primary_path.length === 0)
+				.filter((p) => p.primary_path.length === 0 && !graph.has(p.slug))
 				.map((n) => ({ node: n, real: true }))
 		];
 	};
@@ -199,7 +200,7 @@
 					<h5 class="my-2 font-bold">
 						{WorkTagCategory[cat[0]]()}
 					</h5>
-					<ul class="flex list-none flex-wrap gap-2 md:items-end">
+					<ul class="flex list-none flex-wrap gap-2">
 						{#each merge_paths(cat[1]) as tag, j (j)}
 							<li class="m-0"><WorkTag {tag} tree={true} /></li>
 						{/each}

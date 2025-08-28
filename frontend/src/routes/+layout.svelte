@@ -46,7 +46,7 @@
 	}}
 />
 
-<div>
+<div class="overflow-auto">
 	<div
 		class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full {Themes[
 			data.user?.prefs?.theme ?? +get_prefs()?.theme

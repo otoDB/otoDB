@@ -1288,6 +1288,8 @@ export interface components {
             sample: boolean;
             /** Creator Roles */
             creator_roles: number[] | null;
+            /** Primary Path */
+            primary_path: components["schemas"]["TagWorkSchema"][];
         };
         /** ThinWorkSchema */
         ThinWorkSchema: {
@@ -1680,6 +1682,8 @@ export interface components {
             wiki_page: components["schemas"]["WikiPageSchema"][];
             /** Aliases */
             aliases: components["schemas"]["TagWorkSchema"][];
+            /** Primary Parent */
+            primary_parent?: string | null;
         };
         /** WikiPageSchema */
         WikiPageSchema: {
@@ -3372,6 +3376,10 @@ export interface operations {
                 query: string;
                 author: string;
                 tags?: string | null;
+                bpm_range?: [
+                    number,
+                    number
+                ] | null;
                 limit?: number;
                 offset?: number;
             };
@@ -3379,14 +3387,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": [
-                    number,
-                    number
-                ] | null;
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

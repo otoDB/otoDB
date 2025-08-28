@@ -231,6 +231,18 @@ class TagWork(OtodbTagModel):
         ))
         return with_cte(cte, select=cte.join(TagWork, id=cte.col.id).annotate(fr=cte.col.fr)).order_by()
 
+    @property
+    def primary_path(self):
+        cte = CTE.recursive(lambda cte: TagWork.objects.order_by().filter(id=self.id).values(
+            'id', depth=Value(0, output_field=models.IntegerField()),
+        ).union(
+            cte.join(TagWork.objects.order_by(), parenthood__tag_id=cte.col.id, parenthood__primary=True, aliased_to__isnull=True, deprecated=False).values(
+                'id', depth=cte.col.depth + Value(1, output_field=models.IntegerField()),
+            ),
+            all=True
+        ))
+        return with_cte(cte, select=cte.join(TagWork, id=cte.col.id).annotate(depth=cte.col.depth)).order_by('depth').exclude(id=self.id)
+
 class TagWorkLangPreference(models.Model):
     lang = models.IntegerField(choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False, blank=False)
     tag = HistoricForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
@@ -291,6 +303,7 @@ class TagSongLangPreference(models.Model):
 class TagWorkParenthood(models.Model):
     tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE, related_name='childhood')
     parent = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE, related_name='parenthood')
+    primary = models.BooleanField(default=False)
     history = HistoricalRecords()
     class Meta:
         unique_together = (("tag", "parent"),)
@@ -300,4 +313,9 @@ class TagWorkParenthood(models.Model):
                 condition=~Q(tag=models.F("parent")),
                 violation_error_message="tag cannot be own parent",
             ),
+            models.UniqueConstraint(
+                fields=['tag'],
+                condition=Q(primary=True),
+                name='tagwork_parenthood_at_most_one_primary'
+            )
         ]

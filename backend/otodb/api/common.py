@@ -87,6 +87,7 @@ class TagWorkDetailsSchema(Schema):
     paths: tuple[list[TagWorkSchema], Dict[str,list[str]]]
     wiki_page: list[WikiPageSchema]
     aliases: list[TagWorkSchema]
+    primary_parent: str | None = None
 
 class WorkSourceRejectionSchema(ModelSchema):
     by: ProfileSchema
@@ -112,6 +113,7 @@ class WorkSourceSchema(ModelSchema):
 class TagWorkInstanceSchema(TagWorkSchema):
     sample: bool
     creator_roles: list[int] | None
+    primary_path: list[TagWorkSchema]
 
     @field_validator("creator_roles", mode="before", check_fields=False)
     @classmethod

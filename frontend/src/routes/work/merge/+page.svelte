@@ -4,6 +4,7 @@
 	import WorkField from '$lib/WorkField.svelte';
 	import type { components } from '$lib/schema';
 	import { Rating } from '$lib/enums';
+	import client from '$lib/api';
 
 	let work: {
 		work: components['schemas']['WorkSchema'] | null;
@@ -28,12 +29,16 @@
 		}
 	]);
 
-	function updateInfo(i: number) {
+	async function updateInfo(i: number) {
 		if (work[i].work) {
-			work[i].title = work[i].work.title;
-			work[i].thumbnail = work[i].work.thumbnail!;
-			work[i].description = work[i].work.description!;
-			work[i].rating = work[i].work.rating;
+			const { data } = await client.GET('/api/work/work', {
+				fetch,
+				params: { query: { work_id: work[i].work.id } }
+			});
+			work[i].title = data.title;
+			work[i].thumbnail = data.thumbnail!;
+			work[i].description = data.description!;
+			work[i].rating = data.rating;
 		} else {
 			work[i].title = '';
 			work[i].thumbnail = '';
@@ -214,6 +219,6 @@
 		></textarea>
 		<input hidden type="text" value={work[selecting.thumbnail].thumbnail} name="thumbnail" />
 		<input hidden type="number" name="rating" value={work[selecting.rating].rating} />
-		<input type="submit" disabled={!work[0] || !work[1]} />
+		<input type="submit" disabled={!work[0].work || !work[1].work} />
 	</form>
 </Section>

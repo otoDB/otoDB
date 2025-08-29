@@ -9,7 +9,7 @@
 
 <a
 	href="/tag/song/{tag.slug}"
-	class="rounded-xl border border-solid px-2 {[
+	class="rounded-xl border border-solid px-2 no-underline {[
 		'border-gray-300',
 		'border-indigo-600',
 		'border-orange-600',
@@ -17,6 +17,3 @@
 		'border-red-600'
 	][tag.category]}">{tag.name}</a
 >
-
-<style>
-</style>

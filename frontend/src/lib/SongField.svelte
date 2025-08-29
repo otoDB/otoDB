@@ -23,7 +23,7 @@
 			return;
 		}
 		const { data } = await client.GET('/api/tag/song_search', {
-			params: { query: { query: input, limit: 10 } }
+			params: { query: { query: input, limit: 10, author: '' } }
 		});
 		if (!data) return;
 		suggestions = data.items;

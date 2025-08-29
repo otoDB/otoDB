@@ -309,8 +309,8 @@ ${nodes
 	</Section>
 {/if}
 
-<Section title={m.quiet_super_kangaroo_kiss({ tag: data.display_name })}>
-	{#if results}
+<Section title="{m.quiet_super_kangaroo_kiss({ tag: data.display_name })} ({data.works?.count})">
+	{#if results.length}
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each results as work, i (i)}
 				<WorkCard {work} />

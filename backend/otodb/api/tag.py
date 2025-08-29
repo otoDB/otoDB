@@ -2,8 +2,8 @@ from typing import Annotated
 from itertools import groupby
 from functools import reduce
 
-from django.db import transaction
-from django.db.models import Value, F, Q, Case, When
+from django.db import transaction, models
+from django.db.models import Value, F, Q, Case, When, Count
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
@@ -26,20 +26,21 @@ def filter_tags_by_media_type(qs, media_type: list[int]):
 @tag_router.get('search', response=list[TagWorkSchema])
 @paginate
 def search(request: HttpRequest, query: str, resolve_aliases: bool = True, category: int | None = None, media_type: list[int] | None = Query(None)):
-    qs = TagWork.objects.filter(name__contains=clean_incoming_tag_name(query), deprecated=False)
+    qs = TagWork.objects.filter(name__contains=clean_incoming_tag_name(query))
+
+    if resolve_aliases:
+        qs = qs.filter(aliased_to__isnull=True) | TagWork.objects.filter(id__in=qs.values('aliased_to__id'))
+
     if category is not None and category != -1:
         qs = qs.filter(category=category)
         if category == WorkTagCategory.MEDIA and media_type:
             qs = filter_tags_by_media_type(qs, media_type)
 
-    if resolve_aliases:
-        sub = TagWork.objects.filter(deprecated=False, category=category, id__in=qs.values('aliased_to__id'))
-        if category == WorkTagCategory.MEDIA and media_type:
-            sub = filter_tags_by_media_type(sub, media_type)
-
-        qs = qs.filter(aliased_to__isnull=True).order_by().union(sub.order_by())
-
-    return qs
+    return qs.filter(deprecated=False).annotate(n_instance=Case(
+            When(aliased_to__isnull=False, then=Count('aliased_to__tagworkinstance')),
+            default=Count('tagworkinstance'),
+            output_field=models.IntegerField()
+        )).order_by('-n_instance')
 
 @tag_router.get('tag', response={ 200: FatTagWorkSchema, 300: str })
 def tag(request: HttpRequest, tag_slug: str):

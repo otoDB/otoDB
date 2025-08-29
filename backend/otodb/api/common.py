@@ -58,6 +58,7 @@ class TagWorkSchema(ModelSchema):
     id: int
     lang_prefs: list[TagWorkLangPreferenceSchema]
     aliased_to: Optional['TagWorkSchema']
+    n_instance: int | None = None
     class Meta:
         model = TagWork
         fields = ['name', 'slug', 'category']

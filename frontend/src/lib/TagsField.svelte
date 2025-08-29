@@ -80,9 +80,11 @@
 			}}
 		>
 			{#each suggestions as t, i (i)}
-				<li class="bg-otodb-bg-fainter hover:bg-otodb-bg-faint px-2 py-1">
+				<li
+					class="bg-otodb-bg-fainter hover:bg-otodb-bg-faint flex w-full justify-between gap-10 px-2 py-1"
+				>
 					<a
-						class="cursor-pointer"
+						class="max-w-60 cursor-pointer"
 						href={null}
 						onclick={() => {
 							textarea.value = replaceWordAtPos(
@@ -103,6 +105,7 @@
 										.join(', ')}{/if})
 							</address>{/if}</a
 					>
+					<span>{t.n_instance}</span>
 				</li>
 			{/each}
 		</ul>

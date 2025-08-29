@@ -1255,6 +1255,8 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -1292,6 +1294,8 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -1610,6 +1614,8 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance: number;
             /** Name */
             name: string;
             /** Slug */

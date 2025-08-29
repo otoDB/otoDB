@@ -41,7 +41,7 @@
 			{#each suggestions as t, i (i)}
 				<li class="bg-otodb-bg-fainter hover:bg-otodb-bg-faint px-2 py-1">
 					<a
-						class="cursor-pointer"
+						class="max-w-60 cursor-pointer"
 						href={null}
 						onclick={() => {
 							value = t.aliased_to ? t.aliased_to.slug : t.slug;
@@ -57,6 +57,7 @@
 										.join(', ')}{/if})
 							</address>{/if}</a
 					>
+					<span>{t.n_instance}</span>
 				</li>
 			{/each}
 		</ul>

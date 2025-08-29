@@ -60,7 +60,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			? [
 					{
 						pathname: `tag/${params.tag_slug}`,
-						title: m.grand_nice_pony_belong() + ' ' + data.song.title
+						title: m.grand_nice_pony_belong() + ' ' + data.song.id
 					},
 					...(userLevelCheck(locals.user)
 						? []

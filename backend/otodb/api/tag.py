@@ -15,6 +15,7 @@ from ninja.pagination import paginate
 from otodb.common import clean_incoming_slug, clean_incoming_tag_name
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection, TagWorkParenthood
 from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes, LanguageTypes
+from otodb.models.tag import transfer_data
 
 from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
 
@@ -117,11 +118,21 @@ def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
     tag.lang_prefs.filter(lang=LanguageTypes(lang).value).delete()
     TagWorkLangPreference.objects.create(tag=tag, lang=lang)
 
-@tag_router.delete('lang_pref', auth=django_auth)
+@tag_router.post('set_base', auth=django_auth)
 @user_is_trusted
-def del_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
+def set_base_tag(request: HttpRequest, tag_slug: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    TagWorkLangPreference.objects.get(tag=tag, lang=LanguageTypes(lang).value).delete()
+    to = tag.aliased_to
+    assert(to is not None)
+
+    to.tagworkinstance_set.update(work_tag=tag)
+    transfer_data(to, tag)
+
+    to.aliases.update(aliased_to_id=tag.id)
+    to.aliased_to = tag
+    to.save()
+    tag.aliased_to = None
+    tag.save()
 
 class WorkTagInSchema(Schema):
     category: int

@@ -58,6 +58,14 @@
 		invalidateAll();
 	};
 
+	const setBase = async (tag: components['schemas']['TagWorkSchema']) => {
+		await client.POST('/api/tag/set_base', {
+			fetch,
+			params: { query: { tag_slug: tag.slug } }
+		});
+		goto(`/tag/${tag.slug}/`, { invalidateAll: true });
+	};
+
 	const submitLangPref = async (lang: number, tag_slug: string) => {
 		const p = client.PUT('/api/tag/lang_pref', {
 			fetch,
@@ -228,7 +236,7 @@
 					{#each locales as locale, i (i)}
 						<th>{LanguageNames[locale]} {m.mellow_upper_finch_drip()}</th>
 					{/each}
-					<th>{m.that_true_owl_embrace()}</th></tr
+					<th>{m.mild_full_sloth_work()}</th></tr
 				>
 			</thead>
 			<tbody>
@@ -261,7 +269,7 @@
 						<td
 							><button onclick={() => removeAlias(a)}
 								>{m.that_true_owl_embrace()}</button
-							></td
+							><button onclick={() => setBase(a)}>{m.even_such_wallaby_fond()}</button></td
 						></tr
 					>
 				{/each}

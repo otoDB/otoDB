@@ -863,8 +863,24 @@ export interface paths {
         /** Add Lang Pref */
         put: operations["otodb_api_tag_add_lang_pref"];
         post?: never;
-        /** Del Lang Pref */
-        delete: operations["otodb_api_tag_del_lang_pref"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/set_base": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Base Tag */
+        post: operations["otodb_api_tag_set_base_tag"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1614,8 +1630,6 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance: number;
             /** Name */
             name: string;
             /** Slug */
@@ -3278,11 +3292,10 @@ export interface operations {
             };
         };
     };
-    otodb_api_tag_del_lang_pref: {
+    otodb_api_tag_set_base_tag: {
         parameters: {
             query: {
                 tag_slug: string;
-                lang: number;
             };
             header?: never;
             path?: never;

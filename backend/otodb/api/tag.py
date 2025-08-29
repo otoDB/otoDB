@@ -32,15 +32,12 @@ def search(request: HttpRequest, query: str, resolve_aliases: bool = True, categ
         if category == WorkTagCategory.MEDIA and media_type:
             qs = filter_tags_by_media_type(qs, media_type)
 
-    qs_base = qs.filter(aliased_to__isnull=True).order_by()
     if resolve_aliases:
         sub = TagWork.objects.filter(deprecated=False, category=category, id__in=qs.values('aliased_to__id'))
         if category == WorkTagCategory.MEDIA and media_type:
             sub = filter_tags_by_media_type(sub, media_type)
 
-        qs = qs_base.union(sub.order_by())
-    else:
-        qs = qs_base
+        qs = qs.filter(aliased_to__isnull=True).order_by().union(sub.order_by())
 
     return qs
 

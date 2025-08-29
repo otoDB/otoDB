@@ -254,6 +254,10 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
         if not Type.objects.filter(**target, site=connection.site, content_id=connection.content_id).exists():
             Type.objects.create(site=connection.site, content_id=connection.content_id, **target)
 
+@tag_router.get('song', response=str)
+def song(request: HttpRequest, id: int):
+    return get_object_or_404(MediaSong, id=id).work_tag.slug
+
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate
 def song_search(request: HttpRequest, query: str, author: str, tags: str | None = None, bpm_range: tuple[int,int] | None = Query(None)):

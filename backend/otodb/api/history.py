@@ -90,7 +90,7 @@ def get_diff(delta):
     diffs_html = []
 
     for change in delta.changes:
-        if 'tag' in change.field:
+        if change.field == 'tags':
             field = [f for f in (change.old + change.new)[0].keys() if 'tag' in f][0]
             old, new = {c[field] for c in change.old}, {c[field] for c in change.new}
             old, new = old - new, new - old

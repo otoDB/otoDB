@@ -57,7 +57,7 @@
 					<input type="checkbox" class="reply-toggle hidden" value={false} />
 				</label>
 			{/if}
-			{#if user.level >= UserLevel.ADMIN || data.user.username === user.username}
+			{#if user && (user.level >= UserLevel.ADMIN || data.user.username === user.username)}
 				<button onclick={() => delete_comment(data.id)}>{m.even_alert_grebe_taste()}</button
 				>
 			{/if}

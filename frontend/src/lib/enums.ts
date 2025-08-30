@@ -228,7 +228,7 @@ export const TagWorkConnectionParsers = {
 	22: (link: string) => link.match(/^https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)\/?$/)?.[1],
 	23: (link: string) =>
 		link.match(/^https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)\/?$/)?.[1],
-	24: (link: string) => link.match(/^https?:\/\/knowyourmeme\.com\/([^/?#]+)\/?$/)?.[1]
+	24: (link: string) => link.match(/^https?:\/\/knowyourmeme\.com\/([^?#]+)\/?$/)?.[1]
 };
 
 export const MediaConnectionTypes = {

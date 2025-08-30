@@ -261,7 +261,11 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
         target = {'song': song}
     else:
         target = {'tag': tag}
-    Type.objects.filter(**target).exclude(site=connection.site, content_id=connection.content_id).delete()
+    Type.objects.filter(**target).exclude(reduce(
+        lambda a, b: a | b,
+        [Q(site=p.site) & Q(content_id=p.content_id) for p in payload],
+        Q()
+    )).delete()
     for connection in payload:
         if not Type.objects.filter(**target, site=connection.site, content_id=connection.content_id).exists():
             Type.objects.create(site=connection.site, content_id=connection.content_id, **target)

@@ -1,6 +1,6 @@
 from itertools import repeat, chain
 
-from otodb.models import TagWork, SourceWork, MediaWork
+from otodb.models import TagWork, SourceWork, MediaWork, Request, BulkRequest
 
 def validate(model, field):
     return lambda value: model.objects.get(**{ field: value })

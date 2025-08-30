@@ -269,7 +269,8 @@
 						<td
 							><button onclick={() => removeAlias(a)}
 								>{m.that_true_owl_embrace()}</button
-							><button onclick={() => setBase(a)}>{m.even_such_wallaby_fond()}</button></td
+							><button onclick={() => setBase(a)}>{m.even_such_wallaby_fond()}</button
+							></td
 						></tr
 					>
 				{/each}

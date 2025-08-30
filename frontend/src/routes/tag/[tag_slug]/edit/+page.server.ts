@@ -168,7 +168,7 @@ export const actions = {
 				params: { query: { tag_slug: params.tag_slug!, t: 0 } }
 			})
 		];
-		if (category >= 2 && category <= 4)
+		if ([2, 3, 4].includes(category))
 			pings.push(
 				client.PUT('/api/tag/connection', {
 					fetch,

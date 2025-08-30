@@ -83,6 +83,8 @@ class SongConnectionTypes(models.IntegerChoices):
     NNDMEDLEYWIKI = 30, "NND Medley Wiki"
 
 class TagWorkConnectionTypes(models.IntegerChoices):
+    WEBSITE   = 0, "Website"
+
     OTOMADWIKI    = 1, "otomad.wiki"
     OTOMADFANDOM  = 2, "Otomad Wiki 2"
 

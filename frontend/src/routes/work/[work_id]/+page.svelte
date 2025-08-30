@@ -97,7 +97,7 @@
 				{:else}
 					<ExternalEmbed width={480} height={270} src={data.sources[cover_select]} />
 				{/if}
-				<div class="max-w-480px my-2">
+				<div class="max-w-[480px] my-2">
 					<a
 						href={data.thumbnail}
 						target="_blank"

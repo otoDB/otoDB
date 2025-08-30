@@ -95,7 +95,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None,
 @work_router.get('tags_needed', response=List[ThinWorkSchema])
 @paginate
 def tags_needed(request: HttpRequest):
-    return MediaWork.active_objects.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False))).filter(ntags__lte=4)
+    return MediaWork.active_objects.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False))).filter(ntags__lte=4).order_by('ntags')
 
 @work_router.get('work', response={ 200: WorkSchema, 300: int })
 def work(request: HttpRequest, work_id: int):

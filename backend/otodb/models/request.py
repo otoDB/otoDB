@@ -9,7 +9,7 @@ from otodb.account.models import Account
 class BulkRequest(models.Model):
     user = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='bulk_requests', null=False)
 
-class Request(models.Model):
+class UserRequest(models.Model):
     bulk = models.ForeignKey(BulkRequest, on_delete=models.CASCADE, related_name='prefs', null=False)
     command = models.IntegerField(BulkRequest)
     A_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -20,5 +20,5 @@ class Request(models.Model):
     B = GenericForeignKey('B_type', 'B_id')
 
     class Meta:
-        unique_together = (("bulk", "command", "A_type", "A_id"),)
+        unique_together = (("bulk", "command", "A_type", "A_id", "B_type", "B_id"),)
 

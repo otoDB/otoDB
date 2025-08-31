@@ -133,3 +133,16 @@ class MediaType(models.IntegerChoices):
 	SHOW = 2, "TV Show"
 	FILM = 4, "Film"
 	GAME = 8, "Game"
+
+class RequestActions(models.IntegerChoices):
+    TAGWORK_ALIAS = 1
+    TAGWORK_UNALIAS = 2
+    TAGWORK_DEPRECATE = 3
+    TAGWORK_UNDEPRECATE = 4
+    TAGWORK_PARENT = 5
+    TAGWORK_UNPARENT = 6
+    
+
+    WORKSOURCE_ATTACHTAG = 11
+
+    MEDIAWORK_ATTACHTAG = 21

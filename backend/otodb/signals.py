@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.db.models.signals import m2m_changed, pre_delete
 from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
@@ -31,6 +32,5 @@ def post_group_deleted(sender, instance, using, **kwargs):
         return
 
     UserRequest.objects.filter(
-        content_type=ContentType.objects.get_for_model(instance),
-        object_id=instance.pk
+        (Q(A_type=ContentType.objects.get_for_model(instance)) & Q(A_id=instance.pk)) | (Q(B_type=ContentType.objects.get_for_model(instance)) & Q(B_id=instance.pk))
     ).delete()

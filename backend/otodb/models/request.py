@@ -7,14 +7,15 @@ from otodb.account.models import Account
 
 
 class BulkRequest(models.Model):
-    user = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='bulk_requests', null=False)
+    user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='bulk_requests', null=False)
+    done = models.BooleanField(default=False)
 
 class UserRequest(models.Model):
-    bulk = models.ForeignKey(BulkRequest, on_delete=models.CASCADE, related_name='prefs', null=False)
+    bulk = models.ForeignKey(BulkRequest, on_delete=models.CASCADE, related_name='requests', null=False)
     command = models.IntegerField(BulkRequest)
-    A_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    A_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='requests_A')
     A_id = models.PositiveBigIntegerField()
-    B_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    B_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='requests_B')
     B_id = models.PositiveBigIntegerField()
     A = GenericForeignKey('A_type', 'A_id')
     B = GenericForeignKey('B_type', 'B_id')

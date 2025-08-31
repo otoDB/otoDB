@@ -8,15 +8,17 @@ from ninja.security import django_auth
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 
-from otodb.models import TagWork, SourceWork, MediaWork, UserRequest, BulkRequest, TagWorkParenthood
+from otodb.models import TagWork, WorkSource, MediaWork, UserRequest, BulkRequest, TagWorkParenthood
 from otodb.models.enums import RequestActions
+
+from .common import user_is_editor
 
 def validate(model, field):
     return lambda value: model.objects.get(**{ field: value })
 
 TAGWORK_SLUG_VALIDATOR = validate(TagWork, 'slug')
 MEDIAWORK_ID_VALIDATOR = validate(MediaWork, 'id')
-SOURCEWORK_ID_VALIDATOR = validate(SourceWork, 'id')
+SOURCEWORK_ID_VALIDATOR = validate(WorkSource, 'id')
 
 # Numbers to be replaced by an enum
 COMMANDS = {
@@ -49,16 +51,19 @@ request_router = Router()
 @transaction.atomic
 def make_bulk(request: HttpRequest, s: str):
     lines = [line for line in s.splitlines() if line.strip()]
-    c = lines.split()
-    cmd, A_validator, Bs_validator, _ = COMMANDS[c[0]]
-    A = A_validator(c[1])
-    bulk = BulkRequest.objects.create(request.user)
-    for arg, v in zip(c[2:], Bs_validator):
-        UserRequest.objects.create(bulk=bulk, command=cmd, A=A, B=v(arg))
+    bulk = BulkRequest.objects.create(user=request.user)
+    for line in lines:
+        c = line.split()
+        cmd, A_validator, Bs_validator = COMMANDS[c[0]]
+        A = A_validator(c[1])
+        for arg, v in zip(c[2:], Bs_validator):
+            UserRequest.objects.create(bulk=bulk, command=cmd, A=A, B=v(arg))
 
 @request_router.post('confirm', auth=django_auth)
-@transaction.atomic
+@user_is_editor
 def confirm(request: HttpRequest, request_id: int):
-    bulk = get_object_or_404(BulkRequest, id=request_id)
-    for r in bulk.request_set:
+    bulk = get_object_or_404(BulkRequest, id=request_id, done=False)
+    for r in bulk.requests.all():
         ACTIONS[r.command](r.A, r.B)
+    bulk.done = True
+    bulk.save()

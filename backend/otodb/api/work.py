@@ -355,6 +355,8 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 
     if not src.media:
         work.tags.add(*info.get('tags', []), *TagWork.objects.filter(id__in=UserRequest.objects.filter(command=RequestActions.WORKSOURCE_ATTACHTAG, A_id=src.id).values('B_id')))
+        tags = TagWork.objects.filter(name__in=info.get('tags', []))
+        work.tagworkinstance_set.filter(work_tag__in=tags).update(instance_imported_from_source=True)
         src.media = work
         src.save()
     elif can_merge and src.media.id != work.id:
@@ -382,13 +384,7 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
 
     # Add them first in case they don't exist
     info, _ = video_info(src.url) # Hopefully still available!
-    if info:
-        work.tags.add(*info.get('tags', []))
-        tags = TagWork.objects.filter(name__in=info.get('tags', []))
-        work.tagworkinstance_set.filter(work_tag__in=tags).update(instance_imported_from_source=True)
-
-    src.media = work
-    src.save()
+    sync_work_source(work, src, info, False)
 
     for pool in src.pool_set.all():
         pool.add_work(work.id)

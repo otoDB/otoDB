@@ -5,7 +5,7 @@ from django.db import models
 
 from otodb.account.models import Account
 
-from .enums import Status
+from .enums import Status, RequestActions
 
 class BulkRequest(models.Model):
     user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='bulk_requests', null=False)
@@ -16,7 +16,7 @@ class BulkRequest(models.Model):
 
 class UserRequest(models.Model):
     bulk = models.ForeignKey(BulkRequest, on_delete=models.CASCADE, related_name='requests', null=False)
-    command = models.IntegerField(BulkRequest)
+    command = models.IntegerField(choices=RequestActions.choices)
     A_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='requests_A')
     A_id = models.PositiveBigIntegerField()
     B_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='requests_B')

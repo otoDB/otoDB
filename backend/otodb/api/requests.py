@@ -1,8 +1,12 @@
+from typing import Union
 from itertools import repeat
 
-from django.http import HttpRequest
+from pydantic import field_validator
 
-from ninja import Router
+from django.http import HttpRequest
+from django.contrib.contenttypes.models import ContentType
+
+from ninja import Router, ModelSchema
 from ninja.security import django_auth
 
 from django.db import transaction
@@ -11,7 +15,9 @@ from django.shortcuts import get_object_or_404
 from otodb.models import TagWork, WorkSource, MediaWork, UserRequest, BulkRequest, TagWorkParenthood
 from otodb.models.enums import RequestActions, Status
 
-from .common import user_is_editor
+from .common import user_is_editor, ProfileSchema, TagWorkSchema, WorkSchema, WorkSourceSchema
+
+ENTITY_SCHEMAS = [TagWorkSchema, WorkSchema, WorkSourceSchema]
 
 def validate(model, field):
     return lambda value: model.objects.get(**{ field: value })
@@ -47,7 +53,7 @@ ACTIONS = {
 
 request_router = Router()
 
-@request_router.post('new', auth=django_auth, response={ 200: None, 400: int })
+@request_router.post('new', auth=django_auth)
 @transaction.atomic
 def make_bulk(request: HttpRequest, s: str):
     lines = [line for line in s.splitlines() if line.strip()]
@@ -59,8 +65,9 @@ def make_bulk(request: HttpRequest, s: str):
         for arg, v in zip(c[2:], Bs_validator):
             UserRequest.objects.create(bulk=bulk, command=cmd, A=A, B=v(arg))
         else:
-            if c[2:] or Bs_validator:
-                raise Exception
+            assert(not (c[2:] or Bs_validator))
+    else:
+        raise
 
 @request_router.post('confirm', auth=django_auth)
 @user_is_editor
@@ -70,3 +77,32 @@ def confirm(request: HttpRequest, request_id: int, status: Status):
         ACTIONS[r.command](r.A, r.B)
     bulk.status = Status(status).value
     bulk.save()
+
+class RequestSchema(ModelSchema):
+    A: tuple[str, Union[*ENTITY_SCHEMAS]]
+    B: tuple[str, Union[*ENTITY_SCHEMAS]]
+    class Meta:
+        model = UserRequest
+        fields = ['command']
+
+    @field_validator("A", mode="before", check_fields=False)
+    @classmethod
+    def A_validator(cls, value) -> str:
+        return ContentType.objects.get_for_model(value).model, value
+    
+    @field_validator("B", mode="before", check_fields=False)
+    @classmethod
+    def B_validator(cls, value) -> str:
+        return ContentType.objects.get_for_model(value).model, value
+
+class BulkRequestSchema(ModelSchema):
+    requests: list[RequestSchema]
+    user: ProfileSchema
+    class Meta:
+        model = BulkRequest
+        fields = ['status']
+
+@request_router.get('request', response=BulkRequestSchema)
+def user_request(request: HttpRequest, request_id: int):
+    bulk = get_object_or_404(BulkRequest, id=request_id, status=Status.PENDING)
+    return bulk

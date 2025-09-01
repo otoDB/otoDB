@@ -9,7 +9,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from otodb.models import TagWork, WorkSource, MediaWork, UserRequest, BulkRequest, TagWorkParenthood
-from otodb.models.enums import RequestActions
+from otodb.models.enums import RequestActions, Status
 
 from .common import user_is_editor
 
@@ -41,29 +41,32 @@ ACTIONS = {
     RequestActions.TAGWORK_PARENT:          lambda A, B: TagWorkParenthood.objects.create(tag=A, parent=B).update(deprecated=False),
     RequestActions.TAGWORK_UNPARENT:        lambda A, B: TagWorkParenthood.objects.create(tag=A, parent=B).delete(),
 
-    RequestActions.WORKSOURCE_ATTACHTAG:    lambda A, B: ...,
+    RequestActions.WORKSOURCE_ATTACHTAG:    lambda A, B: A.media.tags.add(B) if A.media else ...,
     RequestActions.MEDIAWORK_ATTACHTAG:     lambda A, B: A.tags.add(B),
 }
 
 request_router = Router()
 
-@request_router.post('new', auth=django_auth)
+@request_router.post('new', auth=django_auth, response={ 200: None, 400: int })
 @transaction.atomic
 def make_bulk(request: HttpRequest, s: str):
     lines = [line for line in s.splitlines() if line.strip()]
     bulk = BulkRequest.objects.create(user=request.user)
-    for line in lines:
+    for n, line in enumerate(lines):
         c = line.split()
         cmd, A_validator, Bs_validator = COMMANDS[c[0]]
         A = A_validator(c[1])
         for arg, v in zip(c[2:], Bs_validator):
             UserRequest.objects.create(bulk=bulk, command=cmd, A=A, B=v(arg))
+        else:
+            if c[2:] or Bs_validator:
+                raise Exception
 
 @request_router.post('confirm', auth=django_auth)
 @user_is_editor
-def confirm(request: HttpRequest, request_id: int):
-    bulk = get_object_or_404(BulkRequest, id=request_id, done=False)
+def confirm(request: HttpRequest, request_id: int, status: Status):
+    bulk = get_object_or_404(BulkRequest, id=request_id, status=Status.PENDING)
     for r in bulk.requests.all():
         ACTIONS[r.command](r.A, r.B)
-    bulk.done = True
+    bulk.status = Status(status).value
     bulk.save()

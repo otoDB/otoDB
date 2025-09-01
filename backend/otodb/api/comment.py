@@ -11,6 +11,7 @@ from django.db.models.functions import Rank
 from django_comments_xtd.models import XtdComment
 
 from ninja import Router, Schema
+from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
 
 from otodb.account.models import Account
@@ -39,7 +40,7 @@ def get(request: HttpRequest, model: Literal[*models_with_comments], pk: int):
     # Use comprehension to force filter after annotate
     return [c for c in XtdComment.objects.filter(content_type=T, object_pk=pk).order_by('id').annotate(index=index) if not c.is_removed]
 
-@comment_router.post('comment', throttle=[AuthRateThrottle('1/8s')])
+@comment_router.post('comment', auth=django_auth, throttle=[AuthRateThrottle('1/8s')])
 @user_is_trusted
 def post(request: HttpRequest, model: Literal[*models_with_comments], pk: int, comment: str, parent_id: int = 0):
     T = ContentType.objects.get(model=model)
@@ -52,7 +53,7 @@ def post(request: HttpRequest, model: Literal[*models_with_comments], pk: int, c
         parent_id=parent_id
     )
 
-@comment_router.delete('comment')
+@comment_router.delete('comment', auth=django_auth)
 @user_is_trusted
 def delete(request: HttpRequest, model: Literal[*models_with_comments], pk: int, comment_id: int):
     T = ContentType.objects.get(model=model)

@@ -3795,7 +3795,7 @@ export interface operations {
     otodb_api_comment_get: {
         parameters: {
             query: {
-                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
                 pk: number;
             };
             header?: never;
@@ -3818,7 +3818,7 @@ export interface operations {
     otodb_api_comment_post: {
         parameters: {
             query: {
-                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
                 pk: number;
                 comment: string;
                 parent_id?: number;
@@ -3841,7 +3841,7 @@ export interface operations {
     otodb_api_comment_delete: {
         parameters: {
             query: {
-                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post";
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
                 pk: number;
                 comment_id: number;
             };

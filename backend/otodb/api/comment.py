@@ -19,7 +19,7 @@ from .common import user_is_trusted, ProfileSchema
 
 comment_router = Router()
 
-models_with_comments = ['mediawork', 'account', 'pool', 'tagwork', 'tagsong', 'post']
+models_with_comments = ['mediawork', 'account', 'pool', 'tagwork', 'tagsong', 'post', 'bulkrequest']
 
 class CommentSchema(Schema):
     id: int

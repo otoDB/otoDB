@@ -58,16 +58,17 @@ request_router = Router()
 def make_bulk(request: HttpRequest, s: str):
     lines = [line for line in s.splitlines() if line.strip()]
     bulk = BulkRequest.objects.create(user=request.user)
+    print(lines)
+    if not lines:
+        raise Exception
     for n, line in enumerate(lines):
         c = line.split()
         cmd, A_validator, Bs_validator = COMMANDS[c[0]]
         A = A_validator(c[1])
+        assert((not c[2:] and not Bs_validator) or (c[2:] and Bs_validator))
         for arg, v in zip(c[2:], Bs_validator):
             UserRequest.objects.create(bulk=bulk, command=cmd, A=A, B=v(arg))
-        else:
-            assert(not (c[2:] or Bs_validator))
-    else:
-        raise
+    return bulk.id
 
 @request_router.post('confirm', auth=django_auth)
 @user_is_editor
@@ -104,5 +105,5 @@ class BulkRequestSchema(ModelSchema):
 
 @request_router.get('request', response=BulkRequestSchema)
 def user_request(request: HttpRequest, request_id: int):
-    bulk = get_object_or_404(BulkRequest, id=request_id, status=Status.PENDING)
+    bulk = get_object_or_404(BulkRequest, id=request_id)
     return bulk

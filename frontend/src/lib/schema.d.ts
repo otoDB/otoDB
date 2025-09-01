@@ -1214,6 +1214,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/request/new": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make Bulk */
+        post: operations["otodb_api_requests_make_bulk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/request/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm */
+        post: operations["otodb_api_requests_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/request/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** User Request */
+        get: operations["otodb_api_requests_user_request"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1856,6 +1907,37 @@ export interface components {
             items: components["schemas"]["HistoryExtSchema"][];
             /** Count */
             count: number;
+        };
+        /**
+         * Status
+         * @enum {integer}
+         */
+        Status: 0 | 1 | 2;
+        /** BulkRequestSchema */
+        BulkRequestSchema: {
+            /** Requests */
+            requests: components["schemas"]["RequestSchema"][];
+            user: components["schemas"]["ProfileSchema"];
+            /**
+             * Status
+             * @default 0
+             */
+            status: number;
+        };
+        /** RequestSchema */
+        RequestSchema: {
+            /** A */
+            A: [
+                string,
+                components["schemas"]["TagWorkSchema"] | components["schemas"]["WorkSchema"] | components["schemas"]["WorkSourceSchema"]
+            ];
+            /** B */
+            B: [
+                string,
+                components["schemas"]["TagWorkSchema"] | components["schemas"]["WorkSchema"] | components["schemas"]["WorkSourceSchema"]
+            ];
+            /** Command */
+            command: number;
         };
     };
     responses: never;
@@ -3868,6 +3950,69 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    otodb_api_requests_make_bulk: {
+        parameters: {
+            query: {
+                s: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_requests_confirm: {
+        parameters: {
+            query: {
+                request_id: number;
+                status: 0 | 1 | 2;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_requests_user_request: {
+        parameters: {
+            query: {
+                request_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkRequestSchema"];
+                };
             };
         };
     };

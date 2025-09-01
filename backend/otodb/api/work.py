@@ -304,13 +304,13 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
         
     # === Work check: no work, and not editor ===
 
-    none_have_work = not work_id and not getattr(src, 'media', None) and not getattr(original_src, 'media', None)
+    none_have_work = not work_id and not src.media and not original_src.media
     if none_have_work and not is_editor:
         return
     
     # === Work check: both have  Works ===
 
-    all_have_work = getattr(src, 'media', None) and getattr(original_src, 'media', None)
+    all_have_work = src.media and original_src.media
     if all_have_work and (src.media.id == original_src.media.id or not is_editor):
         return src.media.id
 

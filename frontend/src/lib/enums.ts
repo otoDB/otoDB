@@ -337,3 +337,14 @@ export const MediaType = {
 	4: m.drab_gaudy_fly_relish,
 	8: m.maroon_close_gorilla_bake
 };
+
+export const RequestActions = {
+	1: 'tagwork:alias',
+	2: 'tagwork:unalias',
+	3: 'tagwork:deprecate',
+	4: 'tagwork:undeprecate',
+	5: 'tagwork:parent',
+	6: 'tagwork:unparent',
+	11: 'source:attach-tag',
+	21: 'work:attach-tag'
+};

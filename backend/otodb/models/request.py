@@ -5,10 +5,14 @@ from django.db import models
 
 from otodb.account.models import Account
 
+from .enums import Status
 
 class BulkRequest(models.Model):
     user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='bulk_requests', null=False)
-    done = models.BooleanField(default=False)
+    status = models.IntegerField(
+        choices=Status.choices,
+        default=Status.PENDING
+    )
 
 class UserRequest(models.Model):
     bulk = models.ForeignKey(BulkRequest, on_delete=models.CASCADE, related_name='requests', null=False)

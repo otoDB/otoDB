@@ -45,7 +45,12 @@
 			{m.curly_safe_lynx_fond()}
 		{/if}
 	</h3>
-	<h4>{Status[data.request.status]()}</h4>
+	<h4>
+		{Status[data.request.status]()}{#if data.request?.processed_by}(<a
+				href="/profile/{data.request.processed_by.username}"
+				>{data.request.processed_by.username}</a
+			>){/if}
+	</h4>
 
 	<ul>
 		{#each data.request.requests as r, i (i)}

@@ -10,6 +10,6 @@ export const actions = {
 			params: { query: { s: actions } }
 		});
 		if (error) fail(400);
-		redirect(303, `/request/${r}`);
+		else redirect(303, `/request/${r}`);
 	}
 } satisfies Actions;

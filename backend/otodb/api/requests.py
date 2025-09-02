@@ -58,7 +58,6 @@ request_router = Router()
 def make_bulk(request: HttpRequest, s: str):
     lines = [line for line in s.splitlines() if line.strip()]
     bulk = BulkRequest.objects.create(user=request.user)
-    print(lines)
     if not lines:
         raise Exception
     for n, line in enumerate(lines):
@@ -77,6 +76,7 @@ def confirm(request: HttpRequest, request_id: int, status: Status):
     for r in bulk.requests.all():
         ACTIONS[r.command](r.A, r.B)
     bulk.status = Status(status).value
+    bulk.processed_by = request.user
     bulk.save()
 
 class RequestSchema(ModelSchema):
@@ -99,6 +99,7 @@ class RequestSchema(ModelSchema):
 class BulkRequestSchema(ModelSchema):
     requests: list[RequestSchema]
     user: ProfileSchema
+    processed_by: ProfileSchema | None
     class Meta:
         model = BulkRequest
         fields = ['status']

@@ -1918,6 +1918,7 @@ export interface components {
             /** Requests */
             requests: components["schemas"]["RequestSchema"][];
             user: components["schemas"]["ProfileSchema"];
+            processed_by: components["schemas"]["ProfileSchema"] | null;
             /**
              * Status
              * @default 0

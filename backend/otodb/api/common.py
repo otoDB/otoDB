@@ -111,15 +111,17 @@ class WorkSourceSchema(ModelSchema):
             'thumbnail', 'source_id'
         ]
 
-class TagWorkInstanceSchema(TagWorkSchema):
+class TagWorkInstanceThinSchema(TagWorkSchema):
     sample: bool
     creator_roles: list[int] | None
-    primary_path: list[TagWorkSchema]
 
     @field_validator("creator_roles", mode="before", check_fields=False)
     @classmethod
     def roles(cls, value: int | None) -> list[int] | None:
         return [r for r in Role if r & value] if value else None
+
+class TagWorkInstanceSchema(TagWorkInstanceThinSchema):
+    primary_path: list[TagWorkSchema]
 
 class WorkSchema(ModelSchema):
     id: int
@@ -130,13 +132,13 @@ class WorkSchema(ModelSchema):
 
 class ThinWorkSchema(ModelSchema):
     id: int
-    tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
+    tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated')
     class Meta:
         model = MediaWork
         fields = ['title', 'thumbnail']
 
 class ListItemSchema(ModelSchema):
-    work: WorkSchema
+    work: ThinWorkSchema
     class Meta:
         model = PoolItem
         fields = ['description']

@@ -36,7 +36,7 @@ def query_external(request: HttpRequest, url: str | None = None, platform: str |
 
     return { 'tags': work.media.tags, 'work_id': work.media.id }
 
-@work_router.get('search', response=List[ThinWorkSchema])
+@work_router.get('search', response=List[ThinWorkSchema], exclude_none=True)
 @paginate
 def search(request: HttpRequest, query: str, tags: str | None = None,
     order: Literal['id', '-id', 'pub', '-pub'] | None = '-id'
@@ -92,7 +92,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None,
         pub=Subquery(WorkSource.objects.filter(media_id=OuterRef('id')).order_by('published_date').values('published_date')[:1]),
     ).order_by('priority', order).distinct()
 
-@work_router.get('tags_needed', response=List[ThinWorkSchema])
+@work_router.get('tags_needed', response=List[ThinWorkSchema], exclude_none=True)
 @paginate
 def tags_needed(request: HttpRequest):
     return MediaWork.active_objects.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False))).filter(ntags__lte=4).order_by('ntags').distinct()
@@ -175,11 +175,11 @@ def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
     if tag.can_be_deleted:
         tag.delete()
 
-@work_router.get('random', response=list[ThinWorkSchema])
+@work_router.get('random', response=list[ThinWorkSchema], exclude_none=True)
 def random(request: HttpRequest, n: int = 1):
     return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by("?")[:min(n,20)]
 
-@work_router.get('recent', response=list[ThinWorkSchema])
+@work_router.get('recent', response=list[ThinWorkSchema], exclude_none=True)
 def recent(request: HttpRequest, n: int = 1):
     return MediaWork.active_objects.order_by('-id')[:min(n, 20)]
 

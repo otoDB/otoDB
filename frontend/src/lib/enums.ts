@@ -339,12 +339,12 @@ export const MediaType = {
 };
 
 export const RequestActions = {
-	1: 'tagwork:alias',
-	2: 'tagwork:unalias',
-	3: 'tagwork:deprecate',
-	4: 'tagwork:undeprecate',
-	5: 'tagwork:parent',
-	6: 'tagwork:unparent',
+	1: 'worktag:alias',
+	2: 'worktag:unalias',
+	3: 'worktag:deprecate',
+	4: 'worktag:undeprecate',
+	5: 'worktag:parent',
+	6: 'worktag:unparent',
 	11: 'source:attach-tag',
 	21: 'work:attach-tag'
 };

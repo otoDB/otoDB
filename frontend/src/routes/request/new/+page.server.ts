@@ -1,5 +1,11 @@
 import client from '$lib/api';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = ({ url }) => {
+	const preFilledData = url.searchParams.get('pre_filled');
+	return { preFilledData };
+};
 
 export const actions = {
 	default: async ({ request, fetch }) => {

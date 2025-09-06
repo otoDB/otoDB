@@ -88,6 +88,7 @@
 				{@render link('/work/add', m.fluffy_crisp_horse_imagine())}
 				{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
 				{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
+				{@render link(`/request/new`, m.muddy_tough_swan_view())}
 				{@render link(
 					`/profile/${user.username}/submissions`,
 					m.flaky_gross_marlin_evoke()

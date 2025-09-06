@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.db.models.signals import m2m_changed, pre_delete
 from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
+from django.contrib.sessions.models import Session
 
 from otodb.models import MediaWork, MediaSong, TagWork, TagSong, UserRequest
 
@@ -28,7 +29,7 @@ def on_add_remove_tag_song(sender, instance, action, pk_set, **kwargs):
 @receiver(pre_delete)
 def post_group_deleted(sender, instance, using, **kwargs):
     # Query tags with the instance of PostGroup and delete them
-    if isinstance(instance, UserRequest):
+    if isinstance(instance, UserRequest) or isinstance(instance, Session):
         return
 
     UserRequest.objects.filter(

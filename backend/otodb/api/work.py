@@ -303,14 +303,14 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
     
         
     # === Work check: no work, and not editor ===
-
-    none_have_work = not work_id and not src.media and not original_src.media
+    original_src_media = original_src.media if original_src else None
+    none_have_work = not work_id and not src.media and not original_src_media
     if none_have_work and not is_editor:
         return
     
     # === Work check: both have  Works ===
 
-    all_have_work = src.media and original_src.media
+    all_have_work = src.media and original_src_media
     if all_have_work and (src.media.id == original_src.media.id or not is_editor):
         return src.media.id
 
@@ -320,7 +320,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
         work = get_object_or_404(MediaWork.active_objects, id=work_id)
     elif src.media:
         work = get_object_or_404(MediaWork.active_objects, id=src.media.id)
-    elif original_src and original_src.media is not None:
+    elif original_src and original_src_media is not None:
         work = get_object_or_404(MediaWork.active_objects, id=original_src.media.id)
     else:
         work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail, rating=rating)

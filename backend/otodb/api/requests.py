@@ -44,8 +44,8 @@ ACTIONS = {
     RequestActions.TAGWORK_UNALIAS:         lambda A, B: TagWork.objects.filter(id=A.id).update(aliased_to=None),
     RequestActions.TAGWORK_DEPRECATE:       lambda A, B: TagWork.objects.filter(id=A.id).update(deprecated=True),
     RequestActions.TAGWORK_UNDEPRECATE:     lambda A, B: TagWork.objects.filter(id=A.id).update(deprecated=False),
-    RequestActions.TAGWORK_PARENT:          lambda A, B: TagWorkParenthood.objects.create(tag=A, parent=B).update(deprecated=False),
-    RequestActions.TAGWORK_UNPARENT:        lambda A, B: TagWorkParenthood.objects.create(tag=A, parent=B).delete(),
+    RequestActions.TAGWORK_PARENT:          lambda A, B: TagWorkParenthood.objects.create(tag=A, parent=B),
+    RequestActions.TAGWORK_UNPARENT:        lambda A, B: TagWorkParenthood.objects.get(tag=A, parent=B).delete(),
 
     RequestActions.WORKSOURCE_ATTACHTAG:    lambda A, B: A.media.tags.add(B) if A.media else ...,
     RequestActions.MEDIAWORK_ATTACHTAG:     lambda A, B: A.tags.add(B),

@@ -13,7 +13,7 @@ from ninja.pagination import paginate
 
 from otodb.common import video_info, clean_incoming_tag_name, clean_incoming_slug
 from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection, TagWork, UserRequest
-from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory, RequestActions
+from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory, RequestActions, Status
 from otodb.account.models import Account
 
 from .common import WorkSchema, ThinWorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
@@ -354,7 +354,9 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
     """
 
     if not src.media:
-        work.tags.add(*info.get('tags', []), *TagWork.objects.filter(id__in=UserRequest.objects.filter(command=RequestActions.WORKSOURCE_ATTACHTAG, A_id=src.id).values('B_id')))
+        work.tags.add(*info.get('tags', []), *TagWork.objects.filter(id__in=UserRequest.objects.filter(
+            command=RequestActions.WORKSOURCE_ATTACHTAG, A_id=src.id, bulk__status=Status.APPROVED
+        ).values('B_id')))
         tags = TagWork.objects.filter(name__in=info.get('tags', []))
         work.tagworkinstance_set.filter(work_tag__in=tags).update(instance_imported_from_source=True)
         src.media = work

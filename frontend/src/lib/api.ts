@@ -29,7 +29,14 @@ export const forwardCookies = (cookies: Cookies, response: Response) => {
 		cookies.set(name, value, { path: '/', expires, maxAge, sameSite });
 };
 
-export type CommentModels = 'mediawork' | 'account' | 'pool' | 'tagwork' | 'tagsong' | 'post';
+export type CommentModels =
+	| 'mediawork'
+	| 'account'
+	| 'pool'
+	| 'tagwork'
+	| 'tagsong'
+	| 'post'
+	| 'bulkrequest';
 
 export const makeCommentTree = (comments: components['schemas']['CommentSchema'][]) => {
 	if (comments.length === 0) return [];

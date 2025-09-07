@@ -1,7 +1,10 @@
-from django.db.models.signals import m2m_changed
+from django.db.models import Q
+from django.db.models.signals import m2m_changed, pre_delete
+from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
+from django.contrib.sessions.models import Session
 
-from otodb.models import MediaWork, MediaSong, TagWork, TagSong
+from otodb.models import MediaWork, MediaSong, TagWork, TagSong, UserRequest
 
 
 # IMPORTANT: maintain following invariants:
@@ -22,3 +25,13 @@ def on_add_remove_tag_song(sender, instance, action, pk_set, **kwargs):
             if tag.aliased_to:
                 instance.tags.remove(tag)
                 instance.tags.add(tag.aliased_to)
+
+@receiver(pre_delete)
+def post_group_deleted(sender, instance, using, **kwargs):
+    # Query tags with the instance of PostGroup and delete them
+    if isinstance(instance, UserRequest) or isinstance(instance, Session):
+        return
+
+    UserRequest.objects.filter(
+        (Q(A_type=ContentType.objects.get_for_model(instance)) & Q(A_id=instance.pk)) | (Q(B_type=ContentType.objects.get_for_model(instance)) & Q(B_id=instance.pk))
+    ).delete()

@@ -51,7 +51,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None,
                         t = TagWork.objects.get(slug=clean_incoming_slug(tag[1:]))
                         if t.aliased_to:
                             t = t.aliased_to
-                        
+
                         if tag[0] == '-':
                             q = q & ~Q(tags=t)
                         else:
@@ -72,7 +72,7 @@ def search(request: HttpRequest, query: str, tags: str | None = None,
 
                         q = q & Q(tags=t)
             except TagWork.DoesNotExist:
-                return []                
+                return []
     else:
         q = q | Q(worksource__source_id=query)
         if query.startswith("https"):
@@ -185,9 +185,10 @@ def recent(request: HttpRequest, n: int = 1):
 
 class SlimWorkSchema(ModelSchema):
     id: int
+    thumbnail: str | None = None  # Exposed as property
     class Meta:
         model = MediaWork
-        fields = ['title', 'thumbnail']
+        fields = ['title']
 
 @work_router.get('relations', response=tuple[list[RelationSchema], list[SlimWorkSchema]])
 def relations(request: HttpRequest, work_id: int):
@@ -240,18 +241,18 @@ def refresh_source(request: HttpRequest, source_id: int):
 class WorkEditSchema(ModelSchema):
     class Meta:
         model = MediaWork
-        fields = ['title', 'description', 'thumbnail', 'rating']
+        fields = ['title', 'description', 'thumbnail_source', 'rating']
 
 @work_router.post('merge', auth=django_auth)
 @user_is_editor
-def merge_works(request:HttpRequest, from_work_id: int, to_work_id: int, payload: WorkEditSchema):
+def merge_works(request:HttpRequest, from_work_id: int, to_work_id: int, work_source_for_thumbnail_id: int, payload: WorkEditSchema):
     MediaWork.merge(
-        get_object_or_404(MediaWork.active_objects, id=to_work_id),
-        get_object_or_404(MediaWork.active_objects, id=from_work_id),
-        payload.title,
-        payload.description,
-        payload.thumbnail,
-        payload.rating
+        to_work=get_object_or_404(MediaWork.active_objects, id=to_work_id),
+        from_work=get_object_or_404(MediaWork.active_objects, id=from_work_id),
+        title=payload.title,
+        description=payload.description,
+        thumbnail_source=get_object_or_404(WorkSource.active_objects, id=work_source_for_thumbnail_id),
+        rating=payload.rating
     )
     return
 
@@ -269,7 +270,7 @@ def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, rea
 @user_is_trusted
 def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, rating: int = 0, work_id: int | None = None, original_url: str | None = None):
     """Creates a new source and, for editors, performs auto-validation as well as Work creation
-    
+
     The priority for redirections/merging is:.
 
     The usage scenarios are as follows:
@@ -279,7 +280,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
             - If two out of three elements have works, the third element is added based on priority: `work_id` > `url` > `original_url`;
         - Adding an existing source redirects to the corresponding work;
         - Adding multiple sources, each with a different work, redirects based on priority: `work_id` > `url` > `original_url`;
-        - For existing sources/works, corrections (`rating`/`is_reupload`) are ignored; 
+        - For existing sources/works, corrections (`rating`/`is_reupload`) are ignored;
     - For editors:
         - Adding a new source creates a new Work;
         - For existing sources/works, corrections (`rating`/`is_reupload`) are applied;
@@ -294,20 +295,20 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
 
     original_src, original_info = WorkSource.from_url(original_url, user=request.user, is_reupload=False)\
         if original_url else (None, None)
-    
+
     if src is None or original_url and original_src is None:
         return 400, {'message': "Bad request, is the URL correct?"}
 
     if getattr(src, 'rejection', None) or getattr(original_src, 'rejection', None):
         return 400, {'message': "Bad Request, This source has already been rejected"}
-    
-        
+
+
     # === Work check: no work, and not editor ===
     original_src_media = original_src.media if original_src else None
     none_have_work = not work_id and not src.media and not original_src_media
     if none_have_work and not is_editor:
         return
-    
+
     # === Work check: both have  Works ===
 
     all_have_work = src.media and original_src_media
@@ -323,7 +324,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
     elif original_src and original_src_media is not None:
         work = get_object_or_404(MediaWork.active_objects, id=original_src.media.id)
     else:
-        work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail, rating=rating)
+        work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail_source=src, rating=rating)
 
     sync_work_source(work, src, info, is_editor)
     if (original_src):
@@ -333,10 +334,10 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
     # the "media" field in a way that's not tracked by the current
     # object.
     if (is_editor):
-        if (work.rating != rating): 
+        if (work.rating != rating):
             work.rating = rating
             work.save(update_fields=['rating'])
-        if (src.work_origin != WorkOrigin(is_reupload)): 
+        if (src.work_origin != WorkOrigin(is_reupload)):
             src.work_origin = WorkOrigin(is_reupload)
             src.save(update_fields=['work_origin'])
         if (original_src and original_src.work_origin != WorkOrigin.AUTHOR):
@@ -347,7 +348,7 @@ def new_source_from_url(request: HttpRequest, url: str, is_reupload: bool, ratin
 
 def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
     """Syncs source data to its work
-    
+
     - Syncs tags and assigns the source to a work if orphan source;
     - Merges the work if `can_merge` is passed and the source has an existing, different work id.
     - Does nothing if the source is already assigned to the work;
@@ -367,7 +368,7 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
             to_work=work,
             title=work.title,
             description=work.description,
-            thumbnail=work.thumbnail,
+            thumbnail_source=src,
             rating=work.rating
         )
 
@@ -382,7 +383,7 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
     if work_id is not None:
         work = get_object_or_404(MediaWork.active_objects, id=work_id)
     else:
-        work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
+        work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail_source=src)
 
     # Add them first in case they don't exist
     info, _ = video_info(src.url) # Hopefully still available!

@@ -1,12 +1,15 @@
 from datetime import date
+from django.conf import settings
 from django.db import models
 from simple_history.models import HistoricalRecords, HistoricForeignKey
+import requests
 
-from .enums import Platform, WorkOrigin, WorkStatus
+from .enums import Platform, WorkOrigin, WorkStatus, MimeType
 from .media import MediaWork
 
 from otodb.account.models import Account
 from otodb.common import video_info, process_video_info
+from otodb.storage_manager import storage_manager
 
 class ActiveManager(models.Manager):
     def get_queryset(self):
@@ -33,7 +36,12 @@ class WorkSource(models.Model):
 
     title = models.CharField(max_length=1000, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
-    thumbnail = models.URLField(null=True, blank=False)
+    thumbnail_url = models.URLField(null=True, blank=False)
+    thumbnail_mime = models.IntegerField(
+        choices=MimeType.choices,
+        null=True,
+        blank=True
+    )
     uploader_id = models.CharField(max_length=1000, null=True, blank=False)
 
     added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
@@ -41,6 +49,8 @@ class WorkSource(models.Model):
     objects = models.Manager()
     active_objects = ActiveManager()
     history = HistoricalRecords()
+
+    info_payload: 'WorkSourceInfoPayload'
 
     def __str__(self) -> str:
         return f'#{self.media.pk} - {self.url}' if self.media else self.title
@@ -55,7 +65,7 @@ class WorkSource(models.Model):
         Refresh work source information.
 
         Args:
-            use_cache: If True, use existing info_payload instead of requesting new data.
+            use_cache: If `True`, use previously cached payload instead of requesting new data.
         """
         full_info = None
 
@@ -68,10 +78,15 @@ class WorkSource(models.Model):
             self.title = info['title']
             self.description = info['description']
             self.uploader_id = info['uploader_id']
-            self.thumbnail = info.get('thumb', self.thumbnail)
+            self.thumbnail_url = info.get('thumb', self.thumbnail_url)
+            self.thumbnail_mime = info.get('thumb_mime', self.thumbnail_mime)
             self.work_width = info.get('work_width', self.work_width)
             self.work_height = info.get('work_height', self.work_height)
             self.work_duration = info.get('work_duration', self.work_duration)
+
+            # Re-upload thumbnail to CDN for non-cached refreshes
+            if not use_cache and self.thumbnail_url and self.thumbnail_mime:
+                self.save_thumbnail()
 
             if full_info is not None:
                 WorkSourceInfoPayload.objects.update_or_create(source=self, defaults={ 'payload': full_info })
@@ -96,6 +111,23 @@ class WorkSource(models.Model):
 
         self.save()
 
+    def save_thumbnail(self):
+        if not self.thumbnail_url or not self.thumbnail_mime:
+            return False
+        try:
+            response = requests.get(self.thumbnail_url, timeout=10)
+            response.raise_for_status()
+            path = storage_manager.save(response.content, self.thumbnail_path)
+
+            if path:
+                return True
+            else:
+                print(f"Failed to upload thumbnail for WorkSource {self.pk}")
+                return False
+        except Exception as e:
+            print(f"Error uploading thumbnail for WorkSource {self.pk}: {e}")
+            return False
+
     # Gets the source registered at the url if it exists, otherwise register as pending
     @staticmethod
     def from_url(url, user, is_reupload, info=None, full_info=None):
@@ -115,11 +147,33 @@ class WorkSource(models.Model):
             src = WorkSource.objects.create(media=None, title=info['title'], description=info['description'],
                 url=info['url'], platform=info['site'], source_id=info['id'],
                 published_date=date.fromtimestamp(info['timestamp']),
-                work_origin=WorkOrigin(is_reupload), thumbnail=info.get('thumb', None),
+                work_origin=WorkOrigin(is_reupload), thumbnail_url=info.get('thumb', None), thumbnail_mime=info.get('thumb_mime', None),
                 work_width=info.get('work_width', None), work_height=info.get('work_height', None), work_duration=info.get('work_duration', None),
                 added_by=user, uploader_id=info['uploader_id'])
             WorkSourceInfoPayload.objects.create(source=src, payload=full_info)
+
+            if src.thumbnail_url and src.thumbnail_mime:
+                src.save_thumbnail()
+
         return src, info
+
+    @property
+    def thumbnail_path(self) -> str:
+        """
+        Returns the path from where thumbnails are located.
+        """
+        ext = MimeType.extension(self.thumbnail_mime)
+        path = f"/t/source/{str(self.pk).zfill(2)[-2:]}/{self.pk}.{ext}"
+        return path
+
+    @property
+    def thumbnail(self) -> str:
+        """
+        Returns the URL endpoint from which a thumbnail is served.
+        """
+        if self.thumbnail_path and settings.OTODB_CDN_ENABLED:
+            return settings.OTODB_CDN_HOST + self.thumbnail_path
+        return self.thumbnail_url # type: ignore -- Fallback to 3rd-party remote thumbnail URL
 
 class WorkSourceRejection(models.Model):
     source = models.OneToOneField(WorkSource, null=False, on_delete=models.CASCADE, related_name='rejection')

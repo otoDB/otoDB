@@ -94,17 +94,21 @@ class MediaWork(models.Model):
         through=TagWorkInstance
     )
 
-    thumbnail = models.CharField(max_length=200, null=True, blank=True)
+	# TODO: Expose a way to change this in the frontend
+    thumbnail_source = models.OneToOneField('WorkSource', null=True, blank=True, on_delete=models.SET_NULL)
 
     history = HistoricalRecords(m2m_fields=[tags])
 
     moved_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 
+    # deprecated!
+    _thumbnail = models.CharField(max_length=200, null=True, blank=True)
+
     objects = models.Manager()
     active_objects = TaggedManager.cast_class(ActiveManager())
 
     def __str__(self):
-        return f'{self.id}: {self.title}'
+        return f'{self.pk}: {self.title}'
 
     class Meta:
         verbose_name = ("Work")
@@ -115,10 +119,10 @@ class MediaWork(models.Model):
 
     @staticmethod
     # Points work_B to work_A
-    def merge(to_work: 'MediaWork', from_work: 'MediaWork', title: str, description: str, thumbnail: str, rating: int):
+    def merge(to_work: 'MediaWork', from_work: 'MediaWork', title: str, description: str, thumbnail_source: 'WorkSource', rating: int):
         to_work.title = title
         to_work.description = description
-        to_work.thumbnail = thumbnail
+        to_work.thumbnail_source = thumbnail_source
         to_work.rating = rating
         to_work.tags.add(*from_work.tags.all())
         to_work.save()
@@ -159,6 +163,17 @@ class MediaWork(models.Model):
             sample=Subquery(self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values('used_as_source')),
             creator_roles=Subquery(self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values('creator_roles'))
         )
+
+    @property
+    def thumbnail(self):
+        thumbnail = self.thumbnail_source.thumbnail if self.thumbnail_source else None
+        if not thumbnail:
+            # Fallback to first source thumbnail
+            first_source = self.worksource_set.first()
+            if first_source:
+                thumbnail = first_source.thumbnail
+        # Fallback to deprecated field (3rd-party remote URL)
+        return thumbnail or self._thumbnail
 
 class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)

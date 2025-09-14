@@ -25,6 +25,7 @@ dependencies = [
     "nh3>=0.2.21",
     "furl>=2.1.4",
     "django-cte>=2.0.0",
+    "boto3>=1.40.30",
 ]
 
 [tool.ruff]

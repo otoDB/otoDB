@@ -100,6 +100,7 @@ class WorkSourceSchema(ModelSchema):
     id: int
     added_by: ProfileSchema
     rejection: WorkSourceRejectionSchema | None = None
+    thumbnail: str | None = None  # Exposed as property
     class Meta:
         model = WorkSource
         fields = [
@@ -108,7 +109,7 @@ class WorkSourceSchema(ModelSchema):
             'work_width', 'work_height', 'work_duration',
             'title', 'description',
             'work_origin', 'work_status',
-            'thumbnail', 'source_id'
+            'source_id'
         ]
 
 class TagWorkInstanceThinSchema(TagWorkSchema):
@@ -126,16 +127,18 @@ class TagWorkInstanceSchema(TagWorkInstanceThinSchema):
 class WorkSchema(ModelSchema):
     id: int
     tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
+    thumbnail: str | None = None  # Exposed as property
     class Meta:
         model = MediaWork
-        fields = ['title', 'description', 'rating', 'thumbnail']
+        fields = ['title', 'description', 'rating']
 
 class ThinWorkSchema(ModelSchema):
     id: int
     tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated')
+    thumbnail: str | None = None  # Exposed as property
     class Meta:
         model = MediaWork
-        fields = ['title', 'thumbnail']
+        fields = ['title']
 
 class ListItemSchema(ModelSchema):
     work: ThinWorkSchema

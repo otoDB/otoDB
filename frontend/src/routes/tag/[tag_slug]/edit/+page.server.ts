@@ -82,7 +82,7 @@ export const actions = {
 				? {
 						title,
 						author,
-						bpm: +bpm,
+						bpm: +bpm || null,
 						variable_bpm
 					}
 				: null;

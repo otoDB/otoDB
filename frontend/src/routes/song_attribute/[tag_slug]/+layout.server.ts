@@ -27,14 +27,14 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 	return {
 		links: [
 			{
-				pathname: `tag/song/${params.tag_slug}`,
+				pathname: `song_attribute/${params.tag_slug}`,
 				title: m.dull_plain_angelfish_cuddle() + ' ' + params.tag_slug
 			},
 			...(userLevelCheck(locals.user)
 				? []
 				: [
 						{
-							pathname: `tag/song/${params.tag_slug}/edit`,
+							pathname: `song_attribute/${params.tag_slug}/edit`,
 							title: m.minor_crisp_cobra_list()
 						}
 					])

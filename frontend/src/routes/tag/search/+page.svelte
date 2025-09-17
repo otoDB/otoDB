@@ -43,7 +43,7 @@
 	menuLinks={[
 		{ title: m.grand_merry_fly_succeed(), pathname: `work/search?query=${data.query}` },
 		{ title: m.empty_legal_chicken_taste(), pathname: 'tag/search' },
-		{ title: m.grand_nice_pony_belong(), pathname: `tag/song/search?query=${data.query}` },
+		{ title: m.grand_nice_pony_belong(), pathname: `song/search?query=${data.query}` },
 		{ title: m.stale_loose_squid_cut(), pathname: `list/search?query=${data.query}` }
 	]}
 >

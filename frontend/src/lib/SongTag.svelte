@@ -8,7 +8,7 @@
 </script>
 
 <a
-	href="/tag/song/{tag.slug}"
+	href="/song_attribute/{tag.slug}"
 	class="rounded-xl border border-solid px-2 no-underline {[
 		'border-gray-300',
 		'border-indigo-600',

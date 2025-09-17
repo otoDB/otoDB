@@ -83,7 +83,7 @@
 	"away_crisp_blackbird_twist": "Parent",
 	"front_game_porpoise_pout": "Changing the category will delete all related information about the song, including tags and relations!",
 	"drab_main_husky_dazzle": "This tag is an orphan.",
-	"dull_plain_angelfish_cuddle": "Song Tag",
+	"dull_plain_angelfish_cuddle": "Song Attribute",
 	"green_due_javelina_pop": "Failed!",
 	"tiny_round_shark_express": "All fields are required.",
 	"careful_lost_jaguar_dart": "Authentication failed!",
@@ -226,5 +226,6 @@
 	"clean_cuddly_sparrow_learn": "New Request",
 	"muddy_tough_swan_view": " New Bulk Request",
 	"grassy_warm_gadfly_inspire": "How to write bulk requests",
-	"tough_calm_hedgehog_wave": "Add tags"
+	"tough_calm_hedgehog_wave": "Add tags",
+	"big_helpful_tortoise_swim": "Variable"
 }

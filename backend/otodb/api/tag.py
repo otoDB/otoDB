@@ -14,7 +14,7 @@ from ninja.pagination import paginate
 
 from otodb.common import clean_incoming_slug, clean_incoming_tag_name
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection, TagWorkParenthood
-from otodb.models.enums import WorkTagCategory, ProfileConnectionTypes, LanguageTypes
+from otodb.models.enums import WorkTagCategory, TagWorkConnectionTypes, LanguageTypes
 from otodb.models.tag import transfer_data
 
 from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
@@ -247,12 +247,12 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
         None                      # META
     ][t]
     assert(Type is not None)
+    tag = get_object_or_404(TagWork, slug=tag_slug)
     for connection in payload:
         connection.content_id = connection.content_id.strip()
         assert(connection.content_id != '')
-        if Type is TagWorkCreatorConnection:
-            assert(connection.site != ProfileConnectionTypes.WEBSITE) # Should be in general connection instead)
-    tag = get_object_or_404(TagWork, slug=tag_slug)
+        if tag.category == WorkTagCategory.CREATOR and Type is TagWorkConnection:
+            assert(connection.site != TagWorkConnectionTypes.WEBSITE) # Should be in creator connections instead
     if t != WorkTagCategory.GENERAL:
         assert(t == tag.category)
     if Type is MediaSongConnection:

@@ -232,7 +232,7 @@ def connection(request: HttpRequest, tag_slug: str):
     if tag.category == WorkTagCategory.MEDIA:
         return 200, (cs, tag.tagworkmediaconnection_set.all())
     elif tag.category == WorkTagCategory.CREATOR:
-        return 200, (cs, tag.tagworkcreatorconnection_set.all())
+        return 200, (cs, tag.tagworkcreatorconnection_set.all().order_by('dead'))
     return 200, (cs, None)
 
 @tag_router.put('connection', auth=django_auth)
@@ -267,8 +267,11 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
         Q()
     )).delete()
     for connection in payload:
-        if not Type.objects.filter(**target, site=connection.site, content_id=connection.content_id).exists():
-            Type.objects.create(site=connection.site, content_id=connection.content_id, **target)
+        old = Type.objects.filter(**target, site=connection.site, content_id=connection.content_id)
+        if not old.exists():
+            Type.objects.create(**connection.dict(), **target)
+        elif Type is TagWorkCreatorConnection:
+            old.update(dead=connection.dead)
 
 @tag_router.get('song', response=str)
 def song(request: HttpRequest, id: int):

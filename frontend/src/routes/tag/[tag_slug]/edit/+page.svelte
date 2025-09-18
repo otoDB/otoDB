@@ -81,10 +81,12 @@
 			...data.connections[0]!.map(({ site, content_id }) =>
 				TagWorkConnectionLink[site](content_id)
 			),
-			...(data.connections[1]?.map(({ site, content_id }) =>
-				(data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink)[site](
-					content_id
-				)
+			...(data.connections[1]?.map(
+				({ site, content_id, dead }) =>
+					(dead ? '-' : '') +
+					(data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink)[site](
+						content_id
+					)
 			) ?? []),
 			...(data.song_connections?.map(({ site, content_id }) =>
 				SongConnectionLink[site](content_id)

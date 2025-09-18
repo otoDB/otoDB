@@ -12,8 +12,8 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import video_info, clean_incoming_tag_name, clean_incoming_slug
-from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection, TagWork, UserRequest
-from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory, RequestActions, Status
+from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection, TagWork, UserRequest, TagWorkCreatorConnection
+from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory, RequestActions, Status, ProfileConnectionTypes
 from otodb.account.models import Account
 
 from .common import WorkSchema, ThinWorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
@@ -354,9 +354,20 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
     """
 
     if not src.media:
-        work.tags.add(*info.get('tags', []), *TagWork.objects.filter(id__in=UserRequest.objects.filter(
-            command=RequestActions.WORKSOURCE_ATTACHTAG, A_id=src.id, bulk__status=Status.APPROVED
-        ).values('B_id')))
+        work.tags.add(
+            *info.get('tags', []),
+            *TagWork.objects.filter(id__in=UserRequest.objects.filter(
+                command=RequestActions.WORKSOURCE_ATTACHTAG, A_id=src.id, bulk__status=Status.APPROVED
+            ).values('B_id')),
+            *TagWork.objects.filter(id__in=(
+                TagWorkCreatorConnection.objects.filter(site=ProfileConnectionTypes.YOUTUBE).filter(
+                    Q(content_id=info['uploader_id']) | Q(content_id='channel/' + info['channel_id'])
+                )
+                if src.platform == Platform.YOUTUBE else TagWorkCreatorConnection.objects.filter(
+                    site=ProfileConnectionTypes[Platform(src.platform).name], content_id=info.uploader_id
+                )
+            ).values('tag_id'))
+        )
         tags = TagWork.objects.filter(name__in=info.get('tags', []))
         work.tagworkinstance_set.filter(work_tag__in=tags).update(instance_imported_from_source=True)
         src.media = work

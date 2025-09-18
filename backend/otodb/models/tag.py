@@ -213,7 +213,7 @@ class TagWork(OtodbTagModel):
 
     @property
     def children(self):
-        return TagWork.objects.filter(childhood__parent=self, aliased_to__isnull=True).order_by()
+        return TagWork.objects.filter(childhood__parent=self, aliased_to__isnull=True)
 
     def get_descendants(self):
         cte = CTE.recursive(lambda cte: TagWork.objects.order_by().filter(id=self.id).values('id').union(

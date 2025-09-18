@@ -96,6 +96,7 @@ def process_video_info(full_info, link=None):
         'thumbnail': 'thumb',
         'timestamp': 'timestamp',
         'uploader_id': 'uploader_id',
+        'channel_id': 'channel_id',
     }
 
     try:

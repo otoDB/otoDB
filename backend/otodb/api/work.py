@@ -11,9 +11,9 @@ from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
-from otodb.common import video_info, clean_incoming_tag_name, clean_incoming_slug
-from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection, TagWork, UserRequest
-from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory, RequestActions, Status
+from otodb.common import clean_incoming_tag_name, clean_incoming_slug, process_video_info
+from otodb.models import MediaWork, WorkRelation, WorkSource, TagWorkVote, TagWorkInstance, WorkSourceRejection, TagWork, UserRequest, TagWorkCreatorConnection
+from otodb.models.enums import Platform, WorkOrigin, Rating, WorkTagCategory, RequestActions, Status, ProfileConnectionTypes
 from otodb.account.models import Account
 
 from .common import WorkSchema, ThinWorkSchema, WorkSourceSchema, Error, TagWorkSchema, user_is_trusted, user_is_editor, RelationSchema, post_relation
@@ -354,9 +354,20 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
     """
 
     if not src.media:
-        work.tags.add(*info.get('tags', []), *TagWork.objects.filter(id__in=UserRequest.objects.filter(
-            command=RequestActions.WORKSOURCE_ATTACHTAG, A_id=src.id, bulk__status=Status.APPROVED
-        ).values('B_id')))
+        work.tags.add(
+            *info.get('tags', []),
+            *TagWork.objects.filter(id__in=UserRequest.objects.filter(
+                command=RequestActions.WORKSOURCE_ATTACHTAG, A_id=src.id, bulk__status=Status.APPROVED
+            ).values('B_id')),
+            *(TagWork.objects.filter(id__in=(
+                TagWorkCreatorConnection.objects.filter(site=ProfileConnectionTypes.YOUTUBE).filter(
+                    Q(content_id=info['uploader_id']) | Q(content_id='channel/' + info['channel_id'])
+                )
+                if src.platform == Platform.YOUTUBE else TagWorkCreatorConnection.objects.filter(
+                    site=ProfileConnectionTypes[Platform(src.platform).name], content_id=info['uploader_id']
+                )
+            ).values('tag_id')) if src.work_origin == WorkOrigin.AUTHOR else [])
+        )
         tags = TagWork.objects.filter(name__in=info.get('tags', []))
         work.tagworkinstance_set.filter(work_tag__in=tags).update(instance_imported_from_source=True)
         src.media = work
@@ -378,14 +389,13 @@ def assign_source_to_work(request: HttpRequest, source_id: int, work_id: int | N
     src = get_object_or_404(WorkSource.active_objects, id=source_id)
     assert(src.media is None and not getattr(src, 'rejection', None))
 
-
     if work_id is not None:
         work = get_object_or_404(MediaWork.active_objects, id=work_id)
     else:
         work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
 
     # Add them first in case they don't exist
-    info, _ = video_info(src.url) # Hopefully still available!
+    info = process_video_info(src.info_payload.payload, src.url)
     sync_work_source(work, src, info, False)
 
     for pool in src.pool_set.all():

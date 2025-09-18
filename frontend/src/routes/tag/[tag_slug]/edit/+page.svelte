@@ -176,7 +176,7 @@
 								step="any"
 								min="0"
 								name="song_bpm"
-								value={data.tag?.song?.bpm ?? 100}
+								value={data.tag?.song?.bpm}
 							/></td
 						></tr
 					>

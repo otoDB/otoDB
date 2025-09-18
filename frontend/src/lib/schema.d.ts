@@ -1354,6 +1354,40 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** TagWorkInstanceThinSchema */
+        TagWorkInstanceThinSchema: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
+            /** Sample */
+            sample: boolean;
+            /** Creator Roles */
+            creator_roles: number[] | null;
+        };
+        /** ThinWorkSchema */
+        ThinWorkSchema: {
+            /** Id */
+            id: number;
+            /** Tags */
+            tags: components["schemas"]["TagWorkInstanceThinSchema"][];
+            /** Title */
+            title: string;
+            /** Thumbnail */
+            thumbnail?: string | null;
+        };
         /** TagWorkInstanceSchema */
         TagWorkInstanceSchema: {
             /** Id */
@@ -1378,17 +1412,6 @@ export interface components {
             creator_roles: number[] | null;
             /** Primary Path */
             primary_path: components["schemas"]["TagWorkSchema"][];
-        };
-        /** ThinWorkSchema */
-        ThinWorkSchema: {
-            /** Id */
-            id: number;
-            /** Tags */
-            tags: components["schemas"]["TagWorkInstanceSchema"][];
-            /** Title */
-            title: string;
-            /** Thumbnail */
-            thumbnail?: string | null;
         };
         /** WorkSchema */
         WorkSchema: {
@@ -1537,6 +1560,8 @@ export interface components {
             site: number;
             /** Content Id */
             content_id: string;
+            /** Dead */
+            dead?: boolean | null;
         };
         /** SubmissionsFilterSchema */
         SubmissionsFilterSchema: {
@@ -1612,7 +1637,7 @@ export interface components {
         };
         /** ListItemSchema */
         ListItemSchema: {
-            work: components["schemas"]["WorkSchema"];
+            work: components["schemas"]["ThinWorkSchema"];
             /** Description */
             description?: string | null;
         };
@@ -1707,7 +1732,7 @@ export interface components {
             /** Title */
             title: string;
             /** Bpm */
-            bpm: number;
+            bpm?: number | null;
             /**
              * Variable Bpm
              * @default false
@@ -1737,7 +1762,7 @@ export interface components {
             /** Title */
             title: string;
             /** Bpm */
-            bpm: number;
+            bpm?: number | null;
             /**
              * Variable Bpm
              * @default false

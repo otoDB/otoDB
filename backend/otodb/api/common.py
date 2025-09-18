@@ -195,6 +195,7 @@ def post_relation(cls, payload: RelationSchema):
 class ConnectionSchema(Schema):
     site: int
     content_id: Annotated[str, Query(min_length=1)]
+    dead: bool | None = None
 
 class UserPreferencesSchema(Schema):
     language: int | None

@@ -29,6 +29,6 @@ export const actions = {
 
 		if (error) return fail(400, { category, parent_slug, failed: true });
 
-		redirect(303, `/tag/song/${params.tag_slug}`);
+		redirect(303, `/song_attribute/${params.tag_slug}`);
 	}
 } satisfies Actions;

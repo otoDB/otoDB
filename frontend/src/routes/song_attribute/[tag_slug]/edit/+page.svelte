@@ -18,7 +18,7 @@
 </script>
 
 <Section
-	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
+	title={m.mild_loud_shad_enchant({ type: m.dull_plain_angelfish_cuddle(), name: data.tag.name })}
 	menuLinks={data.links}
 >
 	<form method="POST" use:enhance action="?/edit">

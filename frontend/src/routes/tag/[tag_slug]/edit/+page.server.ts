@@ -153,9 +153,7 @@ export const actions = {
 		else if (category === 4)
 			parsers = [
 				...parsers,
-				...Array.from(ProfileConnectionParsers.map(make_dead_link_parser).entries()).slice(
-					1
-				)
+				...Array.from(ProfileConnectionParsers.map(make_dead_link_parser).entries())
 			];
 		const connections = [...new Set(urls.split('\n'))]
 			.filter((x) => x.trim() !== '')

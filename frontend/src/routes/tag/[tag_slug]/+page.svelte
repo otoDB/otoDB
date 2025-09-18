@@ -229,11 +229,8 @@ ${nodes
 				<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.tag.song.title}</td></tr>
 				{#if data.tag.song.bpm || data.tag.song.variable_bpm}<tr
 						><th>BPM</th><td
-							>{#if data.tag.song.variable_bpm && data.tag.song.bpm}{m.glad_fresh_thrush_hack(
-									{
-										bpm: data.tag.song.bpm
-									}
-								)}{:else if data.tag.song.bpm}{data.tag.song
+							>{#if data.tag.song.variable_bpm && data.tag.song.bpm}{m.big_helpful_tortoise_swim}({data
+									.tag.song.bpm}){:else if data.tag.song.bpm}{data.tag.song
 									.bpm}{:else}{m.big_helpful_tortoise_swim()}{/if}</td
 						></tr
 					>{/if}

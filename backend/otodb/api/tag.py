@@ -269,7 +269,8 @@ def edit_connections(request: HttpRequest, tag_slug: str, payload: list[Connecti
     for connection in payload:
         old = Type.objects.filter(**target, site=connection.site, content_id=connection.content_id)
         if not old.exists():
-            Type.objects.create(**connection.dict(), **target)
+            print(connection.dict())
+            Type.objects.create(**{k: v for k, v in connection.dict().items() if v is not None}, **target)
         elif Type is TagWorkCreatorConnection:
             old.update(dead=connection.dead)
 

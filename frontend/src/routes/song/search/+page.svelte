@@ -83,7 +83,7 @@
 					<td><a href="/tag/{song.work_tag}">#{song.id} - {song.title}</a></td>
 					<td>{song.author}</td>
 					<td
-						>{#if song.variable_bpm && song.bpm}{m.big_helpful_tortoise_swim()}({song.bpm}){:else if song.bpm}{song.bpm}{:else}{m.big_helpful_tortoise_swim()}{/if}</td
+						>{#if song.variable_bpm && song.bpm}{m.big_helpful_tortoise_swim()} ({song.bpm}){:else if song.bpm}{song.bpm}{:else}{m.big_helpful_tortoise_swim()}{/if}</td
 					>
 				</tr>
 			{/each}

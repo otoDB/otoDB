@@ -195,7 +195,7 @@
 						cat[0]
 					]};background-color: color-mix(in hsl, {WorkTagPresentationColours[
 						cat[0]
-					]}, transparent 90%);"
+					]}, transparent 85%);"
 				>
 					<h5 class="my-2 font-bold">
 						{WorkTagCategory[cat[0]]()}

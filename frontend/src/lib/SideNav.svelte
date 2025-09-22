@@ -41,7 +41,7 @@
 				type="text"
 				name="query"
 				placeholder="{m.mean_top_antelope_love()}..."
-				class="bg-otodb-bg-faint/75 border-otodb-content-primary flex-grow px-2 py-1"
+				class="bg-otodb-bg-faint/75 border-otodb-content-faint flex-grow px-2 py-1"
 			/>
 			<button
 				type="submit"

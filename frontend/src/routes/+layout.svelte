@@ -46,12 +46,12 @@
 	}}
 />
 
-<div class="overflow-auto">
-	<div
-		class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full {Themes[
-			data.user?.prefs?.theme ?? +get_prefs()?.theme
-		]}"
-	></div>
+<div
+	class="text-otodb-content-primary overflow-auto {Themes[
+		data.user?.prefs?.theme ?? +get_prefs()?.theme
+	]}"
+>
+	<div class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<!-- Mobile navigation -->
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->

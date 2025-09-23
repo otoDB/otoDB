@@ -64,7 +64,7 @@
 	}
 
 	tbody > tr:nth-of-type(odd) {
-		background-color: var(--otodb-color-bg-fainter);
+		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
 	}
 
 	ul {

@@ -25,18 +25,9 @@ export const actions = {
 	connections: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 		const urls = (data.get('urls') as string) ?? '';
-		const connections = [...new Set(urls.split('\n'))]
-			.filter((x) => x.trim() !== '')
-			.map(
-				(url) =>
-					ProfileConnectionParsers.map((p, i) => ({ site: i, content_id: p(url) }))
-						.filter((v) => !!v.content_id)
-						.at(-1) // !!! Attention here
-			)
-			.filter((v) => !!v);
 		await client.PUT('/api/profile/connection', {
 			fetch,
-			body: connections
+			params: { query: { urls } }
 		});
 		redirect(303, `/profile/${params.username}`);
 	}

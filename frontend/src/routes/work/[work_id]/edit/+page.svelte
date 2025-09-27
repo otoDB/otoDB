@@ -94,11 +94,7 @@
 								(s) => s.id === thumbnail_source_id
 							)}
 							{#if selectedSource?.thumbnail}
-								<img
-									class="mt-2 w-20"
-									src={selectedSource.thumbnail}
-									alt="Thumbnail preview"
-								/>
+								<img class="mt-2 w-20" src={selectedSource.thumbnail} />
 							{/if}
 						{/if}</td
 					></tr

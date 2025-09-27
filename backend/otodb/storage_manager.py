@@ -1,3 +1,4 @@
+import re
 import boto3
 from django.conf import settings
 from pathlib import Path
@@ -8,7 +9,10 @@ class StorageManager:
     """Generic storage manager for CDN or local storage"""
 
     def __init__(self):
-        self.cdn_enabled = settings.OTODB_CDN_ENABLED
+        self.cdn_enabled: bool = settings.OTODB_CDN_ENABLED
+        self.cdn_root: str = settings.OTODB_CDN_ROOT
+
+        self.media_path: Path = settings.MEDIA_ROOT
 
         if self.cdn_enabled:
             self.s3_client = boto3.client(
@@ -19,6 +23,10 @@ class StorageManager:
                 region_name='auto'  # Cloudflare R2 uses 'auto'
             )
             self.bucket_name = settings.OTODB_CDN_BUCKET_NAME
+        else:
+            if not self.media_path or not settings.MEDIA_URL:
+                raise ValueError("MEDIA_ROOT or MEDIA_URL is not set in Django settings")
+            self.media_path.parent.mkdir(parents=True, exist_ok=True)
 
     def _is_url(self, path: str) -> bool:
         """
@@ -39,7 +47,7 @@ class StorageManager:
                 self.s3_client.upload_fileobj(
                     Fileobj=BytesIO(file_content),
                     Bucket=self.bucket_name,
-                    Key=file_path.lstrip('/'),
+                    Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/'),
                 )
                 return file_path
             except Exception as e:
@@ -53,15 +61,13 @@ class StorageManager:
             print(f"Bypassing local save for URL: {file_path}")
             return file_path
 
-        # Create media directory if it doesn't exist
-        media_root = getattr(settings, 'MEDIA_ROOT', 'media')
-        local_path = Path(media_root) / file_path
+        local_path = self.media_path / file_path.lstrip('/')
         local_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(local_path, 'wb') as f:
             f.write(file_content)
 
-        return str(local_path.relative_to(media_root))
+        return file_path
 
     def delete(self, file_path: str) -> bool:
         """
@@ -75,15 +81,14 @@ class StorageManager:
             try:
                 self.s3_client.delete_object(
                     Bucket=self.bucket_name,
-                    Key=file_path.lstrip('/')
+                    Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/')
                 )
                 return True
             except Exception as e:
                 print(f"CDN deletion failed: {e}")
         else:
             try:
-                media_root = getattr(settings, 'MEDIA_ROOT', 'media')
-                local_path = Path(media_root) / file_path
+                local_path = self.media_path / file_path.lstrip('/')
                 if local_path.exists():
                     local_path.unlink()
                     return True
@@ -104,14 +109,13 @@ class StorageManager:
             try:
                 self.s3_client.head_object(
                     Bucket=self.bucket_name,
-                    Key=file_path.lstrip('/')
+                    Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/')
                 )
                 return True
             except Exception as e:
                 print(f"CDN existence check failed: {e}")
         else:
-            media_root = getattr(settings, 'MEDIA_ROOT', 'media')
-            local_path = Path(media_root) / file_path
+            local_path = self.media_path / file_path.lstrip('/')
             return local_path.exists()
 
         return False

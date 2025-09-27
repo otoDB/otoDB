@@ -172,7 +172,13 @@ class WorkSource(models.Model):
         Returns the URL endpoint from which a thumbnail is served.
         """
         if self.thumbnail_path and settings.OTODB_CDN_ENABLED:
-            return settings.OTODB_CDN_HOST + self.thumbnail_path
+            return settings.OTODB_CDN_HOST + settings.OTODB_CDN_ROOT + self.thumbnail_path
+        elif (
+            self.thumbnail_path
+            and storage_manager.exists(self.thumbnail_path)
+		):
+            # Fallback to local storage
+            return settings.MEDIA_URL + self.thumbnail_path.lstrip('/')
         return self.thumbnail_url # type: ignore -- Fallback to 3rd-party remote thumbnail URL
 
 class WorkSourceRejection(models.Model):

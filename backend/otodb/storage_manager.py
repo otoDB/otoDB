@@ -120,4 +120,22 @@ class StorageManager:
 
         return False
 
+    def url(self, file_path: str) -> str:
+        """
+        Get the URL of the file in CDN or local storage.
+        """
+        if self._is_url(file_path):
+            return file_path
+
+        if file_path and settings.OTODB_CDN_ENABLED:
+            return settings.OTODB_CDN_HOST + settings.OTODB_CDN_ROOT + file_path
+        elif (
+            file_path
+            and self.exists(file_path)
+        ):
+            # Fallback to local storage
+            return settings.MEDIA_URL + file_path.lstrip('/')
+
+        return ""
+
 storage_manager = StorageManager()

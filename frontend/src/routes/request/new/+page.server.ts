@@ -1,8 +1,10 @@
 import client from '$lib/api';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import userLevelGuard from '$lib/route_guard';
 
-export const load: PageServerLoad = ({ url }) => {
+export const load: PageServerLoad = ({ locals, url }) => {
+	userLevelGuard(locals.user);
 	const preFilledData = url.searchParams.get('pre_filled');
 	return { preFilledData };
 };

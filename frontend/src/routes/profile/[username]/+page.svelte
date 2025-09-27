@@ -4,7 +4,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { ProfileConnectionTypes, ProfileConnectionLink, UserLevel } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { x } from '@inlang/paraglide-js/urlpattern-polyfill';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 
 	let { data }: PageProps = $props();

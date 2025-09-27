@@ -99,7 +99,10 @@ def tags_needed(request: HttpRequest):
 
 @work_router.get('work', response={ 200: WorkSchema, 300: int })
 def work(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork.objects, id=work_id)
+    work = get_object_or_404(MediaWork.objects.prefetch_related(
+        'worksource_set__added_by',
+        'worksource_set__rejection'
+    ).select_related('thumbnail_source'), id=work_id)
     if work.moved_to:
         return 300, work.moved_to.id
     return work
@@ -245,13 +248,13 @@ class WorkEditSchema(ModelSchema):
 
 @work_router.post('merge', auth=django_auth)
 @user_is_editor
-def merge_works(request:HttpRequest, from_work_id: int, to_work_id: int, work_source_for_thumbnail_id: int, payload: WorkEditSchema):
+def merge_works(request:HttpRequest, from_work_id: int, to_work_id: int, payload: WorkEditSchema):
     MediaWork.merge(
         to_work=get_object_or_404(MediaWork.active_objects, id=to_work_id),
         from_work=get_object_or_404(MediaWork.active_objects, id=from_work_id),
         title=payload.title,
         description=payload.description,
-        thumbnail_source=get_object_or_404(WorkSource.active_objects, id=work_source_for_thumbnail_id),
+        thumbnail_source=get_object_or_404(WorkSource.active_objects, id=payload.thumbnail_source),
         rating=payload.rating
     )
     return
@@ -261,6 +264,8 @@ def merge_works(request:HttpRequest, from_work_id: int, to_work_id: int, work_so
 def update_work(request: HttpRequest, work_id: int, payload: WorkEditSchema, reason: str):
     work = get_object_or_404(MediaWork.active_objects, id=work_id)
     for attr, value in payload.dict().items():
+        if attr == 'thumbnail_source' and value is not None:
+            value = get_object_or_404(WorkSource.active_objects, id=value)
         setattr(work, attr, value)
     work.save()
     update_change_reason(work, reason)

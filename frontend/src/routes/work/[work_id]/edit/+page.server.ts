@@ -36,7 +36,7 @@ export const actions = {
 		const title = data.get('title') as string,
 			description = data.get('description') as string,
 			rating = data.get('rating') as string,
-			thumbnail = data.get('thumbnail') as string,
+			thumbnail_source_id = data.get('thumbnail_source') as string,
 			reason = data.get('reason') as string;
 
 		const { error } = await client.PUT('/api/work/work', {
@@ -51,12 +51,12 @@ export const actions = {
 				title,
 				description,
 				rating: +rating,
-				thumbnail
+				thumbnail_source_id: thumbnail_source_id ? +thumbnail_source_id : null
 			}
 		});
 
 		if (error)
-			return fail(400, { title, description, rating, thumbnail, reason, failed: true });
+			return fail(400, { title, description, rating, thumbnail_source_id, reason, failed: true });
 		redirect(303, `/work/${params.work_id}`);
 	}
 } satisfies Actions;

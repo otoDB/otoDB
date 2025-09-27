@@ -94,8 +94,7 @@ class MediaWork(models.Model):
         through=TagWorkInstance
     )
 
-	# TODO: Expose a way to change this in the frontend
-    thumbnail_source = models.OneToOneField('WorkSource', null=True, blank=True, on_delete=models.SET_NULL)
+    thumbnail_source = models.ForeignKey('WorkSource', null=True, blank=True, on_delete=models.SET_NULL)
 
     history = HistoricalRecords(m2m_fields=[tags])
 

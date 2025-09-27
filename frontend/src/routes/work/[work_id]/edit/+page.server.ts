@@ -56,7 +56,14 @@ export const actions = {
 		});
 
 		if (error)
-			return fail(400, { title, description, rating, thumbnail_source_id, reason, failed: true });
+			return fail(400, {
+				title,
+				description,
+				rating,
+				thumbnail_source_id,
+				reason,
+				failed: true
+			});
 		redirect(303, `/work/${params.work_id}`);
 	}
 } satisfies Actions;

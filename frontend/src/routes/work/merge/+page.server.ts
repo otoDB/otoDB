@@ -22,7 +22,7 @@ export const actions = {
 		if (!A || isNaN(+A) || !B || isNaN(+B) || !rating || isNaN(+rating)) return fail(400);
 
 		if (!thumbnail_source_id || isNaN(+thumbnail_source_id)) {
-			return fail(400, { error: "A thumbnail source must be selected" });
+			return fail(400, { error: 'A thumbnail source must be selected' });
 		}
 
 		const { error } = await client.POST('/api/work/merge', {

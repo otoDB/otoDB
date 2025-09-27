@@ -169,13 +169,11 @@
 							)}
 							{#if selectedSource?.thumbnail}
 								<img
-									class="mt-2 w-15"
+									class="w-15 mt-2"
 									src={selectedSource.thumbnail}
 									alt={work[0].title}
 								/>
 							{/if}
-						{:else}
-							No sources available
 						{/if}
 					</td>
 					<td
@@ -209,13 +207,11 @@
 							)}
 							{#if selectedSource?.thumbnail}
 								<img
-									class="mt-2 w-15"
+									class="w-15 mt-2"
 									src={selectedSource.thumbnail}
 									alt={work[1].title}
 								/>
 							{/if}
-						{:else}
-							No sources available
 						{/if}
 					</td>
 					<th>{m.heroic_ideal_orangutan_aid()}</th></tr

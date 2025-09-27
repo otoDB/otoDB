@@ -169,7 +169,7 @@
 							)}
 							{#if selectedSource?.thumbnail}
 								<img
-									class="w-15 mt-2"
+									class="mt-2 w-15"
 									src={selectedSource.thumbnail}
 									alt={work[0].title}
 								/>
@@ -207,7 +207,7 @@
 							)}
 							{#if selectedSource?.thumbnail}
 								<img
-									class="w-15 mt-2"
+									class="mt-2 w-15"
 									src={selectedSource.thumbnail}
 									alt={work[1].title}
 								/>

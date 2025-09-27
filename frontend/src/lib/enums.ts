@@ -168,27 +168,7 @@ export const SongConnectionLink = {
 	30: (id: string) => `https://medley.bepis.io/wiki/${id}`
 };
 
-export const SongConnectionParsers = {
-	0: (link: string) => link.match(/^https?:\/\/vgmdb\.net\/album\/(\d+)(?:\/*)?$/)?.[1],
-	1: (link: string) => link.match(/^https?:\/\/vocadb\.net\/S\/(\d+)(?:\/*)?$/)?.[1],
-	2: (link: string) => link.match(/^https?:\/\/www\.discogs\.com\/master\/(\d+)(?:\/*)?$/)?.[1],
-	3: (link: string) =>
-		link.match(/^https?:\/\/musicbrainz\.org\/recording\/([a-f0-9-]+)(?:\/*)?$/)?.[1],
-	4: (link: string) => link.match(/^https?:\/\/rateyourmusic\.com\/song\/([^/]+)(?:\/+)?$/)?.[1],
-	5: (link: string) => link.match(/^https?:\/\/www.dojin-music\.info\/song\/(\d+)(?:\/+)?$/)?.[1],
-	20: (link: string) => link.match(/^https?:\/\/remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
-	21: (link: string) => link.match(/^https?:\/\/silentblue\.remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
-	22: (link: string) =>
-		link.match(
-			/^https?:\/\/zenius-i-vanisher\.com\/v5\.2\/songdb\.php\?songid=(\d+)(?:\/*)?$/
-		)?.[1],
-	30: (link: string) => link.match(/^https?:\/\/medley\.bepis\.io\/wiki\/(.+?)(?:\/*)?$/)?.[1]
-};
-
 export const TagWorkConnectionTypes = {
-	WEBSITE: 0,
-	0: 'Website',
-
 	OTOMADWIKI: 1,
 	1: 'otomad.wiki',
 	OTOMADFANDOM: 2,
@@ -215,20 +195,6 @@ export const TagWorkConnectionLink = {
 	22: (id: string) => `https://en.wikipedia.org/wiki/${id}`,
 	23: (id: string) => `https://namu.wiki/w/${id}`,
 	24: (id: string) => `https://knowyourmeme.com/${id}`
-};
-
-export const TagWorkConnectionParsers = {
-	0: (link: string) =>
-		link.startsWith('http://') || link.startsWith('https://') ? link : undefined,
-	1: (link: string) => link.match(/^https?:\/\/otomad\.wiki\/([^/?#]+)\/?$/)?.[1],
-	2: (link: string) =>
-		link.match(/^https?:\/\/otomad\.fandom\.com\/ja\/wiki\/([^/?#]+)\/?$/)?.[1],
-	20: (link: string) => link.match(/^https?:\/\/dic\.nicovideo\.jp\/a\/([^/?#]+)\/?$/)?.[1],
-	21: (link: string) => link.match(/^https?:\/\/dic\.pixiv\.net\/a\/([^/?#]+)\/?$/)?.[1],
-	22: (link: string) => link.match(/^https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)\/?$/)?.[1],
-	23: (link: string) =>
-		link.match(/^https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)\/?$/)?.[1],
-	24: (link: string) => link.match(/^https?:\/\/knowyourmeme\.com\/([^?#]+)\/?$/)?.[1]
 };
 
 export const MediaConnectionTypes = {
@@ -271,24 +237,6 @@ export const MediaConnectionLink = {
 	40: (id: string) => `https://vndb.org/${id}`,
 	41: (id: string) =>
 		`https://erogamescape.dyndns.org/~ap2/ero/toukei_kaiseki/game.php?game=${id}`
-};
-
-export const MediaConnectionParsers = {
-	1: (link: string) => link.match(/^https?:\/\/www\.anikore\.jp\/anime\/(\d+)\/?$/)?.[1],
-	2: (link: string) => link.match(/^https?:\/\/bangumi\.tv\/subject\/(\d+)\/?$/)?.[1],
-	3: (link: string) => link.match(/^https?:\/\/anidb\.net\/anime\/(\d+)\/?$/)?.[1],
-	4: (link: string) => link.match(/^https?:\/\/myanimelist\.net\/anime\/(\d+)\/?$/)?.[1],
-	5: (link: string) => link.match(/^https?:\/\/anilist\.co\/anime\/(\d+)\/?$/)?.[1],
-	6: (link: string) => link.match(/^https?:\/\/kitsu\.io\/anime\/([^/?#]+)\/?$/)?.[1],
-	7: (link: string) =>
-		link.match(/^https?:\/\/www\.anime-planet\.com\/anime\/([^/?#]+)\/?$/)?.[1],
-	20: (link: string) => link.match(/^https?:\/\/www\.imdb\.com\/title\/(\d+)\/?$/)?.[1],
-	21: (link: string) => link.match(/^https?:\/\/letterboxd\.com\/film\/([^/?#]+)\/?$/)?.[1],
-	40: (link: string) => link.match(/^https?:\/\/vndb\.org\/(v\d+)\/?$/)?.[1],
-	41: (link: string) =>
-		link.match(
-			/^https?:\/\/erogamescape\.dyndns\.org\/~ap2\/ero\/toukei_kaiseki\/game\.php\?game=(\d+)$/
-		)?.[1]
 };
 
 export const Role = {

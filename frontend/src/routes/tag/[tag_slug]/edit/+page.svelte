@@ -309,13 +309,6 @@
 		<summary>{m.fit_noble_niklas_build()}</summary>
 		<table>
 			<tbody>
-				{#each Object.keys(TagWorkConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
-					<tr
-						><td>{TagWorkConnectionTypes[k]}</td><td
-							><code>{TagWorkConnectionLink[k]('<code>')}</code></td
-						></tr
-					>
-				{/each}
 				{#if category === 2 && data.tag.category === 2}
 					{#each Object.keys(SongConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
@@ -333,7 +326,7 @@
 						>
 					{/each}
 				{:else if category === 4 && data.tag.category === 4}
-					{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e) && +e !== 0) as k, i (i)}
+					{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
 							><td>{ProfileConnectionTypes[k]}</td><td
 								><code>{ProfileConnectionLink[k]('<code>')}</code></td
@@ -341,6 +334,13 @@
 						>
 					{/each}
 				{/if}
+				{#each Object.keys(TagWorkConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
+					<tr
+						><td>{TagWorkConnectionTypes[k]}</td><td
+							><code>{TagWorkConnectionLink[k]('<code>')}</code></td
+						></tr
+					>
+				{/each}
 			</tbody>
 		</table>
 	</details>

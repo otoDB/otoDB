@@ -33,6 +33,7 @@
 	import faviconVndb from './connection_favicon/vndb.png';
 	import faviconDoujinMusicInfo from './connection_favicon/同人音楽info.png';
 	import faviconOtomadWiki2 from './connection_favicon/音MAD Wiki 2.png';
+	import faviconSoundcloud from './connection_favicon/Soundcloud.png';
 
 	const img = (type: string) => {
 		switch (type) {
@@ -82,6 +83,8 @@
 				return faviconRemyWiki;
 			case 'Silent Blue':
 				return faviconSilentBlue;
+			case 'Soundcloud':
+				return faviconSoundcloud;
 			case 'Twitter':
 				return faviconTwitter;
 			case 'VGMdb':

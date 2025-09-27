@@ -60,13 +60,14 @@ class SongRelationTypes(models.IntegerChoices):
     SEQUEL   = 3, "Sequel"
 
 class ProfileConnectionTypes(models.IntegerChoices):
-    WEBSITE   = 0, "Website"
+    WEBSITE     = 0, "Website"
 
-    NICONICO  = 1, "Niconico"
-    YOUTUBE   = 2, "YouTube"
-    BILIBILI  = 3, "Bilibili"
-    TWITTER   = 4, "Twitter"
-    BLUESKY   = 5, "Bluesky"
+    NICONICO    = 1, "Niconico"
+    YOUTUBE     = 2, "YouTube"
+    BILIBILI    = 3, "Bilibili"
+    TWITTER     = 4, "Twitter"
+    BLUESKY     = 5, "Bluesky"
+    SOUNDCLOUD  = 6, "Soundcloud"
 
 class SongConnectionTypes(models.IntegerChoices):
     VGMDB         = 0, "VGMdb"

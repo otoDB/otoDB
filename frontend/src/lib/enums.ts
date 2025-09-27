@@ -99,13 +99,14 @@ export const ProfileConnectionTypes = {
 	BILIBILI: 3,
 	TWITTER: 4,
 	BLUESKY: 5,
+	SOUNDCLOUD: 6,
 
 	0: 'Website',
 	1: 'Niconico',
 	2: 'YouTube',
 	3: 'Bilibili',
 	4: 'Twitter',
-	5: 'Bluesky'
+	6: 'Soundcloud'
 };
 
 export const ProfileConnectionLink = {
@@ -114,7 +115,8 @@ export const ProfileConnectionLink = {
 	2: (id: string) => `https://www.youtube.com/${id}`,
 	3: (id: string) => `https://space.bilibili.com/${id}`,
 	4: (id: string) => `https://twitter.com/${id}/`,
-	5: (id: string) => `https://bsky.app/profile/${id}`
+	5: (id: string) => `https://bsky.app/profile/${id}`,
+	6: (id: string) => `https://soundcloud.com/${id}`
 };
 
 export const ProfileConnectionParsers = [
@@ -127,7 +129,8 @@ export const ProfileConnectionParsers = [
 		link.match(
 			/^https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?$/
 		)?.[1],
-	(link: string) => link.match(/^https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)$/)?.[1]
+	(link: string) => link.match(/^https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)$/)?.[1],
+	(link: string) => link.match(/^https?:\/\/soundcloud\.com\/(.+?)(?:\/*)$/)?.[1]
 ];
 
 export const SongConnectionTypes = {

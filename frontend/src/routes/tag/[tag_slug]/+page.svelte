@@ -2,7 +2,6 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
-		LanguageNames,
 		Languages,
 		ProfileConnectionLink,
 		ProfileConnectionTypes,

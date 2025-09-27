@@ -15,7 +15,7 @@ from ninja.pagination import paginate
 
 from otodb.common import clean_incoming_slug, clean_incoming_tag_name
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection, TagWorkParenthood
-from otodb.models.enums import WorkTagCategory, LanguageTypes
+from otodb.models.enums import WorkTagCategory, LanguageTypes, ProfileConnectionTypes, SongConnectionTypes, TagWorkConnectionTypes, MediaConnectionTypes
 from otodb.models.tag import transfer_data
 
 from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
@@ -252,40 +252,40 @@ def make_alt_value_parser(*parsers):
     return match
 
 song_connection_parser = make_alt_value_parser(
-	(0, re_to_parser(re.compile(r'https?:\/\/vgmdb\.net\/album\/(\d+)(?:\/*)?'))),
-	(1, re_to_parser(re.compile(r'https?:\/\/vocadb\.net\/S\/(\d+)(?:\/*)?'))),
-	(2, re_to_parser(re.compile(r'https?:\/\/www\.discogs\.com\/master\/(\d+)(?:\/*)?'))),
-	(3, re_to_parser(re.compile(r'https?:\/\/musicbrainz\.org\/recording\/([a-f0-9-]+)(?:\/*)?'))),
-	(4, re_to_parser(re.compile(r'https?:\/\/rateyourmusic\.com\/song\/([^/]+)(?:\/+)?'))),
-	(5, re_to_parser(re.compile(r'https?:\/\/www.dojin-music\.info\/song\/(\d+)(?:\/+)?'))),
-	(20, re_to_parser(re.compile(r'https?:\/\/remywiki\.com\/(.+?)(?:\/*)?'))),
-	(21, re_to_parser(re.compile(r'https?:\/\/silentblue\.remywiki\.com\/(.+?)(?:\/*)?'))),
-	(22, re_to_parser(re.compile(r'https?:\/\/zenius-i-vanisher\.com\/v5\.2\/songdb\.php\?songid=(\d+)(?:\/*)?'))),
-	(30, re_to_parser(re.compile(r'https?:\/\/medley\.bepis\.io\/wiki\/(.+?)(?:\/*)?')))
+	(SongConnectionTypes.VGMDB, re_to_parser(re.compile(r'https?:\/\/vgmdb\.net\/album\/(\d+)(?:\/*)?'))),
+	(SongConnectionTypes.VOCADB, re_to_parser(re.compile(r'https?:\/\/vocadb\.net\/S\/(\d+)(?:\/*)?'))),
+	(SongConnectionTypes.DISCOGS, re_to_parser(re.compile(r'https?:\/\/www\.discogs\.com\/master\/(\d+)(?:\/*)?'))),
+	(SongConnectionTypes.MUSICBRAINZ, re_to_parser(re.compile(r'https?:\/\/musicbrainz\.org\/recording\/([a-f0-9-]+)(?:\/*)?'))),
+	(SongConnectionTypes.RATEYOURMUSIC, re_to_parser(re.compile(r'https?:\/\/rateyourmusic\.com\/song\/([^/]+)(?:\/+)?'))),
+	(SongConnectionTypes.DOJINMUSIC, re_to_parser(re.compile(r'https?:\/\/www.dojin-music\.info\/song\/(\d+)(?:\/+)?'))),
+	(SongConnectionTypes.REMYWIKI, re_to_parser(re.compile(r'https?:\/\/remywiki\.com\/(.+?)(?:\/*)?'))),
+	(SongConnectionTypes.SILENTBLUE, re_to_parser(re.compile(r'https?:\/\/silentblue\.remywiki\.com\/(.+?)(?:\/*)?'))),
+	(SongConnectionTypes.ZENIUS, re_to_parser(re.compile(r'https?:\/\/zenius-i-vanisher\.com\/v5\.2\/songdb\.php\?songid=(\d+)(?:\/*)?'))),
+	(SongConnectionTypes.NNDMEDLEYWIKI, re_to_parser(re.compile(r'https?:\/\/medley\.bepis\.io\/wiki\/(.+?)(?:\/*)?')))
 )
 
 tag_work_connection_parser = make_alt_value_parser(
-	(1, re_to_parser(re.compile(r'https?:\/\/otomad\.wiki\/([^/?#]+)\/?'))),
-	(2, re_to_parser(re.compile(r'https?:\/\/otomad\.fandom\.com\/ja\/wiki\/([^/?#]+)\/?'))),
-	(20, re_to_parser(re.compile(r'https?:\/\/dic\.nicovideo\.jp\/a\/([^/?#]+)\/?'))),
-	(21, re_to_parser(re.compile(r'https?:\/\/dic\.pixiv\.net\/a\/([^/?#]+)\/?'))),
-	(22, re_to_parser(re.compile(r'https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)\/?'))),
-	(23, re_to_parser(re.compile(r'https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)\/?'))),
-	(24, re_to_parser(re.compile(r'https?:\/\/knowyourmeme\.com\/([^?#]+)\/?')))
+	(TagWorkConnectionTypes.OTOMADWIKI, re_to_parser(re.compile(r'https?:\/\/otomad\.wiki\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.OTOMADFANDOM, re_to_parser(re.compile(r'https?:\/\/otomad\.fandom\.com\/ja\/wiki\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.NICOPEDIA, re_to_parser(re.compile(r'https?:\/\/dic\.nicovideo\.jp\/a\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.PIXIV_DICT, re_to_parser(re.compile(r'https?:\/\/dic\.pixiv\.net\/a\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.WIKIPEDIA, re_to_parser(re.compile(r'https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.NAMUWIKI, re_to_parser(re.compile(r'https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.KNOWYOURMEME, re_to_parser(re.compile(r'https?:\/\/knowyourmeme\.com\/([^?#]+)\/?')))
 )
 
 media_connection_parser = make_alt_value_parser(
-	(1, re_to_parser(re.compile(r'https?:\/\/www\.anikore\.jp\/anime\/(\d+)\/?'))),
-	(2, re_to_parser(re.compile(r'https?:\/\/bangumi\.tv\/subject\/(\d+)\/?'))),
-	(3, re_to_parser(re.compile(r'https?:\/\/anidb\.net\/anime\/(\d+)\/?'))),
-	(4, re_to_parser(re.compile(r'https?:\/\/myanimelist\.net\/anime\/(\d+)\/?'))),
-	(5, re_to_parser(re.compile(r'https?:\/\/anilist\.co\/anime\/(\d+)\/?'))),
-	(6, re_to_parser(re.compile(r'https?:\/\/kitsu\.io\/anime\/([^/?#]+)\/?'))),
-	(7, re_to_parser(re.compile(r'https?:\/\/www\.anime-planet\.com\/anime\/([^/?#]+)\/?'))),
-	(20, re_to_parser(re.compile(r'https?:\/\/www\.imdb\.com\/title\/(\d+)\/?'))),
-	(21, re_to_parser(re.compile(r'https?:\/\/letterboxd\.com\/film\/([^/?#]+)\/?'))),
-	(40, re_to_parser(re.compile(r'https?:\/\/vndb\.org\/(v\d+)\/?'))),
-	(41, re_to_parser(re.compile(r'https?:\/\/erogamescape\.dyndns\.org\/~ap2\/ero\/toukei_kaiseki\/game\.php\?game=(\d+)')))
+	(MediaConnectionTypes.ANIKORE, re_to_parser(re.compile(r'https?:\/\/www\.anikore\.jp\/anime\/(\d+)\/?'))),
+	(MediaConnectionTypes.BANGUMI, re_to_parser(re.compile(r'https?:\/\/bangumi\.tv\/subject\/(\d+)\/?'))),
+	(MediaConnectionTypes.ANIDB, re_to_parser(re.compile(r'https?:\/\/anidb\.net\/anime\/(\d+)\/?'))),
+	(MediaConnectionTypes.MYANIMELIST, re_to_parser(re.compile(r'https?:\/\/myanimelist\.net\/anime\/(\d+)\/?'))),
+	(MediaConnectionTypes.ANILIST, re_to_parser(re.compile(r'https?:\/\/anilist\.co\/anime\/(\d+)\/?'))),
+	(MediaConnectionTypes.KITSU, re_to_parser(re.compile(r'https?:\/\/kitsu\.io\/anime\/([^/?#]+)\/?'))),
+	(MediaConnectionTypes.ANIMEPLANET, re_to_parser(re.compile(r'https?:\/\/www\.anime-planet\.com\/anime\/([^/?#]+)\/?'))),
+	(MediaConnectionTypes.IMDB, re_to_parser(re.compile(r'https?:\/\/www\.imdb\.com\/title\/(\d+)\/?'))),
+	(MediaConnectionTypes.LETTERBOXD, re_to_parser(re.compile(r'https?:\/\/letterboxd\.com\/film\/([^/?#]+)\/?'))),
+	(MediaConnectionTypes.VNDB, re_to_parser(re.compile(r'https?:\/\/vndb\.org\/(v\d+)\/?'))),
+	(MediaConnectionTypes.EROGAMESCAPE, re_to_parser(re.compile(r'https?:\/\/erogamescape\.dyndns\.org\/~ap2\/ero\/toukei_kaiseki\/game\.php\?game=(\d+)')))
 )
 
 def make_dead_link_parser(parser):
@@ -296,12 +296,13 @@ def make_dead_link_parser(parser):
     return match
 
 profile_connection_parser = make_alt_value_parser(
-	(0, make_dead_link_parser(re_to_parser(re.compile(r'(https?://.+)')))),
-	(1, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/www\.nicovideo\.jp\/user\/(\d+)\/?')))),
-	(2, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?')))),
-	(3, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/space\.bilibili\.com\/(\d+)\/?')))),
-	(4, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?')))),
-	(5, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)'))))
+	(ProfileConnectionTypes.WEBSITE, make_dead_link_parser(re_to_parser(re.compile(r'(https?://.+)')))),
+	(ProfileConnectionTypes.NICONICO, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/www\.nicovideo\.jp\/user\/(\d+)\/?')))),
+	(ProfileConnectionTypes.YOUTUBE, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?')))),
+	(ProfileConnectionTypes.BILIBILI, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/space\.bilibili\.com\/(\d+)\/?')))),
+	(ProfileConnectionTypes.TWITTER, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?')))),
+	(ProfileConnectionTypes.BLUESKY, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)'))))
+	(ProfileConnectionTypes.SOUNDCLOUD, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/soundcloud\.com\/(.+?)(?:\/*)'))))
 )
 
 @tag_router.put('connection', auth=django_auth)

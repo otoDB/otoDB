@@ -22,6 +22,7 @@ profile_connection_parser = make_alt_value_parser(
 	(3, re_to_parser(re.compile(r'https?:\/\/space\.bilibili\.com\/(\d+)\/?'))),
 	(4, re_to_parser(re.compile(r'https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?'))),
 	(5, re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)')))
+	(6, re_to_parser(re.compile(r'https?:\/\/soundcloud\.com\/(.+?)(?:\/*)')))
 )
 
 def fix_tag_connections(apps, schema_editor):

@@ -15,10 +15,10 @@ from ninja.pagination import paginate
 
 from otodb.common import clean_incoming_slug, clean_incoming_tag_name
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection, TagWorkParenthood
-from otodb.models.enums import WorkTagCategory, LanguageTypes, ProfileConnectionTypes, SongConnectionTypes, TagWorkConnectionTypes, MediaConnectionTypes
+from otodb.models.enums import WorkTagCategory, LanguageTypes, SongConnectionTypes, TagWorkConnectionTypes, MediaConnectionTypes
 from otodb.models.tag import transfer_data
 
-from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
+from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema, profile_connection_parsers, make_alt_value_parser, re_to_parser
 
 tag_router = Router()
 
@@ -236,21 +236,6 @@ def connection(request: HttpRequest, tag_slug: str):
         return 200, (cs, tag.tagworkcreatorconnection_set.all().order_by('dead'))
     return 200, (cs, None)
 
-def re_to_parser(regex):
-    def matcher(link):
-        m = regex.fullmatch(link)
-        if m:
-            return m.group(1)
-    return matcher
-
-def make_alt_value_parser(*parsers):
-    def match(link):
-        for v, parser in parsers:
-            parse = parser(link)
-            if parse:
-                return (v, parse)
-    return match
-
 song_connection_parser = make_alt_value_parser(
 	(SongConnectionTypes.VGMDB, re_to_parser(re.compile(r'https?:\/\/vgmdb\.net\/album\/(\d+)(?:\/*)?'))),
 	(SongConnectionTypes.VOCADB, re_to_parser(re.compile(r'https?:\/\/vocadb\.net\/S\/(\d+)(?:\/*)?'))),
@@ -295,15 +280,7 @@ def make_dead_link_parser(parser):
         return (dead, parse) if parse else None
     return match
 
-profile_connection_parser = make_alt_value_parser(
-	(ProfileConnectionTypes.WEBSITE, make_dead_link_parser(re_to_parser(re.compile(r'(https?://.+)')))),
-	(ProfileConnectionTypes.NICONICO, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/www\.nicovideo\.jp\/user\/(\d+)\/?')))),
-	(ProfileConnectionTypes.YOUTUBE, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?')))),
-	(ProfileConnectionTypes.BILIBILI, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/space\.bilibili\.com\/(\d+)\/?')))),
-	(ProfileConnectionTypes.TWITTER, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?')))),
-	(ProfileConnectionTypes.BLUESKY, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)')))),
-	(ProfileConnectionTypes.SOUNDCLOUD, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/soundcloud\.com\/(.+?)(?:\/*)'))))
-)
+creator_tag_connection_parser = make_alt_value_parser(*[(v, make_dead_link_parser(parser)) for v, parser in profile_connection_parsers])
 
 @tag_router.put('connection', auth=django_auth)
 @user_is_trusted
@@ -312,7 +289,7 @@ def edit_connections(request: HttpRequest, tag_slug: str, urls: str):
     category_parser_tp = {
         WorkTagCategory.SONG: (MediaSongConnection, song_connection_parser),
         WorkTagCategory.MEDIA: (TagWorkMediaConnection, media_connection_parser),
-        WorkTagCategory.CREATOR: (TagWorkCreatorConnection, profile_connection_parser),
+        WorkTagCategory.CREATOR: (TagWorkCreatorConnection, creator_tag_connection_parser),
     }.get(tag.category, (None, lambda _: None))
     total_parser = make_alt_value_parser(
         (TagWorkConnection, tag_work_connection_parser),

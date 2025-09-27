@@ -120,20 +120,6 @@ export const ProfileConnectionLink = {
 	6: (id: string) => `https://soundcloud.com/${id}`
 };
 
-export const ProfileConnectionParsers = [
-	(link: string) =>
-		link.startsWith('http://') || link.startsWith('https://') ? link : undefined,
-	(link: string) => link.match(/^https?:\/\/www\.nicovideo\.jp\/user\/(\d+)\/?$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/space\.bilibili\.com\/(\d+)\/?$/)?.[1],
-	(link: string) =>
-		link.match(
-			/^https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?$/
-		)?.[1],
-	(link: string) => link.match(/^https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/soundcloud\.com\/(.+?)(?:\/*)$/)?.[1]
-];
-
 export const SongConnectionTypes = {
 	VGMDB: 0,
 	0: 'VGMdb',

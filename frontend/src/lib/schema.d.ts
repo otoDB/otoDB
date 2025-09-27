@@ -1383,10 +1383,27 @@ export interface components {
             id: number;
             /** Tags */
             tags: components["schemas"]["TagWorkInstanceThinSchema"][];
-            /** Title */
-            title: string;
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Title */
+            title: string;
+        };
+        /** ProfileSchema */
+        ProfileSchema: {
+            /** Id */
+            id: number;
+            /** Username */
+            username: string;
+            /**
+             * Level
+             * @default 20
+             */
+            level: number;
+            /**
+             * Date Created
+             * Format: date-time
+             */
+            date_created?: string;
         };
         /** TagWorkInstanceSchema */
         TagWorkInstanceSchema: {
@@ -1419,6 +1436,10 @@ export interface components {
             id: number;
             /** Tags */
             tags: components["schemas"]["TagWorkInstanceSchema"][];
+            /** Thumbnail */
+            thumbnail?: string | null;
+            /** Sources */
+            sources: components["schemas"]["WorkSourceSchema"][];
             /** Title */
             title: string;
             /** Description */
@@ -1428,8 +1449,54 @@ export interface components {
              * @default 0
              */
             rating: number;
+            /** Thumbnail Source */
+            thumbnail_source?: number | null;
+        };
+        /** WorkSourceRejectionSchema */
+        WorkSourceRejectionSchema: {
+            by: components["schemas"]["ProfileSchema"];
+            /** Reason */
+            reason: string;
+        };
+        /** WorkSourceSchema */
+        WorkSourceSchema: {
+            /** Id */
+            id: number;
+            added_by: components["schemas"]["ProfileSchema"];
+            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Platform */
+            platform: number;
+            /** Url */
+            url: string;
+            /**
+             * Published Date
+             * Format: date
+             */
+            published_date: string;
+            /** Work Width */
+            work_width?: number | null;
+            /** Work Height */
+            work_height?: number | null;
+            /** Work Duration */
+            work_duration?: number | null;
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Work Origin
+             * @default 0
+             */
+            work_origin: number;
+            /**
+             * Work Status
+             * @default 0
+             */
+            work_status: number;
+            /** Source Id */
+            source_id: string;
         };
         /** WorkEditSchema */
         WorkEditSchema: {
@@ -1437,8 +1504,8 @@ export interface components {
             title: string;
             /** Description */
             description?: string | null;
-            /** Thumbnail */
-            thumbnail?: string | null;
+            /** Thumbnail Source */
+            thumbnail_source_id?: number | null;
             /**
              * Rating
              * @default 0
@@ -1474,73 +1541,10 @@ export interface components {
         SlimWorkSchema: {
             /** Id */
             id: number;
-            /** Title */
-            title: string;
             /** Thumbnail */
             thumbnail?: string | null;
-        };
-        /** ProfileSchema */
-        ProfileSchema: {
-            /** Id */
-            id: number;
-            /** Username */
-            username: string;
-            /**
-             * Level
-             * @default 20
-             */
-            level: number;
-            /**
-             * Date Created
-             * Format: date-time
-             */
-            date_created?: string;
-        };
-        /** WorkSourceRejectionSchema */
-        WorkSourceRejectionSchema: {
-            by: components["schemas"]["ProfileSchema"];
-            /** Reason */
-            reason: string;
-        };
-        /** WorkSourceSchema */
-        WorkSourceSchema: {
-            /** Id */
-            id: number;
-            added_by: components["schemas"]["ProfileSchema"];
-            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
-            /** Platform */
-            platform: number;
-            /** Url */
-            url: string;
-            /**
-             * Published Date
-             * Format: date
-             */
-            published_date: string;
-            /** Work Width */
-            work_width?: number | null;
-            /** Work Height */
-            work_height?: number | null;
-            /** Work Duration */
-            work_duration?: number | null;
             /** Title */
             title: string;
-            /** Description */
-            description?: string | null;
-            /**
-             * Work Origin
-             * @default 0
-             */
-            work_origin: number;
-            /**
-             * Work Status
-             * @default 0
-             */
-            work_status: number;
-            /** Thumbnail */
-            thumbnail?: string | null;
-            /** Source Id */
-            source_id: string;
         };
         /** ListSchema */
         ListSchema: {
@@ -1585,6 +1589,8 @@ export interface components {
             id: number;
             added_by: components["schemas"]["ProfileSchema"];
             rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
+            /** Thumbnail */
+            thumbnail?: string | null;
             /** Platform */
             platform: number;
             /** Url */
@@ -1614,8 +1620,6 @@ export interface components {
              * @default 0
              */
             work_status: number;
-            /** Thumbnail */
-            thumbnail?: string | null;
             /** Source Id */
             source_id: string;
             /** Media */

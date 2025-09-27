@@ -99,10 +99,7 @@ def tags_needed(request: HttpRequest):
 
 @work_router.get('work', response={ 200: WorkSchema, 300: int })
 def work(request: HttpRequest, work_id: int):
-    work = get_object_or_404(MediaWork.objects.prefetch_related(
-        'worksource_set__added_by',
-        'worksource_set__rejection'
-    ).select_related('thumbnail_source'), id=work_id)
+    work = get_object_or_404(MediaWork.objects, id=work_id)
     if work.moved_to:
         return 300, work.moved_to.id
     return work

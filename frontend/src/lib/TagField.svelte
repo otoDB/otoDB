@@ -1,5 +1,6 @@
 <script lang="ts">
 	import client from './api';
+	import TagSuggestionResults from './TagSuggestionResults.svelte';
 	import { clickOutside, debounce } from './ui';
 
 	interface Props {
@@ -38,28 +39,14 @@
 				suggestions = [];
 			}}
 		>
-			{#each suggestions as t, i (i)}
-				<li class="bg-otodb-bg-fainter hover:bg-otodb-bg-faint px-2 py-1">
-					<a
-						class="max-w-60 cursor-pointer"
-						href={null}
-						onclick={() => {
-							value = t.aliased_to ? t.aliased_to.slug : t.slug;
-							suggestions = [];
-						}}
-						>{t.aliased_to ? `${t.name} → ${t.aliased_to.name}` : t.name}
-						{#if t.slug !== t.name}<address class="inline">
-								({t.slug}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
-										'',
-										...t.lang_prefs
-									]
-										.map((p) => p.tag)
-										.join(', ')}{/if})
-							</address>{/if}</a
-					>
-					<span>{t.n_instance}</span>
-				</li>
-			{/each}
+			<TagSuggestionResults
+				{suggestions}
+				onclick={(t) => {
+					value = t.aliased_to ? t.aliased_to.slug : t.slug;
+					suggestions = [];
+				}}
+				{type}
+			/>
 		</ul>
 	{/if}
 </span>

@@ -3493,17 +3493,13 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                t: number;
+                urls: string;
             };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConnectionSchema"][];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

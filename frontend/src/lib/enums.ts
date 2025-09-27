@@ -348,3 +348,10 @@ export const RequestActions = {
 	11: 'source:attach-tag',
 	21: 'work:attach-tag'
 };
+
+export const PostCategories = [
+	m.livid_loose_eel_pop,
+	m.crazy_loud_trout_peek,
+	m.new_honest_tapir_endure,
+	m.moving_trick_piranha_thrive
+];

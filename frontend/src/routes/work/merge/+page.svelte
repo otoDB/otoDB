@@ -153,7 +153,7 @@
 								disabled={!work[0].work || selecting.thumbnail_source !== 0}
 								bind:value={work[0].thumbnail_source_id}
 							>
-								{#each work[0].work.sources as source}
+								{#each work[0].work.sources as source (source.id)}
 									<option value={source.id}
 										>{Platform[source.platform]}
 										{source.work_origin === 0
@@ -200,7 +200,7 @@
 								disabled={!work[1].work || selecting.thumbnail_source !== 1}
 								bind:value={work[1].thumbnail_source_id}
 							>
-								{#each work[1].work.sources as source}
+								{#each work[1].work.sources as source (source.id)}
 									<option value={source.id}>{source.title}</option>
 								{/each}
 							</select>

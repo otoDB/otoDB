@@ -146,3 +146,9 @@ class RequestActions(models.IntegerChoices):
     WORKSOURCE_ATTACHTAG = 11
 
     MEDIAWORK_ATTACHTAG = 21
+
+class PostCategory(models.IntegerChoices):
+    ANNOUNCEMENT    = 0, "Announcement"
+    FEATURE_REQUEST = 1, "Feature Request"
+    BUG_REPORT      = 2, "Bug Report"
+    GARDENING       = 3, "Gardening"

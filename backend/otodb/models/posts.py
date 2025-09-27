@@ -4,11 +4,12 @@ from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_CLASSY
 
 from otodb.account.models import Account
-from .enums import LanguageTypes
+from .enums import LanguageTypes, PostCategory
 
 class Post(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)
     added_by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
+    category = models.IntegerField(choices=PostCategory.choices, null=False, blank=False)
 
     class Meta:
         verbose_name = ("Post")

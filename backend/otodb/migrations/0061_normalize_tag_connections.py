@@ -47,7 +47,7 @@ def fix_tag_connections(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('otodb', '0059_historicaltagworkcreatorconnection_dead_and_more'),
+        ('otodb', '0060_post_category'),
     ]
 
     operations = [

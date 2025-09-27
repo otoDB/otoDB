@@ -301,7 +301,7 @@ profile_connection_parser = make_alt_value_parser(
 	(ProfileConnectionTypes.YOUTUBE, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?')))),
 	(ProfileConnectionTypes.BILIBILI, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/space\.bilibili\.com\/(\d+)\/?')))),
 	(ProfileConnectionTypes.TWITTER, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?')))),
-	(ProfileConnectionTypes.BLUESKY, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)'))))
+	(ProfileConnectionTypes.BLUESKY, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)')))),
 	(ProfileConnectionTypes.SOUNDCLOUD, make_dead_link_parser(re_to_parser(re.compile(r'https?:\/\/soundcloud\.com\/(.+?)(?:\/*)'))))
 )
 

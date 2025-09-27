@@ -101,7 +101,7 @@ class MediaWork(models.Model):
     moved_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 
     # deprecated!
-    _thumbnail = models.CharField(max_length=200, null=True, blank=True)
+    _thumbnail = models.CharField(max_length=200, null=True, blank=True, help_text="Deprecated: Use thumbnail_source instead")
 
     objects = models.Manager()
     active_objects = TaggedManager.cast_class(ActiveManager())

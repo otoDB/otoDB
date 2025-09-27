@@ -13,7 +13,7 @@ export const WorkTagCategory = [
 export const WorkTagCategoriesSettableAsSource = [2, 4, 6];
 export const WorkTagPresentationOrder = [4, 6, 3, 2, 0, 5];
 export const WorkTagPresentationColours = [
-	'rgb(209,213,219)',
+	'rgb(159,163,169)',
 	'rgb(8,145,178)',
 	'rgb(232,121,249)',
 	'rgb(101,163,13)',
@@ -306,7 +306,7 @@ export const Role = {
 	32: m.heavy_blue_parrot_mend
 };
 
-export const Themes = ['default', 'aniki dark'].map((t) => 'theme-' + t);
+export const Themes = ['default', 'aniki'].map((t) => 'theme-' + t);
 
 export const ThemeNames = [m.grassy_noble_walrus_wish, m.next_ago_opossum_swim];
 

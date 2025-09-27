@@ -65,7 +65,7 @@
 				})
 			);
 		const traverse = (node) => ({
-			node: paths.flatMap((p) => [p, ...p.primary_path]).find((n) => n.slug === node),
+			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node),
 			real: paths.some((n) => n.slug === node),
 			children: Array.from(graph.get(node) ?? []).map((n) => traverse(n))
 		});
@@ -73,7 +73,7 @@
 			...graph
 				.keys()
 				.filter((n) => !graph.values().some((s) => s.has(n)))
-				.map((v) => traverse(v, 0)),
+				.map(traverse),
 			...paths
 				.filter((p) => p.primary_path.length === 0 && !graph.has(p.slug))
 				.map((n) => ({ node: n, real: true }))
@@ -195,7 +195,7 @@
 						cat[0]
 					]};background-color: color-mix(in hsl, {WorkTagPresentationColours[
 						cat[0]
-					]}, transparent 90%);"
+					]}, transparent 85%);"
 				>
 					<h5 class="my-2 font-bold">
 						{WorkTagCategory[cat[0]]()}

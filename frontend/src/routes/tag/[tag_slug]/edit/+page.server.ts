@@ -82,7 +82,7 @@ export const actions = {
 				? {
 						title,
 						author,
-						bpm: +bpm,
+						bpm: +bpm || null,
 						variable_bpm
 					}
 				: null;
@@ -140,10 +140,21 @@ export const actions = {
 
 		let parsers = Object.entries(TagWorkConnectionParsers);
 		const n_general_parsers = parsers.length;
+
+		const make_dead_link_parser =
+			(parser: (link: string) => string | undefined) => (link: string) => {
+				const dead = link.startsWith('-');
+				const parse = parser(dead ? link.substring(1) : link);
+				return parse ? [dead, parse] : undefined;
+			};
+
 		if (category === 2) parsers = [...parsers, ...Object.entries(SongConnectionParsers)];
 		else if (category === 6) parsers = [...parsers, ...Object.entries(MediaConnectionParsers)];
 		else if (category === 4)
-			parsers = [...parsers, ...Array.from(ProfileConnectionParsers.entries()).slice(1)];
+			parsers = [
+				...parsers,
+				...Array.from(ProfileConnectionParsers.map(make_dead_link_parser).entries())
+			];
 		const connections = [...new Set(urls.split('\n'))]
 			.filter((x) => x.trim() !== '')
 			.map(
@@ -151,10 +162,10 @@ export const actions = {
 					parsers
 						.map((p, i) => ({
 							site: +p[0],
-							content_id: p[1](url),
+							parse: p[1](url),
 							t: i >= n_general_parsers ? category : 0
 						}))
-						.filter((v) => !!v.content_id)
+						.filter((v) => !!v.parse)
 						.at(-1) // !!! Attention here
 			)
 			.filter((v) => !!v);
@@ -164,7 +175,7 @@ export const actions = {
 				fetch,
 				body: connections
 					.filter((c) => c.t === 0)
-					.map(({ content_id, site }) => ({ content_id: content_id, site })),
+					.map(({ parse, site }) => ({ content_id: parse, site })),
 				params: { query: { tag_slug: params.tag_slug!, t: 0 } }
 			})
 		];
@@ -174,7 +185,11 @@ export const actions = {
 					fetch,
 					body: connections
 						.filter((c) => c.t === category)
-						.map(({ content_id, site }) => ({ content_id, site })),
+						.map(({ parse, site, t }) => ({
+							content_id: t === 4 ? parse[1] : parse,
+							site,
+							dead: t === 4 ? parse[0] : undefined
+						})),
 					params: { query: { tag_slug: params.tag_slug!, t: category } }
 				})
 			);

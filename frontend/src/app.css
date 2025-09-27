@@ -2,7 +2,7 @@
 @plugin "@tailwindcss/typography";
 @import './themes.css';
 
-@theme {
+@theme inline {
 	--color-otodb-bg-primary: var(--otodb-color-bg-primary);
 	--color-otodb-bg-faint: var(--otodb-color-bg-faint);
 	--color-otodb-bg-fainter: var(--otodb-color-bg-fainter);
@@ -15,24 +15,33 @@
 @custom-variant dark (@media (prefers-color-scheme: dark), &:where(.dark, .dark *), &:has(div.bg-marker.dark));
 
 :root {
-	--otodb-color-bg-primary: white;
+	--otodb-color-bg-fainter: white;
 	--otodb-color-content-primary: black;
+	--otodb-color-bg-faint: color-mix(
+		in hsl,
+		var(--otodb-color-bg-fainter) 95%,
+		var(--otodb-color-content-primary)
+	);
+	--otodb-color-bg-primary: color-mix(
+		in hsl,
+		var(--otodb-color-bg-fainter) 90%,
+		var(--otodb-color-content-primary)
+	);
 
 	@variant dark {
 		--otodb-color-bg-primary: black;
 		--otodb-color-content-primary: white;
+		--otodb-color-bg-faint: color-mix(
+			in hsl,
+			var(--otodb-color-bg-primary) 90%,
+			var(--otodb-color-content-primary)
+		);
+		--otodb-color-bg-fainter: color-mix(
+			in hsl,
+			var(--otodb-color-bg-primary) 80%,
+			var(--otodb-color-content-primary)
+		);
 	}
-
-	--otodb-color-bg-faint: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 90%,
-		var(--otodb-color-content-primary)
-	);
-	--otodb-color-bg-fainter: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 80%,
-		var(--otodb-color-content-primary)
-	);
 
 	--otodb-color-content-faint: color-mix(
 		in hsl,
@@ -55,7 +64,7 @@
 	}
 
 	tbody > tr:nth-of-type(odd) {
-		background-color: var(--otodb-color-bg-fainter);
+		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
 	}
 
 	ul {
@@ -71,7 +80,7 @@
 
 	hr {
 		width: 100%;
-		color: var(--otodb-color-content-primary);
+		color: var(--otodb-color-content-faint);
 	}
 
 	th,
@@ -102,7 +111,7 @@
 	input[type='button'],
 	select,
 	button {
-		border: 1px solid white;
+		border: 1px solid var(--otodb-color-content-faint);
 		outline: none;
 		background-color: var(--otodb-color-bg-faint);
 		&:disabled {

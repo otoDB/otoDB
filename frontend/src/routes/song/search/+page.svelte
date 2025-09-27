@@ -42,7 +42,7 @@
 	menuLinks={[
 		{ title: m.grand_merry_fly_succeed(), pathname: `work/search?query=${data.query}` },
 		{ title: m.empty_legal_chicken_taste(), pathname: `tag/search?query=${data.query}` },
-		{ title: m.grand_nice_pony_belong(), pathname: `tag/song/search` },
+		{ title: m.grand_nice_pony_belong(), pathname: `song/search` },
 		{ title: m.stale_loose_squid_cut(), pathname: `list/search?query=${data.query}` }
 	]}
 >
@@ -83,9 +83,7 @@
 					<td><a href="/tag/{song.work_tag}">#{song.id} - {song.title}</a></td>
 					<td>{song.author}</td>
 					<td
-						>{#if song.variable_bpm}{m.glad_fresh_thrush_hack({
-								bpm: song.bpm
-							})}{:else}{song.bpm}{/if}</td
+						>{#if song.variable_bpm && song.bpm}{m.big_helpful_tortoise_swim()} ({song.bpm}){:else if song.bpm}{song.bpm}{:else}{m.big_helpful_tortoise_swim()}{/if}</td
 					>
 				</tr>
 			{/each}

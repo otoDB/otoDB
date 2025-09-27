@@ -3,9 +3,18 @@
 }
 
 .theme-aniki {
-	background-image: url('/aniki-bg.png'), url('/aniki-right.png');
-	background-position:
-		left top,
-		right top;
-	background-repeat: no-repeat, no-repeat;
+	--otodb-color-content-primary: white;
+	--otodb-color-content-fainter: rgb(184, 180, 212);
+	--otodb-color-content-faint: rgb(121, 122, 151);
+	--otodb-color-bg-fainter: rgb(37, 43, 80);
+	--otodb-color-bg-faint: rgb(10, 10, 32);
+	--otodb-color-bg-primary: black;
+
+	> div.bg-marker:first-child {
+		background-image: url('/aniki-bg.png'), url('/aniki-right.png');
+		background-position:
+			left top,
+			right top;
+		background-repeat: no-repeat, no-repeat;
+	}
 }

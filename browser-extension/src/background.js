@@ -9,13 +9,8 @@ async function updateUserSessionRule() {
 		const removeRuleIds = [RULE_ID];
 		let addRules = [];
 
-		// Only include user_session and domand_bid cookies
-		const filteredCookies = userSessionCookies.filter(cookie =>
-			cookie.name === 'user_session' || cookie.name === 'domand_bid'
-		);
-
-		if (filteredCookies.length > 0) {
-			const cookieHeaderValue = filteredCookies
+		if (userSessionCookies.length > 0) {
+			const cookieHeaderValue = userSessionCookies
 				.map(cookie => `${cookie.name}=${cookie.value}`)
 				.join('; ');
 

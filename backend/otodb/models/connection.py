@@ -41,6 +41,7 @@ class TagWorkCreatorConnection(models.Model):
     tag = HistoricForeignKey(TagWork, on_delete=models.CASCADE)
     site = models.IntegerField(choices=ProfileConnectionTypes.choices)
     content_id = models.CharField(max_length=1000)
+    dead = models.BooleanField(default=False, null=False)
     class Meta:
         unique_together = (("tag", "site", "content_id"),)
     history = HistoricalRecords()

@@ -41,7 +41,7 @@
 				type="text"
 				name="query"
 				placeholder="{m.mean_top_antelope_love()}..."
-				class="bg-otodb-bg-faint/75 border-otodb-content-primary flex-grow px-2 py-1"
+				class="bg-otodb-bg-faint/75 border-otodb-content-faint flex-grow px-2 py-1"
 			/>
 			<button
 				type="submit"
@@ -67,7 +67,7 @@
 				{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 			{/if}
 			{@render link('/tag/search', m.empty_legal_chicken_taste())}
-			{@render link('/tag/song/search', m.grand_nice_pony_belong())}
+			{@render link('/song/search', m.grand_nice_pony_belong())}
 			{@render link('/list/search', m.stale_loose_squid_cut())}
 			{@render link('/post/3', 'FAQ')}
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}

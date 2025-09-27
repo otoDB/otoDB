@@ -1,6 +1,7 @@
 from typing import Annotated
 from itertools import groupby
 from functools import reduce
+import re
 
 from django.db import transaction, models
 from django.db.models import Value, F, Q, Case, When, Count
@@ -14,10 +15,10 @@ from ninja.pagination import paginate
 
 from otodb.common import clean_incoming_slug, clean_incoming_tag_name
 from otodb.models import TagWork, MediaWork, MediaSong, WikiPage, SongRelation, TagSong, TagWorkConnection, MediaSongConnection, TagWorkLangPreference, TagWorkMediaConnection, TagWorkCreatorConnection, TagWorkParenthood
-from otodb.models.enums import WorkTagCategory, TagWorkConnectionTypes, LanguageTypes
+from otodb.models.enums import WorkTagCategory, LanguageTypes, SongConnectionTypes, TagWorkConnectionTypes, MediaConnectionTypes
 from otodb.models.tag import transfer_data
 
-from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema
+from .common import FatTagWorkSchema, TagWorkSchema, ThinWorkSchema, TagWorkDetailsSchema, user_is_trusted, RelationSchema, post_relation, SongSchema, TagSongSchema, ConnectionSchema, profile_connection_parsers, make_alt_value_parser, re_to_parser
 
 tag_router = Router()
 
@@ -235,45 +236,98 @@ def connection(request: HttpRequest, tag_slug: str):
         return 200, (cs, tag.tagworkcreatorconnection_set.all().order_by('dead'))
     return 200, (cs, None)
 
+song_connection_parser = make_alt_value_parser(
+	(SongConnectionTypes.VGMDB, re_to_parser(re.compile(r'https?:\/\/vgmdb\.net\/album\/(\d+)(?:\/*)?'))),
+	(SongConnectionTypes.VOCADB, re_to_parser(re.compile(r'https?:\/\/vocadb\.net\/S\/(\d+)(?:\/*)?'))),
+	(SongConnectionTypes.DISCOGS, re_to_parser(re.compile(r'https?:\/\/www\.discogs\.com\/master\/(\d+)(?:\/*)?'))),
+	(SongConnectionTypes.MUSICBRAINZ, re_to_parser(re.compile(r'https?:\/\/musicbrainz\.org\/recording\/([a-f0-9-]+)(?:\/*)?'))),
+	(SongConnectionTypes.RATEYOURMUSIC, re_to_parser(re.compile(r'https?:\/\/rateyourmusic\.com\/song\/([^/]+)(?:\/+)?'))),
+	(SongConnectionTypes.DOJINMUSIC, re_to_parser(re.compile(r'https?:\/\/www.dojin-music\.info\/song\/(\d+)(?:\/+)?'))),
+	(SongConnectionTypes.REMYWIKI, re_to_parser(re.compile(r'https?:\/\/remywiki\.com\/(.+?)(?:\/*)?'))),
+	(SongConnectionTypes.SILENTBLUE, re_to_parser(re.compile(r'https?:\/\/silentblue\.remywiki\.com\/(.+?)(?:\/*)?'))),
+	(SongConnectionTypes.ZENIUS, re_to_parser(re.compile(r'https?:\/\/zenius-i-vanisher\.com\/v5\.2\/songdb\.php\?songid=(\d+)(?:\/*)?'))),
+	(SongConnectionTypes.NNDMEDLEYWIKI, re_to_parser(re.compile(r'https?:\/\/medley\.bepis\.io\/wiki\/(.+?)(?:\/*)?')))
+)
+
+tag_work_connection_parser = make_alt_value_parser(
+	(TagWorkConnectionTypes.OTOMADWIKI, re_to_parser(re.compile(r'https?:\/\/otomad\.wiki\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.OTOMADFANDOM, re_to_parser(re.compile(r'https?:\/\/otomad\.fandom\.com\/ja\/wiki\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.NICOPEDIA, re_to_parser(re.compile(r'https?:\/\/dic\.nicovideo\.jp\/a\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.PIXIV_DICT, re_to_parser(re.compile(r'https?:\/\/dic\.pixiv\.net\/a\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.WIKIPEDIA, re_to_parser(re.compile(r'https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.NAMUWIKI, re_to_parser(re.compile(r'https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)\/?'))),
+	(TagWorkConnectionTypes.KNOWYOURMEME, re_to_parser(re.compile(r'https?:\/\/knowyourmeme\.com\/([^?#]+)\/?')))
+)
+
+media_connection_parser = make_alt_value_parser(
+	(MediaConnectionTypes.ANIKORE, re_to_parser(re.compile(r'https?:\/\/www\.anikore\.jp\/anime\/(\d+)\/?'))),
+	(MediaConnectionTypes.BANGUMI, re_to_parser(re.compile(r'https?:\/\/bangumi\.tv\/subject\/(\d+)\/?'))),
+	(MediaConnectionTypes.ANIDB, re_to_parser(re.compile(r'https?:\/\/anidb\.net\/anime\/(\d+)\/?'))),
+	(MediaConnectionTypes.MYANIMELIST, re_to_parser(re.compile(r'https?:\/\/myanimelist\.net\/anime\/(\d+)\/?'))),
+	(MediaConnectionTypes.ANILIST, re_to_parser(re.compile(r'https?:\/\/anilist\.co\/anime\/(\d+)\/?'))),
+	(MediaConnectionTypes.KITSU, re_to_parser(re.compile(r'https?:\/\/kitsu\.io\/anime\/([^/?#]+)\/?'))),
+	(MediaConnectionTypes.ANIMEPLANET, re_to_parser(re.compile(r'https?:\/\/www\.anime-planet\.com\/anime\/([^/?#]+)\/?'))),
+	(MediaConnectionTypes.IMDB, re_to_parser(re.compile(r'https?:\/\/www\.imdb\.com\/title\/(\d+)\/?'))),
+	(MediaConnectionTypes.LETTERBOXD, re_to_parser(re.compile(r'https?:\/\/letterboxd\.com\/film\/([^/?#]+)\/?'))),
+	(MediaConnectionTypes.VNDB, re_to_parser(re.compile(r'https?:\/\/vndb\.org\/(v\d+)\/?'))),
+	(MediaConnectionTypes.EROGAMESCAPE, re_to_parser(re.compile(r'https?:\/\/erogamescape\.dyndns\.org\/~ap2\/ero\/toukei_kaiseki\/game\.php\?game=(\d+)')))
+)
+
+def make_dead_link_parser(parser):
+    def match(link):
+        dead = link.startswith('-')
+        parse = parser(link[1:] if dead else link)
+        return (dead, parse) if parse else None
+    return match
+
+creator_tag_connection_parser = make_alt_value_parser(*[(v, make_dead_link_parser(parser)) for v, parser in profile_connection_parsers])
+
 @tag_router.put('connection', auth=django_auth)
 @user_is_trusted
-def edit_connections(request: HttpRequest, tag_slug: str, payload: list[ConnectionSchema], t: int):
-    Type = [
-        TagWorkConnection,        # GENERAL
-        None,                     # EVENT
-        MediaSongConnection,      # SONG
-        TagWorkMediaConnection,  # SOURCE
-        TagWorkCreatorConnection, # CREATOR
-        None                      # META
-    ][t]
-    assert(Type is not None)
+def edit_connections(request: HttpRequest, tag_slug: str, urls: str):
     tag = get_object_or_404(TagWork, slug=tag_slug)
-    for connection in payload:
-        connection.content_id = connection.content_id.strip()
-        assert(connection.content_id != '')
-        if tag.category == WorkTagCategory.CREATOR and Type is TagWorkConnection:
-            assert(connection.site != TagWorkConnectionTypes.WEBSITE) # Should be in creator connections instead
-    if t != WorkTagCategory.GENERAL:
-        assert(t == tag.category)
-    if Type is MediaSongConnection:
-        song = tag.mediasong
-        assert(song)
-        target = {'song': song}
-    else:
-        target = {'tag': tag}
-    Type.objects.filter(**target).exclude(reduce(
+    category_parser_tp = {
+        WorkTagCategory.SONG: (MediaSongConnection, song_connection_parser),
+        WorkTagCategory.MEDIA: (TagWorkMediaConnection, media_connection_parser),
+        WorkTagCategory.CREATOR: (TagWorkCreatorConnection, creator_tag_connection_parser),
+    }.get(tag.category, (None, lambda _: None))
+    total_parser = make_alt_value_parser(
+        (TagWorkConnection, tag_work_connection_parser),
+        category_parser_tp
+    )
+    urls = [total_parser(url) for url in urls.split('\n') if url.strip()]
+    urls = [url for url in urls if url]
+    general_con = [url for tp, url in urls if tp is TagWorkConnection]
+    category_con = [url for tp, url in urls if tp is not TagWorkConnection]
+
+    if category_con:
+        Table = category_parser_tp[0]
+        def get_content_dict(parse):
+            return {'content_id': parse[1], 'dead': parse[0]} if Table is TagWorkCreatorConnection else {'content_id': parse}
+
+        target = {'song': tag.mediasong} if tag.category == WorkTagCategory.SONG else {'tag': tag}
+        Table.objects.filter(**target).exclude(reduce(
+            lambda a, b: a | b,
+            [Q(site=site) & Q(content_id=get_content_dict(parse)['content_id']) for site, parse in category_con],
+            Q()
+        )).delete()
+        for site, parse in category_con:
+            old = Table.objects.filter(**target, site=site, content_id=get_content_dict(parse)['content_id'])
+            if not old.exists():
+                Table.objects.create(**target, site=site, **get_content_dict(parse))
+            elif Table is TagWorkCreatorConnection:
+                old.update(dead=get_content_dict(parse)['dead'])
+
+    TagWorkConnection.objects.filter(tag=tag).exclude(reduce(
         lambda a, b: a | b,
-        [Q(site=p.site) & Q(content_id=p.content_id) for p in payload],
+        [Q(site=site) & Q(content_id=content_id) for site, content_id in general_con],
         Q()
     )).delete()
-    for connection in payload:
-        old = Type.objects.filter(**target, site=connection.site, content_id=connection.content_id)
+    for site, content_id in general_con:
+        old = TagWorkConnection.objects.filter(tag=tag, site=site, content_id=content_id)
         if not old.exists():
-            print(connection.dict())
-            Type.objects.create(**{k: v for k, v in connection.dict().items() if v is not None}, **target)
-        elif Type is TagWorkCreatorConnection:
-            old.update(dead=connection.dead)
-
+            TagWorkConnection.objects.create(site=site, content_id=content_id, tag=tag)
+        
 @tag_router.get('song', response=str)
 def song(request: HttpRequest, id: int):
     return get_object_or_404(MediaSong, id=id).work_tag.slug

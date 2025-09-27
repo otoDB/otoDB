@@ -106,6 +106,7 @@ export const ProfileConnectionTypes = {
 	2: 'YouTube',
 	3: 'Bilibili',
 	4: 'Twitter',
+	5: 'Bluesky',
 	6: 'Soundcloud'
 };
 

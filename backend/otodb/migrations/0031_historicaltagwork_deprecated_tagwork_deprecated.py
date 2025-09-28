@@ -4,19 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0030_alter_worksource_options"),
-    ]
+	dependencies = [
+		('otodb', '0030_alter_worksource_options'),
+	]
 
-    operations = [
-        migrations.AddField(
-            model_name="historicaltagwork",
-            name="deprecated",
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name="tagwork",
-            name="deprecated",
-            field=models.BooleanField(default=False),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='historicaltagwork',
+			name='deprecated',
+			field=models.BooleanField(default=False),
+		),
+		migrations.AddField(
+			model_name='tagwork',
+			name='deprecated',
+			field=models.BooleanField(default=False),
+		),
+	]

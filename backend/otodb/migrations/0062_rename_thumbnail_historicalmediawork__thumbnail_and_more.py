@@ -5,69 +5,69 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0061_normalize_tag_connections"),
-    ]
+	dependencies = [
+		('otodb', '0061_normalize_tag_connections'),
+	]
 
-    operations = [
-        migrations.RenameField(
-            model_name="historicalmediawork",
-            old_name="thumbnail",
-            new_name="_thumbnail",
-        ),
-        migrations.RenameField(
-            model_name="historicalworksource",
-            old_name="thumbnail",
-            new_name="thumbnail_url",
-        ),
-        migrations.RenameField(
-            model_name="mediawork",
-            old_name="thumbnail",
-            new_name="_thumbnail",
-        ),
-        migrations.RenameField(
-            model_name="worksource",
-            old_name="thumbnail",
-            new_name="thumbnail_url",
-        ),
-        migrations.AddField(
-            model_name="historicalmediawork",
-            name="thumbnail_source",
-            field=models.ForeignKey(
-                blank=True,
-                db_constraint=False,
-                null=True,
-                on_delete=django.db.models.deletion.DO_NOTHING,
-                related_name="+",
-                to="otodb.worksource",
-            ),
-        ),
-        migrations.AddField(
-            model_name="historicalworksource",
-            name="thumbnail_mime",
-            field=models.IntegerField(
-                blank=True,
-                choices=[(1, "image/jpeg"), (2, "image/png"), (3, "image/webp")],
-                null=True,
-            ),
-        ),
-        migrations.AddField(
-            model_name="mediawork",
-            name="thumbnail_source",
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                to="otodb.worksource",
-            ),
-        ),
-        migrations.AddField(
-            model_name="worksource",
-            name="thumbnail_mime",
-            field=models.IntegerField(
-                blank=True,
-                choices=[(1, "image/jpeg"), (2, "image/png"), (3, "image/webp")],
-                null=True,
-            ),
-        ),
-    ]
+	operations = [
+		migrations.RenameField(
+			model_name='historicalmediawork',
+			old_name='thumbnail',
+			new_name='_thumbnail',
+		),
+		migrations.RenameField(
+			model_name='historicalworksource',
+			old_name='thumbnail',
+			new_name='thumbnail_url',
+		),
+		migrations.RenameField(
+			model_name='mediawork',
+			old_name='thumbnail',
+			new_name='_thumbnail',
+		),
+		migrations.RenameField(
+			model_name='worksource',
+			old_name='thumbnail',
+			new_name='thumbnail_url',
+		),
+		migrations.AddField(
+			model_name='historicalmediawork',
+			name='thumbnail_source',
+			field=models.ForeignKey(
+				blank=True,
+				db_constraint=False,
+				null=True,
+				on_delete=django.db.models.deletion.DO_NOTHING,
+				related_name='+',
+				to='otodb.worksource',
+			),
+		),
+		migrations.AddField(
+			model_name='historicalworksource',
+			name='thumbnail_mime',
+			field=models.IntegerField(
+				blank=True,
+				choices=[(1, 'image/jpeg'), (2, 'image/png'), (3, 'image/webp')],
+				null=True,
+			),
+		),
+		migrations.AddField(
+			model_name='mediawork',
+			name='thumbnail_source',
+			field=models.ForeignKey(
+				blank=True,
+				null=True,
+				on_delete=django.db.models.deletion.SET_NULL,
+				to='otodb.worksource',
+			),
+		),
+		migrations.AddField(
+			model_name='worksource',
+			name='thumbnail_mime',
+			field=models.IntegerField(
+				blank=True,
+				choices=[(1, 'image/jpeg'), (2, 'image/png'), (3, 'image/webp')],
+				null=True,
+			),
+		),
+	]

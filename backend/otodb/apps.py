@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class OtodbConfig(AppConfig):
-    name = "otodb"
+	name = 'otodb'
 
-    def ready(self):
-        pass  # connect @receivers
+	def ready(self):
+		pass  # connect @receivers

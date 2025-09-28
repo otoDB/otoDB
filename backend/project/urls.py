@@ -22,15 +22,15 @@ from django.conf.urls.static import static
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from project import settings  # noqa: F811
+	from project import settings  # noqa: F811
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    re_path(r"^", include("otodb.urls")),
+	path('admin/', admin.site.urls),
+	re_path(r'^', include('otodb.urls')),
 ]
 
 if settings.DEBUG_TOOLBAR:
-    urlpatterns.append(path("__debug__/", include("debug_toolbar.urls")))
+	urlpatterns.append(path('__debug__/', include('debug_toolbar.urls')))
 
 if not settings.OTODB_CDN_ENABLED:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

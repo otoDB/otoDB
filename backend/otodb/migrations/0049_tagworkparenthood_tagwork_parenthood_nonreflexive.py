@@ -4,20 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        (
-            "otodb",
-            "0048_tagworkparenthood_squashed_0048_alter_tagworkparenthood_unique_together_and_more",
-        ),
-    ]
+	dependencies = [
+		(
+			'otodb',
+			'0048_tagworkparenthood_squashed_0048_alter_tagworkparenthood_unique_together_and_more',
+		),
+	]
 
-    operations = [
-        migrations.AddConstraint(
-            model_name="tagworkparenthood",
-            constraint=models.CheckConstraint(
-                condition=models.Q(("tag", models.F("parent")), _negated=True),
-                name="tagwork_parenthood_nonreflexive",
-                violation_error_message="tag cannot be own parent",
-            ),
-        ),
-    ]
+	operations = [
+		migrations.AddConstraint(
+			model_name='tagworkparenthood',
+			constraint=models.CheckConstraint(
+				condition=models.Q(('tag', models.F('parent')), _negated=True),
+				name='tagwork_parenthood_nonreflexive',
+				violation_error_message='tag cannot be own parent',
+			),
+		),
+	]

@@ -4,14 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0023_alter_tagwork_options_alter_worksource_options_and_more"),
-    ]
+	dependencies = [
+		('otodb', '0023_alter_tagwork_options_alter_worksource_options_and_more'),
+	]
 
-    operations = [
-        migrations.AddField(
-            model_name="worksource",
-            name="info_payload",
-            field=models.JSONField(blank=True, null=True),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='worksource',
+			name='info_payload',
+			field=models.JSONField(blank=True, null=True),
+		),
+	]

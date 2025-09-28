@@ -4,14 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0049_tagworkparenthood_tagwork_parenthood_nonreflexive"),
-    ]
+	dependencies = [
+		('otodb', '0049_tagworkparenthood_tagwork_parenthood_nonreflexive'),
+	]
 
-    operations = [
-        migrations.AddField(
-            model_name="postcontent",
-            name="modified",
-            field=models.DateTimeField(auto_now=True),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='postcontent',
+			name='modified',
+			field=models.DateTimeField(auto_now=True),
+		),
+	]

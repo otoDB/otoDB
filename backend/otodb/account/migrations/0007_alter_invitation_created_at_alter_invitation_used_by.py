@@ -6,25 +6,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("account", "0006_invitation_created_at_invitation_created_by_and_more"),
-    ]
+	dependencies = [
+		('account', '0006_invitation_created_at_invitation_created_by_and_more'),
+	]
 
-    operations = [
-        migrations.AlterField(
-            model_name="invitation",
-            name="created_at",
-            field=models.DateTimeField(auto_now_add=True),
-        ),
-        migrations.AlterField(
-            model_name="invitation",
-            name="used_by",
-            field=models.OneToOneField(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="used_invitation",
-                to=settings.AUTH_USER_MODEL,
-            ),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name='invitation',
+			name='created_at',
+			field=models.DateTimeField(auto_now_add=True),
+		),
+		migrations.AlterField(
+			model_name='invitation',
+			name='used_by',
+			field=models.OneToOneField(
+				blank=True,
+				null=True,
+				on_delete=django.db.models.deletion.CASCADE,
+				related_name='used_invitation',
+				to=settings.AUTH_USER_MODEL,
+			),
+		),
+	]

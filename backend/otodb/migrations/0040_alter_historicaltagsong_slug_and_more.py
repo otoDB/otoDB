@@ -4,29 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0036_userpreferences_squashed_0039_alter_userpreferences_theme"),
-    ]
+	dependencies = [
+		('otodb', '0036_userpreferences_squashed_0039_alter_userpreferences_theme'),
+	]
 
-    operations = [
-        migrations.AlterField(
-            model_name="historicaltagsong",
-            name="slug",
-            field=models.SlugField(allow_unicode=True),
-        ),
-        migrations.AlterField(
-            model_name="historicaltagwork",
-            name="slug",
-            field=models.SlugField(allow_unicode=True),
-        ),
-        migrations.AlterField(
-            model_name="tagsong",
-            name="slug",
-            field=models.SlugField(allow_unicode=True, unique=True),
-        ),
-        migrations.AlterField(
-            model_name="tagwork",
-            name="slug",
-            field=models.SlugField(allow_unicode=True, unique=True),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name='historicaltagsong',
+			name='slug',
+			field=models.SlugField(allow_unicode=True),
+		),
+		migrations.AlterField(
+			model_name='historicaltagwork',
+			name='slug',
+			field=models.SlugField(allow_unicode=True),
+		),
+		migrations.AlterField(
+			model_name='tagsong',
+			name='slug',
+			field=models.SlugField(allow_unicode=True, unique=True),
+		),
+		migrations.AlterField(
+			model_name='tagwork',
+			name='slug',
+			field=models.SlugField(allow_unicode=True, unique=True),
+		),
+	]

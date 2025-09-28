@@ -4,28 +4,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0003_pool_pending_items"),
-    ]
+	dependencies = [
+		('otodb', '0003_pool_pending_items'),
+	]
 
-    operations = [
-        migrations.AlterField(
-            model_name="songrelation",
-            name="relation",
-            field=models.IntegerField(
-                choices=[(0, "Remix"), (1, "Remaster"), (2, "Medley"), (3, "Sequel")]
-            ),
-        ),
-        migrations.AlterField(
-            model_name="workrelation",
-            name="relation",
-            field=models.IntegerField(
-                choices=[
-                    (0, "Sequel"),
-                    (1, "Respect"),
-                    (2, "Collab Part"),
-                    (3, "Sample"),
-                ]
-            ),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name='songrelation',
+			name='relation',
+			field=models.IntegerField(
+				choices=[(0, 'Remix'), (1, 'Remaster'), (2, 'Medley'), (3, 'Sequel')]
+			),
+		),
+		migrations.AlterField(
+			model_name='workrelation',
+			name='relation',
+			field=models.IntegerField(
+				choices=[
+					(0, 'Sequel'),
+					(1, 'Respect'),
+					(2, 'Collab Part'),
+					(3, 'Sample'),
+				]
+			),
+		),
+	]

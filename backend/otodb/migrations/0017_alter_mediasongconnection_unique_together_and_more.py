@@ -4,96 +4,96 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0016_worksource_uploader_id"),
-    ]
+	dependencies = [
+		('otodb', '0016_worksource_uploader_id'),
+	]
 
-    operations = [
-        migrations.AlterUniqueTogether(
-            name="mediasongconnection",
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name="profileconnection",
-            unique_together=set(),
-        ),
-        migrations.AlterUniqueTogether(
-            name="tagworkconnection",
-            unique_together=set(),
-        ),
-        migrations.AlterField(
-            model_name="historicaltagsong",
-            name="category",
-            field=models.IntegerField(
-                choices=[(0, "General"), (1, "Genre"), (2, "Author"), (3, "Meta")],
-                default=0,
-            ),
-        ),
-        migrations.AlterField(
-            model_name="historicaltagwork",
-            name="category",
-            field=models.IntegerField(
-                choices=[
-                    (0, "General"),
-                    (1, "Event"),
-                    (2, "Song"),
-                    (3, "Source"),
-                    (4, "Creator"),
-                    (5, "Meta"),
-                ],
-                default=0,
-            ),
-        ),
-        migrations.AlterField(
-            model_name="profileconnection",
-            name="site",
-            field=models.IntegerField(
-                choices=[
-                    (0, "Website"),
-                    (1, "Niconico"),
-                    (2, "YouTube"),
-                    (3, "Bilibili"),
-                    (4, "Twitter"),
-                    (5, "Bluesky"),
-                ]
-            ),
-        ),
-        migrations.AlterField(
-            model_name="tagsong",
-            name="category",
-            field=models.IntegerField(
-                choices=[(0, "General"), (1, "Genre"), (2, "Author"), (3, "Meta")],
-                default=0,
-            ),
-        ),
-        migrations.AlterField(
-            model_name="tagwork",
-            name="category",
-            field=models.IntegerField(
-                choices=[
-                    (0, "General"),
-                    (1, "Event"),
-                    (2, "Song"),
-                    (3, "Source"),
-                    (4, "Creator"),
-                    (5, "Meta"),
-                ],
-                default=0,
-            ),
-        ),
-        migrations.AlterField(
-            model_name="tagworkconnection",
-            name="site",
-            field=models.IntegerField(
-                choices=[
-                    (1, "otomad.wiki"),
-                    (2, "Otomad Wiki 2"),
-                    (20, "Niconico Encyclopedia"),
-                    (21, "Pixiv Dictionary"),
-                    (22, "Wikipedia"),
-                    (23, "Namu Wiki"),
-                    (24, "Know Your Meme"),
-                ]
-            ),
-        ),
-    ]
+	operations = [
+		migrations.AlterUniqueTogether(
+			name='mediasongconnection',
+			unique_together=set(),
+		),
+		migrations.AlterUniqueTogether(
+			name='profileconnection',
+			unique_together=set(),
+		),
+		migrations.AlterUniqueTogether(
+			name='tagworkconnection',
+			unique_together=set(),
+		),
+		migrations.AlterField(
+			model_name='historicaltagsong',
+			name='category',
+			field=models.IntegerField(
+				choices=[(0, 'General'), (1, 'Genre'), (2, 'Author'), (3, 'Meta')],
+				default=0,
+			),
+		),
+		migrations.AlterField(
+			model_name='historicaltagwork',
+			name='category',
+			field=models.IntegerField(
+				choices=[
+					(0, 'General'),
+					(1, 'Event'),
+					(2, 'Song'),
+					(3, 'Source'),
+					(4, 'Creator'),
+					(5, 'Meta'),
+				],
+				default=0,
+			),
+		),
+		migrations.AlterField(
+			model_name='profileconnection',
+			name='site',
+			field=models.IntegerField(
+				choices=[
+					(0, 'Website'),
+					(1, 'Niconico'),
+					(2, 'YouTube'),
+					(3, 'Bilibili'),
+					(4, 'Twitter'),
+					(5, 'Bluesky'),
+				]
+			),
+		),
+		migrations.AlterField(
+			model_name='tagsong',
+			name='category',
+			field=models.IntegerField(
+				choices=[(0, 'General'), (1, 'Genre'), (2, 'Author'), (3, 'Meta')],
+				default=0,
+			),
+		),
+		migrations.AlterField(
+			model_name='tagwork',
+			name='category',
+			field=models.IntegerField(
+				choices=[
+					(0, 'General'),
+					(1, 'Event'),
+					(2, 'Song'),
+					(3, 'Source'),
+					(4, 'Creator'),
+					(5, 'Meta'),
+				],
+				default=0,
+			),
+		),
+		migrations.AlterField(
+			model_name='tagworkconnection',
+			name='site',
+			field=models.IntegerField(
+				choices=[
+					(1, 'otomad.wiki'),
+					(2, 'Otomad Wiki 2'),
+					(20, 'Niconico Encyclopedia'),
+					(21, 'Pixiv Dictionary'),
+					(22, 'Wikipedia'),
+					(23, 'Namu Wiki'),
+					(24, 'Know Your Meme'),
+				]
+			),
+		),
+	]

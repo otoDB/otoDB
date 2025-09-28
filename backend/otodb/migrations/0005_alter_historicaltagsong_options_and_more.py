@@ -5,37 +5,37 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0004_alter_songrelation_relation_and_more"),
-    ]
+	dependencies = [
+		('otodb', '0004_alter_songrelation_relation_and_more'),
+	]
 
-    operations = [
-        migrations.AlterModelOptions(
-            name="historicaltagsong",
-            options={
-                "get_latest_by": ("history_date", "history_id"),
-                "ordering": ("-history_date", "-history_id"),
-                "verbose_name": "historical Song Tag",
-                "verbose_name_plural": "historical Song Tags",
-            },
-        ),
-        migrations.AlterModelOptions(
-            name="tagsong",
-            options={
-                "permissions": [("manage_tags", "Can manage tags")],
-                "verbose_name": "Song Tag",
-                "verbose_name_plural": "Song Tags",
-            },
-        ),
-        migrations.AlterField(
-            model_name="tagsong",
-            name="parent",
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name="children",
-                to="otodb.tagsong",
-            ),
-        ),
-    ]
+	operations = [
+		migrations.AlterModelOptions(
+			name='historicaltagsong',
+			options={
+				'get_latest_by': ('history_date', 'history_id'),
+				'ordering': ('-history_date', '-history_id'),
+				'verbose_name': 'historical Song Tag',
+				'verbose_name_plural': 'historical Song Tags',
+			},
+		),
+		migrations.AlterModelOptions(
+			name='tagsong',
+			options={
+				'permissions': [('manage_tags', 'Can manage tags')],
+				'verbose_name': 'Song Tag',
+				'verbose_name_plural': 'Song Tags',
+			},
+		),
+		migrations.AlterField(
+			model_name='tagsong',
+			name='parent',
+			field=models.ForeignKey(
+				blank=True,
+				null=True,
+				on_delete=django.db.models.deletion.SET_NULL,
+				related_name='children',
+				to='otodb.tagsong',
+			),
+		),
+	]

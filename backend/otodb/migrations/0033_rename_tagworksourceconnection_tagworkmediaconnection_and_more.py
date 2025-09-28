@@ -4,45 +4,45 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0032_alter_worksource_media"),
-    ]
+	dependencies = [
+		('otodb', '0032_alter_worksource_media'),
+	]
 
-    operations = [
-        migrations.RenameModel(
-            old_name="TagWorkSourceConnection",
-            new_name="TagWorkMediaConnection",
-        ),
-        migrations.AlterField(
-            model_name="historicaltagwork",
-            name="category",
-            field=models.IntegerField(
-                choices=[
-                    (0, "General"),
-                    (1, "Event"),
-                    (2, "Song"),
-                    (3, "Source"),
-                    (4, "Creator"),
-                    (5, "Meta"),
-                    (6, "Media"),
-                ],
-                default=0,
-            ),
-        ),
-        migrations.AlterField(
-            model_name="tagwork",
-            name="category",
-            field=models.IntegerField(
-                choices=[
-                    (0, "General"),
-                    (1, "Event"),
-                    (2, "Song"),
-                    (3, "Source"),
-                    (4, "Creator"),
-                    (5, "Meta"),
-                    (6, "Media"),
-                ],
-                default=0,
-            ),
-        ),
-    ]
+	operations = [
+		migrations.RenameModel(
+			old_name='TagWorkSourceConnection',
+			new_name='TagWorkMediaConnection',
+		),
+		migrations.AlterField(
+			model_name='historicaltagwork',
+			name='category',
+			field=models.IntegerField(
+				choices=[
+					(0, 'General'),
+					(1, 'Event'),
+					(2, 'Song'),
+					(3, 'Source'),
+					(4, 'Creator'),
+					(5, 'Meta'),
+					(6, 'Media'),
+				],
+				default=0,
+			),
+		),
+		migrations.AlterField(
+			model_name='tagwork',
+			name='category',
+			field=models.IntegerField(
+				choices=[
+					(0, 'General'),
+					(1, 'Event'),
+					(2, 'Song'),
+					(3, 'Source'),
+					(4, 'Creator'),
+					(5, 'Meta'),
+					(6, 'Media'),
+				],
+				default=0,
+			),
+		),
+	]

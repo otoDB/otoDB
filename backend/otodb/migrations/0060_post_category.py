@@ -4,23 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0059_historicaltagworkcreatorconnection_dead_and_more"),
-    ]
+	dependencies = [
+		('otodb', '0059_historicaltagworkcreatorconnection_dead_and_more'),
+	]
 
-    operations = [
-        migrations.AddField(
-            model_name="post",
-            name="category",
-            field=models.IntegerField(
-                choices=[
-                    (0, "Announcement"),
-                    (1, "Feature Request"),
-                    (2, "Bug Report"),
-                    (3, "Gardening"),
-                ],
-                default=0,
-            ),
-            preserve_default=False,
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='post',
+			name='category',
+			field=models.IntegerField(
+				choices=[
+					(0, 'Announcement'),
+					(1, 'Feature Request'),
+					(2, 'Bug Report'),
+					(3, 'Gardening'),
+				],
+				default=0,
+			),
+			preserve_default=False,
+		),
+	]

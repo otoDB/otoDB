@@ -4,17 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0029_historicaltagworkinstance_creator_roles_and_more"),
-    ]
+	dependencies = [
+		('otodb', '0029_historicaltagworkinstance_creator_roles_and_more'),
+	]
 
-    operations = [
-        migrations.AlterModelOptions(
-            name="worksource",
-            options={
-                "ordering": ["work_status", "work_origin", "published_date"],
-                "verbose_name": "Media Source",
-                "verbose_name_plural": "Media Sources",
-            },
-        ),
-    ]
+	operations = [
+		migrations.AlterModelOptions(
+			name='worksource',
+			options={
+				'ordering': ['work_status', 'work_origin', 'published_date'],
+				'verbose_name': 'Media Source',
+				'verbose_name_plural': 'Media Sources',
+			},
+		),
+	]

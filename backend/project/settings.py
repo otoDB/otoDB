@@ -19,259 +19,258 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = os.environ.get("OTODB_DEBUG", "False").lower() == "true"
+DEBUG = os.environ.get('OTODB_DEBUG', 'False').lower() == 'true'
 DEBUG_TOOLBAR = (
-    DEBUG and os.environ.get("OTODB_DEBUG_TOOLBAR", "True").lower() != "false"
+	DEBUG and os.environ.get('OTODB_DEBUG_TOOLBAR', 'True').lower() != 'false'
 )
 
-if not DEBUG and "OTODB_SECRET_KEY" not in os.environ:
-    print("No secret key provided (OTODB_SECRET_KEY) -- exiting")
-    exit(1)
+if not DEBUG and 'OTODB_SECRET_KEY' not in os.environ:
+	print('No secret key provided (OTODB_SECRET_KEY) -- exiting')
+	exit(1)
 
-SECRET_KEY = os.environ.get("OTODB_SECRET_KEY", "1145141919")
+SECRET_KEY = os.environ.get('OTODB_SECRET_KEY', '1145141919')
 
-COOKIES_FILE = os.environ.get("OTODB_COOKIES_FILE")
+COOKIES_FILE = os.environ.get('OTODB_COOKIES_FILE')
 
 EMAIL_USE_TLS = True
-EMAIL_HOST = os.environ.get("OTODB_EMAIL_HOST")
-EMAIL_PORT = os.environ.get("OTODB_EMAIL_PORT")
-EMAIL_HOST_USER = os.environ.get("OTODB_EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("OTODB_EMAIL_HOST_PASSWORD")
+EMAIL_HOST = os.environ.get('OTODB_EMAIL_HOST')
+EMAIL_PORT = os.environ.get('OTODB_EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('OTODB_EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('OTODB_EMAIL_HOST_PASSWORD')
 
 ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get("OTODB_ALLOWED_HOSTS", "").split(",")
-    if host
+	host.strip()
+	for host in os.environ.get('OTODB_ALLOWED_HOSTS', '').split(',')
+	if host
 ]
 CSRF_TRUSTED_ORIGINS = [
-    host.strip()
-    for host in os.environ.get("OTODB_CSRF_TRUSTED_ORIGINS", "").split(",")
-    if host
+	host.strip()
+	for host in os.environ.get('OTODB_CSRF_TRUSTED_ORIGINS', '').split(',')
+	if host
 ]
 
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "markdownfield",
-    "django.contrib.staticfiles",
-    "otodb",
-    "otodb.account",
-    "simple_history",
-    "tagulous",
-    "ordered_model",
-    "django.contrib.sites",
-    "django_comments_xtd",
-    "django_comments",
-    "rest_framework",
-    "corsheaders",
+	'django.contrib.admin',
+	'django.contrib.auth',
+	'django.contrib.contenttypes',
+	'django.contrib.sessions',
+	'django.contrib.messages',
+	'markdownfield',
+	'django.contrib.staticfiles',
+	'otodb',
+	'otodb.account',
+	'simple_history',
+	'tagulous',
+	'ordered_model',
+	'django.contrib.sites',
+	'django_comments_xtd',
+	'django_comments',
+	'rest_framework',
+	'corsheaders',
 ]
 
 if DEBUG_TOOLBAR:
-    INSTALLED_APPS = ["debug_toolbar"] + INSTALLED_APPS
+	INSTALLED_APPS = ['debug_toolbar'] + INSTALLED_APPS
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "simple_history.middleware.HistoryRequestMiddleware",
+	'django.middleware.security.SecurityMiddleware',
+	'django.contrib.sessions.middleware.SessionMiddleware',
+	'corsheaders.middleware.CorsMiddleware',
+	'django.middleware.locale.LocaleMiddleware',
+	'django.middleware.common.CommonMiddleware',
+	'django.middleware.csrf.CsrfViewMiddleware',
+	'django.contrib.auth.middleware.AuthenticationMiddleware',
+	'django.contrib.messages.middleware.MessageMiddleware',
+	'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 if DEBUG_TOOLBAR:
-    MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
+	MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
 
-ROOT_URLCONF = "project.urls"
+ROOT_URLCONF = 'project.urls'
 
 TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "otodb.context_preprocessors.G",
-            ],
-        },
-    },
+	{
+		'BACKEND': 'django.template.backends.django.DjangoTemplates',
+		'APP_DIRS': True,
+		'OPTIONS': {
+			'context_processors': [
+				'django.template.context_processors.debug',
+				'django.template.context_processors.request',
+				'django.contrib.auth.context_processors.auth',
+				'django.contrib.messages.context_processors.messages',
+			],
+		},
+	},
 ]
 
-WSGI_APPLICATION = "project.wsgi.application"
+WSGI_APPLICATION = 'project.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-ALLOWED_DATABASE_BACKENDS = ["sqlite3", "postgresql"]
+ALLOWED_DATABASE_BACKENDS = ['sqlite3', 'postgresql']
 if (
-    "OTODB_DB_BACKEND" in os.environ
-    and os.environ["OTODB_DB_BACKEND"] not in ALLOWED_DATABASE_BACKENDS
+	'OTODB_DB_BACKEND' in os.environ
+	and os.environ['OTODB_DB_BACKEND'] not in ALLOWED_DATABASE_BACKENDS
 ):
-    print(f"Database backend {os.environ['OTODB_DB_BACKEND']} not allowed -- exiting")
-    exit(1)
+	print(f'Database backend {os.environ["OTODB_DB_BACKEND"]} not allowed -- exiting')
+	exit(1)
 
-DATABASE_BACKEND = os.environ.get("OTODB_DB_BACKEND", "sqlite3")
+DATABASE_BACKEND = os.environ.get('OTODB_DB_BACKEND', 'sqlite3')
 DATABASE = {
-    "ENGINE": f"django.db.backends.{DATABASE_BACKEND}",
-    "OPTIONS": {},
+	'ENGINE': f'django.db.backends.{DATABASE_BACKEND}',
+	'OPTIONS': {},
 }
 
 if (
-    DATABASE_BACKEND == "postgresql"
-    and os.environ.get("OTODB_DB_SERVICE")
-    and os.environ.get("OTODB_DB_PASSFILE")
+	DATABASE_BACKEND == 'postgresql'
+	and os.environ.get('OTODB_DB_SERVICE')
+	and os.environ.get('OTODB_DB_PASSFILE')
 ):
-    DATABASE["OPTIONS"]["service"] = os.environ["OTODB_DB_SERVICE"]
-    DATABASE["OPTIONS"]["passfile"] = os.environ["OTODB_DB_PASSFILE"]
-elif DATABASE_BACKEND == "postgresql":
-    DATABASE["NAME"] = os.environ["OTODB_DB_NAME"]
-    DATABASE["USER"] = os.environ["OTODB_DB_USER"]
-    DATABASE["PASSWORD"] = os.environ["OTODB_DB_PASSWORD"]
-    DATABASE["HOST"] = os.environ["OTODB_DB_HOST"]
-    DATABASE["PORT"] = os.environ["OTODB_DB_PORT"]
-    DATABASE["OPTIONS"]["pool"] = True
+	DATABASE['OPTIONS']['service'] = os.environ['OTODB_DB_SERVICE']
+	DATABASE['OPTIONS']['passfile'] = os.environ['OTODB_DB_PASSFILE']
+elif DATABASE_BACKEND == 'postgresql':
+	DATABASE['NAME'] = os.environ['OTODB_DB_NAME']
+	DATABASE['USER'] = os.environ['OTODB_DB_USER']
+	DATABASE['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
+	DATABASE['HOST'] = os.environ['OTODB_DB_HOST']
+	DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
+	DATABASE['OPTIONS']['pool'] = True
 else:
-    DATABASE["NAME"] = BASE_DIR / f"{os.environ.get('OTODB_DB_NAME', 'db')}.sqlite3"
+	DATABASE['NAME'] = BASE_DIR / f'{os.environ.get("OTODB_DB_NAME", "db")}.sqlite3'
 
 DATABASES = {
-    "default": DATABASE,
+	'default': DATABASE,
 }
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+	{
+		'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+	},
+	{
+		'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+	},
+	{
+		'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+	},
+	{
+		'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+	},
 ]
 
-AUTH_USER_MODEL = "account.Account"
+AUTH_USER_MODEL = 'account.Account'
 
 STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
+	'default': {
+		'BACKEND': 'django.core.files.storage.FileSystemStorage',
+	},
+	'staticfiles': {
+		'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+	},
 }
 
-STATIC_ROOT = BASE_DIR / "static"
-STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / 'static'
+STATIC_URL = 'static/'
 
-MEDIA_ROOT = BASE_DIR / "media"
-MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = 'media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 INTERNAL_IPS = [
-    ip.strip() for ip in os.environ.get("OTODB_INTERNAL_IPS", "").split(",") if ip
+	ip.strip() for ip in os.environ.get('OTODB_INTERNAL_IPS', '').split(',') if ip
 ]
 
-LOGIN_REDIRECT_URL = "/"
-LOGIN_URL = "/login"
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/login'
 
-OTODB_CONFIG_DICT = {"site_name": os.environ.get("OTODB_CONF_SITE_NAME", "otoDB")}
+OTODB_CONFIG_DICT = {'site_name': os.environ.get('OTODB_CONF_SITE_NAME', 'otoDB')}
 
 SERIALIZATION_MODULES = {
-    "xml": "tagulous.serializers.xml_serializer",
-    "json": "tagulous.serializers.json",
-    "python": "tagulous.serializers.python",
-    "yaml": "tagulous.serializers.pyyaml",
+	'xml': 'tagulous.serializers.xml_serializer',
+	'json': 'tagulous.serializers.json',
+	'python': 'tagulous.serializers.python',
+	'yaml': 'tagulous.serializers.pyyaml',
 }
 
 TAGULOUS_SLUG_ALLOW_UNICODE = True
 
 SITE_URL = ALLOWED_HOSTS[0]
 SITE_ID = 1
-COMMENTS_APP = "django_comments_xtd"
+COMMENTS_APP = 'django_comments_xtd'
 COMMENTS_XTD_MAX_THREAD_LEVEL = 3
 
 COMMENTS_XTD_APP_MODEL_OPTIONS = {
-    "default": {
-        "allow_flagging": True,
-        "allow_feedback": False,
-        "show_feedback": False,
-        "who_can_post": "users",
-    }
+	'default': {
+		'allow_flagging': True,
+		'allow_feedback': False,
+		'show_feedback': False,
+		'who_can_post': 'users',
+	}
 }
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "https://cdn.jsdelivr.net",
-    "https://unpkg.com",
-    "https://www.youtube.com",
-    "https://www.nicovideo.jp",
-    "https://www.bilibili.com",
+	'https://cdn.jsdelivr.net',
+	'https://unpkg.com',
+	'https://www.youtube.com',
+	'https://www.nicovideo.jp',
+	'https://www.bilibili.com',
 ]
 
-OTODB_FRONTEND_DOMAIN = os.environ.get("OTODB_FRONTEND_DOMAIN")
+OTODB_FRONTEND_DOMAIN = os.environ.get('OTODB_FRONTEND_DOMAIN')
 if OTODB_FRONTEND_DOMAIN:
-    CORS_ALLOWED_ORIGINS.append("https://" + OTODB_FRONTEND_DOMAIN)
-    CORS_ALLOWED_ORIGINS.append("http://" + OTODB_FRONTEND_DOMAIN)
-    CSRF_TRUSTED_ORIGINS = [
-        "http://" + OTODB_FRONTEND_DOMAIN,
-        "https://" + OTODB_FRONTEND_DOMAIN,
-    ]
+	CORS_ALLOWED_ORIGINS.append('https://' + OTODB_FRONTEND_DOMAIN)
+	CORS_ALLOWED_ORIGINS.append('http://' + OTODB_FRONTEND_DOMAIN)
+	CSRF_TRUSTED_ORIGINS = [
+		'http://' + OTODB_FRONTEND_DOMAIN,
+		'https://' + OTODB_FRONTEND_DOMAIN,
+	]
 
-OTODB_PROTECT_API_DOCS = os.environ.get("OTODB_PROTECT_API_DOCS", "").lower() == "true"
+OTODB_PROTECT_API_DOCS = os.environ.get('OTODB_PROTECT_API_DOCS', '').lower() == 'true'
 
 # CDN Configuration
-OTODB_CDN_BUCKET_NAME = os.environ.get("OTODB_CDN_BUCKET_NAME")
-OTODB_CDN_ENDPOINT_URL = os.environ.get("OTODB_CDN_ENDPOINT_URL")
-OTODB_CDN_ACCESS_KEY = os.environ.get("OTODB_CDN_ACCESS_KEY")
-OTODB_CDN_SECRET_KEY = os.environ.get("OTODB_CDN_SECRET_KEY")
-OTODB_CDN_HOST = os.environ.get("OTODB_CDN_HOST")
+OTODB_CDN_BUCKET_NAME = os.environ.get('OTODB_CDN_BUCKET_NAME')
+OTODB_CDN_ENDPOINT_URL = os.environ.get('OTODB_CDN_ENDPOINT_URL')
+OTODB_CDN_ACCESS_KEY = os.environ.get('OTODB_CDN_ACCESS_KEY')
+OTODB_CDN_SECRET_KEY = os.environ.get('OTODB_CDN_SECRET_KEY')
+OTODB_CDN_HOST = os.environ.get('OTODB_CDN_HOST')
 OTODB_CDN_ENABLED = (
-    all(
-        [
-            OTODB_CDN_BUCKET_NAME,
-            OTODB_CDN_ENDPOINT_URL,
-            OTODB_CDN_ACCESS_KEY,
-            OTODB_CDN_SECRET_KEY,
-            OTODB_CDN_HOST,
-        ]
-    )
-    if os.environ.get("OTODB_CDN_ENABLED", "").lower() not in ("0", "false")
-    else False
+	all(
+		[
+			OTODB_CDN_BUCKET_NAME,
+			OTODB_CDN_ENDPOINT_URL,
+			OTODB_CDN_ACCESS_KEY,
+			OTODB_CDN_SECRET_KEY,
+			OTODB_CDN_HOST,
+		]
+	)
+	if os.environ.get('OTODB_CDN_ENABLED', '').lower() not in ('0', 'false')
+	else False
 )
-OTODB_CDN_ROOT = os.environ.get("OTODB_CDN_ROOT", "/")
+OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
 
 NINJA_PAGINATION_PER_PAGE = 30
 NINJA_PAGINATION_MAX_PER_PAGE_SIZE = 30
 NINJA_PAGINATION_MAX_LIMIT = 30
 
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
-    },
+	'version': 1,
+	'disable_existing_loggers': False,
+	'handlers': {
+		'console': {
+			'class': 'logging.StreamHandler',
+		},
+	},
+	'root': {
+		'handlers': ['console'],
+		'level': 'INFO',
+	},
 }

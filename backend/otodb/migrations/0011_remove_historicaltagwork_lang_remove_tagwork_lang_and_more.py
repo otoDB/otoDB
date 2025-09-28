@@ -5,66 +5,66 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [
-        ("otodb", "0010_alter_mediasongconnection_site_and_more"),
-    ]
+	dependencies = [
+		('otodb', '0010_alter_mediasongconnection_site_and_more'),
+	]
 
-    operations = [
-        migrations.RemoveField(
-            model_name="historicaltagwork",
-            name="lang",
-        ),
-        migrations.RemoveField(
-            model_name="tagwork",
-            name="lang",
-        ),
-        migrations.AlterField(
-            model_name="mediasong",
-            name="tags",
-            field=tagulous.models.fields.TagField(
-                _set_tag_meta=True,
-                case_sensitive=False,
-                force_lowercase=True,
-                help_text="Enter a comma-separated tag string",
-                protect_all=True,
-                related_name="songs",
-                to="otodb.tagsong",
-            ),
-        ),
-        migrations.AlterField(
-            model_name="mediasongconnection",
-            name="site",
-            field=models.IntegerField(
-                choices=[
-                    (0, "VGMdb"),
-                    (1, "VocaDB"),
-                    (2, "Discogs"),
-                    (3, "MusicBrainz"),
-                    (4, "Rate Your Music"),
-                    (20, "RemyWiki"),
-                    (21, "Silent Blue"),
-                    (22, "Zenius -I- vanisher.com"),
-                ]
-            ),
-        ),
-        migrations.AlterField(
-            model_name="tagworkconnection",
-            name="site",
-            field=models.IntegerField(
-                choices=[
-                    (1, "otomad.wiki"),
-                    (2, "Otomad Wiki 2"),
-                    (20, "Niconico Encyclopedia"),
-                    (21, "Pixiv Dictionary"),
-                    (22, "Wikipedia"),
-                    (23, "Namu Wiki"),
-                    (24, "Know Your Meme"),
-                    (40, "AniKore"),
-                    (41, "Bangumi"),
-                    (42, "AniDB"),
-                    (43, "MyAnimeList"),
-                    (0, "Website"),
-                ]
-            ),
-        ),
-    ]
+	operations = [
+		migrations.RemoveField(
+			model_name='historicaltagwork',
+			name='lang',
+		),
+		migrations.RemoveField(
+			model_name='tagwork',
+			name='lang',
+		),
+		migrations.AlterField(
+			model_name='mediasong',
+			name='tags',
+			field=tagulous.models.fields.TagField(
+				_set_tag_meta=True,
+				case_sensitive=False,
+				force_lowercase=True,
+				help_text='Enter a comma-separated tag string',
+				protect_all=True,
+				related_name='songs',
+				to='otodb.tagsong',
+			),
+		),
+		migrations.AlterField(
+			model_name='mediasongconnection',
+			name='site',
+			field=models.IntegerField(
+				choices=[
+					(0, 'VGMdb'),
+					(1, 'VocaDB'),
+					(2, 'Discogs'),
+					(3, 'MusicBrainz'),
+					(4, 'Rate Your Music'),
+					(20, 'RemyWiki'),
+					(21, 'Silent Blue'),
+					(22, 'Zenius -I- vanisher.com'),
+				]
+			),
+		),
+		migrations.AlterField(
+			model_name='tagworkconnection',
+			name='site',
+			field=models.IntegerField(
+				choices=[
+					(1, 'otomad.wiki'),
+					(2, 'Otomad Wiki 2'),
+					(20, 'Niconico Encyclopedia'),
+					(21, 'Pixiv Dictionary'),
+					(22, 'Wikipedia'),
+					(23, 'Namu Wiki'),
+					(24, 'Know Your Meme'),
+					(40, 'AniKore'),
+					(41, 'Bangumi'),
+					(42, 'AniDB'),
+					(43, 'MyAnimeList'),
+					(0, 'Website'),
+				]
+			),
+		),
+	]

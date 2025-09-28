@@ -221,7 +221,7 @@ def make_alt_value_parser(*parsers):
     return match
 
 profile_connection_parsers = [
-	(ProfileConnectionTypes.NICONICO, re_to_parser(re.compile(r'https?:\/\/www\.nicovideo\.jp\/user\/(\d+)\/?'))),
+	(ProfileConnectionTypes.NICONICO, re_to_parser(re.compile(r'https?:\/\/www\.nico(?:video|log)\.jp\/user\/(\d+)\/?'))),
 	(ProfileConnectionTypes.YOUTUBE, re_to_parser(re.compile(r'https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?'))),
 	(ProfileConnectionTypes.BILIBILI, re_to_parser(re.compile(r'https?:\/\/space\.bilibili\.com\/(\d+)\/?'))),
 	(ProfileConnectionTypes.TWITTER, re_to_parser(re.compile(r'https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?'))),

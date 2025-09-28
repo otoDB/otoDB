@@ -6,15 +6,6 @@
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.fuzzy_crazy_cobra_lead(),
-			name: data.profile.username
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.mild_loud_shad_enchant({
 		type: m.fuzzy_crazy_cobra_lead(),
@@ -28,7 +19,7 @@
 	{/if}
 	<ul class="list-disc">
 		{#each data.lists as list, i (i)}
-			<li><a href="/list/{list.id}">{list.name}</a></li>
+			<li><a href="/list/{list.id}">#{list.id} - {list.name}</a></li>
 		{:else}
 			<li>{m.quiet_stout_haddock_persist()}</li>
 		{/each}

@@ -1,13 +1,17 @@
 import type { LayoutServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages.js';
 import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { userLevelCheck } from '$lib/route_guard';
 
-export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
+export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
 
-	const { data, error: e } = await client.GET('/api/work/work', {
+	const {
+		data,
+		error: e,
+		response
+	} = await client.GET('/api/work/work', {
 		params: {
 			query: {
 				work_id: +params.work_id
@@ -15,6 +19,15 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 		},
 		fetch
 	});
+
+	if (response.status === 300)
+		redirect(
+			303,
+			url.pathname.replace(
+				encodeURIComponent(params.work_id),
+				encodeURIComponent(e as string)
+			)
+		);
 	if (e) error(404, { message: 'Not found' });
 
 	const loggedOut = userLevelCheck(locals.user);
@@ -36,7 +49,11 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 			{ pathname: `work/${params.work_id}/relations`, title: m.alive_these_jay_pick() },
 			...(loggedOut
 				? []
-				: [{ pathname: `work/${params.work_id}/edit`, title: m.minor_crisp_cobra_list() }])
+				: [{ pathname: `work/${params.work_id}/edit`, title: m.minor_crisp_cobra_list() }]),
+			{
+				pathname: `work/${params.work_id}/history`,
+				title: m.giant_away_scallop_hike()
+			}
 		],
 		...data
 	};

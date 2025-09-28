@@ -3,16 +3,25 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
+	import { Rating } from '$lib/enums';
+	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
+	let isOriginal = $derived(!!(form?.origin ?? !data.title));
+
+	$effect(() => {
+		if (form?.failed) {
+			callErrorToast(form.message);
+		}
+	});
 </script>
 
 <svelte:head>
-	<title
-		>{data.title
+	<title>
+		{data.title
 			? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: data.title })
-			: m.helpful_away_jay_succeed()}</title
-	>
+			: m.helpful_away_jay_succeed()}
+	</title>
 </svelte:head>
 
 <Section
@@ -27,32 +36,52 @@
 		<li>Bilibili</li>
 		<li>SoundCloud</li>
 	</ul>
-	<form method="POST" use:enhance>
-		{#if form?.failed}<p class="error">{form.message}</p>{/if}
+	<form method="POST" use:enhance class="mt-4">
 		<table>
 			<tbody>
 				<tr>
-					<th><label for="url">URL</label></th>
-					<td
-						><input
+					<th class="w-min whitespace-nowrap">
+						<label for="url">URL</label>
+					</th>
+					<td class="w-full">
+						<input
 							required
 							type="text"
 							name="url"
 							value={form?.url ?? data.link ?? ''}
-						/></td
-					>
+							class="w-full"
+						/>
+					</td>
 				</tr>
 				<tr>
-					<th><label for="origin">{m.watery_fuzzy_fireant_thrive()}</label></th>
-					<td
-						><select name="origin" value={form?.origin ?? !data.title}
-							><option value={true}>Yes</option><option value={false}>No</option
-							></select
-						></td
-					>
+					<th class="w-min whitespace-nowrap">
+						<label for="origin">{m.watery_fuzzy_fireant_thrive()}</label>
+					</th>
+					<td class="w-full">
+						<select name="origin" bind:value={isOriginal}>
+							<option value={true}>{m.broad_large_squid_zoom()}</option>
+							<option value={false}>{m.great_lucky_goldfish_sail()}</option>
+						</select>
+					</td>
 				</tr>
+				{#if !isOriginal}
+					<tr>
+						<th><label for="original_url">{m.crisp_steep_angelfish_bump()}</label></th>
+						<td><input type="text" name="original_url" /></td>
+					</tr>
+				{/if}
+				{#if data.isNewWork}
+					<tr
+						><th><label for="rating">{m.good_dark_bumblebee_spur()}</label></th><td
+							><select name="rating">
+								{#each Rating as r, i (i)}<option value={i}>{r()}</option
+									>{/each}</select
+							></td
+						></tr
+					>
+				{/if}
 			</tbody>
 		</table>
-		<input type="submit" />
+		<input class="mt-4" type="submit" />
 	</form>
 </Section>

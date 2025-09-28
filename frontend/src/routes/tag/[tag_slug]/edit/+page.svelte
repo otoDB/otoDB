@@ -8,23 +8,27 @@
 		ProfileConnectionTypes,
 		SongConnectionLink,
 		SongConnectionTypes,
-		SourceConnectionLink,
-		SourceConnectionTypes,
+		MediaConnectionLink,
+		MediaConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
-		WorkTagCategory
+		WorkTagCategory,
+		MediaType
 	} from '$lib/enums';
-	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
-	import TagField from '$lib/TagField.svelte';
 	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
+	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { dirtyEnhance } from '$lib/ui';
+	import TagsField from '$lib/TagsField.svelte';
 
 	let { data, form }: PageProps = $props();
+
+	let parents = $state(form?.parent_slugs ?? data.parents?.map((t) => t.slug) ?? []);
 
 	let category = $state(form?.category ?? data.tag?.category);
 	let wikiView = $state(getLocale());
@@ -54,11 +58,21 @@
 		invalidateAll();
 	};
 
+	const setBase = async (tag: components['schemas']['TagWorkSchema']) => {
+		await client.POST('/api/tag/set_base', {
+			fetch,
+			params: { query: { tag_slug: tag.slug } }
+		});
+		goto(`/tag/${tag.slug}/`, { invalidateAll: true });
+	};
+
 	const submitLangPref = async (lang: number, tag_slug: string) => {
-		await client.PUT('/api/tag/lang_pref', {
+		const p = client.PUT('/api/tag/lang_pref', {
 			fetch,
 			params: { query: { lang, tag_slug } }
 		});
+		callSavingToast(p);
+		await p;
 		invalidateAll();
 	};
 
@@ -67,24 +81,43 @@
 			...data.connections[0]!.map(({ site, content_id }) =>
 				TagWorkConnectionLink[site](content_id)
 			),
-			...(data.connections[1]?.map(({ site, content_id }) =>
-				(data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink)[site](
-					content_id
-				)
+			...(data.connections[1]?.map(
+				({ site, content_id, dead }) =>
+					(dead ? '-' : '') +
+					(data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink)[site](
+						content_id
+					)
 			) ?? []),
 			...(data.song_connections?.map(({ site, content_id }) =>
 				SongConnectionLink[site](content_id)
 			) ?? [])
 		].join('\n') ?? ''
 	);
+
+	$effect(() => {
+		if (form?.failed) {
+			callErrorToast(m.green_due_javelina_pop());
+		}
+	});
+
+	const del = async () => {
+		const { response } = await client.DELETE('/api/tag/tag', {
+			fetch,
+			params: { query: { tag_slug: data.tag.slug } }
+		});
+		if (response.ok) {
+			goto('/', { invalidateAll: true });
+		} else if (response.status === 400) {
+			callErrorToast(m.that_new_mayfly_spur());
+		}
+	};
 </script>
 
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
 	menuLinks={data.links}
 >
-	<form method="POST" use:enhance action="?/edit">
-		{#if form?.failed}<p class="error">Failed!</p>{/if}
+	<form method="POST" use:dirtyEnhance action="?/edit">
 		{#if data.tag.category === 2 && category !== 2}
 			<p class="text-red-500">
 				{m.front_game_porpoise_pout()}
@@ -104,19 +137,21 @@
 				</tr>
 				<tr>
 					<th><label for="parent">{m.away_crisp_blackbird_twist()}</label></th>
+					<td>
+						<TagsField type="work" bind:value={parents} name="parents" />
+					</td>
+				</tr>
+				<tr>
+					<th><label for="deprecated">Deprecated</label></th>
 					<td
-						><TagField
-							type="work"
-							name="parent"
-							value={form?.parent_slug ?? data.parent_slug ?? ''}
+						><input
+							type="checkbox"
+							name="deprecated"
+							checked={form?.deprecated ?? data.tag.deprecated}
 						/></td
 					>
 				</tr>
-			</tbody>
-		</table>
-		{#if category === 2}
-			<table>
-				<tbody>
+				{#if category === 2}
 					<tr
 						><th><label for="song_title">{m.large_factual_octopus_exhale()}</label></th
 						><td
@@ -143,15 +178,39 @@
 								step="any"
 								min="0"
 								name="song_bpm"
-								value={data.tag?.song?.bpm ?? 100}
+								value={data.tag?.song?.bpm}
 							/></td
 						></tr
 					>
-				</tbody>
-			</table>
-		{/if}
+					<tr
+						><th
+							><label for="song_variable_bpm">{m.tasty_male_tadpole_glow()}</label
+							></th
+						><td
+							><input
+								type="checkbox"
+								name="song_variable_bpm"
+								checked={data.tag?.song?.variable_bpm ?? false}
+							/></td
+						></tr
+					>
+				{:else if category === 6}
+					<tr>
+						<th>Media type</th>
+						<td>
+							<select name="media_type" multiple value={data.tag.media_type ?? []}>
+								{#each Object.keys(MediaType).filter((e) => !isNaN(e)) as t, i (i)}
+									<option value={+t}>{MediaType[t]()}</option>
+								{/each}
+							</select>
+						</td>
+					</tr>
+				{/if}
+			</tbody>
+		</table>
 		<input type="submit" />
 	</form>
+	<button onclick={del}>Delete this tag</button>
 </Section>
 
 {#if category === 2 && data.tag.category === 2}
@@ -170,8 +229,8 @@
 	</Section>
 {/if}
 
-{#if data.details.aliases.length}
-	<Section title={m.alive_lofty_opossum_laugh()}>
+<Section title={m.alive_lofty_opossum_laugh()}>
+	{#if data.details.aliases.length}
 		<table>
 			<thead>
 				<tr
@@ -179,7 +238,7 @@
 					{#each locales as locale, i (i)}
 						<th>{LanguageNames[locale]} {m.mellow_upper_finch_drip()}</th>
 					{/each}
-					<th>{m.that_true_owl_embrace()}</th></tr
+					<th>{m.mild_full_sloth_work()}</th></tr
 				>
 			</thead>
 			<tbody>
@@ -212,14 +271,16 @@
 						<td
 							><button onclick={() => removeAlias(a)}
 								>{m.that_true_owl_embrace()}</button
+							><button onclick={() => setBase(a)}>{m.even_such_wallaby_fond()}</button
 							></td
 						></tr
 					>
 				{/each}
 			</tbody>
 		</table>
-	</Section>
-{/if}
+	{/if}
+	<a href="/tag/alias?from={data.tag.slug}">{m.weary_moving_swallow_chop()}</a>
+</Section>
 
 <Section title={m.curly_zesty_pelican_aim()}>
 	<div class="my-2">
@@ -231,11 +292,11 @@
 		{/each}
 	</div>
 
-	<form action="?/wiki_page" method="POST" use:enhance>
+	<form action="?/wiki_page" method="POST" use:dirtyEnhance>
 		<input type="text" hidden value={wikiView} name="lang" />
 		<div class="grid grid-cols-2 gap-3">
-			<textarea required name="md" bind:value={mds[wikiView]}></textarea>
-			<div id="md-preview">
+			<textarea name="md" bind:value={mds[wikiView]}></textarea>
+			<div class="prose prose-neutral prose-sm dark:prose-invert">
 				<Markdown md={mds[wikiView]} />
 			</div>
 		</div>
@@ -248,13 +309,6 @@
 		<summary>{m.fit_noble_niklas_build()}</summary>
 		<table>
 			<tbody>
-				{#each Object.keys(TagWorkConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
-					<tr
-						><td>{TagWorkConnectionTypes[k]}</td><td
-							><code>{TagWorkConnectionLink[k]('<code>')}</code></td
-						></tr
-					>
-				{/each}
 				{#if category === 2 && data.tag.category === 2}
 					{#each Object.keys(SongConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
@@ -263,16 +317,16 @@
 							></tr
 						>
 					{/each}
-				{:else if category === 3 && data.tag.category === 3}
-					{#each Object.keys(SourceConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
+				{:else if category === 6 && data.tag.category === 6}
+					{#each Object.keys(MediaConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
-							><td>{SourceConnectionTypes[k]}</td><td
-								><code>{SourceConnectionLink[k]('<code>')}</code></td
+							><td>{MediaConnectionTypes[k]}</td><td
+								><code>{MediaConnectionLink[k]('<code>')}</code></td
 							></tr
 						>
 					{/each}
 				{:else if category === 4 && data.tag.category === 4}
-					{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e) && +e !== 0) as k, i (i)}
+					{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
 							><td>{ProfileConnectionTypes[k]}</td><td
 								><code>{ProfileConnectionLink[k]('<code>')}</code></td
@@ -280,15 +334,22 @@
 						>
 					{/each}
 				{/if}
+				{#each Object.keys(TagWorkConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
+					<tr
+						><td>{TagWorkConnectionTypes[k]}</td><td
+							><code>{TagWorkConnectionLink[k]('<code>')}</code></td
+						></tr
+					>
+				{/each}
 			</tbody>
 		</table>
 	</details>
-	<form action="?/connections" method="POST" use:enhance>
+	<form action="?/connections" method="POST" use:dirtyEnhance>
 		<textarea
 			bind:value={urls}
 			name="urls"
 			class="w-full"
-			placeholder="Enter URLs on separate lines..."
+			placeholder={m.close_any_racoon_cut()}
 		></textarea>
 		<input type="submit" />
 	</form>
@@ -298,21 +359,21 @@
 	label.wiki-lang-tab {
 		padding: 0.2rem 0.5rem;
 		display: inline-block;
-		background-color: var(--otodb-bg-color);
-		border: 1px solid var(--otodb-content-color);
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px solid var(--otodb-color-content-primary);
 		&:hover {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 		&:active {
-			background-color: var(--otodb-faint-bg);
+			background-color: var(--otodb-color-bg-faint);
 		}
 		& > input {
 			display: none;
 		}
 		&:has(> input:checked) {
-			background-color: var(--otodb-content-color);
-			border: 1px solid var(--otodb-bg-color);
-			color: var(--otodb-bg-color);
+			background-color: var(--otodb-color-content-primary);
+			border: 1px solid var(--otodb-color-bg-primary);
+			color: var(--otodb-color-bg-primary);
 		}
 	}
 </style>

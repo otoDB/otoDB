@@ -158,6 +158,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/tags_needed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tags Needed */
+        get: operations["otodb_api_work_tags_needed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/work": {
         parameters: {
             query?: never;
@@ -184,11 +201,27 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Tag Scores */
-        get: operations["otodb_api_work_get_tag_scores"];
+        get?: never;
         /** Vote Tags */
         put: operations["otodb_api_work_vote_tags"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/creator_roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Update Creator Roles */
+        post: operations["otodb_api_work_update_creator_roles"];
         delete?: never;
         options?: never;
         head?: never;
@@ -212,6 +245,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/remove_tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Remove Tag */
+        put: operations["otodb_api_work_remove_tag"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/random": {
         parameters: {
             query?: never;
@@ -221,6 +271,23 @@ export interface paths {
         };
         /** Random */
         get: operations["otodb_api_work_random"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent */
+        get: operations["otodb_api_work_recent"];
         put?: never;
         post?: never;
         delete?: never;
@@ -358,7 +425,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** New Source From Url */
+        /**
+         * New Source From Url
+         * @description Creates a new source and, for editors, performs auto-validation as well as Work creation
+         *
+         *     The priority for redirections/merging is:.
+         *
+         *     The usage scenarios are as follows:
+         *     - For non-editors:
+         *         - Adding a new source leaves it in the approval queue, without creating a Work;
+         *         - If `work_id` is provided, or either of the original/reupload Source already has a Work, the new sources are added to them;
+         *             - If two out of three elements have works, the third element is added based on priority: `work_id` > `url` > `original_url`;
+         *         - Adding an existing source redirects to the corresponding work;
+         *         - Adding multiple sources, each with a different work, redirects based on priority: `work_id` > `url` > `original_url`;
+         *         - For existing sources/works, corrections (`rating`/`is_reupload`) are ignored;
+         *     - For editors:
+         *         - Adding a new source creates a new Work;
+         *         - For existing sources/works, corrections (`rating`/`is_reupload`) are applied;
+         *         - If any or all of `work_id`/`url`/`original_url` have different Works, a merge is performed based on priority: `work_id` > `url` > `original_url.
+         */
         post: operations["otodb_api_work_new_source_from_url"];
         delete?: never;
         options?: never;
@@ -500,6 +585,23 @@ export interface paths {
         get: operations["otodb_api_profile_submissions"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/profile/prefs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Prefs */
+        post: operations["otodb_api_profile_set_prefs"];
         delete?: never;
         options?: never;
         head?: never;
@@ -691,7 +793,8 @@ export interface paths {
         /** Update */
         put: operations["otodb_api_tag_update"];
         post?: never;
-        delete?: never;
+        /** Delete */
+        delete: operations["otodb_api_tag_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -760,8 +863,24 @@ export interface paths {
         /** Add Lang Pref */
         put: operations["otodb_api_tag_add_lang_pref"];
         post?: never;
-        /** Del Lang Pref */
-        delete: operations["otodb_api_tag_del_lang_pref"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/set_base": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Base Tag */
+        post: operations["otodb_api_tag_set_base_tag"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -796,6 +915,23 @@ export interface paths {
         get: operations["otodb_api_tag_connection"];
         /** Edit Connections */
         put: operations["otodb_api_tag_edit_connections"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tag/song": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Song */
+        get: operations["otodb_api_tag_song"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -968,6 +1104,212 @@ export interface paths {
         /** Post */
         get: operations["otodb_api_post_post"];
         put?: never;
+        /** New */
+        post: operations["otodb_api_post_new"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/post/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Categories */
+        get: operations["otodb_api_post_categories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/post/category": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Category */
+        get: operations["otodb_api_post_category"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/post/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search */
+        get: operations["otodb_api_post_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comment/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["otodb_api_comment_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/comment/comment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post */
+        post: operations["otodb_api_comment_post"];
+        /** Delete */
+        delete: operations["otodb_api_comment_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** History */
+        get: operations["otodb_api_history_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent */
+        get: operations["otodb_api_history_recent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** User */
+        get: operations["otodb_api_history_user"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/rollback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rollback */
+        post: operations["otodb_api_history_rollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/request/new": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make Bulk */
+        post: operations["otodb_api_requests_make_bulk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/request/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm */
+        post: operations["otodb_api_requests_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/request/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** User Request */
+        get: operations["otodb_api_requests_user_request"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -991,6 +1333,13 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** UserPreferencesSchema */
+        UserPreferencesSchema: {
+            /** Language */
+            language: number | null;
+            /** Theme */
+            theme: number | null;
+        };
         /** UserStatusSchema */
         UserStatusSchema: {
             /** User Id */
@@ -999,6 +1348,7 @@ export interface components {
             username: string;
             /** Level */
             level: number;
+            prefs?: components["schemas"]["UserPreferencesSchema"] | null;
         };
         /** ExternalQuery */
         ExternalQuery: {
@@ -1006,37 +1356,6 @@ export interface components {
             work_id: number;
             /** Tags */
             tags: components["schemas"]["TagWorkSchema"][];
-        };
-        /** SongSchema */
-        SongSchema: {
-            /** Id */
-            id: number;
-            /** Work Tag */
-            work_tag: string;
-            /** Tags */
-            tags: components["schemas"]["TagSongSchema"][];
-            /** Title */
-            title: string;
-            /** Bpm */
-            bpm: number;
-            /** Author */
-            author: string;
-        };
-        /** TagSongSchema */
-        TagSongSchema: {
-            /** Id */
-            id: number;
-            /** Children */
-            children: components["schemas"]["TagSongSchema"][];
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-            /**
-             * Category
-             * @default 0
-             */
-            category: number;
         };
         /** TagWorkLangPreferenceSchema */
         TagWorkLangPreferenceSchema: {
@@ -1052,11 +1371,11 @@ export interface components {
         TagWorkSchema: {
             /** Id */
             id: number;
-            /** Children */
-            children: components["schemas"]["TagWorkSchema"][];
-            song?: components["schemas"]["SongSchema"] | null;
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -1071,7 +1390,7 @@ export interface components {
         Input: {
             /**
              * Limit
-             * @default 100
+             * @default 30
              */
             limit: number;
             /**
@@ -1080,82 +1399,46 @@ export interface components {
              */
             offset: number;
         };
-        /** PagedWorkSchema */
-        PagedWorkSchema: {
+        /** PagedThinWorkSchema */
+        PagedThinWorkSchema: {
             /** Items */
-            items: components["schemas"]["WorkSchema"][];
+            items: components["schemas"]["ThinWorkSchema"][];
             /** Count */
             count: number;
         };
-        /** WorkSchema */
-        WorkSchema: {
+        /** TagWorkInstanceThinSchema */
+        TagWorkInstanceThinSchema: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
+            /** Sample */
+            sample: boolean;
+            /** Creator Roles */
+            creator_roles: number[] | null;
+        };
+        /** ThinWorkSchema */
+        ThinWorkSchema: {
             /** Id */
             id: number;
             /** Tags */
-            tags: components["schemas"]["TagWorkSchema"][];
-            /** Title */
-            title: string;
-            /** Description */
-            description?: string | null;
-            /**
-             * Rating
-             * @default 0
-             */
-            rating: number;
+            tags: components["schemas"]["TagWorkInstanceThinSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
-        };
-        /** WorkEditSchema */
-        WorkEditSchema: {
             /** Title */
             title: string;
-            /** Description */
-            description?: string | null;
-            /** Thumbnail */
-            thumbnail?: string | null;
-            /**
-             * Rating
-             * @default 0
-             */
-            rating: number;
-        };
-        /** TagWorkInstanceSchema */
-        TagWorkInstanceSchema: {
-            /** Tag Slug */
-            tag_slug: string;
-            /** N Votes */
-            n_votes: number;
-            /** Score */
-            score: number;
-            /** User Score */
-            user_score: number | null;
-            /** Sample */
-            sample: boolean;
-        };
-        /** TagWorkVoteSchema */
-        TagWorkVoteSchema: {
-            /** Tag Slug */
-            tag_slug: string;
-            /** Score */
-            score: number;
-        };
-        /** RelationSchema */
-        RelationSchema: {
-            /** A Id */
-            A_id: number;
-            /** B Id */
-            B_id: number;
-            /** Relation */
-            relation: number;
-        };
-        /** SlimWorkSchema */
-        SlimWorkSchema: {
-            /** Id */
-            id: number;
-            /** Title */
-            title: string;
-            /** Thumbnail */
-            thumbnail?: string | null;
         };
         /** ProfileSchema */
         ProfileSchema: {
@@ -1174,6 +1457,53 @@ export interface components {
              */
             date_created?: string;
         };
+        /** TagWorkInstanceSchema */
+        TagWorkInstanceSchema: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
+            /** Sample */
+            sample: boolean;
+            /** Creator Roles */
+            creator_roles: number[] | null;
+            /** Primary Path */
+            primary_path: components["schemas"]["TagWorkSchema"][];
+        };
+        /** WorkSchema */
+        WorkSchema: {
+            /** Id */
+            id: number;
+            /** Tags */
+            tags: components["schemas"]["TagWorkInstanceSchema"][];
+            /** Thumbnail */
+            thumbnail?: string | null;
+            /** Sources */
+            sources: components["schemas"]["WorkSourceSchema"][];
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Rating
+             * @default 0
+             */
+            rating: number;
+            /** Thumbnail Source */
+            thumbnail_source?: number | null;
+        };
         /** WorkSourceRejectionSchema */
         WorkSourceRejectionSchema: {
             by: components["schemas"]["ProfileSchema"];
@@ -1186,6 +1516,8 @@ export interface components {
             id: number;
             added_by: components["schemas"]["ProfileSchema"];
             rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
+            /** Thumbnail */
+            thumbnail?: string | null;
             /** Platform */
             platform: number;
             /** Url */
@@ -1215,10 +1547,56 @@ export interface components {
              * @default 0
              */
             work_status: number;
-            /** Thumbnail */
-            thumbnail?: string | null;
             /** Source Id */
             source_id: string;
+        };
+        /** WorkEditSchema */
+        WorkEditSchema: {
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /** Thumbnail Source */
+            thumbnail_source_id?: number | null;
+            /**
+             * Rating
+             * @default 0
+             */
+            rating: number;
+        };
+        /** TagWorkVoteSchema */
+        TagWorkVoteSchema: {
+            /** Tag Name */
+            tag_name: string;
+            /** Score */
+            score: number;
+        };
+        /** CreatorRolesUpdateSchema */
+        CreatorRolesUpdateSchema: {
+            /** Work Id */
+            work_id: number;
+            /** Tag Slug */
+            tag_slug: string;
+            /** Creator Roles */
+            creator_roles: number[];
+        };
+        /** RelationSchema */
+        RelationSchema: {
+            /** A Id */
+            A_id: number;
+            /** B Id */
+            B_id: number;
+            /** Relation */
+            relation: number;
+        };
+        /** SlimWorkSchema */
+        SlimWorkSchema: {
+            /** Id */
+            id: number;
+            /** Thumbnail */
+            thumbnail?: string | null;
+            /** Title */
+            title: string;
         };
         /** ListSchema */
         ListSchema: {
@@ -1238,6 +1616,17 @@ export interface components {
             site: number;
             /** Content Id */
             content_id: string;
+            /** Dead */
+            dead?: boolean | null;
+        };
+        /** SubmissionsFilterSchema */
+        SubmissionsFilterSchema: {
+            /** Platform */
+            platform?: number | null;
+            /** Origin */
+            origin?: number | null;
+            /** Status */
+            status?: number | null;
         };
         /** PagedSourceSubmissionSchema */
         PagedSourceSubmissionSchema: {
@@ -1252,6 +1641,8 @@ export interface components {
             id: number;
             added_by: components["schemas"]["ProfileSchema"];
             rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
+            /** Thumbnail */
+            thumbnail?: string | null;
             /** Platform */
             platform: number;
             /** Url */
@@ -1281,8 +1672,6 @@ export interface components {
              * @default 0
              */
             work_status: number;
-            /** Thumbnail */
-            thumbnail?: string | null;
             /** Source Id */
             source_id: string;
             /** Media */
@@ -1304,7 +1693,7 @@ export interface components {
         };
         /** ListItemSchema */
         ListItemSchema: {
-            work: components["schemas"]["WorkSchema"];
+            work: components["schemas"]["ThinWorkSchema"];
             /** Description */
             description?: string | null;
         };
@@ -1361,30 +1750,109 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** FatTagWorkSchema */
+        FatTagWorkSchema: {
+            /** Id */
+            id: number;
+            /** Children */
+            children: components["schemas"]["TagWorkSchema"][];
+            song?: components["schemas"]["SongSchema"] | null;
+            /** Media Type */
+            media_type?: number[] | null;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
+            /**
+             * Deprecated
+             * @default false
+             */
+            deprecated: boolean;
+        };
+        /** SongSchema */
+        SongSchema: {
+            /** Id */
+            id: number;
+            /** Work Tag */
+            work_tag: string;
+            /** Tags */
+            tags: components["schemas"]["TagSongSchema"][];
+            /** Title */
+            title: string;
+            /** Bpm */
+            bpm?: number | null;
+            /**
+             * Variable Bpm
+             * @default false
+             */
+            variable_bpm: boolean;
+            /** Author */
+            author: string;
+        };
+        /** TagSongSchema */
+        TagSongSchema: {
+            /** Id */
+            id: number;
+            /** Children */
+            children: components["schemas"]["TagSongSchema"][];
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /**
+             * Category
+             * @default 0
+             */
+            category: number;
+        };
         /** SongInSchema */
         SongInSchema: {
             /** Title */
             title: string;
             /** Bpm */
-            bpm: number;
+            bpm?: number | null;
+            /**
+             * Variable Bpm
+             * @default false
+             */
+            variable_bpm: boolean;
             /** Author */
             author: string;
         };
-        /** TagInSchema */
-        TagInSchema: {
-            /** Parent Slug */
-            parent_slug: string | null;
+        /** WorkTagInSchema */
+        WorkTagInSchema: {
             /** Category */
             category: number;
+            /** Deprecated */
+            deprecated: boolean;
+            /** Parent Slugs */
+            parent_slugs: string[];
+            /** Media Type */
+            media_type?: number[] | null;
         };
         /** TagWorkDetailsSchema */
         TagWorkDetailsSchema: {
-            /** Tree */
-            tree: components["schemas"]["TagWorkSchema"][];
+            /** Paths */
+            paths: [
+                components["schemas"]["TagWorkSchema"][],
+                {
+                    [key: string]: string[];
+                }
+            ];
             /** Wiki Page */
             wiki_page: components["schemas"]["WikiPageSchema"][];
             /** Aliases */
             aliases: components["schemas"]["TagWorkSchema"][];
+            /** Primary Parent */
+            primary_parent?: string | null;
         };
         /** WikiPageSchema */
         WikiPageSchema: {
@@ -1420,13 +1888,172 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** SongTagInSchema */
+        SongTagInSchema: {
+            /** Parent Slug */
+            parent_slug: string | null;
+            /** Category */
+            category: number;
+        };
+        /** PostContentSchema */
+        PostContentSchema: {
+            /** Lang */
+            lang: number;
+            /** Page Rendered */
+            page_rendered: string;
+            /**
+             * Modified
+             * Format: date-time
+             */
+            modified: string;
+        };
         /** PostSchema */
         PostSchema: {
             added_by: components["schemas"]["ProfileSchema"];
+            /** Pages */
+            pages: components["schemas"]["PostContentSchema"][];
             /** Title */
             title: string;
-            /** Post Rendered */
-            post_rendered: string;
+            /** Category */
+            category: number;
+        };
+        /**
+         * LanguageTypes
+         * @enum {integer}
+         */
+        LanguageTypes: 0 | 1 | 2 | 3 | 4;
+        /**
+         * PostCategory
+         * @enum {integer}
+         */
+        PostCategory: 0 | 1 | 2 | 3;
+        /** PostOverviewSchema */
+        PostOverviewSchema: {
+            /** Id */
+            id: number;
+            added_by: components["schemas"]["ProfileSchema"];
+            /**
+             * Modified
+             * Format: date-time
+             */
+            modified: string;
+            /** Title */
+            title: string;
+            /** Category */
+            category: number;
+        };
+        /** PagedPostOverviewSchema */
+        PagedPostOverviewSchema: {
+            /** Items */
+            items: components["schemas"]["PostOverviewSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** CommentSchema */
+        CommentSchema: {
+            /** Id */
+            id: number;
+            /** Level */
+            level: number;
+            user: components["schemas"]["ProfileSchema"];
+            /** Comment */
+            comment: string;
+            /**
+             * Submit Date
+             * Format: date-time
+             */
+            submit_date: string;
+            /** Parent Id */
+            parent_id: number;
+            /** Index */
+            index: number;
+        };
+        /** DeltaSchema */
+        DeltaSchema: {
+            /** Html */
+            html: string;
+            /** Field */
+            field: string;
+        };
+        /** HistorySchema */
+        HistorySchema: {
+            /** Id */
+            id: number;
+            /** Model */
+            model: string;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+            /** User */
+            user: string;
+            /** Reason */
+            reason: string | null;
+            /** Delta */
+            delta: components["schemas"]["DeltaSchema"][];
+        };
+        /** PagedHistorySchema */
+        PagedHistorySchema: {
+            /** Items */
+            items: components["schemas"]["HistorySchema"][];
+            /** Count */
+            count: number;
+        };
+        /** HistoryExtSchema */
+        HistoryExtSchema: {
+            /** Id */
+            id: number;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+            /** User */
+            user: string;
+            /** Model */
+            model: string;
+            /** Instance */
+            instance: components["schemas"]["SongSchema"] | components["schemas"]["ThinWorkSchema"] | components["schemas"]["TagWorkSchema"] | components["schemas"]["TagSongSchema"];
+        };
+        /** PagedHistoryExtSchema */
+        PagedHistoryExtSchema: {
+            /** Items */
+            items: components["schemas"]["HistoryExtSchema"][];
+            /** Count */
+            count: number;
+        };
+        /**
+         * Status
+         * @enum {integer}
+         */
+        Status: 0 | 1 | 2;
+        /** BulkRequestSchema */
+        BulkRequestSchema: {
+            /** Requests */
+            requests: components["schemas"]["RequestSchema"][];
+            user: components["schemas"]["ProfileSchema"];
+            processed_by: components["schemas"]["ProfileSchema"] | null;
+            /**
+             * Status
+             * @default 0
+             */
+            status: number;
+        };
+        /** RequestSchema */
+        RequestSchema: {
+            /** A */
+            A: [
+                string,
+                components["schemas"]["TagWorkSchema"] | components["schemas"]["WorkSchema"] | components["schemas"]["WorkSourceSchema"]
+            ];
+            /** B */
+            B: [
+                string,
+                components["schemas"]["TagWorkSchema"] | components["schemas"]["WorkSchema"] | components["schemas"]["WorkSourceSchema"]
+            ];
+            /** Command */
+            command: number;
         };
     };
     responses: never;
@@ -1665,6 +2292,7 @@ export interface operations {
             query: {
                 query: string;
                 tags?: string | null;
+                order?: ("id" | "-id" | "pub" | "-pub") | null;
                 limit?: number;
                 offset?: number;
             };
@@ -1680,7 +2308,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedWorkSchema"];
+                    "application/json": components["schemas"]["PagedThinWorkSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_work_tags_needed: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedThinWorkSchema"];
                 };
             };
         };
@@ -1703,6 +2354,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkSchema"];
+                };
+            };
+            /** @description Multiple Choices */
+            300: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
                 };
             };
         };
@@ -1752,28 +2412,6 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_get_tag_scores: {
-        parameters: {
-            query: {
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TagWorkInstanceSchema"][];
-                };
-            };
-        };
-    };
     otodb_api_work_vote_tags: {
         parameters: {
             query: {
@@ -1798,7 +2436,50 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_update_creator_roles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatorRolesUpdateSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_work_toggle_sample: {
+        parameters: {
+            query: {
+                work_id: number;
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_remove_tag: {
         parameters: {
             query: {
                 work_id: number;
@@ -1836,7 +2517,29 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["WorkSchema"][];
+                    "application/json": components["schemas"]["ThinWorkSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_work_recent: {
+        parameters: {
+            query?: {
+                n?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThinWorkSchema"][];
                 };
             };
         };
@@ -2022,7 +2725,9 @@ export interface operations {
             query: {
                 url: string;
                 is_reupload: boolean;
+                rating?: number;
                 work_id?: number | null;
+                original_url?: string | null;
             };
             header?: never;
             path?: never;
@@ -2193,16 +2898,14 @@ export interface operations {
     };
     otodb_api_profile_edit_connections: {
         parameters: {
-            query?: never;
+            query: {
+                urls: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConnectionSchema"][];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -2242,6 +2945,10 @@ export interface operations {
         parameters: {
             query: {
                 username: string;
+                platform?: number | null;
+                origin?: number | null;
+                status?: number | null;
+                order?: ("id" | "-id" | "published_date" | "-published_date") | null;
                 limit?: number;
                 offset?: number;
             };
@@ -2259,6 +2966,28 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PagedSourceSubmissionSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_profile_set_prefs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserPreferencesSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2538,7 +3267,9 @@ export interface operations {
         parameters: {
             query: {
                 query: string;
+                resolve_aliases?: boolean;
                 category?: number | null;
+                media_type?: number[] | null;
                 limit?: number;
                 offset?: number;
             };
@@ -2576,7 +3307,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TagWorkSchema"];
+                    "application/json": components["schemas"]["FatTagWorkSchema"];
+                };
+            };
+            /** @description Multiple Choices */
+            300: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
                 };
             };
         };
@@ -2593,7 +3333,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    payload: components["schemas"]["TagInSchema"];
+                    payload: components["schemas"]["WorkTagInSchema"];
                     song_payload?: components["schemas"]["SongInSchema"] | null;
                 };
             };
@@ -2601,6 +3341,33 @@ export interface operations {
         responses: {
             /** @description OK */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_tag_delete: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2649,7 +3416,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedWorkSchema"];
+                    "application/json": components["schemas"]["PagedThinWorkSchema"];
                 };
             };
         };
@@ -2658,6 +3425,7 @@ export interface operations {
         parameters: {
             query: {
                 into_tag: string;
+                delete: boolean;
             };
             header?: never;
             path?: never;
@@ -2720,11 +3488,10 @@ export interface operations {
             };
         };
     };
-    otodb_api_tag_del_lang_pref: {
+    otodb_api_tag_set_base_tag: {
         parameters: {
             query: {
                 tag_slug: string;
-                lang: number;
             };
             header?: never;
             path?: never;
@@ -2814,17 +3581,13 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                t: number;
+                urls: string;
             };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConnectionSchema"][];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -2835,11 +3598,38 @@ export interface operations {
             };
         };
     };
+    otodb_api_tag_song: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+        };
+    };
     otodb_api_tag_song_search: {
         parameters: {
             query: {
                 query: string;
+                author: string;
                 tags?: string | null;
+                bpm_range?: [
+                    number,
+                    number
+                ] | null;
                 limit?: number;
                 offset?: number;
             };
@@ -3009,7 +3799,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TagInSchema"];
+                "application/json": components["schemas"]["SongTagInSchema"];
             };
         };
         responses: {
@@ -3108,6 +3898,324 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PostSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_post_new: {
+        parameters: {
+            query: {
+                title: string;
+                post: string;
+                category: 0 | 1 | 2 | 3;
+                lang: 0 | 1 | 2 | 3 | 4;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+        };
+    };
+    otodb_api_post_categories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostOverviewSchema"][][];
+                };
+            };
+        };
+    };
+    otodb_api_post_category: {
+        parameters: {
+            query: {
+                category: 0 | 1 | 2 | 3;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedPostOverviewSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_post_search: {
+        parameters: {
+            query: {
+                query: string;
+                category?: components["schemas"]["PostCategory"] | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedPostOverviewSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_comment_get: {
+        parameters: {
+            query: {
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
+                pk: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommentSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_comment_post: {
+        parameters: {
+            query: {
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
+                pk: number;
+                comment: string;
+                parent_id?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_comment_delete: {
+        parameters: {
+            query: {
+                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
+                pk: number;
+                comment_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_history_history: {
+        parameters: {
+            query: {
+                pk: number | string;
+                model: "mediawork" | "mediasong" | "tagwork" | "tagsong";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedHistorySchema"];
+                };
+            };
+        };
+    };
+    otodb_api_history_recent: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedHistoryExtSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_history_user: {
+        parameters: {
+            query: {
+                username: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedHistoryExtSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_history_rollback: {
+        parameters: {
+            query: {
+                model: "mediawork" | "workrelation" | "worksource" | "mediasong" | "songrelation" | "mediasongconnection" | "tagwork" | "wikipage" | "tagworkconnection" | "tagworkmediaconnection" | "tagworkcreatorconnection" | "tagworklangpreference" | "tagworkparenthood" | "tagsong";
+                history_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_requests_make_bulk: {
+        parameters: {
+            query: {
+                s: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_requests_confirm: {
+        parameters: {
+            query: {
+                request_id: number;
+                status: 0 | 1 | 2;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_requests_user_request: {
+        parameters: {
+            query: {
+                request_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkRequestSchema"];
                 };
             };
         };

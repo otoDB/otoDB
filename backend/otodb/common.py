@@ -6,10 +6,10 @@ from time import mktime
 from datetime import datetime
 import unicodedata
 from http.cookiejar import MozillaCookieJar
+from django.utils.text import slugify
 
 from furl import furl
 import nh3
-import diff_match_patch as dmp_mod
 
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
@@ -19,47 +19,16 @@ from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 
 from django.conf import settings
 
-from .models import TagWork
-from .models.enums import Platform
+from .models.enums import Platform, MimeType
 
 def NFKC(s: str):
     return unicodedata.normalize('NFKC', s)
 
-def get_diff(delta):
-    dmp = dmp_mod.diff_match_patch()
+def clean_incoming_tag_name(s: str):
+    return NFKC(s).lower().replace(' ','_')
 
-    def diff_prettyHtml(diffs):
-        html = []
-        for (op, data) in diffs:
-            text = (data.replace("&", "&amp;").replace("<", "&lt;")
-                        .replace(">", "&gt;").replace("\n", "&para;<br>"))
-            if op == dmp.DIFF_INSERT:
-                html.append("<ins>%s</ins>" % text)
-            elif op == dmp.DIFF_DELETE:
-                html.append("<del>%s</del>" % text)
-            elif op == dmp.DIFF_EQUAL:
-                html.append("<span>%s</span>" % text)
-        return "".join(html)
-
-    diffs_html = []
-
-    for change in delta.changes:
-        match change.field:
-            case 'tags':
-                # TODO make this not hardcoded...
-                old, new = set([c['work_tag'] for c in change.old]), set([c['work_tag'] for c in change.new])
-                old, new = old - new, new - old
-                changes = ['- ' + TagWork.objects.get(id=id_).slug for id_ in old] + [
-                    '+ ' + TagWork.objects.get(id=id_).slug for id_ in new]
-                diffs_html.append({'html': ('<br>').join(changes), 'field': change.field})
-            case _:
-                old, new = change.old, change.new
-                diff_field = dmp.diff_main(str(old), str(new))
-                dmp.diff_cleanupSemantic(diff_field)
-
-                diffs_html.append({'html': diff_prettyHtml(diff_field).replace('&para;', ''), 'field': change.field})
-
-    return diffs_html
+def clean_incoming_slug(s: str):
+    return slugify(clean_incoming_tag_name(s), True)
 
 ydl_playlist = YoutubeDL({'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True)
 for e in (YoutubeTabIE, NiconicoPlaylistIE, BilibiliFavoritesListIE, SoundcloudPlaylistIE):
@@ -86,7 +55,7 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 reset_cookies()
 
 make_video_url = {
-    'youtube': lambda s: f'https://youtu.be/{s}',
+    'youtube': lambda s: f'https://youtube.com/watch?v={s}',
     'niconico': lambda s: f'https://nicovideo.jp/watch/{s}',
     'bilibili': lambda s: f'https://www.bilibili.com/video/{s}/'
     }
@@ -125,8 +94,10 @@ def process_video_info(full_info, link=None):
         'webpage_url': 'url',
         'id': 'id',
         'thumbnail': 'thumb',
+        'thumbnail_mime': 'thumb_mime',
         'timestamp': 'timestamp',
         'uploader_id': 'uploader_id',
+        'channel_id': 'channel_id',
     }
 
     try:
@@ -192,10 +163,19 @@ def process_video_info(full_info, link=None):
 
         # Process tags
         if 'tags' in info:
-            info['tags'] = [NFKC(tag.replace(' ', '_')) for tag in info['tags']]
+            info['tags'] = [clean_incoming_tag_name(tag) for tag in info['tags']]
 
         # Clean description
         info['description'] = nh3.clean(info['description'])
+
+		# Get thumbnail mime type
+        try:
+            response = requests.get(info['thumbnail'], allow_redirects=True, timeout=5)
+            content_type = response.headers.get('Content-Type')
+            info['thumbnail_mime'] = MimeType.from_str(content_type)
+        except Exception as e:
+            print(f"Error fetching thumbnail mime type: {e}")
+            info['thumbnail_mime'] = None
 
         return {keys[key]: info[key] for key in keys if key in info}
     except Exception as e:
@@ -217,7 +197,7 @@ def video_info(link):
                 f.remove(["list"])
                 link = f.url
                 assert(YoutubeIE.suitable(link))
-                
+
             full_info = ydl.extract_info(link, download=False)
             info = process_video_info(full_info)
             return info, full_info
@@ -236,15 +216,18 @@ def playlist_info(link):
         return None
 
     match info['extractor_key']:
+        # Note: a platform may have multiple sorts of playlists that call different extractors
         case 'YoutubeTab':
             pass
         case 'NiconicoPlaylist':
             pass
         case 'BilibiliFavoritesList':
             pass
-        # soundcloud?
-        # a platform can also have multiple sorts of playlists that call different extractors
-        # TODO fail for unsupported playlist types
+        case 'SoundcloudPlaylist':
+            pass
+        case _:
+            return None
+
 
     info['entries'] = [entry['url'] for entry in info['entries']]
 

@@ -2,38 +2,44 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
-		LanguageNames,
 		Languages,
 		ProfileConnectionLink,
 		ProfileConnectionTypes,
 		SongConnectionLink,
 		SongConnectionTypes,
-		SourceConnectionLink,
-		SourceConnectionTypes,
+		MediaConnectionLink,
+		MediaConnectionTypes,
 		TagWorkConnectionLink,
 		TagWorkConnectionTypes,
-		WorkTagCategory
+		WorkTagCategory,
+		MediaType
 	} from '$lib/enums';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import SongTag from '$lib/SongTag.svelte';
-	import client from '$lib/api.js';
+	import client, { getTagDisplayName, makeTagDisplayName } from '$lib/api.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import { SVGViewer } from 'svelte-svg-viewer';
+	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import { SongRelationTypes } from '$lib/enums';
+	import mermaid from 'mermaid';
+	import { mermaid_BFS } from '$lib/ui.js';
+	import { onMount } from 'svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
+	import LangSwitch from '$lib/LangSwitch.svelte';
+	import type { components } from '$lib/schema.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
+
 	const aliases = $derived(
-		data.display_name === data.tag.name
-			? data.aliases?.map((a) => a.name)
-			: [
-					data.tag.name,
-					...(data.aliases
-						?.filter((a) => a.name !== data.display_name)
-						.map((a) => a.name) ?? [])
-				]
+		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])]
+			.map(makeTagDisplayName)
+			.filter((e) => e !== data.display_name)
 	);
-	let wikiView = $state(
+
+	let wikiView = $derived(
 		Languages[data.wiki_page?.find(({ lang }) => lang === Languages[getLocale()])?.lang] ??
 			Languages[data.wiki_page?.at(0)?.lang] ??
 			undefined
@@ -51,8 +57,62 @@
 			}
 		});
 
-	const ext_cat_types = data.tag.category === 3 ? SourceConnectionTypes : ProfileConnectionTypes;
-	const ext_cat_links = data.tag.category === 3 ? SourceConnectionLink : ProfileConnectionLink;
+	const ext_cat_types = $derived(
+		data.tag.category === 6 ? MediaConnectionTypes : ProfileConnectionTypes
+	);
+	const ext_cat_links = $derived(
+		data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink
+	);
+
+	// Song Relation
+	let songs = data.song_relations?.[1]?.map((o) => ({ visited: false, ...o }));
+	let deg = $state(2);
+	let direction = $state('LR');
+	let allowed_types = $state(new Array(SongRelationTypes.length).fill(true));
+
+	const get_svg_mermaid = (nodes, links) =>
+		mermaid.render(
+			'Relations',
+			`flowchart ${direction}
+    style ${data.tag.song!.id} color:#f00
+${nodes
+	.map(
+		(w) => `${w.id}["${w.title.replaceAll('"', '#quot;')}"]
+    click ${w.id} "${`/tag/${w.work_tag}`}"`
+	)
+	.join('\n')}
+    ${links.map((r) => `${r.A_id} -->|${SongRelationTypes[r.relation]()}| ${r.B_id}`).join('\n')}`
+		);
+
+	let svg = $derived.by(() => {
+		if (!songs?.length) return;
+		const [nodes, links] = mermaid_BFS(
+			structuredClone(songs),
+			structuredClone(data.song_relations![0]),
+			data.tag.song!.id,
+			deg,
+			allowed_types
+		);
+		return get_svg_mermaid(nodes, links);
+	});
+
+	const paths = $derived.by(() => {
+		const get_paths = (node: string): components['schemas']['TagWorkSchema'][][] =>
+			Object.hasOwn(data.paths[1], node)
+				? data.paths[1][node].flatMap((next) =>
+						get_paths(next).map((p) => [
+							...p,
+							data.paths[0].find((t) => t.slug === node) ?? data.tag
+						])
+					)
+				: [[data.paths[0].find((t) => t.slug === node) ?? data.tag]];
+		return get_paths(data.tag.slug);
+	});
+
+	onMount(() => {
+		if (songs)
+			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'neutral' });
+	});
 </script>
 
 <Section
@@ -63,12 +123,16 @@
 	menuLinks={data.links}
 >
 	<div>
-		<span>{m.empty_legal_chicken_taste()}</span>
-		{#each data.tree as node, i (i)}
-			> <a href={node.slug}>{node.name}</a>&nbsp;
+		{#each paths as path, i (i)}
+			<div>
+				<span>{m.empty_legal_chicken_taste()}</span>
+				{#each path as node, j (j)}
+					> {#if node.slug === data.tag.slug}{data.display_name}{:else}<a href={node.slug}
+							>{getTagDisplayName(node)}</a
+						>{/if}&nbsp;
+				{/each}
+			</div>
 		{/each}
-		>
-		<span>{data.display_name}</span>
 	</div>
 
 	<h2>
@@ -76,24 +140,32 @@
 			type: m.plane_awful_bobcat_spark(),
 			name: WorkTagCategory[data.tag.category]()
 		})}
+		{#if data.tag.category === 6 && data.tag.media_type?.length}
+			({#each data.tag.media_type as t, i (i)}{MediaType[
+					t
+				]()}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
+		{/if}
 	</h2>
 
 	{#if aliases.length}
 		<h3>
 			{m.mild_loud_shad_enchant({
 				type: m.tiny_sharp_lark_fall(),
-				name: aliases.join(', ')
+				name: aliases?.join(', ')
 			})}
 		</h3>
+	{/if}
+
+	{#if data.tag.deprecated}
+		<h2>This tag has been deprecated. It will not be displayed under works.</h2>
 	{/if}
 
 	{#if data.connections}
 		<ul class="list-none">
 			{#each data.connections[0] as s, i (i)}
 				<li>
-					<img
-						src="/connection_favicons/{TagWorkConnectionTypes[s.site]}.png"
-						alt={TagWorkConnectionTypes[s.site]}
+					<ConnectionFavicon
+						type={TagWorkConnectionTypes[s.site]}
 						class="inline size-4"
 					/>
 					<a
@@ -101,22 +173,19 @@
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{TagWorkConnectionLink[s.site](s.content_id)}
+						{decodeURI(TagWorkConnectionLink[s.site](s.content_id))}
 					</a>
 				</li>
 			{/each}
 			{#if data.connections[1]}
 				{#each data.connections[1] as s, i (i)}
-					<li>
-						<img
-							src="/connection_favicons/{ext_cat_types[s.site]}.png"
-							alt={ext_cat_types[s.site]}
-							class="inline size-4"
-						/>
+					<li class={{ 'opacity-60': s.dead }}>
+						<ConnectionFavicon type={ext_cat_types[s.site]} class="inline size-4" />
 						<a
 							href={ext_cat_links[s.site](s.content_id)}
 							target="_blank"
 							rel="noopener noreferrer"
+							class={{ 'line-through': s.dead }}
 						>
 							{ext_cat_links[s.site](s.content_id)}
 						</a>
@@ -130,17 +199,18 @@
 
 	{#if data.wiki_page && data.wiki_page.length}
 		<div class="float-right clear-left my-2">
-			{#each data.wiki_page as page, i (i)}
-				<label class="wiki-lang-tab">
-					<input type="radio" bind:group={wikiView} value={Languages[page.lang]} />
-					{LanguageNames[Languages[page.lang]]}
-				</label>
-			{/each}
+			<LangSwitch
+				availableLanguages={data.wiki_page.map((v) => Languages[v.lang])}
+				bind:value={wikiView}
+			/>
 		</div>
-		{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])?.page_rendered}
-		{/if}
+		<div class="prose prose-neutral prose-sm dark:prose-invert max-w-4xl">
+			{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])
+					?.page_rendered}
+			{/if}
+		</div>
 	{:else}
 		<p>{m.tame_dirty_goldfish_flow()}</p>
 	{/if}
@@ -157,7 +227,13 @@
 		<table>
 			<tbody>
 				<tr><th>{m.large_factual_octopus_exhale()}</th><td>{data.tag.song.title}</td></tr>
-				<tr><th>BPM</th><td>{data.tag.song.bpm}</td></tr>
+				{#if data.tag.song.bpm || data.tag.song.variable_bpm}<tr
+						><th>BPM</th><td
+							>{#if data.tag.song.variable_bpm && data.tag.song.bpm}{m.big_helpful_tortoise_swim()}
+								({data.tag.song.bpm}){:else if data.tag.song.bpm}{data.tag.song
+									.bpm}{:else}{m.big_helpful_tortoise_swim()}{/if}</td
+						></tr
+					>{/if}
 				<tr><th>{m.crisp_red_canary_tickle()}</th><td>{data.tag.song.author}</td></tr>
 			</tbody>
 		</table>
@@ -165,9 +241,8 @@
 			<ul class="list-none">
 				{#each data.song_connections as s, i (i)}
 					<li>
-						<img
-							src="/connection_favicons/{SongConnectionTypes[s.site]}.png"
-							alt={SongConnectionTypes[s.site]}
+						<ConnectionFavicon
+							type={SongConnectionTypes[s.site]}
 							class="inline size-4"
 						/>
 						<a
@@ -175,7 +250,7 @@
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{SongConnectionLink[s.site](s.content_id)}
+							{decodeURI(SongConnectionLink[s.site](s.content_id))}
 						</a>
 					</li>
 				{/each}
@@ -188,25 +263,54 @@
 				{/each}
 			</ul>
 		{/if}
-		{#if data.song_relation_svg}
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html data.song_relation_svg}
+		{#if songs?.length}
+			<label>
+				{m.just_grassy_mantis_slurp()}
+				<input type="number" bind:value={deg} min="1" />
+			</label>
+			<label>
+				{m.fair_aware_salmon_twist()}
+				<select bind:value={direction}
+					><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
+						>{m.stout_jumpy_ox_feel()}</option
+					></select
+				>
+			</label>
+			{#each SongRelationTypes as t, i (i)}
+				<label class="type-label">
+					<input type="checkbox" class="hidden" bind:checked={allowed_types[i]} />
+					{t()}
+				</label>
+			{/each}
+			{#await svg}
+				{m.sunny_light_duck_surge()}
+			{:then s}
+				<SVGViewer
+					maxScale={90}
+					height="200px"
+					width="100%"
+					svgClass="fill-transparent dark:fill-black"
+				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html s.svg}
+				</SVGViewer>
+			{/await}
 		{/if}
 	</Section>
 {/if}
 
 {#if data.tag.children.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
-		<ul>
+		<div class="flex flex-wrap gap-3">
 			{#each data.tag.children as tag, i (i)}
-				<li><a href={tag.slug}>{tag.name}</a></li>
+				<WorkTag {tag} />
 			{/each}
-		</ul>
+		</div>
 	</Section>
 {/if}
 
-<Section title={m.quiet_super_kangaroo_kiss({ tag: data.display_name })}>
-	{#if results}
+<Section title="{m.quiet_super_kangaroo_kiss({ tag: data.display_name })} ({data.works?.count})">
+	{#if results.length}
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each results as work, i (i)}
 				<WorkCard {work} />
@@ -230,7 +334,7 @@
 <style>
 	#song-tags {
 		grid-column: 1 / span 2;
-		border-top: var(--otodb-faint-content) 1px solid;
+		border-top: var(--otodb-color-content-faint) 1px solid;
 		margin-top: 1rem;
 		padding-top: 1rem;
 		display: flex;
@@ -241,24 +345,15 @@
 			margin: 0;
 		}
 	}
-	label.wiki-lang-tab {
-		padding: 0.2rem 0.5rem;
-		display: inline-block;
-		background-color: var(--otodb-bg-color);
-		border: 1px solid var(--otodb-content-color);
-		&:hover {
-			background-color: var(--otodb-fainter-bg);
+	label.type-label {
+		padding: 0 0.3rem;
+		margin: 0.1rem;
+		border: 1px solid var(--otodb-color-content-primary);
+		&:has(input:checked) {
+			background-color: var(--otodb-color-content-primary);
+			color: var(--color-otodb-bg-primary);
 		}
-		&:active {
-			background-color: var(--otodb-faint-bg);
-		}
-		& > input {
-			display: none;
-		}
-		&:has(> input:checked) {
-			background-color: var(--otodb-content-color);
-			border: 1px solid var(--otodb-bg-color);
-			color: var(--otodb-bg-color);
-		}
+		color: var(--otodb-color-content-primary);
+		background-color: var(--otodb-color-bg-primary);
 	}
 </style>

@@ -1,26 +1,28 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
 	import type { PageProps } from '../$types';
 	import { Platform, Rating, WorkOrigin } from '$lib/enums';
-	import CollapsibleText from '../CollapsibleText.svelte';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
+	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { dirtyEnhance } from '$lib/ui';
 
 	let { data, form }: PageProps = $props();
 	let title: string = $state(form?.title ?? data.title!),
 		description: string = $state(form?.description ?? data.description!),
 		rating: number = $state(form?.rating ?? data.rating!),
-		thumbnail: string = $state(form?.thumbnail ?? data.thumbnail!);
+		thumbnail_source_id: number | null = $state(
+			form?.thumbnail_source ?? data.thumbnail_source ?? data.sources?.[0]?.id ?? null
+		);
 	const del = async () => {
 		if (confirm(m.mad_brief_falcon_pop())) {
 			await client.DELETE('/api/work/work', {
 				fetch,
 				params: { query: { work_id: data.id } }
 			});
-			goto('/work/unbound');
+			goto('/work/unbound', { invalidateAll: true });
 		}
 	};
 	const unbind = async (source_id: number) => {
@@ -32,19 +34,26 @@
 		else invalidateAll();
 	};
 	const updateStatus = (source_id: number) => async (e) => {
-		await client.PUT('/api/work/source_origin', {
+		const p = client.PUT('/api/work/source_origin', {
 			fetch,
 			params: { query: { source_id, status: e.target.value } }
 		});
+		callSavingToast(p);
+		await p;
 	};
+
+	$effect(() => {
+		if (form?.failed) {
+			callErrorToast(m.green_due_javelina_pop());
+		}
+	});
 </script>
 
 <Section
 	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
 	menuLinks={data.links}
 >
-	<form method="POST" use:enhance action="?/edit">
-		{#if form?.failed}<p class="error">Failed!</p>{/if}
+	<form method="POST" use:dirtyEnhance action="?/edit">
 		<table class="inline">
 			<tbody>
 				<tr
@@ -66,8 +75,28 @@
 					></tr
 				>
 				<tr
-					><th><label for="thumbnail">{m.heroic_ideal_orangutan_aid()}</label></th><td
-						><input type="text" required name="thumbnail" bind:value={thumbnail} /></td
+					><th><label for="thumbnail_source">{m.heroic_ideal_orangutan_aid()}</label></th
+					><td
+						><select name="thumbnail_source" bind:value={thumbnail_source_id}>
+							{#each data.sources! as src (src.id)}
+								<option value={src.id}
+									>{Platform[src.platform]}
+									{src.work_origin === 0
+										? ''
+										: ' ' + WorkOrigin[src.work_origin]()}
+									-
+									{src.title}</option
+								>
+							{/each}
+						</select>
+						{#if thumbnail_source_id}
+							{@const selectedSource = data.sources!.find(
+								(s) => s.id === thumbnail_source_id
+							)}
+							{#if selectedSource?.thumbnail}
+								<img class="mt-2 w-20" src={selectedSource.thumbnail} />
+							{/if}
+						{/if}</td
 					></tr
 				>
 				<tr
@@ -98,13 +127,17 @@
 								onclick={() => {
 									title = src.title;
 									description = src.description;
-									thumbnail = src.thumbnail;
+									thumbnail_source_id = src.id;
 								}}
 								type="button">&lt;&lt;</button
 							></td
 						>
 						<td class="whitespace-nowrap">{src.title}</td>
-						<td><CollapsibleText text={src.description}></CollapsibleText></td>
+						<td
+							><details>
+								<summary>[{m.tough_early_sparrow_bask()}]</summary>{src.description}
+							</details></td
+						>
 						<td>{Platform[src.platform]}</td>
 						<td class="whitespace-nowrap"
 							><select value={src.work_origin} onchange={updateStatus(src.id)}

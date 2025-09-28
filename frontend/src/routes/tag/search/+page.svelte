@@ -4,7 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api';
-	import { WorkTagCategory } from '$lib/enums';
+	import { MediaType, WorkTagCategory } from '$lib/enums';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 
 	let { data }: PageProps = $props();
@@ -19,21 +19,31 @@
 					query: data.query,
 					limit: data.batch_size,
 					offset: results.length,
-					category: category
+					category: data.category,
+					media_type: data.media_type
 				}
 			}
 		});
 </script>
 
 <svelte:head>
-	<title>{m.mean_top_antelope_love()}</title>
+	<title
+		>{m.mild_loud_shad_enchant({
+			type: m.mean_top_antelope_love(),
+			name: m.empty_legal_chicken_taste()
+		})}</title
+	>
 </svelte:head>
 
 <Section
-	title={m.mean_top_antelope_love()}
+	title={m.mild_loud_shad_enchant({
+		type: m.mean_top_antelope_love(),
+		name: m.empty_legal_chicken_taste()
+	})}
 	menuLinks={[
 		{ title: m.grand_merry_fly_succeed(), pathname: `work/search?query=${data.query}` },
 		{ title: m.empty_legal_chicken_taste(), pathname: 'tag/search' },
+		{ title: m.grand_nice_pony_belong(), pathname: `song/search?query=${data.query}` },
 		{ title: m.stale_loose_squid_cut(), pathname: `list/search?query=${data.query}` }
 	]}
 >
@@ -50,6 +60,13 @@
 				<option value={i}>{cat()}</option>
 			{/each}
 		</select>
+		{#if category === 6}
+			<select name="media_type" multiple value={data.media_type ?? []}>
+				{#each Object.keys(MediaType).filter((e) => !isNaN(e)) as t, i (i)}
+					<option value={+t}>{MediaType[t]()}</option>
+				{/each}
+			</select>
+		{/if}
 		<input type="submit" value={m.mean_top_antelope_love()} />
 	</form>
 

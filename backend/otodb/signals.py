@@ -1,11 +1,10 @@
-from django.db.models.signals import m2m_changed
+from django.db.models import Q
+from django.db.models.signals import m2m_changed, pre_delete
+from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
+from django.contrib.sessions.models import Session
 
-from django_comments.signals import comment_will_be_posted
-from django_comments_xtd.signals import should_request_be_authorized
-
-from otodb.models import MediaWork, MediaSong, TagWork, TagSong
-from otodb.account.models import Account
+from otodb.models import MediaWork, MediaSong, TagWork, TagSong, UserRequest
 
 
 # IMPORTANT: maintain following invariants:
@@ -27,16 +26,12 @@ def on_add_remove_tag_song(sender, instance, action, pk_set, **kwargs):
                 instance.tags.remove(tag)
                 instance.tags.add(tag.aliased_to)
 
-# DRF handler for django_comments_xtd
-@receiver(should_request_be_authorized)
-def check_comments_logged_in(sender, comment, request, **kwargs):
-    return request.user and request.user.is_authenticated   
+@receiver(pre_delete)
+def post_group_deleted(sender, instance, using, **kwargs):
+    # Query tags with the instance of PostGroup and delete them
+    if isinstance(instance, UserRequest) or isinstance(instance, Session):
+        return
 
-# Place zero trust on incoming request
-# for some reason django_comments_xtd allows request to specify name and email even when authenticated
-@receiver(comment_will_be_posted)
-def unbastardize_poster_info(sender, comment, request, **kwargs):
-    if request.user.level < Account.Levels.MEMBER:
-        return False # Discard
-    comment['user_name'] = request.user.username
-    comment['user_email'] = request.user.email
+    UserRequest.objects.filter(
+        (Q(A_type=ContentType.objects.get_for_model(instance)) & Q(A_id=instance.pk)) | (Q(B_type=ContentType.objects.get_for_model(instance)) & Q(B_id=instance.pk))
+    ).delete()

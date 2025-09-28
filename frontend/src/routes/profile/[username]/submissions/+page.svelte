@@ -4,30 +4,15 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { Platform, WorkOrigin, WorkStatus } from '$lib/enums';
 	import RefreshButton from '../../../work/RefreshButton.svelte';
-	import client from '$lib/api';
+	import Pager from '$lib/Pager.svelte';
+	import { page } from '$app/state';
 
 	let { data }: PageProps = $props();
-	let results = $state(data.submissions!.items);
-	let page = $state(0);
+	let results = $derived(data.submissions!.items);
 
 	let approved = $derived(results.filter((s) => s.media));
 	let pending = $derived(results.filter((s) => !s.media && !s.rejection));
 	let rejected = $derived(results.filter((s) => s.rejection));
-
-	$effect(() => {
-		client
-			.GET('/api/profile/submissions', {
-				fetch,
-				params: {
-					query: {
-						username: data.profile.username,
-						limit: data.batch_size,
-						offset: page * data.batch_size
-					}
-				}
-			})
-			.then(({ data }) => (results = data.items));
-	});
 </script>
 
 <Section
@@ -40,6 +25,60 @@
 	{#if data.user?.username === data.profile.username}
 		<a href="/work/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}
+	<form method="get">
+		<table>
+			<caption>{m.livid_same_wren_create()}</caption>
+			<tbody>
+				<tr>
+					<td>{m.sour_swift_sparrow_spin()}</td>
+					<td
+						><select name="platform" value={data.platform ?? null}
+							><option value={null}>---</option
+							>{#each Platform.slice(1) as p, i (i)}<option value={i + 1}
+									>{Platform[i + 1]}</option
+								>{/each}</select
+						></td
+					>
+				</tr>
+				<tr>
+					<td>{m.large_polite_otter_thrive()}</td>
+					<td
+						><select name="origin" value={data.origin ?? null}
+							><option value={null}>---</option><option value={0}
+								>{WorkOrigin[0]()}</option
+							><option value={1}>{WorkOrigin[1]()}</option></select
+						></td
+					>
+				</tr>
+				<tr>
+					<td>{m.civil_trick_oryx_clap()}</td>
+					<td
+						><select name="status" value={data.status ?? null}
+							><option value={null}>---</option><option value={0}
+								>{WorkStatus[0]()}</option
+							><option value={1}>{WorkStatus[1]()}</option></select
+						></td
+					>
+				</tr>
+				<tr>
+					<td>{m.good_heavy_mayfly_spin()}</td>
+					<td>
+						<select name="order" value={data.order ?? 'id'}
+							><option value="id">{m.kind_vivid_niklas_savor()}</option><option
+								value="published_date">{m.swift_each_zebra_assure()}</option
+							></select
+						>
+						<select name="dir" value={data.dir ?? '-'}
+							><option value="-">{m.kind_quick_bullock_push()}</option><option
+								value="+">{m.novel_orange_mantis_feast()}</option
+							></select
+						>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<input type="submit" />
+	</form>
 	<h2>{m.such_actual_okapi_dare()}</h2>
 	{#if pending?.length}
 		<table class="w-full">
@@ -51,6 +90,7 @@
 					<th>{m.large_polite_otter_thrive()}</th>
 					<th>{m.noisy_moving_newt_belong()}</th>
 					{#if data.user}
+						<th>{m.tough_calm_hedgehog_wave()}</th>
 						<th>{m.mushy_proof_hornet_dig()}</th>
 					{/if}
 				</tr></thead
@@ -67,6 +107,13 @@
 							></td
 						>
 						{#if data.user}
+							<td class="whitespace-nowrap"
+								><a
+									href={`/request/new?pre_filled=source:attach_tag ${src.id}`}
+									target="_blank"
+									rel="noopener noreferrer">{m.tough_calm_hedgehog_wave()}</a
+								></td
+							>
 							<td><RefreshButton source={src} /></td>
 						{/if}
 					</tr>
@@ -136,7 +183,7 @@
 				{#each approved as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap"
-							><a href="/work/{src.media}">{src.title}</a></td
+							><a href="/work/{src.media}">#{src.media} - {src.title}</a></td
 						>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td
@@ -158,14 +205,12 @@
 		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 	{#if data.submissions?.count}
-		<div class="mt-3 flex justify-center gap-2">
-			{#each Array(Math.ceil(data.submissions?.count / data.batch_size)).fill(undefined) as _, i (i)}
-				<label class="inline-block border p-2">
-					<input type="radio" value={i} bind:group={page} hidden />
-					{i + 1}
-				</label>
-			{/each}
-		</div>
+		<Pager
+			n_count={data.submissions.count}
+			page={data.page}
+			page_size={data.batch_size}
+			base_url={page.url}
+		/>
 	{/if}
 </Section>
 
@@ -174,9 +219,5 @@
 		font-size: larger;
 		margin: 1rem 0 0.5rem 0;
 		font-weight: 600;
-	}
-	label:has(input:checked) {
-		background-color: var(--otodb-content-color);
-		color: var(--otodb-bg-color);
 	}
 </style>

@@ -3,9 +3,11 @@
 	import client from './api';
 	import { clickOutside, debounce } from './ui';
 	import { m } from './paraglide/messages';
+	import TagSuggestionResults from './TagSuggestionResults.svelte';
 
 	interface Props {
 		value: string[];
+		class: string;
 		type: 'work' | 'song';
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
@@ -13,7 +15,7 @@
 	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
 
 	let textarea: HTMLTextAreaElement;
-	let suggestions = $state([]);
+	let suggestions = $state<any[]>([]);
 
 	const getWordAtPos = (str: string, pos: number) => {
 		let start = [...str.slice(0, pos)].reverse().join('').search(/\s/g);
@@ -35,7 +37,7 @@
 			return;
 		}
 		const { data } = await client.GET(endpoint, {
-			params: { query: { query, limit: 10 } }
+			params: { query: { query, limit: 10, resolve_aliases: false } }
 		});
 		if (!data) return;
 		suggestions = data.items;
@@ -78,39 +80,26 @@
 				suggestions = [];
 			}}
 		>
-			{#each suggestions as t, i (i)}
-				<li class="bg-[var(--otodb-fainter-bg)] px-2 py-1 hover:bg-[var(--otodb-faint-bg)]">
-					<a
-						class="cursor-pointer"
-						href={null}
-						onclick={() => {
-							textarea.value = replaceWordAtPos(
-								textarea.value,
-								textarea.selectionStart,
-								t.slug + ' '
-							);
-							suggestions = [];
-							updateValue();
-						}}
-						>{t.name}
-						{#if t.slug !== t.name}<address class="inline">
-								({t.slug}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
-										'',
-										...t.lang_prefs
-									]
-										.map((p) => p.tag)
-										.join(', ')}{/if})
-							</address>{/if}</a
-					>
-				</li>
-			{/each}
+			<TagSuggestionResults
+				{suggestions}
+				onclick={(t) => {
+					textarea.value = replaceWordAtPos(
+						textarea.value,
+						textarea.selectionStart,
+						t.aliased_to ? t.aliased_to.slug : t.slug + ' '
+					);
+					suggestions = [];
+					updateValue();
+				}}
+				{type}
+			/>
 		</ul>
 	{/if}
 </span>
 
 <style>
 	ul {
-		background-color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-bg-primary);
 		z-index: 1;
 	}
 </style>

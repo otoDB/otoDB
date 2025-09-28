@@ -3,40 +3,61 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkField from '$lib/WorkField.svelte';
 	import type { components } from '$lib/schema';
-	import { Rating } from '$lib/enums';
+	import { Platform, Rating, WorkOrigin } from '$lib/enums';
+	import client from '$lib/api';
 
 	let work: {
 		work: components['schemas']['WorkSchema'] | null;
 		title: string;
 		description: string;
-		thumbnail: string;
+		thumbnail_source_id: number | null;
 		rating: number;
 	}[] = $state([
 		{
 			work: null,
 			title: '',
 			description: '',
-			thumbnail: '',
+			thumbnail_source_id: null,
 			rating: 0
 		},
 		{
 			work: null,
 			title: '',
 			description: '',
-			thumbnail: '',
+			thumbnail_source_id: null,
 			rating: 0
 		}
 	]);
 
-	function updateInfo(i: number) {
+	async function updateInfo(i: number) {
 		if (work[i].work) {
-			work[i].title = work[i].work.title;
-			work[i].thumbnail = work[i].work.thumbnail!;
-			work[i].description = work[i].work.description!;
-			work[i].rating = work[i].work.rating;
+			const [workResponse, sourcesResponse] = await Promise.all([
+				client.GET('/api/work/work', {
+					fetch,
+					params: { query: { work_id: work[i].work.id } }
+				}),
+				client.GET('/api/work/sources', {
+					fetch,
+					params: { query: { work_id: work[i].work.id } }
+				})
+			]);
+
+			if (workResponse.data) {
+				work[i].work = workResponse.data;
+				work[i].title = workResponse.data.title;
+				work[i].description = workResponse.data.description!;
+				work[i].rating = workResponse.data.rating;
+			}
+
+			if (sourcesResponse.data) {
+				work[i].work.sources = sourcesResponse.data;
+				work[i].thumbnail_source_id =
+					workResponse.data?.thumbnail_source ?? sourcesResponse.data?.[0]?.id ?? null;
+			}
 		} else {
+			work[i].work = null;
 			work[i].title = '';
-			work[i].thumbnail = '';
+			work[i].thumbnail_source_id = null;
 			work[i].description = '';
 			work[i].rating = 0;
 		}
@@ -45,7 +66,7 @@
 	let selecting = $state({
 		title: 0,
 		description: 0,
-		thumbnail: 0,
+		thumbnail_source: 0,
 		rating: 0
 	});
 </script>
@@ -137,19 +158,41 @@
 				>
 				<tr
 					><th>{m.heroic_ideal_orangutan_aid()}</th>
-					<td
-						><input
-							type="text"
-							disabled={!work[0].work || selecting.thumbnail !== 0}
-							bind:value={work[0].thumbnail}
-						/><img class="w-15" src={work[0].thumbnail} alt={work[0].title} /></td
-					>
+					<td>
+						{#if work[0].work?.sources && work[0].work.sources.length > 0}
+							<select
+								disabled={!work[0].work || selecting.thumbnail_source !== 0}
+								bind:value={work[0].thumbnail_source_id}
+							>
+								{#each work[0].work.sources as source (source.id)}
+									<option value={source.id}
+										>{Platform[source.platform]}
+										{source.work_origin === 0
+											? ''
+											: ' ' + WorkOrigin[source.work_origin]()}
+										-
+										{source.title}</option
+									>
+								{/each}
+							</select>
+							{@const selectedSource = work[0].work.sources.find(
+								(s) => s.id === work[0].thumbnail_source_id
+							)}
+							{#if selectedSource?.thumbnail}
+								<img
+									class="mt-2 w-15"
+									src={selectedSource.thumbnail}
+									alt={work[0].title}
+								/>
+							{/if}
+						{/if}
+					</td>
 					<td
 						><input
 							type="radio"
 							disabled={!work[0].work}
 							value={0}
-							bind:group={selecting.thumbnail}
+							bind:group={selecting.thumbnail_source}
 						/></td
 					>
 					<td
@@ -157,16 +200,31 @@
 							type="radio"
 							disabled={!work[1].work}
 							value={1}
-							bind:group={selecting.thumbnail}
+							bind:group={selecting.thumbnail_source}
 						/></td
 					>
-					<td
-						><input
-							type="text"
-							disabled={!work[1].work || selecting.thumbnail !== 1}
-							bind:value={work[1].thumbnail}
-						/><img class="w-15" src={work[1].thumbnail} alt={work[1].title} /></td
-					>
+					<td>
+						{#if work[1].work?.sources && work[1].work.sources.length > 0}
+							<select
+								disabled={!work[1].work || selecting.thumbnail_source !== 1}
+								bind:value={work[1].thumbnail_source_id}
+							>
+								{#each work[1].work.sources as source (source.id)}
+									<option value={source.id}>{source.title}</option>
+								{/each}
+							</select>
+							{@const selectedSource = work[1].work.sources.find(
+								(s) => s.id === work[1].thumbnail_source_id
+							)}
+							{#if selectedSource?.thumbnail}
+								<img
+									class="mt-2 w-15"
+									src={selectedSource.thumbnail}
+									alt={work[1].title}
+								/>
+							{/if}
+						{/if}
+					</td>
 					<th>{m.heroic_ideal_orangutan_aid()}</th></tr
 				>
 				<tr
@@ -212,8 +270,13 @@
 		<input hidden type="text" name="title" value={work[selecting.title].title} />
 		<textarea hidden value={work[selecting.description].description} name="description"
 		></textarea>
-		<input hidden type="text" value={work[selecting.thumbnail].thumbnail} name="thumbnail" />
+		<input
+			hidden
+			type="number"
+			value={work[selecting.thumbnail_source].thumbnail_source_id}
+			name="thumbnail_source_id"
+		/>
 		<input hidden type="number" name="rating" value={work[selecting.rating].rating} />
-		<input type="submit" disabled={!work[0] || !work[1]} />
+		<input type="submit" disabled={!work[0].work || !work[1].work} />
 	</form>
 </Section>

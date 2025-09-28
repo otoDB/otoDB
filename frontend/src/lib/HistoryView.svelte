@@ -1,0 +1,48 @@
+<script lang="ts">
+	import { invalidateAll } from '$app/navigation';
+	import client from './api';
+	import { UserLevel } from './enums';
+	import { m } from './paraglide/messages';
+	import type { components } from './schema';
+	interface Props {
+		historicals: components['schemas']['HistorySchema'][];
+		user: components['schemas']['UserStatusSchema'] | null;
+	}
+	let { historicals, user = null }: Props = $props();
+	const rollback = async (entry) => {
+		await client.POST('/api/history/rollback', {
+			fetch,
+			params: { query: { history_id: entry.id, model: entry.model } }
+		});
+		invalidateAll();
+	};
+</script>
+
+<table class="w-full table-auto text-center">
+	<tbody>
+		<tr>
+			<th>{m.fuzzy_crazy_cobra_lead()}</th><th>Changed at</th><th>Changes</th><th
+				>{m.weary_spicy_fly_attend()}</th
+			>{#if user && user.level >= UserLevel.ADMIN}<th>{m.legal_mean_slug_link()}</th>{/if}
+		</tr>
+		{#each historicals as entry, i (i)}
+			<tr
+				><td>
+					<a href="/profile/{entry.user}">{entry.user}</a>
+				</td><td>
+					{new Date(entry.date).toLocaleString()}
+				</td><td
+					>{#each entry.delta as d, i (i)}<div class="flex flex-row gap-2 p-2">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<span>{d.field}:</span>{@html d.html}
+						</div>{/each}</td
+				><td>
+					{entry.reason}
+				</td>{#if user && user.level >= UserLevel.ADMIN}<td
+						><button onclick={() => rollback(entry)}>{m.legal_mean_slug_link()}</button
+						></td
+					>{/if}</tr
+			>
+		{/each}
+	</tbody>
+</table>

@@ -16,14 +16,23 @@
 </script>
 
 <svelte:head>
-	<title>{m.mean_top_antelope_love()}</title>
+	<title
+		>{m.mild_loud_shad_enchant({
+			type: m.mean_top_antelope_love(),
+			name: m.stale_loose_squid_cut()
+		})}</title
+	>
 </svelte:head>
 
 <Section
-	title={m.mean_top_antelope_love()}
+	title={m.mild_loud_shad_enchant({
+		type: m.mean_top_antelope_love(),
+		name: m.stale_loose_squid_cut()
+	})}
 	menuLinks={[
 		{ title: m.grand_merry_fly_succeed(), pathname: `work/search?query=${data.query}` },
 		{ title: m.empty_legal_chicken_taste(), pathname: `tag/search?query=${data.query}` },
+		{ title: m.grand_nice_pony_belong(), pathname: `song/search?query=${data.query}` },
 		{ title: m.stale_loose_squid_cut(), pathname: 'list/search' }
 	]}
 >
@@ -46,7 +55,7 @@
 		</thead><tbody>
 			{#each results as list, i (i)}
 				<tr>
-					<td><a href="/list/{list.id}">{list.name}</a></td>
+					<td><a href="/list/{list.id}">#{list.id} - {list.name}</a></td>
 					<td><a href="/profile/{list.author.username}">{list.author.username}</a></td>
 				</tr>
 			{/each}

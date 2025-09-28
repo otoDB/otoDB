@@ -9,6 +9,7 @@ from django.db.models import Q
 from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
+from ninja.throttling import AuthRateThrottle
 
 from otodb.common import video_info, playlist_info
 from otodb.models import Pool, PoolItem, PoolUpstream, WorkSource, TagWork, TagWorkInstance, MediaWork
@@ -126,12 +127,12 @@ def import_ext_into_pool(info, list_: Pool, user):
     old_entries = list_.poolitem_set.values_list('work__id', flat=True)
 
     new_tag_instances, pool_items = [], []
-    for i, (vid_info, _) in enumerate(list(infos)):
+    for i, (vid_info, full_info) in enumerate(list(infos)):
         if vid_info is None:
             list_.description += f'\nFailed to fetch {info['entries'][i]}'
             continue
 
-        src, _ = WorkSource.from_url(vid_info['url'], user=user, is_reupload=False, info=vid_info)
+        src, _ = WorkSource.from_url(vid_info['url'], user=user, is_reupload=False, info=vid_info, full_info=full_info)
         if getattr(src, 'rejection', None):
             continue
         elif src.media is not None or user.level >= Account.Levels.EDITOR:
@@ -140,7 +141,7 @@ def import_ext_into_pool(info, list_: Pool, user):
                 if work.id in old_entries:
                     continue
             else:
-                work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
+                work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail_source=src)
                 src.media = work
                 src.save()
             for t in vid_info['tags']:
@@ -158,7 +159,7 @@ def import_ext_into_pool(info, list_: Pool, user):
     TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True)
     PoolItem.objects.bulk_create(pool_items)
 
-@list_router.post('import', auth=django_auth, response=int)
+@list_router.post('import', auth=django_auth, response=int, throttle=[AuthRateThrottle('3/30m')])
 def import_ext(request: HttpRequest, url: str):
     info = playlist_info(url)
     list_ = Pool.objects.create(name=info['title'], description=info['description'], author=request.user)

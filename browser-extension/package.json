@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "generate:chrome": "node generate-manifest.js chrome",
+    "generate:firefox": "node generate-manifest.js firefox"
+  }
+}

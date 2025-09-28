@@ -56,7 +56,7 @@
 <style>
 	ul > li {
 		display: flex;
-		background-color: var(--otodb-fainter-bg);
+		background-color: var(--otodb-color-bg-fainter);
 		justify-content: space-between;
 		margin: 1rem 0;
 		padding: 1rem;

@@ -1,4 +1,4 @@
-from typing import Optional, Annotated
+from typing import Optional, Annotated, Dict
 from functools import wraps
 
 from pydantic import field_validator
@@ -12,6 +12,8 @@ from otodb.models import (
     Pool, PoolItem,
     WorkRelation, SongRelation
 )
+from otodb.models.enums import Role, MediaType, ProfileConnectionTypes
+import re
 
 class Error(Schema):
     message: str
@@ -46,7 +48,7 @@ class SongSchema(ModelSchema):
     tags: list[TagSongSchema]
     class Meta:
         model = MediaSong
-        fields = ['title', 'bpm', 'author', 'tags']
+        fields = ['title', 'bpm', 'variable_bpm', 'author', 'tags']
 
     @field_validator("work_tag", mode="before", check_fields=False)
     @classmethod
@@ -55,12 +57,28 @@ class SongSchema(ModelSchema):
 
 class TagWorkSchema(ModelSchema):
     id: int
-    children: list['TagWorkSchema']
-    song: Optional[SongSchema] = Field(None, alias='get_song')
     lang_prefs: list[TagWorkLangPreferenceSchema]
+    aliased_to: Optional['TagWorkSchema']
+    n_instance: int | None = None
     class Meta:
         model = TagWork
         fields = ['name', 'slug', 'category']
+
+class FatTagWorkSchema(ModelSchema):
+    id: int
+    children: list[TagWorkSchema]
+    song: Optional[SongSchema] = Field(None, alias='get_song')
+    media_type: list[int] | None = None
+    lang_prefs: list[TagWorkLangPreferenceSchema]
+    aliased_to: Optional[TagWorkSchema]
+    class Meta:
+        model = TagWork
+        fields = ['name', 'slug', 'category', 'deprecated']
+
+    @field_validator("media_type", mode="before", check_fields=False)
+    @classmethod
+    def types(cls, value: int | None) -> list[int] | None:
+        return [r for r in MediaType if r & value] if value else None
 
 class WikiPageSchema(ModelSchema):
     class Meta:
@@ -68,9 +86,10 @@ class WikiPageSchema(ModelSchema):
         fields = ['page_rendered', 'lang']
 
 class TagWorkDetailsSchema(Schema):
-    tree: list[TagWorkSchema]
+    paths: tuple[list[TagWorkSchema], Dict[str,list[str]]]
     wiki_page: list[WikiPageSchema]
     aliases: list[TagWorkSchema]
+    primary_parent: str | None = None
 
 class WorkSourceRejectionSchema(ModelSchema):
     by: ProfileSchema
@@ -82,6 +101,7 @@ class WorkSourceSchema(ModelSchema):
     id: int
     added_by: ProfileSchema
     rejection: WorkSourceRejectionSchema | None = None
+    thumbnail: str | None = None  # Exposed as property
     class Meta:
         model = WorkSource
         fields = [
@@ -90,18 +110,39 @@ class WorkSourceSchema(ModelSchema):
             'work_width', 'work_height', 'work_duration',
             'title', 'description',
             'work_origin', 'work_status',
-            'thumbnail', 'source_id'
+            'source_id'
         ]
+
+class TagWorkInstanceThinSchema(TagWorkSchema):
+    sample: bool
+    creator_roles: list[int] | None
+
+    @field_validator("creator_roles", mode="before", check_fields=False)
+    @classmethod
+    def roles(cls, value: int | None) -> list[int] | None:
+        return [r for r in Role if r & value] if value else None
+
+class TagWorkInstanceSchema(TagWorkInstanceThinSchema):
+    primary_path: list[TagWorkSchema]
 
 class WorkSchema(ModelSchema):
     id: int
-    tags: list[TagWorkSchema]
+    tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
+    thumbnail: str | None = None  # Exposed as property
     class Meta:
         model = MediaWork
-        fields = ['title', 'description', 'rating', 'thumbnail', 'rating']
+        fields = ['title', 'description', 'rating', 'thumbnail_source']
+
+class ThinWorkSchema(ModelSchema):
+    id: int
+    tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated')
+    thumbnail: str | None = None  # Exposed as property
+    class Meta:
+        model = MediaWork
+        fields = ['title']
 
 class ListItemSchema(ModelSchema):
-    work: WorkSchema
+    work: ThinWorkSchema
     class Meta:
         model = PoolItem
         fields = ['description']
@@ -158,3 +199,33 @@ def post_relation(cls, payload: RelationSchema):
 class ConnectionSchema(Schema):
     site: int
     content_id: Annotated[str, Query(min_length=1)]
+    dead: bool | None = None
+
+class UserPreferencesSchema(Schema):
+    language: int | None
+    theme: int | None
+
+def re_to_parser(regex):
+    def matcher(link):
+        m = regex.fullmatch(link)
+        if m:
+            return m.group(1)
+    return matcher
+
+def make_alt_value_parser(*parsers):
+    def match(link):
+        for v, parser in parsers:
+            parse = parser(link)
+            if parse:
+                return (v, parse)
+    return match
+
+profile_connection_parsers = [
+	(ProfileConnectionTypes.NICONICO, re_to_parser(re.compile(r'https?:\/\/www\.nico(?:video|log)\.jp\/user\/(\d+)\/?'))),
+	(ProfileConnectionTypes.YOUTUBE, re_to_parser(re.compile(r'https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?'))),
+	(ProfileConnectionTypes.BILIBILI, re_to_parser(re.compile(r'https?:\/\/space\.bilibili\.com\/(\d+)\/?'))),
+	(ProfileConnectionTypes.TWITTER, re_to_parser(re.compile(r'https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?'))),
+	(ProfileConnectionTypes.BLUESKY, re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)'))),
+	(ProfileConnectionTypes.SOUNDCLOUD, re_to_parser(re.compile(r'https?:\/\/soundcloud\.com\/(.+?)(?:\/*)'))),
+	(ProfileConnectionTypes.WEBSITE, re_to_parser(re.compile(r'(https?://.+)'))),
+]

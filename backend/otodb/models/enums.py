@@ -8,6 +8,7 @@ class WorkTagCategory(models.IntegerChoices):
     SOURCE    = 3, "Source"
     CREATOR   = 4, "Creator"
     META      = 5, "Meta"
+    MEDIA     = 6, "Media"
 
 class SongTagCategory(models.IntegerChoices):
     GENERAL   = 0, "General"
@@ -59,13 +60,14 @@ class SongRelationTypes(models.IntegerChoices):
     SEQUEL   = 3, "Sequel"
 
 class ProfileConnectionTypes(models.IntegerChoices):
-    WEBSITE   = 0, "Website"
+    WEBSITE     = 0, "Website"
 
-    NICONICO  = 1, "Niconico"
-    YOUTUBE   = 2, "YouTube"
-    BILIBILI  = 3, "Bilibili"
-    TWITTER   = 4, "Twitter"
-    BLUESKY   = 5, "Bluesky"
+    NICONICO    = 1, "Niconico"
+    YOUTUBE     = 2, "YouTube"
+    BILIBILI    = 3, "Bilibili"
+    TWITTER     = 4, "Twitter"
+    BLUESKY     = 5, "Bluesky"
+    SOUNDCLOUD  = 6, "Soundcloud"
 
 class SongConnectionTypes(models.IntegerChoices):
     VGMDB         = 0, "VGMdb"
@@ -91,7 +93,7 @@ class TagWorkConnectionTypes(models.IntegerChoices):
     NAMUWIKI      = 23, "Namu Wiki"
     KNOWYOURMEME  = 24, "Know Your Meme"
 
-class SourceConnectionTypes(models.IntegerChoices):
+class MediaConnectionTypes(models.IntegerChoices):
     ANIKORE       = 1, "AniKore"
     BANGUMI       = 2, "Bangumi"
     ANIDB         = 3, "AniDB"
@@ -112,3 +114,61 @@ class LanguageTypes(models.IntegerChoices):
     JAPANESE           = 2, "ja"
     SIMPLIFIED_CHINESE = 3, "zh-cn"
     KOREAN             = 4, "ko"
+
+class Role(models.IntegerChoices):
+    AUDIO = 1, "Audio"
+    VISUALS = 2, "Visuals"
+    DIRECTOR = 4, "Director"
+    MUSIC = 8, "Music"
+    ARTWORK = 16, "Artwork"
+    THANKS = 32, "Special Thanks"
+
+class ThemePref(models.IntegerChoices):
+    DEFAULT = 0, "Default"
+    ANIKI   = 1, "Aniki"
+
+class MediaType(models.IntegerChoices):
+    ANIME = 1, "Anime"
+    SHOW = 2, "TV Show"
+    FILM = 4, "Film"
+    GAME = 8, "Game"
+
+class RequestActions(models.IntegerChoices):
+    TAGWORK_ALIAS = 1
+    TAGWORK_UNALIAS = 2
+    TAGWORK_DEPRECATE = 3
+    TAGWORK_UNDEPRECATE = 4
+    TAGWORK_PARENT = 5
+    TAGWORK_UNPARENT = 6
+
+
+    WORKSOURCE_ATTACHTAG = 11
+
+    MEDIAWORK_ATTACHTAG = 21
+
+class MimeType(models.IntegerChoices):
+    JPEG = 1, "image/jpeg"
+    PNG = 2, "image/png"
+    WEBP = 3, "image/webp"
+
+    @classmethod
+    def extension(cls, value):
+        extensions = {
+            cls.JPEG: "jpg",
+            cls.PNG: "png",
+            cls.WEBP: "webp",
+        }
+        return extensions.get(value)
+
+    @classmethod
+    def from_str(cls, value):
+        for choice, string in cls.choices:
+            if string == value:
+                return choice
+        return None
+
+class PostCategory(models.IntegerChoices):
+    ANNOUNCEMENT    = 0, "Announcement"
+    FEATURE_REQUEST = 1, "Feature Request"
+    BUG_REPORT      = 2, "Bug Report"
+    GARDENING       = 3, "Gardening"

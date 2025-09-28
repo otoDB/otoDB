@@ -25,8 +25,5 @@ export const actions = {
 		if (error) return fail(400, { username, failed: true });
 
 		forwardCookies(cookies, response);
-
-		const status = await client.GET('/api/auth/status', { fetch });
-		if (status.data) locals.user = { csrf: cookies.get('csrftoken')!, ...status.data };
 	}
 } satisfies Actions;

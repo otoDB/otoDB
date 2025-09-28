@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
+from django.conf.urls.static import static
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -25,8 +26,10 @@ if TYPE_CHECKING:
 urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'^', include('otodb.urls')),
-    re_path(r'^comments/', include('django_comments_xtd.urls')),
 ]
 
 if settings.DEBUG_TOOLBAR:
     urlpatterns.append(path("__debug__/", include("debug_toolbar.urls")))
+
+if not settings.OTODB_CDN_ENABLED:
+	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

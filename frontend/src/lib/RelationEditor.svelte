@@ -8,6 +8,7 @@
 	import SongField from './SongField.svelte';
 	import WorkCard from './WorkCard.svelte';
 	import WorkField from './WorkField.svelte';
+	import { callSavingToast } from './toast';
 
 	interface Props {
 		this_id: number;
@@ -29,17 +30,17 @@
 			}))
 	);
 	const delete_relation = (i: number) => async () => {
+		const w = relations.splice(i, 1)[0];
 		await client.DELETE(endpoint, {
 			fetch,
-			params: { query: { A: relations[i].item.id, B: this_id } }
+			params: { query: { A: w.item.id, B: this_id } }
 		});
-		relations.splice(i, 1);
 	};
-	const post_relation = (i: number) => async () => {
+	const post_relation = (i: number, notify: boolean) => async () => {
 		const r = relations[i];
 		relations = relations.filter((rel, j) => rel.item.id !== r.item.id || j === i);
 		if (r.item.id) {
-			await client.POST(endpoint, {
+			const p = client.POST(endpoint, {
 				fetch,
 				body: {
 					A_id: !r.swapped ? r.item.id : this_id!,
@@ -47,18 +48,20 @@
 					relation: r.relation
 				}
 			});
+			if (notify) callSavingToast(p);
+			await p;
 		}
 		invalidate(`/${obj_type === 'song' ? 'tag' : 'work'}/`);
 	};
 	const swap_relation = (i: number) => async () => {
 		relations[i].swapped = !relations[i].swapped;
-		await post_relation(i)();
+		await post_relation(i, false)();
 	};
 	let new_item = $state(null);
 	const add_new_item = async () => {
 		if (new_item) {
-			relations.push({ swapped: false, item: new_item, relation: 0 });
-			await post_relation(relations.length - 1)();
+			relations.unshift({ swapped: false, item: new_item, relation: 0 });
+			await post_relation(0, false)();
 			new_item = null;
 		}
 	};
@@ -105,7 +108,7 @@
 						><select
 							name="relation"
 							bind:value={relation.relation}
-							onchange={post_relation(i)}
+							onchange={post_relation(i, true)}
 						>
 							{#each obj_type === 'work' ? WorkRelationTypes : SongRelationTypes as rel, j (j)}
 								<option value={j}>{rel()}</option>
@@ -117,7 +120,7 @@
 						><select
 							name="relation"
 							bind:value={relation.relation}
-							onchange={post_relation(i)}
+							onchange={post_relation(i, true)}
 						>
 							{#each obj_type === 'work' ? WorkRelationTypes : SongRelationTypes as rel, j (j)}
 								<option value={j}>{rel()}</option>

@@ -1,10 +1,12 @@
 <script lang="ts">
 	import client from './api';
+	import TagSuggestionResults from './TagSuggestionResults.svelte';
 	import { clickOutside, debounce } from './ui';
 
 	interface Props {
 		value: string;
 		type: 'work' | 'song';
+		resolve_aliases?: boolean;
 	}
 	let { value = $bindable(''), type, ...props }: Props = $props();
 
@@ -18,7 +20,9 @@
 			return;
 		}
 		const { data } = await client.GET(endpoint, {
-			params: { query: { query: value, limit: 10 } }
+			params: {
+				query: { query: value, limit: 10, resolve_aliases: props.resolve_aliases ?? true }
+			}
 		});
 		if (!data) return;
 		suggestions = data.items;
@@ -35,33 +39,20 @@
 				suggestions = [];
 			}}
 		>
-			{#each suggestions as t, i (i)}
-				<li class="bg-[var(--otodb-fainter-bg)] px-2 py-1 hover:bg-[var(--otodb-faint-bg)]">
-					<a
-						class="cursor-pointer"
-						href={null}
-						onclick={() => {
-							value = t.slug;
-							suggestions = [];
-						}}
-						>{t.name}
-						{#if t.slug !== t.name}<address class="inline">
-								({t.slug}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
-										'',
-										...t.lang_prefs
-									]
-										.map((p) => p.tag)
-										.join(', ')}{/if})
-							</address>{/if}</a
-					>
-				</li>
-			{/each}
+			<TagSuggestionResults
+				{suggestions}
+				onclick={(t) => {
+					value = t.aliased_to ? t.aliased_to.slug : t.slug;
+					suggestions = [];
+				}}
+				{type}
+			/>
 		</ul>
 	{/if}
 </span>
 
 <style>
 	ul {
-		background-color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-bg-primary);
 	}
 </style>

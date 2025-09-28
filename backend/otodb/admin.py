@@ -9,11 +9,13 @@ from .models import (
     TagWork,
     TagSong,
     WorkSource,
+    WorkSourceRejection,
     WorkRelation,
     SongRelation,
     TagWorkInstance,
     TagWorkVote,
     Post,
+    PostContent
 )
 
 class MediaSourceInline(admin.TabularInline):
@@ -43,7 +45,7 @@ class TagWorkInstanceInline(admin.TabularInline):
 class TagWorkAdmin(admin.ModelAdmin):
     readonly_fields = ('display_name',)
     search_fields = ['name', 'aliases__name']
-    list_display = ['name', 'display_name', 'category', 'parent', 'aliased_to']
+    list_display = ['name', 'display_name', 'category', 'aliased_to']
     list_filter = ['category', 'aliased_to']
 
 class TagWorkVoteInline(admin.TabularInline):
@@ -124,11 +126,20 @@ class MediaWorkAdmin(MediaAdmin):
 class MediaSongAdmin(MediaAdmin):
     inlines = [SongRelationAInline, SongRelationBInline]
 
+class WorkSourceRejectionInline(admin.TabularInline):
+    model = WorkSourceRejection
+
 class WorkSourceAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'title', 'platform', 'work_status', 'published_date']
     list_filter = ['work_status', 'platform', 'work_origin']
     search_fields = ['title', 'url', 'uploader_id']
     readonly_fields = ['info_payload']
+    inlines = [WorkSourceRejectionInline]
+
+class PostContentInline(admin.TabularInline):
+    model = PostContent
+class PostAdmin(admin.ModelAdmin):
+    inlines = [PostContentInline]
 
 admin.site.register(WorkSource, WorkSourceAdmin)
 admin.site.register(Pool)
@@ -137,4 +148,4 @@ admin.site.register(TagSong, TagWorkAdmin)
 admin.site.register(MediaWork, MediaWorkAdmin)
 admin.site.register(MediaSong, MediaSongAdmin)
 admin.site.register(TagWorkInstance, TagWorkInstanceAdmin)
-admin.site.register(Post)
+admin.site.register(Post, PostAdmin)

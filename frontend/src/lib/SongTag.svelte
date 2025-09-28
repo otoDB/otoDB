@@ -8,15 +8,12 @@
 </script>
 
 <a
-	href="/tag/song/{tag.slug}"
-	class="rounded-full border border-solid px-2 {[
-		'border-white-600',
+	href="/song_attribute/{tag.slug}"
+	class="rounded-xl border border-solid px-2 no-underline {[
+		'border-gray-300',
 		'border-indigo-600',
 		'border-orange-600',
 		'border-yellow-600',
 		'border-red-600'
 	][tag.category]}">{tag.name}</a
 >
-
-<style>
-</style>

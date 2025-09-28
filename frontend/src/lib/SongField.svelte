@@ -23,7 +23,7 @@
 			return;
 		}
 		const { data } = await client.GET('/api/tag/song_search', {
-			params: { query: { query: input, limit: 10 } }
+			params: { query: { query: input, limit: 10, author: '' } }
 		});
 		if (!data) return;
 		suggestions = data.items;
@@ -65,7 +65,7 @@
 		>
 			<tbody>
 				{#each suggestions as v, i (i)}
-					<tr class="w bg-[var(--otodb-fainter-bg)] p-1 hover:bg-[var(--otodb-faint-bg)]">
+					<tr class="w bg-otodb-bg-fainter hover:bg-otodb-bg-faint p-1">
 						<td
 							><a
 								class="cursor-pointer"
@@ -89,7 +89,7 @@
 
 <style>
 	ul {
-		background-color: var(--otodb-bg-color);
+		background-color: var(--otodb-color-bg-primary);
 		z-index: 10;
 	}
 </style>

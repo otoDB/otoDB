@@ -3,11 +3,12 @@ from typing import TYPE_CHECKING, cast
 import nh3
 
 from django.db import models
+from django.db.models import Subquery, OuterRef
 from django.urls import reverse
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagField, TaggedManager
 
-from .enums import Rating
+from .enums import Rating, WorkTagCategory, Role
 from .tag import TagWork, TagSong
 from otodb.account.models import Account
 
@@ -34,7 +35,25 @@ class TagWorkInstance(models.Model):
     work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 
     used_as_source = models.BooleanField(null=False, default=False)
+    creator_roles = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Creator role bitmask"
+    )
     instance_imported_from_source = models.BooleanField(null=False, default=True)
+
+    def set_creator_roles(self, roles: list[Role | int]):
+        if self.work_tag.category != WorkTagCategory.CREATOR:
+            self.creator_roles = None
+            return
+
+        role_value = 0
+        for role in roles:
+            if isinstance(role, Role):
+                role_value |= role.value
+            else:
+                role_value |= role
+        self.creator_roles = role_value if role_value > 0 else None
 
 
 class TagWorkVote(models.Model):
@@ -75,17 +94,20 @@ class MediaWork(models.Model):
         through=TagWorkInstance
     )
 
-    thumbnail = models.CharField(max_length=200, null=True, blank=True)
+    thumbnail_source = models.ForeignKey('WorkSource', null=True, blank=True, on_delete=models.SET_NULL)
 
     history = HistoricalRecords(m2m_fields=[tags])
 
     moved_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 
+    # deprecated!
+    _thumbnail = models.CharField(max_length=200, null=True, blank=True, help_text="Deprecated: Use thumbnail_source instead")
+
     objects = models.Manager()
     active_objects = TaggedManager.cast_class(ActiveManager())
 
     def __str__(self):
-        return self.title
+        return f'{self.pk}: {self.title}'
 
     class Meta:
         verbose_name = ("Work")
@@ -96,10 +118,10 @@ class MediaWork(models.Model):
 
     @staticmethod
     # Points work_B to work_A
-    def merge(to_work: 'MediaWork', from_work: 'MediaWork', title: str, description: str, thumbnail: str, rating: int):
+    def merge(to_work: 'MediaWork', from_work: 'MediaWork', title: str, description: str, thumbnail_source: 'WorkSource', rating: int):
         to_work.title = title
         to_work.description = description
-        to_work.thumbnail = thumbnail
+        to_work.thumbnail_source = thumbnail_source
         to_work.rating = rating
         to_work.tags.add(*from_work.tags.all())
         to_work.save()
@@ -134,9 +156,28 @@ class MediaWork(models.Model):
             self.description = nh3.clean(self.description)
         super().save(*args, **kwargs)
 
+    @property
+    def tags_annotated(self):
+        return self.tags.filter(deprecated=False).annotate(
+            sample=Subquery(self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values('used_as_source')),
+            creator_roles=Subquery(self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values('creator_roles'))
+        )
+
+    @property
+    def thumbnail(self):
+        thumbnail = self.thumbnail_source.thumbnail if self.thumbnail_source else None
+        if not thumbnail:
+            # Fallback to first source thumbnail
+            first_source = self.worksource_set.first()
+            if first_source:
+                thumbnail = first_source.thumbnail
+        # Fallback to deprecated field (3rd-party remote URL)
+        return self._thumbnail or thumbnail
+
 class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)
-    bpm = models.FloatField(null=False)
+    bpm = models.FloatField(null=True)
+    variable_bpm = models.BooleanField(default=False, null=False)
     work_tag = models.OneToOneField(TagWork, null=False, on_delete=models.CASCADE)
     author = models.CharField(max_length=1000, null=False, blank=False)
 
@@ -145,7 +186,7 @@ class MediaSong(models.Model):
         related_name="songs"
     )
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(m2m_fields=[tags])
 
     class Meta:
         verbose_name = ("Song")

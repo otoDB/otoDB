@@ -125,16 +125,15 @@ DATABASE = {
 }
 
 if DATABASE_BACKEND == 'postgresql' and os.environ.get('OTODB_DB_SERVICE') and os.environ.get('OTODB_DB_PASSFILE'):
-    DATABASE['OPTIONS'] = {
-        'service': os.environ['OTODB_DB_SERVICE'],
-        'passfile': os.environ['OTODB_DB_PASSFILE'],
-    }
+    DATABASE['OPTIONS']['service'] = os.environ['OTODB_DB_SERVICE']
+    DATABASE['OPTIONS']['passfile'] = os.environ['OTODB_DB_PASSFILE']
 elif DATABASE_BACKEND == 'postgresql':
     DATABASE['NAME'] = os.environ['OTODB_DB_NAME']
     DATABASE['USER'] = os.environ['OTODB_DB_USER']
     DATABASE['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
     DATABASE['HOST'] = os.environ['OTODB_DB_HOST']
     DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
+    DATABASE['OPTIONS']['pool'] = True
 else:
     DATABASE['NAME'] = BASE_DIR / f'{os.environ.get("OTODB_DB_NAME", "db")}.sqlite3'
 
@@ -218,8 +217,6 @@ COMMENTS_XTD_APP_MODEL_OPTIONS = {
     }
 }
 
-COMMENTS_XTD_API_DATETIME_FORMAT = "U"
-
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://cdn.jsdelivr.net",
@@ -234,3 +231,38 @@ if OTODB_FRONTEND_DOMAIN:
     CORS_ALLOWED_ORIGINS.append('https://' + OTODB_FRONTEND_DOMAIN)
     CORS_ALLOWED_ORIGINS.append('http://' + OTODB_FRONTEND_DOMAIN)
     CSRF_TRUSTED_ORIGINS = ['http://' + OTODB_FRONTEND_DOMAIN, 'https://' + OTODB_FRONTEND_DOMAIN]
+
+OTODB_PROTECT_API_DOCS = os.environ.get('OTODB_PROTECT_API_DOCS', '').lower() == 'true'
+
+# CDN Configuration
+OTODB_CDN_BUCKET_NAME = os.environ.get('OTODB_CDN_BUCKET_NAME')
+OTODB_CDN_ENDPOINT_URL = os.environ.get('OTODB_CDN_ENDPOINT_URL')
+OTODB_CDN_ACCESS_KEY = os.environ.get('OTODB_CDN_ACCESS_KEY')
+OTODB_CDN_SECRET_KEY = os.environ.get('OTODB_CDN_SECRET_KEY')
+OTODB_CDN_HOST = os.environ.get('OTODB_CDN_HOST')
+OTODB_CDN_ENABLED = all([
+    OTODB_CDN_BUCKET_NAME,
+    OTODB_CDN_ENDPOINT_URL,
+    OTODB_CDN_ACCESS_KEY,
+    OTODB_CDN_SECRET_KEY,
+    OTODB_CDN_HOST,
+]) if os.environ.get('OTODB_CDN_ENABLED', '').lower() not in ('0', 'false') else False
+OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
+
+NINJA_PAGINATION_PER_PAGE = 30
+NINJA_PAGINATION_MAX_PER_PAGE_SIZE = 30
+NINJA_PAGINATION_MAX_LIMIT = 30
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}

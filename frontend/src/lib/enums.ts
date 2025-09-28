@@ -6,7 +6,20 @@ export const WorkTagCategory = [
 	m.grand_nice_pony_belong,
 	m.knotty_due_hamster_wave,
 	m.empty_fresh_mare_jump,
-	m.sad_next_jaguar_renew
+	m.sad_next_jaguar_renew,
+	m.wise_keen_beaver_pick
+];
+
+export const WorkTagCategoriesSettableAsSource = [2, 4, 6];
+export const WorkTagPresentationOrder = [4, 6, 3, 2, 0, 5];
+export const WorkTagPresentationColours = [
+	'rgb(159,163,169)',
+	'rgb(8,145,178)',
+	'rgb(232,121,249)',
+	'rgb(101,163,13)',
+	'rgb(220,38,38)',
+	'rgb(251,191,36)',
+	'rgb(112,26,117)'
 ];
 
 export const SongTagCategory = [
@@ -86,13 +99,15 @@ export const ProfileConnectionTypes = {
 	BILIBILI: 3,
 	TWITTER: 4,
 	BLUESKY: 5,
+	SOUNDCLOUD: 6,
 
 	0: 'Website',
 	1: 'Niconico',
 	2: 'YouTube',
 	3: 'Bilibili',
 	4: 'Twitter',
-	5: 'Bluesky'
+	5: 'Bluesky',
+	6: 'Soundcloud'
 };
 
 export const ProfileConnectionLink = {
@@ -101,20 +116,9 @@ export const ProfileConnectionLink = {
 	2: (id: string) => `https://www.youtube.com/${id}`,
 	3: (id: string) => `https://space.bilibili.com/${id}`,
 	4: (id: string) => `https://twitter.com/${id}/`,
-	5: (id: string) => `https://bsky.app/profile/${id}`
+	5: (id: string) => `https://bsky.app/profile/${id}`,
+	6: (id: string) => `https://soundcloud.com/${id}`
 };
-
-export const ProfileConnectionParsers = [
-	(link: string) =>
-		link.startsWith('http://') || link.startsWith('https://') ? link : undefined,
-	(link: string) => link.match(/^https?:\/\/www\.nicovideo\.jp\/user\/(\d+)(?:\/)?$/)?.[1],
-	(link: string) =>
-		link.match(/^https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)(?:\/)?$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/space\.bilibili\.com\/(\d+)(?:\/)?$/)?.[1],
-	(link: string) =>
-		link.match(/^https?:\/\/(?:twitter|x)\.com\/([A-Za-z0-9_]{1,15})(?:\/)?$/)?.[1],
-	(link: string) => link.match(/^https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)$/)?.[1]
-];
 
 export const SongConnectionTypes = {
 	VGMDB: 0,
@@ -154,27 +158,7 @@ export const SongConnectionLink = {
 	30: (id: string) => `https://medley.bepis.io/wiki/${id}`
 };
 
-export const SongConnectionParsers = {
-	0: (link: string) => link.match(/^https?:\/\/vgmdb\.net\/album\/(\d+)(?:\/*)?$/)?.[1],
-	1: (link: string) => link.match(/^https?:\/\/vocadb\.net\/S\/(\d+)(?:\/*)?$/)?.[1],
-	2: (link: string) => link.match(/^https?:\/\/www\.discogs\.com\/master\/(\d+)(?:\/*)?$/)?.[1],
-	3: (link: string) =>
-		link.match(/^https?:\/\/musicbrainz\.org\/recording\/([a-f0-9-]+)(?:\/*)?$/)?.[1],
-	4: (link: string) => link.match(/^https?:\/\/rateyourmusic\.com\/song\/([^/]+)(?:\/+)?$/)?.[1],
-	5: (link: string) => link.match(/^https?:\/\/www.dojin-music\.info\/song\/(\d+)(?:\/+)?$/)?.[1],
-	20: (link: string) => link.match(/^https?:\/\/remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
-	21: (link: string) => link.match(/^https?:\/\/silentblue\.remywiki\.com\/(.+?)(?:\/*)?$/)?.[1],
-	22: (link: string) =>
-		link.match(
-			/^https?:\/\/zenius-i-vanisher\.com\/v5\.2\/songdb\.php\?songid=(\d+)(?:\/*)?$/
-		)?.[1],
-	30: (link: string) => link.match(/^https?:\/\/medley\.bepis\.io\/wiki\/(.+?)(?:\/*)?$/)?.[1]
-};
-
 export const TagWorkConnectionTypes = {
-	WEBSITE: 0,
-	0: 'Website',
-
 	OTOMADWIKI: 1,
 	1: 'otomad.wiki',
 	OTOMADFANDOM: 2,
@@ -200,25 +184,10 @@ export const TagWorkConnectionLink = {
 	21: (id: string) => `https://dic.pixiv.net/a/${id}/`,
 	22: (id: string) => `https://en.wikipedia.org/wiki/${id}`,
 	23: (id: string) => `https://namu.wiki/w/${id}`,
-	24: (id: string) => `https://knowyourmeme.com/memes/${id}`
+	24: (id: string) => `https://knowyourmeme.com/${id}`
 };
 
-export const TagWorkConnectionParsers = {
-	0: (link: string) =>
-		link.startsWith('http://') || link.startsWith('https://') ? link : undefined,
-	1: (link: string) => link.match(/^https?:\/\/otomad\.wiki\/([^/?#]+)(?:\/)?$/)?.[1],
-	2: (link: string) =>
-		link.match(/^https?:\/\/otomad\.fandom\.com\/ja\/wiki\/([^/?#]+)(?:\/)?$/)?.[1],
-	20: (link: string) => link.match(/^https?:\/\/dic\.nicovideo\.jp\/a\/([^/?#]+)(?:\/)?$/)?.[1],
-	21: (link: string) => link.match(/^https?:\/\/dic\.pixiv\.net\/a\/([^/?#]+)(?:\/)?$/)?.[1],
-	22: (link: string) =>
-		link.match(/^https?:\/\/en\.wikipedia\.org\/wiki\/([^/?#]+)(?:\/)?$/)?.[1],
-	23: (link: string) =>
-		link.match(/^https?:\/\/(?:[a-z]{2,}\.)?namu\.wiki\/w\/([^/?#]+)(?:\/)?$/)?.[1],
-	24: (link: string) => link.match(/^https?:\/\/knowyourmeme\.com\/memes\/([^/?#]+)(?:\/)?$/)?.[1]
-};
-
-export const SourceConnectionTypes = {
+export const MediaConnectionTypes = {
 	ANIKORE: 1,
 	1: 'AniKore',
 	BANGUMI: 2,
@@ -245,7 +214,7 @@ export const SourceConnectionTypes = {
 	41: 'ErogameScape'
 };
 
-export const SourceConnectionLink = {
+export const MediaConnectionLink = {
 	1: (id: string) => `https://www.anikore.jp/anime/${id}/`,
 	2: (id: string) => `https://bangumi.tv/subject/${id}`,
 	3: (id: string) => `https://anidb.net/anime/${id}`,
@@ -260,20 +229,67 @@ export const SourceConnectionLink = {
 		`https://erogamescape.dyndns.org/~ap2/ero/toukei_kaiseki/game.php?game=${id}`
 };
 
-export const SourceConnectionParsers = {
-	1: (link: string) => link.match(/^https?:\/\/www\.anikore\.jp\/anime\/(\d+)(?:\/)?$/)?.[1],
-	2: (link: string) => link.match(/^https?:\/\/bangumi\.tv\/subject\/(\d+)(?:\/)?$/)?.[1],
-	3: (link: string) => link.match(/^https?:\/\/anidb\.net\/anime\/(\d+)(?:\/)?$/)?.[1],
-	4: (link: string) => link.match(/^https?:\/\/myanimelist\.net\/anime\/(\d+)(?:\/)?$/)?.[1],
-	5: (link: string) => link.match(/^https?:\/\/anilist\.co\/anime\/(\d+)(?:\/)?$/)?.[1],
-	6: (link: string) => link.match(/^https?:\/\/kitsu\.io\/anime\/([^/?#]+)(?:\/)?$/)?.[1],
-	7: (link: string) =>
-		link.match(/^https?:\/\/www\.anime-planet\.com\/anime\/([^/?#]+)(?:\/)?$/)?.[1],
-	20: (link: string) => link.match(/^https?:\/\/www\.imdb\.com\/title\/(\d+)(?:\/)?$/)?.[1],
-	21: (link: string) => link.match(/^https?:\/\/letterboxd\.com\/film\/([^/?#]+)(?:\/)?$/)?.[1],
-	40: (link: string) => link.match(/^https?:\/\/vndb\.org\/(v\d+)(?:\/)?$/)?.[1],
-	41: (link: string) =>
-		link.match(
-			/^https?:\/\/erogamescape\.dyndns\.org\/~ap2\/ero\/toukei_kaiseki\/game\.php\?game=(\d+)$/
-		)?.[1]
+export const Role = {
+	AUDIO: 1,
+	1: m.weary_yummy_lobster_kick,
+	VISUALS: 2,
+	2: m.great_flaky_spider_comfort,
+	DIRECTOR: 4,
+	4: m.brief_slow_robin_fond,
+	MUSIC: 8,
+	8: m.known_green_jackal_jolt,
+	ARTWORK: 16,
+	16: m.weird_quaint_jan_dazzle,
+	THANKS: 32,
+	32: m.heavy_blue_parrot_mend
 };
+
+export const Themes = ['default', 'aniki'].map((t) => 'theme-' + t);
+
+export const ThemeNames = [m.grassy_noble_walrus_wish, m.next_ago_opossum_swim];
+
+export const HistoryModelNames = {
+	mediawork: m.grand_merry_fly_succeed,
+	workrelation: m.grand_merry_fly_succeed,
+	worksource: m.grand_merry_fly_succeed,
+	mediasong: m.grand_nice_pony_belong,
+	songrelation: m.grand_nice_pony_belong,
+	mediasongconnection: m.grand_nice_pony_belong,
+	tagwork: m.empty_legal_chicken_taste,
+	wikipage: m.curly_zesty_pelican_aim,
+	tagworkconnection: m.empty_legal_chicken_taste,
+	tagworkmediaconnection: m.empty_legal_chicken_taste,
+	tagworkcreatorconnection: m.empty_legal_chicken_taste,
+	tagworklangpreference: m.empty_legal_chicken_taste,
+	tagworkparenthood: m.empty_legal_chicken_taste,
+	tagsong: m.dull_plain_angelfish_cuddle
+};
+
+export const MediaType = {
+	ANIME: 1,
+	SHOW: 2,
+	FILM: 4,
+	GAME: 8,
+	1: m.sea_new_barbel_rest,
+	2: m.every_vivid_dolphin_dash,
+	4: m.drab_gaudy_fly_relish,
+	8: m.maroon_close_gorilla_bake
+};
+
+export const RequestActions = {
+	1: 'worktag:alias',
+	2: 'worktag:unalias',
+	3: 'worktag:deprecate',
+	4: 'worktag:undeprecate',
+	5: 'worktag:parent',
+	6: 'worktag:unparent',
+	11: 'source:attach-tag',
+	21: 'work:attach-tag'
+};
+
+export const PostCategories = [
+	m.livid_loose_eel_pop,
+	m.crazy_loud_trout_peek,
+	m.new_honest_tapir_endure,
+	m.moving_trick_piranha_thrive
+];

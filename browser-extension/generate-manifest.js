@@ -1,0 +1,81 @@
+const fs = require('fs');
+
+const manifest = {
+    "manifest_version": 3,
+    "name": "otoDB",
+    "version": "1.1.2",
+    "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "otoDB"
+    },
+    "content_scripts": [
+      {
+        "matches": [
+          "https://*.nicovideo.jp/*"
+        ],
+        "js": ["niconico.js"]
+      },
+      {
+        "matches": [
+          "https://embed.nicovideo.jp/watch/*"
+        ],
+        "js": ["niconico-embed.js"],
+        "run_at": "document_idle",
+        "all_frames": true
+      },
+      {
+        "matches": [
+          "https://*.nicovideo.jp/*"
+        ],
+        "js": ["injector.js"],
+        "run_at": "document_start",
+        "all_frames": true
+      }
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": ["injected.js", "niconico-embed-injected.js"],
+        "matches": ["https://*.nicovideo.jp/*"]
+      }
+    ],
+    "permissions": [
+      "declarativeNetRequestWithHostAccess",
+      "cookies",
+      "activeTab"
+    ],
+    "host_permissions": [
+      "https://otodb.net/*",
+      "https://*.nicovideo.jp/*"
+    ],
+    "declarative_net_request": {
+      "rule_resources": [
+        {
+          "id": "ruleset",
+          "enabled": true,
+          "path": "rules.json"
+        }
+      ]
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{717c1436-7545-4acd-bed8-a473bac7698b}"
+        }
+    }
+};
+
+const configs = {
+  chrome: {
+    background: {
+        "service_worker": "background.js"
+    },
+  },
+  firefox: {}
+};
+
+const target = process.argv[2]; // Config selection
+const finalManifest = { ...manifest, ...configs[target] };
+fs.writeFileSync('src/manifest.json', JSON.stringify(finalManifest, null, 2));

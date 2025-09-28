@@ -1,14 +1,23 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import CollapsibleText from './CollapsibleText.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { Platform, Rating, WorkOrigin, WorkStatus } from '$lib/enums';
+	import {
+		Platform,
+		Rating,
+		WorkOrigin,
+		WorkStatus,
+		WorkTagCategoriesSettableAsSource,
+		WorkTagCategory,
+		WorkTagPresentationColours,
+		WorkTagPresentationOrder
+	} from '$lib/enums';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api';
 	import type { components } from '$lib/schema';
 	import RefreshButton from '../RefreshButton.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
+	import { callSavingToast } from '$lib/toast';
 
 	let { data } = $props();
 
@@ -29,17 +38,47 @@
 		}
 	};
 	const toggleWork = async (list_id: number) => {
-		const { error, data: state } = await client.PUT('/api/list/toggle_work', {
+		const p = client.PUT('/api/list/toggle_work', {
 			fetch,
 			params: { query: { list_id, work_id: data.id } }
 		});
+		callSavingToast(p);
+		const { error } = await p;
 		if (!error) {
 			const list = userLists.find((el) => el[0].id === list_id)!;
 			list[1] = !list[1];
 		}
 	};
 
-	let cover_select = $state(-1);
+	// Force dpendence on page route
+	let cover_select = $derived(data ? -1 : -1);
+
+	const merge_paths = (paths) => {
+		const graph = new Map();
+		paths
+			.filter((p) => p.primary_path.length)
+			.forEach((path) =>
+				path.primary_path.forEach((p, i, a) => {
+					const next_node = (i + 1 === a.length ? path : a[i + 1]).slug;
+					if (graph.has(p.slug)) graph.get(p.slug).add(next_node);
+					else graph.set(p.slug, new Set([next_node]));
+				})
+			);
+		const traverse = (node) => ({
+			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node),
+			real: paths.some((n) => n.slug === node),
+			children: Array.from(graph.get(node) ?? []).map((n) => traverse(n))
+		});
+		return [
+			...graph
+				.keys()
+				.filter((n) => !graph.values().some((s) => s.has(n)))
+				.map(traverse),
+			...paths
+				.filter((p) => p.primary_path.length === 0 && !graph.has(p.slug))
+				.map((n) => ({ node: n, real: true }))
+		];
+	};
 </script>
 
 <Section
@@ -58,7 +97,7 @@
 				{:else}
 					<ExternalEmbed width={480} height={270} src={data.sources[cover_select]} />
 				{/if}
-				<div class="my-2">
+				<div class="my-2 max-w-[480px]">
 					<a
 						href={data.thumbnail}
 						target="_blank"
@@ -71,24 +110,21 @@
 						}}
 					>
 						{m.heroic_ideal_orangutan_aid()}
-					</a>
-					{#each data.sources as s, i (i)}
-						<a
-							href={s.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="cover_select"
-							class:selected={cover_select === i}
-							onclick={(e) => {
-								e.preventDefault();
-								cover_select = i;
-							}}
-						>
-							{Platform[s.platform]}{s.work_origin === 0
-								? ''
-								: ' ' + WorkOrigin[s.work_origin]()}
-						</a>
-					{/each}
+					</a>{#each data.sources as s, i (i)}{#if s.work_status !== 1}<a
+								href={s.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="cover_select"
+								class:selected={cover_select === i}
+								onclick={(e) => {
+									e.preventDefault();
+									cover_select = i;
+								}}
+							>
+								{Platform[s.platform]}{s.work_origin === 0
+									? ''
+									: ' ' + WorkOrigin[s.work_origin]()}
+							</a>{/if}{/each}
 				</div>
 			</div>
 			<div class="ml-2 flex-grow">
@@ -151,11 +187,27 @@
 				{/if}
 			</div>
 		</div>
-		<ul id="work-tags">
-			{#each data.tags as tag, i (i)}
-				<li><WorkTag {tag} /></li>
+		<div class="mt-2 flex flex-row flex-wrap gap-x-3 border-t-1">
+			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
+				<span
+					class="mt-4 border-l-2 px-3 pb-2"
+					style="border-color: {WorkTagPresentationColours[
+						cat[0]
+					]};background-color: color-mix(in hsl, {WorkTagPresentationColours[
+						cat[0]
+					]}, transparent 85%);"
+				>
+					<h5 class="my-2 font-bold">
+						{WorkTagCategory[cat[0]]()}
+					</h5>
+					<ul class="flex list-none flex-wrap gap-2">
+						{#each merge_paths(cat[1]) as tag, j (j)}
+							<li class="m-0"><WorkTag {tag} tree={true} /></li>
+						{/each}
+					</ul>
+				</span>
 			{/each}
-		</ul>
+		</div>
 	</div>
 </Section>
 
@@ -170,20 +222,21 @@
 			<div
 				class={[
 					'w-full border px-4 py-2',
-					src.work_status !== 0
-						? 'bg-[var(--otodb-fainter-bg)] text-[var(--otodb-fainter-content)]'
-						: ''
+					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : ''
 				]}
 			>
+				{#if data.user}
+					<span class="float-right mt-2">
+						<RefreshButton source={src} />
+					</span>
+				{/if}
 				<div class="text-lg">
 					<strong>
 						<a
 							href={src.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class={[
-								src.work_status !== 0 ? 'text-[var(--otodb-fainter-content)]' : ''
-							]}
+							class={[src.work_status !== 0 ? 'text-otodb-content-fainter' : '']}
 						>
 							{Platform[src.platform]}
 							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
@@ -235,16 +288,14 @@
 							{/if}
 						</strong>
 					</div>
-					<div></div>
 				</div>
-				<div class="mt-2">
-					<CollapsibleText text={src.description}></CollapsibleText>
+				<div class="my-2">
+					<details>
+						<summary>{m.clear_lucky_peacock_pick()}</summary>
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html src.description}
+					</details>
 				</div>
-				{#if data.user}
-					<div class="mt-2 flex justify-end">
-						<RefreshButton source={src} />
-					</div>
-				{/if}
 			</div>
 		{/each}
 	</div>
@@ -255,19 +306,6 @@
 </Section>
 
 <style>
-	#work-tags {
-		grid-column: 1 / span 2;
-		border-top: var(--otodb-faint-content) 1px solid;
-		margin-top: 2rem;
-		padding-top: 1rem;
-		display: flex;
-		gap: 0.3rem 1rem;
-		flex-wrap: wrap;
-		list-style: none;
-		& > li {
-			margin: 0;
-		}
-	}
 	.description-cell {
 		white-space: pre-wrap;
 		max-height: 15em;
@@ -280,19 +318,19 @@
 	.cover_select {
 		padding: 0.2rem 0.5rem;
 		display: inline-block;
-		background-color: var(--otodb-bg-color);
-		border: 1px solid var(--otodb-content-color);
+		background-color: var(--otodb-color-bg-primary);
+		border: 1px solid var(--otodb-color-content-primary);
 		text-decoration: none;
 		&:hover {
-			background-color: var(--otodb-fainter-bg);
+			background-color: var(--otodb-color-bg-fainter);
 		}
 		&:active {
-			background-color: var(--otodb-faint-bg);
+			background-color: var(--otodb-color-bg-faint);
 		}
 		&.selected {
-			background-color: var(--otodb-content-color);
-			border: 1px solid var(--otodb-bg-color);
-			color: var(--otodb-bg-color);
+			background-color: var(--otodb-color-content-primary);
+			border: 1px solid var(--otodb-color-bg-primary);
+			color: var(--otodb-color-bg-primary);
 		}
 	}
 </style>

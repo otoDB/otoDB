@@ -172,7 +172,7 @@ class MediaWork(models.Model):
             if first_source:
                 thumbnail = first_source.thumbnail
         # Fallback to deprecated field (3rd-party remote URL)
-        return thumbnail or self._thumbnail
+        return self._thumbnail or thumbnail
 
 class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)

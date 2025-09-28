@@ -116,22 +116,22 @@ class LanguageTypes(models.IntegerChoices):
     KOREAN             = 4, "ko"
 
 class Role(models.IntegerChoices):
-	AUDIO = 1, "Audio"
-	VISUALS = 2, "Visuals"
-	DIRECTOR = 4, "Director"
-	MUSIC = 8, "Music"
-	ARTWORK = 16, "Artwork"
-	THANKS = 32, "Special Thanks"
+    AUDIO = 1, "Audio"
+    VISUALS = 2, "Visuals"
+    DIRECTOR = 4, "Director"
+    MUSIC = 8, "Music"
+    ARTWORK = 16, "Artwork"
+    THANKS = 32, "Special Thanks"
 
 class ThemePref(models.IntegerChoices):
     DEFAULT = 0, "Default"
     ANIKI   = 1, "Aniki"
 
 class MediaType(models.IntegerChoices):
-	ANIME = 1, "Anime"
-	SHOW = 2, "TV Show"
-	FILM = 4, "Film"
-	GAME = 8, "Game"
+    ANIME = 1, "Anime"
+    SHOW = 2, "TV Show"
+    FILM = 4, "Film"
+    GAME = 8, "Game"
 
 class RequestActions(models.IntegerChoices):
     TAGWORK_ALIAS = 1
@@ -140,11 +140,32 @@ class RequestActions(models.IntegerChoices):
     TAGWORK_UNDEPRECATE = 4
     TAGWORK_PARENT = 5
     TAGWORK_UNPARENT = 6
-    
+
 
     WORKSOURCE_ATTACHTAG = 11
 
     MEDIAWORK_ATTACHTAG = 21
+
+class MimeType(models.IntegerChoices):
+    JPEG = 1, "image/jpeg"
+    PNG = 2, "image/png"
+    WEBP = 3, "image/webp"
+
+    @classmethod
+    def extension(cls, value):
+        extensions = {
+            cls.JPEG: "jpg",
+            cls.PNG: "png",
+            cls.WEBP: "webp",
+        }
+        return extensions.get(value)
+
+    @classmethod
+    def from_str(cls, value):
+        for choice, string in cls.choices:
+            if string == value:
+                return choice
+        return None
 
 class PostCategory(models.IntegerChoices):
     ANNOUNCEMENT    = 0, "Announcement"

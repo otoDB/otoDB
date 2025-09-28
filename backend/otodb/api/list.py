@@ -141,7 +141,7 @@ def import_ext_into_pool(info, list_: Pool, user):
                 if work.id in old_entries:
                     continue
             else:
-                work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail=src.thumbnail)
+                work = MediaWork.objects.create(title=src.title, description=src.description, thumbnail_source=src)
                 src.media = work
                 src.save()
             for t in vid_info['tags']:

@@ -16,10 +16,14 @@ export const actions = {
 			B = data.get('B') as string,
 			title = data.get('title') as string,
 			description = data.get('description') as string,
-			thumbnail = data.get('thumbnail') as string,
+			thumbnail_source_id = data.get('thumbnail_source_id') as string,
 			rating = data.get('rating') as string;
 
 		if (!A || isNaN(+A) || !B || isNaN(+B) || !rating || isNaN(+rating)) return fail(400);
+
+		if (!thumbnail_source_id || isNaN(+thumbnail_source_id)) {
+			return fail(400, { error: 'A thumbnail source must be selected' });
+		}
 
 		const { error } = await client.POST('/api/work/merge', {
 			fetch,
@@ -32,7 +36,7 @@ export const actions = {
 			body: {
 				title,
 				description,
-				thumbnail,
+				thumbnail_source_id: +thumbnail_source_id,
 				rating: +rating
 			}
 		});

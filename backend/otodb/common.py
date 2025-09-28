@@ -19,7 +19,7 @@ from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 
 from django.conf import settings
 
-from .models.enums import Platform
+from .models.enums import Platform, MimeType
 
 def NFKC(s: str):
     return unicodedata.normalize('NFKC', s)
@@ -94,6 +94,7 @@ def process_video_info(full_info, link=None):
         'webpage_url': 'url',
         'id': 'id',
         'thumbnail': 'thumb',
+        'thumbnail_mime': 'thumb_mime',
         'timestamp': 'timestamp',
         'uploader_id': 'uploader_id',
         'channel_id': 'channel_id',
@@ -167,6 +168,15 @@ def process_video_info(full_info, link=None):
         # Clean description
         info['description'] = nh3.clean(info['description'])
 
+		# Get thumbnail mime type
+        try:
+            response = requests.get(info['thumbnail'], allow_redirects=True, timeout=5)
+            content_type = response.headers.get('Content-Type')
+            info['thumbnail_mime'] = MimeType.from_str(content_type)
+        except Exception as e:
+            print(f"Error fetching thumbnail mime type: {e}")
+            info['thumbnail_mime'] = None
+
         return {keys[key]: info[key] for key in keys if key in info}
     except Exception as e:
         print(f"Error processing video info: {e}")
@@ -187,7 +197,7 @@ def video_info(link):
                 f.remove(["list"])
                 link = f.url
                 assert(YoutubeIE.suitable(link))
-                
+
             full_info = ydl.extract_info(link, download=False)
             info = process_video_info(full_info)
             return info, full_info

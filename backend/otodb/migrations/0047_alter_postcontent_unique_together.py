@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0046_remove_post_post_remove_post_post_rendered_and_more'),
+        ("otodb", "0046_remove_post_post_remove_post_post_rendered_and_more"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='postcontent',
-            unique_together={('post', 'lang')},
+            name="postcontent",
+            unique_together={("post", "lang")},
         ),
     ]

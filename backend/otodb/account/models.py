@@ -18,11 +18,7 @@ class AccountManager(BaseUserManager):
         if self.filter(username__iexact=username).exists():
             raise IntegrityError("This username is already taken")
         username = User.normalize_username(username)
-        user: Account = self.model(
-            username=username,
-            email=email,
-            **extra_fields
-        )
+        user: Account = self.model(username=username, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -35,6 +31,7 @@ class AccountManager(BaseUserManager):
         user.level = Account.Levels.OWNER
         user.save(using=self._db)
         return user
+
 
 class Account(AbstractBaseUser):
     class Levels(models.IntegerChoices):
@@ -107,17 +104,25 @@ class Account(AbstractBaseUser):
         return self.username
 
     def get_absolute_url(self):
-        return reverse('otodb:profile', kwargs={ 'user_id': self.id })
+        return reverse("otodb:profile", kwargs={"user_id": self.id})
 
 
 class Invitation(models.Model):
     secret = models.CharField(max_length=127, unique=True)
     level = models.IntegerField(choices=Account.Levels)
-    created_by = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='created_invitations')
+    created_by = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="created_invitations"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    used_by = models.OneToOneField(Account, on_delete=models.CASCADE, related_name='used_invitation', null=True, blank=True)
+    used_by = models.OneToOneField(
+        Account,
+        on_delete=models.CASCADE,
+        related_name="used_invitation",
+        null=True,
+        blank=True,
+    )
     used_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         status = "Used" if self.used_by is not None else "Available"
-        return f'{Account.Levels(self.level).label} - {self.secret} ({status})'
+        return f"{Account.Levels(self.level).label} - {self.secret} ({status})"

@@ -4,7 +4,12 @@ from .tag import TagWork, TagSong, WikiPage, TagWorkLangPreference, TagWorkParen
 from .work_source import WorkSource, WorkSourceRejection
 from .relations import WorkRelation, SongRelation
 from .posts import Post, PostContent
-from .connection import ProfileConnection, MediaSongConnection, TagWorkConnection, TagWorkMediaConnection, TagWorkCreatorConnection
+from .connection import (
+    ProfileConnection,
+    MediaSongConnection,
+    TagWorkConnection,
+    TagWorkMediaConnection,
+    TagWorkCreatorConnection,
+)
 from .prefs import UserPreferences
 from .request import BulkRequest, UserRequest
-

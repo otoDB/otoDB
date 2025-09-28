@@ -4,19 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0013_remove_historicaltagwork_wiki_page_and_more'),
+        ("otodb", "0013_remove_historicaltagwork_wiki_page_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='worksource',
-            name='rejection_reason',
+            model_name="worksource",
+            name="rejection_reason",
             field=models.CharField(blank=True, max_length=1000, null=True),
         ),
         migrations.AlterUniqueTogether(
-            name='tagworklangpreference',
-            unique_together={('tag', 'lang')},
+            name="tagworklangpreference",
+            unique_together={("tag", "lang")},
         ),
     ]

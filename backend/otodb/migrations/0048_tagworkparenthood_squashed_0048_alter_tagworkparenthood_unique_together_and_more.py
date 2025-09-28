@@ -5,68 +5,130 @@ import simple_history.models
 from django.conf import settings
 from django.db import migrations, models
 
+
 def move_column_data(apps, schema_editor):
-    OriginalModel = apps.get_model('otodb', 'TagWork')
-    NewModel = apps.get_model('otodb', 'TagWorkParenthood')
+    OriginalModel = apps.get_model("otodb", "TagWork")
+    NewModel = apps.get_model("otodb", "TagWorkParenthood")
 
     for t in OriginalModel.objects.filter(parent__isnull=False).all():
-        NewModel.objects.create(
-            tag=t,
-            parent=t.parent
-        )
+        NewModel.objects.create(tag=t, parent=t.parent)
+
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('otodb', '0047_alter_postcontent_unique_together'),
+        ("otodb", "0047_alter_postcontent_unique_together"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TagWorkParenthood',
+            name="TagWorkParenthood",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('parent', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='otodb.tagwork')),
-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='childhood', to='otodb.tagwork')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="otodb.tagwork"
+                    ),
+                ),
+                (
+                    "tag",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="childhood",
+                        to="otodb.tagwork",
+                    ),
+                ),
             ],
         ),
         migrations.RunPython(
             code=move_column_data,
         ),
         migrations.RemoveField(
-            model_name='historicaltagwork',
-            name='parent',
+            model_name="historicaltagwork",
+            name="parent",
         ),
         migrations.RemoveField(
-            model_name='tagwork',
-            name='parent',
+            model_name="tagwork",
+            name="parent",
         ),
         migrations.AlterField(
-            model_name='tagworkparenthood',
-            name='parent',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='parenthood', to='otodb.tagwork'),
+            model_name="tagworkparenthood",
+            name="parent",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="parenthood",
+                to="otodb.tagwork",
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='tagworkparenthood',
-            unique_together={('tag', 'parent')},
+            name="tagworkparenthood",
+            unique_together={("tag", "parent")},
         ),
         migrations.CreateModel(
-            name='HistoricalTagWorkParenthood',
+            name="HistoricalTagWorkParenthood",
             fields=[
-                ('id', models.BigIntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
-                ('history_id', models.AutoField(primary_key=True, serialize=False)),
-                ('history_date', models.DateTimeField(db_index=True)),
-                ('history_change_reason', models.CharField(max_length=100, null=True)),
-                ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
-                ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('parent', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='otodb.tagwork')),
-                ('tag', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='otodb.tagwork')),
+                (
+                    "id",
+                    models.BigIntegerField(
+                        auto_created=True, blank=True, db_index=True, verbose_name="ID"
+                    ),
+                ),
+                ("history_id", models.AutoField(primary_key=True, serialize=False)),
+                ("history_date", models.DateTimeField(db_index=True)),
+                ("history_change_reason", models.CharField(max_length=100, null=True)),
+                (
+                    "history_type",
+                    models.CharField(
+                        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")],
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "history_user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to="otodb.tagwork",
+                    ),
+                ),
+                (
+                    "tag",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to="otodb.tagwork",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'historical tag work parenthood',
-                'verbose_name_plural': 'historical tag work parenthoods',
-                'ordering': ('-history_date', '-history_id'),
-                'get_latest_by': ('history_date', 'history_id'),
+                "verbose_name": "historical tag work parenthood",
+                "verbose_name_plural": "historical tag work parenthoods",
+                "ordering": ("-history_date", "-history_id"),
+                "get_latest_by": ("history_date", "history_id"),
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),

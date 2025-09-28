@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0025_alter_tagsong_unique_together_alter_tagsong_slug_and_more'),
+        ("otodb", "0025_alter_tagsong_unique_together_alter_tagsong_slug_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='worksource',
-            name='uploader_id',
+            model_name="worksource",
+            name="uploader_id",
             field=models.CharField(max_length=1000, null=True),
         ),
     ]

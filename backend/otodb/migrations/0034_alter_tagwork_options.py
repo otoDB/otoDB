@@ -4,14 +4,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0033_rename_tagworksourceconnection_tagworkmediaconnection_and_more'),
+        (
+            "otodb",
+            "0033_rename_tagworksourceconnection_tagworkmediaconnection_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tagwork',
-            options={'ordering': [models.Case(models.When(category=1, then=models.Value(0)), models.When(category=4, then=models.Value(10)), models.When(category=3, then=models.Value(20)), models.When(category=2, then=models.Value(30)), models.When(category=6, then=models.Value(31)), models.When(category=0, then=models.Value(40)), models.When(category=5, then=models.Value(1000)), default=models.Value(999), output_field=models.IntegerField()), 'name']},
+            name="tagwork",
+            options={
+                "ordering": [
+                    models.Case(
+                        models.When(category=1, then=models.Value(0)),
+                        models.When(category=4, then=models.Value(10)),
+                        models.When(category=3, then=models.Value(20)),
+                        models.When(category=2, then=models.Value(30)),
+                        models.When(category=6, then=models.Value(31)),
+                        models.When(category=0, then=models.Value(40)),
+                        models.When(category=5, then=models.Value(1000)),
+                        default=models.Value(999),
+                        output_field=models.IntegerField(),
+                    ),
+                    "name",
+                ]
+            },
         ),
     ]

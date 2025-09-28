@@ -6,25 +6,53 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0056_remove_bulkrequest_done_bulkrequest_status'),
+        ("otodb", "0056_remove_bulkrequest_done_bulkrequest_status"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='bulkrequest',
-            name='processed_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='processed_requests', to=settings.AUTH_USER_MODEL),
+            model_name="bulkrequest",
+            name="processed_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="processed_requests",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='userrequest',
-            name='command',
-            field=models.IntegerField(choices=[(1, 'Tagwork Alias'), (2, 'Tagwork Unalias'), (3, 'Tagwork Deprecate'), (4, 'Tagwork Undeprecate'), (5, 'Tagwork Parent'), (6, 'Tagwork Unparent'), (11, 'Worksource Attachtag'), (21, 'Mediawork Attachtag')]),
+            model_name="userrequest",
+            name="command",
+            field=models.IntegerField(
+                choices=[
+                    (1, "Tagwork Alias"),
+                    (2, "Tagwork Unalias"),
+                    (3, "Tagwork Deprecate"),
+                    (4, "Tagwork Undeprecate"),
+                    (5, "Tagwork Parent"),
+                    (6, "Tagwork Unparent"),
+                    (11, "Worksource Attachtag"),
+                    (21, "Mediawork Attachtag"),
+                ]
+            ),
         ),
         migrations.AddConstraint(
-            model_name='bulkrequest',
-            constraint=models.CheckConstraint(condition=models.Q(models.Q(('status', 0), ('processed_by__isnull', False), _connector='OR'), models.Q(('processed_by__isnull', True), models.Q(('status', 0), _negated=True), _connector='OR')), name='request_processed_by_notnull_iff_not_pending', violation_error_message='processed_by null <=> status is pending'),
+            model_name="bulkrequest",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    models.Q(
+                        ("status", 0), ("processed_by__isnull", False), _connector="OR"
+                    ),
+                    models.Q(
+                        ("processed_by__isnull", True),
+                        models.Q(("status", 0), _negated=True),
+                        _connector="OR",
+                    ),
+                ),
+                name="request_processed_by_notnull_iff_not_pending",
+                violation_error_message="processed_by null <=> status is pending",
+            ),
         ),
     ]

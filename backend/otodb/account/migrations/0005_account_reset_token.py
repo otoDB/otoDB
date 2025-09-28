@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('account', '0004_alter_account_level_alter_invitation_level'),
+        ("account", "0004_alter_account_level_alter_invitation_level"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='account',
-            name='reset_token',
+            model_name="account",
+            name="reset_token",
             field=models.CharField(max_length=127, null=True, unique=True),
         ),
     ]

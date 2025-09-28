@@ -5,34 +5,88 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0018_alter_mediasongconnection_unique_together_and_more'),
+        ("otodb", "0018_alter_mediasongconnection_unique_together_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TagWorkCreatorConnection',
+            name="TagWorkCreatorConnection",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('site', models.IntegerField(choices=[(0, 'Website'), (1, 'Niconico'), (2, 'YouTube'), (3, 'Bilibili'), (4, 'Twitter'), (5, 'Bluesky')])),
-                ('content_id', models.CharField(max_length=1000)),
-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='otodb.tagwork')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "site",
+                    models.IntegerField(
+                        choices=[
+                            (0, "Website"),
+                            (1, "Niconico"),
+                            (2, "YouTube"),
+                            (3, "Bilibili"),
+                            (4, "Twitter"),
+                            (5, "Bluesky"),
+                        ]
+                    ),
+                ),
+                ("content_id", models.CharField(max_length=1000)),
+                (
+                    "tag",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="otodb.tagwork"
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('tag', 'site', 'content_id')},
+                "unique_together": {("tag", "site", "content_id")},
             },
         ),
         migrations.CreateModel(
-            name='TagWorkSourceConnection',
+            name="TagWorkSourceConnection",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('site', models.IntegerField(choices=[(1, 'AniKore'), (2, 'Bangumi'), (3, 'AniDB'), (4, 'MyAnimeList'), (5, 'AniList'), (6, 'Kitsu'), (7, 'Anime-Planet'), (20, 'IMDb'), (21, 'Letterboxd'), (40, 'vndb'), (41, 'ErogameScape')])),
-                ('content_id', models.CharField(max_length=1000)),
-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='otodb.tagwork')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "site",
+                    models.IntegerField(
+                        choices=[
+                            (1, "AniKore"),
+                            (2, "Bangumi"),
+                            (3, "AniDB"),
+                            (4, "MyAnimeList"),
+                            (5, "AniList"),
+                            (6, "Kitsu"),
+                            (7, "Anime-Planet"),
+                            (20, "IMDb"),
+                            (21, "Letterboxd"),
+                            (40, "vndb"),
+                            (41, "ErogameScape"),
+                        ]
+                    ),
+                ),
+                ("content_id", models.CharField(max_length=1000)),
+                (
+                    "tag",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="otodb.tagwork"
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('tag', 'site', 'content_id')},
+                "unique_together": {("tag", "site", "content_id")},
             },
         ),
     ]

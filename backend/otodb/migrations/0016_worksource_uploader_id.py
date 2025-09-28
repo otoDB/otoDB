@@ -4,16 +4,15 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0015_alter_mediasongconnection_site'),
+        ("otodb", "0015_alter_mediasongconnection_site"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksource',
-            name='uploader_id',
-            field=models.CharField(default='', max_length=1000),
+            model_name="worksource",
+            name="uploader_id",
+            field=models.CharField(default="", max_length=1000),
             preserve_default=False,
         ),
     ]

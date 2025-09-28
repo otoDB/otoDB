@@ -7,6 +7,4 @@ if TYPE_CHECKING:
 
 
 def G(request):
-    return {
-        "config": settings.OTODB_CONFIG_DICT
-    }
+    return {"config": settings.OTODB_CONFIG_DICT}

@@ -4,15 +4,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0014_alter_worksource_rejection_reason_and_more'),
+        ("otodb", "0014_alter_worksource_rejection_reason_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='mediasongconnection',
-            name='site',
-            field=models.IntegerField(choices=[(0, 'VGMdb'), (1, 'VocaDB'), (2, 'Discogs'), (3, 'MusicBrainz'), (4, 'Rate Your Music'), (20, 'RemyWiki'), (21, 'Silent Blue'), (22, 'Zenius -I- vanisher.com'), (30, 'NND Medley Wiki')]),
+            model_name="mediasongconnection",
+            name="site",
+            field=models.IntegerField(
+                choices=[
+                    (0, "VGMdb"),
+                    (1, "VocaDB"),
+                    (2, "Discogs"),
+                    (3, "MusicBrainz"),
+                    (4, "Rate Your Music"),
+                    (20, "RemyWiki"),
+                    (21, "Silent Blue"),
+                    (22, "Zenius -I- vanisher.com"),
+                    (30, "NND Medley Wiki"),
+                ]
+            ),
         ),
     ]

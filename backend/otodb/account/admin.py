@@ -49,7 +49,10 @@ class UserChangeForm(forms.ModelForm):
     """
 
     password = ReadOnlyPasswordHashField()
-    level = forms.ChoiceField(choices=[c for c in Account.Levels.choices if c[0] < Account.Levels.ADMIN], initial=Account.Levels.MEMBER)
+    level = forms.ChoiceField(
+        choices=[c for c in Account.Levels.choices if c[0] < Account.Levels.ADMIN],
+        initial=Account.Levels.MEMBER,
+    )
 
     class Meta:
         model = Account
@@ -84,43 +87,59 @@ class UserAdmin(BaseUserAdmin):
             return True
         return request.user.level > obj.level
 
+
 class AddInvitationForm(forms.ModelForm):
     bulk = forms.IntegerField(initial=1, min_value=1)
-    level = forms.ChoiceField(choices=[c for c in Account.Levels.choices if c[0] < Account.Levels.ADMIN], initial=Account.Levels.MEMBER)
+    level = forms.ChoiceField(
+        choices=[c for c in Account.Levels.choices if c[0] < Account.Levels.ADMIN],
+        initial=Account.Levels.MEMBER,
+    )
+
     class Meta:
         model = Invitation
         fields = ["level"]
 
+
 class InvitationAdmin(admin.ModelAdmin):
-    list_display = ['secret', 'get_level_display', 'created_by', 'created_at', 'used_by', 'used_at']
-    list_filter = ['level', 'created_at', 'used_at']
-    search_fields = ['created_by', 'used_by']
-    readonly_fields = ['secret', 'created_by', 'created_at', 'used_by', 'used_at']
-    ordering = ['-created_at']
+    list_display = [
+        "secret",
+        "get_level_display",
+        "created_by",
+        "created_at",
+        "used_by",
+        "used_at",
+    ]
+    list_filter = ["level", "created_at", "used_at"]
+    search_fields = ["created_by", "used_by"]
+    readonly_fields = ["secret", "created_by", "created_at", "used_by", "used_at"]
+    ordering = ["-created_at"]
 
     def has_change_permission(self, request, obj=None):
         return False
 
     def get_form(self, request, obj=None, **kwargs):
         if obj is None:
-            kwargs['form'] = AddInvitationForm
+            kwargs["form"] = AddInvitationForm
         form = super().get_form(request, obj, **kwargs)
         if obj is None:
-            form.base_fields['level'].initial = 20
+            form.base_fields["level"].initial = 20
         return form
 
     def add_view(self, request, form_url="", extra_context=None):
         if request.method == "POST":
             form = AddInvitationForm(request.POST)
             if form.is_valid():
-                for _ in range(form.cleaned_data['bulk']):
+                for _ in range(form.cleaned_data["bulk"]):
                     Invitation.objects.create(
-                        secret=get_random_string(16, string.ascii_letters+string.digits),
-                        level=form.cleaned_data['level'],
+                        secret=get_random_string(
+                            16, string.ascii_letters + string.digits
+                        ),
+                        level=form.cleaned_data["level"],
                         created_by=request.user,
                     )
-                return redirect('admin:account_invitation_changelist')
+                return redirect("admin:account_invitation_changelist")
         return super().add_view(request, form_url, extra_context)
+
 
 admin.site.register(Account, UserAdmin)
 admin.site.register(Invitation, InvitationAdmin)

@@ -4,30 +4,41 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0007_alter_post_options_mediasongconnection_and_more'),
+        ("otodb", "0007_alter_post_options_mediasongconnection_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicaltagwork',
-            name='lang',
-            field=models.IntegerField(choices=[(0, 'N/A'), (1, 'en'), (2, 'ja'), (3, 'zh-cn'), (4, 'ko')], default=0),
+            model_name="historicaltagwork",
+            name="lang",
+            field=models.IntegerField(
+                choices=[(0, "N/A"), (1, "en"), (2, "ja"), (3, "zh-cn"), (4, "ko")],
+                default=0,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalwikipage',
-            name='lang',
-            field=models.IntegerField(choices=[(0, 'N/A'), (1, 'en'), (2, 'ja'), (3, 'zh-cn'), (4, 'ko')], default=0),
+            model_name="historicalwikipage",
+            name="lang",
+            field=models.IntegerField(
+                choices=[(0, "N/A"), (1, "en"), (2, "ja"), (3, "zh-cn"), (4, "ko")],
+                default=0,
+            ),
         ),
         migrations.AddField(
-            model_name='tagwork',
-            name='lang',
-            field=models.IntegerField(choices=[(0, 'N/A'), (1, 'en'), (2, 'ja'), (3, 'zh-cn'), (4, 'ko')], default=0),
+            model_name="tagwork",
+            name="lang",
+            field=models.IntegerField(
+                choices=[(0, "N/A"), (1, "en"), (2, "ja"), (3, "zh-cn"), (4, "ko")],
+                default=0,
+            ),
         ),
         migrations.AddField(
-            model_name='wikipage',
-            name='lang',
-            field=models.IntegerField(choices=[(0, 'N/A'), (1, 'en'), (2, 'ja'), (3, 'zh-cn'), (4, 'ko')], default=0),
+            model_name="wikipage",
+            name="lang",
+            field=models.IntegerField(
+                choices=[(0, "N/A"), (1, "en"), (2, "ja"), (3, "zh-cn"), (4, "ko")],
+                default=0,
+            ),
         ),
     ]

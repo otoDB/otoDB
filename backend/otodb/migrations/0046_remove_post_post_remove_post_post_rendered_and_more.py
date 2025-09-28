@@ -4,41 +4,67 @@ import django.db.models.deletion
 import markdownfield.models
 from django.db import migrations, models
 
+
 def move_column_data(apps, schema_editor):
-    OriginalModel = apps.get_model('otodb', 'Post')
-    NewModel = apps.get_model('otodb', 'PostContent')
+    OriginalModel = apps.get_model("otodb", "Post")
+    NewModel = apps.get_model("otodb", "PostContent")
 
     for original_instance in OriginalModel.objects.all():
         NewModel.objects.create(
-            post=original_instance,
-            lang=1,
-            page=original_instance.post
+            post=original_instance, lang=1, page=original_instance.post
         )
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
-        ('otodb', '0045_rename_info_payload_worksourceinfopayload_payload_and_more'),
+        ("otodb", "0045_rename_info_payload_worksourceinfopayload_payload_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PostContent',
+            name="PostContent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('page', markdownfield.models.MarkdownField(rendered_field='page_rendered')),
-                ('page_rendered', markdownfield.models.RenderedMarkdownField()),
-                ('lang', models.IntegerField(choices=[(0, 'N/A'), (1, 'en'), (2, 'ja'), (3, 'zh-cn'), (4, 'ko')])),
-                ('post', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='otodb.post')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "page",
+                    markdownfield.models.MarkdownField(rendered_field="page_rendered"),
+                ),
+                ("page_rendered", markdownfield.models.RenderedMarkdownField()),
+                (
+                    "lang",
+                    models.IntegerField(
+                        choices=[
+                            (0, "N/A"),
+                            (1, "en"),
+                            (2, "ja"),
+                            (3, "zh-cn"),
+                            (4, "ko"),
+                        ]
+                    ),
+                ),
+                (
+                    "post",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="otodb.post"
+                    ),
+                ),
             ],
         ),
         migrations.RunPython(move_column_data),
         migrations.RemoveField(
-            model_name='post',
-            name='post',
+            model_name="post",
+            name="post",
         ),
         migrations.RemoveField(
-            model_name='post',
-            name='post_rendered',
+            model_name="post",
+            name="post_rendered",
         ),
     ]

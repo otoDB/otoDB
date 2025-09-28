@@ -18,39 +18,37 @@ from otodb.storage_manager import storage_manager
 
 
 class Command(BaseCommand):
-    help = 'Migrate existing thumbnails from MediaWork._thumbnail to CDN via WorkSource'
+    help = "Migrate existing thumbnails from MediaWork._thumbnail to CDN via WorkSource"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--dry-run',
-            action='store_true',
+            "--dry-run",
+            action="store_true",
         )
         parser.add_argument(
-            '--batch-size',
+            "--batch-size",
             type=int,
             default=50,
-            help='Number of works to process in each batch (default: 50)',
+            help="Number of works to process in each batch (default: 50)",
         )
         parser.add_argument(
-            '--resume-from',
+            "--resume-from",
             type=int,
-            help='Resume from specific MediaWork ID',
+            help="Resume from specific MediaWork ID",
         )
         parser.add_argument(
-            '--work-id',
+            "--work-id",
             type=int,
-            help='Process only specific MediaWork ID',
+            help="Process only specific MediaWork ID",
         )
 
     def handle(self, *args, **options):
-        dry_run = options['dry_run']
-        batch_size = options['batch_size']
-        resume_from = options['resume_from']
-        work_id = options['work_id']
+        dry_run = options["dry_run"]
+        batch_size = options["batch_size"]
+        resume_from = options["resume_from"]
+        work_id = options["work_id"]
 
-        self.stdout.write(
-            self.style.SUCCESS('Starting thumbnail migration...')
-        )
+        self.stdout.write(self.style.SUCCESS("Starting thumbnail migration..."))
         self.stdout.write(f"CDN enabled: {storage_manager.cdn_enabled}")
 
         if not storage_manager.cdn_enabled:
@@ -78,10 +76,10 @@ class Command(BaseCommand):
         error_count = 0
 
         for offset in range(0, total_works, batch_size):
-            batch = query[offset:offset + batch_size]
+            batch = query[offset : offset + batch_size]
 
             self.stdout.write(
-                f"\nProcessing batch {offset//batch_size + 1} "
+                f"\nProcessing batch {offset // batch_size + 1} "
                 f"({offset + 1}-{min(offset + batch_size, total_works)} of {total_works})"
             )
 
@@ -94,7 +92,9 @@ class Command(BaseCommand):
                         error_count += 1
                 except Exception as e:
                     self.stdout.write(
-                        self.style.ERROR(f"Unexpected error processing Work {work.pk}: {e}")
+                        self.style.ERROR(
+                            f"Unexpected error processing Work {work.pk}: {e}"
+                        )
                     )
                     error_count += 1
 
@@ -105,9 +105,7 @@ class Command(BaseCommand):
                 f"({success_count} success, {error_count} errors)"
             )
 
-        self.stdout.write(
-            self.style.SUCCESS(f"\nMigration complete!")
-        )
+        self.stdout.write(self.style.SUCCESS("\nMigration complete!"))
         self.stdout.write(f"Results: {success_count} successful, {error_count} errors")
 
         if dry_run:
@@ -129,17 +127,23 @@ class Command(BaseCommand):
             return False
         for source in work_sources:
             if dry_run:
-                self.stdout.write(f"  [DRY RUN] Would migrate to WorkSource {source.pk}")
+                self.stdout.write(
+                    f"  [DRY RUN] Would migrate to WorkSource {source.pk}"
+                )
                 return True
 
             if not source.thumbnail_mime:
                 try:
-                    response = requests.get(work._thumbnail, allow_redirects=True, timeout=10)
-                    content_type = response.headers.get('Content-Type')
+                    response = requests.get(
+                        work._thumbnail, allow_redirects=True, timeout=10
+                    )
+                    content_type = response.headers.get("Content-Type")
                     source.thumbnail_mime = MimeType.from_str(content_type)
 
                     if not source.thumbnail_mime:
-                        self.stdout.write(f"  Could not detect MIME type for {work._thumbnail}")
+                        self.stdout.write(
+                            f"  Could not detect MIME type for {work._thumbnail}"
+                        )
                         return False
                 except Exception as e:
                     self.stdout.write(f"  Error detecting MIME type: {e}")
@@ -147,17 +151,21 @@ class Command(BaseCommand):
 
                 success = source.save_thumbnail()
                 if not success:
-                    self.stdout.write(f"  Failed to upload thumbnail for WorkSource {source.pk}")
+                    self.stdout.write(
+                        f"  Failed to upload thumbnail for WorkSource {source.pk}"
+                    )
                     return False
 
-                source.save(update_fields=['thumbnail_mime'])
+                source.save(update_fields=["thumbnail_mime"])
                 self.stdout.write(f"  Uploaded thumbnail for WorkSource {source.pk}")
 
         first_source = work_sources.first()
         with transaction.atomic():
             work.thumbnail_source = first_source  # type: ignore
             work._thumbnail = None
-            work.save(update_fields=['thumbnail_source', '_thumbnail'])
-            self.stdout.write(f"  Set thumbnail_source to WorkSource {work.thumbnail_source.pk}")  # type: ignore
+            work.save(update_fields=["thumbnail_source", "_thumbnail"])
+            self.stdout.write(
+                f"  Set thumbnail_source to WorkSource {work.thumbnail_source.pk}"
+            )  # type: ignore
 
         return True

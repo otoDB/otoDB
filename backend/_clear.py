@@ -1,12 +1,11 @@
 from pathlib import Path
 from dotenv import load_dotenv
-from glob import glob
 import os
 
 load_dotenv()
 db_name = os.getenv("OTODB_DB_NAME") + ".sqlite3"
 
-root_dir = Path('.')
+root_dir = Path(".")
 
 migrations = set()
 

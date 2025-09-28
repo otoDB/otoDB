@@ -4,20 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0050_postcontent_modified'),
+        ("otodb", "0050_postcontent_modified"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicaltagwork',
-            name='media_type',
-            field=models.IntegerField(blank=True, help_text='Media type bitmask', null=True),
+            model_name="historicaltagwork",
+            name="media_type",
+            field=models.IntegerField(
+                blank=True, help_text="Media type bitmask", null=True
+            ),
         ),
         migrations.AddField(
-            model_name='tagwork',
-            name='media_type',
-            field=models.IntegerField(blank=True, help_text='Media type bitmask', null=True),
+            model_name="tagwork",
+            name="media_type",
+            field=models.IntegerField(
+                blank=True, help_text="Media type bitmask", null=True
+            ),
         ),
     ]

@@ -16,23 +16,25 @@ class StorageManager:
 
         if self.cdn_enabled:
             self.s3_client = boto3.client(
-                's3',
+                "s3",
                 endpoint_url=settings.OTODB_CDN_ENDPOINT_URL,
                 aws_access_key_id=settings.OTODB_CDN_ACCESS_KEY,
                 aws_secret_access_key=settings.OTODB_CDN_SECRET_KEY,
-                region_name='auto'  # Cloudflare R2 uses 'auto'
+                region_name="auto",  # Cloudflare R2 uses 'auto'
             )
             self.bucket_name = settings.OTODB_CDN_BUCKET_NAME
         else:
             if not self.media_path or not settings.MEDIA_URL:
-                raise ValueError("MEDIA_ROOT or MEDIA_URL is not set in Django settings")
+                raise ValueError(
+                    "MEDIA_ROOT or MEDIA_URL is not set in Django settings"
+                )
             self.media_path.parent.mkdir(parents=True, exist_ok=True)
 
     def _is_url(self, path: str) -> bool:
         """
         Simple check to see if path is a URL (we ignore storage ops in these cases)
         """
-        return path.lower().startswith(('http://', 'https://'))
+        return path.lower().startswith(("http://", "https://"))
 
     def save(self, file_content: bytes, file_path: str) -> str | None:
         """
@@ -47,7 +49,7 @@ class StorageManager:
                 self.s3_client.upload_fileobj(
                     Fileobj=BytesIO(file_content),
                     Bucket=self.bucket_name,
-                    Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/'),
+                    Key=re.sub(r"/+", "/", self.cdn_root + file_path).lstrip("/"),
                 )
                 return file_path
             except Exception as e:
@@ -61,10 +63,10 @@ class StorageManager:
             print(f"Bypassing local save for URL: {file_path}")
             return file_path
 
-        local_path = self.media_path / file_path.lstrip('/')
+        local_path = self.media_path / file_path.lstrip("/")
         local_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(local_path, 'wb') as f:
+        with open(local_path, "wb") as f:
             f.write(file_content)
 
         return file_path
@@ -81,14 +83,14 @@ class StorageManager:
             try:
                 self.s3_client.delete_object(
                     Bucket=self.bucket_name,
-                    Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/')
+                    Key=re.sub(r"/+", "/", self.cdn_root + file_path).lstrip("/"),
                 )
                 return True
             except Exception as e:
                 print(f"CDN deletion failed: {e}")
         else:
             try:
-                local_path = self.media_path / file_path.lstrip('/')
+                local_path = self.media_path / file_path.lstrip("/")
                 if local_path.exists():
                     local_path.unlink()
                     return True
@@ -109,13 +111,13 @@ class StorageManager:
             try:
                 self.s3_client.head_object(
                     Bucket=self.bucket_name,
-                    Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/')
+                    Key=re.sub(r"/+", "/", self.cdn_root + file_path).lstrip("/"),
                 )
                 return True
             except Exception as e:
                 print(f"CDN existence check failed: {e}")
         else:
-            local_path = self.media_path / file_path.lstrip('/')
+            local_path = self.media_path / file_path.lstrip("/")
             return local_path.exists()
 
         return False
@@ -128,14 +130,16 @@ class StorageManager:
             return file_path
 
         if file_path and settings.OTODB_CDN_ENABLED:
-            return settings.OTODB_CDN_HOST + settings.OTODB_CDN_ROOT + file_path.lstrip('/')
-        elif (
-            file_path
-            and self.exists(file_path)
-        ):
+            return (
+                settings.OTODB_CDN_HOST
+                + settings.OTODB_CDN_ROOT
+                + file_path.lstrip("/")
+            )
+        elif file_path and self.exists(file_path):
             # Fallback to local storage
-            return settings.MEDIA_URL + file_path.lstrip('/')
+            return settings.MEDIA_URL + file_path.lstrip("/")
 
         return ""
+
 
 storage_manager = StorageManager()

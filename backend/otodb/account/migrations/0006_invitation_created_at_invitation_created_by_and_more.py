@@ -7,31 +7,41 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('account', '0005_account_reset_token'),
+        ("account", "0005_account_reset_token"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='invitation',
-            name='created_at',
+            model_name="invitation",
+            name="created_at",
             field=models.DateTimeField(default=django.utils.timezone.now),
         ),
         migrations.AddField(
-            model_name='invitation',
-            name='created_by',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='created_invitations', to=settings.AUTH_USER_MODEL),
+            model_name="invitation",
+            name="created_by",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="created_invitations",
+                to=settings.AUTH_USER_MODEL,
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='invitation',
-            name='used_at',
+            model_name="invitation",
+            name="used_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='invitation',
-            name='used_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='used_invitations', to=settings.AUTH_USER_MODEL),
+            model_name="invitation",
+            name="used_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="used_invitations",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

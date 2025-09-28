@@ -3,30 +3,47 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
+
 def move_column_data(apps, schema_editor):
-    OriginalModel = apps.get_model('otodb', 'WorkSource')
-    NewModel = apps.get_model('otodb', 'WorkSourceInfoPayload')
+    OriginalModel = apps.get_model("otodb", "WorkSource")
+    NewModel = apps.get_model("otodb", "WorkSourceInfoPayload")
 
     for original_instance in OriginalModel.objects.all():
         if original_instance.info_payload:
             NewModel.objects.create(
-                source=original_instance,
-                info_payload=original_instance.info_payload
+                source=original_instance, info_payload=original_instance.info_payload
             )
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
-        ('otodb', '0041_alter_historicalwikipage_tag_and_more_squashed_0043_historicalmediasong_tags'),
+        (
+            "otodb",
+            "0041_alter_historicalwikipage_tag_and_more_squashed_0043_historicalmediasong_tags",
+        ),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='WorkSourceInfoPayload',
+            name="WorkSourceInfoPayload",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('info_payload', models.JSONField()),
-                ('source', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='otodb.worksource')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("info_payload", models.JSONField()),
+                (
+                    "source",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="otodb.worksource",
+                    ),
+                ),
             ],
         ),
         migrations.RunPython(move_column_data),

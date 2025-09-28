@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0058_alter_historicalmediasong_bpm_alter_mediasong_bpm'),
+        ("otodb", "0058_alter_historicalmediasong_bpm_alter_mediasong_bpm"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicaltagworkcreatorconnection',
-            name='dead',
+            model_name="historicaltagworkcreatorconnection",
+            name="dead",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='tagworkcreatorconnection',
-            name='dead',
+            model_name="tagworkcreatorconnection",
+            name="dead",
             field=models.BooleanField(default=False),
         ),
     ]

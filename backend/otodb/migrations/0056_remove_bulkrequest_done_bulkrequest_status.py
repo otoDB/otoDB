@@ -4,19 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0053_alter_historicaltagworkconnection_site_and_more_squashed_0055_bulkrequest_done_alter_userrequest_bulk'),
+        (
+            "otodb",
+            "0053_alter_historicaltagworkconnection_site_and_more_squashed_0055_bulkrequest_done_alter_userrequest_bulk",
+        ),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='bulkrequest',
-            name='done',
+            model_name="bulkrequest",
+            name="done",
         ),
         migrations.AddField(
-            model_name='bulkrequest',
-            name='status',
-            field=models.IntegerField(choices=[(0, 'Pending'), (1, 'Approved'), (2, 'Unapproved')], default=0),
+            model_name="bulkrequest",
+            name="status",
+            field=models.IntegerField(
+                choices=[(0, "Pending"), (1, "Approved"), (2, "Unapproved")], default=0
+            ),
         ),
     ]

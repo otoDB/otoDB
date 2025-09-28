@@ -4,27 +4,44 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0022_remove_worksource_rejection_reason_poolupstream_and_more'),
+        ("otodb", "0022_remove_worksource_rejection_reason_poolupstream_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tagwork',
-            options={'ordering': [models.Case(models.When(category=1, then=models.Value(0)), models.When(category=4, then=models.Value(1)), models.When(category=3, then=models.Value(2)), models.When(category=2, then=models.Value(3)), models.When(category=0, then=models.Value(4)), models.When(category=5, then=models.Value(5)), default=models.Value(99), output_field=models.IntegerField()), 'name']},
+            name="tagwork",
+            options={
+                "ordering": [
+                    models.Case(
+                        models.When(category=1, then=models.Value(0)),
+                        models.When(category=4, then=models.Value(1)),
+                        models.When(category=3, then=models.Value(2)),
+                        models.When(category=2, then=models.Value(3)),
+                        models.When(category=0, then=models.Value(4)),
+                        models.When(category=5, then=models.Value(5)),
+                        default=models.Value(99),
+                        output_field=models.IntegerField(),
+                    ),
+                    "name",
+                ]
+            },
         ),
         migrations.AlterModelOptions(
-            name='worksource',
-            options={'ordering': ['-published_date'], 'verbose_name': 'Media Source', 'verbose_name_plural': 'Media Sources'},
+            name="worksource",
+            options={
+                "ordering": ["-published_date"],
+                "verbose_name": "Media Source",
+                "verbose_name_plural": "Media Sources",
+            },
         ),
         migrations.AlterUniqueTogether(
-            name='tagwork',
+            name="tagwork",
             unique_together=set(),
         ),
         migrations.AddField(
-            model_name='worksource',
-            name='work_duration',
+            model_name="worksource",
+            name="work_duration",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
     ]

@@ -18,14 +18,17 @@ if TYPE_CHECKING:
     from .pool import PoolItem
     from .relations import WorkRelation
 
+
 class ActiveManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(moved_to__isnull=True)
 
+
 # allow setting a through table on tag fields
-TagField.forbidden_fields = cast(tuple, tuple(
-    v for v in TagField.forbidden_fields if v != "through"
-))
+TagField.forbidden_fields = cast(
+    tuple, tuple(v for v in TagField.forbidden_fields if v != "through")
+)
+
 
 class TagWorkInstance(models.Model):
     class Meta:
@@ -36,9 +39,7 @@ class TagWorkInstance(models.Model):
 
     used_as_source = models.BooleanField(null=False, default=False)
     creator_roles = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Creator role bitmask"
+        null=True, blank=True, help_text="Creator role bitmask"
     )
     instance_imported_from_source = models.BooleanField(null=False, default=True)
 
@@ -60,7 +61,9 @@ class TagWorkVote(models.Model):
     user = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
     score = models.FloatField(null=False, blank=False)
 
-    tag_instance = models.ForeignKey(TagWorkInstance, on_delete=models.CASCADE, null=True)
+    tag_instance = models.ForeignKey(
+        TagWorkInstance, on_delete=models.CASCADE, null=True
+    )
 
     class Meta:
         unique_together = (("user", "tag_instance"),)
@@ -72,53 +75,63 @@ class TagWorkVote(models.Model):
             ),
         ]
 
+
 class MediaWork(models.Model):
     if TYPE_CHECKING:
-        worksource_set: QuerySet['WorkSource']
-        poolitem_set: QuerySet['PoolItem']
-        relation_A: QuerySet['WorkRelation']
-        relation_B: QuerySet['WorkRelation']
-        tagworkinstance_set: QuerySet['TagWorkInstance']
+        worksource_set: QuerySet["WorkSource"]
+        poolitem_set: QuerySet["PoolItem"]
+        relation_A: QuerySet["WorkRelation"]
+        relation_B: QuerySet["WorkRelation"]
+        tagworkinstance_set: QuerySet["TagWorkInstance"]
 
     title = models.CharField(max_length=1000, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
 
-    rating = models.IntegerField(
-        choices=Rating.choices,
-        default=Rating.GENERAL
-    )
+    rating = models.IntegerField(choices=Rating.choices, default=Rating.GENERAL)
 
-    tags = TagField(
-        to=TagWork,
-        related_name="works",
-        through=TagWorkInstance
-    )
+    tags = TagField(to=TagWork, related_name="works", through=TagWorkInstance)
 
-    thumbnail_source = models.ForeignKey('WorkSource', null=True, blank=True, on_delete=models.SET_NULL)
+    thumbnail_source = models.ForeignKey(
+        "WorkSource", null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     history = HistoricalRecords(m2m_fields=[tags])
 
-    moved_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+    moved_to = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.CASCADE
+    )
 
     # deprecated!
-    _thumbnail = models.CharField(max_length=200, null=True, blank=True, help_text="Deprecated: Use thumbnail_source instead")
+    _thumbnail = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        help_text="Deprecated: Use thumbnail_source instead",
+    )
 
     objects = models.Manager()
     active_objects = TaggedManager.cast_class(ActiveManager())
 
     def __str__(self):
-        return f'{self.pk}: {self.title}'
+        return f"{self.pk}: {self.title}"
 
     class Meta:
-        verbose_name = ("Work")
-        verbose_name_plural = ("Works")
+        verbose_name = "Work"
+        verbose_name_plural = "Works"
 
     def get_absolute_url(self):
-        return reverse('otodb:work', kwargs={ 'work_id': self.pk })
+        return reverse("otodb:work", kwargs={"work_id": self.pk})
 
     @staticmethod
     # Points work_B to work_A
-    def merge(to_work: 'MediaWork', from_work: 'MediaWork', title: str, description: str, thumbnail_source: 'WorkSource', rating: int):
+    def merge(
+        to_work: "MediaWork",
+        from_work: "MediaWork",
+        title: str,
+        description: str,
+        thumbnail_source: "WorkSource",
+        rating: int,
+    ):
         to_work.title = title
         to_work.description = description
         to_work.thumbnail_source = thumbnail_source
@@ -159,8 +172,16 @@ class MediaWork(models.Model):
     @property
     def tags_annotated(self):
         return self.tags.filter(deprecated=False).annotate(
-            sample=Subquery(self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values('used_as_source')),
-            creator_roles=Subquery(self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values('creator_roles'))
+            sample=Subquery(
+                self.tagworkinstance_set.filter(work_tag=OuterRef("id")).values(
+                    "used_as_source"
+                )
+            ),
+            creator_roles=Subquery(
+                self.tagworkinstance_set.filter(work_tag=OuterRef("id")).values(
+                    "creator_roles"
+                )
+            ),
         )
 
     @property
@@ -174,6 +195,7 @@ class MediaWork(models.Model):
         # Fallback to deprecated field (3rd-party remote URL)
         return self._thumbnail or thumbnail
 
+
 class MediaSong(models.Model):
     title = models.CharField(max_length=1000, null=False, blank=False)
     bpm = models.FloatField(null=True)
@@ -181,16 +203,13 @@ class MediaSong(models.Model):
     work_tag = models.OneToOneField(TagWork, null=False, on_delete=models.CASCADE)
     author = models.CharField(max_length=1000, null=False, blank=False)
 
-    tags = TagField(
-        to=TagSong,
-        related_name="songs"
-    )
+    tags = TagField(to=TagSong, related_name="songs")
 
     history = HistoricalRecords(m2m_fields=[tags])
 
     class Meta:
-        verbose_name = ("Song")
-        verbose_name_plural = ("Songs")
+        verbose_name = "Song"
+        verbose_name_plural = "Songs"
         constraints = [
             models.CheckConstraint(
                 name="song_bpm_positive",

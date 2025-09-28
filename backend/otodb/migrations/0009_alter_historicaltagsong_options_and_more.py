@@ -4,34 +4,43 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0008_historicaltagwork_lang_historicalwikipage_lang_and_more'),
+        ("otodb", "0008_historicaltagwork_lang_historicalwikipage_lang_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='historicaltagsong',
-            options={'get_latest_by': ('history_date', 'history_id'), 'ordering': ('-history_date', '-history_id'), 'verbose_name': 'historical tag song', 'verbose_name_plural': 'historical tag songs'},
+            name="historicaltagsong",
+            options={
+                "get_latest_by": ("history_date", "history_id"),
+                "ordering": ("-history_date", "-history_id"),
+                "verbose_name": "historical tag song",
+                "verbose_name_plural": "historical tag songs",
+            },
         ),
         migrations.AlterModelOptions(
-            name='historicaltagwork',
-            options={'get_latest_by': ('history_date', 'history_id'), 'ordering': ('-history_date', '-history_id'), 'verbose_name': 'historical tag work', 'verbose_name_plural': 'historical tag works'},
+            name="historicaltagwork",
+            options={
+                "get_latest_by": ("history_date", "history_id"),
+                "ordering": ("-history_date", "-history_id"),
+                "verbose_name": "historical tag work",
+                "verbose_name_plural": "historical tag works",
+            },
         ),
         migrations.AlterModelOptions(
-            name='tagsong',
-            options={'ordering': ('name',)},
+            name="tagsong",
+            options={"ordering": ("name",)},
         ),
         migrations.AlterModelOptions(
-            name='tagwork',
-            options={'ordering': ('name',)},
+            name="tagwork",
+            options={"ordering": ("name",)},
         ),
         migrations.AlterUniqueTogether(
-            name='tagsong',
-            unique_together={('slug',)},
+            name="tagsong",
+            unique_together={("slug",)},
         ),
         migrations.AlterUniqueTogether(
-            name='tagwork',
-            unique_together={('slug',)},
+            name="tagwork",
+            unique_together={("slug",)},
         ),
     ]

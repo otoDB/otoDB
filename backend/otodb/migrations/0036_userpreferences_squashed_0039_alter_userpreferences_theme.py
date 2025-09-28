@@ -6,22 +6,58 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
-    replaces = [('otodb', '0036_userpreferences'), ('otodb', '0037_alter_userpreferences_language_and_more'), ('otodb', '0038_alter_userpreferences_language'), ('otodb', '0039_alter_userpreferences_theme')]
+    replaces = [
+        ("otodb", "0036_userpreferences"),
+        ("otodb", "0037_alter_userpreferences_language_and_more"),
+        ("otodb", "0038_alter_userpreferences_language"),
+        ("otodb", "0039_alter_userpreferences_theme"),
+    ]
 
     dependencies = [
-        ('otodb', '0035_alter_tagwork_options'),
+        ("otodb", "0035_alter_tagwork_options"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UserPreferences',
+            name="UserPreferences",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('language', models.IntegerField(choices=[(0, 'N/A'), (1, 'en'), (2, 'ja'), (3, 'zh-cn'), (4, 'ko')], default=0)),
-                ('theme', models.IntegerField(choices=[(0, 'Default'), (1, 'Aniki')], default=0)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='prefs', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "language",
+                    models.IntegerField(
+                        choices=[
+                            (0, "N/A"),
+                            (1, "en"),
+                            (2, "ja"),
+                            (3, "zh-cn"),
+                            (4, "ko"),
+                        ],
+                        default=0,
+                    ),
+                ),
+                (
+                    "theme",
+                    models.IntegerField(
+                        choices=[(0, "Default"), (1, "Aniki")], default=0
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="prefs",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

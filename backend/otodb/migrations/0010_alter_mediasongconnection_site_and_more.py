@@ -4,20 +4,43 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('otodb', '0009_alter_historicaltagsong_options_and_more'),
+        ("otodb", "0009_alter_historicaltagsong_options_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='mediasongconnection',
-            name='site',
-            field=models.IntegerField(choices=[(0, 'VGMdb'), (1, 'VocaDB'), (2, 'Discogs'), (3, 'MusicBrainz'), (4, 'Rate Your Music'), (5, 'RemyWiki'), (6, 'Zenius -I- vanisher.com')]),
+            model_name="mediasongconnection",
+            name="site",
+            field=models.IntegerField(
+                choices=[
+                    (0, "VGMdb"),
+                    (1, "VocaDB"),
+                    (2, "Discogs"),
+                    (3, "MusicBrainz"),
+                    (4, "Rate Your Music"),
+                    (5, "RemyWiki"),
+                    (6, "Zenius -I- vanisher.com"),
+                ]
+            ),
         ),
         migrations.AlterField(
-            model_name='tagworkconnection',
-            name='site',
-            field=models.IntegerField(choices=[(1, 'otomad.wiki'), (2, 'Otomad Wiki 2'), (3, 'Niconico Encyclopedia'), (4, 'Pixiv Dictionary'), (5, 'Wikipedia'), (6, 'Namu Wiki'), (7, 'AniKore'), (8, 'Bangumi'), (9, 'AniDB'), (10, 'MyAnimeList'), (0, 'Website')]),
+            model_name="tagworkconnection",
+            name="site",
+            field=models.IntegerField(
+                choices=[
+                    (1, "otomad.wiki"),
+                    (2, "Otomad Wiki 2"),
+                    (3, "Niconico Encyclopedia"),
+                    (4, "Pixiv Dictionary"),
+                    (5, "Wikipedia"),
+                    (6, "Namu Wiki"),
+                    (7, "AniKore"),
+                    (8, "Bangumi"),
+                    (9, "AniDB"),
+                    (10, "MyAnimeList"),
+                    (0, "Website"),
+                ]
+            ),
         ),
     ]

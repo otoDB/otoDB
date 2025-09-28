@@ -9,14 +9,6 @@ root_dir = Path('.')
 
 migrations = set()
 
-# migrations = migrations.union(glob("./otodb/migrations/*.py"))
-# migrations = migrations.union(glob("./otodb/**/migrations/*.py", recursive=True))
-
-# for p in migrations:
-#     if not p.endswith('__init__.py'):
-#         print(f"Removing: {p}")
-#         os.remove(p)
-
 # Remove the database file if it exists
 db_path = root_dir / db_name
 if db_path.exists():

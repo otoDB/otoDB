@@ -11,11 +11,10 @@ from .connection import (
 	TagWorkMediaConnection,
 	TagWorkCreatorConnection,
 )
+from .prefs import UserPreferences
+from .request import BulkRequest, UserRequest
 
 __all__ = [
-	'UserPreferences',
-	'BulkRequest',
-	'UserRequest',
 	'MediaWork',
 	'TagWorkInstance',
 	'TagWorkVote',

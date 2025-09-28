@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('otodb', '0057_bulkrequest_processed_by_alter_userrequest_command_and_more'),
+        ('otodb', '0061_normalize_tag_connections'),
     ]
 
     operations = [
@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='mediawork',
             name='thumbnail_source',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='otodb.worksource'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='otodb.worksource'),
         ),
         migrations.AddField(
             model_name='worksource',

@@ -12,7 +12,7 @@ from ninja.pagination import paginate
 from otodb.account.models import Account
 from otodb.models import ProfileConnection, UserPreferences
 
-from .common import ListSchema, ProfileSchema, WorkSourceSchema, ConnectionSchema, UserPreferencesSchema
+from .common import ListSchema, ProfileSchema, WorkSourceSchema, ConnectionSchema, UserPreferencesSchema, profile_connection_parsers, make_alt_value_parser
 
 profile_router = Router()
 
@@ -31,16 +31,15 @@ def connection(request: HttpRequest, username: str):
     user = get_object_or_404(Account, username__iexact=username)
     return user.profileconnection_set
 
+creator_tag_connection_parser = make_alt_value_parser(*profile_connection_parsers)
 @profile_router.put('connection', auth=django_auth)
-def edit_connections(request: HttpRequest, payload: List[ConnectionSchema]):
-    for connection in payload:
-        connection.content_id = connection.content_id.strip()
-        assert(connection.content_id != '')
+def edit_connections(request: HttpRequest, urls: str):
     user = request.user
     ProfileConnection.objects.filter(profile=user).delete()
-    for connection in payload:
-        ProfileConnection.objects.create(profile=user, site=connection.site,
-            content_id=connection.content_id)
+    urls = [creator_tag_connection_parser(url) for url in urls.split('\n') if url.strip()]
+    urls = [url for url in urls if url]
+    for site, content_id in urls:
+        ProfileConnection.objects.create(profile=user, site=site, content_id=content_id)
 
 @profile_router.get('work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth)
 def work_in_lists(request: HttpRequest, work_id: int):
@@ -53,6 +52,7 @@ class SourceSubmissionSchema(WorkSourceSchema):
     def work_id(cls, value) -> str:
         return value.id if value is not None else None
 
+
 class SubmissionsFilterSchema(FilterSchema):
     platform: int | None = None
     origin: int | None = Field(None, q='work_origin')
@@ -62,7 +62,7 @@ class SubmissionsFilterSchema(FilterSchema):
 @paginate
 def submissions(request: HttpRequest, username: str, filters: SubmissionsFilterSchema = Query(...),
     order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id'
-    ):
+):
     user = get_object_or_404(Account, username__iexact=username)
     submissions = user.worksource_set.all()
     submissions = filters.filter(submissions)

@@ -4,9 +4,10 @@
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
-	import { LanguageNames, Languages } from '$lib/enums.js';
+	import { LanguageNames, Languages, PostCategories } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { isSOV, isSVO } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 
 	let { data } = $props();
@@ -45,11 +46,28 @@
 		availableLanguages={data.post.pages.map((v) => Languages[v.lang])}
 		bind:value={lang_view}
 	/>
+	{#if data.post.category > 0}
+		<h3>
+			{#if isSVO(getLocale())}
+				{m.curly_safe_lynx_fond()}
+			{/if}
+			<a href="/profile/{data.list?.author.username}">{data.post?.added_by.username}</a>
+			{#if isSOV(getLocale())}
+				{m.curly_safe_lynx_fond()}
+			{/if}
+		</h3>
+	{/if}
+	<h4>
+		{m.mild_loud_shad_enchant({
+			type: m.plane_awful_bobcat_spark(),
+			name: PostCategories[data.post.category]()
+		})}
+	</h4>
 	{m.mild_loud_shad_enchant({
 		type: m.lower_full_opossum_bless(),
 		name: new Date(page_object.modified).toLocaleString()
 	})}
-	<div class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto max-w-4xl">
+	<div class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto mt-4 max-w-4xl">
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html page}
 	</div>

@@ -12,7 +12,8 @@ from otodb.models import (
     Pool, PoolItem,
     WorkRelation, SongRelation
 )
-from otodb.models.enums import Role, MediaType
+from otodb.models.enums import Role, MediaType, ProfileConnectionTypes
+import re
 
 class Error(Schema):
     message: str
@@ -205,3 +206,28 @@ class ConnectionSchema(Schema):
 class UserPreferencesSchema(Schema):
     language: int | None
     theme: int | None
+
+def re_to_parser(regex):
+    def matcher(link):
+        m = regex.fullmatch(link)
+        if m:
+            return m.group(1)
+    return matcher
+
+def make_alt_value_parser(*parsers):
+    def match(link):
+        for v, parser in parsers:
+            parse = parser(link)
+            if parse:
+                return (v, parse)
+    return match
+
+profile_connection_parsers = [
+	(ProfileConnectionTypes.NICONICO, re_to_parser(re.compile(r'https?:\/\/www\.nicovideo\.jp\/user\/(\d+)\/?'))),
+	(ProfileConnectionTypes.YOUTUBE, re_to_parser(re.compile(r'https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?'))),
+	(ProfileConnectionTypes.BILIBILI, re_to_parser(re.compile(r'https?:\/\/space\.bilibili\.com\/(\d+)\/?'))),
+	(ProfileConnectionTypes.TWITTER, re_to_parser(re.compile(r'https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?'))),
+	(ProfileConnectionTypes.BLUESKY, re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)'))),
+	(ProfileConnectionTypes.SOUNDCLOUD, re_to_parser(re.compile(r'https?:\/\/soundcloud\.com\/(.+?)(?:\/*)'))),
+	(ProfileConnectionTypes.WEBSITE, re_to_parser(re.compile(r'(https?://.+)'))),
+]

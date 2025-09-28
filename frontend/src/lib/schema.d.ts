@@ -1104,6 +1104,58 @@ export interface paths {
         /** Post */
         get: operations["otodb_api_post_post"];
         put?: never;
+        /** New */
+        post: operations["otodb_api_post_new"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/post/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Categories */
+        get: operations["otodb_api_post_categories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/post/category": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Category */
+        get: operations["otodb_api_post_category"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/post/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search */
+        get: operations["otodb_api_post_search"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1862,6 +1914,40 @@ export interface components {
             pages: components["schemas"]["PostContentSchema"][];
             /** Title */
             title: string;
+            /** Category */
+            category: number;
+        };
+        /**
+         * LanguageTypes
+         * @enum {integer}
+         */
+        LanguageTypes: 0 | 1 | 2 | 3 | 4;
+        /**
+         * PostCategory
+         * @enum {integer}
+         */
+        PostCategory: 0 | 1 | 2 | 3;
+        /** PostOverviewSchema */
+        PostOverviewSchema: {
+            /** Id */
+            id: number;
+            added_by: components["schemas"]["ProfileSchema"];
+            /**
+             * Modified
+             * Format: date-time
+             */
+            modified: string;
+            /** Title */
+            title: string;
+            /** Category */
+            category: number;
+        };
+        /** PagedPostOverviewSchema */
+        PagedPostOverviewSchema: {
+            /** Items */
+            items: components["schemas"]["PostOverviewSchema"][];
+            /** Count */
+            count: number;
         };
         /** CommentSchema */
         CommentSchema: {
@@ -2812,16 +2898,14 @@ export interface operations {
     };
     otodb_api_profile_edit_connections: {
         parameters: {
-            query?: never;
+            query: {
+                urls: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConnectionSchema"][];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -3497,17 +3581,13 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                t: number;
+                urls: string;
             };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConnectionSchema"][];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -3818,6 +3898,100 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PostSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_post_new: {
+        parameters: {
+            query: {
+                title: string;
+                post: string;
+                category: 0 | 1 | 2 | 3;
+                lang: 0 | 1 | 2 | 3 | 4;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+        };
+    };
+    otodb_api_post_categories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostOverviewSchema"][][];
+                };
+            };
+        };
+    };
+    otodb_api_post_category: {
+        parameters: {
+            query: {
+                category: 0 | 1 | 2 | 3;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedPostOverviewSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_post_search: {
+        parameters: {
+            query: {
+                query: string;
+                category?: components["schemas"]["PostCategory"] | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedPostOverviewSchema"];
                 };
             };
         };

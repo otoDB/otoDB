@@ -16,20 +16,20 @@ def make_alt_value_parser(*parsers):
                 return (v, parse)
     return match
 profile_connection_parser = make_alt_value_parser(
-	(0, re_to_parser(re.compile(r'(https?://.+)'))),
 	(1, re_to_parser(re.compile(r'https?:\/\/www\.nicovideo\.jp\/user\/(\d+)\/?'))),
 	(2, re_to_parser(re.compile(r'https?:\/\/www\.youtube\.com\/([^/?#]+(?:\/[^/?#]+)*)\/?'))),
 	(3, re_to_parser(re.compile(r'https?:\/\/space\.bilibili\.com\/(\d+)\/?'))),
 	(4, re_to_parser(re.compile(r'https?:\/\/(?:twitter|x)\.com\/((?:[A-Za-z0-9_]{1,15})|(?:i\/user\/\d+))\/?'))),
 	(5, re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)'))),
-	(6, re_to_parser(re.compile(r'https?:\/\/soundcloud\.com\/(.+?)(?:\/*)')))
+	(6, re_to_parser(re.compile(r'https?:\/\/soundcloud\.com\/(.+?)(?:\/*)'))),
+    (0, re_to_parser(re.compile(r'(https?://.+)'))),
 )
 
 def fix_tag_connections(apps, schema_editor):
     WikiPage = apps.get_model('otodb', 'WikiPage')
     TagWorkConnection = apps.get_model('otodb', 'TagWorkConnection')
     TagWorkCreatorConnection = apps.get_model('otodb', 'TagWorkCreatorConnection')
-    
+
     for con in TagWorkConnection.objects.filter(site=0):
         tag = con.tag
         if tag.category == 4:

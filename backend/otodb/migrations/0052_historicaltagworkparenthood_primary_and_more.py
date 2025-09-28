@@ -4,24 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0051_historicaltagwork_media_type_tagwork_media_type'),
+	]
 
-    dependencies = [
-        ('otodb', '0051_historicaltagwork_media_type_tagwork_media_type'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='historicaltagworkparenthood',
-            name='primary',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='tagworkparenthood',
-            name='primary',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddConstraint(
-            model_name='tagworkparenthood',
-            constraint=models.UniqueConstraint(condition=models.Q(('primary', True)), fields=('tag',), name='tagwork_parenthood_at_most_one_primary'),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='historicaltagworkparenthood',
+			name='primary',
+			field=models.BooleanField(default=False),
+		),
+		migrations.AddField(
+			model_name='tagworkparenthood',
+			name='primary',
+			field=models.BooleanField(default=False),
+		),
+		migrations.AddConstraint(
+			model_name='tagworkparenthood',
+			constraint=models.UniqueConstraint(
+				condition=models.Q(('primary', True)),
+				fields=('tag',),
+				name='tagwork_parenthood_at_most_one_primary',
+			),
+		),
+	]

@@ -6,32 +6,65 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0021_alter_mediasongconnection_site'),
+		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+	]
 
-    dependencies = [
-        ('otodb', '0021_alter_mediasongconnection_site'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-    ]
-
-    operations = [
-        migrations.RemoveField(
-            model_name='worksource',
-            name='rejection_reason',
-        ),
-        migrations.CreateModel(
-            name='PoolUpstream',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('upstream', models.URLField()),
-                ('pool', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='otodb.pool')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='WorkSourceRejection',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('reason', models.CharField(max_length=1000)),
-                ('by', models.ForeignKey(on_delete=django.db.models.deletion.RESTRICT, to=settings.AUTH_USER_MODEL)),
-                ('source', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='rejection', to='otodb.worksource')),
-            ],
-        ),
-    ]
+	operations = [
+		migrations.RemoveField(
+			model_name='worksource',
+			name='rejection_reason',
+		),
+		migrations.CreateModel(
+			name='PoolUpstream',
+			fields=[
+				(
+					'id',
+					models.BigAutoField(
+						auto_created=True,
+						primary_key=True,
+						serialize=False,
+						verbose_name='ID',
+					),
+				),
+				('upstream', models.URLField()),
+				(
+					'pool',
+					models.OneToOneField(
+						on_delete=django.db.models.deletion.CASCADE, to='otodb.pool'
+					),
+				),
+			],
+		),
+		migrations.CreateModel(
+			name='WorkSourceRejection',
+			fields=[
+				(
+					'id',
+					models.BigAutoField(
+						auto_created=True,
+						primary_key=True,
+						serialize=False,
+						verbose_name='ID',
+					),
+				),
+				('reason', models.CharField(max_length=1000)),
+				(
+					'by',
+					models.ForeignKey(
+						on_delete=django.db.models.deletion.RESTRICT,
+						to=settings.AUTH_USER_MODEL,
+					),
+				),
+				(
+					'source',
+					models.OneToOneField(
+						on_delete=django.db.models.deletion.CASCADE,
+						related_name='rejection',
+						to='otodb.worksource',
+					),
+				),
+			],
+		),
+	]

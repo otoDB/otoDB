@@ -7,3 +7,4 @@ media
 static
 .python-version
 *cookies.txt
+.ruff_cache

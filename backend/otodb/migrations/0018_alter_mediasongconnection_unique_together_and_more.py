@@ -5,23 +5,22 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0017_alter_mediasongconnection_unique_together_and_more'),
+		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+	]
 
-    dependencies = [
-        ('otodb', '0017_alter_mediasongconnection_unique_together_and_more'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-    ]
-
-    operations = [
-        migrations.AlterUniqueTogether(
-            name='mediasongconnection',
-            unique_together={('song', 'site', 'content_id')},
-        ),
-        migrations.AlterUniqueTogether(
-            name='profileconnection',
-            unique_together={('profile', 'site', 'content_id')},
-        ),
-        migrations.AlterUniqueTogether(
-            name='tagworkconnection',
-            unique_together={('tag', 'site', 'content_id')},
-        ),
-    ]
+	operations = [
+		migrations.AlterUniqueTogether(
+			name='mediasongconnection',
+			unique_together={('song', 'site', 'content_id')},
+		),
+		migrations.AlterUniqueTogether(
+			name='profileconnection',
+			unique_together={('profile', 'site', 'content_id')},
+		),
+		migrations.AlterUniqueTogether(
+			name='tagworkconnection',
+			unique_together={('tag', 'site', 'content_id')},
+		),
+	]

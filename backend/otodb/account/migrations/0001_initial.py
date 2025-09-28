@@ -5,28 +5,65 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	initial = True
 
-    initial = True
+	dependencies = []
 
-    dependencies = [
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='Account',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('password', models.CharField(max_length=128, verbose_name='password')),
-                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('username', models.CharField(max_length=127, unique=True, verbose_name='username')),
-                ('email', models.EmailField(max_length=255, unique=True, verbose_name='email address')),
-                ('level', models.IntegerField(choices=[(0, 'Anonymous'), (10, 'Restricted'), (20, 'Member'), (40, 'Moderator'), (50, 'Admin'), (100, 'Owner')], default=20)),
-                ('email_activated', models.BooleanField(default=False)),
-                ('is_active', models.BooleanField(default=True)),
-                ('date_created', models.DateTimeField(default=django.utils.timezone.now)),
-            ],
-            options={
-                'abstract': False,
-            },
-        ),
-    ]
+	operations = [
+		migrations.CreateModel(
+			name='Account',
+			fields=[
+				(
+					'id',
+					models.BigAutoField(
+						auto_created=True,
+						primary_key=True,
+						serialize=False,
+						verbose_name='ID',
+					),
+				),
+				('password', models.CharField(max_length=128, verbose_name='password')),
+				(
+					'last_login',
+					models.DateTimeField(
+						blank=True, null=True, verbose_name='last login'
+					),
+				),
+				(
+					'username',
+					models.CharField(
+						max_length=127, unique=True, verbose_name='username'
+					),
+				),
+				(
+					'email',
+					models.EmailField(
+						max_length=255, unique=True, verbose_name='email address'
+					),
+				),
+				(
+					'level',
+					models.IntegerField(
+						choices=[
+							(0, 'Anonymous'),
+							(10, 'Restricted'),
+							(20, 'Member'),
+							(40, 'Moderator'),
+							(50, 'Admin'),
+							(100, 'Owner'),
+						],
+						default=20,
+					),
+				),
+				('email_activated', models.BooleanField(default=False)),
+				('is_active', models.BooleanField(default=True)),
+				(
+					'date_created',
+					models.DateTimeField(default=django.utils.timezone.now),
+				),
+			],
+			options={
+				'abstract': False,
+			},
+		),
+	]

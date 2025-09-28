@@ -5,28 +5,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0044_worksourceinfopayload'),
+	]
 
-    dependencies = [
-        ('otodb', '0044_worksourceinfopayload'),
-    ]
-
-    operations = [
-        migrations.RenameField(
-            model_name='worksourceinfopayload',
-            old_name='info_payload',
-            new_name='payload',
-        ),
-        migrations.RemoveField(
-            model_name='historicalworksource',
-            name='info_payload',
-        ),
-        migrations.RemoveField(
-            model_name='worksource',
-            name='info_payload',
-        ),
-        migrations.AlterField(
-            model_name='worksourceinfopayload',
-            name='source',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='info_payload', to='otodb.worksource'),
-        ),
-    ]
+	operations = [
+		migrations.RenameField(
+			model_name='worksourceinfopayload',
+			old_name='info_payload',
+			new_name='payload',
+		),
+		migrations.RemoveField(
+			model_name='historicalworksource',
+			name='info_payload',
+		),
+		migrations.RemoveField(
+			model_name='worksource',
+			name='info_payload',
+		),
+		migrations.AlterField(
+			model_name='worksourceinfopayload',
+			name='source',
+			field=models.OneToOneField(
+				on_delete=django.db.models.deletion.CASCADE,
+				related_name='info_payload',
+				to='otodb.worksource',
+			),
+		),
+	]

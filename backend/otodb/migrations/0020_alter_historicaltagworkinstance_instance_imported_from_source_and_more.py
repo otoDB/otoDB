@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0019_tagworkcreatorconnection_tagworksourceconnection'),
+	]
 
-    dependencies = [
-        ('otodb', '0019_tagworkcreatorconnection_tagworksourceconnection'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='historicaltagworkinstance',
-            name='instance_imported_from_source',
-            field=models.BooleanField(default=True),
-        ),
-        migrations.AlterField(
-            model_name='tagworkinstance',
-            name='instance_imported_from_source',
-            field=models.BooleanField(default=True),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name='historicaltagworkinstance',
+			name='instance_imported_from_source',
+			field=models.BooleanField(default=True),
+		),
+		migrations.AlterField(
+			model_name='tagworkinstance',
+			name='instance_imported_from_source',
+			field=models.BooleanField(default=True),
+		),
+	]

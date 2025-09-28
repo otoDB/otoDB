@@ -1,13 +1,13 @@
-name: CI for Frontend
+name: CI for Backend
 
 on:
   push:
     paths:
-      - "frontend/**"
+      - "backend/**"
 
 defaults:
   run:
-    working-directory: frontend
+    working-directory: backend
 
 jobs:
   test:
@@ -15,10 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install --frozen-lockfile
-      - run: bunx prettier --check .
-      - run: bunx eslint .
+      - uses: astral-sh/setup-uv@v6
+      - run: uvx ruff format --check
+      - run: uvx ruff check
 
   build_docker:
     name: Build Docker image
@@ -32,5 +31,5 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           push: false
-          context: frontend
-          file: frontend/Dockerfile
+          context: backend
+          file: backend/Dockerfile

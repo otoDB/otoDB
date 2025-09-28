@@ -4,20 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0028_historicalmediasong_bpm_mixed_mediasong_bpm_mixed'),
+	]
 
-    dependencies = [
-        ('otodb', '0028_historicalmediasong_bpm_mixed_mediasong_bpm_mixed'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='historicaltagworkinstance',
-            name='creator_roles',
-            field=models.IntegerField(blank=True, help_text='Creator role bitmask', null=True),
-        ),
-        migrations.AddField(
-            model_name='tagworkinstance',
-            name='creator_roles',
-            field=models.IntegerField(blank=True, help_text='Creator role bitmask', null=True),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='historicaltagworkinstance',
+			name='creator_roles',
+			field=models.IntegerField(
+				blank=True, help_text='Creator role bitmask', null=True
+			),
+		),
+		migrations.AddField(
+			model_name='tagworkinstance',
+			name='creator_roles',
+			field=models.IntegerField(
+				blank=True, help_text='Creator role bitmask', null=True
+			),
+		),
+	]

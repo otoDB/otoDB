@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0002_remove_historicaltagworkinstance_mean_score_and_more'),
+	]
 
-    dependencies = [
-        ('otodb', '0002_remove_historicaltagworkinstance_mean_score_and_more'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='pool',
-            name='pending_items',
-            field=models.ManyToManyField(to='otodb.worksource'),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='pool',
+			name='pending_items',
+			field=models.ManyToManyField(to='otodb.worksource'),
+		),
+	]

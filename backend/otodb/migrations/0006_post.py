@@ -7,25 +7,41 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0005_alter_historicaltagsong_options_and_more'),
+		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+	]
 
-    dependencies = [
-        ('otodb', '0005_alter_historicaltagsong_options_and_more'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='Post',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=1000)),
-                ('post', markdownfield.models.MarkdownField(rendered_field='post_rendered')),
-                ('post_rendered', markdownfield.models.RenderedMarkdownField()),
-                ('added_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'verbose_name': 'Thread',
-                'verbose_name_plural': 'Threads',
-            },
-        ),
-    ]
+	operations = [
+		migrations.CreateModel(
+			name='Post',
+			fields=[
+				(
+					'id',
+					models.BigAutoField(
+						auto_created=True,
+						primary_key=True,
+						serialize=False,
+						verbose_name='ID',
+					),
+				),
+				('title', models.CharField(max_length=1000)),
+				(
+					'post',
+					markdownfield.models.MarkdownField(rendered_field='post_rendered'),
+				),
+				('post_rendered', markdownfield.models.RenderedMarkdownField()),
+				(
+					'added_by',
+					models.ForeignKey(
+						on_delete=django.db.models.deletion.CASCADE,
+						to=settings.AUTH_USER_MODEL,
+					),
+				),
+			],
+			options={
+				'verbose_name': 'Thread',
+				'verbose_name_plural': 'Threads',
+			},
+		),
+	]

@@ -129,8 +129,6 @@ class WorkSchema(ModelSchema):
     id: int
     tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
     thumbnail: str | None = None  # Exposed as property
-    # REVIEW (mmaker): May want to create a separate schema for exposing sources
-    sources: list[WorkSourceSchema] = Field(..., alias='worksource_set')
     class Meta:
         model = MediaWork
         fields = ['title', 'description', 'rating', 'thumbnail_source']

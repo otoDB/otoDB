@@ -31,17 +31,28 @@
 
 	async function updateInfo(i: number) {
 		if (work[i].work) {
-			const { data } = await client.GET('/api/work/work', {
-				fetch,
-				params: { query: { work_id: work[i].work.id } }
-			});
-			if (data) {
-				work[i].work = data;
-				work[i].title = data.title;
+			const [workResponse, sourcesResponse] = await Promise.all([
+				client.GET('/api/work/work', {
+					fetch,
+					params: { query: { work_id: work[i].work.id } }
+				}),
+				client.GET('/api/work/sources', {
+					fetch,
+					params: { query: { work_id: work[i].work.id } }
+				})
+			]);
+
+			if (workResponse.data) {
+				work[i].work = workResponse.data;
+				work[i].title = workResponse.data.title;
+				work[i].description = workResponse.data.description!;
+				work[i].rating = workResponse.data.rating;
+			}
+
+			if (sourcesResponse.data) {
+				work[i].work.sources = sourcesResponse.data;
 				work[i].thumbnail_source_id =
-					data.thumbnail_source ?? data.sources?.[0]?.id ?? null;
-				work[i].description = data.description!;
-				work[i].rating = data.rating;
+					workResponse.data?.thumbnail_source ?? sourcesResponse.data?.[0]?.id ?? null;
 			}
 		} else {
 			work[i].work = null;
@@ -169,7 +180,7 @@
 							)}
 							{#if selectedSource?.thumbnail}
 								<img
-									class="mt-2 w-15"
+									class="w-15 mt-2"
 									src={selectedSource.thumbnail}
 									alt={work[0].title}
 								/>
@@ -207,7 +218,7 @@
 							)}
 							{#if selectedSource?.thumbnail}
 								<img
-									class="mt-2 w-15"
+									class="w-15 mt-2"
 									src={selectedSource.thumbnail}
 									alt={work[1].title}
 								/>

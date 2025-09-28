@@ -4,14 +4,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0034_alter_tagwork_options'),
+	]
 
-    dependencies = [
-        ('otodb', '0034_alter_tagwork_options'),
-    ]
-
-    operations = [
-        migrations.AlterModelOptions(
-            name='tagwork',
-            options={'ordering': [models.Case(models.When(category=1, then=models.Value(0)), models.When(category=4, then=models.Value(10)), models.When(category=6, then=models.Value(11)), models.When(category=3, then=models.Value(20)), models.When(category=2, then=models.Value(30)), models.When(category=0, then=models.Value(40)), models.When(category=5, then=models.Value(1000)), default=models.Value(999), output_field=models.IntegerField()), 'name']},
-        ),
-    ]
+	operations = [
+		migrations.AlterModelOptions(
+			name='tagwork',
+			options={
+				'ordering': [
+					models.Case(
+						models.When(category=1, then=models.Value(0)),
+						models.When(category=4, then=models.Value(10)),
+						models.When(category=6, then=models.Value(11)),
+						models.When(category=3, then=models.Value(20)),
+						models.When(category=2, then=models.Value(30)),
+						models.When(category=0, then=models.Value(40)),
+						models.When(category=5, then=models.Value(1000)),
+						default=models.Value(999),
+						output_field=models.IntegerField(),
+					),
+					'name',
+				]
+			},
+		),
+	]

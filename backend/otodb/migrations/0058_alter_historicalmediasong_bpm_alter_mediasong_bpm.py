@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0057_bulkrequest_processed_by_alter_userrequest_command_and_more'),
+	]
 
-    dependencies = [
-        ('otodb', '0057_bulkrequest_processed_by_alter_userrequest_command_and_more'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='historicalmediasong',
-            name='bpm',
-            field=models.FloatField(null=True),
-        ),
-        migrations.AlterField(
-            model_name='mediasong',
-            name='bpm',
-            field=models.FloatField(null=True),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name='historicalmediasong',
+			name='bpm',
+			field=models.FloatField(null=True),
+		),
+		migrations.AlterField(
+			model_name='mediasong',
+			name='bpm',
+			field=models.FloatField(null=True),
+		),
+	]

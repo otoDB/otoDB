@@ -5,26 +5,75 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0011_remove_historicaltagwork_lang_remove_tagwork_lang_and_more'),
+	]
 
-    dependencies = [
-        ('otodb', '0011_remove_historicaltagwork_lang_remove_tagwork_lang_and_more'),
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='TagSongLangPreference',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('lang', models.IntegerField(choices=[(0, 'N/A'), (1, 'en'), (2, 'ja'), (3, 'zh-cn'), (4, 'ko')], default=0)),
-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='otodb.tagsong')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='TagWorkLangPreference',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('lang', models.IntegerField(choices=[(0, 'N/A'), (1, 'en'), (2, 'ja'), (3, 'zh-cn'), (4, 'ko')], default=0)),
-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='otodb.tagwork')),
-            ],
-        ),
-    ]
+	operations = [
+		migrations.CreateModel(
+			name='TagSongLangPreference',
+			fields=[
+				(
+					'id',
+					models.BigAutoField(
+						auto_created=True,
+						primary_key=True,
+						serialize=False,
+						verbose_name='ID',
+					),
+				),
+				(
+					'lang',
+					models.IntegerField(
+						choices=[
+							(0, 'N/A'),
+							(1, 'en'),
+							(2, 'ja'),
+							(3, 'zh-cn'),
+							(4, 'ko'),
+						],
+						default=0,
+					),
+				),
+				(
+					'tag',
+					models.ForeignKey(
+						on_delete=django.db.models.deletion.CASCADE, to='otodb.tagsong'
+					),
+				),
+			],
+		),
+		migrations.CreateModel(
+			name='TagWorkLangPreference',
+			fields=[
+				(
+					'id',
+					models.BigAutoField(
+						auto_created=True,
+						primary_key=True,
+						serialize=False,
+						verbose_name='ID',
+					),
+				),
+				(
+					'lang',
+					models.IntegerField(
+						choices=[
+							(0, 'N/A'),
+							(1, 'en'),
+							(2, 'ja'),
+							(3, 'zh-cn'),
+							(4, 'ko'),
+						],
+						default=0,
+					),
+				),
+				(
+					'tag',
+					models.ForeignKey(
+						on_delete=django.db.models.deletion.CASCADE, to='otodb.tagwork'
+					),
+				),
+			],
+		),
+	]

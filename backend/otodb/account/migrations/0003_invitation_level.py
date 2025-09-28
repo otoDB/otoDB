@@ -4,16 +4,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('account', '0002_invitation'),
+	]
 
-    dependencies = [
-        ('account', '0002_invitation'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='invitation',
-            name='level',
-            field=models.IntegerField(choices=[(0, 'Anonymous'), (10, 'Restricted'), (20, 'Member'), (40, 'Moderator'), (50, 'Admin'), (100, 'Owner')], default=20),
-            preserve_default=False,
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='invitation',
+			name='level',
+			field=models.IntegerField(
+				choices=[
+					(0, 'Anonymous'),
+					(10, 'Restricted'),
+					(20, 'Member'),
+					(40, 'Moderator'),
+					(50, 'Admin'),
+					(100, 'Owner'),
+				],
+				default=20,
+			),
+			preserve_default=False,
+		),
+	]

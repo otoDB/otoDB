@@ -5,15 +5,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0031_historicaltagwork_deprecated_tagwork_deprecated'),
+	]
 
-    dependencies = [
-        ('otodb', '0031_historicaltagwork_deprecated_tagwork_deprecated'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='worksource',
-            name='media',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='otodb.mediawork'),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name='worksource',
+			name='media',
+			field=models.ForeignKey(
+				blank=True,
+				null=True,
+				on_delete=django.db.models.deletion.CASCADE,
+				to='otodb.mediawork',
+			),
+		),
+	]

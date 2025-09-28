@@ -4,24 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0024_worksource_info_payload'),
+	]
 
-    dependencies = [
-        ('otodb', '0024_worksource_info_payload'),
-    ]
-
-    operations = [
-        migrations.AlterUniqueTogether(
-            name='tagsong',
-            unique_together=set(),
-        ),
-        migrations.AlterField(
-            model_name='tagsong',
-            name='slug',
-            field=models.SlugField(unique=True),
-        ),
-        migrations.AlterField(
-            model_name='tagwork',
-            name='slug',
-            field=models.SlugField(unique=True),
-        ),
-    ]
+	operations = [
+		migrations.AlterUniqueTogether(
+			name='tagsong',
+			unique_together=set(),
+		),
+		migrations.AlterField(
+			model_name='tagsong',
+			name='slug',
+			field=models.SlugField(unique=True),
+		),
+		migrations.AlterField(
+			model_name='tagwork',
+			name='slug',
+			field=models.SlugField(unique=True),
+		),
+	]

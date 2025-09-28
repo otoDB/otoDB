@@ -4,20 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		(
+			'otodb',
+			'0027_rename_song_used_as_source_historicaltagworkinstance_used_as_source_and_more',
+		),
+	]
 
-    dependencies = [
-        ('otodb', '0027_rename_song_used_as_source_historicaltagworkinstance_used_as_source_and_more'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='historicalmediasong',
-            name='variable_bpm',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='mediasong',
-            name='variable_bpm',
-            field=models.BooleanField(default=False),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='historicalmediasong',
+			name='variable_bpm',
+			field=models.BooleanField(default=False),
+		),
+		migrations.AddField(
+			model_name='mediasong',
+			name='variable_bpm',
+			field=models.BooleanField(default=False),
+		),
+	]

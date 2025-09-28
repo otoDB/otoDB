@@ -128,7 +128,7 @@ class StorageManager:
             return file_path
 
         if file_path and settings.OTODB_CDN_ENABLED:
-            return settings.OTODB_CDN_HOST + settings.OTODB_CDN_ROOT + file_path
+            return settings.OTODB_CDN_HOST + settings.OTODB_CDN_ROOT + file_path.lstrip('/')
         elif (
             file_path
             and self.exists(file_path)

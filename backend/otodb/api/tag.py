@@ -515,40 +515,41 @@ def edit_connections(request: HttpRequest, tag_slug: str, urls: str):
 	general_con = [url for tp, url in urls if tp is TagWorkConnection]
 	category_con = [url for tp, url in urls if tp is not TagWorkConnection]
 
-	if category_con:
-		Table = category_parser_tp[0]
+	# Category specific connections
+	Table = category_parser_tp[0]
 
-		def get_content_dict(parse):
-			return (
-				{'content_id': parse[1], 'dead': parse[0]}
-				if Table is TagWorkCreatorConnection
-				else {'content_id': parse}
-			)
-
-		target = (
-			{'song': tag.mediasong}
-			if tag.category == WorkTagCategory.SONG
-			else {'tag': tag}
+	def get_content_dict(parse):
+		return (
+			{'content_id': parse[1], 'dead': parse[0]}
+			if Table is TagWorkCreatorConnection
+			else {'content_id': parse}
 		)
-		Table.objects.filter(**target).exclude(
-			reduce(
-				lambda a, b: a | b,
-				[
-					Q(site=site) & Q(content_id=get_content_dict(parse)['content_id'])
-					for site, parse in category_con
-				],
-				Q(),
-			)
-		).delete()
-		for site, parse in category_con:
-			old = Table.objects.filter(
-				**target, site=site, content_id=get_content_dict(parse)['content_id']
-			)
-			if not old.exists():
-				Table.objects.create(**target, site=site, **get_content_dict(parse))
-			elif Table is TagWorkCreatorConnection:
-				old.update(dead=get_content_dict(parse)['dead'])
 
+	target = (
+		{'song': tag.mediasong}
+		if tag.category == WorkTagCategory.SONG
+		else {'tag': tag}
+	)
+	Table.objects.filter(**target).exclude(
+		reduce(
+			lambda a, b: a | b,
+			[
+				Q(site=site) & Q(content_id=get_content_dict(parse)['content_id'])
+				for site, parse in category_con
+			],
+			Q(),
+		)
+	).delete()
+	for site, parse in category_con:
+		old = Table.objects.filter(
+			**target, site=site, content_id=get_content_dict(parse)['content_id']
+		)
+		if not old.exists():
+			Table.objects.create(**target, site=site, **get_content_dict(parse))
+		elif Table is TagWorkCreatorConnection:
+			old.update(dead=get_content_dict(parse)['dead'])
+
+	# All general connections
 	TagWorkConnection.objects.filter(tag=tag).exclude(
 		reduce(
 			lambda a, b: a | b,

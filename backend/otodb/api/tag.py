@@ -2,6 +2,7 @@ from typing import Annotated
 from itertools import groupby
 from functools import reduce
 import re
+from urllib.parse import urlparse, parse_qs
 
 from django.db import transaction, models
 from django.db.models import Value, F, Q, Case, When, Count
@@ -335,6 +336,26 @@ def connection(request: HttpRequest, tag_slug: str):
 	return 200, (cs, None)
 
 
+def query_parser(param_arg: str, param_match=None):
+	def match(link):
+		try:
+			parse = parse_qs(urlparse(link).query)[param_arg][0]
+			if param_match is None or param_match(parse):
+				return parse
+		except Exception:
+			pass
+
+	return match
+
+
+def parser_conjunction(parser, conditions):
+	def match(link):
+		if all(c(link) for c in conditions):
+			return parser(link)
+
+	return match
+
+
 song_connection_parser = make_alt_value_parser(
 	(
 		SongConnectionTypes.VGMDB,
@@ -380,15 +401,30 @@ song_connection_parser = make_alt_value_parser(
 	),
 	(
 		SongConnectionTypes.ZENIUS,
-		re_to_parser(
-			re.compile(
-				r'https?:\/\/zenius-i-vanisher\.com\/v5\.2\/songdb\.php\?songid=(\d+)(?:\/*)?'
-			)
+		parser_conjunction(
+			query_parser('songid', lambda s: s.isdigit()),
+			[
+				lambda link: re.compile(
+					r'https?:\/\/zenius-i-vanisher\.com\/v5\.2\/songdb\.php'
+				).match(link),
+			],
 		),
 	),
 	(
 		SongConnectionTypes.NNDMEDLEYWIKI,
 		re_to_parser(re.compile(r'https?:\/\/medley\.bepis\.io\/wiki\/(.+?)(?:\/*)?')),
+	),
+	(
+		SongConnectionTypes.MODARCHIVE,
+		parser_conjunction(
+			query_parser('query', lambda s: s.isdigit()),
+			[
+				lambda link: query_parser('request')(link) == 'view_by_moduleid',
+				lambda link: re.compile(r'https?:\/\/modarchive\.org\/index.php').match(
+					link
+				),
+			],
+		),
 	),
 )
 
@@ -472,10 +508,13 @@ media_connection_parser = make_alt_value_parser(
 	),
 	(
 		MediaConnectionTypes.EROGAMESCAPE,
-		re_to_parser(
-			re.compile(
-				r'https?:\/\/erogamescape\.dyndns\.org\/~ap2\/ero\/toukei_kaiseki\/game\.php\?game=(\d+)'
-			)
+		parser_conjunction(
+			query_parser('game', lambda s: s.isdigit()),
+			[
+				lambda link: re.compile(
+					r'https?:\/\/erogamescape\.dyndns\.org\/~ap2\/ero\/toukei_kaiseki\/game\.php'
+				).match(link),
+			],
 		),
 	),
 )

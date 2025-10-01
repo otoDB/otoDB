@@ -93,6 +93,8 @@ class SongConnectionTypes(models.IntegerChoices):
 
 	NNDMEDLEYWIKI = 30, 'NND Medley Wiki'
 
+	MODARCHIVE = 40, 'The Mod Archive'
+
 
 class TagWorkConnectionTypes(models.IntegerChoices):
 	OTOMADWIKI = 1, 'otomad.wiki'

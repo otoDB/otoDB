@@ -12,6 +12,7 @@
 	import faviconKitsu from './connection_favicon/Kitsu.png';
 	import faviconKnowYourMeme from './connection_favicon/Know Your Meme.png';
 	import faviconLetterboxd from './connection_favicon/Letterboxd.png';
+	import faviconModArchive from './connection_favicon/The Mod Archive.png';
 	import faviconMusicBrainz from './connection_favicon/MusicBrainz.png';
 	import faviconMyAnimeList from './connection_favicon/MyAnimeList.png';
 	import faviconNNDMedleyWiki from './connection_favicon/NND Medley Wiki.png';
@@ -63,6 +64,8 @@
 				return faviconKnowYourMeme;
 			case 'Letterboxd':
 				return faviconLetterboxd;
+			case 'The Mod Archive':
+				return faviconModArchive;
 			case 'MusicBrainz':
 				return faviconMusicBrainz;
 			case 'MyAnimeList':

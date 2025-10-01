@@ -142,7 +142,10 @@ export const SongConnectionTypes = {
 	22: 'Zenius -I- vanisher.com',
 
 	NNDMEDLEYWIKI: 30,
-	30: 'NND Medley Wiki'
+	30: 'NND Medley Wiki',
+
+	MODARCHIVE: 40,
+	40: 'The Mod Archive'
 };
 
 export const SongConnectionLink = {
@@ -155,7 +158,8 @@ export const SongConnectionLink = {
 	20: (id: string) => `https://remywiki.com/${id}`,
 	21: (id: string) => `https://silentblue.remywiki.com/${id}`,
 	22: (id: string) => `https://zenius-i-vanisher.com/v5.2/songdb.php?songid=${id}`,
-	30: (id: string) => `https://medley.bepis.io/wiki/${id}`
+	30: (id: string) => `https://medley.bepis.io/wiki/${id}`,
+	40: (id: string) => `https://modarchive.org/index.php?request=view_by_moduleid&query=${id}`
 };
 
 export const TagWorkConnectionTypes = {

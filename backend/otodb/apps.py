@@ -5,4 +5,5 @@ class OtodbConfig(AppConfig):
 	name = 'otodb'
 
 	def ready(self):
-		pass  # connect @receivers
+		# connect @receivers
+		from . import signals  # noqa: F401

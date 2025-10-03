@@ -556,37 +556,38 @@ def edit_connections(request: HttpRequest, tag_slug: str, urls: str):
 
 	# Category specific connections
 	Table = category_parser_tp[0]
+	if Table is not None:
 
-	def get_content_dict(parse):
-		return (
-			{'content_id': parse[1], 'dead': parse[0]}
-			if Table is TagWorkCreatorConnection
-			else {'content_id': parse}
-		)
+		def get_content_dict(parse):
+			return (
+				{'content_id': parse[1], 'dead': parse[0]}
+				if Table is TagWorkCreatorConnection
+				else {'content_id': parse}
+			)
 
-	target = (
-		{'song': tag.mediasong}
-		if tag.category == WorkTagCategory.SONG
-		else {'tag': tag}
-	)
-	Table.objects.filter(**target).exclude(
-		reduce(
-			lambda a, b: a | b,
-			[
-				Q(site=site) & Q(content_id=get_content_dict(parse)['content_id'])
-				for site, parse in category_con
-			],
-			Q(),
+		target = (
+			{'song': tag.mediasong}
+			if tag.category == WorkTagCategory.SONG
+			else {'tag': tag}
 		)
-	).delete()
-	for site, parse in category_con:
-		old = Table.objects.filter(
-			**target, site=site, content_id=get_content_dict(parse)['content_id']
-		)
-		if not old.exists():
-			Table.objects.create(**target, site=site, **get_content_dict(parse))
-		elif Table is TagWorkCreatorConnection:
-			old.update(dead=get_content_dict(parse)['dead'])
+		Table.objects.filter(**target).exclude(
+			reduce(
+				lambda a, b: a | b,
+				[
+					Q(site=site) & Q(content_id=get_content_dict(parse)['content_id'])
+					for site, parse in category_con
+				],
+				Q(),
+			)
+		).delete()
+		for site, parse in category_con:
+			old = Table.objects.filter(
+				**target, site=site, content_id=get_content_dict(parse)['content_id']
+			)
+			if not old.exists():
+				Table.objects.create(**target, site=site, **get_content_dict(parse))
+			elif Table is TagWorkCreatorConnection:
+				old.update(dead=get_content_dict(parse)['dead'])
 
 	# All general connections
 	TagWorkConnection.objects.filter(tag=tag).exclude(

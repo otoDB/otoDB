@@ -20,6 +20,8 @@
 			`---
 config:
   layout: elk
+  elk:
+    mergeEdges: true
 ---
 flowchart ${direction}
     style ${data.id} color:#f00

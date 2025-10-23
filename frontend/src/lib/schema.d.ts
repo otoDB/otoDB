@@ -1380,10 +1380,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /**
-             * Category
-             * @default 0
-             */
+            /** Category */
             category: number;
         };
         /** Input */
@@ -1419,10 +1416,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /**
-             * Category
-             * @default 0
-             */
+            /** Category */
             category: number;
             /** Sample */
             sample: boolean;
@@ -1453,10 +1447,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /**
-             * Category
-             * @default 0
-             */
+            /** Category */
             category: number;
             /** Sample */
             sample: boolean;

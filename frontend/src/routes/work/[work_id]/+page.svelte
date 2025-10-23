@@ -18,6 +18,7 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import { callSavingToast } from '$lib/toast';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let { data } = $props();
 
@@ -54,7 +55,7 @@
 	let cover_select = $derived(data ? -1 : -1);
 
 	const merge_paths = (paths) => {
-		const graph = new Map();
+		const graph = new SvelteMap();
 		paths
 			.filter((p) => p.primary_path.length)
 			.forEach((path) =>

@@ -1,7 +1,6 @@
 import client from '$lib/api';
 import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { ProfileConnectionParsers } from '$lib/enums';
 
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	if (!locals.user || params.username !== locals.user?.username)

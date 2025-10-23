@@ -12,30 +12,30 @@
 
 	let tags = $state(data.tags);
 
-	const set_score = (new_vote: number, tag) => async (e) => {
-		e.preventDefault();
-		await client.PUT('/api/work/tag_scores', {
-			fetch,
-			params: { query: { work_id: +data.id } },
-			body: [{ score: new_vote, tag_name: tag.slug }]
-		});
-		tag.user_score = new_vote;
+	// const set_score = (new_vote: number, tag) => async (e) => {
+	// 	e.preventDefault();
+	// 	await client.PUT('/api/work/tag_scores', {
+	// 		fetch,
+	// 		params: { query: { work_id: +data.id } },
+	// 		body: [{ score: new_vote, tag_name: tag.slug }]
+	// 	});
+	// 	tag.user_score = new_vote;
 
-		const original_tag = data.tags.find((t) => t.slug === tag.slug)!;
-		if (original_tag && original_tag.user_score !== null)
-			tag.score =
-				original_tag.score -
-				original_tag.user_score / original_tag.n_votes +
-				new_vote / original_tag.n_votes;
-		else {
-			tag.score =
-				(original_tag.score * original_tag.n_votes + new_vote) / (original_tag.n_votes + 1);
-			original_tag.n_votes++;
-			tag.n_votes = original_tag.n_votes;
-			original_tag.user_score = new_vote;
-			original_tag.score = tag.score;
-		}
-	};
+	// 	const original_tag = data.tags.find((t) => t.slug === tag.slug)!;
+	// 	if (original_tag && original_tag.user_score !== null)
+	// 		tag.score =
+	// 			original_tag.score -
+	// 			original_tag.user_score / original_tag.n_votes +
+	// 			new_vote / original_tag.n_votes;
+	// 	else {
+	// 		tag.score =
+	// 			(original_tag.score * original_tag.n_votes + new_vote) / (original_tag.n_votes + 1);
+	// 		original_tag.n_votes++;
+	// 		tag.n_votes = original_tag.n_votes;
+	// 		original_tag.user_score = new_vote;
+	// 		original_tag.score = tag.score;
+	// 	}
+	// };
 
 	const toggle_creator_role = async (tag_slug: string, role_value: number) => {
 		const tag = tags.find((t) => t.slug === tag_slug);

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidate } from '$app/navigation';
+	import { invalidate, invalidateAll } from '$app/navigation';
 	import client from './api';
 	import { SongRelationTypes, WorkRelationTypes } from './enums';
 	import { m } from './paraglide/messages';
@@ -35,6 +35,7 @@
 			fetch,
 			params: { query: { A: w.item.id, B: this_id } }
 		});
+		invalidate('otodb:work_layout');
 	};
 	const post_relation = (i: number, notify: boolean) => async () => {
 		const r = relations[i];
@@ -50,8 +51,8 @@
 			});
 			if (notify) callSavingToast(p);
 			await p;
+			invalidate('otodb:work_layout');
 		}
-		invalidate(`/${obj_type === 'song' ? 'tag' : 'work'}/`);
 	};
 	const swap_relation = (i: number) => async () => {
 		relations[i].swapped = !relations[i].swapped;
@@ -59,7 +60,7 @@
 	};
 	let new_item = $state(null);
 	const add_new_item = async () => {
-		if (new_item) {
+		if (new_item && new_item.id !== this_id) {
 			relations.unshift({ swapped: false, item: new_item, relation: 0 });
 			await post_relation(0, false)();
 			new_item = null;

@@ -1440,23 +1440,6 @@ export interface components {
             /** Title */
             title: string;
         };
-        /** ProfileSchema */
-        ProfileSchema: {
-            /** Id */
-            id: number;
-            /** Username */
-            username: string;
-            /**
-             * Level
-             * @default 20
-             */
-            level: number;
-            /**
-             * Date Created
-             * Format: date-time
-             */
-            date_created?: string;
-        };
         /** TagWorkInstanceSchema */
         TagWorkInstanceSchema: {
             /** Id */
@@ -1490,8 +1473,8 @@ export interface components {
             tags: components["schemas"]["TagWorkInstanceSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
-            /** Sources */
-            sources: components["schemas"]["WorkSourceSchema"][];
+            /** Has Relations */
+            has_relations: boolean;
             /** Title */
             title: string;
             /** Description */
@@ -1503,52 +1486,6 @@ export interface components {
             rating: number;
             /** Thumbnail Source */
             thumbnail_source?: number | null;
-        };
-        /** WorkSourceRejectionSchema */
-        WorkSourceRejectionSchema: {
-            by: components["schemas"]["ProfileSchema"];
-            /** Reason */
-            reason: string;
-        };
-        /** WorkSourceSchema */
-        WorkSourceSchema: {
-            /** Id */
-            id: number;
-            added_by: components["schemas"]["ProfileSchema"];
-            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
-            /** Thumbnail */
-            thumbnail?: string | null;
-            /** Platform */
-            platform: number;
-            /** Url */
-            url: string;
-            /**
-             * Published Date
-             * Format: date
-             */
-            published_date: string;
-            /** Work Width */
-            work_width?: number | null;
-            /** Work Height */
-            work_height?: number | null;
-            /** Work Duration */
-            work_duration?: number | null;
-            /** Title */
-            title: string;
-            /** Description */
-            description?: string | null;
-            /**
-             * Work Origin
-             * @default 0
-             */
-            work_origin: number;
-            /**
-             * Work Status
-             * @default 0
-             */
-            work_status: number;
-            /** Source Id */
-            source_id: string;
         };
         /** WorkEditSchema */
         WorkEditSchema: {
@@ -1597,6 +1534,69 @@ export interface components {
             thumbnail?: string | null;
             /** Title */
             title: string;
+        };
+        /** ProfileSchema */
+        ProfileSchema: {
+            /** Id */
+            id: number;
+            /** Username */
+            username: string;
+            /**
+             * Level
+             * @default 20
+             */
+            level: number;
+            /**
+             * Date Created
+             * Format: date-time
+             */
+            date_created?: string;
+        };
+        /** WorkSourceRejectionSchema */
+        WorkSourceRejectionSchema: {
+            by: components["schemas"]["ProfileSchema"];
+            /** Reason */
+            reason: string;
+        };
+        /** WorkSourceSchema */
+        WorkSourceSchema: {
+            /** Id */
+            id: number;
+            added_by: components["schemas"]["ProfileSchema"];
+            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
+            /** Thumbnail */
+            thumbnail?: string | null;
+            /** Platform */
+            platform: number;
+            /** Url */
+            url: string;
+            /**
+             * Published Date
+             * Format: date
+             */
+            published_date: string;
+            /** Work Width */
+            work_width?: number | null;
+            /** Work Height */
+            work_height?: number | null;
+            /** Work Duration */
+            work_duration?: number | null;
+            /** Title */
+            title: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Work Origin
+             * @default 0
+             */
+            work_origin: number;
+            /**
+             * Work Status
+             * @default 0
+             */
+            work_status: number;
+            /** Source Id */
+            source_id: string;
         };
         /** ListSchema */
         ListSchema: {

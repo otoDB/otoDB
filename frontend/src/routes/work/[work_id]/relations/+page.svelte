@@ -57,15 +57,27 @@ ${nodes
 	function svgMouseOver(event: MouseEvent) {
 		const target = event.target as HTMLElement;
 		const node = target.closest('[id^="flowchart-"]');
+		const label = target.closest('.label:has(.edgeLabel)');
 
-		if (node && svgContainer) {
-			// Extract numeric ID from node ID (e.g. "flowchart-1-0" -> "1")
-			const nodeId = node.id.split('-')[1];
-			if (nodeId) {
-				const links = svgContainer.querySelectorAll(`[id*="_${nodeId}_"]`);
-				links.forEach((link) => {
-					link.classList.add('highlighted');
-				});
+		if (svgContainer) {
+			if (node) {
+				// Extract numeric ID from node ID (e.g. "flowchart-1-0" -> "1")
+				const nodeId = node.id.split('-')[1];
+				if (nodeId) {
+					const links = svgContainer.querySelectorAll(`[id*="_${nodeId}_"]`);
+					links.forEach((link) => {
+						link.classList.add('highlighted');
+					});
+					const labels = svgContainer.querySelectorAll(`[data-id*="_${nodeId}_"]`);
+					labels.forEach((link) => {
+						link.classList.add('highlighted');
+					});
+				}
+			}
+			if (label) {
+				const edge = svgContainer.querySelector(`[data-id="${label.dataset.id}"`);
+				edge.classList.add('highlighted');
+				label.classList.add('highlighted');
 			}
 		}
 	}
@@ -78,6 +90,10 @@ ${nodes
 			});
 		}
 	}
+
+	let svg_height = $state(600),
+		old_svg_height = svg_height;
+	let svg_resizing_begin = -1;
 </script>
 
 <Section
@@ -109,12 +125,26 @@ ${nodes
 		{#await svg}
 			{m.sunny_light_duck_surge()}
 		{:then s}
-			<div bind:this={svgContainer} on:mouseover={svgMouseOver} on:mouseout={svgMouseOut}>
+			<div
+				bind:this={svgContainer}
+				onmouseover={svgMouseOver}
+				onmouseout={svgMouseOut}
+				role="main"
+				onblur={() => {}}
+				onfocus={() => {}}
+			>
+				<button
+					class="absolute right-0 bottom-0 cursor-ns-resize text-3xl"
+					onmousedown={(e) => {
+						svg_resizing_begin = e.clientY;
+						old_svg_height = svg_height;
+					}}>↕</button
+				>
 				<SVGViewer
+					resizeBehavior="zoom"
 					maxScale={90}
-					height="600px"
+					height={`${svg_height}px`}
 					width="100%"
-					svgClass="fill-transparent dark:fill-black"
 				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html s.svg}
@@ -125,21 +155,59 @@ ${nodes
 		<p>{m.left_watery_jellyfish_grip()}</p>
 	{/if}
 </Section>
+<svelte:body
+	onmouseup={() => {
+		svg_resizing_begin = -1;
+		console.log('d');
+	}}
+	onmousemove={(e) => {
+		if (svg_resizing_begin >= 0) {
+			svg_height = Math.max(600, old_svg_height + e.clientY - svg_resizing_begin);
+		}
+	}}
+/>
 
 <style>
+	@reference "../../../../app.css";
 	label.type-label {
 		padding: 0 0.3rem;
 		margin: 0.1rem;
 		border: 1px solid var(--otodb-color-content-primary);
 		&:has(input:checked) {
-			background-color: var(--otodb-color-content-primary);
-			color: var(--color-otodb-bg-primary);
+			@apply text-otodb-bg-primary;
+			@apply bg-otodb-content-primary;
 		}
-		color: var(--otodb-color-content-primary);
-		background-color: var(--otodb-color-bg-primary);
+		@apply bg-otodb-bg-primary;
+		@apply text-otodb-content-primary;
 	}
-	:global(.highlighted) {
-		stroke: #f00 !important;
-		stroke-width: 2px !important;
+	:global(svg#svg-viewer) {
+		& .highlighted {
+			stroke: #f00 !important;
+			stroke-width: 2px !important;
+		}
+		& > rect:first-child {
+			@apply fill-otodb-bg-primary;
+		}
+		& #Relations .icon-shape p,
+		& #Relations .image-shape p {
+			@apply bg-otodb-bg-fainter;
+			@apply text-otodb-content-primary;
+			@apply fill-otodb-content-primary;
+		}
+		& #Relations .flowchart-link,
+		& #Relations .edgeLabel,
+		& #Relations .edgeLabel p {
+			@apply text-otodb-content-primary;
+			@apply fill-otodb-content-primary;
+			@apply stroke-otodb-content-fainter;
+			@apply bg-otodb-bg-fainter;
+		}
+		& #Relations .edgeLabel .label.highlighted {
+			outline: #f00 1px solid !important;
+		}
+		& #Relations .marker {
+			@apply stroke-otodb-content-faint;
+			@apply fill-otodb-content-faint;
+		}
 	}
 </style>

@@ -195,6 +195,10 @@ class MediaWork(models.Model):
 		# Fallback to deprecated field (3rd-party remote URL)
 		return self._thumbnail or thumbnail
 
+	@property
+	def has_relations(self):
+		return self.relation_A.exists() or self.relation_B.exists()
+
 
 class MediaSong(models.Model):
 	title = models.CharField(max_length=1000, null=False, blank=False)

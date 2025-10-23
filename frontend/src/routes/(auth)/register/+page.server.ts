@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ cookies, fetch, locals }) => {
 };
 
 export const actions = {
-	default: async ({ cookies, request, fetch, locals }) => {
+	default: async ({ cookies, request, fetch }) => {
 		const data = await request.formData();
 		const username = data.get('username') as string,
 			invite = data.get('invite') as string,

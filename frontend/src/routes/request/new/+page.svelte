@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
-	let { form, data }: PageProps = $props();
+	let { data }: PageProps = $props();
 	import { m } from '$lib/paraglide/messages.js';
 </script>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidate, invalidateAll } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 	import client from './api';
 	import { SongRelationTypes, WorkRelationTypes } from './enums';
 	import { m } from './paraglide/messages';

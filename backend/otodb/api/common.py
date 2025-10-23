@@ -73,16 +73,14 @@ class SongSchema(ModelSchema):
 		return value.slug
 
 
-class TagWorkSchema(ModelSchema):
+class TagWorkSchema(Schema):
 	id: int
 	lang_prefs: list[TagWorkLangPreferenceSchema]
 	aliased_to: Optional['TagWorkSchema']
 	n_instance: int | None = None
-
-	class Meta:
-		model = TagWork
-		fields = ['name', 'slug', 'category']
-
+	name: str
+	slug: str
+	category: int
 
 class FatTagWorkSchema(ModelSchema):
 	id: int

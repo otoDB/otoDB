@@ -164,7 +164,7 @@ ${nodes
 	{/if}
 
 	{#if data.tag.deprecated}
-		<h2>This tag has been deprecated. It will not be displayed under works.</h2>
+		<h2>{m.sad_lazy_goat_engage()}</h2>
 	{/if}
 
 	{#if data.connections}

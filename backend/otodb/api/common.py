@@ -164,6 +164,7 @@ class WorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
+	has_relations: bool
 
 	class Meta:
 		model = MediaWork

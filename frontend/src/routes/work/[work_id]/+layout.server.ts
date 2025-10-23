@@ -4,8 +4,10 @@ import client from '$lib/api';
 import { error, redirect } from '@sveltejs/kit';
 import { userLevelCheck } from '$lib/route_guard';
 
-export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
+export const load: LayoutServerLoad = async ({ params, fetch, locals, url, depends }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
+
+	depends('otodb:work_layout');
 
 	const {
 		data,
@@ -46,7 +48,14 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 							title: m.empty_legal_chicken_taste()
 						}
 					]),
-			{ pathname: `work/${params.work_id}/relations`, title: m.alive_these_jay_pick() },
+			...(data.has_relations
+				? [
+						{
+							pathname: `work/${params.work_id}/relations`,
+							title: m.alive_these_jay_pick()
+						}
+					]
+				: []),
 			...(loggedOut
 				? []
 				: [{ pathname: `work/${params.work_id}/edit`, title: m.minor_crisp_cobra_list() }]),

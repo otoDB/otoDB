@@ -142,7 +142,7 @@
 					</td>
 				</tr>
 				<tr>
-					<th><label for="deprecated">Deprecated</label></th>
+					<th><label for="deprecated">{m.heavy_orange_okapi_intend()}</label></th>
 					<td
 						><input
 							type="checkbox"

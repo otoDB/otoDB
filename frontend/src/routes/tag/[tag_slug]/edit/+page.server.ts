@@ -1,14 +1,7 @@
 import client from '$lib/api';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import {
-	Languages,
-	ProfileConnectionParsers,
-	SongConnectionParsers,
-	MediaConnectionParsers,
-	TagWorkConnectionParsers,
-	UserLevel
-} from '$lib/enums';
+import { Languages, UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 
 export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {

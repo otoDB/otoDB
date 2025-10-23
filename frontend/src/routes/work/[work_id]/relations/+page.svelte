@@ -194,7 +194,9 @@ ${nodes
 			@apply text-otodb-content-primary;
 			@apply fill-otodb-content-primary;
 		}
-		& #Relations .flowchart-link,
+		& #Relations .flowchart-link {
+			@apply stroke-otodb-content-fainter;
+		}
 		& #Relations .edgeLabel,
 		& #Relations .edgeLabel p {
 			@apply text-otodb-content-primary;

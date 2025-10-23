@@ -24,6 +24,7 @@
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { SongRelationTypes } from '$lib/enums';
 	import mermaid from 'mermaid';
+	import elkLayouts from '@mermaid-js/layout-elk';
 	import { mermaid_BFS } from '$lib/ui.js';
 	import { onMount } from 'svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -73,7 +74,11 @@
 	const get_svg_mermaid = (nodes, links) =>
 		mermaid.render(
 			'Relations',
-			`flowchart ${direction}
+			`---
+config:
+  layout: elk
+---
+flowchart ${direction}
     style ${data.tag.song!.id} color:#f00
 ${nodes
 	.map(
@@ -110,8 +115,10 @@ ${nodes
 	});
 
 	onMount(() => {
-		if (songs)
+		if (songs) {
 			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'neutral' });
+			mermaid.registerLayoutLoaders(elkLayouts);
+		}
 	});
 </script>
 
@@ -277,10 +284,13 @@ ${nodes
 				>
 			</label>
 			{#each SongRelationTypes as t, i (i)}
-				<label class="type-label">
-					<input type="checkbox" class="hidden" bind:checked={allowed_types[i]} />
-					{t()}
-				</label>
+				<label class="type-label"
+					><input
+						type="checkbox"
+						class="hidden"
+						bind:checked={allowed_types[i]}
+					/>{t()}</label
+				>
 			{/each}
 			{#await svg}
 				{m.sunny_light_duck_surge()}

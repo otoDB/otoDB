@@ -4,6 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { mermaid_BFS } from '$lib/ui.js';
 	import mermaid from 'mermaid';
+	import elkLayouts from '@mermaid-js/layout-elk';
 	import { onMount } from 'svelte';
 	import { SVGViewer } from 'svelte-svg-viewer';
 	let { data } = $props();
@@ -16,7 +17,11 @@
 	const get_svg_mermaid = (nodes, links) =>
 		mermaid.render(
 			'Relations',
-			`flowchart ${direction}
+			`---
+config:
+  layout: elk
+---
+flowchart ${direction}
     style ${data.id} color:#f00
 ${nodes
 	.map(
@@ -41,8 +46,10 @@ ${nodes
 	});
 
 	onMount(() => {
-		if (works)
+		if (works) {
 			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'neutral' });
+			mermaid.registerLayoutLoaders(elkLayouts);
+		}
 	});
 
 	let svgContainer = $state<HTMLDivElement | undefined>(undefined);
@@ -91,10 +98,13 @@ ${nodes
 			>
 		</label>
 		{#each WorkRelationTypes as t, i (i)}
-			<label class="type-label">
-				<input type="checkbox" class="hidden" bind:checked={allowed_types[i]} />
-				{t()}
-			</label>
+			<label class="type-label"
+				><input
+					type="checkbox"
+					class="hidden"
+					bind:checked={allowed_types[i]}
+				/>{t()}</label
+			>
 		{/each}
 		{#await svg}
 			{m.sunny_light_duck_surge()}

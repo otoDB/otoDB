@@ -12,7 +12,6 @@ from otodb.models import (
 	MediaSong,
 	WorkSourceRejection,
 	TagWork,
-	TagSong,
 	TagWorkLangPreference,
 	WikiPage,
 	Pool,
@@ -49,13 +48,12 @@ class TagWorkLangPreferenceSchema(ModelSchema):
 		return value.name
 
 
-class TagSongSchema(ModelSchema):
+class TagSongSchema(Schema):
 	id: int
 	children: list['TagSongSchema']
-
-	class Meta:
-		model = TagSong
-		fields = ['name', 'slug', 'category']
+	name: str
+	slug: str
+	category: int
 
 
 class SongSchema(ModelSchema):

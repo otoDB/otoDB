@@ -82,6 +82,7 @@ class TagWorkSchema(Schema):
 	slug: str
 	category: int
 
+
 class FatTagWorkSchema(ModelSchema):
 	id: int
 	children: list[TagWorkSchema]

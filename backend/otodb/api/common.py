@@ -63,7 +63,7 @@ class SongSchema(ModelSchema):
 
 	class Meta:
 		model = MediaSong
-		fields = ['title', 'bpm', 'variable_bpm', 'author', 'tags']
+		fields = ['title', 'bpm', 'variable_bpm', 'author']
 
 	@field_validator('work_tag', mode='before', check_fields=False)
 	@classmethod

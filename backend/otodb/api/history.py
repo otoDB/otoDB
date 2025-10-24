@@ -72,7 +72,9 @@ class HistoryExtSchema(Schema):
 	date: datetime = Field(..., alias='history_date')
 	user: str = Field(..., alias='history_user__username')
 	model: str
-	instance: SongSchema | ThinWorkSchema | TagWorkSchema | TagSongSchema
+	instance: SongSchema | ThinWorkSchema | TagWorkSchema | TagSongSchema = Field(
+		union_mode='left_to_right'
+	)
 
 
 def get_history_querysets(**kwargs):

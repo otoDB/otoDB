@@ -59,6 +59,41 @@ class OtodbTagModel(BaseTagModel):
 
 
 def transfer_data(from_tag, to_tag):
+	from .media import TagWorkInstance
+
+	# transfer/merge TagWorkInstance records (creator_roles, used_as_source, etc.)
+	for twi in TagWorkInstance.objects.filter(work_tag=from_tag):
+		# check if the work already has the `to_tag` associated
+		existing_twi = TagWorkInstance.objects.filter(
+			work=twi.work, work_tag=to_tag
+		).first()
+
+		if existing_twi:
+			# merge the attributes
+			if twi.creator_roles:
+				if existing_twi.creator_roles:
+					# combine role bitmasks
+					existing_twi.creator_roles |= twi.creator_roles
+				else:
+					existing_twi.creator_roles = twi.creator_roles
+
+			if twi.used_as_source:
+				existing_twi.used_as_source = True
+
+			# keep instance_imported_from_source as True if either is True
+			if (
+				twi.instance_imported_from_source
+				or existing_twi.instance_imported_from_source
+			):
+				existing_twi.instance_imported_from_source = True
+
+			existing_twi.save()
+			twi.delete()
+		else:
+			# if no existing instance, just transfer
+			twi.work_tag = to_tag
+			twi.save()
+
 	# carry over parenthood, category, wikipages, connections
 	for tp in TagWorkParenthood.objects.filter(parent=from_tag):
 		if TagWorkParenthood.objects.filter(tag=tp.tag, parent=to_tag).exists():
@@ -121,18 +156,18 @@ def _alias(from_tags, into_tag):
 		if tag.id != into_tag.id:
 			tag.aliased_to = into_tag
 			tag.save()
-			for work in (tag.works if is_work else tag.songs).all():
-				work.tags.add(into_tag)
-				work.tags.remove(tag)
-			for t in model.objects.filter(aliased_to=tag):
-				t.aliased_to = into_tag
-				t.save()
 			if is_work:
 				transfer_data(tag, into_tag)
 			else:
+				for work in tag.songs.all():
+					work.tags.add(into_tag)
+					work.tags.remove(tag)
 				for t in model.objects.filter(parent=tag):
 					t.parent = into_tag
 					t.save()
+			for t in model.objects.filter(aliased_to=tag):
+				t.aliased_to = into_tag
+				t.save()
 
 
 class TagWork(OtodbTagModel):

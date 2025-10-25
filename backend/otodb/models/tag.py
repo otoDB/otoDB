@@ -81,7 +81,10 @@ def transfer_data(from_tag, to_tag):
 				existing_twi.used_as_source = True
 
 			# keep instance_imported_from_source as True if either is True
-			if twi.instance_imported_from_source or existing_twi.instance_imported_from_source:
+			if (
+				twi.instance_imported_from_source
+				or existing_twi.instance_imported_from_source
+			):
 				existing_twi.instance_imported_from_source = True
 
 			existing_twi.save()

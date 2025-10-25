@@ -11,20 +11,27 @@ def fix_truncated_slugs(apps, schema_editor):
 	TagWork = apps.get_model('otodb', 'TagWork')
 	TagSong = apps.get_model('otodb', 'TagSong')
 	for model in [TagWork, TagSong]:
-		for tag in model.objects.annotate(slug_length=Length('slug')).filter(slug_length__gt=49):
+		for tag in model.objects.annotate(slug_length=Length('slug')).filter(
+			slug_length__gt=49
+		):
 			expected_slug = clean_incoming_slug(tag.name)
 			if tag.slug != expected_slug:
-				if not model.objects.filter(slug=expected_slug).exclude(id=tag.id).exists():
+				if (
+					not model.objects.filter(slug=expected_slug)
+					.exclude(id=tag.id)
+					.exists()
+				):
 					tag.slug = expected_slug
 					tag.save(update_fields=['slug'])
 
 
 class Migration(migrations.Migration):
-
 	dependencies = [
 		('otodb', '0063_increase_slug_length'),
 	]
 
 	operations = [
-		migrations.RunPython(fix_truncated_slugs, reverse_code=migrations.RunPython.noop),
+		migrations.RunPython(
+			fix_truncated_slugs, reverse_code=migrations.RunPython.noop
+		),
 	]

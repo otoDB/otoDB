@@ -2,27 +2,11 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import client from '$lib/api';
-	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import TagsField from '$lib/TagsField.svelte';
+	import Pager from '$lib/Pager.svelte';
+	import { page } from '$app/state';
 
 	let { data }: PageProps = $props();
-	let results = $derived(data.results!.items);
-
-	const fetchNextBatch = () =>
-		client.GET('/api/tag/song_search', {
-			fetch,
-			params: {
-				query: {
-					query: data.query,
-					tags: data.query_tags,
-					author: data.author,
-					limit: data.batch_size,
-					offset: results.length,
-					bpm_range: data.bpm_range
-				}
-			}
-		});
 </script>
 
 <svelte:head>
@@ -78,7 +62,7 @@
 				<th>BPM</th>
 			</tr>
 		</thead><tbody>
-			{#each results as song, i (i)}
+			{#each data.results?.items as song, i (i)}
 				<tr>
 					<td><a href="/tag/{song.work_tag}">#{song.id} - {song.title}</a></td>
 					<td>{song.author}</td>
@@ -89,5 +73,12 @@
 			{/each}
 		</tbody>
 	</table>
-	<LoadMoreButton {fetchNextBatch} maxCount={data.results!.count} bind:results />
+	{#if data.results?.count}
+		<Pager
+			n_count={data.results.count}
+			page={data.page}
+			page_size={data.batch_size}
+			base_url={page.url}
+		/>
+	{/if}
 </Section>

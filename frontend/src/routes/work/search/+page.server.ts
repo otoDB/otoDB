@@ -7,6 +7,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const tags = url.searchParams.get('tags') ?? '';
 	const order = url.searchParams.get('order'),
 		dir = url.searchParams.get('dir');
+	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/work/search', {
 		fetch,
 		params: {
@@ -14,7 +15,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				query,
 				tags,
 				limit: batch_size,
-				offset: 0,
+				offset: batch_size * (page - 1),
 				order: order ? (dir === '-' ? '-' : '') + order : null
 			}
 		}
@@ -25,6 +26,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		results: data,
 		batch_size,
 		order,
-		dir
+		dir,
+		page
 	};
 };

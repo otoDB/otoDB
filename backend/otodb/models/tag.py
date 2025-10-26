@@ -262,7 +262,7 @@ class TagWork(OtodbTagModel):
 		)
 
 	@classmethod
-	def transfer_data(cls, from_tag, to_tag):
+	def transfer_data(cls, from_tag: Self, to_tag: Self):
 		from .media import TagWorkInstance
 
 		# transfer/merge TagWorkInstance records (creator_roles, used_as_source, etc.)
@@ -298,61 +298,59 @@ class TagWork(OtodbTagModel):
 				twi.work_tag = to_tag
 				twi.save()
 
-		@classmethod
-		def transfer_data(cls, from_tag: Self, to_tag: Self):
-			# carry over parenthood, category, wikipages, connections
-			for tp in TagWorkParenthood.objects.filter(parent=from_tag):
-				if TagWorkParenthood.objects.filter(tag=tp.tag, parent=to_tag).exists():
-					tp.delete()
-				elif not to_tag.get_paths().filter(id=tp.tag.id).exists():
-					tp.parent = to_tag
-					tp.save()
-			for tp in TagWorkParenthood.objects.filter(tag=from_tag):
-				if TagWorkParenthood.objects.filter(
-					parent=tp.parent, tag=to_tag
-				).exists():
-					tp.delete()
-				elif not to_tag.get_descendants().filter(id=tp.tag.id).exists():
-					tp.tag = to_tag
-					tp.save()
+		# carry over parenthood, category, wikipages, connections
+		for tp in TagWorkParenthood.objects.filter(parent=from_tag):
+			if TagWorkParenthood.objects.filter(tag=tp.tag, parent=to_tag).exists():
+				tp.delete()
+			elif not to_tag.get_paths().filter(id=tp.tag.id).exists():
+				tp.parent = to_tag
+				tp.save()
+		for tp in TagWorkParenthood.objects.filter(tag=from_tag):
+			if TagWorkParenthood.objects.filter(
+				parent=tp.parent, tag=to_tag
+			).exists():
+				tp.delete()
+			elif not to_tag.get_descendants().filter(id=tp.tag.id).exists():
+				tp.tag = to_tag
+				tp.save()
+		if (
+			from_tag.category != WorkTagCategory.GENERAL
+			and to_tag.category == WorkTagCategory.GENERAL
+		):
+			to_tag.category = from_tag.category
+			if from_tag.category == WorkTagCategory.MEDIA:
+				to_tag.media_type = from_tag.media_type
+				from_tag.media_type = None
+			if from_tag.category == WorkTagCategory.SONG:
+				s = from_tag.mediasong
+				s.work_tag = to_tag
+				s.save()
+			from_tag.category = WorkTagCategory.GENERAL
+			from_tag.save()
+		for p in from_tag.wikipage_set.all():
+			try:
+				page = WikiPage.objects.get(tag=to_tag, lang=p.lang)
+				page.page += '\n\n'
+				page.page += p.page
+				page.save()
+			except WikiPage.DoesNotExist:
+				WikiPage.objects.create(tag=to_tag, lang=p.lang, page=p.page)
+			p.delete()
+		for c in chain(
+			from_tag.tagworkconnection_set.all(),
+			from_tag.tagworkmediaconnection_set.all(),
+			from_tag.tagworkcreatorconnection_set.all(),
+		):
 			if (
-				from_tag.category != WorkTagCategory.GENERAL
-				and to_tag.category == WorkTagCategory.GENERAL
+				type(c)
+				.objects.filter(tag=to_tag, site=c.site, content_id=c.content_id)
+				.exists()
 			):
-				to_tag.category = from_tag.category
-				if from_tag.category == WorkTagCategory.MEDIA:
-					to_tag.media_type = from_tag.media_type
-					from_tag.media_type = None
-				if from_tag.category == WorkTagCategory.SONG:
-					s = from_tag.mediasong
-					s.work_tag = to_tag
-					s.save()
-				from_tag.category = WorkTagCategory.GENERAL
-				from_tag.save()
-			for p in from_tag.wikipage_set.all():
-				try:
-					page = WikiPage.objects.get(tag=to_tag, lang=p.lang)
-					page.page += '\n\n'
-					page.page += p.page
-					page.save()
-				except WikiPage.DoesNotExist:
-					WikiPage.objects.create(tag=to_tag, lang=p.lang, page=p.page)
-				p.delete()
-			for c in chain(
-				from_tag.tagworkconnection_set.all(),
-				from_tag.tagworkmediaconnection_set.all(),
-				from_tag.tagworkcreatorconnection_set.all(),
-			):
-				if (
-					type(c)
-					.objects.filter(tag=to_tag, site=c.site, content_id=c.content_id)
-					.exists()
-				):
-					c.delete()
-				else:
-					c.tag = to_tag
-					c.save()
-			to_tag.save()
+				c.delete()
+			else:
+				c.tag = to_tag
+				c.save()
+		to_tag.save()
 
 
 class TagWorkLangPreference(models.Model):

@@ -210,7 +210,7 @@
 		</table>
 		<input type="submit" />
 	</form>
-	<button onclick={del}>Delete this tag</button>
+	<button onclick={del}>{m.chunky_giant_quail_breathe()}</button>
 </Section>
 
 {#if category === 2 && data.tag.category === 2}

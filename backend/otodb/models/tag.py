@@ -38,6 +38,14 @@ class LowerCaseTagModelManager(TagModelManager):
 			kwargs['name'] = name_cleaner(kwargs['name'])
 		return super().get(*args, **kwargs)
 
+	def get_queryset(self):
+		return (
+			super()
+			.get_queryset()
+			.select_related('aliased_to')
+			.prefetch_related('aliases')
+		)
+
 
 class OtodbTagModel(BaseTagModel):
 	"""
@@ -51,6 +59,9 @@ class OtodbTagModel(BaseTagModel):
 	)
 	protected = models.BooleanField(
 		default=False, help_text='Will not be deleted when the count reaches 0'
+	)
+	aliased_to = models.ForeignKey(
+		'self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases'
 	)
 
 	def save(self, *args, **kwargs):
@@ -111,9 +122,6 @@ class TagWork(OtodbTagModel):
 	deprecated = models.BooleanField(default=False, null=False)
 	category = models.IntegerField(
 		choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL
-	)
-	aliased_to = models.ForeignKey(
-		'self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases'
 	)
 	history = HistoricalRecords()
 	media_type = models.IntegerField(
@@ -401,9 +409,6 @@ class TagSong(OtodbTagModel):
 		blank=True,
 		on_delete=models.SET_NULL,
 		related_name='children',
-	)
-	aliased_to = models.ForeignKey(
-		'self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases'
 	)
 	history = HistoricalRecords()
 

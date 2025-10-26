@@ -319,3 +319,15 @@ profile_connection_parsers = [
 	),
 	(ProfileConnectionTypes.WEBSITE, re_to_parser(re.compile(r'(https?://.+)'))),
 ]
+
+
+def print_queries(f):
+	@wraps(f)
+	def wrapper(request, *args, **kwargs):
+		from django.db import connection
+
+		r = f(request, *args, **kwargs)
+		print(connection.queries)
+		return r
+
+	return wrapper

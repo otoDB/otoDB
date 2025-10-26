@@ -108,7 +108,9 @@ def tag(request: HttpRequest, tag_slug: str):
 
 @tag_router.get('details', response=TagWorkDetailsSchema)
 def details(request: HttpRequest, tag_slug: str):
-	tag = get_object_or_404(TagWork, slug=tag_slug)
+	tag = get_object_or_404(
+		TagWork.objects.prefetch_related('childhood', 'wikipage_set'), slug=tag_slug
+	)
 
 	primary_parent = [
 		*tag.childhood.filter(primary=True).values_list('parent__slug', flat=True)
@@ -133,7 +135,9 @@ def details(request: HttpRequest, tag_slug: str):
 @tag_router.get('works', response=list[ThinWorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
-	return MediaWork.active_objects.filter(tags__slug=tag_slug)
+	return MediaWork.active_objects.filter(tags__slug=tag_slug).select_related(
+		'thumbnail_source'
+	)
 
 
 @tag_router.post('alias', auth=django_auth)

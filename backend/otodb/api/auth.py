@@ -13,6 +13,7 @@ from ninja import Schema, Router, Field
 from ninja.security import django_auth
 
 from otodb.account.models import Account, Invitation
+from otodb.models.enums import LanguageTypes
 
 from .common import Error, UserPreferencesSchema
 
@@ -94,26 +95,98 @@ def reset_password(request, password: str, token: str | None = None):
 	user.save()
 
 
+PASSWORD_RESET_EMAIL = {
+	LanguageTypes.ENGLISH: [
+		'[otodb.net] Reset Your Password',
+		lambda name, token: f"""Hello {name},
+
+
+A request to reset your password has been issued. To reset your password, go here:
+https://otodb.net/reset_password?token={token}
+
+Do not share this link with anyone. If you did not try to reset your password, ignore this email.
+
+
+otoDB
+https://otodb.net/
+""",
+	],
+	LanguageTypes.JAPANESE: [
+		'[otodb.net] パスワード再設定のご案内',
+		lambda name, token: f"""{name} 様
+
+
+パスワード再設定のリクエストがありました。パスワードを再設定するには、以下のリンクにアクセスしてください：
+https://otodb.net/reset_password?token={token}
+
+このリンクを他人と共有しないでください。もしパスワード再設定のリクエストに心当たりがない場合は、このメールを無視してください。
+
+
+otoDB
+https://otodb.net/
+""",
+	],
+	LanguageTypes.SIMPLIFIED_CHINESE: [
+		'[otodb.net] 重置您的密码',
+		lambda name, token: f"""{name}，您好：
+
+
+我们收到一个重置您密码的请求。要重置密码，请访问：
+https://otodb.net/reset_password?token={token}
+
+请不要将此链接分享给任何人。如果您未申请重置密码，请忽略此邮件。
+
+
+otoDB
+https://otodb.net/
+""",
+	],
+	LanguageTypes.KOREAN: [
+		'[otodb.net] 비밀번호 재설정 안내',
+		lambda name, token: f"""{name}님 안녕하세요,
+
+
+비밀번호 재설정 요청이 접수되었습니다. 비밀번호를 재설정하려면 아래 링크를 방문하세요:
+https://example.com/reset_password?token={token}
+
+이 링크를 다른 사람과 공유하지 마십시오. 비밀번호 재설정을 요청하지 않으셨다면 이 이메일을 무시하시면 됩니다.
+
+
+otoDB
+https://otodb.net/
+""",
+	],
+}
+
+
+def get_user_language(user, request):
+	if user and hasattr(user, 'prefs'):
+		if lang := user.prefs.language:
+			return lang
+	if request:
+		if locale := request.COOKIES.get('PARAGLIDE_LOCALE'):
+			try:
+				if lang := LanguageTypes.labels.index(locale):
+					return lang
+			except ValueError:
+				pass
+		if header := request.headers.get('Accept-Language'):
+			for value, label in LanguageTypes.choices[1:]:
+				if label in header:  # lol
+					return value
+	return LanguageTypes.ENGLISH
+
+
 @auth_router.put('/reset_password')
 def send_reset_password_token(request, email: str):
 	try:
 		user = Account.objects.get(email=email)
 		user.reset_token = get_random_string(120, string.ascii_letters + string.digits)
 		user.save()
+		language = get_user_language(user, request)
 		send_mail(
-			'[otodb.net] Reset Your Password',
-			f"""
-Hello {user.username},
-
-
-A request to reset your password has been issued. To reset your password, go here:
-https://otodb.net/reset_password?token={user.reset_token}
-
-Do not share this link with anyone. If you did not try to reset your password, ignore this email.
-
-otodb
-https://otodb.net
-""",
+			PASSWORD_RESET_EMAIL[language][0],
+			PASSWORD_RESET_EMAIL[language][1],
 			'noreply@otodb.net',
 			[user.email],
 			fail_silently=False,

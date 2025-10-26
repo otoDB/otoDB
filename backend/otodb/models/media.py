@@ -10,7 +10,6 @@ from tagulous.models import TagField, TaggedManager
 
 from .enums import Rating, WorkTagCategory, Role
 from .tag import TagWork, TagSong
-from otodb.account.models import Account
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet

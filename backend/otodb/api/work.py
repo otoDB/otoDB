@@ -1,4 +1,4 @@
-from typing import List, Annotated, Literal
+from typing import List, Literal
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404

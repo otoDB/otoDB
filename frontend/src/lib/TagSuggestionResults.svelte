@@ -15,7 +15,7 @@
 
 	// Reset selected index when suggestions change
 	$effect(() => {
-		suggestions;
+		void suggestions;
 		selectedIndex = 0;
 	});
 

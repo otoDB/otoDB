@@ -4,13 +4,12 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0064_fix_truncated_slugs'),
+	]
 
-    dependencies = [
-        ('otodb', '0064_fix_truncated_slugs'),
-    ]
-
-    operations = [
-        migrations.DeleteModel(
-            name='TagWorkVote',
-        ),
-    ]
+	operations = [
+		migrations.DeleteModel(
+			name='TagWorkVote',
+		),
+	]

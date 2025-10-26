@@ -5,8 +5,10 @@
 	import { ProfileConnectionTypes, ProfileConnectionLink, UserLevel } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import { current_version, version_end_dates } from '$lib/ui';
 
 	let { data }: PageProps = $props();
+	console.log(version_end_dates);
 </script>
 
 <Section
@@ -20,7 +22,9 @@
 	<p>
 		{m.sharp_witty_jackdaw_treat({
 			date: new Date(data.profile.date_created).toLocaleDateString()
-		})}
+		})} ({version_end_dates.find(
+			(d, i, a) => i > 0 && Date.now() - a[i - 1][1] >= 0 && d[1] - Date.now() >= 0
+		)?.[0]})
 	</p>
 
 	{#if data.connections}

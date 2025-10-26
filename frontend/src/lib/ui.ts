@@ -40,56 +40,6 @@ export const clickOutside = (node: HTMLElement) => {
 export const isSVO = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'en' || lang === 'zh-cn';
 export const isSOV = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'ko' || lang === 'ja';
 
-export const mermaid_BFS = (
-	ns,
-	ls,
-	start: number,
-	max_distance: number = Number.POSITIVE_INFINITY,
-	allowed_types: boolean[] = new Array(WorkRelationTypes.length).fill(true)
-) => {
-	const nodes = structuredClone(ns),
-		links = structuredClone(ls);
-	let queue = [[start, 0]];
-	while (queue.length) {
-		const next_queue = [];
-		for (const [n, curr_distance] of queue) {
-			const ng = nodes.find((nn) => nn.id === n)!;
-			if (curr_distance > max_distance || ng.distance !== undefined) continue;
-			ng.distance = curr_distance;
-			next_queue.push(
-				...[
-					...new Set(
-						links
-							.filter(
-								(v) => allowed_types[v.relation] && (v.A_id === n || v.B_id === n)
-							)
-							.flatMap((v) => [v.A_id, v.B_id])
-					)
-				].map((nn) => [nn, curr_distance + 1])
-			);
-		}
-		queue = next_queue;
-	}
-	return [
-		nodes.filter((v) => v.distance !== undefined),
-		links.filter(
-			(v) =>
-				allowed_types[v.relation] &&
-				nodes.find((w) => w.id === v.A_id).distance !== undefined &&
-				nodes.find((w) => w.id === v.B_id).distance !== undefined
-		),
-		[
-			...new Set(
-				links
-					.filter((v) => allowed_types[v.relation])
-					.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)))
-					.filter(([a, b]) => (a.distance === undefined) !== (b.distance === undefined))
-					.map(([a, b]) => (a.distance !== undefined ? a.id : b.id))
-			)
-		]
-	];
-};
-
 export const set_lang = async (lang, logged_in) => {
 	if (logged_in) {
 		await client.POST('/api/profile/prefs', {
@@ -127,3 +77,10 @@ export const dirtyEnhance = (node: HTMLFormElement) => {
 		};
 	});
 };
+
+export const version_end_dates = [
+	['Pre-Alpha', 1752505560412],
+	['Alpha', Number.POSITIVE_INFINITY]
+];
+
+export const current_version = version_end_dates.at(-1)[0];

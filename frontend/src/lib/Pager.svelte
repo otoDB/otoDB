@@ -13,21 +13,36 @@
 		u.searchParams.set('page', page.toString());
 		return u.href;
 	};
+
+	let pp = $derived(page);
 </script>
+
+{#snippet btn(p)}
+	<a class="bg-otodb-bg-fainter border-otodb-content-faint border p-2" href={url(p)}>{p}</a>
+{/snippet}
 
 {#if page_range.length > 1}
 	<div class="mt-3 flex justify-center gap-2">
 		{#if page_range[0] !== 1}
-			<a href={url(1)}>{1}</a>
+			{@render btn(1)}
 			{#if page_range[0] !== 2}
 				...
 			{/if}
 		{/if}
 		{#each page_range as index, i (i)}
 			{#if index === page}
-				{index}
+				<form target="_self" method="get">
+					<input
+						class="p-2"
+						type="number"
+						name="page"
+						min="1"
+						max={n_pages}
+						bind:value={pp}
+					/>
+				</form>
 			{:else}
-				<a href={url(index)}>{index}</a>
+				{@render btn(index)}
 			{/if}
 		{/each}
 
@@ -35,7 +50,7 @@
 			{#if page_range.at(-1) !== n_pages - 1}
 				...
 			{/if}
-			<a href={url(n_pages)}>{n_pages}</a>
+			{@render btn(n_pages)}
 		{/if}
 	</div>
 {/if}

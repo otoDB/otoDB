@@ -4,7 +4,7 @@
 	import { Toaster } from 'svelte-sonner';
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
-	import { clickOutside, get_prefs, isFormDirty, set_lang } from '$lib/ui';
+	import { clickOutside, current_version, get_prefs, isFormDirty, set_lang } from '$lib/ui';
 	import { LanguageNames, Themes, UserLevel } from '$lib/enums';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
@@ -256,7 +256,9 @@
 						{m.mild_loud_shad_enchant({
 							type: 'otoDB',
 							name: m.glad_born_mouse_taste()
-						})} Alpha {#if env.PUBLIC_OTODB_HASH}
+						})}
+						{current_version}
+						{#if env.PUBLIC_OTODB_HASH}
 							- {env.PUBLIC_OTODB_HASH}{/if}
 					</span>
 					<div class="social-links">

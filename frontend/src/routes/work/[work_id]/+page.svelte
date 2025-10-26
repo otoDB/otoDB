@@ -5,6 +5,7 @@
 		Platform,
 		Rating,
 		WorkOrigin,
+		WorkRelationTypes,
 		WorkStatus,
 		WorkTagCategoriesSettableAsSource,
 		WorkTagCategory,
@@ -19,6 +20,8 @@
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import { callSavingToast } from '$lib/toast';
 	import { SvelteMap } from 'svelte/reactivity';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	let { data } = $props();
 
@@ -80,6 +83,8 @@
 				.map((n) => ({ node: n, real: true }))
 		];
 	};
+
+	const invert_subordinate_phrase = getLocale() !== 'en';
 </script>
 
 <Section
@@ -88,7 +93,7 @@
 >
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
-			<div class="flex-shrink-0">
+			<div class="shrink-0">
 				{#if cover_select === -1}
 					<img
 						src={data.thumbnail}
@@ -128,7 +133,7 @@
 							</a>{/if}{/each}
 				</div>
 			</div>
-			<div class="ml-2 flex-grow">
+			<div class="ml-2 grow">
 				<div>
 					<table class="w-full">
 						<tbody>
@@ -142,6 +147,52 @@
 								<td><div class="description-cell">{@html data.description}</div></td
 								>
 							</tr>
+							{#if data.relations[0].length}
+								<tr>
+									<th>{m.alive_these_jay_pick()}</th>
+									<td
+										><ul>
+											{#each Object.entries(Object.groupBy( data.relations[0], (r) => (r.A_id === data.id ? m.grand_vexed_snail_ripple() : m.clean_best_kangaroo_achieve()) )).map( (d) => [d[0], Object.entries(Object.groupBy(d[1], (r) => r.relation))] ) as [dir, rels], i (i)}
+												{#each rels as [tp, relations], j (j)}
+													<li>
+														{#if !invert_subordinate_phrase && dir === m.clean_best_kangaroo_achieve()}
+															{WorkRelationTypes[
+																tp
+															]()}{m.great_clean_beaver_amuse()}{dir}{m.great_clean_beaver_amuse()}{m
+																.stout_frail_warbler_support()
+																.toLowerCase()}{m.great_clean_beaver_amuse()}{m
+																.grand_merry_fly_succeed()
+																.toLowerCase()}
+														{:else}
+															{m.stout_frail_warbler_support()}{m.great_clean_beaver_amuse()}{m
+																.grand_merry_fly_succeed()
+																.toLowerCase()}{m.great_clean_beaver_amuse()}{dir}{m.great_clean_beaver_amuse()}{WorkRelationTypes[
+																tp
+															]()}
+														{/if}
+														<ul class="ml-2">
+															{#each relations as r, j (j)}
+																{@const w = data.relations[1].find(
+																	(w) =>
+																		w.id ===
+																		(r.A_id === data.id
+																			? r.B_id
+																			: r.A_id)
+																)}
+																<li>
+																	<a href="/work/{w.id}"
+																		>#{w.id} - {w.title}</a
+																	>
+																</li>
+															{/each}
+														</ul>
+													</li>
+												{/each}
+											{/each}
+										</ul></td
+									>
+								</tr>
+							{/if}
 							<tr>
 								<th class="w-24">{m.good_dark_bumblebee_spur()}</th>
 								<td>{Rating[data.rating]()}</td>
@@ -188,7 +239,9 @@
 				{/if}
 			</div>
 		</div>
-		<div class="mt-2 flex flex-row flex-wrap gap-x-3 border-t-1">
+		<div
+			class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}
+		>
 			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"

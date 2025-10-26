@@ -48,7 +48,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url, depen
 							title: m.empty_legal_chicken_taste()
 						}
 					]),
-			...(data.has_relations
+			...(data.relations[0].length
 				? [
 						{
 							pathname: `work/${params.work_id}/relations`,

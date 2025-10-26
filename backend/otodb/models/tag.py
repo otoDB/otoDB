@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 from itertools import chain
 
 from django.db import models
@@ -53,121 +53,27 @@ class OtodbTagModel(BaseTagModel):
 		default=False, help_text='Will not be deleted when the count reaches 0'
 	)
 
+	def save(self, *args, **kwargs):
+		if self.name:
+			self.name = name_cleaner(self.name)
+		super().save(*args, **kwargs)
+
 	class Meta:
 		abstract = True
 		ordering = ('name',)
 
-
-def transfer_data(from_tag, to_tag):
-	from .media import TagWorkInstance
-
-	# transfer/merge TagWorkInstance records (creator_roles, used_as_source, etc.)
-	for twi in TagWorkInstance.objects.filter(work_tag=from_tag):
-		# check if the work already has the `to_tag` associated
-		existing_twi = TagWorkInstance.objects.filter(
-			work=twi.work, work_tag=to_tag
-		).first()
-
-		if existing_twi:
-			# merge the attributes
-			if twi.creator_roles:
-				if existing_twi.creator_roles:
-					# combine role bitmasks
-					existing_twi.creator_roles |= twi.creator_roles
-				else:
-					existing_twi.creator_roles = twi.creator_roles
-
-			if twi.used_as_source:
-				existing_twi.used_as_source = True
-
-			# keep instance_imported_from_source as True if either is True
-			if (
-				twi.instance_imported_from_source
-				or existing_twi.instance_imported_from_source
-			):
-				existing_twi.instance_imported_from_source = True
-
-			existing_twi.save()
-			twi.delete()
-		else:
-			# if no existing instance, just transfer
-			twi.work_tag = to_tag
-			twi.save()
-
-	# carry over parenthood, category, wikipages, connections
-	for tp in TagWorkParenthood.objects.filter(parent=from_tag):
-		if TagWorkParenthood.objects.filter(tag=tp.tag, parent=to_tag).exists():
-			tp.delete()
-		elif not to_tag.get_paths().filter(id=tp.tag.id).exists():
-			tp.parent = to_tag
-			tp.save()
-	for tp in TagWorkParenthood.objects.filter(tag=from_tag):
-		if TagWorkParenthood.objects.filter(parent=tp.parent, tag=to_tag).exists():
-			tp.delete()
-		elif not to_tag.get_descendants().filter(id=tp.tag.id).exists():
-			tp.tag = to_tag
-			tp.save()
-	if (
-		from_tag.category != WorkTagCategory.GENERAL
-		and to_tag.category == WorkTagCategory.GENERAL
-	):
-		to_tag.category = from_tag.category
-		if from_tag.category == WorkTagCategory.MEDIA:
-			to_tag.media_type = from_tag.media_type
-			from_tag.media_type = None
-		if from_tag.category == WorkTagCategory.SONG:
-			s = from_tag.mediasong
-			s.work_tag = to_tag
-			s.save()
-		from_tag.category = WorkTagCategory.GENERAL
-		from_tag.save()
-	for p in from_tag.wikipage_set.all():
-		try:
-			page = WikiPage.objects.get(tag=to_tag, lang=p.lang)
-			page.page += '\n\n'
-			page.page += p.page
-			page.save()
-		except WikiPage.DoesNotExist:
-			WikiPage.objects.create(tag=to_tag, lang=p.lang, page=p.page)
-		p.delete()
-	for c in chain(
-		from_tag.tagworkconnection_set.all(),
-		from_tag.tagworkmediaconnection_set.all(),
-		from_tag.tagworkcreatorconnection_set.all(),
-	):
-		if (
-			type(c)
-			.objects.filter(tag=to_tag, site=c.site, content_id=c.content_id)
-			.exists()
-		):
-			c.delete()
-		else:
-			c.tag = to_tag
-			c.save()
-	to_tag.save()
-
-
-def _alias(from_tags, into_tag):
-	is_work = isinstance(into_tag, TagWork)
-	model = TagWork if is_work else TagSong
-	for tag in from_tags:
-		if tag.aliased_to:
-			tag = tag.aliased_to
-		if tag.id != into_tag.id:
-			tag.aliased_to = into_tag
-			tag.save()
-			if is_work:
-				transfer_data(tag, into_tag)
-			else:
-				for work in tag.songs.all():
-					work.tags.add(into_tag)
-					work.tags.remove(tag)
-				for t in model.objects.filter(parent=tag):
-					t.parent = into_tag
+	@classmethod
+	def alias(cls, from_tags: list[Self], into_tag: Self):
+		for tag in from_tags:
+			if tag.aliased_to:
+				tag = tag.aliased_to
+			if tag.id != into_tag.id:
+				tag.aliased_to = into_tag
+				tag.save()
+				cls.transfer_data(tag, into_tag)
+				for t in cls.objects.filter(aliased_to=tag):
+					t.aliased_to = into_tag
 					t.save()
-			for t in model.objects.filter(aliased_to=tag):
-				t.aliased_to = into_tag
-				t.save()
 
 
 class TagWork(OtodbTagModel):
@@ -201,11 +107,6 @@ class TagWork(OtodbTagModel):
 			),
 			'name',
 		]
-
-	def save(self, *args, **kwargs):
-		if self.name:
-			self.name = name_cleaner(self.name)
-		super().save(*args, **kwargs)
 
 	deprecated = models.BooleanField(default=False, null=False)
 	category = models.IntegerField(
@@ -242,10 +143,6 @@ class TagWork(OtodbTagModel):
 			else:
 				type_value |= t
 		self.media_type = type_value if type_value > 0 else None
-
-	@staticmethod
-	def alias(from_tags: list['TagWork'], into_tag: 'TagWork'):
-		_alias(from_tags, into_tag)
 
 	@property
 	def lang_prefs(self):
@@ -364,6 +261,99 @@ class TagWork(OtodbTagModel):
 			.exclude(id=self.id)
 		)
 
+	@classmethod
+	def transfer_data(cls, from_tag, to_tag):
+		from .media import TagWorkInstance
+
+		# transfer/merge TagWorkInstance records (creator_roles, used_as_source, etc.)
+		for twi in TagWorkInstance.objects.filter(work_tag=from_tag):
+			# check if the work already has the `to_tag` associated
+			existing_twi = TagWorkInstance.objects.filter(
+				work=twi.work, work_tag=to_tag
+			).first()
+
+			if existing_twi:
+				# merge the attributes
+				if twi.creator_roles:
+					if existing_twi.creator_roles:
+						# combine role bitmasks
+						existing_twi.creator_roles |= twi.creator_roles
+					else:
+						existing_twi.creator_roles = twi.creator_roles
+
+				if twi.used_as_source:
+					existing_twi.used_as_source = True
+
+				# keep instance_imported_from_source as True if either is True
+				if (
+					twi.instance_imported_from_source
+					or existing_twi.instance_imported_from_source
+				):
+					existing_twi.instance_imported_from_source = True
+
+				existing_twi.save()
+				twi.delete()
+			else:
+				# if no existing instance, just transfer
+				twi.work_tag = to_tag
+				twi.save()
+
+		@classmethod
+		def transfer_data(cls, from_tag: Self, to_tag: Self):
+			# carry over parenthood, category, wikipages, connections
+			for tp in TagWorkParenthood.objects.filter(parent=from_tag):
+				if TagWorkParenthood.objects.filter(tag=tp.tag, parent=to_tag).exists():
+					tp.delete()
+				elif not to_tag.get_paths().filter(id=tp.tag.id).exists():
+					tp.parent = to_tag
+					tp.save()
+			for tp in TagWorkParenthood.objects.filter(tag=from_tag):
+				if TagWorkParenthood.objects.filter(
+					parent=tp.parent, tag=to_tag
+				).exists():
+					tp.delete()
+				elif not to_tag.get_descendants().filter(id=tp.tag.id).exists():
+					tp.tag = to_tag
+					tp.save()
+			if (
+				from_tag.category != WorkTagCategory.GENERAL
+				and to_tag.category == WorkTagCategory.GENERAL
+			):
+				to_tag.category = from_tag.category
+				if from_tag.category == WorkTagCategory.MEDIA:
+					to_tag.media_type = from_tag.media_type
+					from_tag.media_type = None
+				if from_tag.category == WorkTagCategory.SONG:
+					s = from_tag.mediasong
+					s.work_tag = to_tag
+					s.save()
+				from_tag.category = WorkTagCategory.GENERAL
+				from_tag.save()
+			for p in from_tag.wikipage_set.all():
+				try:
+					page = WikiPage.objects.get(tag=to_tag, lang=p.lang)
+					page.page += '\n\n'
+					page.page += p.page
+					page.save()
+				except WikiPage.DoesNotExist:
+					WikiPage.objects.create(tag=to_tag, lang=p.lang, page=p.page)
+				p.delete()
+			for c in chain(
+				from_tag.tagworkconnection_set.all(),
+				from_tag.tagworkmediaconnection_set.all(),
+				from_tag.tagworkcreatorconnection_set.all(),
+			):
+				if (
+					type(c)
+					.objects.filter(tag=to_tag, site=c.site, content_id=c.content_id)
+					.exists()
+				):
+					c.delete()
+				else:
+					c.tag = to_tag
+					c.save()
+			to_tag.save()
+
 
 class TagWorkLangPreference(models.Model):
 	lang = models.IntegerField(
@@ -406,11 +396,6 @@ class TagSong(OtodbTagModel):
 		case_sensitive = False
 		force_lowercase = True
 
-	def save(self, *args, **kwargs):
-		if self.name:
-			self.name = name_cleaner(self.name)
-		super().save(*args, **kwargs)
-
 	category = models.IntegerField(
 		choices=SongTagCategory.choices, default=SongTagCategory.GENERAL
 	)
@@ -433,6 +418,15 @@ class TagSong(OtodbTagModel):
 	def __str__(self):
 		return self.name
 
+	@classmethod
+	def transfer_data(cls, from_tag: Self, to_tag: Self):
+		for song in from_tag.songs.all():
+			song.tags.add(to_tag)
+			song.tags.remove(from_tag)
+		for t in cls.objects.filter(parent=from_tag):
+			t.parent = to_tag
+			t.save()
+
 	def get_tree(self):
 		cte = CTE.recursive(
 			lambda cte: TagSong.objects.order_by()
@@ -452,10 +446,6 @@ class TagSong(OtodbTagModel):
 		return with_cte(
 			cte, select=cte.join(TagSong, id=cte.col.id).annotate(depth=cte.col.depth)
 		).order_by('-depth')
-
-	@staticmethod
-	def alias(from_tags: list['TagSong'], into_tag: 'TagSong'):
-		_alias(from_tags, into_tag)
 
 
 class TagSongLangPreference(models.Model):

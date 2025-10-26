@@ -55,7 +55,7 @@
 	"spry_muddy_sloth_radiate": "Sequel",
 	"inclusive_just_rabbit_succeed": "Respect",
 	"full_gaudy_sloth_value": "Collab Part",
-	"icy_raw_gazelle_heal": "Sample",
+	"icy_raw_gazelle_heal": "Sampling",
 	"light_caring_deer_coax": "Medley",
 	"bold_polite_myna_delight": "Remaster",
 	"antsy_north_reindeer_radiate": "Remix",
@@ -74,7 +74,7 @@
 	"kind_brief_earthworm_dash": "Reply",
 	"inner_solid_toad_zap": "Post",
 	"left_watery_jellyfish_grip": "This work does not have any relations.",
-	"patient_male_ox_praise": "Add more tags...",
+	"patient_male_ox_praise": "Add or remove tags",
 	"sunny_deft_puffin_scoop": "Your Score",
 	"wide_just_gull_glow": "Update Reason",
 	"tame_dirty_goldfish_flow": "This tag does not yet have a wiki page.",
@@ -151,7 +151,6 @@
 	"jumpy_spry_canary_scoop": "Connections",
 	"loose_tame_dingo_talk": "Song Connections",
 	"acidic_brave_halibut_heart": "Used as sample",
-	"brave_caring_ocelot_treat": "(from {votes} votes)",
 	"mellow_upper_finch_drip": "Display",
 	"factual_house_antelope_arise": "[Default]",
 	"true_tough_butterfly_sew": "Reset password",
@@ -234,5 +233,7 @@
 	"antsy_aloof_horse_grace": "New thread",
 	"just_salty_anaconda_nourish": "Discussions",
 	"heavy_orange_okapi_intend": "Deprecated",
-	"sad_lazy_goat_engage": "This tag has been deprecated. It will not be displayed under works."
+	"sad_lazy_goat_engage": "This tag has been deprecated. It will not be displayed under works.",
+	"great_clean_beaver_amuse": " ",
+	"fresh_deft_warbler_edit": "More..."
 }

@@ -74,7 +74,7 @@
 	"kind_brief_earthworm_dash": "回复",
 	"inner_solid_toad_zap": "发布",
 	"left_watery_jellyfish_grip": "本作品没有关联的作品。",
-	"patient_male_ox_praise": "添加标签...",
+	"patient_male_ox_praise": "添加或删除标签",
 	"sunny_deft_puffin_scoop": "你的评分",
 	"wide_just_gull_glow": "更新理由",
 	"tame_dirty_goldfish_flow": "本标签还没有维基页面。",
@@ -184,5 +184,6 @@
 	"maroon_close_gorilla_bake": "游戏",
 	"just_salty_anaconda_nourish": "论坛",
 	"heavy_orange_okapi_intend": "弃用",
-	"sad_lazy_goat_engage": "此标签已被弃用。将不会在作品下显示。"
+	"sad_lazy_goat_engage": "此标签已被弃用。将不会在作品下显示。",
+	"great_clean_beaver_amuse": ""
 }

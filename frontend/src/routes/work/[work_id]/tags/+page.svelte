@@ -10,35 +10,10 @@
 
 	let { data } = $props();
 
-	let tags = $state(data.tags);
-
-	// const set_score = (new_vote: number, tag) => async (e) => {
-	// 	e.preventDefault();
-	// 	await client.PUT('/api/work/tag_scores', {
-	// 		fetch,
-	// 		params: { query: { work_id: +data.id } },
-	// 		body: [{ score: new_vote, tag_name: tag.slug }]
-	// 	});
-	// 	tag.user_score = new_vote;
-
-	// 	const original_tag = data.tags.find((t) => t.slug === tag.slug)!;
-	// 	if (original_tag && original_tag.user_score !== null)
-	// 		tag.score =
-	// 			original_tag.score -
-	// 			original_tag.user_score / original_tag.n_votes +
-	// 			new_vote / original_tag.n_votes;
-	// 	else {
-	// 		tag.score =
-	// 			(original_tag.score * original_tag.n_votes + new_vote) / (original_tag.n_votes + 1);
-	// 		original_tag.n_votes++;
-	// 		tag.n_votes = original_tag.n_votes;
-	// 		original_tag.user_score = new_vote;
-	// 		original_tag.score = tag.score;
-	// 	}
-	// };
+	let tags = $state(data.tags.map((t) => t.slug));
 
 	const toggle_creator_role = async (tag_slug: string, role_value: number) => {
-		const tag = tags.find((t) => t.slug === tag_slug);
+		const tag = data.tags.find((t) => t.slug === tag_slug);
 		if (!tag || tag.category !== 4) return; // Creator tags only
 
 		const current_roles = tag.creator_roles || [];
@@ -58,13 +33,12 @@
 		}
 	};
 
-	let new_tags: string[] = $state([]);
-	const submit_new_tags = async (e: SubmitEvent) => {
+	const submit_tags = async (e: SubmitEvent) => {
 		e.preventDefault();
-		await client.PUT('/api/work/tag_scores', {
+		await client.PUT('/api/work/set_tags', {
 			fetch,
 			params: { query: { work_id: +data.id } },
-			body: new_tags.map((t) => ({ tag_name: t, score: 1 }))
+			body: tags
 		});
 		goto(`/work/${data.id}`, { invalidateAll: true });
 	};
@@ -77,14 +51,6 @@
 		callSavingToast(p);
 		await p;
 	};
-
-	const remove_tag = async (tag_slug: string) => {
-		await client.PUT('/api/work/remove_tag', {
-			fetch,
-			params: { query: { work_id: data.id, tag_slug } }
-		});
-		tags = tags.filter((tag) => tag.slug !== tag_slug);
-	};
 </script>
 
 <Section
@@ -96,11 +62,10 @@
 			<tr
 				><th>{m.empty_legal_chicken_taste()}</th>
 				<th>{m.acidic_brave_halibut_heart()}</th>
-				<th>{m.broad_wide_lemming_hint()}</th>
-				<th>{m.even_alert_grebe_taste()}</th></tr
+				<th>{m.broad_wide_lemming_hint()}</th></tr
 			>
 		</thead><tbody>
-			{#each tags as tag, i (i)}
+			{#each data.tags as tag, i (i)}
 				<tr>
 					<td><WorkTag {tag} /></td>
 					<td
@@ -128,17 +93,15 @@
 							{m.simple_less_marlin_enchant()}
 						{/if}
 					</td>
-					<td>
-						<button class="px-2" onclick={() => remove_tag(tag.slug)}>X</button>
-					</td>
 				</tr>
 			{/each}
 		</tbody>
 	</table>
+</Section>
 
-	<h3>{m.patient_male_ox_praise()}</h3>
-	<form onsubmit={submit_new_tags}>
-		<div><TagsField type="work" class="w-full" bind:value={new_tags} /></div>
+<Section title={m.patient_male_ox_praise()}>
+	<form onsubmit={submit_tags}>
+		<div><TagsField type="work" class="w-full" bind:value={tags} /></div>
 		<input type="submit" />
 	</form>
 </Section>

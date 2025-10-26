@@ -16,17 +16,8 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
 		fetch
 	});
 
-	const { data: relations } = await client.GET('/api/work/relations', {
-		params: {
-			query: {
-				work_id: +params.work_id
-			}
-		},
-		fetch
-	});
 	return {
-		sources: data,
-		relations
+		sources: data
 	};
 };
 

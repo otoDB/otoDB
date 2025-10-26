@@ -1,8 +1,5 @@
 <script lang="ts">
 	let { suggestions, onclick, type } = $props();
-	$effect(() => {
-		console.log(suggestions);
-	});
 </script>
 
 {#each suggestions as t, i (i)}

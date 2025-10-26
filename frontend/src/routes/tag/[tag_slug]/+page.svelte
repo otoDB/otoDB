@@ -20,16 +20,11 @@
 	import client, { getTagDisplayName, makeTagDisplayName } from '$lib/api.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
-	import { SVGViewer } from 'svelte-svg-viewer';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import { SongRelationTypes } from '$lib/enums';
-	import mermaid from 'mermaid';
-	import elkLayouts from '@mermaid-js/layout-elk';
-	import { mermaid_BFS } from '$lib/ui.js';
-	import { onMount } from 'svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import type { components } from '$lib/schema.js';
+	import RelationViewer from '$lib/RelationViewer.svelte';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -65,42 +60,6 @@
 		data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink
 	);
 
-	// Song Relation
-	let songs = data.song_relations?.[1]?.map((o) => ({ visited: false, ...o }));
-	let deg = $state(2);
-	let direction = $state('LR');
-	let allowed_types = $state(new Array(SongRelationTypes.length).fill(true));
-
-	const get_svg_mermaid = (nodes, links) =>
-		mermaid.render(
-			'Relations',
-			`---
-config:
-  layout: elk
----
-flowchart ${direction}
-    style ${data.tag.song!.id} color:#f00
-${nodes
-	.map(
-		(w) => `${w.id}["${w.title.replaceAll('"', '#quot;')}"]
-    click ${w.id} "${`/tag/${w.work_tag}`}"`
-	)
-	.join('\n')}
-    ${links.map((r) => `${r.A_id} -->|${SongRelationTypes[r.relation]()}| ${r.B_id}`).join('\n')}`
-		);
-
-	let svg = $derived.by(() => {
-		if (!songs?.length) return;
-		const [nodes, links] = mermaid_BFS(
-			structuredClone(songs),
-			structuredClone(data.song_relations![0]),
-			data.tag.song!.id,
-			deg,
-			allowed_types
-		);
-		return get_svg_mermaid(nodes, links);
-	});
-
 	const paths = $derived.by(() => {
 		const get_paths = (node: string): components['schemas']['TagWorkSchema'][][] =>
 			Object.hasOwn(data.paths[1], node)
@@ -112,13 +71,6 @@ ${nodes
 					)
 				: [[data.paths[0].find((t) => t.slug === node) ?? data.tag]];
 		return get_paths(data.tag.slug);
-	});
-
-	onMount(() => {
-		if (songs) {
-			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'neutral' });
-			mermaid.registerLayoutLoaders(elkLayouts);
-		}
 	});
 </script>
 
@@ -270,41 +222,15 @@ ${nodes
 				{/each}
 			</ul>
 		{/if}
-		{#if songs?.length}
-			<label>
-				{m.just_grassy_mantis_slurp()}
-				<input type="number" bind:value={deg} min="1" />
-			</label>
-			<label>
-				{m.fair_aware_salmon_twist()}
-				<select bind:value={direction}
-					><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
-						>{m.stout_jumpy_ox_feel()}</option
-					></select
-				>
-			</label>
-			{#each SongRelationTypes as t, i (i)}
-				<label class="type-label"
-					><input
-						type="checkbox"
-						class="hidden"
-						bind:checked={allowed_types[i]}
-					/>{t()}</label
-				>
-			{/each}
-			{#await svg}
-				{m.sunny_light_duck_surge()}
-			{:then s}
-				<SVGViewer
-					maxScale={90}
-					height="200px"
-					width="100%"
-					svgClass="fill-transparent dark:fill-black"
-				>
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html s.svg}
-				</SVGViewer>
-			{/await}
+		{#if data.song_relations[0]?.length}
+			<RelationViewer
+				id={data.tag.song.id}
+				objects={data.song_relations[1]}
+				relations={data.song_relations[0]}
+				defaultDir="LR"
+				type="song"
+				min_height={80}
+			/>
 		{/if}
 	</Section>
 {/if}

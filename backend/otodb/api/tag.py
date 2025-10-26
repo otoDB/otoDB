@@ -36,7 +36,6 @@ from otodb.models.enums import (
 	TagWorkConnectionTypes,
 	MediaConnectionTypes,
 )
-from otodb.models.tag import transfer_data
 
 from .common import (
 	FatTagWorkSchema,
@@ -194,7 +193,7 @@ def set_base_tag(request: HttpRequest, tag_slug: str):
 	assert to is not None
 
 	to.tagworkinstance_set.update(work_tag=tag)
-	transfer_data(to, tag)
+	TagWork.transfer_data(to, tag)
 
 	to.aliases.update(aliased_to_id=tag.id)
 	to.aliased_to = tag

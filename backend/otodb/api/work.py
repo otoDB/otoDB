@@ -15,13 +15,11 @@ from django.db.models import (
 
 from simple_history.utils import update_change_reason
 
-from pydantic import AfterValidator
 from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import (
-	clean_incoming_tag_name,
 	clean_incoming_slug,
 	process_video_info,
 )
@@ -29,7 +27,6 @@ from otodb.models import (
 	MediaWork,
 	WorkRelation,
 	WorkSource,
-	TagWorkVote,
 	TagWorkInstance,
 	WorkSourceRejection,
 	TagWork,
@@ -57,6 +54,7 @@ from .common import (
 	user_is_editor,
 	RelationSchema,
 	post_relation,
+	SlimWorkSchema,
 )
 
 work_router = Router()
@@ -192,39 +190,20 @@ def delete_work(request: HttpRequest, work_id: int):
 	work.delete()
 
 
-class TagWorkVoteSchema(Schema):
-	tag_name: Annotated[str, AfterValidator(clean_incoming_tag_name)]
-	score: int
-
-
-@work_router.put('tag_scores', auth=django_auth)
+@work_router.put('set_tags', auth=django_auth)
 @user_is_trusted
-def vote_tags(request: HttpRequest, work_id: int, payload: List[TagWorkVoteSchema]):
+def set_tags(request: HttpRequest, work_id: int, payload: List[str]):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-
-	for vote in payload:
-		vote.score = max(-1, min(1, vote.score))  # zero trust
 
 	tags = []
 	for v in payload:
 		try:
-			tags.append(TagWork.objects.get(slug=clean_incoming_slug(v.tag_name)))
+			tags.append(TagWork.objects.get(slug=clean_incoming_slug(v)))
 		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=v.tag_name))
+			tags.append(TagWork.objects.create(name=v))
 
+	work.tags.remove(*work.tags.exclude(id__in=[t.id for t in tags]))
 	work.tags.add(*tags)
-
-	for vote in payload:
-		tag_instance = work.tagworkinstance_set.get(
-			work_tag__slug=clean_incoming_slug(vote.tag_name)
-		)
-		if v := tag_instance.tagworkvote_set.filter(user=request.user).first():
-			v.score = vote.score
-			v.save()
-		else:
-			TagWorkVote.objects.create(
-				tag_instance=tag_instance, user=request.user, score=vote.score
-			)
 
 	return 200
 
@@ -279,15 +258,6 @@ def random(request: HttpRequest, n: int = 1):
 @work_router.get('recent', response=list[ThinWorkSchema], exclude_none=True)
 def recent(request: HttpRequest, n: int = 1):
 	return MediaWork.active_objects.order_by('-id')[: min(n, 20)]
-
-
-class SlimWorkSchema(ModelSchema):
-	id: int
-	thumbnail: str | None = None  # Exposed as property
-
-	class Meta:
-		model = MediaWork
-		fields = ['title']
 
 
 @work_router.get(

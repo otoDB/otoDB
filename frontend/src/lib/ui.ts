@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import client from './api';
-import { Languages } from './enums';
+import { Languages, WorkRelationTypes } from './enums';
 import { setLocale } from './paraglide/runtime';
 import { applyAction, enhance } from '$app/forms';
 import { m } from './paraglide/messages';
@@ -40,40 +40,53 @@ export const clickOutside = (node: HTMLElement) => {
 export const isSVO = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'en' || lang === 'zh-cn';
 export const isSOV = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'ko' || lang === 'ja';
 
-export const mermaid_BFS = (ns, ls, start: number, distance: number, allowed_types: boolean[]) => {
+export const mermaid_BFS = (
+	ns,
+	ls,
+	start: number,
+	max_distance: number = Number.POSITIVE_INFINITY,
+	allowed_types: boolean[] = new Array(WorkRelationTypes.length).fill(true)
+) => {
 	const nodes = structuredClone(ns),
 		links = structuredClone(ls);
-	let queue = [start];
-	for (let i = 0; i <= distance; i++) {
+	let queue = [[start, 0]];
+	while (queue.length) {
 		const next_queue = [];
-		for (const n of queue) {
-			nodes.find((nn) => nn.id === n)!.visited = true;
+		for (const [n, curr_distance] of queue) {
+			const ng = nodes.find((nn) => nn.id === n)!;
+			if (curr_distance > max_distance || ng.distance !== undefined) continue;
+			ng.distance = curr_distance;
 			next_queue.push(
 				...[
 					...new Set(
 						links
 							.filter(
-								(v) =>
-									allowed_types[v.relation] &&
-									(v.A_id === n || v.B_id === n) &&
-									(!nodes.find((w) => w.id === v.A_id).visited ||
-										!nodes.find((w) => w.id === v.B_id).visited)
+								(v) => allowed_types[v.relation] && (v.A_id === n || v.B_id === n)
 							)
 							.flatMap((v) => [v.A_id, v.B_id])
 					)
-				]
+				].map((nn) => [nn, curr_distance + 1])
 			);
 		}
 		queue = next_queue;
 	}
 	return [
-		nodes.filter((v) => v.visited),
+		nodes.filter((v) => v.distance !== undefined),
 		links.filter(
 			(v) =>
 				allowed_types[v.relation] &&
-				nodes.find((w) => w.id === v.A_id).visited &&
-				nodes.find((w) => w.id === v.B_id).visited
-		)
+				nodes.find((w) => w.id === v.A_id).distance !== undefined &&
+				nodes.find((w) => w.id === v.B_id).distance !== undefined
+		),
+		[
+			...new Set(
+				links
+					.filter((v) => allowed_types[v.relation])
+					.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)))
+					.filter(([a, b]) => (a.distance === undefined) !== (b.distance === undefined))
+					.map(([a, b]) => (a.distance !== undefined ? a.id : b.id))
+			)
+		]
 	];
 };
 

@@ -4,10 +4,10 @@
 </script>
 
 <section
-	class="bg-otodb-bg-faint/75 border-otodb-content-faint relative mb-1 mb-4 border px-5 pt-3 pb-6"
+	class="bg-otodb-bg-faint/75 border-otodb-content-faint relative mb-4 border px-5 pt-3 pb-6"
 >
 	{#if menuLinks}
-		<menu class="absolute right-[-1px] bottom-full">
+		<menu class="absolute -right-px bottom-full">
 			<ul class="flex list-none gap-2">
 				{#each menuLinks as { pathname, title }, i (i)}
 					<li

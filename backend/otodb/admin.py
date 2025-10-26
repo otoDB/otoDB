@@ -13,7 +13,6 @@ from .models import (
 	WorkRelation,
 	SongRelation,
 	TagWorkInstance,
-	TagWorkVote,
 	Post,
 	PostContent,
 )
@@ -56,12 +55,8 @@ class TagWorkAdmin(admin.ModelAdmin):
 	list_filter = ['category', 'aliased_to']
 
 
-class TagWorkVoteInline(admin.TabularInline):
-	model = TagWorkVote
-
-
 class TagWorkInstanceAdmin(admin.ModelAdmin):
-	inlines = [TagWorkVoteInline]
+	inlines = []
 
 
 class MediaAdminForm(forms.ModelForm):

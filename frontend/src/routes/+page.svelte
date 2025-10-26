@@ -23,9 +23,12 @@
 <Section title={m.fine_late_chicken_quiz()}>
 	<p>{m.silly_main_reindeer_chop()}</p>
 	<ul>
-		<li>
-			<a href="/post/2">{m.noble_fine_iguana_pull()}</a>
-		</li>
+		<li><a href="/post/2">{m.noble_fine_iguana_pull()}</a></li>
+		<li><a href="/post/3">FAQ</a></li>
+		{#if data.user}
+		<li><a href="/post/4">{m.arable_direct_cougar_win()}</a></li>
+		<li><a href="/post/1">{m.bald_ideal_gadfly_jest()}</a></li>
+		{/if}
 	</ul>
 
 	<hr class="my-4" />

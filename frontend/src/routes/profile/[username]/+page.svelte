@@ -22,9 +22,7 @@
 	<p>
 		{m.sharp_witty_jackdaw_treat({
 			date: new Date(data.profile.date_created).toLocaleDateString()
-		})} ({version_end_dates.find(
-			(d, i, a) => i > 0 && Date.now() - a[i - 1][1] >= 0 && d[1] - Date.now() >= 0
-		)?.[0]})
+		})} ({version_end_dates.find((d, i, a) => d[1] - data.profile.date_created >= 0)?.[0]})
 	</p>
 
 	{#if data.connections}

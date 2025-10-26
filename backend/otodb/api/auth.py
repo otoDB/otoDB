@@ -186,7 +186,7 @@ def send_reset_password_token(request, email: str):
 		language = get_user_language(user, request)
 		send_mail(
 			PASSWORD_RESET_EMAIL[language][0],
-			PASSWORD_RESET_EMAIL[language][1],
+			PASSWORD_RESET_EMAIL[language][1](user.username, user.reset_token),
 			'noreply@otodb.net',
 			[user.email],
 			fail_silently=False,

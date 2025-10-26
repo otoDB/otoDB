@@ -2,7 +2,39 @@
 	import { WorkTagPresentationColours } from './enums';
 	import { makeTagDisplayName } from './api';
 
-	let { suggestions, selectedIndex, onclick, onhover, type, query = '' } = $props();
+	interface Props {
+		suggestions: any[];
+		onselect: (tag: any) => void;
+		onclose?: () => void;
+		type: 'work' | 'song';
+		query?: string;
+	}
+	let { suggestions, onselect, onclose, type, query = '' }: Props = $props();
+
+	let selectedIndex = $state(0);
+
+	// Reset selected index when suggestions change
+	$effect(() => {
+		suggestions;
+		selectedIndex = 0;
+	});
+
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (!suggestions.length) return;
+
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			selectedIndex = (selectedIndex + 1) % suggestions.length;
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			selectedIndex = selectedIndex <= 0 ? suggestions.length - 1 : selectedIndex - 1;
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			onselect(suggestions[selectedIndex]);
+		} else if (e.key === 'Escape') {
+			onclose?.();
+		}
+	};
 
 	const highlightMatch = (text: string, query: string) => {
 		const displayText = makeTagDisplayName(text);
@@ -24,6 +56,8 @@
 	};
 </script>
 
+<svelte:window onkeydown={handleKeyDown} />
+
 {#each suggestions as t, i (i)}
 	<li
 		class:bg-otodb-bg-fainter={selectedIndex === i}
@@ -32,11 +66,11 @@
 		<a
 			href="/tag/{t.aliased_to?.slug || t.slug}"
 			class="flex w-full cursor-pointer justify-between gap-10 px-2 py-1 no-underline"
-			onmouseenter={() => onhover(i)}
+			onmouseenter={() => (selectedIndex = i)}
 			onclick={(e) => {
 				if (e.button === 0) {
 					e.preventDefault();
-					onclick(t, e);
+					onselect(t);
 				}
 			}}
 		>

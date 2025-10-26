@@ -41,10 +41,11 @@
 		>
 			<TagSuggestionResults
 				{suggestions}
-				onclick={(t) => {
+				onselect={(t) => {
 					value = t.aliased_to ? t.aliased_to.slug : t.slug;
 					suggestions = [];
 				}}
+				onclose={() => (suggestions = [])}
 				{type}
 			/>
 		</ul>

@@ -56,7 +56,7 @@
 	};
 	const swap_relation = (i: number) => async () => {
 		relations[i].swapped = !relations[i].swapped;
-		await post_relation(i, false)();
+		await post_relation(i, true)();
 	};
 	let new_item = $state(null);
 	const add_new_item = async () => {
@@ -87,12 +87,7 @@
 			<a href="/tag/{relation.item.work_tag}">{relation.item.title}</a>
 		{/if}
 	{:else}
-		{m.stout_frail_warbler_support()}
-		{#if obj_type === 'work'}
-			{m.grand_merry_fly_succeed()}
-		{:else if obj_type === 'song'}
-			{m.grand_nice_pony_belong()}
-		{/if}
+		{m.stout_frail_warbler_support()}{m.great_clean_beaver_amuse()}{#if obj_type === 'work'}{m.grand_merry_fly_succeed()}{:else if obj_type === 'song'}{m.grand_nice_pony_belong()}{/if}
 	{/if}
 {/snippet}
 

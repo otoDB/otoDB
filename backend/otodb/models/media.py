@@ -57,25 +57,6 @@ class TagWorkInstance(models.Model):
 		self.creator_roles = role_value if role_value > 0 else None
 
 
-class TagWorkVote(models.Model):
-	user = models.ForeignKey(Account, blank=False, null=False, on_delete=models.CASCADE)
-	score = models.FloatField(null=False, blank=False)
-
-	tag_instance = models.ForeignKey(
-		TagWorkInstance, on_delete=models.CASCADE, null=True
-	)
-
-	class Meta:
-		unique_together = (('user', 'tag_instance'),)
-		constraints = [
-			models.CheckConstraint(
-				name='tagwork_vote_in_pn_1',
-				check=models.Q(score__gte=-1, score__lte=1),
-				violation_error_message='TagWork vote score must be in [-1, 1]',
-			),
-		]
-
-
 class MediaWork(models.Model):
 	if TYPE_CHECKING:
 		worksource_set: QuerySet['WorkSource']
@@ -196,8 +177,14 @@ class MediaWork(models.Model):
 		return self._thumbnail or thumbnail
 
 	@property
-	def has_relations(self):
-		return self.relation_A.exists() or self.relation_B.exists()
+	def relations(self):
+		rs = self.relation_A.all() | self.relation_B.all()
+		return rs, MediaWork.objects.filter(
+			id__in=[
+				*rs.values_list('A_id', flat=True),
+				*rs.values_list('B_id', flat=True),
+			]
+		).exclude(id=self.id)
 
 
 class MediaSong(models.Model):

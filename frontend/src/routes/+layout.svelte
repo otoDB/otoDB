@@ -30,22 +30,13 @@
 	});
 
 	let search_type = $state('work');
+
+	const theme = Themes[data.user?.prefs?.theme ?? +get_prefs()?.theme];
 </script>
 
 <a href="#content" class="absolute z-50 transform-[translateY(-100%)] focus:transform-none">
 	{m.round_extra_impala_fry()}
 </a>
-
-<Toaster
-	expand={true}
-	position="bottom-right"
-	toastOptions={{
-		unstyled: true,
-		classes: {
-			toast: 'bg-otodb-bg-faint text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
-		}
-	}}
-/>
 
 {#snippet link(pathname: string, title: string)}
 	<li>
@@ -58,11 +49,7 @@
 	</li>
 {/snippet}
 
-<div
-	class="text-otodb-content-primary overflow-auto {Themes[
-		data.user?.prefs?.theme ?? +get_prefs()?.theme
-	]}"
->
+<div class="text-otodb-content-primary overflow-auto {theme}">
 	<div class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
@@ -76,7 +63,16 @@
 			<div class="white place-self-center text-2xl">☰</div>
 		</button>
 	</div>
-
+	<Toaster
+		expand={true}
+		position="bottom-right"
+		toastOptions={{
+			unstyled: true,
+			classes: {
+				toast: 'bg-otodb-bg-faint text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
+			}
+		}}
+	/>
 	<header class="relative col-span-2 px-6 py-16 md:px-48">
 		<address class="font-mono text-2xl italic">
 			<a href="/" class="no-underline!">

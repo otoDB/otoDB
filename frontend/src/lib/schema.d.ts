@@ -194,7 +194,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/work/tag_scores": {
+    "/api/work/set_tags": {
         parameters: {
             query?: never;
             header?: never;
@@ -202,8 +202,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Vote Tags */
-        put: operations["otodb_api_work_vote_tags"];
+        /** Set Tags */
+        put: operations["otodb_api_work_set_tags"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1434,6 +1434,24 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** RelationSchema */
+        RelationSchema: {
+            /** A Id */
+            A_id: number;
+            /** B Id */
+            B_id: number;
+            /** Relation */
+            relation: number;
+        };
+        /** SlimWorkSchema */
+        SlimWorkSchema: {
+            /** Id */
+            id: number;
+            /** Thumbnail */
+            thumbnail?: string | null;
+            /** Title */
+            title: string;
+        };
         /** TagWorkInstanceSchema */
         TagWorkInstanceSchema: {
             /** Id */
@@ -1464,8 +1482,11 @@ export interface components {
             tags: components["schemas"]["TagWorkInstanceSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
-            /** Has Relations */
-            has_relations: boolean;
+            /** Relations */
+            relations: [
+                components["schemas"]["RelationSchema"][],
+                components["schemas"]["SlimWorkSchema"][]
+            ];
             /** Title */
             title: string;
             /** Description */
@@ -1492,13 +1513,6 @@ export interface components {
              */
             rating: number;
         };
-        /** TagWorkVoteSchema */
-        TagWorkVoteSchema: {
-            /** Tag Name */
-            tag_name: string;
-            /** Score */
-            score: number;
-        };
         /** CreatorRolesUpdateSchema */
         CreatorRolesUpdateSchema: {
             /** Work Id */
@@ -1507,24 +1521,6 @@ export interface components {
             tag_slug: string;
             /** Creator Roles */
             creator_roles: number[];
-        };
-        /** RelationSchema */
-        RelationSchema: {
-            /** A Id */
-            A_id: number;
-            /** B Id */
-            B_id: number;
-            /** Relation */
-            relation: number;
-        };
-        /** SlimWorkSchema */
-        SlimWorkSchema: {
-            /** Id */
-            id: number;
-            /** Thumbnail */
-            thumbnail?: string | null;
-            /** Title */
-            title: string;
         };
         /** ProfileSchema */
         ProfileSchema: {
@@ -1798,10 +1794,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /**
-             * Category
-             * @default 0
-             */
+            /** Category */
             category: number;
         };
         /** SongInSchema */
@@ -2403,7 +2396,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_vote_tags: {
+    otodb_api_work_set_tags: {
         parameters: {
             query: {
                 work_id: number;
@@ -2414,7 +2407,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TagWorkVoteSchema"][];
+                "application/json": string[];
             };
         };
         responses: {

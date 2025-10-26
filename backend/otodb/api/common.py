@@ -157,11 +157,26 @@ class TagWorkInstanceSchema(TagWorkInstanceThinSchema):
 	primary_path: list[TagWorkSchema]
 
 
+class RelationSchema(Schema):
+	A_id: int
+	B_id: int
+	relation: int
+
+
+class SlimWorkSchema(ModelSchema):
+	id: int
+	thumbnail: str | None = None  # Exposed as property
+
+	class Meta:
+		model = MediaWork
+		fields = ['title']
+
+
 class WorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
-	has_relations: bool
+	relations: tuple[list[RelationSchema], list[SlimWorkSchema]]
 
 	class Meta:
 		model = MediaWork
@@ -220,12 +235,6 @@ user_is_trusted = perm_decorator_ctor(
 )
 user_is_editor = perm_decorator_ctor(lambda user: user.is_editor)
 user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
-
-
-class RelationSchema(Schema):
-	A_id: int
-	B_id: int
-	relation: int
 
 
 def post_relation(cls, payload: RelationSchema):

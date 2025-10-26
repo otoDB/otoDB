@@ -74,7 +74,7 @@
 	"kind_brief_earthworm_dash": "返信",
 	"inner_solid_toad_zap": "投稿する",
 	"left_watery_jellyfish_grip": "この作品には関連作品がありません。",
-	"patient_male_ox_praise": "タグを追加する...",
+	"patient_male_ox_praise": "タグを追加または削除する",
 	"sunny_deft_puffin_scoop": "あなたのスコア",
 	"wide_just_gull_glow": "更新理由",
 	"tame_dirty_goldfish_flow": "このタグにはまだウィキページがありません。",
@@ -185,5 +185,6 @@
 	"maroon_close_gorilla_bake": "ゲーム",
 	"just_salty_anaconda_nourish": "フォーラム",
 	"heavy_orange_okapi_intend": "無効化",
-	"sad_lazy_goat_engage": "このタグは無効化されました。作品の下には表示されません。"
+	"sad_lazy_goat_engage": "このタグは無効化されました。作品の下には表示されません。",
+	"great_clean_beaver_amuse": ""
 }

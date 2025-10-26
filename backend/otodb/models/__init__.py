@@ -1,4 +1,4 @@
-from .media import MediaWork, TagWorkInstance, TagWorkVote, MediaSong
+from .media import MediaWork, TagWorkInstance, MediaSong
 from .pool import Pool, PoolItem, PoolUpstream
 from .tag import TagWork, TagSong, WikiPage, TagWorkLangPreference, TagWorkParenthood
 from .work_source import WorkSource, WorkSourceRejection
@@ -17,7 +17,6 @@ from .request import BulkRequest, UserRequest
 __all__ = [
 	'MediaWork',
 	'TagWorkInstance',
-	'TagWorkVote',
 	'MediaSong',
 	'Pool',
 	'PoolItem',

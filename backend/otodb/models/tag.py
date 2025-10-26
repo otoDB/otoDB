@@ -306,9 +306,7 @@ class TagWork(OtodbTagModel):
 				tp.parent = to_tag
 				tp.save()
 		for tp in TagWorkParenthood.objects.filter(tag=from_tag):
-			if TagWorkParenthood.objects.filter(
-				parent=tp.parent, tag=to_tag
-			).exists():
+			if TagWorkParenthood.objects.filter(parent=tp.parent, tag=to_tag).exists():
 				tp.delete()
 			elif not to_tag.get_descendants().filter(id=tp.tag.id).exists():
 				tp.tag = to_tag

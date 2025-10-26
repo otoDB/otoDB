@@ -233,7 +233,7 @@ def update(
 	payload: WorkTagInSchema,
 	song_payload: SongInSchema | None = None,
 ):
-	tag = get_object_or_404(TagWork.objects.select_for_update(), slug=tag_slug)
+	tag = get_object_or_404(TagWork.objects.select_for_update(of=('self',)), slug=tag_slug)
 	if (
 		tag.category == WorkTagCategory.SONG
 		and payload.category != WorkTagCategory.SONG
@@ -704,7 +704,7 @@ def song_tag_details(request: HttpRequest, tag_slug: str):
 @user_is_trusted
 @transaction.atomic
 def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchema):
-	tag = get_object_or_404(TagSong.objects.select_for_update(), slug=tag_slug)
+	tag = get_object_or_404(TagSong.objects.select_for_update(of=('self',)), slug=tag_slug)
 	tag.category = payload.category
 	if payload.parent_slug:
 		parent = get_object_or_404(TagSong, slug=payload.parent_slug)

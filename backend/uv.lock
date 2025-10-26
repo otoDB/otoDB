@@ -214,19 +214,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-debug-toolbar"
-version = "6.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "sqlparse" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c5/d5/5fc90234532088aeec5faa48d5b09951cc7eab6626030ed427d3bd8cd9bc/django_debug_toolbar-6.0.0.tar.gz", hash = "sha256:6eb9fa6f4a5884bf04004700ffb5a44043f1fff38784447fc52c1633448c8c14", size = 305331, upload-time = "2025-07-25T13:11:48.68Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/b5/4724a8c18fcc5b09dca7b7a0e70c34208317bb110075ad12484d6588ae91/django_debug_toolbar-6.0.0-py3-none-any.whl", hash = "sha256:0cf2cac5c307b77d6e143c914e5c6592df53ffe34642d93929e5ef095ae56841", size = 266967, upload-time = "2025-07-25T13:11:47.265Z" },
-]
-
-[[package]]
 name = "django-markdownfield"
 version = "0.11.0"
 source = { registry = "https://pypi.org/simple" }
@@ -239,18 +226,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/3d/ee/7244016bef5911fa10aa983af9237c2e6e546ba76561ad57a3c5a95a9aff/django_markdownfield-0.11.0.tar.gz", hash = "sha256:6f1636b21226b658a18a9bc3d5284a8708447fe3d772b933c65fec9f28d119b9", size = 779982, upload-time = "2023-08-27T04:00:44.33Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e6/36/d7a13624668f3ae5a9abb9b253ad14b775f1140f4055b1b5870a582de15b/django_markdownfield-0.11.0-py3-none-any.whl", hash = "sha256:fc9d60b4dbb846954ec05832c28400f138303e02d309316a105b9e1b9182183d", size = 745902, upload-time = "2023-08-27T04:00:36.758Z" },
-]
-
-[[package]]
-name = "django-model-utils"
-version = "5.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/81/60/5e232c32a2c977cc1af8c70a38ef436598bc649ad89c2c4568454edde2c9/django_model_utils-5.0.0.tar.gz", hash = "sha256:041cdd6230d2fbf6cd943e1969318bce762272077f4ecd333ab2263924b4e5eb", size = 80559, upload-time = "2024-09-04T11:35:22.858Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/13/87a42048700c54bfce35900a34e2031245132775fb24363fc0e33664aa9c/django_model_utils-5.0.0-py3-none-any.whl", hash = "sha256:fec78e6c323d565a221f7c4edc703f4567d7bb1caeafe1acd16a80c5ff82056b", size = 42630, upload-time = "2024-09-04T11:36:23.166Z" },
 ]
 
 [[package]]
@@ -273,6 +248,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/15/79/c320791f4f811045a77404d5a73e08e1d94767661dafd25324779e4f95d7/django-ordered-model-3.7.4.tar.gz", hash = "sha256:f258b9762525c00a53009e82f8b8bf2a3aa315e8b453e281e8fdbbfe2b8cb3ba", size = 203491, upload-time = "2023-03-17T15:53:40.529Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e8/cb/109ea0483080c0bec559c64c28959f9ff4d85b4ebc53b2726dbb6bc3fc59/django_ordered_model-3.7.4-py3-none-any.whl", hash = "sha256:dfcd3183fe0749dad1c9971cba1d6240ce7328742a30ddc92feca41107bb241d", size = 20532, upload-time = "2023-03-17T15:53:38.689Z" },
+]
+
+[[package]]
+name = "django-silk"
+version = "5.4.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "gprof2dot" },
+    { name = "sqlparse" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c5/13/ef9344e4ed6ab6ed0f15d7743e9509545e95f3336ac9bbef4b39aefbabeb/django_silk-5.4.3.tar.gz", hash = "sha256:bedb17c8fd9c029a7746cb947864f5c9ea943ae33d6a9581e60f67c45e4490ad", size = 4495552, upload-time = "2025-09-09T07:13:30.229Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/97/bc1f1d0f922144a3807ad15531b93ba474c7538d6f006e98bf8ab77a2f82/django_silk-5.4.3-py3-none-any.whl", hash = "sha256:f7920ae91a34716654296140b2cbf449e9798237a0c6eb7cf2cd79c2cfb39321", size = 1944434, upload-time = "2025-09-09T07:13:50.846Z" },
 ]
 
 [[package]]
@@ -331,6 +320,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/53/e4/203a76fa2ef46cdb0a618295cc115220cbb874229d4d8721068335eb87f0/furl-2.1.4.tar.gz", hash = "sha256:877657501266c929269739fb5f5980534a41abd6bbabcb367c136d1d3b2a6015", size = 57526, upload-time = "2025-03-09T05:36:21.175Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/61/8c/dce3b1b7593858eba995b2dfdb833f872c7f863e3da92aab7128a6b11af4/furl-2.1.4-py2.py3-none-any.whl", hash = "sha256:da34d0b34e53ffe2d2e6851a7085a05d96922b5b578620a37377ff1dbeeb11c8", size = 27550, upload-time = "2025-03-09T05:36:19.928Z" },
+]
+
+[[package]]
+name = "gprof2dot"
+version = "2025.4.14"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/fd/cad13fa1f7a463a607176432c4affa33ea162f02f58cc36de1d40d3e6b48/gprof2dot-2025.4.14.tar.gz", hash = "sha256:35743e2d2ca027bf48fa7cba37021aaf4a27beeae1ae8e05a50b55f1f921a6ce", size = 39536, upload-time = "2025-04-14T07:21:45.76Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/71/ed/89d760cb25279109b89eb52975a7b5479700d3114a2421ce735bfb2e7513/gprof2dot-2025.4.14-py3-none-any.whl", hash = "sha256:0742e4c0b4409a5e8777e739388a11e1ed3750be86895655312ea7c20bd0090e", size = 37555, upload-time = "2025-04-14T07:21:43.319Z" },
 ]
 
 [[package]]
@@ -463,9 +461,7 @@ dependencies = [
     { name = "django-comments-xtd" },
     { name = "django-cors-headers" },
     { name = "django-cte" },
-    { name = "django-debug-toolbar" },
     { name = "django-markdownfield" },
-    { name = "django-model-utils" },
     { name = "django-ninja" },
     { name = "django-ordered-model" },
     { name = "django-simple-history" },
@@ -480,6 +476,11 @@ dependencies = [
     { name = "yt-dlp" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "django-silk" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.40.30" },
@@ -488,9 +489,7 @@ requires-dist = [
     { name = "django-comments-xtd", specifier = ">=2.10.1" },
     { name = "django-cors-headers", specifier = ">=4.6.0" },
     { name = "django-cte", specifier = ">=2.0.0" },
-    { name = "django-debug-toolbar", specifier = ">=5.0.1" },
     { name = "django-markdownfield", specifier = ">=0.11.0" },
-    { name = "django-model-utils", specifier = ">=5.0.0" },
     { name = "django-ninja", specifier = ">=1.3.0" },
     { name = "django-ordered-model", specifier = ">=3.7.4" },
     { name = "django-simple-history", specifier = ">=3.7.0" },
@@ -504,6 +503,9 @@ requires-dist = [
     { name = "requests", specifier = ">=2.32.3" },
     { name = "yt-dlp", specifier = ">=2025.9.23" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "django-silk", specifier = ">=5.4.3" }]
 
 [[package]]
 name = "psycopg"

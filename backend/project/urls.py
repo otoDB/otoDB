@@ -29,8 +29,8 @@ urlpatterns = [
 	re_path(r'^', include('otodb.urls')),
 ]
 
-if settings.DEBUG_TOOLBAR:
-	urlpatterns.append(path('__debug__/', include('debug_toolbar.urls')))
+if settings.DEBUG:
+	urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 
 if not settings.OTODB_CDN_ENABLED:
 	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

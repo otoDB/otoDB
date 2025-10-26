@@ -91,7 +91,7 @@ def submissions(
 	order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id',
 ):
 	user = get_object_or_404(Account, username__iexact=username)
-	submissions = user.worksource_set.all()
+	submissions = user.worksource_set.all().select_related('rejection', 'media')
 	submissions = filters.filter(submissions)
 	submissions = submissions.order_by(order)
 	return submissions

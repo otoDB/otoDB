@@ -20,9 +20,6 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = os.environ.get('OTODB_DEBUG', 'False').lower() == 'true'
-DEBUG_TOOLBAR = (
-	DEBUG and os.environ.get('OTODB_DEBUG_TOOLBAR', 'True').lower() != 'false'
-)
 
 if not DEBUG and 'OTODB_SECRET_KEY' not in os.environ:
 	print('No secret key provided (OTODB_SECRET_KEY) -- exiting')
@@ -71,9 +68,6 @@ INSTALLED_APPS = [
 	'corsheaders',
 ]
 
-if DEBUG_TOOLBAR:
-	INSTALLED_APPS = ['debug_toolbar'] + INSTALLED_APPS
-
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
@@ -87,8 +81,9 @@ MIDDLEWARE = [
 	'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
-if DEBUG_TOOLBAR:
-	MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
+if DEBUG:
+	INSTALLED_APPS.append('silk')
+	MIDDLEWARE.append('silk.middleware.SilkyMiddleware')
 
 ROOT_URLCONF = 'project.urls'
 

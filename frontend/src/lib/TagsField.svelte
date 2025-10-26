@@ -16,6 +16,8 @@
 
 	let textarea: HTMLTextAreaElement;
 	let suggestions = $state<any[]>([]);
+	let selectedIndex = $state(0);
+	let lastQuery = $state('');
 
 	const getWordAtPos = (str: string, pos: number) => {
 		let start = [...str.slice(0, pos)].reverse().join('').search(/\s/g);
@@ -34,13 +36,18 @@
 		const query = getWordAtPos(textarea.value, textarea.selectionStart).word;
 		if (query === '') {
 			suggestions = [];
+			selectedIndex = 0;
+			lastQuery = '';
 			return;
 		}
+		if (query === lastQuery) return;
+		lastQuery = query;
 		const { data } = await client.GET(endpoint, {
 			params: { query: { query, limit: 10, resolve_aliases: false } }
 		});
 		if (!data) return;
 		suggestions = data.items;
+		selectedIndex = 0;
 	});
 
 	const updateValue = () => {
@@ -54,6 +61,36 @@
 		];
 	};
 
+	const selectTag = (tag: any) => {
+		textarea.value = replaceWordAtPos(
+			textarea.value,
+			textarea.selectionStart,
+			tag.aliased_to ? tag.aliased_to.slug : tag.slug + ' '
+		);
+		suggestions = [];
+		selectedIndex = 0;
+		updateValue();
+		textarea.focus();
+	};
+
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (!suggestions.length) return;
+
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			selectedIndex = (selectedIndex + 1) % suggestions.length;
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			selectedIndex = selectedIndex <= 0 ? suggestions.length - 1 : selectedIndex - 1;
+		} else if (e.key === 'Enter' && suggestions.length > 0) {
+			e.preventDefault();
+			selectTag(suggestions[selectedIndex]);
+		} else if (e.key === 'Escape') {
+			suggestions = [];
+			selectedIndex = 0;
+		}
+	};
+
 	onMount(() => {
 		if (value) {
 			textarea.value = value.join(' ');
@@ -63,6 +100,7 @@
 
 <span role="none">
 	<textarea
+		onkeydown={handleKeyDown}
 		onkeyup={() => {
 			updateValue();
 			search();
@@ -78,20 +116,16 @@
 			use:clickOutside
 			onOutclick={() => {
 				suggestions = [];
+				selectedIndex = 0;
 			}}
 		>
 			<TagSuggestionResults
 				{suggestions}
-				onclick={(t) => {
-					textarea.value = replaceWordAtPos(
-						textarea.value,
-						textarea.selectionStart,
-						t.aliased_to ? t.aliased_to.slug : t.slug + ' '
-					);
-					suggestions = [];
-					updateValue();
-				}}
+				{selectedIndex}
+				onclick={(t) => selectTag(t)}
+				onhover={(index) => (selectedIndex = index)}
 				{type}
+				query={lastQuery}
 			/>
 		</ul>
 	{/if}

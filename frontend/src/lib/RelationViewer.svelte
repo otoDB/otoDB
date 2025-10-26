@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages.js';
 	import { SongRelationTypes, WorkRelationTypes } from '$lib/enums.js';
-	import { mermaid_BFS } from '$lib/ui.js';
 	import mermaid from 'mermaid';
 	import elkLayouts from '@mermaid-js/layout-elk';
 	import { onMount } from 'svelte';
@@ -48,7 +47,7 @@ flowchart ${direction}
 		.map(
 			(a) => `${a}MORE["${m.fresh_deft_warbler_edit()}"]
 	class ${a}MORE moreNodes;
-	${a}MORE -.- ${a}`
+	${a > 0 ? `${a}MORE -.- ${a}` : `${-a} -.- ${a}MORE`}`
 		)
 		.join('\n')}`
 					: `
@@ -60,6 +59,59 @@ flowchart ${direction}
 		.join('\n')}
     ${links.map((r) => `${r.A_id} -->|${RelationTypes[r.relation]()}| ${r.B_id}`).join('\n')}`)
 		);
+
+	export const mermaid_BFS = (
+		ns,
+		ls,
+		start: number,
+		max_distance: number = Number.POSITIVE_INFINITY,
+		allowed_types: boolean[] = new Array(WorkRelationTypes.length).fill(true)
+	) => {
+		const nodes = structuredClone(ns),
+			links = structuredClone(ls);
+		let queue = [[start, 0]];
+		while (queue.length) {
+			const next_queue = [];
+			for (const [n, curr_distance] of queue) {
+				const ng = nodes.find((nn) => nn.id === n)!;
+				if (curr_distance > max_distance || ng.distance !== undefined) continue;
+				ng.distance = curr_distance;
+				next_queue.push(
+					...[
+						...new Set(
+							links
+								.filter(
+									(v) =>
+										allowed_types[v.relation] && (v.A_id === n || v.B_id === n)
+								)
+								.flatMap((v) => [v.A_id, v.B_id])
+						)
+					].map((nn) => [nn, curr_distance + 1])
+				);
+			}
+			queue = next_queue;
+		}
+		return [
+			nodes.filter((v) => v.distance !== undefined),
+			links.filter(
+				(v) =>
+					allowed_types[v.relation] &&
+					nodes.find((w) => w.id === v.A_id).distance !== undefined &&
+					nodes.find((w) => w.id === v.B_id).distance !== undefined
+			),
+			[
+				...new Set(
+					links
+						.filter((v) => allowed_types[v.relation])
+						.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)))
+						.filter(
+							([a, b]) => (a.distance === undefined) !== (b.distance === undefined)
+						)
+						.map(([a, b]) => (a.distance !== undefined ? a.id : -b.id))
+				)
+			]
+		];
+	};
 
 	const max_distance = Math.max(...mermaid_BFS(objects, relations, id)[0].map((n) => n.distance));
 

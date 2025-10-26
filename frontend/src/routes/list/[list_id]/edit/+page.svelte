@@ -156,7 +156,7 @@
 							><textarea
 								class="min-h-30 w-full"
 								value={entry.description}
-								oninput={debounce(update_description)}
+								oninput={debounce(update_description, 1000)}
 							></textarea></td
 						><td
 							><button type="button" onclick={delete_item}

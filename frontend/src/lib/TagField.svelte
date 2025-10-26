@@ -53,6 +53,6 @@
 
 <style>
 	ul {
-		background-color: var(--otodb-color-bg-primary);
+		background-color: var(--otodb-color-bg-faint);
 	}
 </style>

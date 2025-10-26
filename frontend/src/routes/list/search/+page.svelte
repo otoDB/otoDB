@@ -2,17 +2,10 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import client from '$lib/api';
-	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import Pager from '$lib/Pager.svelte';
+	import { page } from '$app/state';
 
 	let { data }: PageProps = $props();
-	let results = $derived(data.results!.items);
-
-	const fetchNextBatch = () =>
-		client.GET('/api/list/search', {
-			fetch,
-			params: { query: { query: data.query, limit: data.batch_size, offset: results.length } }
-		});
 </script>
 
 <svelte:head>
@@ -53,7 +46,7 @@
 				<th>{m.crisp_red_canary_tickle()}</th>
 			</tr>
 		</thead><tbody>
-			{#each results as list, i (i)}
+			{#each data.results?.items as list, i (i)}
 				<tr>
 					<td><a href="/list/{list.id}">#{list.id} - {list.name}</a></td>
 					<td><a href="/profile/{list.author.username}">{list.author.username}</a></td>
@@ -61,5 +54,12 @@
 			{/each}
 		</tbody>
 	</table>
-	<LoadMoreButton bind:results maxCount={data.results!.count} {fetchNextBatch} />
+	{#if data.results?.count}
+		<Pager
+			n_count={data.results.count}
+			page={data.page}
+			page_size={data.batch_size}
+			base_url={page.url}
+		/>
+	{/if}
 </Section>

@@ -4,25 +4,10 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import TagsField from '$lib/TagsField.svelte';
-	import client from '$lib/api';
-	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import Pager from '$lib/Pager.svelte';
+	import { page } from '$app/state';
 
 	let { data }: PageProps = $props();
-	let results = $derived(data.results!.items);
-
-	const fetchNextBatch = () =>
-		client.GET('/api/work/search', {
-			fetch,
-			params: {
-				query: {
-					query: data.query,
-					tags: data.query_tags,
-					limit: data.batch_size,
-					offset: results.length,
-					order: data.order ? (data.dir === '-' ? '-' : '') + data.order : null
-				}
-			}
-		});
 </script>
 
 <svelte:head>
@@ -70,11 +55,18 @@
 	</form>
 	<hr />
 	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
-		{#each results as work, i (i)}
+		{#each data.results?.items as work, i (i)}
 			<WorkCard {work} />
 		{/each}
 	</div>
-	<LoadMoreButton maxCount={data.results!.count} bind:results {fetchNextBatch} />
+	{#if data.results?.count}
+		<Pager
+			n_count={data.results.count}
+			page={data.page}
+			page_size={data.batch_size}
+			base_url={page.url}
+		/>
+	{/if}
 </Section>
 
 <style>

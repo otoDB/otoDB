@@ -16,7 +16,6 @@
 
 	let textarea: HTMLTextAreaElement;
 	let suggestions = $state<any[]>([]);
-	let selectedIndex = $state(0);
 	let lastQuery = $state('');
 
 	const getWordAtPos = (str: string, pos: number) => {
@@ -36,7 +35,6 @@
 		const query = getWordAtPos(textarea.value, textarea.selectionStart).word;
 		if (query === '') {
 			suggestions = [];
-			selectedIndex = 0;
 			lastQuery = '';
 			return;
 		}
@@ -47,7 +45,6 @@
 		});
 		if (!data) return;
 		suggestions = data.items;
-		selectedIndex = 0;
 	});
 
 	const updateValue = () => {
@@ -68,27 +65,8 @@
 			tag.aliased_to ? tag.aliased_to.slug : tag.slug + ' '
 		);
 		suggestions = [];
-		selectedIndex = 0;
 		updateValue();
 		textarea.focus();
-	};
-
-	const handleKeyDown = (e: KeyboardEvent) => {
-		if (!suggestions.length) return;
-
-		if (e.key === 'ArrowDown') {
-			e.preventDefault();
-			selectedIndex = (selectedIndex + 1) % suggestions.length;
-		} else if (e.key === 'ArrowUp') {
-			e.preventDefault();
-			selectedIndex = selectedIndex <= 0 ? suggestions.length - 1 : selectedIndex - 1;
-		} else if (e.key === 'Enter' && suggestions.length > 0) {
-			e.preventDefault();
-			selectTag(suggestions[selectedIndex]);
-		} else if (e.key === 'Escape') {
-			suggestions = [];
-			selectedIndex = 0;
-		}
 	};
 
 	onMount(() => {
@@ -100,7 +78,6 @@
 
 <span role="none">
 	<textarea
-		onkeydown={handleKeyDown}
 		onkeyup={() => {
 			updateValue();
 			search();
@@ -116,14 +93,12 @@
 			use:clickOutside
 			onOutclick={() => {
 				suggestions = [];
-				selectedIndex = 0;
 			}}
 		>
 			<TagSuggestionResults
 				{suggestions}
-				{selectedIndex}
-				onclick={(t) => selectTag(t)}
-				onhover={(index) => (selectedIndex = index)}
+				onselect={selectTag}
+				onclose={() => (suggestions = [])}
 				{type}
 				query={lastQuery}
 			/>

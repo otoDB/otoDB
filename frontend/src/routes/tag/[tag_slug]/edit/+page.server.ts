@@ -60,6 +60,7 @@ export const actions = {
 	edit: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 		const category = data.get('category') as string,
+			primary = data.get('primary') as string,
 			parent_slugs = (data.get('parents') as string).split(/\s+/).filter((s) => s.length),
 			deprecated = !!data.get('deprecated');
 
@@ -92,13 +93,14 @@ export const actions = {
 					parent_slugs,
 					category: +category,
 					deprecated,
-					media_type
+					media_type,
+					primary: +primary === -1 ? null : +primary
 				},
 				song_payload: song
 			}
 		});
 
-		if (error) return fail(400, { category, parent_slugs, deprecated, failed: true });
+		if (error) return fail(400, { category, parent_slugs, deprecated, failed: true, primary });
 
 		redirect(303, `/tag/${params.tag_slug}`);
 	},

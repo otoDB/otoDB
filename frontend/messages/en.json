@@ -166,7 +166,7 @@
 	"flat_small_kitten_race": "Settings",
 	"orange_born_seal_ascend": "User Settings",
 	"acidic_sound_opossum_bump": "Theme",
-	"grassy_noble_walrus_wish": "None",
+	"grassy_noble_walrus_wish": "Default",
 	"next_ago_opossum_swim": "Aniki",
 	"noble_fine_iguana_pull": "About",
 	"big_long_squirrel_kiss": "Recently added works",
@@ -215,7 +215,7 @@
 	"known_green_jackal_jolt": "Music",
 	"heavy_blue_parrot_mend": "Special Thanks",
 	"sea_new_barbel_rest": "Anime",
-	"every_vivid_dolphin_dash": "TV/Web Show",
+	"every_vivid_dolphin_dash": "TV/Web Series",
 	"drab_gaudy_fly_relish": "Film",
 	"maroon_close_gorilla_bake": "Video Game",
 	"even_such_wallaby_fond": "Set as base",
@@ -242,5 +242,6 @@
 	"safe_gray_cowfish_dart": "Original Collab",
 	"free_mellow_tiger_cook": "Prequel",
 	"lazy_awful_gopher_build": "Sampled by",
-	"simple_fair_mallard_roar": "Referenced by"
+	"simple_fair_mallard_roar": "Referenced by",
+	"alive_light_eagle_stop": "Primary parent"
 }

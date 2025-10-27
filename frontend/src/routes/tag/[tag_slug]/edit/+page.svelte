@@ -29,6 +29,12 @@
 	let { data, form }: PageProps = $props();
 
 	let parents = $state(form?.parent_slugs ?? data.parents?.map((t) => t.slug) ?? []);
+	let primary = $state(
+		form?.primary ??
+			(data.details?.primary_parent
+				? (parents.indexOf(data.details?.primary_parent) ?? -1)
+				: -1)
+	);
 
 	let category = $state(form?.category ?? data.tag?.category);
 	let wikiView = $state(getLocale());
@@ -140,6 +146,16 @@
 					<td>
 						<TagsField type="work" bind:value={parents} name="parents" />
 					</td>
+				</tr>
+				<tr>
+					<th><label for="primary">{m.alive_light_eagle_stop()}</label></th>
+					<td
+						><select name="primary" bind:value={primary}
+							><option value={-1}>None</option>{#each parents as p, i (i)}<option
+									value={i}>{p}</option
+								>{p}{/each}</select
+						></td
+					>
 				</tr>
 				<tr>
 					<th><label for="deprecated">{m.heavy_orange_okapi_intend()}</label></th>

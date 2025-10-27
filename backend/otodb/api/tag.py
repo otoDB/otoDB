@@ -211,6 +211,7 @@ class WorkTagInSchema(Schema):
 	deprecated: bool
 	parent_slugs: list[str]
 	media_type: list[int] | None = None
+	primary: int | None
 
 
 class SongTagInSchema(Schema):
@@ -280,6 +281,7 @@ def update(
 		get_object_or_404(TagWork, slug=s, aliased_to__isnull=True)
 		for s in [clean_incoming_slug(p) for p in payload.parent_slugs]
 	]
+	assert payload.primary is None or 0 <= payload.primary < len(ps)
 	tag.childhood.exclude(parent__in=ps).delete()
 	desc = tag.get_descendants()
 	for p in ps:
@@ -291,7 +293,11 @@ def update(
 	if ps:
 		tag.childhood.update(
 			primary=Case(
-				When(parent=ps[0], then=Value(True)),
+				*(
+					[When(parent=ps[payload.primary], then=Value(True))]
+					if payload.primary is not None
+					else []
+				),
 				default=Value(False),
 			)
 		)

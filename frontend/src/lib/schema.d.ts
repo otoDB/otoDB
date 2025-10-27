@@ -1821,6 +1821,8 @@ export interface components {
             parent_slugs: string[];
             /** Media Type */
             media_type?: number[] | null;
+            /** Primary */
+            primary: number | null;
         };
         /** TagWorkDetailsSchema */
         TagWorkDetailsSchema: {

@@ -55,7 +55,7 @@
 		<!-- Hamburger button -->
 		<button
 			class={[
-				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-[3] h-[64px] w-[64px]',
+				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-[3] h-12 w-12',
 				{ invisible: isMobileNavOpen }
 			]}
 			onclick={toggleMobileNav}
@@ -90,7 +90,7 @@
 		>
 			<nav
 				class={[
-					'bg-otodb-bg-faint/90 fixed top-0 left-0 z-2 m-0 flex h-full flex-col gap-y-2 overflow-y-auto p-8 md:visible md:relative md:w-min md:min-w-64 md:bg-transparent md:p-0 md:after:content-none',
+					'bg-otodb-bg-faint/90 fixed top-0 left-0 z-2 m-0 flex h-full flex-col gap-y-2 overflow-y-auto max-w-[85vw] p-8 md:visible md:relative md:w-min md:min-w-64 md:bg-transparent md:p-0 md:after:content-none',
 					{
 						invisible: !isMobileNavOpen
 					}
@@ -241,7 +241,7 @@
 				</div>
 			</nav>
 		</div>
-		<div class="flex-grow">
+		<div class="grow">
 			<main id="content">
 				{@render children()}
 			</main>

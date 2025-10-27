@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getTagDisplayName } from './api';
-	import { WorkTagCategoriesSettableAsSource, WorkTagPresentationColours } from './enums';
+	import { Role, WorkTagCategoriesSettableAsSource, WorkTagPresentationColours } from './enums';
 	import type { components } from './schema';
 
 	interface Props {
@@ -23,7 +23,13 @@
 		]}
 		style="border-color: {WorkTagPresentationColours[sample_override ? 3 : t.category]};"
 		>{getTagDisplayName(t)}</a
-	>
+	>{#if t.category === 4 && t.creator_roles?.length}<address
+			class="text-otodb-content-fainter inline px-1 text-xs"
+		>
+			{#each t.creator_roles as role, i (i)}{Role[
+					role
+				]()}{#if i < t.creator_roles.length - 1},&nbsp{/if}{/each}
+		</address>{/if}
 {/snippet}
 
 {#snippet recur(this_snippet, tree)}

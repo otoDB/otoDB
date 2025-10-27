@@ -46,6 +46,20 @@ export const WorkRelationTypes = [
 	m.icy_raw_gazelle_heal
 ];
 
+export const WorkRelationDisplayForward = [
+	m.free_mellow_tiger_cook,
+	m.dizzy_true_florian_pop,
+	m.safe_gray_cowfish_dart,
+	m.icy_raw_gazelle_heal
+];
+
+export const WorkRelationDisplayBackward = [
+	m.spry_muddy_sloth_radiate,
+	m.simple_fair_mallard_roar,
+	m.full_gaudy_sloth_value,
+	m.lazy_awful_gopher_build
+];
+
 export const SongRelationTypes = [
 	m.antsy_north_reindeer_radiate,
 	m.bold_polite_myna_delight,

@@ -90,7 +90,7 @@
 		>
 			<nav
 				class={[
-					'bg-otodb-bg-faint/90 fixed top-0 left-0 z-2 m-0 flex h-full flex-col gap-y-2 overflow-y-auto max-w-[85vw] p-8 md:visible md:relative md:w-min md:min-w-64 md:bg-transparent md:p-0 md:after:content-none',
+					'bg-otodb-bg-faint/90 fixed top-0 left-0 z-2 m-0 flex h-full max-w-[85vw] flex-col gap-y-2 overflow-y-auto p-8 md:visible md:relative md:w-min md:min-w-64 md:bg-transparent md:p-0 md:after:content-none',
 					{
 						invisible: !isMobileNavOpen
 					}

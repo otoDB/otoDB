@@ -5,33 +5,41 @@
 
 	import { LanguageNames, ThemeNames, Themes } from '$lib/enums';
 	import client from '$lib/api';
-	import { invalidateAll } from '$app/navigation';
-	import { set_lang, update_prefs } from '$lib/ui.js';
+	import { get_prefs, set_lang, update_prefs } from '$lib/ui.js';
 
 	let { data } = $props();
 
 	async function changeBackground(theme) {
 		if (data.user) {
 			await client.POST('/api/profile/prefs', { fetch, body: { theme, language: null } });
-			invalidateAll();
 		} else {
 			update_prefs({ theme });
-			location.reload();
 		}
+		location.reload();
 	}
+
+	let current_locale = $state(getLocale());
+	let current_theme = $state(data.user?.prefs?.theme ?? +get_prefs()?.theme);
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>
 	<h2 class="text-lg">{m.hour_loud_squirrel_ascend()}</h2>
 	<div class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-4">
 		{#each locales as key (key)}
-			<button
-				aria-pressed={getLocale() === key}
-				onclick={() => set_lang(key, !!data.user)}
-				class="bg-otodb-bg-faint aria-pressed:bg-otodb-bg-fainter hover:bg-otodb-bg-fainter mb-2 cursor-pointer px-4 py-4 text-lg"
+			<label
+				class="bg-otodb-bg-faint has-checked:bg-otodb-bg-fainter hover:bg-otodb-bg-fainter mb-2 cursor-pointer border px-4 py-4 text-center text-lg"
 			>
+				<input
+					class="hidden"
+					type="radio"
+					bind:group={current_locale}
+					value={key}
+					onchange={() => {
+						set_lang(current_locale, !!data.user);
+					}}
+				/>
 				{LanguageNames[key]}
-			</button>
+			</label>
 		{/each}
 	</div>
 
@@ -42,9 +50,18 @@
 		class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 	>
 		{#each Themes as _, i (i)}
-			<button onclick={() => changeBackground(i)} class="py-2 text-lg">
+			<label
+				class="bg-otodb-bg-faint has-checked:bg-otodb-bg-fainter hover:bg-otodb-bg-fainter mb-2 cursor-pointer border px-4 py-4 text-center text-lg"
+			>
+				<input
+					class="hidden"
+					type="radio"
+					bind:group={current_theme}
+					value={i}
+					onchange={() => changeBackground(i)}
+				/>
 				{ThemeNames[i]()}
-			</button>
+			</label>
 		{/each}
 	</div>
 </Section>

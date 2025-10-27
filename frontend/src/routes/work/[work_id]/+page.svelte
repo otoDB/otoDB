@@ -5,7 +5,8 @@
 		Platform,
 		Rating,
 		WorkOrigin,
-		WorkRelationTypes,
+		WorkRelationDisplayBackward,
+		WorkRelationDisplayForward,
 		WorkStatus,
 		WorkTagCategoriesSettableAsSource,
 		WorkTagCategory,
@@ -20,8 +21,6 @@
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import { callSavingToast } from '$lib/toast';
 	import { SvelteMap } from 'svelte/reactivity';
-	import WorkCard from '$lib/WorkCard.svelte';
-	import { getLocale } from '$lib/paraglide/runtime';
 
 	let { data } = $props();
 
@@ -83,8 +82,6 @@
 				.map((n) => ({ node: n, real: true }))
 		];
 	};
-
-	const invert_subordinate_phrase = getLocale() !== 'en';
 </script>
 
 <Section
@@ -152,24 +149,16 @@
 									<th>{m.alive_these_jay_pick()}</th>
 									<td
 										><ul>
-											{#each Object.entries(Object.groupBy( data.relations[0], (r) => (r.A_id === data.id ? m.grand_vexed_snail_ripple() : m.clean_best_kangaroo_achieve()) )).map( (d) => [d[0], Object.entries(Object.groupBy(d[1], (r) => r.relation))] ) as [dir, rels], i (i)}
+											{#each Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map( (d) => [d[0], Object.entries(Object.groupBy(d[1], (r) => r.relation))] ) as [dir, rels], i (i)}
 												{#each rels as [tp, relations], j (j)}
 													<li>
-														{#if !invert_subordinate_phrase && dir === m.clean_best_kangaroo_achieve()}
-															{WorkRelationTypes[
-																tp
-															]()}{m.great_clean_beaver_amuse()}{dir}{m.great_clean_beaver_amuse()}{m
-																.stout_frail_warbler_support()
-																.toLowerCase()}{m.great_clean_beaver_amuse()}{m
-																.grand_merry_fly_succeed()
-																.toLowerCase()}
-														{:else}
-															{m.stout_frail_warbler_support()}{m.great_clean_beaver_amuse()}{m
-																.grand_merry_fly_succeed()
-																.toLowerCase()}{m.great_clean_beaver_amuse()}{dir}{m.great_clean_beaver_amuse()}{WorkRelationTypes[
-																tp
-															]()}
-														{/if}
+														{m.mild_loud_shad_enchant({
+															type: [
+																WorkRelationDisplayBackward,
+																WorkRelationDisplayForward
+															][+dir][tp](),
+															name: ''
+														})}
 														<ul class="ml-2">
 															{#each relations as r, j (j)}
 																{@const w = data.relations[1].find(

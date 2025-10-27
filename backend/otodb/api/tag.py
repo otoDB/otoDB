@@ -291,16 +291,9 @@ def update(
 		):
 			TagWorkParenthood.objects.create(parent=p, tag=tag)
 	if ps:
-		tag.childhood.update(
-			primary=Case(
-				*(
-					[When(parent=ps[payload.primary], then=Value(True))]
-					if payload.primary is not None
-					else []
-				),
-				default=Value(False),
-			)
-		)
+		tag.childhood.update(primary=False)
+		if payload.primary is not None:
+			tag.childhood.filter(parent=ps[payload.primary]).update(primary=True)
 
 	return
 

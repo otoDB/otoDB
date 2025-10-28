@@ -82,9 +82,7 @@ class OtodbTagModel(BaseTagModel):
 				tag.aliased_to = into_tag
 				tag.save()
 				cls.transfer_data(tag, into_tag)
-				for t in cls.objects.filter(aliased_to=tag):
-					t.aliased_to = into_tag
-					t.save()
+				cls.objects.filter(aliased_to=tag).update(aliased_to=into_tag)
 
 
 class TagWork(OtodbTagModel):
@@ -424,9 +422,7 @@ class TagSong(OtodbTagModel):
 		for song in from_tag.songs.all():
 			song.tags.add(to_tag)
 			song.tags.remove(from_tag)
-		for t in cls.objects.filter(parent=from_tag):
-			t.parent = to_tag
-			t.save()
+		cls.objects.filter(parent=from_tag).update(parent=to_tag)
 
 	def get_tree(self):
 		cte = CTE.recursive(

@@ -119,28 +119,16 @@ class MediaWork(models.Model):
 		to_work.tags.add(*from_work.tags.all())
 		to_work.save()
 
-		for src in from_work.worksource_set.all():
-			src.media = to_work
-			src.save()
+		from_work.worksource_set.update(media=to_work)
 
-		for item in from_work.poolitem_set.all():
-			item.work = to_work
-			item.save()
+		from_work.poolitem_set.update(work=to_work)
 
-		for relation in from_work.relation_A.all():
-			if relation.B.pk == to_work.pk:
-				relation.delete()
-			else:
-				relation.A = to_work
-				relation.save()
-
-		for relation in from_work.relation_B.all():
-			if relation.A.pk == to_work.pk:
-				relation.delete()
-			else:
-				relation.B = to_work
-				relation.save()
-
+		from_work.relation_A.filter(B=to_work).delete()
+		from_work.relation_A.update(A=to_work)
+	
+		from_work.relation_B.filter(A=to_work).delete()
+		from_work.relation_A.update(B=to_work)
+	
 		from_work.moved_to = to_work
 		from_work.save()
 

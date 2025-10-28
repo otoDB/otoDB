@@ -128,8 +128,7 @@ def toggle(request: HttpRequest, list_id: int, work_id: int):
 		return 403
 
 	if entries := lst.work_in_pool(work_id):
-		for entry in entries:
-			entry.delete()
+		entries.delete()
 		return False
 	else:
 		lst.add_work(work_id)

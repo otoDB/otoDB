@@ -110,13 +110,15 @@ def make_bulk(request: HttpRequest, s: str):
 	bulk = BulkRequest.objects.create(user=request.user)
 	if not lines:
 		raise Exception
+	reqs = []
 	for n, line in enumerate(lines):
 		c = line.split()
 		cmd, A_validator, Bs_validator = COMMANDS[c[0]]
 		A = A_validator(c[1])
 		assert (not c[2:] and not Bs_validator) or (c[2:] and Bs_validator)
 		for arg, v in zip(c[2:], Bs_validator):
-			UserRequest.objects.create(bulk=bulk, command=cmd, A=A, B=v(arg))
+			reqs.append(UserRequest(bulk=bulk, command=cmd, A=A, B=v(arg)))
+	UserRequest.objects.bulk_create(reqs)
 	return bulk.id
 
 

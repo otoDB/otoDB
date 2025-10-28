@@ -35,11 +35,12 @@
 	let primary = $state(
 		form?.primary ??
 			(data.details?.primary_parent
-				? parents.indexOf(
-						getTagDisplaySlug(
-							data.parents?.find((t) => t.slug === data.details?.primary_parent)!
-						)
-					)
+				? (() => {
+						const parentTag = data.parents?.find(
+							(t) => t.slug === data.details?.primary_parent
+						);
+						return parentTag ? parents.indexOf(getTagDisplaySlug(parentTag)) : -1;
+					})()
 				: -1)
 	);
 	$effect(() => {

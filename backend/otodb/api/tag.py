@@ -278,7 +278,8 @@ def update(
 	tag.save()
 
 	ps = [
-		get_object_or_404(TagWork, slug=s).aliased_to or get_object_or_404(TagWork, slug=s, aliased_to__isnull=True)
+		get_object_or_404(TagWork, slug=s).aliased_to
+		or get_object_or_404(TagWork, slug=s, aliased_to__isnull=True)
 		for s in [clean_incoming_slug(p) for p in payload.parent_slugs]
 	]
 	assert payload.primary is None or 0 <= payload.primary < len(ps)

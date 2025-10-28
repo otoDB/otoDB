@@ -357,9 +357,10 @@ def track_revision(f):
 		rev_msg = cache.get('rev_msg')
 
 		if len(rev) or len(rev_del):
-			revision = Revision.objects.get_or_create(
+			revision = Revision.objects.filter(
+				date__gt=datetime.now() - timedelta(minutes=5)
+			).get_or_create(
 				user=request.user,
-				date__gt=datetime.now() - timedelta(minutes=5),
 				defaults={'message': rev_msg},
 			)
 			for ctpk, pk, entities in rev_del:

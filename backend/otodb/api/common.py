@@ -352,8 +352,6 @@ def track_revision(f):
 
 		rev = cache.get('rev')
 		rev_del = cache.get('rev_del')
-		print(rev)
-		print(rev_del)
 
 		if len(rev) or len(rev_del):
 			revision = Revision.objects.create(user=request.user)

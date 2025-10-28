@@ -58,9 +58,7 @@
 			<tbody>
 				{#each data.revisions as r, i (i)}
 					<tr
-						><td
-							><a href="/revision/{r.id}">#{r.id}</a>
-						</td><td>
+						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td>
 							{#if isSVO(getLocale())}
 								{m.curly_safe_lynx_fond()}
 							{/if}

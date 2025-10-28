@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import client from './api';
+	import client, { getTagDisplaySlug } from './api';
 	import { clickOutside, debounce } from './ui';
 	import { m } from './paraglide/messages';
 	import TagSuggestionResults from './TagSuggestionResults.svelte';
@@ -62,7 +62,7 @@
 		textarea.value = replaceWordAtPos(
 			textarea.value,
 			textarea.selectionStart,
-			tag.aliased_to ? tag.aliased_to.slug : tag.slug + ' '
+			getTagDisplaySlug(tag.aliased_to || tag) + ' '
 		);
 		suggestions = [];
 		updateValue();

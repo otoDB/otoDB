@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import client from '$lib/api.js';
+	import client, { getTagDisplaySlug } from '$lib/api.js';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -10,7 +10,7 @@
 
 	let { data } = $props();
 
-	let tags = $state(data.tags.map((t) => t.slug));
+	let tags = $state(data.tags.map((t) => getTagDisplaySlug(t)));
 
 	const toggle_creator_role = async (tag_slug: string, role_value: number) => {
 		const tag = data.tags.find((t) => t.slug === tag_slug);

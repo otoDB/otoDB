@@ -29,10 +29,15 @@
 	let { data, form }: PageProps = $props();
 
 	let parents = $state(form?.parent_slugs ?? data.parents?.map((t) => t.slug) ?? []);
+	let prev_n_parents = parents.length;
 	let primary = $state(
 		form?.primary ??
 			(data.details?.primary_parent ? parents.indexOf(data.details?.primary_parent) : -1)
 	);
+	$effect(() => {
+		if (prev_n_parents === 0 && parents.length > 0) primary = 0;
+		prev_n_parents = parents.length;
+	});
 
 	let category = $state(form?.category ?? data.tag?.category);
 	let wikiView = $state(getLocale());

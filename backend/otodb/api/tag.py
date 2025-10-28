@@ -10,7 +10,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
 from pydantic import AfterValidator
-from ninja import Router, ModelSchema, Schema, Query
+from ninja import ModelSchema, Schema, Query
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
@@ -51,9 +51,10 @@ from .common import (
 	profile_connection_parsers,
 	make_alt_value_parser,
 	re_to_parser,
+	RouterWithRevision
 )
 
-tag_router = Router()
+tag_router = RouterWithRevision()
 
 
 def filter_tags_by_media_type(qs, media_type: list[int]):

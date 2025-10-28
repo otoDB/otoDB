@@ -16,20 +16,25 @@ class Revision(models.Model):
 class RevisionChange(models.Model):
     rev = models.ForeignKey(Revision, null=False, on_delete=models.CASCADE)
 
-    target_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=False, related_name='model_revision_changes')
+    target_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=False)
     target_id = models.PositiveBigIntegerField(null=False)
     target = GenericForeignKey('target_type', 'target_id')
     deleted = models.BooleanField(default=False, null=False)
 
-    target_column = models.CharField(max_length=100, null=False)
-    target_value = models.TextField(null=False)
+    target_column = models.CharField(max_length=100, null=True)
+    target_value = models.TextField(null=True)
 
-    entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=False, related_name='entity_revision_changes')
+    class Meta:
+        unique_together = (('rev', 'target_type', 'target_id', 'target_column',),)
+
+class RevisionChangeEntity(models.Model):
+    change = models.ForeignKey(RevisionChange, null=False, on_delete=models.CASCADE)
+    entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=False)
     entity_id = models.PositiveBigIntegerField(null=False)
     entity = GenericForeignKey('entity_type', 'entity_id')
 
     class Meta:
-        unique_together = (('rev', 'target_type', 'target_id', 'target_column',),)
+        unique_together = (('change', 'entity_type', 'entity_id',),)
 
 class RevisionTrackedQuerySet(models.QuerySet):
     def bulk_create(self, *args, **kwargs):
@@ -52,16 +57,18 @@ class RevisionTrackedQuerySet(models.QuerySet):
         return changed
 
     def delete(self):
-        to_del = self.all().values_list('pk', flat=True)
+        to_del_dicts = self.all().values('pk', *[x for x in self.model.revision_entity_attrs if x != 'self'])
         cache = get_request_cache()
         if cache is None:
             print(f"DELETING {to_del} ON {self.model} --- NOT TRACKING CHANGES")
         else:
             rev_del = cache.get('rev_del')
-            for pk in to_del:
-                rev_del.append((ContentType.objects.get_for_model(model=self.model).pk, pk))
+            for obj in to_del_dicts:
+                ents = tuple([obj['pk' if attr == 'self' else attr] for attr in self.model.revision_entity_attrs])
+                rev_del.append((ContentType.objects.get_for_model(model=self.model).pk, obj['pk'], ents))
+            cache.set('rev_del', rev_del)
         super().delete()
-        return len(to_del)
+        return len(to_del_dicts)
 
 class RevisionTrackedManager(models.Manager):
     def get_queryset(self):
@@ -69,6 +76,7 @@ class RevisionTrackedManager(models.Manager):
 
 class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
     revision_tracked_fields: list[str] = []
+    revision_entity_attrs: list[str] = []
 
     objects = RevisionTrackedManager()
 
@@ -78,16 +86,17 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
     def save(self, *args, **kwargs):
         cache = get_request_cache()
         if cache is None:
-            for k, v in self.get_dirty_fields().items():
+            for k, v in self.get_dirty_fields(check_relationship=True).items():
                 if k in self.revision_tracked_fields:
                     print(f"UPDATING {k}: {v} -> {getattr(self, k)} ON {self} ({type(self)}.{self.pk}) --- NOT TRACKING CHANGES")
         else:
             rev = cache.get('rev')
-            for k in self.get_dirty_fields():
+            for k in self.get_dirty_fields(check_relationship=True):
                 if k in self.revision_tracked_fields:
                     rev[(ContentType.objects.get_for_model(model=type(self)).pk, self.pk, k)] = getattr(self, k)
+            cache.set('rev', rev)
         super().save(*args, **kwargs)
-        return len(self.get_dirty_fields()) > 0
+        return len(self.get_dirty_fields(check_relationship=True)) > 0
 
     def delete(self, *args, **kwargs):
         if ret := super().delete(*args, **kwargs):
@@ -96,6 +105,8 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
                 print(f"DELETING {self} ({type(self)}.{self.pk}) --- NOT TRACKING CHANGES")
             else:
                 rev_del = cache.get('rev_del')
-                rev_del.append((ContentType.objects.get_for_model(model=type(self)).pk, self.pk))
+                ents = tuple([(self if attr == 'self' else getattr(self, attr)).pk for attr in type(self).revision_entity_attrs])
+                rev_del.append((ContentType.objects.get_for_model(model=type(self)).pk, self.pk, ents))
+                cache.set('rev_del', rev_del)
             
             return ret

@@ -13,7 +13,7 @@ from django.db.models import (
 	OuterRef,
 )
 
-from ninja import Router, Schema, ModelSchema
+from ninja import Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
@@ -53,9 +53,10 @@ from .common import (
 	RelationSchema,
 	post_relation,
 	SlimWorkSchema,
+	RouterWithRevision
 )
 
-work_router = Router()
+work_router = RouterWithRevision()
 
 
 class ExternalQuery(Schema):

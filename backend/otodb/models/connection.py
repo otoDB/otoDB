@@ -30,6 +30,7 @@ class MediaSongConnection(RevisionTrackedModel):
 		unique_together = (('song', 'site', 'content_id'),)
 
 	revision_tracked_fields = ['tag', 'site', 'content_id']
+	revision_entity_attrs = ['song']
 
 
 class TagWorkConnection(RevisionTrackedModel):
@@ -41,7 +42,7 @@ class TagWorkConnection(RevisionTrackedModel):
 		unique_together = (('tag', 'site', 'content_id'),)
 
 	revision_tracked_fields = ['tag', 'site', 'content_id']
-
+	revision_entity_attrs = ['tag']
 
 class TagWorkMediaConnection(RevisionTrackedModel):
 	tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
@@ -52,6 +53,7 @@ class TagWorkMediaConnection(RevisionTrackedModel):
 		unique_together = (('tag', 'site', 'content_id'),)
 
 	revision_tracked_fields = ['tag', 'site', 'content_id']
+	revision_entity_attrs = ['tag']
 
 
 class TagWorkCreatorConnection(RevisionTrackedModel):
@@ -64,3 +66,4 @@ class TagWorkCreatorConnection(RevisionTrackedModel):
 		unique_together = (('tag', 'site', 'content_id'),)
 
 	revision_tracked_fields = ['tag', 'site', 'content_id', 'dead']
+	revision_entity_attrs = ['tag']

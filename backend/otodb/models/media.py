@@ -76,6 +76,7 @@ class MediaWork(RevisionTrackedModel):
 	)
 
 	revision_tracked_fields = ['title', 'description', 'rating', 'moved_to']
+	revision_entity_attrs = ['self', 'moved_to']
 
 	# deprecated!
 	_thumbnail = models.CharField(
@@ -176,6 +177,7 @@ class MediaSong(RevisionTrackedModel):
 	tags = TagField(to=TagSong, related_name='songs')
 
 	revision_tracked_fields = ['title', 'bpm', 'variable_bpm', 'work_tag', 'author']
+	revision_entity_attrs = ['self', 'work_tag']
 	# TODO track tags when we have custom through table
 
 	class Meta:

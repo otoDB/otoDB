@@ -28,6 +28,8 @@ from .common import (
 	TagWorkSchema,
 	WorkSchema,
 	WorkSourceSchema,
+	track_revision,
+	add_revision_message
 )
 
 ENTITY_SCHEMAS = [TagWorkSchema, WorkSchema, WorkSourceSchema]
@@ -124,6 +126,7 @@ def make_bulk(request: HttpRequest, s: str):
 
 @request_router.post('confirm', auth=django_auth)
 @user_is_editor
+@track_revision
 def confirm(request: HttpRequest, request_id: int, status: Status):
 	bulk = get_object_or_404(BulkRequest, id=request_id, status=Status.PENDING)
 	for r in bulk.requests.all():
@@ -131,6 +134,7 @@ def confirm(request: HttpRequest, request_id: int, status: Status):
 	bulk.status = Status(status).value
 	bulk.processed_by = request.user
 	bulk.save()
+	add_revision_message(f'Via request {bulk.id} from {bulk.user.username}')
 
 
 class RequestSchema(ModelSchema):

@@ -126,6 +126,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 	)
 
 	revision_tracked_fields = ['name', 'slug', 'aliased_to', 'deprecated', 'category', 'media_type']
+	revision_entity_attrs = ['self', 'aliased_to']
 
 	@property
 	def display_name(self):
@@ -367,6 +368,7 @@ class TagWorkLangPreference(RevisionTrackedModel):
 	)
 	tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
 	revision_tracked_fields = ['lang', 'tag']
+	revision_entity_attrs = ['tag']
 
 	class Meta:
 		unique_together = (('tag', 'lang'),)
@@ -386,6 +388,7 @@ class WikiPage(RevisionTrackedModel):
 	)
 
 	revision_tracked_fields = ['lang', 'tag', 'page']
+	revision_entity_attrs = ['tag']
 
 	class Meta:
 		unique_together = (('tag', 'lang'),)
@@ -411,6 +414,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 	)
 
 	revision_tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
+	revision_entity_attrs = ['self']
 
 	@property
 	def display_name(self):
@@ -475,6 +479,7 @@ class TagWorkParenthood(RevisionTrackedModel):
 	)
 	primary = models.BooleanField(default=False)
 	revision_tracked_fields = ['tag', 'parent', 'primary']
+	revision_entity_attrs = ['tag', 'parent']
 
 	class Meta:
 		unique_together = (('tag', 'parent'),)

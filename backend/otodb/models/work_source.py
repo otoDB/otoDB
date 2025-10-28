@@ -66,6 +66,7 @@ class WorkSource(RevisionTrackedModel):
 		'uploader_id',
 		'added_by',
 	]
+	revision_entity_attrs = ['self', 'media']
 
 	info_payload: 'WorkSourceInfoPayload'
 
@@ -115,7 +116,7 @@ class WorkSource(RevisionTrackedModel):
 				
 				tags = info.get('tags', [])
 				exists = TagWork.objects.filter(name__in=tags)
-				created = TagWork.objects.bulk_create([TagWork(name=name) for name in tags if name not in set(exists.values_list('name', flat=True))])
+				created = [TagWork.objects.create(name=name) for name in tags if name not in set(exists.values_list('name', flat=True))]
 				self.media.tags.add(*exists, *created)
 				self.media.tagworkinstance_set.filter(work_tag__in=created).update(
 					instance_imported_from_source=True

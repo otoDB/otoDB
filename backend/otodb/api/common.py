@@ -3,7 +3,10 @@ from functools import wraps
 
 from pydantic import field_validator
 
-from ninja import Schema, ModelSchema, Field, Query
+from django.contrib.contenttypes.models import ContentType
+
+from ninja import Schema, ModelSchema, Field, Query, Router
+from django_request_cache import get_request_cache
 
 from otodb.account.models import Account
 from otodb.models import (
@@ -18,6 +21,9 @@ from otodb.models import (
 	PoolItem,
 	WorkRelation,
 	SongRelation,
+	Revision,
+	RevisionChange,
+	RevisionChangeEntity
 )
 from otodb.models.enums import Role, MediaType, ProfileConnectionTypes
 import re
@@ -331,3 +337,59 @@ def print_queries(f):
 		return r
 
 	return wrapper
+
+def track_revision(f):
+	@wraps(f)
+	def wrapper(request, *args, **kwargs):
+		cache = get_request_cache()
+		cache.add('rev', {}) 	 # key: (ContentType.pk, pk, field as str), value: str?
+		cache.add('rev_del', []) # list of (ContentType.pk, pk, ...entity_pks)
+
+		ret = f(request, *args, **kwargs)
+
+		rev = cache.get('rev')
+		rev_del = cache.get('rev_del')
+
+		if len(rev) or len(rev_del):
+			revision = Revision.objects.create(user=request.user)
+			for ctpk, pk, entities in rev_del:
+				change = RevisionChange.objects.create(
+					rev=revision,
+					target_type_id=ctpk,
+					target_id=pk,
+					deleted=True,
+				)
+				for ent_ctpk, ent_pk in entities:
+					RevisionChangeEntity.objects.create(
+						change=change,
+						entity_type_id=ent_ctpk,
+						entity_id=ent_pk
+					)
+			for (ctpk, pk, field), val in rev.items():
+				contenttype = ContentType.objects.get(pk=ctpk)
+				target = contenttype.model_class().objects.get(pk=pk)
+				change = RevisionChange.objects.create(
+					rev=revision,
+					target=target,
+					target_column=field,
+					target_value=val,
+				)
+				for ent_attr in contenttype.model_class().revision_entity_attrs:
+					entity = target if ent_attr == 'self' else getattr(target, ent_attr)
+					if entity:
+						RevisionChangeEntity.objects.create(change=change, entity=entity)
+
+		return ret
+	return wrapper
+
+
+def add_revision_message(message: str):
+	cache = get_request_cache()
+	rev_msg = cache.get_or_set('rev_msg', '')
+	rev_msg = rev_msg + ('\n' if rev_msg else '') + message
+	rev_msg = cache.set('rev_msg', rev_msg)
+
+class RouterWithRevision(Router):
+	def add_api_operation(self, path, methods, view_func, **kwargs):
+		view_func = track_revision(view_func)
+		return super().add_api_operation(path, methods, view_func, **kwargs)

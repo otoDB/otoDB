@@ -17,6 +17,8 @@ from ninja.security import django_auth
 from otodb.models import TagWork
 from otodb.account.models import Account
 
+from .common import track_revision
+
 from .common import (
 	user_is_staff,
 	ThinWorkSchema,

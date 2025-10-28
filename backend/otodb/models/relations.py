@@ -55,6 +55,7 @@ class WorkRelation(RevisionTrackedModel):
 	relation = models.IntegerField(choices=WorkRelationTypes.choices)
 
 	revision_tracked_fields = ['A', 'B', 'relation']
+	revision_entity_attrs = ['A', 'B']
 
 	objects = BidirectionalManager()
 
@@ -97,6 +98,7 @@ class SongRelation(RevisionTrackedModel):
 	)
 	relation = models.IntegerField(choices=SongRelationTypes.choices)
 	revision_tracked_fields = ['A', 'B', 'relation']
+	revision_entity_attrs = ['A', 'B']
 
 	objects = BidirectionalManager()
 

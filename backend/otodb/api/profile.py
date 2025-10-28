@@ -54,7 +54,10 @@ def edit_connections(request: HttpRequest, urls: str):
 		creator_tag_connection_parser(url) for url in urls.split('\n') if url.strip()
 	]
 	urls = [url for url in urls if url]
-	connections = [ProfileConnection(profile=user, site=site, content_id=content_id) for site, content_id in urls]
+	connections = [
+		ProfileConnection(profile=user, site=site, content_id=content_id)
+		for site, content_id in urls
+	]
 	ProfileConnection.objects.bulk_create(connections)
 
 

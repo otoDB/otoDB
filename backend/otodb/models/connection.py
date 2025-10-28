@@ -44,6 +44,7 @@ class TagWorkConnection(RevisionTrackedModel):
 	revision_tracked_fields = ['tag', 'site', 'content_id']
 	revision_entity_attrs = ['tag']
 
+
 class TagWorkMediaConnection(RevisionTrackedModel):
 	tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 	site = models.IntegerField(choices=MediaConnectionTypes.choices)

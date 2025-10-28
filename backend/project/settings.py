@@ -78,7 +78,7 @@ MIDDLEWARE = [
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'django_userforeignkey.middleware.UserForeignKeyMiddleware',
-    'django_request_cache.middleware.RequestCacheMiddleware',
+	'django_request_cache.middleware.RequestCacheMiddleware',
 ]
 
 if DEBUG:

@@ -11,6 +11,7 @@ from .revision import RevisionTrackedModel, RevisionTrackedManager
 from .enums import Platform, WorkOrigin, WorkStatus, MimeType
 from .media import MediaWork
 
+
 class ActiveManager(RevisionTrackedManager):
 	def get_queryset(self):
 		return super().get_queryset().filter(rejection__isnull=True)
@@ -48,7 +49,7 @@ class WorkSource(RevisionTrackedModel):
 	)
 
 	active_objects = ActiveManager()
-	
+
 	revision_tracked_fields = [
 		'media',
 		'platform',
@@ -113,10 +114,14 @@ class WorkSource(RevisionTrackedModel):
 
 			if self.media:
 				from .tag import TagWork
-				
+
 				tags = info.get('tags', [])
 				exists = TagWork.objects.filter(name__in=tags)
-				created = [TagWork.objects.create(name=name) for name in tags if name not in set(exists.values_list('name', flat=True))]
+				created = [
+					TagWork.objects.create(name=name)
+					for name in tags
+					if name not in set(exists.values_list('name', flat=True))
+				]
 				self.media.tags.add(*exists, *created)
 				self.media.tagworkinstance_set.filter(work_tag__in=created).update(
 					instance_imported_from_source=True
@@ -210,6 +215,7 @@ class WorkSourceRejection(models.Model):
 	reason = models.CharField(max_length=1000, null=False, blank=False)
 	by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.RESTRICT)
 	date = models.DateTimeField(auto_now_add=True, null=False)
+
 
 class WorkSourceInfoPayload(models.Model):
 	source = models.OneToOneField(

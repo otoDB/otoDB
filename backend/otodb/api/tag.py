@@ -51,7 +51,7 @@ from .common import (
 	profile_connection_parsers,
 	make_alt_value_parser,
 	re_to_parser,
-	RouterWithRevision
+	RouterWithRevision,
 )
 
 tag_router = RouterWithRevision()
@@ -136,9 +136,9 @@ def details(request: HttpRequest, tag_slug: str):
 @tag_router.get('works', response=list[ThinWorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
-	return MediaWork.objects.filter(moved_to__isnull=True, tags__slug=tag_slug).select_related(
-		'thumbnail_source'
-	)
+	return MediaWork.objects.filter(
+		moved_to__isnull=True, tags__slug=tag_slug
+	).select_related('thumbnail_source')
 
 
 @tag_router.post('alias', auth=django_auth)
@@ -665,7 +665,7 @@ def song_relation(request: HttpRequest, payload: RelationSchema):
 def delete_relation(request: HttpRequest, A: int, B: int):
 	a = MediaSong.objects.get(id=A)
 	b = MediaSong.objects.get(id=B)
-	rel = SongRelation.objects.get(a, b)
+	rel = SongRelation.objects.get_relation(a, b)
 	rel.delete()
 	return
 

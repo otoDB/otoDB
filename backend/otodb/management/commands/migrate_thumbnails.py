@@ -56,7 +56,9 @@ class Command(BaseCommand):
 				'CDN is not configured. Please check environment variables.'
 			)
 
-		query = MediaWork.objects.filter(moved_to__isnull=True, _thumbnail__isnull=False)
+		query = MediaWork.objects.filter(
+			moved_to__isnull=True, _thumbnail__isnull=False
+		)
 
 		if work_id:
 			query = query.filter(pk=work_id)

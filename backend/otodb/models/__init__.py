@@ -43,5 +43,5 @@ __all__ = [
 	'UserRequest',
 	'Revision',
 	'RevisionChange',
-	'RevisionChangeEntity'
+	'RevisionChangeEntity',
 ]

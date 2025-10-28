@@ -29,7 +29,7 @@ from .common import (
 	WorkSchema,
 	WorkSourceSchema,
 	track_revision,
-	add_revision_message
+	add_revision_message,
 )
 
 ENTITY_SCHEMAS = [TagWorkSchema, WorkSchema, WorkSourceSchema]

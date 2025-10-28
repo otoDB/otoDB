@@ -5,11 +5,11 @@ import nh3
 from django.db import models
 from django.db.models import Subquery, OuterRef
 from django.urls import reverse
-from tagulous.models import TagField, TaggedManager
+from tagulous.models import TagField
 
 from .enums import Rating, WorkTagCategory, Role
 from .tag import TagWork, TagSong
-from .revision import RevisionTrackedModel, RevisionTrackedManager
+from .revision import RevisionTrackedModel
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
@@ -51,6 +51,8 @@ class TagWorkInstance(RevisionTrackedModel):
 		self.creator_roles = role_value if role_value > 0 else None
 
 	revision_tracked_fields = ['work', 'work_tag', 'used_as_source', 'creator_roles']
+	revision_entity_attrs = ['work']
+
 
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
@@ -119,10 +121,10 @@ class MediaWork(RevisionTrackedModel):
 
 		from_work.relation_A.filter(B=to_work).delete()
 		from_work.relation_A.update(A=to_work)
-	
+
 		from_work.relation_B.filter(A=to_work).delete()
 		from_work.relation_A.update(B=to_work)
-	
+
 		from_work.moved_to = to_work
 		from_work.save()
 
@@ -166,6 +168,7 @@ class MediaWork(RevisionTrackedModel):
 				*rs.values_list('B_id', flat=True),
 			]
 		).exclude(id=self.id)
+
 
 class MediaSong(RevisionTrackedModel):
 	title = models.CharField(max_length=1000, null=False, blank=False)

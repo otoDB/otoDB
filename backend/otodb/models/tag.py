@@ -125,7 +125,14 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		null=True, blank=True, help_text='Media type bitmask'
 	)
 
-	revision_tracked_fields = ['name', 'slug', 'aliased_to', 'deprecated', 'category', 'media_type']
+	revision_tracked_fields = [
+		'name',
+		'slug',
+		'aliased_to',
+		'deprecated',
+		'category',
+		'media_type',
+	]
 	revision_entity_attrs = ['self', 'aliased_to']
 
 	@property
@@ -461,6 +468,7 @@ class TagSongLangPreference(RevisionTrackedModel):
 	tag = models.ForeignKey(TagSong, null=False, blank=False, on_delete=models.CASCADE)
 
 	revision_tracked_fields = ['lang', 'tag']
+
 
 class TagWorkParenthood(RevisionTrackedModel):
 	tag = models.ForeignKey(

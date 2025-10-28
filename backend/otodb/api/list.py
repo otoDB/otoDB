@@ -182,7 +182,9 @@ def import_ext_into_pool(info, list_: Pool, user):
 				tt, _ = TagWork.objects.get_or_create(name=t)
 				if tt.aliased_to:
 					tt = tt.aliased_to
-				TagWorkInstance.objects.create(work=work, work_tag=tt, instance_imported_from_source=True)
+				TagWorkInstance.objects.create(
+					work=work, work_tag=tt, instance_imported_from_source=True
+				)
 
 			pool_items.append(PoolItem(work=work, description='', pool=list_))
 		elif src.media is None:

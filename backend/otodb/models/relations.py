@@ -30,7 +30,7 @@ def _get_component(model, obj_id: int):
 
 
 class BidirectionalManager(RevisionTrackedManager):
-	def get(self, A, B):
+	def get_relation(self, A, B):
 		try:
 			return super().get(A=A, B=B)
 		except ObjectDoesNotExist:

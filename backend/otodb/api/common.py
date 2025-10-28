@@ -23,7 +23,7 @@ from otodb.models import (
 	SongRelation,
 	Revision,
 	RevisionChange,
-	RevisionChangeEntity
+	RevisionChangeEntity,
 )
 from otodb.models.enums import Role, MediaType, ProfileConnectionTypes
 import re
@@ -42,16 +42,11 @@ class ProfileSchema(ModelSchema):
 
 
 class TagWorkLangPreferenceSchema(ModelSchema):
-	tag: str
+	tag: str = Field(..., alias='tag.name')
 
 	class Meta:
 		model = TagWorkLangPreference
 		fields = ['lang']
-
-	@field_validator('tag', mode='before', check_fields=False)
-	@classmethod
-	def tag_slug(cls, value) -> str:
-		return value.name
 
 
 class TagSongSchema(Schema):
@@ -64,17 +59,12 @@ class TagSongSchema(Schema):
 
 class SongSchema(ModelSchema):
 	id: int
-	work_tag: str
+	work_tag: str = Field(..., alias='work_tag.slug')
 	tags: list[TagSongSchema]
 
 	class Meta:
 		model = MediaSong
 		fields = ['title', 'bpm', 'variable_bpm', 'author']
-
-	@field_validator('work_tag', mode='before', check_fields=False)
-	@classmethod
-	def tag_slug(cls, value) -> str:
-		return value.slug
 
 
 class TagWorkSchema(Schema):
@@ -245,12 +235,14 @@ user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
 
 def post_relation(cls, payload: RelationSchema):
 	assert cls is MediaWork or cls is MediaSong
-	manager = cls.objects.filter(moved_to__isnull=True) if cls is MediaWork else cls.objects
+	manager = (
+		cls.objects.filter(moved_to__isnull=True) if cls is MediaWork else cls.objects
+	)
 	rel_cls = WorkRelation if cls is MediaWork else SongRelation
 	A = manager.get(id=payload.A_id)
 	B = manager.get(id=payload.B_id)
 	try:
-		rel = rel_cls.objects.get(A, B)
+		rel = rel_cls.objects.get_relation(A, B)
 		rel.A = A
 		rel.B = B
 		rel.relation = payload.relation
@@ -338,17 +330,21 @@ def print_queries(f):
 
 	return wrapper
 
+
 def track_revision(f):
 	@wraps(f)
 	def wrapper(request, *args, **kwargs):
 		cache = get_request_cache()
-		cache.add('rev', {}) 	 # key: (ContentType.pk, pk, field as str), value: str?
-		cache.add('rev_del', []) # list of (ContentType.pk, pk, ...entity_pks)
+		cache.add('rev', {})  # key: (ContentType.pk, pk, field as str), value: str?
+		cache.add('rev_del', [])  # list of (ContentType.pk, pk, ...entity_pks)
 
 		ret = f(request, *args, **kwargs)
 
 		rev = cache.get('rev')
 		rev_del = cache.get('rev_del')
+
+		print(rev)
+		print(rev_del)
 
 		if len(rev) or len(rev_del):
 			revision = Revision.objects.create(user=request.user)
@@ -359,12 +355,22 @@ def track_revision(f):
 					target_id=pk,
 					deleted=True,
 				)
-				for ent_ctpk, ent_pk in entities:
-					RevisionChangeEntity.objects.create(
-						change=change,
-						entity_type_id=ent_ctpk,
-						entity_id=ent_pk
-					)
+				model = ContentType.objects.get(pk=ctpk).model_class()
+				for entity_type, ent_pk in zip(
+					[
+						ContentType.objects.get_for_model(
+							model
+							if attr == 'self'
+							else model._meta.get_field(attr).related_model
+						)
+						for attr in model.revision_entity_attrs
+					],
+					entities,
+				):
+					if ent_pk:
+						RevisionChangeEntity.objects.create(
+							change=change, entity_type=entity_type, entity_id=ent_pk
+						)
 			for (ctpk, pk, field), val in rev.items():
 				contenttype = ContentType.objects.get(pk=ctpk)
 				target = contenttype.model_class().objects.get(pk=pk)
@@ -377,9 +383,12 @@ def track_revision(f):
 				for ent_attr in contenttype.model_class().revision_entity_attrs:
 					entity = target if ent_attr == 'self' else getattr(target, ent_attr)
 					if entity:
-						RevisionChangeEntity.objects.create(change=change, entity=entity)
+						RevisionChangeEntity.objects.create(
+							change=change, entity=entity
+						)
 
 		return ret
+
 	return wrapper
 
 
@@ -388,6 +397,7 @@ def add_revision_message(message: str):
 	rev_msg = cache.get_or_set('rev_msg', '')
 	rev_msg = rev_msg + ('\n' if rev_msg else '') + message
 	rev_msg = cache.set('rev_msg', rev_msg)
+
 
 class RouterWithRevision(Router):
 	def add_api_operation(self, path, methods, view_func, **kwargs):

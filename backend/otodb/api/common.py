@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from typing import Optional, Annotated, Dict
 from functools import wraps
 
@@ -357,12 +356,7 @@ def track_revision(f):
 		rev_msg = cache.get('rev_msg')
 
 		if len(rev) or len(rev_del):
-			revision = Revision.objects.filter(
-				date__gt=datetime.now() - timedelta(minutes=5)
-			).get_or_create(
-				user=request.user,
-				defaults={'message': rev_msg},
-			)
+			revision = Revision.objects.create(user=request.user, message=rev_msg)
 			for ctpk, pk, entities in rev_del:
 				change = RevisionChange.objects.create(
 					rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
@@ -377,14 +371,12 @@ def track_revision(f):
 				ct = ContentType.objects.get(pk=ctpk)
 				model = ct.model_class()
 				target = model.objects.get(pk=pk)
-				change, _ = RevisionChange.objects.update_or_create(
+				change = RevisionChange.objects.create(
 					rev=revision,
 					target=target,
 					target_column=field,
-					defaults={'target_value': val},
+					target_value=val,
 				)
-
-				RevisionChangeEntity.objects.filter(change=change).delete()
 				for entity_type, ent_pk in zip(get_entity_cts(model), entities):
 					if ent_pk:
 						RevisionChangeEntity.objects.create(

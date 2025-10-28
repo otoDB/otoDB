@@ -52,16 +52,71 @@ class RevisionChangeEntity(models.Model):
 		)
 
 
-class RevisionTrackedQuerySet(models.QuerySet):
-	def bulk_create(self, *args, **kwargs):
-		raise NotImplementedError(
-			'bulk_create is disabled; use instance.save() to ensure revision tracking.'
+def get_serialized_value(instance, field):
+	return getattr(
+		instance,
+		field + '_id'
+		if isinstance(
+			type(instance)._meta.get_field(field), models.fields.related.RelatedField
 		)
+		else field,
+	)
 
-	def bulk_update(self, *args, **kwargs):
-		raise NotImplementedError(
-			'bulk_update is disabled; use instance.save() to ensure revision tracking.'
-		)
+
+def _bulk_get_new_rev(model, objs, tracked_fields):
+	all_changes = []
+
+	for obj in objs:
+		if obj.pk is None:
+			continue
+		changes = {}
+		for k in obj.get_dirty_fields(check_relationship=True):
+			if k in model.revision_tracked_fields:
+				changes[k] = get_serialized_value(obj, k)
+		all_changes.append(changes)
+
+	return all_changes
+
+
+def _get_ents(obj):
+	return tuple(
+		[
+			(obj if attr == 'self' else getattr(obj, attr)).pk
+			for attr in type(obj).revision_entity_attrs
+		]
+	)
+
+
+class RevisionTrackedQuerySet(models.QuerySet):
+	def bulk_create(self, objs, *args, **kwargs):
+		all_changes = _bulk_get_new_rev(self.model, objs)
+		cache = get_request_cache()
+		rev = cache.get('rev')
+		ctpk = ContentType.objects.get_for_model(self.model).pk
+		objs = super().bulk_create(objs, *args, **kwargs)
+		for changes, obj in zip(all_changes, objs):
+			if obj.pk is not None:
+				ents = _get_ents(obj)
+				for k in changes:
+					rev[(ctpk, obj.pk, k)] = ents, changes[k]
+		cache.set('rev', rev)
+
+		return objs
+
+	def bulk_update(self, objs, *args, **kwargs):
+		all_changes = _bulk_get_new_rev(self.model, objs)
+		cache = get_request_cache()
+		rev = cache.get('rev')
+		ctpk = ContentType.objects.get_for_model(self.model).pk
+		ret = super().bulk_update(objs, *args, **kwargs)
+		for changes, obj in zip(all_changes, objs):
+			if obj.pk is not None:
+				ents = _get_ents(obj)
+				for k in changes:
+					rev[(ctpk, obj.pk, k)] = ents, changes[k]
+		cache.set('rev', rev)
+
+		return ret
 
 	def update(self, **kwargs):
 		# This seems bad but we need to record revisions anyway, so it's as good as it can be
@@ -83,6 +138,7 @@ class RevisionTrackedQuerySet(models.QuerySet):
 			)
 		else:
 			rev_del = cache.get('rev_del')
+			ctpk = ContentType.objects.get_for_model(model=self.model).pk
 			for obj in to_del_dicts:
 				ents = tuple(
 					[
@@ -92,13 +148,14 @@ class RevisionTrackedQuerySet(models.QuerySet):
 				)
 				rev_del.append(
 					(
-						ContentType.objects.get_for_model(model=self.model).pk,
+						ctpk,
 						obj['pk'],
 						ents,
 					)
 				)
-			cache.set('rev_del', rev_del)
 		super().delete()
+		if cache is not None:
+			cache.set('rev_del', rev_del)
 		return len(to_del_dicts)
 
 
@@ -116,7 +173,7 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 	class Meta:
 		abstract = True
 
-	def save(self, *args, **kwargs):
+	def save(self, *args, **kwargs) -> bool:
 		cache = get_request_cache()
 		dirty = self.get_dirty_fields(check_relationship=True)
 		# Needs to commit so we get a PK, but only after dirty fields have been copied
@@ -130,26 +187,15 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 		else:
 			rev = cache.get('rev')
 			ctpk = ContentType.objects.get_for_model(model=type(self)).pk
+			ents = _get_ents(self)
 			for k in dirty:
 				if k in self.revision_tracked_fields:
-					rev[(ctpk, self.pk, k)] = getattr(
-						self,
-						k + '_id'
-						if isinstance(
-							self._meta.get_field(k), models.fields.related.RelatedField
-						)
-						else k,
-					)
+					rev[(ctpk, self.pk, k)] = ents, get_serialized_value(self, k)
 			cache.set('rev', rev)
 		return len(self.get_dirty_fields(check_relationship=True)) > 0
 
 	def delete(self, *args, **kwargs):
-		ents = tuple(
-			[
-				(self if attr == 'self' else getattr(self, attr)).pk
-				for attr in type(self).revision_entity_attrs
-			]
-		)
+		ents = _get_ents(self)
 		pk = self.pk  # actually deleting will null the PK
 		if ret := super().delete(*args, **kwargs):
 			cache = get_request_cache()

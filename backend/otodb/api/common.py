@@ -332,19 +332,26 @@ def print_queries(f):
 
 
 def track_revision(f):
+	def get_entity_cts(model):
+		return [
+			ContentType.objects.get_for_model(
+				model if attr == 'self' else model._meta.get_field(attr).related_model
+			)
+			for attr in model.revision_entity_attrs
+		]
+
 	@wraps(f)
 	def wrapper(request, *args, **kwargs):
 		cache = get_request_cache()
-		cache.add('rev', {})  # key: (ContentType.pk, pk, field as str), value: str?
+		cache.add(
+			'rev', {}
+		)  # key: (ContentType.pk, pk, field as str), value: (entity_pks, str)
 		cache.add('rev_del', [])  # list of (ContentType.pk, pk, ...entity_pks)
 
 		ret = f(request, *args, **kwargs)
 
 		rev = cache.get('rev')
 		rev_del = cache.get('rev_del')
-
-		print(rev)
-		print(rev_del)
 
 		if len(rev) or len(rev_del):
 			revision = Revision.objects.create(user=request.user)
@@ -356,35 +363,25 @@ def track_revision(f):
 					deleted=True,
 				)
 				model = ContentType.objects.get(pk=ctpk).model_class()
-				for entity_type, ent_pk in zip(
-					[
-						ContentType.objects.get_for_model(
-							model
-							if attr == 'self'
-							else model._meta.get_field(attr).related_model
-						)
-						for attr in model.revision_entity_attrs
-					],
-					entities,
-				):
+				for entity_type, ent_pk in zip(get_entity_cts(model), entities):
 					if ent_pk:
 						RevisionChangeEntity.objects.create(
 							change=change, entity_type=entity_type, entity_id=ent_pk
 						)
-			for (ctpk, pk, field), val in rev.items():
-				contenttype = ContentType.objects.get(pk=ctpk)
-				target = contenttype.model_class().objects.get(pk=pk)
+			for (ctpk, pk, field), (entities, val) in rev.items():
+				ct = ContentType.objects.get(pk=ctpk)
+				model = ct.model_class()
+				target = model.objects.get(pk=pk)
 				change = RevisionChange.objects.create(
 					rev=revision,
 					target=target,
 					target_column=field,
 					target_value=val,
 				)
-				for ent_attr in contenttype.model_class().revision_entity_attrs:
-					entity = target if ent_attr == 'self' else getattr(target, ent_attr)
-					if entity:
+				for entity_type, ent_pk in zip(get_entity_cts(model), entities):
+					if ent_pk:
 						RevisionChangeEntity.objects.create(
-							change=change, entity=entity
+							change=change, entity=entity_type, entity_id=ent_pk
 						)
 
 		return ret

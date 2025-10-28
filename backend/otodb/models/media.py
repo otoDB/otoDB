@@ -5,11 +5,11 @@ import nh3
 from django.db import models
 from django.db.models import Subquery, OuterRef
 from django.urls import reverse
-from simple_history.models import HistoricalRecords
 from tagulous.models import TagField, TaggedManager
 
 from .enums import Rating, WorkTagCategory, Role
 from .tag import TagWork, TagSong
+from .revision import RevisionTrackedModel, RevisionTrackedManager
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
@@ -18,18 +18,13 @@ if TYPE_CHECKING:
 	from .relations import WorkRelation
 
 
-class ActiveManager(models.Manager):
-	def get_queryset(self):
-		return super().get_queryset().filter(moved_to__isnull=True)
-
-
 # allow setting a through table on tag fields
 TagField.forbidden_fields = cast(
 	tuple, tuple(v for v in TagField.forbidden_fields if v != 'through')
 )
 
 
-class TagWorkInstance(models.Model):
+class TagWorkInstance(RevisionTrackedModel):
 	class Meta:
 		unique_together = (('work', 'work_tag'),)
 
@@ -55,8 +50,9 @@ class TagWorkInstance(models.Model):
 				role_value |= role
 		self.creator_roles = role_value if role_value > 0 else None
 
+	revision_tracked_fields = ['work', 'work_tag', 'used_as_source', 'creator_roles']
 
-class MediaWork(models.Model):
+class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		worksource_set: QuerySet['WorkSource']
 		poolitem_set: QuerySet['PoolItem']
@@ -75,11 +71,11 @@ class MediaWork(models.Model):
 		'WorkSource', null=True, blank=True, on_delete=models.SET_NULL
 	)
 
-	history = HistoricalRecords(m2m_fields=[tags])
-
 	moved_to = models.ForeignKey(
 		'self', null=True, blank=True, on_delete=models.CASCADE
 	)
+
+	revision_tracked_fields = ['title', 'description', 'rating', 'moved_to']
 
 	# deprecated!
 	_thumbnail = models.CharField(
@@ -88,9 +84,6 @@ class MediaWork(models.Model):
 		blank=True,
 		help_text='Deprecated: Use thumbnail_source instead',
 	)
-
-	objects = models.Manager()
-	active_objects = TaggedManager.cast_class(ActiveManager())
 
 	def __str__(self):
 		return f'{self.pk}: {self.title}'
@@ -173,8 +166,7 @@ class MediaWork(models.Model):
 			]
 		).exclude(id=self.id)
 
-
-class MediaSong(models.Model):
+class MediaSong(RevisionTrackedModel):
 	title = models.CharField(max_length=1000, null=False, blank=False)
 	bpm = models.FloatField(null=True)
 	variable_bpm = models.BooleanField(default=False, null=False)
@@ -183,7 +175,8 @@ class MediaSong(models.Model):
 
 	tags = TagField(to=TagSong, related_name='songs')
 
-	history = HistoricalRecords(m2m_fields=[tags])
+	revision_tracked_fields = ['title', 'bpm', 'variable_bpm', 'work_tag', 'author']
+	# TODO track tags when we have custom through table
 
 	class Meta:
 		verbose_name = 'Song'

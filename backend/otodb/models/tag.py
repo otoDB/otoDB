@@ -3,7 +3,6 @@ from itertools import chain
 
 from django.db import models
 from django.db.models import Value, Q
-from simple_history.models import HistoricalRecords, HistoricForeignKey
 from tagulous.models import BaseTagModel, TagModelManager
 
 from django_cte import CTE, with_cte
@@ -12,6 +11,7 @@ from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_CLASSY
 
 from .enums import WorkTagCategory, SongTagCategory, LanguageTypes, MediaType
+from .revision import RevisionTrackedModel, RevisionTrackedManager
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
@@ -27,7 +27,7 @@ def name_cleaner(s):
 	return s.lower()
 
 
-class LowerCaseTagModelManager(TagModelManager):
+class LowerCaseTagModelManager(RevisionTrackedManager, TagModelManager):
 	def get_or_create(self, *args, **kwargs):
 		if 'name' in kwargs:
 			kwargs['name'] = name_cleaner(kwargs['name'])
@@ -85,7 +85,7 @@ class OtodbTagModel(BaseTagModel):
 				cls.objects.filter(aliased_to=tag).update(aliased_to=into_tag)
 
 
-class TagWork(OtodbTagModel):
+class TagWork(RevisionTrackedModel, OtodbTagModel):
 	objects = LowerCaseTagModelManager()
 
 	if TYPE_CHECKING:
@@ -121,10 +121,11 @@ class TagWork(OtodbTagModel):
 	category = models.IntegerField(
 		choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL
 	)
-	history = HistoricalRecords()
 	media_type = models.IntegerField(
 		null=True, blank=True, help_text='Media type bitmask'
 	)
+
+	revision_tracked_fields = ['name', 'slug', 'aliased_to', 'deprecated', 'category', 'media_type']
 
 	@property
 	def display_name(self):
@@ -357,22 +358,22 @@ class TagWork(OtodbTagModel):
 		to_tag.save()
 
 
-class TagWorkLangPreference(models.Model):
+class TagWorkLangPreference(RevisionTrackedModel):
 	lang = models.IntegerField(
 		choices=LanguageTypes.choices,
 		default=LanguageTypes.NOT_APPLICABLE,
 		null=False,
 		blank=False,
 	)
-	tag = HistoricForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
-	history = HistoricalRecords()
+	tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
+	revision_tracked_fields = ['lang', 'tag']
 
 	class Meta:
 		unique_together = (('tag', 'lang'),)
 
 
-class WikiPage(models.Model):
-	tag = HistoricForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
+class WikiPage(RevisionTrackedModel):
+	tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
 	page = MarkdownField(
 		rendered_field='page_rendered', validator=VALIDATOR_CLASSY, null=False
 	)  # type: ignore
@@ -384,13 +385,13 @@ class WikiPage(models.Model):
 		blank=False,
 	)
 
-	history = HistoricalRecords()
+	revision_tracked_fields = ['lang', 'tag', 'page']
 
 	class Meta:
 		unique_together = (('tag', 'lang'),)
 
 
-class TagSong(OtodbTagModel):
+class TagSong(RevisionTrackedModel, OtodbTagModel):
 	objects = LowerCaseTagModelManager()
 
 	class TagMeta:
@@ -408,7 +409,8 @@ class TagSong(OtodbTagModel):
 		on_delete=models.SET_NULL,
 		related_name='children',
 	)
-	history = HistoricalRecords()
+
+	revision_tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
 
 	@property
 	def display_name(self):
@@ -445,7 +447,7 @@ class TagSong(OtodbTagModel):
 		).order_by('-depth')
 
 
-class TagSongLangPreference(models.Model):
+class TagSongLangPreference(RevisionTrackedModel):
 	lang = models.IntegerField(
 		choices=LanguageTypes.choices,
 		default=LanguageTypes.NOT_APPLICABLE,
@@ -454,8 +456,9 @@ class TagSongLangPreference(models.Model):
 	)
 	tag = models.ForeignKey(TagSong, null=False, blank=False, on_delete=models.CASCADE)
 
+	revision_tracked_fields = ['lang', 'tag']
 
-class TagWorkParenthood(models.Model):
+class TagWorkParenthood(RevisionTrackedModel):
 	tag = models.ForeignKey(
 		TagWork,
 		null=False,
@@ -471,7 +474,7 @@ class TagWorkParenthood(models.Model):
 		related_name='parenthood',
 	)
 	primary = models.BooleanField(default=False)
-	history = HistoricalRecords()
+	revision_tracked_fields = ['tag', 'parent', 'primary']
 
 	class Meta:
 		unique_together = (('tag', 'parent'),)

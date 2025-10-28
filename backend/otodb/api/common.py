@@ -239,7 +239,7 @@ user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
 
 def post_relation(cls, payload: RelationSchema):
 	assert cls is MediaWork or cls is MediaSong
-	manager = cls.active_objects if cls is MediaWork else cls.objects
+	manager = cls.objects.filter(moved_to__isnull=True) if cls is MediaWork else cls.objects
 	rel_cls = WorkRelation if cls is MediaWork else SongRelation
 	A = manager.get(id=payload.A_id)
 	B = manager.get(id=payload.B_id)

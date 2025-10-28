@@ -7,12 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-	replaces = [
-		('otodb', '0053_alter_historicaltagworkconnection_site_and_more'),
-		('otodb', '0054_alter_bulkrequest_user'),
-		('otodb', '0055_bulkrequest_done_alter_userrequest_bulk'),
-	]
-
 	dependencies = [
 		('contenttypes', '0002_remove_content_type_name'),
 		('otodb', '0052_historicaltagworkparenthood_primary_and_more'),

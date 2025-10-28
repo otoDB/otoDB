@@ -135,7 +135,7 @@ def details(request: HttpRequest, tag_slug: str):
 @tag_router.get('works', response=list[ThinWorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
-	return MediaWork.active_objects.filter(tags__slug=tag_slug).select_related(
+	return MediaWork.objects.filter(moved_to__isnull=True, tags__slug=tag_slug).select_related(
 		'thumbnail_source'
 	)
 
@@ -662,8 +662,8 @@ def song_relation(request: HttpRequest, payload: RelationSchema):
 @tag_router.delete('song_relation', auth=django_auth)
 @user_is_trusted
 def delete_relation(request: HttpRequest, A: int, B: int):
-	a = MediaSong.active_objects.get(id=A)
-	b = MediaSong.active_objects.get(id=B)
+	a = MediaSong.objects.get(id=A)
+	b = MediaSong.objects.get(id=B)
 	rel = SongRelation.objects.get(a, b)
 	rel.delete()
 	return

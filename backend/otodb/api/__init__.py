@@ -35,7 +35,7 @@ def statistics(request):
 	from otodb.models import MediaWork, TagWork, MediaSong, Pool
 
 	return [
-		MediaWork.active_objects.count(),
+		MediaWork.objects.filter(moved_to__isnull=True).count(),
 		TagWork.objects.count(),
 		MediaSong.objects.count(),
 		Pool.objects.count(),

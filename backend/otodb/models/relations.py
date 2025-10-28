@@ -4,11 +4,10 @@ from django.db.models import Q
 
 from django_cte import CTE, with_cte
 
-from simple_history.models import HistoricalRecords, HistoricForeignKey
-
 from .media import MediaWork, MediaSong
 
 from .enums import WorkRelationTypes, SongRelationTypes
+from .revision import RevisionTrackedModel, RevisionTrackedManager
 
 
 def _get_component(model, obj_id: int):
@@ -30,7 +29,7 @@ def _get_component(model, obj_id: int):
 	return relations
 
 
-class BidirectionalManager(models.Manager):
+class BidirectionalManager(RevisionTrackedManager):
 	def get(self, A, B):
 		try:
 			return super().get(A=A, B=B)
@@ -38,15 +37,15 @@ class BidirectionalManager(models.Manager):
 			return super().get(B=A, A=B)
 
 
-class WorkRelation(models.Model):
-	A = HistoricForeignKey(
+class WorkRelation(RevisionTrackedModel):
+	A = models.ForeignKey(
 		MediaWork,
 		null=False,
 		blank=False,
 		on_delete=models.CASCADE,
 		related_name='relation_A',
 	)
-	B = HistoricForeignKey(
+	B = models.ForeignKey(
 		MediaWork,
 		null=False,
 		blank=False,
@@ -54,7 +53,8 @@ class WorkRelation(models.Model):
 		related_name='relation_B',
 	)
 	relation = models.IntegerField(choices=WorkRelationTypes.choices)
-	history = HistoricalRecords()
+
+	revision_tracked_fields = ['A', 'B', 'relation']
 
 	objects = BidirectionalManager()
 
@@ -80,15 +80,15 @@ class WorkRelation(models.Model):
 		return _get_component(WorkRelation, work_id)
 
 
-class SongRelation(models.Model):
-	A = HistoricForeignKey(
+class SongRelation(RevisionTrackedModel):
+	A = models.ForeignKey(
 		MediaSong,
 		null=False,
 		blank=False,
 		on_delete=models.CASCADE,
 		related_name='relation_A',
 	)
-	B = HistoricForeignKey(
+	B = models.ForeignKey(
 		MediaSong,
 		null=False,
 		blank=False,
@@ -96,7 +96,7 @@ class SongRelation(models.Model):
 		related_name='relation_B',
 	)
 	relation = models.IntegerField(choices=SongRelationTypes.choices)
-	history = HistoricalRecords()
+	revision_tracked_fields = ['A', 'B', 'relation']
 
 	objects = BidirectionalManager()
 

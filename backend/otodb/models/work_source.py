@@ -1,23 +1,23 @@
 from datetime import date
 from django.db import models
-from simple_history.models import HistoricalRecords, HistoricForeignKey
 import requests
-
-from .enums import Platform, WorkOrigin, WorkStatus, MimeType
-from .media import MediaWork
 
 from otodb.account.models import Account
 from otodb.common import video_info, process_video_info
 from otodb.storage_manager import storage_manager
 
 
-class ActiveManager(models.Manager):
+from .revision import RevisionTrackedModel, RevisionTrackedManager
+from .enums import Platform, WorkOrigin, WorkStatus, MimeType
+from .media import MediaWork
+
+class ActiveManager(RevisionTrackedManager):
 	def get_queryset(self):
 		return super().get_queryset().filter(rejection__isnull=True)
 
 
-class WorkSource(models.Model):
-	media = HistoricForeignKey(
+class WorkSource(RevisionTrackedModel):
+	media = models.ForeignKey(
 		MediaWork, on_delete=models.CASCADE, null=True, blank=True
 	)
 	platform = models.IntegerField(choices=Platform.choices)
@@ -47,9 +47,25 @@ class WorkSource(models.Model):
 		Account, blank=False, null=False, on_delete=models.CASCADE
 	)
 
-	objects = models.Manager()
 	active_objects = ActiveManager()
-	history = HistoricalRecords()
+	
+	revision_tracked_fields = [
+		'media',
+		'platform',
+		'source_id',
+		'url',
+		'published_date',
+		'work_origin',
+		'work_status',
+		'work_width',
+		'work_height',
+		'work_duration',
+		'title',
+		'description',
+		'thumbnail_url',
+		'uploader_id',
+		'added_by',
+	]
 
 	info_payload: 'WorkSourceInfoPayload'
 
@@ -192,7 +208,7 @@ class WorkSourceRejection(models.Model):
 	)
 	reason = models.CharField(max_length=1000, null=False, blank=False)
 	by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.RESTRICT)
-
+	date = models.DateTimeField(auto_now_add=True, null=False)
 
 class WorkSourceInfoPayload(models.Model):
 	source = models.OneToOneField(

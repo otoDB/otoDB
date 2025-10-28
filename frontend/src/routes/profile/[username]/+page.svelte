@@ -8,7 +8,6 @@
 	import { current_version, version_end_dates } from '$lib/ui';
 
 	let { data }: PageProps = $props();
-	console.log(version_end_dates);
 </script>
 
 <Section

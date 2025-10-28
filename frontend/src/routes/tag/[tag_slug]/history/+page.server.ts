@@ -6,8 +6,8 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		fetch,
 		params: {
 			query: {
-				model: 'tagwork',
-				pk: params.tag_slug
+				entity: 'tagwork',
+				object_id: params.tag_slug
 			}
 		}
 	});

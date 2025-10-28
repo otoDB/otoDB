@@ -63,7 +63,7 @@ def get_serialized_value(instance, field):
 	)
 
 
-def _bulk_get_new_rev(model, objs, tracked_fields):
+def _bulk_get_new_rev(model, objs):
 	all_changes = []
 
 	for obj in objs:
@@ -81,7 +81,7 @@ def _bulk_get_new_rev(model, objs, tracked_fields):
 def _get_ents(obj):
 	return tuple(
 		[
-			(obj if attr == 'self' else getattr(obj, attr)).pk
+			getattr(obj if attr == 'self' else getattr(obj, attr), 'pk', None)
 			for attr in type(obj).revision_entity_attrs
 		]
 	)

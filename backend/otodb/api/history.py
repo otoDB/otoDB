@@ -1,6 +1,10 @@
+from typing import Literal
 from datetime import datetime
 
 import diff_match_patch as dmp_mod
+
+from django.db.models import Window, F
+from django.db.models.functions import RowNumber
 
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
@@ -13,9 +17,7 @@ from ninja.security import django_auth
 from otodb.models import TagWork, Revision, RevisionChange
 from otodb.account.models import Account
 
-from .common import track_revision
-
-from .common import user_is_staff
+from .common import user_is_staff, track_revision
 
 history_router = Router()
 
@@ -78,6 +80,7 @@ class RevisionSchema(ModelSchema):
 	id: int
 	date: datetime
 	user: str = Field(..., alias='user.username')
+	index: None | int = None
 
 	class Meta:
 		model = Revision
@@ -94,20 +97,6 @@ class RevisionChangeSchema(ModelSchema):
 
 class FullRevisionSchema(RevisionSchema):
 	changes: list[RevisionChangeSchema] = Field(..., alias='revisionchange_set')
-
-
-# class DeltaSchema(Schema):
-# 	html: str
-# 	field: str
-
-
-# class HistorySchema(Schema):
-# 	id: int = Field(..., alias='history_id')
-# 	model: str
-# 	date: datetime = Field(..., alias='history_date')
-# 	user: str = Field(..., alias='history_user')
-# 	reason: str | None = Field(..., alias='history_change_reason')
-# 	delta: list[DeltaSchema]
 
 
 def get_history_dict(historical):
@@ -149,3 +138,21 @@ def revision(request: HttpRequest, revision_id: int):
 @track_revision
 def rollback(request: HttpRequest, history_id: int):
 	pass  # TODO
+
+
+@history_router.get('history', auth=django_auth, response=list[RevisionSchema])
+@paginate
+def history(
+	request: HttpRequest, object_id: int | str, entity: Literal['mediawork', 'tagwork']
+):
+	if entity == 'tagwork':
+		object_id = TagWork.objects.get(slug=object_id).id
+	return (
+		Revision.objects.filter(
+			revisionchange__revisionchangeentity__entity_id=object_id,
+			revisionchange__revisionchangeentity__entity_type__model=entity,
+		)
+		.distinct()
+		.annotate(index=Window(expression=RowNumber(), order_by=F('id').asc()))
+		.order_by('-id')
+	)

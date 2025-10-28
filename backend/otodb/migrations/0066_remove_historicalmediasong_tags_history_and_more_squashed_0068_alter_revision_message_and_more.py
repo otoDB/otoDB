@@ -50,9 +50,11 @@ def initial_revision(apps, schema_editor):
 					for attr in model.revision_entity_attrs:
 						RevisionChangeEntity.objects.create(
 							change=change,
-							entity_type=model
-							if attr == 'self'
-							else model._meta.get_field(attr).related_model,
+							entity_type=ContentType.objects.get_for_model(
+								model
+								if attr == 'self'
+								else model._meta.get_field(attr).related_model
+							),
 							entity_id=instance['pk' if attr == 'self' else attr],
 						)
 

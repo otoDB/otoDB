@@ -23,6 +23,6 @@ export const load: PageServerLoad = async ({ fetch }) => {
 	return {
 		random: randomWork.data,
 		recent: recentWork.data,
-		changes: recentChanges.data.items
+		revisions: recentChanges.data.items
 	};
 };

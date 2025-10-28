@@ -1,5 +1,5 @@
 <script lang="ts">
-	import client from './api';
+	import client, { getTagDisplaySlug } from './api';
 	import TagSuggestionResults from './TagSuggestionResults.svelte';
 	import { clickOutside, debounce } from './ui';
 
@@ -42,7 +42,7 @@
 			<TagSuggestionResults
 				{suggestions}
 				onselect={(t) => {
-					value = t.aliased_to ? t.aliased_to.slug : t.slug;
+					value = getTagDisplaySlug(t.aliased_to || t);
 					suggestions = [];
 				}}
 				onclose={() => (suggestions = [])}

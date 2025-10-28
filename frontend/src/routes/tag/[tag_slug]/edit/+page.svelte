@@ -31,9 +31,7 @@
 	let parents = $state(form?.parent_slugs ?? data.parents?.map((t) => t.slug) ?? []);
 	let primary = $state(
 		form?.primary ??
-			(data.details?.primary_parent
-				? (parents.indexOf(data.details?.primary_parent) ?? -1)
-				: -1)
+			(data.details?.primary_parent ? parents.indexOf(data.details?.primary_parent) : -1)
 	);
 
 	let category = $state(form?.category ?? data.tag?.category);
@@ -153,7 +151,7 @@
 						><select name="primary" bind:value={primary}
 							><option value={-1}>None</option>{#each parents as p, i (i)}<option
 									value={i}>{p}</option
-								>{p}{/each}</select
+								>{/each}</select
 						></td
 					>
 				</tr>

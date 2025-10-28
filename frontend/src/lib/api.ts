@@ -69,3 +69,6 @@ export const getTagDisplayName = (tag) =>
 	makeTagDisplayName(
 		tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.tag ?? tag.name
 	);
+
+export const getTagDisplaySlug = (tag) =>
+	tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.slug ?? tag.slug;

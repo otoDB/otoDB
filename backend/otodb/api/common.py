@@ -36,16 +36,12 @@ class ProfileSchema(ModelSchema):
 
 
 class TagWorkLangPreferenceSchema(ModelSchema):
-	tag: str
+	tag: str = Field(..., alias='tag.name')
+	slug: str = Field(..., alias='tag.slug')
 
 	class Meta:
 		model = TagWorkLangPreference
 		fields = ['lang']
-
-	@field_validator('tag', mode='before', check_fields=False)
-	@classmethod
-	def tag_slug(cls, value) -> str:
-		return value.name
 
 
 class TagSongSchema(Schema):

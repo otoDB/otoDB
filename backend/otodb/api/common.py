@@ -347,20 +347,19 @@ def track_revision(f):
 			'rev', {}
 		)  # key: (ContentType.pk, pk, field as str), value: (entity_pks, str)
 		cache.add('rev_del', [])  # list of (ContentType.pk, pk, ...entity_pks)
+		cache.add('rev_msg', '')
 
 		ret = f(request, *args, **kwargs)
 
 		rev = cache.get('rev')
 		rev_del = cache.get('rev_del')
+		rev_msg = cache.get('rev_msg')
 
 		if len(rev) or len(rev_del):
-			revision = Revision.objects.create(user=request.user)
+			revision = Revision.objects.create(user=request.user, message=rev_msg)
 			for ctpk, pk, entities in rev_del:
 				change = RevisionChange.objects.create(
-					rev=revision,
-					target_type_id=ctpk,
-					target_id=pk,
-					deleted=True,
+					rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
 				)
 				model = ContentType.objects.get(pk=ctpk).model_class()
 				for entity_type, ent_pk in zip(get_entity_cts(model), entities):
@@ -393,7 +392,7 @@ def add_revision_message(message: str):
 	cache = get_request_cache()
 	rev_msg = cache.get_or_set('rev_msg', '')
 	rev_msg = rev_msg + ('\n' if rev_msg else '') + message
-	rev_msg = cache.set('rev_msg', rev_msg)
+	cache.set('rev_msg', rev_msg)
 
 
 class RouterWithRevision(Router):

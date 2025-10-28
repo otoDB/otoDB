@@ -9,9 +9,9 @@ from otodb.account.models import Account
 
 
 class Revision(models.Model):
-	user = models.ForeignKey(Account, on_delete=models.CASCADE, null=False)
+	user = models.ForeignKey(Account, on_delete=models.PROTECT, null=False)
 	date = models.DateTimeField(auto_now_add=True)
-	message = models.TextField(null=True)
+	message = models.TextField(null=False, default='')
 
 
 class RevisionChange(models.Model):

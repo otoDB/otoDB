@@ -36,6 +36,7 @@
 	);
 	$effect(() => {
 		if (prev_n_parents === 0 && parents.length > 0) primary = 0;
+		if (parents.length === 0) primary = -1;
 		prev_n_parents = parents.length;
 	});
 

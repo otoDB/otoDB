@@ -1361,6 +1361,8 @@ export interface components {
         TagWorkLangPreferenceSchema: {
             /** Tag */
             tag: string;
+            /** Slug */
+            slug: string;
             /**
              * Lang
              * @default 0

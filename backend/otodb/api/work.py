@@ -98,7 +98,7 @@ def search(
 	order: Literal['id', '-id', 'pub', '-pub'] | None = '-id',
 ):
 	search_id = int(query) if query.isdigit() else -1
-	q = Q(title__icontains=query) | Q(description__icontains=query)
+	q = Q(title__icontains=query) | Q(description__icontains=query) | Q(worksource__title__icontains=query)
 	if tags:
 		for tag in tags.split():
 			try:
@@ -143,10 +143,9 @@ def search(
 				When(id=search_id, then=Value(0)),
 				When(worksource__url=query, then=Value(1)),
 				When(worksource__source_id=query, then=Value(2)),
-				When(
-					Q(title__icontains=query) | Q(description__icontains=query),
-					then=Value(100),
-				),
+				When(title__icontains=query, then=Value(100)),
+				When(worksource__title__icontains=query, then=Value(101)),
+				When(description__icontains=query, then=Value(102)),
 				default=Value(1000),
 				output_field=IntegerField(),
 			),

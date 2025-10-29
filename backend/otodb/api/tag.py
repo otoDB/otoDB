@@ -150,7 +150,9 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
 		except TagWork.DoesNotExist:
 			tags.append(TagWork.objects.create(name=tag_name))
 
-	into = get_object_or_404(TagWork.objects.select_related('aliased_to'), slug=clean_incoming_slug(into_tag))
+	into = get_object_or_404(
+		TagWork.objects.select_related('aliased_to'), slug=clean_incoming_slug(into_tag)
+	)
 	if into.aliased_to:
 		into = into.aliased_to
 	assert into.aliased_to is None

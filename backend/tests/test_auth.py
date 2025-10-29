@@ -1,7 +1,5 @@
 """Tests for authentication API endpoints."""
 
-from urllib.parse import urlencode
-
 import pytest
 from django.core import mail
 
@@ -10,9 +8,7 @@ from django.core import mail
 def test_password_reset_email_sends_successfully(auth_client, member):
 	"""Test that password reset email is sent with correct format."""
 	# Request password reset using member fixture
-	response = auth_client.put(
-		'/reset_password?' + urlencode({'email': 'user@test.com'})
-	)
+	response = auth_client.put('/reset_password', json={'email': 'user@test.com'})
 
 	# Should return success (200) even if email doesn't exist (security best practice)
 	assert response.status_code == 200
@@ -51,9 +47,7 @@ def test_password_reset_email_sends_successfully(auth_client, member):
 def test_password_reset_email_nonexistent_user(auth_client):
 	"""Test that password reset doesn't reveal if user exists (security best practice)."""
 	# Request password reset for non-existent email
-	response = auth_client.put(
-		'/reset_password?' + urlencode({'email': 'nonexistent@example.com'})
-	)
+	response = auth_client.put('/reset_password', json={'email': 'nonexistent@example.com'})
 
 	# Should still return success to prevent user enumeration
 	assert response.status_code == 200
@@ -66,7 +60,7 @@ def test_password_reset_email_nonexistent_user(auth_client):
 def test_password_reset_token_uniqueness(auth_client, editor):
 	"""Test that each password reset generates a unique token."""
 	# Request first reset using editor fixture
-	auth_client.put('/reset_password?' + urlencode({'email': 'editor@test.com'}))
+	auth_client.put('/reset_password', json={'email': 'editor@test.com'})
 	editor.refresh_from_db()
 	first_token = editor.reset_token
 
@@ -74,7 +68,7 @@ def test_password_reset_token_uniqueness(auth_client, editor):
 	mail.outbox.clear()
 
 	# Request second reset
-	auth_client.put('/reset_password?' + urlencode({'email': 'editor@test.com'}))
+	auth_client.put('/reset_password', json={'email': 'editor@test.com'})
 	editor.refresh_from_db()
 	second_token = editor.reset_token
 

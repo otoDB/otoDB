@@ -22,7 +22,7 @@ export const actions = {
 		else if (password != confirm) return fail(400, { mismatch: true });
 
 		const { error } = await client.POST('/api/auth/reset_password', {
-			params: { query: { password, token } },
+			body: { password, token },
 			fetch
 		});
 
@@ -35,7 +35,7 @@ export const actions = {
 		if (!email) return fail(400, { missing: true });
 
 		await client.PUT('/api/auth/reset_password', {
-			params: { query: { email } },
+			body: { email },
 			fetch
 		});
 

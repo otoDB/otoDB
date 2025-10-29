@@ -24,7 +24,7 @@ export const actions = {
 		else if (password != confirm) return fail(400, { username, email, mismatch: true });
 
 		const { response, error } = await client.POST('/api/auth/register', {
-			params: { query: { username, password, email, invite } },
+			body: { username, password, email, invite },
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') },
 			fetch
 		});

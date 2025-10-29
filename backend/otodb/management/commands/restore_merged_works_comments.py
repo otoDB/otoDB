@@ -29,7 +29,9 @@ class Command(BaseCommand):
 		self.stdout.write('Starting comment restoration...')
 
 		if dry_run:
-			self.stdout.write(self.style.WARNING('DRY RUN MODE - No changes will be made'))
+			self.stdout.write(
+				self.style.WARNING('DRY RUN MODE - No changes will be made')
+			)
 
 		try:
 			mediawork_ct = ContentType.objects.get_for_model(MediaWork)
@@ -56,8 +58,7 @@ class Command(BaseCommand):
 
 			if final_work and final_work.pk != merged_work.pk:
 				comment_count = XtdComment.objects.filter(
-					content_type=mediawork_ct,
-					object_pk=str(merged_work.pk)
+					content_type=mediawork_ct, object_pk=str(merged_work.pk)
 				).count()
 
 				if comment_count > 0:
@@ -67,8 +68,7 @@ class Command(BaseCommand):
 						)
 					else:
 						updated = XtdComment.objects.filter(
-							content_type=mediawork_ct,
-							object_pk=str(merged_work.pk)
+							content_type=mediawork_ct, object_pk=str(merged_work.pk)
 						).update(object_pk=str(final_work.pk))
 
 						self.stdout.write(
@@ -81,7 +81,11 @@ class Command(BaseCommand):
 
 		self.stdout.write(self.style.SUCCESS('\nRestoration complete'))
 		self.stdout.write(f'Processed {works_processed} merged works')
-		self.stdout.write(f'Total comments {"would be" if dry_run else ""} migrated: {migration_count}')
+		self.stdout.write(
+			f'Total comments {"would be" if dry_run else ""} migrated: {migration_count}'
+		)
 
 		if dry_run:
-			self.stdout.write(self.style.WARNING('This was a dry run - no actual changes were made'))
+			self.stdout.write(
+				self.style.WARNING('This was a dry run - no actual changes were made')
+			)

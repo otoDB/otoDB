@@ -147,8 +147,7 @@ class MediaWork(models.Model):
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
 		XtdComment.objects.filter(
-			content_type=mediawork_ct,
-			object_pk=str(from_work.pk)
+			content_type=mediawork_ct, object_pk=str(from_work.pk)
 		).update(object_pk=str(to_work.pk))
 
 		from_work.moved_to = to_work

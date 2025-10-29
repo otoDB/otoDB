@@ -4,6 +4,7 @@ import pytest
 from ninja.testing import TestClient
 
 from otodb.account.models import Account
+from otodb.api.auth import auth_router
 from otodb.api.tag import tag_router
 from otodb.api.work import work_router
 
@@ -36,3 +37,9 @@ def work_client():
 def tag_client():
 	"""Create a test client for the tag router."""
 	return TestClient(tag_router)
+
+
+@pytest.fixture
+def auth_client():
+	"""Create a test client for the auth router."""
+	return TestClient(auth_router)

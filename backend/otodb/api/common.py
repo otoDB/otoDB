@@ -381,7 +381,7 @@ def track_revision(f):
 				for entity_type, ent_pk in zip(get_entity_cts(model), entities):
 					if ent_pk:
 						RevisionChangeEntity.objects.create(
-							change=change, entity=entity_type, entity_id=ent_pk
+							change=change, entity_type=entity_type, entity_id=ent_pk
 						)
 
 		return ret

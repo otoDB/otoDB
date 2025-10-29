@@ -439,3 +439,118 @@ class TestWork:
 		).count()
 
 		assert comments_on_work_1 == 2
+
+	def test_merge_always_uses_lowest_id(self, editor):
+		"""Test that merge always keeps the work with the lowest ID regardless of direction."""
+		# Create works with explicit IDs (work_1 has lower ID)
+		work_1 = MediaWork.objects.create(title='Work 1', rating=Rating.GENERAL)
+		work_2 = MediaWork.objects.create(title='Work 2', rating=Rating.GENERAL)
+		work_3 = MediaWork.objects.create(title='Work 3', rating=Rating.GENERAL)
+
+		# Create sources for each work
+		source_1 = WorkSource.objects.create(
+			media=work_1,
+			platform=Platform.YOUTUBE,
+			source_id='test1',
+			url='https://youtube.com/test1',
+			published_date=date.today(),
+			title='Source 1',
+			added_by=editor,
+		)
+		source_2 = WorkSource.objects.create(
+			media=work_2,
+			platform=Platform.YOUTUBE,
+			source_id='test2',
+			url='https://youtube.com/test2',
+			published_date=date.today(),
+			title='Source 2',
+			added_by=editor,
+		)
+		source_3 = WorkSource.objects.create(
+			media=work_3,
+			platform=Platform.YOUTUBE,
+			source_id='test3',
+			url='https://youtube.com/test3',
+			published_date=date.today(),
+			title='Source 3',
+			added_by=editor,
+		)
+
+		# Create comments on each work
+		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+		comment_1 = XtdComment.objects.create(
+			content_type=mediawork_ct,
+			object_pk=str(work_1.pk),
+			site_id=1,
+			user=editor,
+			comment='Comment on work 1',
+		)
+		comment_2 = XtdComment.objects.create(
+			content_type=mediawork_ct,
+			object_pk=str(work_2.pk),
+			site_id=1,
+			user=editor,
+			comment='Comment on work 2',
+		)
+
+		work_1_id = work_1.pk
+		work_2_id = work_2.pk
+		work_3_id = work_3.pk
+
+		# Test 1: Merge work_2 -> work_1 (normal direction, to_work has lower ID)
+		MediaWork.merge(
+			to_work=work_1,
+			from_work=work_2,
+			title='Merged Title A',
+			description='Merged Description A',
+			thumbnail_source=source_1,
+			rating=Rating.GENERAL,
+		)
+
+		work_1.refresh_from_db()
+		work_2.refresh_from_db()
+		source_2.refresh_from_db()
+		comment_2.refresh_from_db()
+
+		# Verify work_1 (lower ID) is preserved
+		assert work_1.title == 'Merged Title A'
+		assert work_1.description == 'Merged Description A'
+		assert work_2.moved_to == work_1
+		assert source_2.media == work_1
+		assert comment_2.object_pk == str(work_1_id)
+
+		# Test 2: Merge work_1 -> work_3 (reversed direction, from_work has lower ID)
+		# This should swap internally so work_1 remains the target
+		MediaWork.merge(
+			to_work=work_3,
+			from_work=work_1,
+			title='Merged Title B',
+			description='Merged Description B',
+			thumbnail_source=source_1,
+			rating=Rating.EXPLICIT,
+		)
+
+		work_1.refresh_from_db()
+		work_3.refresh_from_db()
+		source_1.refresh_from_db()
+		source_3.refresh_from_db()
+		comment_1.refresh_from_db()
+
+		# Verify work_1 (lowest ID) is STILL preserved, not work_3
+		assert work_1.title == 'Merged Title B'
+		assert work_1.description == 'Merged Description B'
+		assert work_1.rating == Rating.EXPLICIT
+		assert work_3.moved_to == work_1
+		assert work_1.moved_to is None  # work_1 should not be moved
+
+		# All sources should now point to work_1
+		assert source_1.media == work_1
+		assert source_3.media == work_1
+
+		# All comments should be on work_1
+		assert comment_1.object_pk == str(work_1_id)
+
+		# Verify all sources are on the lowest ID work
+		assert WorkSource.objects.filter(media=work_1).count() == 3
+		assert WorkSource.objects.filter(media=work_2).count() == 0
+		assert WorkSource.objects.filter(media=work_3).count() == 0

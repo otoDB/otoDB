@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TransactionTestCase
 from ninja.testing import TestClient
 from otodb.api.work import work_router
 from otodb.account.models import Account
@@ -40,7 +40,7 @@ def fuzz_video_infos(info_tuple):
 	return process_video_info(full_info), full_info
 
 
-class WorkTest(TestCase):
+class WorkTest(TransactionTestCase):
 	reset_sequences = True
 
 	@classmethod

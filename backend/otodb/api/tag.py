@@ -72,7 +72,8 @@ def search(
 	category: int | None = None,
 	media_type: list[int] | None = Query(None),
 ):
-	qs = TagWork.objects.filter(name__contains=clean_incoming_tag_name(query))
+	cleaned_query = clean_incoming_tag_name(query)
+	qs = TagWork.objects.filter(name__contains=cleaned_query)
 
 	if resolve_aliases:
 		qs = qs.filter(aliased_to__isnull=True) | TagWork.objects.filter(
@@ -93,9 +94,15 @@ def search(
 				),
 				default=Count('tagworkinstance'),
 				output_field=models.IntegerField(),
-			)
+			),
+			exact_match=Case(
+				When(name__iexact=cleaned_query, then=Value(0)),
+				When(aliases__name__iexact=cleaned_query, then=Value(1)),
+				default=Value(99),
+				output_field=models.IntegerField(),
+			),
 		)
-		.order_by('-n_instance')
+		.order_by('exact_match', '-n_instance')
 	)
 
 
@@ -151,7 +158,11 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
 		except TagWork.DoesNotExist:
 			tags.append(TagWork.objects.create(name=tag_name))
 
-	into = get_object_or_404(TagWork, slug=clean_incoming_slug(into_tag))
+	into = get_object_or_404(
+		TagWork.objects.select_related('aliased_to'), slug=clean_incoming_slug(into_tag)
+	)
+	if into.aliased_to:
+		into = into.aliased_to
 	assert into.aliased_to is None
 
 	TagWork.alias(tags, into)
@@ -279,7 +290,8 @@ def update(
 	tag.save()
 
 	ps = [
-		get_object_or_404(TagWork, slug=s, aliased_to__isnull=True)
+		get_object_or_404(TagWork, slug=s).aliased_to
+		or get_object_or_404(TagWork, slug=s, aliased_to__isnull=True)
 		for s in [clean_incoming_slug(p) for p in payload.parent_slugs]
 	]
 	assert payload.primary is None or 0 <= payload.primary < len(ps)

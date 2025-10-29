@@ -100,7 +100,14 @@ export const actions = {
 			}
 		});
 
-		if (error) return fail(400, { category, parent_slugs, deprecated, failed: true, primary });
+		if (error)
+			return fail(400, {
+				category,
+				parent_slugs,
+				deprecated,
+				failed: true,
+				primary: +primary
+			});
 
 		redirect(303, `/tag/${params.tag_slug}`);
 	},

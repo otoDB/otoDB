@@ -175,16 +175,16 @@
 								`/profile/${data.user.username}/submissions`,
 								m.flaky_gross_marlin_evoke()
 							)}
-							<li
-								aria-current={page.url.pathname === `/logout` ? 'page' : undefined}
-								class="mt-4"
-							>
-								<a
-									href="/logout"
-									data-sveltekit-preload-data="tap"
-									data-sveltekit-reload
-									class="no-underline">{m.best_front_swallow_play()}</a
-								>
+							<li class="mt-4">
+								<form method="POST" action="/logout">
+									<button
+										type="submit"
+										class="w-full cursor-pointer border-none bg-transparent p-0 text-left text-xl text-[inherit] no-underline md:text-sm"
+										onclick={closeMobileNav}
+									>
+										{m.best_front_swallow_play()}
+									</button>
+								</form>
 							</li>
 						{/if}
 					</ul>

@@ -94,6 +94,7 @@ class MediaWork(RevisionTrackedModel):
 	class Meta:
 		verbose_name = 'Work'
 		verbose_name_plural = 'Works'
+		ordering = ['-id']
 
 	def get_absolute_url(self):
 		return reverse('otodb:work', kwargs={'work_id': self.pk})
@@ -108,6 +109,13 @@ class MediaWork(RevisionTrackedModel):
 		thumbnail_source: 'WorkSource',
 		rating: int,
 	):
+		from django.contrib.contenttypes.models import ContentType
+		from django_comments_xtd.models import XtdComment
+
+		# Ensure we always merge into the work with the lower ID
+		if from_work.pk < to_work.pk:
+			to_work, from_work = from_work, to_work
+
 		to_work.title = title
 		to_work.description = description
 		to_work.thumbnail_source = thumbnail_source
@@ -124,6 +132,11 @@ class MediaWork(RevisionTrackedModel):
 
 		from_work.relation_B.filter(A=to_work).delete()
 		from_work.relation_A.update(B=to_work)
+
+		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+		XtdComment.objects.filter(
+			content_type=mediawork_ct, object_pk=str(from_work.pk)
+		).update(object_pk=str(to_work.pk))
 
 		from_work.moved_to = to_work
 		from_work.save()
@@ -189,7 +202,7 @@ class MediaSong(RevisionTrackedModel):
 		constraints = [
 			models.CheckConstraint(
 				name='song_bpm_positive',
-				check=models.Q(bpm__gt=0),
+				condition=models.Q(bpm__gt=0),
 				violation_error_message='BPM must be positive',
 			),
 		]

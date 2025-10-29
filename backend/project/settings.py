@@ -134,7 +134,14 @@ elif DATABASE_BACKEND == 'postgresql':
 	DATABASE['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
 	DATABASE['HOST'] = os.environ['OTODB_DB_HOST']
 	DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
-	DATABASE['OPTIONS']['pool'] = True
+	DATABASE['CONN_MAX_AGE'] = 0
+	DATABASE['OPTIONS']['pool'] = {
+		'min_size': int(os.environ.get('OTODB_DB_POOL_MIN_SIZE', '4')),
+		'max_size': int(os.environ.get('OTODB_DB_POOL_MAX_SIZE', '16')),
+		'timeout': int(os.environ.get('OTODB_DB_POOL_TIMEOUT', '10')),
+		'max_lifetime': int(os.environ.get('OTODB_DB_POOL_MAX_LIFETIME', '1800')),
+		'max_idle': int(os.environ.get('OTODB_DB_POOL_MAX_IDLE', '300')),
+	}
 else:
 	DATABASE['NAME'] = BASE_DIR / f'{os.environ.get("OTODB_DB_NAME", "db")}.sqlite3'
 

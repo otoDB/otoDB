@@ -43,6 +43,7 @@ class ProfileSchema(ModelSchema):
 
 class TagWorkLangPreferenceSchema(ModelSchema):
 	tag: str = Field(..., alias='tag.name')
+	slug: str = Field(..., alias='tag.slug')
 
 	class Meta:
 		model = TagWorkLangPreference

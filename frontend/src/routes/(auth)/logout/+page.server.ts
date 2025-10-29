@@ -1,16 +1,18 @@
 import client from '$lib/api';
 import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { Actions } from './$types';
 
-export const load: PageServerLoad = async ({ cookies, fetch, locals }) => {
-	if (!locals.user) redirect(303, '/');
+export const actions: Actions = {
+	default: async ({ cookies, fetch, locals }) => {
+		if (!locals.user) redirect(303, '/');
 
-	const { error } = await client.POST('/api/auth/logout', { fetch });
+		const { error } = await client.POST('/api/auth/logout', { fetch });
 
-	if (!error) {
-		cookies.delete('csrftoken', { path: '/' });
-		cookies.delete('sessionid', { path: '/' });
+		if (!error) {
+			cookies.delete('csrftoken', { path: '/' });
+			cookies.delete('sessionid', { path: '/' });
+		}
+
+		redirect(303, '/');
 	}
-
-	redirect(303, '/');
 };

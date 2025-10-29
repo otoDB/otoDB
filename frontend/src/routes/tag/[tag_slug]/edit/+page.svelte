@@ -18,7 +18,7 @@
 	import type { PageProps } from './$types';
 	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
-	import client from '$lib/api';
+	import client, { getTagDisplaySlug } from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
@@ -28,13 +28,26 @@
 
 	let { data, form }: PageProps = $props();
 
-	let parents = $state(form?.parent_slugs ?? data.parents?.map((t) => t.slug) ?? []);
+	let parents = $state(
+		form?.parent_slugs ?? data.parents?.map((t) => getTagDisplaySlug(t)) ?? []
+	);
+	let prev_n_parents = parents.length;
 	let primary = $state(
 		form?.primary ??
 			(data.details?.primary_parent
-				? (parents.indexOf(data.details?.primary_parent) ?? -1)
+				? (() => {
+						const parentTag = data.parents?.find(
+							(t) => t.slug === data.details?.primary_parent
+						);
+						return parentTag ? parents.indexOf(getTagDisplaySlug(parentTag)) : -1;
+					})()
 				: -1)
 	);
+	$effect(() => {
+		if (prev_n_parents === 0 && parents.length > 0) primary = 0;
+		if (parents.length === 0) primary = -1;
+		prev_n_parents = parents.length;
+	});
 
 	let category = $state(form?.category ?? data.tag?.category);
 	let wikiView = $state(getLocale());
@@ -153,7 +166,7 @@
 						><select name="primary" bind:value={primary}
 							><option value={-1}>None</option>{#each parents as p, i (i)}<option
 									value={i}>{p}</option
-								>{p}{/each}</select
+								>{/each}</select
 						></td
 					>
 				</tr>

@@ -71,7 +71,7 @@ class WorkRelation(RevisionTrackedModel):
 			),
 			models.CheckConstraint(
 				name='work_relation_nonreflexive',
-				check=~models.Q(A=models.F('B')),
+				condition=~models.Q(A=models.F('B')),
 				violation_error_message='A must be different from B',
 			),
 		]
@@ -114,7 +114,7 @@ class SongRelation(RevisionTrackedModel):
 			),
 			models.CheckConstraint(
 				name='song_relation_nonreflexive',
-				check=~models.Q(A=models.F('B')),
+				condition=~models.Q(A=models.F('B')),
 				violation_error_message='A must be different from B',
 			),
 		]

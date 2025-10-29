@@ -236,8 +236,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 					'id',
 					'slug',
 					fr=models.functions.Cast(cte.col.slug, models.TextField()),
-				),
-				all=True,
+				),  # Cannot do all=True because we could have diamond problems
 			)
 		)
 		return with_cte(

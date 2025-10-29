@@ -81,8 +81,8 @@ class SourceSubmissionSchema(WorkSourceSchema):
 
 class SubmissionsFilterSchema(FilterSchema):
 	platform: int | None = None
-	origin: int | None = Field(None, q='work_origin')
-	status: int | None = Field(None, q='work_status')
+	origin: int | None = Field(None, json_schema_extra={'q': 'work_origin'})
+	status: int | None = Field(None, json_schema_extra={'q': 'work_status'})
 
 
 @profile_router.get('submissions', response=List[SourceSubmissionSchema])

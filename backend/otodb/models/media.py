@@ -113,6 +113,9 @@ class MediaWork(models.Model):
 		thumbnail_source: 'WorkSource',
 		rating: int,
 	):
+		from django.contrib.contenttypes.models import ContentType
+		from django_comments_xtd.models import XtdComment
+
 		to_work.title = title
 		to_work.description = description
 		to_work.thumbnail_source = thumbnail_source
@@ -141,6 +144,11 @@ class MediaWork(models.Model):
 			else:
 				relation.B = to_work
 				relation.save()
+
+		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+		XtdComment.objects.filter(
+			content_type=mediawork_ct, object_pk=str(from_work.pk)
+		).update(object_pk=str(to_work.pk))
 
 		from_work.moved_to = to_work
 		from_work.save()

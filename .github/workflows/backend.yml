@@ -20,30 +20,29 @@ jobs:
       - run: uvx ruff check
 
   test:
-    name: Test (Python ${{ matrix.python-version }}, ${{ matrix.db-name }})
+    name: Test (Python ${{ matrix.python-version }}, ${{ matrix.database.name }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.13", "3.14"]
-        db-backend: [sqlite, postgres]
-        postgres-version: ["17", "18"]
-        exclude:
-          - db-backend: sqlite
-            postgres-version: "18"
-        include:
-          - db-backend: sqlite
-            postgres-version: "17"
-            db-name: SQLite
-          - db-backend: postgres
-            postgres-version: "17"
-            db-name: PostgreSQL 17
-          - db-backend: postgres
-            postgres-version: "18"
-            db-name: PostgreSQL 18
+        database:
+          - { type: sqlite, name: SQLite }
+          - { type: postgres, name: PostgreSQL 17, version: "17" }
+          - { type: postgres, name: PostgreSQL 18, version: "18" }
+
+    env:
+      OTODB_SECRET_KEY: test-secret-key-for-ci
+      OTODB_DB_BACKEND: ${{ matrix.database.type }}
+      OTODB_DB_HOST: ${{ matrix.database.type == 'postgres' && 'localhost' || '' }}
+      OTODB_DB_PORT: ${{ matrix.database.type == 'postgres' && '5432' || '' }}
+      OTODB_DB_NAME: ${{ matrix.database.type == 'postgres' && 'otodb_test' || '' }}
+      OTODB_DB_USER: ${{ matrix.database.type == 'postgres' && 'postgres' || '' }}
+      OTODB_DB_PASSWORD: ${{ matrix.database.type == 'postgres' && 'postgres' || '' }}
+
     services:
       postgres:
-        image: ${{ matrix.db-backend == 'postgres' && format('postgres:{0}', matrix.postgres-version) || '' }}
+        image: ${{ matrix.database.type == 'postgres' && format('postgres:{0}', matrix.database.version) || '' }}
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: otodb_test
@@ -65,36 +64,12 @@ jobs:
         run: uv sync
       - name: Copy .env.example to .env
         run: cp .env.example .env
-      - name: Run setup script (migrations + create admin)
+      - name: Run setup script
         run: uv run _setup.py
-        env:
-          OTODB_SECRET_KEY: test-secret-key-for-ci
-          OTODB_DB_BACKEND: ${{ matrix.db-backend }}
-          OTODB_DB_HOST: ${{ matrix.db-backend == 'postgres' && 'localhost' || '' }}
-          OTODB_DB_PORT: ${{ matrix.db-backend == 'postgres' && '5432' || '' }}
-          OTODB_DB_NAME: ${{ matrix.db-backend == 'postgres' && 'otodb_test' || '' }}
-          OTODB_DB_USER: ${{ matrix.db-backend == 'postgres' && 'postgres' || '' }}
-          OTODB_DB_PASSWORD: ${{ matrix.db-backend == 'postgres' && 'postgres' || '' }}
       - name: Run Django tests
         run: uv run python manage.py test
-        env:
-          OTODB_SECRET_KEY: test-secret-key-for-ci
-          OTODB_DB_BACKEND: ${{ matrix.db-backend }}
-          OTODB_DB_HOST: ${{ matrix.db-backend == 'postgres' && 'localhost' || '' }}
-          OTODB_DB_PORT: ${{ matrix.db-backend == 'postgres' && '5432' || '' }}
-          OTODB_DB_NAME: ${{ matrix.db-backend == 'postgres' && 'otodb_test' || '' }}
-          OTODB_DB_USER: ${{ matrix.db-backend == 'postgres' && 'postgres' || '' }}
-          OTODB_DB_PASSWORD: ${{ matrix.db-backend == 'postgres' && 'postgres' || '' }}
       - name: Check server can start
         run: timeout 10 uv run python manage.py runserver || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
-        env:
-          OTODB_SECRET_KEY: test-secret-key-for-ci
-          OTODB_DB_BACKEND: ${{ matrix.db-backend }}
-          OTODB_DB_HOST: ${{ matrix.db-backend == 'postgres' && 'localhost' || '' }}
-          OTODB_DB_PORT: ${{ matrix.db-backend == 'postgres' && '5432' || '' }}
-          OTODB_DB_NAME: ${{ matrix.db-backend == 'postgres' && 'otodb_test' || '' }}
-          OTODB_DB_USER: ${{ matrix.db-backend == 'postgres' && 'postgres' || '' }}
-          OTODB_DB_PASSWORD: ${{ matrix.db-backend == 'postgres' && 'postgres' || '' }}
 
   build_docker:
     name: Build Docker image

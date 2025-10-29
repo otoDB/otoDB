@@ -19,7 +19,9 @@ class Migration(migrations.Migration):
 			model_name='revision',
 			name='user',
 			field=models.ForeignKey(
-				on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL
+				null=True,
+				on_delete=django.db.models.deletion.PROTECT,
+				to=settings.AUTH_USER_MODEL,
 			),
 		),
 	]

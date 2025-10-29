@@ -30,7 +30,7 @@ def initial_revision(apps, schema_editor):
 		'WorkSource',
 	]
 
-	rev = Revision.objects.create(user_id=1)
+	rev = Revision.objects.create(user_id=None)
 	for m in old_models_with_history:
 		model = apps.get_model('otodb', m)
 		if hasattr(model, 'revision_tracked_fields'):
@@ -84,7 +84,8 @@ class Migration(migrations.Migration):
 				(
 					'user',
 					models.ForeignKey(
-						on_delete=django.db.models.deletion.CASCADE,
+						null=True,
+						on_delete=django.db.models.deletion.PROTECT,
 						to=settings.AUTH_USER_MODEL,
 					),
 				),

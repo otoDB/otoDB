@@ -9,7 +9,7 @@ from otodb.account.models import Account
 
 
 class Revision(models.Model):
-	user = models.ForeignKey(Account, on_delete=models.PROTECT, null=False)
+	user = models.ForeignKey(Account, on_delete=models.PROTECT, null=True)
 	date = models.DateTimeField(auto_now_add=True)
 	message = models.TextField(null=False, default='')
 

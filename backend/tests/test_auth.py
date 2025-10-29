@@ -5,8 +5,6 @@ from urllib.parse import urlencode
 import pytest
 from django.core import mail
 
-from otodb.account.models import Account
-
 
 @pytest.mark.django_db
 def test_password_reset_email_sends_successfully(auth_client, member):

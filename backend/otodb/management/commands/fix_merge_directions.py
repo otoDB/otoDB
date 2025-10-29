@@ -91,7 +91,7 @@ class Command(BaseCommand):
 		5. Clearing lower_id_work's moved_to pointer
 		6. Setting higher_id_work's moved_to to lower_id_work
 		"""
-		self.stdout.write(f'  Reversing merge direction...')
+		self.stdout.write('  Reversing merge direction...')
 
 		# Move all sources from higher_id_work to lower_id_work
 		sources_moved = WorkSource.objects.filter(media=higher_id_work).update(

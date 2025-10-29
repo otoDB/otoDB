@@ -494,8 +494,6 @@ class TestWork:
 		)
 
 		work_1_id = work_1.pk
-		work_2_id = work_2.pk
-		work_3_id = work_3.pk
 
 		# Test 1: Merge work_2 -> work_1 (normal direction, to_work has lower ID)
 		MediaWork.merge(

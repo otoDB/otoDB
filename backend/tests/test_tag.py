@@ -274,17 +274,19 @@ class TestTagHierarchy:
 		path_list = list(paths.values('slug', 'fr'))
 
 		# Count how many times 'zun -> touhou' appears
-		zun_touhou_edges = [p for p in path_list if p['slug'] == 'zun' and p['fr'] == 'touhou']
+		zun_touhou_edges = [
+			p for p in path_list if p['slug'] == 'zun' and p['fr'] == 'touhou'
+		]
 
 		# Should only appear once, not twice (even though there are two paths to touhou)
 		assert len(zun_touhou_edges) == 1, (
 			f"Expected exactly 1 'zun -> touhou' edge, but found {len(zun_touhou_edges)}. "
-			f"Full paths: {path_list}"
+			f'Full paths: {path_list}'
 		)
 
 		# Verify total unique edges (no duplicates)
 		assert len(path_list) == len(set((p['slug'], p['fr']) for p in path_list)), (
-			"Found duplicate edges in path list"
+			'Found duplicate edges in path list'
 		)
 
 		# Expected edges:
@@ -327,7 +329,7 @@ class TestTagHierarchy:
 		# Check that 'touhou' only has one outgoing edge to 'zun' in the adjacency list
 		assert 'touhou' in paths_adj
 		assert paths_adj['touhou'] == ['zun'], (
-			f"Expected touhou to have exactly one edge to zun, got {paths_adj['touhou']}"
+			f'Expected touhou to have exactly one edge to zun, got {paths_adj["touhou"]}'
 		)
 
 		# Verify no duplicate edges
@@ -339,5 +341,5 @@ class TestTagHierarchy:
 
 		# Check no duplicate edges
 		assert len(all_edges) == len(set(all_edges)), (
-			f"Found duplicate edges: {all_edges}"
+			f'Found duplicate edges: {all_edges}'
 		)

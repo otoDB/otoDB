@@ -43,16 +43,14 @@ def fuzz_video_infos(info_tuple):
 class WorkTest(TransactionTestCase):
 	reset_sequences = True
 
-	@classmethod
-	def setUpTestData(self):
-		self.v_info = get_video_infos_mock()
-
 	def setUp(self):
 		self.patcher = patch('otodb.models.work_source.video_info')
 		self.mock_video_info = self.patcher.start()
 		self.addCleanup(self.patcher.stop)
 
-		fuzzed = fuzz_video_infos(self.v_info)
+		# Load mock data and fuzz it for this test
+		v_info = get_video_infos_mock()
+		fuzzed = fuzz_video_infos(v_info)
 		self.mock_video_info.return_value = fuzzed
 		self.v_info = fuzzed
 

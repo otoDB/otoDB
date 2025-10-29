@@ -1,4 +1,5 @@
 """Shared pytest fixtures for all tests."""
+
 import pytest
 from ninja.testing import TestClient
 

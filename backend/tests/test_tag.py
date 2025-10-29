@@ -115,9 +115,7 @@ class TestTagLanguagePreference:
 		assert alias_tag not in work.tags.all()
 
 		# Verify TagWorkInstance was created with base tag directly
-		assert TagWorkInstance.objects.filter(
-			work=work, work_tag=base_tag
-		).exists()
+		assert TagWorkInstance.objects.filter(work=work, work_tag=base_tag).exists()
 		assert not TagWorkInstance.objects.filter(
 			work=work, work_tag=alias_tag
 		).exists()

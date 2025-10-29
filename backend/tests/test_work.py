@@ -60,6 +60,7 @@ def video_info_mock(base_video_info):
 @pytest.fixture
 def upload_src(work_client):
 	"""Helper function to upload a source."""
+
 	def _upload(
 		is_reupload=False,
 		rating=0,
@@ -83,6 +84,7 @@ def upload_src(work_client):
 			content_type='application/x-www-form-urlencoded',
 			user=user,
 		)
+
 	return _upload
 
 

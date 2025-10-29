@@ -200,7 +200,8 @@ def set_tags(request: HttpRequest, work_id: int, payload: List[str]):
 	tags = []
 	for v in payload:
 		try:
-			tags.append(TagWork.objects.get(slug=clean_incoming_slug(v)))
+			tag = TagWork.objects.get(slug=clean_incoming_slug(v))
+			tags.append(tag.aliased_to if tag.aliased_to else tag)
 		except TagWork.DoesNotExist:
 			tags.append(TagWork.objects.create(name=v))
 

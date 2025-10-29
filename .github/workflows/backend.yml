@@ -66,8 +66,8 @@ jobs:
         run: cp .env.example .env
       - name: Run setup script
         run: uv run _setup.py
-      - name: Run Django tests
-        run: uv run python manage.py test
+      - name: Run tests with pytest
+        run: uv run pytest -v --tb=short
       - name: Check server can start
         run: timeout 10 uv run python manage.py runserver || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 

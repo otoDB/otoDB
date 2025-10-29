@@ -30,6 +30,19 @@ def initial_revision(apps, schema_editor):
 		'WorkSource',
 	]
 
+	# Check if there's any data to migrate first
+	# This prevents creating an empty revision in fresh databases (e.g., test databases)
+	# which would cause PostgreSQL sequence conflicts when tests create their own revisions
+	has_data = False
+	for m in old_models_with_history:
+		model = apps.get_model('otodb', m)
+		if model.objects.exists():
+			has_data = True
+			break
+
+	if not has_data:
+		return  # No data to migrate, skip creating initial revision
+
 	rev = Revision.objects.create(user_id=None)
 	for m in old_models_with_history:
 		model = apps.get_model('otodb', m)

@@ -230,3 +230,116 @@ class TestTagSearch:
 		assert results[0]['name'] == 'anime'
 		# 'anime_series' should be second as a partial match
 		assert results[1]['name'] == 'anime_series'
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+class TestTagHierarchy:
+	"""Test tag hierarchy and path traversal"""
+
+	def test_diamond_dependency_no_duplicate_paths(self, tag_client):
+		"""
+		Test that when multiple tags converge on a common ancestor (diamond pattern),
+		the get_paths() method doesn't return duplicate edges.
+
+		Hierarchy:
+				zun
+				 |
+			  touhou
+			   |  |
+		   cherry  angel
+			   |  |
+			   abc
+
+		Both 'cherry' and 'angel' have 'touhou' as parent, which has 'zun' as parent.
+		The path from 'abc' to 'zun' should only appear once, not twice.
+		"""
+		# Create the hierarchy
+		zun = TagWork.objects.create(name='zun', category=WorkTagCategory.CREATOR)
+		touhou = TagWork.objects.create(name='touhou', category=WorkTagCategory.MEDIA)
+		cherry = TagWork.objects.create(name='cherry', category=WorkTagCategory.GENERAL)
+		angel = TagWork.objects.create(name='angel', category=WorkTagCategory.GENERAL)
+		wataten = TagWork.objects.create(name='wataten', category=WorkTagCategory.MEDIA)
+		abc = TagWork.objects.create(name='abc', category=WorkTagCategory.GENERAL)
+
+		# Set up parent relationships
+		TagWorkParenthood.objects.create(tag=touhou, parent=zun, primary=True)
+		TagWorkParenthood.objects.create(tag=cherry, parent=touhou, primary=True)
+		TagWorkParenthood.objects.create(tag=angel, parent=touhou, primary=True)
+		TagWorkParenthood.objects.create(tag=angel, parent=wataten, primary=False)
+		TagWorkParenthood.objects.create(tag=abc, parent=cherry, primary=True)
+		TagWorkParenthood.objects.create(tag=abc, parent=angel, primary=False)
+
+		# Get paths from abc (excluding the root node)
+		paths = abc.get_paths().exclude(fr='')
+		path_list = list(paths.values('slug', 'fr'))
+
+		# Count how many times 'zun -> touhou' appears
+		zun_touhou_edges = [
+			p for p in path_list if p['slug'] == 'zun' and p['fr'] == 'touhou'
+		]
+
+		# Should only appear once, not twice (even though there are two paths to touhou)
+		assert len(zun_touhou_edges) == 1, (
+			f"Expected exactly 1 'zun -> touhou' edge, but found {len(zun_touhou_edges)}. "
+			f'Full paths: {path_list}'
+		)
+
+		# Verify total unique edges (no duplicates)
+		assert len(path_list) == len(set((p['slug'], p['fr']) for p in path_list)), (
+			'Found duplicate edges in path list'
+		)
+
+		# Expected edges:
+		# - abc -> cherry
+		# - abc -> angel
+		# - cherry -> touhou
+		# - angel -> touhou
+		# - angel -> wataten
+		# - touhou -> zun
+		assert len(path_list) == 6
+
+	def test_diamond_dependency_breadcrumb_trails(self, tag_client):
+		"""
+		Test that the tag details API returns correct breadcrumb trails
+		for a diamond dependency without duplicates.
+		"""
+		# Create the same hierarchy as above
+		zun = TagWork.objects.create(name='zun', category=WorkTagCategory.CREATOR)
+		touhou = TagWork.objects.create(name='touhou', category=WorkTagCategory.MEDIA)
+		cherry = TagWork.objects.create(name='cherry', category=WorkTagCategory.GENERAL)
+		angel = TagWork.objects.create(name='angel', category=WorkTagCategory.GENERAL)
+		wataten = TagWork.objects.create(name='wataten', category=WorkTagCategory.MEDIA)
+		abc = TagWork.objects.create(name='abc', category=WorkTagCategory.GENERAL)
+
+		TagWorkParenthood.objects.create(tag=touhou, parent=zun, primary=True)
+		TagWorkParenthood.objects.create(tag=cherry, parent=touhou, primary=True)
+		TagWorkParenthood.objects.create(tag=angel, parent=touhou, primary=True)
+		TagWorkParenthood.objects.create(tag=angel, parent=wataten, primary=False)
+		TagWorkParenthood.objects.create(tag=abc, parent=cherry, primary=True)
+		TagWorkParenthood.objects.create(tag=abc, parent=angel, primary=False)
+
+		# Call the details endpoint
+		response = tag_client.get(f'/details?tag_slug={abc.slug}')
+		assert response.status_code == 200
+		data = response.json()
+
+		# Extract the adjacency list from the paths
+		paths_adj = data['paths'][1]
+
+		# Check that 'touhou' only has one outgoing edge to 'zun' in the adjacency list
+		assert 'touhou' in paths_adj
+		assert paths_adj['touhou'] == ['zun'], (
+			f'Expected touhou to have exactly one edge to zun, got {paths_adj["touhou"]}'
+		)
+
+		# Verify no duplicate edges
+		# Extract all edges from the adjacency list
+		all_edges = []
+		for from_node, to_nodes in paths_adj.items():
+			for to_node in to_nodes:
+				all_edges.append((from_node, to_node))
+
+		# Check no duplicate edges
+		assert len(all_edges) == len(set(all_edges)), (
+			f'Found duplicate edges: {all_edges}'
+		)

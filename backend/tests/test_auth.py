@@ -18,17 +18,16 @@ def auth_client():
 
 @pytest.mark.django_db
 def test_password_reset_email_sends_successfully(auth_client):
-	"""Test that password reset email is sent with correct format.
-	"""
+	"""Test that password reset email is sent with correct format."""
 	# Create a test user
 	user = Account.objects.create_user(
-		username='testuser',
-		email='test@example.com',
-		password='old_password'
+		username='testuser', email='test@example.com', password='old_password'
 	)
 
 	# Request password reset
-	response = auth_client.put('/reset_password?' + urlencode({'email': 'test@example.com'}))
+	response = auth_client.put(
+		'/reset_password?' + urlencode({'email': 'test@example.com'})
+	)
 
 	# Should return success (200) even if email doesn't exist (security best practice)
 	assert response.status_code == 200
@@ -57,14 +56,19 @@ def test_password_reset_email_sends_successfully(auth_client):
 	assert user.reset_token in mail.outbox[0].body  # Token should be in email body
 
 	# Verify the reset URL is properly formatted in the email
-	assert f'https://otodb.net/reset_password?token={user.reset_token}' in mail.outbox[0].body
+	assert (
+		f'https://otodb.net/reset_password?token={user.reset_token}'
+		in mail.outbox[0].body
+	)
 
 
 @pytest.mark.django_db
 def test_password_reset_email_nonexistent_user(auth_client):
 	"""Test that password reset doesn't reveal if user exists (security best practice)."""
 	# Request password reset for non-existent email
-	response = auth_client.put('/reset_password?' + urlencode({'email': 'nonexistent@example.com'}))
+	response = auth_client.put(
+		'/reset_password?' + urlencode({'email': 'nonexistent@example.com'})
+	)
 
 	# Should still return success to prevent user enumeration
 	assert response.status_code == 200
@@ -77,9 +81,7 @@ def test_password_reset_email_nonexistent_user(auth_client):
 def test_password_reset_token_uniqueness(auth_client):
 	"""Test that each password reset generates a unique token."""
 	user = Account.objects.create_user(
-		username='testuser',
-		email='test@example.com',
-		password='password'
+		username='testuser', email='test@example.com', password='password'
 	)
 
 	# Request first reset
@@ -116,16 +118,14 @@ def test_logout_does_not_crash_on_session_deletion(auth_client):
 
 	# Create a user and session
 	user = User.objects.create_user(
-		username='testuser',
-		email='test@example.com',
-		password='password'
+		username='testuser', email='test@example.com', password='password'
 	)
 
 	# Create a session (simulating login)
 	session = Session.objects.create(
 		session_key='test_session_key_12345',
 		session_data='encoded_session_data',
-		expire_date='2030-01-01'
+		expire_date='2030-01-01',
 	)
 
 	# Delete the session (simulating logout)

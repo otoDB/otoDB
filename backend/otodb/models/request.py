@@ -21,7 +21,7 @@ class BulkRequest(models.Model):
 		constraints = [
 			models.CheckConstraint(
 				name='request_processed_by_notnull_iff_not_pending',
-				check=(
+				condition=(
 					models.Q(status=Status.PENDING)
 					| models.Q(processed_by__isnull=False)
 				)

@@ -203,7 +203,7 @@ class MediaSong(models.Model):
 		constraints = [
 			models.CheckConstraint(
 				name='song_bpm_positive',
-				check=models.Q(bpm__gt=0),
+				condition=models.Q(bpm__gt=0),
 				violation_error_message='BPM must be positive',
 			),
 		]

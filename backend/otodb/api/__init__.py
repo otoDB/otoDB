@@ -16,7 +16,6 @@ from .requests import request_router
 
 api = NinjaAPI(
 	urls_namespace='otodb:api',
-	csrf=True,
 	docs_decorator=staff_member_required if settings.OTODB_PROTECT_API_DOCS else None,
 )
 api.add_router('/auth/', auth_router)

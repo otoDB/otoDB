@@ -98,3 +98,42 @@ def test_password_reset_token_uniqueness(auth_client):
 	# Tokens should be different
 	assert first_token != second_token
 	assert len(mail.outbox) == 1
+
+
+@pytest.mark.django_db
+def test_logout_does_not_crash_on_session_deletion(auth_client):
+	"""Test that deleting a session (logout) doesn't crash the pre_delete signal.
+
+	This test prevents regression where the pre_delete signal handler tried to
+	query UserRequest objects for Session instances, causing a crash on logout.
+
+	Bug was fixed in commit b022b83.
+	"""
+	from django.contrib.sessions.models import Session
+	from django.contrib.auth import get_user_model
+
+	User = get_user_model()
+
+	# Create a user and session
+	user = User.objects.create_user(
+		username='testuser',
+		email='test@example.com',
+		password='password'
+	)
+
+	# Create a session (simulating login)
+	session = Session.objects.create(
+		session_key='test_session_key_12345',
+		session_data='encoded_session_data',
+		expire_date='2030-01-01'
+	)
+
+	# Delete the session (simulating logout)
+	# This should NOT crash due to pre_delete signal
+	try:
+		session.delete()
+		# If we reach here, the test passed
+		assert True
+	except Exception as e:
+		# If an exception is raised, the test should fail
+		pytest.fail(f'Session deletion (logout) crashed with error: {e}')

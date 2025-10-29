@@ -116,6 +116,10 @@ class MediaWork(models.Model):
 		from django.contrib.contenttypes.models import ContentType
 		from django_comments_xtd.models import XtdComment
 
+		# Ensure we always merge into the work with the lower ID
+		if from_work.pk < to_work.pk:
+			to_work, from_work = from_work, to_work
+
 		to_work.title = title
 		to_work.description = description
 		to_work.thumbnail_source = thumbnail_source

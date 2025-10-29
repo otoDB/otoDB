@@ -28,11 +28,19 @@ jobs:
         python-version: ["3.13", "3.14"]
         db-backend: [sqlite, postgres]
         postgres-version: ["17", "18"]
+        exclude:
+          - db-backend: sqlite
+            postgres-version: "18"
         include:
           - db-backend: sqlite
+            postgres-version: "17"
             db-name: SQLite
           - db-backend: postgres
-            db-name: PostgreSQL ${{ matrix.postgres-version }}
+            postgres-version: "17"
+            db-name: PostgreSQL 17
+          - db-backend: postgres
+            postgres-version: "18"
+            db-name: PostgreSQL 18
     services:
       postgres:
         image: ${{ matrix.db-backend == 'postgres' && format('postgres:{0}', matrix.postgres-version) || '' }}

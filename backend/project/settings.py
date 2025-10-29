@@ -136,8 +136,8 @@ elif DATABASE_BACKEND == 'postgresql':
 	DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
 	DATABASE['CONN_MAX_AGE'] = 0
 	DATABASE['OPTIONS']['pool'] = {
-		'min_size': int(os.environ.get('OTODB_DB_POOL_MIN_SIZE', '2')),
-		'max_size': int(os.environ.get('OTODB_DB_POOL_MAX_SIZE', '10')),
+		'min_size': int(os.environ.get('OTODB_DB_POOL_MIN_SIZE', '4')),
+		'max_size': int(os.environ.get('OTODB_DB_POOL_MAX_SIZE', '16')),
 		'timeout': int(os.environ.get('OTODB_DB_POOL_TIMEOUT', '10')),
 		'max_lifetime': int(os.environ.get('OTODB_DB_POOL_MAX_LIFETIME', '1800')),
 		'max_idle': int(os.environ.get('OTODB_DB_POOL_MAX_IDLE', '300')),

@@ -2,15 +2,18 @@ import json
 import random
 import string
 import time
+from datetime import date
 from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import urlencode
 
 import pytest
+from django.contrib.contenttypes.models import ContentType
+from django_comments_xtd.models import XtdComment
 
 from otodb.common import process_video_info
 from otodb.models import MediaWork, WorkSource
-from otodb.models.enums import Rating, WorkOrigin
+from otodb.models.enums import Rating, WorkOrigin, Platform
 
 
 def random_str(length):
@@ -315,3 +318,124 @@ class TestWork:
 		assert WorkSource.objects.filter(media=res1.json()).count() == 3
 		assert WorkSource.objects.filter(media=res2.json()).count() == 0
 		assert WorkSource.objects.filter(media=res3.json()).count() == 0
+
+	def test_merge_preserves_comments(self, editor):
+		"""Test that comments are migrated when works are merged."""
+		work_1 = MediaWork.objects.create(title='Work 1', rating=Rating.GENERAL)
+		work_2 = MediaWork.objects.create(title='Work 2', rating=Rating.GENERAL)
+		work_source = WorkSource.objects.create(
+			media=work_1,
+			platform=Platform.YOUTUBE,
+			source_id='test123',
+			url='https://youtube.com/test123',
+			published_date=date.today(),
+			title='Test Source',
+			added_by=editor,
+		)
+
+		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+
+		comment_1 = XtdComment.objects.create(
+			content_type=mediawork_ct,
+			object_pk=str(work_1.pk),
+			site_id=1,
+			user=editor,
+			comment='Comment on work 1',
+		)
+		comment_2 = XtdComment.objects.create(
+			content_type=mediawork_ct,
+			object_pk=str(work_2.pk),
+			site_id=1,
+			user=editor,
+			comment='Comment on work 2',
+		)
+
+		MediaWork.merge(
+			to_work=work_1,
+			from_work=work_2,
+			title='Merged Work',
+			description='Merged description',
+			thumbnail_source=work_source,
+			rating=Rating.GENERAL,
+		)
+
+		comment_1.refresh_from_db()
+		comment_2.refresh_from_db()
+
+		assert comment_1.object_pk == str(work_1.pk)
+		assert comment_2.object_pk == str(work_1.pk)
+
+		work_2.refresh_from_db()
+		assert work_2.moved_to == work_1
+
+		comments_on_work_1 = XtdComment.objects.filter(
+			content_type=mediawork_ct, object_pk=str(work_1.pk)
+		).count()
+		comments_on_work_2 = XtdComment.objects.filter(
+			content_type=mediawork_ct, object_pk=str(work_2.pk)
+		).count()
+
+		assert comments_on_work_1 == 2
+		assert comments_on_work_2 == 0
+
+	def test_merge_preserves_comments_with_chain(self, editor):
+		"""Test that comments follow the moved_to chain correctly."""
+		work_1 = MediaWork.objects.create(title='Work 1', rating=Rating.GENERAL)
+		work_2 = MediaWork.objects.create(title='Work 2', rating=Rating.GENERAL)
+		work_3 = MediaWork.objects.create(title='Work 3', rating=Rating.GENERAL)
+		work_source = WorkSource.objects.create(
+			media=work_1,
+			platform=Platform.YOUTUBE,
+			source_id='test123',
+			url='https://youtube.com/test123',
+			published_date=date.today(),
+			title='Test Source',
+			added_by=editor,
+		)
+
+		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+
+		comment_2 = XtdComment.objects.create(
+			content_type=mediawork_ct,
+			object_pk=str(work_2.pk),
+			site_id=1,
+			user=editor,
+			comment='Comment on work 2',
+		)
+		comment_3 = XtdComment.objects.create(
+			content_type=mediawork_ct,
+			object_pk=str(work_3.pk),
+			site_id=1,
+			user=editor,
+			comment='Comment on work 3',
+		)
+
+		MediaWork.merge(
+			to_work=work_2,
+			from_work=work_3,
+			title='Intermediate Work',
+			description='',
+			thumbnail_source=work_source,
+			rating=Rating.GENERAL,
+		)
+
+		MediaWork.merge(
+			to_work=work_1,
+			from_work=work_2,
+			title='Final Work',
+			description='',
+			thumbnail_source=work_source,
+			rating=Rating.GENERAL,
+		)
+
+		comment_2.refresh_from_db()
+		comment_3.refresh_from_db()
+
+		assert comment_2.object_pk == str(work_1.pk)
+		assert comment_3.object_pk == str(work_1.pk)
+
+		comments_on_work_1 = XtdComment.objects.filter(
+			content_type=mediawork_ct, object_pk=str(work_1.pk)
+		).count()
+
+		assert comments_on_work_1 == 2

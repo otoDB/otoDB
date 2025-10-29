@@ -34,4 +34,6 @@ docstring-code-format = true
 [dependency-groups]
 dev = [
     "django-silk>=5.4.3",
+    "pytest>=8.4.2",
+    "pytest-django>=4.11.1",
 ]

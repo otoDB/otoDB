@@ -12,10 +12,14 @@ export const load: PageServerLoad = async ({ fetch, locals }) => {
 			fetch,
 			params: { query: { n: 8 } }
 		}),
-		...(locals.user ? [client.GET('/api/history/recent', {
-			fetch,
-			params: { query: { limit: 16, offset: 0 } }
-		})] : [])
+		...(locals.user
+			? [
+					client.GET('/api/history/recent', {
+						fetch,
+						params: { query: { limit: 16, offset: 0 } }
+					})
+				]
+			: [])
 	]);
 	if (randomWork.error || recentWork.error || recentChanges?.error)
 		error(500, { message: 'Internal server error' });

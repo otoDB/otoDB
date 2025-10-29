@@ -98,6 +98,7 @@ class MediaWork(models.Model):
 	class Meta:
 		verbose_name = 'Work'
 		verbose_name_plural = 'Works'
+		ordering = ['-id']
 
 	def get_absolute_url(self):
 		return reverse('otodb:work', kwargs={'work_id': self.pk})

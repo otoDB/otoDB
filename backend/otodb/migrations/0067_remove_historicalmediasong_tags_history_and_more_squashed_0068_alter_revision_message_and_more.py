@@ -62,7 +62,7 @@ def initial_revision(apps, schema_editor):
 class Migration(migrations.Migration):
 	dependencies = [
 		('contenttypes', '0002_remove_content_type_name'),
-		('otodb', '0065_delete_tagworkvote'),
+		('otodb', '0066_alter_mediawork_options'),
 		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
 	]
 

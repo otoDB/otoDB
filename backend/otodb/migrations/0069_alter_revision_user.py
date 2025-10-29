@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 	dependencies = [
 		(
 			'otodb',
-			'0066_remove_historicalmediasong_tags_history_and_more_squashed_0068_alter_revision_message_and_more',
+			'0067_remove_historicalmediasong_tags_history_and_more_squashed_0068_alter_revision_message_and_more',
 		),
 		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
 	]

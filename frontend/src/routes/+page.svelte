@@ -50,8 +50,7 @@
 		</div>
 	</div>
 
-	{#if data.user}
-		<hr class="my-4" />
+	<hr class="my-4" />
 
 	<div class="w-full">
 		<h2 class="mb-4 text-xl">{m.sea_cute_beaver_file()}</h2>

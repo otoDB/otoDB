@@ -1333,6 +1333,13 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** LoginRequestSchema */
+        LoginRequestSchema: {
+            /** Username */
+            username: string;
+            /** Password */
+            password: string;
+        };
         /** UserPreferencesSchema */
         UserPreferencesSchema: {
             /** Language */
@@ -1349,6 +1356,29 @@ export interface components {
             /** Level */
             level: number;
             prefs?: components["schemas"]["UserPreferencesSchema"] | null;
+        };
+        /** RegisterRequestSchema */
+        RegisterRequestSchema: {
+            /** Username */
+            username: string;
+            /** Password */
+            password: string;
+            /** Email */
+            email: string;
+            /** Invite */
+            invite: string;
+        };
+        /** ResetPasswordRequestSchema */
+        ResetPasswordRequestSchema: {
+            /** Password */
+            password: string;
+            /** Token */
+            token?: string | null;
+        };
+        /** SendResetTokenRequestSchema */
+        SendResetTokenRequestSchema: {
+            /** Email */
+            email: string;
         };
         /** ExternalQuery */
         ExternalQuery: {
@@ -2090,15 +2120,16 @@ export interface operations {
     };
     otodb_api_auth_login_endpoint: {
         parameters: {
-            query: {
-                username: string;
-                password: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequestSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -2169,17 +2200,16 @@ export interface operations {
     };
     otodb_api_auth_register: {
         parameters: {
-            query: {
-                username: string;
-                password: string;
-                email: string;
-                invite: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterRequestSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -2212,14 +2242,16 @@ export interface operations {
     };
     otodb_api_auth_send_reset_password_token: {
         parameters: {
-            query: {
-                email: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendResetTokenRequestSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -2232,15 +2264,16 @@ export interface operations {
     };
     otodb_api_auth_reset_password: {
         parameters: {
-            query: {
-                password: string;
-                token?: string | null;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordRequestSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

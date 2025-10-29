@@ -71,7 +71,8 @@ def search(
 	category: int | None = None,
 	media_type: list[int] | None = Query(None),
 ):
-	qs = TagWork.objects.filter(name__contains=clean_incoming_tag_name(query))
+	cleaned_query = clean_incoming_tag_name(query)
+	qs = TagWork.objects.filter(name__contains=cleaned_query)
 
 	if resolve_aliases:
 		qs = qs.filter(aliased_to__isnull=True) | TagWork.objects.filter(
@@ -92,9 +93,15 @@ def search(
 				),
 				default=Count('tagworkinstance'),
 				output_field=models.IntegerField(),
-			)
+			),
+			exact_match=Case(
+				When(name__iexact=cleaned_query, then=Value(0)),
+				When(aliases__name__iexact=cleaned_query, then=Value(1)),
+				default=Value(99),
+				output_field=models.IntegerField(),
+			),
 		)
-		.order_by('-n_instance')
+		.order_by('exact_match', '-n_instance')
 	)
 
 

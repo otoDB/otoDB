@@ -41,6 +41,7 @@ def fuzz_video_infos(info_tuple):
 
 
 class WorkTest(TestCase):
+	reset_sequences = True
 	@classmethod
 	def setUpTestData(self):
 		self.v_info = get_video_infos_mock()

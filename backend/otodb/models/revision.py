@@ -52,15 +52,9 @@ class RevisionChangeEntity(models.Model):
 		)
 
 
-def get_serialized_value(instance, field):
-	return getattr(
-		instance,
-		field + '_id'
-		if isinstance(
-			type(instance)._meta.get_field(field), models.fields.related.RelatedField
-		)
-		else field,
-	)
+def get_serialized_value(instance: models.Model, field):
+	field = instance._meta.get_field(field)
+	return field.value_to_string(instance)  # type: ignore
 
 
 def _bulk_get_new_rev(model, objs):

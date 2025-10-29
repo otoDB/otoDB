@@ -10,14 +10,66 @@ defaults:
     working-directory: backend
 
 jobs:
-  test:
-    name: Test
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
       - run: uvx ruff format --check
       - run: uvx ruff check
+
+  test:
+    name: Test (Python ${{ matrix.python-version }}, ${{ matrix.database.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13", "3.14"]
+        database:
+          - { type: sqlite3, name: SQLite }
+          - { type: postgresql, name: PostgreSQL 17, version: "17" }
+          - { type: postgresql, name: PostgreSQL 18, version: "18" }
+
+    env:
+      OTODB_SECRET_KEY: test-secret-key-for-ci
+      OTODB_DB_BACKEND: ${{ matrix.database.type }}
+      OTODB_DB_HOST: ${{ matrix.database.type == 'postgresql' && 'localhost' || '' }}
+      OTODB_DB_PORT: ${{ matrix.database.type == 'postgresql' && '5432' || '' }}
+      OTODB_DB_NAME: ${{ matrix.database.type == 'postgresql' && 'otodb_test' || '' }}
+      OTODB_DB_USER: ${{ matrix.database.type == 'postgresql' && 'postgres' || '' }}
+      OTODB_DB_PASSWORD: ${{ matrix.database.type == 'postgresql' && 'postgres' || '' }}
+
+    services:
+      postgres:
+        image: ${{ matrix.database.type == 'postgresql' && format('postgres:{0}', matrix.database.version) || '' }}
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: otodb_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: uv sync
+      - name: Copy .env.example to .env
+        run: cp .env.example .env
+      - name: Run setup script
+        run: uv run _setup.py
+      - name: Run tests with pytest
+        run: uv run pytest -v --tb=short
+      - name: Check server can start
+        run: timeout 10 uv run python manage.py runserver || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
   build_docker:
     name: Build Docker image

@@ -7,9 +7,9 @@ from django.contrib.sessions.models import Session
 from otodb.models import MediaWork, MediaSong, TagWork, TagSong, UserRequest
 
 
-# IMPORTANT: maintain following invariants:
+# IMPORTANT- maintain following invariants:
 # - aliased tags are NOT attached to any works, table joined to alias as soon as aliasing happens
-# - a tag that is aliased to another tag cannot itself be an alias target, all alias targets must have alised_to = null
+# - a tag that is aliased to another tag cannot itself be an alias target, all alias targets must have aliased_to = null
 @receiver(m2m_changed, sender=MediaWork.tags.through)
 def on_add_remove_tag_work(sender, instance, action, pk_set, **kwargs):
 	if action == 'post_add':

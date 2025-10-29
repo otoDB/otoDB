@@ -1,17 +1,16 @@
-from django.test import TestCase
-from ninja.testing import TestClient
-from otodb.api.work import work_router
-from otodb.account.models import Account
-from otodb.models import WorkSource, MediaWork
-from otodb.models.enums import Rating, WorkOrigin
-from urllib.parse import urlencode
-from unittest.mock import patch
-from otodb.common import process_video_info
-from pathlib import Path
 import json
 import random
 import string
 import time
+from pathlib import Path
+from unittest.mock import patch
+from urllib.parse import urlencode
+
+import pytest
+
+from otodb.common import process_video_info
+from otodb.models import MediaWork, WorkSource
+from otodb.models.enums import Rating, WorkOrigin
 
 
 def random_str(length):
@@ -22,7 +21,7 @@ def random_str(length):
 
 def get_video_infos_mock():
 	json_path = Path(__file__).parent / 'mocks' / 'video_info.json'
-	with json_path.open() as f:
+	with json_path.open(encoding='utf-8') as f:
 		info = json.load(f)
 		return process_video_info(info), info
 
@@ -40,33 +39,29 @@ def fuzz_video_infos(info_tuple):
 	return process_video_info(full_info), full_info
 
 
-class WorkTest(TestCase):
-	@classmethod
-	def setUpTestData(self):
-		self.v_info = get_video_infos_mock()
+# Fixtures specific to work tests
 
-	def setUp(self):
-		self.patcher = patch('otodb.models.work_source.video_info')
-		self.mock_video_info = self.patcher.start()
-		self.addCleanup(self.patcher.stop)
 
-		fuzzed = fuzz_video_infos(self.v_info)
-		self.mock_video_info.return_value = fuzzed
-		self.v_info = fuzzed
+@pytest.fixture
+def base_video_info():
+	"""Load base video info mock data."""
+	return get_video_infos_mock()
 
-		self.member = Account.objects.create_user(
-			'user', 'user@test.com', password='user_pass', level=Account.Levels.MEMBER
-		)
-		self.editor = Account.objects.create_user(
-			'editor',
-			'editor@test.com',
-			password='editor_pass',
-			level=Account.Levels.EDITOR,
-		)
-		self.client = TestClient(work_router)
 
-	def upload_src(
-		self,
+@pytest.fixture
+def video_info_mock(base_video_info):
+	"""Create a mock for video_info with fuzzed data."""
+	fuzzed = fuzz_video_infos(base_video_info)
+	with patch('otodb.models.work_source.video_info') as mock:
+		mock.return_value = fuzzed
+		yield mock, fuzzed
+
+
+@pytest.fixture
+def upload_src(work_client):
+	"""Helper function to upload a source."""
+
+	def _upload(
 		is_reupload=False,
 		rating=0,
 		work_id: int | None = None,
@@ -74,8 +69,6 @@ class WorkTest(TestCase):
 		user=None,
 	):
 		payload = {
-			# Url does not matter, as the work ID is determined by infos
-			# extracted by yt-dlp
 			'url': 'https://youtu.be/fakeUrl',
 			'is_reupload': is_reupload,
 		}
@@ -86,206 +79,239 @@ class WorkTest(TestCase):
 		if has_original:
 			payload['original_url'] = 'https://youtu.be/fakeUrl'
 
-		return self.client.post(
+		return work_client.post(
 			'/source?' + urlencode(payload),
 			content_type='application/x-www-form-urlencoded',
 			user=user,
 		)
 
-	def test_must_not_create_work_for_source_if_member(self):
-		res = self.upload_src(user=self.member)
-		self.assertEqual(res.status_code, 200)
-		self.assertEqual(res.json(), None)
+	return _upload
 
-		vid1 = fuzz_video_infos(self.v_info)
-		vid2 = fuzz_video_infos(self.v_info)
-		self.mock_video_info.side_effect = [vid1, vid2]
 
-		res = self.upload_src(user=self.member, has_original=True)
-		self.assertEqual(res.status_code, 200)
-		self.assertEqual(res.json(), None)
+# Tests
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+class TestWork:
+	"""Work-related tests."""
 
-		self.assertEqual(MediaWork.objects.all().count(), 0)
-		self.assertEqual(WorkSource.objects.all().count(), 3)
+	def test_must_not_create_work_for_source_if_member(
+		self, member, video_info_mock, upload_src, base_video_info
+	):
+		mock, v_info = video_info_mock
+		res = upload_src(user=member)
+		assert res.status_code == 200
+		assert res.json() is None
 
-	def test_must_create_new_work_for_source_if_editor(self):
-		res = self.upload_src(user=self.editor)
-		self.assertEqual(res.status_code, 200)
-		self.assertEqual(res.json(), 1)
+		vid1 = fuzz_video_infos(v_info)
+		vid2 = fuzz_video_infos(v_info)
+		mock.side_effect = [vid1, vid2]
 
-		vid1 = fuzz_video_infos(self.v_info)
-		vid2 = fuzz_video_infos(self.v_info)
-		self.mock_video_info.side_effect = [vid1, vid2]
+		res = upload_src(user=member, has_original=True)
+		assert res.status_code == 200
+		assert res.json() is None
 
-		res = self.upload_src(user=self.editor, has_original=True)
-		self.assertEqual(res.status_code, 200)
-		self.assertEqual(res.json(), 2)
+		assert MediaWork.objects.count() == 0
+		assert WorkSource.objects.count() == 3
 
-		self.assertEqual(MediaWork.objects.all().count(), 2)
-		self.assertEqual(WorkSource.objects.all().count(), 3)
+	def test_must_create_new_work_for_source_if_editor(
+		self, editor, video_info_mock, upload_src, base_video_info
+	):
+		mock, v_info = video_info_mock
+		res = upload_src(user=editor)
+		assert res.status_code == 200
+		assert res.json() == 1
 
-	def test_must_add_new_source_to_provided_work_id_ignoring_rating_as_member(self):
-		res = self.upload_src(user=self.editor)
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(MediaWork.objects.all().count(), 1)
-		self.assertEqual(WorkSource.objects.all().count(), 1)
+		vid1 = fuzz_video_infos(base_video_info)
+		vid2 = fuzz_video_infos(base_video_info)
+		mock.side_effect = [vid1, vid2]
 
-		self.mock_video_info.return_value = fuzz_video_infos(self.v_info)
+		res = upload_src(user=editor, has_original=True)
+		assert res.status_code == 200
+		assert res.json() == 2
 
-		res = self.upload_src(work_id=1, user=self.member, rating=Rating.EXPLICIT)
+		assert MediaWork.objects.count() == 2
+		assert WorkSource.objects.count() == 3
+
+	def test_must_add_new_source_to_provided_work_id_ignoring_rating_as_member(
+		self, member, editor, video_info_mock, upload_src, base_video_info
+	):
+		mock, v_info = video_info_mock
+		res = upload_src(user=editor)
+		assert res.json() == 1
+		assert MediaWork.objects.count() == 1
+		assert WorkSource.objects.count() == 1
+
+		mock.return_value = fuzz_video_infos(v_info)
+
+		res = upload_src(work_id=1, user=member, rating=Rating.EXPLICIT)
 		work = MediaWork.objects.get(pk=res.json())
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(work.rating, Rating.GENERAL)
-		self.assertEqual(MediaWork.objects.all().count(), 1)
-		self.assertEqual(WorkSource.objects.all().count(), 2)
+		assert res.json() == 1
+		assert work.rating == Rating.GENERAL
+		assert MediaWork.objects.count() == 1
+		assert WorkSource.objects.count() == 2
 
-	def test_must_add_new_source_to_provided_work_id_updating_rating_as_editor(self):
-		res = self.upload_src(user=self.editor)
-		self.assertEqual(res.json(), 1)
+	def test_must_add_new_source_to_provided_work_id_updating_rating_as_editor(
+		self, editor, video_info_mock, upload_src, base_video_info
+	):
+		mock, v_info = video_info_mock
+		res = upload_src(user=editor)
+		assert res.json() == 1
 
-		self.mock_video_info.return_value = fuzz_video_infos(self.v_info)
+		mock.return_value = fuzz_video_infos(v_info)
 
-		res = self.upload_src(work_id=1, user=self.editor, rating=Rating.EXPLICIT)
+		res = upload_src(work_id=1, user=editor, rating=Rating.EXPLICIT)
 		work = MediaWork.objects.get(pk=res.json())
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(work.rating, Rating.EXPLICIT)
-		self.assertEqual(MediaWork.objects.all().count(), 1)
-		self.assertEqual(WorkSource.objects.all().count(), 2)
+		assert res.json() == 1
+		assert work.rating == Rating.EXPLICIT
+		assert MediaWork.objects.count() == 1
+		assert WorkSource.objects.count() == 2
 
-	def test_must_add_new_source_based_on_priority_as_member(self):
-		vid1 = self.v_info
-		vid2 = fuzz_video_infos(self.v_info)
-		vid3 = fuzz_video_infos(self.v_info)
+	def test_must_add_new_source_based_on_priority_as_member(
+		self, member, editor, video_info_mock, upload_src, base_video_info
+	):
+		mock, v_info = video_info_mock
+		vid1 = v_info
+		vid2 = fuzz_video_infos(v_info)
+		vid3 = fuzz_video_infos(v_info)
 
-		self.mock_video_info.return_value = vid1
-		res = self.upload_src(user=self.editor)
-		self.assertEqual(res.json(), 1)
-		self.mock_video_info.return_value = vid2
-		res = self.upload_src(user=self.editor)
-		self.assertEqual(res.json(), 2)
+		mock.return_value = vid1
+		res = upload_src(user=editor)
+		assert res.json() == 1
+		mock.return_value = vid2
+		res = upload_src(user=editor)
+		assert res.json() == 2
 
-		self.mock_video_info.side_effect = [vid2, vid3]
+		mock.side_effect = [vid2, vid3]
 
-		res = self.upload_src(
-			work_id=1, is_reupload=True, has_original=True, user=self.member
-		)
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(MediaWork.objects.all().count(), 2)
-		self.assertEqual(WorkSource.objects.filter(media=1).count(), 2)
-		self.assertEqual(WorkSource.objects.filter(media=2).count(), 1)
+		res = upload_src(work_id=1, is_reupload=True, has_original=True, user=member)
+		assert res.json() == 1
+		assert MediaWork.objects.count() == 2
+		assert WorkSource.objects.filter(media=1).count() == 2
+		assert WorkSource.objects.filter(media=2).count() == 1
 
-	def test_must_add_to_work_id_as_member_if_provided_and_none_have_work(self):
-		res = self.upload_src(user=self.editor)
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(MediaWork.objects.all().count(), 1)
-		self.assertEqual(WorkSource.objects.all().count(), 1)
+	def test_must_add_to_work_id_as_member_if_provided_and_none_have_work(
+		self, member, editor, video_info_mock, upload_src, base_video_info
+	):
+		mock, v_info = video_info_mock
+		res = upload_src(user=editor)
+		assert res.json() == 1
+		assert MediaWork.objects.count() == 1
+		assert WorkSource.objects.count() == 1
 
-		vid1 = fuzz_video_infos(self.v_info)
-		vid2 = fuzz_video_infos(self.v_info)
-		self.mock_video_info.side_effect = [vid1, vid2]
+		vid1 = fuzz_video_infos(v_info)
+		vid2 = fuzz_video_infos(v_info)
+		mock.side_effect = [vid1, vid2]
 
-		res = self.upload_src(
-			work_id=1, is_reupload=True, has_original=True, user=self.member
-		)
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(MediaWork.objects.all().count(), 1)
-		self.assertEqual(WorkSource.objects.filter(media=1).count(), 3)
+		res = upload_src(work_id=1, is_reupload=True, has_original=True, user=member)
+		assert res.json() == 1
+		assert MediaWork.objects.count() == 1
+		assert WorkSource.objects.filter(media=1).count() == 3
 
-	def test_must_add_to_reupload_if_only_it_has_work(self):
-		res = self.upload_src(user=self.editor)
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(MediaWork.objects.all().count(), 1)
-		self.assertEqual(WorkSource.objects.all().count(), 1)
+	def test_must_add_to_reupload_if_only_it_has_work(
+		self, member, editor, video_info_mock, upload_src, base_video_info
+	):
+		mock, v_info = video_info_mock
+		res = upload_src(user=editor)
+		assert res.json() == 1
+		assert MediaWork.objects.count() == 1
+		assert WorkSource.objects.count() == 1
 
-		vid1 = self.v_info
-		vid2 = fuzz_video_infos(self.v_info)
-		self.mock_video_info.side_effect = [vid1, vid2]
+		vid1 = v_info
+		vid2 = fuzz_video_infos(v_info)
+		mock.side_effect = [vid1, vid2]
 
-		res = self.upload_src(is_reupload=True, has_original=True, user=self.member)
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(MediaWork.objects.all().count(), 1)
-		self.assertEqual(WorkSource.objects.all().count(), 2)
+		res = upload_src(is_reupload=True, has_original=True, user=member)
+		assert res.json() == 1
+		assert MediaWork.objects.count() == 1
+		assert WorkSource.objects.count() == 2
 
-	def test_must_add_to_origin_work_if_only_it_has_work(self):
-		res = self.upload_src(user=self.editor)
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(MediaWork.objects.all().count(), 1)
-		self.assertEqual(WorkSource.objects.all().count(), 1)
+	def test_must_add_to_origin_work_if_only_it_has_work(
+		self, member, editor, video_info_mock, upload_src, base_video_info
+	):
+		mock, v_info = video_info_mock
+		res = upload_src(user=editor)
+		assert res.json() == 1
+		assert MediaWork.objects.count() == 1
+		assert WorkSource.objects.count() == 1
 
-		vid1 = fuzz_video_infos(self.v_info)
-		vid2 = self.v_info
-		self.mock_video_info.side_effect = [vid1, vid2]
+		vid1 = fuzz_video_infos(v_info)
+		vid2 = v_info
+		mock.side_effect = [vid1, vid2]
 
-		res = self.upload_src(is_reupload=True, has_original=True, user=self.member)
-		self.assertEqual(res.json(), 1)
-		self.assertEqual(MediaWork.objects.all().count(), 1)
-		self.assertEqual(WorkSource.objects.all().count(), 2)
+		res = upload_src(is_reupload=True, has_original=True, user=member)
+		assert res.json() == 1
+		assert MediaWork.objects.count() == 1
+		assert WorkSource.objects.count() == 2
 
-	def test_must_redirect_to_relevant_work_ignoring_source_corrections_as_member(self):
-		vid1 = self.v_info
-		vid2 = fuzz_video_infos(self.v_info)
+	def test_must_redirect_to_relevant_work_ignoring_source_corrections_as_member(
+		self, member, editor, video_info_mock, upload_src, base_video_info
+	):
+		mock, v_info = video_info_mock
+		vid1 = v_info
+		vid2 = fuzz_video_infos(v_info)
 
-		res1 = self.upload_src(user=self.editor)
-		self.mock_video_info.return_value = vid2
-		res2 = self.upload_src(user=self.editor)
+		res1 = upload_src(user=editor)
+		mock.return_value = vid2
+		res2 = upload_src(user=editor)
 
-		self.mock_video_info.side_effect = [vid1, vid2, vid2]
+		mock.side_effect = [vid1, vid2, vid2]
 
-		res3 = self.upload_src(is_reupload=True, has_original=True, user=self.member)
+		res3 = upload_src(is_reupload=True, has_original=True, user=member)
 		workSource = WorkSource.objects.filter(source_id=vid1[0]['id']).first()
-		self.assertEqual(workSource.work_origin, WorkOrigin.AUTHOR)
-		self.assertEqual(res3.json(), 1)
+		assert workSource.work_origin == WorkOrigin.AUTHOR
+		assert res3.json() == 1
 
-		res4 = self.upload_src(user=self.member)
-		self.assertEqual(res4.json(), 2)
+		res4 = upload_src(user=member)
+		assert res4.json() == 2
 
-		self.assertEqual(MediaWork.objects.all().count(), 2)
-		self.assertEqual(WorkSource.objects.filter(media=res1.json()).count(), 1)
-		self.assertEqual(WorkSource.objects.filter(media=res2.json()).count(), 1)
+		assert MediaWork.objects.count() == 2
+		assert WorkSource.objects.filter(media=res1.json()).count() == 1
+		assert WorkSource.objects.filter(media=res2.json()).count() == 1
 
 	def test_must_merge_to_reupload_applying_source_corrections_if_both_have_different_works_as_editor(
-		self,
+		self, editor, video_info_mock, upload_src, base_video_info
 	):
-		vid1 = self.v_info
-		vid2 = fuzz_video_infos(self.v_info)
+		mock, v_info = video_info_mock
+		vid1 = v_info
+		vid2 = fuzz_video_infos(v_info)
 
-		res1 = self.upload_src(user=self.editor)
-		self.mock_video_info.return_value = vid2
-		res2 = self.upload_src(user=self.editor, is_reupload=True)
+		res1 = upload_src(user=editor)
+		mock.return_value = vid2
+		res2 = upload_src(user=editor, is_reupload=True)
 
-		self.mock_video_info.side_effect = [vid1, vid2]
+		mock.side_effect = [vid1, vid2]
 
-		res3 = self.upload_src(is_reupload=True, has_original=True, user=self.editor)
+		res3 = upload_src(is_reupload=True, has_original=True, user=editor)
 		workSource1 = WorkSource.objects.filter(source_id=vid1[0]['id']).first()
 		workSource2 = WorkSource.objects.filter(source_id=vid2[0]['id']).first()
-		self.assertEqual(workSource1.work_origin, WorkOrigin.REUPLOAD)
-		self.assertEqual(workSource2.work_origin, WorkOrigin.AUTHOR)
+		assert workSource1.work_origin == WorkOrigin.REUPLOAD
+		assert workSource2.work_origin == WorkOrigin.AUTHOR
 
-		self.assertEqual(res3.json(), 1)
-		self.assertEqual(MediaWork.objects.all().count(), 2)
-		self.assertEqual(WorkSource.objects.filter(media=res1.json()).count(), 2)
-		self.assertEqual(WorkSource.objects.filter(media=res2.json()).count(), 0)
+		assert res3.json() == 1
+		assert MediaWork.objects.count() == 2
+		assert WorkSource.objects.filter(media=res1.json()).count() == 2
+		assert WorkSource.objects.filter(media=res2.json()).count() == 0
 
 	def test_must_merge_to_target_if_both_and_target_have_different_works_as_editor(
-		self,
+		self, editor, video_info_mock, upload_src, base_video_info
 	):
-		vid2 = fuzz_video_infos(self.v_info)
-		vid3 = fuzz_video_infos(self.v_info)
+		mock, v_info = video_info_mock
+		vid2 = fuzz_video_infos(v_info)
+		vid3 = fuzz_video_infos(v_info)
 
-		res1 = self.upload_src(user=self.editor)
-		self.mock_video_info.return_value = vid2
-		res2 = self.upload_src(user=self.editor)
-		self.mock_video_info.return_value = vid3
-		res3 = self.upload_src(user=self.editor)
+		res1 = upload_src(user=editor)
+		mock.return_value = vid2
+		res2 = upload_src(user=editor)
+		mock.return_value = vid3
+		res3 = upload_src(user=editor)
 
-		self.mock_video_info.side_effect = [vid2, vid3]
+		mock.side_effect = [vid2, vid3]
 
-		res4 = self.upload_src(
-			is_reupload=True, has_original=True, work_id=res1.json(), user=self.editor
+		res4 = upload_src(
+			is_reupload=True, has_original=True, work_id=res1.json(), user=editor
 		)
 
-		self.assertEqual(res4.json(), res1.json())
-		self.assertEqual(MediaWork.objects.all().count(), 3)
-		self.assertEqual(WorkSource.objects.filter(media=res1.json()).count(), 3)
-		self.assertEqual(WorkSource.objects.filter(media=res2.json()).count(), 0)
-		self.assertEqual(WorkSource.objects.filter(media=res3.json()).count(), 0)
+		assert res4.json() == res1.json()
+		assert MediaWork.objects.count() == 3
+		assert WorkSource.objects.filter(media=res1.json()).count() == 3
+		assert WorkSource.objects.filter(media=res2.json()).count() == 0
+		assert WorkSource.objects.filter(media=res3.json()).count() == 0

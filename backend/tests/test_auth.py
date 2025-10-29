@@ -47,7 +47,9 @@ def test_password_reset_email_sends_successfully(auth_client, member):
 def test_password_reset_email_nonexistent_user(auth_client):
 	"""Test that password reset doesn't reveal if user exists (security best practice)."""
 	# Request password reset for non-existent email
-	response = auth_client.put('/reset_password', json={'email': 'nonexistent@example.com'})
+	response = auth_client.put(
+		'/reset_password', json={'email': 'nonexistent@example.com'}
+	)
 
 	# Should still return success to prevent user enumeration
 	assert response.status_code == 200

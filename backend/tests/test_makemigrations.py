@@ -7,7 +7,13 @@ from django.db import migrations
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import OutputWrapper
 
-from otodb.management.commands.makemigrations import Command
+from otodb.management.commands.makemigrations import (
+	Command,
+	RevisionTrackingOperation,
+	update_revision_renames,
+	reverse_revision_renames,
+	remove_revision_fields,
+)
 from otodb.models import MediaWork, RevisionChange
 
 
@@ -42,9 +48,11 @@ class TestMakemigrationsCommand:
 			# Call the injection method
 			command._inject_revision_updates('otodb', mock_migration)
 
-		# Verify a RunPython operation was added
+		# Verify a RevisionTrackingOperation was added
 		assert len(mock_migration.operations) == 2
-		assert isinstance(mock_migration.operations[1], migrations.RunPython)
+		assert isinstance(mock_migration.operations[1], RevisionTrackingOperation)
+		assert mock_migration.operations[1].operation_type == 'rename'
+		assert mock_migration.operations[1].field_data == {'description': 'desc'}
 
 	def test_inject_revision_updates_with_remove(self, db):
 		"""Test that RemoveField operations are detected and handled."""
@@ -53,7 +61,7 @@ class TestMakemigrationsCommand:
 		# Create a mock migration with a RemoveField operation
 		mock_migration = Mock()
 		mock_migration.operations = [
-			migrations.RemoveField(model_name='mediawork', name='description')
+			migrations.RemoveField(model_name='mediawork', name='desc')
 		]
 
 		# Mock the app config
@@ -64,9 +72,11 @@ class TestMakemigrationsCommand:
 
 			command._inject_revision_updates('otodb', mock_migration)
 
-		# Verify a RunPython operation was added
+		# Verify a RevisionTrackingOperation was added
 		assert len(mock_migration.operations) == 2
-		assert isinstance(mock_migration.operations[1], migrations.RunPython)
+		assert isinstance(mock_migration.operations[1], RevisionTrackingOperation)
+		assert mock_migration.operations[1].operation_type == 'remove'
+		assert mock_migration.operations[1].field_data == ['desc']
 
 	def test_inject_revision_updates_ignores_untracked_fields(self, db):
 		"""Test that fields not in revision_tracked_fields are ignored."""
@@ -119,20 +129,12 @@ class TestMakemigrationsCommand:
 
 @pytest.mark.django_db
 class TestDataMigrationFunctions:
-	"""Test the generated data migration functions."""
+	"""Test the module-level data migration functions."""
 
-	def test_data_migration_rename_updates_revision_changes(
+	def test_update_revision_renames(
 		self, test_work, test_revision, test_revision_change
 	):
-		"""Test that the forward migration updates RevisionChange records."""
-		command = Command()
-
-		# Create the data migration function
-		changes = {'renames': {'title': 'work_title'}, 'removes': []}
-		forward_func = command._create_data_migration_forward(
-			'otodb', 'MediaWork', changes
-		)
-
+		"""Test that update_revision_renames updates RevisionChange records."""
 		# Mock apps to return actual models
 		mock_apps = Mock()
 		mock_apps.get_model = Mock(
@@ -142,25 +144,19 @@ class TestDataMigrationFunctions:
 			}[(app, model)]
 		)
 
-		# Run the forward migration
-		forward_func(mock_apps, None)
+		# Run the function
+		update_revision_renames(
+			mock_apps, None, 'otodb', 'MediaWork', {'title': 'work_title'}
+		)
 
 		# Verify the RevisionChange was updated
 		updated_change = RevisionChange.objects.get(pk=test_revision_change.pk)
 		assert updated_change.target_column == 'work_title'
 
-	def test_data_migration_remove_deletes_revision_changes(
+	def test_remove_revision_fields(
 		self, test_work, test_revision, test_revision_change
 	):
-		"""Test that the forward migration deletes RevisionChange records for removed fields."""
-		command = Command()
-
-		# Create the data migration function for field removal
-		changes = {'renames': {}, 'removes': ['title']}
-		forward_func = command._create_data_migration_forward(
-			'otodb', 'MediaWork', changes
-		)
-
+		"""Test that remove_revision_fields deletes RevisionChange records for removed fields."""
 		# Mock apps
 		mock_apps = Mock()
 		mock_apps.get_model = Mock(
@@ -170,14 +166,14 @@ class TestDataMigrationFunctions:
 			}[(app, model)]
 		)
 
-		# Run the forward migration
-		forward_func(mock_apps, None)
+		# Run the function
+		remove_revision_fields(mock_apps, None, 'otodb', 'MediaWork', ['title'])
 
 		# Verify the RevisionChange was deleted
 		assert not RevisionChange.objects.filter(pk=test_revision_change.pk).exists()
 
-	def test_data_migration_reverse_restores_old_names(self, test_work, test_revision):
-		"""Test that the reverse migration restores original field names."""
+	def test_reverse_revision_renames(self, test_work, test_revision):
+		"""Test that reverse_revision_renames restores original field names."""
 		# Create a RevisionChange with the new name
 		content_type = ContentType.objects.get_for_model(MediaWork)
 		change = RevisionChange.objects.create(
@@ -188,14 +184,6 @@ class TestDataMigrationFunctions:
 			target_value='Test Work',
 		)
 
-		command = Command()
-
-		# Create the reverse migration function
-		changes = {'renames': {'title': 'work_title'}, 'removes': []}
-		reverse_func = command._create_data_migration_reverse(
-			'otodb', 'MediaWork', changes
-		)
-
 		# Mock apps
 		mock_apps = Mock()
 		mock_apps.get_model = Mock(
@@ -205,22 +193,17 @@ class TestDataMigrationFunctions:
 			}[(app, model)]
 		)
 
-		# Run the reverse migration
-		reverse_func(mock_apps, None)
+		# Run the reverse function
+		reverse_revision_renames(
+			mock_apps, None, 'otodb', 'MediaWork', {'title': 'work_title'}
+		)
 
 		# Verify the RevisionChange was reverted to old name
 		updated_change = RevisionChange.objects.get(pk=change.pk)
 		assert updated_change.target_column == 'title'
 
-	def test_data_migration_handles_missing_content_type(self, member):
-		"""Test that migration gracefully handles missing ContentType."""
-		command = Command()
-
-		changes = {'renames': {'title': 'work_title'}, 'removes': []}
-		forward_func = command._create_data_migration_forward(
-			'otodb', 'NonExistentModel', changes
-		)
-
+	def test_update_revision_renames_handles_missing_content_type(self, member):
+		"""Test that update_revision_renames gracefully handles missing ContentType."""
 		# Mock apps
 		mock_apps = Mock()
 		mock_apps.get_model = Mock(
@@ -231,10 +214,12 @@ class TestDataMigrationFunctions:
 		)
 
 		# Should not raise an exception
-		forward_func(mock_apps, None)
+		update_revision_renames(
+			mock_apps, None, 'otodb', 'NonExistentModel', {'title': 'work_title'}
+		)
 
-	def test_data_migration_multiple_renames(self, test_work, test_revision):
-		"""Test handling multiple field renames in a single migration."""
+	def test_update_revision_renames_multiple_fields(self, test_work, test_revision):
+		"""Test handling multiple field renames in a single call."""
 		content_type = ContentType.objects.get_for_model(MediaWork)
 
 		# Create multiple RevisionChange records
@@ -253,17 +238,6 @@ class TestDataMigrationFunctions:
 			target_value='Test Description',
 		)
 
-		command = Command()
-
-		# Create migration with multiple renames
-		changes = {
-			'renames': {'title': 'work_title', 'description': 'work_desc'},
-			'removes': [],
-		}
-		forward_func = command._create_data_migration_forward(
-			'otodb', 'MediaWork', changes
-		)
-
 		# Mock apps
 		mock_apps = Mock()
 		mock_apps.get_model = Mock(
@@ -273,8 +247,14 @@ class TestDataMigrationFunctions:
 			}[(app, model)]
 		)
 
-		# Run the migration
-		forward_func(mock_apps, None)
+		# Run the function with multiple renames
+		update_revision_renames(
+			mock_apps,
+			None,
+			'otodb',
+			'MediaWork',
+			{'title': 'work_title', 'description': 'work_desc'},
+		)
 
 		# Verify both were updated
 		updated1 = RevisionChange.objects.get(pk=change1.pk)
@@ -333,4 +313,4 @@ class TestCommandIntegration:
 		# Check that success message was written
 		output = command.stdout.getvalue().lower()
 		assert 'added data migration for mediawork' in output
-		assert 'description → desc' in output
+		assert 'rename: description -> desc' in output

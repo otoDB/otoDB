@@ -88,3 +88,31 @@ def tag_client(member):
 def auth_client(member):
 	"""Create a test client for the auth router."""
 	return AuthenticatedTestClient(auth_router, member)
+
+
+# Revision tracking fixtures
+@pytest.fixture
+def test_work(db, member):
+	"""Create a test MediaWork for revision testing."""
+	return MediaWork.objects.create(
+		title='Test Work', description='Test Description', rating=0
+	)
+
+
+@pytest.fixture
+def test_revision(db, member):
+	"""Create a test Revision."""
+	return Revision.objects.create(user=member, message='Test revision')
+
+
+@pytest.fixture
+def test_revision_change(db, test_revision, test_work):
+	"""Create a test RevisionChange for a MediaWork."""
+	content_type = ContentType.objects.get_for_model(MediaWork)
+	return RevisionChange.objects.create(
+		rev=test_revision,
+		target_type=content_type,
+		target_id=test_work.pk,
+		target_column='title',
+		target_value='Test Work',
+	)

@@ -25,6 +25,11 @@ class UserLoginSchema(Schema):
 	username: str
 
 
+class LoginRequestSchema(Schema):
+	username: str
+	password: str
+
+
 @auth_router.get('/csrf')
 @ensure_csrf_cookie
 @csrf_exempt
@@ -33,8 +38,8 @@ def csrf(request):
 
 
 @auth_router.post('/login', response={200: UserLoginSchema, 401: Error})
-def login_endpoint(request, username: str, password: str):
-	user = authenticate(request, username=username, password=password)
+def login_endpoint(request, body: LoginRequestSchema):
+	user = authenticate(request, username=body.username, password=body.password)
 	if user is not None:
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
@@ -61,13 +66,20 @@ def logout_endpoint(request):
 	return {'message': 'Logged out'}
 
 
+class RegisterRequestSchema(Schema):
+	username: str
+	password: str
+	email: str
+	invite: str
+
+
 @auth_router.post('/register', response={200: UserLoginSchema, 401: Error, 409: Error})
-def register(request, username: str, password: str, email: str, invite: str):
-	invite_res = get_object_or_404(Invitation, secret=invite, used_by__isnull=True)
-	assert password
+def register(request, body: RegisterRequestSchema):
+	invite_res = get_object_or_404(Invitation, secret=body.invite, used_by__isnull=True)
+	assert body.password
 	try:
 		user = Account.objects.create_user(
-			username, email, password=password, level=invite_res.level
+			body.username, body.email, password=body.password, level=invite_res.level
 		)
 		invite_res.used_by = user
 		invite_res.used_at = timezone.now()
@@ -81,17 +93,22 @@ def register(request, username: str, password: str, email: str, invite: str):
 		return 400, {'message': 'A validation error occured'}
 
 
+class ResetPasswordRequestSchema(Schema):
+	password: str
+	token: str | None = None
+
+
 @auth_router.post('/reset_password')
-def reset_password(request, password: str, token: str | None = None):
-	assert password
+def reset_password(request, body: ResetPasswordRequestSchema):
+	assert body.password
 	user = request.user
 	if user.is_authenticated:
-		assert not token
+		assert not body.token
 	else:
-		assert token
-		user = get_object_or_404(Account, reset_token=token)
+		assert body.token
+		user = get_object_or_404(Account, reset_token=body.token)
 		user.reset_token = None
-	user.set_password(password)
+	user.set_password(body.password)
 	user.save()
 
 
@@ -177,10 +194,14 @@ def get_user_language(user, request):
 	return LanguageTypes.ENGLISH
 
 
+class SendResetTokenRequestSchema(Schema):
+	email: str
+
+
 @auth_router.put('/reset_password')
-def send_reset_password_token(request, email: str):
+def send_reset_password_token(request, body: SendResetTokenRequestSchema):
 	try:
-		user = Account.objects.get(email=email)
+		user = Account.objects.get(email=body.email)
 		user.reset_token = get_random_string(120, string.ascii_letters + string.digits)
 		user.save()
 		language = get_user_language(user, request)

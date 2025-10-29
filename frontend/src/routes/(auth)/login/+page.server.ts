@@ -19,7 +19,7 @@ export const actions = {
 
 		const { response, error } = await client.POST('/api/auth/login', {
 			fetch,
-			params: { query: { username, password } },
+			body: { username, password },
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') }
 		});
 		if (error) return fail(400, { username, failed: true });

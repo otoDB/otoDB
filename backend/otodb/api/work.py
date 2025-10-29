@@ -98,7 +98,11 @@ def search(
 	order: Literal['id', '-id', 'pub', '-pub'] | None = '-id',
 ):
 	search_id = int(query) if query.isdigit() else -1
-	q = Q(title__icontains=query) | Q(description__icontains=query) | Q(worksource__title__icontains=query)
+	q = (
+		Q(title__icontains=query)
+		| Q(description__icontains=query)
+		| Q(worksource__title__icontains=query)
+	)
 	if tags:
 		for tag in tags.split():
 			try:

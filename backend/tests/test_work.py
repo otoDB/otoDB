@@ -22,7 +22,7 @@ def random_str(length):
 
 def get_video_infos_mock():
 	json_path = Path(__file__).parent / 'mocks' / 'video_info.json'
-	with json_path.open() as f:
+	with json_path.open(encoding='utf-8') as f:
 		info = json.load(f)
 		return process_video_info(info), info
 

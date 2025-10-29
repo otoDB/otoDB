@@ -61,7 +61,7 @@ class TestMakemigrationsCommand:
 		# Create a mock migration with a RemoveField operation
 		mock_migration = Mock()
 		mock_migration.operations = [
-			migrations.RemoveField(model_name='mediawork', name='desc')
+			migrations.RemoveField(model_name='mediawork', name='description')
 		]
 
 		# Mock the app config
@@ -76,7 +76,7 @@ class TestMakemigrationsCommand:
 		assert len(mock_migration.operations) == 2
 		assert isinstance(mock_migration.operations[1], RevisionTrackingOperation)
 		assert mock_migration.operations[1].operation_type == 'remove'
-		assert mock_migration.operations[1].field_data == ['desc']
+		assert mock_migration.operations[1].field_data == ['description']
 
 	def test_inject_revision_updates_ignores_untracked_fields(self, db):
 		"""Test that fields not in revision_tracked_fields are ignored."""

@@ -10,15 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import logging
 import os
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()
-
-logging.getLogger('psycopg.pool').setLevel(logging.INFO)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

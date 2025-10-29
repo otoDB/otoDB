@@ -119,3 +119,34 @@ class TestTagLanguagePreference:
 		assert not TagWorkInstance.objects.filter(
 			work=work, work_tag=alias_tag
 		).exists()
+
+	def test_aliasing_into_alias_tag_resolves_to_base(self, editor, tag_client):
+		"""
+		Test that when aliasing tags into another alias tag, the system resolves
+		to the base tag to prevent creating an alias chain.
+		"""
+		# Create base tag and an alias to it
+		base_tag = TagWork.objects.create(name='base_tag')
+		existing_alias = TagWork.objects.create(name='existing_alias')
+		existing_alias.aliased_to = base_tag
+		existing_alias.save()
+
+		# Create a tag that we want to alias
+		tag_to_alias = TagWork.objects.create(name='tag_to_alias')
+
+		# Try to alias into the alias tag (should resolve to base_tag)
+		response = tag_client.post(
+			'/alias?into_tag=existing_alias&delete=false',
+			json=['tag_to_alias'],
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		# Verify the tag was aliased to the base tag, not the alias
+		tag_to_alias.refresh_from_db()
+		assert tag_to_alias.aliased_to == base_tag
+		assert tag_to_alias.aliased_to != existing_alias
+
+		# Verify we don't have an alias chain
+		assert existing_alias.aliased_to == base_tag
+		assert base_tag.aliased_to is None

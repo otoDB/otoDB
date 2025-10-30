@@ -71,10 +71,8 @@ def _bulk_get_new_rev(model, objs):
 
 def _get_ents(obj):
 	return tuple(
-		[
-			getattr(obj if attr == 'self' else getattr(obj, attr), 'pk', None)
-			for attr in type(obj).revision_entity_attrs
-		]
+		obj.pk if attr == 'self' else getattr(obj, obj._meta.get_field(attr).attname)
+		for attr in type(obj).revision_entity_attrs
 	)
 
 

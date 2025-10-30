@@ -1,5 +1,5 @@
 from typing import Optional, Annotated, Dict
-from functools import wraps
+from functools import wraps, lru_cache
 
 from pydantic import field_validator
 
@@ -332,15 +332,17 @@ def print_queries(f):
 	return wrapper
 
 
-def track_revision(f):
-	def get_entity_cts(model):
-		return [
-			ContentType.objects.get_for_model(
-				model if attr == 'self' else model._meta.get_field(attr).related_model
-			)
-			for attr in model.revision_entity_attrs
-		]
+@lru_cache(maxsize=128)
+def _get_entity_cts(model):
+	return [
+		ContentType.objects.get_for_model(
+			model if attr == 'self' else model._meta.get_field(attr).related_model
+		)
+		for attr in model.revision_entity_attrs
+	]
 
+
+def track_revision(f):
 	@wraps(f)
 	def wrapper(request, *args, **kwargs):
 		cache = get_request_cache()
@@ -359,6 +361,21 @@ def track_revision(f):
 		if len(rev) or len(rev_del):
 			revision = Revision.objects.create(user=request.user, message=rev_msg)
 
+			# Pre-fetch all ContentTypes in bulk
+			content_types = ContentType.objects.in_bulk(
+				set(ctpk for ctpk, *_ in rev_del)
+				| set(ctpk for (ctpk, *_), _ in rev.items())
+			)
+
+			# Batch fetch all target objects instead of N individual queries
+			targets_by_ct = {}
+			for (ctpk, pk, field), (entities, val) in rev.items():
+				targets_by_ct.setdefault(ctpk, set()).add(pk)
+			targets_cache = {
+				ctpk: content_types[ctpk].model_class().objects.in_bulk(list(pks))  # type: ignore
+				for ctpk, pks in targets_by_ct.items()
+			}
+
 			# For batching
 			revision_changes = []
 			pending_entities = []
@@ -369,14 +386,14 @@ def track_revision(f):
 					rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
 				)
 				revision_changes.append(change)
-				model = ContentType.objects.get(pk=ctpk).model_class()
-				pending_entities.append((change, get_entity_cts(model), entities))
+				model = content_types[ctpk].model_class()
+				pending_entities.append((change, _get_entity_cts(model), entities))
 
 			# Process updates
 			for (ctpk, pk, field), (entities, val) in rev.items():
-				ct = ContentType.objects.get(pk=ctpk)
+				ct = content_types[ctpk]
 				model = ct.model_class()
-				target = model.objects.get(pk=pk)
+				target = targets_cache[ctpk][pk]
 				change = RevisionChange(
 					rev=revision,
 					target=target,
@@ -384,7 +401,7 @@ def track_revision(f):
 					target_value=val,
 				)
 				revision_changes.append(change)
-				pending_entities.append((change, get_entity_cts(model), entities))
+				pending_entities.append((change, _get_entity_cts(model), entities))
 
 			# Bulk create changes
 			RevisionChange.objects.bulk_create(revision_changes)

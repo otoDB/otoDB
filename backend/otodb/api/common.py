@@ -358,31 +358,50 @@ def track_revision(f):
 
 		if len(rev) or len(rev_del):
 			revision = Revision.objects.create(user=request.user, message=rev_msg)
+
+			# For batching
+			revision_changes = []
+			pending_entities = []
+
+			# Process deletions
 			for ctpk, pk, entities in rev_del:
-				change = RevisionChange.objects.create(
+				change = RevisionChange(
 					rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
 				)
+				revision_changes.append(change)
 				model = ContentType.objects.get(pk=ctpk).model_class()
-				for entity_type, ent_pk in zip(get_entity_cts(model), entities):
-					if ent_pk:
-						RevisionChangeEntity.objects.create(
-							change=change, entity_type=entity_type, entity_id=ent_pk
-						)
+				pending_entities.append((change, get_entity_cts(model), entities))
+
+			# Process updates
 			for (ctpk, pk, field), (entities, val) in rev.items():
 				ct = ContentType.objects.get(pk=ctpk)
 				model = ct.model_class()
 				target = model.objects.get(pk=pk)
-				change = RevisionChange.objects.create(
+				change = RevisionChange(
 					rev=revision,
 					target=target,
 					target_column=field,
 					target_value=val,
 				)
-				for entity_type, ent_pk in zip(get_entity_cts(model), entities):
+				revision_changes.append(change)
+				pending_entities.append((change, get_entity_cts(model), entities))
+
+			# Bulk create changes
+			RevisionChange.objects.bulk_create(revision_changes)
+
+			# Bulk create change entities
+			revision_change_entities = []
+			for change, entity_cts, entities in pending_entities:
+				for entity_type, ent_pk in zip(entity_cts, entities):
 					if ent_pk:
-						RevisionChangeEntity.objects.create(
-							change=change, entity_type=entity_type, entity_id=ent_pk
+						revision_change_entities.append(
+							RevisionChangeEntity(
+								change=change, entity_type=entity_type, entity_id=ent_pk
+							)
 						)
+
+			if revision_change_entities:
+				RevisionChangeEntity.objects.bulk_create(revision_change_entities)
 
 		return ret
 

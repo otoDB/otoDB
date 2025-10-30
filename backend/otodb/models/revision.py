@@ -13,8 +13,6 @@ class Revision(models.Model):
 	date = models.DateTimeField(auto_now_add=True)
 	message = models.TextField(null=False, default='')
 
-	revisionchange_set: models.QuerySet['RevisionChange']
-
 
 class RevisionChange(models.Model):
 	rev = models.ForeignKey(Revision, null=False, on_delete=models.CASCADE)
@@ -26,8 +24,6 @@ class RevisionChange(models.Model):
 
 	target_column = models.CharField(max_length=100, null=True)
 	target_value = models.TextField(null=True)
-
-	revisionchangeentity_set: models.QuerySet['RevisionChangeEntity']
 
 	class Meta:
 		unique_together = (

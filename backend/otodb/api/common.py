@@ -1,6 +1,3 @@
-from django.utils import timezone
-from datetime import timedelta
-
 from typing import Optional, Annotated, Dict
 from functools import wraps
 
@@ -360,74 +357,18 @@ def track_revision(f):
 		rev_msg = cache.get('rev_msg')
 
 		if len(rev) or len(rev_del):
-			# Collect all affected entities from current changes
-			affected_entities = set()
-			for ctpk, pk, entities in rev_del:
-				affected_entities.update(
-					(ctpk, ent_pk) for ent_pk in entities if ent_pk
-				)
-			for (ctpk, pk, field), (entities, val) in rev.items():
-				affected_entities.update(
-					(ctpk, ent_pk) for ent_pk in entities if ent_pk
-				)
-
-			# Try to find a recent revision that:
-			# - Was made within the last 60 minutes
-			# - Was made by the same user
-			# - Affects the exact same set of entities
-			revision = None
-			if affected_entities:
-				five_minutes_ago = timezone.now() - timedelta(minutes=60)
-				recent_revisions = (
-					Revision.objects.filter(
-						user=request.user, date__gte=five_minutes_ago
-					)
-					.prefetch_related('revisionchange_set__revisionchangeentity_set')
-					.order_by('-date')
-				)
-
-				# Find a revision that affects the exact same set of entities
-				for candidate_revision in recent_revisions:
-					candidate_entities = set()
-					for change in candidate_revision.revisionchange_set.all():
-						for entity in change.revisionchangeentity_set.all():
-							candidate_entities.add(
-								(entity.entity_type_id, entity.entity_id)  # type: ignore
-							)
-
-					# Check if the entities match exactly
-					if candidate_entities == affected_entities:
-						revision = candidate_revision
-						# Append new message if provided
-						if rev_msg and rev_msg not in revision.message:
-							revision.message = (
-								revision.message
-								+ ('\n' if revision.message else '')
-								+ rev_msg
-							)
-							revision.save()
-						break
-
-			# Create new revision if no recent one found
-			if revision is None:
-				revision = Revision.objects.create(user=request.user, message=rev_msg)
+			revision = Revision.objects.create(user=request.user, message=rev_msg)
 
 			# For batching
-			revision_changes_to_create = []
-			revision_changes_to_update = []
+			revision_changes = []
 			pending_entities = []
-
-			# Check if we're reusing an existing revision (merging)
-			merging_revision = (
-				revision.pk is not None and len(revision.revisionchange_set.all()) > 0
-			)
 
 			# Process deletions
 			for ctpk, pk, entities in rev_del:
 				change = RevisionChange(
 					rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
 				)
-				revision_changes_to_create.append(change)
+				revision_changes.append(change)
 				model = ContentType.objects.get(pk=ctpk).model_class()
 				pending_entities.append((change, get_entity_cts(model), entities))
 
@@ -435,43 +376,18 @@ def track_revision(f):
 			for (ctpk, pk, field), (entities, val) in rev.items():
 				ct = ContentType.objects.get(pk=ctpk)
 				model = ct.model_class()
-				target = model.objects.get(pk=pk)  # type: ignore
-
-				# Check if this exact change already exists in the revision (only if merging)
-				existing_change = None
-				if merging_revision:
-					existing_change = RevisionChange.objects.filter(
-						rev=revision,
-						target_type_id=ctpk,
-						target_id=pk,
-						target_column=field,
-						deleted=False,
-					).first()
-
-				if existing_change:
-					# Update the value instead of creating a new change
-					existing_change.target_value = val
-					revision_changes_to_update.append(existing_change)
-				else:
-					# Create new change
-					change = RevisionChange(
-						rev=revision,
-						target=target,
-						target_column=field,
-						target_value=val,
-					)
-					revision_changes_to_create.append(change)
-					pending_entities.append((change, get_entity_cts(model), entities))
-
-			# Bulk create new changes
-			if revision_changes_to_create:
-				RevisionChange.objects.bulk_create(revision_changes_to_create)
-
-			# Bulk update existing changes
-			if revision_changes_to_update:
-				RevisionChange.objects.bulk_update(
-					revision_changes_to_update, ['target_value']
+				target = model.objects.get(pk=pk)
+				change = RevisionChange(
+					rev=revision,
+					target=target,
+					target_column=field,
+					target_value=val,
 				)
+				revision_changes.append(change)
+				pending_entities.append((change, get_entity_cts(model), entities))
+
+			# Bulk create changes
+			RevisionChange.objects.bulk_create(revision_changes)
 
 			# Bulk create change entities
 			revision_change_entities = []

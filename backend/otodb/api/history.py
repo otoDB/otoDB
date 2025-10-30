@@ -3,7 +3,7 @@ from datetime import datetime
 
 import diff_match_patch as dmp_mod
 
-from django.db.models import Window, F
+from django.db.models import Window, F, Subquery
 from django.db.models.functions import RowNumber
 
 from django.forms.models import model_to_dict
@@ -149,10 +149,15 @@ def history(
 		object_id = TagWork.objects.get(slug=object_id).id
 	return (
 		Revision.objects.filter(
-			revisionchange__revisionchangeentity__entity_id=object_id,
-			revisionchange__revisionchangeentity__entity_type__model=entity,
+			id__in=Subquery(
+				Revision.objects.filter(
+					revisionchange__revisionchangeentity__entity_id=object_id,
+					revisionchange__revisionchangeentity__entity_type__model=entity,
+				)
+				.distinct()
+				.values('id')
+			)
 		)
-		.distinct()
 		.annotate(index=Window(expression=RowNumber(), order_by=F('id').asc()))
-		.order_by('-id')
+		.order_by('-index')
 	)

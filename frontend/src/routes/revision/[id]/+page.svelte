@@ -19,6 +19,7 @@
 	</h3>
 	{#if data.revision.message}<h4>{data.revision.message}</h4>{/if}
 
-	<pre>{#each data.revision.changes as c, i (i)}{c.target_type} #{c.target_id} - {#if c.deleted}Deleted{:else}{c.target_column} -> {c.target_value}{/if}
+	<pre>
+		{#each data.revision.changes as c, i (i)}{c.target_type} #{c.target_id} - {#if c.deleted}Deleted{:else}{c.target_column} -> {c.target_value}{/if}
 		{/each}</pre>
 </Section>

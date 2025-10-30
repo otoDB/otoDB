@@ -59,10 +59,7 @@ def get_serialized_value(instance: models.Model, field):
 
 def _bulk_get_new_rev(model, objs):
 	all_changes = []
-
 	for obj in objs:
-		if obj.pk is None:
-			continue
 		changes = {}
 		for k in obj.get_dirty_fields(check_relationship=True):
 			if k in model.revision_tracked_fields:

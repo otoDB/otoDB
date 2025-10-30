@@ -10,11 +10,13 @@ from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
+from django_cte import CTE, with_cte
+
 from ninja import Router, ModelSchema, Field
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.models import TagWork, Revision, RevisionChange
+from otodb.models import TagWork, Revision, RevisionChange, MediaWork
 from otodb.account.models import Account
 
 from .common import user_is_staff, track_revision
@@ -145,13 +147,45 @@ def rollback(request: HttpRequest, history_id: int):
 def history(
 	request: HttpRequest, object_id: int | str, entity: Literal['mediawork', 'tagwork']
 ):
-	if entity == 'tagwork':
-		object_id = TagWork.objects.get(slug=object_id).id
+	query_ids = []
+	match entity:
+		case 'mediawork':
+			work = MediaWork.objects.get(id=object_id)
+			while work.moved_to:
+				work = work.moved_to
+			object_id = work.id
+			cte = CTE.recursive(
+				lambda cte: MediaWork.objects.order_by()
+				.filter(id=work.id)
+				.values('id')
+				.union(
+					cte.join(
+						MediaWork.objects.order_by(),
+						moved_to_id=cte.col.id,
+					).values('id'),
+					all=True,
+				)
+			)
+			merged = (
+				with_cte(cte, select=cte.join(TagWork, id=cte.col.id))
+				.exclude(id=work.id)
+				.distinct()
+				.order_by()
+			)
+			query_ids = query_ids + [*merged.values_list('id', flat=True)]
+
+		case 'tagwork':
+			tag = TagWork.objects.get(slug=object_id)
+			if tag.aliased_to:
+				tag = tag.alised_to
+			object_id = tag.id
+			query_ids = query_ids + [*tag.aliases.values_list('id', flat=True)]
+	query_ids.append(object_id)
 	return (
 		Revision.objects.filter(
 			id__in=Subquery(
 				Revision.objects.filter(
-					revisionchange__revisionchangeentity__entity_id=object_id,
+					revisionchange__revisionchangeentity__entity_id__in=query_ids,
 					revisionchange__revisionchangeentity__entity_type__model=entity,
 				)
 				.distinct()

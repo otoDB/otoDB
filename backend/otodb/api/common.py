@@ -357,7 +357,8 @@ def track_revision(f):
 		rev = cache.get('rev')
 		rev_del = cache.get('rev_del')
 		rev_msg = cache.get('rev_msg')
-		rev_route = cache.get('rev_route')
+		# REVIEW: This should never be unknown but some test cases might not set it; should fix those tests
+		rev_route = cache.get('rev_route', Route.UNKNOWN)
 
 		if len(rev) or len(rev_del):
 			revision = Revision.objects.create(user=request.user, message=rev_msg)

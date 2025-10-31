@@ -229,7 +229,7 @@ class CreatorRolesUpdateSchema(Schema):
 
 @work_router.post('creator_roles', auth=django_auth)
 @user_is_trusted
-@with_revision_route(Route.MEDIAWORK_SET_TAGS)
+@with_revision_route(Route.MEDIAWORK_UPDATE_CREATOR_ROLES)
 def update_creator_roles(request: HttpRequest, payload: CreatorRolesUpdateSchema):
 	instance = get_object_or_404(
 		TagWorkInstance, work_id=payload.work_id, work_tag__slug=payload.tag_slug
@@ -346,7 +346,7 @@ def source_origin(request: HttpRequest, source_id: int, status: int):
 
 
 @work_router.post('refresh_source', auth=django_auth)
-@with_revision_route(Route.WORKSOURCE_CREATE)
+@with_revision_route(Route.WORKSOURCE_REFRESH)
 def refresh_source(request: HttpRequest, source_id: int):
 	src = get_object_or_404(WorkSource.active_objects, id=source_id)
 	src.refresh()

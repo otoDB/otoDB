@@ -5,6 +5,7 @@
 	import Section from '$lib/Section.svelte';
 	import { isSOV, isSVO } from '$lib/ui.js';
 	import WorkCard from '$lib/WorkCard.svelte';
+	import { Route } from '$lib/enums.js';
 
 	let { data } = $props();
 </script>
@@ -58,7 +59,9 @@
 			<tbody>
 				{#each data.revisions as r, i (i)}
 					<tr
-						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td>
+						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
+							>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+						><td>
 							{#if isSVO(getLocale())}
 								{m.curly_safe_lynx_fond()}
 							{/if}

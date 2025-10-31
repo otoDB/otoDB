@@ -128,7 +128,13 @@ def get_history_dict(historical):
 @history_router.get('recent', response=list[RevisionSchema])
 @paginate
 def recent(request: HttpRequest):
-	return Revision.objects.order_by('-id')
+	return Revision.objects.annotate(
+		route=Subquery(
+			RevisionChangeEntity.objects.filter(change__rev_id=OuterRef('id')).values(
+				'route'
+			)[:1]
+		)
+	).order_by('-id')
 
 
 @history_router.get('user', response=list[RevisionSchema])

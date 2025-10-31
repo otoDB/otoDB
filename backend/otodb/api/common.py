@@ -25,7 +25,7 @@ from otodb.models import (
 	RevisionChange,
 	RevisionChangeEntity,
 )
-from otodb.models.enums import Role, MediaType, ProfileConnectionTypes
+from otodb.models.enums import Role, MediaType, ProfileConnectionTypes, Route
 import re
 
 
@@ -357,6 +357,7 @@ def track_revision(f):
 		rev = cache.get('rev')
 		rev_del = cache.get('rev_del')
 		rev_msg = cache.get('rev_msg')
+		rev_route = cache.get('rev_route')
 
 		if len(rev) or len(rev_del):
 			revision = Revision.objects.create(user=request.user, message=rev_msg)
@@ -413,7 +414,10 @@ def track_revision(f):
 					if ent_pk:
 						revision_change_entities.append(
 							RevisionChangeEntity(
-								change=change, entity_type=entity_type, entity_id=ent_pk
+								change=change,
+								entity_type=entity_type,
+								entity_id=ent_pk,
+								route=rev_route,
 							)
 						)
 
@@ -430,6 +434,21 @@ def add_revision_message(message: str):
 	rev_msg = cache.get_or_set('rev_msg', '')
 	rev_msg = rev_msg + ('\n' if rev_msg else '') + message
 	cache.set('rev_msg', rev_msg)
+
+
+def with_revision_route(route: Route):
+	"""Decorator to set the revision route for a API endpoint."""
+
+	def decorator(f):
+		@wraps(f)
+		def wrapper(request, *args, **kwargs):
+			cache = get_request_cache()
+			cache.set('rev_route', route.value)
+			return f(request, *args, **kwargs)
+
+		return wrapper
+
+	return decorator
 
 
 class RouterWithRevision(Router):

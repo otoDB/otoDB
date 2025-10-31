@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import client from './api';
-	import { UserLevel } from './enums';
+	import { UserLevel, Route } from './enums';
 	import { m } from './paraglide/messages';
 	import type { components } from './schema';
 	interface Props {
@@ -21,13 +21,16 @@
 <table class="w-full table-auto text-center">
 	<tbody>
 		<tr>
-			<th>Version</th><th>Revision</th><th>{m.fuzzy_crazy_cobra_lead()}</th><th>Changed at</th
+			<th>Version</th><th>Revision</th><th>Action</th><th>{m.fuzzy_crazy_cobra_lead()}</th><th
+				>Changed at</th
 			><th>{m.weary_spicy_fly_attend()}</th>
 			<!-- {#if user && user.level >= UserLevel.ADMIN}<th>{m.legal_mean_slug_link()}</th>{/if} -->
 		</tr>
 		{#each revisions as rev, i (i)}
 			<tr
-				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td>
+				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
+					>{rev.route !== null && rev.route !== undefined ? Route[rev.route] : ''}</td
+				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>
 				</td><td>
 					{new Date(rev.date).toLocaleString()}

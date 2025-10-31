@@ -3,7 +3,7 @@ from datetime import datetime
 
 import diff_match_patch as dmp_mod
 
-from django.db.models import Window, F, Subquery
+from django.db.models import Window, F, Subquery, OuterRef
 from django.db.models.functions import RowNumber
 
 from django.forms.models import model_to_dict
@@ -16,7 +16,13 @@ from ninja import Router, ModelSchema, Field
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.models import TagWork, Revision, RevisionChange, MediaWork
+from otodb.models import (
+	TagWork,
+	Revision,
+	RevisionChange,
+	RevisionChangeEntity,
+	MediaWork,
+)
 from otodb.account.models import Account
 
 from .common import user_is_staff, track_revision
@@ -83,6 +89,7 @@ class RevisionSchema(ModelSchema):
 	date: datetime
 	user: str = Field(..., alias='user.username')
 	index: None | int = None
+	route: None | int = None
 
 	class Meta:
 		model = Revision
@@ -153,10 +160,10 @@ def history(
 			work = MediaWork.objects.get(id=object_id)
 			while work.moved_to:
 				work = work.moved_to
-			object_id = work.id
+			object_id = work.pk
 			cte = CTE.recursive(
 				lambda cte: MediaWork.objects.order_by()
-				.filter(id=work.id)
+				.filter(pk=work.pk)
 				.values('id')
 				.union(
 					cte.join(
@@ -168,7 +175,7 @@ def history(
 			)
 			merged = (
 				with_cte(cte, select=cte.join(TagWork, id=cte.col.id))
-				.exclude(id=work.id)
+				.exclude(pk=work.pk)
 				.distinct()
 				.order_by()
 			)
@@ -177,8 +184,8 @@ def history(
 		case 'tagwork':
 			tag = TagWork.objects.get(slug=object_id)
 			if tag.aliased_to:
-				tag = tag.alised_to
-			object_id = tag.id
+				tag = tag.aliased_to
+			object_id = tag.pk
 			query_ids = query_ids + [*tag.aliases.values_list('id', flat=True)]
 	query_ids.append(object_id)
 	return (
@@ -192,6 +199,13 @@ def history(
 				.values('id')
 			)
 		)
-		.annotate(index=Window(expression=RowNumber(), order_by=F('id').asc()))
+		.annotate(
+			index=Window(expression=RowNumber(), order_by=F('id').asc()),
+			route=Subquery(
+				RevisionChangeEntity.objects.filter(
+					change__rev_id=OuterRef('id')
+				).values('route')[:1]
+			),
+		)
 		.order_by('-index')
 	)

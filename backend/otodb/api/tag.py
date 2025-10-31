@@ -35,6 +35,7 @@ from otodb.models.enums import (
 	SongConnectionTypes,
 	TagWorkConnectionTypes,
 	MediaConnectionTypes,
+	Route,
 )
 
 from .common import (
@@ -52,6 +53,7 @@ from .common import (
 	make_alt_value_parser,
 	re_to_parser,
 	RouterWithRevision,
+	with_revision_route,
 )
 
 tag_router = RouterWithRevision()
@@ -150,6 +152,7 @@ def works(request: HttpRequest, tag_slug: str):
 
 @tag_router.post('alias', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_ALIAS)
 def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool):
 	tags = []
 	for tag_name in from_tags:
@@ -178,6 +181,7 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
 
 @tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_DELETE)
 def delete(request: HttpRequest, tag_slug: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	if tag.can_be_deleted:
@@ -188,6 +192,7 @@ def delete(request: HttpRequest, tag_slug: str):
 
 @tag_router.delete('alias', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_UNALIAS)
 def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	tag.aliases.filter(slug=alias).update(aliased_to=None)
@@ -195,6 +200,7 @@ def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
 
 @tag_router.put('lang_pref', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_ADD_LANG_PREF)
 def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	tag.lang_prefs.filter(lang=LanguageTypes(lang).value).delete()
@@ -203,6 +209,7 @@ def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
 
 @tag_router.post('set_base', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_SET_BASE)
 def set_base_tag(request: HttpRequest, tag_slug: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	to = tag.aliased_to
@@ -240,6 +247,7 @@ class SongInSchema(ModelSchema):
 @tag_router.put('tag', auth=django_auth)
 @user_is_trusted
 @transaction.atomic
+@with_revision_route(Route.TAGWORK_UPDATE)
 def update(
 	request: HttpRequest,
 	tag_slug: str,
@@ -325,6 +333,7 @@ def wiki_page(request: HttpRequest, tag_slug: str):
 
 @tag_router.post('wiki_page', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_EDIT_WIKI)
 def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	empty = md.strip() == ''
@@ -553,6 +562,7 @@ creator_tag_connection_parser = make_alt_value_parser(
 
 @tag_router.put('connection', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_EDIT_CONNECTIONS)
 def edit_connections(request: HttpRequest, tag_slug: str, urls: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	category_parser_tp = {
@@ -666,6 +676,7 @@ def song_relations(request: HttpRequest, song_id: int):
 
 
 @tag_router.post('song_relation', auth=django_auth)
+@with_revision_route(Route.SONGRELATION_CREATE)
 @user_is_trusted
 def song_relation(request: HttpRequest, payload: RelationSchema):
 	post_relation(MediaSong, payload)
@@ -674,6 +685,7 @@ def song_relation(request: HttpRequest, payload: RelationSchema):
 
 @tag_router.delete('song_relation', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.SONGRELATION_DELETE)
 def delete_relation(request: HttpRequest, A: int, B: int):
 	a = MediaSong.objects.get(id=A)
 	b = MediaSong.objects.get(id=B)
@@ -692,6 +704,7 @@ def song_tag_search(request: HttpRequest, query: str):
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.SONGTAG_SET_TAGS)
 def song_tags(
 	request: HttpRequest,
 	song_id: int,
@@ -717,6 +730,7 @@ def song_tag_details(request: HttpRequest, tag_slug: str):
 @tag_router.put('song_tag', auth=django_auth)
 @user_is_trusted
 @transaction.atomic
+@with_revision_route(Route.SONGTAG_UPDATE)
 def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchema):
 	tag = get_object_or_404(
 		TagSong.objects.select_for_update(of=('self',)), slug=tag_slug

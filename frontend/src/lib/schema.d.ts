@@ -2023,8 +2023,13 @@ export interface components {
             user: string;
             /** Index */
             index?: number | null;
-            /** Message */
-            message?: string | null;
+            /** Route */
+            route?: number | null;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
         };
         /** FullRevisionSchema */
         FullRevisionSchema: {
@@ -2039,8 +2044,13 @@ export interface components {
             user: string;
             /** Index */
             index?: number | null;
-            /** Message */
-            message?: string | null;
+            /** Route */
+            route?: number | null;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
             /** Changes */
             changes: components["schemas"]["RevisionChangeSchema"][];
         };

@@ -6,6 +6,7 @@ from django_request_cache import get_request_cache
 from dirtyfields import DirtyFieldsMixin
 
 from otodb.account.models import Account
+from otodb.models.enums import Route
 
 
 class Revision(models.Model):
@@ -41,6 +42,9 @@ class RevisionChangeEntity(models.Model):
 	entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=False)
 	entity_id = models.PositiveBigIntegerField(null=False)
 	entity = GenericForeignKey('entity_type', 'entity_id')
+	route = models.IntegerField(
+		null=False, choices=Route.choices, default=Route.UNKNOWN
+	)
 
 	class Meta:
 		unique_together = (

@@ -161,20 +161,21 @@ class EntitySchema(Schema):
 	id: int | str
 	entity: Literal['mediawork', 'tagwork']
 
+def rollback_entity(entity_id, entity_type, date, del_new_ids={}):
+	if isinstance(entity_type, int):
+		entity_type_id = entity_type
+	elif isinstance(entity_type, str):
+		entity_type_id = ContentType.objects.get(model=entity_type).id
 
-def rollback_entity(entity_id, entity_type, date):
-	rces = RevisionChangeEntity.objects.filter(
-		entity_id=entity_id, entity_type=entity_type, change__rev__date__gte=date
-	)
 	changes = RevisionChange.objects.filter(
-		id__in=rces.values_list('change_id', flat=True)
+		id__in=RevisionChangeEntity.objects.filter(
+			entity_id=entity_id, entity_type_id=entity_type_id, change__rev__date__gte=date
+		).values_list('change_id', flat=True)
 	)
-
-	del_new_ids = {}
 	# Changes tagged with this entity may not tell us it's deleted if the FK/1-1 was changed to another entity before deletion
 	# So we need to re-query with a correlated Table.Row
-	for target_type_id, target_id in RevisionChange.objects.filter(
-		rev__date__gte=date, deleted=True
+	rcs = RevisionChange.objects.filter(
+		rev__date__gte=date
 	).filter(
 		Exists(
 			changes.filter(
@@ -182,7 +183,13 @@ def rollback_entity(entity_id, entity_type, date):
 				target_id=OuterRef('target_id'),
 			)
 		)
-	):
+	)
+	# if another entity that has been deleted - some model - this entity
+	for ent_id, ent_type_id in RevisionChangeEntity.objects.filter(change__in=rcs, change__deleted=True, change__target_id=F('entity_id'), change__target_type=F('entity_type')).exclude(entity_id=entity_id, entity_type_id=entity_type_id).values_list('entity_id', 'entity_type_id').distinct():
+		if (ent_type_id, ent_id) not in del_new_ids:
+			rollback_entity(ent_id, ent_type_id, date, del_new_ids)
+
+	for target_type_id, target_id in rcs.filter(deleted=True).values_list('target_id', 'target_type_id').distinct():
 		T = ContentType.objects.get(id=target_type_id).model_class()
 		values = {
 			field: RevisionChange.objects.filter(
@@ -196,9 +203,7 @@ def rollback_entity(entity_id, entity_type, date):
 			.target_value
 			for field in T.revision_tracked_fields
 		}
-		del_new_ids[(target_type_id, target_id)] = T.objects.update_or_create(**values)[
-			0
-		].id
+		del_new_ids[(target_type_id, target_id)] = T.objects.create(**values).id
 
 	for (target_type_id, target_id), target_columns in groupby(
 		changes.filter(deleted=False)
@@ -210,7 +215,6 @@ def rollback_entity(entity_id, entity_type, date):
 		T = ContentType.objects.get(id=target_type_id).model_class()
 		values = {}
 		for field in target_columns:
-			F = T._meta.get_field(field)
 			target_value = (
 				RevisionChange.objects.filter(
 					target_column=field,
@@ -224,10 +228,11 @@ def rollback_entity(entity_id, entity_type, date):
 			)
 
 			if isinstance(F, RelatedField):
+				FF = T._meta.get_field(field)
 				values[field] = getattr(
 					del_new_ids,
 					(
-						ContentType.objects.get_for_model(F.related_model).id,
+						ContentType.objects.get_for_model(FF.related_model).id,
 						int(target_value),
 					),
 					target_value,

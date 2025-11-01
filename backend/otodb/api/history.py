@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Any
 from datetime import datetime
 from itertools import groupby
 import logging
@@ -167,6 +167,71 @@ class EntitySchema(Schema):
 	entity: Literal['mediawork', 'tagwork']
 
 
+def _get_field_previous_value(
+	model_class,
+	field: str,
+	target_type_id: int,
+	target_id: int,
+	date: datetime,
+	del_new_ids: dict[tuple[int, int], int],
+) -> tuple[str, Any]:
+	"""
+	Fetch and convert the previous value of a field before a given date.
+
+	Args:
+		model_class: The Django model class
+		field: The field name to fetch
+		target_type_id: ContentType ID of the target model
+		target_id: ID of the target instance
+		date: Rollback to state before this date
+		del_new_ids: Mapping of (content_type_id, old_id) -> new_id for recreated entities
+
+	Returns:
+		Tuple of (field_attname, converted_value)
+
+	Raises:
+		ValueError: If no previous revision is found
+	"""
+	# Find the most recent change before the rollback date
+	prev_change = (
+		RevisionChange.objects.filter(
+			target_column=field,
+			target_type_id=target_type_id,
+			target_id=target_id,
+			rev__date__lt=date,
+		)
+		.order_by('-rev__date')
+		.first()
+	)
+
+	if prev_change is None:
+		raise ValueError(
+			f'No previous revision found for {model_class.__name__}.{field} '
+			f'(id={target_id})'
+		)
+
+	target_value = prev_change.target_value
+	field_obj = model_class._meta.get_field(field)
+
+	# Use attname to get the actual database column name
+	# For ForeignKey fields, this automatically gives us 'field_id' instead of 'field'
+	if isinstance(field_obj, RelatedField):
+		if target_value is not None:
+			# Check if the related object was also deleted and recreated
+			related_ct_id = ContentType.objects.get_for_model(
+				field_obj.related_model
+			).id
+			# Use the new ID if it was recreated, otherwise use the original ID
+			actual_id = del_new_ids.get(
+				(related_ct_id, int(target_value)), int(target_value)
+			)
+			return field_obj.attname, actual_id
+		else:
+			return field_obj.attname, None
+	else:
+		return field_obj.attname, field_obj.to_python(target_value)
+
+
 @transaction.atomic
 def rollback_entity(
 	entity_id: int | str,
@@ -178,8 +243,7 @@ def rollback_entity(
 	Rollback an entity to its state before a given date.
 
 	This function restores both deleted entities and updates to existing entities
-	by examining the revision history. It handles related entities recursively and
-	uses bulk operations for performance.
+	by examining the revision history. Related entities are handled recursively.
 
 	Args:
 		entity_id: The ID of the entity to rollback
@@ -267,46 +331,15 @@ def rollback_entity(
 		# Fetch previous values for all tracked fields
 		values = {}
 		for field in getattr(model_class, 'revision_tracked_fields', []):
-			prev_change = (
-				RevisionChange.objects.filter(
-					target_column=field,
-					target_type_id=target_type_id,
-					target_id=target_id,
-					rev__date__lt=date,
+			try:
+				field_name, field_value = _get_field_previous_value(
+					model_class, field, target_type_id, target_id, date, del_new_ids
 				)
-				.order_by('-rev__date')
-				.first()
-			)
-
-			if prev_change is None:
-				logger.error(
-					f'No previous revision found for {model_class.__name__}.{field} '
-					f'(id={target_id}), cannot restore deleted entity'
-				)
+				values[field_name] = field_value
+			except ValueError as e:
+				logger.error(f'{e}, cannot restore deleted entity')
 				# Stop entire rollback prematurely -- cannot safely restore
 				return
-
-			target_value = prev_change.target_value
-			field_obj = model_class._meta.get_field(field)
-
-			# Use attname to get the actual database column name
-			# For ForeignKey fields, this automatically gives us 'field_id' instead of 'field'
-			if isinstance(field_obj, RelatedField):
-				if target_value is not None:
-					# Check if the related object was also deleted and recreated
-					related_ct_id = ContentType.objects.get_for_model(
-						field_obj.related_model
-					).id
-					# Use the new ID if it was recreated, otherwise use the original ID
-					actual_id = del_new_ids.get(
-						(related_ct_id, int(target_value)), int(target_value)
-					)
-					values[field_obj.attname] = actual_id
-				else:
-					values[field_obj.attname] = None
-			else:
-				# Use to_python to properly deserialize the string value
-				values[field_obj.attname] = field_obj.to_python(target_value)
 		else:
 			# All fields were successfully fetched, create the entity
 			try:
@@ -343,45 +376,15 @@ def rollback_entity(
 		for field_name_tuple in target_columns:
 			field = field_name_tuple[2]  # Extract field name from tuple
 
-			# Find the most recent change before the rollback date
-			prev_change = (
-				RevisionChange.objects.filter(
-					target_column=field,
-					target_type_id=target_type_id,
-					target_id=target_id,
-					rev__date__lt=date,
+			try:
+				field_name, field_value = _get_field_previous_value(
+					model_class, field, target_type_id, target_id, date, del_new_ids
 				)
-				.order_by('-rev__date')
-				.first()
-			)
-
-			if prev_change is None:
-				logger.error(
-					f'No previous revision found for {model_class.__name__}.{field} '
-					f'(id={target_id}), skipping field'
-				)
+				values[field_name] = field_value
+			except ValueError as e:
+				logger.error(f'{e}, skipping field')
 				# Stop entire rollback prematurely -- cannot safely restore
 				return
-
-			target_value = prev_change.target_value
-
-			# Handle ForeignKey and OneToOne fields
-			try:
-				field_obj = model_class._meta.get_field(field)
-				if isinstance(field_obj, RelatedField):
-					if target_value is not None:
-						# If the related object was also deleted and recreated, use the new ID
-						related_ct_id = ContentType.objects.get_for_model(
-							field_obj.related_model
-						).id
-						actual_id = del_new_ids.get(
-							(related_ct_id, int(target_value)), int(target_value)
-						)
-						values[field_obj.attname] = actual_id
-					else:
-						values[field_obj.attname] = None
-				else:
-					values[field_obj.attname] = field_obj.to_python(target_value)
 			except Exception as e:
 				logger.warning(
 					f'Could not process field {field} on {model_class.__name__}: {e}'

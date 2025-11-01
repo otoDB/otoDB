@@ -210,9 +210,7 @@ def _get_all_previous_field_values(
 			)
 		)
 		qs = annotated_qs.filter(row_number=1)
-	latest_changes = dict(
-		qs.values_list('target_column', 'target_value')
-	)
+	latest_changes = dict(qs.values_list('target_column', 'target_value'))
 
 	# Check if we found all required fields
 	required_fields = fields or getattr(model_class, 'revision_tracked_fields', [])

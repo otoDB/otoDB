@@ -274,11 +274,11 @@ def rollback_entity(
 			)
 
 			if prev_change is None:
-				logger.warning(
+				logger.error(
 					f'No previous revision found for {model_class.__name__}.{field} '
 					f'(id={target_id}), cannot restore deleted entity'
 				)
-				# Stop entire rollback prematurely -- cannot safely restore this entity
+				# Stop entire rollback prematurely -- cannot safely restore
 				return
 
 			target_value = prev_change.target_value
@@ -345,11 +345,12 @@ def rollback_entity(
 			)
 
 			if prev_change is None:
-				logger.warning(
+				logger.error(
 					f'No previous revision found for {model_class.__name__}.{field} '
 					f'(id={target_id}), skipping field'
 				)
-				continue
+				# Stop entire rollback prematurely -- cannot safely restore
+				return
 
 			target_value = prev_change.target_value
 

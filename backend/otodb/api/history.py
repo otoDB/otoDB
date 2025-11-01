@@ -1,10 +1,12 @@
 from typing import Literal
 from datetime import datetime
+from itertools import groupby
 
 import diff_match_patch as dmp_mod
 
-from django.db.models import Window, F, Subquery, OuterRef
+from django.db.models import Window, F, Subquery, OuterRef, Exists
 from django.db.models.functions import RowNumber
+from django.db.models.fields.related import RelatedField
 
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
@@ -12,7 +14,7 @@ from django.shortcuts import get_object_or_404
 
 from django_cte import CTE, with_cte
 
-from ninja import Router, ModelSchema, Field
+from ninja import Router, ModelSchema, Schema, Field
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
@@ -148,25 +150,131 @@ def revision(request: HttpRequest, revision_id: int):
 	return get_object_or_404(Revision, id=revision_id)
 
 
-@history_router.post('rollback', auth=django_auth)
+class EntitySchema(Schema):
+	id: int | str
+	entity: Literal['mediawork', 'tagwork']
+
+
+def rollback_entity(entity_id, entity_type, date):
+	rces = RevisionChangeEntity.objects.filter(
+		entity_id=entity_id, entity_type=entity_type, change__rev__date__gte=date
+	)
+	changes = RevisionChange.objects.filter(
+		id__in=rces.values_list('change_id', flat=True)
+	)
+
+	del_new_ids = {}
+	for target_type_id, target_id in RevisionChange.objects.filter(
+		rev__date__gte=date, deleted=True
+	).filter(
+		Exists(
+			changes.filter(
+				target_type_id=OuterRef('target_type_id'),
+				target_id=OuterRef('target_id'),
+			)
+		)
+	):
+		T = ContentType.objects.get(id=target_type_id).model_class()
+		values = {
+			field: RevisionChange.objects.filter(
+				target_column=field,
+				target_type_id=target_type_id,
+				target_id=target_id,
+				rev__date_lt=date,
+			)
+			.order_by('-rev__date')
+			.first()
+			.target_value
+			for field in T.revision_tracked_fields
+		}
+		del_new_ids[(target_type_id, target_id)] = T.objects.update_or_create(**values)[
+			0
+		].id
+
+	for (target_type_id, target_id), target_columns in groupby(
+		changes.filter(deleted=False)
+		.values_list('target_type_id', 'target_id', 'target_column')
+		.order_by('target_type_id', 'target_id')
+		.all(),
+		lambda v: (v[0], v[1]),
+	):
+		T = ContentType.objects.get(id=target_type_id).model_class()
+		values = {}
+		for field in target_columns:
+			F = T._meta.get_field(field)
+			target_value = (
+				RevisionChange.objects.filter(
+					target_column=field,
+					target_type_id=target_type_id,
+					target_id=target_id,
+					rev__date_lt=date,
+				)
+				.order_by('-rev__date')
+				.first()
+				.target_value
+			)
+
+			if isinstance(F, RelatedField):
+				values[field] = getattr(
+					del_new_ids,
+					(
+						ContentType.objects.get_for_model(F.related_model).id,
+						int(target_value),
+					),
+					target_value,
+				)
+			else:
+				values[field] = target_value
+		ContentType.objects.get(id=target_type_id).model_class().filter(
+			id=getattr(del_new_ids, (target_type_id, target_id), target_id)
+		).update(**values)
+
+
+@history_router.post('rollback_ent', auth=django_auth)
 @user_is_staff  # for now
 @track_revision
-def rollback(request: HttpRequest, history_id: int):
-	pass  # TODO
+def entity_rollback(request: HttpRequest, date: datetime, entity: EntitySchema):
+	rollback_entity(entity.id, entity.entity, date)
+
+
+@history_router.post('rollback', auth=django_auth)
+@user_is_staff  # for now
+def rollback(request: HttpRequest, revision_id: int):
+	rev = get_object_or_404(Revision, id=revision_id)
+	for ent in (
+		RevisionChangeEntity.objects.filter(change__rev=rev)
+		.values('entity_id', 'entity_type__model')
+		.distinct()
+		.all()
+	):
+		rollback_entity(ent['entity_id'], ent['entity_type__model'], rev.date)
+
+
+@history_router.post('rollback_user', auth=django_auth)
+@user_is_staff
+def user_rollback(request: HttpRequest, date: datetime, username: str):
+	for ent in (
+		RevisionChangeEntity.objects.filter(
+			change__rev__date__gte=date,
+			change__rev__user=get_object_or_404(Account, username=username),
+		)
+		.values('entity_id', 'entity_type__model')
+		.distinct()
+		.all()
+	):
+		rollback_entity(ent['entity_id'], ent['entity_type__model'], date)
 
 
 @history_router.get('history', auth=django_auth, response=list[RevisionSchema])
 @paginate
-def history(
-	request: HttpRequest, object_id: int | str, entity: Literal['mediawork', 'tagwork']
-):
+def history(request: HttpRequest, entity: EntitySchema):
 	query_ids = []
-	match entity:
+	match entity.entity:
 		case 'mediawork':
-			work = MediaWork.objects.get(id=object_id)
+			work = MediaWork.objects.get(id=entity.id)
 			while work.moved_to:
 				work = work.moved_to
-			object_id = work.pk
+			entity.id = work.pk
 			cte = CTE.recursive(
 				lambda cte: MediaWork.objects.order_by()
 				.filter(pk=work.pk)
@@ -188,18 +296,18 @@ def history(
 			query_ids = query_ids + [*merged.values_list('id', flat=True)]
 
 		case 'tagwork':
-			tag = TagWork.objects.get(slug=object_id)
+			tag = TagWork.objects.get(slug=entity.id)
 			if tag.aliased_to:
 				tag = tag.aliased_to
-			object_id = tag.pk
+			entity.id = tag.pk
 			query_ids = query_ids + [*tag.aliases.values_list('id', flat=True)]
-	query_ids.append(object_id)
+	query_ids.append(entity.id)
 	return (
 		Revision.objects.filter(
 			id__in=Subquery(
 				Revision.objects.filter(
 					revisionchange__revisionchangeentity__entity_id__in=query_ids,
-					revisionchange__revisionchangeentity__entity_type__model=entity,
+					revisionchange__revisionchangeentity__entity_type__model=entity.entity,
 				)
 				.distinct()
 				.values('id')

@@ -164,7 +164,10 @@ class EntitySchema(Schema):
 	entity: Literal['mediawork', 'tagwork']
 
 
-def rollback_entity(entity_id, entity_type, date, del_new_ids={}):
+def rollback_entity(entity_id, entity_type, date, del_new_ids=None):
+	if del_new_ids is None:
+		del_new_ids = {}
+
 	if isinstance(entity_type, int):
 		entity_type_id = entity_type
 	elif isinstance(entity_type, str):
@@ -206,7 +209,7 @@ def rollback_entity(entity_id, entity_type, date, del_new_ids={}):
 			rollback_entity(ent_id, ent_type_id, date, del_new_ids)
 
 	for target_type_id, target_id in del_rcs.values_list(
-		'target_id', 'target_type_id'
+		'target_type_id', 'target_id'
 	).distinct():
 		T = ContentType.objects.get(id=target_type_id).model_class()
 		values = {
@@ -245,20 +248,19 @@ def rollback_entity(entity_id, entity_type, date, del_new_ids={}):
 				.target_value
 			)
 
-			if isinstance(F, RelatedField):
-				FF = T._meta.get_field(field)
-				values[field] = getattr(
-					del_new_ids,
+			FF = T._meta.get_field(field)
+			if isinstance(FF, RelatedField):
+				values[field] = del_new_ids.get(
 					(
 						ContentType.objects.get_for_model(FF.related_model).id,
-						int(target_value),
+						int(target_value) if target_value is not None else None,
 					),
 					target_value,
 				)
 			else:
 				values[field] = target_value
-		ContentType.objects.get(id=target_type_id).model_class().filter(
-			id=getattr(del_new_ids, (target_type_id, target_id), target_id)
+		ContentType.objects.get(id=target_type_id).model_class().objects.filter(
+			id=del_new_ids.get((target_type_id, target_id), target_id)
 		).update(**values)
 
 
@@ -299,7 +301,7 @@ def user_rollback(request: HttpRequest, date: datetime, username: str):
 
 @history_router.get('history', auth=django_auth, response=list[RevisionSchema])
 @paginate
-def history(request: HttpRequest, entity: EntitySchema = Query(...)):
+def history(request: HttpRequest, entity: Query[EntitySchema]):
 	query_ids = []
 	match entity.entity:
 		case 'mediawork':

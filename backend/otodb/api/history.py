@@ -161,6 +161,7 @@ class EntitySchema(Schema):
 	id: int | str
 	entity: Literal['mediawork', 'tagwork']
 
+
 def rollback_entity(entity_id, entity_type, date, del_new_ids={}):
 	if isinstance(entity_type, int):
 		entity_type_id = entity_type
@@ -169,27 +170,42 @@ def rollback_entity(entity_id, entity_type, date, del_new_ids={}):
 
 	changes = RevisionChange.objects.filter(
 		id__in=RevisionChangeEntity.objects.filter(
-			entity_id=entity_id, entity_type_id=entity_type_id, change__rev__date__gte=date
+			entity_id=entity_id,
+			entity_type_id=entity_type_id,
+			change__rev__date__gte=date,
 		).values_list('change_id', flat=True)
 	)
 	# Changes tagged with this entity may not tell us it's deleted if the FK/1-1 was changed to another entity before deletion
 	# So we need to re-query with a correlated Table.Row
-	rcs = RevisionChange.objects.filter(
-		rev__date__gte=date
-	).filter(
-		Exists(
-			changes.filter(
-				target_type_id=OuterRef('target_type_id'),
-				target_id=OuterRef('target_id'),
+	del_rcs = (
+		RevisionChange.objects.filter(rev__date__gte=date)
+		.filter(
+			Exists(
+				changes.filter(
+					target_type_id=OuterRef('target_type_id'),
+					target_id=OuterRef('target_id'),
+				)
 			)
 		)
+		.filter(deleted=True)
 	)
 	# if another entity that has been deleted - some model - this entity
-	for ent_id, ent_type_id in RevisionChangeEntity.objects.filter(change__in=rcs, change__deleted=True, change__target_id=F('entity_id'), change__target_type=F('entity_type')).exclude(entity_id=entity_id, entity_type_id=entity_type_id).values_list('entity_id', 'entity_type_id').distinct():
+	for ent_id, ent_type_id in (
+		RevisionChangeEntity.objects.filter(
+			change__in=del_rcs,
+			change__target_id=F('entity_id'),
+			change__target_type=F('entity_type'),
+		)
+		.exclude(entity_id=entity_id, entity_type_id=entity_type_id)
+		.values_list('entity_id', 'entity_type_id')
+		.distinct()
+	):
 		if (ent_type_id, ent_id) not in del_new_ids:
 			rollback_entity(ent_id, ent_type_id, date, del_new_ids)
 
-	for target_type_id, target_id in rcs.filter(deleted=True).values_list('target_id', 'target_type_id').distinct():
+	for target_type_id, target_id in del_rcs.values_list(
+		'target_id', 'target_type_id'
+	).distinct():
 		T = ContentType.objects.get(id=target_type_id).model_class()
 		values = {
 			field: RevisionChange.objects.filter(

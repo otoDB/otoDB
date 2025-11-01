@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		params: {
 			query: {
 				entity: 'mediawork',
-				object_id: +params.work_id
+				id: +params.work_id
 			}
 		}
 	});

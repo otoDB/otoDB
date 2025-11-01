@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404
 
 from django_cte import CTE, with_cte
 
-from ninja import Router, ModelSchema, Schema, Field
+from ninja import Router, ModelSchema, Schema, Field, Query
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
@@ -106,8 +106,15 @@ class RevisionChangeSchema(ModelSchema):
 		fields = ['target_id', 'deleted', 'target_column', 'target_value']
 
 
+class RevisionChangeEntitySchema(Schema):
+	entity_type: str = Field(..., alias='entity_type__model')
+	entity_id: int
+	route: int
+
+
 class FullRevisionSchema(RevisionSchema):
 	changes: list[RevisionChangeSchema] = Field(..., alias='revisionchange_set')
+	actions: list[RevisionChangeEntitySchema]
 
 
 def get_history_dict(historical):
@@ -164,6 +171,8 @@ def rollback_entity(entity_id, entity_type, date):
 	)
 
 	del_new_ids = {}
+	# Changes tagged with this entity may not tell us it's deleted if the FK/1-1 was changed to another entity before deletion
+	# So we need to re-query with a correlated Table.Row
 	for target_type_id, target_id in RevisionChange.objects.filter(
 		rev__date__gte=date, deleted=True
 	).filter(
@@ -267,7 +276,7 @@ def user_rollback(request: HttpRequest, date: datetime, username: str):
 
 @history_router.get('history', auth=django_auth, response=list[RevisionSchema])
 @paginate
-def history(request: HttpRequest, entity: EntitySchema):
+def history(request: HttpRequest, entity: EntitySchema = Query(...)):
 	query_ids = []
 	match entity.entity:
 		case 'mediawork':

@@ -14,6 +14,14 @@ class Revision(models.Model):
 	date = models.DateTimeField(auto_now_add=True)
 	message = models.TextField(null=False, default='')
 
+	@property
+	def actions(self):
+		return (
+			RevisionChangeEntity.objects.filter(change__rev=self)
+			.values('route', 'entity_type__model', 'entity_id')
+			.distinct()
+		)
+
 
 class RevisionChange(models.Model):
 	rev = models.ForeignKey(Revision, null=False, on_delete=models.CASCADE)

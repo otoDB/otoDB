@@ -1249,6 +1249,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/history/rollback_ent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Entity Rollback */
+        post: operations["otodb_api_history_entity_rollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/history/rollback": {
         parameters: {
             query?: never;
@@ -1260,6 +1277,23 @@ export interface paths {
         put?: never;
         /** Rollback */
         post: operations["otodb_api_history_rollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/rollback_user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** User Rollback */
+        post: operations["otodb_api_history_user_rollback"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2053,6 +2087,17 @@ export interface components {
             message: string;
             /** Changes */
             changes: components["schemas"]["RevisionChangeSchema"][];
+            /** Actions */
+            actions: components["schemas"]["RevisionChangeEntitySchema"][];
+        };
+        /** RevisionChangeEntitySchema */
+        RevisionChangeEntitySchema: {
+            /** Entity Type */
+            entity_type: string;
+            /** Entity Id */
+            entity_id: number;
+            /** Route */
+            route: number;
         };
         /** RevisionChangeSchema */
         RevisionChangeSchema: {
@@ -2069,6 +2114,16 @@ export interface components {
             target_column?: string | null;
             /** Target Value */
             target_value?: string | null;
+        };
+        /** EntitySchema */
+        EntitySchema: {
+            /** Id */
+            id: number | string;
+            /**
+             * Entity
+             * @enum {string}
+             */
+            entity: "mediawork" | "tagwork";
         };
         /**
          * Status
@@ -4183,10 +4238,55 @@ export interface operations {
             };
         };
     };
+    otodb_api_history_entity_rollback: {
+        parameters: {
+            query: {
+                date: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntitySchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_history_rollback: {
         parameters: {
             query: {
-                history_id: number;
+                revision_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_history_user_rollback: {
+        parameters: {
+            query: {
+                date: string;
+                username: string;
             };
             header?: never;
             path?: never;
@@ -4206,7 +4306,7 @@ export interface operations {
     otodb_api_history_history: {
         parameters: {
             query: {
-                object_id: number | string;
+                id: number | string;
                 entity: "mediawork" | "tagwork";
                 limit?: number;
                 offset?: number;

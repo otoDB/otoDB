@@ -258,10 +258,15 @@ def rollback_entity(
 	# Restore deleted entities
 	for target_type_id, target_id in deleted_targets:
 		model_class = content_types[target_type_id].model_class()
+		if model_class is None:
+			logger.error(
+				f'Could not get model class for ContentType ID {target_type_id}'
+			)
+			return
 
 		# Fetch previous values for all tracked fields
 		values = {}
-		for field in model_class.revision_tracked_fields:
+		for field in getattr(model_class, 'revision_tracked_fields', []):
 			prev_change = (
 				RevisionChange.objects.filter(
 					target_column=field,
@@ -326,6 +331,12 @@ def rollback_entity(
 		lambda v: (v[0], v[1]),
 	):
 		model_class = content_types[target_type_id].model_class()
+		if model_class is None:
+			logger.error(
+				f'Could not get model class for ContentType ID {target_type_id}'
+			)
+			return
+
 		actual_target_id = del_new_ids.get((target_type_id, target_id), target_id)
 
 		values = {}

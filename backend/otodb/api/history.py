@@ -412,16 +412,28 @@ def rollback_entity(
 
 	# Execute bulk updates per model
 	for model_class, updates in updates_by_model.items():
-		for instance_id, field_updates in updates:
-			try:
-				model_class.objects.filter(id=instance_id).update(**field_updates)
-				logger.debug(
-					f'Updated {model_class.__name__} (id={instance_id}) with {len(field_updates)} fields'
-				)
-			except Exception as e:
-				logger.error(
-					f'Failed to update {model_class.__name__} (id={instance_id}): {e}'
-				)
+		pks = [pk for pk, _ in updates]
+		updates_by_pk = {pk: data for pk, data in updates}
+
+		objects_to_update = []
+		all_fields = set()
+
+		for obj in model_class.objects.filter(pk__in=pks):
+			update_data = updates_by_pk.get(obj.pk)
+			if update_data:
+				for field, value in update_data.items():
+					setattr(obj, field, value)
+					all_fields.add(field)
+				objects_to_update.append(obj)
+
+		if objects_to_update:
+			model_class.objects.bulk_update(
+				objects_to_update, fields=list(all_fields), batch_size=500
+			)
+			logger.debug(
+				f'Bulk updated {len(objects_to_update)} {model_class.__name__} instances '
+				f'with fields: {", ".join(all_fields)}'
+			)
 
 
 @history_router.post('rollback_ent', auth=django_auth)

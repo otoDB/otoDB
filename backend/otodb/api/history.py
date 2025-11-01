@@ -1,10 +1,12 @@
 from typing import Literal
 from datetime import datetime
 from itertools import groupby
+import logging
 
 import diff_match_patch as dmp_mod
 
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 
 from django.db.models import Window, F, Subquery, OuterRef, Exists
 from django.db.models.functions import RowNumber
@@ -34,6 +36,7 @@ from .common import user_is_staff, track_revision
 history_router = Router()
 
 dmp = dmp_mod.diff_match_patch()
+logger = logging.getLogger(__name__)
 
 
 def get_diff(delta):
@@ -164,15 +167,41 @@ class EntitySchema(Schema):
 	entity: Literal['mediawork', 'tagwork']
 
 
-def rollback_entity(entity_id, entity_type, date, del_new_ids=None):
+@transaction.atomic
+def rollback_entity(
+	entity_id: int | str,
+	entity_type: int | str,
+	date: datetime,
+	del_new_ids: dict[tuple[int, int], int] | None = None,
+) -> None:
+	"""
+	Rollback an entity to its state before a given date.
+
+	This function restores both deleted entities and updates to existing entities
+	by examining the revision history. It handles related entities recursively and
+	uses bulk operations for performance.
+
+	Args:
+		entity_id: The ID of the entity to rollback
+		entity_type: Either a ContentType ID (int) or model name (str)
+		date: Rollback all changes that occurred on or after this date
+		del_new_ids: Mapping of (content_type_id, old_id) -> new_id for recreated entities
+	"""
 	if del_new_ids is None:
 		del_new_ids = {}
 
+	# Normalize entity_type to ContentType ID
 	if isinstance(entity_type, int):
 		entity_type_id = entity_type
 	elif isinstance(entity_type, str):
 		entity_type_id = ContentType.objects.get(model=entity_type).id
+	else:
+		logger.error(f'Invalid entity_type: {entity_type}')
+		return
 
+	logger.info(f'Rolling back entity {entity_type}:{entity_id} to {date}')
+
+	# Get all changes associated with this entity since the rollback date
 	changes = RevisionChange.objects.filter(
 		id__in=RevisionChangeEntity.objects.filter(
 			entity_id=entity_id,
@@ -180,6 +209,7 @@ def rollback_entity(entity_id, entity_type, date, del_new_ids=None):
 			change__rev__date__gte=date,
 		).values_list('change_id', flat=True)
 	)
+
 	# Changes tagged with this entity may not tell us it's deleted if the FK/1-1 was changed to another entity before deletion
 	# So we need to re-query with a correlated Table.Row
 	del_rcs = (
@@ -194,8 +224,11 @@ def rollback_entity(entity_id, entity_type, date, del_new_ids=None):
 		)
 		.filter(deleted=True)
 	)
-	# if another entity that has been deleted - some model - this entity
-	for ent_id, ent_type_id in (
+
+	# Recursively rollback related entities that were deleted.
+	# If a related entity (FK/OneToOne pointing to this entity) was deleted,
+	# we need to restore it first before we can restore this entity's references to it.
+	related_entities = (
 		RevisionChangeEntity.objects.filter(
 			change__in=del_rcs,
 			change__target_id=F('entity_id'),
@@ -204,76 +237,178 @@ def rollback_entity(entity_id, entity_type, date, del_new_ids=None):
 		.exclude(entity_id=entity_id, entity_type_id=entity_type_id)
 		.values_list('entity_id', 'entity_type_id')
 		.distinct()
-	):
+	)
+	for ent_id, ent_type_id in related_entities:
 		if (ent_type_id, ent_id) not in del_new_ids:
 			rollback_entity(ent_id, ent_type_id, date, del_new_ids)
 
-	for target_type_id, target_id in del_rcs.values_list(
-		'target_type_id', 'target_id'
-	).distinct():
-		T = ContentType.objects.get(id=target_type_id).model_class()
-		values = {
-			field: RevisionChange.objects.filter(
-				target_column=field,
-				target_type_id=target_type_id,
-				target_id=target_id,
-				rev__date_lt=date,
-			)
-			.order_by('-rev__date')
-			.first()
-			.target_value
-			for field in T.revision_tracked_fields
-		}
-		del_new_ids[(target_type_id, target_id)] = T.objects.create(**values).id
+	# Bulk fetch all unique ContentTypes we'll need
+	deleted_targets = del_rcs.values_list('target_type_id', 'target_id').distinct()
+	content_type_ids = set(ct_id for ct_id, _ in deleted_targets)
 
-	for (target_type_id, target_id), target_columns in groupby(
+	# Also get content types for modified entities
+	modified_targets = (
 		changes.filter(deleted=False)
-		.values_list('target_type_id', 'target_id', 'target_column')
-		.order_by('target_type_id', 'target_id')
-		.all(),
-		lambda v: (v[0], v[1]),
-	):
-		T = ContentType.objects.get(id=target_type_id).model_class()
+		.values_list('target_type_id', 'target_id')
+		.distinct()
+	)
+	content_type_ids.update(ct_id for ct_id, _ in modified_targets)
+	content_types = ContentType.objects.in_bulk(list(content_type_ids))
+
+	# Restore deleted entities
+	for target_type_id, target_id in deleted_targets:
+		model_class = content_types[target_type_id].model_class()
+
+		# Fetch previous values for all tracked fields
 		values = {}
-		for field in target_columns:
-			target_value = (
+		for field in model_class.revision_tracked_fields:
+			prev_change = (
 				RevisionChange.objects.filter(
 					target_column=field,
 					target_type_id=target_type_id,
 					target_id=target_id,
-					rev__date_lt=date,
+					rev__date__lt=date,
 				)
 				.order_by('-rev__date')
 				.first()
-				.target_value
 			)
 
-			FF = T._meta.get_field(field)
-			if isinstance(FF, RelatedField):
-				values[field] = del_new_ids.get(
-					(
-						ContentType.objects.get_for_model(FF.related_model).id,
-						int(target_value) if target_value is not None else None,
-					),
-					target_value,
+			if prev_change is None:
+				logger.warning(
+					f'No previous revision found for {model_class.__name__}.{field} '
+					f'(id={target_id}), cannot restore deleted entity'
 				)
+				# Stop entire rollback prematurely -- cannot safely restore this entity
+				return
+
+			target_value = prev_change.target_value
+			field_obj = model_class._meta.get_field(field)
+
+			# Use attname to get the actual database column name
+			# For ForeignKey fields, this automatically gives us 'field_id' instead of 'field'
+			if isinstance(field_obj, RelatedField):
+				if target_value is not None:
+					# Check if the related object was also deleted and recreated
+					related_ct_id = ContentType.objects.get_for_model(
+						field_obj.related_model
+					).id
+					# Use the new ID if it was recreated, otherwise use the original ID
+					actual_id = del_new_ids.get(
+						(related_ct_id, int(target_value)), int(target_value)
+					)
+					values[field_obj.attname] = actual_id
+				else:
+					values[field_obj.attname] = None
 			else:
-				values[field] = target_value
-		ContentType.objects.get(id=target_type_id).model_class().objects.filter(
-			id=del_new_ids.get((target_type_id, target_id), target_id)
-		).update(**values)
+				# Use to_python to properly deserialize the string value
+				values[field_obj.attname] = field_obj.to_python(target_value)
+		else:
+			# All fields were successfully fetched, create the entity
+			try:
+				new_instance = model_class.objects.create(**values)
+				del_new_ids[(target_type_id, target_id)] = new_instance.pk
+				logger.debug(
+					f'Restored deleted {model_class.__name__} (old_id={target_id}, new_id={new_instance.pk})'
+				)
+			except Exception as e:
+				logger.error(
+					f'Failed to restore {model_class.__name__} (id={target_id}): {e}'
+				)
+
+	# Update modified entities using bulk operations
+	# Group by (target_type_id, target_id) to batch updates per entity
+	updates_by_model = {}  # model_class -> list of (instance_id, field_updates)
+
+	for (target_type_id, target_id), target_columns in groupby(
+		changes.filter(deleted=False)
+		.values_list('target_type_id', 'target_id', 'target_column')
+		.order_by('target_type_id', 'target_id'),
+		lambda v: (v[0], v[1]),
+	):
+		model_class = content_types[target_type_id].model_class()
+		actual_target_id = del_new_ids.get((target_type_id, target_id), target_id)
+
+		values = {}
+		for field_name_tuple in target_columns:
+			field = field_name_tuple[2]  # Extract field name from tuple
+
+			# Find the most recent change before the rollback date
+			prev_change = (
+				RevisionChange.objects.filter(
+					target_column=field,
+					target_type_id=target_type_id,
+					target_id=target_id,
+					rev__date__lt=date,
+				)
+				.order_by('-rev__date')
+				.first()
+			)
+
+			if prev_change is None:
+				logger.warning(
+					f'No previous revision found for {model_class.__name__}.{field} '
+					f'(id={target_id}), skipping field'
+				)
+				continue
+
+			target_value = prev_change.target_value
+
+			# Handle ForeignKey and OneToOne fields
+			try:
+				field_obj = model_class._meta.get_field(field)
+				if isinstance(field_obj, RelatedField):
+					if target_value is not None:
+						# If the related object was also deleted and recreated, use the new ID
+						related_ct_id = ContentType.objects.get_for_model(
+							field_obj.related_model
+						).id
+						actual_id = del_new_ids.get(
+							(related_ct_id, int(target_value)), int(target_value)
+						)
+						values[field_obj.attname] = actual_id
+					else:
+						values[field_obj.attname] = None
+				else:
+					values[field_obj.attname] = field_obj.to_python(target_value)
+			except Exception as e:
+				logger.warning(
+					f'Could not process field {field} on {model_class.__name__}: {e}'
+				)
+
+		if values:
+			# Queue this update
+			if model_class not in updates_by_model:
+				updates_by_model[model_class] = []
+			updates_by_model[model_class].append((actual_target_id, values))
+
+	# Execute bulk updates per model
+	for model_class, updates in updates_by_model.items():
+		for instance_id, field_updates in updates:
+			try:
+				model_class.objects.filter(id=instance_id).update(**field_updates)
+				logger.debug(
+					f'Updated {model_class.__name__} (id={instance_id}) with {len(field_updates)} fields'
+				)
+			except Exception as e:
+				logger.error(
+					f'Failed to update {model_class.__name__} (id={instance_id}): {e}'
+				)
 
 
 @history_router.post('rollback_ent', auth=django_auth)
 @user_is_staff  # for now
 @track_revision
+@transaction.atomic
 def entity_rollback(request: HttpRequest, date: datetime, entity: EntitySchema):
+	"""Rollback a specific entity to its state before the given date."""
 	rollback_entity(entity.id, entity.entity, date)
 
 
 @history_router.post('rollback', auth=django_auth)
 @user_is_staff  # for now
+@transaction.atomic
 def rollback(request: HttpRequest, revision_id: int):
+	"""Rollback all changes made in a specific revision."""
 	rev = get_object_or_404(Revision, id=revision_id)
 	for ent in (
 		RevisionChangeEntity.objects.filter(change__rev=rev)
@@ -286,7 +421,9 @@ def rollback(request: HttpRequest, revision_id: int):
 
 @history_router.post('rollback_user', auth=django_auth)
 @user_is_staff
+@transaction.atomic
 def user_rollback(request: HttpRequest, date: datetime, username: str):
+	"""Rollback all changes made by a specific user since the given date."""
 	for ent in (
 		RevisionChangeEntity.objects.filter(
 			change__rev__date__gte=date,

@@ -65,8 +65,11 @@ class RevisionChangeEntity(models.Model):
 
 
 def get_serialized_value(instance: models.Model, field):
-	field = instance._meta.get_field(field)
-	return field.value_to_string(instance)  # type: ignore
+	field_obj = instance._meta.get_field(field)
+	value = field_obj.value_from_object(instance)
+	if value is None:
+		return None
+	return field_obj.value_to_string(instance)  # type: ignore
 
 
 def _bulk_get_new_rev(model, objs):

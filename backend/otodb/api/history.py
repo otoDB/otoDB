@@ -4,6 +4,8 @@ from itertools import groupby
 
 import diff_match_patch as dmp_mod
 
+from django.contrib.contenttypes.models import ContentType
+
 from django.db.models import Window, F, Subquery, OuterRef, Exists
 from django.db.models.functions import RowNumber
 from django.db.models.fields.related import RelatedField

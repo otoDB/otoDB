@@ -6,7 +6,7 @@ import logging
 import diff_match_patch as dmp_mod
 
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction
+from django.db import transaction, connection
 
 from django.db.models import Window, F, Subquery, OuterRef, Exists
 from django.db.models.functions import RowNumber
@@ -179,62 +179,62 @@ def _get_all_previous_field_values(
 	Fetch and convert previous values for all fields of an entity before a given date.
 
 	Args:
-	    model_class: The Django model class
-	    target_type_id: ContentType ID of the target model
-	    target_id: ID of the target instance
-	    date: Rollback to state before this date
-	    del_new_ids: Mapping of (content_type_id, old_id) -> new_id for recreated entities
-	    fields: Optional list of specific fields to fetch (fetches all if None)
+		model_class: The Django model class
+		target_type_id: ContentType ID of the target model
+		target_id: ID of the target instance
+		date: Rollback to state before this date
+		del_new_ids: Mapping of (content_type_id, old_id) -> new_id for recreated entities
+		fields: Optional list of specific fields to fetch (fetches all if None)
 
 	Returns:
-	    Dictionary mapping field attnames to their converted values
+		Dictionary mapping field attnames to their converted values
 
 	Raises:
-	    ValueError: If no previous revision is found for any required field
+		ValueError: If no previous revision is found for any required field
 	"""
-	# Fetch all changes for this entity before the rollback date
 	query = RevisionChange.objects.filter(
 		target_type_id=target_type_id,
 		target_id=target_id,
 		rev__date__lt=date,
 	)
-
 	if fields:
 		query = query.filter(target_column__in=fields)
-
-	# Get all changes, ordered by date descending
-	all_changes = query.order_by('target_column', '-rev__date').values(
-		'target_column', 'target_value', 'rev__date'
+	if connection.vendor == 'postgresql':
+		qs = query.order_by('target_column', '-rev__date').distinct('target_column')
+	else:
+		annotated_qs = query.annotate(
+			row_number=Window(
+				expression=RowNumber(),
+				partition_by=[F('target_column')],
+				order_by=F('rev__date').desc(),
+			)
+		)
+		qs = annotated_qs.filter(row_number=1)
+	latest_changes = dict(
+		qs.values_list('target_column', 'target_value')
 	)
-
-	# Group by field and take the most recent change for each
-	latest_changes = {}
-	for change in all_changes:
-		field = change['target_column']
-		if field not in latest_changes:
-			latest_changes[field] = change['target_value']
 
 	# Check if we found all required fields
 	required_fields = fields or getattr(model_class, 'revision_tracked_fields', [])
 	missing_fields = set(required_fields) - set(latest_changes.keys())
 	if missing_fields:
 		raise ValueError(
-			f'No previous revision found for {model_class.__name__} fields: {missing_fields} '
-			f'(id={target_id})'
+			f'Incomplete history for {model_class.__name__} (id={target_id}). '
+			f'Missing fields: {missing_fields}'
 		)
 
-	# Prefetch all ContentTypes we might need for ForeignKey fields
+	# Pre-fetch field objects
 	related_fields = {
 		field_name: model_class._meta.get_field(field_name)
 		for field_name in latest_changes.keys()
 	}
-
-	related_ct_ids = set()
-	for field_obj in related_fields.values():
-		if isinstance(field_obj, RelatedField):
-			related_ct_ids.add(
-				ContentType.objects.get_for_model(field_obj.related_model).id
-			)
+	model_to_ct_id = {
+		field_obj.related_model: ContentType.objects.get_for_model(
+			field_obj.related_model
+		).id
+		for field_obj in related_fields.values()
+		if isinstance(field_obj, RelatedField)
+	}
 
 	result = {}
 	for field_name, target_value in latest_changes.items():
@@ -242,9 +242,7 @@ def _get_all_previous_field_values(
 
 		if isinstance(field_obj, RelatedField):
 			if target_value is not None:
-				related_ct_id = ContentType.objects.get_for_model(
-					field_obj.related_model
-				).id
+				related_ct_id = model_to_ct_id[field_obj.related_model]
 				actual_id = del_new_ids.get(
 					(related_ct_id, int(target_value)), int(target_value)
 				)

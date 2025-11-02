@@ -17,7 +17,9 @@
 			<li>
 				<span>
 					<h3>
-						<a href={src.url} target="_blank" rel="noopener noreferrer">{src.title || src.url}</a>
+						<a href={src.url} target="_blank" rel="noopener noreferrer"
+							>{src.title || src.url}</a
+						>
 					</h3>
 					<h4>
 						{m.swift_sweet_anaconda_hurl()}

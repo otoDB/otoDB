@@ -94,21 +94,36 @@
 				{/if}
 				{#if allowDead}
 					<tr>
-						<th><label for="manual_title">{m.large_factual_octopus_exhale()}</label></th>
+						<th><label for="manual_title">{m.large_factual_octopus_exhale()}</label></th
+						>
 						<td>
 							<input type="text" name="manual_title" class="w-full" />
 						</td>
 					</tr>
 					<tr>
-						<th><label for="manual_description">{m.clear_lucky_peacock_pick()}</label></th>
-						<td><textarea name="manual_description" class="w-full" rows="3"></textarea></td>
+						<th
+							><label for="manual_description">{m.clear_lucky_peacock_pick()}</label
+							></th
+						>
+						<td
+							><textarea name="manual_description" class="w-full" rows="3"
+							></textarea></td
+						>
 					</tr>
 					<tr>
-						<th><label for="manual_uploader_id">{m.vivid_still_bumblebee_explore()}</label></th>
+						<th
+							><label for="manual_uploader_id"
+								>{m.vivid_still_bumblebee_explore()}</label
+							></th
+						>
 						<td><input type="text" name="manual_uploader_id" class="w-full" /></td>
 					</tr>
 					<tr>
-						<th><label for="manual_thumbnail_url">{m.heroic_ideal_orangutan_aid()}</label></th>
+						<th
+							><label for="manual_thumbnail_url"
+								>{m.heroic_ideal_orangutan_aid()}</label
+							></th
+						>
 						<td><input type="url" name="manual_thumbnail_url" class="w-full" /></td>
 					</tr>
 					<tr>

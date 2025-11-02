@@ -185,10 +185,7 @@
 							{#if data.user?.level >= UserLevel.EDITOR && src.work_status === 1}
 								<details>
 									<summary>[{m.minor_crisp_cobra_list()}]</summary>
-									<input
-										type="url"
-										bind:value={thumbnailUrlEdits[src.id]}
-									/>
+									<input type="url" bind:value={thumbnailUrlEdits[src.id]} />
 									<input type="submit" onclick={updateThumbnailUrl(src.id)} />
 								</details>
 							{:else}

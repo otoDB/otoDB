@@ -51,7 +51,9 @@ export const actions = {
 			thumbnail_url: (data.get('manual_thumbnail_url') as string) || null,
 			work_width: data.get('manual_width') ? +(data.get('manual_width') as string) : null,
 			work_height: data.get('manual_height') ? +(data.get('manual_height') as string) : null,
-			work_duration: data.get('manual_duration') ? +(data.get('manual_duration') as string) : null,
+			work_duration: data.get('manual_duration')
+				? +(data.get('manual_duration') as string)
+				: null,
 			published_date: (data.get('manual_date') as string) || null
 		};
 

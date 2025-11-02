@@ -539,29 +539,38 @@ def rollback_entity(
 			).update(**changes)
 
 
-@history_router.post('rollback_ent', auth=django_auth)
-@user_is_staff  # for now
-@track_revision
-@transaction.atomic
-def entity_rollback(request: HttpRequest, date: datetime, entity: EntitySchema):
-	"""Rollback a specific entity to its state before the given date."""
-	rollback_entity(entity.id, entity.entity, date)
-
-
 @history_router.post('rollback', auth=django_auth)
 @user_is_staff  # for now
 @track_revision
 @transaction.atomic
-def rollback(request: HttpRequest, revision_id: int):
-	"""Rollback all changes made in a specific revision."""
+def rollback(
+	request: HttpRequest, revision_id: int, entity: EntitySchema | None = None
+):
+	"""
+	Rollback changes of a specific revision.
+
+	If entity is not provided: rollback all changes made IN the specified revision.
+	If entity is provided: rollback that entity TO its state at the specified revision.
+	"""
 	rev = get_object_or_404(Revision, id=revision_id)
-	for ent in (
-		RevisionChangeEntity.objects.filter(change__rev=rev)
-		.values('entity_id', 'entity_type__model')
-		.distinct()
-		.all()
-	):
-		rollback_entity(ent['entity_id'], ent['entity_type__model'], rev.date)
+
+	if entity is None:
+		# Rollback all entities affected by this revision
+		for ent in (
+			RevisionChangeEntity.objects.filter(change__rev=rev)
+			.values('entity_id', 'entity_type__model')
+			.distinct()
+			.all()
+		):
+			rollback_entity(ent['entity_id'], ent['entity_type__model'], rev.date)
+	else:
+		# Rollback specific entity TO the state at this revision
+		# Get the next revision after the specified one
+		next_rev = Revision.objects.filter(id__gt=revision_id).order_by('id').first()
+		if next_rev is not None:
+			# Rollback to the state before the next revision
+			rollback_entity(entity.id, entity.entity, next_rev.date)
+		# If no next revision, entity is already in that state (no-op)
 
 
 @history_router.post('rollback_user', auth=django_auth)

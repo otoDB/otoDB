@@ -413,7 +413,7 @@ def track_revision(f):
 						rev=revision,
 						target_type_id=ctpk,
 						target_id=pk,
-						target_value=pk,
+						target_value=to_pk,
 						restored=True,
 					)
 				)

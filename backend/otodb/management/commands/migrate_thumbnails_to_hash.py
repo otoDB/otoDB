@@ -151,8 +151,8 @@ class Command(BaseCommand):
 
 		if dry_run:
 			self.stdout.write(f'  [DRY RUN] Would read file from {old_path}')
-			self.stdout.write(f'  [DRY RUN] Would calculate SHA256 hash')
-			self.stdout.write(f'  [DRY RUN] Would save to hash-based path')
+			self.stdout.write('  [DRY RUN] Would calculate SHA256 hash')
+			self.stdout.write('  [DRY RUN] Would save to hash-based path')
 			return 'success'
 
 		# Try to read the file from old path
@@ -196,7 +196,7 @@ class Command(BaseCommand):
 			try:
 				with transaction.atomic():
 					source.save(update_fields=['thumbnail_hash'])
-				self.stdout.write(f'  Updated thumbnail_hash in database')
+				self.stdout.write('  Updated thumbnail_hash in database')
 			except Exception as e:
 				self.stdout.write(self.style.ERROR(f'  Error updating database: {e}'))
 				return 'error'
@@ -230,7 +230,7 @@ class Command(BaseCommand):
 		try:
 			with transaction.atomic():
 				source.save(update_fields=['thumbnail_hash'])
-			self.stdout.write(f'  Updated thumbnail_hash in database')
+			self.stdout.write('  Updated thumbnail_hash in database')
 		except Exception as e:
 			self.stdout.write(self.style.ERROR(f'  Error updating database: {e}'))
 			return 'error'
@@ -245,5 +245,5 @@ class Command(BaseCommand):
 					self.style.WARNING(f'  Could not delete old file: {e}')
 				)
 
-		self.stdout.write(self.style.SUCCESS(f'  ✓ Successfully migrated'))
+		self.stdout.write(self.style.SUCCESS('  ✓ Successfully migrated'))
 		return 'success'

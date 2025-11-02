@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0066_alter_mediawork_options'),
+	]
 
-    dependencies = [
-        ('otodb', '0066_alter_mediawork_options'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='historicalworksource',
-            name='thumbnail_hash',
-            field=models.CharField(blank=True, max_length=64, null=True),
-        ),
-        migrations.AddField(
-            model_name='worksource',
-            name='thumbnail_hash',
-            field=models.CharField(blank=True, max_length=64, null=True),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name='historicalworksource',
+			name='thumbnail_hash',
+			field=models.CharField(blank=True, max_length=64, null=True),
+		),
+		migrations.AddField(
+			model_name='worksource',
+			name='thumbnail_hash',
+			field=models.CharField(blank=True, max_length=64, null=True),
+		),
+	]

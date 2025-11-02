@@ -5,6 +5,7 @@ import requests
 
 from .enums import Platform, WorkOrigin, WorkStatus, MimeType
 from .media import MediaWork
+import hashlib
 
 from otodb.account.models import Account
 from otodb.common import video_info, process_video_info
@@ -41,6 +42,7 @@ class WorkSource(models.Model):
 	thumbnail_mime = models.IntegerField(
 		choices=MimeType.choices, null=True, blank=True
 	)
+	thumbnail_hash = models.CharField(max_length=64, null=True, blank=True)
 	uploader_id = models.CharField(max_length=1000, null=True, blank=False)
 
 	added_by = models.ForeignKey(
@@ -125,9 +127,16 @@ class WorkSource(models.Model):
 		try:
 			response = requests.get(self.thumbnail_url, timeout=10)
 			response.raise_for_status()
+
+			self.thumbnail_hash = hashlib.sha256(response.content).hexdigest()
+			if storage_manager.exists(self.thumbnail_path):
+				self.save(update_fields=['thumbnail_hash'])
+				return True
+
 			path = storage_manager.save(response.content, self.thumbnail_path)
 
 			if path:
+				self.save(update_fields=['thumbnail_hash'])
 				return True
 			else:
 				print(f'Failed to upload thumbnail for WorkSource {self.pk}')
@@ -179,11 +188,15 @@ class WorkSource(models.Model):
 	@property
 	def thumbnail_path(self) -> str:
 		"""
-		Returns the path from where thumbnails are located.
+		Returns content-addressed path for thumbnail using two-level directory structure.
+		Format: /t/{hash[:2]}/{hash[2:4]}/{hash}.{ext}
 		"""
+		if not self.thumbnail_hash or not self.thumbnail_mime:
+			# REVIEW: This should never be reached but we may want to handle it more safely
+			return None
 		ext = MimeType.extension(self.thumbnail_mime)
-		path = f'/t/source/{str(self.pk).zfill(2)[-2:]}/{self.pk}.{ext}'
-		return path
+		# Two-level sharding: /t/ab/cd/abcd...hash.ext
+		return f'/t/{self.thumbnail_hash[:2]}/{self.thumbnail_hash[2:4]}/{self.thumbnail_hash}.{ext}'
 
 	@property
 	def thumbnail(self) -> str:

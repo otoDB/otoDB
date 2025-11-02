@@ -99,6 +99,34 @@ class StorageManager:
 
 		return False
 
+	def read(self, file_path: str) -> bytes | None:
+		"""
+		Read file content from CDN or local storage.
+		"""
+		if self._is_url(file_path):
+			print(f'Cannot read URL directly: {file_path}')
+			return None
+
+		if self.cdn_enabled:
+			try:
+				response = self.s3_client.get_object(
+					Bucket=self.bucket_name,
+					Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/'),
+				)
+				return response['Body'].read()
+			except Exception as e:
+				print(f'CDN read failed: {e}')
+		else:
+			try:
+				local_path = self.media_path / file_path.lstrip('/')
+				if local_path.exists():
+					with open(local_path, 'rb') as f:
+						return f.read()
+			except Exception as e:
+				print(f'Local read failed: {e}')
+
+		return None
+
 	def exists(self, file_path: str) -> bool:
 		"""
 		Check if file exists in CDN or local storage.

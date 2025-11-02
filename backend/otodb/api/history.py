@@ -167,31 +167,39 @@ class EntitySchema(Schema):
 	id: int | str
 	entity: Literal['mediawork', 'tagwork']
 
+def find_rev_rst(ctpk, query_pk, rev):
+	if q := RevisionChange.objects.filter(
+		target_type_id=ctpk, target_id=query_pk, restored=True
+	):
+		return int(q.first().target_value)
+	if (ctpk, query_pk) in rev:
+		return rev[ctpk, query_pk]
+
+
+def get_rev_restored(ctpk, pk):
+	cache = get_request_cache()
+	rev = cache.get('rev_rst')
+	rev_del = cache.get('rev_del')
+
+	while pk is not None:
+		last = pk
+		pk = find_rev_rst(ctpk, pk, rev)
+
+	return None if RevisionChange.objects.filter(target_type_id=ctpk, target_id=last, deleted=True).exists() or any([ctpk == ctid and last == idd for ctid, idd, _ in rev_del]) else last
+
 
 def add_rev_restore(ctpk, pk, new_pk):
 	assert pk != new_pk
 	cache = get_request_cache()
 	rev = cache.get('rev_rst')
-	rev[(ctpk, pk)] = new_pk
-	cache.set('rev_rst', rev)
-
-
-def check_rev_restore(ctpk, pk):
-	cache = get_request_cache()
-	rev = cache.get('rev_rst')
-
-	def find(query_pk):
-		if q := RevisionChange.objects.filter(
-			target_type_id=ctpk, target_id=query_pk, restored=True
-		):
-			return int(q.first().target_value)
-		if (ctpk, query_pk) in rev:
-			return rev[ctpk, query_pk]
 
 	while pk is not None:
 		last = pk
-		pk = find(pk)
-	return last
+		pk = find_rev_rst(ctpk, pk, rev)
+
+	assert RevisionChange.objects.filter(target_type_id=ctpk, target_id=last, deleted=True).exists()
+	rev[(ctpk, last)] = new_pk
+	cache.set('rev_rst', rev)
 
 
 def _get_all_previous_field_values(
@@ -346,7 +354,7 @@ def rollback_entity(
 			.distinct()
 		)
 		for ent_id, ent_type_id in related_entities:
-			if check_rev_restore(ent_type_id, ent_id) == ent_id:
+			if get_rev_restored(ent_type_id, ent_id) == ent_id:
 				rollback_entity_rec(ent_id, ent_type_id, related_targets)
 
 		# Bulk fetch all unique ContentTypes we'll need
@@ -420,7 +428,8 @@ def rollback_entity(
 				)
 				return
 
-			actual_target_id = check_rev_restore(target_type_id, target_id)
+			actual_target_id = get_rev_restored(target_type_id, target_id)
+			assert actual_target_id
 
 			# Extract just the field names
 			fields_to_fetch = [
@@ -470,8 +479,8 @@ def rollback_entity(
 	rollback_entity_rec(entity_id, entity_type, related_targets)
 	for (ctid, rid, f), (rctid, v) in related_targets.items():
 		ContentType.objects.get(id=ctid).model_class().objects.filter(
-			id=check_rev_restore(ctid, rid)
-		).update(**{f: check_rev_restore(rctid, v)})
+			id=get_rev_restored(ctid, rid)
+		).update(**{f: get_rev_restored(rctid, v)})
 
 
 @history_router.post('rollback_ent', auth=django_auth)

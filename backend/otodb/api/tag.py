@@ -535,7 +535,7 @@ media_connection_parser = make_alt_value_parser(
 	),
 	(
 		MediaConnectionTypes.VGMDB,
-		re_to_parser(re.compile(r'https?:\/\/vgmdb\.net\/product\/(\d+)(?:\/*)?')),
+		re_to_parser(re.compile(r'https?:\/\/vgmdb\.net\/product\/(\d+)\/?')),
 	),
 )
 

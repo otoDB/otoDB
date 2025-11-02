@@ -377,7 +377,7 @@ def rollback_entity(
 				)
 			except ValueError as e:
 				logger.error(f'{e}, cannot restore deleted entity')
-				return
+				raise
 
 			if completed:
 				try:
@@ -400,6 +400,7 @@ def rollback_entity(
 					import traceback
 
 					print(traceback.format_exc())
+					raise
 
 		# Update modified entities using bulk operations
 		# Group by (target_type_id, target_id) to batch updates per entity
@@ -436,7 +437,7 @@ def rollback_entity(
 				)
 			except ValueError as e:
 				logger.error(f'{e}, skipping entity')
-				return
+				raise
 			except Exception as e:
 				logger.warning(f'Could not process {model_class.__name__}: {e}')
 			if completed:
@@ -460,6 +461,7 @@ def rollback_entity(
 					logger.error(
 						f'Failed to update {model_class.__name__} (id={instance_id}): {e}'
 					)
+					raise
 
 		for model_class, target_ids in delete_models.items():
 			model_class.objects.filter(id__in=target_ids).delete()

@@ -46,11 +46,11 @@ def initial_revision(apps, schema_editor):
 	rev = Revision.objects.create(user_id=None)
 	for m in old_models_with_history:
 		model = apps.get_model('otodb', m)
-		if hasattr(model, 'revision_tracked_fields'):
+		if hasattr(model, '_revision_meta'):
 			for instance in model.objects.values(
 				'pk',
-				*model.revision_tracked_fields,
-				*[attr for attr in model.revision_entity_attrs if attr != 'self'],
+				*model._revision_meta.tracked_fields,
+				*[attr for attr in model._revision_meta.entity_attrs if attr != 'self'],
 			):
 				for field in instance:
 					change = RevisionChange.objects.create(
@@ -60,7 +60,7 @@ def initial_revision(apps, schema_editor):
 						target_column=field,
 						target_value=instance['field'],
 					)
-					for attr in model.revision_entity_attrs:
+					for attr in model._revision_meta.entity_attrs:
 						RevisionChangeEntity.objects.create(
 							change=change,
 							entity_type=ContentType.objects.get_for_model(

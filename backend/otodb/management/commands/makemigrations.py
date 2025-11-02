@@ -166,7 +166,7 @@ class Command(MakeMigrationsCommand):
 		revision_tracked_models = {}
 		try:
 			for model in apps.get_app_config(app_label).get_models():
-				if hasattr(model, 'revision_tracked_fields'):
+				if hasattr(model, '_revision_meta'):
 					revision_tracked_models[model.__name__.lower()] = model
 		except LookupError:
 			pass
@@ -182,7 +182,7 @@ class Command(MakeMigrationsCommand):
 					new_name = operation.new_name
 
 					# Only track if either old or new field name is in revision_tracked_fields
-					tracked_fields = getattr(model, 'revision_tracked_fields', [])
+					tracked_fields = model._revision_meta.tracked_fields
 					if old_name in tracked_fields or new_name in tracked_fields:
 						if model_name not in models_to_update:
 							models_to_update[model_name] = {
@@ -200,7 +200,7 @@ class Command(MakeMigrationsCommand):
 					field_name = operation.name
 
 					# Only track if this field is in revision_tracked_fields
-					if field_name in getattr(model, 'revision_tracked_fields', []):
+					if field_name in model._revision_meta.tracked_fields:
 						if model_name not in models_to_update:
 							models_to_update[model_name] = {
 								'renames': {},

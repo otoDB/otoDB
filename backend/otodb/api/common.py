@@ -338,7 +338,7 @@ def _get_entity_cts(model):
 		ContentType.objects.get_for_model(
 			model if attr == 'self' else model._meta.get_field(attr).related_model
 		)
-		for attr in model.revision_entity_attrs
+		for attr in model._revision_meta.entity_attrs
 	]
 
 

@@ -350,6 +350,7 @@ def track_revision(f):
 			'rev', {}
 		)  # key: (ContentType.pk, pk, field as str), value: (entity_pks, str)
 		cache.add('rev_del', [])  # list of (ContentType.pk, pk, ...entity_pks)
+		cache.add('rev_rst', {})
 		cache.add('rev_msg', '')
 
 		ret = f(request, *args, **kwargs)
@@ -357,10 +358,11 @@ def track_revision(f):
 		rev = cache.get('rev')
 		rev_del = cache.get('rev_del')
 		rev_msg = cache.get('rev_msg')
+		rev_rst = cache.get('rev_rst')
 		# REVIEW: This should never be unknown but some test cases might not set it; should fix those tests
 		rev_route = cache.get('rev_route', Route.UNKNOWN)
 
-		if len(rev) or len(rev_del):
+		if len(rev) or len(rev_del) or len(rev_rst):
 			revision = Revision.objects.create(user=request.user, message=rev_msg)
 
 			# Pre-fetch all ContentTypes in bulk
@@ -404,6 +406,17 @@ def track_revision(f):
 				)
 				revision_changes.append(change)
 				pending_entities.append((change, _get_entity_cts(model), entities))
+
+			for (ctpk, pk), to_pk in rev_rst.items():
+				revision_changes.append(
+					RevisionChange(
+						rev=revision,
+						target_type_id=ctpk,
+						target_id=pk,
+						target_value=pk,
+						restored=True,
+					)
+				)
 
 			# Bulk create changes
 			RevisionChange.objects.bulk_create(revision_changes)

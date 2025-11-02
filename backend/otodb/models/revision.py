@@ -30,6 +30,7 @@ class RevisionChange(models.Model):
 	target_id = models.PositiveBigIntegerField(null=False)
 	target = GenericForeignKey('target_type', 'target_id')
 	deleted = models.BooleanField(default=False, null=False)
+	restored = models.BooleanField(default=False, null=False)
 
 	target_column = models.CharField(max_length=100, null=True)
 	target_value = models.TextField(null=True)
@@ -43,6 +44,22 @@ class RevisionChange(models.Model):
 				'target_column',
 			),
 		)
+		constraints = [
+			models.CheckConstraint(
+				check=~models.Q(deleted=True, restored=True),
+				name='revisionchange_cannot_be_both_delete_and_restore',
+			),
+			models.UniqueConstraint(
+				fields=['target_type', 'target_id'],
+				condition=models.Q(deleted=True),
+				name='revisionchange_model_can_only_be_deleted_once',
+			),
+			models.UniqueConstraint(
+				fields=['target_type', 'target_id'],
+				condition=models.Q(restored=True),
+				name='revisionchange_model_can_only_be_restored_once',
+			),
+		]
 
 
 class RevisionChangeEntity(models.Model):
@@ -124,12 +141,13 @@ class RevisionTrackedQuerySet(models.QuerySet):
 
 	def update(self, **kwargs):
 		# This seems bad but we need to record revisions anyway, so it's as good as it can be
-		changed = 0
+		matched = 0
 		for instance in self.all():
 			for k, v in kwargs.items():
 				setattr(instance, k, v)
-			changed += instance.save()  # instance will make records
-		return changed
+			instance.save()
+			matched += 1
+		return matched
 
 	def delete(self):
 		to_del_dicts = self.all().values(

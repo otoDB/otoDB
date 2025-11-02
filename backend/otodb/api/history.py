@@ -174,7 +174,7 @@ def _get_all_previous_field_values(
 	date: datetime,
 	del_new_ids: dict[tuple[int, int], int],
 	fields: list[str] | None = None,
-) -> dict[str, Any]:
+) -> tuple[bool, dict[str, Any]]:
 	"""
 	Fetch and convert previous values for all fields of an entity before a given date.
 
@@ -187,10 +187,8 @@ def _get_all_previous_field_values(
 		fields: Optional list of specific fields to fetch (fetches all if None)
 
 	Returns:
-		Dictionary mapping field attnames to their converted values
-
-	Raises:
-		ValueError: If no previous revision is found for any required field
+		(True, dictionary mapping field attnames to their converted values)
+		(False, missing_fields)
 	"""
 	query = RevisionChange.objects.filter(
 		target_type_id=target_type_id,
@@ -216,10 +214,7 @@ def _get_all_previous_field_values(
 	required_fields = fields or getattr(model_class, 'revision_tracked_fields', [])
 	missing_fields = set(required_fields) - set(latest_changes.keys())
 	if missing_fields:
-		raise ValueError(
-			f'Incomplete history for {model_class.__name__} (id={target_id}). '
-			f'Missing fields: {missing_fields}'
-		)
+		return False, missing_fields
 
 	# Pre-fetch field objects
 	related_fields = {
@@ -250,7 +245,7 @@ def _get_all_previous_field_values(
 		else:
 			result[field_obj.attname] = field_obj.to_python(target_value)
 
-	return result
+	return True, result
 
 
 @transaction.atomic
@@ -350,27 +345,34 @@ def rollback_entity(
 			return
 
 		try:
-			values = _get_all_previous_field_values(
+			completed, values = _get_all_previous_field_values(
 				model_class, target_type_id, target_id, date, del_new_ids
 			)
 		except ValueError as e:
 			logger.error(f'{e}, cannot restore deleted entity')
 			return
 
-		try:
-			new_instance = model_class.objects.create(**values)
-			del_new_ids[(target_type_id, target_id)] = new_instance.pk
-			logger.debug(
-				f'Restored deleted {model_class.__name__} (old_id={target_id}, new_id={new_instance.pk})'
-			)
-		except Exception as e:
-			logger.error(
-				f'Failed to restore {model_class.__name__} (id={target_id}): {e}'
-			)
+		if completed:
+			try:
+				new_instance, created = model_class.objects.update_or_create(**values)
+				del_new_ids[(target_type_id, target_id)] = new_instance.pk
+				if created:
+					logger.debug(
+						f'Restored deleted {model_class.__name__} (old_id={target_id}, new_id={new_instance.pk})'
+					)
+				else:
+					logger.debug(
+						f'Restored {model_class.__name__} (old_id={target_id}, new_id={new_instance.pk}) by updating'
+					)
+			except Exception as e:
+				logger.error(
+					f'Failed to restore {model_class.__name__} (id={target_id}): {e}'
+				)
 
 	# Update modified entities using bulk operations
 	# Group by (target_type_id, target_id) to batch updates per entity
 	updates_by_model = {}  # model_class -> list of (instance_id, field_updates)
+	delete_models = {}
 
 	for (target_type_id, target_id), target_columns in groupby(
 		changes.filter(deleted=False)
@@ -390,7 +392,7 @@ def rollback_entity(
 		# Extract just the field names
 		fields_to_fetch = [field_name_tuple[2] for field_name_tuple in target_columns]
 		try:
-			values = _get_all_previous_field_values(
+			completed, values = _get_all_previous_field_values(
 				model_class,
 				target_type_id,
 				target_id,
@@ -404,11 +406,14 @@ def rollback_entity(
 		except Exception as e:
 			logger.warning(f'Could not process {model_class.__name__}: {e}')
 			continue
-
-		if values:
+		if completed:
 			if model_class not in updates_by_model:
 				updates_by_model[model_class] = []
 			updates_by_model[model_class].append((actual_target_id, values))
+		elif set(fields_to_fetch) == values:
+			if model_class not in delete_models:
+				delete_models[model_class] = []
+			delete_models[model_class].append(actual_target_id)
 
 	# Execute bulk updates per model
 	for model_class, updates in updates_by_model.items():
@@ -422,6 +427,9 @@ def rollback_entity(
 				logger.error(
 					f'Failed to update {model_class.__name__} (id={instance_id}): {e}'
 				)
+
+	for model_class, target_ids in delete_models.items():
+		model_class.objects.filter(id__in=target_ids).delete()
 
 
 @history_router.post('rollback_ent', auth=django_auth)

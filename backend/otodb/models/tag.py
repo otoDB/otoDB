@@ -467,6 +467,7 @@ class TagSongLangPreference(RevisionTrackedModel):
 	tag = models.ForeignKey(TagSong, null=False, blank=False, on_delete=models.CASCADE)
 
 	revision_tracked_fields = ['lang', 'tag']
+	revision_entity_attrs = ['tag']
 
 
 class TagWorkParenthood(RevisionTrackedModel):

@@ -29,7 +29,7 @@ class MediaSongConnection(RevisionTrackedModel):
 	class Meta:
 		unique_together = (('song', 'site', 'content_id'),)
 
-	revision_tracked_fields = ['tag', 'site', 'content_id']
+	revision_tracked_fields = ['song', 'site', 'content_id']
 	revision_entity_attrs = ['song']
 
 

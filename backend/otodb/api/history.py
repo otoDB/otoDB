@@ -167,6 +167,7 @@ class EntitySchema(Schema):
 	id: int | str
 	entity: Literal['mediawork', 'tagwork']
 
+
 def find_rev_rst(ctpk, query_pk, rev):
 	if q := RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=query_pk, restored=True
@@ -185,7 +186,14 @@ def get_rev_restored(ctpk, pk):
 		last = pk
 		pk = find_rev_rst(ctpk, pk, rev)
 
-	return None if RevisionChange.objects.filter(target_type_id=ctpk, target_id=last, deleted=True).exists() or any([ctpk == ctid and last == idd for ctid, idd, _ in rev_del]) else last
+	return (
+		None
+		if RevisionChange.objects.filter(
+			target_type_id=ctpk, target_id=last, deleted=True
+		).exists()
+		or any([ctpk == ctid and last == idd for ctid, idd, _ in rev_del])
+		else last
+	)
 
 
 def add_rev_restore(ctpk, pk, new_pk):
@@ -197,7 +205,9 @@ def add_rev_restore(ctpk, pk, new_pk):
 		last = pk
 		pk = find_rev_rst(ctpk, pk, rev)
 
-	assert RevisionChange.objects.filter(target_type_id=ctpk, target_id=last, deleted=True).exists()
+	assert RevisionChange.objects.filter(
+		target_type_id=ctpk, target_id=last, deleted=True
+	).exists()
 	rev[(ctpk, last)] = new_pk
 	cache.set('rev_rst', rev)
 
@@ -207,7 +217,7 @@ def _get_all_previous_field_values(
 	target_type_id: int,
 	target_id: int,
 	date: datetime,
-	related_targets: dict[tuple[int, int, str], int],
+	related_targets: dict[tuple[int, int], list[tuple[str, int, int]]],
 	fields: list[str] | None = None,
 ) -> tuple[bool, dict[str, Any]]:
 	"""
@@ -270,10 +280,19 @@ def _get_all_previous_field_values(
 		if isinstance(field_obj, RelatedField):
 			if target_value is not None:
 				related_ct_id = model_to_ct_id[field_obj.related_model]
-				related_targets[(target_type_id, target_id, field_obj.attname)] = (
-					related_ct_id,
-					int(target_value),
-				)
+				if (target_type_id, target_id) not in related_targets:
+					related_targets[(target_type_id, target_id)] = [
+						(field_obj.attname, related_ct_id, int(target_value))
+					]
+				else:
+					related_targets[(target_type_id, target_id)].append(
+						(
+							field_obj.attname,
+							related_ct_id,
+							int(target_value),
+						)
+					)
+				result[field_obj.attname] = int(target_value)  # Ostrich
 			else:
 				result[field_obj.attname] = None
 		else:
@@ -282,6 +301,7 @@ def _get_all_previous_field_values(
 	return True, result
 
 
+@transaction.atomic
 def rollback_entity(
 	entity_id: int | str,
 	entity_type: int | str,
@@ -299,11 +319,10 @@ def rollback_entity(
 		date: Rollback all changes that occurred on or after this date
 	"""
 
-	@transaction.atomic
 	def rollback_entity_rec(
 		entity_id: int | str,
 		entity_type: int | str,
-		related_targets: dict[tuple[int, int, str], int],
+		related_targets: dict[tuple[int, int], list[tuple[str, int, int]]],
 	) -> None:
 		# Normalize entity_type to ContentType ID
 		if isinstance(entity_type, int):
@@ -389,25 +408,61 @@ def rollback_entity(
 
 			if completed:
 				try:
-					new_instance, created = model_class.objects.update_or_create(
-						**values
-					)
+					for field_name in set(model_class.revision_tracked_fields) - set(
+						model_class.revision_entity_attrs
+					):
+						FF = model_class._meta.get_field(field_name)
+						if isinstance(FF, RelatedField):
+							R = FF.related_model
+							if not FF.null and hasattr(R, 'revision_tracked_fields'):
+								assert (field_name + '_id') in values
+								rel = (
+									RevisionChange.objects.filter(
+										target_type=ContentType.objects.get_for_model(
+											R
+										),
+										target_id=values[field_name + '_id'],
+										rev__date__lt=date,
+									)
+									.order_by('-rev__date')
+									.first()
+								)
+								for ent in rel.revisionchangeentity_set.all():
+									if (
+										ent.entity_type_id != entity_type_id
+										and not get_rev_restored(
+											ent.entity_type_id, ent.entity_id
+										)
+									):
+										rollback_entity_rec(
+											ent.entity_id,
+											ent.entity_type_id,
+											related_targets,
+										)
+
+					# ...I'm not exactly sure why this check makes a difference, but it does
+					if new_id := get_rev_restored(target_type_id, target_id):
+						npk = new_id
+						created = False
+						model_class.objects.filter(id=new_id).update(**values)
+					else:
+						new_instance, created = model_class.objects.update_or_create(
+							**values
+						)
+						npk = new_instance.pk
 					if created:
-						add_rev_restore(target_type_id, target_id, new_instance.pk)
+						add_rev_restore(target_type_id, target_id, npk)
 						logger.debug(
-							f'Restored deleted {model_class.__name__} (old_id={target_id}, new_id={new_instance.pk})'
+							f'Restored deleted {model_class.__name__} (old_id={target_id}, new_id={npk})'
 						)
 					else:
 						logger.debug(
-							f'Restored {model_class.__name__} (old_id={target_id}, new_id={new_instance.pk}) by updating'
+							f'Restored {model_class.__name__} (old_id={target_id}, new_id={npk}) by updating'
 						)
 				except Exception as e:
 					logger.error(
 						f'Failed to restore {model_class.__name__} (id={target_id}): {e}'
 					)
-					import traceback
-
-					print(traceback.format_exc())
 					raise
 
 		# Update modified entities using bulk operations
@@ -476,11 +531,13 @@ def rollback_entity(
 			model_class.objects.filter(id__in=target_ids).delete()
 
 	related_targets = {}
-	rollback_entity_rec(entity_id, entity_type, related_targets)
-	for (ctid, rid, f), (rctid, v) in related_targets.items():
-		ContentType.objects.get(id=ctid).model_class().objects.filter(
-			id=get_rev_restored(ctid, rid)
-		).update(**{f: get_rev_restored(rctid, v)})
+	with connection.constraint_checks_disabled():
+		rollback_entity_rec(entity_id, entity_type, related_targets)
+		for (ctid, rid), fs in related_targets.items():
+			changes = {f: get_rev_restored(rctid, v) for (f, rctid, v) in fs}
+			ContentType.objects.get(id=ctid).model_class().objects.filter(
+				id=get_rev_restored(ctid, rid)
+			).update(**changes)
 
 
 @history_router.post('rollback_ent', auth=django_auth)

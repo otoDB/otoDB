@@ -318,6 +318,9 @@ def rollback_entity(
 		entity_type: Either a ContentType ID (int) or model name (str)
 		date: Rollback all changes that occurred on or after this date
 	"""
+	first_rev = Revision.objects.order_by('date').first()
+	if first_rev and date <= first_rev.date:
+		raise ValueError('Not allowed to rollback to before the first revision')
 
 	def rollback_entity_rec(
 		entity_id: int | str,

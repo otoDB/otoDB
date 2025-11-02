@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db.models.deletion import Collector
 
 from django_request_cache import get_request_cache
 from dirtyfields import DirtyFieldsMixin
@@ -101,11 +102,34 @@ def _bulk_get_new_rev(model, objs):
 	return all_changes
 
 
-def _get_ents(obj):
+def _get_ents(obj) -> tuple[int, int, tuple]:
 	return tuple(
 		obj.pk if attr == 'self' else getattr(obj, obj._meta.get_field(attr).attname)
 		for attr in type(obj).revision_entity_attrs
 	)
+
+
+def _collect_cascade_deletions(
+	instances, using='default'
+) -> list[tuple[int, int, tuple]]:
+	if not instances:
+		return []
+
+	deletions = []
+	collector = Collector(using=using)
+	collector.collect(instances)
+	collector_data = getattr(collector, 'data', {})
+	all_models = set(collector_data.keys())
+	for model in all_models:
+		# Only track RevisionTrackedModels
+		if hasattr(model, 'revision_entity_attrs'):
+			ctpk = ContentType.objects.get_for_model(model).pk
+			instance_set = collector_data.get(model, set())
+			for instance in instance_set:
+				ents = _get_ents(instance)
+				deletions.append((ctpk, instance.pk, ents))
+
+	return deletions
 
 
 class RevisionTrackedQuerySet(models.QuerySet):
@@ -150,35 +174,24 @@ class RevisionTrackedQuerySet(models.QuerySet):
 		return matched
 
 	def delete(self):
-		to_del_dicts = self.all().values(
-			'pk', *[x for x in self.model.revision_entity_attrs if x != 'self']
-		)
+		# Collect all objects that will be deleted (including cascades)
+		instances_to_delete = list(self.all())
+		deletions = _collect_cascade_deletions(instances_to_delete, using=self.db)
+
 		cache = get_request_cache()
 		if cache is None:
 			print(
-				f'DELETING {[o["pk"] for o in to_del_dicts]} ON {self.model} --- NOT TRACKING CHANGES'
+				f'DELETING {len(instances_to_delete)} objects ON {self.model} --- NOT TRACKING CHANGES'
 			)
 		else:
 			rev_del = cache.get('rev_del')
-			ctpk = ContentType.objects.get_for_model(model=self.model).pk
-			for obj in to_del_dicts:
-				ents = tuple(
-					[
-						obj['pk' if attr == 'self' else attr]
-						for attr in self.model.revision_entity_attrs
-					]
-				)
-				rev_del.append(
-					(
-						ctpk,
-						obj['pk'],
-						ents,
-					)
-				)
-		super().delete()
-		if cache is not None:
+			# Add all deletions (direct + cascade) to rev_del
+			for ctpk, pk, ents in deletions:
+				rev_del.append((ctpk, pk, ents))
 			cache.set('rev_del', rev_del)
-		return len(to_del_dicts)
+
+		super().delete()
+		return len(instances_to_delete)
 
 
 class RevisionTrackedManager(models.Manager):
@@ -217,22 +230,18 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 		return len(self.get_dirty_fields(check_relationship=True)) > 0
 
 	def delete(self, *args, **kwargs):
-		ents = _get_ents(self)
 		pk = self.pk  # actually deleting will null the PK
+		using = self._state.db or 'default'
+		deletions = _collect_cascade_deletions([self], using=using)
+
 		if ret := super().delete(*args, **kwargs):
 			cache = get_request_cache()
 			if cache is None:
 				print(f'DELETING {self} ({type(self)}.{pk}) --- NOT TRACKING CHANGES')
 			else:
 				rev_del = cache.get('rev_del')
-
-				rev_del.append(
-					(
-						ContentType.objects.get_for_model(model=type(self)).pk,
-						pk,
-						ents,
-					)
-				)
+				for ctpk, obj_pk, ents in deletions:
+					rev_del.append((ctpk, obj_pk, ents))
 				cache.set('rev_del', rev_del)
 
 			return ret

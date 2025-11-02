@@ -385,13 +385,17 @@ def track_revision(f):
 			pending_entities = []
 
 			# Process deletions
+			seen_deletions = {}
 			for ctpk, pk, entities in rev_del:
-				change = RevisionChange(
-					rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
-				)
-				revision_changes.append(change)
-				model = content_types[ctpk].model_class()
-				pending_entities.append((change, _get_entity_cts(model), entities))
+				key = (ctpk, pk)
+				if key not in seen_deletions:
+					seen_deletions[key] = entities
+					change = RevisionChange(
+						rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
+					)
+					revision_changes.append(change)
+					model = content_types[ctpk].model_class()
+					pending_entities.append((change, _get_entity_cts(model), entities))
 
 			# Process updates
 			for (ctpk, pk, field), (entities, val) in rev.items():

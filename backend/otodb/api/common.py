@@ -430,6 +430,10 @@ def track_revision(f):
 			for change, entity_cts, entities in pending_entities:
 				for entity_type, ent_pk in zip(entity_cts, entities):
 					if ent_pk:
+						# TODO: add if rev_route == ROLLBACK OR better probably should move this to rollback_entity
+						from .history import get_rev_restored
+
+						ent_pk = get_rev_restored(entity_type.id, ent_pk) or ent_pk
 						revision_change_entities.append(
 							RevisionChangeEntity(
 								change=change,

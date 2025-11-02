@@ -484,34 +484,33 @@ def rollback_entity(
 				return
 
 			actual_target_id = get_rev_restored(target_type_id, target_id)
-			assert actual_target_id
-
-			# Extract just the field names
-			fields_to_fetch = [
-				field_name_tuple[2] for field_name_tuple in target_columns
-			]
-			try:
-				completed, values = _get_all_previous_field_values(
-					model_class,
-					target_type_id,
-					target_id,
-					date,
-					related_targets,
-					fields=fields_to_fetch,
-				)
-			except ValueError as e:
-				logger.error(f'{e}, skipping entity')
-				raise
-			except Exception as e:
-				logger.warning(f'Could not process {model_class.__name__}: {e}')
-			if completed:
-				if model_class not in updates_by_model:
-					updates_by_model[model_class] = []
-				updates_by_model[model_class].append((actual_target_id, values))
-			elif set(fields_to_fetch) == values:
-				if model_class not in delete_models:
-					delete_models[model_class] = []
-				delete_models[model_class].append(actual_target_id)
+			if actual_target_id:
+				# Extract just the field names
+				fields_to_fetch = [
+					field_name_tuple[2] for field_name_tuple in target_columns
+				]
+				try:
+					completed, values = _get_all_previous_field_values(
+						model_class,
+						target_type_id,
+						target_id,
+						date,
+						related_targets,
+						fields=fields_to_fetch,
+					)
+				except ValueError as e:
+					logger.error(f'{e}, skipping entity')
+					raise
+				except Exception as e:
+					logger.warning(f'Could not process {model_class.__name__}: {e}')
+				if completed:
+					if model_class not in updates_by_model:
+						updates_by_model[model_class] = []
+					updates_by_model[model_class].append((actual_target_id, values))
+				elif set(fields_to_fetch) == values:
+					if model_class not in delete_models:
+						delete_models[model_class] = []
+					delete_models[model_class].append(actual_target_id)
 
 		# Execute bulk updates per model
 		for model_class, updates in updates_by_model.items():

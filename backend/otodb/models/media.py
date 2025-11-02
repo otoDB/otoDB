@@ -50,8 +50,9 @@ class TagWorkInstance(RevisionTrackedModel):
 				role_value |= role
 		self.creator_roles = role_value if role_value > 0 else None
 
-	revision_tracked_fields = ['work', 'work_tag', 'used_as_source', 'creator_roles']
-	revision_entity_attrs = ['work']
+	class RevisionMeta:
+		tracked_fields = ['work', 'work_tag', 'used_as_source', 'creator_roles']
+		entity_attrs = ['work']
 
 
 class MediaWork(RevisionTrackedModel):
@@ -77,8 +78,10 @@ class MediaWork(RevisionTrackedModel):
 		'self', null=True, blank=True, on_delete=models.CASCADE
 	)
 
-	revision_tracked_fields = ['title', 'description', 'rating', 'moved_to']
-	revision_entity_attrs = ['self', 'moved_to']
+	class RevisionMeta:
+		tracked_fields = ['title', 'description', 'rating', 'moved_to']
+		entity_attrs = ['self', 'moved_to']
+		to_active = lambda instance: instance.moved_to or instance
 
 	# deprecated!
 	_thumbnail = models.CharField(
@@ -192,9 +195,10 @@ class MediaSong(RevisionTrackedModel):
 
 	tags = TagField(to=TagSong, related_name='songs')
 
-	revision_tracked_fields = ['title', 'bpm', 'variable_bpm', 'work_tag', 'author']
-	revision_entity_attrs = ['self', 'work_tag']
-	# TODO track tags when we have custom through table
+	class RevisionMeta:
+		tracked_fields = ['title', 'bpm', 'variable_bpm', 'work_tag', 'author']
+		entity_attrs = ['self', 'work_tag']
+		# TODO track tags when we have custom through table
 
 	class Meta:
 		verbose_name = 'Song'

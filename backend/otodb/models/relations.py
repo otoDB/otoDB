@@ -6,7 +6,7 @@ from django_cte import CTE, with_cte
 
 from .media import MediaWork, MediaSong
 
-from .enums import WorkRelationTypes, SongRelationTypes
+from .enums import WorkRelationTypes, SongRelationTypes, RevisionChain
 from .revision import RevisionTrackedModel, RevisionTrackedManager
 
 
@@ -54,8 +54,12 @@ class WorkRelation(RevisionTrackedModel):
 	)
 	relation = models.IntegerField(choices=WorkRelationTypes.choices)
 
-	revision_tracked_fields = ['A', 'B', 'relation']
-	revision_entity_attrs = ['A', 'B']
+	class RevisionMeta:
+		tracked_fields = ['A', 'B', 'relation']
+		entity_attrs = ['A', 'B']
+		chain = (
+			RevisionChain.WEAK
+		)  # Don't restore deleted works when restoring relations
 
 	objects = BidirectionalManager()
 
@@ -97,8 +101,13 @@ class SongRelation(RevisionTrackedModel):
 		related_name='relation_B',
 	)
 	relation = models.IntegerField(choices=SongRelationTypes.choices)
-	revision_tracked_fields = ['A', 'B', 'relation']
-	revision_entity_attrs = ['A', 'B']
+
+	class RevisionMeta:
+		tracked_fields = ['A', 'B', 'relation']
+		entity_attrs = ['A', 'B']
+		chain = (
+			RevisionChain.WEAK
+		)  # Don't restore deleted songs when restoring relations
 
 	objects = BidirectionalManager()
 

@@ -53,26 +53,27 @@ class WorkSource(RevisionTrackedModel):
 
 	active_objects = ActiveManager()
 
-	revision_tracked_fields = [
-		'media',
-		'platform',
-		'source_id',
-		'url',
-		'published_date',
-		'work_origin',
-		'work_status',
-		'work_width',
-		'work_height',
-		'work_duration',
-		'title',
-		'description',
-		'thumbnail_url',
-		'thumbnail_mime',
-		'thumbnail_hash',
-		'uploader_id',
-		'added_by',
-	]
-	revision_entity_attrs = ['self', 'media']
+	class RevisionMeta:
+		tracked_fields = [
+			'media',
+			'platform',
+			'source_id',
+			'url',
+			'published_date',
+			'work_origin',
+			'work_status',
+			'work_width',
+			'work_height',
+			'work_duration',
+			'title',
+			'description',
+			'thumbnail_url',
+			'thumbnail_mime',
+			'thumbnail_hash',
+			'uploader_id',
+			'added_by',
+		]
+		entity_attrs = ['self', 'media']
 
 	info_payload: 'WorkSourceInfoPayload'
 

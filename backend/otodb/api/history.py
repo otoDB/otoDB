@@ -30,6 +30,7 @@ from otodb.models import (
 	RevisionChangeEntity,
 	MediaWork,
 )
+from otodb.models.enums import RevisionChain
 from otodb.account.models import Account
 
 from .common import user_is_staff, track_revision
@@ -186,14 +187,23 @@ def get_rev_restored(ctpk, pk):
 		last = pk
 		pk = find_rev_rst(ctpk, pk, rev)
 
-	return (
-		None
-		if RevisionChange.objects.filter(
-			target_type_id=ctpk, target_id=last, deleted=True
-		).exists()
-		or any([ctpk == ctid and last == idd for ctid, idd, _ in rev_del])
-		else last
-	)
+	# Check if deleted
+	if RevisionChange.objects.filter(
+		target_type_id=ctpk, target_id=last, deleted=True
+	).exists() or any([ctpk == ctid and last == idd for ctid, idd, _ in rev_del]):
+		return None
+
+	# Apply to_active to resolve soft deletes (aliased_to/moved_to)
+	model_class = ContentType.objects.get(id=ctpk).model_class()
+	if model_class and hasattr(model_class, '_revision_meta'):
+		try:
+			instance = model_class.objects.get(pk=last)
+			active_instance = model_class._revision_meta.to_active(instance)
+			return active_instance.pk
+		except model_class.DoesNotExist:
+			return None
+
+	return last
 
 
 def add_rev_restore(ctpk, pk, new_pk):
@@ -255,7 +265,7 @@ def _get_all_previous_field_values(
 	latest_changes = dict(qs.values_list('target_column', 'target_value'))
 
 	# Check if we found all required fields
-	required_fields = fields or getattr(model_class, 'revision_tracked_fields', [])
+	required_fields = fields or model_class._revision_meta.tracked_fields
 	missing_fields = set(required_fields) - set(latest_changes.keys())
 	if missing_fields:
 		return False, missing_fields
@@ -411,37 +421,39 @@ def rollback_entity(
 
 			if completed:
 				try:
-					for field_name in set(model_class.revision_tracked_fields) - set(
-						model_class.revision_entity_attrs
-					):
-						FF = model_class._meta.get_field(field_name)
-						if isinstance(FF, RelatedField):
-							R = FF.related_model
-							if not FF.null and hasattr(R, 'revision_tracked_fields'):
-								assert (field_name + '_id') in values
-								rel = (
-									RevisionChange.objects.filter(
-										target_type=ContentType.objects.get_for_model(
-											R
-										),
-										target_id=values[field_name + '_id'],
-										rev__date__lt=date,
+					# Only recursively restore related entities if chain is STRONG
+					if model_class._revision_meta.chain == RevisionChain.STRONG:
+						for field_name in set(
+							model_class._revision_meta.tracked_fields
+						) - set(model_class._revision_meta.entity_attrs):
+							FF = model_class._meta.get_field(field_name)
+							if isinstance(FF, RelatedField):
+								R = FF.related_model
+								if not FF.null and hasattr(R, '_revision_meta'):
+									assert (field_name + '_id') in values
+									rel = (
+										RevisionChange.objects.filter(
+											target_type=ContentType.objects.get_for_model(
+												R
+											),
+											target_id=values[field_name + '_id'],
+											rev__date__lt=date,
+										)
+										.order_by('-rev__date')
+										.first()
 									)
-									.order_by('-rev__date')
-									.first()
-								)
-								for ent in rel.revisionchangeentity_set.all():
-									if (
-										ent.entity_type_id != entity_type_id
-										and not get_rev_restored(
-											ent.entity_type_id, ent.entity_id
-										)
-									):
-										rollback_entity_rec(
-											ent.entity_id,
-											ent.entity_type_id,
-											related_targets,
-										)
+									for ent in rel.revisionchangeentity_set.all():
+										if (
+											ent.entity_type_id != entity_type_id
+											and not get_rev_restored(
+												ent.entity_type_id, ent.entity_id
+											)
+										):
+											rollback_entity_rec(
+												ent.entity_id,
+												ent.entity_type_id,
+												related_targets,
+											)
 
 					# ...I'm not exactly sure why this check makes a difference, but it does
 					if new_id := get_rev_restored(target_type_id, target_id):

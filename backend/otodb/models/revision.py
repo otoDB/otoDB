@@ -7,7 +7,7 @@ from django_request_cache import get_request_cache
 from dirtyfields import DirtyFieldsMixin
 
 from otodb.account.models import Account
-from otodb.models.enums import Route
+from otodb.models.enums import Route, RevisionChain
 
 
 class Revision(models.Model):
@@ -95,7 +95,7 @@ def _bulk_get_new_rev(model, objs):
 	for obj in objs:
 		changes = {}
 		for k in obj.get_dirty_fields(check_relationship=True):
-			if k in model.revision_tracked_fields:
+			if k in model._revision_meta.tracked_fields:
 				changes[k] = get_serialized_value(obj, k)
 		all_changes.append(changes)
 
@@ -105,7 +105,7 @@ def _bulk_get_new_rev(model, objs):
 def _get_ents(obj) -> tuple[int, int, tuple]:
 	return tuple(
 		obj.pk if attr == 'self' else getattr(obj, obj._meta.get_field(attr).attname)
-		for attr in type(obj).revision_entity_attrs
+		for attr in type(obj)._revision_meta.entity_attrs
 	)
 
 
@@ -122,7 +122,7 @@ def _collect_cascade_deletions(
 	all_models = set(collector_data.keys())
 	for model in all_models:
 		# Only track RevisionTrackedModels
-		if hasattr(model, 'revision_entity_attrs'):
+		if hasattr(model, '_revision_meta'):
 			ctpk = ContentType.objects.get_for_model(model).pk
 			instance_set = collector_data.get(model, set())
 			for instance in instance_set:
@@ -199,14 +199,48 @@ class RevisionTrackedManager(models.Manager):
 		return RevisionTrackedQuerySet(self.model, using=self._db)
 
 
-class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
-	revision_tracked_fields: list[str] = []
-	revision_entity_attrs: list[str] = []
+class _RevisionMetaConfig:
+	"""Holds revision tracking configuration for a model"""
 
+	def __init__(
+		self,
+		tracked_fields: list[str] | None = None,
+		entity_attrs: list[str] | None = None,
+		chain: RevisionChain = RevisionChain.STRONG,
+		to_active=None,
+	):
+		self.tracked_fields = tracked_fields or []
+		self.entity_attrs = entity_attrs or []
+		self.chain = chain
+		self.to_active = to_active or (lambda instance: instance)
+
+
+class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 	objects = RevisionTrackedManager()
 
 	class Meta:
 		abstract = True
+
+	def __init_subclass__(cls, **kwargs):
+		super().__init_subclass__(**kwargs)
+
+		# Extract RevisionMeta
+		if hasattr(cls, 'RevisionMeta'):
+			meta = getattr(cls, 'RevisionMeta')
+			tracked_fields = getattr(meta, 'tracked_fields', [])
+			entity_attrs = getattr(meta, 'entity_attrs', [])
+			chain = getattr(meta, 'chain', RevisionChain.STRONG)
+			to_active = getattr(meta, 'to_active', lambda instance: instance)
+
+			cls._revision_meta = _RevisionMetaConfig(
+				tracked_fields=tracked_fields,
+				entity_attrs=entity_attrs,
+				chain=chain,
+				to_active=to_active,
+			)
+		else:
+			# Default empty config
+			cls._revision_meta = _RevisionMetaConfig()
 
 	def save(self, *args, **kwargs) -> bool:
 		cache = get_request_cache()
@@ -215,7 +249,7 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 		super().save(*args, **kwargs)
 		if cache is None:
 			for k, v in dirty.items():
-				if k in self.revision_tracked_fields:
+				if k in type(self)._revision_meta.tracked_fields:
 					print(
 						f'UPDATING {k}: {v} -> {getattr(self, k)} ON {self} ({type(self)}.{self.pk}) --- NOT TRACKING CHANGES'
 					)
@@ -224,7 +258,7 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 			ctpk = ContentType.objects.get_for_model(model=type(self)).pk
 			ents = _get_ents(self)
 			for k in dirty:
-				if k in self.revision_tracked_fields:
+				if k in type(self)._revision_meta.tracked_fields:
 					rev[(ctpk, self.pk, k)] = ents, get_serialized_value(self, k)
 			cache.set('rev', rev)
 		return len(self.get_dirty_fields(check_relationship=True)) > 0

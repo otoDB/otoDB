@@ -26,11 +26,12 @@ class MediaSongConnection(RevisionTrackedModel):
 	site = models.IntegerField(choices=SongConnectionTypes.choices)
 	content_id = models.CharField(max_length=1000)
 
+	class RevisionMeta:
+		tracked_fields = ['song', 'site', 'content_id']
+		entity_attrs = ['song']
+
 	class Meta:
 		unique_together = (('song', 'site', 'content_id'),)
-
-	revision_tracked_fields = ['song', 'site', 'content_id']
-	revision_entity_attrs = ['song']
 
 
 class TagWorkConnection(RevisionTrackedModel):
@@ -38,11 +39,12 @@ class TagWorkConnection(RevisionTrackedModel):
 	site = models.IntegerField(choices=TagWorkConnectionTypes.choices)
 	content_id = models.CharField(max_length=1000)
 
+	class RevisionMeta:
+		tracked_fields = ['tag', 'site', 'content_id']
+		entity_attrs = ['tag']
+
 	class Meta:
 		unique_together = (('tag', 'site', 'content_id'),)
-
-	revision_tracked_fields = ['tag', 'site', 'content_id']
-	revision_entity_attrs = ['tag']
 
 
 class TagWorkMediaConnection(RevisionTrackedModel):
@@ -50,11 +52,12 @@ class TagWorkMediaConnection(RevisionTrackedModel):
 	site = models.IntegerField(choices=MediaConnectionTypes.choices)
 	content_id = models.CharField(max_length=1000)
 
+	class RevisionMeta:
+		tracked_fields = ['tag', 'site', 'content_id']
+		entity_attrs = ['tag']
+
 	class Meta:
 		unique_together = (('tag', 'site', 'content_id'),)
-
-	revision_tracked_fields = ['tag', 'site', 'content_id']
-	revision_entity_attrs = ['tag']
 
 
 class TagWorkCreatorConnection(RevisionTrackedModel):
@@ -63,8 +66,9 @@ class TagWorkCreatorConnection(RevisionTrackedModel):
 	content_id = models.CharField(max_length=1000)
 	dead = models.BooleanField(default=False, null=False)
 
+	class RevisionMeta:
+		tracked_fields = ['tag', 'site', 'content_id', 'dead']
+		entity_attrs = ['tag']
+
 	class Meta:
 		unique_together = (('tag', 'site', 'content_id'),)
-
-	revision_tracked_fields = ['tag', 'site', 'content_id', 'dead']
-	revision_entity_attrs = ['tag']

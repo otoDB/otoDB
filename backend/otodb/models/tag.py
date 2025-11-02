@@ -125,15 +125,17 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		null=True, blank=True, help_text='Media type bitmask'
 	)
 
-	revision_tracked_fields = [
-		'name',
-		'slug',
-		'aliased_to',
-		'deprecated',
-		'category',
-		'media_type',
-	]
-	revision_entity_attrs = ['self', 'aliased_to']
+	class RevisionMeta:
+		tracked_fields = [
+			'name',
+			'slug',
+			'aliased_to',
+			'deprecated',
+			'category',
+			'media_type',
+		]
+		entity_attrs = ['self', 'aliased_to']
+		to_active = lambda instance: instance.aliased_to or instance
 
 	@property
 	def display_name(self):
@@ -373,8 +375,10 @@ class TagWorkLangPreference(RevisionTrackedModel):
 		blank=False,
 	)
 	tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
-	revision_tracked_fields = ['lang', 'tag']
-	revision_entity_attrs = ['tag']
+
+	class RevisionMeta:
+		tracked_fields = ['lang', 'tag']
+		entity_attrs = ['tag']
 
 	class Meta:
 		unique_together = (('tag', 'lang'),)
@@ -393,8 +397,9 @@ class WikiPage(RevisionTrackedModel):
 		blank=False,
 	)
 
-	revision_tracked_fields = ['lang', 'tag', 'page']
-	revision_entity_attrs = ['tag']
+	class RevisionMeta:
+		tracked_fields = ['lang', 'tag', 'page']
+		entity_attrs = ['tag']
 
 	class Meta:
 		unique_together = (('tag', 'lang'),)
@@ -419,8 +424,10 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 		related_name='children',
 	)
 
-	revision_tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
-	revision_entity_attrs = ['self']
+	class RevisionMeta:
+		tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
+		entity_attrs = ['self']
+		to_active = lambda instance: instance.aliased_to or instance
 
 	@property
 	def display_name(self):
@@ -466,8 +473,9 @@ class TagSongLangPreference(RevisionTrackedModel):
 	)
 	tag = models.ForeignKey(TagSong, null=False, blank=False, on_delete=models.CASCADE)
 
-	revision_tracked_fields = ['lang', 'tag']
-	revision_entity_attrs = ['tag']
+	class RevisionMeta:
+		tracked_fields = ['lang', 'tag']
+		entity_attrs = ['tag']
 
 
 class TagWorkParenthood(RevisionTrackedModel):
@@ -486,8 +494,10 @@ class TagWorkParenthood(RevisionTrackedModel):
 		related_name='parenthood',
 	)
 	primary = models.BooleanField(default=False)
-	revision_tracked_fields = ['tag', 'parent', 'primary']
-	revision_entity_attrs = ['tag', 'parent']
+
+	class RevisionMeta:
+		tracked_fields = ['tag', 'parent', 'primary']
+		entity_attrs = ['tag', 'parent']
 
 	class Meta:
 		unique_together = (('tag', 'parent'),)

@@ -194,6 +194,11 @@ class PostCategory(models.IntegerChoices):
 	GARDENING = 3, 'Gardening'
 
 
+class RevisionChain(models.IntegerChoices):
+	STRONG = 0, 'Strong'
+	WEAK = 1, 'Weak'
+
+
 class Route(models.IntegerChoices):
 	UNKNOWN = 0, 'Unknown'
 	TAGWORK_ALIAS = 1, 'Tag Work Alias'

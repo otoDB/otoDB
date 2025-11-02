@@ -55,7 +55,7 @@ def base_video_info():
 def video_info_mock(base_video_info):
 	"""Create a mock for video_info with fuzzed data."""
 	fuzzed = fuzz_video_infos(base_video_info)
-	with patch('otodb.models.work_source.video_info') as mock:
+	with patch('otodb.common.video_info') as mock:
 		mock.return_value = fuzzed
 		yield mock, fuzzed
 
@@ -70,21 +70,29 @@ def upload_src(work_client):
 		work_id: int | None = None,
 		has_original: bool = False,
 		user=None,
+		allow_dead: bool = False,
 	):
-		payload = {
+		# Query parameters
+		query_params = {
 			'url': 'https://youtu.be/fakeUrl',
-			'is_reupload': is_reupload,
 		}
 		if rating is not None:
-			payload['rating'] = rating
+			query_params['rating'] = rating
 		if work_id is not None:
-			payload['work_id'] = work_id
+			query_params['work_id'] = work_id
 		if has_original:
-			payload['original_url'] = 'https://youtu.be/fakeUrl'
+			query_params['original_url'] = 'https://youtu.be/fakeUrl'
+
+		# Request body with metadata
+		metadata = {
+			'is_reupload': is_reupload,
+			'allow_dead': allow_dead,
+		}
 
 		return work_client.post(
-			'/source?' + urlencode(payload),
-			content_type='application/x-www-form-urlencoded',
+			'/source?' + urlencode(query_params),
+			data=json.dumps(metadata),
+			content_type='application/json',
 			user=user,
 		)
 

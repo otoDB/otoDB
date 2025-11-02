@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from django.db import models
 from simple_history.models import HistoricalRecords, HistoricForeignKey
 import requests
@@ -25,7 +25,9 @@ class WorkSource(models.Model):
 	source_id = models.CharField(max_length=1000)
 
 	url = models.URLField(null=False, blank=False)
-	published_date = models.DateField(auto_now=False, auto_now_add=False)
+	published_date = models.DateField(
+		auto_now=False, auto_now_add=False, null=True, blank=True
+	)
 	work_origin = models.IntegerField(
 		choices=WorkOrigin.choices, default=WorkOrigin.AUTHOR
 	)
@@ -121,7 +123,7 @@ class WorkSource(models.Model):
 
 		self.save()
 
-	def save_thumbnail(self):
+	def save_thumbnail(self) -> bool:
 		if not self.thumbnail_url or not self.thumbnail_mime:
 			return False
 		try:
@@ -147,20 +149,94 @@ class WorkSource(models.Model):
 
 	# Gets the source registered at the url if it exists, otherwise register as pending
 	@staticmethod
-	def from_url(url, user, is_reupload, info=None, full_info=None):
+	def from_url(url, user, metadata=None, info=None, full_info=None):
+		"""
+		Gets or creates a WorkSource from a URL.
+
+		Args:
+		    url: The URL to fetch
+		    user: The user adding the source
+		    metadata: Optional metadata dict/object with behavioral flags and manual metadata
+		    info: Optional pre-fetched info dict (for optimization)
+		    full_info: Optional pre-fetched full info dict (for optimization)
+
+		Returns:
+		    Tuple of (WorkSource, info_dict) or (None, None) if failed
+		"""
+		from otodb.common import video_info, parse_url_for_platform
+
+		# Extract flags from metadata with safe defaults
+		is_reupload = getattr(metadata, 'is_reupload', False) if metadata else False
+		allow_dead = getattr(metadata, 'allow_dead', False) if metadata else False
+
+		# Try to fetch info if not provided
 		if info is None:
 			info, full_info = video_info(url)
 
-		if info is None:
+		# Handle dead sources when allow_dead is True
+		if info is None and allow_dead:
+			parsed = parse_url_for_platform(url)
+			if parsed is None:
+				print(f'Failed to parse URL for platform: {url}')
+				return None, None
+
+			# Build minimal info from parsed URL and manual metadata
+			from otodb.common import fetch_thumbnail_mime_type
+
+			published_date = (
+				getattr(metadata, 'published_date', None) if metadata else None
+			)
+			thumbnail_url = (
+				getattr(metadata, 'thumbnail_url', None) if metadata else None
+			)
+
+			# Fetch thumbnail mime type if URL is provided
+			thumb_mime = (
+				fetch_thumbnail_mime_type(thumbnail_url) if thumbnail_url else None
+			)
+
+			info = {
+				'site': parsed['platform'],
+				'id': parsed['source_id'],
+				'url': parsed['canonical_url'],
+				'title': getattr(metadata, 'title', None) if metadata else None,
+				'description': (
+					getattr(metadata, 'description', None) if metadata else None
+				)
+				or '',
+				'timestamp': datetime.combine(
+					published_date, datetime.min.time()
+				).timestamp()
+				if published_date
+				else None,
+				'uploader_id': getattr(metadata, 'uploader_id', None)
+				if metadata
+				else None,
+				'thumb': thumbnail_url,
+				'thumb_mime': thumb_mime,
+				'work_width': getattr(metadata, 'work_width', None)
+				if metadata
+				else None,
+				'work_height': getattr(metadata, 'work_height', None)
+				if metadata
+				else None,
+				'work_duration': getattr(metadata, 'work_duration', None)
+				if metadata
+				else None,
+				'tags': [],
+			}
+		elif info is None:
 			print(f'Failed to get video info for URL: {url}')
-			return None
+			return None, None
 
 		if info['site'] is None:
-			return None
+			return None, None
 
+		# Check if source already exists
 		try:
 			src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
 		except WorkSource.DoesNotExist:
+			# Create new source
 			src = WorkSource.objects.create(
 				media=None,
 				title=info['title'],
@@ -168,17 +244,22 @@ class WorkSource(models.Model):
 				url=info['url'],
 				platform=info['site'],
 				source_id=info['id'],
-				published_date=date.fromtimestamp(info['timestamp']),
+				published_date=(
+					date.fromtimestamp(info['timestamp']) if info['timestamp'] else None
+				),
 				work_origin=WorkOrigin(is_reupload),
-				thumbnail_url=info.get('thumb', None),
-				thumbnail_mime=info.get('thumb_mime', None),
-				work_width=info.get('work_width', None),
-				work_height=info.get('work_height', None),
-				work_duration=info.get('work_duration', None),
+				work_status=WorkStatus.DOWN if allow_dead else WorkStatus.AVAILABLE,
+				thumbnail_url=info.get('thumb'),
+				thumbnail_mime=info.get('thumb_mime'),
+				work_width=info.get('work_width'),
+				work_height=info.get('work_height'),
+				work_duration=info.get('work_duration'),
 				added_by=user,
 				uploader_id=info['uploader_id'],
 			)
-			WorkSourceInfoPayload.objects.create(source=src, payload=full_info)
+
+			if full_info is not None:
+				WorkSourceInfoPayload.objects.create(source=src, payload=full_info)
 
 			if src.thumbnail_url and src.thumbnail_mime:
 				src.save_thumbnail()

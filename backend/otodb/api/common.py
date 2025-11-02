@@ -1,4 +1,5 @@
 from typing import Optional, Annotated, Dict
+from datetime import date
 from functools import wraps
 
 from pydantic import field_validator
@@ -25,6 +26,24 @@ import re
 
 class Error(Schema):
 	message: str
+
+
+class SourceMetadata(Schema):
+	"""Metadata for source creation - includes behavioral flags and manual metadata fields"""
+
+	# Behavioral flags
+	allow_dead: bool = False
+	is_reupload: bool = False
+
+	# Manual metadata (for dead sources or overrides)
+	title: str | None = None
+	description: str | None = None
+	uploader_id: str | None = None
+	thumbnail_url: str | None = None
+	work_width: int | None = None
+	work_height: int | None = None
+	work_duration: int | None = None
+	published_date: date | None = None
 
 
 class ProfileSchema(ModelSchema):

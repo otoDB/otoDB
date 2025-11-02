@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from '../$types';
-	import { Platform, Rating, WorkOrigin } from '$lib/enums';
+	import { Platform, Rating, WorkOrigin, UserLevel, WorkStatus } from '$lib/enums';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -16,6 +16,7 @@
 		thumbnail_source_id: number | null = $state(
 			form?.thumbnail_source ?? data.thumbnail_source ?? data.sources?.[0]?.id ?? null
 		);
+	let thumbnailUrlEdits: Record<number, string> = $state({});
 	const del = async () => {
 		if (confirm(m.mad_brief_falcon_pop())) {
 			await client.DELETE('/api/work/work', {
@@ -40,6 +41,29 @@
 		});
 		callSavingToast(p);
 		await p;
+	};
+	const updateThumbnailUrl = (source_id: number) => async () => {
+		const thumbnail_url = thumbnailUrlEdits[source_id];
+
+		// If blank, refresh/re-fetch the original thumbnail
+		if (!thumbnail_url || thumbnail_url.trim() === '') {
+			const p = client.POST('/api/work/refresh_source', {
+				fetch,
+				params: { query: { source_id } }
+			});
+			callSavingToast(p);
+			await p;
+			invalidateAll();
+			return;
+		}
+
+		const p = client.PUT('/api/work/source_thumbnail_url', {
+			fetch,
+			params: { query: { source_id, thumbnail_url } }
+		});
+		callSavingToast(p);
+		await p;
+		invalidateAll();
 	};
 
 	$effect(() => {
@@ -85,7 +109,7 @@
 										? ''
 										: ' ' + WorkOrigin[src.work_origin]()}
 									-
-									{src.title}</option
+									{src.title || src.url}</option
 								>
 							{/each}
 						</select>
@@ -120,6 +144,7 @@
 					<th>{m.large_polite_otter_thrive()}</th>
 					<th>{m.super_agent_pigeon_aim()}</th>
 					<th>{m.noisy_moving_newt_belong()}</th>
+					<th>{m.heroic_ideal_orangutan_aid()}</th>
 					<th>{m.sour_lime_shad_edit()}</th>
 				</tr></thead
 			>
@@ -136,7 +161,7 @@
 								type="button">&lt;&lt;</button
 							></td
 						>
-						<td class="whitespace-nowrap">{src.title}</td>
+						<td class="whitespace-nowrap">{src.title || src.url}</td>
 						<td
 							><details>
 								<summary>[{m.tough_early_sparrow_bask()}]</summary>{src.description}
@@ -156,6 +181,20 @@
 								>{m.noisy_moving_newt_belong()}</a
 							></td
 						>
+						<td>
+							{#if data.user?.level >= UserLevel.EDITOR && src.work_status === 1}
+								<details>
+									<summary>[{m.minor_crisp_cobra_list()}]</summary>
+									<input
+										type="url"
+										bind:value={thumbnailUrlEdits[src.id]}
+									/>
+									<input type="submit" onclick={updateThumbnailUrl(src.id)} />
+								</details>
+							{:else}
+								{src.thumbnail ? 'Set' : m.simple_less_marlin_enchant()}
+							{/if}
+						</td>
 						<td
 							><button type="button" onclick={() => unbind(src.id)}
 								>{m.sour_lime_shad_edit()}</button

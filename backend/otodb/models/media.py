@@ -64,7 +64,7 @@ class MediaWork(models.Model):
 		relation_B: QuerySet['WorkRelation']
 		tagworkinstance_set: QuerySet['TagWorkInstance']
 
-	title = models.CharField(max_length=1000, null=False, blank=False)
+	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
 
 	rating = models.IntegerField(choices=Rating.choices, default=Rating.GENERAL)

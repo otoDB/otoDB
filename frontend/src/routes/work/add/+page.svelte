@@ -3,11 +3,12 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { Rating } from '$lib/enums';
+	import { Rating, UserLevel } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
 	let isOriginal = $derived(!!(form?.origin ?? !data.title));
+	let allowDead = $state(false);
 
 	$effect(() => {
 		if (form?.failed) {
@@ -79,6 +80,53 @@
 							></td
 						></tr
 					>
+				{/if}
+				{#if data.user?.level >= UserLevel.EDITOR}
+					<tr>
+						<th></th>
+						<td>
+							<label>
+								<input type="checkbox" name="allow_dead" bind:checked={allowDead} />
+								{m.that_large_mare_ascend()}
+							</label>
+						</td>
+					</tr>
+				{/if}
+				{#if allowDead}
+					<tr>
+						<th><label for="manual_title">{m.large_factual_octopus_exhale()}</label></th>
+						<td>
+							<input type="text" name="manual_title" class="w-full" />
+						</td>
+					</tr>
+					<tr>
+						<th><label for="manual_description">{m.clear_lucky_peacock_pick()}</label></th>
+						<td><textarea name="manual_description" class="w-full" rows="3"></textarea></td>
+					</tr>
+					<tr>
+						<th><label for="manual_uploader_id">{m.vivid_still_bumblebee_explore()}</label></th>
+						<td><input type="text" name="manual_uploader_id" class="w-full" /></td>
+					</tr>
+					<tr>
+						<th><label for="manual_thumbnail_url">{m.heroic_ideal_orangutan_aid()}</label></th>
+						<td><input type="url" name="manual_thumbnail_url" class="w-full" /></td>
+					</tr>
+					<tr>
+						<th><label for="manual_width">{m.home_yummy_eel_scold()}</label></th>
+						<td><input type="number" name="manual_width" min="0" /></td>
+					</tr>
+					<tr>
+						<th><label for="manual_height">{m.legal_strong_ladybug_fade()}</label></th>
+						<td><input type="number" name="manual_height" min="0" /></td>
+					</tr>
+					<tr>
+						<th><label for="manual_duration">{m.nice_tense_mule_grasp()}</label></th>
+						<td><input type="number" name="manual_duration" min="0" /></td>
+					</tr>
+					<tr>
+						<th><label for="manual_date">{m.super_agent_pigeon_aim()}</label></th>
+						<td><input type="date" name="manual_date" /></td>
+					</tr>
 				{/if}
 			</tbody>
 		</table>

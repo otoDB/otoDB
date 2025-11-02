@@ -135,7 +135,9 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			'media_type',
 		]
 		entity_attrs = ['self', 'aliased_to']
-		to_active = lambda instance: instance.aliased_to or instance
+
+		def to_active(instance):
+			return instance.aliased_to or instance
 
 	@property
 	def display_name(self):
@@ -427,7 +429,9 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 	class RevisionMeta:
 		tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
 		entity_attrs = ['self']
-		to_active = lambda instance: instance.aliased_to or instance
+
+		def to_active(instance):
+			return instance.aliased_to or instance
 
 	@property
 	def display_name(self):

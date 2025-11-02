@@ -81,7 +81,9 @@ class MediaWork(RevisionTrackedModel):
 	class RevisionMeta:
 		tracked_fields = ['title', 'description', 'rating', 'moved_to']
 		entity_attrs = ['self', 'moved_to']
-		to_active = lambda instance: instance.moved_to or instance
+
+		def to_active(instance):
+			return instance.moved_to or instance
 
 	# deprecated!
 	_thumbnail = models.CharField(

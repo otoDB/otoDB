@@ -212,7 +212,7 @@ class _RevisionMetaConfig:
 		self.tracked_fields = tracked_fields or []
 		self.entity_attrs = entity_attrs or []
 		self.chain = chain
-		self.to_active = to_active or (lambda instance: instance)
+		self.to_active = to_active
 
 
 class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
@@ -230,7 +230,7 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 			tracked_fields = getattr(meta, 'tracked_fields', [])
 			entity_attrs = getattr(meta, 'entity_attrs', [])
 			chain = getattr(meta, 'chain', RevisionChain.STRONG)
-			to_active = getattr(meta, 'to_active', lambda instance: instance)
+			to_active = getattr(meta, 'to_active', None)
 
 			cls._revision_meta = _RevisionMetaConfig(
 				tracked_fields=tracked_fields,

@@ -1,6 +1,9 @@
 from datetime import date
 from django.db import models
 import requests
+
+from .enums import Platform, WorkOrigin, WorkStatus, MimeType
+from .media import MediaWork
 import hashlib
 
 from otodb.account.models import Account

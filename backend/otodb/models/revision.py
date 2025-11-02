@@ -47,7 +47,7 @@ class RevisionChange(models.Model):
 		)
 		constraints = [
 			models.CheckConstraint(
-				check=~models.Q(deleted=True, restored=True),
+				condition=~models.Q(deleted=True, restored=True),
 				name='revisionchange_cannot_be_both_delete_and_restore',
 			),
 			models.UniqueConstraint(

@@ -12,8 +12,6 @@ from otodb.storage_manager import storage_manager
 
 
 from .revision import RevisionTrackedModel, RevisionTrackedManager
-from .enums import Platform, WorkOrigin, WorkStatus, MimeType
-from .media import MediaWork
 
 
 class ActiveManager(RevisionTrackedManager):

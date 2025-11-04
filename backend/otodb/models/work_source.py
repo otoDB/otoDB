@@ -41,7 +41,7 @@ class WorkSource(models.Model):
 	work_height = models.PositiveIntegerField(null=True, blank=True)
 	work_duration = models.PositiveIntegerField(null=True, blank=True)
 
-	title = models.CharField(max_length=1000, null=False, blank=False)
+	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
 	thumbnail_url = models.URLField(null=True, blank=False)
 	thumbnail_mime = models.IntegerField(

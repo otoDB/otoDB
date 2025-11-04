@@ -24,6 +24,7 @@ dependencies = [
     "furl>=2.1.4",
     "django-cte>=2.0.0",
     "boto3>=1.40.30",
+    "sentry-sdk[django]>=2.43.0",
 ]
 
 [tool.ruff.format]

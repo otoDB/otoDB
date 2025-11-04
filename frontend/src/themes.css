@@ -18,3 +18,26 @@
 		background-repeat: no-repeat, no-repeat;
 	}
 }
+
+.theme-otogroove {
+	--otodb-color-bg-fainter: white;
+	--otodb-color-content-primary: black;
+	--otodb-color-bg-faint: color-mix(
+		in hsl,
+		var(--otodb-color-bg-fainter) 95%,
+		var(--otodb-color-content-primary)
+	);
+	--otodb-color-bg-primary: color-mix(
+		in hsl,
+		var(--otodb-color-bg-fainter) 90%,
+		var(--otodb-color-content-primary)
+	);
+	> div.bg-marker:first-child {
+		background-image: url('/otogroove-bg.png'), url('/otogroove-right.png');
+		background-position:
+			left 20px,
+			right -20px;
+		background-repeat: no-repeat, no-repeat;
+		background-size: auto, min(100vw, 845px);
+	}
+}

@@ -160,6 +160,13 @@ def search(
 				.values('published_date')[:1]
 			),
 		)
+		.select_related('thumbnail_source')
+		.prefetch_related(
+			'tags',
+			'tags__aliases',
+			'tags__tagworklangpreference_set',
+			'tags__aliases__tagworklangpreference_set',
+		)
 		.order_by('priority', order)
 		.distinct()
 	)
@@ -259,7 +266,12 @@ def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
 def random(request: HttpRequest, n: int = 1):
 	return (
 		MediaWork.active_objects.select_related('thumbnail_source')
-		.prefetch_related('tags', 'tags__aliases', 'tags__tagworklangpreference_set')
+		.prefetch_related(
+			'tags',
+			'tags__aliases',
+			'tags__tagworklangpreference_set',
+			'tags__aliases__tagworklangpreference_set',
+		)
 		.filter(rating=Rating.GENERAL)
 		.order_by('?')[: min(n, 20)]
 	)
@@ -269,7 +281,12 @@ def random(request: HttpRequest, n: int = 1):
 def recent(request: HttpRequest, n: int = 1):
 	return (
 		MediaWork.active_objects.select_related('thumbnail_source')
-		.prefetch_related('tags', 'tags__aliases', 'tags__tagworklangpreference_set')
+		.prefetch_related(
+			'tags',
+			'tags__aliases',
+			'tags__tagworklangpreference_set',
+			'tags__aliases__tagworklangpreference_set',
+		)
 		.order_by('-id')[: min(n, 20)]
 	)
 

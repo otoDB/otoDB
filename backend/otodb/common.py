@@ -312,7 +312,7 @@ def fetch_thumbnail_mime_type(thumbnail_url: str):
 		content_type = response.headers.get('Content-Type')
 		return MimeType.from_str(content_type)
 	except Exception as e:
-		print(f'Error fetching thumbnail mime type: {e}')
+		logger.error(f'Error fetching thumbnail mime type: {e}')
 		return None
 
 
@@ -359,5 +359,5 @@ def parse_url_for_platform(url: str):
 		else:
 			return None
 	except Exception as e:
-		print(f'Error parsing URL {url}: {e}')
+		logger.error(f'Error parsing URL {url}: {e}')
 		return None

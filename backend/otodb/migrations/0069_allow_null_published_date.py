@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0067_historicalworksource_thumbnail_hash_and_more'),
+		('otodb', '0068_alter_historicaltagworkmediaconnection_site_and_more'),
 	]
 
 	operations = [

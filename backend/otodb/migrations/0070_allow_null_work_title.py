@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0068_allow_null_published_date'),
+		('otodb', '0069_allow_null_published_date'),
 	]
 
 	operations = [

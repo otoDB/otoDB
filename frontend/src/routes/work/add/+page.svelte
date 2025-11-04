@@ -136,7 +136,7 @@
 								id="manual_width"
 								name="manual_width"
 								min="0"
-								placeholder="{m.home_yummy_eel_scold()}"
+								placeholder={m.home_yummy_eel_scold()}
 							/>
 							x
 							<input
@@ -144,7 +144,7 @@
 								id="manual_height"
 								name="manual_height"
 								min="0"
-								placeholder="{m.legal_strong_ladybug_fade()}"
+								placeholder={m.legal_strong_ladybug_fade()}
 							/>
 						</td>
 					</tr>

@@ -59,8 +59,12 @@ export const actions = {
 					description: (data.get('manual_description') as string) || null,
 					uploader_id: (data.get('manual_uploader_id') as string) || null,
 					thumbnail_url: (data.get('manual_thumbnail_url') as string) || null,
-					work_width: data.get('manual_width') ? +(data.get('manual_width') as string) : null,
-					work_height: data.get('manual_height') ? +(data.get('manual_height') as string) : null,
+					work_width: data.get('manual_width')
+						? +(data.get('manual_width') as string)
+						: null,
+					work_height: data.get('manual_height')
+						? +(data.get('manual_height') as string)
+						: null,
 					work_duration: data.get('manual_duration')
 						? +(data.get('manual_duration') as string)
 						: null,

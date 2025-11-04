@@ -1,5 +1,6 @@
 import string
 import smtplib
+import logging
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
@@ -16,6 +17,8 @@ from otodb.account.models import Account, Invitation
 from otodb.models.enums import LanguageTypes
 
 from .common import Error, UserPreferencesSchema
+
+logger = logging.getLogger(__name__)
 
 auth_router = Router()
 
@@ -215,4 +218,4 @@ def send_reset_password_token(request, body: SendResetTokenRequestSchema):
 	except Account.DoesNotExist:
 		pass
 	except smtplib.SMTPException as e:
-		print('Could not send mail:', e)
+		logger.error('Could not send mail:', e)

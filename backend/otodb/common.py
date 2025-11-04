@@ -2,6 +2,7 @@ import requests
 import json
 import html
 import re
+import logging
 from time import mktime
 from datetime import datetime
 import unicodedata
@@ -20,6 +21,8 @@ from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 from django.conf import settings
 
 from .models.enums import Platform, MimeType
+
+logger = logging.getLogger(__name__)
 
 
 def NFKC(s: str):
@@ -221,12 +224,12 @@ def process_video_info(full_info, link=None):
 			content_type = response.headers.get('Content-Type')
 			info['thumbnail_mime'] = MimeType.from_str(content_type)
 		except Exception as e:
-			print(f'Error fetching thumbnail mime type: {e}')
+			logger.error(f'Error fetching thumbnail mime type: {e}')
 			info['thumbnail_mime'] = None
 
 		return {keys[key]: info[key] for key in keys if key in info}
 	except Exception as e:
-		print(f'Error processing video info: {e}')
+		logger.error(f'Error processing video info: {e}')
 		return None
 
 
@@ -250,7 +253,7 @@ def video_info(link):
 			info = process_video_info(full_info)
 			return info, full_info
 	except Exception as e:
-		print(f'Error extracting video info from {link}: {e}')
+		logger.error(f'Error extracting video info from {link}: {e}')
 		return None, None
 
 

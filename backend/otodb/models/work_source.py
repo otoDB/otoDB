@@ -147,16 +147,16 @@ class WorkSource(models.Model):
 
 	# Gets the source registered at the url if it exists, otherwise register as pending
 	@staticmethod
-	def from_url(url, user, is_reupload, info=None, full_info=None):
+	def from_url(url, user, is_reupload, info=None, full_info=None) -> tuple['WorkSource | None', dict | None]:
 		if info is None:
 			info, full_info = video_info(url)
 
 		if info is None:
 			print(f'Failed to get video info for URL: {url}')
-			return None
+			return None, None
 
 		if info['site'] is None:
-			return None
+			return None, None
 
 		try:
 			src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])

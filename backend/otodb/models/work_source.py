@@ -9,7 +9,7 @@ from .media import MediaWork
 import hashlib
 
 from otodb.account.models import Account
-from otodb.common import video_info, process_video_info
+from otodb.common import video_info, process_video_info, fetch_thumbnail_mime_type
 from otodb.storage_manager import storage_manager
 
 logger = logging.getLogger(__name__)
@@ -127,6 +127,8 @@ class WorkSource(models.Model):
 		self.save()
 
 	def save_thumbnail(self) -> bool:
+		if not self.thumbnail_mime and self.thumbnail_url:
+			self.thumbnail_mime = fetch_thumbnail_mime_type(self.thumbnail_url)
 		if not self.thumbnail_url or not self.thumbnail_mime:
 			return False
 		try:
@@ -179,7 +181,7 @@ class WorkSource(models.Model):
 		if info is None and metadata is not None:
 			parsed = parse_url_for_platform(url)
 			if parsed is None:
-				print(f'Failed to parse URL for platform: {url}')
+				logger.error(f'Failed to parse URL for platform: {url}')
 				return None, None
 
 			# Build minimal info from parsed URL and manual metadata
@@ -213,7 +215,7 @@ class WorkSource(models.Model):
 				'tags': [],
 			}
 		elif info is None:
-			print(f'Failed to get video info for URL: {url}')
+			logger.error(f'Failed to get video info for URL: {url}')
 			return None, None
 
 		if info['site'] is None:

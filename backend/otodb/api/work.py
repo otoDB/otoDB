@@ -341,7 +341,9 @@ def source_origin(request: HttpRequest, source_id: int, status: int):
 	src.save()
 
 
-@work_router.put('source_thumbnail_url', auth=django_auth)
+@work_router.put(
+	'source_thumbnail_url', auth=django_auth, response={200: None, 400: Error}
+)
 @user_is_editor
 def update_source_thumbnail_url(
 	request: HttpRequest, source_id: int, thumbnail_url: str

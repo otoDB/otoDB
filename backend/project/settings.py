@@ -131,7 +131,9 @@ if (
 	'OTODB_DB_BACKEND' in os.environ
 	and os.environ['OTODB_DB_BACKEND'] not in ALLOWED_DATABASE_BACKENDS
 ):
-	logger.critical(f'Database backend {os.environ["OTODB_DB_BACKEND"]} not allowed -- exiting')
+	logger.critical(
+		f'Database backend {os.environ["OTODB_DB_BACKEND"]} not allowed -- exiting'
+	)
 	exit(1)
 
 DATABASE_BACKEND = os.environ.get('OTODB_DB_BACKEND', 'sqlite3')

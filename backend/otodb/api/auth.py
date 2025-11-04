@@ -1,6 +1,9 @@
 import string
 import smtplib
+import logging
 from django.core.mail import send_mail
+
+logger = logging.getLogger(__name__)
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
@@ -215,4 +218,4 @@ def send_reset_password_token(request, body: SendResetTokenRequestSchema):
 	except Account.DoesNotExist:
 		pass
 	except smtplib.SMTPException as e:
-		print('Could not send mail:', e)
+		logger.error('Could not send mail:', e)

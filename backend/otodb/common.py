@@ -34,6 +34,10 @@ def clean_incoming_slug(s: str):
 	return slugify(clean_incoming_tag_name(s), True)
 
 
+class NiconicoIECustom(NiconicoIE):
+	# Support nico.ms short URLs
+	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/watch|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
+
 ydl_playlist = YoutubeDL(
 	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True
 )
@@ -62,7 +66,7 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		opts['cookiefile'] = cookie_file
 	ydl = YoutubeDL(opts, auto_init=False)
 
-	for e in (YoutubeIE, NiconicoIE, BiliBiliIE, SoundcloudIE):
+	for e in (YoutubeIE, NiconicoIECustom, BiliBiliIE, SoundcloudIE):
 		ydl.add_info_extractor(e)
 
 
@@ -232,8 +236,8 @@ def process_video_info(full_info, link=None):
 
 def video_info(link):
 	try:
-		if NiconicoIE.suitable(link):
-			full_info = get_niconico_geoblocked(NiconicoIE.get_temp_id(link))
+		if NiconicoIECustom.suitable(link):
+			full_info = get_niconico_geoblocked(NiconicoIECustom.get_temp_id(link))
 			if full_info:
 				info = process_video_info(full_info, link)
 				return info, full_info

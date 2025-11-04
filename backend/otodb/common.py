@@ -2,6 +2,7 @@ import requests
 import json
 import html
 import re
+import logging
 from time import mktime
 from datetime import datetime
 import unicodedata
@@ -21,6 +22,8 @@ from django.conf import settings
 
 from .models.enums import Platform, MimeType
 
+logger = logging.getLogger(__name__)
+
 
 def NFKC(s: str):
 	return unicodedata.normalize('NFKC', s)
@@ -32,6 +35,11 @@ def clean_incoming_tag_name(s: str):
 
 def clean_incoming_slug(s: str):
 	return slugify(clean_incoming_tag_name(s), True)
+
+
+class NiconicoIECustom(NiconicoIE):
+	# Support nico.ms short URLs
+	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/watch|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
 
 
 ydl_playlist = YoutubeDL(
@@ -62,7 +70,7 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		opts['cookiefile'] = cookie_file
 	ydl = YoutubeDL(opts, auto_init=False)
 
-	for e in (YoutubeIE, NiconicoIE, BiliBiliIE, SoundcloudIE):
+	for e in (YoutubeIE, NiconicoIECustom, BiliBiliIE, SoundcloudIE):
 		ydl.add_info_extractor(e)
 
 
@@ -219,14 +227,14 @@ def process_video_info(full_info, link=None):
 
 		return {keys[key]: info[key] for key in keys if key in info}
 	except Exception as e:
-		print(f'Error processing video info: {e}')
+		logger.error(f'Error processing video info: {e}')
 		return None
 
 
 def video_info(link):
 	try:
-		if NiconicoIE.suitable(link):
-			full_info = get_niconico_geoblocked(NiconicoIE.get_temp_id(link))
+		if NiconicoIECustom.suitable(link):
+			full_info = get_niconico_geoblocked(NiconicoIECustom.get_temp_id(link))
 			if full_info:
 				info = process_video_info(full_info, link)
 				return info, full_info
@@ -243,7 +251,7 @@ def video_info(link):
 			info = process_video_info(full_info)
 			return info, full_info
 	except Exception as e:
-		print(f'Error extracting video info from {link}: {e}')
+		logger.error(f'Error extracting video info from {link}: {e}')
 		return None, None
 
 

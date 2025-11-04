@@ -122,6 +122,8 @@ class MediaConnectionTypes(models.IntegerChoices):
 	VNDB = 40, 'vndb'
 	EROGAMESCAPE = 41, 'ErogameScape'
 
+	VGMDB = 50, 'VGMdb'
+
 
 class LanguageTypes(models.IntegerChoices):
 	NOT_APPLICABLE = 0, 'N/A'

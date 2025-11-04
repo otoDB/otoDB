@@ -1,4 +1,5 @@
 from datetime import date, datetime
+import logging
 from django.db import models
 from simple_history.models import HistoricalRecords, HistoricForeignKey
 import requests
@@ -10,6 +11,8 @@ import hashlib
 from otodb.account.models import Account
 from otodb.common import video_info, process_video_info
 from otodb.storage_manager import storage_manager
+
+logger = logging.getLogger(__name__)
 
 
 class ActiveManager(models.Manager):
@@ -116,7 +119,7 @@ class WorkSource(models.Model):
 						instance_imported_from_source=True
 					)
 		else:
-			print(
+			logger.error(
 				f'Failed to refresh WorkSource {self.pk} - {self.url}: No info found.'
 			)
 			self.work_status = WorkStatus.DOWN
@@ -141,15 +144,17 @@ class WorkSource(models.Model):
 				self.save(update_fields=['thumbnail_hash'])
 				return True
 			else:
-				print(f'Failed to upload thumbnail for WorkSource {self.pk}')
+				logger.error(f'Failed to upload thumbnail for WorkSource {self.pk}')
 				return False
 		except Exception as e:
-			print(f'Error uploading thumbnail for WorkSource {self.pk}: {e}')
+			logger.error(f'Error uploading thumbnail for WorkSource {self.pk}: {e}')
 			return False
 
 	# Gets the source registered at the url if it exists, otherwise register as pending
 	@staticmethod
-	def from_url(url, user, metadata=None, info=None, full_info=None):
+	def from_url(
+		url, user, metadata=None, info=None, full_info=None
+	) -> tuple['WorkSource | None', 'dict | None']:
 		"""
 		Gets or creates a WorkSource from a URL.
 

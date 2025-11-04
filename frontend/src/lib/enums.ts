@@ -229,7 +229,10 @@ export const MediaConnectionTypes = {
 	VNDB: 40,
 	40: 'vndb',
 	EROGAMESCAPE: 41,
-	41: 'ErogameScape'
+	41: 'ErogameScape',
+
+	VGMDB: 50,
+	50: 'VGMdb'
 };
 
 export const MediaConnectionLink = {
@@ -244,7 +247,8 @@ export const MediaConnectionLink = {
 	21: (id: string) => `https://letterboxd.com/film/${id}/`,
 	40: (id: string) => `https://vndb.org/${id}`,
 	41: (id: string) =>
-		`https://erogamescape.dyndns.org/~ap2/ero/toukei_kaiseki/game.php?game=${id}`
+		`https://erogamescape.dyndns.org/~ap2/ero/toukei_kaiseki/game.php?game=${id}`,
+	50: (id: string) => `https://vgmdb.net/product/${id}`
 };
 
 export const Role = {

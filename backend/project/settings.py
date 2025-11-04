@@ -11,11 +11,14 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import logging
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -38,7 +41,7 @@ if OTODB_SENTRY_DSN := os.environ.get('OTODB_SENTRY_DSN'):
 	)
 
 if not DEBUG and 'OTODB_SECRET_KEY' not in os.environ:
-	print('No secret key provided (OTODB_SECRET_KEY) -- exiting')
+	logger.critical('No secret key provided (OTODB_SECRET_KEY) -- exiting')
 	exit(1)
 
 SECRET_KEY = os.environ.get('OTODB_SECRET_KEY', '1145141919')
@@ -128,7 +131,9 @@ if (
 	'OTODB_DB_BACKEND' in os.environ
 	and os.environ['OTODB_DB_BACKEND'] not in ALLOWED_DATABASE_BACKENDS
 ):
-	print(f'Database backend {os.environ["OTODB_DB_BACKEND"]} not allowed -- exiting')
+	logger.critical(
+		f'Database backend {os.environ["OTODB_DB_BACKEND"]} not allowed -- exiting'
+	)
 	exit(1)
 
 DATABASE_BACKEND = os.environ.get('OTODB_DB_BACKEND', 'sqlite3')

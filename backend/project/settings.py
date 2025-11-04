@@ -27,6 +27,7 @@ if OTODB_SENTRY_DSN := os.environ.get('OTODB_SENTRY_DSN'):
 	sentry_sdk.init(
 		dsn=OTODB_SENTRY_DSN,
 		send_default_pii=False,  # May need to enable later
+		enable_logs=True,
 		traces_sample_rate=float(
 			os.environ.get('OTODB_SENTRY_TRACES_SAMPLE_RATE', '0.1')
 		),

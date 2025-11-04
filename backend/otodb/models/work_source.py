@@ -1,5 +1,6 @@
 from datetime import date, datetime
 import logging
+import contextlib
 from django.db import models
 from simple_history.models import HistoricalRecords, HistoricForeignKey
 import requests
@@ -173,7 +174,15 @@ class WorkSource(models.Model):
 
 		# Try to fetch info if not provided
 		if info is None:
-			info, full_info = video_info(url)
+			if metadata is not None:
+				# Unavailable source path
+				# Extraction failure likely expected, but we double-check
+				from yt_dlp.utils import DownloadError
+
+				with contextlib.suppress(DownloadError):
+					info, full_info = video_info(url)
+			else:
+				info, full_info = video_info(url)
 
 		# Handle unavailable sources
 		if info is None and metadata is not None:

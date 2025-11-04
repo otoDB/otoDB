@@ -2,8 +2,6 @@ import string
 import smtplib
 import logging
 from django.core.mail import send_mail
-
-logger = logging.getLogger(__name__)
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
@@ -19,6 +17,8 @@ from otodb.account.models import Account, Invitation
 from otodb.models.enums import LanguageTypes
 
 from .common import Error, UserPreferencesSchema
+
+logger = logging.getLogger(__name__)
 
 auth_router = Router()
 

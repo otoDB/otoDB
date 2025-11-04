@@ -326,8 +326,8 @@ def parse_url_for_platform(url: str):
 				'source_id': source_id,
 				'canonical_url': make_video_url[Platform.YOUTUBE](source_id),
 			}
-		elif NiconicoIE.suitable(url):
-			source_id = NiconicoIE.get_temp_id(url)
+		elif NiconicoIECustom.suitable(url):
+			source_id = NiconicoIECustom.get_temp_id(url)
 			return {
 				'platform': Platform.NICONICO,
 				'source_id': source_id,

@@ -13,6 +13,7 @@ from furl import furl
 import nh3
 
 from yt_dlp import YoutubeDL
+from yt_dlp.utils import DownloadError
 from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
 from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
@@ -250,6 +251,9 @@ def video_info(link):
 			full_info = ydl.extract_info(link, download=False)
 			info = process_video_info(full_info)
 			return info, full_info
+	except DownloadError as e:
+		logger.error(f'yt-dlp DownloadError extracting video info from {link}: {e}')
+		return None, None
 	except Exception as e:
 		logger.error(f'Error extracting video info from {link}: {e}')
 		return None, None

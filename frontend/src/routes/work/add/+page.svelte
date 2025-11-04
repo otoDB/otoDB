@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { Rating, UserLevel } from '$lib/enums';
+	import { Rating, UserLevel, Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
@@ -32,10 +32,9 @@
 >
 	<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 	<ul>
-		<li>YouTube</li>
-		<li>Niconico</li>
-		<li>Bilibili</li>
-		<li>SoundCloud</li>
+		{#each Platform.slice(1) as platform}
+			<li>{platform}</li>
+		{/each}
 	</ul>
 	<form method="POST" use:enhance class="mt-4">
 		<table>

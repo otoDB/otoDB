@@ -14,10 +14,12 @@ import nh3
 
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
+from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
 from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
+from yt_dlp.extractor.twitter import TwitterIE
 
 from django.conf import settings
 
@@ -71,16 +73,20 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		opts['cookiefile'] = cookie_file
 	ydl = YoutubeDL(opts, auto_init=False)
 
-	for e in (YoutubeIE, NiconicoIECustom, BiliBiliIE, SoundcloudIE):
+	for e in (YoutubeIE, NiconicoIECustom, BiliBiliIE, SoundcloudIE, TwitterIE):
 		ydl.add_info_extractor(e)
 
 
 reset_cookies()
 
 make_video_url = {
-	Platform.YOUTUBE: lambda s: f'https://youtube.com/watch?v={s}',
-	Platform.NICONICO: lambda s: f'https://nicovideo.jp/watch/{s}',
-	Platform.BILIBILI: lambda s: f'https://www.bilibili.com/video/{s}/',
+	Platform.YOUTUBE: lambda s, uid=None: f'https://youtube.com/watch?v={s}',
+	Platform.NICONICO: lambda s, uid=None: f'https://nicovideo.jp/watch/{s}',
+	Platform.BILIBILI: lambda s, uid=None: f'https://www.bilibili.com/video/{s}/',
+	Platform.SOUNDCLOUD: lambda s, uid=None: s,  # TODO
+	Platform.TWITTER: lambda s, uid=None: f'https://twitter.com/{uid}/status/{s}'
+	if uid
+	else f'https://twitter.com/i/status/{s}',
 }
 
 niconico_meta_re = re.compile(
@@ -183,7 +189,12 @@ def process_video_info(full_info, link=None):
 
 		info['extractor'] = Platform.from_str(info['extractor'])
 		if info['extractor'] in make_video_url:
-			info['webpage_url'] = make_video_url[info['extractor']](info['id'])
+			info['webpage_url'] = make_video_url[info['extractor']](
+				info['id'],
+				uid=info.get('uploader_id')
+				if info['extractor'] == Platform.TWITTER
+				else None,
+			)
 
 		# Platform-specific processing
 		match info['extractor']:
@@ -207,6 +218,9 @@ def process_video_info(full_info, link=None):
 				pass  # webpage_url already set
 			case Platform.SOUNDCLOUD:
 				pass  # TODO
+			case Platform.TWITTER:
+				info['id'] = info['display_id']
+				info['title'] = None
 			case _:
 				return None
 
@@ -326,38 +340,28 @@ def parse_url_for_platform(url: str):
 	Returns:
 	    Dict with 'platform', 'source_id', 'canonical_url', or None if URL is invalid/unsupported
 	"""
+	platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
+		(Platform.YOUTUBE, YoutubeIE),
+		(Platform.NICONICO, NiconicoIECustom),
+		(Platform.BILIBILI, BiliBiliIE),
+		(Platform.SOUNDCLOUD, SoundcloudIE),
+		(Platform.TWITTER, TwitterIE),
+	]  # type: ignore
+
 	try:
-		# Check each supported platform
-		if YoutubeIE.suitable(url):
-			source_id = YoutubeIE.get_temp_id(url)
-			return {
-				'platform': Platform.YOUTUBE,
-				'source_id': source_id,
-				'canonical_url': make_video_url[Platform.YOUTUBE](source_id),
-			}
-		elif NiconicoIECustom.suitable(url):
-			source_id = NiconicoIECustom.get_temp_id(url)
-			return {
-				'platform': Platform.NICONICO,
-				'source_id': source_id,
-				'canonical_url': make_video_url[Platform.NICONICO](source_id),
-			}
-		elif BiliBiliIE.suitable(url):
-			source_id = _clean_bilibili_source_id(BiliBiliIE.get_temp_id(url))
-			return {
-				'platform': Platform.BILIBILI,
-				'source_id': source_id,
-				'canonical_url': make_video_url[Platform.BILIBILI](source_id),
-			}
-		elif SoundcloudIE.suitable(url):
-			source_id = SoundcloudIE.get_temp_id(url)
-			return {
-				'platform': Platform.SOUNDCLOUD,
-				'source_id': source_id,
-				'canonical_url': url,  # TODO
-			}
-		else:
-			return None
+		for platform, extractor in platform_extractors:
+			if extractor.suitable(url):
+				source_id = extractor.get_temp_id(url)
+				if platform == Platform.BILIBILI:
+					source_id = _clean_bilibili_source_id(source_id)
+
+				return {
+					'platform': platform,
+					'source_id': source_id,
+					'canonical_url': make_video_url[platform](source_id),
+				}
+
+		return None
 	except Exception as e:
 		logger.error(f'Error parsing URL {url}: {e}')
 		return None

@@ -1481,7 +1481,7 @@ export interface components {
             /** Thumbnail */
             thumbnail?: string | null;
             /** Title */
-            title: string;
+            title?: string | null;
         };
         /** RelationSchema */
         RelationSchema: {
@@ -1499,7 +1499,7 @@ export interface components {
             /** Thumbnail */
             thumbnail?: string | null;
             /** Title */
-            title: string;
+            title?: string | null;
         };
         /** TagWorkInstanceSchema */
         TagWorkInstanceSchema: {
@@ -1537,7 +1537,7 @@ export interface components {
                 components["schemas"]["SlimWorkSchema"][]
             ];
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -1551,7 +1551,7 @@ export interface components {
         /** WorkEditSchema */
         WorkEditSchema: {
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /** Thumbnail Source */
@@ -1632,20 +1632,10 @@ export interface components {
             source_id: string;
         };
         /**
-         * SourceMetadata
-         * @description Metadata for source creation - includes behavioral flags and manual metadata fields
+         * WorkSourceMetadataSchema
+         * @description Manual metadata for unavailable sources - matches WorkSource model fields
          */
-        SourceMetadata: {
-            /**
-             * Allow Dead
-             * @default false
-             */
-            allow_dead: boolean;
-            /**
-             * Is Reupload
-             * @default false
-             */
-            is_reupload: boolean;
+        WorkSourceMetadataSchema: {
             /** Title */
             title?: string | null;
             /** Description */
@@ -2809,6 +2799,7 @@ export interface operations {
         parameters: {
             query: {
                 url: string;
+                is_reupload: boolean;
                 rating?: number;
                 work_id?: number | null;
                 original_url?: string | null;
@@ -2817,9 +2808,9 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
-                "application/json": components["schemas"]["SourceMetadata"];
+                "application/json": components["schemas"]["WorkSourceMetadataSchema"] | null;
             };
         };
         responses: {

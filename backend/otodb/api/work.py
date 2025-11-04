@@ -48,9 +48,9 @@ from .common import (
 	WorkSchema,
 	ThinWorkSchema,
 	WorkSourceSchema,
+	WorkSourceMetadataSchema,
 	Error,
 	TagWorkSchema,
-	SourceMetadata,
 	user_is_trusted,
 	user_is_editor,
 	RelationSchema,
@@ -390,10 +390,11 @@ def update_work(
 def new_source_from_url(
 	request: HttpRequest,
 	url: str,
-	metadata: SourceMetadata,
+	is_reupload: bool,
 	rating: int = 0,
 	work_id: int | None = None,
 	original_url: str | None = None,
+	metadata: WorkSourceMetadataSchema | None = None,
 ):
 	"""Creates a new source and, for editors, performs auto-validation as well as Work creation
 
@@ -415,17 +416,20 @@ def new_source_from_url(
 
 	is_editor = request.user.level >= Account.Levels.EDITOR
 
-	# Check permission for allow_dead flag
-	if metadata.allow_dead and not is_editor:
-		return 403, {'message': 'Only editors can add dead/unavailable sources'}
+	# Check permission for metadata (unavailable sources)
+	if metadata is not None and not is_editor:
+		return 403, {'message': 'Only editors can add unavailable sources'}
 
 	# === Source retrieval, common to all flows ===
 
-	src, info = WorkSource.from_url(url, user=request.user, metadata=metadata)
+	metadata_dict = metadata.dict() if metadata else None
+	src, info = WorkSource.from_url(
+		url, user=request.user, is_reupload=is_reupload, metadata=metadata_dict
+	)
 
 	original_src, original_info = (
 		WorkSource.from_url(
-			original_url, user=request.user, metadata=SourceMetadata(is_reupload=False)
+			original_url, user=request.user, is_reupload=False, metadata=metadata_dict
 		)
 		if original_url
 		else (None, None)
@@ -476,8 +480,8 @@ def new_source_from_url(
 		if work.rating != rating:
 			work.rating = rating
 			work.save(update_fields=['rating'])
-		if src.work_origin != WorkOrigin(metadata.is_reupload):
-			src.work_origin = WorkOrigin(metadata.is_reupload)
+		if src.work_origin != WorkOrigin(is_reupload):
+			src.work_origin = WorkOrigin(is_reupload)
 			src.save(update_fields=['work_origin'])
 		if original_src and original_src.work_origin != WorkOrigin.AUTHOR:
 			original_src.work_origin = WorkOrigin.AUTHOR

@@ -70,11 +70,12 @@ def upload_src(work_client):
 		work_id: int | None = None,
 		has_original: bool = False,
 		user=None,
-		allow_dead: bool = False,
+		metadata: dict | None = None,
 	):
 		# Query parameters
 		query_params = {
 			'url': 'https://youtu.be/fakeUrl',
+			'is_reupload': is_reupload,
 		}
 		if rating is not None:
 			query_params['rating'] = rating
@@ -83,16 +84,11 @@ def upload_src(work_client):
 		if has_original:
 			query_params['original_url'] = 'https://youtu.be/fakeUrl'
 
-		# Request body with metadata
-		metadata = {
-			'is_reupload': is_reupload,
-			'allow_dead': allow_dead,
-		}
-
+		# Request body with metadata (only if provided)
 		return work_client.post(
 			'/source?' + urlencode(query_params),
-			data=json.dumps(metadata),
-			content_type='application/json',
+			data=json.dumps(metadata) if metadata else None,
+			content_type='application/json' if metadata else None,
 			user=user,
 		)
 

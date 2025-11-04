@@ -153,7 +153,7 @@ class WorkSource(models.Model):
 	# Gets the source registered at the url if it exists, otherwise register as pending
 	@staticmethod
 	def from_url(
-		url, user, metadata=None, info=None, full_info=None
+		url, user, is_reupload, metadata=None, info=None, full_info=None
 	) -> tuple['WorkSource | None', 'dict | None']:
 		"""
 		Gets or creates a WorkSource from a URL.
@@ -161,7 +161,8 @@ class WorkSource(models.Model):
 		Args:
 		    url: The URL to fetch
 		    user: The user adding the source
-		    metadata: Optional metadata dict/object with behavioral flags and manual metadata
+		    is_reupload: Whether this is a reupload (not by original author)
+		    metadata: Optional metadata dict for unavailable sources (editors only)
 		    info: Optional pre-fetched info dict (for optimization)
 		    full_info: Optional pre-fetched full info dict (for optimization)
 
@@ -170,16 +171,12 @@ class WorkSource(models.Model):
 		"""
 		from otodb.common import video_info, parse_url_for_platform
 
-		# Extract flags from metadata with safe defaults
-		is_reupload = getattr(metadata, 'is_reupload', False) if metadata else False
-		allow_dead = getattr(metadata, 'allow_dead', False) if metadata else False
-
 		# Try to fetch info if not provided
 		if info is None:
 			info, full_info = video_info(url)
 
-		# Handle dead sources when allow_dead is True
-		if info is None and allow_dead:
+		# Handle unavailable sources
+		if info is None and metadata is not None:
 			parsed = parse_url_for_platform(url)
 			if parsed is None:
 				print(f'Failed to parse URL for platform: {url}')
@@ -188,12 +185,8 @@ class WorkSource(models.Model):
 			# Build minimal info from parsed URL and manual metadata
 			from otodb.common import fetch_thumbnail_mime_type
 
-			published_date = (
-				getattr(metadata, 'published_date', None) if metadata else None
-			)
-			thumbnail_url = (
-				getattr(metadata, 'thumbnail_url', None) if metadata else None
-			)
+			published_date = metadata.get('published_date') if metadata else None
+			thumbnail_url = metadata.get('thumbnail_url') if metadata else None
 
 			# Fetch thumbnail mime type if URL is provided
 			thumb_mime = (
@@ -204,30 +197,19 @@ class WorkSource(models.Model):
 				'site': parsed['platform'],
 				'id': parsed['source_id'],
 				'url': parsed['canonical_url'],
-				'title': getattr(metadata, 'title', None) if metadata else None,
-				'description': (
-					getattr(metadata, 'description', None) if metadata else None
-				)
-				or '',
+				'title': metadata.get('title') if metadata else None,
+				'description': metadata.get('description') if metadata else '',
 				'timestamp': datetime.combine(
 					published_date, datetime.min.time()
 				).timestamp()
 				if published_date
 				else None,
-				'uploader_id': getattr(metadata, 'uploader_id', None)
-				if metadata
-				else None,
+				'uploader_id': metadata.get('uploader_id') if metadata else None,
 				'thumb': thumbnail_url,
 				'thumb_mime': thumb_mime,
-				'work_width': getattr(metadata, 'work_width', None)
-				if metadata
-				else None,
-				'work_height': getattr(metadata, 'work_height', None)
-				if metadata
-				else None,
-				'work_duration': getattr(metadata, 'work_duration', None)
-				if metadata
-				else None,
+				'work_width': metadata.get('work_width') if metadata else None,
+				'work_height': metadata.get('work_height') if metadata else None,
+				'work_duration': metadata.get('work_duration') if metadata else None,
 				'tags': [],
 			}
 		elif info is None:
@@ -253,7 +235,9 @@ class WorkSource(models.Model):
 					date.fromtimestamp(info['timestamp']) if info['timestamp'] else None
 				),
 				work_origin=WorkOrigin(is_reupload),
-				work_status=WorkStatus.DOWN if allow_dead else WorkStatus.AVAILABLE,
+				work_status=WorkStatus.DOWN
+				if metadata is not None
+				else WorkStatus.AVAILABLE,
 				thumbnail_url=info.get('thumb'),
 				thumbnail_mime=info.get('thumb_mime'),
 				work_width=info.get('work_width'),

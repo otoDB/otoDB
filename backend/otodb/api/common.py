@@ -28,14 +28,9 @@ class Error(Schema):
 	message: str
 
 
-class SourceMetadata(Schema):
-	"""Metadata for source creation - includes behavioral flags and manual metadata fields"""
+class WorkSourceMetadataSchema(Schema):
+	"""Manual WorkSource metadata input"""
 
-	# Behavioral flags
-	allow_dead: bool = False
-	is_reupload: bool = False
-
-	# Manual metadata (for dead sources or overrides)
 	title: str | None = None
 	description: str | None = None
 	uploader_id: str | None = None

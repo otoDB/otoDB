@@ -8,7 +8,7 @@
 
 	let { data, form }: PageProps = $props();
 	let isOriginal = $derived(!!(form?.origin ?? !data.title));
-	let allowDead = $state(false);
+	let isUnavailable = $state(false);
 
 	$effect(() => {
 		if (form?.failed) {
@@ -83,16 +83,18 @@
 				{/if}
 				{#if data.user?.level >= UserLevel.EDITOR}
 					<tr>
-						<th></th>
-						<td>
-							<label>
-								<input type="checkbox" name="allow_dead" bind:checked={allowDead} />
-								{m.that_large_mare_ascend()}
-							</label>
+						<th class="w-min whitespace-nowrap">
+							<label for="isUnavailable">{m.that_large_mare_ascend()}</label>
+						</th>
+						<td class="w-full">
+							<select id="isUnavailable" bind:value={isUnavailable}>
+								<option value={false}>{m.great_lucky_goldfish_sail()}</option>
+								<option value={true}>{m.broad_large_squid_zoom()}</option>
+							</select>
 						</td>
 					</tr>
 				{/if}
-				{#if allowDead}
+				{#if isUnavailable}
 					<tr>
 						<th><label for="manual_title">{m.large_factual_octopus_exhale()}</label></th
 						>
@@ -127,12 +129,24 @@
 						<td><input type="url" name="manual_thumbnail_url" class="w-full" /></td>
 					</tr>
 					<tr>
-						<th><label for="manual_width">{m.home_yummy_eel_scold()}</label></th>
-						<td><input type="number" name="manual_width" min="0" /></td>
-					</tr>
-					<tr>
-						<th><label for="manual_height">{m.legal_strong_ladybug_fade()}</label></th>
-						<td><input type="number" name="manual_height" min="0" /></td>
+						<th><label for="manual_width">{m.big_dry_seahorse_succeed()}</label></th>
+						<td>
+							<input
+								type="number"
+								id="manual_width"
+								name="manual_width"
+								min="0"
+								placeholder="{m.home_yummy_eel_scold()}"
+							/>
+							x
+							<input
+								type="number"
+								id="manual_height"
+								name="manual_height"
+								min="0"
+								placeholder="{m.legal_strong_ladybug_fade()}"
+							/>
+						</td>
 					</tr>
 					<tr>
 						<th><label for="manual_duration">{m.nice_tense_mule_grasp()}</label></th>

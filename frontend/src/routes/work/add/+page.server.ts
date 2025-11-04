@@ -40,22 +40,34 @@ export const actions = {
 			rating = data.get('rating');
 		const work = url.searchParams.get('for_work');
 
-		// Build metadata object
-		const allow_dead = data.get('allow_dead') === 'on';
-		const metadata = {
-			allow_dead,
-			is_reupload: !is_official,
-			title: (data.get('manual_title') as string) || null,
-			description: (data.get('manual_description') as string) || null,
-			uploader_id: (data.get('manual_uploader_id') as string) || null,
-			thumbnail_url: (data.get('manual_thumbnail_url') as string) || null,
-			work_width: data.get('manual_width') ? +(data.get('manual_width') as string) : null,
-			work_height: data.get('manual_height') ? +(data.get('manual_height') as string) : null,
-			work_duration: data.get('manual_duration')
-				? +(data.get('manual_duration') as string)
-				: null,
-			published_date: (data.get('manual_date') as string) || null
-		};
+		// Build metadata object only if user is editor AND manual fields provided
+		let metadata: Record<string, any> | undefined = undefined;
+		if (locals.user?.level >= UserLevel.EDITOR) {
+			const hasManualData =
+				data.get('manual_title') ||
+				data.get('manual_description') ||
+				data.get('manual_uploader_id') ||
+				data.get('manual_thumbnail_url') ||
+				data.get('manual_width') ||
+				data.get('manual_height') ||
+				data.get('manual_duration') ||
+				data.get('manual_date');
+
+			if (hasManualData) {
+				metadata = {
+					title: (data.get('manual_title') as string) || null,
+					description: (data.get('manual_description') as string) || null,
+					uploader_id: (data.get('manual_uploader_id') as string) || null,
+					thumbnail_url: (data.get('manual_thumbnail_url') as string) || null,
+					work_width: data.get('manual_width') ? +(data.get('manual_width') as string) : null,
+					work_height: data.get('manual_height') ? +(data.get('manual_height') as string) : null,
+					work_duration: data.get('manual_duration')
+						? +(data.get('manual_duration') as string)
+						: null,
+					published_date: (data.get('manual_date') as string) || null
+				};
+			}
+		}
 
 		const {
 			data: work_id,
@@ -66,6 +78,7 @@ export const actions = {
 			params: {
 				query: {
 					url: link,
+					is_reupload: !is_official,
 					work_id: work ? +work : undefined,
 					rating: rating ? +rating : undefined,
 					original_url: (original_url as string) || undefined

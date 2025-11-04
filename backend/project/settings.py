@@ -21,6 +21,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = os.environ.get('OTODB_DEBUG', 'False').lower() == 'true'
 
+if OTODB_SENTRY_DSN := os.environ.get('OTODB_SENTRY_DSN'):
+	import sentry_sdk
+
+	sentry_sdk.init(
+		dsn=OTODB_SENTRY_DSN,
+		send_default_pii=False,  # May need to enable later
+		traces_sample_rate=float(
+			os.environ.get('OTODB_SENTRY_TRACES_SAMPLE_RATE', '0.1')
+		),
+		profiles_sample_rate=float(
+			os.environ.get('OTODB_SENTRY_PROFILES_SAMPLE_RATE', '0.1')
+		),
+		release=os.environ.get('OTODB_HASH', 'unknown'),
+	)
+
 if not DEBUG and 'OTODB_SECRET_KEY' not in os.environ:
 	print('No secret key provided (OTODB_SECRET_KEY) -- exiting')
 	exit(1)

@@ -232,7 +232,7 @@ def process_video_info(full_info, link=None):
 		return None
 
 
-def video_info(link):
+def video_info(link, expected_unavailable=False):
 	try:
 		if NiconicoIECustom.suitable(link):
 			full_info = get_niconico_geoblocked(NiconicoIECustom.get_temp_id(link))
@@ -252,7 +252,12 @@ def video_info(link):
 			info = process_video_info(full_info)
 			return info, full_info
 	except DownloadError as e:
-		logger.error(f'yt-dlp DownloadError extracting video info from {link}: {e}')
+		if expected_unavailable:
+			logger.info(
+				f'yt-dlp (expected) DownloadError extracting video info from {link}: {e}'
+			)
+		else:
+			logger.error(f'yt-dlp DownloadError extracting video info from {link}: {e}')
 		return None, None
 	except Exception as e:
 		logger.error(f'Error extracting video info from {link}: {e}')

@@ -1,8 +1,11 @@
 import re
+import logging
 import boto3
 from django.conf import settings
 from pathlib import Path
 from io import BytesIO
+
+logger = logging.getLogger(__name__)
 
 
 class StorageManager:
@@ -41,7 +44,7 @@ class StorageManager:
 		Upload file to CDN or save locally as fallback.
 		"""
 		if self._is_url(file_path):
-			print(f'Bypassing storage for URL: {file_path}')
+			logger.debug(f'Bypassing storage for URL: {file_path}')
 			return file_path
 
 		if self.cdn_enabled:
@@ -53,14 +56,14 @@ class StorageManager:
 				)
 				return file_path
 			except Exception as e:
-				print(f'CDN upload failed: {e}')
+				logger.error(f'CDN upload failed: {e}')
 		else:
 			return self._save_local(file_content, file_path)
 
 	def _save_local(self, file_content: bytes, file_path: str) -> str | None:
 		"""Save file to local storage as fallback"""
 		if self._is_url(file_path):
-			print(f'Bypassing local save for URL: {file_path}')
+			logger.debug(f'Bypassing local save for URL: {file_path}')
 			return file_path
 
 		local_path = self.media_path / file_path.lstrip('/')
@@ -76,7 +79,7 @@ class StorageManager:
 		Delete file from CDN or local storage.
 		"""
 		if self._is_url(file_path):
-			print(f'Bypassing deletion for URL: {file_path}')
+			logger.debug(f'Bypassing deletion for URL: {file_path}')
 			return True
 
 		if self.cdn_enabled:
@@ -87,7 +90,7 @@ class StorageManager:
 				)
 				return True
 			except Exception as e:
-				print(f'CDN deletion failed: {e}')
+				logger.error(f'CDN deletion failed: {e}')
 		else:
 			try:
 				local_path = self.media_path / file_path.lstrip('/')
@@ -95,7 +98,7 @@ class StorageManager:
 					local_path.unlink()
 					return True
 			except Exception as e:
-				print(f'Local deletion failed: {e}')
+				logger.error(f'Local deletion failed: {e}')
 
 		return False
 
@@ -104,7 +107,7 @@ class StorageManager:
 		Read file content from CDN or local storage.
 		"""
 		if self._is_url(file_path):
-			print(f'Cannot read URL directly: {file_path}')
+			logger.warning(f'Cannot read URL directly: {file_path}')
 			return None
 
 		if self.cdn_enabled:
@@ -115,7 +118,7 @@ class StorageManager:
 				)
 				return response['Body'].read()
 			except Exception as e:
-				print(f'CDN read failed: {e}')
+				logger.warning(f'CDN read failed: {e}')
 		else:
 			try:
 				local_path = self.media_path / file_path.lstrip('/')
@@ -123,7 +126,7 @@ class StorageManager:
 					with open(local_path, 'rb') as f:
 						return f.read()
 			except Exception as e:
-				print(f'Local read failed: {e}')
+				logger.error(f'Local read failed: {e}')
 
 		return None
 
@@ -132,7 +135,7 @@ class StorageManager:
 		Check if file exists in CDN or local storage.
 		"""
 		if self._is_url(file_path):
-			print(f'Bypassing existence check for URL: {file_path}')
+			logger.debug(f'Bypassing existence check for URL: {file_path}')
 			return True
 
 		if self.cdn_enabled:
@@ -143,7 +146,7 @@ class StorageManager:
 				)
 				return True
 			except Exception as e:
-				print(f'CDN existence check failed: {e}')
+				logger.debug(f'CDN existence check failed: {e}')
 		else:
 			local_path = self.media_path / file_path.lstrip('/')
 			return local_path.exists()

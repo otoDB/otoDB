@@ -26,18 +26,37 @@
 	--otodb-color-bg-primary: rgb(245, 248, 255);
 	--otodb-color-bg-faint: rgb(235, 242, 255);
 	--otodb-color-bg-fainter: rgb(220, 235, 255);
+
 	> div.bg-marker:first-child {
-		background-image:
-			linear-gradient(rgba(250, 250, 252, 0.25), rgba(250, 250, 252, 0.25)),
-			url('/otogroove-bg.png'),
-			linear-gradient(rgba(250, 250, 252, 0.75), rgba(250, 250, 252, 0.75)),
-			url('/otogroove-right.png');
-		background-position:
-			10px 10px,
-			10px 10px,
-			right -20px,
-			right -20px;
-		background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
-		background-size: auto, auto, min(100vw, 845px), min(100vw, 845px);
+		&::before {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image: url('/otogroove-bg.png');
+			background-position: 10px 10px;
+			background-repeat: no-repeat;
+			background-size: auto;
+			opacity: 0.75;
+			pointer-events: none;
+			z-index: -1;
+		}
+		&::after {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image: url('/otogroove-right.png');
+			background-position: right -20px;
+			background-repeat: no-repeat;
+			background-size: min(100vw, 845px);
+			opacity: 0.25;
+			pointer-events: none;
+			z-index: -1;
+		}
 	}
 }

@@ -48,6 +48,7 @@ from .common import (
 	WorkSchema,
 	ThinWorkSchema,
 	WorkSourceSchema,
+	WorkSourceMetadataSchema,
 	Error,
 	TagWorkSchema,
 	user_is_trusted,
@@ -323,6 +324,19 @@ def source_origin(request: HttpRequest, source_id: int, status: int):
 	src.save()
 
 
+@work_router.put('source_thumbnail_url', auth=django_auth)
+@user_is_editor
+def update_source_thumbnail_url(
+	request: HttpRequest, source_id: int, thumbnail_url: str
+):
+	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src.thumbnail_url = thumbnail_url
+	saved_thumbnail = src.save_thumbnail()
+	if not saved_thumbnail:
+		return 400, {'message': 'Failed to save thumbnail from the provided URL'}
+	src.save()
+
+
 @work_router.post('refresh_source', auth=django_auth)
 def refresh_source(request: HttpRequest, source_id: int):
 	src = get_object_or_404(WorkSource.active_objects, id=source_id)
@@ -380,6 +394,7 @@ def new_source_from_url(
 	rating: int = 0,
 	work_id: int | None = None,
 	original_url: str | None = None,
+	metadata: WorkSourceMetadataSchema | None = None,
 ):
 	"""Creates a new source and, for editors, performs auto-validation as well as Work creation
 
@@ -401,12 +416,21 @@ def new_source_from_url(
 
 	is_editor = request.user.level >= Account.Levels.EDITOR
 
+	# Check permission for metadata (unavailable sources)
+	if metadata is not None and not is_editor:
+		return 403, {'message': 'Only editors can add unavailable sources'}
+
 	# === Source retrieval, common to all flows ===
 
-	src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
+	metadata_dict = metadata.dict() if metadata else None
+	src, info = WorkSource.from_url(
+		url, user=request.user, is_reupload=is_reupload, metadata=metadata_dict
+	)
 
 	original_src, original_info = (
-		WorkSource.from_url(original_url, user=request.user, is_reupload=False)
+		WorkSource.from_url(
+			original_url, user=request.user, is_reupload=False, metadata=metadata_dict
+		)
 		if original_url
 		else (None, None)
 	)
@@ -475,6 +499,28 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 	"""
 
 	if not src.media:
+		# Build creator connections query only if we have uploader_id
+		creator_tags = []
+		if src.work_origin == WorkOrigin.AUTHOR and info.get('uploader_id'):
+			if src.platform == Platform.YOUTUBE and info.get('channel_id'):
+				creator_tags = TagWork.objects.filter(
+					id__in=TagWorkCreatorConnection.objects.filter(
+						site=ProfileConnectionTypes.YOUTUBE
+					)
+					.filter(
+						Q(content_id=info['uploader_id'])
+						| Q(content_id='channel/' + info['channel_id'])
+					)
+					.values('tag_id')
+				)
+			else:
+				creator_tags = TagWork.objects.filter(
+					id__in=TagWorkCreatorConnection.objects.filter(
+						site=ProfileConnectionTypes[Platform(src.platform).name],
+						content_id=info['uploader_id'],
+					).values('tag_id')
+				)
+
 		work.tags.add(
 			*info.get('tags', []),
 			*TagWork.objects.filter(
@@ -484,25 +530,7 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 					bulk__status=Status.APPROVED,
 				).values('B_id')
 			),
-			*(
-				TagWork.objects.filter(
-					id__in=(
-						TagWorkCreatorConnection.objects.filter(
-							site=ProfileConnectionTypes.YOUTUBE
-						).filter(
-							Q(content_id=info['uploader_id'])
-							| Q(content_id='channel/' + info['channel_id'])
-						)
-						if src.platform == Platform.YOUTUBE
-						else TagWorkCreatorConnection.objects.filter(
-							site=ProfileConnectionTypes[Platform(src.platform).name],
-							content_id=info['uploader_id'],
-						)
-					).values('tag_id')
-				)
-				if src.work_origin == WorkOrigin.AUTHOR
-				else []
-			),
+			*creator_tags,
 		)
 		tags = TagWork.objects.filter(name__in=info.get('tags', []))
 		work.tagworkinstance_set.filter(work_tag__in=tags).update(

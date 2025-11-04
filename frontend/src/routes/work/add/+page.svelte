@@ -32,7 +32,7 @@
 >
 	<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 	<ul>
-		{#each Platform.slice(1) as platform}
+		{#each Platform.slice(1) as platform, i (i)}
 			<li>{platform}</li>
 		{/each}
 	</ul>

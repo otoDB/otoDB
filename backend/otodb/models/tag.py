@@ -97,6 +97,9 @@ class TagWork(OtodbTagModel):
 		tagworklangpreference_set: QuerySet['TagWorkLangPreference']
 		aliases: QuerySet['TagWork']
 		mediasong: 'MediaSong | None'
+		childhood: QuerySet['TagWorkParenthood']
+		parenthood: QuerySet['TagWorkParenthood']
+		wikipage_set: QuerySet['WikiPage']
 
 	class TagMeta:
 		protect_all = True

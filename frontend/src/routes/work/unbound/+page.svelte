@@ -91,7 +91,7 @@
 						<td>
 							<h3>
 								<a href={src.url} target="_blank" rel="noopener noreferrer"
-									>{src.title}</a
+									>{src.title || src.url}</a
 								>
 							</h3>
 							<h4>
@@ -117,7 +117,7 @@
 							<a href={src.url} target="_blank" rel="noopener noreferrer"
 								><img
 									src={src.thumbnail}
-									alt={src.title}
+									alt={src.title || src.url}
 									class="float-right clear-both w-50"
 								/></a
 							>

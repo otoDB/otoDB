@@ -284,7 +284,7 @@
 							{Platform[src.platform]}
 							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
 							-
-							{src.title}
+							{src.title || src.url}
 						</a>
 					</strong>
 				</div>
@@ -294,7 +294,11 @@
 						{m.super_agent_pigeon_aim()}:
 						<strong>
 							<date>
-								{src.published_date}
+								{#if src.published_date}
+									{src.published_date}
+								{:else}
+									{m.simple_less_marlin_enchant()}
+								{/if}
 							</date>
 						</strong>
 					</div>

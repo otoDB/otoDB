@@ -382,6 +382,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/source_thumbnail_url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Source Thumbnail Url */
+        put: operations["otodb_api_work_update_source_thumbnail_url"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/refresh_source": {
         parameters: {
             query?: never;
@@ -1464,7 +1481,7 @@ export interface components {
             /** Thumbnail */
             thumbnail?: string | null;
             /** Title */
-            title: string;
+            title?: string | null;
         };
         /** RelationSchema */
         RelationSchema: {
@@ -1482,7 +1499,7 @@ export interface components {
             /** Thumbnail */
             thumbnail?: string | null;
             /** Title */
-            title: string;
+            title?: string | null;
         };
         /** TagWorkInstanceSchema */
         TagWorkInstanceSchema: {
@@ -1520,7 +1537,7 @@ export interface components {
                 components["schemas"]["SlimWorkSchema"][]
             ];
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -1534,7 +1551,7 @@ export interface components {
         /** WorkEditSchema */
         WorkEditSchema: {
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /** Thumbnail Source */
@@ -1589,11 +1606,8 @@ export interface components {
             platform: number;
             /** Url */
             url: string;
-            /**
-             * Published Date
-             * Format: date
-             */
-            published_date: string;
+            /** Published Date */
+            published_date?: string | null;
             /** Work Width */
             work_width?: number | null;
             /** Work Height */
@@ -1616,6 +1630,28 @@ export interface components {
             work_status: number;
             /** Source Id */
             source_id: string;
+        };
+        /**
+         * WorkSourceMetadataSchema
+         * @description Manual metadata for unavailable sources - matches WorkSource model fields
+         */
+        WorkSourceMetadataSchema: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Uploader Id */
+            uploader_id?: string | null;
+            /** Thumbnail Url */
+            thumbnail_url?: string | null;
+            /** Work Width */
+            work_width?: number | null;
+            /** Work Height */
+            work_height?: number | null;
+            /** Work Duration */
+            work_duration?: number | null;
+            /** Published Date */
+            published_date?: string | null;
         };
         /** ListSchema */
         ListSchema: {
@@ -1666,11 +1702,8 @@ export interface components {
             platform: number;
             /** Url */
             url: string;
-            /**
-             * Published Date
-             * Format: date
-             */
-            published_date: string;
+            /** Published Date */
+            published_date?: string | null;
             /** Work Width */
             work_width?: number | null;
             /** Work Height */
@@ -2696,6 +2729,27 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_update_source_thumbnail_url: {
+        parameters: {
+            query: {
+                source_id: number;
+                thumbnail_url: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_work_refresh_source: {
         parameters: {
             query: {
@@ -2754,7 +2808,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WorkSourceMetadataSchema"] | null;
+            };
+        };
         responses: {
             /** @description OK */
             200: {

@@ -77,9 +77,9 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 reset_cookies()
 
 make_video_url = {
-	'youtube': lambda s: f'https://youtube.com/watch?v={s}',
-	'niconico': lambda s: f'https://nicovideo.jp/watch/{s}',
-	'bilibili': lambda s: f'https://www.bilibili.com/video/{s}/',
+	Platform.YOUTUBE: lambda s: f'https://youtube.com/watch?v={s}',
+	Platform.NICONICO: lambda s: f'https://nicovideo.jp/watch/{s}',
+	Platform.BILIBILI: lambda s: f'https://www.bilibili.com/video/{s}/',
 }
 
 niconico_meta_re = re.compile(
@@ -89,7 +89,7 @@ hashtag_re = re.compile(r'#(\w+)')
 
 
 def get_niconico_geoblocked(sm):
-	clean_url = make_video_url['niconico'](sm)
+	clean_url = make_video_url[Platform.NICONICO](sm)
 	r = requests.get(
 		clean_url,
 		headers={'User-Agent': 'Twitterbot/1.0', 'Accept-Language': 'ja'},
@@ -137,7 +137,7 @@ def process_video_info(full_info, link=None):
 			if not link:
 				return None
 			link = (
-				make_video_url['niconico'](link)
+				make_video_url[Platform.NICONICO](link)
 				if not link.startswith('http')
 				else link
 			)
@@ -181,22 +181,21 @@ def process_video_info(full_info, link=None):
 				info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
 
 		info['extractor'] = Platform.from_str(info['extractor'])
+		if info['extractor'] in make_video_url:
+			info['webpage_url'] = make_video_url[info['extractor']](info['id'])
 
 		# Platform-specific processing
 		match info['extractor']:
 			case Platform.YOUTUBE:
-				info['webpage_url'] = make_video_url['youtube'](info['id'])
 				info['tags'].extend(hashtag_re.findall(info['description']))
 			case Platform.BILIBILI:
-				chapter_mark = info['id'].find('_')
-				if chapter_mark != -1:
-					info['id'] = info['id'][:chapter_mark]
+				info['id'] = _clean_bilibili_source_id(info['id'])
 				title_chapter_mark = info['title'].find(
 					' p01'
 				)  # TODO this is far from perfect
-				if chapter_mark != -1:
+				if title_chapter_mark != -1:
 					info['title'] = info['title'][:title_chapter_mark]
-				info['webpage_url'] = make_video_url['bilibili'](info['id'])
+				info['webpage_url'] = make_video_url[info['extractor']](info['id'])
 				info['tags'] = [
 					tag[3:-1]
 					if tag.startswith('发现《') and tag.endswith('》')
@@ -204,7 +203,7 @@ def process_video_info(full_info, link=None):
 					for tag in info['tags']
 				]
 			case Platform.NICONICO:
-				info['webpage_url'] = make_video_url['niconico'](info['id'])
+				pass  # webpage_url already set
 			case Platform.SOUNDCLOUD:
 				pass  # TODO
 			case _:
@@ -224,13 +223,7 @@ def process_video_info(full_info, link=None):
 		info['description'] = nh3.clean(info['description'])
 
 		# Get thumbnail mime type
-		try:
-			response = requests.get(info['thumbnail'], allow_redirects=True, timeout=5)
-			content_type = response.headers.get('Content-Type')
-			info['thumbnail_mime'] = MimeType.from_str(content_type)
-		except Exception as e:
-			logger.error(f'Error fetching thumbnail mime type: {e}')
-			info['thumbnail_mime'] = None
+		info['thumbnail_mime'] = fetch_thumbnail_mime_type(info['thumbnail'])
 
 		return {keys[key]: info[key] for key in keys if key in info}
 	except Exception as e:
@@ -288,3 +281,74 @@ def playlist_info(link):
 	info['entries'] = [entry['url'] for entry in info['entries']]
 
 	return {keys[key]: info[key] for key in keys if key in info}
+
+
+def _clean_bilibili_source_id(source_id: str) -> str:
+	chapter_mark = source_id.find('_')
+	return source_id[:chapter_mark] if chapter_mark != -1 else source_id
+
+
+def fetch_thumbnail_mime_type(thumbnail_url: str):
+	"""
+	Fetch the MIME type of a thumbnail from its URL.
+
+	Args:
+	    thumbnail_url: URL of the thumbnail
+
+	Returns:
+	    MimeType enum value or None if fetch fails
+	"""
+	try:
+		response = requests.get(thumbnail_url, allow_redirects=True, timeout=5)
+		content_type = response.headers.get('Content-Type')
+		return MimeType.from_str(content_type)
+	except Exception as e:
+		print(f'Error fetching thumbnail mime type: {e}')
+		return None
+
+
+def parse_url_for_platform(url: str):
+	"""
+	Parse a URL to extract platform, source_id, and canonical URL without fetching metadata.
+
+	Args:
+	    url: The URL to parse
+
+	Returns:
+	    Dict with 'platform', 'source_id', 'canonical_url', or None if URL is invalid/unsupported
+	"""
+	try:
+		# Check each supported platform
+		if YoutubeIE.suitable(url):
+			source_id = YoutubeIE.get_temp_id(url)
+			return {
+				'platform': Platform.YOUTUBE,
+				'source_id': source_id,
+				'canonical_url': make_video_url[Platform.YOUTUBE](source_id),
+			}
+		elif NiconicoIECustom.suitable(url):
+			source_id = NiconicoIECustom.get_temp_id(url)
+			return {
+				'platform': Platform.NICONICO,
+				'source_id': source_id,
+				'canonical_url': make_video_url[Platform.NICONICO](source_id),
+			}
+		elif BiliBiliIE.suitable(url):
+			source_id = _clean_bilibili_source_id(BiliBiliIE.get_temp_id(url))
+			return {
+				'platform': Platform.BILIBILI,
+				'source_id': source_id,
+				'canonical_url': make_video_url[Platform.BILIBILI](source_id),
+			}
+		elif SoundcloudIE.suitable(url):
+			source_id = SoundcloudIE.get_temp_id(url)
+			return {
+				'platform': Platform.SOUNDCLOUD,
+				'source_id': source_id,
+				'canonical_url': url,  # TODO
+			}
+		else:
+			return None
+	except Exception as e:
+		print(f'Error parsing URL {url}: {e}')
+		return None

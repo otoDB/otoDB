@@ -9,10 +9,12 @@ from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
+from django.views.decorators.cache import cache_page
 
 from ninja import Router, Schema, Field
 from ninja.pagination import paginate
 from ninja.security import django_auth
+from ninja.decorators import decorate_view
 
 from otodb.models import TagWork
 from otodb.account.models import Account
@@ -258,6 +260,7 @@ def history(
 
 @history_router.get('recent', response=list[HistoryExtSchema])
 @paginate(pass_parameter='pagination_info')
+@decorate_view(cache_page(60))
 def recent(request: HttpRequest, **kwargs):
 	return resolve_history_instance_id(
 		get_combined_history_queryset().order_by('-history_date'),

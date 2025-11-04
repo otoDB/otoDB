@@ -147,7 +147,9 @@ class WorkSource(models.Model):
 
 	# Gets the source registered at the url if it exists, otherwise register as pending
 	@staticmethod
-	def from_url(url, user, is_reupload, info=None, full_info=None) -> tuple['WorkSource | None', dict | None]:
+	def from_url(
+		url, user, is_reupload, info=None, full_info=None
+	) -> tuple['WorkSource | None', dict | None]:
 		if info is None:
 			info, full_info = video_info(url)
 

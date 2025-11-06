@@ -185,7 +185,7 @@ class WorkSource(models.Model):
 				platform = source_id = canonical_url = None
 				try:
 					for platform, extractor in platform_extractors:
-						if extractor.suitable(url):
+						if match := extractor.suitable(url):
 							if platform == Platform.SOUNDCLOUD:
 								# Can't get source ID from URL alone for SoundCloud
 								source_id = None
@@ -193,11 +193,7 @@ class WorkSource(models.Model):
 								source_id = extractor.get_temp_id(url)
 
 							if platform == Platform.BILIBILI and source_id is not None:
-								from yt_dlp.extractor.bilibili import BiliBiliIE
-
-								source_id = ''.join(
-									BiliBiliIE._match_valid_url(url).groups()
-								)
+								source_id = ''.join(match.groups())
 
 							canonical_url = make_video_url[platform](source_id)
 							break

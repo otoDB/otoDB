@@ -208,7 +208,7 @@ def process_video_info(full_info, link=None):
 			case Platform.YOUTUBE:
 				info['tags'].extend(hashtag_re.findall(info['description']))
 			case Platform.BILIBILI:
-				info['id'] = clean_bilibili_source_id(info['id'])
+				info['id'] = _clean_bilibili_source_id(info['id'])
 				title_chapter_mark = info['title'].find(
 					' p01'
 				)  # TODO this is far from perfect
@@ -313,7 +313,7 @@ def playlist_info(link):
 	return {keys[key]: info[key] for key in keys if key in info}
 
 
-def clean_bilibili_source_id(source_id: str) -> str:
+def _clean_bilibili_source_id(source_id: str) -> str:
 	chapter_mark = source_id.find('_')
 	return source_id[:chapter_mark] if chapter_mark != -1 else source_id
 

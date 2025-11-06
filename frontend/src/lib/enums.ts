@@ -266,9 +266,9 @@ export const Role = {
 	32: m.heavy_blue_parrot_mend
 };
 
-export const Themes = ['default', 'aniki'].map((t) => 'theme-' + t);
+export const Themes = ['default', 'aniki', 'otogroove'].map((t) => 'theme-' + t);
 
-export const ThemeNames = [m.grassy_noble_walrus_wish, m.next_ago_opossum_swim];
+export const ThemeNames = [m.grassy_noble_walrus_wish, m.next_ago_opossum_swim, () => 'otogroove'];
 
 export const HistoryModelNames = {
 	mediawork: m.grand_merry_fly_succeed,

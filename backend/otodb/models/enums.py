@@ -146,6 +146,7 @@ class Role(models.IntegerChoices):
 class ThemePref(models.IntegerChoices):
 	DEFAULT = 0, 'Default'
 	ANIKI = 1, 'Aniki'
+	OTOGROOVE = 2, 'otogroove'
 
 
 class MediaType(models.IntegerChoices):

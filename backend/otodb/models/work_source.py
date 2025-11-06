@@ -97,6 +97,7 @@ class WorkSource(models.Model):
 				self.save_thumbnail()
 
 			if full_info is not None:
+				self.work_status = WorkStatus.AVAILABLE
 				WorkSourceInfoPayload.objects.update_or_create(
 					source=self, defaults={'payload': full_info}
 				)
@@ -174,7 +175,6 @@ class WorkSource(models.Model):
 		# Try to fetch info if not provided
 		if info is None:
 			from otodb.common import (
-				clean_bilibili_source_id,
 				fetch_thumbnail_mime_type,
 				make_video_url,
 				platform_extractors,
@@ -193,7 +193,11 @@ class WorkSource(models.Model):
 								source_id = extractor.get_temp_id(url)
 
 							if platform == Platform.BILIBILI and source_id is not None:
-								source_id = clean_bilibili_source_id(source_id)
+								from yt_dlp.extractor.bilibili import BiliBiliIE
+
+								source_id = ''.join(
+									BiliBiliIE._match_valid_url(url).groups()
+								)
 
 							canonical_url = make_video_url[platform](source_id)
 							break

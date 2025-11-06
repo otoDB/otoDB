@@ -172,14 +172,14 @@ class WorkSource(models.Model):
 		Returns:
 		    Tuple of (WorkSource, info_dict) or (None, None) if failed
 		"""
+		from otodb.common import (
+			fetch_thumbnail_mime_type,
+			make_video_url,
+			platform_extractors,
+		)
+
 		# Try to fetch info if not provided
 		if info is None:
-			from otodb.common import (
-				fetch_thumbnail_mime_type,
-				make_video_url,
-				platform_extractors,
-			)
-
 			info, full_info = video_info(url, expected_unavailable=metadata is not None)
 
 		# Handle unavailable sources

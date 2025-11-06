@@ -25,7 +25,7 @@ class WorkSource(models.Model):
 		MediaWork, on_delete=models.CASCADE, null=True, blank=True
 	)
 	platform = models.IntegerField(choices=Platform.choices)
-	source_id = models.CharField(max_length=1000)
+	source_id = models.CharField(max_length=1000, null=True, blank=True)
 
 	url = models.URLField(null=False, blank=False)
 	published_date = models.DateField(
@@ -171,21 +171,39 @@ class WorkSource(models.Model):
 		Returns:
 		    Tuple of (WorkSource, info_dict) or (None, None) if failed
 		"""
-		from otodb.common import video_info, parse_url_for_platform
-
 		# Try to fetch info if not provided
 		if info is None:
+			from otodb.common import (
+				clean_bilibili_source_id,
+				fetch_thumbnail_mime_type,
+				make_video_url,
+				platform_extractors,
+			)
+
 			info, full_info = video_info(url, expected_unavailable=metadata is not None)
+			if info is None and metadata is not None:
+				try:
+					for platform, extractor in platform_extractors:
+						if extractor.suitable(url):
+							if platform == Platform.SOUNDCLOUD:
+								# Can't get source ID from URL alone for SoundCloud
+								source_id = None
+							else:
+								source_id = extractor.get_temp_id(url)
 
-		# Handle unavailable sources
-		if info is None and metadata is not None:
-			parsed = parse_url_for_platform(url)
-			if parsed is None:
-				logger.error(f'Failed to parse URL for platform: {url}')
-				return None, None
+							if platform == Platform.BILIBILI:
+								source_id = clean_bilibili_source_id(source_id)
 
-			# Build minimal info from parsed URL and manual metadata
-			from otodb.common import fetch_thumbnail_mime_type
+							canonical_url = make_video_url[platform](source_id)
+							break
+					else:
+						logger.error(
+							f'No suitable platform extractor found for URL: {url}'
+						)
+						return None, None
+				except Exception:
+					logger.error(f'Failed to parse URL for platform: {url}')
+					return None, None
 
 			published_date = metadata.get('published_date') if metadata else None
 			thumbnail_url = metadata.get('thumbnail_url') if metadata else None
@@ -196,9 +214,9 @@ class WorkSource(models.Model):
 			)
 
 			info = {
-				'site': parsed['platform'],
-				'id': parsed['source_id'],
-				'url': parsed['canonical_url'],
+				'site': platform,
+				'id': source_id,
+				'url': canonical_url,
 				'title': metadata.get('title') if metadata else None,
 				'description': metadata.get('description') if metadata else '',
 				'timestamp': datetime.combine(

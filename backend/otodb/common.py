@@ -79,6 +79,13 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 
 reset_cookies()
 
+platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
+	(Platform.YOUTUBE, YoutubeIE),
+	(Platform.NICONICO, NiconicoIECustom),
+	(Platform.BILIBILI, BiliBiliIE),
+	(Platform.SOUNDCLOUD, SoundcloudIE),
+	(Platform.TWITTER, TwitterIE),
+]  # type: ignore
 make_video_url = {
 	Platform.YOUTUBE: lambda s, uid=None: f'https://youtube.com/watch?v={s}',
 	Platform.NICONICO: lambda s, uid=None: f'https://nicovideo.jp/watch/{s}',
@@ -201,7 +208,7 @@ def process_video_info(full_info, link=None):
 			case Platform.YOUTUBE:
 				info['tags'].extend(hashtag_re.findall(info['description']))
 			case Platform.BILIBILI:
-				info['id'] = _clean_bilibili_source_id(info['id'])
+				info['id'] = clean_bilibili_source_id(info['id'])
 				title_chapter_mark = info['title'].find(
 					' p01'
 				)  # TODO this is far from perfect
@@ -306,7 +313,7 @@ def playlist_info(link):
 	return {keys[key]: info[key] for key in keys if key in info}
 
 
-def _clean_bilibili_source_id(source_id: str) -> str:
+def clean_bilibili_source_id(source_id: str) -> str:
 	chapter_mark = source_id.find('_')
 	return source_id[:chapter_mark] if chapter_mark != -1 else source_id
 
@@ -327,41 +334,4 @@ def fetch_thumbnail_mime_type(thumbnail_url: str):
 		return MimeType.from_str(content_type)
 	except Exception as e:
 		logger.error(f'Error fetching thumbnail mime type: {e}')
-		return None
-
-
-def parse_url_for_platform(url: str):
-	"""
-	Parse a URL to extract platform, source_id, and canonical URL without fetching metadata.
-
-	Args:
-	    url: The URL to parse
-
-	Returns:
-	    Dict with 'platform', 'source_id', 'canonical_url', or None if URL is invalid/unsupported
-	"""
-	platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
-		(Platform.YOUTUBE, YoutubeIE),
-		(Platform.NICONICO, NiconicoIECustom),
-		(Platform.BILIBILI, BiliBiliIE),
-		(Platform.SOUNDCLOUD, SoundcloudIE),
-		(Platform.TWITTER, TwitterIE),
-	]  # type: ignore
-
-	try:
-		for platform, extractor in platform_extractors:
-			if extractor.suitable(url):
-				source_id = extractor.get_temp_id(url)
-				if platform == Platform.BILIBILI:
-					source_id = _clean_bilibili_source_id(source_id)
-
-				return {
-					'platform': platform,
-					'source_id': source_id,
-					'canonical_url': make_video_url[platform](source_id),
-				}
-
-		return None
-	except Exception as e:
-		logger.error(f'Error parsing URL {url}: {e}')
 		return None

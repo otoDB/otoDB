@@ -17,6 +17,10 @@
 			right top;
 		background-repeat: no-repeat, no-repeat;
 	}
+
+	& .prose {
+		@apply prose-invert;
+	}
 }
 
 .theme-otogroove {
@@ -26,6 +30,10 @@
 	--otodb-color-bg-primary: rgb(245, 248, 255);
 	--otodb-color-bg-faint: rgb(235, 242, 255);
 	--otodb-color-bg-fainter: rgb(220, 235, 255);
+
+	& .prose {
+		@apply prose-neutral;
+	}
 
 	> div.bg-marker:first-child {
 		&::before {

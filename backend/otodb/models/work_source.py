@@ -25,7 +25,7 @@ class WorkSource(models.Model):
 		MediaWork, on_delete=models.CASCADE, null=True, blank=True
 	)
 	platform = models.IntegerField(choices=Platform.choices)
-	source_id = models.CharField(max_length=1000, null=True, blank=True)
+	source_id = models.CharField(max_length=1000, null=True, blank=False)
 
 	url = models.URLField(null=False, blank=False)
 	published_date = models.DateField(

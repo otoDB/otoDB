@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
 		migrations.AlterField(
 			model_name='historicalworksource',
 			name='source_id',
-			field=models.CharField(blank=True, max_length=1000, null=True),
+			field=models.CharField(blank=False, max_length=1000, null=True),
 		),
 		migrations.AlterField(
 			model_name='worksource',
@@ -43,6 +43,6 @@ class Migration(migrations.Migration):
 		migrations.AlterField(
 			model_name='worksource',
 			name='source_id',
-			field=models.CharField(blank=True, max_length=1000, null=True),
+			field=models.CharField(blank=False, max_length=1000, null=True),
 		),
 	]

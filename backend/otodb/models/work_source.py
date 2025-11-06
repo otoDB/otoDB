@@ -97,6 +97,7 @@ class WorkSource(models.Model):
 				self.save_thumbnail()
 
 			if full_info is not None:
+				self.work_status = WorkStatus.AVAILABLE
 				WorkSourceInfoPayload.objects.update_or_create(
 					source=self, defaults={'payload': full_info}
 				)

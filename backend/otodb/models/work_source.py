@@ -181,63 +181,61 @@ class WorkSource(models.Model):
 			)
 
 			info, full_info = video_info(url, expected_unavailable=metadata is not None)
-			if info is None and metadata is not None:
-				platform = source_id = canonical_url = None
-				try:
-					for platform, extractor in platform_extractors:
-						if match := extractor.suitable(url):
-							if platform == Platform.SOUNDCLOUD:
-								# Can't get source ID from URL alone for SoundCloud
-								source_id = None
-							else:
-								source_id = extractor.get_temp_id(url)
 
-							if platform == Platform.BILIBILI and source_id is not None:
-								source_id = ''.join(match.groups())
+		# Handle unavailable sources
+		if info is None and metadata is not None:
+			platform = source_id = canonical_url = None
+			try:
+				for platform, extractor in platform_extractors:
+					if match := extractor.suitable(url):
+						if platform == Platform.SOUNDCLOUD:
+							# Can't get source ID from URL alone for SoundCloud
+							source_id = None
+						else:
+							source_id = extractor.get_temp_id(url)
 
-							canonical_url = make_video_url[platform](source_id)
-							break
-					else:
-						logger.error(
-							f'No suitable platform extractor found for URL: {url}'
-						)
-						return None, None
-				except Exception:
-					logger.error(f'Failed to parse URL for platform: {url}')
+						if platform == Platform.BILIBILI and source_id is not None:
+							source_id = ''.join(match.groups())
+
+						canonical_url = make_video_url[platform](source_id)
+						break
+				else:
+					logger.error(f'No suitable platform extractor found for URL: {url}')
 					return None, None
-
-				published_date = metadata.get('published_date') if metadata else None
-				thumbnail_url = metadata.get('thumbnail_url') if metadata else None
-
-				# Fetch thumbnail mime type if URL is provided
-				thumb_mime = (
-					fetch_thumbnail_mime_type(thumbnail_url) if thumbnail_url else None
-				)
-
-				info = {
-					'site': platform,
-					'id': source_id,
-					'url': canonical_url,
-					'title': metadata.get('title') if metadata else None,
-					'description': metadata.get('description') if metadata else '',
-					'timestamp': datetime.combine(
-						published_date, datetime.min.time()
-					).timestamp()
-					if published_date
-					else None,
-					'uploader_id': metadata.get('uploader_id') if metadata else None,
-					'thumb': thumbnail_url,
-					'thumb_mime': thumb_mime,
-					'work_width': metadata.get('work_width') if metadata else None,
-					'work_height': metadata.get('work_height') if metadata else None,
-					'work_duration': metadata.get('work_duration')
-					if metadata
-					else None,
-					'tags': [],
-				}
-			elif info is None:
-				logger.error(f'Failed to get video info for URL: {url}')
+			except Exception:
+				logger.error(f'Failed to parse URL for platform: {url}')
 				return None, None
+
+			published_date = metadata.get('published_date') if metadata else None
+			thumbnail_url = metadata.get('thumbnail_url') if metadata else None
+
+			# Fetch thumbnail mime type if URL is provided
+			thumb_mime = (
+				fetch_thumbnail_mime_type(thumbnail_url) if thumbnail_url else None
+			)
+
+			info = {
+				'site': platform,
+				'id': source_id,
+				'url': canonical_url,
+				'title': metadata.get('title') if metadata else None,
+				'description': metadata.get('description') if metadata else '',
+				'timestamp': datetime.combine(
+					published_date, datetime.min.time()
+				).timestamp()
+				if published_date
+				else None,
+				'uploader_id': metadata.get('uploader_id') if metadata else None,
+				'thumb': thumbnail_url,
+				'thumb_mime': thumb_mime,
+				'work_width': metadata.get('work_width') if metadata else None,
+				'work_height': metadata.get('work_height') if metadata else None,
+				'work_duration': metadata.get('work_duration') if metadata else None,
+				'tags': [],
+			}
+		elif info is None:
+			logger.error(f'Failed to get video info for URL: {url}')
+			return None, None
 
 		if info['site'] is None:
 			return None, None

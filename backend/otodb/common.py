@@ -343,7 +343,7 @@ def parse_url_for_platform(url: str):
 				'canonical_url': make_video_url[Platform.NICONICO](source_id),
 			}
 		elif BiliBiliIE.suitable(url):
-			source_id = _clean_bilibili_source_id(BiliBiliIE.get_temp_id(url))
+			source_id = ''.join(BiliBiliIE._match_valid_url(url).groups())
 			return {
 				'platform': Platform.BILIBILI,
 				'source_id': source_id,

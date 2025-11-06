@@ -201,6 +201,10 @@ class WorkSource(models.Model):
 							f'No suitable platform extractor found for URL: {url}'
 						)
 						return None, None
+
+					if platform is None:
+						logger.error(f'Could not determine platform for URL: {url}')
+						return None, None
 				except Exception:
 					logger.error(f'Failed to parse URL for platform: {url}')
 					return None, None

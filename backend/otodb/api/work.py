@@ -532,6 +532,17 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 					)
 					.values('tag_id')
 				)
+			elif src.platform == Platform.TWITTER:
+				creator_tags = TagWork.objects.filter(
+					id__in=TagWorkCreatorConnection.objects.filter(
+						site=ProfileConnectionTypes.TWITTER,
+					)
+					.filter(
+						Q(content_id=info['channel_id'])
+						| Q(content_id__endswith='/' + info['uploader_id'])
+					)
+					.values('tag_id')
+				)
 			else:
 				creator_tags = TagWork.objects.filter(
 					id__in=TagWorkCreatorConnection.objects.filter(

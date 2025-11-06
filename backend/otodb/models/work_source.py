@@ -210,36 +210,38 @@ class WorkSource(models.Model):
 					logger.error(f'Failed to parse URL for platform: {url}')
 					return None, None
 
-			published_date = metadata.get('published_date') if metadata else None
-			thumbnail_url = metadata.get('thumbnail_url') if metadata else None
+				published_date = metadata.get('published_date') if metadata else None
+				thumbnail_url = metadata.get('thumbnail_url') if metadata else None
 
-			# Fetch thumbnail mime type if URL is provided
-			thumb_mime = (
-				fetch_thumbnail_mime_type(thumbnail_url) if thumbnail_url else None
-			)
+				# Fetch thumbnail mime type if URL is provided
+				thumb_mime = (
+					fetch_thumbnail_mime_type(thumbnail_url) if thumbnail_url else None
+				)
 
-			info = {
-				'site': platform,
-				'id': source_id,
-				'url': canonical_url,
-				'title': metadata.get('title') if metadata else None,
-				'description': metadata.get('description') if metadata else '',
-				'timestamp': datetime.combine(
-					published_date, datetime.min.time()
-				).timestamp()
-				if published_date
-				else None,
-				'uploader_id': metadata.get('uploader_id') if metadata else None,
-				'thumb': thumbnail_url,
-				'thumb_mime': thumb_mime,
-				'work_width': metadata.get('work_width') if metadata else None,
-				'work_height': metadata.get('work_height') if metadata else None,
-				'work_duration': metadata.get('work_duration') if metadata else None,
-				'tags': [],
-			}
-		elif info is None:
-			logger.error(f'Failed to get video info for URL: {url}')
-			return None, None
+				info = {
+					'site': platform,
+					'id': source_id,
+					'url': canonical_url,
+					'title': metadata.get('title') if metadata else None,
+					'description': metadata.get('description') if metadata else '',
+					'timestamp': datetime.combine(
+						published_date, datetime.min.time()
+					).timestamp()
+					if published_date
+					else None,
+					'uploader_id': metadata.get('uploader_id') if metadata else None,
+					'thumb': thumbnail_url,
+					'thumb_mime': thumb_mime,
+					'work_width': metadata.get('work_width') if metadata else None,
+					'work_height': metadata.get('work_height') if metadata else None,
+					'work_duration': metadata.get('work_duration')
+					if metadata
+					else None,
+					'tags': [],
+				}
+			elif info is None:
+				logger.error(f'Failed to get video info for URL: {url}')
+				return None, None
 
 		if info['site'] is None:
 			return None, None

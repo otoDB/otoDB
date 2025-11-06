@@ -540,6 +540,7 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 					.filter(
 						Q(content_id=info['channel_id'])
 						| Q(content_id__endswith='/' + info['uploader_id'])
+						| Q(content_id__endswith='user_id=' + info['uploader_id'])
 					)
 					.values('tag_id')
 				)

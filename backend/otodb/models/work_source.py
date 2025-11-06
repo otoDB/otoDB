@@ -182,6 +182,7 @@ class WorkSource(models.Model):
 
 			info, full_info = video_info(url, expected_unavailable=metadata is not None)
 			if info is None and metadata is not None:
+				platform = source_id = canonical_url = None
 				try:
 					for platform, extractor in platform_extractors:
 						if extractor.suitable(url):
@@ -191,7 +192,7 @@ class WorkSource(models.Model):
 							else:
 								source_id = extractor.get_temp_id(url)
 
-							if platform == Platform.BILIBILI:
+							if platform == Platform.BILIBILI and source_id is not None:
 								source_id = clean_bilibili_source_id(source_id)
 
 							canonical_url = make_video_url[platform](source_id)

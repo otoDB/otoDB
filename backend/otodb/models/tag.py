@@ -27,6 +27,35 @@ def name_cleaner(s):
 	return s.lower()
 
 
+def tagwork_ordering_case(prefix=''):
+	prefix = f'{prefix}__' if prefix and not prefix.endswith('__') else prefix
+	return models.Case(
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.EVENT}, then=models.Value(0)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.CREATOR}, then=models.Value(10)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.MEDIA}, then=models.Value(11)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.SOURCE}, then=models.Value(20)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.SONG}, then=models.Value(30)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.GENERAL}, then=models.Value(40)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.META}, then=models.Value(1000)
+		),
+		default=models.Value(999),
+		output_field=models.IntegerField(),
+	)
+
+
 class LowerCaseTagModelManager(TagModelManager):
 	def get_or_create(self, *args, **kwargs):
 		if 'name' in kwargs:
@@ -108,17 +137,7 @@ class TagWork(OtodbTagModel):
 
 	class Meta:
 		ordering = [
-			models.Case(
-				models.When(category=1, then=Value(0)),  # EVENT
-				models.When(category=4, then=Value(10)),  # CREATOR
-				models.When(category=6, then=Value(11)),  # MEDIA
-				models.When(category=3, then=Value(20)),  # SOURCE
-				models.When(category=2, then=Value(30)),  # SONG
-				models.When(category=0, then=Value(40)),  # GENERAL
-				models.When(category=5, then=Value(1000)),  # META (always last)
-				default=Value(999),
-				output_field=models.IntegerField(),
-			),
+			tagwork_ordering_case(),
 			'name',
 		]
 

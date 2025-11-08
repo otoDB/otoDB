@@ -563,6 +563,8 @@ def assign_source_to_work(
 		)
 
 	# Add them first in case they don't exist
+	if not src.info_payload:
+		src.refresh()
 	info = process_video_info(src.info_payload.payload, src.url)
 	sync_work_source(work, src, info, False)
 

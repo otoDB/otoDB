@@ -197,7 +197,9 @@ def process_video_info(full_info, link=None):
 		info['extractor'] = Platform.from_str(info['extractor'])
 		if info['extractor'] in make_video_url:
 			info['webpage_url'] = make_video_url[info['extractor']](
-				info['id'],
+				info['display_id']
+				if info['extractor'] in [Platform.TWITTER]
+				else info['id'],
 				uid=info.get('uploader_id')
 				if info['extractor'] == Platform.TWITTER
 				else None,

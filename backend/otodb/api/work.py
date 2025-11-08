@@ -160,13 +160,6 @@ def search(
 				.values('published_date')[:1]
 			),
 		)
-		.select_related('thumbnail_source')
-		.prefetch_related(
-			'tags',
-			'tags__aliases',
-			'tags__tagworklangpreference_set',
-			'tags__aliases__tagworklangpreference_set',
-		)
 		.order_by('priority', order)
 		.distinct()
 	)
@@ -187,9 +180,7 @@ def tags_needed(request: HttpRequest):
 
 @work_router.get('work', response={200: WorkSchema, 300: int})
 def work(request: HttpRequest, work_id: int):
-	work = get_object_or_404(
-		MediaWork.objects.select_related('thumbnail_source'), id=work_id
-	)
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	if work.moved_to:
 		return 300, work.moved_to.id
 	return work
@@ -264,31 +255,14 @@ def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
 
 @work_router.get('random', response=list[ThinWorkSchema], exclude_none=True)
 def random(request: HttpRequest, n: int = 1):
-	return (
-		MediaWork.active_objects.select_related('thumbnail_source')
-		.prefetch_related(
-			'tags',
-			'tags__aliases',
-			'tags__tagworklangpreference_set',
-			'tags__aliases__tagworklangpreference_set',
-		)
-		.filter(rating=Rating.GENERAL)
-		.order_by('?')[: min(n, 20)]
-	)
+	return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by('?')[
+		: min(n, 20)
+	]
 
 
 @work_router.get('recent', response=list[ThinWorkSchema], exclude_none=True)
 def recent(request: HttpRequest, n: int = 1):
-	return (
-		MediaWork.active_objects.select_related('thumbnail_source')
-		.prefetch_related(
-			'tags',
-			'tags__aliases',
-			'tags__tagworklangpreference_set',
-			'tags__aliases__tagworklangpreference_set',
-		)
-		.order_by('-id')[: min(n, 20)]
-	)
+	return MediaWork.active_objects.order_by('-id')[: min(n, 20)]
 
 
 @work_router.get(

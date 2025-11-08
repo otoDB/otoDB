@@ -201,7 +201,7 @@ def process_video_info(full_info, link=None):
 				if info['extractor'] in [Platform.TWITTER]
 				else info['id'],
 				uid=info.get('uploader_id')
-				if info['extractor'] == Platform.TWITTER
+				if info['extractor'] in [Platform.TWITTER]
 				else None,
 			)
 

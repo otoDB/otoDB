@@ -332,7 +332,7 @@ def update_source_thumbnail_url(
 
 @work_router.post('refresh_source', auth=django_auth)
 def refresh_source(request: HttpRequest, source_id: int):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src: WorkSource = get_object_or_404(WorkSource.active_objects, id=source_id)
 	src.refresh()
 	return
 
@@ -552,7 +552,7 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 def assign_source_to_work(
 	request: HttpRequest, source_id: int, work_id: int | None = None
 ):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src: WorkSource = get_object_or_404(WorkSource.active_objects, id=source_id)
 	assert src.media is None and not getattr(src, 'rejection', None)
 
 	if work_id is not None:
@@ -563,14 +563,16 @@ def assign_source_to_work(
 		)
 
 	# Add them first in case they don't exist
+	if not src.info_payload:
+		src.refresh()
 	info = process_video_info(src.info_payload.payload, src.url)
 	sync_work_source(work, src, info, False)
 
 	for pool in src.pool_set.all():
-		pool.add_work(work.id)
+		pool.add_work(work.pk)
 		pool.pending_items.remove(src)
 
-	return work.id
+	return work.pk
 
 
 @work_router.post('reject_source', auth=django_auth)

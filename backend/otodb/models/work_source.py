@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from datetime import date, datetime
 import logging
 from django.db import models
@@ -21,6 +22,11 @@ class ActiveManager(models.Manager):
 
 
 class WorkSource(models.Model):
+	if TYPE_CHECKING:
+		from .pool import Pool
+
+		pool_set: 'models.QuerySet[Pool]'
+
 	media = HistoricForeignKey(
 		MediaWork, on_delete=models.CASCADE, null=True, blank=True
 	)

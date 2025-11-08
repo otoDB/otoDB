@@ -160,13 +160,6 @@ def search(
 				.values('published_date')[:1]
 			),
 		)
-		.select_related('thumbnail_source')
-		.prefetch_related(
-			'tags',
-			'tags__aliases',
-			'tags__tagworklangpreference_set',
-			'tags__aliases__tagworklangpreference_set',
-		)
 		.order_by('priority', order)
 		.distinct()
 	)
@@ -187,9 +180,7 @@ def tags_needed(request: HttpRequest):
 
 @work_router.get('work', response={200: WorkSchema, 300: int})
 def work(request: HttpRequest, work_id: int):
-	work = get_object_or_404(
-		MediaWork.objects.select_related('thumbnail_source'), id=work_id
-	)
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	if work.moved_to:
 		return 300, work.moved_to.id
 	return work
@@ -264,31 +255,14 @@ def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
 
 @work_router.get('random', response=list[ThinWorkSchema], exclude_none=True)
 def random(request: HttpRequest, n: int = 1):
-	return (
-		MediaWork.active_objects.select_related('thumbnail_source')
-		.prefetch_related(
-			'tags',
-			'tags__aliases',
-			'tags__tagworklangpreference_set',
-			'tags__aliases__tagworklangpreference_set',
-		)
-		.filter(rating=Rating.GENERAL)
-		.order_by('?')[: min(n, 20)]
-	)
+	return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by('?')[
+		: min(n, 20)
+	]
 
 
 @work_router.get('recent', response=list[ThinWorkSchema], exclude_none=True)
 def recent(request: HttpRequest, n: int = 1):
-	return (
-		MediaWork.active_objects.select_related('thumbnail_source')
-		.prefetch_related(
-			'tags',
-			'tags__aliases',
-			'tags__tagworklangpreference_set',
-			'tags__aliases__tagworklangpreference_set',
-		)
-		.order_by('-id')[: min(n, 20)]
-	)
+	return MediaWork.active_objects.order_by('-id')[: min(n, 20)]
 
 
 @work_router.get(
@@ -358,7 +332,7 @@ def update_source_thumbnail_url(
 
 @work_router.post('refresh_source', auth=django_auth)
 def refresh_source(request: HttpRequest, source_id: int):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src: WorkSource = get_object_or_404(WorkSource.active_objects, id=source_id)
 	src.refresh()
 	return
 
@@ -579,7 +553,7 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 def assign_source_to_work(
 	request: HttpRequest, source_id: int, work_id: int | None = None
 ):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src: WorkSource = get_object_or_404(WorkSource.active_objects, id=source_id)
 	assert src.media is None and not getattr(src, 'rejection', None)
 
 	if work_id is not None:
@@ -590,14 +564,16 @@ def assign_source_to_work(
 		)
 
 	# Add them first in case they don't exist
+	if not hasattr(src, 'info_payload'):
+		src.refresh()
 	info = process_video_info(src.info_payload.payload, src.url)
 	sync_work_source(work, src, info, False)
 
 	for pool in src.pool_set.all():
-		pool.add_work(work.id)
+		pool.add_work(work.pk)
 		pool.pending_items.remove(src)
 
-	return work.id
+	return work.pk
 
 
 @work_router.post('reject_source', auth=django_auth)

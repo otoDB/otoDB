@@ -3,13 +3,14 @@ from typing import TYPE_CHECKING, cast
 import nh3
 
 from django.db import models
-from django.db.models import Subquery, OuterRef
+from django.db.models import Prefetch
 from django.urls import reverse
+from django.utils.functional import cached_property
 from simple_history.models import HistoricalRecords
 from tagulous.models import TagField, TaggedManager
 
 from .enums import Rating, WorkTagCategory, Role
-from .tag import TagWork, TagSong
+from .tag import TagWork, TagSong, tagwork_ordering_case
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
@@ -20,7 +21,28 @@ if TYPE_CHECKING:
 
 class ActiveManager(models.Manager):
 	def get_queryset(self):
-		return super().get_queryset().filter(moved_to__isnull=True)
+		qs = super().get_queryset().filter(moved_to__isnull=True)
+
+		instances_queryset = (
+			TagWorkInstance.objects.filter(work_tag__deprecated=False)
+			.select_related(
+				'work_tag',
+				'work_tag__aliased_to',
+			)
+			.prefetch_related(
+				'work_tag__tagworklangpreference_set',
+				'work_tag__aliases',
+				'work_tag__aliases__tagworklangpreference_set',
+			)
+			.order_by(
+				tagwork_ordering_case(prefix='work_tag__'),
+				'work_tag__name',
+			)
+		)
+
+		return qs.select_related('thumbnail_source').prefetch_related(
+			Prefetch('tagworkinstance_set', queryset=instances_queryset)
+		)
 
 
 # allow setting a through table on tag fields
@@ -162,20 +184,15 @@ class MediaWork(models.Model):
 			self.description = nh3.clean(self.description)
 		super().save(*args, **kwargs)
 
-	@property
+	@cached_property
 	def tags_annotated(self):
-		return self.tags.filter(deprecated=False).annotate(
-			sample=Subquery(
-				self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values(
-					'used_as_source'
-				)
-			),
-			creator_roles=Subquery(
-				self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values(
-					'creator_roles'
-				)
-			),
-		)
+		t = []
+		for instance in self.tagworkinstance_set.all():
+			tag = instance.work_tag
+			tag.sample = instance.used_as_source
+			tag.creator_roles = instance.creator_roles
+			t.append(tag)
+		return t
 
 	@property
 	def thumbnail(self):

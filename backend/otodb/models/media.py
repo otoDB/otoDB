@@ -10,7 +10,7 @@ from simple_history.models import HistoricalRecords
 from tagulous.models import TagField, TaggedManager
 
 from .enums import Rating, WorkTagCategory, Role
-from .tag import TagWork, TagSong
+from .tag import TagWork, TagSong, tagwork_ordering_case
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
@@ -33,6 +33,10 @@ class ActiveManager(models.Manager):
 				'work_tag__tagworklangpreference_set',
 				'work_tag__aliases',
 				'work_tag__aliases__tagworklangpreference_set',
+			)
+			.order_by(
+				tagwork_ordering_case(prefix='work_tag__'),
+				'work_tag__name',
 			)
 		)
 

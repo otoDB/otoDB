@@ -506,9 +506,9 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 				)
 			elif src.platform == Platform.TWITTER:
 				q = q.filter(
-					Q(content_id=info['channel_id'])
-					| Q(content_id__endswith='/' + info['uploader_id'])
-					| Q(content_id__endswith='user_id=' + info['uploader_id'])
+					Q(content_id=info['uploader_id'])
+					| Q(content_id__endswith='/' + info['channel_id'])
+					| Q(content_id__endswith='user_id=' + info['channel_id'])
 				)
 			else:
 				q = q.filter(content_id=info['uploader_id'])

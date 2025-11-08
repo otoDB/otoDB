@@ -13,8 +13,7 @@ export const load: PageServerLoad = async ({ fetch, locals }) => {
 			params: { query: { n: 8 } }
 		})
 	]);
-	if (randomWork.error || recentWork.error)
-		error(500, { message: 'Internal server error' });
+	if (randomWork.error || recentWork.error) error(500, { message: 'Internal server error' });
 
 	return {
 		random: randomWork.data,

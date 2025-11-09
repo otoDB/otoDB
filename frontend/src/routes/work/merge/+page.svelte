@@ -44,7 +44,7 @@
 
 			if (workResponse.data) {
 				work[i].work = workResponse.data;
-				work[i].title = getDisplayText(workResponse.data.title, '');
+				work[i].title = workResponse.data.title;
 				work[i].description = workResponse.data.description!;
 				work[i].rating = workResponse.data.rating;
 			}

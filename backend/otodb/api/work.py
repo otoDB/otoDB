@@ -370,6 +370,9 @@ def update_work(
 	for attr, value in payload.dict().items():
 		if attr == 'thumbnail_source' and value is not None:
 			value = get_object_or_404(WorkSource.active_objects, id=value)
+		# Special handling for title: if current is NULL and new is blank, keep NULL
+		if attr == 'title' and work.title is None and value == '':
+			continue
 		setattr(work, attr, value)
 	work.save()
 	update_change_reason(work, reason)

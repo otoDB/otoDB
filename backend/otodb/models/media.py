@@ -142,7 +142,11 @@ class MediaWork(models.Model):
 		if from_work.pk < to_work.pk:
 			to_work, from_work = from_work, to_work
 
-		to_work.title = title
+		# Special handling for title: if current is NULL and new is blank, keep NULL
+		if to_work.title is None and title == '':
+			pass  # Keep title as NULL
+		else:
+			to_work.title = title
 		to_work.description = description
 		to_work.thumbnail_source = thumbnail_source
 		to_work.rating = rating

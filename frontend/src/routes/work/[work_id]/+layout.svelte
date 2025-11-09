@@ -6,7 +6,10 @@
 
 <svelte:head>
 	<title
-		>{m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: getDisplayText(data.title) })}</title
+		>{m.mild_loud_shad_enchant({
+			type: m.grand_merry_fly_succeed(),
+			name: getDisplayText(data.title)
+		})}</title
 	>
 	<meta name="twitter:card" content="summary_large_image" />
 

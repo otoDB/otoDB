@@ -85,11 +85,7 @@
 	};
 </script>
 
-<Section
-	titleType={m.grand_merry_fly_succeed()}
-	titleName={data.title}
-	menuLinks={data.links}
->
+<Section titleType={m.grand_merry_fly_succeed()} titleName={data.title} menuLinks={data.links}>
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">

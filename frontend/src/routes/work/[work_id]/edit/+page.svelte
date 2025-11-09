@@ -73,11 +73,7 @@
 	});
 </script>
 
-<Section
-	titleType={m.grand_merry_fly_succeed()}
-	titleName={data.title}
-	menuLinks={data.links}
->
+<Section titleType={m.grand_merry_fly_succeed()} titleName={data.title} menuLinks={data.links}>
 	<form method="POST" use:dirtyEnhance action="?/edit">
 		<table class="inline">
 			<tbody>

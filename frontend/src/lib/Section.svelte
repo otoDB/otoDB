@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import DisplayText from './DisplayText.svelte';
-	let { title = undefined, titleType = undefined, titleName = undefined, children, menuLinks = null } = $props();
+	let {
+		title = undefined,
+		titleType = undefined,
+		titleName = undefined,
+		children,
+		menuLinks = null
+	} = $props();
 </script>
 
 <section

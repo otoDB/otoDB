@@ -21,15 +21,15 @@
 <svelte:head>
 	<title>
 		{data.title
-			? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: getDisplayText(data.title) })
+			? m.mild_loud_shad_enchant({
+					type: m.helpful_away_jay_succeed(),
+					name: getDisplayText(data.title)
+				})
 			: m.helpful_away_jay_succeed()}
 	</title>
 </svelte:head>
 
-<Section
-	titleType={m.helpful_away_jay_succeed()}
-	titleName={data.title}
->
+<Section titleType={m.helpful_away_jay_succeed()} titleName={data.title}>
 	<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 	<ul>
 		{#each Platform.slice(1) as platform, i (i)}

@@ -69,7 +69,8 @@
 			<tbody>
 				{#each suggestions as v, i (i)}
 					<tr class="w bg-otodb-bg-fainter hover:bg-otodb-bg-faint p-1">
-						<td><img class="w-20" src={v.thumbnail} alt={getDisplayText(v.title)} /></td>
+						<td><img class="w-20" src={v.thumbnail} alt={getDisplayText(v.title)} /></td
+						>
 						<td
 							><a
 								class="cursor-pointer"

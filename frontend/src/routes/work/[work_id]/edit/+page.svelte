@@ -83,7 +83,7 @@
 			<tbody>
 				<tr
 					><th><label for="title">{m.large_factual_octopus_exhale()}</label></th><td
-						><input required type="text" name="title" bind:value={title} /></td
+						><input type="text" name="title" bind:value={title} /></td
 					></tr
 				>
 				<tr

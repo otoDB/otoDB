@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	let { title, children, menuLinks = null } = $props();
+	import DisplayText from './DisplayText.svelte';
+	let { title = undefined, titleType = undefined, titleName = undefined, children, menuLinks = null } = $props();
 </script>
 
 <section
@@ -21,7 +22,13 @@
 		</menu>
 	{/if}
 
-	<h1 class="mb-2 text-2xl font-bold">{title}</h1>
+	<h1 class="mb-2 text-2xl font-bold">
+		{#if titleType !== undefined && titleName !== undefined}
+			{titleType}: <DisplayText value={titleName} />
+		{:else}
+			<DisplayText value={title} />
+		{/if}
+	</h1>
 
 	{@render children()}
 </section>

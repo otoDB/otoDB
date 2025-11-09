@@ -5,6 +5,7 @@
 	import { enhance } from '$app/forms';
 	import { Rating, UserLevel, Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
+	import { getDisplayText } from '$lib/api';
 
 	let { data, form }: PageProps = $props();
 	let isOriginal = $derived(!!(form?.origin ?? !data.title));
@@ -20,15 +21,14 @@
 <svelte:head>
 	<title>
 		{data.title
-			? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: data.title })
+			? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: getDisplayText(data.title) })
 			: m.helpful_away_jay_succeed()}
 	</title>
 </svelte:head>
 
 <Section
-	title={data.title
-		? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: data.title })
-		: m.helpful_away_jay_succeed()}
+	titleType={m.helpful_away_jay_succeed()}
+	titleName={data.title}
 >
 	<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 	<ul>

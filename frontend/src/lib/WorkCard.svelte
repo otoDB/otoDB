@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { components } from './schema';
 	import WorkTag from './WorkTag.svelte';
+	import DisplayText from './DisplayText.svelte';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getDisplayText } from './api';
 
 	interface Props {
 		work: components['schemas']['WorkSchema'];
@@ -17,9 +19,9 @@
 	]}
 >
 	<a href="/work/{work.id}" tabindex="-1" class="flex h-full items-center">
-		<img src={work.thumbnail} alt={work.title} class="aspect-video h-full object-cover" />
+		<img src={work.thumbnail} alt={getDisplayText(work.title)} class="aspect-video h-full object-cover" />
 	</a>
-	<a href="/work/{work.id}" class="my-2 line-clamp-2 self-center px-4">{work.title}</a>
+	<a href="/work/{work.id}" class="my-2 line-clamp-2 self-center px-4"><DisplayText value={work.title} /></a>
 	<!-- Caller can choose to not supply tags -->
 	{#if work.tags}
 		<div

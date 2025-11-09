@@ -4,11 +4,12 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { debounce } from '$lib/ui';
-	import client from '$lib/api';
+	import client, { getDisplayText } from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { draggable, droppable } from '@thisux/sveltednd';
 	import Pager from '$lib/Pager.svelte';
 	import { callSavingToast } from '$lib/toast';
+	import DisplayText from '$lib/DisplayText.svelte';
 
 	let { data, form }: PageProps = $props();
 
@@ -144,12 +145,12 @@
 								><img
 									class="w-56"
 									src={entry.work.thumbnail}
-									alt={entry.work.title}
+									alt={getDisplayText(entry.work.title)}
 								/></a
 							>
 							<h3>
 								<a target="_blank" href="/work/{entry.work.id}"
-									>{entry.work.title}</a
+									><DisplayText value={entry.work.title} /></a
 								>
 							</h3>
 						</td><td

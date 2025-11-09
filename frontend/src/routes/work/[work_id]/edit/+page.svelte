@@ -4,13 +4,13 @@
 	import type { PageProps } from '../$types';
 	import { Platform, Rating, WorkOrigin, UserLevel, WorkStatus } from '$lib/enums';
 	import RelationEditor from '$lib/RelationEditor.svelte';
-	import client from '$lib/api';
+	import client, { getDisplayText } from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
 
 	let { data, form }: PageProps = $props();
-	let title: string = $state(form?.title ?? data.title!),
+	let title: string = $state(form?.title ?? getDisplayText(data.title, '')),
 		description: string = $state(form?.description ?? data.description!),
 		rating: number = $state(form?.rating ?? data.rating!),
 		thumbnail_source_id: number | null = $state(
@@ -74,7 +74,8 @@
 </script>
 
 <Section
-	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
+	titleType={m.grand_merry_fly_succeed()}
+	titleName={data.title}
 	menuLinks={data.links}
 >
 	<form method="POST" use:dirtyEnhance action="?/edit">

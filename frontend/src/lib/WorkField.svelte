@@ -1,8 +1,10 @@
 <script lang="ts">
 	import client from './api';
+	import { getDisplayText } from './api';
 	import { m } from './paraglide/messages';
 	import type { components } from './schema';
 	import { clickOutside, debounce } from './ui';
+	import DisplayText from './DisplayText.svelte';
 
 	let self: HTMLElement;
 
@@ -31,7 +33,7 @@
 
 	$effect(() => {
 		if (value) {
-			input = value.title;
+			input = getDisplayText(value.title, '');
 			locked_in = true;
 		} else {
 			locked_in = false;
@@ -53,7 +55,7 @@
 			}}>{m.quick_happy_trout_amuse()}</button
 		>
 		<a target="_blank" href="/work/{value?.id}"
-			><img class="w-56" src={value?.thumbnail} alt={value?.title} /></a
+			><img class="w-56" src={value?.thumbnail} alt={getDisplayText(value?.title)} /></a
 		>
 	{/if}
 	{#if suggestions.length}
@@ -67,18 +69,18 @@
 			<tbody>
 				{#each suggestions as v, i (i)}
 					<tr class="w bg-otodb-bg-fainter hover:bg-otodb-bg-faint p-1">
-						<td><img class="w-20" src={v.thumbnail} alt={v.title} /></td>
+						<td><img class="w-20" src={v.thumbnail} alt={getDisplayText(v.title)} /></td>
 						<td
 							><a
 								class="cursor-pointer"
 								href={null}
 								onclick={() => {
 									value = v;
-									input = v.title;
+									input = getDisplayText(v.title, '');
 									suggestions = [];
 									locked_in = true;
 									if (oninput) oninput(self, v);
-								}}>{v.title} ({v.id})</a
+								}}><DisplayText value={v.title} /> ({v.id})</a
 							>
 						</td>
 					</tr>

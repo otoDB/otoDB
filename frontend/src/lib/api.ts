@@ -6,6 +6,7 @@ import type { Cookies } from '@sveltejs/kit';
 import setCookie from 'set-cookie-parser';
 import { Languages } from './enums';
 import { getLocale } from './paraglide/runtime';
+import { m } from './paraglide/messages';
 
 const backend = browser ? PUBLIC_BACKEND_URL_EXTERNAL : PUBLIC_BACKEND_URL_INTERNAL;
 
@@ -72,3 +73,7 @@ export const getTagDisplayName = (tag) =>
 
 export const getTagDisplaySlug = (tag) =>
 	tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.slug ?? tag.slug;
+
+export function getDisplayText(value: string | null | undefined, placeholder: string = m.lost_game_mink_loop()): string {
+	return value || placeholder;
+}

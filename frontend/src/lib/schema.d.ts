@@ -1615,7 +1615,7 @@ export interface components {
             /** Work Duration */
             work_duration?: number | null;
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -1629,11 +1629,11 @@ export interface components {
              */
             work_status: number;
             /** Source Id */
-            source_id: string;
+            source_id?: string | null;
         };
         /**
          * WorkSourceMetadataSchema
-         * @description Manual metadata for unavailable sources - matches WorkSource model fields
+         * @description Manual WorkSource metadata input
          */
         WorkSourceMetadataSchema: {
             /** Title */
@@ -1711,7 +1711,7 @@ export interface components {
             /** Work Duration */
             work_duration?: number | null;
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -1725,7 +1725,7 @@ export interface components {
              */
             work_status: number;
             /** Source Id */
-            source_id: string;
+            source_id?: string | null;
             /** Media */
             media: number | null;
         };
@@ -2747,6 +2747,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
         };
     };

@@ -75,5 +75,5 @@ export const getTagDisplaySlug = (tag) =>
 	tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.slug ?? tag.slug;
 
 export function getDisplayText(value: string | null | undefined, placeholder: string = m.lost_game_mink_loop()): string {
-	return value || placeholder;
+	return value !== null && value !== undefined ? value : placeholder;
 }

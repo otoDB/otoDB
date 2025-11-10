@@ -1,7 +1,13 @@
 import pytest
 
-from otodb.models import MediaWork, TagWork, TagWorkInstance, TagWorkParenthood
-from otodb.models.enums import WorkTagCategory
+from otodb.models import (
+	MediaWork,
+	TagWork,
+	TagWorkInstance,
+	TagWorkParenthood,
+	TagWorkLangPreference,
+)
+from otodb.models.enums import WorkTagCategory, LanguageTypes
 
 
 # Tests
@@ -150,6 +156,115 @@ class TestTagLanguagePreference:
 		# Verify we don't have an alias chain
 		assert existing_alias.aliased_to == base_tag
 		assert base_tag.aliased_to is None
+
+	def test_add_lang_pref_basic(self, editor, tag_client):
+		"""
+		Test that adding a language preference to a tag works correctly.
+		Regression test for: 'list' object has no attribute 'filter' error.
+		"""
+		# Create a tag
+		tag = TagWork.objects.create(name='test_tag')
+
+		# Add a language preference
+		response = tag_client.put(
+			f'/lang_pref?tag_slug={tag.slug}&lang={LanguageTypes.JAPANESE}',
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		# Verify the preference was created
+		assert TagWorkLangPreference.objects.filter(
+			tag=tag, lang=LanguageTypes.JAPANESE
+		).exists()
+
+	def test_add_lang_pref_updates_existing(self, editor, tag_client):
+		"""
+		Test that adding a language preference replaces the existing one for that language.
+		"""
+		# Create a tag with an existing language preference
+		tag = TagWork.objects.create(name='test_tag')
+		old_pref = TagWorkLangPreference.objects.create(
+			tag=tag, lang=LanguageTypes.ENGLISH
+		)
+
+		# Update the same language preference
+		response = tag_client.put(
+			f'/lang_pref?tag_slug={tag.slug}&lang={LanguageTypes.ENGLISH}',
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		# Verify old preference was deleted and new one created
+		assert not TagWorkLangPreference.objects.filter(pk=old_pref.pk).exists()
+		new_pref = TagWorkLangPreference.objects.get(
+			tag=tag, lang=LanguageTypes.ENGLISH
+		)
+		assert new_pref.pk != old_pref.pk
+
+	def test_add_lang_pref_with_aliases(self, editor, tag_client):
+		"""
+		Test that adding a language preference clears it from all aliases.
+		"""
+		# Create base tag with aliases
+		base_tag = TagWork.objects.create(name='attack_on_titan')
+		alias1 = TagWork.objects.create(name='shingeki_no_kyojin')
+		alias2 = TagWork.objects.create(name='aot')
+		alias1.aliased_to = base_tag
+		alias2.aliased_to = base_tag
+		alias1.save()
+		alias2.save()
+
+		# Add language preferences to aliases
+		TagWorkLangPreference.objects.create(tag=alias1, lang=LanguageTypes.JAPANESE)
+		TagWorkLangPreference.objects.create(tag=alias2, lang=LanguageTypes.JAPANESE)
+
+		# Add language preference to base tag
+		response = tag_client.put(
+			f'/lang_pref?tag_slug={base_tag.slug}&lang={LanguageTypes.JAPANESE}',
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		# Verify preferences on aliases were deleted
+		assert not TagWorkLangPreference.objects.filter(
+			tag=alias1, lang=LanguageTypes.JAPANESE
+		).exists()
+		assert not TagWorkLangPreference.objects.filter(
+			tag=alias2, lang=LanguageTypes.JAPANESE
+		).exists()
+
+		# Verify new preference exists on base tag
+		assert TagWorkLangPreference.objects.filter(
+			tag=base_tag, lang=LanguageTypes.JAPANESE
+		).exists()
+
+	def test_add_lang_pref_to_alias_tag(self, editor, tag_client):
+		"""
+		Test that adding a language preference to an alias tag works correctly.
+		"""
+		# Create base tag and alias
+		base_tag = TagWork.objects.create(name='attack_on_titan')
+		alias_tag = TagWork.objects.create(name='shingeki_no_kyojin')
+		alias_tag.aliased_to = base_tag
+		alias_tag.save()
+
+		# Add existing preference to base tag
+		TagWorkLangPreference.objects.create(tag=base_tag, lang=LanguageTypes.KOREAN)
+
+		# Add language preference using alias slug
+		response = tag_client.put(
+			f'/lang_pref?tag_slug={alias_tag.slug}&lang={LanguageTypes.KOREAN}',
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		# Verify old preference was deleted
+		prefs = TagWorkLangPreference.objects.filter(
+			tag__in=[base_tag, alias_tag], lang=LanguageTypes.KOREAN
+		)
+		# Should only have one preference (the new one on alias_tag)
+		assert prefs.count() == 1
+		assert prefs.first().tag == alias_tag
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)

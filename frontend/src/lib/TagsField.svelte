@@ -45,7 +45,7 @@
 		});
 		if (!data) return;
 		suggestions = data.items;
-	});
+	}, type === 'work' ? 0 : 300);
 
 	const updateValue = () => {
 		value = [

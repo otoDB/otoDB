@@ -30,7 +30,7 @@
 </script>
 
 <span role="none">
-	<input type="text" oninput={debounce(search)} bind:value {...props} />
+	<input type="text" oninput={debounce(search, type === 'work' ? 0 : 300)} bind:value {...props} />
 	{#if suggestions.length}
 		<ul
 			class="absolute z-1 list-none"

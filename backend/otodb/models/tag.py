@@ -277,37 +277,50 @@ class TagWork(OtodbTagModel):
 			cte, select=cte.join(TagWork, id=cte.col.id).annotate(fr=cte.col.fr)
 		).order_by()
 
-	@property
-	def primary_path(self):
+	@classmethod
+	def get_primary_paths(cls, tag_ids: list[int]) -> dict[int, list[Self]]:
+		if not tag_ids:
+			return {}
+
 		cte = CTE.recursive(
-			lambda cte: TagWork.objects.order_by()
-			.filter(id=self.id)
+			lambda cte: cls.objects.order_by()
+			.filter(id__in=tag_ids)
 			.values(
 				'id',
+				source_tag_id=models.F('id'),
 				depth=Value(0, output_field=models.IntegerField()),
 			)
 			.union(
 				cte.join(
-					TagWork.objects.order_by(),
+					cls.objects.order_by(),
 					parenthood__tag_id=cte.col.id,
 					parenthood__primary=True,
 					aliased_to__isnull=True,
 					deprecated=False,
 				).values(
 					'id',
+					source_tag_id=cte.col.source_tag_id,
 					depth=cte.col.depth + Value(1, output_field=models.IntegerField()),
 				),
 				all=True,
 			)
 		)
-		return (
-			with_cte(
-				cte,
-				select=cte.join(TagWork, id=cte.col.id).annotate(depth=cte.col.depth),
-			)
-			.order_by('-depth')
-			.exclude(id=self.id)
-		)
+
+		results = with_cte(
+			cte,
+			select=cte.join(cls, id=cte.col.id).annotate(
+				source_tag_id=cte.col.source_tag_id, depth=cte.col.depth
+			),
+		).order_by('source_tag_id', '-depth')
+
+		paths_dict = {}
+		for tag in results:
+			if tag.id != tag.source_tag_id:
+				if tag.source_tag_id not in paths_dict:
+					paths_dict[tag.source_tag_id] = []
+				paths_dict[tag.source_tag_id].append(tag)
+
+		return paths_dict
 
 	@classmethod
 	def transfer_data(cls, from_tag: Self, to_tag: Self):

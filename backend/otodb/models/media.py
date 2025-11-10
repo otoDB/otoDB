@@ -41,7 +41,8 @@ class ActiveManager(models.Manager):
 		)
 
 		return qs.select_related('thumbnail_source').prefetch_related(
-			Prefetch('tagworkinstance_set', queryset=instances_queryset)
+			Prefetch('tagworkinstance_set', queryset=instances_queryset),
+			'worksource_set',
 		)
 
 
@@ -212,12 +213,12 @@ class MediaWork(models.Model):
 	@property
 	def relations(self):
 		rs = self.relation_A.all() | self.relation_B.all()
-		return rs, MediaWork.objects.filter(
+		return rs, MediaWork.active_objects.filter(
 			id__in=[
 				*rs.values_list('A_id', flat=True),
 				*rs.values_list('B_id', flat=True),
 			]
-		).exclude(id=self.id)
+		).exclude(id=self.pk)
 
 
 class MediaSong(models.Model):

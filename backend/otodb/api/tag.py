@@ -205,7 +205,11 @@ def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
 @user_is_trusted
 def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
-	tag.lang_prefs.filter(lang=LanguageTypes(lang).value).delete()
+	base_tag = tag.aliased_to if tag.aliased_to else tag
+	tags_to_clear = [base_tag] + list(base_tag.aliases.all())
+	TagWorkLangPreference.objects.filter(
+		tag__in=tags_to_clear, lang=LanguageTypes(lang).value
+	).delete()
 	TagWorkLangPreference.objects.create(tag=tag, lang=lang)
 
 

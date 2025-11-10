@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Self
 from itertools import chain
 
 from django.db import models
+from django.utils.functional import cached_property
 from django.db.models import Value, Q
 from simple_history.models import HistoricalRecords, HistoricForeignKey
 from tagulous.models import BaseTagModel, TagModelManager
@@ -72,7 +73,10 @@ class LowerCaseTagModelManager(TagModelManager):
 			super()
 			.get_queryset()
 			.select_related('aliased_to')
-			.prefetch_related('aliases')
+			.prefetch_related(
+				'aliases',
+				'tagworklangpreference_set',
+			)
 		)
 
 
@@ -174,14 +178,16 @@ class TagWork(OtodbTagModel):
 				type_value |= t
 		self.media_type = type_value if type_value > 0 else None
 
-	@property
+	@cached_property
 	def lang_prefs(self):
 		if self.aliased_to:
 			return self.aliased_to.lang_prefs
-		q = self.tagworklangpreference_set.all()
-		for alias in self.aliases.all():
-			q |= alias.tagworklangpreference_set.all()
-		return q.distinct()
+		all_prefs_qs = chain(
+			self.tagworklangpreference_set.all(),
+			*(alias.tagworklangpreference_set.all() for alias in self.aliases.all()),
+		)
+		prefs_dict = {pref.pk: pref for pref in all_prefs_qs}
+		return list(prefs_dict.values())
 
 	@property
 	def unaliasable(self):

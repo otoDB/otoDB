@@ -188,6 +188,7 @@
 								type="text"
 								name="song_title"
 								value={data.tag?.song?.title ?? ''}
+								required
 							/></td
 						></tr
 					>
@@ -197,6 +198,7 @@
 								type="text"
 								name="song_author"
 								value={data.tag?.song?.author ?? ''}
+								required
 							/></td
 						></tr
 					>

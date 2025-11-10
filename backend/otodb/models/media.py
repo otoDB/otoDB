@@ -52,6 +52,10 @@ TagField.forbidden_fields = cast(
 
 
 class TagWorkInstance(models.Model):
+	if TYPE_CHECKING:
+		work_id: int
+		work_tag_id: int
+
 	class Meta:
 		unique_together = (('work', 'work_tag'),)
 

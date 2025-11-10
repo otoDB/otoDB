@@ -122,14 +122,37 @@ def tag(request: HttpRequest, tag_slug: str):
 
 @tag_router.get('details', response=TagWorkDetailsSchema)
 def details(request: HttpRequest, tag_slug: str):
-	tag = get_object_or_404(TagWork.objects, slug=tag_slug)
+	tag = get_object_or_404(
+		TagWork.objects.prefetch_related(
+			'childhood',
+			'wikipage_set',
+			'aliases',
+			'aliases__tagworklangpreference_set',
+			'aliases__aliases',
+			'aliases__aliases__tagworklangpreference_set',
+			'aliased_to__tagworklangpreference_set',
+			'tagworklangpreference_set',
+		),
+		slug=tag_slug,
+	)
 
 	primary_parent = [
 		*tag.childhood.filter(primary=True).values_list('parent__slug', flat=True)
 	]
 	primary_parent = primary_parent[0] if primary_parent else None
 
-	paths = tag.get_paths().exclude(fr='')
+	paths = (
+		tag.get_paths()
+		.exclude(fr='')
+		.prefetch_related(
+			'aliases',
+			'aliases__tagworklangpreference_set',
+			'aliases__aliases',
+			'aliases__aliases__tagworklangpreference_set',
+			'aliased_to__tagworklangpreference_set',
+			'tagworklangpreference_set',
+		)
+	)
 	adj = {
 		k: [vv[0] for vv in v]
 		for k, v in groupby(
@@ -139,8 +162,8 @@ def details(request: HttpRequest, tag_slug: str):
 	return {
 		'paths': (paths.distinct(), adj),
 		'primary_parent': primary_parent,
-		'wiki_page': tag.wikipage_set.all(),
-		'aliases': tag.aliases.all(),
+		'wiki_page': tag.wikipage_set,
+		'aliases': tag.aliases,
 	}
 
 

@@ -57,6 +57,8 @@ def tagwork_ordering_case(prefix=''):
 
 
 class LowerCaseTagModelManager(TagModelManager):
+	"""Base manager that handles lowercase name normalization for all tag models"""
+
 	def get_or_create(self, *args, **kwargs):
 		if 'name' in kwargs:
 			kwargs['name'] = name_cleaner(kwargs['name'])
@@ -67,12 +69,14 @@ class LowerCaseTagModelManager(TagModelManager):
 			kwargs['name'] = name_cleaner(kwargs['name'])
 		return super().get(*args, **kwargs)
 
+
+class TagWorkManager(LowerCaseTagModelManager):
 	def get_queryset(self):
 		# Prefetch language preferences with their tag relationship
 		lang_prefs_qs = TagWorkLangPreference.objects.select_related('tag')
 
 		# For aliases, use parent's get_queryset to avoid infinite recursion
-		aliases_base_qs = super(LowerCaseTagModelManager, self).get_queryset()
+		aliases_base_qs = super(TagWorkManager, self).get_queryset()
 
 		return (
 			super()
@@ -88,6 +92,11 @@ class LowerCaseTagModelManager(TagModelManager):
 				),
 			)
 		)
+
+
+class TagSongManager(LowerCaseTagModelManager):
+	def get_queryset(self):
+		return super().get_queryset().prefetch_related('children')
 
 
 class OtodbTagModel(BaseTagModel):
@@ -131,7 +140,7 @@ class OtodbTagModel(BaseTagModel):
 
 
 class TagWork(OtodbTagModel):
-	objects = LowerCaseTagModelManager()
+	objects = TagWorkManager()
 
 	if TYPE_CHECKING:
 		tagworkconnection_set: QuerySet['TagWorkConnection']
@@ -446,7 +455,7 @@ class WikiPage(models.Model):
 
 
 class TagSong(OtodbTagModel):
-	objects = LowerCaseTagModelManager()
+	objects = TagSongManager()
 
 	class TagMeta:
 		protect_all = True

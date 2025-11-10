@@ -5,6 +5,7 @@ import re
 from urllib.parse import urlparse, parse_qs
 
 from django.db import transaction, models
+from django.db import connection as dj_connection
 from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
@@ -39,7 +40,7 @@ from otodb.models.enums import (
 
 from .common import (
 	FatTagWorkSchema,
-	TagWorkSchema,
+	TagWorkSearchResultSchema,
 	ThinWorkSchema,
 	TagWorkDetailsSchema,
 	user_is_trusted,
@@ -62,7 +63,7 @@ def filter_tags_by_media_type(qs, media_type: list[int]):
 	).filter(Q(mt__gt=0))
 
 
-@tag_router.get('search', response=list[TagWorkSchema])
+@tag_router.get('search', response=list[TagWorkSearchResultSchema])
 @paginate
 def search(
 	request: HttpRequest,
@@ -72,44 +73,121 @@ def search(
 	media_type: list[int] | None = Query(None),
 ):
 	cleaned_query = clean_incoming_tag_name(query)
-	qs = TagWork.objects.filter(name__contains=cleaned_query)
 
-	if resolve_aliases:
-		qs = qs.filter(aliased_to__isnull=True) | TagWork.objects.filter(
-			id__in=qs.values('aliased_to__id')
+	# PostgreSQL: Single query from materialized view
+	if dj_connection.vendor == 'postgresql':
+		# Build dynamic WHERE conditions
+		conditions = ['deprecated = false']
+		params = []
+
+		# Name search - search both tag name and alias names
+		conditions.append(
+			'(name ILIKE %s OR EXISTS (SELECT 1 FROM unnest(alias_names) AS alias WHERE alias ILIKE %s))'
 		)
+		params.append(f'%{cleaned_query}%')
+		params.append(f'%{cleaned_query}%')
 
-	if category is not None and category != -1:
-		qs = qs.filter(category=category)
-		if category == WorkTagCategory.MEDIA and media_type:
-			qs = filter_tags_by_media_type(qs, media_type)
+		# Resolve aliases: exclude aliased tags
+		if resolve_aliases:
+			conditions.append('aliased_to_id IS NULL')
 
-	return (
-		qs.filter(deprecated=False)
-		.annotate(
-			n_instance=Case(
-				When(
-					aliased_to__isnull=False, then=Count('aliased_to__tagworkinstance')
-				),
-				default=Count('tagworkinstance'),
-				output_field=models.IntegerField(),
-			),
-			exact_match=Case(
-				When(name__iexact=cleaned_query, then=Value(0)),
-				When(
-					Exists(
-						TagWork.objects.filter(
-							id=OuterRef('id'), aliases__name__iexact=cleaned_query
-						)
+		# Category filter
+		if category is not None and category != -1:
+			conditions.append('category = %s')
+			params.append(category)
+
+			# Media type filter (only for MEDIA category)
+			if category == 6 and media_type:  # WorkTagCategory.MEDIA = 6
+				# Compute bitmask
+				media_bitmask = reduce(lambda a, b: a | b, media_type)
+				conditions.append('(media_type & %s) > 0')
+				params.append(media_bitmask)
+
+		where_clause = ' AND '.join(conditions)
+
+		with dj_connection.cursor() as cursor:
+			cursor.execute(
+				f"""
+				SELECT
+					id,
+					name,
+					slug,
+					category,
+					n_instance,
+					lang_prefs_json::json as lang_prefs_json,
+					aliased_to_json::json as aliased_to_json,
+					CASE
+						WHEN LOWER(name) = LOWER(%s) THEN 0
+						WHEN %s = ANY(
+							SELECT LOWER(alias_name)
+							FROM unnest(alias_names) AS alias_name
+						) THEN 1
+						ELSE 99
+					END as exact_match
+				FROM otodb_tagwork_search_mv
+				WHERE {where_clause}
+				ORDER BY exact_match ASC, n_instance DESC
+			""",
+				[cleaned_query, cleaned_query.lower()] + params,
+			)
+
+			if cursor.description is None:
+				return []
+
+			columns = [col[0] for col in cursor.description]
+			results = []
+
+			for row in cursor.fetchall():
+				result_dict = dict(zip(columns, row))
+				# With ::json cast, psycopg should auto-convert to Python objects
+				result_dict['lang_prefs'] = result_dict.pop('lang_prefs_json', []) or []
+				result_dict['aliased_to'] = result_dict.pop('aliased_to_json', None)
+				result_dict.pop('exact_match', None)  # Used for sorting only
+				results.append(result_dict)
+
+			return results
+
+	else:
+		# SQLite fallback
+		qs = TagWork.objects.filter(name__contains=cleaned_query)
+
+		if resolve_aliases:
+			qs = qs.filter(aliased_to__isnull=True) | TagWork.objects.filter(
+				id__in=qs.values('aliased_to__id')
+			)
+
+		if category is not None and category != -1:
+			qs = qs.filter(category=category)
+			if category == WorkTagCategory.MEDIA and media_type:
+				qs = filter_tags_by_media_type(qs, media_type)
+
+		return (
+			qs.filter(deprecated=False)
+			.annotate(
+				n_instance=Case(
+					When(
+						aliased_to__isnull=False,
+						then=Count('aliased_to__tagworkinstance'),
 					),
-					then=Value(1),
+					default=Count('tagworkinstance'),
+					output_field=models.IntegerField(),
 				),
-				default=Value(99),
-				output_field=models.IntegerField(),
-			),
+				exact_match=Case(
+					When(name__iexact=cleaned_query, then=Value(0)),
+					When(
+						Exists(
+							TagWork.objects.filter(
+								id=OuterRef('id'), aliases__name__iexact=cleaned_query
+							)
+						),
+						then=Value(1),
+					),
+					default=Value(99),
+					output_field=models.IntegerField(),
+				),
+			)
+			.order_by('exact_match', '-n_instance')
 		)
-		.order_by('exact_match', '-n_instance')
-	)
 
 
 @tag_router.get('tag', response={200: FatTagWorkSchema, 300: str})

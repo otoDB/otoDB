@@ -5,7 +5,7 @@ import re
 from urllib.parse import urlparse, parse_qs
 
 from django.db import transaction, models
-from django.db.models import Value, F, Q, Case, When, Count
+from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
@@ -96,7 +96,14 @@ def search(
 			),
 			exact_match=Case(
 				When(name__iexact=cleaned_query, then=Value(0)),
-				When(aliases__name__iexact=cleaned_query, then=Value(1)),
+				When(
+					Exists(
+						TagWork.objects.filter(
+							id=OuterRef('id'), aliases__name__iexact=cleaned_query
+						)
+					),
+					then=Value(1),
+				),
 				default=Value(99),
 				output_field=models.IntegerField(),
 			),

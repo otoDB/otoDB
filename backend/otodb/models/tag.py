@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Self
 from itertools import chain
 
 from django.db import models
-from django.db.models import Value, Q
+from django.db.models import Value, Q, Prefetch
 from simple_history.models import HistoricalRecords, HistoricForeignKey
 from tagulous.models import BaseTagModel, TagModelManager
 
@@ -68,11 +68,25 @@ class LowerCaseTagModelManager(TagModelManager):
 		return super().get(*args, **kwargs)
 
 	def get_queryset(self):
+		# Prefetch language preferences with their tag relationship
+		lang_prefs_qs = TagWorkLangPreference.objects.select_related('tag')
+
+		# For aliases, use parent's get_queryset to avoid infinite recursion
+		aliases_base_qs = super(LowerCaseTagModelManager, self).get_queryset()
+
 		return (
 			super()
 			.get_queryset()
 			.select_related('aliased_to')
-			.prefetch_related('aliases')
+			.prefetch_related(
+				Prefetch('tagworklangpreference_set', queryset=lang_prefs_qs),
+				Prefetch(
+					'aliases',
+					queryset=aliases_base_qs.prefetch_related(
+						Prefetch('tagworklangpreference_set', queryset=lang_prefs_qs)
+					),
+				),
+			)
 		)
 
 
@@ -178,10 +192,15 @@ class TagWork(OtodbTagModel):
 	def lang_prefs(self):
 		if self.aliased_to:
 			return self.aliased_to.lang_prefs
-		q = self.tagworklangpreference_set.all()
+
+		prefs_dict = {}
+		for pref in self.tagworklangpreference_set.all():
+			prefs_dict[pref.pk] = pref
 		for alias in self.aliases.all():
-			q |= alias.tagworklangpreference_set.all()
-		return q.distinct()
+			for pref in alias.tagworklangpreference_set.all():
+				prefs_dict[pref.pk] = pref
+
+		return list(prefs_dict.values())
 
 	@property
 	def unaliasable(self):

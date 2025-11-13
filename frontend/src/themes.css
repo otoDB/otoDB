@@ -112,8 +112,8 @@
 			height: 100%;
 			background-image: url('/retro-voyage-link.svg');
 			background-repeat: no-repeat;
-			background-size: calc(100% - 580px) calc(100% - 470px);
-			background-position: left 200px top 150px;
+			background-size: calc(100% - 550px) calc(100% - 470px);
+			background-position: right 420px top 160px;
 			pointer-events: none;
 			z-index: -1;
 		}

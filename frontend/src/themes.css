@@ -119,3 +119,38 @@
 		}
 	}
 }
+
+.theme-sorimix {
+	--otodb-color-content-primary: rgb(197, 255, 195);
+	--otodb-color-content-fainter: rgb(45, 228, 75);
+	--otodb-color-content-faint: rgb(0, 255, 163);
+	--otodb-color-bg-fainter: rgb(21, 71, 5);
+	--otodb-color-bg-faint: rgb(2, 31, 25);
+	--otodb-color-bg-primary: rgb(0, 94, 31);
+
+	& .prose {
+		@apply prose-invert;
+	}
+
+	> div.bg-marker:first-child {
+		&::after {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image:
+				url('/sorimix-front.png'), url('/sorimix-logo.png'),
+				linear-gradient(to bottom, #031414, #03403d);
+			background-position:
+				bottom center,
+				right,
+				center;
+			background-size: cover;
+			background-repeat: no-repeat;
+			pointer-events: none;
+			z-index: -1;
+		}
+	}
+}

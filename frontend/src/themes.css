@@ -92,8 +92,8 @@
 			width: 100%;
 			height: 100%;
 			background-image:
-				url('/retro-voyage-br.png'), url('/retro-voyage-tl.png'),
-				url('/retro-voyage-tr.png'), url('/retro-voyage-bl.png');
+				url('/retro-voyage-rb.png'), url('/retro-voyage-lt.png'),
+				url('/retro-voyage-rt.png'), url('/retro-voyage-lb.png');
 			background-position:
 				bottom right,
 				top left,

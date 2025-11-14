@@ -22,8 +22,8 @@ services:
       OTODB_DB_HOST: db
       OTODB_DB_PORT: "5432"
     volumes:
-      - ./backend:/app
       - /mnt/otodb-block/static:/app/static # Mount to specific location
+      # - ./backend:/app  # For development purposes only
     working_dir: /app
     depends_on:
       - db

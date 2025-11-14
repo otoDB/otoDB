@@ -197,12 +197,13 @@ def process_video_info(full_info, link=None):
 				if title_chapter_mark != -1:
 					info['title'] = info['title'][:title_chapter_mark]
 				info['webpage_url'] = make_video_url[info['extractor']](info['id'])
-				info['tags'] = [
-					tag[3:-1]
-					if tag.startswith('发现《') and tag.endswith('》')
-					else tag
-					for tag in info['tags']
-				]
+				if 'tags' in info:
+					info['tags'] = [
+						tag[3:-1]
+						if tag.startswith('发现《') and tag.endswith('》')
+						else tag
+						for tag in info['tags']
+					]
 			case Platform.NICONICO:
 				pass  # webpage_url already set
 			case Platform.SOUNDCLOUD:

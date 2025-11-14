@@ -25,6 +25,7 @@ dependencies = [
     "django-cte>=2.0.0",
     "boto3>=1.40.30",
     "sentry-sdk[django]>=2.43.0",
+    "patch-package-py>=0.1.3",
 ]
 
 [tool.ruff.format]

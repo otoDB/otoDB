@@ -23,6 +23,7 @@ services:
       OTODB_DB_PORT: "5432"
     volumes:
       - /mnt/otodb-block/static:/app/static # Mount to specific location
+      - ./backend/cookies.txt:/app/cookies.txt:ro # Mount cookies for yt-dlp
       # - ./backend:/app  # For development purposes only
     working_dir: /app
     depends_on:

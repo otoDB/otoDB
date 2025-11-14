@@ -523,6 +523,7 @@ dependencies = [
     { name = "furl" },
     { name = "granian" },
     { name = "nh3" },
+    { name = "patch-package-py" },
     { name = "psycopg", extra = ["binary", "pool"] },
     { name = "python-dotenv" },
     { name = "pyyaml" },
@@ -555,6 +556,7 @@ requires-dist = [
     { name = "furl", specifier = ">=2.1.4" },
     { name = "granian", specifier = ">=2.1.0" },
     { name = "nh3", specifier = ">=0.2.21" },
+    { name = "patch-package-py", specifier = ">=0.1.3" },
     { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2.6" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
@@ -578,6 +580,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f", size = 165727, upload-time = "2025-04-19T11:48:59.673Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484", size = 66469, upload-time = "2025-04-19T11:48:57.875Z" },
+]
+
+[[package]]
+name = "patch-package-py"
+version = "0.1.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2a/b4/52b2c2703f5057fd34fb44489ab28e8c0de1480d836ac0f6b49c1f6d97e9/patch_package_py-0.1.3.tar.gz", hash = "sha256:e166a5bdc5a8729bf736308be62c59f5437672c8675fa49b440c9a49a3acb975", size = 8416, upload-time = "2025-10-15T01:10:08.828Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3e/6b/cafbb00c42dd2142b7a32fa77b70b8e13a39baf72b67973bca4ac80b4888/patch_package_py-0.1.3-py3-none-any.whl", hash = "sha256:5fcce6aa40490f46c85893ec7e17954c655dcb85eaa494b4f369cecc1e50f46b", size = 6377, upload-time = "2025-10-15T01:10:07.499Z" },
 ]
 
 [[package]]

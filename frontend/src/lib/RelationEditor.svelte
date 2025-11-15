@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
 	import client from './api';
-	import { SongRelationTypes, WorkRelationTypes } from './enums';
+	import { SongRelationTypes, WorkRelationEditorPredicate } from './enums';
 	import { m } from './paraglide/messages';
+	import { isSOV } from './ui';
 	import { getLocale } from './paraglide/runtime';
 	import type { components } from './schema';
 	import SongField from './SongField.svelte';
@@ -66,8 +67,6 @@
 			new_item = null;
 		}
 	};
-
-	const invert_subordinate_phrase = getLocale() !== 'en';
 </script>
 
 <div class="grid w-fit grid-cols-2 gap-3">
@@ -96,17 +95,21 @@
 		{#each relations as relation, i (i)}
 			<tr>
 				<td class="w-64">{@render work(relation, !relation.swapped)}</td>
-				<td>{m.grand_vexed_snail_ripple()}</td>
-				{#if invert_subordinate_phrase}
+				{#if isSOV(getLocale()) || obj_type === 'song'}
+					<td>{m.grand_vexed_snail_ripple()}</td>
+				{/if}
+				{#if isSOV(getLocale()) || (obj_type === 'song' && getLocale() !== 'en')}
 					<td class="w-64">{@render work(relation, relation.swapped)}</td>
-					<td>{m.clean_best_kangaroo_achieve()}</td>
+					{#if obj_type === 'song'}
+						<td>{m.clean_best_kangaroo_achieve()}</td>
+					{/if}
 					<td
 						><select
 							name="relation"
 							bind:value={relation.relation}
 							onchange={post_relation(i, true)}
 						>
-							{#each obj_type === 'work' ? WorkRelationTypes : SongRelationTypes as rel, j (j)}
+							{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationTypes as rel, j (j)}
 								<option value={j}>{rel()}</option>
 							{/each}
 						</select></td
@@ -118,12 +121,14 @@
 							bind:value={relation.relation}
 							onchange={post_relation(i, true)}
 						>
-							{#each obj_type === 'work' ? WorkRelationTypes : SongRelationTypes as rel, j (j)}
+							{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationTypes as rel, j (j)}
 								<option value={j}>{rel()}</option>
 							{/each}
 						</select></td
 					>
-					<td>{m.clean_best_kangaroo_achieve()}</td>
+					{#if obj_type === 'song'}
+						<td>{m.clean_best_kangaroo_achieve()}</td>
+					{/if}
 					<td class="w-64">{@render work(relation, relation.swapped)}</td>
 				{/if}
 				<td

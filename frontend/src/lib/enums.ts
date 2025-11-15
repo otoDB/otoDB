@@ -46,6 +46,13 @@ export const WorkRelationTypes = [
 	m.icy_raw_gazelle_heal
 ];
 
+export const WorkRelationEditorPredicate = [
+	m.curly_many_orangutan_grip,
+	m.sound_funny_hound_embrace,
+	m.shy_bland_bird_harbor,
+	m.major_tense_fly_savor
+];
+
 export const WorkRelationDisplayForward = [
 	m.free_mellow_tiger_cook,
 	m.dizzy_true_florian_pop,

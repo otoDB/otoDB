@@ -77,7 +77,7 @@
 	--otodb-color-content-fainter: rgb(100, 128, 160);
 	--otodb-color-bg-primary: #64dfe7;
 	--otodb-color-bg-faint: rgb(228, 245, 244);
-	--otodb-color-bg-fainter: rgb(163, 244, 247);;
+	--otodb-color-bg-fainter: rgb(163, 244, 247);
 
 	& .prose {
 		@apply prose-neutral;

@@ -5,10 +5,9 @@
 	import { ProfileConnectionTypes, ProfileConnectionLink, UserLevel } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import { current_version, version_end_dates } from '$lib/ui';
+	import { version_end_dates } from '$lib/ui';
 
 	let { data }: PageProps = $props();
-	console.log(version_end_dates);
 </script>
 
 <Section

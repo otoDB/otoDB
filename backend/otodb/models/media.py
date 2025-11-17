@@ -208,7 +208,7 @@ class MediaWork(models.Model):
 			if first_source:
 				thumbnail = first_source.thumbnail
 		# Fallback to deprecated field (3rd-party remote URL)
-		return self._thumbnail or thumbnail
+		return thumbnail or self._thumbnail
 
 	@property
 	def relations(self):

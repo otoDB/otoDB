@@ -282,7 +282,9 @@ class WorkSource(models.Model):
 		"""
 		Returns the URL endpoint from which a thumbnail is served.
 		"""
-		return storage_manager.url(self.thumbnail_path) or self.thumbnail_url  # type: ignore -- Fallback to 3rd-party remote thumbnail URL
+		if self.thumbnail_path:
+			return storage_manager.url(self.thumbnail_path)
+		return self.thumbnail_url  # type: ignore -- Fallback to 3rd-party remote thumbnail URL
 
 
 class WorkSourceRejection(models.Model):

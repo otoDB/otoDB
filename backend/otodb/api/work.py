@@ -1,3 +1,5 @@
+import re
+
 from typing import List, Literal
 
 from django.http import HttpRequest
@@ -76,11 +78,27 @@ def query_external(
 	if url:
 		work = get_object_or_404(WorkSource.active_objects, url=url)
 	elif platform and id:
-		work = get_object_or_404(
-			WorkSource.active_objects,
-			platform=Platform.from_str(platform),
-			source_id=id,
-		)
+		platform_str = Platform.from_str(platform)
+		match platform_str:
+			case Platform.SOUNDCLOUD:
+				if re.fullmatch(r"[^/]+/[^/]+", id): # URL slug e.g. `user/track`
+					work = get_object_or_404(
+						WorkSource.active_objects,
+						platform=Platform.SOUNDCLOUD,
+						url="https://soundcloud.com/" + id,
+					)
+				else: # else numeric ID e.g. `123456`
+					work = get_object_or_404(
+						WorkSource.active_objects,
+						platform=Platform.SOUNDCLOUD,
+						source_id=id,
+					)
+			case _:
+				work = get_object_or_404(
+					WorkSource.active_objects,
+					platform=platform_str,
+					source_id=id,
+				)
 	else:
 		# TODO: raise a more specific error
 		raise ValueError(

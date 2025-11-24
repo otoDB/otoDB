@@ -81,13 +81,13 @@ def query_external(
 		platform_str = Platform.from_str(platform)
 		match platform_str:
 			case Platform.SOUNDCLOUD:
-				if re.fullmatch(r"[^/]+/[^/]+", id): # URL slug e.g. `user/track`
+				if re.fullmatch(r'[^/]+/[^/]+', id):  # URL slug e.g. `user/track`
 					work = get_object_or_404(
 						WorkSource.active_objects,
 						platform=Platform.SOUNDCLOUD,
-						url="https://soundcloud.com/" + id,
+						url='https://soundcloud.com/' + id,
 					)
-				else: # else numeric ID e.g. `123456`
+				else:  # else numeric ID e.g. `123456`
 					work = get_object_or_404(
 						WorkSource.active_objects,
 						platform=Platform.SOUNDCLOUD,

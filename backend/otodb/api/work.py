@@ -77,9 +77,8 @@ def query_external(
 		work = get_object_or_404(WorkSource.active_objects, url=url)
 	elif platform and id:
 		work = get_object_or_404(
-			WorkSource.active_objects,
-			platform=Platform.from_str(platform),
-			source_id=id,
+			WorkSource.active_objects.filter(platform=Platform.from_str(platform)),
+			Q(source_id=id) | Q(url__endswith=id),
 		)
 	else:
 		# TODO: raise a more specific error

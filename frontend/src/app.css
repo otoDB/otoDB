@@ -133,4 +133,10 @@
 	del {
 		background-color: var(--otodb-color-del);
 	}
+
+	/* Labels next to required fields in table forms */
+	main table > tbody > tr > th:has(+ td *:required) > label::after {
+		content: '*';
+		color: var(--otodb-color-del);
+	}
 }

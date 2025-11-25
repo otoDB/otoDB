@@ -396,7 +396,7 @@ def new_source_from_url(
 	request: HttpRequest,
 	url: str,
 	is_reupload: bool,
-	rating: int = 0,
+	rating: int | None = None,
 	work_id: int | None = None,
 	original_url: str | None = None,
 	metadata: WorkSourceMetadataSchema | None = None,
@@ -482,7 +482,7 @@ def new_source_from_url(
 	# the "media" field in a way that's not tracked by the current
 	# object.
 	if is_editor:
-		if work.rating != rating:
+		if rating is not None and work.rating != rating:
 			work.rating = rating
 			work.save(update_fields=['rating'])
 		if src.work_origin != WorkOrigin(is_reupload):

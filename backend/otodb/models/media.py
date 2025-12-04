@@ -192,11 +192,15 @@ class MediaWork(models.Model):
 	@cached_property
 	def tags_annotated(self):
 		t = []
-		for instance in self.tagworkinstance_set.filter(work_tag__deprecated=False):
+		twis = self.tagworkinstance_set.filter(work_tag__deprecated=False)
+		primary_paths = TagWork.get_primary_paths(twis.values_list('id', flat=True))
+		for instance in twis:
 			tag = instance.work_tag
 			tag.sample = instance.used_as_source
 			tag.creator_roles = instance.creator_roles
+			tag.primary_path = primary_paths.get(tag.id, [])
 			t.append(tag)
+
 		return t
 
 	@property

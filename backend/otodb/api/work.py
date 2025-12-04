@@ -182,19 +182,6 @@ def work(request: HttpRequest, work_id: int):
 	work: MediaWork = get_object_or_404(MediaWork.active_objects, id=work_id)
 	if work.moved_to:
 		return 300, work.moved_to.id
-
-	# Bulk compute primary paths for all tags
-	tag_ids = [
-		tag_instance.work_tag_id for tag_instance in work.tagworkinstance_set.all()
-	]
-	if tag_ids:
-		primary_paths = TagWork.get_primary_paths(tag_ids)
-		# Attach computed paths to each tag for schema serialization
-		for tag_instance in work.tagworkinstance_set.all():
-			tag_instance.work_tag.primary_path = primary_paths.get(
-				tag_instance.work_tag_id, []
-			)
-
 	return work
 
 

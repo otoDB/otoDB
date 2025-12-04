@@ -192,7 +192,7 @@ class MediaWork(models.Model):
 	@cached_property
 	def tags_annotated(self):
 		t = []
-		for instance in self.tagworkinstance_set.all():
+		for instance in self.tagworkinstance_set.filter(work_tag__deprecated=False):
 			tag = instance.work_tag
 			tag.sample = instance.used_as_source
 			tag.creator_roles = instance.creator_roles

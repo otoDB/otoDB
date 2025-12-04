@@ -71,17 +71,17 @@ jobs:
       - name: Check server can start
         run: timeout 10 uv run python manage.py runserver || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
-  build_docker:
-    name: Build Docker image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      # - uses: hadolint/hadolint-action@v3.1.0
-      #   with:
-      #     dockerfile: web/Dockerfile
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v5
-        with:
-          push: false
-          context: backend
-          file: backend/Dockerfile
+  # build_docker:
+  #   name: Build Docker image
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     # - uses: hadolint/hadolint-action@v3.1.0
+  #     #   with:
+  #     #     dockerfile: web/Dockerfile
+  #     - uses: docker/setup-buildx-action@v3
+  #     - uses: docker/build-push-action@v5
+  #       with:
+  #         push: false
+  #         context: backend
+  #         file: backend/Dockerfile

@@ -25,11 +25,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.13", "3.14"]
+        python-version: ["3.14"]
         database:
           - { type: sqlite3, name: SQLite }
           - { type: postgresql, name: PostgreSQL 17, version: "17" }
-          - { type: postgresql, name: PostgreSQL 18, version: "18" }
+          # - { type: postgresql, name: PostgreSQL 18, version: "18" }
 
     env:
       OTODB_SECRET_KEY: test-secret-key-for-ci

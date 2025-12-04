@@ -34,8 +34,7 @@
 					<td
 						><select name="platform" value={data.platform ?? null}
 							><option value={null}>---</option
-							>{#each Platform.slice(1) as p, i (i)}<option value={i + 1}
-									>{Platform[i + 1]}</option
+							>{#each Platform.slice(1) as p, i (i)}<option value={i + 1}>{p}</option
 								>{/each}</select
 						></td
 					>

@@ -193,7 +193,9 @@ class MediaWork(models.Model):
 	def tags_annotated(self):
 		t = []
 		twis = self.tagworkinstance_set.filter(work_tag__deprecated=False)
-		primary_paths = TagWork.get_primary_paths(twis.values_list('id', flat=True))
+		primary_paths = TagWork.get_primary_paths(
+			twis.values_list('work_tag_id', flat=True)
+		)
 		for instance in twis:
 			tag = instance.work_tag
 			tag.sample = instance.used_as_source

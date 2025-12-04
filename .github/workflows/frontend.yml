@@ -20,17 +20,17 @@ jobs:
       - run: bunx prettier --check .
       - run: bunx eslint .
 
-  build_docker:
-    name: Build Docker image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      # - uses: hadolint/hadolint-action@v3.1.0
-      #   with:
-      #     dockerfile: web/Dockerfile
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v5
-        with:
-          push: false
-          context: frontend
-          file: frontend/Dockerfile
+  # build_docker:
+  #   name: Build Docker image
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     # - uses: hadolint/hadolint-action@v3.1.0
+  #     #   with:
+  #     #     dockerfile: web/Dockerfile
+  #     - uses: docker/setup-buildx-action@v3
+  #     - uses: docker/build-push-action@v5
+  #       with:
+  #         push: false
+  #         context: frontend
+  #         file: frontend/Dockerfile

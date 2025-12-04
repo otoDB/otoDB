@@ -22,7 +22,7 @@
 		{m.sharp_witty_jackdaw_treat({
 			date: new Date(data.profile.date_created).toLocaleDateString()
 		})} ({version_end_dates.find(
-			(d, i, a) => d[1] - Date.parse(data.profile.date_created) >= 0
+			(d) => d[1] - Date.parse(data.profile.date_created) >= 0
 		)?.[0]})
 	</p>
 

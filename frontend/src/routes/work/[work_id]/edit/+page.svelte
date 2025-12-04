@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from '../$types';
-	import { Platform, Rating, WorkOrigin, UserLevel, WorkStatus } from '$lib/enums';
+	import { Platform, Rating, WorkOrigin, UserLevel } from '$lib/enums';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';

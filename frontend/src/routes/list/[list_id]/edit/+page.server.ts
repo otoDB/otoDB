@@ -14,7 +14,7 @@ export const actions = {
 		const name = data.get('name') as string,
 			description = data.get('description') as string;
 
-		const { error, data: list_id } = await client.PUT('/api/list/list', {
+		const { error, data: _list_id } = await client.PUT('/api/list/list', {
 			fetch,
 			params: { query: { list_id: +params.list_id! } },
 			body: {

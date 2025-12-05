@@ -3,7 +3,7 @@ name = "otodb"
 version = "0.1.0"
 description = "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "diff-match-patch>=20241021",
     "django-comments-xtd>=2.10.1",

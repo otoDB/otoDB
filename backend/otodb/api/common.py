@@ -91,6 +91,22 @@ class TagWorkSchema(Schema):
 	category: int
 
 
+class TagWorkSearchResultSchema(Schema):
+	"""Schema for tag search results from materialized view (PostgreSQL) or queryset (SQLite)"""
+
+	id: int
+	name: str
+	slug: str
+	category: int
+	n_instance: int
+	lang_prefs: list[
+		dict
+	]  # Already JSONB from materialized view, no nested schema needed
+	aliased_to: (
+		dict | None
+	)  # Already JSONB from materialized view, no nested schema needed
+
+
 class FatTagWorkSchema(ModelSchema):
 	id: int
 	children: list[TagWorkSchema]

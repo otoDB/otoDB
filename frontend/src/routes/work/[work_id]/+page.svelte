@@ -357,7 +357,7 @@
 		white-space: pre-wrap;
 		max-height: 15em;
 		overflow-y: auto;
-		word-wrap: break-word;
+		overflow-wrap: anywhere;
 	}
 	th {
 		white-space: nowrap;

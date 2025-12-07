@@ -1,22 +1,23 @@
+from datetime import datetime, timedelta
 import string
 import smtplib
 import logging
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import authenticate, login, logout
 
-from ninja import Schema, Router, Field
+from ninja import Schema, Router, Field, ModelSchema
 from ninja.security import django_auth
 
 from otodb.account.models import Account, Invitation
 from otodb.models.enums import LanguageTypes
 
-from .common import Error, UserPreferencesSchema
+from .common import Error, UserPreferencesSchema, ProfileSchema, user_is_editor
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +37,12 @@ class LoginRequestSchema(Schema):
 @auth_router.get('/csrf')
 @ensure_csrf_cookie
 @csrf_exempt
-def csrf(request):
+def csrf(request: HttpRequest):
 	return HttpResponse()
 
 
 @auth_router.post('/login', response={200: UserLoginSchema, 401: Error})
-def login_endpoint(request, body: LoginRequestSchema):
+def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 	user = authenticate(request, username=body.username, password=body.password)
 	if user is not None:
 		login(request, user)
@@ -57,14 +58,14 @@ class UserStatusSchema(UserLoginSchema):
 
 
 @auth_router.get('/status', response={200: UserStatusSchema, 401: Error})
-def status(request):
+def status(request: HttpRequest):
 	if request.user.is_authenticated:
 		return request.user
 	return 401, {'message': 'Not logged in.'}
 
 
 @auth_router.post('/logout', auth=django_auth)
-def logout_endpoint(request):
+def logout_endpoint(request: HttpRequest):
 	logout(request)
 	return {'message': 'Logged out'}
 
@@ -77,7 +78,7 @@ class RegisterRequestSchema(Schema):
 
 
 @auth_router.post('/register', response={200: UserLoginSchema, 401: Error, 409: Error})
-def register(request, body: RegisterRequestSchema):
+def register(request: HttpRequest, body: RegisterRequestSchema):
 	invite_res = get_object_or_404(Invitation, secret=body.invite, used_by__isnull=True)
 	assert body.password
 	try:
@@ -102,7 +103,7 @@ class ResetPasswordRequestSchema(Schema):
 
 
 @auth_router.post('/reset_password')
-def reset_password(request, body: ResetPasswordRequestSchema):
+def reset_password(request: HttpRequest, body: ResetPasswordRequestSchema):
 	assert body.password
 	user = request.user
 	if user.is_authenticated:
@@ -202,7 +203,7 @@ class SendResetTokenRequestSchema(Schema):
 
 
 @auth_router.put('/reset_password')
-def send_reset_password_token(request, body: SendResetTokenRequestSchema):
+def send_reset_password_token(request: HttpRequest, body: SendResetTokenRequestSchema):
 	try:
 		user = Account.objects.get(email=body.email)
 		user.reset_token = get_random_string(120, string.ascii_letters + string.digits)
@@ -219,3 +220,47 @@ def send_reset_password_token(request, body: SendResetTokenRequestSchema):
 		pass
 	except smtplib.SMTPException as e:
 		logger.error('Could not send mail:', e)
+
+
+class InvitationSchema(ModelSchema):
+	used_by: ProfileSchema | None
+	used_at: datetime | None
+	created_at: datetime
+
+	class Meta:
+		model = Invitation
+		fields = ['secret', 'level']
+
+
+@auth_router.get(
+	'/invites',
+	auth=django_auth,
+	response=tuple[list[InvitationSchema], ProfileSchema | None],
+)
+def user_invites(request: HttpRequest):
+	return 200, (
+		Invitation.objects.filter(created_by=request.user).order_by('created_at'),
+		getattr(
+			Invitation.objects.filter(
+				created_by=request.user, used_by__level__lte=Account.Levels.RESTRICTED
+			).first(),
+			'used_by',
+			None,
+		),
+	)
+
+
+@auth_router.post('/invite', auth=django_auth)
+@user_is_editor
+def new_invite(request: HttpRequest):
+	assert not Invitation.objects.filter(
+		created_by=request.user, created_at__gte=datetime.now() - timedelta(days=14)
+	).exists()
+	assert not Invitation.objects.filter(
+		created_by=request.user, used_by__level__lte=Account.Levels.RESTRICTED
+	).exists()
+	Invitation.objects.create(
+		created_by=request.user,
+		level=Account.Levels.EDITOR,
+		secret=get_random_string(16, string.ascii_letters + string.digits),
+	)

@@ -124,6 +124,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** User Invites */
+        get: operations["otodb_api_auth_user_invites"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** New Invite */
+        post: operations["otodb_api_auth_new_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/query_external": {
         parameters: {
             query?: never;
@@ -1397,6 +1431,38 @@ export interface components {
             /** Email */
             email: string;
         };
+        /** InvitationSchema */
+        InvitationSchema: {
+            used_by: components["schemas"]["ProfileSchema"] | null;
+            /** Used At */
+            used_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Secret */
+            secret: string;
+            /** Level */
+            level: number;
+        };
+        /** ProfileSchema */
+        ProfileSchema: {
+            /** Id */
+            id: number;
+            /** Username */
+            username: string;
+            /**
+             * Level
+             * @default 20
+             */
+            level: number;
+            /**
+             * Date Created
+             * Format: date-time
+             */
+            date_created?: string;
+        };
         /** ExternalQuery */
         ExternalQuery: {
             /** Work Id */
@@ -1571,23 +1637,6 @@ export interface components {
             /** Creator Roles */
             creator_roles: number[];
         };
-        /** ProfileSchema */
-        ProfileSchema: {
-            /** Id */
-            id: number;
-            /** Username */
-            username: string;
-            /**
-             * Level
-             * @default 20
-             */
-            level: number;
-            /**
-             * Date Created
-             * Format: date-time
-             */
-            date_created?: string;
-        };
         /** WorkSourceRejectionSchema */
         WorkSourceRejectionSchema: {
             by: components["schemas"]["ProfileSchema"];
@@ -1615,7 +1664,7 @@ export interface components {
             /** Work Duration */
             work_duration?: number | null;
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -1633,7 +1682,7 @@ export interface components {
         };
         /**
          * WorkSourceMetadataSchema
-         * @description Manual metadata for unavailable sources - matches WorkSource model fields
+         * @description Manual WorkSource metadata input
          */
         WorkSourceMetadataSchema: {
             /** Title */
@@ -1711,7 +1760,7 @@ export interface components {
             /** Work Duration */
             work_duration?: number | null;
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -2317,6 +2366,47 @@ export interface operations {
             };
         };
     };
+    otodb_api_auth_user_invites: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": [
+                        components["schemas"]["InvitationSchema"][],
+                        components["schemas"]["ProfileSchema"] | null
+                    ];
+                };
+            };
+        };
+    };
+    otodb_api_auth_new_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_work_query_external: {
         parameters: {
             query?: {
@@ -2748,6 +2838,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     otodb_api_work_refresh_source: {
@@ -2800,7 +2899,7 @@ export interface operations {
             query: {
                 url: string;
                 is_reupload: boolean;
-                rating?: number;
+                rating?: number | null;
                 work_id?: number | null;
                 original_url?: string | null;
             };

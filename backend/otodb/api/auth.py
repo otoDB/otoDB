@@ -239,7 +239,7 @@ class InvitationSchema(ModelSchema):
 )
 def user_invites(request: HttpRequest):
 	return 200, (
-		Invitation.objects.filter(created_by=request.user).order_by('created_at'),
+		Invitation.objects.filter(created_by=request.user).order_by('-created_at'),
 		getattr(
 			Invitation.objects.filter(
 				created_by=request.user, used_by__level__lte=Account.Levels.RESTRICTED
@@ -253,9 +253,12 @@ def user_invites(request: HttpRequest):
 @auth_router.post('/invite', auth=django_auth)
 @user_is_editor
 def new_invite(request: HttpRequest):
-	assert not Invitation.objects.filter(
-		created_by=request.user, created_at__gte=datetime.now() - timedelta(days=14)
-	).exists()
+	assert (
+		request.user.level >= Account.Levels.ADMIN
+		or not Invitation.objects.filter(
+			created_by=request.user, created_at__gte=datetime.now() - timedelta(days=14)
+		).exists()
+	)
 	assert not Invitation.objects.filter(
 		created_by=request.user, used_by__level__lte=Account.Levels.RESTRICTED
 	).exists()

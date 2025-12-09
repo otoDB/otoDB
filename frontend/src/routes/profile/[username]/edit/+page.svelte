@@ -16,11 +16,12 @@
 
 	const invite_interval = 2 * 7 * 24 * 60 * 60 * 1000; // two weeks
 	const can_create_invite = $derived(
-		!data.invites[1] &&
-			(data.invites[0].length === 0 ||
-				data.invites[0].some(
-					(inv) => Date.now() - Date.parse(inv.created_at) >= invite_interval
-				))
+		data.user.level >= UserLevel.ADMIN ||
+			(!data.invites[1] &&
+				(data.invites[0].length === 0 ||
+					data.invites[0].some(
+						(inv) => Date.now() - Date.parse(inv.created_at) >= invite_interval
+					)))
 	);
 </script>
 

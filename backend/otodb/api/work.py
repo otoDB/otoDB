@@ -589,3 +589,15 @@ def reject_source(request: HttpRequest, source_id: int, reason: str):
 @user_is_editor
 def get_unbound_sources(request: HttpRequest, pending: bool):
 	return WorkSource.objects.filter(media__isnull=True, rejection__isnull=pending)
+
+
+@work_router.get('similar', response=List[ThinWorkSchema])
+def similar(request: HttpRequest, work_id: int):
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	wt = work.tags.filter(deprecated=False).values_list('id', flat=True)
+	return (
+		MediaWork.active_objects.exclude(id=work_id)
+		.filter(tags__in=Subquery(wt))
+		.annotate(shared_tags_count=Count('tags', filter=Q(tags__in=Subquery(wt))))
+		.order_by('-shared_tags_count')
+	)[:6]

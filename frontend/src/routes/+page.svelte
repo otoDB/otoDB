@@ -54,14 +54,14 @@
 	</div>
 
 	{#if data.user}
-		<hr class="my-4" />
+		{#await data.changes}
+			<!-- Blank while loading -->
+		{:then changes}
+			{#if changes && changes.length > 0}
+				<hr class="my-4" />
 
-		<div class="w-full">
-			<h2 class="mb-4 text-xl">{m.sea_cute_beaver_file()}</h2>
-			{#await data.changes}
-				<!-- Blank while loading -->
-			{:then changes}
-				{#if changes && changes.length > 0}
+				<div class="w-full">
+					<h2 class="mb-4 text-xl">{m.sea_cute_beaver_file()}</h2>
 					<table class="w-full">
 						<tbody>
 							{#each changes as c, i (i)}
@@ -94,8 +94,8 @@
 							{/each}
 						</tbody>
 					</table>
-				{/if}
-			{/await}
-		</div>
+				</div>
+			{/if}
+		{/await}
 	{/if}
 </Section>

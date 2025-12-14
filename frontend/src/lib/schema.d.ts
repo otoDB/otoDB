@@ -522,6 +522,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Similar */
+        get: operations["otodb_api_work_similar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile/profile": {
         parameters: {
             query?: never;
@@ -1111,6 +1128,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Similar */
+        get: operations["otodb_api_tag_similar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/post": {
         parameters: {
             query?: never;
@@ -1615,7 +1649,7 @@ export interface components {
             /** Work Duration */
             work_duration?: number | null;
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -1633,7 +1667,7 @@ export interface components {
         };
         /**
          * WorkSourceMetadataSchema
-         * @description Manual metadata for unavailable sources - matches WorkSource model fields
+         * @description Manual WorkSource metadata input
          */
         WorkSourceMetadataSchema: {
             /** Title */
@@ -1711,7 +1745,7 @@ export interface components {
             /** Work Duration */
             work_duration?: number | null;
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -2748,6 +2782,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     otodb_api_work_refresh_source: {
@@ -2800,7 +2843,7 @@ export interface operations {
             query: {
                 url: string;
                 is_reupload: boolean;
-                rating?: number;
+                rating?: number | null;
                 work_id?: number | null;
                 original_url?: string | null;
             };
@@ -2905,6 +2948,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkSourceSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_work_similar: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThinWorkSchema"][];
                 };
             };
         };
@@ -3955,6 +4020,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConnectionSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_tag_similar: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagWorkSchema"][];
                 };
             };
         };

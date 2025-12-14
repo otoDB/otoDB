@@ -51,6 +51,13 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 			).data
 		: null;
 
+	const similar = client
+		.GET('/api/tag/similar', {
+			fetch,
+			params: { query: { tag_slug: params.tag_slug } }
+		})
+		.then((res) => res.data);
+
 	return {
 		...details,
 		works,
@@ -58,6 +65,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		song_relations,
 		batch_size,
 		connections,
-		song_connections
+		song_connections,
+		similar
 	};
 };

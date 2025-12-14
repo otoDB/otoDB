@@ -5,7 +5,7 @@ import re
 from urllib.parse import urlparse, parse_qs
 
 from django.db import transaction, models
-from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists
+from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists, Subquery
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
@@ -758,3 +758,15 @@ def songs(request: HttpRequest, tag_slug: str):
 def song_connection(request: HttpRequest, song_id: int):
 	song = get_object_or_404(MediaSong.objects, id=song_id)
 	return song.mediasongconnection_set
+
+
+@tag_router.get('similar', response=list[TagWorkSchema])
+def similar(request: HttpRequest, tag_slug: str):
+	tag = get_object_or_404(TagWork, slug=tag_slug)
+	tw = MediaWork.active_objects.filter(tags=tag).values_list('id', flat=True)
+	return (
+		TagWork.objects.exclude(id=tag.id)
+		.filter(works__in=Subquery(tw), deprecated=False)
+		.annotate(shared_works_count=Count('works', filter=Q(works__in=Subquery(tw))))
+		.order_by('-shared_works_count')
+	)[:10]

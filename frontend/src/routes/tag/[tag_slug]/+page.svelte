@@ -245,6 +245,20 @@
 	</Section>
 {/if}
 
+{#await data.similar}
+	<!-- Blank -->
+{:then similar}
+	{#if similar?.length}
+		<Section title={m.topical_main_beaver_walk()}>
+			<div class="flex flex-wrap gap-3">
+				{#each similar as s, i (i)}
+					<WorkTag tag={s} />
+				{/each}
+			</div>
+		</Section>
+	{/if}
+{/await}
+
 <Section title="{m.quiet_super_kangaroo_kiss({ tag: data.display_name })} ({data.works?.count})">
 	{#if results.length}
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">

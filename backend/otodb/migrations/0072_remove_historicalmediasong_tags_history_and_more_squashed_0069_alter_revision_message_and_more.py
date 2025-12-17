@@ -13,6 +13,7 @@ def initial_revision(apps, schema_editor):
 	RevisionChangeEntity = apps.get_model('otodb', 'RevisionChangeEntity')
 	ContentType = apps.get_model('contenttypes', 'ContentType')
 	from django.apps import apps
+
 	old_models_with_history = [
 		'MediaSong',
 		'MediaSongConnection',
@@ -40,34 +41,46 @@ def initial_revision(apps, schema_editor):
 	else:
 		return
 
-	rev = Revision.objects.create(user_id=apps.get_model('account', 'account').objects.first().id)
+	rev = Revision.objects.create(
+		user_id=apps.get_model('account', 'account').objects.order_by('id').first().id
+	)
 	for m in old_models_with_history:
 		model = apps.get_model('otodb', m)
 		if hasattr(model, '_revision_meta'):
+			changes = []
+			entities = []
 			for instance in model.objects.values(
 				'pk',
 				*model._revision_meta.tracked_fields,
 				*[attr for attr in model._revision_meta.entity_attrs if attr != 'self'],
 			):
 				for field in instance:
-					change = RevisionChange.objects.create(
-						rev=rev,
-						target_type=ContentType.objects.get_for_model(model),
-						target_id=instance['pk'],
-						target_column=field,
-						target_value=instance[field],
+					changes.append(
+						RevisionChange(
+							rev=rev,
+							target_type=ContentType.objects.get_for_model(model),
+							target_id=instance['pk'],
+							target_column=field,
+							target_value=instance[field],
+						)
 					)
 					for attr in model._revision_meta.entity_attrs:
 						if attr == 'self' or instance[attr]:
-							RevisionChangeEntity.objects.create(
-								change=change,
-								entity_type=ContentType.objects.get_for_model(
-									model
-									if attr == 'self'
-									else model._meta.get_field(attr).related_model
-								),
-								entity_id=instance['pk' if attr == 'self' else attr],
+							entities.append(
+								RevisionChangeEntity(
+									change=changes[-1],
+									entity_type=ContentType.objects.get_for_model(
+										model
+										if attr == 'self'
+										else model._meta.get_field(attr).related_model
+									),
+									entity_id=instance[
+										'pk' if attr == 'self' else attr
+									],
+								)
 							)
+			RevisionChange.objects.bulk_create(changes)
+			RevisionChangeEntity.objects.bulk_create(entities)
 
 
 class Migration(migrations.Migration):

@@ -5,21 +5,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0076_revisionchange_restored_and_more'),
+	]
 
-    dependencies = [
-        ('otodb', '0076_revisionchange_restored_and_more'),
-    ]
-
-    operations = [
-        migrations.AlterModelManagers(
-            name='mediawork',
-            managers=[
-                ('active_objects', django.db.models.manager.Manager()),
-            ],
-        ),
-        migrations.AlterField(
-            model_name='userpreferences',
-            name='theme',
-            field=models.IntegerField(choices=[(0, 'Default'), (1, 'Aniki'), (2, 'otogroove')], default=0),
-        ),
-    ]
+	operations = [
+		migrations.AlterModelManagers(
+			name='mediawork',
+			managers=[
+				('active_objects', django.db.models.manager.Manager()),
+			],
+		),
+		migrations.AlterField(
+			model_name='userpreferences',
+			name='theme',
+			field=models.IntegerField(
+				choices=[(0, 'Default'), (1, 'Aniki'), (2, 'otogroove')], default=0
+			),
+		),
+	]

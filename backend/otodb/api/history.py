@@ -120,8 +120,8 @@ class RevisionChangeEntitySchema(Schema):
 
 
 class FullRevisionSchema(RevisionSchema):
-	changes: list[RevisionChangeSchema] = Field(..., alias='revisionchange_set')
-	actions: list[RevisionChangeEntitySchema]
+	# actions: list[RevisionChangeEntitySchema]
+	pass
 
 
 def get_history_dict(historical):
@@ -162,6 +162,12 @@ def user(request: HttpRequest, username: str):
 @history_router.get('revision', response=FullRevisionSchema)
 def revision(request: HttpRequest, revision_id: int):
 	return get_object_or_404(Revision, id=revision_id)
+
+
+@history_router.get('revision_changes', response=list[RevisionChangeSchema])
+@paginate
+def revision_changes(request: HttpRequest, revision_id: int):
+	return get_object_or_404(Revision, id=revision_id).revisionchange_set.all()
 
 
 class EntitySchema(Schema):
@@ -574,6 +580,7 @@ def rollback(
 	If entity is not provided: rollback all changes made IN the specified revision.
 	If entity is provided: rollback that entity TO its state at the specified revision.
 	"""
+	assert revision_id > Revision.objects.order_by('id').first().id
 	rev = get_object_or_404(Revision, id=revision_id)
 
 	if entity is None:
@@ -613,7 +620,7 @@ def user_rollback(request: HttpRequest, date: datetime, username: str):
 		rollback_entity(ent['entity_id'], ent['entity_type__model'], date)
 
 
-@history_router.get('history', auth=django_auth, response=list[RevisionSchema])
+@history_router.get('history', response=list[RevisionSchema])
 @paginate
 def history(request: HttpRequest, entity: Query[EntitySchema]):
 	query_ids = []

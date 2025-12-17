@@ -1300,6 +1300,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/history/revision_changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Revision Changes */
+        get: operations["otodb_api_history_revision_changes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/history/rollback": {
         parameters: {
             query?: never;
@@ -2144,19 +2161,13 @@ export interface components {
              * @default
              */
             message: string;
-            /** Changes */
-            changes: components["schemas"]["RevisionChangeSchema"][];
-            /** Actions */
-            actions: components["schemas"]["RevisionChangeEntitySchema"][];
         };
-        /** RevisionChangeEntitySchema */
-        RevisionChangeEntitySchema: {
-            /** Entity Type */
-            entity_type: string;
-            /** Entity Id */
-            entity_id: number;
-            /** Route */
-            route: number;
+        /** PagedRevisionChangeSchema */
+        PagedRevisionChangeSchema: {
+            /** Items */
+            items: components["schemas"]["RevisionChangeSchema"][];
+            /** Count */
+            count: number;
         };
         /** RevisionChangeSchema */
         RevisionChangeSchema: {
@@ -4371,6 +4382,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FullRevisionSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_history_revision_changes: {
+        parameters: {
+            query: {
+                revision_id: number;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedRevisionChangeSchema"];
                 };
             };
         };

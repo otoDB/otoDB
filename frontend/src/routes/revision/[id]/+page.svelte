@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Route } from '$lib/enums.js';
+	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import Section from '$lib/Section.svelte';
@@ -21,10 +21,7 @@
 	{#if data.revision.message}<h4>{data.revision.message}</h4>{/if}
 
 	<pre>
-		{#each data.revision?.actions as a, i (i)}{Route[a.route]} {a.entity_type} {a.entity_id}
+		{#each data.changes.items as c, i (i)}{c.target_type} #{c.target_id} - {#if c.deleted}Deleted{:else}{c.target_column} -> {c.target_value}{/if}
 		{/each}</pre>
-
-	<pre>
-		{#each data.revision.changes as c, i (i)}{c.target_type} #{c.target_id} - {#if c.deleted}Deleted{:else}{c.target_column} -> {c.target_value}{/if}
-		{/each}</pre>
+	<Pager n_count={data.changes?.count} page={data.page} page_size={data.batch_size} />
 </Section>

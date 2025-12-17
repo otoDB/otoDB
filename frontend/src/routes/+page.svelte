@@ -51,38 +51,35 @@
 		</div>
 	</div>
 
-	{#if data.user}
-		{#await data.changes}
-			<!-- Blank while loading -->
-		{:then changes}
-			{#if changes && changes.length > 0}
-				<hr class="my-4" />
-
-				<div class="w-full">
-					<h2 class="mb-4 text-xl">{m.sea_cute_beaver_file()}</h2>
-					<table class="w-full">
-						<tbody>
-							{#each changes as r, i (i)}
-								<tr
-									><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-										>{r.route !== null && r.route !== undefined
-											? Route[r.route]
-											: ''}</td
-									><td>
-										{#if isSVO(getLocale())}
-											{m.curly_safe_lynx_fond()}
-										{/if}
-										<a href="/profile/{r.user}">{r.user}</a>
-										{#if isSOV(getLocale())}
-											{m.curly_safe_lynx_fond()}
-										{/if}</td
-									><td>{new Date(r.date).toLocaleString()}</td></tr
-								>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-			{/if}
-		{/await}
-	{/if}
+	{#await data.changes}
+		<!-- Blank while loading -->
+	{:then changes}
+		{#if changes && changes.length > 0}
+			<hr class="my-4" />
+			<div class="w-full">
+				<h2 class="mb-4 text-xl">{m.sea_cute_beaver_file()}</h2>
+				<table class="w-full">
+					<tbody>
+						{#each changes as r, i (i)}
+							<tr
+								><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
+									>{r.route !== null && r.route !== undefined
+										? Route[r.route]
+										: ''}</td
+								><td>
+									{#if isSVO(getLocale())}
+										{m.curly_safe_lynx_fond()}
+									{/if}
+									<a href="/profile/{r.user}">{r.user}</a>
+									{#if isSOV(getLocale())}
+										{m.curly_safe_lynx_fond()}
+									{/if}</td
+								><td>{new Date(r.date).toLocaleString()}</td></tr
+							>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		{/if}
+	{/await}
 </Section>

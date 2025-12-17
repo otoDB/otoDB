@@ -30,7 +30,7 @@ flowchart ${direction}
 					? `
     ${nodes
 		.map(
-			(w) => `${w.id}@{ img: "${w.thumbnail}", constraint: on, w: 10 }
+			(w) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
     ${w.id}["${w.title.replaceAll('"', '#quot;')}"]
     click ${w.id} "${`/work/${w.id}`}"`
 		)

@@ -382,6 +382,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/source_thumbnail_url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Source Thumbnail Url */
+        put: operations["otodb_api_work_update_source_thumbnail_url"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/refresh_source": {
         parameters: {
             query?: never;
@@ -497,6 +514,23 @@ export interface paths {
         };
         /** Get Unbound Sources */
         get: operations["otodb_api_work_get_unbound_sources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Similar */
+        get: operations["otodb_api_work_similar"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1094,6 +1128,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Similar */
+        get: operations["otodb_api_tag_similar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/post": {
         parameters: {
             query?: never;
@@ -1515,7 +1566,7 @@ export interface components {
             /** Thumbnail */
             thumbnail?: string | null;
             /** Title */
-            title: string;
+            title?: string | null;
         };
         /** RelationSchema */
         RelationSchema: {
@@ -1533,7 +1584,7 @@ export interface components {
             /** Thumbnail */
             thumbnail?: string | null;
             /** Title */
-            title: string;
+            title?: string | null;
         };
         /** TagWorkInstanceSchema */
         TagWorkInstanceSchema: {
@@ -1571,7 +1622,7 @@ export interface components {
                 components["schemas"]["SlimWorkSchema"][]
             ];
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -1585,7 +1636,7 @@ export interface components {
         /** WorkEditSchema */
         WorkEditSchema: {
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /** Thumbnail Source */
@@ -1640,11 +1691,8 @@ export interface components {
             platform: number;
             /** Url */
             url: string;
-            /**
-             * Published Date
-             * Format: date
-             */
-            published_date: string;
+            /** Published Date */
+            published_date?: string | null;
             /** Work Width */
             work_width?: number | null;
             /** Work Height */
@@ -1652,7 +1700,7 @@ export interface components {
             /** Work Duration */
             work_duration?: number | null;
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -1667,6 +1715,28 @@ export interface components {
             work_status: number;
             /** Source Id */
             source_id: string;
+        };
+        /**
+         * WorkSourceMetadataSchema
+         * @description Manual WorkSource metadata input
+         */
+        WorkSourceMetadataSchema: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Uploader Id */
+            uploader_id?: string | null;
+            /** Thumbnail Url */
+            thumbnail_url?: string | null;
+            /** Work Width */
+            work_width?: number | null;
+            /** Work Height */
+            work_height?: number | null;
+            /** Work Duration */
+            work_duration?: number | null;
+            /** Published Date */
+            published_date?: string | null;
         };
         /** ListSchema */
         ListSchema: {
@@ -1717,11 +1787,8 @@ export interface components {
             platform: number;
             /** Url */
             url: string;
-            /**
-             * Published Date
-             * Format: date
-             */
-            published_date: string;
+            /** Published Date */
+            published_date?: string | null;
             /** Work Width */
             work_width?: number | null;
             /** Work Height */
@@ -1729,7 +1796,7 @@ export interface components {
             /** Work Duration */
             work_duration?: number | null;
             /** Title */
-            title: string;
+            title?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -2780,6 +2847,36 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_update_source_thumbnail_url: {
+        parameters: {
+            query: {
+                source_id: number;
+                thumbnail_url: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     otodb_api_work_refresh_source: {
         parameters: {
             query: {
@@ -2830,7 +2927,7 @@ export interface operations {
             query: {
                 url: string;
                 is_reupload: boolean;
-                rating?: number;
+                rating?: number | null;
                 work_id?: number | null;
                 original_url?: string | null;
             };
@@ -2838,7 +2935,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WorkSourceMetadataSchema"] | null;
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -2931,6 +3032,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkSourceSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_work_similar: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThinWorkSchema"][];
                 };
             };
         };
@@ -3981,6 +4104,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConnectionSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_tag_similar: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagWorkSchema"][];
                 };
             };
         };

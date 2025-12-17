@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Self
 from itertools import chain
 
 from django.db import models
-from django.db.models import Value, Q
+from django.db.models import Value, Q, Prefetch
 from tagulous.models import BaseTagModel, TagModelManager
 
 from django_cte import CTE, with_cte
@@ -27,7 +27,38 @@ def name_cleaner(s):
 	return s.lower()
 
 
+def tagwork_ordering_case(prefix=''):
+	prefix = f'{prefix}__' if prefix and not prefix.endswith('__') else prefix
+	return models.Case(
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.EVENT}, then=models.Value(0)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.CREATOR}, then=models.Value(10)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.MEDIA}, then=models.Value(11)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.SOURCE}, then=models.Value(20)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.SONG}, then=models.Value(30)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.GENERAL}, then=models.Value(40)
+		),
+		models.When(
+			**{f'{prefix}category': WorkTagCategory.META}, then=models.Value(1000)
+		),
+		default=models.Value(999),
+		output_field=models.IntegerField(),
+	)
+
+
 class LowerCaseTagModelManager(RevisionTrackedManager, TagModelManager):
+	"""Base manager that handles lowercase name normalization for all tag models"""
+
 	def get_or_create(self, *args, **kwargs):
 		if 'name' in kwargs:
 			kwargs['name'] = name_cleaner(kwargs['name'])
@@ -38,13 +69,34 @@ class LowerCaseTagModelManager(RevisionTrackedManager, TagModelManager):
 			kwargs['name'] = name_cleaner(kwargs['name'])
 		return super().get(*args, **kwargs)
 
+
+class TagWorkManager(LowerCaseTagModelManager):
 	def get_queryset(self):
+		# Prefetch language preferences with their tag relationship
+		lang_prefs_qs = TagWorkLangPreference.objects.select_related('tag')
+
+		# For aliases, use parent's get_queryset to avoid infinite recursion
+		aliases_base_qs = super(TagWorkManager, self).get_queryset()
+
 		return (
 			super()
 			.get_queryset()
 			.select_related('aliased_to')
-			.prefetch_related('aliases')
+			.prefetch_related(
+				Prefetch('tagworklangpreference_set', queryset=lang_prefs_qs),
+				Prefetch(
+					'aliases',
+					queryset=aliases_base_qs.prefetch_related(
+						Prefetch('tagworklangpreference_set', queryset=lang_prefs_qs)
+					),
+				),
+			)
 		)
+
+
+class TagSongManager(LowerCaseTagModelManager):
+	def get_queryset(self):
+		return super().get_queryset().prefetch_related('children')
 
 
 class OtodbTagModel(BaseTagModel):
@@ -86,7 +138,7 @@ class OtodbTagModel(BaseTagModel):
 
 
 class TagWork(RevisionTrackedModel, OtodbTagModel):
-	objects = LowerCaseTagModelManager()
+	objects = TagWorkManager()
 
 	if TYPE_CHECKING:
 		tagworkconnection_set: QuerySet['TagWorkConnection']
@@ -95,6 +147,9 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		tagworklangpreference_set: QuerySet['TagWorkLangPreference']
 		aliases: QuerySet['TagWork']
 		mediasong: 'MediaSong | None'
+		childhood: QuerySet['TagWorkParenthood']
+		parenthood: QuerySet['TagWorkParenthood']
+		wikipage_set: QuerySet['WikiPage']
 
 	class TagMeta:
 		protect_all = True
@@ -103,17 +158,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 	class Meta:
 		ordering = [
-			models.Case(
-				models.When(category=1, then=Value(0)),  # EVENT
-				models.When(category=4, then=Value(10)),  # CREATOR
-				models.When(category=6, then=Value(11)),  # MEDIA
-				models.When(category=3, then=Value(20)),  # SOURCE
-				models.When(category=2, then=Value(30)),  # SONG
-				models.When(category=0, then=Value(40)),  # GENERAL
-				models.When(category=5, then=Value(1000)),  # META (always last)
-				default=Value(999),
-				output_field=models.IntegerField(),
-			),
+			tagwork_ordering_case(),
 			'name',
 		]
 
@@ -167,10 +212,15 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 	def lang_prefs(self):
 		if self.aliased_to:
 			return self.aliased_to.lang_prefs
-		q = self.tagworklangpreference_set.all()
+
+		prefs_dict = {}
+		for pref in self.tagworklangpreference_set.all():
+			prefs_dict[pref.pk] = pref
 		for alias in self.aliases.all():
-			q |= alias.tagworklangpreference_set.all()
-		return q.distinct()
+			for pref in alias.tagworklangpreference_set.all():
+				prefs_dict[pref.pk] = pref
+
+		return list(prefs_dict.values())
 
 	@property
 	def unaliasable(self):
@@ -247,37 +297,50 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			cte, select=cte.join(TagWork, id=cte.col.id).annotate(fr=cte.col.fr)
 		).order_by()
 
-	@property
-	def primary_path(self):
+	@classmethod
+	def get_primary_paths(cls, tag_ids: list[int]) -> dict[int, list[Self]]:
+		if not tag_ids:
+			return {}
+
 		cte = CTE.recursive(
-			lambda cte: TagWork.objects.order_by()
-			.filter(id=self.id)
+			lambda cte: cls.objects.order_by()
+			.filter(id__in=tag_ids)
 			.values(
 				'id',
+				source_tag_id=models.F('id'),
 				depth=Value(0, output_field=models.IntegerField()),
 			)
 			.union(
 				cte.join(
-					TagWork.objects.order_by(),
+					cls.objects.order_by(),
 					parenthood__tag_id=cte.col.id,
 					parenthood__primary=True,
 					aliased_to__isnull=True,
 					deprecated=False,
 				).values(
 					'id',
+					source_tag_id=cte.col.source_tag_id,
 					depth=cte.col.depth + Value(1, output_field=models.IntegerField()),
 				),
 				all=True,
 			)
 		)
-		return (
-			with_cte(
-				cte,
-				select=cte.join(TagWork, id=cte.col.id).annotate(depth=cte.col.depth),
-			)
-			.order_by('-depth')
-			.exclude(id=self.id)
-		)
+
+		results = with_cte(
+			cte,
+			select=cte.join(cls, id=cte.col.id).annotate(
+				source_tag_id=cte.col.source_tag_id, depth=cte.col.depth
+			),
+		).order_by('source_tag_id', '-depth')
+
+		paths_dict = {}
+		for tag in results:
+			if tag.id != tag.source_tag_id:
+				if tag.source_tag_id not in paths_dict:
+					paths_dict[tag.source_tag_id] = []
+				paths_dict[tag.source_tag_id].append(tag)
+
+		return paths_dict
 
 	@classmethod
 	def transfer_data(cls, from_tag: Self, to_tag: Self):
@@ -408,7 +471,7 @@ class WikiPage(RevisionTrackedModel):
 
 
 class TagSong(RevisionTrackedModel, OtodbTagModel):
-	objects = LowerCaseTagModelManager()
+	objects = TagSongManager()
 
 	class TagMeta:
 		protect_all = True

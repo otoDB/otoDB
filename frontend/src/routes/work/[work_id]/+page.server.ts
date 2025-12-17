@@ -17,8 +17,16 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		})
 	]);
 
+	const similar = client
+		.GET('/api/work/similar', {
+			fetch,
+			params: { query: { work_id: +params.work_id } }
+		})
+		.then((res) => res.data);
+
 	return {
 		sources: data,
-		comments
+		comments,
+		similar
 	};
 };

@@ -34,8 +34,7 @@
 					<td
 						><select name="platform" value={data.platform ?? null}
 							><option value={null}>---</option
-							>{#each Platform.slice(1) as p, i (i)}<option value={i + 1}
-									>{Platform[i + 1]}</option
+							>{#each Platform.slice(1) as p, i (i)}<option value={i + 1}>{p}</option
 								>{/each}</select
 						></td
 					>
@@ -98,7 +97,7 @@
 			<tbody>
 				{#each pending as src, i (i)}
 					<tr>
-						<td class="whitespace-nowrap">{src.title}</td>
+						<td class="whitespace-nowrap">{src.title || src.url}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
 						<td class="whitespace-nowrap"
@@ -143,7 +142,7 @@
 			<tbody>
 				{#each rejected as src, i (i)}
 					<tr>
-						<td class="whitespace-nowrap">{src.title}</td>
+						<td class="whitespace-nowrap">{src.title || src.url}</td>
 						<td class="whitespace-nowrap">{src.rejection.reason}</td>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>

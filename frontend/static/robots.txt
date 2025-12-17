@@ -1,3 +1,21 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Disallow: /
+
+Allow: /$
+
+Disallow: /api
+Disallow: */edit
+Disallow: */history
+Disallow: /work/random
+
+Allow: /post
+Allow: /work
+Allow: /tag
+Allow: /song
+Allow: /list
+Allow: /profile
+
+Allow: /404
+Allow: /favicon.ico
+Allow: /favicon.svg

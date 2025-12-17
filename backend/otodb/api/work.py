@@ -47,6 +47,7 @@ from .common import (
 	WorkSchema,
 	ThinWorkSchema,
 	WorkSourceSchema,
+	WorkSourceMetadataSchema,
 	Error,
 	TagWorkSchema,
 	user_is_trusted,
@@ -77,9 +78,8 @@ def query_external(
 		work = get_object_or_404(WorkSource.active_objects, url=url)
 	elif platform and id:
 		work = get_object_or_404(
-			WorkSource.active_objects,
-			platform=Platform.from_str(platform),
-			source_id=id,
+			WorkSource.active_objects.filter(platform=Platform.from_str(platform)),
+			Q(source_id=id) | Q(url__endswith=id),
 		)
 	else:
 		# TODO: raise a more specific error
@@ -180,9 +180,7 @@ def tags_needed(request: HttpRequest):
 
 @work_router.get('work', response={200: WorkSchema, 300: int})
 def work(request: HttpRequest, work_id: int):
-	work = get_object_or_404(
-		MediaWork.objects.select_related('thumbnail_source'), id=work_id
-	)
+	work: MediaWork = get_object_or_404(MediaWork.active_objects, id=work_id)
 	if work.moved_to:
 		return 300, work.moved_to.id
 	return work
@@ -268,23 +266,14 @@ def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
 
 @work_router.get('random', response=list[ThinWorkSchema], exclude_none=True)
 def random(request: HttpRequest, n: int = 1):
-	return (
-		MediaWork.objects.filter(moved_to__isnull=True)
-		.select_related('thumbnail_source')
-		.prefetch_related('tags', 'tags__aliases', 'tags__tagworklangpreference_set')
-		.filter(rating=Rating.GENERAL)
-		.order_by('?')[: min(n, 20)]
-	)
+	return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by('?')[
+		: min(n, 20)
+	]
 
 
 @work_router.get('recent', response=list[ThinWorkSchema], exclude_none=True)
 def recent(request: HttpRequest, n: int = 1):
-	return (
-		MediaWork.objects.filter(moved_to__isnull=True)
-		.select_related('thumbnail_source')
-		.prefetch_related('tags', 'tags__aliases', 'tags__tagworklangpreference_set')
-		.order_by('-id')[: min(n, 20)]
-	)
+	return MediaWork.active_objects.order_by('-id')[: min(n, 20)]
 
 
 @work_router.get(
@@ -345,10 +334,25 @@ def source_origin(request: HttpRequest, source_id: int, status: int):
 	src.save()
 
 
+@work_router.put(
+	'source_thumbnail_url', auth=django_auth, response={200: None, 400: Error}
+)
+@user_is_editor
+def update_source_thumbnail_url(
+	request: HttpRequest, source_id: int, thumbnail_url: str
+):
+	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src.thumbnail_url = thumbnail_url
+	saved_thumbnail = src.save_thumbnail()
+	if not saved_thumbnail:
+		return 400, {'message': 'Failed to save thumbnail from the provided URL'}
+	src.save()
+
+
 @work_router.post('refresh_source', auth=django_auth)
 @with_revision_route(Route.WORKSOURCE_REFRESH)
 def refresh_source(request: HttpRequest, source_id: int):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src: WorkSource = get_object_or_404(WorkSource.active_objects, id=source_id)
 	src.refresh()
 	return
 
@@ -408,9 +412,10 @@ def new_source_from_url(
 	request: HttpRequest,
 	url: str,
 	is_reupload: bool,
-	rating: int = 0,
+	rating: int | None = None,
 	work_id: int | None = None,
 	original_url: str | None = None,
+	metadata: WorkSourceMetadataSchema | None = None,
 ):
 	"""Creates a new source and, for editors, performs auto-validation as well as Work creation
 
@@ -432,12 +437,21 @@ def new_source_from_url(
 
 	is_editor = request.user.level >= Account.Levels.EDITOR
 
+	# Check permission for metadata (unavailable sources)
+	if metadata is not None and not is_editor:
+		return 403, {'message': 'Only editors can add unavailable sources'}
+
 	# === Source retrieval, common to all flows ===
 
-	src, info = WorkSource.from_url(url, user=request.user, is_reupload=is_reupload)
+	metadata_dict = metadata.dict() if metadata else None
+	src, info = WorkSource.from_url(
+		url, user=request.user, is_reupload=is_reupload, metadata=metadata_dict
+	)
 
 	original_src, original_info = (
-		WorkSource.from_url(original_url, user=request.user, is_reupload=False)
+		WorkSource.from_url(
+			original_url, user=request.user, is_reupload=False, metadata=metadata_dict
+		)
 		if original_url
 		else (None, None)
 	)
@@ -490,7 +504,7 @@ def new_source_from_url(
 	# the "media" field in a way that's not tracked by the current
 	# object.
 	if is_editor:
-		if work.rating != rating:
+		if rating is not None and work.rating != rating:
 			work.rating = rating
 			work.save(update_fields=['rating'])
 		if src.work_origin != WorkOrigin(is_reupload):
@@ -512,6 +526,28 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 	"""
 
 	if not src.media:
+		# Build creator connections query only if we have uploader_id
+		creator_tags = []
+		if src.work_origin == WorkOrigin.AUTHOR and info.get('uploader_id'):
+			if src.platform == Platform.YOUTUBE and info.get('channel_id'):
+				creator_tags = TagWork.objects.filter(
+					id__in=TagWorkCreatorConnection.objects.filter(
+						site=ProfileConnectionTypes.YOUTUBE
+					)
+					.filter(
+						Q(content_id=info['uploader_id'])
+						| Q(content_id='channel/' + info['channel_id'])
+					)
+					.values('tag_id')
+				)
+			else:
+				creator_tags = TagWork.objects.filter(
+					id__in=TagWorkCreatorConnection.objects.filter(
+						site=ProfileConnectionTypes[Platform(src.platform).name],
+						content_id=info['uploader_id'],
+					).values('tag_id')
+				)
+
 		work.tags.add(
 			*info.get('tags', []),
 			*TagWork.objects.filter(
@@ -521,25 +557,7 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 					bulk__status=Status.APPROVED,
 				).values('B_id')
 			),
-			*(
-				TagWork.objects.filter(
-					id__in=(
-						TagWorkCreatorConnection.objects.filter(
-							site=ProfileConnectionTypes.YOUTUBE
-						).filter(
-							Q(content_id=info['uploader_id'])
-							| Q(content_id='channel/' + info['channel_id'])
-						)
-						if src.platform == Platform.YOUTUBE
-						else TagWorkCreatorConnection.objects.filter(
-							site=ProfileConnectionTypes[Platform(src.platform).name],
-							content_id=info['uploader_id'],
-						)
-					).values('tag_id')
-				)
-				if src.work_origin == WorkOrigin.AUTHOR
-				else []
-			),
+			*creator_tags,
 		)
 		tags = TagWork.objects.filter(name__in=info.get('tags', []))
 		work.tagworkinstance_set.filter(work_tag__in=tags).update(
@@ -569,7 +587,7 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 def assign_source_to_work(
 	request: HttpRequest, source_id: int, work_id: int | None = None
 ):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src: WorkSource = get_object_or_404(WorkSource.active_objects, id=source_id)
 	assert src.media is None and not getattr(src, 'rejection', None)
 
 	if work_id is not None:
@@ -582,14 +600,16 @@ def assign_source_to_work(
 		)
 
 	# Add them first in case they don't exist
+	if not hasattr(src, 'info_payload'):
+		src.refresh()
 	info = process_video_info(src.info_payload.payload, src.url)
 	sync_work_source(work, src, info, False)
 
 	for pool in src.pool_set.all():
-		pool.add_work(work.id)
+		pool.add_work(work.pk)
 		pool.pending_items.remove(src)
 
-	return work.id
+	return work.pk
 
 
 @work_router.post('reject_source', auth=django_auth)
@@ -609,3 +629,15 @@ def reject_source(request: HttpRequest, source_id: int, reason: str):
 @with_revision_route(Route.WORKSOURCE_UNBIND)
 def get_unbound_sources(request: HttpRequest, pending: bool):
 	return WorkSource.objects.filter(media__isnull=True, rejection__isnull=pending)
+
+
+@work_router.get('similar', response=List[ThinWorkSchema])
+def similar(request: HttpRequest, work_id: int):
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	wt = work.tags.filter(deprecated=False).values_list('id', flat=True)
+	return (
+		MediaWork.active_objects.exclude(id=work_id)
+		.filter(tags__in=Subquery(wt))
+		.annotate(shared_tags_count=Count('tags', filter=Q(tags__in=Subquery(wt))))
+		.order_by('-shared_tags_count')
+	)[:6]

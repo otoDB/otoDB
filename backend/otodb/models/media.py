@@ -3,12 +3,13 @@ from typing import TYPE_CHECKING, cast
 import nh3
 
 from django.db import models
-from django.db.models import Subquery, OuterRef
+from django.db.models import Prefetch
 from django.urls import reverse
+from django.utils.functional import cached_property
 from tagulous.models import TagField
 
 from .enums import Rating, WorkTagCategory, Role
-from .tag import TagWork, TagSong
+from .tag import TagWork, TagSong, tagwork_ordering_case
 from .revision import RevisionTrackedModel
 
 if TYPE_CHECKING:
@@ -18,6 +19,33 @@ if TYPE_CHECKING:
 	from .relations import WorkRelation
 
 
+class ActiveManager(models.Manager):
+	def get_queryset(self):
+		qs = super().get_queryset().filter(moved_to__isnull=True)
+
+		instances_queryset = (
+			TagWorkInstance.objects.filter(work_tag__deprecated=False)
+			.select_related(
+				'work_tag',
+				'work_tag__aliased_to',
+			)
+			.prefetch_related(
+				'work_tag__tagworklangpreference_set',
+				'work_tag__aliases',
+				'work_tag__aliases__tagworklangpreference_set',
+			)
+			.order_by(
+				tagwork_ordering_case(prefix='work_tag__'),
+				'work_tag__name',
+			)
+		)
+
+		return qs.select_related('thumbnail_source').prefetch_related(
+			Prefetch('tagworkinstance_set', queryset=instances_queryset),
+			'worksource_set',
+		)
+
+
 # allow setting a through table on tag fields
 TagField.forbidden_fields = cast(
 	tuple, tuple(v for v in TagField.forbidden_fields if v != 'through')
@@ -25,6 +53,10 @@ TagField.forbidden_fields = cast(
 
 
 class TagWorkInstance(RevisionTrackedModel):
+	if TYPE_CHECKING:
+		work_id: int
+		work_tag_id: int
+
 	class Meta:
 		unique_together = (('work', 'work_tag'),)
 
@@ -63,7 +95,7 @@ class MediaWork(RevisionTrackedModel):
 		relation_B: QuerySet['WorkRelation']
 		tagworkinstance_set: QuerySet['TagWorkInstance']
 
-	title = models.CharField(max_length=1000, null=False, blank=False)
+	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
 
 	rating = models.IntegerField(choices=Rating.choices, default=Rating.GENERAL)
@@ -151,20 +183,21 @@ class MediaWork(RevisionTrackedModel):
 			self.description = nh3.clean(self.description)
 		super().save(*args, **kwargs)
 
-	@property
+	@cached_property
 	def tags_annotated(self):
-		return self.tags.filter(deprecated=False).annotate(
-			sample=Subquery(
-				self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values(
-					'used_as_source'
-				)
-			),
-			creator_roles=Subquery(
-				self.tagworkinstance_set.filter(work_tag=OuterRef('id')).values(
-					'creator_roles'
-				)
-			),
+		t = []
+		twis = self.tagworkinstance_set.filter(work_tag__deprecated=False)
+		primary_paths = TagWork.get_primary_paths(
+			twis.values_list('work_tag_id', flat=True)
 		)
+		for instance in twis:
+			tag = instance.work_tag
+			tag.sample = instance.used_as_source
+			tag.creator_roles = instance.creator_roles
+			tag.primary_path = primary_paths.get(tag.id, [])
+			t.append(tag)
+
+		return t
 
 	@property
 	def thumbnail(self):
@@ -175,17 +208,17 @@ class MediaWork(RevisionTrackedModel):
 			if first_source:
 				thumbnail = first_source.thumbnail
 		# Fallback to deprecated field (3rd-party remote URL)
-		return self._thumbnail or thumbnail
+		return thumbnail or self._thumbnail
 
 	@property
 	def relations(self):
 		rs = self.relation_A.all() | self.relation_B.all()
-		return rs, MediaWork.objects.filter(
+		return rs, MediaWork.active_objects.filter(
 			id__in=[
 				*rs.values_list('A_id', flat=True),
 				*rs.values_list('B_id', flat=True),
 			]
-		).exclude(id=self.id)
+		).exclude(id=self.pk)
 
 
 class MediaSong(RevisionTrackedModel):

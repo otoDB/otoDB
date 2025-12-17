@@ -22,6 +22,7 @@ from django_request_cache import get_request_cache
 from ninja import Router, ModelSchema, Schema, Field, Query
 from ninja.pagination import paginate
 from ninja.security import django_auth
+from ninja.decorators import decorate_view
 
 from otodb.models import (
 	TagWork,

@@ -76,7 +76,10 @@
 <Section title={m.bald_clear_marlin_grasp()}>
 	{#if data.entries?.items.length}
 		<div class="flex w-full">
-			<ol class="mr-5 w-full list-outside list-decimal">
+			<ol
+				class="mr-5 w-full list-outside list-decimal"
+				start={1 + data.batch_size * (data.page - 1)}
+			>
 				{#each data.entries.items as entry, i (i)}
 					<li class="mx-5 w-full p-1">
 						<label class="grid gap-5 md:grid-cols-[15rem_1fr]">
@@ -110,7 +113,7 @@
 					<span>
 						<h3>
 							<a href={src.url} target="_blank" rel="noopener noreferrer"
-								>{src.title}</a
+								>{src.title || src.url}</a
 							>
 						</h3>
 						<h4>{Platform[src.platform]} {src.published_date}</h4>
@@ -127,7 +130,7 @@
 						<a href={src.url} target="_blank" rel="noopener noreferrer"
 							><img
 								src={src.thumbnail}
-								alt={src.title}
+								alt={src.title || src.url}
 								class="float-right clear-both w-50"
 							/></a
 						>

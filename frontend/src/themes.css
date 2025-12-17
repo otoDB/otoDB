@@ -17,4 +17,140 @@
 			right top;
 		background-repeat: no-repeat, no-repeat;
 	}
+
+	& .prose {
+		@apply prose-invert;
+	}
+}
+
+.theme-otogroove {
+	--otodb-color-content-primary: rgb(2, 27, 14);
+	--otodb-color-content-faint: rgb(230, 30, 30);
+	--otodb-color-content-fainter: rgb(189, 73, 102);
+	--otodb-color-bg-primary: rgb(255, 255, 255);
+	--otodb-color-bg-faint: rgb(253, 239, 239);
+	--otodb-color-bg-fainter: rgb(230, 211, 211);
+
+	& .prose {
+		@apply prose-neutral;
+	}
+
+	> div.bg-marker:first-child {
+		&::before {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image: url('/otogroove-repeat.png'), url('/otogroove-repeat.png');
+			background-position:
+				top 0px left 0px,
+				top calc(min(100vw, 600px) / 1) left 230px;
+			background-repeat: repeat, repeat;
+			background-size: min(100vw, 600px), min(100vw, 600px);
+			opacity: 0.2;
+			pointer-events: none;
+			z-index: -1;
+		}
+		&::after {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image: url('/otogroove-bg.png');
+			background-position: right bottom;
+			background-repeat: no-repeat;
+			background-size: auto;
+			opacity: 0.9;
+			pointer-events: none;
+			z-index: -1;
+		}
+	}
+}
+
+.theme-retro-voyage {
+	--otodb-color-content-primary: rgb(36, 51, 80);
+	--otodb-color-content-faint: rgb(6, 25, 131);
+	--otodb-color-content-fainter: rgb(100, 128, 160);
+	--otodb-color-bg-primary: #64dfe7;
+	--otodb-color-bg-faint: rgb(228, 245, 244);
+	--otodb-color-bg-fainter: rgb(163, 244, 247);
+
+	& .prose {
+		@apply prose-neutral;
+	}
+
+	> div.bg-marker:first-child {
+		&::after {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image:
+				url('/retro-voyage-rb.png'), url('/retro-voyage-lt.png'),
+				url('/retro-voyage-rt.png'), url('/retro-voyage-lb.png');
+			background-position:
+				bottom right,
+				top left,
+				top right,
+				bottom left;
+			background-repeat: no-repeat;
+			pointer-events: none;
+			z-index: -1;
+		}
+		&::before {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image: url('/retro-voyage-link.svg');
+			background-repeat: no-repeat;
+			background-size: calc(100% - 550px) calc(100% - 470px);
+			background-position: right 420px top 160px;
+			pointer-events: none;
+			z-index: -1;
+		}
+	}
+}
+
+.theme-sorimix {
+	--otodb-color-content-primary: rgb(197, 255, 195);
+	--otodb-color-content-fainter: rgb(45, 228, 75);
+	--otodb-color-content-faint: rgb(0, 255, 163);
+	--otodb-color-bg-fainter: rgb(21, 71, 5);
+	--otodb-color-bg-faint: rgb(2, 31, 25);
+	--otodb-color-bg-primary: #041309;
+
+	& .prose {
+		@apply prose-invert;
+	}
+
+	> div.bg-marker:first-child {
+		&::after {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image:
+				url('/sorimix-front.png'), url('/sorimix-logo.png'),
+				linear-gradient(to bottom, #031414, #03403d);
+			background-position:
+				bottom center,
+				right,
+				center;
+			background-size: cover;
+			background-repeat: no-repeat;
+			pointer-events: none;
+			z-index: -1;
+		}
+	}
 }

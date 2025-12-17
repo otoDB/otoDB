@@ -1,0 +1,14 @@
+<svg
+   version="1.1"
+   width="100%"
+   height="100%"
+   viewBox="0 50 205 300"
+   preserveAspectRatio="none"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <path
+     vector-effect="non-scaling-stroke"
+     style="fill:none;stroke:rgb(216,119,145);stroke-width:60;stroke-linejoin:miter;stroke-dasharray:80,70;stroke-dashoffset:80;stroke-opacity:1"
+     d="m 1.5224317,52.120367 c 0,0 -2.6950789,98.527933 83.7778293,135.281723 137.310129,58.36125 115.689299,161.33159 115.689299,161.33159" />
+</svg>

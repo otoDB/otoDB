@@ -39,9 +39,9 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals, url }) => 
 				pathname: `list/${params.list_id}`,
 				title: m.stale_loose_squid_cut() + ' ' + params.list_id
 			},
-			...(locals.user && locals.user.user_id !== data.author.id
-				? []
-				: [{ pathname: `list/${params.list_id}/edit`, title: m.minor_crisp_cobra_list() }])
+			...(locals.user && locals.user.user_id === data.author.id
+				? [{ pathname: `list/${params.list_id}/edit`, title: m.minor_crisp_cobra_list() }]
+				: [])
 		]
 	};
 };

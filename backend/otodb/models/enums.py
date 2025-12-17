@@ -122,6 +122,8 @@ class MediaConnectionTypes(models.IntegerChoices):
 	VNDB = 40, 'vndb'
 	EROGAMESCAPE = 41, 'ErogameScape'
 
+	VGMDB = 50, 'VGMdb'
+
 
 class LanguageTypes(models.IntegerChoices):
 	NOT_APPLICABLE = 0, 'N/A'
@@ -143,6 +145,7 @@ class Role(models.IntegerChoices):
 class ThemePref(models.IntegerChoices):
 	DEFAULT = 0, 'Default'
 	ANIKI = 1, 'Aniki'
+	OTOGROOVE = 2, 'otogroove'
 
 
 class MediaType(models.IntegerChoices):

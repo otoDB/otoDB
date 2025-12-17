@@ -580,7 +580,6 @@ def rollback(
 	If entity is not provided: rollback all changes made IN the specified revision.
 	If entity is provided: rollback that entity TO its state at the specified revision.
 	"""
-	assert revision_id > Revision.objects.order_by('id').first().id
 	rev = get_object_or_404(Revision, id=revision_id)
 
 	if entity is None:

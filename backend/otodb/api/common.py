@@ -385,15 +385,6 @@ def track_revision(f):
 				| set(ctpk for (ctpk, *_), _ in rev.items())
 			)
 
-			# Batch fetch all target objects instead of N individual queries
-			targets_by_ct = {}
-			for (ctpk, pk, field), (entities, val) in rev.items():
-				targets_by_ct.setdefault(ctpk, set()).add(pk)
-			targets_cache = {
-				ctpk: content_types[ctpk].model_class().objects.in_bulk(list(pks))  # type: ignore
-				for ctpk, pks in targets_by_ct.items()
-			}
-
 			# For batching
 			revision_changes = []
 			pending_entities = []
@@ -415,10 +406,10 @@ def track_revision(f):
 			for (ctpk, pk, field), (entities, val) in rev.items():
 				ct = content_types[ctpk]
 				model = ct.model_class()
-				target = targets_cache[ctpk][pk]
 				change = RevisionChange(
 					rev=revision,
-					target=target,
+					target_type_id=ctpk,
+					target_id=pk,
 					target_column=field,
 					target_value=val,
 				)

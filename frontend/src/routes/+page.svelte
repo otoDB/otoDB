@@ -65,7 +65,9 @@
 							{#each changes as r, i (i)}
 								<tr
 									><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-										>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+										>{r.route !== null && r.route !== undefined
+											? Route[r.route]
+											: ''}</td
 									><td>
 										{#if isSVO(getLocale())}
 											{m.curly_safe_lynx_fond()}

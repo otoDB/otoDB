@@ -12,6 +12,7 @@ def initial_revision(apps, schema_editor):
 	RevisionChange = apps.get_model('otodb', 'RevisionChange')
 	RevisionChangeEntity = apps.get_model('otodb', 'RevisionChangeEntity')
 	ContentType = apps.get_model('contenttypes', 'ContentType')
+	from django.apps import apps
 	old_models_with_history = [
 		'MediaSong',
 		'MediaSongConnection',
@@ -33,17 +34,13 @@ def initial_revision(apps, schema_editor):
 	# Check if there's any data to migrate first
 	# This prevents creating an empty revision in fresh databases (e.g., test databases)
 	# which would cause PostgreSQL sequence conflicts when tests create their own revisions
-	has_data = False
 	for m in old_models_with_history:
-		model = apps.get_model('otodb', m)
-		if model.objects.exists():
-			has_data = True
+		if apps.get_model('otodb', m).objects.exists():
 			break
+	else:
+		return
 
-	if not has_data:
-		return  # No data to migrate, skip creating initial revision
-
-	rev = Revision.objects.create(user_id=None)
+	rev = Revision.objects.create(user_id=apps.get_model('account', 'account').objects.first().id)
 	for m in old_models_with_history:
 		model = apps.get_model('otodb', m)
 		if hasattr(model, '_revision_meta'):
@@ -58,18 +55,19 @@ def initial_revision(apps, schema_editor):
 						target_type=ContentType.objects.get_for_model(model),
 						target_id=instance['pk'],
 						target_column=field,
-						target_value=instance['field'],
+						target_value=instance[field],
 					)
 					for attr in model._revision_meta.entity_attrs:
-						RevisionChangeEntity.objects.create(
-							change=change,
-							entity_type=ContentType.objects.get_for_model(
-								model
-								if attr == 'self'
-								else model._meta.get_field(attr).related_model
-							),
-							entity_id=instance['pk' if attr == 'self' else attr],
-						)
+						if attr == 'self' or instance[attr]:
+							RevisionChangeEntity.objects.create(
+								change=change,
+								entity_type=ContentType.objects.get_for_model(
+									model
+									if attr == 'self'
+									else model._meta.get_field(attr).related_model
+								),
+								entity_id=instance['pk' if attr == 'self' else attr],
+							)
 
 
 class Migration(migrations.Migration):
@@ -172,7 +170,7 @@ class Migration(migrations.Migration):
 				'unique_together': {('change', 'entity_type', 'entity_id')},
 			},
 		),
-		migrations.RunPython(initial_revision),
+		migrations.RunPython(initial_revision, migrations.RunPython.noop),
 		migrations.AlterModelOptions(
 			name='tagsong',
 			options={},

@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0070_alter_revision_message'),
+		('otodb', '0074_alter_revision_message'),
 	]
 
 	operations = [

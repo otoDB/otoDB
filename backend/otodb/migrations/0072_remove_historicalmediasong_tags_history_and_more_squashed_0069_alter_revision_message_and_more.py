@@ -75,7 +75,7 @@ def initial_revision(apps, schema_editor):
 class Migration(migrations.Migration):
 	dependencies = [
 		('contenttypes', '0002_remove_content_type_name'),
-		('otodb', '0067_historicalworksource_thumbnail_hash_and_more'),
+		('otodb', '0071_allow_null_and_blank_source_title'),
 		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
 	]
 

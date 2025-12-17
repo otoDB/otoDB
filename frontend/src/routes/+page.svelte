@@ -62,7 +62,7 @@
 					<h2 class="mb-4 text-xl">{m.sea_cute_beaver_file()}</h2>
 					<table class="w-full">
 						<tbody>
-							{#each data.revisions as r, i (i)}
+							{#each changes as r, i (i)}
 								<tr
 									><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
 										>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td

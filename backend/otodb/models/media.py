@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Prefetch
 from django.urls import reverse
 from django.utils.functional import cached_property
-from tagulous.models import TagField
+from tagulous.models import TagField, TaggedManager
 
 from .enums import Rating, WorkTagCategory, Role
 from .tag import TagWork, TagSong, tagwork_ordering_case
@@ -124,6 +124,8 @@ class MediaWork(RevisionTrackedModel):
 		blank=True,
 		help_text='Deprecated: Use thumbnail_source instead',
 	)
+
+	active_objects = TaggedManager.cast_class(ActiveManager())
 
 	def __str__(self):
 		return f'{self.pk}: {self.title}'

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 	dependencies = [
 		('contenttypes', '0002_remove_content_type_name'),
-		('otodb', '0071_revisionchangeentity_route'),
+		('otodb', '0075_revisionchangeentity_route'),
 	]
 
 	operations = [

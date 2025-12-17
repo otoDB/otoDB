@@ -1300,23 +1300,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/history/rollback_ent": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Entity Rollback */
-        post: operations["otodb_api_history_entity_rollback"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/history/rollback": {
         parameters: {
             query?: never;
@@ -1326,7 +1309,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Rollback */
+        /**
+         * Rollback
+         * @description Rollback changes of a specific revision.
+         *
+         *     If entity is not provided: rollback all changes made IN the specified revision.
+         *     If entity is provided: rollback that entity TO its state at the specified revision.
+         */
         post: operations["otodb_api_history_rollback"];
         delete?: never;
         options?: never;
@@ -1343,7 +1332,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** User Rollback */
+        /**
+         * User Rollback
+         * @description Rollback all changes made by a specific user since the given date.
+         */
         post: operations["otodb_api_history_user_rollback"];
         delete?: never;
         options?: never;
@@ -4383,30 +4375,6 @@ export interface operations {
             };
         };
     };
-    otodb_api_history_entity_rollback: {
-        parameters: {
-            query: {
-                date: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EntitySchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     otodb_api_history_rollback: {
         parameters: {
             query: {
@@ -4416,7 +4384,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EntitySchema"] | null;
+            };
+        };
         responses: {
             /** @description OK */
             200: {

@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0069_alter_revision_user'),
+		('otodb', '0073_alter_revision_user'),
 	]
 
 	operations = [

@@ -23,7 +23,7 @@ from otodb.models import (
 )
 from otodb.account.models import Account
 
-from .common import ListSchema, ListItemSchema, WorkSourceSchema
+from .common import ListSchema, ListItemSchema, WorkSourceSchema, track_revision
 
 list_router = Router()
 
@@ -128,8 +128,7 @@ def toggle(request: HttpRequest, list_id: int, work_id: int):
 		return 403
 
 	if entries := lst.work_in_pool(work_id):
-		for entry in entries:
-			entry.delete()
+		entries.delete()
 		return False
 	else:
 		lst.add_work(work_id)
@@ -153,7 +152,7 @@ def import_ext_into_pool(info, list_: Pool, user):
 
 	old_entries = list_.poolitem_set.values_list('work__id', flat=True)
 
-	new_tag_instances, pool_items = [], []
+	pool_items = []
 	for i, (vid_info, full_info) in enumerate(list(infos)):
 		if vid_info is None:
 			list_.description += f'\nFailed to fetch {info["entries"][i]}'
@@ -183,10 +182,8 @@ def import_ext_into_pool(info, list_: Pool, user):
 				tt, _ = TagWork.objects.get_or_create(name=t)
 				if tt.aliased_to:
 					tt = tt.aliased_to
-				new_tag_instances.append(
-					TagWorkInstance(
-						work=work, work_tag=tt, instance_imported_from_source=True
-					)
+				TagWorkInstance.objects.create(
+					work=work, work_tag=tt, instance_imported_from_source=True
 				)
 
 			pool_items.append(PoolItem(work=work, description='', pool=list_))
@@ -194,14 +191,13 @@ def import_ext_into_pool(info, list_: Pool, user):
 			list_.pending_items.add(src)
 
 	list_.save()
-	# bulk_create does not handle M2M so we do this manually
-	TagWorkInstance.objects.bulk_create(new_tag_instances, ignore_conflicts=True)
 	PoolItem.objects.bulk_create(pool_items)
 
 
 @list_router.post(
 	'import', auth=django_auth, response=int, throttle=[AuthRateThrottle('3/30m')]
 )
+@track_revision
 def import_ext(request: HttpRequest, url: str):
 	info = playlist_info(url)
 	list_ = Pool.objects.create(

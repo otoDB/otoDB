@@ -28,6 +28,8 @@ from .common import (
 	TagWorkSchema,
 	WorkSchema,
 	WorkSourceSchema,
+	track_revision,
+	add_revision_message,
 )
 
 ENTITY_SCHEMAS = [TagWorkSchema, WorkSchema, WorkSourceSchema]
@@ -110,18 +112,21 @@ def make_bulk(request: HttpRequest, s: str):
 	bulk = BulkRequest.objects.create(user=request.user)
 	if not lines:
 		raise Exception
+	reqs = []
 	for n, line in enumerate(lines):
 		c = line.split()
 		cmd, A_validator, Bs_validator = COMMANDS[c[0]]
 		A = A_validator(c[1])
 		assert (not c[2:] and not Bs_validator) or (c[2:] and Bs_validator)
 		for arg, v in zip(c[2:], Bs_validator):
-			UserRequest.objects.create(bulk=bulk, command=cmd, A=A, B=v(arg))
+			reqs.append(UserRequest(bulk=bulk, command=cmd, A=A, B=v(arg)))
+	UserRequest.objects.bulk_create(reqs)
 	return bulk.id
 
 
 @request_router.post('confirm', auth=django_auth)
 @user_is_editor
+@track_revision
 def confirm(request: HttpRequest, request_id: int, status: Status):
 	bulk = get_object_or_404(BulkRequest, id=request_id, status=Status.PENDING)
 	for r in bulk.requests.all():
@@ -129,6 +134,7 @@ def confirm(request: HttpRequest, request_id: int, status: Status):
 	bulk.status = Status(status).value
 	bulk.processed_by = request.user
 	bulk.save()
+	add_revision_message(f'Via request {bulk.id} from {bulk.user.username}')
 
 
 class RequestSchema(ModelSchema):

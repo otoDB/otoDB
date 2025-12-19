@@ -13,9 +13,7 @@ from django.db.models import (
 	OuterRef,
 )
 
-from simple_history.utils import update_change_reason
-
-from ninja import Router, Schema, ModelSchema
+from ninja import Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
@@ -41,6 +39,7 @@ from otodb.models.enums import (
 	RequestActions,
 	Status,
 	ProfileConnectionTypes,
+	Route,
 )
 from otodb.account.models import Account
 
@@ -56,9 +55,11 @@ from .common import (
 	RelationSchema,
 	post_relation,
 	SlimWorkSchema,
+	RouterWithRevision,
+	with_revision_route,
 )
 
-work_router = Router()
+work_router = RouterWithRevision()
 
 
 class ExternalQuery(Schema):
@@ -141,7 +142,8 @@ def search(
 			q = q | Q(id=search_id)
 
 	return (
-		MediaWork.active_objects.filter(q)
+		MediaWork.objects.filter(moved_to__isnull=True)
+		.filter(q)
 		.annotate(
 			priority=Case(
 				When(id=search_id, then=Value(0)),
@@ -168,9 +170,8 @@ def search(
 @paginate
 def tags_needed(request: HttpRequest):
 	return (
-		MediaWork.active_objects.annotate(
-			ntags=Count('tags', filter=Q(tags__deprecated=False))
-		)
+		MediaWork.objects.filter(moved_to__isnull=True)
+		.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False)))
 		.filter(ntags__lte=4)
 		.order_by('ntags')
 		.distinct()
@@ -187,16 +188,22 @@ def work(request: HttpRequest, work_id: int):
 
 @work_router.delete('work', auth=django_auth)
 @user_is_editor
+@with_revision_route(Route.MEDIAWORK_DELETE)
 def delete_work(request: HttpRequest, work_id: int):
-	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	work = get_object_or_404(
+		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+	)
 	work.worksource_set.update(media=None)
 	work.delete()
 
 
 @work_router.put('set_tags', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.MEDIAWORK_SET_TAGS)
 def set_tags(request: HttpRequest, work_id: int, payload: List[str]):
-	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	work = get_object_or_404(
+		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+	)
 
 	tags = []
 	for v in payload:
@@ -220,6 +227,7 @@ class CreatorRolesUpdateSchema(Schema):
 
 @work_router.post('creator_roles', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.MEDIAWORK_UPDATE_CREATOR_ROLES)
 def update_creator_roles(request: HttpRequest, payload: CreatorRolesUpdateSchema):
 	instance = get_object_or_404(
 		TagWorkInstance, work_id=payload.work_id, work_tag__slug=payload.tag_slug
@@ -234,6 +242,7 @@ def update_creator_roles(request: HttpRequest, payload: CreatorRolesUpdateSchema
 
 @work_router.put('toggle_sample', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.MEDIAWORK_TOGGLE_SAMPLE)
 def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
 	instance = get_object_or_404(
 		TagWorkInstance, work_id=work_id, work_tag__slug=tag_slug
@@ -244,8 +253,11 @@ def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
 
 @work_router.put('remove_tag', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.MEDIAWORK_REMOVE_TAG)
 def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
-	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	work = get_object_or_404(
+		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+	)
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	work.tags.remove(tag)
 	if tag.can_be_deleted:
@@ -268,13 +280,16 @@ def recent(request: HttpRequest, n: int = 1):
 	'relations', response=tuple[list[RelationSchema], list[SlimWorkSchema]]
 )
 def relations(request: HttpRequest, work_id: int):
-	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	work = get_object_or_404(
+		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+	)
 	relations = WorkRelation.get_component(work.id)
 	return 200, (relations, {w.id: w for r in relations for w in (r.A, r.B)}.values())
 
 
 @work_router.post('relation', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.WORKRELATION_CREATE)
 def relation(request: HttpRequest, payload: RelationSchema):
 	post_relation(MediaWork, payload)
 	return
@@ -282,22 +297,26 @@ def relation(request: HttpRequest, payload: RelationSchema):
 
 @work_router.delete('relation', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.WORKRELATION_DELETE)
 def delete_relation(request: HttpRequest, A: int, B: int):
-	a = MediaWork.active_objects.get(id=A)
-	b = MediaWork.active_objects.get(id=B)
-	rel = WorkRelation.objects.get(a, b)
+	a = MediaWork.objects.filter(moved_to__isnull=True).get(id=A)
+	b = MediaWork.objects.filter(moved_to__isnull=True).get(id=B)
+	rel = WorkRelation.objects.get_relation(a, b)
 	rel.delete()
 	return
 
 
 @work_router.get('sources', response=List[WorkSourceSchema])
 def sources(request: HttpRequest, work_id: int):
-	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	work = get_object_or_404(
+		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+	)
 	return work.worksource_set
 
 
 @work_router.post('unbind_source', auth=django_auth)
 @user_is_editor
+@with_revision_route(Route.WORKSOURCE_UNBIND)
 def unbind_sources(request: HttpRequest, source_id: int):
 	src = get_object_or_404(WorkSource.active_objects, id=source_id)
 	if src.media.worksource_set.count() == 1:
@@ -308,6 +327,7 @@ def unbind_sources(request: HttpRequest, source_id: int):
 
 @work_router.put('source_origin', auth=django_auth)
 @user_is_editor
+@with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
 def source_origin(request: HttpRequest, source_id: int, status: int):
 	src = get_object_or_404(WorkSource.active_objects, id=source_id)
 	src.work_origin = WorkOrigin(status).value
@@ -330,6 +350,7 @@ def update_source_thumbnail_url(
 
 
 @work_router.post('refresh_source', auth=django_auth)
+@with_revision_route(Route.WORKSOURCE_REFRESH)
 def refresh_source(request: HttpRequest, source_id: int):
 	src: WorkSource = get_object_or_404(WorkSource.active_objects, id=source_id)
 	src.refresh()
@@ -344,12 +365,17 @@ class WorkEditSchema(ModelSchema):
 
 @work_router.post('merge', auth=django_auth)
 @user_is_editor
+@with_revision_route(Route.MEDIAWORK_MERGE)
 def merge_works(
 	request: HttpRequest, from_work_id: int, to_work_id: int, payload: WorkEditSchema
 ):
 	MediaWork.merge(
-		to_work=get_object_or_404(MediaWork.active_objects, id=to_work_id),
-		from_work=get_object_or_404(MediaWork.active_objects, id=from_work_id),
+		to_work=get_object_or_404(
+			MediaWork.objects.filter(moved_to__isnull=True), id=to_work_id
+		),
+		from_work=get_object_or_404(
+			MediaWork.objects.filter(moved_to__isnull=True), id=from_work_id
+		),
 		title=payload.title,
 		description=payload.description,
 		thumbnail_source=get_object_or_404(
@@ -362,16 +388,18 @@ def merge_works(
 
 @work_router.put('work', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.MEDIAWORK_UPDATE)
 def update_work(
 	request: HttpRequest, work_id: int, payload: WorkEditSchema, reason: str
 ):
-	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	work = get_object_or_404(
+		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+	)
 	for attr, value in payload.dict().items():
 		if attr == 'thumbnail_source' and value is not None:
 			value = get_object_or_404(WorkSource.active_objects, id=value)
 		setattr(work, attr, value)
 	work.save()
-	update_change_reason(work, reason)
 	return
 
 
@@ -379,6 +407,7 @@ def update_work(
 	'source', auth=django_auth, response={200: int | None, 400: Error, 409: Error}
 )
 @user_is_trusted
+@with_revision_route(Route.WORKSOURCE_CREATE)
 def new_source_from_url(
 	request: HttpRequest,
 	url: str,
@@ -448,11 +477,17 @@ def new_source_from_url(
 	# === Work check: editor flow or existing work found in request/sources ===
 
 	if work_id:
-		work = get_object_or_404(MediaWork.active_objects, id=work_id)
+		work = get_object_or_404(
+			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+		)
 	elif src.media:
-		work = get_object_or_404(MediaWork.active_objects, id=src.media.id)
+		work = get_object_or_404(
+			MediaWork.objects.filter(moved_to__isnull=True), id=src.media.id
+		)
 	elif original_src and original_src_media is not None:
-		work = get_object_or_404(MediaWork.active_objects, id=original_src.media.id)
+		work = get_object_or_404(
+			MediaWork.objects.filter(moved_to__isnull=True), id=original_src.media.id
+		)
 	else:
 		work = MediaWork.objects.create(
 			title=src.title,
@@ -548,6 +583,7 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 	response=int,
 )
 @user_is_editor
+@with_revision_route(Route.WORKSOURCE_ASSIGN)
 def assign_source_to_work(
 	request: HttpRequest, source_id: int, work_id: int | None = None
 ):
@@ -555,7 +591,9 @@ def assign_source_to_work(
 	assert src.media is None and not getattr(src, 'rejection', None)
 
 	if work_id is not None:
-		work = get_object_or_404(MediaWork.active_objects, id=work_id)
+		work = get_object_or_404(
+			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+		)
 	else:
 		work = MediaWork.objects.create(
 			title=src.title, description=src.description, thumbnail_source=src
@@ -576,6 +614,7 @@ def assign_source_to_work(
 
 @work_router.post('reject_source', auth=django_auth)
 @user_is_editor
+@with_revision_route(Route.WORKSOURCE_REJECT)
 def reject_source(request: HttpRequest, source_id: int, reason: str):
 	src = get_object_or_404(WorkSource.active_objects, id=source_id)
 	src.rejection = WorkSourceRejection.objects.create(
@@ -587,6 +626,7 @@ def reject_source(request: HttpRequest, source_id: int, reason: str):
 
 @work_router.get('unbound', auth=django_auth, response=List[WorkSourceSchema])
 @user_is_editor
+@with_revision_route(Route.WORKSOURCE_UNBIND)
 def get_unbound_sources(request: HttpRequest, pending: bool):
 	return WorkSource.objects.filter(media__isnull=True, rejection__isnull=pending)
 

@@ -6,7 +6,7 @@ from project.asgi import application as otodb_django
 from sqlalchemy import select, func, String, ForeignKey
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from litestar import Litestar, get, asgi, Router
 from litestar.types import Receive, Scope, Send
@@ -33,6 +33,29 @@ class Rating(enum.Enum):
 	EXPLICIT = 2
 
 
+class TagWorkInstance(Base):
+	__tablename__ = 'otodb_tagworkinstance'
+	id: Mapped[int] = mapped_column(primary_key=True)
+	work_id: Mapped[int] = mapped_column(ForeignKey('otodb_mediawork.id'))
+	work_tag_id: Mapped[int] = mapped_column(ForeignKey('otodb_tagwork.id'))
+	used_as_source: Mapped[bool]
+	creator_roles: Mapped[int | None]
+	instance_imported_from_source: Mapped[bool]
+
+
+class TagWork(Base):
+	__tablename__ = 'otodb_tagwork'
+	id: Mapped[int] = mapped_column(primary_key=True)
+	name: Mapped[str]
+	slug: Mapped[str]
+	count: Mapped[int]
+	protected: Mapped[bool]
+	aliased_to_id: Mapped[int | None]
+	deprecated: Mapped[bool]
+	category: Mapped[int]
+	media_type: Mapped[int | None]
+
+
 class MediaWork(Base):
 	__tablename__ = 'otodb_mediawork'
 	id: Mapped[int] = mapped_column(primary_key=True)
@@ -42,6 +65,9 @@ class MediaWork(Base):
 	thumbnail_source_id: Mapped[int | None]
 	moved_to_id: Mapped[int | None] = mapped_column(ForeignKey('otodb_mediawork.id'))
 	_thumbnail: Mapped[str | None] = mapped_column(String(200))
+	tags: Mapped[list[TagWork]] = relationship(
+		secondary='otodb_tagworkinstance', lazy='selectin'
+	)
 
 
 class MediaSong(Base):
@@ -52,19 +78,6 @@ class MediaSong(Base):
 	variable_bpm: Mapped[bool]
 	bpm: Mapped[float | None]
 	work_tag_id = Mapped[int]
-
-
-class TagWork(Base):
-	__tablename__ = 'otodb_tagwork'
-	id: Mapped[int] = mapped_column(primary_key=True)
-	name: Mapped[str]
-	slug: Mapped[str]
-	count: Mapped[int]
-	protected: Mapped[bool]
-	alised_to_id: Mapped[int | None]
-	deprecated: Mapped[bool]
-	category: Mapped[int]
-	media_type: Mapped[int | None]
 
 
 class Pool(Base):

@@ -116,6 +116,15 @@ wheels = [
 ]
 
 [[package]]
+name = "cached-property"
+version = "2.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/4b/3d870836119dbe9a5e3c9a61af8cc1a8b69d75aea564572e385882d5aefb/cached_property-2.0.1.tar.gz", hash = "sha256:484d617105e3ee0e4f1f58725e72a8ef9e93deee462222dbd51cd91230897641", size = 10574, upload-time = "2024-10-25T15:43:55.667Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/0e/7d8225aab3bc1a0f5811f8e1b557aa034ac04bdf641925b30d3caf586b28/cached_property-2.0.1-py3-none-any.whl", hash = "sha256:f617d70ab1100b7bcf6e42228f9ddcb78c676ffa167278d9f730d1c2fba69ccb", size = 7428, upload-time = "2024-10-25T15:43:54.711Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2025.11.12"
 source = { registry = "https://pypi.org/simple" }
@@ -899,6 +908,7 @@ dependencies = [
     { name = "requests" },
     { name = "sentry-sdk", extra = ["django"] },
     { name = "sqlalchemy", extra = ["aiosqlite"] },
+    { name = "sqlalchemy-history" },
     { name = "yt-dlp" },
 ]
 
@@ -939,6 +949,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.32.3" },
     { name = "sentry-sdk", extras = ["django"], specifier = ">=2.43.0" },
     { name = "sqlalchemy", extras = ["aiosqlite"], specifier = ">=2.0.45" },
+    { name = "sqlalchemy-history", specifier = ">=2.1.4" },
     { name = "yt-dlp", specifier = ">=2025.9.23" },
 ]
 
@@ -1365,6 +1376,32 @@ aiosqlite = [
     { name = "aiosqlite" },
     { name = "greenlet" },
     { name = "typing-extensions" },
+]
+
+[[package]]
+name = "sqlalchemy-history"
+version = "2.1.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cached-property" },
+    { name = "sqlalchemy" },
+    { name = "sqlalchemy-utils" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/18/1b0dca189b8a4a23a9dd71af967ad1c022a3772f47fa88c5f690ca44f7b6/sqlalchemy_history-2.1.4.tar.gz", hash = "sha256:39a2fe5f1c26099de58ece95db0d5cd22f4e1049b300c6be7680ee8118f9a157", size = 39087, upload-time = "2024-01-11T03:41:24.736Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/0c/96b7827fa8cadfe65c5aea841e3eb8563ac82713dc08a1f864bee9e3a560/sqlalchemy_history-2.1.4-py3-none-any.whl", hash = "sha256:adeee6e5a9a1e89126fec29fd4f5dfef83b86000d3cc0cca3b921533309a2633", size = 47083, upload-time = "2024-01-11T03:41:20.182Z" },
+]
+
+[[package]]
+name = "sqlalchemy-utils"
+version = "0.42.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "sqlalchemy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0f/7d/eb9565b6a49426552a5bf5c57e7c239c506dc0e4e5315aec6d1e8241dc7c/sqlalchemy_utils-0.42.1.tar.gz", hash = "sha256:881f9cd9e5044dc8f827bccb0425ce2e55490ce44fc0bb848c55cc8ee44cc02e", size = 130789, upload-time = "2025-12-13T03:14:13.591Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7c/25/7400c18c3ee97914cc99c90007795c00a4ec5b60c853b49db7ba24d11179/sqlalchemy_utils-0.42.1-py3-none-any.whl", hash = "sha256:243cfe1b3a1dae3c74118ae633f1d1e0ed8c787387bc33e556e37c990594ac80", size = 91761, upload-time = "2025-12-13T03:14:15.014Z" },
 ]
 
 [[package]]

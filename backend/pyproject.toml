@@ -33,12 +33,16 @@ dependencies = [
     "sqlalchemy[aiosqlite]>=2.0.45",
     "advanced-alchemy>=1.8.2",
     "litestar-granian>=0.14.2",
+    "sqlalchemy-history>=2.1.4",
 ]
 
 [tool.ruff.format]
 quote-style = "single"
 indent-style = "tab"
 docstring-code-format = true
+
+[tool.ruff.lint]
+ignore = ["E711", "E712"]
 
 [dependency-groups]
 dev = [

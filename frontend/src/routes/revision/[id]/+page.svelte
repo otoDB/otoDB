@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
+	import client from '$lib/api.js';
+	import { UserLevel } from '$lib/enums.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
@@ -19,6 +22,15 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4>{data.revision.message}</h4>{/if}
+	{#if data.user?.level >= UserLevel.ADMIN}<button
+			onclick={async () => {
+				await client.POST('/api/history/rollback', {
+					fetch,
+					params: { query: { revision_id: data.revision.id } }
+				});
+				invalidateAll();
+			}}>Revert</button
+		>{/if}
 
 	<pre>
 		{#each data.changes.items as c, i (i)}{c.target_type} #{c.target_id} - {#if c.deleted}Deleted{:else}{c.target_column} -> {c.target_value}{/if}

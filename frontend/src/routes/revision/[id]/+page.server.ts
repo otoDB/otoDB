@@ -22,6 +22,8 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		client.GET('/api/history/revision', { fetch, params: { query: { revision_id } } })
 	]);
 
+	if (!revision) error(404, { message: 'Not found' });
+
 	return {
 		revision,
 		changes,

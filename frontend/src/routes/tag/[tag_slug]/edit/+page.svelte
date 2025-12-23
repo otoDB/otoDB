@@ -25,6 +25,7 @@
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
 	import TagsField from '$lib/TagsField.svelte';
+	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 
 	let { data, form }: PageProps = $props();
 
@@ -136,6 +137,7 @@
 	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
 	menuLinks={data.links}
 >
+	<GuidelineWarning />
 	<form method="POST" use:dirtyEnhance action="?/edit">
 		{#if data.tag.category === 2 && category !== 2}
 			<p class="text-red-500">

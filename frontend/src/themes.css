@@ -154,3 +154,59 @@
 		}
 	}
 }
+
+.theme-resample {
+	--otodb-color-content-primary: rgb(2, 20, 27);
+	--otodb-color-content-faint: rgb(30, 110, 230);
+	--otodb-color-content-fainter: rgb(73, 152, 189);
+	--otodb-color-bg-primary: rgb(172, 243, 255);
+	--otodb-color-bg-faint: rgb(239, 245, 253);
+	--otodb-color-bg-fainter: rgb(211, 219, 230);
+
+	& .prose {
+		@apply prose-neutral;
+	}
+
+	> div.bg-marker:first-child {
+		&::after {
+			content: '';
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-image:
+				url('/resample-r.png'), url('/resample-ll.svg'), url('/resample-ll.svg'),
+				url('/resample-ll.svg'), linear-gradient(to top, var(--otodb-color-bg-primary)),
+				repeating-linear-gradient(
+					to top,
+					rgb(110, 201, 253) 0,
+					rgb(110, 201, 253) 50px,
+					transparent 50px,
+					transparent 90px
+				),
+				linear-gradient(to right, var(--otodb-color-bg-primary));
+			background-color: rgb(107, 166, 255);
+			background-position:
+				center calc(100% - 150px),
+				top left,
+				180px top,
+				360px top,
+				center calc(100% - 145px),
+				calc(100% - 215px),
+				calc(100% - 150px);
+			background-size:
+				auto 100px,
+				250px,
+				250px,
+				250px,
+				auto 120px,
+				10px 100%,
+				140px;
+			background-repeat:
+				repeat-x, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+			pointer-events: none;
+			z-index: -1;
+		}
+	}
+}

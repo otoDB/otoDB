@@ -18,16 +18,14 @@ export const load: PageServerLoad = async ({ fetch, locals }) => {
 	return {
 		random: randomWork.data,
 		recent: recentWork.data,
-		changes: locals.user
-			? client
-					.GET('/api/history/recent', {
-						fetch,
-						params: { query: { limit: 16, offset: 0 } }
-					})
-					.then((res) => {
-						if (res.error) return null;
-						return res.data.items;
-					})
-			: null
+		changes: client
+			.GET('/api/history/recent', {
+				fetch,
+				params: { query: { limit: 16, offset: 0 } }
+			})
+			.then((res) => {
+				if (res.error) return null;
+				return res.data.items;
+			})
 	};
 };

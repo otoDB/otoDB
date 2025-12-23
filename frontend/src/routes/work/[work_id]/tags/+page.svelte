@@ -7,6 +7,7 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import { Role, WorkTagCategoriesSettableAsSource } from '$lib/enums';
 	import { callSavingToast } from '$lib/toast.js';
+	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 
 	let { data } = $props();
 
@@ -57,6 +58,7 @@
 	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
 	menuLinks={data.links}
 >
+	<GuidelineWarning />
 	<table>
 		<thead>
 			<tr

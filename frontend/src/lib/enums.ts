@@ -273,7 +273,7 @@ export const Role = {
 	32: m.heavy_blue_parrot_mend
 };
 
-export const Themes = ['default', 'aniki', 'otogroove', 'retro-voyage', 'sorimix'].map(
+export const Themes = ['default', 'aniki', 'otogroove', 'retro-voyage', 'sorimix', 'resample'].map(
 	(t) => 'theme-' + t
 );
 
@@ -282,7 +282,8 @@ export const ThemeNames = [
 	m.next_ago_opossum_swim,
 	() => 'otogroove',
 	m.tiny_plane_ape_pull,
-	m.mean_zesty_ray_savor
+	m.mean_zesty_ray_savor,
+	() => 'Re:Sample'
 ];
 
 export const HistoryModelNames = {

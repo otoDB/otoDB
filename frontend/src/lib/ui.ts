@@ -84,3 +84,6 @@ export const version_end_dates = [
 ];
 
 export const current_version = version_end_dates.at(-1)[0];
+
+export const GUIDELINE_POST_ID = 4;
+export const FAQ_POST_ID = 3;

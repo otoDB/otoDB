@@ -22,14 +22,14 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4>{data.revision.message}</h4>{/if}
-	{#if data.user?.level >= UserLevel.ADMIN}<button
+	{#if data.user?.level >= UserLevel.ADMIN && data.revision.id > 1}<button
 			onclick={async () => {
 				await client.POST('/api/history/rollback', {
 					fetch,
 					params: { query: { revision_id: data.revision.id } }
 				});
 				invalidateAll();
-			}}>Revert</button
+			}}>Revert changes made in this revision</button
 		>{/if}
 
 	<pre>

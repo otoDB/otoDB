@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 from datetime import date, datetime
 import logging
 from django.db import models
-from simple_history.models import HistoricalRecords, HistoricForeignKey
 import requests
 
 from .enums import Platform, WorkOrigin, WorkStatus, MimeType
@@ -13,21 +12,23 @@ from otodb.account.models import Account
 from otodb.common import video_info, process_video_info, fetch_thumbnail_mime_type
 from otodb.storage_manager import storage_manager
 
+from .revision import RevisionTrackedModel, RevisionTrackedManager
+
 logger = logging.getLogger(__name__)
 
 
-class ActiveManager(models.Manager):
+class ActiveManager(RevisionTrackedManager):
 	def get_queryset(self):
 		return super().get_queryset().filter(rejection__isnull=True)
 
 
-class WorkSource(models.Model):
+class WorkSource(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		from .pool import Pool
 
 		pool_set: 'models.QuerySet[Pool]'
 
-	media = HistoricForeignKey(
+	media = models.ForeignKey(
 		MediaWork, on_delete=models.CASCADE, null=True, blank=True
 	)
 	platform = models.IntegerField(choices=Platform.choices)
@@ -60,9 +61,29 @@ class WorkSource(models.Model):
 		Account, blank=False, null=False, on_delete=models.CASCADE
 	)
 
-	objects = models.Manager()
 	active_objects = ActiveManager()
-	history = HistoricalRecords()
+
+	class RevisionMeta:
+		tracked_fields = [
+			'media',
+			'platform',
+			'source_id',
+			'url',
+			'published_date',
+			'work_origin',
+			'work_status',
+			'work_width',
+			'work_height',
+			'work_duration',
+			'title',
+			'description',
+			'thumbnail_url',
+			'thumbnail_mime',
+			'thumbnail_hash',
+			'uploader_id',
+			'added_by',
+		]
+		entity_attrs = ['self', 'media']
 
 	info_payload: 'WorkSourceInfoPayload'
 
@@ -111,20 +132,17 @@ class WorkSource(models.Model):
 			if self.media:
 				from .tag import TagWork
 
-				new_tags = []
-				for tag in info.get('tags', []):
-					try:
-						tag_obj, created = TagWork.objects.get_or_create(name=tag)
-						self.media.tags.add(tag_obj)
-						if created:
-							new_tags.append(tag_obj.pk)
-					except Exception:
-						tag_obj = TagWork.objects.get(name=tag)
-						self.media.tags.add(tag_obj)
-				if new_tags:
-					self.media.tagworkinstance_set.filter(work_tag__in=new_tags).update(
-						instance_imported_from_source=True
-					)
+				tags = info.get('tags', [])
+				exists = TagWork.objects.filter(name__in=tags)
+				created = [
+					TagWork.objects.create(name=name)
+					for name in tags
+					if name not in set(exists.values_list('name', flat=True))
+				]
+				self.media.tags.add(*exists, *created)
+				self.media.tagworkinstance_set.filter(work_tag__in=created).update(
+					instance_imported_from_source=True
+				)
 		else:
 			logger.error(
 				f'Failed to refresh WorkSource {self.pk} - {self.url}: No info found.'
@@ -293,6 +311,7 @@ class WorkSourceRejection(models.Model):
 	)
 	reason = models.CharField(max_length=1000, null=False, blank=False)
 	by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.RESTRICT)
+	date = models.DateTimeField(auto_now_add=True, null=False)
 
 
 class WorkSourceInfoPayload(models.Model):

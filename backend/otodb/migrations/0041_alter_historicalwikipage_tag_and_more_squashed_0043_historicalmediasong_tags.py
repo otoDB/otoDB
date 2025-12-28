@@ -7,12 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-	replaces = [
-		('otodb', '0041_alter_historicalwikipage_tag_and_more'),
-		('otodb', '0042_alter_songrelation_a_alter_songrelation_b_and_more'),
-		('otodb', '0043_historicalmediasong_tags'),
-	]
-
 	dependencies = [
 		('otodb', '0040_alter_historicaltagsong_slug_and_more'),
 		migrations.swappable_dependency(settings.AUTH_USER_MODEL),

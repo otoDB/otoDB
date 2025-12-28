@@ -5,6 +5,7 @@
 	import type { components } from '$lib/schema';
 	import { Platform, Rating, WorkOrigin } from '$lib/enums';
 	import client from '$lib/api';
+	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 
 	let work: {
 		work: components['schemas']['WorkSchema'] | null;
@@ -76,6 +77,7 @@
 </svelte:head>
 
 <Section title={m.heroic_same_wasp_conquer()}>
+	<GuidelineWarning />
 	<form method="POST">
 		<table>
 			<tbody>

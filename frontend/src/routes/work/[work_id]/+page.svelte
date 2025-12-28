@@ -21,6 +21,7 @@
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import { callSavingToast } from '$lib/toast';
 	import { SvelteMap } from 'svelte/reactivity';
+	import WorkCard from '$lib/WorkCard.svelte';
 
 	let { data } = $props();
 
@@ -348,6 +349,20 @@
 	</div>
 </Section>
 
+{#await data.similar}
+	<!-- Blank -->
+{:then similar}
+	{#if similar?.length}
+		<Section title={m.topical_main_beaver_walk()}>
+			<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
+				{#each similar as s, i (i)}
+					<WorkCard work={s} />
+				{/each}
+			</div>
+		</Section>
+	{/if}
+{/await}
+
 <Section title={m.same_broad_haddock_pinch()}>
 	<CommentTree comments={data.comments} user={data.user ?? null} model="mediawork" pk={data.id} />
 </Section>
@@ -357,7 +372,7 @@
 		white-space: pre-wrap;
 		max-height: 15em;
 		overflow-y: auto;
-		word-wrap: break-word;
+		overflow-wrap: anywhere;
 	}
 	th {
 		white-space: nowrap;

@@ -221,8 +221,7 @@
 	"even_such_wallaby_fond": "Set as base",
 	"mild_full_sloth_work": "Actions",
 	"last_jumpy_barbel_mop": "Request",
-	"clean_cuddly_sparrow_learn": "New Request",
-	"muddy_tough_swan_view": " New Bulk Request",
+	"muddy_tough_swan_view": "New Bulk Request",
 	"grassy_warm_gadfly_inspire": "How to write bulk requests",
 	"tough_calm_hedgehog_wave": "Add tags",
 	"big_helpful_tortoise_swim": "Variable",
@@ -237,7 +236,6 @@
 	"great_clean_beaver_amuse": " ",
 	"fresh_deft_warbler_edit": "More...",
 	"chunky_giant_quail_breathe": "Delete this tag",
-	"bald_candid_herring_gaze": "Sampling",
 	"dizzy_true_florian_pop": "Respect for",
 	"safe_gray_cowfish_dart": "Original Collab",
 	"free_mellow_tiger_cook": "Prequel",
@@ -261,5 +259,7 @@
 	"muddy_that_bobcat_gleam": "Create a new invite for an {level}",
 	"just_mushy_ladybug_twist": "Your invitee {username} has become Restricted. You are not able to create any more invites.",
 	"next_royal_carp_pride": "Your next invite will be available at {date}.",
-	"sound_flaky_goose_pinch": "Please make sure that you can trust who you wish to invite as an Editor. Your own privileges may be suspended should any of your invitees become Restricted."
+	"sound_flaky_goose_pinch": "Please make sure that you can trust who you wish to invite as an Editor. Your own privileges may be suspended should any of your invitees become Restricted.",
+	"topical_main_beaver_walk": "Similar",
+	"arable_direct_swan_glow": "Revision"
 }

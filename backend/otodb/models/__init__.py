@@ -13,6 +13,7 @@ from .connection import (
 )
 from .prefs import UserPreferences
 from .request import BulkRequest, UserRequest
+from .revision import Revision, RevisionChange, RevisionChangeEntity
 
 __all__ = [
 	'MediaWork',
@@ -40,4 +41,7 @@ __all__ = [
 	'UserPreferences',
 	'BulkRequest',
 	'UserRequest',
+	'Revision',
+	'RevisionChange',
+	'RevisionChangeEntity',
 ]

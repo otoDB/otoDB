@@ -1,9 +1,13 @@
+import orjson
+
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.cache import cache_page
 
 from ninja import NinjaAPI
 from ninja.decorators import decorate_view
+from ninja.parser import Parser
+from ninja.renderers import BaseRenderer
 
 from .auth import auth_router
 from .work import work_router
@@ -15,9 +19,24 @@ from .comment import comment_router
 from .history import history_router
 from .requests import request_router
 
+
+class ORJSONParser(Parser):
+	def parse_body(self, request):
+		return orjson.loads(request.body)
+
+
+class ORJSONRenderer(BaseRenderer):
+	media_type = 'application/json'
+
+	def render(self, request, data, *, response_status):
+		return orjson.dumps(data)
+
+
 api = NinjaAPI(
 	urls_namespace='otodb:api',
 	docs_decorator=staff_member_required if settings.OTODB_PROTECT_API_DOCS else None,
+	parser=ORJSONParser(),
+	renderer=ORJSONRenderer(),
 )
 api.add_router('/auth/', auth_router)
 api.add_router('/work/', work_router)
@@ -36,7 +55,7 @@ def statistics(request):
 	from otodb.models import MediaWork, TagWork, MediaSong, Pool
 
 	return [
-		MediaWork.active_objects.count(),
+		MediaWork.objects.filter(moved_to__isnull=True).count(),
 		TagWork.objects.count(),
 		MediaSong.objects.count(),
 		Pool.objects.count(),

@@ -384,10 +384,10 @@ export const Route = {
 	46: 'Work: Merge',
 	50: 'Work: Create Relation',
 	51: 'Work: Delete Relation',
-	60: 'Source: Create',
-	61: 'Source: Unbind',
-	62: 'Source: Set Origin',
-	63: 'Source: Refresh',
-	64: 'Source: Assign',
-	65: 'Source: Reject'
+	60: 'Upload: Create',
+	61: 'Upload: Unbind',
+	62: 'Upload: Set Origin',
+	63: 'Upload: Refresh',
+	64: 'Upload: Assign',
+	65: 'Upload: Reject'
 };

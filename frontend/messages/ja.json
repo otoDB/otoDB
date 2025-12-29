@@ -180,6 +180,7 @@
 	"sound_careful_falcon_grow": "更新しました!",
 	"only_moving_cat_hint": "更新中...",
 	"spry_late_kudu_assure": "タグ不足",
+	"that_new_mayfly_spur": "このタグにはまだ情報が関連付けられています。削除するタグは、別名が設定されていない孤立タグで、「一般」カテゴリに属し、接続がなく、空のウィキページのみである必要があります。",
 	"dirty_lazy_mammoth_empower": "タグをエイリアスとして保存する",
 	"real_born_goat_snap": "タグを削除する",
 	"weary_moving_swallow_chop": "别名を追加する...",
@@ -215,6 +216,7 @@
 	"muddy_tough_swan_view": "新しい一括リクエスト",
 	"grassy_warm_gadfly_inspire": "一括リクエストの書き方",
 	"tough_calm_hedgehog_wave": "タグを追加する",
+	"moving_trick_piranha_thrive": "編集上の議論",
 	"new_honest_tapir_endure": "バグレポート",
 	"crazy_loud_trout_peek": "機能リクエスト",
 	"livid_loose_eel_pop": "発表",
@@ -237,5 +239,15 @@
 	"sound_funny_hound_embrace": "をリスペクトしている",
 	"major_tense_fly_savor": "をサンプルとして使用",
 	"shy_bland_bird_harbor": "の合作単品",
-	"arable_direct_swan_glow": "変更"
+	"stale_early_squirrel_prosper": "作成日",
+	"basic_upper_racoon_type": "レベル",
+	"suave_royal_jurgen_shine": "使用者",
+	"true_male_kudu_cook": "招待",
+	"muddy_that_bobcat_gleam": "{level}の新しい招待を作成します",
+	"just_mushy_ladybug_twist": "招待者{username}が制限対象となりました。これ以上招待を作成できません。",
+	"next_royal_carp_pride": "次の招待コードは{date}に利用可能になります。",
+	"sound_flaky_goose_pinch": "編集者として招待する方は、信頼できる方であることを必ずご確認ください。招待した方が制限対象になった場合、ご自身の権限も停止される可能性があります。",
+	"topical_main_beaver_walk": "似ている",
+	"arable_direct_swan_glow": "変更",
+	"born_these_snake_devour": "をよく理解してください"
 }

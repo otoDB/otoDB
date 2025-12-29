@@ -4,15 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0078_alter_userpreferences_theme'),
+	]
 
-    dependencies = [
-        ('otodb', '0078_alter_userpreferences_theme'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='userpreferences',
-            name='theme',
-            field=models.IntegerField(choices=[(0, 'Default'), (1, 'Aniki'), (2, 'otogroove'), (3, 'Retro Voyage'), (4, 'SORIMIX'), (5, 'Re:Sample')], default=0),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name='userpreferences',
+			name='theme',
+			field=models.IntegerField(
+				choices=[
+					(0, 'Default'),
+					(1, 'Aniki'),
+					(2, 'otogroove'),
+					(3, 'Retro Voyage'),
+					(4, 'SORIMIX'),
+					(5, 'Re:Sample'),
+				],
+				default=0,
+			),
+		),
+	]

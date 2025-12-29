@@ -9,10 +9,10 @@
 </script>
 
 <h4>
-	Please make sure you are familiar with the <a href="/post/{GUIDELINE_POST_ID}"
+	{m.born_these_snake_devour()} <a href="/post/{GUIDELINE_POST_ID}"
 		>{m.arable_direct_cougar_win()}</a
 	>
-	and common <a href="/post/{FAQ_POST_ID}">FAQ</a>. {#await r}
+	& <a href="/post/{FAQ_POST_ID}">FAQ</a> {#await r}
 		<!-- Blank -->
 	{:then post}
 		{#if post.data}

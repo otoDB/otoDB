@@ -160,7 +160,7 @@
 							{@render link('/register', m.blue_whole_camel_type())}
 						{:else}
 							{@render link(`/settings`, m.orange_born_seal_ascend())}
-							{@render link('/post/1', m.bald_ideal_gadfly_jest())}
+							{@render link('/post/new?category=2', m.bald_ideal_gadfly_jest())}
 							{@render link('/work/add', m.fluffy_crisp_horse_imagine())}
 							{@render link(
 								`/profile/${data.user.username}`,

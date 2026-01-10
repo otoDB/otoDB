@@ -1,6 +1,7 @@
 <script>
 	import client from './api';
 	import { m } from './paraglide/messages';
+	import { getLocale } from './paraglide/runtime';
 	import { FAQ_POST_ID, GUIDELINE_POST_ID, isSOV, isSVO } from './ui';
 	const r = client.GET('/api/post/post', {
 		fetch,
@@ -9,12 +10,12 @@
 </script>
 
 <h4>
-	{#if isSVO()}
+	{#if isSVO(getLocale())}
 		{m.born_these_snake_devour()}
-		<a href="/post/{GUIDELINE_POST_ID}">{m.arable_direct_cougar_win()}</a>
 	{/if}
+	<a href="/post/{GUIDELINE_POST_ID}">{m.arable_direct_cougar_win()}</a>
 	& <a href="/post/{FAQ_POST_ID}">FAQ</a>
-	{#if isSOV()}{m.born_these_snake_devour()}{/if}
+	{#if isSOV(getLocale())}{m.born_these_snake_devour()}{/if}
 	{#await r}
 		<!-- Blank -->
 	{:then post}

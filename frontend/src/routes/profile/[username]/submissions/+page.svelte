@@ -78,6 +78,7 @@
 		</table>
 		<input type="submit" />
 	</form>
+	<hr class="my-2" />
 	<h2>{m.such_actual_okapi_dare()}</h2>
 	{#if pending?.length}
 		<table class="w-full">

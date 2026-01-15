@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-from django.db.models import Subquery, OuterRef, DateTimeField
-from django.db.models.functions import Greatest, Coalesce
+from django.db.models import Subquery, OuterRef, DateTimeField, CharField
+from django.db.models.functions import Greatest, Coalesce, Cast
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
@@ -118,12 +118,12 @@ def recent_posts(request: HttpRequest):
 				Subquery(
 					XtdComment.objects.filter(
 						content_type=ContentType.objects.get_for_model(Post),
-						object_pk=OuterRef('id'),
+						object_pk=Cast(OuterRef('id'), CharField()),
 					)
 					.order_by('submit_date')
 					.values('submit_date')[:1]
 				),
-				0,
+				datetime.fromtimestamp(0, tz=timezone.utc),
 				output_field=DateTimeField(),
 			),
 		)

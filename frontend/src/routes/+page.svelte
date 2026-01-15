@@ -25,7 +25,6 @@
 		<li><a href="/post/3">FAQ</a></li>
 		{#if data.user}
 			<li><a href="/post/4">{m.arable_direct_cougar_win()}</a></li>
-			<li><a href="/post/1">{m.bald_ideal_gadfly_jest()}</a></li>
 		{/if}
 	</ul>
 </Section>

@@ -30,7 +30,7 @@
 	</ul>
 </Section>
 
-<div class="grid grid-cols-[repeat(auto-fill,minmax(576px,1fr))] gap-x-4">
+<div class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,576px),1fr))] gap-x-4">
 	<Section title={m.fuzzy_chunky_niklas_peek()}>
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.random as w, i (i)}

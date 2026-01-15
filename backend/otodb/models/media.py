@@ -170,7 +170,7 @@ class MediaWork(RevisionTrackedModel):
 		from_work.relation_A.update(A=to_work)
 
 		from_work.relation_B.filter(A=to_work).delete()
-		from_work.relation_A.update(B=to_work)
+		from_work.relation_B.update(B=to_work)
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
 		XtdComment.objects.filter(

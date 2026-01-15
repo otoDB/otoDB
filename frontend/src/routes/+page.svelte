@@ -28,58 +28,59 @@
 			<li><a href="/post/1">{m.bald_ideal_gadfly_jest()}</a></li>
 		{/if}
 	</ul>
+</Section>
 
-	<hr class="my-4" />
-
-	<div class="w-full">
-		<h2 class="mb-4 text-xl">{m.fuzzy_chunky_niklas_peek()}</h2>
+<div class="grid grid-cols-[repeat(auto-fill,minmax(576px,1fr))] gap-x-4">
+	<Section title={m.fuzzy_chunky_niklas_peek()}>
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.random as w, i (i)}
 				<WorkCard work={w} />
 			{/each}
 		</div>
-	</div>
+	</Section>
 
-	<hr class="my-4" />
-
-	<div class="w-full">
-		<h2 class="mb-4 text-xl">{m.big_long_squirrel_kiss()}</h2>
+	<Section title={m.big_long_squirrel_kiss()}>
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.recent as w, i (i)}
 				<WorkCard work={w} />
 			{/each}
 		</div>
-	</div>
+	</Section>
 
-	{#await data.changes}
-		<!-- Blank while loading -->
-	{:then changes}
-		{#if changes && changes.length > 0}
-			<hr class="my-4" />
-			<div class="w-full">
-				<h2 class="mb-4 text-xl">{m.sea_cute_beaver_file()}</h2>
-				<table class="w-full">
-					<tbody>
-						{#each changes as r, i (i)}
-							<tr
-								><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-									>{r.route !== null && r.route !== undefined
-										? Route[r.route]
-										: ''}</td
-								><td>
-									{#if isSVO(getLocale())}
-										{m.curly_safe_lynx_fond()}
-									{/if}
-									<a href="/profile/{r.user}">{r.user}</a>
-									{#if isSOV(getLocale())}
-										{m.curly_safe_lynx_fond()}
-									{/if}</td
-								><td>{new Date(r.date).toLocaleString()}</td></tr
-							>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/if}
-	{/await}
-</Section>
+	<Section title={m.sea_cute_beaver_file()}>
+		<table class="w-full">
+			<tbody>
+				{#each data.changes.items as r, i (i)}
+					<tr
+						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
+							>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+						><td>
+							{#if isSVO(getLocale())}
+								{m.curly_safe_lynx_fond()}
+							{/if}
+							<a href="/profile/{r.user}">{r.user}</a>
+							{#if isSOV(getLocale())}
+								{m.curly_safe_lynx_fond()}
+							{/if}</td
+						><td>{new Date(r.date).toLocaleString()}</td></tr
+					>
+				{/each}
+			</tbody>
+		</table>
+		<a href="/revision/history" class="float-right">{m.fresh_deft_warbler_edit()}</a>
+	</Section>
+
+	<Section title={m.curly_fuzzy_turkey_launch()}>
+		<table class="w-full">
+			<tbody>
+				{#each data.posts.items as p, i (i)}
+					<tr>
+						<td><a href="/post/{p.id}">{p.title}</a></td>
+						<td>{new Date(p.modified).toLocaleString()}</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+		<a href="/post/overview" class="float-right">{m.fresh_deft_warbler_edit()}</a>
+	</Section>
+</div>

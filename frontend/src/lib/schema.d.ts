@@ -1248,6 +1248,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/post/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent Posts */
+        get: operations["otodb_api_post_recent_posts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/comment/comments": {
         parameters: {
             query?: never;
@@ -4339,6 +4356,29 @@ export interface operations {
             };
         };
     };
+    otodb_api_post_recent_posts: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedPostOverviewSchema"];
+                };
+            };
+        };
+    };
     otodb_api_comment_get: {
         parameters: {
             query: {
@@ -4410,6 +4450,7 @@ export interface operations {
     otodb_api_history_recent: {
         parameters: {
             query?: {
+                username?: string | null;
                 limit?: number;
                 offset?: number;
             };

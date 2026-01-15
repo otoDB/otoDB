@@ -95,8 +95,13 @@
 		{#each relations as relation, i (i)}
 			<tr>
 				<td class="w-64">{@render work(relation, !relation.swapped)}</td>
-				{#if isSOV(getLocale()) || obj_type === 'song'}
-					<td>{m.grand_vexed_snail_ripple()}</td>
+				{#if isSOV(getLocale()) || getLocale() === 'zh-cn' || obj_type === 'song'}
+					{#if getLocale() === 'zh-cn' && relation.relation === 3 && obj_type === 'work'}
+						<!-- TODO: Find better wording here -->
+						<td>把</td>
+					{:else}
+						<td>{m.grand_vexed_snail_ripple()}</td>
+					{/if}
 				{/if}
 				{#if isSOV(getLocale()) || (obj_type === 'song' && getLocale() !== 'en')}
 					<td class="w-64">{@render work(relation, relation.swapped)}</td>

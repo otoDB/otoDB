@@ -5,12 +5,12 @@ from pydantic import field_validator
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
-from ninja import Router, FilterSchema, Query, Field
+from ninja import Router, FilterSchema, Query, Field, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.account.models import Account
-from otodb.models import ProfileConnection, UserPreferences
+from otodb.models import ProfileConnection, UserPreferences, Notification
 
 from .common import (
 	ListSchema,
@@ -107,3 +107,16 @@ def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
 		if value is not None:
 			setattr(prefs, attr, value)
 	prefs.save()
+
+
+class NotificationSchema(ModelSchema):
+	class Meta:
+		model = Notification
+		fields = ['message', 'dismissed']
+
+
+@profile_router.get(
+	'notifications', auth=django_auth, response=list[NotificationSchema]
+)
+def notifications(request: HttpRequest):
+	return request.user.notifs

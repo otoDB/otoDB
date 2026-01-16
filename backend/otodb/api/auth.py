@@ -55,6 +55,7 @@ class UserStatusSchema(UserLoginSchema):
 	user_id: int = Field(..., alias='id')
 	username: str
 	prefs: UserPreferencesSchema | None = None
+	notifs: int = Field(..., alias='notifs.count')
 
 
 @auth_router.get('/status', response={200: UserStatusSchema, 401: Error})

@@ -676,6 +676,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profile/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Notifications */
+        get: operations["otodb_api_profile_notifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/list/search": {
         parameters: {
             query?: never;
@@ -1501,6 +1518,8 @@ export interface components {
             /** Level */
             level: number;
             prefs?: components["schemas"]["UserPreferencesSchema"] | null;
+            /** Notifs */
+            notifs: number;
         };
         /** RegisterRequestSchema */
         RegisterRequestSchema: {
@@ -1871,6 +1890,16 @@ export interface components {
             source_id: string;
             /** Media */
             media: number | null;
+        };
+        /** NotificationSchema */
+        NotificationSchema: {
+            /** Message */
+            message: number;
+            /**
+             * Dismissed
+             * @default false
+             */
+            dismissed: boolean;
         };
         /** PagedListSchema */
         PagedListSchema: {
@@ -3309,6 +3338,26 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    otodb_api_profile_notifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationSchema"][];
+                };
             };
         };
     };

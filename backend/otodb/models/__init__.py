@@ -3,7 +3,7 @@ from .pool import Pool, PoolItem, PoolUpstream
 from .tag import TagWork, TagSong, WikiPage, TagWorkLangPreference, TagWorkParenthood
 from .work_source import WorkSource, WorkSourceRejection
 from .relations import WorkRelation, SongRelation
-from .posts import Post, PostContent
+from .posts import Post, PostContent, Notification
 from .connection import (
 	ProfileConnection,
 	MediaSongConnection,
@@ -33,6 +33,7 @@ __all__ = [
 	'SongRelation',
 	'Post',
 	'PostContent',
+	'Notification',
 	'ProfileConnection',
 	'MediaSongConnection',
 	'TagWorkConnection',

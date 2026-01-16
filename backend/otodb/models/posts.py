@@ -1,10 +1,13 @@
 from django.db import models
 
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_CLASSY
 
 from otodb.account.models import Account
-from .enums import LanguageTypes, PostCategory
+from .enums import LanguageTypes, PostCategory, MessageTypes
 
 
 class Post(models.Model):
@@ -36,3 +39,18 @@ class PostContent(models.Model):
 
 	class Meta:
 		unique_together = (('post', 'lang'),)
+
+
+class Notification(models.Model):
+	target = models.ForeignKey(
+		Account,
+		blank=False,
+		null=False,
+		on_delete=models.CASCADE,
+		related_name='notifs',
+	)
+	message = models.IntegerField(choices=MessageTypes.choices, null=False, blank=False)
+	entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+	entity_id = models.PositiveBigIntegerField()
+	entity = GenericForeignKey('entity_type', 'entity_id')
+	dismissed = models.BooleanField(default=False)

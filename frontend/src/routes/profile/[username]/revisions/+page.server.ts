@@ -7,8 +7,8 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	const { data: revisions } = await client.GET('/api/history/recent', {
 		fetch,
 		params: {
-			username: params.username,
 			query: {
+				username: params.username,
 				limit: batch_size,
 				offset: (page - 1) * batch_size
 			}

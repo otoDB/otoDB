@@ -156,12 +156,6 @@ def recent(request: HttpRequest, username: str | None = None):
 	return q
 
 
-@history_router.get('user', response=list[RevisionSchema])
-@paginate
-def user(request: HttpRequest, username: str):
-	return Revision.objects.filter(user=get_object_or_404(Account, username=username))
-
-
 @history_router.get('revision', response=FullRevisionSchema)
 def revision(request: HttpRequest, revision_id: int):
 	return get_object_or_404(Revision, id=revision_id)

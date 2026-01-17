@@ -1317,23 +1317,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/history/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** User */
-        get: operations["otodb_api_history_user"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/history/revision": {
         parameters: {
             query?: never;
@@ -4451,30 +4434,6 @@ export interface operations {
         parameters: {
             query?: {
                 username?: string | null;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedRevisionSchema"];
-                };
-            };
-        };
-    };
-    otodb_api_history_user: {
-        parameters: {
-            query: {
-                username: string;
                 limit?: number;
                 offset?: number;
             };

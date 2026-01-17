@@ -49,9 +49,8 @@
 
 {#snippet comment(data, this_component, depth: number)}
 	<div class="comment">
-		<!-- TODO: design decision -- allow deeper nested comments? check COMMENTS_XTD_MAX_THREAD_LEVEL on backend -->
 		<div class="float-right flex gap-2">
-			{#if can_comment && depth < 3}
+			{#if can_comment}
 				<label class="bg-otodb-bg-primary hover:bg-otodb-bg-fainter border">
 					{m.kind_brief_earthworm_dash()}
 					<input type="checkbox" class="reply-toggle hidden" value={false} />

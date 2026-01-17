@@ -127,6 +127,10 @@ class OtodbTagModel(BaseTagModel):
 
 	@classmethod
 	def alias(cls, from_tags: list[Self], into_tag: Self):
+		from django.contrib.contenttypes.models import ContentType
+		from django_comments_xtd.models import XtdComment
+
+		self_ct = ContentType.objects.get_for_model(cls)
 		for tag in from_tags:
 			if tag.aliased_to:
 				tag = tag.aliased_to
@@ -135,6 +139,9 @@ class OtodbTagModel(BaseTagModel):
 				tag.save()
 				cls.transfer_data(tag, into_tag)
 				cls.objects.filter(aliased_to=tag).update(aliased_to=into_tag)
+				XtdComment.objects.filter(
+					content_type=self_ct, object_pk=str(tag.pk)
+				).update(object_pk=str(into_tag.pk))
 
 
 class TagWork(RevisionTrackedModel, OtodbTagModel):

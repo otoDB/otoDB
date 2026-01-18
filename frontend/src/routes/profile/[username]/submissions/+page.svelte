@@ -34,8 +34,7 @@
 					<td
 						><select name="platform" value={data.platform ?? null}
 							><option value={null}>---</option
-							>{#each Platform.slice(1) as p, i (i)}<option value={i + 1}
-									>{Platform[i + 1]}</option
+							>{#each Platform.slice(1) as p, i (i)}<option value={i + 1}>{p}</option
 								>{/each}</select
 						></td
 					>
@@ -79,6 +78,7 @@
 		</table>
 		<input type="submit" />
 	</form>
+	<hr class="my-2" />
 	<h2>{m.such_actual_okapi_dare()}</h2>
 	{#if pending?.length}
 		<table class="w-full">

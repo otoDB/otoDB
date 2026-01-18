@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import client from './api';
-import { Languages, WorkRelationTypes } from './enums';
+import { Languages } from './enums';
 import { setLocale } from './paraglide/runtime';
 import { applyAction, enhance } from '$app/forms';
 import { m } from './paraglide/messages';
@@ -80,7 +80,11 @@ export const dirtyEnhance = (node: HTMLFormElement) => {
 
 export const version_end_dates = [
 	['Pre-Alpha', 1752505560412],
-	['Alpha', Number.POSITIVE_INFINITY]
+	['Alpha', 1766984874569],
+	['Beta', Number.POSITIVE_INFINITY]
 ];
 
-export const current_version = version_end_dates.at(-1)[0];
+export const current_version = version_end_dates.at(-1)![0];
+
+export const GUIDELINE_POST_ID = 4;
+export const FAQ_POST_ID = 3;

@@ -21,8 +21,14 @@ export default defineConfig(
 	{
 		rules: {
 			'@typescript-eslint/no-explicit-any': [1],
-			'@typescript-eslint/no-unused-vars': [1],
-			'svelte/no-navigation-without-resolve': [1]
+			'svelte/no-navigation-without-resolve': [0],
+			'@typescript-eslint/no-unused-vars': [
+				1,
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_'
+				}
+			]
 		}
 	},
 	{

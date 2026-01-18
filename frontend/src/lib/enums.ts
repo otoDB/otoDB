@@ -46,6 +46,13 @@ export const WorkRelationTypes = [
 	m.icy_raw_gazelle_heal
 ];
 
+export const WorkRelationEditorPredicate = [
+	m.curly_many_orangutan_grip,
+	m.sound_funny_hound_embrace,
+	m.shy_bland_bird_harbor,
+	m.major_tense_fly_savor
+];
+
 export const WorkRelationDisplayForward = [
 	m.free_mellow_tiger_cook,
 	m.dizzy_true_florian_pop,
@@ -266,9 +273,18 @@ export const Role = {
 	32: m.heavy_blue_parrot_mend
 };
 
-export const Themes = ['default', 'aniki', 'otogroove'].map((t) => 'theme-' + t);
+export const Themes = ['default', 'aniki', 'otogroove', 'retro-voyage', 'sorimix', 'resample'].map(
+	(t) => 'theme-' + t
+);
 
-export const ThemeNames = [m.grassy_noble_walrus_wish, m.next_ago_opossum_swim, () => 'otogroove'];
+export const ThemeNames = [
+	m.grassy_noble_walrus_wish,
+	m.next_ago_opossum_swim,
+	() => 'otogroove',
+	m.tiny_plane_ape_pull,
+	m.mean_zesty_ray_savor,
+	() => 'Re:Sample'
+];
 
 export const HistoryModelNames = {
 	mediawork: m.grand_merry_fly_succeed,
@@ -315,3 +331,63 @@ export const PostCategories = [
 	m.new_honest_tapir_endure,
 	m.moving_trick_piranha_thrive
 ];
+
+export const Route = {
+	UNKNOWN: 0,
+	TAGWORK_ALIAS: 1,
+	TAGWORK_UNALIAS: 2,
+	TAGWORK_DELETE: 3,
+	TAGWORK_UPDATE: 4,
+	TAGWORK_SET_BASE: 5,
+	TAGWORK_ADD_LANG_PREF: 6,
+	TAGWORK_EDIT_WIKI: 7,
+	TAGWORK_EDIT_CONNECTIONS: 8,
+	SONGTAG_UPDATE: 20,
+	SONGTAG_SET_TAGS: 21,
+	SONGRELATION_CREATE: 30,
+	SONGRELATION_DELETE: 31,
+	MEDIAWORK_DELETE: 40,
+	MEDIAWORK_SET_TAGS: 41,
+	MEDIAWORK_REMOVE_TAG: 42,
+	MEDIAWORK_UPDATE_CREATOR_ROLES: 43,
+	MEDIAWORK_TOGGLE_SAMPLE: 44,
+	MEDIAWORK_UPDATE: 45,
+	MEDIAWORK_MERGE: 46,
+	WORKRELATION_CREATE: 50,
+	WORKRELATION_DELETE: 51,
+	WORKSOURCE_CREATE: 60,
+	WORKSOURCE_UNBIND: 61,
+	WORKSOURCE_SET_ORIGIN: 62,
+	WORKSOURCE_REFRESH: 63,
+	WORKSOURCE_ASSIGN: 64,
+	WORKSOURCE_REJECT: 65,
+
+	0: 'Unknown',
+	1: 'Tag: Alias',
+	2: 'Tag: Unalias',
+	3: 'Tag: Delete',
+	4: 'Tag: Update',
+	5: 'Tag: Set Base',
+	6: 'Tag: Add Language',
+	7: 'Tag: Edit Wiki',
+	8: 'Tag: Edit Connections',
+	20: 'Song Tag: Update',
+	21: 'Song Tag: Set Tags',
+	30: 'Song: Create Relation',
+	31: 'Song: Delete Relation',
+	40: 'Work: Delete',
+	41: 'Work: Set Tags',
+	42: 'Work: Remove Tag',
+	43: 'Work: Update Creator Roles',
+	44: 'Work: Toggle Sample',
+	45: 'Work: Update',
+	46: 'Work: Merge',
+	50: 'Work: Create Relation',
+	51: 'Work: Delete Relation',
+	60: 'Upload: Create',
+	61: 'Upload: Unbind',
+	62: 'Upload: Set Origin',
+	63: 'Upload: Refresh',
+	64: 'Upload: Assign',
+	65: 'Upload: Reject'
+};

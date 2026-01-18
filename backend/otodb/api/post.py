@@ -1,8 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-from django.db.models import Subquery, OuterRef
+from django.db.models import Subquery, OuterRef, DateTimeField, CharField
+from django.db.models.functions import Greatest, Coalesce, Cast
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+
+from django_comments_xtd.models import XtdComment
 
 from ninja import Router, ModelSchema
 from ninja.pagination import paginate
@@ -97,3 +100,31 @@ def search(request: HttpRequest, query: str, category: PostCategory | None = Non
 	if category is not None and category >= 0:
 		posts = posts.filter(category=category)
 	return posts
+
+
+@post_router.get('recent', response=list[PostOverviewSchema])
+@paginate
+def recent_posts(request: HttpRequest):
+	from django.contrib.contenttypes.models import ContentType
+
+	return Post.objects.annotate(
+		modified=Greatest(
+			Subquery(
+				PostContent.objects.filter(post_id=OuterRef('id'))
+				.order_by('modified')
+				.values('modified')[:1]
+			),
+			Coalesce(
+				Subquery(
+					XtdComment.objects.filter(
+						content_type=ContentType.objects.get_for_model(Post),
+						object_pk=Cast(OuterRef('id'), CharField()),
+					)
+					.order_by('submit_date')
+					.values('submit_date')[:1]
+				),
+				datetime.fromtimestamp(0, tz=timezone.utc),
+				output_field=DateTimeField(),
+			),
+		)
+	).order_by('-modified')

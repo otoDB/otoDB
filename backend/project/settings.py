@@ -77,7 +77,6 @@ INSTALLED_APPS = [
 	'django.contrib.staticfiles',
 	'otodb',
 	'otodb.account',
-	'simple_history',
 	'tagulous',
 	'ordered_model',
 	'django.contrib.sites',
@@ -97,7 +96,8 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'simple_history.middleware.HistoryRequestMiddleware',
+	'django_userforeignkey.middleware.UserForeignKeyMiddleware',
+	'django_request_cache.middleware.RequestCacheMiddleware',
 ]
 
 if DEBUG:
@@ -283,6 +283,9 @@ OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
 NINJA_PAGINATION_PER_PAGE = 30
 NINJA_PAGINATION_MAX_PER_PAGE_SIZE = 30
 NINJA_PAGINATION_MAX_LIMIT = 30
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 LOGGING = {
 	'version': 1,

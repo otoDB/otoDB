@@ -1,10 +1,13 @@
 from typing import Optional, Annotated, Dict
 from datetime import date
-from functools import wraps
+from functools import wraps, lru_cache
 
 from pydantic import field_validator
 
-from ninja import Schema, ModelSchema, Field, Query
+from django.contrib.contenttypes.models import ContentType
+
+from ninja import Schema, ModelSchema, Field, Query, Router
+from django_request_cache import get_request_cache
 
 from otodb.account.models import Account
 from otodb.models import (
@@ -19,8 +22,11 @@ from otodb.models import (
 	PoolItem,
 	WorkRelation,
 	SongRelation,
+	Revision,
+	RevisionChange,
+	RevisionChangeEntity,
 )
-from otodb.models.enums import Role, MediaType, ProfileConnectionTypes
+from otodb.models.enums import Role, MediaType, ProfileConnectionTypes, Route
 import re
 
 
@@ -68,17 +74,12 @@ class TagSongSchema(Schema):
 
 class SongSchema(ModelSchema):
 	id: int
-	work_tag: str
+	work_tag: str = Field(..., alias='work_tag.slug')
 	tags: list[TagSongSchema]
 
 	class Meta:
 		model = MediaSong
 		fields = ['title', 'bpm', 'variable_bpm', 'author']
-
-	@field_validator('work_tag', mode='before', check_fields=False)
-	@classmethod
-	def tag_slug(cls, value) -> str:
-		return value.slug
 
 
 class TagWorkSchema(Schema):
@@ -249,12 +250,14 @@ user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
 
 def post_relation(cls, payload: RelationSchema):
 	assert cls is MediaWork or cls is MediaSong
-	manager = cls.active_objects if cls is MediaWork else cls.objects
+	manager = (
+		cls.objects.filter(moved_to__isnull=True) if cls is MediaWork else cls.objects
+	)
 	rel_cls = WorkRelation if cls is MediaWork else SongRelation
 	A = manager.get(id=payload.A_id)
 	B = manager.get(id=payload.B_id)
 	try:
-		rel = rel_cls.objects.get(A, B)
+		rel = rel_cls.objects.get_relation(A, B)
 		rel.A = A
 		rel.B = B
 		rel.relation = payload.relation
@@ -341,3 +344,141 @@ def print_queries(f):
 		return r
 
 	return wrapper
+
+
+@lru_cache(maxsize=128)
+def _get_entity_cts(model):
+	return [
+		ContentType.objects.get_for_model(
+			model if attr == 'self' else model._meta.get_field(attr).related_model
+		)
+		for attr in model._revision_meta.entity_attrs
+	]
+
+
+def track_revision(f):
+	@wraps(f)
+	def wrapper(request, *args, **kwargs):
+		cache = get_request_cache()
+		cache.add(
+			'rev', {}
+		)  # key: (ContentType.pk, pk, field as str), value: (entity_pks, str)
+		cache.add('rev_del', [])  # list of (ContentType.pk, pk, ...entity_pks)
+		cache.add('rev_rst', {})
+		cache.add('rev_msg', '')
+
+		ret = f(request, *args, **kwargs)
+
+		rev = cache.get('rev')
+		rev_del = cache.get('rev_del')
+		rev_msg = cache.get('rev_msg')
+		rev_rst = cache.get('rev_rst')
+		# REVIEW: This should never be unknown but some test cases might not set it; should fix those tests
+		rev_route = cache.get('rev_route', Route.UNKNOWN)
+
+		if len(rev) or len(rev_del) or len(rev_rst):
+			revision = Revision.objects.create(user=request.user, message=rev_msg)
+
+			# Pre-fetch all ContentTypes in bulk
+			content_types = ContentType.objects.in_bulk(
+				set(ctpk for ctpk, *_ in rev_del)
+				| set(ctpk for (ctpk, *_), _ in rev.items())
+			)
+
+			# For batching
+			revision_changes = []
+			pending_entities = []
+
+			# Process deletions
+			seen_deletions = {}
+			for ctpk, pk, entities in rev_del:
+				key = (ctpk, pk)
+				if key not in seen_deletions:
+					seen_deletions[key] = entities
+					change = RevisionChange(
+						rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
+					)
+					revision_changes.append(change)
+					model = content_types[ctpk].model_class()
+					pending_entities.append((change, _get_entity_cts(model), entities))
+
+			# Process updates
+			for (ctpk, pk, field), (entities, val) in rev.items():
+				ct = content_types[ctpk]
+				model = ct.model_class()
+				change = RevisionChange(
+					rev=revision,
+					target_type_id=ctpk,
+					target_id=pk,
+					target_column=field,
+					target_value=val,
+				)
+				revision_changes.append(change)
+				pending_entities.append((change, _get_entity_cts(model), entities))
+
+			for (ctpk, pk), to_pk in rev_rst.items():
+				revision_changes.append(
+					RevisionChange(
+						rev=revision,
+						target_type_id=ctpk,
+						target_id=pk,
+						target_value=to_pk,
+						restored=True,
+					)
+				)
+
+			# Bulk create changes
+			RevisionChange.objects.bulk_create(revision_changes)
+
+			# Bulk create change entities
+			revision_change_entities = []
+			for change, entity_cts, entities in pending_entities:
+				for entity_type, ent_pk in zip(entity_cts, entities):
+					if ent_pk:
+						# TODO: add if rev_route == ROLLBACK OR better probably should move this to rollback_entity
+						from .history import get_rev_restored
+
+						ent_pk = get_rev_restored(entity_type.id, ent_pk) or ent_pk
+						revision_change_entities.append(
+							RevisionChangeEntity(
+								change=change,
+								entity_type=entity_type,
+								entity_id=ent_pk,
+								route=rev_route,
+							)
+						)
+
+			if revision_change_entities:
+				RevisionChangeEntity.objects.bulk_create(revision_change_entities)
+
+		return ret
+
+	return wrapper
+
+
+def add_revision_message(message: str):
+	cache = get_request_cache()
+	rev_msg = cache.get_or_set('rev_msg', '')
+	rev_msg = rev_msg + ('\n' if rev_msg else '') + message
+	cache.set('rev_msg', rev_msg)
+
+
+def with_revision_route(route: Route):
+	"""Decorator to set the revision route for a API endpoint."""
+
+	def decorator(f):
+		@wraps(f)
+		def wrapper(request, *args, **kwargs):
+			cache = get_request_cache()
+			cache.set('rev_route', route.value)
+			return f(request, *args, **kwargs)
+
+		return wrapper
+
+	return decorator
+
+
+class RouterWithRevision(Router):
+	def add_api_operation(self, path, methods, view_func, **kwargs):
+		view_func = track_revision(view_func)
+		return super().add_api_operation(path, methods, view_func, **kwargs)

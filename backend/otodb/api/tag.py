@@ -5,12 +5,12 @@ import re
 from urllib.parse import urlparse, parse_qs
 
 from django.db import transaction, models
-from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists
+from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists, Subquery
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
 from pydantic import AfterValidator
-from ninja import Router, ModelSchema, Schema, Query
+from ninja import ModelSchema, Schema, Query
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
@@ -35,6 +35,7 @@ from otodb.models.enums import (
 	SongConnectionTypes,
 	TagWorkConnectionTypes,
 	MediaConnectionTypes,
+	Route,
 )
 
 from .common import (
@@ -51,9 +52,11 @@ from .common import (
 	profile_connection_parsers,
 	make_alt_value_parser,
 	re_to_parser,
+	RouterWithRevision,
+	with_revision_route,
 )
 
-tag_router = Router()
+tag_router = RouterWithRevision()
 
 
 def filter_tags_by_media_type(qs, media_type: list[int]):
@@ -151,13 +154,14 @@ def details(request: HttpRequest, tag_slug: str):
 @tag_router.get('works', response=list[ThinWorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
-	return MediaWork.active_objects.filter(tags__slug=tag_slug).select_related(
-		'thumbnail_source'
-	)
+	return MediaWork.objects.filter(
+		moved_to__isnull=True, tags__slug=tag_slug
+	).select_related('thumbnail_source')
 
 
 @tag_router.post('alias', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_ALIAS)
 def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool):
 	tags = []
 	for tag_name in from_tags:
@@ -186,6 +190,7 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
 
 @tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_DELETE)
 def delete(request: HttpRequest, tag_slug: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	if tag.can_be_deleted:
@@ -196,6 +201,7 @@ def delete(request: HttpRequest, tag_slug: str):
 
 @tag_router.delete('alias', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_UNALIAS)
 def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	tag.aliases.filter(slug=alias).update(aliased_to=None)
@@ -203,14 +209,20 @@ def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
 
 @tag_router.put('lang_pref', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_ADD_LANG_PREF)
 def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
-	tag.lang_prefs.filter(lang=LanguageTypes(lang).value).delete()
+	base_tag = tag.aliased_to if tag.aliased_to else tag
+	tags_to_clear = [base_tag] + list(base_tag.aliases.all())
+	TagWorkLangPreference.objects.filter(
+		tag__in=tags_to_clear, lang=LanguageTypes(lang).value
+	).delete()
 	TagWorkLangPreference.objects.create(tag=tag, lang=lang)
 
 
 @tag_router.post('set_base', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_SET_BASE)
 def set_base_tag(request: HttpRequest, tag_slug: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	to = tag.aliased_to
@@ -248,6 +260,7 @@ class SongInSchema(ModelSchema):
 @tag_router.put('tag', auth=django_auth)
 @user_is_trusted
 @transaction.atomic
+@with_revision_route(Route.TAGWORK_UPDATE)
 def update(
 	request: HttpRequest,
 	tag_slug: str,
@@ -333,6 +346,7 @@ def wiki_page(request: HttpRequest, tag_slug: str):
 
 @tag_router.post('wiki_page', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_EDIT_WIKI)
 def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	empty = md.strip() == ''
@@ -565,6 +579,7 @@ creator_tag_connection_parser = make_alt_value_parser(
 
 @tag_router.put('connection', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.TAGWORK_EDIT_CONNECTIONS)
 def edit_connections(request: HttpRequest, tag_slug: str, urls: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	category_parser_tp = {
@@ -678,6 +693,7 @@ def song_relations(request: HttpRequest, song_id: int):
 
 
 @tag_router.post('song_relation', auth=django_auth)
+@with_revision_route(Route.SONGRELATION_CREATE)
 @user_is_trusted
 def song_relation(request: HttpRequest, payload: RelationSchema):
 	post_relation(MediaSong, payload)
@@ -686,10 +702,11 @@ def song_relation(request: HttpRequest, payload: RelationSchema):
 
 @tag_router.delete('song_relation', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.SONGRELATION_DELETE)
 def delete_relation(request: HttpRequest, A: int, B: int):
-	a = MediaSong.active_objects.get(id=A)
-	b = MediaSong.active_objects.get(id=B)
-	rel = SongRelation.objects.get(a, b)
+	a = MediaSong.objects.get(id=A)
+	b = MediaSong.objects.get(id=B)
+	rel = SongRelation.objects.get_relation(a, b)
 	rel.delete()
 	return
 
@@ -704,6 +721,7 @@ def song_tag_search(request: HttpRequest, query: str):
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted
+@with_revision_route(Route.SONGTAG_SET_TAGS)
 def song_tags(
 	request: HttpRequest,
 	song_id: int,
@@ -729,6 +747,7 @@ def song_tag_details(request: HttpRequest, tag_slug: str):
 @tag_router.put('song_tag', auth=django_auth)
 @user_is_trusted
 @transaction.atomic
+@with_revision_route(Route.SONGTAG_UPDATE)
 def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchema):
 	tag = get_object_or_404(
 		TagSong.objects.select_for_update(of=('self',)), slug=tag_slug
@@ -754,3 +773,15 @@ def songs(request: HttpRequest, tag_slug: str):
 def song_connection(request: HttpRequest, song_id: int):
 	song = get_object_or_404(MediaSong.objects, id=song_id)
 	return song.mediasongconnection_set
+
+
+@tag_router.get('similar', response=list[TagWorkSchema])
+def similar(request: HttpRequest, tag_slug: str):
+	tag = get_object_or_404(TagWork, slug=tag_slug)
+	tw = MediaWork.active_objects.filter(tags=tag).values_list('id', flat=True)
+	return (
+		TagWork.objects.exclude(id=tag.id)
+		.filter(works__in=Subquery(tw), deprecated=False)
+		.annotate(shared_works_count=Count('works', filter=Q(works__in=Subquery(tw))))
+		.order_by('-shared_works_count')
+	)[:10]

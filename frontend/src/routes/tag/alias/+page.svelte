@@ -6,6 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { isSOV, isSVO } from '$lib/ui';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 
 	let { data } = $props();
 
@@ -29,6 +30,7 @@
 </svelte:head>
 
 <Section title={m.front_maroon_hamster_urge()}>
+	<GuidelineWarning />
 	<TagsField type="work" class="w-full" bind:value={tags} />
 	{#if tags.length}
 		<form onsubmit={submit}>

@@ -6,13 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-	replaces = [
-		('otodb', '0036_userpreferences'),
-		('otodb', '0037_alter_userpreferences_language_and_more'),
-		('otodb', '0038_alter_userpreferences_language'),
-		('otodb', '0039_alter_userpreferences_theme'),
-	]
-
 	dependencies = [
 		('otodb', '0035_alter_tagwork_options'),
 		migrations.swappable_dependency(settings.AUTH_USER_MODEL),

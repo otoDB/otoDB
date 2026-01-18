@@ -2,12 +2,13 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from '../$types';
-	import { Platform, Rating, WorkOrigin, UserLevel, WorkStatus } from '$lib/enums';
+	import { Platform, Rating, WorkOrigin, UserLevel } from '$lib/enums';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client, { getDisplayText } from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
+	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 
 	let { data, form }: PageProps = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, '')),
@@ -73,7 +74,11 @@
 	});
 </script>
 
-<Section titleType={m.grand_merry_fly_succeed()} titleName={data.title} menuLinks={data.links}>
+<Section
+	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
+	menuLinks={data.links}
+>
+	<GuidelineWarning />
 	<form method="POST" use:dirtyEnhance action="?/edit">
 		<table class="inline">
 			<tbody>

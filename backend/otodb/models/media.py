@@ -6,11 +6,11 @@ from django.db import models
 from django.db.models import Prefetch
 from django.urls import reverse
 from django.utils.functional import cached_property
-from simple_history.models import HistoricalRecords
 from tagulous.models import TagField, TaggedManager
 
 from .enums import Rating, WorkTagCategory, Role
 from .tag import TagWork, TagSong, tagwork_ordering_case
+from .revision import RevisionTrackedModel
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
@@ -52,7 +52,7 @@ TagField.forbidden_fields = cast(
 )
 
 
-class TagWorkInstance(models.Model):
+class TagWorkInstance(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		work_id: int
 		work_tag_id: int
@@ -82,8 +82,12 @@ class TagWorkInstance(models.Model):
 				role_value |= role
 		self.creator_roles = role_value if role_value > 0 else None
 
+	class RevisionMeta:
+		tracked_fields = ['work', 'work_tag', 'used_as_source', 'creator_roles']
+		entity_attrs = ['work']
 
-class MediaWork(models.Model):
+
+class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		worksource_set: QuerySet['WorkSource']
 		poolitem_set: QuerySet['PoolItem']
@@ -102,11 +106,16 @@ class MediaWork(models.Model):
 		'WorkSource', null=True, blank=True, on_delete=models.SET_NULL
 	)
 
-	history = HistoricalRecords(m2m_fields=[tags])
-
 	moved_to = models.ForeignKey(
 		'self', null=True, blank=True, on_delete=models.CASCADE
 	)
+
+	class RevisionMeta:
+		tracked_fields = ['title', 'description', 'rating', 'moved_to']
+		entity_attrs = ['self', 'moved_to']
+
+		def to_active(instance):
+			return instance.moved_to or instance
 
 	# deprecated!
 	_thumbnail = models.CharField(
@@ -116,7 +125,6 @@ class MediaWork(models.Model):
 		help_text='Deprecated: Use thumbnail_source instead',
 	)
 
-	objects = models.Manager()
 	active_objects = TaggedManager.cast_class(ActiveManager())
 
 	def __str__(self):
@@ -158,27 +166,15 @@ class MediaWork(models.Model):
 		to_work.tags.add(*from_work.tags.all())
 		to_work.save()
 
-		for src in from_work.worksource_set.all():
-			src.media = to_work
-			src.save()
+		from_work.worksource_set.update(media=to_work)
 
-		for item in from_work.poolitem_set.all():
-			item.work = to_work
-			item.save()
+		from_work.poolitem_set.update(work=to_work)
 
-		for relation in from_work.relation_A.all():
-			if relation.B.pk == to_work.pk:
-				relation.delete()
-			else:
-				relation.A = to_work
-				relation.save()
+		from_work.relation_A.filter(B=to_work).delete()
+		from_work.relation_A.update(A=to_work)
 
-		for relation in from_work.relation_B.all():
-			if relation.A.pk == to_work.pk:
-				relation.delete()
-			else:
-				relation.B = to_work
-				relation.save()
+		from_work.relation_B.filter(A=to_work).delete()
+		from_work.relation_B.update(B=to_work)
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
 		XtdComment.objects.filter(
@@ -196,11 +192,17 @@ class MediaWork(models.Model):
 	@cached_property
 	def tags_annotated(self):
 		t = []
-		for instance in self.tagworkinstance_set.all():
+		twis = self.tagworkinstance_set.filter(work_tag__deprecated=False)
+		primary_paths = TagWork.get_primary_paths(
+			twis.values_list('work_tag_id', flat=True)
+		)
+		for instance in twis:
 			tag = instance.work_tag
 			tag.sample = instance.used_as_source
 			tag.creator_roles = instance.creator_roles
+			tag.primary_path = primary_paths.get(tag.id, [])
 			t.append(tag)
+
 		return t
 
 	@property
@@ -212,7 +214,7 @@ class MediaWork(models.Model):
 			if first_source:
 				thumbnail = first_source.thumbnail
 		# Fallback to deprecated field (3rd-party remote URL)
-		return self._thumbnail or thumbnail
+		return thumbnail or self._thumbnail
 
 	@property
 	def relations(self):
@@ -225,7 +227,7 @@ class MediaWork(models.Model):
 		).exclude(id=self.pk)
 
 
-class MediaSong(models.Model):
+class MediaSong(RevisionTrackedModel):
 	title = models.CharField(max_length=1000, null=False, blank=False)
 	bpm = models.FloatField(null=True)
 	variable_bpm = models.BooleanField(default=False, null=False)
@@ -234,7 +236,10 @@ class MediaSong(models.Model):
 
 	tags = TagField(to=TagSong, related_name='songs')
 
-	history = HistoricalRecords(m2m_fields=[tags])
+	class RevisionMeta:
+		tracked_fields = ['title', 'bpm', 'variable_bpm', 'work_tag', 'author']
+		entity_attrs = ['self', 'work_tag']
+		# TODO track tags when we have custom through table
 
 	class Meta:
 		verbose_name = 'Song'

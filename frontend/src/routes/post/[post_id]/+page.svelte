@@ -4,7 +4,7 @@
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
-	import { LanguageNames, Languages, PostCategories } from '$lib/enums.js';
+	import { Languages, PostCategories } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { isSOV, isSVO } from '$lib/ui.js';

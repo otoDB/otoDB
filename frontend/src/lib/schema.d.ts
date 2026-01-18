@@ -124,6 +124,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** User Invites */
+        get: operations["otodb_api_auth_user_invites"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** New Invite */
+        post: operations["otodb_api_auth_new_invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/query_external": {
         parameters: {
             query?: never;
@@ -514,6 +548,23 @@ export interface paths {
         };
         /** Get Unbound Sources */
         get: operations["otodb_api_work_get_unbound_sources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Similar */
+        get: operations["otodb_api_work_similar"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1111,6 +1162,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Similar */
+        get: operations["otodb_api_tag_similar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/post": {
         parameters: {
             query?: never;
@@ -1180,6 +1248,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/post/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent Posts */
+        get: operations["otodb_api_post_recent_posts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/comment/comments": {
         parameters: {
             query?: never;
@@ -1215,23 +1300,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/history/history": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** History */
-        get: operations["otodb_api_history_history"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/history/recent": {
         parameters: {
             query?: never;
@@ -1249,15 +1317,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/history/user": {
+    "/api/history/revision": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** User */
-        get: operations["otodb_api_history_user"];
+        /** Revision */
+        get: operations["otodb_api_history_revision"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/revision_changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Revision Changes */
+        get: operations["otodb_api_history_revision_changes"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1275,8 +1360,51 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Rollback */
+        /**
+         * Rollback
+         * @description Rollback changes of a specific revision.
+         *
+         *     If entity is not provided: rollback all changes made IN the specified revision.
+         *     If entity is provided: rollback that entity TO its state at the specified revision.
+         */
         post: operations["otodb_api_history_rollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/rollback_user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * User Rollback
+         * @description Rollback all changes made by a specific user since the given date.
+         */
+        post: operations["otodb_api_history_user_rollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** History */
+        get: operations["otodb_api_history_history"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1396,6 +1524,38 @@ export interface components {
         SendResetTokenRequestSchema: {
             /** Email */
             email: string;
+        };
+        /** InvitationSchema */
+        InvitationSchema: {
+            used_by: components["schemas"]["ProfileSchema"] | null;
+            /** Used At */
+            used_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Secret */
+            secret: string;
+            /** Level */
+            level: number;
+        };
+        /** ProfileSchema */
+        ProfileSchema: {
+            /** Id */
+            id: number;
+            /** Username */
+            username: string;
+            /**
+             * Level
+             * @default 20
+             */
+            level: number;
+            /**
+             * Date Created
+             * Format: date-time
+             */
+            date_created?: string;
         };
         /** ExternalQuery */
         ExternalQuery: {
@@ -1570,23 +1730,6 @@ export interface components {
             tag_slug: string;
             /** Creator Roles */
             creator_roles: number[];
-        };
-        /** ProfileSchema */
-        ProfileSchema: {
-            /** Id */
-            id: number;
-            /** Username */
-            username: string;
-            /**
-             * Level
-             * @default 20
-             */
-            level: number;
-            /**
-             * Date Created
-             * Format: date-time
-             */
-            date_created?: string;
         };
         /** WorkSourceRejectionSchema */
         WorkSourceRejectionSchema: {
@@ -2019,40 +2162,15 @@ export interface components {
             /** Index */
             index: number;
         };
-        /** DeltaSchema */
-        DeltaSchema: {
-            /** Html */
-            html: string;
-            /** Field */
-            field: string;
-        };
-        /** HistorySchema */
-        HistorySchema: {
-            /** Id */
-            id: number;
-            /** Model */
-            model: string;
-            /**
-             * Date
-             * Format: date-time
-             */
-            date: string;
-            /** User */
-            user: string;
-            /** Reason */
-            reason: string | null;
-            /** Delta */
-            delta: components["schemas"]["DeltaSchema"][];
-        };
-        /** PagedHistorySchema */
-        PagedHistorySchema: {
+        /** PagedRevisionSchema */
+        PagedRevisionSchema: {
             /** Items */
-            items: components["schemas"]["HistorySchema"][];
+            items: components["schemas"]["RevisionSchema"][];
             /** Count */
             count: number;
         };
-        /** HistoryExtSchema */
-        HistoryExtSchema: {
+        /** RevisionSchema */
+        RevisionSchema: {
             /** Id */
             id: number;
             /**
@@ -2062,17 +2180,69 @@ export interface components {
             date: string;
             /** User */
             user: string;
-            /** Model */
-            model: string;
-            /** Instance */
-            instance: components["schemas"]["SongSchema"] | components["schemas"]["ThinWorkSchema"] | components["schemas"]["TagWorkSchema"] | components["schemas"]["TagSongSchema"];
+            /** Index */
+            index?: number | null;
+            /** Route */
+            route?: number | null;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
         };
-        /** PagedHistoryExtSchema */
-        PagedHistoryExtSchema: {
+        /** FullRevisionSchema */
+        FullRevisionSchema: {
+            /** Id */
+            id: number;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+            /** User */
+            user: string;
+            /** Index */
+            index?: number | null;
+            /** Route */
+            route?: number | null;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+        };
+        /** PagedRevisionChangeSchema */
+        PagedRevisionChangeSchema: {
             /** Items */
-            items: components["schemas"]["HistoryExtSchema"][];
+            items: components["schemas"]["RevisionChangeSchema"][];
             /** Count */
             count: number;
+        };
+        /** RevisionChangeSchema */
+        RevisionChangeSchema: {
+            /** Target Type */
+            target_type: string;
+            /** Target Id */
+            target_id: number;
+            /**
+             * Deleted
+             * @default false
+             */
+            deleted: boolean;
+            /** Target Column */
+            target_column?: string | null;
+            /** Target Value */
+            target_value?: string | null;
+        };
+        /** EntitySchema */
+        EntitySchema: {
+            /** Id */
+            id: number | string;
+            /**
+             * Entity
+             * @enum {string}
+             */
+            entity: "mediawork" | "tagwork";
         };
         /**
          * Status
@@ -2307,6 +2477,47 @@ export interface operations {
                 "application/json": components["schemas"]["ResetPasswordRequestSchema"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_auth_user_invites: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": [
+                        components["schemas"]["InvitationSchema"][],
+                        components["schemas"]["ProfileSchema"] | null
+                    ];
+                };
+            };
+        };
+    };
+    otodb_api_auth_new_invite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -2809,7 +3020,7 @@ export interface operations {
             query: {
                 url: string;
                 is_reupload: boolean;
-                rating?: number;
+                rating?: number | null;
                 work_id?: number | null;
                 original_url?: string | null;
             };
@@ -2914,6 +3125,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkSourceSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_work_similar: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThinWorkSchema"][];
                 };
             };
         };
@@ -3968,6 +4201,28 @@ export interface operations {
             };
         };
     };
+    otodb_api_tag_similar: {
+        parameters: {
+            query: {
+                tag_slug: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagWorkSchema"][];
+                };
+            };
+        };
+    };
     otodb_api_post_post: {
         parameters: {
             query: {
@@ -4084,6 +4339,29 @@ export interface operations {
             };
         };
     };
+    otodb_api_post_recent_posts: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedPostOverviewSchema"];
+                };
+            };
+        };
+    };
     otodb_api_comment_get: {
         parameters: {
             query: {
@@ -4152,34 +4430,10 @@ export interface operations {
             };
         };
     };
-    otodb_api_history_history: {
-        parameters: {
-            query: {
-                pk: number | string;
-                model: "mediawork" | "mediasong" | "tagwork" | "tagsong";
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedHistorySchema"];
-                };
-            };
-        };
-    };
     otodb_api_history_recent: {
         parameters: {
             query?: {
+                username?: string | null;
                 limit?: number;
                 offset?: number;
             };
@@ -4195,15 +4449,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedHistoryExtSchema"];
+                    "application/json": components["schemas"]["PagedRevisionSchema"];
                 };
             };
         };
     };
-    otodb_api_history_user: {
+    otodb_api_history_revision: {
         parameters: {
             query: {
-                username: string;
+                revision_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FullRevisionSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_history_revision_changes: {
+        parameters: {
+            query: {
+                revision_id: number;
                 limit?: number;
                 offset?: number;
             };
@@ -4219,7 +4495,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedHistoryExtSchema"];
+                    "application/json": components["schemas"]["PagedRevisionChangeSchema"];
                 };
             };
         };
@@ -4227,8 +4503,32 @@ export interface operations {
     otodb_api_history_rollback: {
         parameters: {
             query: {
-                model: "mediawork" | "workrelation" | "worksource" | "mediasong" | "songrelation" | "mediasongconnection" | "tagwork" | "wikipage" | "tagworkconnection" | "tagworkmediaconnection" | "tagworkcreatorconnection" | "tagworklangpreference" | "tagworkparenthood" | "tagsong";
-                history_id: number;
+                revision_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["EntitySchema"] | null;
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_history_user_rollback: {
+        parameters: {
+            query: {
+                date: string;
+                username: string;
             };
             header?: never;
             path?: never;
@@ -4242,6 +4542,31 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    otodb_api_history_history: {
+        parameters: {
+            query: {
+                id: number | string;
+                entity: "mediawork" | "tagwork";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedRevisionSchema"];
+                };
             };
         };
     };

@@ -147,6 +147,9 @@ class ThemePref(models.IntegerChoices):
 	DEFAULT = 0, 'Default'
 	ANIKI = 1, 'Aniki'
 	OTOGROOVE = 2, 'otogroove'
+	RETRO_VOYAGE = 3, 'Retro Voyage'
+	SORIMIX = 4, 'SORIMIX'
+	RESAMPLE = 5, 'Re:Sample'
 
 
 class MediaType(models.IntegerChoices):
@@ -196,3 +199,44 @@ class PostCategory(models.IntegerChoices):
 	FEATURE_REQUEST = 1, 'Feature Request'
 	BUG_REPORT = 2, 'Bug Report'
 	GARDENING = 3, 'Gardening'
+
+
+class RevisionChain(models.IntegerChoices):
+	STRONG = 0, 'Strong'
+	WEAK = 1, 'Weak'
+
+
+class Route(models.IntegerChoices):
+	UNKNOWN = 0, 'Unknown'
+	TAGWORK_ALIAS = 1, 'Tag Work Alias'
+	TAGWORK_UNALIAS = 2, 'Tag Work Unalias'
+	TAGWORK_DELETE = 3, 'Tag Work Delete'
+	TAGWORK_UPDATE = 4, 'Tag Work Update'
+	TAGWORK_SET_BASE = 5, 'Tag Work Set Base'
+	TAGWORK_ADD_LANG_PREF = 6, 'Tag Work Add Language Preference'
+	TAGWORK_EDIT_WIKI = 7, 'Tag Work Edit Wiki'
+	TAGWORK_EDIT_CONNECTIONS = 8, 'Tag Work Edit Connections'
+
+	SONGTAG_UPDATE = 20, 'Song Tag Update'
+	SONGTAG_SET_TAGS = 21, 'Song Tag Set Tags'
+
+	SONGRELATION_CREATE = 30, 'Song Relation Create'
+	SONGRELATION_DELETE = 31, 'Song Relation Delete'
+
+	MEDIAWORK_DELETE = 40, 'Media Work Delete'
+	MEDIAWORK_SET_TAGS = 41, 'Media Work Set Tags'
+	MEDIAWORK_REMOVE_TAG = 42, 'Media Work Remove Tag'
+	MEDIAWORK_UPDATE_CREATOR_ROLES = 43, 'Media Work Update Creator Roles'
+	MEDIAWORK_TOGGLE_SAMPLE = 44, 'Media Work Toggle Sample'
+	MEDIAWORK_UPDATE = 45, 'Media Work Update'
+	MEDIAWORK_MERGE = 46, 'Media Work Merge'
+
+	WORKRELATION_CREATE = 50, 'Work Relation Create'
+	WORKRELATION_DELETE = 51, 'Work Relation Delete'
+
+	WORKSOURCE_CREATE = 60, 'Work Source Create'
+	WORKSOURCE_UNBIND = 61, 'Work Source Unbind'
+	WORKSOURCE_SET_ORIGIN = 62, 'Work Source Set Origin'
+	WORKSOURCE_REFRESH = 63, 'Work Source Refresh'
+	WORKSOURCE_ASSIGN = 64, 'Work Source Assign'
+	WORKSOURCE_REJECT = 65, 'Work Source Reject'

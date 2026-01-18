@@ -3,7 +3,6 @@ from itertools import chain
 
 from django.db import models
 from django.db.models import Value, Q, Prefetch
-from simple_history.models import HistoricalRecords, HistoricForeignKey
 from tagulous.models import BaseTagModel, TagModelManager
 
 from django_cte import CTE, with_cte
@@ -12,6 +11,7 @@ from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_CLASSY
 
 from .enums import WorkTagCategory, SongTagCategory, LanguageTypes, MediaType
+from .revision import RevisionTrackedModel, RevisionTrackedManager
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
@@ -56,7 +56,7 @@ def tagwork_ordering_case(prefix=''):
 	)
 
 
-class LowerCaseTagModelManager(TagModelManager):
+class LowerCaseTagModelManager(RevisionTrackedManager, TagModelManager):
 	"""Base manager that handles lowercase name normalization for all tag models"""
 
 	def get_or_create(self, *args, **kwargs):
@@ -127,6 +127,10 @@ class OtodbTagModel(BaseTagModel):
 
 	@classmethod
 	def alias(cls, from_tags: list[Self], into_tag: Self):
+		from django.contrib.contenttypes.models import ContentType
+		from django_comments_xtd.models import XtdComment
+
+		self_ct = ContentType.objects.get_for_model(cls)
 		for tag in from_tags:
 			if tag.aliased_to:
 				tag = tag.aliased_to
@@ -134,12 +138,13 @@ class OtodbTagModel(BaseTagModel):
 				tag.aliased_to = into_tag
 				tag.save()
 				cls.transfer_data(tag, into_tag)
-				for t in cls.objects.filter(aliased_to=tag):
-					t.aliased_to = into_tag
-					t.save()
+				cls.objects.filter(aliased_to=tag).update(aliased_to=into_tag)
+				XtdComment.objects.filter(
+					content_type=self_ct, object_pk=str(tag.pk)
+				).update(object_pk=str(into_tag.pk))
 
 
-class TagWork(OtodbTagModel):
+class TagWork(RevisionTrackedModel, OtodbTagModel):
 	objects = TagWorkManager()
 
 	if TYPE_CHECKING:
@@ -168,10 +173,23 @@ class TagWork(OtodbTagModel):
 	category = models.IntegerField(
 		choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL
 	)
-	history = HistoricalRecords()
 	media_type = models.IntegerField(
 		null=True, blank=True, help_text='Media type bitmask'
 	)
+
+	class RevisionMeta:
+		tracked_fields = [
+			'name',
+			'slug',
+			'aliased_to',
+			'deprecated',
+			'category',
+			'media_type',
+		]
+		entity_attrs = ['self', 'aliased_to']
+
+		def to_active(instance):
+			return instance.aliased_to or instance
 
 	@property
 	def display_name(self):
@@ -421,22 +439,25 @@ class TagWork(OtodbTagModel):
 		to_tag.save()
 
 
-class TagWorkLangPreference(models.Model):
+class TagWorkLangPreference(RevisionTrackedModel):
 	lang = models.IntegerField(
 		choices=LanguageTypes.choices,
 		default=LanguageTypes.NOT_APPLICABLE,
 		null=False,
 		blank=False,
 	)
-	tag = HistoricForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
-	history = HistoricalRecords()
+	tag = models.ForeignKey(TagWork, null=False, blank=False, on_delete=models.CASCADE)
+
+	class RevisionMeta:
+		tracked_fields = ['lang', 'tag']
+		entity_attrs = ['tag']
 
 	class Meta:
 		unique_together = (('tag', 'lang'),)
 
 
-class WikiPage(models.Model):
-	tag = HistoricForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
+class WikiPage(RevisionTrackedModel):
+	tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
 	page = MarkdownField(
 		rendered_field='page_rendered', validator=VALIDATOR_CLASSY, null=False
 	)  # type: ignore
@@ -448,13 +469,15 @@ class WikiPage(models.Model):
 		blank=False,
 	)
 
-	history = HistoricalRecords()
+	class RevisionMeta:
+		tracked_fields = ['lang', 'tag', 'page']
+		entity_attrs = ['tag']
 
 	class Meta:
 		unique_together = (('tag', 'lang'),)
 
 
-class TagSong(OtodbTagModel):
+class TagSong(RevisionTrackedModel, OtodbTagModel):
 	objects = TagSongManager()
 
 	class TagMeta:
@@ -472,7 +495,13 @@ class TagSong(OtodbTagModel):
 		on_delete=models.SET_NULL,
 		related_name='children',
 	)
-	history = HistoricalRecords()
+
+	class RevisionMeta:
+		tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
+		entity_attrs = ['self']
+
+		def to_active(instance):
+			return instance.aliased_to or instance
 
 	@property
 	def display_name(self):
@@ -486,9 +515,7 @@ class TagSong(OtodbTagModel):
 		for song in from_tag.songs.all():
 			song.tags.add(to_tag)
 			song.tags.remove(from_tag)
-		for t in cls.objects.filter(parent=from_tag):
-			t.parent = to_tag
-			t.save()
+		cls.objects.filter(parent=from_tag).update(parent=to_tag)
 
 	def get_tree(self):
 		cte = CTE.recursive(
@@ -511,7 +538,7 @@ class TagSong(OtodbTagModel):
 		).order_by('-depth')
 
 
-class TagSongLangPreference(models.Model):
+class TagSongLangPreference(RevisionTrackedModel):
 	lang = models.IntegerField(
 		choices=LanguageTypes.choices,
 		default=LanguageTypes.NOT_APPLICABLE,
@@ -520,8 +547,12 @@ class TagSongLangPreference(models.Model):
 	)
 	tag = models.ForeignKey(TagSong, null=False, blank=False, on_delete=models.CASCADE)
 
+	class RevisionMeta:
+		tracked_fields = ['lang', 'tag']
+		entity_attrs = ['tag']
 
-class TagWorkParenthood(models.Model):
+
+class TagWorkParenthood(RevisionTrackedModel):
 	tag = models.ForeignKey(
 		TagWork,
 		null=False,
@@ -537,7 +568,10 @@ class TagWorkParenthood(models.Model):
 		related_name='parenthood',
 	)
 	primary = models.BooleanField(default=False)
-	history = HistoricalRecords()
+
+	class RevisionMeta:
+		tracked_fields = ['tag', 'parent', 'primary']
+		entity_attrs = ['tag', 'parent']
 
 	class Meta:
 		unique_together = (('tag', 'parent'),)

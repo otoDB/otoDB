@@ -55,7 +55,7 @@ def base_video_info():
 def video_info_mock(base_video_info):
 	"""Create a mock for video_info with fuzzed data."""
 	fuzzed = fuzz_video_infos(base_video_info)
-	with patch('otodb.common.video_info') as mock:
+	with patch('otodb.models.work_source.video_info') as mock:
 		mock.return_value = fuzzed
 		yield mock, fuzzed
 

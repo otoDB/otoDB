@@ -4,7 +4,7 @@
 	import WorkField from '$lib/WorkField.svelte';
 	import type { components } from '$lib/schema';
 	import { Platform, Rating, WorkOrigin } from '$lib/enums';
-	import client from '$lib/api';
+	import client, { getDisplayText } from '$lib/api';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 
 	let work: {
@@ -184,7 +184,7 @@
 								<img
 									class="mt-2 w-15"
 									src={selectedSource.thumbnail}
-									alt={work[0].title}
+									alt={getDisplayText(work[0].title)}
 								/>
 							{/if}
 						{/if}
@@ -222,7 +222,7 @@
 								<img
 									class="mt-2 w-15"
 									src={selectedSource.thumbnail}
-									alt={work[1].title}
+									alt={getDisplayText(work[1].title)}
 								/>
 							{/if}
 						{/if}

@@ -25,13 +25,7 @@
 	);
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({
-		type: m.fuzzy_crazy_cobra_lead(),
-		name: data.profile.username
-	})}
-	menuLinks={data.links}
->
+<Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	<a href="/reset_password">{m.true_tough_butterfly_sew()}</a>
 </Section>
 <Section title={m.jumpy_spry_canary_scoop()}>

@@ -36,10 +36,8 @@
 </svelte:head>
 
 <Section
-	title={m.mild_loud_shad_enchant({
-		type: m.mean_top_antelope_love(),
-		name: m.empty_legal_chicken_taste()
-	})}
+	title={m.empty_legal_chicken_taste()}
+	type={m.mean_top_antelope_love()}
 	menuLinks={[
 		{ title: m.grand_merry_fly_succeed(), pathname: `work/search?query=${data.query}` },
 		{ title: m.empty_legal_chicken_taste(), pathname: 'tag/search' },

@@ -14,8 +14,9 @@
 		WorkTagPresentationOrder
 	} from '$lib/enums';
 	import WorkTag from '$lib/WorkTag.svelte';
-	import client from '$lib/api';
+	import client, { getDisplayText } from '$lib/api';
 	import type { components } from '$lib/schema';
+	import DisplayText from '$lib/DisplayText.svelte';
 	import RefreshButton from '../RefreshButton.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
@@ -85,17 +86,14 @@
 	};
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
-	menuLinks={data.links}
->
+<Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
 				{#if cover_select === -1}
 					<img
 						src={data.thumbnail}
-						alt={data.title}
+						alt={getDisplayText(data.title)}
 						class="h-[270px] w-[480px] object-cover"
 					/>
 				{:else}
@@ -137,7 +135,7 @@
 						<tbody>
 							<tr>
 								<th class="w-24">{m.large_factual_octopus_exhale()}</th>
-								<td>{data.title}</td>
+								<td><DisplayText value={data.title} /></td>
 							</tr>
 							<tr>
 								<th class="w-24">{m.clear_lucky_peacock_pick()}</th>

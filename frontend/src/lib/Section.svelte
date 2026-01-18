@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	let { title, children, menuLinks = null } = $props();
+	import DisplayText from './DisplayText.svelte';
+	import { m } from './paraglide/messages';
+	let { title = undefined, type = undefined, children, menuLinks = null } = $props();
 </script>
 
 <section
@@ -21,7 +23,9 @@
 		</menu>
 	{/if}
 
-	<h1 class="mb-2 text-2xl font-bold">{title}</h1>
+	<h1 class="mb-2 text-2xl font-bold">
+		{#if type}{m.mild_loud_shad_enchant({ type, name: '' })}{/if}<DisplayText value={title} />
+	</h1>
 
 	{@render children()}
 </section>

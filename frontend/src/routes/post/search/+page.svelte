@@ -33,10 +33,8 @@
 </svelte:head>
 
 <Section
-	title={m.mild_loud_shad_enchant({
-		type: m.mean_top_antelope_love(),
-		name: m.just_salty_anaconda_nourish()
-	})}
+	title={m.just_salty_anaconda_nourish()}
+	type={m.mean_top_antelope_love()}
 	menuLinks={data.links}
 >
 	<form target="_self" method="get">

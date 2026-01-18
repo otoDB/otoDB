@@ -40,6 +40,7 @@ from otodb.models.enums import (
 	Status,
 	ProfileConnectionTypes,
 	Route,
+	WorkStatus,
 )
 from otodb.account.models import Account
 
@@ -334,21 +335,6 @@ def source_origin(request: HttpRequest, source_id: int, status: int):
 	src.save()
 
 
-@work_router.put(
-	'source_thumbnail_url', auth=django_auth, response={200: None, 400: Error}
-)
-@user_is_editor
-def update_source_thumbnail_url(
-	request: HttpRequest, source_id: int, thumbnail_url: str
-):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
-	src.thumbnail_url = thumbnail_url
-	saved_thumbnail = src.save_thumbnail()
-	if not saved_thumbnail:
-		return 400, {'message': 'Failed to save thumbnail from the provided URL'}
-	src.save()
-
-
 @work_router.post('refresh_source', auth=django_auth)
 @with_revision_route(Route.WORKSOURCE_REFRESH)
 def refresh_source(request: HttpRequest, source_id: int):
@@ -404,6 +390,37 @@ def update_work(
 		setattr(work, attr, value)
 	work.save()
 	return
+
+
+@work_router.get('source', auth=django_auth, response=WorkSourceSchema)
+def get_source(request: HttpRequest, source_id: int):
+	return get_object_or_404(WorkSource, id=source_id)
+
+
+@work_router.put('source', auth=django_auth, response={200: int, 400: Error})
+@user_is_editor
+@with_revision_route(Route.WORKSOURCE_REFRESH)
+def update_source(
+	request: HttpRequest, source_id: int, metadata: WorkSourceMetadataSchema
+):
+	src = get_object_or_404(
+		WorkSource.active_objects, id=source_id, work_status=WorkStatus.DOWN
+	)
+	src.title = metadata.title
+	src.description = metadata.description
+	src.uploader_id = metadata.uploader_id
+
+	src.thumbnail_url = metadata.thumbnail_url
+
+	src.work_width = metadata.work_width
+	src.work_height = metadata.work_height
+	src.work_duration = metadata.work_duration
+	src.published_date = metadata.published_date
+
+	src.save_thumbnail()
+	src.save()
+
+	return src.media.id
 
 
 @work_router.post(

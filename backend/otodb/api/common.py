@@ -153,6 +153,7 @@ class WorkSourceSchema(ModelSchema):
 			'work_origin',
 			'work_status',
 			'source_id',
+			'uploader_id',
 		]
 
 

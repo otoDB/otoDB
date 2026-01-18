@@ -10,8 +10,10 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 
 	const link = url.searchParams.get('url');
 	const work = url.searchParams.get('for_work');
-	const isNewWork = work === null;
+	const source = url.searchParams.get('for_source');
+
 	let title = null;
+	let unavailable_source = null;
 	if (work && !isNaN(+work)) {
 		const { data, error: e } = await client.GET('/api/work/work', {
 			params: {
@@ -23,11 +25,25 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 		});
 		if (e) error(404, { message: 'Not found' });
 		title = data.title;
+	} else if (source && !isNaN(+source)) {
+		const { data, error: e } = await client.GET('/api/work/source', {
+			params: {
+				query: {
+					source_id: +source
+				}
+			},
+			fetch
+		});
+		if (e) error(404, { message: 'Not found' });
+		if (data.rejection || data.work_status === 0) error(400, { message: 'Bad Request' });
+		unavailable_source = data;
+		title = unavailable_source.title;
 	}
 	return {
 		title,
 		link,
-		isNewWork
+		isNewWork: work === null,
+		unavailable_source
 	};
 };
 
@@ -39,6 +55,8 @@ export const actions = {
 			original_url = data.get('original_url'),
 			rating = data.get('rating');
 		const work = url.searchParams.get('for_work');
+		const source = url.searchParams.get('for_source');
+		const editing_unavailable_source = source && !isNaN(+source);
 
 		// Build metadata object only if user is editor AND manual fields provided
 		let metadata: Record<string, any> | undefined = undefined;
@@ -77,19 +95,29 @@ export const actions = {
 			data: work_id,
 			error,
 			response
-		} = await client.POST('/api/work/source', {
-			fetch,
-			params: {
-				query: {
-					url: link,
-					is_reupload: !is_official,
-					work_id: work ? +work : undefined,
-					rating: rating ? +rating : undefined,
-					original_url: (original_url as string) || undefined
-				}
-			},
-			body: metadata
-		});
+		} = await (editing_unavailable_source
+			? client.PUT('/api/work/source', {
+					fetch,
+					params: {
+						query: {
+							source_id: +source
+						}
+					},
+					body: metadata
+				})
+			: client.POST('/api/work/source', {
+					fetch,
+					params: {
+						query: {
+							url: link,
+							is_reupload: !is_official,
+							work_id: work ? +work : undefined,
+							rating: rating ? +rating : undefined,
+							original_url: (original_url as string) || undefined
+						}
+					},
+					body: metadata
+				}));
 
 		if (response.status === 409) {
 			return fail(409, {
@@ -106,6 +134,8 @@ export const actions = {
 				failed: true,
 				message: m.careful_lost_jaguar_dart()
 			});
+
+		if (editing_unavailable_source && work_id) redirect(303, `/work/${work_id}`);
 
 		// New source to existing work flow
 		if (work && !isNaN(+work)) redirect(303, `/work/${+work}`);

@@ -9,6 +9,7 @@
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
+	import RefreshButton from '../../RefreshButton.svelte';
 
 	let { data, form }: PageProps = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, '')),
@@ -17,7 +18,6 @@
 		thumbnail_source_id: number | null = $state(
 			form?.thumbnail_source ?? data.thumbnail_source ?? data.sources?.[0]?.id ?? null
 		);
-	let thumbnailUrlEdits: Record<number, string> = $state({});
 	const del = async () => {
 		if (confirm(m.mad_brief_falcon_pop())) {
 			await client.DELETE('/api/work/work', {
@@ -42,29 +42,6 @@
 		});
 		callSavingToast(p);
 		await p;
-	};
-	const updateThumbnailUrl = (source_id: number) => async () => {
-		const thumbnail_url = thumbnailUrlEdits[source_id];
-
-		// If blank, refresh/re-fetch the original thumbnail
-		if (!thumbnail_url || thumbnail_url.trim() === '') {
-			const p = client.POST('/api/work/refresh_source', {
-				fetch,
-				params: { query: { source_id } }
-			});
-			callSavingToast(p);
-			await p;
-			invalidateAll();
-			return;
-		}
-
-		const p = client.PUT('/api/work/source_thumbnail_url', {
-			fetch,
-			params: { query: { source_id, thumbnail_url } }
-		});
-		callSavingToast(p);
-		await p;
-		invalidateAll();
 	};
 
 	$effect(() => {
@@ -145,6 +122,7 @@
 					<th>{m.noisy_moving_newt_belong()}</th>
 					<th>{m.heroic_ideal_orangutan_aid()}</th>
 					<th>{m.sour_lime_shad_edit()}</th>
+					<th>{m.mushy_proof_hornet_dig()} / {m.minor_crisp_cobra_list()}</th>
 				</tr></thead
 			>
 			<tbody>
@@ -181,21 +159,27 @@
 							></td
 						>
 						<td>
-							{#if data.user?.level >= UserLevel.EDITOR && src.work_status === 1}
-								<details>
-									<summary>[{m.minor_crisp_cobra_list()}]</summary>
-									<input type="url" bind:value={thumbnailUrlEdits[src.id]} />
-									<input type="submit" onclick={updateThumbnailUrl(src.id)} />
-								</details>
-							{:else}
-								{src.thumbnail ? 'Set' : m.simple_less_marlin_enchant()}
-							{/if}
+							{src.thumbnail
+								? m.full_best_canary_view()
+								: m.simple_less_marlin_enchant()}
 						</td>
 						<td
 							><button type="button" onclick={() => unbind(src.id)}
 								>{m.sour_lime_shad_edit()}</button
 							></td
-						>
+						><td>
+							{#if src.work_status === 0}
+								<RefreshButton source={src} />
+							{:else if src.work_status === 1}
+								{#if data.user?.level >= UserLevel.EDITOR}
+									<a href="/work/add?for_source={src.id}"
+										>{m.minor_crisp_cobra_list()}</a
+									>
+								{:else}
+									{m.simple_less_marlin_enchant()}
+								{/if}
+							{/if}
+						</td>
 					</tr>
 				{/each}
 			</tbody>

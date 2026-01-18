@@ -55,7 +55,8 @@
 </script>
 
 <Section
-	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
+	title={data.title}
+	type={m.grand_merry_fly_succeed()} 
 	menuLinks={data.links}
 >
 	<GuidelineWarning />

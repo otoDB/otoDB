@@ -35,7 +35,8 @@
 </script>
 
 <Section
-	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
+	title={data.list.name}
+	type={m.stale_loose_squid_cut()}
 	menuLinks={data.links}
 >
 	<h3>

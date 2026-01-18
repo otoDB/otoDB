@@ -19,10 +19,8 @@
 </script>
 
 <Section
-	title={m.mild_loud_shad_enchant({
-		type: m.grand_nice_pony_belong(),
-		name: data.tag.song!.title
-	})}
+	title={data.tag.song!.title}
+	type={m.grand_nice_pony_belong()}
 	menuLinks={data.song_links}
 >
 	<TagsField type="song" class="w-full" bind:value={tags} />

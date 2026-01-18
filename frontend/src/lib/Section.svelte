@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import DisplayText from './DisplayText.svelte';
+	import { m } from './paraglide/messages';
 	let {
 		title = undefined,
-		titleType = undefined,
-		titleName = undefined,
+		type = undefined,
 		children,
 		menuLinks = null
 	} = $props();
@@ -29,11 +29,7 @@
 	{/if}
 
 	<h1 class="mb-2 text-2xl font-bold">
-		{#if titleType !== undefined && titleName !== undefined}
-			{titleType}: <DisplayText value={titleName} />
-		{:else}
-			<DisplayText value={title} />
-		{/if}
+		{#if type}{m.mild_loud_shad_enchant({type, name: ''})}{/if}<DisplayText value={title} />
 	</h1>
 
 	{@render children()}

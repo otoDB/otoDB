@@ -5,8 +5,7 @@
 </script>
 
 <span
-	class={value !== null && value !== undefined ? '' : 'italic'}
-	style:color={value !== null && value !== undefined ? '' : 'var(--color-otodb-content-fainter)'}
+	class={value ?? 'italic text-otodb-content-fainter'}
 >
-	{placeholder !== undefined ? getDisplayText(value, placeholder) : getDisplayText(value)}
+	{getDisplayText(value, placeholder)}
 </span>

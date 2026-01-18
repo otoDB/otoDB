@@ -7,10 +7,8 @@
 </script>
 
 <Section
-	title={m.mild_loud_shad_enchant({
-		type: m.fuzzy_crazy_cobra_lead(),
-		name: data.profile.username
-	})}
+	title={data.profile.username}
+	type={m.fuzzy_crazy_cobra_lead()}
 	menuLinks={data.links}
 >
 	{#if data.user?.username === data.profile.username}

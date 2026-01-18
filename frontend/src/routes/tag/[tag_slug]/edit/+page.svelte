@@ -134,7 +134,8 @@
 </script>
 
 <Section
-	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
+	title={data.tag.name}
+	type={m.empty_legal_chicken_taste()}
 	menuLinks={data.links}
 >
 	<GuidelineWarning />
@@ -248,10 +249,8 @@
 
 {#if category === 2 && data.tag.category === 2}
 	<Section
-		title={m.mild_loud_shad_enchant({
-			type: m.grand_nice_pony_belong() + ' ' + m.alive_these_jay_pick(),
-			name: data.tag!.song!.title
-		})}
+		title={data.tag!.song!.title}
+		type={m.grand_nice_pony_belong() + ' ' + m.alive_these_jay_pick()}
 		menuLinks={data.song_links}
 	>
 		<RelationEditor

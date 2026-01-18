@@ -68,6 +68,10 @@ def post(
 	parent_id: int = 0,
 ):
 	T = ContentType.objects.get(model=model)
+	parent = None if parent_id == 0 else XtdComment.objects.get(id=parent_id)
+	if parent.is_removed:
+		return 400
+
 	comment = XtdComment.objects.create(
 		content_type=T,
 		object_pk=pk,
@@ -76,17 +80,21 @@ def post(
 		comment=comment,
 		parent_id=parent_id,
 	)
-	Notification.objects.bulk_create(
-		[
-			Notification(target_id=sub, comment=comment)
-			for sub in T.model_class()
-			.objects.get(id=pk)
-			.subscription_set.values_list('subscriber_id', flat=True)
-		]
-	)
-	Subscription.objects.get_or_create(
-		subscriber=request.user, entity_type=T, entity_id=pk
-	)
+	if parent is None:
+		Notification.objects.bulk_create(
+			[
+				Notification(target_id=sub, comment=comment)
+				for sub in Subscription.objects.filter(
+					entity_type=T, entity_id=pk
+				).values_list('subscriber_id', flat=True)
+				if sub != request.user.id
+			]
+		)
+		Subscription.objects.get_or_create(
+			subscriber=request.user, entity_type=T, entity_id=pk
+		)
+	else:
+		Notification.objects.create(target_id=parent.user_id, comment=comment)
 
 
 @comment_router.delete('comment', auth=django_auth)

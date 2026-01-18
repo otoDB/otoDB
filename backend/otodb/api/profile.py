@@ -112,7 +112,7 @@ def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
 class NotificationSchema(ModelSchema):
 	class Meta:
 		model = Notification
-		fields = ['dismissed']
+		fields = ['dismissed', 'revision', 'comment']
 
 
 @profile_router.get(

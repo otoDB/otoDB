@@ -470,11 +470,12 @@ def track_revision(f):
 
 			if revision_change_entities or subscriptions:
 				RevisionChangeEntity.objects.bulk_create(revision_change_entities)
-				Subscription.objects.bulk_create(subscriptions)
+				Subscription.objects.bulk_create(subscriptions, ignore_conflicts=True)
 			Notification.objects.bulk_create(
 				[
 					Notification(revision=revision, target_id=sub)
 					for sub in set(subscribers)
+					if sub != request.user.id
 				]
 			)
 

@@ -69,7 +69,7 @@ def post(
 ):
 	T = ContentType.objects.get(model=model)
 	parent = None if parent_id == 0 else XtdComment.objects.get(id=parent_id)
-	if parent.is_removed:
+	if parent is None or parent.is_removed:
 		return 400
 
 	comment = XtdComment.objects.create(

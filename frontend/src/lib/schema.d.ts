@@ -416,23 +416,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/work/source_thumbnail_url": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Update Source Thumbnail Url */
-        put: operations["otodb_api_work_update_source_thumbnail_url"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/work/refresh_source": {
         parameters: {
             query?: never;
@@ -474,8 +457,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
+        /** Get Source */
+        get: operations["otodb_api_work_get_source"];
+        /** Update Source */
+        put: operations["otodb_api_work_update_source"];
         /**
          * New Source From Url
          * @description Creates a new source and, for editors, performs auto-validation as well as Work creation
@@ -1773,6 +1758,8 @@ export interface components {
             work_status: number;
             /** Source Id */
             source_id?: string | null;
+            /** Uploader Id */
+            uploader_id?: string | null;
         };
         /**
          * WorkSourceMetadataSchema
@@ -1869,6 +1856,8 @@ export interface components {
             work_status: number;
             /** Source Id */
             source_id?: string | null;
+            /** Uploader Id */
+            uploader_id?: string | null;
             /** Media */
             media: number | null;
         };
@@ -2940,36 +2929,6 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_update_source_thumbnail_url: {
-        parameters: {
-            query: {
-                source_id: number;
-                thumbnail_url: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
     otodb_api_work_refresh_source: {
         parameters: {
             query: {
@@ -3012,6 +2971,63 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    otodb_api_work_get_source: {
+        parameters: {
+            query: {
+                source_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkSourceSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_work_update_source: {
+        parameters: {
+            query: {
+                source_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkSourceMetadataSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
         };
     };

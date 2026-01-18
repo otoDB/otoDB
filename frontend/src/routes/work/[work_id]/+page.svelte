@@ -26,8 +26,11 @@
 
 	let { data } = $props();
 
-	let userLists: [components['schemas']['ListSchema'], boolean][] = $state([]),
-		userListsFetched = false,
+	let [userLists, userListsFetched]: [[components['schemas']['ListSchema'], boolean][], boolean] =
+			$derived.by(() => {
+				data.id; // Track
+				return [[], false];
+			}),
 		userListsShown = $state(false);
 	const showLists = async () => {
 		if (!userListsFetched) {

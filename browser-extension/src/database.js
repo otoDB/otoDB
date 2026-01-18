@@ -28,6 +28,15 @@ function getQuery(url) {
             };
         }
     }
+	else if (url.hostname.endsWith('twitter.com') || url.hostname.endsWith('x.com')) {
+		const match = url.href.match(/status\/([0-9]+)/);
+		if (match) {
+			return {
+				platform: 'twitter',
+				id: match[1]
+			};
+		}
+	}
     else if (url.hostname.endsWith('soundcloud.com')) {
         return {
             url: `${url.protocol}//${url.hostname}${url.pathname}`

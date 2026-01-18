@@ -74,13 +74,7 @@
 	});
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({
-		type: m.empty_legal_chicken_taste(),
-		name: data.display_name
-	})}
-	menuLinks={data.links}
->
+<Section title={data.display_name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<div>
 		{#each paths as path, i (i)}
 			<div>
@@ -177,10 +171,8 @@
 
 {#if data.tag.song}
 	<Section
-		title={m.mild_loud_shad_enchant({
-			type: m.grand_nice_pony_belong(),
-			name: data.tag.song.title
-		})}
+		title={data.tag.song.title}
+		type={m.grand_nice_pony_belong()}
 		menuLinks={data.song_links}
 	>
 		<table>

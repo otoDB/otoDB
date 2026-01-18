@@ -5,10 +5,7 @@
 	let { data } = $props();
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({ type: m.grand_merry_fly_succeed(), name: data.title })}
-	menuLinks={data.links}
->
+<Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
 	{#if data.works}
 		<RelationViewer
 			id={data.id}

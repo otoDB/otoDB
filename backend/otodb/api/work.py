@@ -398,6 +398,9 @@ def update_work(
 	for attr, value in payload.dict().items():
 		if attr == 'thumbnail_source' and value is not None:
 			value = get_object_or_404(WorkSource.active_objects, id=value)
+		# Special handling for title: if current is NULL and new is blank, keep NULL
+		if attr == 'title' and work.title is None and value == '':
+			continue
 		setattr(work, attr, value)
 	work.save()
 	return
@@ -529,24 +532,25 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 		# Build creator connections query only if we have uploader_id
 		creator_tags = []
 		if src.work_origin == WorkOrigin.AUTHOR and info.get('uploader_id'):
+			q = TagWorkCreatorConnection.objects.filter(
+				site=ProfileConnectionTypes[Platform(src.platform).name]
+			)
+
 			if src.platform == Platform.YOUTUBE and info.get('channel_id'):
-				creator_tags = TagWork.objects.filter(
-					id__in=TagWorkCreatorConnection.objects.filter(
-						site=ProfileConnectionTypes.YOUTUBE
-					)
-					.filter(
-						Q(content_id=info['uploader_id'])
-						| Q(content_id='channel/' + info['channel_id'])
-					)
-					.values('tag_id')
+				q = q.filter(
+					Q(content_id=info['uploader_id'])
+					| Q(content_id='channel/' + info['channel_id'])
+				)
+			elif src.platform == Platform.TWITTER:
+				q = q.filter(
+					Q(content_id=info['uploader_id'])
+					| Q(content_id__endswith='/' + info['channel_id'])
+					| Q(content_id__endswith='user_id=' + info['channel_id'])
 				)
 			else:
-				creator_tags = TagWork.objects.filter(
-					id__in=TagWorkCreatorConnection.objects.filter(
-						site=ProfileConnectionTypes[Platform(src.platform).name],
-						content_id=info['uploader_id'],
-					).values('tag_id')
-				)
+				q = q.filter(content_id=info['uploader_id'])
+
+			creator_tags = TagWork.objects.filter(id__in=q.values('tag_id'))
 
 		work.tags.add(
 			*info.get('tags', []),

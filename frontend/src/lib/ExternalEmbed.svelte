@@ -51,6 +51,18 @@
 		allow="autoplay"
 		src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{src.source_id}&visual=true"
 	></iframe>
+{:else if src.platform === 5}
+	<iframe
+		title="Twitter Embed"
+		loading="lazy"
+		{width}
+		{height}
+		src="https://platform.twitter.com/embed/Tweet.html?dnt=true&embedId=twitter-widget-0&frame=false&hideCard=true&hideThread=true&id={src.source_id}&maxWidth={width}px&origin={encodeURIComponent(
+			window.location.origin
+		)}&width={width}px"
+		frameborder="0"
+		scrolling="no"
+	></iframe>
 {/if}
 
 <style>

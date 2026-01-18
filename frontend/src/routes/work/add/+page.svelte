@@ -3,8 +3,9 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { Rating, UserLevel } from '$lib/enums';
+	import { Rating, UserLevel, Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
+	import { getDisplayText } from '$lib/api';
 
 	let { data, form }: PageProps = $props();
 	let isOriginal = $derived(!!(form?.origin ?? !data.title));
@@ -20,22 +21,20 @@
 <svelte:head>
 	<title>
 		{data.title
-			? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: data.title })
+			? m.mild_loud_shad_enchant({
+					type: m.helpful_away_jay_succeed(),
+					name: getDisplayText(data.title)
+				})
 			: m.helpful_away_jay_succeed()}
 	</title>
 </svelte:head>
 
-<Section
-	title={data.title
-		? m.mild_loud_shad_enchant({ type: m.helpful_away_jay_succeed(), name: data.title })
-		: m.helpful_away_jay_succeed()}
->
+<Section type={m.helpful_away_jay_succeed()} title={data.title}>
 	<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 	<ul>
-		<li>YouTube</li>
-		<li>Niconico</li>
-		<li>Bilibili</li>
-		<li>SoundCloud</li>
+		{#each Platform.slice(1) as platform, i (i)}
+			<li>{platform}</li>
+		{/each}
 	</ul>
 	<form method="POST" use:enhance class="mt-4">
 		<table>

@@ -7,9 +7,6 @@
 	let { data }: PageProps = $props();
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({ type: m.giant_away_scallop_hike(), name: data.tag.name })}
-	menuLinks={data.links}
->
+<Section title={data.tag.name} type={m.giant_away_scallop_hike()} menuLinks={data.links}>
 	<HistoryView revisions={data.history.items} user={data.user} />
 </Section>

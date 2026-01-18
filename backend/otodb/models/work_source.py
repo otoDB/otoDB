@@ -32,7 +32,7 @@ class WorkSource(RevisionTrackedModel):
 		MediaWork, on_delete=models.CASCADE, null=True, blank=True
 	)
 	platform = models.IntegerField(choices=Platform.choices)
-	source_id = models.CharField(max_length=1000)
+	source_id = models.CharField(max_length=1000, null=True, blank=False)
 
 	url = models.URLField(null=False, blank=False)
 	published_date = models.DateField(
@@ -196,7 +196,11 @@ class WorkSource(RevisionTrackedModel):
 		Returns:
 		    Tuple of (WorkSource, info_dict) or (None, None) if failed
 		"""
-		from otodb.common import video_info, parse_url_for_platform
+		from otodb.common import (
+			fetch_thumbnail_mime_type,
+			make_video_url,
+			platform_extractors,
+		)
 
 		# Try to fetch info if not provided
 		if info is None:
@@ -204,13 +208,31 @@ class WorkSource(RevisionTrackedModel):
 
 		# Handle unavailable sources
 		if info is None and metadata is not None:
-			parsed = parse_url_for_platform(url)
-			if parsed is None:
+			platform = source_id = canonical_url = None
+			try:
+				for platform, extractor in platform_extractors:
+					if extractor.suitable(url):
+						if platform == Platform.SOUNDCLOUD:
+							# Can't get source ID from URL alone for SoundCloud
+							source_id = None
+							canonical_url = url  # TODO
+							break
+
+						source_id = extractor.get_temp_id(url)
+
+						if platform == Platform.BILIBILI and source_id is not None:
+							source_id = ''.join(
+								extractor._match_valid_url(url).groups()
+							)
+
+						canonical_url = make_video_url[platform](source_id)
+						break
+				else:
+					logger.error(f'No suitable platform extractor found for URL: {url}')
+					return None, None
+			except Exception:
 				logger.error(f'Failed to parse URL for platform: {url}')
 				return None, None
-
-			# Build minimal info from parsed URL and manual metadata
-			from otodb.common import fetch_thumbnail_mime_type
 
 			published_date = metadata.get('published_date') if metadata else None
 			thumbnail_url = metadata.get('thumbnail_url') if metadata else None
@@ -221,9 +243,9 @@ class WorkSource(RevisionTrackedModel):
 			)
 
 			info = {
-				'site': parsed['platform'],
-				'id': parsed['source_id'],
-				'url': parsed['canonical_url'],
+				'site': platform,
+				'id': source_id,
+				'url': canonical_url,
 				'title': metadata.get('title') if metadata else None,
 				'description': metadata.get('description') if metadata else '',
 				'timestamp': datetime.combine(

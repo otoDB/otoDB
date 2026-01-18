@@ -162,10 +162,10 @@
 							{@render link(
 								`/notifications`,
 								m.free_keen_wren_exhale() +
-									(data.user.notifs > 0
+									(data.user.notifs_count > 0
 										? m.great_clean_beaver_amuse() +
 											m.awful_house_liger_expand({
-												content: data.user.notifs
+												content: data.user.notifs_count
 											})
 										: '')
 							)}

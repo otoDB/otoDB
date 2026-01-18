@@ -12,6 +12,8 @@ from ninja.pagination import paginate
 from otodb.account.models import Account
 from otodb.models import ProfileConnection, UserPreferences, Notification
 
+from .comment import models_with_comments
+
 from .common import (
 	ListSchema,
 	ProfileSchema,
@@ -110,13 +112,50 @@ def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
 
 
 class NotificationSchema(ModelSchema):
+	id: int
+	comment: tuple[Literal[*models_with_comments], int | str] | None
+
 	class Meta:
 		model = Notification
-		fields = ['dismissed', 'revision', 'comment']
+		fields = ['dismissed', 'revision']
+
+	@field_validator('comment', mode='before', check_fields=False)
+	@classmethod
+	def cmt(cls, value) -> tuple[Literal[*models_with_comments], int | str] | None:
+		from otodb.models.tag import OtodbTagModel
+
+		if value is None:
+			return None
+		else:
+			ct = value.content_type
+			T = ct.model_class()
+			return (
+				ct.model,
+				T.objects.get(id=value.object_pk).slug
+				if issubclass(T, OtodbTagModel)
+				else int(value.object_pk),
+			)
 
 
 @profile_router.get(
 	'notifications', auth=django_auth, response=list[NotificationSchema]
 )
+@paginate
 def notifications(request: HttpRequest):
-	return request.user.notifs
+	return request.user.notifs.order_by('dismissed')
+
+
+@profile_router.put('notification', auth=django_auth)
+def read_notif(request: HttpRequest, notif_id: int):
+	if request.user.notifs.filter(id=notif_id).update(dismissed=True) > 0:
+		return 200
+	else:
+		return 403
+
+
+@profile_router.delete('notification', auth=django_auth)
+def del_notif(request: HttpRequest, notif_id: int):
+	if request.user.notifs.filter(id=notif_id).delete()[0] > 0:
+		return 200
+	else:
+		return 403

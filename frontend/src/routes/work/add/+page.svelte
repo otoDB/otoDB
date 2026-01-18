@@ -19,7 +19,9 @@
 
 	const title = data.title
 		? m.mild_loud_shad_enchant({
-				type: m.helpful_away_jay_succeed(),
+				type: data.unavailable_source
+					? m.new_aloof_camel_read()
+					: m.helpful_away_jay_succeed(),
 				name: getDisplayText(data.title)
 			})
 		: m.helpful_away_jay_succeed();

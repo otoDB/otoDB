@@ -10,13 +10,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({
-		type: m.fuzzy_crazy_cobra_lead(),
-		name: data.profile.username
-	})}
-	menuLinks={data.links}
->
+<Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	<p>{UserLevel[data.profile?.level]()}</p>
 	<p>
 		{m.sharp_witty_jackdaw_treat({

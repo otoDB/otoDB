@@ -133,10 +133,7 @@
 	};
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: data.tag.name })}
-	menuLinks={data.links}
->
+<Section title={data.tag.name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<GuidelineWarning />
 	<form method="POST" use:dirtyEnhance action="?/edit">
 		{#if data.tag.category === 2 && category !== 2}
@@ -248,10 +245,8 @@
 
 {#if category === 2 && data.tag.category === 2}
 	<Section
-		title={m.mild_loud_shad_enchant({
-			type: m.grand_nice_pony_belong() + ' ' + m.alive_these_jay_pick(),
-			name: data.tag!.song!.title
-		})}
+		title={data.tag!.song!.title}
+		type={m.grand_nice_pony_belong() + ' ' + m.alive_these_jay_pick()}
 		menuLinks={data.song_links}
 	>
 		<RelationEditor

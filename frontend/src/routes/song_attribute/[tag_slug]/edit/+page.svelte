@@ -17,10 +17,7 @@
 	});
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({ type: m.dull_plain_angelfish_cuddle(), name: data.tag.name })}
-	menuLinks={data.links}
->
+<Section title={data.tag.name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
 	<form method="POST" use:enhance action="?/edit">
 		<table>
 			<tbody>

@@ -15,13 +15,7 @@
 	let rejected = $derived(results.filter((s) => s.rejection));
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({
-		type: m.fuzzy_crazy_cobra_lead(),
-		name: data.profile.username
-	})}
-	menuLinks={data.links}
->
+<Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	{#if data.user?.username === data.profile.username}
 		<a href="/work/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}

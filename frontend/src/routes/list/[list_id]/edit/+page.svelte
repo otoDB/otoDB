@@ -4,15 +4,16 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { debounce } from '$lib/ui';
-	import client from '$lib/api';
+	import client, { getDisplayText } from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { draggable, droppable } from '@thisux/sveltednd';
 	import Pager from '$lib/Pager.svelte';
 	import { callSavingToast } from '$lib/toast';
+	import DisplayText from '$lib/DisplayText.svelte';
 
 	let { data, form }: PageProps = $props();
 
-	const offset = (data.page - 1) * data.batch_size;
+	const offset = $derived((data.page - 1) * data.batch_size);
 
 	let entries = $derived(data.entries!.items.map((e, i) => Object.assign({}, e, { ui_id: i })));
 
@@ -86,10 +87,7 @@
 	};
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
-	menuLinks={data.links}
->
+<Section title={data.list.name} type={m.stale_loose_squid_cut()} menuLinks={data.links}>
 	<form use:enhance method="POST">
 		<table>
 			<tbody>
@@ -144,12 +142,12 @@
 								><img
 									class="w-56"
 									src={entry.work.thumbnail}
-									alt={entry.work.title}
+									alt={getDisplayText(entry.work.title)}
 								/></a
 							>
 							<h3>
 								<a target="_blank" href="/work/{entry.work.id}"
-									>{entry.work.title}</a
+									><DisplayText value={entry.work.title} /></a
 								>
 							</h3>
 						</td><td

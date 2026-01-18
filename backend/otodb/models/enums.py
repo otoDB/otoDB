@@ -45,6 +45,7 @@ class Platform(models.IntegerChoices):
 	NICONICO = 2, 'Niconico'
 	BILIBILI = 3, 'Bilibili'
 	SOUNDCLOUD = 4, 'SoundCloud'
+	TWITTER = 5, 'Twitter'
 
 	@staticmethod
 	def from_str(s):

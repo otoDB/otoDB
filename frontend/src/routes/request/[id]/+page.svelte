@@ -35,7 +35,7 @@
 	>
 </svelte:head>
 
-<Section title={m.mild_loud_shad_enchant({ type: m.last_jumpy_barbel_mop(), name: '#' + data.id })}>
+<Section title={'#' + data.id} type={m.last_jumpy_barbel_mop()}>
 	<h3>
 		{#if isSVO(getLocale())}
 			{m.curly_safe_lynx_fond()}

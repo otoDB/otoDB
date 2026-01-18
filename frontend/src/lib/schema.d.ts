@@ -1791,7 +1791,7 @@ export interface components {
              */
             work_status: number;
             /** Source Id */
-            source_id: string;
+            source_id?: string | null;
         };
         /**
          * WorkSourceMetadataSchema
@@ -1887,7 +1887,7 @@ export interface components {
              */
             work_status: number;
             /** Source Id */
-            source_id: string;
+            source_id?: string | null;
             /** Media */
             media: number | null;
         };

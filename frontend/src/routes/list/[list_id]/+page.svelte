@@ -34,10 +34,7 @@
 	});
 </script>
 
-<Section
-	title={m.mild_loud_shad_enchant({ type: m.stale_loose_squid_cut(), name: data.list.name })}
-	menuLinks={data.links}
->
+<Section title={data.list.name} type={m.stale_loose_squid_cut()} menuLinks={data.links}>
 	<h3>
 		{#if isSVO(getLocale())}
 			{m.curly_safe_lynx_fond()}

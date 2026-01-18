@@ -3,9 +3,10 @@
 	import client, { makeCommentTree, type CommentModels } from './api';
 	import { UserLevel } from './enums';
 	import { m } from './paraglide/messages';
+	import type { components } from './schema';
 
 	interface Props {
-		comments: any;
+		comments: components['schemas']['CommentSchema'][];
 		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
 		model: CommentModels;

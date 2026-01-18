@@ -25,6 +25,8 @@ from otodb.models import (
 	Revision,
 	RevisionChange,
 	RevisionChangeEntity,
+	Notification,
+	Subscription,
 )
 from otodb.models.enums import Role, MediaType, ProfileConnectionTypes, Route
 import re
@@ -389,6 +391,7 @@ def track_revision(f):
 			# For batching
 			revision_changes = []
 			pending_entities = []
+			subscribers = []
 
 			# Process deletions
 			seen_deletions = {}
@@ -403,6 +406,12 @@ def track_revision(f):
 					model = content_types[ctpk].model_class()
 					pending_entities.append((change, _get_entity_cts(model), entities))
 
+					subs = Subscription.objects.filter(
+						entity_type_id=ctpk, entity_id=pk
+					)
+					subscribers.extend(subs.values_list('subscriber_id', flat=True))
+					subs.delete()
+
 			# Process updates
 			for (ctpk, pk, field), (entities, val) in rev.items():
 				ct = content_types[ctpk]
@@ -416,6 +425,9 @@ def track_revision(f):
 				)
 				revision_changes.append(change)
 				pending_entities.append((change, _get_entity_cts(model), entities))
+				subs = Subscription.objects.filter(entity_type_id=ctpk, entity_id=pk)
+				subscribers.extend(subs.values_list('subscriber_id', flat=True))
+				subs.delete()
 
 			for (ctpk, pk), to_pk in rev_rst.items():
 				revision_changes.append(
@@ -433,6 +445,7 @@ def track_revision(f):
 
 			# Bulk create change entities
 			revision_change_entities = []
+			subscriptions = []
 			for change, entity_cts, entities in pending_entities:
 				for entity_type, ent_pk in zip(entity_cts, entities):
 					if ent_pk:
@@ -448,9 +461,24 @@ def track_revision(f):
 								route=rev_route,
 							)
 						)
+						subscriptions.append(
+							Subscription(
+								subscriber=request.user,
+								entity_type=entity_type,
+								entity_id=ent_pk,
+							)
+						)
 
-			if revision_change_entities:
+			if revision_change_entities or subscriptions:
 				RevisionChangeEntity.objects.bulk_create(revision_change_entities)
+				Subscription.objects.bulk_create(subscriptions, ignore_conflicts=True)
+			Notification.objects.bulk_create(
+				[
+					Notification(revision=revision, target_id=sub)
+					for sub in set(subscribers)
+					if sub != request.user.id
+				]
+			)
 
 		return ret
 

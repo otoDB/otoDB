@@ -15,9 +15,11 @@
 	<p>
 		{m.sharp_witty_jackdaw_treat({
 			date: new Date(data.profile.date_created).toLocaleDateString()
-		})} ({version_end_dates.find(
-			(d) => d[1] - Date.parse(data.profile.date_created) >= 0
-		)?.[0]})
+		})}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
+			content: version_end_dates.find(
+				(d) => d[1] - Date.parse(data.profile.date_created) >= 0
+			)?.[0]
+		})}
 	</p>
 
 	{#if data.connections}

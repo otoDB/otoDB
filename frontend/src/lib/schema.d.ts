@@ -661,6 +661,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profile/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Notifications */
+        get: operations["otodb_api_profile_notifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/profile/notification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Read Notif */
+        put: operations["otodb_api_profile_read_notif"];
+        post?: never;
+        /** Del Notif */
+        delete: operations["otodb_api_profile_del_notif"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/list/search": {
         parameters: {
             query?: never;
@@ -1486,6 +1521,8 @@ export interface components {
             /** Level */
             level: number;
             prefs?: components["schemas"]["UserPreferencesSchema"] | null;
+            /** Notifs Count */
+            notifs_count: number;
         };
         /** RegisterRequestSchema */
         RegisterRequestSchema: {
@@ -1860,6 +1897,30 @@ export interface components {
             uploader_id?: string | null;
             /** Media */
             media: number | null;
+        };
+        /** NotificationSchema */
+        NotificationSchema: {
+            /** Id */
+            id: number;
+            /** Comment */
+            comment: [
+                "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest",
+                number | string
+            ] | null;
+            /**
+             * Dismissed
+             * @default false
+             */
+            dismissed: boolean;
+            /** Revision */
+            revision?: number | null;
+        };
+        /** PagedNotificationSchema */
+        PagedNotificationSchema: {
+            /** Items */
+            items: components["schemas"]["NotificationSchema"][];
+            /** Count */
+            count: number;
         };
         /** PagedListSchema */
         PagedListSchema: {
@@ -3318,6 +3379,69 @@ export interface operations {
                 "application/json": components["schemas"]["UserPreferencesSchema"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_profile_notifications: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedNotificationSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_profile_read_notif: {
+        parameters: {
+            query: {
+                notif_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_profile_del_notif: {
+        parameters: {
+            query: {
+                notif_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

@@ -246,7 +246,6 @@
 	"legal_strong_ladybug_fade": "Height",
 	"vivid_still_bumblebee_explore": "Uploader ID",
 	"that_large_mare_ascend": "Is this upload unavailable?",
-	"lost_game_mink_loop": "[Untitled]",
 	"tiny_plane_ape_pull": "Retro Voyage",
 	"mean_zesty_ray_savor": "SORIMIX",
 	"curly_many_orangutan_grip": "is a sequel to",
@@ -267,5 +266,10 @@
 	"curly_fuzzy_turkey_launch": "Recent discussions",
 	"house_patient_cuckoo_trust": "Revisions",
 	"full_best_canary_view": "Set",
-	"new_aloof_camel_read": "Edit Upload"
+	"new_aloof_camel_read": "Edit Upload",
+	"awful_house_liger_expand": "({content})",
+	"free_keen_wren_exhale": "Notifications",
+	"wacky_weird_swallow_trust": "No notifications.",
+	"livid_real_platypus_borrow": "An entity you are subscribed to was modified in a revision.",
+	"curly_these_mule_ascend": "New reply."
 }

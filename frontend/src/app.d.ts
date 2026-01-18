@@ -7,13 +7,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user: {
-				csrf: string;
-				user_id: number;
-				username: string;
-				level: int;
-				prefs: components['schemas']['UserPreferencesSchema']?;
-			};
+			user: { csrf: string } & components['schemas']['UserStatusSchema'];
 		}
 		// interface PageData {}
 		// interface PageState {}

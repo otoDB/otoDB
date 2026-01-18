@@ -11,7 +11,7 @@ from ninja import Router, ModelSchema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.models import Post, PostContent
+from otodb.models import Post, PostContent, Subscription
 from otodb.models.enums import PostCategory, LanguageTypes
 
 from .common import ProfileSchema, user_is_trusted
@@ -90,6 +90,7 @@ def new(
 	assert post
 	p = Post.objects.create(title=title, added_by=request.user, category=category)
 	PostContent.objects.create(post=p, lang=lang, page=post)
+	Subscription.objects.create(subscriber=request.user, entity=p)
 	return p.id
 
 

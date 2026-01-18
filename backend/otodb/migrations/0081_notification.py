@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 	dependencies = [
 		('contenttypes', '0002_remove_content_type_name'),
-		('otodb', '0079_alter_userpreferences_theme'),
+		('otodb', '0080_alter_historicalworksource_platform_and_more'),
 		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
 	]
 

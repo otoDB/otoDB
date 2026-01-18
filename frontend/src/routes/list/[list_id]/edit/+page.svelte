@@ -13,7 +13,7 @@
 
 	let { data, form }: PageProps = $props();
 
-	const offset = (data.page - 1) * data.batch_size;
+	const offset = $derived((data.page - 1) * data.batch_size);
 
 	let entries = $derived(data.entries!.items.map((e, i) => Object.assign({}, e, { ui_id: i })));
 

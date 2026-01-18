@@ -2,7 +2,7 @@ import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ fetch, locals }) => {
+export const load: PageServerLoad = async ({ fetch }) => {
 	const [randomWork, recentWork, changes, posts] = await Promise.all([
 		client.GET('/api/work/random', {
 			fetch,

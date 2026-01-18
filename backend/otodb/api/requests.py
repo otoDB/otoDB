@@ -19,6 +19,7 @@ from otodb.models import (
 	UserRequest,
 	BulkRequest,
 	TagWorkParenthood,
+	Subscription,
 )
 from otodb.models.enums import RequestActions, Status
 
@@ -121,6 +122,7 @@ def make_bulk(request: HttpRequest, s: str):
 		for arg, v in zip(c[2:], Bs_validator):
 			reqs.append(UserRequest(bulk=bulk, command=cmd, A=A, B=v(arg)))
 	UserRequest.objects.bulk_create(reqs)
+	Subscription.objects.create(entity=bulk, subscriber=request.user)
 	return bulk.id
 
 

@@ -55,12 +55,15 @@ class UserStatusSchema(UserLoginSchema):
 	user_id: int = Field(..., alias='id')
 	username: str
 	prefs: UserPreferencesSchema | None = None
+	notifs_count: int
 
 
 @auth_router.get('/status', response={200: UserStatusSchema, 401: Error})
 def status(request: HttpRequest):
 	if request.user.is_authenticated:
-		return request.user
+		u = request.user
+		u.notifs_count = u.notifs.filter(dismissed=False).count()
+		return u
 	return 401, {'message': 'Not logged in.'}
 
 

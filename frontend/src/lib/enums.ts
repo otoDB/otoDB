@@ -391,3 +391,13 @@ export const Route = {
 	64: 'Upload: Assign',
 	65: 'Upload: Reject'
 };
+
+export const CommentModelRoutes = {
+	mediawork: 'work',
+	account: 'profile',
+	pool: 'list',
+	tagwork: 'tag',
+	tagsong: 'song_attribute',
+	post: 'post',
+	bulkrequest: 'request'
+};

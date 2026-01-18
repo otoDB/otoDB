@@ -27,7 +27,7 @@
 	let { data } = $props();
 
 	let [userLists, userListsFetched]: [[components['schemas']['ListSchema'], boolean][], boolean] =
-			$derived(data.id && [[], false]),
+			$derived(data && [[], false]),
 		userListsShown = $state(false);
 	const showLists = async () => {
 		if (!userListsFetched) {

@@ -29,7 +29,14 @@
 	</title>
 </svelte:head>
 
-<Section type={m.helpful_away_jay_succeed()} title={data.title}>
+<Section
+	title={data.title
+		? m.mild_loud_shad_enchant({
+				type: m.helpful_away_jay_succeed(),
+				name: getDisplayText(data.title)
+			})
+		: m.helpful_away_jay_succeed()}
+>
 	<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 	<ul>
 		{#each Platform.slice(1) as platform, i (i)}

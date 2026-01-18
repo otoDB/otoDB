@@ -9,11 +9,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<Section
-	title={data.profile.username}
-	type={m.fuzzy_crazy_cobra_lead()}
-	menuLinks={data.links}
->
+<Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	<table class="w-full">
 		<tbody>
 			{#each data.revisions?.items as r, i (i)}

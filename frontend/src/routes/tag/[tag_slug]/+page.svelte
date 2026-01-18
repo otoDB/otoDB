@@ -74,11 +74,7 @@
 	});
 </script>
 
-<Section
-	title={data.display_name}
-	type={m.empty_legal_chicken_taste()}
-	menuLinks={data.links}
->
+<Section title={data.display_name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<div>
 		{#each paths as path, i (i)}
 			<div>

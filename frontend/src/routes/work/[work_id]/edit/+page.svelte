@@ -74,11 +74,7 @@
 	});
 </script>
 
-<Section
-	title={data.title}
-	type={m.grand_merry_fly_succeed()}
-	menuLinks={data.links}
->
+<Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
 	<GuidelineWarning />
 	<form method="POST" use:dirtyEnhance action="?/edit">
 		<table class="inline">

@@ -133,11 +133,7 @@
 	};
 </script>
 
-<Section
-	title={data.tag.name}
-	type={m.empty_legal_chicken_taste()}
-	menuLinks={data.links}
->
+<Section title={data.tag.name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<GuidelineWarning />
 	<form method="POST" use:dirtyEnhance action="?/edit">
 		{#if data.tag.category === 2 && category !== 2}

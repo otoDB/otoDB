@@ -87,11 +87,7 @@
 	};
 </script>
 
-<Section
-	title={data.list.name}
-	type={m.stale_loose_squid_cut()}
-	menuLinks={data.links}
->
+<Section title={data.list.name} type={m.stale_loose_squid_cut()} menuLinks={data.links}>
 	<form use:enhance method="POST">
 		<table>
 			<tbody>

@@ -6,11 +6,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<Section
-	title={data.profile.username}
-	type={m.fuzzy_crazy_cobra_lead()}
-	menuLinks={data.links}
->
+<Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	{#if data.user?.username === data.profile.username}
 		<a href="/list/new">{m.plane_inner_chipmunk_race()}</a>
 		<a href="/list/import">{m.proof_heroic_rat_cuddle()}</a>

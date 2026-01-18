@@ -54,11 +54,7 @@
 	};
 </script>
 
-<Section
-	title={data.title}
-	type={m.grand_merry_fly_succeed()} 
-	menuLinks={data.links}
->
+<Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
 	<GuidelineWarning />
 	<table>
 		<thead>

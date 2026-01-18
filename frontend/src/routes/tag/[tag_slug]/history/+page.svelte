@@ -7,10 +7,6 @@
 	let { data }: PageProps = $props();
 </script>
 
-<Section
-	title={data.tag.name}
-	type={m.giant_away_scallop_hike()}
-	menuLinks={data.links}
->
+<Section title={data.tag.name} type={m.giant_away_scallop_hike()} menuLinks={data.links}>
 	<HistoryView revisions={data.history.items} user={data.user} />
 </Section>

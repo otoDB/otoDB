@@ -4,8 +4,6 @@
 	export let placeholder = undefined;
 </script>
 
-<span
-	class={value ?? 'italic text-otodb-content-fainter'}
->
+<span class={value ?? 'text-otodb-content-fainter italic'}>
 	{getDisplayText(value, placeholder)}
 </span>

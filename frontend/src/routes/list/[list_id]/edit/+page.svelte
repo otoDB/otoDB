@@ -5,21 +5,24 @@
 	import { enhance } from '$app/forms';
 	import { debounce } from '$lib/ui';
 	import client, { getDisplayText } from '$lib/api';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { draggable, droppable } from '@thisux/sveltednd';
-	import Pager from '$lib/Pager.svelte';
 	import { callSavingToast } from '$lib/toast';
 	import DisplayText from '$lib/DisplayText.svelte';
+	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 
 	let { data, form }: PageProps = $props();
 
-	const offset = $derived((data.page - 1) * data.batch_size);
-
-	let entries = $derived(data.entries!.items.map((e, i) => Object.assign({}, e, { ui_id: i })));
+	let entries = $derived.by(() => {
+		// https://github.com/sveltejs/svelte/issues/16189
+		let _ = $state(data.entries!.items);
+		return _;
+	});
+	$inspect(entries);
 
 	async function handleDrop(state) {
 		const { draggedItem, targetContainer } = state;
-		const dragIndex = entries.findIndex((item) => item.ui_id === draggedItem[1].ui_id);
+		const dragIndex = draggedItem[0];
 		const dropIndex = parseInt(targetContainer ?? '0');
 
 		if (dragIndex !== -1 && !isNaN(dropIndex) && dragIndex !== dropIndex) {
@@ -30,13 +33,12 @@
 				fetch,
 				params: { query: { list_id: data.list.id } },
 				body: {
-					move: [[dragIndex + offset, dropIndex + offset]],
+					move: [[dragIndex, dropIndex]],
 					delete: [],
 					update_description: [],
 					update_work: []
 				}
 			});
-			invalidateAll();
 		}
 	}
 
@@ -45,9 +47,7 @@
 			fetch,
 			params: { query: { list_id: data.list.id } },
 			body: {
-				update_description: [
-					[+el.target.closest('tr').dataset.ridx + offset, el.target.value]
-				],
+				update_description: [[+el.target.closest('tr').dataset.ridx, el.target.value]],
 				move: [],
 				delete: [],
 				update_work: []
@@ -55,11 +55,10 @@
 		});
 		callSavingToast(p);
 		await p;
-		invalidateAll();
 	}
 
 	async function delete_item(el) {
-		const i = +el.target.closest('tr')!.dataset.ridx! + offset;
+		const i = +el.target.closest('tr')!.dataset.ridx!;
 		const { error } = await client.PUT('/api/list/items', {
 			fetch,
 			params: { query: { list_id: data.list.id } },
@@ -74,8 +73,8 @@
 		if (!error) {
 			entries.splice(i, 1);
 			entries = entries;
+			data.entries.count--;
 		}
-		invalidateAll();
 	}
 
 	const pull = async () => {
@@ -119,7 +118,7 @@
 	{#if entries.length}
 		<table class="w-full">
 			<tbody>
-				{#each entries as entry, i (entry.ui_id)}
+				{#each entries as entry, i (entry.work.id)}
 					<tr
 						class="svelte-dnd-touch-feedback"
 						use:droppable={{
@@ -166,7 +165,21 @@
 			</tbody>
 		</table>
 		{#if data.entries?.count}
-			<Pager n_count={data.entries.count} page={data.page} page_size={data.batch_size} />
+			<LoadMoreButton
+				fetchNextBatch={() =>
+					client.GET('/api/list/entries', {
+						fetch,
+						params: {
+							query: {
+								list_id: data.list.id,
+								limit: data.batch_size,
+								offset: entries.length
+							}
+						}
+					})}
+				maxCount={data.entries!.count}
+				bind:results={entries}
+			/>
 		{/if}
 	{:else}
 		<h3>{m.hour_flat_finch_zoom()}</h3>

@@ -15,6 +15,7 @@ from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
 
 from otodb.account.models import Account
+from otodb.models import Notification, Subscription
 from .common import user_is_trusted, ProfileSchema
 
 comment_router = Router()
@@ -67,13 +68,24 @@ def post(
 	parent_id: int = 0,
 ):
 	T = ContentType.objects.get(model=model)
-	XtdComment.objects.create(
+	comment = XtdComment.objects.create(
 		content_type=T,
 		object_pk=pk,
 		site_id=1,
 		user=request.user,
 		comment=comment,
 		parent_id=parent_id,
+	)
+	Notification.objects.bulk_create(
+		[
+			Notification(target_id=sub, comment=comment)
+			for sub in T.model_class()
+			.objects.get(id=pk)
+			.subscription_set.values_list('subscriber_id', flat=True)
+		]
+	)
+	Subscription.objects.get_or_create(
+		subscriber=request.user, entity_type=T, entity_id=pk
 	)
 
 
@@ -92,5 +104,6 @@ def delete(
 	if request.user.level >= Account.Levels.ADMIN or comment.user == request.user:
 		comment.is_removed = True
 		comment.save()
+		Notification.objects.filter(comment=comment).delete()
 	else:
 		return 403

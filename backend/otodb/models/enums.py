@@ -240,8 +240,3 @@ class Route(models.IntegerChoices):
 	WORKSOURCE_REFRESH = 63, 'Work Source Refresh'
 	WORKSOURCE_ASSIGN = 64, 'Work Source Assign'
 	WORKSOURCE_REJECT = 65, 'Work Source Reject'
-
-
-class MessageTypes(models.IntegerChoices):
-	REPLY = 0, 'Reply'
-	ENTITY_EDITED = 1, 'Entity Edited'

@@ -3,11 +3,14 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
+from django_comments_xtd.models import XtdComment
+
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_CLASSY
 
 from otodb.account.models import Account
-from .enums import LanguageTypes, PostCategory, MessageTypes
+from .enums import LanguageTypes, PostCategory
+from .revision import Revision
 
 
 class Post(models.Model):
@@ -49,8 +52,47 @@ class Notification(models.Model):
 		on_delete=models.CASCADE,
 		related_name='notifs',
 	)
-	message = models.IntegerField(choices=MessageTypes.choices, null=False, blank=False)
+	dismissed = models.BooleanField(default=False)
+
+	revision = models.ForeignKey(
+		Revision,
+		blank=True,
+		null=True,
+		on_delete=models.CASCADE,
+	)
+	comment = models.ForeignKey(
+		XtdComment,
+		blank=True,
+		null=True,
+		on_delete=models.CASCADE,
+	)
+
+	class Meta:
+		constraints = [
+			models.CheckConstraint(
+				check=(
+					models.Q(revision__isnull=True) ^ models.Q(comment__isnull=True)
+				),
+				name='notification_union',
+			)
+		]
+
+
+class Subscription(models.Model):
+	subscriber = models.ForeignKey(
+		Account,
+		blank=False,
+		null=False,
+		on_delete=models.CASCADE,
+	)
 	entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
 	entity_id = models.PositiveBigIntegerField()
 	entity = GenericForeignKey('entity_type', 'entity_id')
-	dismissed = models.BooleanField(default=False)
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(
+				fields=['subscriber', 'entity_type', 'entity_id'],
+				name='unique_subscription',
+			)
+		]

@@ -18,7 +18,6 @@
 		let _ = $state(data.entries!.items);
 		return _;
 	});
-	$inspect(entries);
 
 	async function handleDrop(state) {
 		const { draggedItem, targetContainer } = state;

@@ -6,7 +6,6 @@
 	import { CommentModelRoutes } from '$lib/enums';
 	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
-	import { TOGGLE_WHATS_NEW_NOTIFICATIONS } from 'storybook/internal/core-events';
 
 	let { data }: PageProps = $props();
 

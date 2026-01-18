@@ -5,28 +5,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0071_allow_null_and_blank_source_title'),
+		('otodb', '0079_alter_userpreferences_theme'),
 	]
 
 	operations = [
-		migrations.AlterField(
-			model_name='historicalworksource',
-			name='platform',
-			field=models.IntegerField(
-				choices=[
-					(1, 'YouTube'),
-					(2, 'Niconico'),
-					(3, 'Bilibili'),
-					(4, 'SoundCloud'),
-					(5, 'Twitter'),
-				]
-			),
-		),
-		migrations.AlterField(
-			model_name='historicalworksource',
-			name='source_id',
-			field=models.CharField(blank=False, max_length=1000, null=True),
-		),
 		migrations.AlterField(
 			model_name='worksource',
 			name='platform',

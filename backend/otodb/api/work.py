@@ -1,6 +1,7 @@
 from typing import List, Literal
 
 from django.http import HttpRequest
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import (
 	Q,
@@ -427,6 +428,7 @@ def update_source(
 	'source', auth=django_auth, response={200: int | None, 400: Error, 409: Error}
 )
 @user_is_trusted
+@transaction.atomic
 @with_revision_route(Route.WORKSOURCE_CREATE)
 def new_source_from_url(
 	request: HttpRequest,

@@ -17,9 +17,9 @@ ADD . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
-RUN apt-get update && apt-get install -y ca-certificates git patch curl
+RUN apt-get update && apt-get install -y ca-certificates git patch curl 
 ENV DENO_INSTALL=/usr/local
-RUN curl -fsSL https://deno.land/install.sh | sh
+RUN curl -fsSL https://deno.land/install.sh | sh -s -- -y
 RUN uv run p12y apply
 
 # Ensure cookies.txt exists so volume mount doesn't create a directory

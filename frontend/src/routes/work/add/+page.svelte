@@ -25,6 +25,8 @@
 				name: getDisplayText(data.title)
 			})
 		: m.helpful_away_jay_succeed();
+
+	let submitting = $state(false);
 </script>
 
 <svelte:head>
@@ -40,7 +42,14 @@
 			{/each}
 		</ul>
 	{/if}
-	<form method="POST" use:enhance class="mt-4">
+	<form
+		method="POST"
+		use:enhance={({ cancel }) => {
+			if (submitting) return cancel();
+			submitting = true;
+		}}
+		class="mt-4"
+	>
 		<table>
 			<tbody>
 				{#if !data.unavailable_source}
@@ -205,6 +214,6 @@
 				{/if}
 			</tbody>
 		</table>
-		<input class="mt-4" type="submit" />
+		<input disabled={submitting} class="mt-4" type="submit" />
 	</form>
 </Section>

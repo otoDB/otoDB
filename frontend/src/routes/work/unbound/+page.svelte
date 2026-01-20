@@ -48,7 +48,13 @@
 					});
 			})
 		);
-		invalidateAll();
+		await invalidateAll();
+		actions = Array(data.sources.length).fill({
+			reason: '',
+			menu: 'none',
+			suggestion_candidate: -1,
+			specify_target: null
+		});
 	};
 	const unfold = async (i: number) => {
 		if (!loaded[i] && actions[i].menu === 'new') {

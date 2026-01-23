@@ -24,5 +24,5 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			params: { query: { list_id: +params.list_id, limit: batch_size, offset: 0 } }
 		})
 	]);
-	return { entries, comments, pending_items };
+	return { entries, comments, pending_items, batch_size, page };
 };

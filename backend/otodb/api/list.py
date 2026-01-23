@@ -4,6 +4,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 from django.db.models import Q
 
 from ninja import Router, Schema, ModelSchema
@@ -197,6 +198,7 @@ def import_ext_into_pool(info, list_: Pool, user):
 @list_router.post(
 	'import', auth=django_auth, response=int, throttle=[AuthRateThrottle('3/30m')]
 )
+@transaction.atomic
 @track_revision
 def import_ext(request: HttpRequest, url: str):
 	info = playlist_info(url)

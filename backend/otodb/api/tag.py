@@ -188,6 +188,37 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
 	return {'merged_slug': into.slug}
 
 
+@tag_router.post('alias', auth=django_auth)
+@user_is_trusted
+@with_revision_route(Route.SONGTAG_ALIAS)
+def alias_song_attrs(
+	request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool
+):
+	tags = []
+	for tag_name in from_tags:
+		try:
+			tags.append(TagSong.objects.get(slug=clean_incoming_slug(tag_name)))
+		except TagSong.DoesNotExist:
+			tags.append(TagSong.objects.create(name=tag_name))
+
+	into = get_object_or_404(
+		TagSong.objects.select_related('aliased_to'), slug=clean_incoming_slug(into_tag)
+	)
+	if into.aliased_to:
+		into = into.aliased_to
+	assert into.aliased_to is None
+
+	TagSong.alias(tags, into)
+	if delete:
+		for tag in tags:
+			tag.aliased_to = None
+			tag.save()
+			if tag.can_be_deleted:
+				tag.delete()
+
+	return {'merged_slug': into.slug}
+
+
 @tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})
 @user_is_trusted
 @with_revision_route(Route.TAGWORK_DELETE)
@@ -723,7 +754,7 @@ def song_tag_search(request: HttpRequest, query: str):
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted
-@with_revision_route(Route.SONGTAG_SET_TAGS)
+@with_revision_route(Route.MEDIASONG_SET_TAGS)
 def song_tags(
 	request: HttpRequest,
 	song_id: int,

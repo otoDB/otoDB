@@ -87,6 +87,18 @@ class TagWorkInstance(RevisionTrackedModel):
 		entity_attrs = ['work']
 
 
+class TagSongInstance(RevisionTrackedModel):
+	class Meta:
+		unique_together = (('song', 'song_tag'),)
+
+	song = models.ForeignKey('MediaSong', on_delete=models.CASCADE)
+	song_tag = models.ForeignKey(TagSong, on_delete=models.CASCADE)
+
+	class RevisionMeta:
+		tracked_fields = ['song', 'song_tag']
+		entity_attrs = ['song']
+
+
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		worksource_set: QuerySet['WorkSource']
@@ -234,12 +246,11 @@ class MediaSong(RevisionTrackedModel):
 	work_tag = models.OneToOneField(TagWork, null=False, on_delete=models.CASCADE)
 	author = models.CharField(max_length=1000, null=False, blank=False)
 
-	tags = TagField(to=TagSong, related_name='songs')
+	tags = TagField(to=TagSong, related_name='songs', through=TagSongInstance)
 
 	class RevisionMeta:
 		tracked_fields = ['title', 'bpm', 'variable_bpm', 'work_tag', 'author']
 		entity_attrs = ['self', 'work_tag']
-		# TODO track tags when we have custom through table
 
 	class Meta:
 		verbose_name = 'Song'

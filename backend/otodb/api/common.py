@@ -57,13 +57,10 @@ class ProfileSchema(ModelSchema):
 		fields = ['username', 'level', 'date_created']
 
 
-class TagWorkLangPreferenceSchema(ModelSchema):
+class TagLangPreferenceSchema(ModelSchema):
 	tag: str = Field(..., alias='tag.name')
 	slug: str = Field(..., alias='tag.slug')
-
-	class Meta:
-		model = TagWorkLangPreference
-		fields = ['lang']
+	lang: int
 
 
 class TagSongSchema(Schema):
@@ -72,6 +69,7 @@ class TagSongSchema(Schema):
 	name: str
 	slug: str
 	category: int
+	lang_prefs: list[TagLangPreferenceSchema]
 
 
 class SongSchema(ModelSchema):
@@ -86,7 +84,7 @@ class SongSchema(ModelSchema):
 
 class TagWorkSchema(Schema):
 	id: int
-	lang_prefs: list[TagWorkLangPreferenceSchema]
+	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional['TagWorkSchema']
 	n_instance: int | None = None
 	name: str
@@ -99,7 +97,7 @@ class FatTagWorkSchema(ModelSchema):
 	children: list[TagWorkSchema]
 	song: Optional[SongSchema] = Field(None, alias='get_song')
 	media_type: list[int] | None = None
-	lang_prefs: list[TagWorkLangPreferenceSchema]
+	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional[TagWorkSchema]
 
 	class Meta:

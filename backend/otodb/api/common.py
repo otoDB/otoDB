@@ -56,7 +56,7 @@ class ProfileSchema(ModelSchema):
 		fields = ['username', 'level', 'date_created']
 
 
-class TagLangPreferenceSchema(ModelSchema):
+class TagLangPreferenceSchema(Schema):
 	tag: str = Field(..., alias='tag.name')
 	slug: str = Field(..., alias='tag.slug')
 	lang: int

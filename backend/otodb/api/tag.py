@@ -480,7 +480,9 @@ tag_work_connection_parser = make_alt_value_parser(
 	),
 	(
 		TagWorkConnectionTypes.NICOPEDIA,
-		re_to_parser(re.compile(r'https?:\/\/dic\.nicovideo\.jp\/a\/([^/?#]+)\/?')),
+		re_to_parser(
+			re.compile(r'https?:\/\/dic\.nicovideo\.jp\/((?:a|v)\/[^/?#]+)\/?')
+		),
 	),
 	(
 		TagWorkConnectionTypes.PIXIV_DICT,

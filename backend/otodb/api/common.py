@@ -16,7 +16,6 @@ from otodb.models import (
 	MediaSong,
 	WorkSourceRejection,
 	TagWork,
-	TagWorkLangPreference,
 	WikiPage,
 	Pool,
 	PoolItem,

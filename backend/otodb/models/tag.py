@@ -413,12 +413,16 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			elif not to_tag.get_paths().filter(id=tp.tag.id).exists():
 				tp.parent = to_tag
 				tp.save()
+			else:
+				tp.delete()
 		for tp in TagWorkParenthood.objects.filter(tag=from_tag):
 			if TagWorkParenthood.objects.filter(parent=tp.parent, tag=to_tag).exists():
 				tp.delete()
 			elif not to_tag.get_descendants().filter(id=tp.tag.id).exists():
 				tp.tag = to_tag
 				tp.save()
+			else:
+				tp.delete()
 		if (
 			from_tag.category != WorkTagCategory.GENERAL
 			and to_tag.category == WorkTagCategory.GENERAL
@@ -523,6 +527,15 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 		def to_active(instance):
 			return instance.aliased_to or instance
 
+	class Meta:
+		constraints = [
+			models.CheckConstraint(
+				name='tagsong_parenthood_nonreflexive',
+				condition=~Q(parent_id=models.F('id')),
+				violation_error_message='tag cannot be own parent',
+			),
+		]
+
 	@property
 	def display_name(self):
 		return self.name.replace('_', ' ')
@@ -537,13 +550,25 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 			song.tags.remove(from_tag)
 		cls.objects.filter(parent=from_tag).update(parent=to_tag)
 
-		# carry over category
+		# carry over category and parenthood
+		for tc in from_tag.children.all():
+			if not to_tag.get_tree().filter(id=tc.id).exists():
+				tc.parent = to_tag
+			else:
+				tc.parent = None
+			tc.save()
+		if tp := from_tag.parent:
+			if not to_tag.get_descendants().filter(id=tp.id).exists():
+				to_tag.parent = tp
+				to_tag.save()
+			from_tag.parent = None
+			from_tag.save()
 		if (
 			from_tag.category != SongTagCategory.GENERAL
 			and to_tag.category == SongTagCategory.GENERAL
 		):
 			to_tag.category = from_tag.category
-			from_tag.category = WorkTagCategory.GENERAL
+			from_tag.category = SongTagCategory.GENERAL
 			from_tag.save()
 
 		to_tag.save()
@@ -578,6 +603,27 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 		return with_cte(
 			cte, select=cte.join(TagSong, id=cte.col.id).annotate(depth=cte.col.depth)
 		).order_by('-depth')
+
+	def get_descendants(self):
+		cte = CTE.recursive(
+			lambda cte: TagSong.objects.order_by()
+			.filter(id=self.id)
+			.values('id')
+			.union(
+				cte.join(
+					TagSong.objects.order_by(),
+					parent_id=cte.col.id,
+					aliased_to__isnull=True,
+				).values('id'),
+				all=True,
+			)
+		)
+		return (
+			with_cte(cte, select=cte.join(TagSong, id=cte.col.id))
+			.exclude(id=self.id)
+			.distinct()
+			.order_by()
+		)
 
 	@property
 	def lang_prefs(self):

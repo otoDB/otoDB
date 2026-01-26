@@ -20,11 +20,7 @@
 		{#each data.tree as node, i (i)}
 			> {#if node.slug === data.tag.slug}{data.display_name}{:else}<a href={node.slug}
 					>{getTagDisplayName(node)}</a
-				>{/if}&nbsp; >
-		{:else}
-			>
-		{/each}
-		<span>{data.tag.name}</span>
+				>{/if}&nbsp;{/each}> <span>{data.tag.name}</span>
 	</div>
 
 	<h2>

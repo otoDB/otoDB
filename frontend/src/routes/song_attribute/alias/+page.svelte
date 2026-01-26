@@ -26,10 +26,10 @@
 </script>
 
 <svelte:head>
-	<title>{m.front_maroon_hamster_urge()}</title>
+	<title>{m.fine_maroon_seal_flip()}</title>
 </svelte:head>
 
-<Section title={m.front_maroon_hamster_urge()}>
+<Section title={m.fine_maroon_seal_flip()}>
 	<GuidelineWarning />
 	<TagsField type="song" class="w-full" bind:value={tags} />
 	{#if tags.length}

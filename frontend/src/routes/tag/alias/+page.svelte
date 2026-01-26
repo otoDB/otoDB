@@ -46,8 +46,11 @@
 				{m.male_gross_angelfish_reap()}
 			{/if}
 
-			<label
-				>Behaviour: <select name="behaviour" bind:value={del}
+			<label class="block"
+				>{m.mild_loud_shad_enchant({
+					type: m.still_happy_cheetah_savor(),
+					name: ''
+				})}<select name="behaviour" bind:value={del}
 					><option value={false}>{m.dirty_lazy_mammoth_empower()}</option><option
 						value={true}>{m.real_born_goat_snap()}</option
 					></select

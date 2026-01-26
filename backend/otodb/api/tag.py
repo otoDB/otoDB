@@ -181,7 +181,7 @@ def tag_route_switch(work_route: Route, song_route: Route):
 			wrapper,
 			'type',
 			Literal['work', 'song'],
-			Query(...),
+			Query(default='work'),
 		)
 
 		return wrapper

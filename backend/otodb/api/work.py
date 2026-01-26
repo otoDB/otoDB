@@ -1,4 +1,5 @@
 from typing import List, Literal
+from datetime import date
 
 from django.http import HttpRequest
 from django.db import transaction
@@ -49,7 +50,6 @@ from .common import (
 	WorkSchema,
 	ThinWorkSchema,
 	WorkSourceSchema,
-	WorkSourceMetadataSchema,
 	Error,
 	TagWorkSchema,
 	user_is_trusted,
@@ -62,6 +62,19 @@ from .common import (
 )
 
 work_router = RouterWithRevision()
+
+
+class WorkSourceMetadataSchema(Schema):
+	"""Manual WorkSource metadata input"""
+
+	title: str | None = None
+	description: str | None = None
+	uploader_id: str | None = None
+	thumbnail_url: str | None = None
+	work_width: int | None = None
+	work_height: int | None = None
+	work_duration: int | None = None
+	published_date: date | None = None
 
 
 class ExternalQuery(Schema):

@@ -1,5 +1,4 @@
-from typing import Optional, Annotated, Dict
-from datetime import date
+from typing import Optional, Annotated
 from functools import wraps, lru_cache
 
 from pydantic import field_validator
@@ -15,8 +14,6 @@ from otodb.models import (
 	WorkSource,
 	MediaSong,
 	WorkSourceRejection,
-	TagWork,
-	WikiPage,
 	Pool,
 	PoolItem,
 	WorkRelation,
@@ -27,25 +24,12 @@ from otodb.models import (
 	Notification,
 	Subscription,
 )
-from otodb.models.enums import Role, MediaType, ProfileConnectionTypes, Route
+from otodb.models.enums import Role, ProfileConnectionTypes, Route
 import re
 
 
 class Error(Schema):
 	message: str
-
-
-class WorkSourceMetadataSchema(Schema):
-	"""Manual WorkSource metadata input"""
-
-	title: str | None = None
-	description: str | None = None
-	uploader_id: str | None = None
-	thumbnail_url: str | None = None
-	work_width: int | None = None
-	work_height: int | None = None
-	work_duration: int | None = None
-	published_date: date | None = None
 
 
 class ProfileSchema(ModelSchema):
@@ -62,25 +46,6 @@ class TagLangPreferenceSchema(Schema):
 	lang: int
 
 
-class TagSongSchema(Schema):
-	id: int
-	children: list['TagSongSchema']
-	name: str
-	slug: str
-	category: int
-	lang_prefs: list[TagLangPreferenceSchema]
-
-
-class SongSchema(ModelSchema):
-	id: int
-	work_tag: str = Field(..., alias='work_tag.slug')
-	tags: list[TagSongSchema]
-
-	class Meta:
-		model = MediaSong
-		fields = ['title', 'bpm', 'variable_bpm', 'author']
-
-
 class TagWorkSchema(Schema):
 	id: int
 	lang_prefs: list[TagLangPreferenceSchema]
@@ -89,37 +54,6 @@ class TagWorkSchema(Schema):
 	name: str
 	slug: str
 	category: int
-
-
-class FatTagWorkSchema(ModelSchema):
-	id: int
-	children: list[TagWorkSchema]
-	song: Optional[SongSchema] = Field(None, alias='get_song')
-	media_type: list[int] | None = None
-	lang_prefs: list[TagLangPreferenceSchema]
-	aliased_to: Optional[TagWorkSchema]
-
-	class Meta:
-		model = TagWork
-		fields = ['name', 'slug', 'category', 'deprecated']
-
-	@field_validator('media_type', mode='before', check_fields=False)
-	@classmethod
-	def types(cls, value: int | None) -> list[int] | None:
-		return [r for r in MediaType if r & value] if value else None
-
-
-class WikiPageSchema(ModelSchema):
-	class Meta:
-		model = WikiPage
-		fields = ['page_rendered', 'lang']
-
-
-class TagWorkDetailsSchema(Schema):
-	paths: tuple[list[TagWorkSchema], Dict[str, list[str]]]
-	wiki_page: list[WikiPageSchema]
-	aliases: list[TagWorkSchema]
-	primary_parent: str | None = None
 
 
 class WorkSourceRejectionSchema(ModelSchema):

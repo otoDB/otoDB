@@ -552,6 +552,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 	def can_be_deleted(self):
 		return not any(
 			[
+				self.category != SongTagCategory.GENERAL,
 				self.songs.exists(),
 				self.aliased_to,
 				self.aliases.exists(),

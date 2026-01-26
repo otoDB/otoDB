@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Dict, Optional
 from itertools import groupby
 from functools import reduce, wraps
 import re
@@ -9,8 +9,8 @@ from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists, S
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
-from pydantic import AfterValidator
-from ninja import ModelSchema, Schema, Query
+from pydantic import AfterValidator, field_validator
+from ninja import ModelSchema, Schema, Query, Field
 from ninja.security import django_auth
 from ninja.pagination import paginate
 from ninja.utils import contribute_operation_args
@@ -38,27 +38,80 @@ from otodb.models.enums import (
 	TagWorkConnectionTypes,
 	MediaConnectionTypes,
 	Route,
+	MediaType,
 )
 
 from .common import (
-	FatTagWorkSchema,
 	TagWorkSchema,
 	ThinWorkSchema,
-	TagWorkDetailsSchema,
 	user_is_trusted,
 	RelationSchema,
 	post_relation,
-	SongSchema,
-	TagSongSchema,
 	ConnectionSchema,
 	profile_connection_parsers,
 	make_alt_value_parser,
 	re_to_parser,
 	RouterWithRevision,
 	with_revision_route,
+	TagLangPreferenceSchema,
 )
 
 tag_router = RouterWithRevision()
+
+
+class FatTagWorkSchema(ModelSchema):
+	id: int
+	children: list[TagWorkSchema]
+	song: Optional[SongSchema] = Field(None, alias='get_song')
+	media_type: list[int] | None = None
+	lang_prefs: list[TagLangPreferenceSchema]
+	aliased_to: Optional[TagWorkSchema]
+
+	class Meta:
+		model = TagWork
+		fields = ['name', 'slug', 'category', 'deprecated']
+
+	@field_validator('media_type', mode='before', check_fields=False)
+	@classmethod
+	def types(cls, value: int | None) -> list[int] | None:
+		return [r for r in MediaType if r & value] if value else None
+
+
+class WikiPageSchema(ModelSchema):
+	class Meta:
+		model = WikiPage
+		fields = ['page_rendered', 'lang']
+
+
+class TagWorkDetailsSchema(Schema):
+	paths: tuple[list[TagWorkSchema], Dict[str, list[str]]]
+	wiki_page: list[WikiPageSchema]
+	aliases: list[TagWorkSchema]
+	primary_parent: str | None = None
+
+
+class TagSongSchema(Schema):
+	id: int
+	children: list['TagSongSchema']
+	name: str
+	slug: str
+	category: int
+	lang_prefs: list[TagLangPreferenceSchema]
+
+
+class TagSongDetailsSchema(Schema):
+	tree: list[TagSongSchema]
+	aliases: list[TagSongSchema]
+
+
+class SongSchema(ModelSchema):
+	id: int
+	work_tag: str = Field(..., alias='work_tag.slug')
+	tags: list[TagSongSchema]
+
+	class Meta:
+		model = MediaSong
+		fields = ['title', 'bpm', 'variable_bpm', 'author']
 
 
 def filter_tags_by_media_type(qs, media_type: list[int]):
@@ -785,10 +838,13 @@ def song_tag(request: HttpRequest, tag_slug: str):
 	return tag
 
 
-@tag_router.get('song_tag_details', response=list[str])
+@tag_router.get('song_tag_details', response=TagSongDetailsSchema)
 def song_tag_details(request: HttpRequest, tag_slug: str):
 	tag = get_object_or_404(TagSong, slug=tag_slug)
-	return list(tag.get_tree())[:-1]
+	return {
+		'tree': list(tag.get_tree())[:-1],
+		'aliases': tag.aliases,
+	}
 
 
 @tag_router.put('song_tag', auth=django_auth)

@@ -75,9 +75,9 @@ export const SongRelationTypes = [
 ];
 
 export const SongRelationPredicate = [
-	() => ['のリミックス', 'Remix了', 'Remix of', '의 리믹스'][0],
-	() => ['のリマスター', 'Remaster了', 'Remaster of', '의 리마스터'][0],
-	() => ['を使ったメドレー', '作为组曲使用了', 'Medley using', '를 사용한 메들리'][0],
+	m.frail_nimble_tadpole_arrive,
+	m.mellow_only_bulldog_arise,
+	m.giant_petty_shad_exhale,
 	m.curly_many_orangutan_grip
 ];
 

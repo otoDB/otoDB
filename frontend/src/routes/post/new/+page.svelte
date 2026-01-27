@@ -6,6 +6,9 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { LanguageNames, PostCategories } from '$lib/enums';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import Markdown from 'svelte-exmarkdown';
+
+	let md = $state('');
 </script>
 
 <svelte:head>
@@ -41,7 +44,12 @@
 				></tbody
 			>
 		</table>
-		<textarea rows="10" class="w-full" name="post" required></textarea>
+		<div class="grid grid-cols-2 gap-3">
+			<textarea rows="10" bind:value={md} class="w-full" name="post" required></textarea>
+			<div class="prose prose-neutral prose-sm dark:prose-invert">
+				<Markdown {md} />
+			</div>
+		</div>
 		<input type="submit" />
 	</form>
 </Section>

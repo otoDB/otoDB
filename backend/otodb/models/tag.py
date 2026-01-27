@@ -96,7 +96,27 @@ class TagWorkManager(LowerCaseTagModelManager):
 
 class TagSongManager(LowerCaseTagModelManager):
 	def get_queryset(self):
-		return super().get_queryset().prefetch_related('children')
+		# Prefetch language preferences with their tag relationship
+		lang_prefs_qs = TagSongLangPreference.objects.select_related('tag')
+
+		# For aliases, use parent's get_queryset to avoid infinite recursion
+		aliases_base_qs = super(TagSongManager, self).get_queryset()
+
+		return (
+			super()
+			.get_queryset()
+			.prefetch_related('children')
+			.select_related('aliased_to')
+			.prefetch_related(
+				Prefetch('tagsonglangpreference_set', queryset=lang_prefs_qs),
+				Prefetch(
+					'aliases',
+					queryset=aliases_base_qs.prefetch_related(
+						Prefetch('tagsonglangpreference_set', queryset=lang_prefs_qs)
+					),
+				),
+			)
+		)
 
 
 class OtodbTagModel(BaseTagModel):
@@ -393,12 +413,16 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			elif not to_tag.get_paths().filter(id=tp.tag.id).exists():
 				tp.parent = to_tag
 				tp.save()
+			else:
+				tp.delete()
 		for tp in TagWorkParenthood.objects.filter(tag=from_tag):
 			if TagWorkParenthood.objects.filter(parent=tp.parent, tag=to_tag).exists():
 				tp.delete()
 			elif not to_tag.get_descendants().filter(id=tp.tag.id).exists():
 				tp.tag = to_tag
 				tp.save()
+			else:
+				tp.delete()
 		if (
 			from_tag.category != WorkTagCategory.GENERAL
 			and to_tag.category == WorkTagCategory.GENERAL
@@ -503,6 +527,15 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 		def to_active(instance):
 			return instance.aliased_to or instance
 
+	class Meta:
+		constraints = [
+			models.CheckConstraint(
+				name='tagsong_parenthood_nonreflexive',
+				condition=~Q(parent_id=models.F('id')),
+				violation_error_message='tag cannot be own parent',
+			),
+		]
+
 	@property
 	def display_name(self):
 		return self.name.replace('_', ' ')
@@ -516,6 +549,40 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 			song.tags.add(to_tag)
 			song.tags.remove(from_tag)
 		cls.objects.filter(parent=from_tag).update(parent=to_tag)
+
+		# carry over category and parenthood
+		for tc in from_tag.children.all():
+			if not to_tag.get_tree().filter(id=tc.id).exists():
+				tc.parent = to_tag
+			else:
+				tc.parent = None
+			tc.save()
+		if tp := from_tag.parent:
+			if not to_tag.get_descendants().filter(id=tp.id).exists():
+				to_tag.parent = tp
+				to_tag.save()
+			from_tag.parent = None
+			from_tag.save()
+		if (
+			from_tag.category != SongTagCategory.GENERAL
+			and to_tag.category == SongTagCategory.GENERAL
+		):
+			to_tag.category = from_tag.category
+			from_tag.category = SongTagCategory.GENERAL
+			from_tag.save()
+
+		to_tag.save()
+
+	@property
+	def can_be_deleted(self):
+		return not any(
+			[
+				self.category != SongTagCategory.GENERAL,
+				self.songs.exists(),
+				self.aliased_to,
+				self.aliases.exists(),
+			]
+		)
 
 	def get_tree(self):
 		cte = CTE.recursive(
@@ -537,6 +604,41 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 			cte, select=cte.join(TagSong, id=cte.col.id).annotate(depth=cte.col.depth)
 		).order_by('-depth')
 
+	def get_descendants(self):
+		cte = CTE.recursive(
+			lambda cte: TagSong.objects.order_by()
+			.filter(id=self.id)
+			.values('id')
+			.union(
+				cte.join(
+					TagSong.objects.order_by(),
+					parent_id=cte.col.id,
+					aliased_to__isnull=True,
+				).values('id'),
+				all=True,
+			)
+		)
+		return (
+			with_cte(cte, select=cte.join(TagSong, id=cte.col.id))
+			.exclude(id=self.id)
+			.distinct()
+			.order_by()
+		)
+
+	@property
+	def lang_prefs(self):
+		if self.aliased_to:
+			return self.aliased_to.lang_prefs
+
+		prefs_dict = {}
+		for pref in self.tagsonglangpreference_set.all():
+			prefs_dict[pref.pk] = pref
+		for alias in self.aliases.all():
+			for pref in alias.tagsonglangpreference_set.all():
+				prefs_dict[pref.pk] = pref
+
+		return list(prefs_dict.values())
+
 
 class TagSongLangPreference(RevisionTrackedModel):
 	lang = models.IntegerField(
@@ -550,6 +652,9 @@ class TagSongLangPreference(RevisionTrackedModel):
 	class RevisionMeta:
 		tracked_fields = ['lang', 'tag']
 		entity_attrs = ['tag']
+
+	class Meta:
+		unique_together = (('tag', 'lang'),)
 
 
 class TagWorkParenthood(RevisionTrackedModel):

@@ -3,19 +3,24 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { SongTagCategory } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import { getTagDisplayName, makeTagDisplayName } from '$lib/api.js';
 
 	let { data } = $props();
+
+	const aliases = $derived(
+		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])]
+			.map(makeTagDisplayName)
+			.filter((e) => e !== data.display_name)
+	);
 </script>
 
 <Section title={data.tag.name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
 	<div>
 		<span>{m.dull_plain_angelfish_cuddle()}</span>
 		{#each data.tree as node, i (i)}
-			> <a href={node.slug}>{node.name}</a> >
-		{:else}
-			>
-		{/each}
-		<span>{data.tag.name}</span>
+			> {#if node.slug === data.tag.slug}{data.display_name}{:else}<a href={node.slug}
+					>{getTagDisplayName(node)}</a
+				>{/if}&nbsp;{/each}> <span>{data.tag.name}</span>
 	</div>
 
 	<h2>
@@ -24,10 +29,19 @@
 			name: SongTagCategory[data.tag.category]()
 		})}
 	</h2>
+
+	{#if aliases.length}
+		<h3>
+			{m.mild_loud_shad_enchant({
+				type: m.tiny_sharp_lark_fall(),
+				name: aliases?.join(', ')
+			})}
+		</h3>
+	{/if}
 </Section>
 
 {#if data.tag.children.length}
-	<Section title={m.weird_nimble_fireant_climb()}>
+	<Section title={m.misty_great_gazelle_comfort()}>
 		<ul>
 			{#each data.tag.children as tag, i (i)}
 				<li><a href={tag.slug}>{tag.name}</a></li>
@@ -36,7 +50,7 @@
 	</Section>
 {/if}
 
-<Section title="Songs tagged with {data.tag.name}">
+<Section title={m.red_petty_jurgen_sway({ name: data.tag.name })}>
 	{#if data.songs.items.length}
 		<table>
 			<thead
@@ -50,14 +64,14 @@
 				{#each data.songs.items as song, i (i)}
 					<tr>
 						<td><a href="/tag/{song.work_tag}">{song.title}</a></td>
-						<td>{song.bpm}</td>
+						<td>{song.bpm ?? m.simple_less_marlin_enchant()}</td>
 						<td>{song.author}</td>
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	{:else}
-		<p>{m.drab_main_husky_dazzle()}</p>
+		<p>{m.noble_sleek_duck_lift()}</p>
 	{/if}
 </Section>
 

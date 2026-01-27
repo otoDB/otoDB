@@ -18,20 +18,20 @@
 		e.preventDefault();
 		const { error, data } = await client.POST('/api/tag/alias', {
 			fetch,
-			params: { query: { into_tag: selected, delete: del } },
+			params: { query: { into_tag: selected, delete: del, type: 'song' } },
 			body: tags
 		});
-		if (!error) goto(`/tag/${data.merged_slug}`, { invalidateAll: true });
+		if (!error) goto(`/song_attribute/${data.merged_slug}`, { invalidateAll: true });
 	};
 </script>
 
 <svelte:head>
-	<title>{m.front_maroon_hamster_urge()}</title>
+	<title>{m.fine_maroon_seal_flip()}</title>
 </svelte:head>
 
-<Section title={m.front_maroon_hamster_urge()}>
+<Section title={m.fine_maroon_seal_flip()}>
 	<GuidelineWarning />
-	<TagsField type="work" class="w-full" bind:value={tags} />
+	<TagsField type="song" class="w-full" bind:value={tags} />
 	{#if tags.length}
 		<form onsubmit={submit}>
 			{#if isSVO(getLocale())}

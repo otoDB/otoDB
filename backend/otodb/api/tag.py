@@ -1,6 +1,6 @@
-from typing import Annotated
+from typing import Annotated, Literal, Dict, Optional
 from itertools import groupby
-from functools import reduce
+from functools import reduce, wraps
 import re
 from urllib.parse import urlparse, parse_qs
 
@@ -9,10 +9,11 @@ from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists, S
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, get_list_or_404
 
-from pydantic import AfterValidator
-from ninja import ModelSchema, Schema, Query
+from pydantic import AfterValidator, field_validator
+from ninja import ModelSchema, Schema, Query, Field
 from ninja.security import django_auth
 from ninja.pagination import paginate
+from ninja.utils import contribute_operation_args
 
 from otodb.common import clean_incoming_slug, clean_incoming_tag_name
 from otodb.models import (
@@ -22,6 +23,7 @@ from otodb.models import (
 	WikiPage,
 	SongRelation,
 	TagSong,
+	TagSongLangPreference,
 	TagWorkConnection,
 	MediaSongConnection,
 	TagWorkLangPreference,
@@ -36,27 +38,80 @@ from otodb.models.enums import (
 	TagWorkConnectionTypes,
 	MediaConnectionTypes,
 	Route,
+	MediaType,
 )
 
 from .common import (
-	FatTagWorkSchema,
 	TagWorkSchema,
 	ThinWorkSchema,
-	TagWorkDetailsSchema,
 	user_is_trusted,
 	RelationSchema,
 	post_relation,
-	SongSchema,
-	TagSongSchema,
 	ConnectionSchema,
 	profile_connection_parsers,
 	make_alt_value_parser,
 	re_to_parser,
 	RouterWithRevision,
 	with_revision_route,
+	TagLangPreferenceSchema,
 )
 
 tag_router = RouterWithRevision()
+
+
+class FatTagWorkSchema(ModelSchema):
+	id: int
+	children: list[TagWorkSchema]
+	song: Optional[SongSchema] = Field(None, alias='get_song')
+	media_type: list[int] | None = None
+	lang_prefs: list[TagLangPreferenceSchema]
+	aliased_to: Optional[TagWorkSchema]
+
+	class Meta:
+		model = TagWork
+		fields = ['name', 'slug', 'category', 'deprecated']
+
+	@field_validator('media_type', mode='before', check_fields=False)
+	@classmethod
+	def types(cls, value: int | None) -> list[int] | None:
+		return [r for r in MediaType if r & value] if value else None
+
+
+class WikiPageSchema(ModelSchema):
+	class Meta:
+		model = WikiPage
+		fields = ['page_rendered', 'lang']
+
+
+class TagWorkDetailsSchema(Schema):
+	paths: tuple[list[TagWorkSchema], Dict[str, list[str]]]
+	wiki_page: list[WikiPageSchema]
+	aliases: list[TagWorkSchema]
+	primary_parent: str | None = None
+
+
+class TagSongSchema(Schema):
+	id: int
+	children: list['TagSongSchema']
+	name: str
+	slug: str
+	category: int
+	lang_prefs: list[TagLangPreferenceSchema]
+
+
+class TagSongDetailsSchema(Schema):
+	tree: list[TagSongSchema]
+	aliases: list[TagSongSchema]
+
+
+class SongSchema(ModelSchema):
+	id: int
+	work_tag: str = Field(..., alias='work_tag.slug')
+	tags: list[TagSongSchema]
+
+	class Meta:
+		model = MediaSong
+		fields = ['title', 'bpm', 'variable_bpm', 'author']
 
 
 def filter_tags_by_media_type(qs, media_type: list[int]):
@@ -159,25 +214,57 @@ def works(request: HttpRequest, tag_slug: str):
 	).select_related('thumbnail_source')
 
 
+def tag_route_switch(work_route: Route, song_route: Route):
+	def decorator(f):
+		@wraps(f)
+		def wrapper(request, *args, **kwargs):
+			type = kwargs.pop('type')
+			kwargs['model'] = (
+				(TagWork, TagWorkLangPreference)
+				if type == 'work'
+				else (TagSong, TagSongLangPreference)
+			)
+			return with_revision_route(work_route if type == 'work' else song_route)(f)(
+				request,
+				*args,
+				**kwargs,
+			)
+
+		contribute_operation_args(
+			wrapper,
+			'type',
+			Literal['work', 'song'],
+			Query(default='work'),
+		)
+
+		return wrapper
+
+	return decorator
+
+
 @tag_router.post('alias', auth=django_auth)
 @user_is_trusted
-@with_revision_route(Route.TAGWORK_ALIAS)
-def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool):
+@tag_route_switch(Route.TAGWORK_ALIAS, Route.SONGTAG_ALIAS)
+def alias_tags(
+	request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool, **kwargs
+):
+	model, _ = kwargs['model']
+
 	tags = []
 	for tag_name in from_tags:
 		try:
-			tags.append(TagWork.objects.get(slug=clean_incoming_slug(tag_name)))
-		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=tag_name))
+			tags.append(model.objects.get(slug=clean_incoming_slug(tag_name)))
+		except model.DoesNotExist:
+			tags.append(model.objects.create(name=tag_name))
 
 	into = get_object_or_404(
-		TagWork.objects.select_related('aliased_to'), slug=clean_incoming_slug(into_tag)
+		model.objects.select_related('aliased_to'), slug=clean_incoming_slug(into_tag)
 	)
 	if into.aliased_to:
 		into = into.aliased_to
 	assert into.aliased_to is None
 
-	TagWork.alias(tags, into)
+	model.alias(tags, into)
 	if delete:
 		for tag in tags:
 			tag.aliased_to = None
@@ -190,9 +277,11 @@ def alias_tags(request: HttpRequest, from_tags: list[str], into_tag: str, delete
 
 @tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})
 @user_is_trusted
-@with_revision_route(Route.TAGWORK_DELETE)
-def delete(request: HttpRequest, tag_slug: str):
-	tag = get_object_or_404(TagWork, slug=tag_slug)
+@tag_route_switch(Route.TAGWORK_DELETE, Route.SONGTAG_DELETE)
+def delete(request: HttpRequest, tag_slug: str, **kwargs):
+	model, _ = kwargs['model']
+
+	tag = get_object_or_404(model, slug=tag_slug)
 	if tag.can_be_deleted:
 		tag.delete()
 	else:
@@ -201,35 +290,44 @@ def delete(request: HttpRequest, tag_slug: str):
 
 @tag_router.delete('alias', auth=django_auth)
 @user_is_trusted
-@with_revision_route(Route.TAGWORK_UNALIAS)
-def remove_alias(request: HttpRequest, tag_slug: str, alias: str):
-	tag = get_object_or_404(TagWork, slug=tag_slug)
+@tag_route_switch(Route.TAGWORK_UNALIAS, Route.SONGTAG_UNALIAS)
+def remove_alias(request: HttpRequest, tag_slug: str, alias: str, **kwargs):
+	model, _ = kwargs['model']
+
+	tag = get_object_or_404(model, slug=tag_slug)
 	tag.aliases.filter(slug=alias).update(aliased_to=None)
 
 
 @tag_router.put('lang_pref', auth=django_auth)
 @user_is_trusted
-@with_revision_route(Route.TAGWORK_ADD_LANG_PREF)
-def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int):
-	tag = get_object_or_404(TagWork, slug=tag_slug)
+@tag_route_switch(Route.TAGWORK_ADD_LANG_PREF, Route.SONGTAG_ADD_LANG_PREF)
+def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int, **kwargs):
+	model, model_lang_prefs = kwargs['model']
+
+	tag = get_object_or_404(model, slug=tag_slug)
 	base_tag = tag.aliased_to if tag.aliased_to else tag
 	tags_to_clear = [base_tag] + list(base_tag.aliases.all())
-	TagWorkLangPreference.objects.filter(
+	model_lang_prefs.objects.filter(
 		tag__in=tags_to_clear, lang=LanguageTypes(lang).value
 	).delete()
-	TagWorkLangPreference.objects.create(tag=tag, lang=lang)
+	model_lang_prefs.objects.create(tag=tag, lang=lang)
 
 
 @tag_router.post('set_base', auth=django_auth)
 @user_is_trusted
-@with_revision_route(Route.TAGWORK_SET_BASE)
-def set_base_tag(request: HttpRequest, tag_slug: str):
-	tag = get_object_or_404(TagWork, slug=tag_slug)
+@tag_route_switch(Route.TAGWORK_SET_BASE, Route.SONGTAG_SET_BASE)
+def set_base_tag(request: HttpRequest, tag_slug: str, **kwargs):
+	model, _ = kwargs['model']
+
+	tag = get_object_or_404(model, slug=tag_slug)
 	to = tag.aliased_to
 	assert to is not None
 
-	to.tagworkinstance_set.update(work_tag=tag)
-	TagWork.transfer_data(to, tag)
+	if model is TagWork:
+		to.tagworkinstance_set.update(work_tag=tag)
+	elif model is TagSong:
+		to.tagsongkinstance_set.update(song_tag=tag)
+	model.transfer_data(to, tag)
 
 	to.aliases.update(aliased_to_id=tag.id)
 	to.aliased_to = tag
@@ -723,7 +821,7 @@ def song_tag_search(request: HttpRequest, query: str):
 
 @tag_router.post('song_tags', auth=django_auth)
 @user_is_trusted
-@with_revision_route(Route.SONGTAG_SET_TAGS)
+@with_revision_route(Route.MEDIASONG_SET_TAGS)
 def song_tags(
 	request: HttpRequest,
 	song_id: int,
@@ -740,10 +838,13 @@ def song_tag(request: HttpRequest, tag_slug: str):
 	return tag
 
 
-@tag_router.get('song_tag_details', response=list[str])
+@tag_router.get('song_tag_details', response=TagSongDetailsSchema)
 def song_tag_details(request: HttpRequest, tag_slug: str):
 	tag = get_object_or_404(TagSong, slug=tag_slug)
-	return list(tag.get_tree())[:-1]
+	return {
+		'tree': list(tag.get_tree())[:-1],
+		'aliases': tag.aliases,
+	}
 
 
 @tag_router.put('song_tag', auth=django_auth)

@@ -1,6 +1,13 @@
 from .media import MediaWork, TagWorkInstance, MediaSong
 from .pool import Pool, PoolItem, PoolUpstream
-from .tag import TagWork, TagSong, WikiPage, TagWorkLangPreference, TagWorkParenthood
+from .tag import (
+	TagWork,
+	TagSong,
+	WikiPage,
+	TagWorkLangPreference,
+	TagWorkParenthood,
+	TagSongLangPreference,
+)
 from .work_source import WorkSource, WorkSourceRejection
 from .relations import WorkRelation, SongRelation
 from .posts import Post, PostContent, Notification, Subscription
@@ -24,6 +31,7 @@ __all__ = [
 	'PoolUpstream',
 	'TagWork',
 	'TagSong',
+	'TagSongLangPreference',
 	'WikiPage',
 	'TagWorkLangPreference',
 	'TagWorkParenthood',

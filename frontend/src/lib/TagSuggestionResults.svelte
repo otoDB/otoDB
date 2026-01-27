@@ -95,13 +95,12 @@
 				{#if t.slug !== t.name}
 					{@const slugParts = highlightMatch(t.slug, query)}
 					<address class="inline">
-						({slugParts.before}<strong>{slugParts.match}</strong
-						>{slugParts.after}<!-- TODO extend lang prefs to song tags -->{#if type === 'work'}{[
-								'',
-								...t.lang_prefs
-							]
-								.map((p) => p.tag)
-								.join(', ')}{/if})
+						({slugParts.before}<strong>{slugParts.match}</strong>{slugParts.after}{[
+							'',
+							...t.lang_prefs
+						]
+							.map((p) => p.tag)
+							.join(', ')})
 					</address>
 				{/if}
 			</span>

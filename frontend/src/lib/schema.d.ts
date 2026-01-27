@@ -1586,16 +1586,13 @@ export interface components {
             /** Tags */
             tags: components["schemas"]["TagWorkSchema"][];
         };
-        /** TagWorkLangPreferenceSchema */
-        TagWorkLangPreferenceSchema: {
+        /** TagLangPreferenceSchema */
+        TagLangPreferenceSchema: {
             /** Tag */
             tag: string;
             /** Slug */
             slug: string;
-            /**
-             * Lang
-             * @default 0
-             */
+            /** Lang */
             lang: number;
         };
         /** TagWorkSchema */
@@ -1603,7 +1600,7 @@ export interface components {
             /** Id */
             id: number;
             /** Lang Prefs */
-            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
             /** N Instance */
             n_instance?: number | null;
@@ -1639,7 +1636,7 @@ export interface components {
             /** Id */
             id: number;
             /** Lang Prefs */
-            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
             /** N Instance */
             n_instance?: number | null;
@@ -1688,7 +1685,7 @@ export interface components {
             /** Id */
             id: number;
             /** Lang Prefs */
-            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
             /** N Instance */
             n_instance?: number | null;
@@ -2005,7 +2002,7 @@ export interface components {
             /** Media Type */
             media_type?: number[] | null;
             /** Lang Prefs */
-            lang_prefs: components["schemas"]["TagWorkLangPreferenceSchema"][];
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
             /** Name */
             name: string;
@@ -2054,6 +2051,8 @@ export interface components {
             slug: string;
             /** Category */
             category: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
         };
         /** SongInSchema */
         SongInSchema: {
@@ -2138,6 +2137,13 @@ export interface components {
             parent_slug: string | null;
             /** Category */
             category: number;
+        };
+        /** TagSongDetailsSchema */
+        TagSongDetailsSchema: {
+            /** Tree */
+            tree: components["schemas"]["TagSongSchema"][];
+            /** Aliases */
+            aliases: components["schemas"]["TagSongSchema"][];
         };
         /** PostContentSchema */
         PostContentSchema: {
@@ -3813,6 +3819,7 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
+                type?: "work" | "song";
             };
             header?: never;
             path?: never;
@@ -3887,6 +3894,7 @@ export interface operations {
             query: {
                 into_tag: string;
                 delete: boolean;
+                type?: "work" | "song";
             };
             header?: never;
             path?: never;
@@ -3912,6 +3920,7 @@ export interface operations {
             query: {
                 tag_slug: string;
                 alias: string;
+                type?: "work" | "song";
             };
             header?: never;
             path?: never;
@@ -3933,6 +3942,7 @@ export interface operations {
             query: {
                 tag_slug: string;
                 lang: number;
+                type?: "work" | "song";
             };
             header?: never;
             path?: never;
@@ -3953,6 +3963,7 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
+                type?: "work" | "song";
             };
             header?: never;
             path?: never;
@@ -4290,7 +4301,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string[];
+                    "application/json": components["schemas"]["TagSongDetailsSchema"];
                 };
             };
         };

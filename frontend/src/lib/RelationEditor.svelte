@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
 	import client from './api';
-	import { SongRelationTypes, WorkRelationEditorPredicate } from './enums';
+	import { SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
 	import { m } from './paraglide/messages';
 	import { isSOV } from './ui';
 	import { getLocale } from './paraglide/runtime';
@@ -36,7 +36,7 @@
 			fetch,
 			params: { query: { A: w.item.id, B: this_id } }
 		});
-		invalidate('otodb:work_layout');
+		if (obj_type === 'work') invalidate('otodb:work_layout');
 	};
 	const post_relation = (i: number, notify: boolean) => async () => {
 		const r = relations[i];
@@ -52,7 +52,7 @@
 			});
 			if (notify) callSavingToast(p);
 			await p;
-			invalidate('otodb:work_layout');
+			if (obj_type === 'work') invalidate('otodb:work_layout');
 		}
 	};
 	const swap_relation = (i: number) => async () => {
@@ -95,26 +95,16 @@
 		{#each relations as relation, i (i)}
 			<tr>
 				<td class="w-64">{@render work(relation, !relation.swapped)}</td>
-				{#if isSOV(getLocale()) || getLocale() === 'zh-cn' || obj_type === 'song'}
-					{#if getLocale() === 'zh-cn' && relation.relation === 3 && obj_type === 'work'}
-						<!-- TODO: Find better wording here -->
-						<td>把</td>
-					{:else}
-						<td>{m.grand_vexed_snail_ripple()}</td>
-					{/if}
-				{/if}
-				{#if isSOV(getLocale()) || (obj_type === 'song' && getLocale() !== 'en')}
+				{#if isSOV(getLocale())}
+					<td>{m.grand_vexed_snail_ripple()}</td>
 					<td class="w-64">{@render work(relation, relation.swapped)}</td>
-					{#if obj_type === 'song'}
-						<td>{m.clean_best_kangaroo_achieve()}</td>
-					{/if}
 					<td
 						><select
 							name="relation"
 							bind:value={relation.relation}
 							onchange={post_relation(i, true)}
 						>
-							{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationTypes as rel, j (j)}
+							{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationPredicate as rel, j (j)}
 								<option value={j}>{rel()}</option>
 							{/each}
 						</select></td
@@ -126,14 +116,11 @@
 							bind:value={relation.relation}
 							onchange={post_relation(i, true)}
 						>
-							{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationTypes as rel, j (j)}
+							{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationPredicate as rel, j (j)}
 								<option value={j}>{rel()}</option>
 							{/each}
 						</select></td
 					>
-					{#if obj_type === 'song'}
-						<td>{m.clean_best_kangaroo_achieve()}</td>
-					{/if}
 					<td class="w-64">{@render work(relation, relation.swapped)}</td>
 				{/if}
 				<td

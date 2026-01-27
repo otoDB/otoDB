@@ -74,6 +74,13 @@ export const SongRelationTypes = [
 	m.spry_muddy_sloth_radiate
 ];
 
+export const SongRelationPredicate = [
+	m.frail_nimble_tadpole_arrive,
+	m.mellow_only_bulldog_arise,
+	m.giant_petty_shad_exhale,
+	m.curly_many_orangutan_grip
+];
+
 export const UserLevel = {
 	ANONYMOUS: 0,
 	RESTRICTED: 10,
@@ -371,8 +378,13 @@ export const Route = {
 	6: 'Tag: Add Language',
 	7: 'Tag: Edit Wiki',
 	8: 'Tag: Edit Connections',
-	20: 'Song Tag: Update',
-	21: 'Song Tag: Set Tags',
+	20: 'Song Attribute: Update',
+	21: 'Song: Set Tags',
+	22: 'Song Attribute: Alias',
+	23: 'Song Attribute: Unalias',
+	24: 'Song Attribute: Delete',
+	25: 'Song Attribute: Set Base',
+	26: 'Song Attribute: Add Language',
 	30: 'Song: Create Relation',
 	31: 'Song: Delete Relation',
 	40: 'Work: Delete',

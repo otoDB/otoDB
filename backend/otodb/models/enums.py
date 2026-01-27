@@ -218,7 +218,12 @@ class Route(models.IntegerChoices):
 	TAGWORK_EDIT_CONNECTIONS = 8, 'Tag Work Edit Connections'
 
 	SONGTAG_UPDATE = 20, 'Song Tag Update'
-	SONGTAG_SET_TAGS = 21, 'Song Tag Set Tags'
+	MEDIASONG_SET_TAGS = 21, 'Song Tag Set Tags'
+	SONGTAG_ALIAS = 22, 'Song Tag Alias'
+	SONGTAG_UNALIAS = 23, 'Song Tag Unalias'
+	SONGTAG_DELETE = 24, 'Song Tag Delete'
+	SONGTAG_SET_BASE = 25, 'Song Tag Set Base'
+	SONGTAG_ADD_LANG_PREF = 26, 'Song Tag Add Language Preference'
 
 	SONGRELATION_CREATE = 30, 'Song Relation Create'
 	SONGRELATION_DELETE = 31, 'Song Relation Delete'

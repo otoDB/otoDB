@@ -187,8 +187,8 @@
 	"only_moving_cat_hint": "Refreshing...",
 	"spry_late_kudu_assure": "Tags needed",
 	"that_new_mayfly_spur": "This tag still has information associated. The tag to be deleted needs to be an unaliased orphan, in the General category, have no connections and only empty wiki pages.",
-	"dirty_lazy_mammoth_empower": "Keep tags as aliases",
-	"real_born_goat_snap": "Delete tags",
+	"dirty_lazy_mammoth_empower": "Keep as aliases",
+	"real_born_goat_snap": "Delete",
 	"weary_moving_swallow_chop": "Add aliases...",
 	"wise_keen_beaver_pick": "Media",
 	"hour_loud_squirrel_ascend": "Language",
@@ -272,5 +272,15 @@
 	"wacky_weird_swallow_trust": "No notifications.",
 	"livid_real_platypus_borrow": "An entity you are subscribed to was modified in a revision.",
 	"curly_these_mule_ascend": "New reply.",
-	"lost_game_mink_loop": "[Untitled]"
+	"lost_game_mink_loop": "[Untitled]",
+	"misty_great_gazelle_comfort": "Child Attributes",
+	"red_petty_jurgen_sway": "Songs associated with {name}",
+	"noble_sleek_duck_lift": "This attribute is an orphan.",
+	"proof_merry_chicken_bump": "Delete this attribute",
+	"flat_fuzzy_pug_sway": "This attribute still has information associated. The attribute to be deleted needs to be an unliased orphan, and be in the General category.",
+	"fine_maroon_seal_flip": "Merge song attributes",
+	"still_happy_cheetah_savor": "Behaviour",
+	"frail_nimble_tadpole_arrive": "Remix of",
+	"mellow_only_bulldog_arise": "Remaster of",
+	"giant_petty_shad_exhale": "Medley using"
 }

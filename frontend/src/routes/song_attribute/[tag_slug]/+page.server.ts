@@ -1,5 +1,5 @@
 import client from '$lib/api';
-import type { PageServerLoad } from '../../[tag_slug]/$types';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 	const data = await parent();

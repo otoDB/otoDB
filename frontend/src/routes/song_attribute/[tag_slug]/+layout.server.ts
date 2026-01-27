@@ -3,6 +3,7 @@ import client from '$lib/api';
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { userLevelCheck } from '$lib/route_guard';
+import { getTagDisplayName } from '$lib/api';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 	const { data, error: e } = await client.GET('/api/tag/song_tag', {
@@ -15,7 +16,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 	});
 	if (e) error(404, { message: 'Not found' });
 
-	const { data: tree } = await client.GET('/api/tag/song_tag_details', {
+	const { data: details } = await client.GET('/api/tag/song_tag_details', {
 		fetch,
 		params: {
 			query: {
@@ -40,6 +41,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 					])
 		],
 		tag: data,
-		tree
+		...details,
+		display_name: getTagDisplayName(data)
 	};
 };

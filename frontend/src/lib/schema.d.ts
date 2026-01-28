@@ -2298,7 +2298,7 @@ export interface components {
              * Entity
              * @enum {string}
              */
-            entity: "mediawork" | "tagwork";
+            entity: "mediawork" | "tagwork" | "tagsong";
         };
         /**
          * Status
@@ -4194,6 +4194,8 @@ export interface operations {
         parameters: {
             query: {
                 query: string;
+                resolve_aliases?: boolean;
+                category?: number | null;
                 limit?: number;
                 offset?: number;
             };
@@ -4700,7 +4702,7 @@ export interface operations {
         parameters: {
             query: {
                 id: number | string;
-                entity: "mediawork" | "tagwork";
+                entity: "mediawork" | "tagwork" | "tagsong";
                 limit?: number;
                 offset?: number;
             };

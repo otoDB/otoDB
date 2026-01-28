@@ -38,7 +38,12 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 							pathname: `song_attribute/${params.tag_slug}/edit`,
 							title: m.minor_crisp_cobra_list()
 						}
-					])
+					]),
+
+			{
+				pathname: `song_attribute/${params.tag_slug}/history`,
+				title: m.giant_away_scallop_hike()
+			}
 		],
 		tag: data,
 		...details,

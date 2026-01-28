@@ -813,10 +813,43 @@ def delete_relation(request: HttpRequest, A: int, B: int):
 
 @tag_router.get('song_tag_search', response=list[TagSongSchema])
 @paginate
-def song_tag_search(request: HttpRequest, query: str):
-	return TagSong.objects.filter(
-		name__contains=clean_incoming_tag_name(query), aliased_to__isnull=True
-	)
+def song_tag_search(
+	request: HttpRequest,
+	query: str,
+	resolve_aliases: bool = True,
+	category: int | None = None,
+):
+	cleaned_query = clean_incoming_tag_name(query)
+	qs = TagSong.objects.filter(name__contains=cleaned_query)
+
+	if resolve_aliases:
+		qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
+			id__in=qs.values('aliased_to__id')
+		)
+
+	if category is not None and category != -1:
+		qs = qs.filter(category=category)
+
+	return qs.annotate(
+		n_instance=Case(
+			When(aliased_to__isnull=False, then=Count('aliased_to__tagsonginstance')),
+			default=Count('tagsonginstance'),
+			output_field=models.IntegerField(),
+		),
+		exact_match=Case(
+			When(name__iexact=cleaned_query, then=Value(0)),
+			When(
+				Exists(
+					TagSong.objects.filter(
+						id=OuterRef('id'), aliases__name__iexact=cleaned_query
+					)
+				),
+				then=Value(1),
+			),
+			default=Value(99),
+			output_field=models.IntegerField(),
+		),
+	).order_by('exact_match', '-n_instance')
 
 
 @tag_router.post('song_tags', auth=django_auth)

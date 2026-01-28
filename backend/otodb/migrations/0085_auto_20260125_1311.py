@@ -4,14 +4,32 @@ from django.db import migrations
 
 
 def nicopedia_add_v(apps, schema_editor):
-	from django.db.models import CharField, Value
+	from django.db.models import CharField, Value, OuterRef, Exists, TextField
 	from django.db.models.functions import Concat
 	from otodb.models.enums import TagWorkConnectionTypes
 
+	ContentType = apps.get_model('contenttypes', 'ContentType')
 	TagWorkConnection = apps.get_model('otodb', 'TagWorkConnection')
+	RevisionChange = apps.get_model('otodb', 'RevisionChange')
 	TagWorkConnection.objects.filter(site=TagWorkConnectionTypes.NICOPEDIA).update(
 		content_id=Concat(Value('a/'), 'content_id', output_field=CharField())
 	)
+	RevisionChange.objects.filter(
+		target_type=ContentType.objects.get_for_model(TagWorkConnection),
+		target_column='content_id',
+	).filter(
+		Exists(
+			RevisionChange.objects.filter(
+				rev=OuterRef('rev'),
+				target_id=OuterRef('target_id'),
+				target_type=OuterRef('target_type'),
+				target_column='site',
+				target_value=TagWorkConnectionTypes.NICOPEDIA.value,
+			)
+		)
+	).filter(target_value__isnull=False).exclude(target_value__startswith='v/').exclude(
+		target_value__startswith='a/'
+	).update(target_value=Concat(Value('a/'), 'target_value', output_field=TextField()))
 
 
 class Migration(migrations.Migration):

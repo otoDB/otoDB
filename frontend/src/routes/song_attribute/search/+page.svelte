@@ -2,25 +2,24 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api';
-	import { MediaType, WorkTagCategory } from '$lib/enums';
+	import { SongTagCategory } from '$lib/enums';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import SongTag from '$lib/SongTag.svelte';
 
 	let { data }: PageProps = $props();
 	let results = $derived(data.results!.items);
 	let category = $state(data.category);
 
 	const fetchNextBatch = () =>
-		client.GET('/api/tag/search', {
+		client.GET('/api/tag/song_tag_search', {
 			fetch,
 			params: {
 				query: {
 					query: data.query,
 					limit: data.batch_size,
 					offset: results.length,
-					category: data.category,
-					media_type: data.media_type
+					category: data.category
 				}
 			}
 		});
@@ -30,22 +29,19 @@
 	<title
 		>{m.mild_loud_shad_enchant({
 			type: m.mean_top_antelope_love(),
-			name: m.empty_legal_chicken_taste()
+			name: m.dull_plain_angelfish_cuddle()
 		})}</title
 	>
 </svelte:head>
 
 <Section
-	title={m.empty_legal_chicken_taste()}
+	title={m.dull_plain_angelfish_cuddle()}
 	type={m.mean_top_antelope_love()}
 	menuLinks={[
 		{ title: m.grand_merry_fly_succeed(), pathname: `work/search?query=${data.query}` },
-		{ title: m.empty_legal_chicken_taste(), pathname: 'tag/search' },
+		{ title: m.empty_legal_chicken_taste(), pathname: `tag/search?query=${data.query}` },
 		{ title: m.grand_nice_pony_belong(), pathname: `song/search?query=${data.query}` },
-		{
-			title: m.dull_plain_angelfish_cuddle(),
-			pathname: `song_attribute/search?query=${data.query}`
-		},
+		{ title: m.dull_plain_angelfish_cuddle(), pathname: 'song_attribute/search' },
 		{ title: m.stale_loose_squid_cut(), pathname: `list/search?query=${data.query}` }
 	]}
 >
@@ -58,17 +54,10 @@
 		/>
 		<select name="category" bind:value={category}>
 			<option value={-1}>{m.keen_soft_crow_relish()}</option>
-			{#each WorkTagCategory as cat, i (i)}
+			{#each SongTagCategory as cat, i (i)}
 				<option value={i}>{cat()}</option>
 			{/each}
 		</select>
-		{#if category === 6}
-			<select name="media_type" multiple value={data.media_type ?? []}>
-				{#each Object.keys(MediaType).filter((e) => !isNaN(e)) as t, i (i)}
-					<option value={+t}>{MediaType[t]()}</option>
-				{/each}
-			</select>
-		{/if}
 		<input type="submit" value={m.mean_top_antelope_love()} />
 	</form>
 
@@ -76,7 +65,7 @@
 
 	<div class="flex flex-wrap gap-3">
 		{#each results as tag, i (i)}
-			<WorkTag {tag} />
+			<SongTag {tag} />
 		{/each}
 	</div>
 	<LoadMoreButton {fetchNextBatch} maxCount={data.results!.count} bind:results />

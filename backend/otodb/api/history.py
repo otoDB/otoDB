@@ -25,6 +25,7 @@ from ninja.security import django_auth
 
 from otodb.models import (
 	TagWork,
+	TagSong,
 	Revision,
 	RevisionChange,
 	RevisionChangeEntity,
@@ -169,7 +170,7 @@ def revision_changes(request: HttpRequest, revision_id: int):
 
 class EntitySchema(Schema):
 	id: int | str
-	entity: Literal['mediawork', 'tagwork']
+	entity: Literal['mediawork', 'tagwork', 'tagsong']
 
 
 def find_rev_rst(ctpk, query_pk, rev):
@@ -648,6 +649,12 @@ def history(request: HttpRequest, entity: Query[EntitySchema]):
 
 		case 'tagwork':
 			tag = TagWork.objects.get(slug=entity.id)
+			if tag.aliased_to:
+				tag = tag.aliased_to
+			entity.id = tag.pk
+			query_ids = query_ids + [*tag.aliases.values_list('id', flat=True)]
+		case 'tagsong':
+			tag = TagSong.objects.get(slug=entity.id)
 			if tag.aliased_to:
 				tag = tag.aliased_to
 			entity.id = tag.pk

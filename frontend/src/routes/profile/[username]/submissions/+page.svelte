@@ -177,7 +177,8 @@
 				{#each approved as src, i (i)}
 					<tr>
 						<td class="whitespace-nowrap"
-							><a href="/work/{src.media}">#{src.media} - {src.title}</a></td
+							><a href="/work/{src.media}">#{src.media} - {src.title || src.url}</a
+							></td
 						>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td

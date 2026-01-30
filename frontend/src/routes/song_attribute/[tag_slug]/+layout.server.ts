@@ -4,9 +4,14 @@ import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { userLevelCheck } from '$lib/route_guard';
 import { getTagDisplayName } from '$lib/api';
+import { redirect } from '@sveltejs/kit';
 
-export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
-	const { data, error: e } = await client.GET('/api/tag/song_tag', {
+export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
+	const {
+		data,
+		error: e,
+		response
+	} = await client.GET('/api/tag/song_tag', {
 		params: {
 			query: {
 				tag_slug: params.tag_slug!
@@ -14,7 +19,15 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 		},
 		fetch
 	});
-	if (e) error(404, { message: 'Not found' });
+	if (response.status === 300)
+		redirect(
+			303,
+			url.pathname.replace(
+				encodeURIComponent(params.tag_slug),
+				encodeURIComponent(e as string)
+			)
+		);
+	else if (e) error(404, { message: 'Not found' });
 
 	const { data: details } = await client.GET('/api/tag/song_tag_details', {
 		fetch,

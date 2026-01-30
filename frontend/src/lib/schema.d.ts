@@ -4260,6 +4260,15 @@ export interface operations {
                     "application/json": components["schemas"]["TagSongSchema"];
                 };
             };
+            /** @description Multiple Choices */
+            300: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
         };
     };
     otodb_api_tag_update_song_tag: {

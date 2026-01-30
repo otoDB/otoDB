@@ -95,6 +95,8 @@ def post(
 		)
 	else:
 		Notification.objects.create(target_id=parent.user_id, comment=comment)
+	if model == 'account' and pk != request.user.id:
+		Notification.objects.create(target_id=pk, comment=comment)
 
 
 @comment_router.delete('comment', auth=django_auth)

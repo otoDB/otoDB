@@ -172,7 +172,12 @@ def search(
 
 @tag_router.get('tag', response={200: FatTagWorkSchema, 300: str})
 def tag(request: HttpRequest, tag_slug: str):
-	tag = get_object_or_404(TagWork, slug=tag_slug)
+	cleaned = clean_incoming_slug(tag_slug)
+	tag = get_object_or_404(TagWork, slug=cleaned)
+	# Check only after querying
+	# want 404 without redirection if the cleaned doesn't exist either
+	if cleaned != tag_slug:
+		return 300, cleaned
 	if tag.aliased_to:
 		return 300, tag.aliased_to.slug
 	return tag
@@ -865,9 +870,16 @@ def song_tags(
 	return
 
 
-@tag_router.get('song_tag', response=TagSongSchema)
+@tag_router.get('song_tag', response={200: TagSongSchema, 300: str})
 def song_tag(request: HttpRequest, tag_slug: str):
-	tag = get_object_or_404(TagSong, slug=tag_slug, aliased_to__isnull=True)
+	cleaned = clean_incoming_slug(tag_slug)
+	tag = get_object_or_404(TagSong, slug=cleaned)
+	# Check only after querying
+	# want 404 without redirection if the cleaned doesn't exist either
+	if cleaned != tag_slug:
+		return 300, cleaned
+	if tag.aliased_to:
+		return 300, tag.aliased_to.slug
 	return tag
 
 

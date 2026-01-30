@@ -14,7 +14,7 @@
 			.join('\n') ?? ''
 	);
 
-	const invite_interval = 2 * 7 * 24 * 60 * 60 * 1000; // two weeks
+	const invite_interval = 1 * 7 * 24 * 60 * 60 * 1000; // two weeks
 	const can_create_invite = $derived(
 		data.user.level >= UserLevel.ADMIN ||
 			(!data.invites[1] &&

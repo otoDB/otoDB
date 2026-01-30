@@ -259,7 +259,7 @@ def new_invite(request: HttpRequest):
 	assert (
 		request.user.level >= Account.Levels.ADMIN
 		or not Invitation.objects.filter(
-			created_by=request.user, created_at__gte=datetime.now() - timedelta(days=14)
+			created_by=request.user, created_at__gte=datetime.now() - timedelta(days=7)
 		).exists()
 	)
 	assert not Invitation.objects.filter(

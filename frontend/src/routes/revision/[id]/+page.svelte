@@ -23,11 +23,15 @@
 	</h3>
 	{#if data.revision.actions.length}
 		<ul class="my-5">
+			{#each new Set(data.revision.actions.map((a) => a.route)) as r, i (i)}
+				{Route[r]}
+			{/each}
 			{#each data.revision.actions as ent, i (i)}
-				<li>
-					{Route[ent.route]}
-					<a href="/{CommentModelRoutes[ent.ent_type]}/{ent.ent_id}">{ent.ent_id}</a>
-				</li>
+				{#if Object.hasOwn(CommentModelRoutes, ent.ent_type)}
+					<li>
+						<a href="/{CommentModelRoutes[ent.ent_type]}/{ent.ent_id}">{ent.ent_id}</a>
+					</li>
+				{/if}
 			{/each}
 		</ul>
 	{/if}

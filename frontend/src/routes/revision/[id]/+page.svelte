@@ -29,7 +29,9 @@
 			{#each data.revision.actions as ent, i (i)}
 				{#if Object.hasOwn(CommentModelRoutes, ent.ent_type)}
 					<li>
-						<a href="/{CommentModelRoutes[ent.ent_type]}/{ent.ent_id}">{ent.ent_id}</a>
+						<a href="/{CommentModelRoutes[ent.ent_type]}/{ent.ent_id}"
+							>/{CommentModelRoutes[ent.ent_type]}/{ent.ent_id}</a
+						>
 					</li>
 				{/if}
 			{/each}

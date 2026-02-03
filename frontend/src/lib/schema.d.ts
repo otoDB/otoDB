@@ -2266,6 +2266,17 @@ export interface components {
              * @default
              */
             message: string;
+            /** Actions */
+            actions: components["schemas"]["RevisionChangeEntitySchema"][];
+        };
+        /** RevisionChangeEntitySchema */
+        RevisionChangeEntitySchema: {
+            /** Ent Type */
+            ent_type: string;
+            /** Ent Id */
+            ent_id: string;
+            /** Route */
+            route: number;
         };
         /** PagedRevisionChangeSchema */
         PagedRevisionChangeSchema: {

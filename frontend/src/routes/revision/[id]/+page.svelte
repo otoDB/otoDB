@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
-	import { UserLevel } from '$lib/enums.js';
+	import { CommentModelRoutes, Route, UserLevel } from '$lib/enums.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
@@ -21,9 +21,21 @@
 			{m.curly_safe_lynx_fond()}
 		{/if}
 	</h3>
-	{#if data.revision.message}<h4>{data.revision.message}</h4>{/if}
+	{#if data.revision.actions.length}
+		<ul class="my-5">
+			{#each data.revision.actions as ent, i (i)}
+				<li>
+					{Route[ent.route]}
+					<a href="/{CommentModelRoutes[ent.ent_type]}/{ent.ent_id}">{ent.ent_id}</a>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
 	{#if data.user?.level >= UserLevel.ADMIN && data.revision.id > 1}<button
+			class="my-5"
 			onclick={async () => {
+				if (!confirm('Are you sure?')) return;
 				await client.POST('/api/history/rollback', {
 					fetch,
 					params: { query: { revision_id: data.revision.id } }

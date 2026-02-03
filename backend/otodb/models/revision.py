@@ -19,7 +19,26 @@ class Revision(models.Model):
 	def actions(self):
 		return (
 			RevisionChangeEntity.objects.filter(change__rev=self)
-			.values('route', 'entity_type__model', 'entity_id')
+			.annotate(
+				ent_id=(
+					models.Case(
+						models.When(
+							entity_type__model__contains='tag',
+							then=models.Subquery(
+								RevisionChange.objects.filter(
+									target_type_id=models.OuterRef('entity_type_id'),
+									target_id=models.OuterRef('entity_id'),
+									target_column='slug',
+								).values('target_value')[:1]
+							),
+						),
+						default=models.functions.Cast(
+							models.F('entity_id'), output_field=models.TextField()
+						),
+					)
+				)
+			)
+			.values('route', 'entity_type__model', 'ent_id')
 			.distinct()
 		)
 

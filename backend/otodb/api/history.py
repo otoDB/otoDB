@@ -31,10 +31,15 @@ from otodb.models import (
 	RevisionChangeEntity,
 	MediaWork,
 )
-from otodb.models.enums import RevisionChain
+from otodb.models.enums import RevisionChain, Route
 from otodb.account.models import Account
 
-from .common import user_is_staff, track_revision
+from .common import (
+	user_is_staff,
+	track_revision,
+	with_revision_route,
+	add_revision_message,
+)
 
 history_router = Router()
 
@@ -115,14 +120,13 @@ class RevisionChangeSchema(ModelSchema):
 
 
 class RevisionChangeEntitySchema(Schema):
-	entity_type: str = Field(..., alias='entity_type__model')
-	entity_id: int
+	ent_type: str = Field(..., alias='entity_type__model')
+	ent_id: str
 	route: int
 
 
 class FullRevisionSchema(RevisionSchema):
-	# actions: list[RevisionChangeEntitySchema]
-	pass
+	actions: list[RevisionChangeEntitySchema] = Field(..., max_length=10)
 
 
 def get_history_dict(historical):
@@ -568,6 +572,7 @@ def rollback_entity(
 @history_router.post('rollback', auth=django_auth)
 @user_is_staff  # for now
 @track_revision
+@with_revision_route(Route.ROLLBACK)
 @transaction.atomic
 def rollback(
 	request: HttpRequest, revision_id: int, entity: EntitySchema | None = None
@@ -578,6 +583,8 @@ def rollback(
 	If entity is not provided: rollback all changes made IN the specified revision.
 	If entity is provided: rollback that entity TO its state at the specified revision.
 	"""
+	add_revision_message(f'Rolled back changes in revision #{revision_id}')
+
 	rev = get_object_or_404(Revision, id=revision_id)
 
 	if entity is None:
@@ -602,9 +609,14 @@ def rollback(
 @history_router.post('rollback_user', auth=django_auth)
 @user_is_staff
 @track_revision
+@with_revision_route(Route.ROLLBACK)
 @transaction.atomic
 def user_rollback(request: HttpRequest, date: datetime, username: str):
 	"""Rollback all changes made by a specific user since the given date."""
+	add_revision_message(
+		f'Rolled back changes made by {username} prior to {date.isoformat()}'
+	)
+
 	for ent in (
 		RevisionChangeEntity.objects.filter(
 			change__rev__date__gte=date,

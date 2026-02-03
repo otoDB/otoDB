@@ -245,3 +245,5 @@ class Route(models.IntegerChoices):
 	WORKSOURCE_REFRESH = 63, 'Work Source Refresh'
 	WORKSOURCE_ASSIGN = 64, 'Work Source Assign'
 	WORKSOURCE_REJECT = 65, 'Work Source Reject'
+
+	ROLLBACK = 100, 'Rollback'

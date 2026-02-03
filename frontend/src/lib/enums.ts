@@ -401,7 +401,8 @@ export const Route = {
 	62: 'Upload: Set Origin',
 	63: 'Upload: Refresh',
 	64: 'Upload: Assign',
-	65: 'Upload: Reject'
+	65: 'Upload: Reject',
+	100: 'Rollback'
 };
 
 export const CommentModelRoutes = {

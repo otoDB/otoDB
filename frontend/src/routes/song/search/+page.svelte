@@ -46,7 +46,7 @@
 			value={data.author}
 		/>
 		<input type="submit" value={m.mean_top_antelope_love()} />
-		<h4>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: '' })}</h4>
+		<h4>{m.mild_loud_shad_enchant({ type: m.dull_plain_angelfish_cuddle(), name: '' })}</h4>
 		<TagsField type="song" name="tags" value={data.query_tags.split(' ')} class="w-full" />
 		<h4>BPM</h4>
 		<input type="number" step="any" min="0" name="bpm_min" value={data.bpm_range?.[0]} />

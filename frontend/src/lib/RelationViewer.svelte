@@ -5,6 +5,7 @@
 	import elkLayouts from '@mermaid-js/layout-elk';
 	import { onMount } from 'svelte';
 	import { SVGViewer } from 'svelte-svg-viewer';
+	import * as Viz from '@viz-js/viz';
 
 	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 } = $props();
 
@@ -60,7 +61,7 @@ flowchart ${direction}
     ${links.map((r) => `${r.A_id} -->|${RelationTypes[r.relation]()}| ${r.B_id}`).join('\n')}`)
 		);
 
-	export const mermaid_BFS = (
+	const mermaid_BFS = (
 		ns,
 		ls,
 		start: number,
@@ -120,7 +121,62 @@ flowchart ${direction}
 	let [nodes, links, ext] = $derived(
 		mermaid_BFS(objects, relations, id, distance, allowed_types)
 	);
-	let svg = $derived(get_svg_mermaid(nodes, links, ext));
+	// let svg = $derived(get_svg_mermaid(nodes, links, ext));
+	console.log(objects, relations, id);
+	const c = 'white';
+	let svg = $derived(
+		Viz.instance().then((viz) =>
+			viz.renderString(
+				{
+					...(type === 'work'
+						? {
+								nodes: objects.map((ob) => ({
+									name: ob.id,
+									attributes: {
+										label: { html: `${ob.title}` },
+										URL: `/work/${ob.id}`
+									}
+								})),
+								edges: relations.map((r) =>
+									r.relation === 0
+										? {
+												tail: r.A_id,
+												head: r.B_id,
+												attributes: { label: RelationTypes[r.relation]() }
+											}
+										: {
+												tail: r.B_id,
+												head: r.A_id,
+												attributes: { label: RelationTypes[r.relation]() }
+											}
+								)
+							}
+						: {
+								nodes: objects.map((ob) => ({
+									name: ob.id,
+									attributes: {
+										label: { html: `<a href="/tag/${ob.id}">${ob.title}</a>` }
+									}
+								})),
+								edges: relations.map((r) => ({
+									tail: r.B_id,
+									head: r.A_id,
+									attributes: { label: RelationTypes[r.relation]() }
+								}))
+							}),
+					nodeAttributes: {
+						margin: 0,
+						width: 5,
+						fontcolor: c,
+						shape: 'none',
+						fixedsize: true
+					},
+					edgeAttributes: { color: c, fontcolor: c }
+				},
+				{ format: 'svg_inline', graphAttributes: { bgcolor: 'transparent' } }
+			)
+		)
+	);
 
 	onMount(() => {
 		mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'base' });
@@ -210,7 +266,7 @@ flowchart ${direction}
 		>
 		<SVGViewer resizeBehavior="zoom" maxScale={90} height={`${svg_height}px`} width="100%">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html s.svg}
+			{@html s}
 		</SVGViewer>
 	</div>
 {/await}

@@ -56,6 +56,7 @@
 		"@inlang/paraglide-js": "^2.5.0",
 		"@mermaid-js/layout-elk": "^0.2.0",
 		"@thisux/sveltednd": "^0.0.20",
+		"@viz-js/viz": "^3.24.0",
 		"mermaid": "^11.12.2",
 		"openapi-fetch": "^0.15.0",
 		"set-cookie-parser": "^2.7.2",

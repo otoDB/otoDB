@@ -97,9 +97,9 @@ ACTIONS = {
 	RequestActions.TAGWORK_UNPARENT: lambda A, B: TagWorkParenthood.objects.get(
 		tag=A, parent=B
 	).delete(),
-	RequestActions.WORKSOURCE_ATTACHTAG: lambda A, B: A.media.tags.add(B)
-	if A.media
-	else ...,
+	RequestActions.WORKSOURCE_ATTACHTAG: lambda A, B: (
+		A.media.tags.add(B) if A.media else ...
+	),
 	RequestActions.MEDIAWORK_ATTACHTAG: lambda A, B: A.tags.add(B),
 }
 

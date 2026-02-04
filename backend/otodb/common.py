@@ -91,9 +91,11 @@ make_video_url = {
 	Platform.NICONICO: lambda s, uid=None: f'https://nicovideo.jp/watch/{s}',
 	Platform.BILIBILI: lambda s, uid=None: f'https://www.bilibili.com/video/{s}/',
 	Platform.SOUNDCLOUD: lambda s, uid=None: s,  # TODO
-	Platform.TWITTER: lambda s, uid=None: f'https://twitter.com/{uid}/status/{s}'
-	if uid
-	else f'https://twitter.com/i/status/{s}',
+	Platform.TWITTER: lambda s, uid=None: (
+		f'https://twitter.com/{uid}/status/{s}'
+		if uid
+		else f'https://twitter.com/i/status/{s}'
+	),
 }
 
 niconico_meta_re = re.compile(

@@ -122,7 +122,8 @@ def reset_password(request: HttpRequest, body: ResetPasswordRequestSchema):
 PASSWORD_RESET_EMAIL = {
 	LanguageTypes.ENGLISH: [
 		'[otodb.net] Reset Your Password',
-		lambda name, token: f"""Hello {name},
+		lambda name, token: (
+			f"""Hello {name},
 
 
 A request to reset your password has been issued. To reset your password, go here:
@@ -133,11 +134,13 @@ Do not share this link with anyone. If you did not try to reset your password, i
 
 otoDB
 https://otodb.net/
-""",
+"""
+		),
 	],
 	LanguageTypes.JAPANESE: [
 		'[otodb.net] パスワード再設定のご案内',
-		lambda name, token: f"""{name} 様
+		lambda name, token: (
+			f"""{name} 様
 
 
 パスワード再設定のリクエストがありました。パスワードを再設定するには、以下のリンクにアクセスしてください：
@@ -148,11 +151,13 @@ https://otodb.net/reset_password?token={token}
 
 otoDB
 https://otodb.net/
-""",
+"""
+		),
 	],
 	LanguageTypes.SIMPLIFIED_CHINESE: [
 		'[otodb.net] 重置您的密码',
-		lambda name, token: f"""{name}，您好：
+		lambda name, token: (
+			f"""{name}，您好：
 
 
 我们收到一个重置您密码的请求。要重置密码，请访问：
@@ -163,11 +168,13 @@ https://otodb.net/reset_password?token={token}
 
 otoDB
 https://otodb.net/
-""",
+"""
+		),
 	],
 	LanguageTypes.KOREAN: [
 		'[otodb.net] 비밀번호 재설정 안내',
-		lambda name, token: f"""{name}님 안녕하세요,
+		lambda name, token: (
+			f"""{name}님 안녕하세요,
 
 
 비밀번호 재설정 요청이 접수되었습니다. 비밀번호를 재설정하려면 아래 링크를 방문하세요:
@@ -178,7 +185,8 @@ https://example.com/reset_password?token={token}
 
 otoDB
 https://otodb.net/
-""",
+"""
+		),
 	],
 }
 

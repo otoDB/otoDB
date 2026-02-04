@@ -640,15 +640,17 @@ def history(request: HttpRequest, entity: Query[EntitySchema]):
 				work = work.moved_to
 			entity.id = work.pk
 			cte = CTE.recursive(
-				lambda cte: MediaWork.objects.order_by()
-				.filter(pk=work.pk)
-				.values('id')
-				.union(
-					cte.join(
-						MediaWork.objects.order_by(),
-						moved_to_id=cte.col.id,
-					).values('id'),
-					all=True,
+				lambda cte: (
+					MediaWork.objects.order_by()
+					.filter(pk=work.pk)
+					.values('id')
+					.union(
+						cte.join(
+							MediaWork.objects.order_by(),
+							moved_to_id=cte.col.id,
+						).values('id'),
+						all=True,
+					)
 				)
 			)
 			merged = (

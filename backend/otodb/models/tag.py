@@ -278,17 +278,19 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 	def get_descendants(self):
 		cte = CTE.recursive(
-			lambda cte: TagWork.objects.order_by()
-			.filter(id=self.id)
-			.values('id')
-			.union(
-				cte.join(
-					TagWork.objects.order_by(),
-					childhood__parent_id=cte.col.id,
-					aliased_to__isnull=True,
-					deprecated=False,
-				).values('id'),
-				all=True,
+			lambda cte: (
+				TagWork.objects.order_by()
+				.filter(id=self.id)
+				.values('id')
+				.union(
+					cte.join(
+						TagWork.objects.order_by(),
+						childhood__parent_id=cte.col.id,
+						aliased_to__isnull=True,
+						deprecated=False,
+					).values('id'),
+					all=True,
+				)
 			)
 		)
 		return (
@@ -300,24 +302,26 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 	def get_paths(self):
 		cte = CTE.recursive(
-			lambda cte: TagWork.objects.order_by()
-			.filter(id=self.id)
-			.values(
-				'id',
-				'slug',
-				fr=Value('', output_field=models.TextField()),
-			)
-			.union(
-				cte.join(
-					TagWork.objects.order_by(),
-					parenthood__tag_id=cte.col.id,
-					aliased_to__isnull=True,
-					deprecated=False,
-				).values(
+			lambda cte: (
+				TagWork.objects.order_by()
+				.filter(id=self.id)
+				.values(
 					'id',
 					'slug',
-					fr=models.functions.Cast(cte.col.slug, models.TextField()),
-				),  # Cannot do all=True because we could have diamond problems
+					fr=Value('', output_field=models.TextField()),
+				)
+				.union(
+					cte.join(
+						TagWork.objects.order_by(),
+						parenthood__tag_id=cte.col.id,
+						aliased_to__isnull=True,
+						deprecated=False,
+					).values(
+						'id',
+						'slug',
+						fr=models.functions.Cast(cte.col.slug, models.TextField()),
+					),  # Cannot do all=True because we could have diamond problems
+				)
 			)
 		)
 		return with_cte(
@@ -330,26 +334,29 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			return {}
 
 		cte = CTE.recursive(
-			lambda cte: cls.objects.order_by()
-			.filter(id__in=tag_ids)
-			.values(
-				'id',
-				source_tag_id=models.F('id'),
-				depth=Value(0, output_field=models.IntegerField()),
-			)
-			.union(
-				cte.join(
-					cls.objects.order_by(),
-					parenthood__tag_id=cte.col.id,
-					parenthood__primary=True,
-					aliased_to__isnull=True,
-					deprecated=False,
-				).values(
+			lambda cte: (
+				cls.objects.order_by()
+				.filter(id__in=tag_ids)
+				.values(
 					'id',
-					source_tag_id=cte.col.source_tag_id,
-					depth=cte.col.depth + Value(1, output_field=models.IntegerField()),
-				),
-				all=True,
+					source_tag_id=models.F('id'),
+					depth=Value(0, output_field=models.IntegerField()),
+				)
+				.union(
+					cte.join(
+						cls.objects.order_by(),
+						parenthood__tag_id=cte.col.id,
+						parenthood__primary=True,
+						aliased_to__isnull=True,
+						deprecated=False,
+					).values(
+						'id',
+						source_tag_id=cte.col.source_tag_id,
+						depth=cte.col.depth
+						+ Value(1, output_field=models.IntegerField()),
+					),
+					all=True,
+				)
 			)
 		)
 
@@ -586,18 +593,23 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 
 	def get_tree(self):
 		cte = CTE.recursive(
-			lambda cte: TagSong.objects.order_by()
-			.filter(id=self.id)
-			.values(
-				'id', 'parent_id', depth=Value(0, output_field=models.IntegerField())
-			)
-			.union(
-				cte.join(TagSong.objects.order_by(), id=cte.col.parent_id).values(
+			lambda cte: (
+				TagSong.objects.order_by()
+				.filter(id=self.id)
+				.values(
 					'id',
 					'parent_id',
-					depth=cte.col.depth + Value(1, output_field=models.IntegerField()),
-				),
-				all=True,
+					depth=Value(0, output_field=models.IntegerField()),
+				)
+				.union(
+					cte.join(TagSong.objects.order_by(), id=cte.col.parent_id).values(
+						'id',
+						'parent_id',
+						depth=cte.col.depth
+						+ Value(1, output_field=models.IntegerField()),
+					),
+					all=True,
+				)
 			)
 		)
 		return with_cte(
@@ -606,16 +618,18 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 
 	def get_descendants(self):
 		cte = CTE.recursive(
-			lambda cte: TagSong.objects.order_by()
-			.filter(id=self.id)
-			.values('id')
-			.union(
-				cte.join(
-					TagSong.objects.order_by(),
-					parent_id=cte.col.id,
-					aliased_to__isnull=True,
-				).values('id'),
-				all=True,
+			lambda cte: (
+				TagSong.objects.order_by()
+				.filter(id=self.id)
+				.values('id')
+				.union(
+					cte.join(
+						TagSong.objects.order_by(),
+						parent_id=cte.col.id,
+						aliased_to__isnull=True,
+					).values('id'),
+					all=True,
+				)
 			)
 		)
 		return (

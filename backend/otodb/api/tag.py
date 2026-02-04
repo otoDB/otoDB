@@ -932,4 +932,5 @@ def similar(request: HttpRequest, tag_slug: str):
 		.filter(works__in=Subquery(tw), deprecated=False)
 		.annotate(shared_works_count=Count('works', filter=Q(works__in=Subquery(tw))))
 		.order_by('-shared_works_count')
+		.filter(shared_works_count__gt=3)
 	)[:10]

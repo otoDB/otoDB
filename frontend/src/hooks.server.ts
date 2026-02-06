@@ -23,6 +23,17 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
+const handleCache: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+
+	if (event.url.pathname === '/' && !event.locals.user) {
+		response.headers.set('Cache-Control', 'public, s-maxage=600, max-age=0');
+		response.headers.set('Vary', 'Accept-Language');
+	}
+
+	return response;
+};
+
 const handleContentLength: Handle = async ({ event, resolve }) => {
 	return resolve(event, {
 		filterSerializedResponseHeaders(name) {
@@ -32,7 +43,7 @@ const handleContentLength: Handle = async ({ event, resolve }) => {
 	});
 };
 
-export const handle: Handle = sequence(handleAuth, handleContentLength, handleParaglide);
+export const handle: Handle = sequence(handleAuth, handleCache, handleContentLength, handleParaglide);
 
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 	if (request.url.startsWith(PUBLIC_BACKEND_URL_INTERNAL)) {

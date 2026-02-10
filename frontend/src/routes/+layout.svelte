@@ -35,23 +35,22 @@
 </script>
 
 <svelte:head>
-	{#if page.data.head}
-		{#if page.data.head.title}
-			<title>{page.data.head.title}</title>
-			<meta property="og:title" content={page.data.head.title} />
-			<meta name="twitter:title" content={page.data.head.title} />
-		{/if}
-		{#if page.data.head.description}
-			<meta name="description" content={page.data.head.description} />
-		{/if}
-		{#if page.data.head.image <= 1}
-			<meta property="og:image" content={page.data.head.image} />
-			<meta name="twitter:image" content={page.data.head.image} />
-		{/if}
-	{:else}
+	{#if page.data.head?.title}
 		<title>{page.data.head.title}</title>
+		<meta property="og:title" content={page.data.head.title} />
+		<meta name="twitter:title" content={page.data.head.title} />
+	{:else}
+		<title>otoDB</title>
 		<meta property="og:title" content="otoDB" />
 		<meta name="twitter:title" content="otoDB" />
+	{/if}
+	{#if page.data.head?.description}
+		<meta name="description" content={page.data.head.description} />
+	{/if}
+	{#if page.data.head?.image}
+		<meta property="og:image" content={page.data.head.image} />
+		<meta name="twitter:image" content={page.data.head.image} />
+	{:else}
 		<meta property="og:image" content="https://otodb.net/thumb.png" />
 		<meta name="twitter:image" content="https://otodb.net/thumb.png" />
 	{/if}

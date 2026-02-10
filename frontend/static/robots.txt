@@ -19,3 +19,4 @@ Allow: /profile
 Allow: /404
 Allow: /favicon.ico
 Allow: /favicon.svg
+Allow: /thumb.png

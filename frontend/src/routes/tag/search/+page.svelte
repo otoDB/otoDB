@@ -26,15 +26,6 @@
 		});
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.mean_top_antelope_love(),
-			name: m.empty_legal_chicken_taste()
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.empty_legal_chicken_taste()}
 	type={m.mean_top_antelope_love()}

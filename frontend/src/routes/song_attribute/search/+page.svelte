@@ -25,15 +25,6 @@
 		});
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.mean_top_antelope_love(),
-			name: m.dull_plain_angelfish_cuddle()
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.dull_plain_angelfish_cuddle()}
 	type={m.mean_top_antelope_love()}

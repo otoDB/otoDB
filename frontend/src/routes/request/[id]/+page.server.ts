@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
@@ -22,5 +23,15 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 		})
 	]);
 
-	return { request: data, ...params, comments };
+	return {
+		request: data,
+		...params,
+		comments,
+		head: {
+			title: m.mild_loud_shad_enchant({
+				type: m.last_jumpy_barbel_mop(),
+				name: '#' + params.id
+			})
+		}
+	};
 };

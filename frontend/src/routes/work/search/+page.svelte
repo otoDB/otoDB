@@ -10,15 +10,6 @@
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.mean_top_antelope_love(),
-			name: m.grand_merry_fly_succeed()
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.grand_merry_fly_succeed()}
 	type={m.mean_top_antelope_love()}

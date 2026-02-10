@@ -16,10 +16,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{m.inner_stale_anteater_walk()}</title>
-</svelte:head>
-
 <Section title={m.inner_stale_anteater_walk()}>
 	<form method="POST" use:enhance>
 		<table>

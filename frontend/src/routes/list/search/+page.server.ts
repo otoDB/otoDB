@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
@@ -13,6 +14,12 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		query: query,
 		results: data,
 		batch_size,
-		page
+		page,
+		head: {
+			title: m.mild_loud_shad_enchant({
+				type: m.mean_top_antelope_love(),
+				name: m.stale_loose_squid_cut()
+			})
+		}
 	};
 };

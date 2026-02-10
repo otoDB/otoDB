@@ -72,10 +72,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{m.heroic_same_wasp_conquer()}</title>
-</svelte:head>
-
 <Section title={m.heroic_same_wasp_conquer()}>
 	<GuidelineWarning />
 	<form method="POST">

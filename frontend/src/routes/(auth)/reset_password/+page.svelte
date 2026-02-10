@@ -16,10 +16,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{m.true_tough_butterfly_sew()}</title>
-</svelte:head>
-
 <Section title={m.true_tough_butterfly_sew()}>
 	{#if form?.reset_success}
 		<p>{m.stock_jolly_crocodile_cheer()}</p>

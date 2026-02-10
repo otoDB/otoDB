@@ -38,6 +38,12 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 						}
 					])
 		],
-		profile: data
+		profile: data,
+		head: {
+			title: m.mild_loud_shad_enchant({
+				type: m.fuzzy_crazy_cobra_lead(),
+				name: data.username
+			})
+		}
 	};
 };

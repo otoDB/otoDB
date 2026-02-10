@@ -3,6 +3,7 @@ import { UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 	userLevelGuard(locals.user, UserLevel.MEMBER);
@@ -19,6 +20,7 @@ export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 	return {
 		notifications: data,
 		batch_size,
-		page
+		page,
+		head: { title: m.free_keen_wren_exhale() }
 	};
 };

@@ -14,10 +14,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{m.plane_inner_chipmunk_race()}</title>
-</svelte:head>
-
 <Section
 	title={m.plane_inner_chipmunk_race()}
 	menuLinks={[

@@ -1,12 +1,15 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import client, { forwardCookies } from '$lib/api';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
 	if (locals.user) redirect(303, url.searchParams.get('from') ?? '/');
 
 	const { response } = await client.GET('/api/auth/csrf', { fetch });
 	forwardCookies(cookies, response);
+
+	return { head: { title: m.inner_stale_anteater_walk() } };
 };
 
 export const actions = {

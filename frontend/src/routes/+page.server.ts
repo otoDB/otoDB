@@ -1,6 +1,7 @@
 import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ fetch, setHeaders, locals }) => {
 	if (!locals.user) {
@@ -35,6 +36,13 @@ export const load: PageServerLoad = async ({ fetch, setHeaders, locals }) => {
 		random: randomWork.data,
 		recent: recentWork.data,
 		changes: changes.data,
-		posts: posts.data
+		posts: posts.data,
+		head: {
+			title: m.fine_late_chicken_quiz(),
+			description: m.mild_loud_shad_enchant({
+				type: 'otoDB',
+				name: m.glad_born_mouse_taste()
+			})
+		}
 	};
 };

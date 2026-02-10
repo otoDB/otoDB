@@ -19,10 +19,6 @@
 	};
 </script>
 
-<svelte:head>
-	<title>{m.free_keen_wren_exhale()}</title>
-</svelte:head>
-
 <Section title={m.free_keen_wren_exhale()}>
 	{#if data.notifications.count}
 		<table class="w-full">

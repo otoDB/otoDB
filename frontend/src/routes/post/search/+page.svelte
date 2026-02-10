@@ -23,15 +23,6 @@
 		});
 </script>
 
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({
-			type: m.mean_top_antelope_love(),
-			name: m.just_salty_anaconda_nourish()
-		})}</title
-	>
-</svelte:head>
-
 <Section
 	title={m.just_salty_anaconda_nourish()}
 	type={m.mean_top_antelope_love()}

@@ -26,6 +26,12 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 			...(locals.user && locals.user.user_id === data.author.id
 				? [{ pathname: `list/${params.list_id}/edit`, title: m.minor_crisp_cobra_list() }]
 				: [])
-		]
+		],
+		head: {
+			title: m.mild_loud_shad_enchant({
+				type: m.stale_loose_squid_cut(),
+				name: data.name
+			})
+		}
 	};
 };

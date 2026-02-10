@@ -668,7 +668,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "sentry-sdk", extras = ["django"], specifier = ">=2.43.0" },
-    { name = "yt-dlp", extras = ["default"], specifier = ">=2025.9.23" },
+    { name = "yt-dlp", extras = ["default"], specifier = ">=2026.2.4" },
 ]
 
 [package.metadata.requires-dev]

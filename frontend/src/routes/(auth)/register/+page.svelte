@@ -19,10 +19,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{m.blue_whole_camel_type()}</title>
-</svelte:head>
-
 <Section title={m.blue_whole_camel_type()}>
 	<form method="POST" use:enhance>
 		<table>

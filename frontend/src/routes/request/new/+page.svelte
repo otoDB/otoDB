@@ -6,10 +6,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 </script>
 
-<svelte:head>
-	<title>{m.muddy_tough_swan_view()}</title>
-</svelte:head>
-
 <Section title={m.muddy_tough_swan_view()}>
 	<a href="/post/5">{m.grassy_warm_gadfly_inspire()}</a>
 	<form method="POST" use:enhance>

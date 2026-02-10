@@ -7,10 +7,6 @@
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title>{m.weird_lucky_hornet_grip()}</title>
-</svelte:head>
-
 <Section title={m.weird_lucky_hornet_grip()} menuLinks={data.links}>
 	<ul>
 		{#each data.sources as src, i (i)}

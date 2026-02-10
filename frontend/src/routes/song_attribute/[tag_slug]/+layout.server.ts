@@ -60,6 +60,12 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		],
 		tag: data,
 		...details,
-		display_name: getTagDisplayName(data)
+		display_name: getTagDisplayName(data),
+		head: {
+			title: m.mild_loud_shad_enchant({
+				type: m.dull_plain_angelfish_cuddle(),
+				name: data.name
+			})
+		}
 	};
 };

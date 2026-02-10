@@ -11,10 +11,6 @@
 	let md = $state('');
 </script>
 
-<svelte:head>
-	<title>{m.antsy_aloof_horse_grace()}</title>
-</svelte:head>
-
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
 	<form method="POST" use:enhance>
 		<table>

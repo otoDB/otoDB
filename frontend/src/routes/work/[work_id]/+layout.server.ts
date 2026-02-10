@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages.js';
-import client from '$lib/api';
+import client, { getDisplayText } from '$lib/api';
 import { error, redirect } from '@sveltejs/kit';
 import { userLevelCheck } from '$lib/route_guard';
 
@@ -64,6 +64,13 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url, depen
 				title: m.giant_away_scallop_hike()
 			}
 		],
-		...data
+		...data,
+		head: {
+			title: m.mild_loud_shad_enchant({
+				type: m.grand_merry_fly_succeed(),
+				name: getDisplayText(data.title)
+			}),
+			image: data.rating <= 1 ? data.thumbnail : null
+		}
 	};
 };

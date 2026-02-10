@@ -5,7 +5,6 @@
 	import { enhance } from '$app/forms';
 	import { Rating, UserLevel, Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
-	import { getDisplayText } from '$lib/api';
 
 	let { data, form }: PageProps = $props();
 	let isOriginal = $derived(!!(form?.origin ?? !data.title));
@@ -17,23 +16,10 @@
 		}
 	});
 
-	const title = data.title
-		? m.mild_loud_shad_enchant({
-				type: data.unavailable_source
-					? m.new_aloof_camel_read()
-					: m.helpful_away_jay_succeed(),
-				name: getDisplayText(data.title)
-			})
-		: m.helpful_away_jay_succeed();
-
 	let submitting = $state(false);
 </script>
 
-<svelte:head>
-	<title>{title}</title>
-</svelte:head>
-
-<Section {title}>
+<Section title={data.head.title}>
 	{#if !data.unavailable_source}
 		<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 		<ul>

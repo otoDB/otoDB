@@ -14,10 +14,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{m.proof_heroic_rat_cuddle()}</title>
-</svelte:head>
-
 <Section
 	title={m.proof_heroic_rat_cuddle()}
 	menuLinks={[

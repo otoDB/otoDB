@@ -1,14 +1,16 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import client, { forwardCookies } from '$lib/api';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
+	let token = undefined;
 	if (!locals.user) {
-		const token = url.searchParams.get('token');
+		token = url.searchParams.get('token');
 		const { response } = await client.GET('/api/auth/csrf', { fetch });
 		forwardCookies(cookies, response);
-		return { token };
 	}
+	return { token, head: { title: m.true_tough_butterfly_sew() } };
 };
 
 export const actions = {

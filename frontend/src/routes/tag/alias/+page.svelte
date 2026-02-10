@@ -25,10 +25,6 @@
 	};
 </script>
 
-<svelte:head>
-	<title>{m.front_maroon_hamster_urge()}</title>
-</svelte:head>
-
 <Section title={m.front_maroon_hamster_urge()}>
 	<GuidelineWarning />
 	<TagsField type="work" class="w-full" bind:value={tags} />

@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
@@ -11,6 +12,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	return {
 		results: data,
 		batch_size,
-		page
+		page,
+		head: { title: m.giant_away_scallop_hike() }
 	};
 };

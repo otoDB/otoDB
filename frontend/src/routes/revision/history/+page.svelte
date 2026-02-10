@@ -11,10 +11,6 @@
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title>{m.giant_away_scallop_hike()}</title>
-</svelte:head>
-
 <Section title={m.giant_away_scallop_hike()}>
 	<table class="w-full">
 		<tbody>

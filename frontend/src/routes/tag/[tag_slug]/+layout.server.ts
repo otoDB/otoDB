@@ -41,7 +41,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				})
 			).data
 		: null;
-
+	const display_name = getTagDisplayName(data);
 	return {
 		links: [
 			{
@@ -78,6 +78,12 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			: null,
 		tag: data,
 		song_relations,
-		display_name: getTagDisplayName(data)
+		display_name,
+		head: {
+			title: m.mild_loud_shad_enchant({
+				type: m.empty_legal_chicken_taste(),
+				name: display_name
+			})
+		}
 	};
 };

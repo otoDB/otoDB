@@ -6,10 +6,6 @@
 	let { data } = $props();
 </script>
 
-<svelte:head>
-	<title>{m.just_salty_anaconda_nourish()}</title>
-</svelte:head>
-
 <Section title={m.just_salty_anaconda_nourish()} menuLinks={data.links}>
 	{#each data.categories as c, i (i)}
 		{#if c.length}

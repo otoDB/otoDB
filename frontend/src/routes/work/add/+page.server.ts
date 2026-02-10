@@ -1,6 +1,6 @@
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client from '$lib/api';
+import client, { getDisplayText } from '$lib/api';
 import { UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
@@ -43,7 +43,17 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 		title,
 		link,
 		isNewWork: work === null,
-		unavailable_source
+		unavailable_source,
+		head: {
+			title: title
+				? m.mild_loud_shad_enchant({
+						type: unavailable_source
+							? m.new_aloof_camel_read()
+							: m.helpful_away_jay_succeed(),
+						name: getDisplayText(title)
+					})
+				: m.helpful_away_jay_succeed()
+		}
 	};
 };
 

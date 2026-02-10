@@ -3,11 +3,12 @@ import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { Languages } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = ({ locals, url }) => {
 	userLevelGuard(locals.user);
 	const category = url.searchParams.get('category');
-	return { category };
+	return { category, head: { title: m.antsy_aloof_horse_grace() } };
 };
 
 export const actions = {

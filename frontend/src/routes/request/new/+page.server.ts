@@ -2,11 +2,12 @@ import client from '$lib/api';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import userLevelGuard from '$lib/route_guard';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = ({ locals, url }) => {
 	userLevelGuard(locals.user);
 	const preFilledData = url.searchParams.get('pre_filled');
-	return { preFilledData };
+	return { preFilledData, head: { title: m.muddy_tough_swan_view() } };
 };
 
 export const actions = {

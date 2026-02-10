@@ -74,10 +74,6 @@
 	};
 </script>
 
-<svelte:head>
-	<title>{m.suave_gray_stork_type()}</title>
-</svelte:head>
-
 <Section title={m.suave_gray_stork_type()} menuLinks={data.links}>
 	{#if data.sources.length}
 		<input type="submit" onclick={submit} class="text-l float-right p-2" />

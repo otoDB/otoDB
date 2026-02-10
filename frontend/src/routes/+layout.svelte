@@ -34,6 +34,32 @@
 	const theme = Themes[data.user?.prefs?.theme ?? +get_prefs()?.theme];
 </script>
 
+<svelte:head>
+	{#if page.data.head}
+		{#if page.data.head.title}
+			<title>{page.data.head.title}</title>
+			<meta property="og:title" content={page.data.head.title} />
+			<meta name="twitter:title" content={page.data.head.title} />
+		{/if}
+		{#if page.data.head.description}
+			<meta name="description" content={page.data.head.description} />
+		{/if}
+		{#if page.data.head.image <= 1}
+			<meta property="og:image" content={page.data.head.image} />
+			<meta name="twitter:image" content={page.data.head.image} />
+		{/if}
+	{:else}
+		<title>{page.data.head.title}</title>
+		<meta property="og:title" content="otoDB" />
+		<meta name="twitter:title" content="otoDB" />
+		<meta property="og:image" content="https://otodb.net/thumb.png" />
+		<meta name="twitter:image" content="https://otodb.net/thumb.png" />
+	{/if}
+	<link rel="canonical" href={page.url.toString()} />
+	<meta property="og:url" content={page.url.toString()} />
+	<meta name="twitter:card" content="summary_large_image" />
+</svelte:head>
+
 <a href="#content" class="absolute z-50 transform-[translateY(-100%)] focus:transform-none">
 	{m.round_extra_impala_fry()}
 </a>

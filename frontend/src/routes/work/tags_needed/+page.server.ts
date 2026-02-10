@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch }) => {
@@ -9,6 +10,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 	});
 	return {
 		results: data,
-		batch_size
+		batch_size,
+		head: { title: m.spry_late_kudu_assure() }
 	};
 };

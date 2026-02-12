@@ -35,7 +35,11 @@
 					>
 				</tr>
 				<tr>
-					<th><label for="invite">{m.tiny_great_robin_commend()}</label></th>
+					<th
+						><label for="invite"
+							>{m.tiny_great_robin_commend()} (<a href="/post/19">?</a>)</label
+						></th
+					>
 					<td><input required type="text" name="invite" /></td>
 				</tr>
 				<tr>

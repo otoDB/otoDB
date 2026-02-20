@@ -63,6 +63,16 @@
 		frameborder="0"
 		scrolling="no"
 	></iframe>
+{:else if src.platform === 6}
+	<iframe
+		title="AcFun Player"
+		{width}
+		{height}
+		src="https://www.acfun.cn/player/ac{src.source_id}"
+		frameborder="no"
+		scrolling="no"
+		allowfullscreen
+	></iframe>
 {/if}
 
 <style>

@@ -37,6 +37,15 @@ function getQuery(url) {
 			};
 		}
 	}
+	else if (url.hostname.endsWith('acfun.cn')) {
+		const match = url.href.match(/\/v\/ac([\d_]+)/);
+		if (match) {
+			return {
+				platform: 'acfun',
+				id: match[1]
+			};
+		}
+	}
     else if (url.hostname.endsWith('soundcloud.com')) {
         return {
             url: `${url.protocol}//${url.hostname}${url.pathname}`

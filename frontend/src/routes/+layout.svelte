@@ -305,6 +305,8 @@
 						/
 						<a href="https://twitter.com/otoDBnet">Twitter</a>
 						/
+						<a href="https://github.com/otoDB/otoDB">GitHub</a>
+						/
 						<a href="irc://irc.rizon.net/#otodb">#otodb @ Rizon</a>
 						/
 						<a href="mailto:contact@otodb.net">contact@otodb.net</a>

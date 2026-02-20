@@ -37,7 +37,15 @@ export const WorkOrigin = [m.crisp_red_canary_tickle, m.lucky_still_vulture_work
 
 export const WorkStatus = [m.this_lime_porpoise_launch, m.dizzy_mellow_pug_spur];
 
-export const Platform = ['Invalid', 'YouTube', 'Niconico', 'Bilibili', 'SoundCloud', 'Twitter', 'AcFun'];
+export const Platform = [
+	'Invalid',
+	'YouTube',
+	'Niconico',
+	'Bilibili',
+	'SoundCloud',
+	'Twitter',
+	'AcFun'
+];
 
 export const WorkRelationTypes = [
 	m.spry_muddy_sloth_radiate,

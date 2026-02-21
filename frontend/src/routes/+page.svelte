@@ -3,7 +3,7 @@
 	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO } from '$lib/ui.js';
+	import { isSOV, isSVO, timeAgo } from '$lib/ui.js';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import { Route } from '$lib/enums.js';
 
@@ -55,7 +55,10 @@
 							{#if isSOV(getLocale())}
 								{m.curly_safe_lynx_fond()}
 							{/if}</td
-						><td>{new Date(r.date).toLocaleString()}</td></tr
+						><td
+							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
+							></td
+						></tr
 					>
 				{/each}
 			</tbody>
@@ -69,7 +72,11 @@
 				{#each data.posts.items as p, i (i)}
 					<tr>
 						<td><a href="/post/{p.id}">{p.title}</a></td>
-						<td>{new Date(p.modified).toLocaleString()}</td>
+						<td
+							><time title={new Date(p.modified).toLocaleString()}
+								>{timeAgo(p.modified)}</time
+							></td
+						>
 					</tr>
 				{/each}
 			</tbody>

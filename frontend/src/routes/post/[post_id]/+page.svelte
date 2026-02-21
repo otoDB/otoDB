@@ -7,7 +7,7 @@
 	import { Languages, PostCategories } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { isSOV, isSVO } from '$lib/ui.js';
+	import { isSOV, isSVO, timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 
 	let { data } = $props();
@@ -65,7 +65,7 @@
 	</h4>
 	{m.mild_loud_shad_enchant({
 		type: m.lower_full_opossum_bless(),
-		name: new Date(page_object.modified).toLocaleString()
+		name: timeAgo(page_object.modified)
 	})}
 	<div class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto mt-4 max-w-4xl">
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->

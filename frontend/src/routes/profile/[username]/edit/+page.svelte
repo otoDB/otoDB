@@ -5,6 +5,7 @@
 	import { ProfileConnectionLink, ProfileConnectionTypes, UserLevel } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
+	import { timeAgo } from '$lib/ui';
 
 	let { data } = $props();
 
@@ -71,9 +72,11 @@
 					>
 					{#each data.invites[0] as inv, i (i)}
 						<tr
-							><td>{new Date(inv.created_at).toLocaleString()}</td><td
-								><pre>{inv.secret}</pre></td
-							><td>{UserLevel[inv.level]()}</td><td
+							><td
+								><time title={new Date(inv.created_at).toLocaleString()}
+									>{timeAgo(inv.created_at)}</time
+								></td
+							><td><pre>{inv.secret}</pre></td><td>{UserLevel[inv.level]()}</td><td
 								>{#if inv.used_by}<a href="/profile/{inv.used_by.username}"
 										>{inv.used_by.username}</a
 									>{:else}N/A{/if}</td

@@ -3,6 +3,7 @@
 	import client from './api';
 	import { UserLevel, Route } from './enums';
 	import { m } from './paraglide/messages';
+	import { timeAgo } from './ui';
 	import type { components } from './schema';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
@@ -22,7 +23,7 @@
 	<tbody>
 		<tr>
 			<th>Version</th><th>Revision</th><th>Action</th><th>{m.fuzzy_crazy_cobra_lead()}</th><th
-				>Changed at</th
+				>{m.super_agent_pigeon_aim()}</th
 			><th>{m.weary_spicy_fly_attend()}</th>
 			<!-- {#if user && user.level >= UserLevel.ADMIN}<th>{m.legal_mean_slug_link()}</th>{/if} -->
 		</tr>
@@ -33,7 +34,7 @@
 				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>
 				</td><td>
-					{new Date(rev.date).toLocaleString()}
+					<time title={new Date(rev.date).toLocaleString()}>{timeAgo(rev.date)}</time>
 				</td><td>
 					{rev.message}
 				</td>

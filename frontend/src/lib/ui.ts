@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import client from './api';
 import { Languages } from './enums';
-import { setLocale } from './paraglide/runtime';
+import { getLocale, setLocale } from './paraglide/runtime';
 import { applyAction, enhance } from '$app/forms';
 import { m } from './paraglide/messages';
 
@@ -88,3 +88,29 @@ export const current_version = version_end_dates.at(-1)![0];
 
 export const GUIDELINE_POST_ID = 4;
 export const FAQ_POST_ID = 3;
+
+const MINUTE = 60;
+const HOUR = MINUTE * 60;
+const DAY = HOUR * 24;
+const WEEK = DAY * 7;
+const MONTH = DAY * 30;
+const YEAR = DAY * 365;
+
+// prettier-ignore
+export function timeAgo(date: string | Date): string {
+	const d = date instanceof Date ? date : new Date(date);
+	const diff = (d.getTime() - Date.now()) / 1000;
+	const elapsed = Math.abs(diff);
+	const rtf = new Intl.RelativeTimeFormat(getLocale(), { numeric: 'always' });
+
+	const [divisor, unit]: [number, Intl.RelativeTimeFormatUnit] =
+		elapsed > YEAR   * 2 ? [YEAR,   'year']   :
+		elapsed > MONTH  * 2 ? [MONTH,  'month']  :
+		elapsed > WEEK   * 2 ? [WEEK,   'week']   :
+		elapsed > DAY    * 2 ? [DAY,    'day']    :
+		elapsed > HOUR   * 2 ? [HOUR,   'hour']   :
+		elapsed > MINUTE * 2 ? [MINUTE, 'minute'] :
+		                       [1,      'second'] ;
+
+	return rtf.format(Math.trunc(diff / divisor), unit);
+}

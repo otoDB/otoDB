@@ -55,7 +55,10 @@
 							{#if isSOV(getLocale())}
 								{m.curly_safe_lynx_fond()}
 							{/if}</td
-						><td><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time></td></tr
+						><td
+							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
+							></td
+						></tr
 					>
 				{/each}
 			</tbody>
@@ -69,7 +72,11 @@
 				{#each data.posts.items as p, i (i)}
 					<tr>
 						<td><a href="/post/{p.id}">{p.title}</a></td>
-						<td><time title={new Date(p.modified).toLocaleString()}>{timeAgo(p.modified)}</time></td>
+						<td
+							><time title={new Date(p.modified).toLocaleString()}
+								>{timeAgo(p.modified)}</time
+							></td
+						>
 					</tr>
 				{/each}
 			</tbody>

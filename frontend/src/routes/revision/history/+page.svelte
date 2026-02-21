@@ -26,7 +26,10 @@
 						{#if isSOV(getLocale())}
 							{m.curly_safe_lynx_fond()}
 						{/if}</td
-					><td><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time></td></tr
+					><td
+						><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
+						></td
+					></tr
 				>
 			{/each}
 		</tbody>

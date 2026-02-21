@@ -17,7 +17,10 @@
 				<tr
 					><td><a href="/revision/{r.id}">#{r.id}</a></td><td
 						>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
-					><td><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time></td></tr
+					><td
+						><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
+						></td
+					></tr
 				>
 			{/each}
 		</tbody>

@@ -29,7 +29,11 @@
 										>{p.added_by.username}</a
 									></td
 								>{/if}
-							<td><time title={new Date(p.modified).toLocaleString()}>{timeAgo(p.modified)}</time></td>
+							<td
+								><time title={new Date(p.modified).toLocaleString()}
+									>{timeAgo(p.modified)}</time
+								></td
+							>
 						</tr>
 					{/each}
 				</tbody>

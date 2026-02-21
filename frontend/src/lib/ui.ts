@@ -96,6 +96,7 @@ const WEEK = DAY * 7;
 const MONTH = DAY * 30;
 const YEAR = DAY * 365;
 
+// prettier-ignore
 export function timeAgo(date: string | Date): string {
 	const d = date instanceof Date ? date : new Date(date);
 	const diff = (d.getTime() - Date.now()) / 1000;

@@ -64,7 +64,11 @@
 					<td>{PostCategories[post.category]()}</td>
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td
 					>
-					<td><time title={new Date(post.modified).toLocaleString()}>{timeAgo(post.modified)}</time></td>
+					<td
+						><time title={new Date(post.modified).toLocaleString()}
+							>{timeAgo(post.modified)}</time
+						></td
+					>
 				</tr>
 			{/each}
 		</tbody>

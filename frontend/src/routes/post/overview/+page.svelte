@@ -2,6 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { PostCategories } from '$lib/enums';
+	import { timeAgo } from '$lib/ui';
 
 	let { data } = $props();
 </script>
@@ -28,7 +29,7 @@
 										>{p.added_by.username}</a
 									></td
 								>{/if}
-							<td>{new Date(p.modified).toLocaleString()}</td>
+							<td><time title={new Date(p.modified).toLocaleString()}>{timeAgo(p.modified)}</time></td>
 						</tr>
 					{/each}
 				</tbody>

@@ -5,6 +5,7 @@
 	import client from '$lib/api';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import { PostCategories } from '$lib/enums';
+	import { timeAgo } from '$lib/ui';
 
 	let { data }: PageProps = $props();
 	let results = $derived(data.results!.items);
@@ -63,7 +64,7 @@
 					<td>{PostCategories[post.category]()}</td>
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td
 					>
-					<td>{new Date(post.modified).toDateString()}</td>
+					<td><time title={new Date(post.modified).toLocaleString()}>{timeAgo(post.modified)}</time></td>
 				</tr>
 			{/each}
 		</tbody>

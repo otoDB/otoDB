@@ -3,6 +3,7 @@
 	import client, { makeCommentTree, type CommentModels } from './api';
 	import { UserLevel } from './enums';
 	import { m } from './paraglide/messages';
+	import { timeAgo } from './ui';
 	import type { components } from './schema';
 
 	interface Props {
@@ -66,7 +67,7 @@
 			<p>#{data.index}</p>
 			<h4><a href="/profile/{data.user.username}">{data.user.username}</a></h4>
 			<address class="text-otodb-content-fainter text-xs">
-				{data.time.toLocaleString()}
+				<time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time>
 			</address>
 		</div>
 		<p>{data.comment}</p>

@@ -5,17 +5,19 @@ from typing import Literal
 from django.http import HttpRequest
 from django.contrib.contenttypes.models import ContentType
 
-from django.db.models import Window
+from django.db import models
+from django.db.models import Window, Case, When, Subquery, OuterRef, F
 from django.db.models.functions import Rank
 
 from django_comments_xtd.models import XtdComment
 
 from ninja import Router, Schema
+from ninja.pagination import paginate
 from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
 
 from otodb.account.models import Account
-from otodb.models import Notification, Subscription
+from otodb.models import Notification, Subscription, RevisionChange
 from .common import user_is_trusted, ProfileSchema
 
 comment_router = Router()
@@ -31,13 +33,16 @@ models_with_comments = [
 ]
 
 
-class CommentSchema(Schema):
+class BaseCommentSchema(Schema):
 	id: int
-	level: int
 	user: ProfileSchema
 	comment: str
 	submit_date: datetime
+
+
+class CommentSchema(BaseCommentSchema):
 	parent_id: int
+	level: int
 	index: int
 
 
@@ -117,3 +122,39 @@ def delete(
 		Notification.objects.filter(comment=comment).delete()
 	else:
 		return 403
+
+
+class ExtCommentSchema(BaseCommentSchema):
+	entity_type: str
+	entity_id: str
+
+
+@comment_router.get('recent', response=list[ExtCommentSchema])
+@paginate
+def recent(request: HttpRequest):
+	return (
+		XtdComment.objects.filter(is_removed=False)
+		.order_by('-submit_date')
+		.annotate(
+			entity_id=Case(
+				When(
+					content_type__model__contains='tag',
+					then=Subquery(
+						RevisionChange.objects.filter(
+							target_type_id=OuterRef('content_type_id'),
+							target_id=models.functions.Cast(
+								OuterRef('object_pk'),
+								output_field=models.BigIntegerField(),
+							),
+							target_column='slug',
+						).values('target_value')[:1]
+					),
+				),
+				default=models.functions.Cast(
+					F('object_pk'),
+					output_field=models.TextField(),
+				),
+			),
+			entity_type=F('content_type__model'),
+		)
+	)

@@ -38,7 +38,7 @@ function getQuery(url) {
 		}
 	}
 	else if (url.hostname.endsWith('acfun.cn')) {
-		const match = url.href.match(/\/v\/ac([\d_]+)/);
+		const match = url.href.match(/\/v\/(ac[\d_]+)/);
 		if (match) {
 			return {
 				platform: 'acfun',

@@ -1,4 +1,4 @@
-const OTODB_HOST = `https://otodb.net`;
+const OTODB_WEB = `https://otodb.net`;
 const OTODB_API = `https://otodb.net/api`;
 
 function getQuery(url) {

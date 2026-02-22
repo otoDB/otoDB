@@ -561,11 +561,15 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 	"""
 
 	if not src.media:
-		# Build creator connections query only if we have uploader_id
 		creator_tags = []
-		if src.work_origin == WorkOrigin.AUTHOR and info.get('uploader_id'):
+		platform_name = Platform(src.platform).name
+		if (
+			src.work_origin == WorkOrigin.AUTHOR
+			and info.get('uploader_id')
+			and platform_name in ProfileConnectionTypes.__members__
+		):
 			q = TagWorkCreatorConnection.objects.filter(
-				site=ProfileConnectionTypes[Platform(src.platform).name]
+				site=ProfileConnectionTypes[platform_name]
 			)
 
 			if src.platform == Platform.YOUTUBE and info.get('channel_id'):

@@ -20,6 +20,7 @@ from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 from yt_dlp.extractor.twitter import TwitterIE
+from yt_dlp.extractor.acfun import AcFunVideoIE
 
 from django.conf import settings
 
@@ -73,7 +74,14 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		opts['cookiefile'] = cookie_file
 	ydl = YoutubeDL(opts, auto_init=False)
 
-	for e in (YoutubeIE, NiconicoIECustom, BiliBiliIE, SoundcloudIE, TwitterIE):
+	for e in (
+		YoutubeIE,
+		NiconicoIECustom,
+		BiliBiliIE,
+		SoundcloudIE,
+		TwitterIE,
+		AcFunVideoIE,
+	):
 		ydl.add_info_extractor(e)
 
 
@@ -85,6 +93,7 @@ platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
 	(Platform.BILIBILI, BiliBiliIE),
 	(Platform.SOUNDCLOUD, SoundcloudIE),
 	(Platform.TWITTER, TwitterIE),
+	(Platform.ACFUN, AcFunVideoIE),
 ]  # type: ignore
 make_video_url = {
 	Platform.YOUTUBE: lambda s, uid=None: f'https://youtube.com/watch?v={s}',
@@ -97,6 +106,9 @@ make_video_url = {
 		f'https://twitter.com/{uid}/status/{s}'
 		if uid
 		else f'https://twitter.com/i/status/{s}'
+	),
+	Platform.ACFUN: lambda s, uid=None: (
+		f'https://www.acfun.cn/v/{s if s.startswith("ac") else "ac" + s}'
 	),
 }
 
@@ -234,6 +246,8 @@ def process_video_info(full_info, link=None):
 			case Platform.TWITTER:
 				info['id'] = info['display_id']
 				info['title'] = None
+			case Platform.ACFUN:
+				info['id'] = 'ac' + info['id']
 			case _:
 				return None
 

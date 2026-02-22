@@ -46,9 +46,12 @@ class Platform(models.IntegerChoices):
 	BILIBILI = 3, 'Bilibili'
 	SOUNDCLOUD = 4, 'SoundCloud'
 	TWITTER = 5, 'Twitter'
+	ACFUN = 6, 'AcFun'
 
 	@staticmethod
 	def from_str(s):
+		aliases = {'acfunvideo': 'acfun'}
+		s = aliases.get(s.lower(), s)
 		for choice, string in Platform.choices:
 			if string.lower() == s.lower():
 				return choice

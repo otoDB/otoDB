@@ -71,7 +71,7 @@ const displayResults = (work_id, tags) => {
     const resultsEl = document.getElementById('results');
 
     mainEl.innerText = "View on otoDB";
-    mainEl.href = `${OTODB_HOST}/work/${work_id}`;
+    mainEl.href = `${OTODB_WEB}/work/${work_id}`;
     mainEl.target = "_blank";
     mainEl.rel = "noopener noreferrer";
 
@@ -79,7 +79,7 @@ const displayResults = (work_id, tags) => {
     tags.forEach((tag) => {
         let tagLink = document.createElement('A');
         tagLink.innerText = tag.name;
-        tagLink.href = `${OTODB_HOST}/tag/${tag.slug}`;
+        tagLink.href = `${OTODB_WEB}/tag/${tag.slug}`;
         tagLink.target = "_blank";
         tagLink.rel = "noopener noreferrer";
         tagLink.classList.add(`tag-category-${tag.category}`);
@@ -94,7 +94,7 @@ const displayNotFound = (currentUrl) => {
     const resultsContainer = document.getElementById('results');
     let addLink = document.createElement('A');
     addLink.innerText = "Add this work to otoDB...";
-    addLink.href = `${OTODB_HOST}/work/add?${new URLSearchParams({ url: currentUrl })}`;
+    addLink.href = `${OTODB_WEB}/work/add?${new URLSearchParams({ url: currentUrl })}`;
     addLink.target = "_blank";
     addLink.rel = "noopener noreferrer";
     resultsContainer.appendChild(addLink);

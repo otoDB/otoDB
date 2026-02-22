@@ -105,7 +105,7 @@ make_video_url = {
 		if uid
 		else f'https://twitter.com/i/status/{s}'
 	),
-	Platform.ACFUN: lambda s, uid=None: f'https://www.acfun.cn/v/{s}',
+	Platform.ACFUN: lambda s, uid=None: f'https://www.acfun.cn/v/ac{s}',
 }
 
 niconico_meta_re = re.compile(

@@ -89,7 +89,7 @@ platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
 make_video_url = {
 	Platform.YOUTUBE: lambda s, uid=None: f'https://youtube.com/watch?v={s}',
 	Platform.NICONICO: lambda s, uid=None: f'https://nicovideo.jp/watch/{s}',
-	Platform.BILIBILI: lambda s, uid=None: f'https://www.bilibili.com/video/{s}/',
+	Platform.BILIBILI: lambda s, uid=None: f'https://www.bilibili.com/video/{s + '/' if '_p' not in s else s[:s.index('_p')] + '/' + '?p=' + s[s.index('_p') + 2:]}',
 	Platform.SOUNDCLOUD: lambda s, uid=None: s,  # TODO
 	Platform.TWITTER: lambda s, uid=None: (
 		f'https://twitter.com/{uid}/status/{s}'
@@ -212,13 +212,14 @@ def process_video_info(full_info, link=None):
 			case Platform.YOUTUBE:
 				info['tags'].extend(hashtag_re.findall(info['description']))
 			case Platform.BILIBILI:
-				info['id'] = _clean_bilibili_source_id(info['id'])
-				title_chapter_mark = info['title'].find(
-					' p01'
-				)  # TODO this is far from perfect
-				if title_chapter_mark != -1:
-					info['title'] = info['title'][:title_chapter_mark]
-				info['webpage_url'] = make_video_url[info['extractor']](info['id'])
+				if 'p' not in furl(info['webpage_url']).args:
+					info['id'] = _clean_bilibili_source_id(info['id'])
+					title_chapter_mark = info['title'].find(
+						' p01'
+					) 
+					if title_chapter_mark != -1:
+						info['title'] = info['title'][:title_chapter_mark]
+					info['webpage_url'] = make_video_url[info['extractor']](info['id'])
 				if 'tags' in info:
 					info['tags'] = [
 						tag[3:-1]

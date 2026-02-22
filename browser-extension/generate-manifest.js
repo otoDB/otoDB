@@ -49,7 +49,8 @@ const manifest = {
     ],
     "host_permissions": [
       "https://otodb.net/*",
-      "https://*.nicovideo.jp/*"
+      "https://*.nicovideo.jp/*",
+      "https://www.nicochart.jp/*"
     ],
     "declarative_net_request": {
       "rule_resources": [

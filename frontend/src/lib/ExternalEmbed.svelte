@@ -68,7 +68,7 @@
 		title="AcFun Player"
 		{width}
 		{height}
-		src="https://www.acfun.cn/player/ac{src.source_id}"
+		src="https://www.acfun.cn/player/{src.source_id}"
 		frameborder="no"
 		scrolling="no"
 		allowfullscreen

@@ -10,13 +10,14 @@
 	let isOriginal = $derived(!!(form?.origin ?? !data.title));
 	let isUnavailable = $derived(!!data.unavailable_source);
 
+	let submitting = $state(false);
+
 	$effect(() => {
 		if (form?.failed) {
+			submitting = false;
 			callErrorToast(form.message);
 		}
 	});
-
-	let submitting = $state(false);
 </script>
 
 <Section title={data.head.title}>

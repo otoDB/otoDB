@@ -51,7 +51,8 @@
 								{/if}
 							{/each}
 						</select></td
-					></tr></tbody
+					></tr
+				></tbody
 			>
 		</table>
 		<div class="grid grid-cols-2 gap-3">

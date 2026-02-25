@@ -31,7 +31,9 @@
 				fetch,
 				params: { query: { model, pk, comment_text, parent_id: reply_to } }
 			});
-			document.querySelectorAll<HTMLInputElement>('.reply-toggle').forEach((e) => (e.checked = false));
+			document
+				.querySelectorAll<HTMLInputElement>('.reply-toggle')
+				.forEach((e) => (e.checked = false));
 			drafts[reply_to] = '';
 			previews[reply_to] = '';
 			previewMode[reply_to] = false;
@@ -87,7 +89,7 @@
 				</div>
 			{:else}
 				<textarea
-					class="block min-h-15 w-full reply-editor"
+					class="reply-editor block min-h-15 w-full"
 					name="comment"
 					bind:value={drafts[reply_to]}
 					use:autosize={drafts[reply_to] ?? ''}

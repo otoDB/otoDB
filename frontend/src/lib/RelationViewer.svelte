@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages.js';
 	import { SongRelationTypes, WorkRelationTypes } from '$lib/enums.js';
+	import { getDisplayText } from '$lib/api';
 	import mermaid from 'mermaid';
 	import elkLayouts from '@mermaid-js/layout-elk';
 	import { onMount } from 'svelte';
@@ -25,13 +26,14 @@ config:
 ---
 flowchart ${direction}
     style ${id} color:#f00
-	classDef moreNodes fill:none,stroke:none;` +
+	classDef moreNodes fill:none,stroke:none;
+	classDef untitled font-style:italic;` +
 				(type === 'work'
 					? `
     ${nodes
 		.map(
 			(w) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
-    ${w.id}["${w.title.replaceAll('"', '#quot;')}"]
+    ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
     click ${w.id} "${`/work/${w.id}`}"`
 		)
 		.join('\n')}
@@ -53,7 +55,9 @@ flowchart ${direction}
 					: `
     ${nodes
 		.map(
-			(w) => `${w.id}["${w.title.replaceAll('"', '#quot;')}"]
+			(
+				w
+			) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
     click ${w.id} "${`/tag/${w.work_tag}`}"`
 		)
 		.join('\n')}

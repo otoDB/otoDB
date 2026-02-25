@@ -2,6 +2,7 @@
 	import type { components } from './schema';
 	import WorkTag from './WorkTag.svelte';
 	import DisplayText from './DisplayText.svelte';
+	import WorkThumbnail from './WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getDisplayText } from './api';
 
@@ -19,10 +20,10 @@
 	]}
 >
 	<a href="/work/{work.id}" tabindex="-1" class="flex h-full items-center">
-		<img
-			src={work.thumbnail}
+		<WorkThumbnail
+			thumbnail={work.thumbnail}
 			alt={getDisplayText(work.title)}
-			class="aspect-video h-full object-cover"
+			class="aspect-video h-full min-w-full object-cover"
 		/>
 	</a>
 	<a href="/work/{work.id}" class="my-2 line-clamp-2 self-center px-4"

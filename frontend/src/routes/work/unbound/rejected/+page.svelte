@@ -3,6 +3,7 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Platform, WorkOrigin } from '$lib/enums';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let { data }: PageProps = $props();
 </script>
@@ -37,10 +38,10 @@
 				</span>
 				<span>
 					<a href={src.url} target="_blank" rel="noopener noreferrer"
-						><img
-							src={src.thumbnail}
+						><WorkThumbnail
+							thumbnail={src.thumbnail}
 							alt={src.title || src.url}
-							class="float-right clear-both w-50"
+							class="float-right clear-both w-50 aspect-video"
 						/></a
 					>
 				</span>

@@ -23,6 +23,7 @@
 	import { callSavingToast } from '$lib/toast';
 	import { SvelteMap } from 'svelte/reactivity';
 	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let { data } = $props();
 
@@ -91,8 +92,8 @@
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
 				{#if cover_select === -1}
-					<img
-						src={data.thumbnail}
+					<WorkThumbnail
+						thumbnail={data.thumbnail}
 						alt={getDisplayText(data.title)}
 						class="h-[270px] w-[480px] object-cover"
 					/>

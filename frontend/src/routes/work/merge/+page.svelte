@@ -6,6 +6,7 @@
 	import { Platform, Rating, WorkOrigin } from '$lib/enums';
 	import client, { getDisplayText } from '$lib/api';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let work: {
 		work: components['schemas']['WorkSchema'] | null;
@@ -176,13 +177,11 @@
 							{@const selectedSource = work[0].work.sources.find(
 								(s) => s.id === work[0].thumbnail_source_id
 							)}
-							{#if selectedSource?.thumbnail}
-								<img
-									class="mt-2 w-15"
-									src={selectedSource.thumbnail}
-									alt={getDisplayText(work[0].title)}
-								/>
-							{/if}
+							<WorkThumbnail
+								class="mt-2 w-15 aspect-video"
+								thumbnail={selectedSource?.thumbnail}
+								alt={getDisplayText(work[0].title)}
+							/>
 						{/if}
 					</td>
 					<td
@@ -214,13 +213,11 @@
 							{@const selectedSource = work[1].work.sources.find(
 								(s) => s.id === work[1].thumbnail_source_id
 							)}
-							{#if selectedSource?.thumbnail}
-								<img
-									class="mt-2 w-15"
-									src={selectedSource.thumbnail}
-									alt={getDisplayText(work[1].title)}
-								/>
-							{/if}
+							<WorkThumbnail
+								class="mt-2 w-15 aspect-video"
+								thumbnail={selectedSource?.thumbnail}
+								alt={getDisplayText(work[1].title)}
+							/>
 						{/if}
 					</td>
 					<th>{m.heroic_ideal_orangutan_aid()}</th></tr

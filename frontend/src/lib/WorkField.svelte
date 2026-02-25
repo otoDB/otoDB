@@ -5,6 +5,7 @@
 	import type { components } from './schema';
 	import { clickOutside, debounce } from './ui';
 	import DisplayText from './DisplayText.svelte';
+	import WorkThumbnail from './WorkThumbnail.svelte';
 
 	let self: HTMLElement;
 
@@ -55,7 +56,7 @@
 			}}>{m.quick_happy_trout_amuse()}</button
 		>
 		<a target="_blank" href="/work/{value?.id}"
-			><img class="w-56" src={value?.thumbnail} alt={getDisplayText(value?.title)} /></a
+			><WorkThumbnail class="w-56 aspect-video" thumbnail={value?.thumbnail} alt={getDisplayText(value?.title)} /></a
 		>
 	{/if}
 	{#if suggestions.length}
@@ -69,7 +70,7 @@
 			<tbody>
 				{#each suggestions as v, i (i)}
 					<tr class="w bg-otodb-bg-fainter hover:bg-otodb-bg-faint p-1">
-						<td><img class="w-20" src={v.thumbnail} alt={getDisplayText(v.title)} /></td
+						<td><WorkThumbnail class="w-20 aspect-video" thumbnail={v.thumbnail} alt={getDisplayText(v.title)} /></td
 						>
 						<td
 							><a

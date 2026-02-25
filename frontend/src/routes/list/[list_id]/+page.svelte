@@ -12,6 +12,7 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import Pager from '$lib/Pager.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -125,10 +126,10 @@
 					</span>
 					<span>
 						<a href={src.url} target="_blank" rel="noopener noreferrer"
-							><img
-								src={src.thumbnail}
+							><WorkThumbnail
+								thumbnail={src.thumbnail}
 								alt={src.title || src.url}
-								class="float-right clear-both w-50"
+								class="float-right clear-both w-50 aspect-video"
 							/></a
 						>
 					</span>

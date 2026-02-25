@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/markdown_preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Markdown Preview */
+        post: operations["otodb_api_markdown_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/csrf": {
         parameters: {
             query?: never;
@@ -1498,6 +1515,11 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** MarkdownPreviewRequest */
+        MarkdownPreviewRequest: {
+            /** Md */
+            md: string;
+        };
         /** LoginRequestSchema */
         LoginRequestSchema: {
             /** Username */
@@ -1904,6 +1926,8 @@ export interface components {
                 "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest",
                 number | string
             ] | null;
+            /** Post */
+            post?: number | null;
             /**
              * Dismissed
              * @default false
@@ -2367,6 +2391,30 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    otodb_api_markdown_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkdownPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
             };
         };
     };
@@ -4563,7 +4611,7 @@ export interface operations {
             query: {
                 model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
                 pk: number;
-                comment: string;
+                comment_text: string;
                 parent_id?: number;
             };
             header?: never;

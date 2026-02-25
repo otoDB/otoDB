@@ -16,7 +16,6 @@
 		MediaType
 	} from '$lib/enums';
 	import type { PageProps } from './$types';
-	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client, { getTagDisplaySlug } from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -129,6 +128,22 @@
 			goto('/', { invalidateAll: true });
 		} else if (response.status === 400) {
 			callErrorToast(m.that_new_mayfly_spur());
+		}
+	};
+
+	let previewHtml = $state('');
+	let previewing = $state(false);
+
+	const fetchPreview = async () => {
+		try {
+			previewing = true;
+			const { data } = await client.POST('/api/markdown_preview', {
+				fetch,
+				body: { md: mds[wikiView] }
+			});
+			previewHtml = data ?? '';
+		} finally {
+			previewing = false;
 		}
 	};
 </script>
@@ -325,9 +340,21 @@
 		<div class="grid grid-cols-2 gap-3">
 			<textarea name="md" bind:value={mds[wikiView]}></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
-				<Markdown md={mds[wikiView]} />
+				{#if previewHtml}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html previewHtml}
+				{/if}
 			</div>
 		</div>
+		<button
+			type="button"
+			onclick={fetchPreview}
+			disabled={previewing}
+			class:opacity-60={previewing}
+			class:pointer-events-none={previewing}
+		>
+			Preview
+		</button>
 		<input type="submit" />
 	</form>
 </Section>

@@ -66,12 +66,26 @@ class Notification(models.Model):
 		null=True,
 		on_delete=models.CASCADE,
 	)
+	post = models.ForeignKey(
+		Post,
+		blank=True,
+		null=True,
+		on_delete=models.CASCADE,
+	)
 
 	class Meta:
 		constraints = [
 			models.CheckConstraint(
-				check=(
-					models.Q(revision__isnull=True) ^ models.Q(comment__isnull=True)
+				condition=(
+					models.Q(
+						revision__isnull=False, comment__isnull=True, post__isnull=True
+					)
+					| models.Q(
+						revision__isnull=True, comment__isnull=False, post__isnull=True
+					)
+					| models.Q(
+						revision__isnull=True, comment__isnull=True, post__isnull=False
+					)
 				),
 				name='notification_union',
 			)

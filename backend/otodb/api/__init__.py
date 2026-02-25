@@ -4,10 +4,13 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.cache import cache_page
 
-from ninja import NinjaAPI
+from ninja import NinjaAPI, Schema
 from ninja.decorators import decorate_view
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
+from ninja.security import django_auth
+
+from otodb.markdown import render_markdown
 
 from .auth import auth_router
 from .work import work_router
@@ -60,3 +63,12 @@ def statistics(request):
 		MediaSong.objects.count(),
 		Pool.objects.count(),
 	]
+
+
+class MarkdownPreviewRequest(Schema):
+	md: str
+
+
+@api.post('markdown_preview', auth=django_auth, response=str)
+def markdown_preview(request, payload: MarkdownPreviewRequest):
+	return render_markdown(payload.md)

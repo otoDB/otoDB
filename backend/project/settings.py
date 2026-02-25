@@ -86,6 +86,13 @@ INSTALLED_APPS = [
 	'corsheaders',
 ]
 
+MARKDOWN_EXTENSIONS = [
+	'fenced_code',
+	'tables',
+	'nl2br',
+	'otodb.markdown',
+]
+
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',

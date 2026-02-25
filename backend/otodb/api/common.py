@@ -4,11 +4,13 @@ from functools import wraps, lru_cache
 from pydantic import field_validator
 
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 
 from ninja import Schema, ModelSchema, Field, Query, Router
 from django_request_cache import get_request_cache
 
 from otodb.account.models import Account
+from otodb.markdown import parse_mentions
 from otodb.models import (
 	MediaWork,
 	WorkSource,
@@ -30,6 +32,21 @@ import re
 
 class Error(Schema):
 	message: str
+
+
+def mentioned_user_ids(text: str, exclude_user_id: int | None = None) -> set[int]:
+	names = parse_mentions(text)
+	if not names:
+		return set()
+
+	q = Q()
+	for name in names:
+		q |= Q(username__iexact=name)
+
+	users = Account.objects.filter(q)
+	if exclude_user_id is not None:
+		users = users.exclude(id=exclude_user_id)
+	return set(users.values_list('id', flat=True))
 
 
 class ProfileSchema(ModelSchema):

@@ -6,9 +6,24 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { LanguageNames, PostCategories } from '$lib/enums';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import Markdown from 'svelte-exmarkdown';
+	import client from '$lib/api';
 
 	let md = $state('');
+	let previewHtml = $state('');
+	let previewing = $state(false);
+
+	const fetchPreview = async () => {
+		try {
+			previewing = true;
+			const { data } = await client.POST('/api/markdown_preview', {
+				fetch,
+				body: { md }
+			});
+			previewHtml = data ?? '';
+		} finally {
+			previewing = false;
+		}
+	};
 </script>
 
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
@@ -36,16 +51,27 @@
 								{/if}
 							{/each}
 						</select></td
-					></tr
-				></tbody
+					></tr></tbody
 			>
 		</table>
 		<div class="grid grid-cols-2 gap-3">
 			<textarea rows="10" bind:value={md} class="w-full" name="post" required></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
-				<Markdown {md} />
+				{#if previewHtml}
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html previewHtml}
+				{/if}
 			</div>
 		</div>
+		<button
+			type="button"
+			onclick={fetchPreview}
+			disabled={previewing}
+			class:opacity-60={previewing}
+			class:pointer-events-none={previewing}
+		>
+			{m.many_each_wolf_arrive()}
+		</button>
 		<input type="submit" />
 	</form>
 </Section>

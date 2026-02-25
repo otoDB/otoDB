@@ -205,7 +205,10 @@ def process_video_info(full_info, link=None):
 			resolutions = [
 				(f['width'], f['height'])
 				for f in info['formats']
-				if 'width' in f and f['width'] is not None
+				if 'width' in f
+				and f['width'] is not None
+				# Exclude super-resolution (AI upscaled) formats
+				and not f.get('format_id', '').endswith('-sr')
 			]
 			if resolutions:
 				info['width'], info['height'] = max(resolutions, key=lambda s: s[0])

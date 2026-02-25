@@ -76,7 +76,7 @@ export const getTagDisplaySlug = (tag) =>
 
 export function getDisplayText(
 	value: string | null | undefined,
-	placeholder: string | undefined
+	placeholder: string | undefined = undefined
 ): string {
 	return value ?? placeholder ?? m.lost_game_mink_loop();
 }

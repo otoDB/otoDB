@@ -55,7 +55,9 @@ flowchart ${direction}
 					: `
     ${nodes
 		.map(
-			(w) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
+			(
+				w
+			) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
     click ${w.id} "${`/tag/${w.work_tag}`}"`
 		)
 		.join('\n')}

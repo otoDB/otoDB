@@ -114,11 +114,14 @@ def search(
 	order: Literal['id', '-id', 'pub', '-pub'] | None = '-id',
 ):
 	search_id = int(query) if query.isdigit() else -1
-	q = (
-		Q(title__icontains=query)
-		| Q(description__icontains=query)
-		| Q(worksource__title__icontains=query)
-	)
+	if query:
+		q = (
+			Q(title__icontains=query)
+			| Q(description__icontains=query)
+			| Q(worksource__title__icontains=query)
+		)
+	else:
+		q = Q()
 	if tags:
 		for tag in tags.split():
 			try:
@@ -149,17 +152,27 @@ def search(
 						q = q & Q(tags=t)
 			except TagWork.DoesNotExist:
 				return []
-	else:
+	elif query:
 		q = q | Q(worksource__source_id=query)
 		if query.startswith('https'):
 			q = q | Q(worksource__url=query)
 		if search_id > 0:
 			q = q | Q(id=search_id)
 
-	return (
+	qs = (
 		MediaWork.objects.filter(moved_to__isnull=True)
 		.filter(q)
 		.annotate(
+			pub=Subquery(
+				WorkSource.objects.filter(media_id=OuterRef('id'))
+				.order_by('published_date')
+				.values('published_date')[:1]
+			),
+		)
+	)
+
+	if query:
+		qs = qs.annotate(
 			priority=Case(
 				When(id=search_id, then=Value(0)),
 				When(worksource__url=query, then=Value(1)),
@@ -170,15 +183,11 @@ def search(
 				default=Value(1000),
 				output_field=IntegerField(),
 			),
-			pub=Subquery(
-				WorkSource.objects.filter(media_id=OuterRef('id'))
-				.order_by('published_date')
-				.values('published_date')[:1]
-			),
-		)
-		.order_by('priority', order)
-		.distinct()
-	)
+		).order_by('priority', order)
+	else:
+		qs = qs.order_by(order)
+
+	return qs.distinct()
 
 
 @work_router.get('tags_needed', response=List[ThinWorkSchema], exclude_none=True)

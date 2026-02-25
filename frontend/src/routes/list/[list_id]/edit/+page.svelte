@@ -139,7 +139,7 @@
 						><td class="w-56">
 							<a target="_blank" href="/work/{entry.work.id}"
 								><WorkThumbnail
-									class="w-56 aspect-video"
+									class="aspect-video w-56"
 									thumbnail={entry.work.thumbnail}
 									alt={getDisplayText(entry.work.title)}
 								/></a

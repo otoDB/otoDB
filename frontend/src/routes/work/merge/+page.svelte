@@ -178,7 +178,7 @@
 								(s) => s.id === work[0].thumbnail_source_id
 							)}
 							<WorkThumbnail
-								class="mt-2 w-15 aspect-video"
+								class="mt-2 aspect-video w-15"
 								thumbnail={selectedSource?.thumbnail}
 								alt={getDisplayText(work[0].title)}
 							/>
@@ -214,7 +214,7 @@
 								(s) => s.id === work[1].thumbnail_source_id
 							)}
 							<WorkThumbnail
-								class="mt-2 w-15 aspect-video"
+								class="mt-2 aspect-video w-15"
 								thumbnail={selectedSource?.thumbnail}
 								alt={getDisplayText(work[1].title)}
 							/>

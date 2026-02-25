@@ -41,7 +41,7 @@
 						><WorkThumbnail
 							thumbnail={src.thumbnail}
 							alt={src.title || src.url}
-							class="float-right clear-both w-50 aspect-video"
+							class="float-right clear-both aspect-video w-50"
 						/></a
 					>
 				</span>

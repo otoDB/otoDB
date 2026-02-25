@@ -95,7 +95,7 @@
 								(s) => s.id === thumbnail_source_id
 							)}
 							<WorkThumbnail
-								class="mt-2 w-20 aspect-video"
+								class="mt-2 aspect-video w-20"
 								thumbnail={selectedSource?.thumbnail}
 								alt={selectedSource?.title ?? ''}
 							/>

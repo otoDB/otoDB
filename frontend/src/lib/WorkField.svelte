@@ -56,7 +56,11 @@
 			}}>{m.quick_happy_trout_amuse()}</button
 		>
 		<a target="_blank" href="/work/{value?.id}"
-			><WorkThumbnail class="w-56 aspect-video" thumbnail={value?.thumbnail} alt={getDisplayText(value?.title)} /></a
+			><WorkThumbnail
+				class="aspect-video w-56"
+				thumbnail={value?.thumbnail}
+				alt={getDisplayText(value?.title)}
+			/></a
 		>
 	{/if}
 	{#if suggestions.length}
@@ -70,7 +74,12 @@
 			<tbody>
 				{#each suggestions as v, i (i)}
 					<tr class="w bg-otodb-bg-fainter hover:bg-otodb-bg-faint p-1">
-						<td><WorkThumbnail class="w-20 aspect-video" thumbnail={v.thumbnail} alt={getDisplayText(v.title)} /></td
+						<td
+							><WorkThumbnail
+								class="aspect-video w-20"
+								thumbnail={v.thumbnail}
+								alt={getDisplayText(v.title)}
+							/></td
 						>
 						<td
 							><a

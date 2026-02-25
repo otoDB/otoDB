@@ -23,7 +23,7 @@
 		<WorkThumbnail
 			thumbnail={work.thumbnail}
 			alt={getDisplayText(work.title)}
-			class="aspect-video h-full object-cover min-w-full"
+			class="aspect-video h-full min-w-full object-cover"
 		/>
 	</a>
 	<a href="/work/{work.id}" class="my-2 line-clamp-2 self-center px-4"

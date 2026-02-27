@@ -39,6 +39,7 @@
 						min="1"
 						max={n_pages}
 						bind:value={pp}
+						onchange={(e) => e.currentTarget.form?.requestSubmit()}
 					/>
 				</form>
 			{:else}

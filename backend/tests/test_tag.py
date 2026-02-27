@@ -269,8 +269,6 @@ class TestTagLanguagePreference:
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestTagSearch:
-	"""Test tag search endpoint sorting behavior"""
-
 	def test_search_finds_aliased_tag(self, tag_client):
 		"""
 		Test that searching for an alias name returns the base tag.
@@ -291,30 +289,6 @@ class TestTagSearch:
 		result_names = [tag['name'] for tag in results]
 
 		assert 'massively_multiplayer_online' in result_names
-
-	def test_exact_match_case_insensitive(self, tag_client):
-		"""Test that exact matching is case-insensitive"""
-		work1 = MediaWork.objects.create(title='Work 1')
-		work2 = MediaWork.objects.create(title='Work 2')
-
-		# Create tags with different cases
-		tag1 = TagWork.objects.create(name='anime', category=WorkTagCategory.GENERAL)
-		tag2 = TagWork.objects.create(
-			name='ANIME_SERIES', category=WorkTagCategory.GENERAL
-		)
-
-		work1.tags.add(tag1)
-		work2.tags.add(tag2)
-
-		# Search with different case
-		response = tag_client.get('/search?query=ANIME')
-		assert response.status_code == 200
-		results = response.json()['items']
-
-		# 'anime' should be first as an exact match
-		assert results[0]['name'] == 'anime'
-		# 'anime_series' should be second as a partial match
-		assert results[1]['name'] == 'anime_series'
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)

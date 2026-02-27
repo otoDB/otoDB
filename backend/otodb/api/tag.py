@@ -214,9 +214,7 @@ def details(request: HttpRequest, tag_slug: str):
 @tag_router.get('works', response=list[ThinWorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
-	return MediaWork.objects.filter(
-		moved_to__isnull=True, tags__slug=tag_slug
-	).select_related('thumbnail_source')
+	return MediaWork.active_objects.filter(tags__slug=tag_slug)
 
 
 def tag_route_switch(work_route: Route, song_route: Route):

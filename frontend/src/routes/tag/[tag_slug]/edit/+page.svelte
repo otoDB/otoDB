@@ -18,6 +18,7 @@
 	import type { PageProps } from './$types';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client, { getTagDisplaySlug } from '$lib/api';
+	import { renderMarkdown } from '$lib/markdown';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
@@ -131,21 +132,7 @@
 		}
 	};
 
-	let previewHtml = $state('');
-	let previewing = $state(false);
-
-	const fetchPreview = async () => {
-		try {
-			previewing = true;
-			const { data } = await client.POST('/api/markdown_preview', {
-				fetch,
-				body: { md: mds[wikiView] }
-			});
-			previewHtml = data ?? '';
-		} finally {
-			previewing = false;
-		}
-	};
+	let previewHtml = $derived(renderMarkdown(mds[wikiView] ?? ''));
 </script>
 
 <Section title={data.tag.name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
@@ -340,21 +327,10 @@
 		<div class="grid grid-cols-2 gap-3">
 			<textarea name="md" bind:value={mds[wikiView]}></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
-				{#if previewHtml}
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html previewHtml}
-				{/if}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html previewHtml}
 			</div>
 		</div>
-		<button
-			type="button"
-			onclick={fetchPreview}
-			disabled={previewing}
-			class:opacity-60={previewing}
-			class:pointer-events-none={previewing}
-		>
-			Preview
-		</button>
 		<input type="submit" />
 	</form>
 </Section>

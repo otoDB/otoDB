@@ -73,7 +73,12 @@ def work_in_lists(request: HttpRequest, work_id: int):
 
 
 class SourceSubmissionSchema(WorkSourceSchema):
-	media: int | None = Field(None, alias='media_id')
+	media: int | None
+
+	@field_validator('media', mode='before', check_fields=False)
+	@classmethod
+	def work_id(cls, value) -> str:
+		return value.id if value is not None else None
 
 
 class SubmissionsFilterSchema(FilterSchema):

@@ -54,6 +54,7 @@ from .common import (
 	RouterWithRevision,
 	with_revision_route,
 	TagLangPreferenceSchema,
+	render_markdown,
 )
 
 tag_router = RouterWithRevision()
@@ -453,16 +454,23 @@ def wiki_page(request: HttpRequest, tag_slug: str):
 def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	empty = md.strip() == ''
+	page_rendered = '' if empty else render_markdown(md)
 	try:
 		wp = WikiPage.objects.get(tag=tag, lang=LanguageTypes(lang).value)
 		if empty:
 			wp.delete()
 		else:
 			wp.page = md
-			wp.save()  # Cannot use update_or_create here because the rendered page doesn't get rendered
+			wp.page_rendered = page_rendered
+			wp.save()
 	except WikiPage.DoesNotExist:
 		if not empty:
-			WikiPage.objects.create(tag=tag, lang=LanguageTypes(lang).value, page=md)
+			WikiPage.objects.create(
+				tag=tag,
+				lang=LanguageTypes(lang).value,
+				page=md,
+				page_rendered=page_rendered,
+			)
 
 
 @tag_router.get(

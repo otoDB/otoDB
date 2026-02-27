@@ -20,7 +20,7 @@ from otodb.models import (
 )
 from otodb.models.enums import PostCategory, LanguageTypes
 
-from .common import ProfileSchema, user_is_trusted, mentioned_user_ids
+from .common import ProfileSchema, user_is_trusted, mentioned_user_ids, render_markdown
 
 post_router = Router()
 
@@ -95,10 +95,17 @@ def new(
 	assert category > 0
 	assert title
 	assert post
-	p = Post.objects.create(title=title, added_by=request.user, category=category)
-	PostContent.objects.create(post=p, lang=lang, page=post)
-
+	rendered_post = render_markdown(post)
 	target_ids = mentioned_user_ids(post, exclude_user_id=request.user.pk)
+
+	p = Post.objects.create(title=title, added_by=request.user, category=category)
+	PostContent.objects.create(
+		post=p,
+		lang=lang,
+		page=post,
+		page_rendered=rendered_post,
+	)
+
 	Notification.objects.bulk_create(
 		[Notification(target_id=target_id, post=p) for target_id in target_ids]
 	)

@@ -21,23 +21,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/markdown_preview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Markdown Preview */
-        post: operations["otodb_api_markdown_preview"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/auth/csrf": {
         parameters: {
             query?: never;
@@ -1515,11 +1498,6 @@ export interface components {
             /** Message */
             message: string;
         };
-        /** MarkdownPreviewRequest */
-        MarkdownPreviewRequest: {
-            /** Md */
-            md: string;
-        };
         /** LoginRequestSchema */
         LoginRequestSchema: {
             /** Username */
@@ -2123,8 +2101,11 @@ export interface components {
         };
         /** WikiPageSchema */
         WikiPageSchema: {
-            /** Page Rendered */
-            page_rendered: string;
+            /**
+             * Page Rendered
+             * @default
+             */
+            page_rendered: string | null;
             /**
              * Lang
              * @default 0
@@ -2173,8 +2154,11 @@ export interface components {
         PostContentSchema: {
             /** Lang */
             lang: number;
-            /** Page Rendered */
-            page_rendered: string;
+            /**
+             * Page Rendered
+             * @default
+             */
+            page_rendered: string | null;
             /**
              * Modified
              * Format: date-time
@@ -2241,6 +2225,23 @@ export interface components {
             parent_id: number;
             /** Index */
             index: number;
+        };
+        /** CommentInSchema */
+        CommentInSchema: {
+            /**
+             * Model
+             * @enum {string}
+             */
+            model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
+            /** Pk */
+            pk: number;
+            /** Comment Text */
+            comment_text: string;
+            /**
+             * Parent Id
+             * @default 0
+             */
+            parent_id: number;
         };
         /** PagedRevisionSchema */
         PagedRevisionSchema: {
@@ -2391,30 +2392,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    otodb_api_markdown_preview: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MarkdownPreviewRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": string;
-                };
             };
         };
     };
@@ -4608,17 +4585,16 @@ export interface operations {
     };
     otodb_api_comment_post: {
         parameters: {
-            query: {
-                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
-                pk: number;
-                comment_text: string;
-                parent_id?: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentInSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

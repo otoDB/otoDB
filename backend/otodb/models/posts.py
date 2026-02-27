@@ -5,9 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 
 from django_comments_xtd.models import XtdComment
 
-from markdownfield.models import MarkdownField, RenderedMarkdownField
-from markdownfield.validators import VALIDATOR_CLASSY
-
 from otodb.account.models import Account
 from .enums import LanguageTypes, PostCategory
 from .revision import Revision
@@ -33,10 +30,8 @@ class Post(models.Model):
 
 class PostContent(models.Model):
 	post = models.ForeignKey(Post, blank=False, null=False, on_delete=models.CASCADE)
-	page = MarkdownField(
-		rendered_field='page_rendered', validator=VALIDATOR_CLASSY, null=False
-	)
-	page_rendered = RenderedMarkdownField()
+	page = models.TextField(null=False)
+	page_rendered = models.TextField(default='', blank=True)
 	lang = models.IntegerField(choices=LanguageTypes.choices, null=False, blank=False)
 	modified = models.DateTimeField(auto_now=True)
 

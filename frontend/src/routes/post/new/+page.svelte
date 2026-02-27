@@ -6,24 +6,10 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { LanguageNames, PostCategories } from '$lib/enums';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import client from '$lib/api';
+	import { renderMarkdown } from '$lib/markdown';
 
 	let md = $state('');
-	let previewHtml = $state('');
-	let previewing = $state(false);
-
-	const fetchPreview = async () => {
-		try {
-			previewing = true;
-			const { data } = await client.POST('/api/markdown_preview', {
-				fetch,
-				body: { md }
-			});
-			previewHtml = data ?? '';
-		} finally {
-			previewing = false;
-		}
-	};
+	let previewHtml = $derived(renderMarkdown(md));
 </script>
 
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
@@ -58,21 +44,10 @@
 		<div class="grid grid-cols-2 gap-3">
 			<textarea rows="10" bind:value={md} class="w-full" name="post" required></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
-				{#if previewHtml}
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html previewHtml}
-				{/if}
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html previewHtml}
 			</div>
 		</div>
-		<button
-			type="button"
-			onclick={fetchPreview}
-			disabled={previewing}
-			class:opacity-60={previewing}
-			class:pointer-events-none={previewing}
-		>
-			{m.many_each_wolf_arrive()}
-		</button>
 		<input type="submit" />
 	</form>
 </Section>

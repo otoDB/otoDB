@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import client, { makeCommentTree, type CommentModels } from './api';
 	import { UserLevel } from './enums';
+	import { renderMarkdown } from './markdown';
 	import { m } from './paraglide/messages';
 	import { autosize, timeAgo } from './ui';
 	import type { components } from './schema';
@@ -19,9 +20,7 @@
 	const tree = $derived(makeCommentTree(comments) ?? []);
 	let drafts = $state<Record<number, string>>({});
 	let previews = $state<Record<number, string>>({});
-	let previewing = $state<Record<number, boolean>>({});
 	let previewMode = $state<Record<number, boolean>>({});
-	let previewSource = $state<Record<number, string>>({});
 
 	const post = (reply_to: number) => async (e: SubmitEvent) => {
 		e.preventDefault();
@@ -29,7 +28,7 @@
 		if (comment_text) {
 			await client.POST('/api/comment/comment', {
 				fetch,
-				params: { query: { model, pk, comment_text, parent_id: reply_to } }
+				body: { model, pk, comment_text, parent_id: reply_to }
 			});
 			document
 				.querySelectorAll<HTMLInputElement>('.reply-toggle')
@@ -41,7 +40,7 @@
 		}
 	};
 
-	const togglePreview = async (reply_to: number) => {
+	const togglePreview = (reply_to: number) => {
 		if (previewMode[reply_to]) {
 			previewMode[reply_to] = false;
 			return;
@@ -50,20 +49,8 @@
 		const comment = drafts[reply_to]?.trim();
 		if (!comment) return;
 
-		try {
-			previewing[reply_to] = true;
-			if (previewSource[reply_to] !== comment) {
-				const { data } = await client.POST('/api/markdown_preview', {
-					fetch,
-					body: { md: comment }
-				});
-				previews[reply_to] = data ?? '';
-				previewSource[reply_to] = comment;
-			}
-			previewMode[reply_to] = true;
-		} finally {
-			previewing[reply_to] = false;
-		}
+		previews[reply_to] = renderMarkdown(comment);
+		previewMode[reply_to] = true;
 	};
 
 	const can_comment = user && user.level >= UserLevel.MEMBER;
@@ -96,14 +83,7 @@
 				></textarea>
 			{/if}
 			<div class="reply-actions">
-				<button
-					type="button"
-					class="h-15 p-3"
-					onclick={() => togglePreview(reply_to)}
-					disabled={previewing[reply_to]}
-					class:opacity-60={previewing[reply_to]}
-					class:pointer-events-none={previewing[reply_to]}
-				>
+				<button type="button" class="h-15 p-3" onclick={() => togglePreview(reply_to)}>
 					{previewMode[reply_to] ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}
 				</button>
 				<input type="submit" class="h-15 p-3" value={m.inner_solid_toad_zap()} />
@@ -135,7 +115,7 @@
 		</div>
 		<div class="prose prose-neutral prose-sm dark:prose-invert">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html data.comment}
+			{@html renderMarkdown(data.comment)}
 		</div>
 	</div>
 	<div class="ml-3">

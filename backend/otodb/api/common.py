@@ -1,3 +1,5 @@
+import logging
+import requests
 from typing import Optional, Annotated
 from functools import wraps, lru_cache
 
@@ -9,8 +11,10 @@ from django.db.models import Q
 from ninja import Schema, ModelSchema, Field, Query, Router
 from django_request_cache import get_request_cache
 
+from django.conf import settings
+
 from otodb.account.models import Account
-from otodb.markdown import parse_mentions
+from ninja.errors import HttpError
 from otodb.models import (
 	MediaWork,
 	WorkSource,
@@ -34,8 +38,48 @@ class Error(Schema):
 	message: str
 
 
+logger = logging.getLogger(__name__)
+
+
+def _call_internal_api(path: str, payload: dict):
+	base_url = getattr(settings, 'OTODB_INTERNAL_API_BASE_URL', 'http://localhost:5173')
+	path = path.lstrip('/')
+	url = f'{base_url.rstrip("/")}/internal/{path}'
+	try:
+		resp = requests.post(url, json=payload, timeout=5)
+		resp.raise_for_status()
+		data = resp.json()
+	except Exception:
+		logger.warning(
+			'Internal content endpoint request failed: %s', url, exc_info=True
+		)
+		raise HttpError(503, '')
+
+	value = data.get('data')
+	if value is None:
+		logger.warning('Internal content endpoint response missing key data at %s', url)
+		raise HttpError(503, '')
+	return value
+
+
+def render_markdown(text: str) -> str:
+	"""Render markdown via the internal content processing API."""
+	html = _call_internal_api('render', {'text': text})
+	if not isinstance(html, str):
+		logger.warning('Internal render endpoint returned non-string html payload')
+		raise HttpError(503, '')
+	return html
+
+
 def mentioned_user_ids(text: str, exclude_user_id: int | None = None) -> set[int]:
-	names = parse_mentions(text)
+	names = _call_internal_api('mentions', {'text': text})
+	if not isinstance(names, list):
+		logger.warning('Internal mention endpoint returned non-list payload')
+		raise HttpError(503, '')
+	if not all(isinstance(name, str) for name in names):
+		logger.warning('Internal mention endpoint returned non-string entries')
+		raise HttpError(503, '')
+
 	if not names:
 		return set()
 

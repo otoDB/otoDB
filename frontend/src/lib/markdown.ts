@@ -1,11 +1,10 @@
 import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
-import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { findAndReplace } from 'mdast-util-find-and-replace';
-import type { Root, PhrasingContent } from 'mdast';
+import type { Root, PhrasingContent, Parent } from 'mdast';
 
 const ENTITIES = [
 	{ shortPrefix: 'w', longLabel: 'work', urlPath: 'work' },
@@ -17,6 +16,29 @@ const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N
 
 function link(href: string, text: string): PhrasingContent {
 	return { type: 'link', url: href, children: [{ type: 'text', value: text }] };
+}
+
+function remarkStripImages() {
+	return (tree: Root) => {
+		function stripImages(parent: Parent): void {
+			for (const child of parent.children) {
+				if ('children' in child) {
+					stripImages(child as Parent);
+				}
+			}
+
+			for (let i = 0; i < parent.children.length; ) {
+				const node = parent.children[i];
+				if (node.type === 'image' || node.type === 'imageReference') {
+					parent.children.splice(i, 1);
+					continue;
+				}
+				i++;
+			}
+		}
+
+		stripImages(tree);
+	};
 }
 
 function remarkOtodb() {
@@ -55,7 +77,7 @@ function remarkOtodb() {
 
 const processor = unified()
 	.use(remarkParse)
-	.use(remarkGfm)
+	.use(remarkStripImages)
 	.use(remarkBreaks)
 	.use(remarkOtodb)
 	.use(remarkRehype)

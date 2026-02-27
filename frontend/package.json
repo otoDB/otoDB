@@ -61,7 +61,6 @@
 		"openapi-fetch": "^0.15.0",
 		"rehype-stringify": "^10.0.1",
 		"remark-breaks": "^4.0.0",
-		"remark-gfm": "^4.0.1",
 		"remark-parse": "^11.0.0",
 		"remark-rehype": "^11.1.2",
 		"set-cookie-parser": "^2.7.2",

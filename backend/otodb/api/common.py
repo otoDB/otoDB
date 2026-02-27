@@ -54,6 +54,7 @@ class TagWorkSchema(Schema):
 	name: str
 	slug: str
 	category: int
+	deprecated: bool
 
 
 class WorkSourceRejectionSchema(ModelSchema):

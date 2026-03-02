@@ -32,6 +32,7 @@ export const SongTagCategory = [
 export const Rating = [m.fresh_lower_rook_trip, m.sound_such_sloth_talk, m.mad_sound_walrus_tap];
 
 export const Status = [m.such_actual_okapi_dare, m.spare_few_kudu_learn, m.stale_vexed_hare_pray];
+export const StatusValue = { PENDING: 0, APPROVED: 1, UNAPPROVED: 2 } as const;
 
 export const WorkOrigin = [m.crisp_red_canary_tickle, m.lucky_still_vulture_work];
 
@@ -368,6 +369,7 @@ export const Route = {
 	MEDIAWORK_TOGGLE_SAMPLE: 44,
 	MEDIAWORK_UPDATE: 45,
 	MEDIAWORK_MERGE: 46,
+	MEDIAWORK_CREATE: 47,
 	WORKRELATION_CREATE: 50,
 	WORKRELATION_DELETE: 51,
 	WORKSOURCE_CREATE: 60,
@@ -376,6 +378,8 @@ export const Route = {
 	WORKSOURCE_REFRESH: 63,
 	WORKSOURCE_ASSIGN: 64,
 	WORKSOURCE_REJECT: 65,
+	WORKSOURCE_UPDATE: 66,
+	ROLLBACK: 100,
 
 	0: 'Unknown',
 	1: 'Tag: Alias',
@@ -402,14 +406,16 @@ export const Route = {
 	44: 'Work: Toggle Sample',
 	45: 'Work: Update',
 	46: 'Work: Merge',
+	47: 'Work: Create',
 	50: 'Work: Create Relation',
 	51: 'Work: Delete Relation',
-	60: 'Upload: Create',
-	61: 'Upload: Unbind',
-	62: 'Upload: Set Origin',
-	63: 'Upload: Refresh',
-	64: 'Upload: Assign',
-	65: 'Upload: Reject',
+	60: 'Source: Create',
+	61: 'Source: Unbind',
+	62: 'Source: Set Origin',
+	63: 'Source: Refresh',
+	64: 'Source: Assign',
+	65: 'Source: Reject',
+	66: 'Source: Update',
 	100: 'Rollback'
 };
 

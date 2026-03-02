@@ -170,6 +170,7 @@ class RequestActions(models.IntegerChoices):
 	TAGWORK_PARENT = 5
 	TAGWORK_UNPARENT = 6
 
+	# NOTE: deprecated
 	WORKSOURCE_ATTACHTAG = 11
 
 	MEDIAWORK_ATTACHTAG = 21
@@ -202,6 +203,12 @@ class PostCategory(models.IntegerChoices):
 	FEATURE_REQUEST = 1, 'Feature Request'
 	BUG_REPORT = 2, 'Bug Report'
 	GARDENING = 3, 'Gardening'
+
+
+class FlagStatus(models.IntegerChoices):
+	PENDING = 0, 'Pending'
+	SUCCEEDED = 1, 'Succeeded'
+	REJECTED = 2, 'Rejected'
 
 
 class RevisionChain(models.IntegerChoices):
@@ -238,6 +245,7 @@ class Route(models.IntegerChoices):
 	MEDIAWORK_TOGGLE_SAMPLE = 44, 'Media Work Toggle Sample'
 	MEDIAWORK_UPDATE = 45, 'Media Work Update'
 	MEDIAWORK_MERGE = 46, 'Media Work Merge'
+	MEDIAWORK_CREATE = 47, 'Media Work Create'
 
 	WORKRELATION_CREATE = 50, 'Work Relation Create'
 	WORKRELATION_DELETE = 51, 'Work Relation Delete'
@@ -248,5 +256,6 @@ class Route(models.IntegerChoices):
 	WORKSOURCE_REFRESH = 63, 'Work Source Refresh'
 	WORKSOURCE_ASSIGN = 64, 'Work Source Assign'
 	WORKSOURCE_REJECT = 65, 'Work Source Reject'
+	WORKSOURCE_UPDATE = 66, 'Work Source Update'
 
 	ROLLBACK = 100, 'Rollback'

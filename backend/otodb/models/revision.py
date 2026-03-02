@@ -6,12 +6,14 @@ from django.db.models.deletion import Collector
 from django_request_cache import get_request_cache
 from dirtyfields import DirtyFieldsMixin
 
-from otodb.account.models import Account
+from django.conf import settings
 from otodb.models.enums import Route, RevisionChain
 
 
 class Revision(models.Model):
-	user = models.ForeignKey(Account, on_delete=models.PROTECT, null=True)
+	user = models.ForeignKey(
+		settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True
+	)
 	date = models.DateTimeField(auto_now_add=True)
 	message = models.TextField(null=False, default='')
 

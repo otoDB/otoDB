@@ -4,6 +4,7 @@ from functools import wraps, lru_cache
 from pydantic import field_validator
 
 from django.contrib.contenttypes.models import ContentType
+from django.http import HttpRequest
 
 from ninja import Schema, ModelSchema, Field, Query, Router
 from django_request_cache import get_request_cache
@@ -14,6 +15,9 @@ from otodb.models import (
 	WorkSource,
 	MediaSong,
 	WorkSourceRejection,
+	WorkFlag,
+	WorkAppeal,
+	WorkDisapproval,
 	Pool,
 	PoolItem,
 	WorkRelation,
@@ -26,6 +30,10 @@ from otodb.models import (
 )
 from otodb.models.enums import Role, ProfileConnectionTypes, Route
 import re
+
+
+class AuthedHttpRequest(HttpRequest):
+	user: Account
 
 
 class Error(Schema):
@@ -61,7 +69,7 @@ class WorkSourceRejectionSchema(ModelSchema):
 
 	class Meta:
 		model = WorkSourceRejection
-		fields = ['reason']
+		fields = ['reason', 'date']
 
 
 class WorkSourceSchema(ModelSchema):
@@ -114,7 +122,7 @@ class SlimWorkSchema(ModelSchema):
 
 	class Meta:
 		model = MediaWork
-		fields = ['title']
+		fields = ['title', 'status']
 
 
 class WorkSchema(ModelSchema):
@@ -122,20 +130,88 @@ class WorkSchema(ModelSchema):
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
 	relations: tuple[list[RelationSchema], list[SlimWorkSchema]]
+	pending_flag: 'WorkFlagSchema | None' = None
+	pending_appeal: 'WorkAppealSchema | None' = None
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'description', 'rating', 'thumbnail_source']
+		fields = ['title', 'description', 'rating', 'thumbnail_source', 'status']
+
+	@staticmethod
+	def resolve_pending_flag(obj):
+		return obj.pending_flag[0] if obj.pending_flag else None
+
+	@staticmethod
+	def resolve_pending_appeal(obj):
+		return obj.pending_appeal[0] if obj.pending_appeal else None
 
 
 class ThinWorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
+	pending_flag: 'WorkFlagSchema | None' = None
+	pending_appeal: 'WorkAppealSchema | None' = None
 
 	class Meta:
 		model = MediaWork
-		fields = ['title']
+		fields = ['title', 'status']
+
+	@staticmethod
+	def resolve_pending_flag(obj):
+		return obj.pending_flag[0] if obj.pending_flag else None
+
+	@staticmethod
+	def resolve_pending_appeal(obj):
+		return obj.pending_appeal[0] if obj.pending_appeal else None
+
+
+class SourceCreationResponse(Schema):
+	source_id: int | None = None
+	work_id: int | None = None
+
+
+class CreateWorkPayload(Schema):
+	source_id: int
+	title: str | None = None
+	description: str | None = None
+	rating: int = 0
+	tags: list[str] = []
+
+
+class SourceSuggestionsResponse(Schema):
+	title: str | None = None
+	description: str | None = None
+	source_tags: list[TagWorkSchema] = []
+	new_tags: list[TagWorkSchema] = []
+	creator_tags: list[TagWorkSchema] = []
+
+
+class WorkFlagSchema(ModelSchema):
+	id: int
+	creator: ProfileSchema
+
+	class Meta:
+		model = WorkFlag
+		fields = ['reason', 'status', 'date']
+
+
+class WorkAppealSchema(ModelSchema):
+	id: int
+	creator: ProfileSchema
+
+	class Meta:
+		model = WorkAppeal
+		fields = ['reason', 'status', 'date']
+
+
+class WorkDisapprovalSchema(ModelSchema):
+	id: int
+	by: ProfileSchema
+
+	class Meta:
+		model = WorkDisapproval
+		fields = ['reason', 'date']
 
 
 class ListItemSchema(ModelSchema):

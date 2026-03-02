@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { Rating, UserLevel, Platform } from '$lib/enums';
+	import { UserLevel, Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
@@ -73,16 +73,6 @@
 							>
 							<td><input type="text" name="original_url" /></td>
 						</tr>
-					{/if}
-					{#if data.isNewWork}
-						<tr
-							><th><label for="rating">{m.good_dark_bumblebee_spur()}</label></th><td
-								><select name="rating">
-									{#each Rating as r, i (i)}<option value={i}>{r()}</option
-										>{/each}</select
-								></td
-							></tr
-						>
 					{/if}
 					{#if data.user?.level >= UserLevel.EDITOR}
 						<tr>

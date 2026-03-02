@@ -4,6 +4,7 @@
 	import {
 		Platform,
 		Rating,
+		StatusValue,
 		WorkOrigin,
 		WorkRelationDisplayBackward,
 		WorkRelationDisplayForward,
@@ -19,11 +20,10 @@
 	import DisplayText from '$lib/DisplayText.svelte';
 	import RefreshButton from '../RefreshButton.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import { callSavingToast } from '$lib/toast';
 	import { SvelteMap } from 'svelte/reactivity';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import SourceViewer from '$lib/SourceViewer.svelte';
 
 	let { data } = $props();
 
@@ -56,9 +56,6 @@
 		}
 	};
 
-	// Force dpendence on page route
-	let cover_select = $derived(data ? -1 : -1);
-
 	const merge_paths = (paths) => {
 		const graph = new SvelteMap();
 		paths
@@ -88,47 +85,73 @@
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
+	{#if data.status === StatusValue.PENDING}
+		<div class="mb-3 border border-sky-600 bg-sky-600/10 px-4 py-2 font-bold text-sky-600">
+			This work is pending approval.
+		</div>
+	{/if}
+	{#if data?.pending_flag}
+		<div class="mb-3 border border-yellow-600 bg-yellow-600/10 px-4 py-2 text-yellow-600">
+			<div class="font-bold">This work has been flagged for review.</div>
+			<div class="mt-1 text-sm">
+				Reason: {data.pending_flag.reason}
+			</div>
+		</div>
+	{/if}
+	{#if data.user && (data.status === StatusValue.PENDING || data?.pending_flag || data?.pending_appeal)}
+		<div class="mb-3 flex flex-wrap gap-2">
+			{#if data.user.level >= 40}
+				<button
+					class="border border-green-600 px-3 py-1 text-green-600"
+					onclick={async () => {
+						const { error } = await client.POST('/api/work/approve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (!error) location.reload();
+					}}
+				>
+					Approve
+				</button>
+				<button
+					class="border px-3 py-1"
+					onclick={async () => {
+						const reason = prompt('Disapproval reason:');
+						if (!reason) return;
+						await client.POST('/api/work/disapprove', {
+							fetch,
+							params: { query: { work_id: data.id, reason: reason } }
+						});
+					}}
+				>
+					Disapprove
+				</button>
+			{/if}
+			{#if data.user.level >= 50}
+				<button
+					class="border border-red-600 px-3 py-1 text-red-600"
+					onclick={async () => {
+						if (!confirm('Immediately resolve this work?')) return;
+						const { error } = await client.POST('/api/work/resolve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (!error) location.reload();
+					}}
+				>
+					Force Resolve
+				</button>
+			{/if}
+		</div>
+	{/if}
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
-				{#if cover_select === -1}
-					<WorkThumbnail
-						thumbnail={data.thumbnail}
-						alt={getDisplayText(data.title)}
-						class="h-[270px] w-[480px] object-cover"
-					/>
-				{:else}
-					<ExternalEmbed width={480} height={270} src={data.sources[cover_select]} />
-				{/if}
-				<div class="my-2 max-w-[480px]">
-					<a
-						href={data.thumbnail}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="cover_select"
-						class:selected={cover_select === -1}
-						onclick={(e) => {
-							e.preventDefault();
-							cover_select = -1;
-						}}
-					>
-						{m.heroic_ideal_orangutan_aid()}
-					</a>{#each data.sources as s, i (i)}{#if s.work_status !== 1}<a
-								href={s.url}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="cover_select"
-								class:selected={cover_select === i}
-								onclick={(e) => {
-									e.preventDefault();
-									cover_select = i;
-								}}
-							>
-								{Platform[s.platform]}{s.work_origin === 0
-									? ''
-									: ' ' + WorkOrigin[s.work_origin]()}
-							</a>{/if}{/each}
-				</div>
+				<SourceViewer
+					sources={data.sources ?? []}
+					thumbnail={data.thumbnail}
+					thumbnailAlt={getDisplayText(data.title)}
+				/>
 			</div>
 			<div class="ml-2 grow">
 				<div>
@@ -222,6 +245,31 @@
 										{/if}
 									</td>
 								</tr>
+								{#if data.status === StatusValue.APPROVED && !data?.pending_flag}
+									<tr>
+										<th class="w-24">Flag</th>
+										<td>
+											<button
+												onclick={async () => {
+													const reason = prompt('Flag reason:');
+													if (!reason) return;
+													const { error } = await client.POST(
+														'/api/work/flag',
+														{
+															fetch,
+															params: {
+																query: { work_id: data.id, reason }
+															}
+														}
+													);
+													if (!error) location.reload();
+												}}
+											>
+												Flag
+											</button>
+										</td>
+									</tr>
+								{/if}
 							</tbody>
 						</table>
 					</div>
@@ -257,7 +305,7 @@
 <Section
 	title={m.extra_brave_tapir_skip()}
 	menuLinks={data.user
-		? [{ pathname: `work/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]
+		? [{ pathname: `source/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]
 		: []}
 >
 	<div class="mt-2 flex w-full flex-col gap-y-4">
@@ -375,23 +423,5 @@
 	}
 	th {
 		white-space: nowrap;
-	}
-	.cover_select {
-		padding: 0.2rem 0.5rem;
-		display: inline-block;
-		background-color: var(--otodb-color-bg-primary);
-		border: 1px solid var(--otodb-color-content-primary);
-		text-decoration: none;
-		&:hover {
-			background-color: var(--otodb-color-bg-fainter);
-		}
-		&:active {
-			background-color: var(--otodb-color-bg-faint);
-		}
-		&.selected {
-			background-color: var(--otodb-color-content-primary);
-			border: 1px solid var(--otodb-color-bg-primary);
-			color: var(--otodb-color-bg-primary);
-		}
 	}
 </style>

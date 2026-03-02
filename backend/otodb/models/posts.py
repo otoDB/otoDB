@@ -8,7 +8,7 @@ from django_comments_xtd.models import XtdComment
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_CLASSY
 
-from otodb.account.models import Account
+from django.conf import settings
 from .enums import LanguageTypes, PostCategory
 from .revision import Revision
 
@@ -16,7 +16,7 @@ from .revision import Revision
 class Post(models.Model):
 	title = models.CharField(max_length=1000, null=False, blank=False)
 	added_by = models.ForeignKey(
-		Account, blank=False, null=False, on_delete=models.CASCADE
+		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.CASCADE
 	)
 	category = models.IntegerField(
 		choices=PostCategory.choices, null=False, blank=False
@@ -46,7 +46,7 @@ class PostContent(models.Model):
 
 class Notification(models.Model):
 	target = models.ForeignKey(
-		Account,
+		settings.AUTH_USER_MODEL,
 		blank=False,
 		null=False,
 		on_delete=models.CASCADE,
@@ -70,7 +70,7 @@ class Notification(models.Model):
 	class Meta:
 		constraints = [
 			models.CheckConstraint(
-				check=(
+				condition=(
 					models.Q(revision__isnull=True) ^ models.Q(comment__isnull=True)
 				),
 				name='notification_union',
@@ -80,7 +80,7 @@ class Notification(models.Model):
 
 class Subscription(models.Model):
 	subscriber = models.ForeignKey(
-		Account,
+		settings.AUTH_USER_MODEL,
 		blank=False,
 		null=False,
 		on_delete=models.CASCADE,

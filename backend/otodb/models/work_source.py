@@ -8,7 +8,7 @@ from .enums import Platform, WorkOrigin, WorkStatus, MimeType
 from .media import MediaWork
 import hashlib
 
-from otodb.account.models import Account
+from django.conf import settings
 from otodb.common import video_info, process_video_info, fetch_thumbnail_mime_type
 from otodb.storage_manager import storage_manager
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class ActiveManager(RevisionTrackedManager):
 	def get_queryset(self):
-		return super().get_queryset().filter(rejection__isnull=True)
+		return super().get_queryset().filter(rejection__isnull=True, is_pending=False)
 
 
 class WorkSource(RevisionTrackedModel):
@@ -58,8 +58,11 @@ class WorkSource(RevisionTrackedModel):
 	uploader_id = models.CharField(max_length=1000, null=True, blank=False)
 
 	added_by = models.ForeignKey(
-		Account, blank=False, null=False, on_delete=models.CASCADE
+		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.CASCADE
 	)
+
+	is_pending = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
 
 	active_objects = ActiveManager()
 
@@ -82,6 +85,7 @@ class WorkSource(RevisionTrackedModel):
 			'thumbnail_hash',
 			'uploader_id',
 			'added_by',
+			'is_pending',
 		]
 		entity_attrs = ['self', 'media']
 
@@ -129,20 +133,6 @@ class WorkSource(RevisionTrackedModel):
 					source=self, defaults={'payload': full_info}
 				)
 
-			if self.media:
-				from .tag import TagWork
-
-				tags = info.get('tags', [])
-				exists = TagWork.objects.filter(name__in=tags)
-				created = [
-					TagWork.objects.create(name=name)
-					for name in tags
-					if name not in set(exists.values_list('name', flat=True))
-				]
-				self.media.tags.add(*exists, *created)
-				self.media.tagworkinstance_set.filter(work_tag__in=created).update(
-					instance_imported_from_source=True
-				)
 		else:
 			logger.error(
 				f'Failed to refresh WorkSource {self.pk} - {self.url}: No info found.'
@@ -332,7 +322,9 @@ class WorkSourceRejection(models.Model):
 		WorkSource, null=False, on_delete=models.CASCADE, related_name='rejection'
 	)
 	reason = models.CharField(max_length=1000, null=False, blank=False)
-	by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.RESTRICT)
+	by = models.ForeignKey(
+		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.RESTRICT
+	)
 	date = models.DateTimeField(auto_now_add=True, null=False)
 
 

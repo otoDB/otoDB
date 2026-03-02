@@ -22,6 +22,7 @@
 	<a href="/work/{work.id}" tabindex="-1" class="flex h-full items-center">
 		<WorkThumbnail
 			thumbnail={work.thumbnail}
+			preview={work.thumbnail_preview}
 			alt={getDisplayText(work.title)}
 			class="aspect-video h-full min-w-full object-cover"
 		/>

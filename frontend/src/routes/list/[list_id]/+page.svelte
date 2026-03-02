@@ -128,6 +128,7 @@
 						<a href={src.url} target="_blank" rel="noopener noreferrer"
 							><WorkThumbnail
 								thumbnail={src.thumbnail}
+								preview={src.thumbnail_preview}
 								alt={src.title || src.url}
 								class="float-right clear-both aspect-video w-50"
 							/></a

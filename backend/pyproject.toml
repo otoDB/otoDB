@@ -29,6 +29,7 @@ dependencies = [
     "sentry-sdk[django]>=2.43.0",
     "patch-package-py>=0.1.3",
     "orjson>=3.11.5",
+    "Pillow>=12.1.0",
 ]
 
 [tool.ruff.format]

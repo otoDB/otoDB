@@ -141,6 +141,7 @@
 								><WorkThumbnail
 									class="aspect-video w-56"
 									thumbnail={entry.work.thumbnail}
+									preview={entry.work.thumbnail_preview}
 									alt={getDisplayText(entry.work.title)}
 								/></a
 							>

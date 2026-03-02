@@ -237,6 +237,17 @@ class MediaWork(RevisionTrackedModel):
 		return thumbnail or self._thumbnail
 
 	@property
+	def thumbnail_preview(self):
+		preview = (
+			self.thumbnail_source.thumbnail_preview if self.thumbnail_source else None
+		)
+		if not preview:
+			first_source = self.worksource_set.first()
+			if first_source:
+				preview = first_source.thumbnail_preview
+		return preview
+
+	@property
 	def relations(self):
 		rs = self.relation_A.all() | self.relation_B.all()
 		return rs, MediaWork.active_objects.filter(

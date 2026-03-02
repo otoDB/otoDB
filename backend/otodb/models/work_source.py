@@ -9,7 +9,12 @@ from .media import MediaWork
 import hashlib
 
 from otodb.account.models import Account
-from otodb.common import video_info, process_video_info, fetch_thumbnail_mime_type
+from otodb.common import (
+	video_info,
+	process_video_info,
+	fetch_thumbnail_mime_type,
+	generate_thumbnail,
+)
 from otodb.storage_manager import storage_manager
 
 from .revision import RevisionTrackedModel, RevisionTrackedManager
@@ -161,18 +166,23 @@ class WorkSource(RevisionTrackedModel):
 			response.raise_for_status()
 
 			self.thumbnail_hash = hashlib.sha256(response.content).hexdigest()
-			if storage_manager.exists(self.thumbnail_path):
-				self.save(update_fields=['thumbnail_hash'])
-				return True
 
-			path = storage_manager.save(response.content, self.thumbnail_path)
+			if not storage_manager.exists(self.thumbnail_path):
+				path = storage_manager.save(response.content, self.thumbnail_path)
+				if not path:
+					logger.error(f'Failed to upload thumbnail for WorkSource {self.pk}')
+					return False
 
-			if path:
-				self.save(update_fields=['thumbnail_hash'])
-				return True
-			else:
-				logger.error(f'Failed to upload thumbnail for WorkSource {self.pk}')
-				return False
+			assert self.thumbnail_preview_path
+			if not storage_manager.exists(self.thumbnail_preview_path):
+				preview_bytes = generate_thumbnail(response.content)
+				if preview_bytes:
+					storage_manager.save(preview_bytes, self.thumbnail_preview_path)
+				else:
+					logger.error(f'Failed to generate preview for WorkSource {self.pk}')
+
+			self.save(update_fields=['thumbnail_hash'])
+			return True
 		except Exception as e:
 			logger.error(f'Error uploading thumbnail for WorkSource {self.pk}: {e}')
 			return False
@@ -318,6 +328,16 @@ class WorkSource(RevisionTrackedModel):
 		return f'/t/{self.thumbnail_hash[:2]}/{self.thumbnail_hash[2:4]}/{self.thumbnail_hash}.{ext}'
 
 	@property
+	def thumbnail_preview_path(self) -> str | None:
+		"""
+		Returns content-addressed path for preview thumbnail.
+		Format: /tp/{hash[:2]}/{hash[2:4]}/{hash}.jpg
+		"""
+		if not self.thumbnail_hash:
+			return None
+		return f'/tp/{self.thumbnail_hash[:2]}/{self.thumbnail_hash[2:4]}/{self.thumbnail_hash}.jpg'
+
+	@property
 	def thumbnail(self) -> str:
 		"""
 		Returns the URL endpoint from which a thumbnail is served.
@@ -325,6 +345,15 @@ class WorkSource(RevisionTrackedModel):
 		if self.thumbnail_path:
 			return storage_manager.url(self.thumbnail_path)
 		return self.thumbnail_url  # type: ignore -- Fallback to 3rd-party remote thumbnail URL
+
+	@property
+	def thumbnail_preview(self) -> str | None:
+		"""
+		Returns the URL for the preview/compressed thumbnail.
+		"""
+		if self.thumbnail_preview_path:
+			return storage_manager.url(self.thumbnail_preview_path)
+		return None
 
 
 class WorkSourceRejection(models.Model):

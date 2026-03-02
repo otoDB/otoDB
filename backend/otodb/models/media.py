@@ -202,19 +202,27 @@ class MediaWork(RevisionTrackedModel):
 		super().save(*args, **kwargs)
 
 	@cached_property
-	def tags_annotated(self):
+	def tags_annotated_thin(self):
+		twis = list(self.tagworkinstance_set.all())
 		t = []
-		twis = self.tagworkinstance_set.filter(work_tag__deprecated=False)
-		primary_paths = TagWork.get_primary_paths(
-			twis.values_list('work_tag_id', flat=True)
-		)
+		for instance in twis:
+			tag = instance.work_tag
+			tag.sample = instance.used_as_source
+			tag.creator_roles = instance.creator_roles
+			t.append(tag)
+		return t
+
+	@cached_property
+	def tags_annotated(self):
+		twis = list(self.tagworkinstance_set.filter(work_tag__deprecated=False))
+		primary_paths = TagWork.get_primary_paths([i.work_tag_id for i in twis])
+		t = []
 		for instance in twis:
 			tag = instance.work_tag
 			tag.sample = instance.used_as_source
 			tag.creator_roles = instance.creator_roles
 			tag.primary_path = primary_paths.get(tag.id, [])
 			t.append(tag)
-
 		return t
 
 	@property

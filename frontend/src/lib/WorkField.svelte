@@ -59,6 +59,7 @@
 			><WorkThumbnail
 				class="aspect-video w-56"
 				thumbnail={value?.thumbnail}
+				preview={value?.thumbnail_preview}
 				alt={getDisplayText(value?.title)}
 			/></a
 		>
@@ -78,6 +79,7 @@
 							><WorkThumbnail
 								class="aspect-video w-20"
 								thumbnail={v.thumbnail}
+								preview={v.thumbnail_preview}
 								alt={getDisplayText(v.title)}
 							/></td
 						>

@@ -358,3 +358,60 @@ def fetch_thumbnail_mime_type(thumbnail_url: str):
 	except Exception as e:
 		logger.error(f'Error fetching thumbnail mime type: {e}')
 		return None
+
+
+def generate_thumbnail(
+	image_bytes: bytes, max_size: int = 360, quality: int = 75
+) -> bytes | None:
+	"""
+	Generate a JPEG preview thumbnail using Pillow for resizing and
+	MozJPEG's cjpeg for encoding.
+	"""
+	import subprocess
+	from PIL import Image
+	from io import BytesIO
+
+	try:
+		img = Image.open(BytesIO(image_bytes))
+	except Exception:
+		logger.error('Failed to open image')
+		return None
+
+	try:
+		img.thumbnail((max_size, max_size), Image.Resampling.HAMMING)
+
+		if img.mode != 'RGB':
+			img = img.convert('RGB')
+
+		ppm_buffer = BytesIO()
+		img.save(ppm_buffer, format='PPM')
+
+		result = subprocess.run(
+			[
+				'cjpeg',
+				'-quality',
+				str(quality),
+				'-baseline',
+				'-optimize',
+				'-quant-table',
+				'2',
+				'-sample',
+				'2x2',
+			],
+			input=ppm_buffer.getvalue(),
+			capture_output=True,
+			timeout=10,
+		)
+		if result.returncode == 0 and result.stdout:
+			return result.stdout
+		logger.error(
+			'cjpeg failed (code %d): %s',
+			result.returncode,
+			result.stderr.decode(errors='replace').strip(),
+		)
+		return None
+	except Exception:
+		logger.exception('Error generating preview')
+		return None
+	finally:
+		img.close()

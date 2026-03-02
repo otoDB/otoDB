@@ -32,7 +32,7 @@ flowchart ${direction}
 					? `
     ${nodes
 		.map(
-			(w) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
+			(w) => `${w.id}@{ ${w.thumbnail_preview || w.thumbnail ? `img: "${w.thumbnail_preview || w.thumbnail}",` : ''} constraint: on, w: 10 }
     ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
     click ${w.id} "${`/work/${w.id}`}"`
 		)

@@ -1659,6 +1659,8 @@ export interface components {
             tags: components["schemas"]["TagWorkInstanceThinSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Thumbnail Preview */
+            thumbnail_preview?: string | null;
             /** Title */
             title?: string | null;
         };
@@ -1677,6 +1679,8 @@ export interface components {
             id: number;
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Thumbnail Preview */
+            thumbnail_preview?: string | null;
             /** Title */
             title?: string | null;
         };
@@ -1710,6 +1714,8 @@ export interface components {
             tags: components["schemas"]["TagWorkInstanceSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Thumbnail Preview */
+            thumbnail_preview?: string | null;
             /** Relations */
             relations: [
                 components["schemas"]["RelationSchema"][],
@@ -1764,6 +1770,8 @@ export interface components {
             rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Thumbnail Preview */
+            thumbnail_preview?: string | null;
             /** Platform */
             platform: number;
             /** Url */
@@ -1862,6 +1870,8 @@ export interface components {
             rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Thumbnail Preview */
+            thumbnail_preview?: string | null;
             /** Platform */
             platform: number;
             /** Url */

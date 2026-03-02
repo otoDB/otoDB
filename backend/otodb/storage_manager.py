@@ -1,7 +1,6 @@
 import re
 import logging
 import boto3
-from botocore.config import Config as BotoConfig
 from django.conf import settings
 from pathlib import Path
 from io import BytesIO
@@ -25,7 +24,6 @@ class StorageManager:
 				aws_access_key_id=settings.OTODB_CDN_ACCESS_KEY,
 				aws_secret_access_key=settings.OTODB_CDN_SECRET_KEY,
 				region_name='auto',  # Cloudflare R2 uses 'auto'
-				config=BotoConfig(max_pool_connections=50),
 			)
 			self.bucket_name = settings.OTODB_CDN_BUCKET_NAME
 		else:

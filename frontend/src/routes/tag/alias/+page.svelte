@@ -21,7 +21,7 @@
 			params: { query: { into_tag: selected, delete: del } },
 			body: tags
 		});
-		if (!error) goto(`/tag/${data.merged_slug}`, { invalidateAll: true });
+		if (!error) goto(`/tag/${data.merged_slug}/edit`, { invalidateAll: true });
 	};
 </script>
 

@@ -245,7 +245,11 @@ def tag_route_switch(work_route: Route, song_route: Route):
 	return decorator
 
 
-@tag_router.post('alias', auth=django_auth)
+class AliasResponse(Schema):
+	merged_slug: str
+
+
+@tag_router.post('alias', auth=django_auth, response=AliasResponse)
 @user_is_trusted
 @tag_route_switch(Route.TAGWORK_ALIAS, Route.SONGTAG_ALIAS)
 def alias_tags(
@@ -275,7 +279,7 @@ def alias_tags(
 			if tag.can_be_deleted:
 				tag.delete()
 
-	return {'merged_slug': into.slug}
+	return AliasResponse(merged_slug=into.slug)
 
 
 @tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})

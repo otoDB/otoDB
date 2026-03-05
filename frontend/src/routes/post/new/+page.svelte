@@ -6,9 +6,10 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { LanguageNames, PostCategories } from '$lib/enums';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import Markdown from 'svelte-exmarkdown';
+	import { renderMarkdown } from '$lib/markdown';
 
 	let md = $state('');
+	let previewHtml = $derived(renderMarkdown(md));
 </script>
 
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
@@ -43,7 +44,8 @@
 		<div class="grid grid-cols-2 gap-3">
 			<textarea rows="10" bind:value={md} class="w-full" name="post" required></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
-				<Markdown {md} />
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html previewHtml}
 			</div>
 		</div>
 		<input type="submit" />

@@ -1904,6 +1904,8 @@ export interface components {
                 "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest",
                 number | string
             ] | null;
+            /** Post */
+            post?: number | null;
             /**
              * Dismissed
              * @default false
@@ -2099,8 +2101,11 @@ export interface components {
         };
         /** WikiPageSchema */
         WikiPageSchema: {
-            /** Page Rendered */
-            page_rendered: string;
+            /**
+             * Page Rendered
+             * @default
+             */
+            page_rendered: string | null;
             /**
              * Lang
              * @default 0
@@ -2154,8 +2159,11 @@ export interface components {
         PostContentSchema: {
             /** Lang */
             lang: number;
-            /** Page Rendered */
-            page_rendered: string;
+            /**
+             * Page Rendered
+             * @default
+             */
+            page_rendered: string | null;
             /**
              * Modified
              * Format: date-time
@@ -2222,6 +2230,23 @@ export interface components {
             parent_id: number;
             /** Index */
             index: number;
+        };
+        /** CommentInSchema */
+        CommentInSchema: {
+            /**
+             * Model
+             * @enum {string}
+             */
+            model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
+            /** Pk */
+            pk: number;
+            /** Comment Text */
+            comment_text: string;
+            /**
+             * Parent Id
+             * @default 0
+             */
+            parent_id: number;
         };
         /** PagedRevisionSchema */
         PagedRevisionSchema: {
@@ -4567,17 +4592,16 @@ export interface operations {
     };
     otodb_api_comment_post: {
         parameters: {
-            query: {
-                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
-                pk: number;
-                comment: string;
-                parent_id?: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentInSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

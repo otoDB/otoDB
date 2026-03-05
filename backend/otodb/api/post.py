@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from django.db import transaction
 from django.db.models import Subquery, OuterRef, DateTimeField, CharField
 from django.db.models.functions import Greatest, Coalesce, Cast
 from django.http import HttpRequest
@@ -11,10 +12,15 @@ from ninja import Router, ModelSchema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.models import Post, PostContent, Subscription
+from otodb.models import (
+	Notification,
+	Post,
+	PostContent,
+	Subscription,
+)
 from otodb.models.enums import PostCategory, LanguageTypes
 
-from .common import ProfileSchema, user_is_trusted
+from .common import ProfileSchema, user_is_trusted, mentioned_user_ids, render_markdown
 
 post_router = Router()
 
@@ -78,6 +84,7 @@ def category(request: HttpRequest, category: PostCategory):
 
 @post_router.post('post', response=int, auth=django_auth)
 @user_is_trusted
+@transaction.atomic
 def new(
 	request: HttpRequest,
 	title: str,
@@ -88,15 +95,32 @@ def new(
 	assert category > 0
 	assert title
 	assert post
+	rendered_post = render_markdown(post)
+	target_ids = mentioned_user_ids(post, exclude_user_id=request.user.pk)
+
 	p = Post.objects.create(title=title, added_by=request.user, category=category)
-	PostContent.objects.create(post=p, lang=lang, page=post)
+	PostContent.objects.create(
+		post=p,
+		lang=lang,
+		page=post,
+		page_rendered=rendered_post,
+	)
+
+	Notification.objects.bulk_create(
+		[Notification(target_id=target_id, post=p) for target_id in target_ids]
+	)
+
 	Subscription.objects.create(subscriber=request.user, entity=p)
-	return p.id
+	return p.pk
 
 
 @post_router.get('search', response=list[PostOverviewSchema])
 @paginate
-def search(request: HttpRequest, query: str, category: PostCategory | None = None):
+def search(
+	request: HttpRequest,
+	query: str,
+	category: PostCategory | None = None,
+):
 	posts = annotate_modified(Post.objects.filter(title__icontains=query))
 	if category is not None and category >= 0:
 		posts = posts.filter(category=category)

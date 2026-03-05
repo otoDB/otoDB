@@ -18,7 +18,7 @@
 	);
 	let page_object = $derived(data.post.pages.find((p) => p.lang === Languages[lang_view]));
 	let page = $derived(
-		page_object.page_rendered.replaceAll(
+		(page_object?.page_rendered ?? '').replaceAll(
 			/&lt;otodb-worktag\s*slug="(.+?)"\s*\/&gt;/g,
 			'<otodb-worktag data-slug="$1"></otodb-worktag>'
 		)

@@ -16,11 +16,11 @@ from ninja.throttling import AuthRateThrottle
 
 from otodb.account.models import Account
 from otodb.models import Notification, Subscription
-from .common import user_is_trusted, ProfileSchema
+from .common import user_is_trusted, ProfileSchema, mentioned_user_ids
 
 comment_router = Router()
 
-models_with_comments = [
+ModelsWithComments = Literal[
 	'mediawork',
 	'account',
 	'pool',
@@ -41,8 +41,15 @@ class CommentSchema(Schema):
 	index: int
 
 
+class CommentInSchema(Schema):
+	model: ModelsWithComments
+	pk: int
+	comment_text: str
+	parent_id: int = 0
+
+
 @comment_router.get('comments', response=list[CommentSchema])
-def get(request: HttpRequest, model: Literal[*models_with_comments], pk: int):
+def get(request: HttpRequest, model: ModelsWithComments, pk: int):
 	T = ContentType.objects.get(model=model)
 	index = Window(
 		expression=Rank(),
@@ -62,48 +69,55 @@ def get(request: HttpRequest, model: Literal[*models_with_comments], pk: int):
 @user_is_trusted
 def post(
 	request: HttpRequest,
-	model: Literal[*models_with_comments],
-	pk: int,
-	comment: str,
-	parent_id: int = 0,
+	payload: CommentInSchema,
 ):
-	T = ContentType.objects.get(model=model)
+	T = ContentType.objects.get(model=payload.model)
+	parent_id = payload.parent_id
+	comment_text = payload.comment_text
+	pk = payload.pk
 	parent = None if parent_id == 0 else XtdComment.objects.get(id=parent_id)
 	if parent is not None and parent.is_removed:
 		return 400
+
+	mention_ids = mentioned_user_ids(comment_text, exclude_user_id=request.user.pk)
 
 	comment = XtdComment.objects.create(
 		content_type=T,
 		object_pk=pk,
 		site_id=1,
 		user=request.user,
-		comment=comment,
+		comment=comment_text,
 		parent_id=parent_id,
 	)
+
+	target_ids: set[int] = set()
 	if parent is None:
-		Notification.objects.bulk_create(
-			[
-				Notification(target_id=sub, comment=comment)
-				for sub in Subscription.objects.filter(
-					entity_type=T, entity_id=pk
-				).values_list('subscriber_id', flat=True)
-				if sub != request.user.id
-			]
+		target_ids |= set(
+			Subscription.objects.filter(entity_type=T, entity_id=pk)
+			.exclude(subscriber_id=request.user.pk)
+			.values_list('subscriber_id', flat=True)
 		)
 		Subscription.objects.get_or_create(
 			subscriber=request.user, entity_type=T, entity_id=pk
 		)
 	else:
-		Notification.objects.create(target_id=parent.user_id, comment=comment)
-	if model == 'account' and pk != request.user.id:
-		Notification.objects.create(target_id=pk, comment=comment)
+		target_ids.add(parent.user_id)
+	if payload.model == 'account' and pk != request.user.pk:
+		target_ids.add(pk)
+
+	target_ids |= mention_ids
+	target_ids.discard(request.user.pk)
+
+	Notification.objects.bulk_create(
+		[Notification(target_id=target_id, comment=comment) for target_id in target_ids]
+	)
 
 
 @comment_router.delete('comment', auth=django_auth)
 @user_is_trusted
 def delete(
 	request: HttpRequest,
-	model: Literal[*models_with_comments],
+	model: ModelsWithComments,
 	pk: int,
 	comment_id: int,
 ):

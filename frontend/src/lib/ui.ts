@@ -37,6 +37,27 @@ export const clickOutside = (node: HTMLElement) => {
 	};
 };
 
+export const autosize = (node: HTMLTextAreaElement, _value = '') => {
+	const resize = () => {
+		node.style.height = 'auto';
+		node.style.height = `${node.scrollHeight}px`;
+	};
+
+	node.style.overflowY = 'hidden';
+	node.style.resize = 'none';
+	resize();
+	node.addEventListener('input', resize);
+
+	return {
+		update() {
+			resize();
+		},
+		destroy() {
+			node.removeEventListener('input', resize);
+		}
+	};
+};
+
 export const isSVO = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'en' || lang === 'zh-cn';
 export const isSOV = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'ko' || lang === 'ja';
 

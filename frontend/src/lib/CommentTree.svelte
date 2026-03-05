@@ -2,8 +2,9 @@
 	import { invalidateAll } from '$app/navigation';
 	import client, { makeCommentTree, type CommentModels } from './api';
 	import { UserLevel } from './enums';
+	import { renderMarkdown } from './markdown';
 	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
+	import { autosize, timeAgo } from './ui';
 	import type { components } from './schema';
 
 	interface Props {
@@ -16,24 +17,45 @@
 
 	const { comments, user = null, model, pk }: Props = $props();
 
-	const tree = $derived(makeCommentTree(comments));
+	const tree = $derived(makeCommentTree(comments) ?? []);
+	let drafts = $state<Record<number, string>>({});
+	let previews = $state<Record<number, string>>({});
+	let previewMode = $state<Record<number, boolean>>({});
 
 	const post = (reply_to: number) => async (e: SubmitEvent) => {
 		e.preventDefault();
-		const comment = new FormData(e.target).get('comment')?.toString();
-		if (comment) {
+		const comment_text = drafts[reply_to]?.trim();
+		if (comment_text) {
 			await client.POST('/api/comment/comment', {
-				params: { query: { model, pk, comment, parent_id: reply_to }, fetch }
+				fetch,
+				body: { model, pk, comment_text, parent_id: reply_to }
 			});
-			document.querySelectorAll('.reply-toggle').forEach((e) => (e.checked = false));
-			e.target.querySelector('textarea').value = '';
+			document
+				.querySelectorAll<HTMLInputElement>('.reply-toggle')
+				.forEach((e) => (e.checked = false));
+			drafts[reply_to] = '';
+			previews[reply_to] = '';
+			previewMode[reply_to] = false;
 			invalidateAll();
 		}
 	};
 
+	const togglePreview = (reply_to: number) => {
+		if (previewMode[reply_to]) {
+			previewMode[reply_to] = false;
+			return;
+		}
+
+		const comment = drafts[reply_to]?.trim();
+		if (!comment) return;
+
+		previews[reply_to] = renderMarkdown(comment);
+		previewMode[reply_to] = true;
+	};
+
 	const can_comment = user && user.level >= UserLevel.MEMBER;
 
-	const delete_comment = async (comment_id) => {
+	const delete_comment = async (comment_id: number) => {
 		await client.DELETE('/api/comment/comment', {
 			fetch,
 			params: { query: { comment_id, model, pk } }
@@ -43,9 +65,30 @@
 </script>
 
 {#snippet reply(reply_to: number)}
-	<form onsubmit={post(reply_to)} class="reply-form align-start gap-1">
-		<textarea class="block min-h-15 w-full" name="comment"></textarea>
-		<input type="submit" class="h-15 p-3" value={m.inner_solid_toad_zap()} />
+	<form onsubmit={post(reply_to)} class="reply-form gap-2">
+		<div class="reply-main">
+			{#if previewMode[reply_to]}
+				<div class="editor-panel reply-editor">
+					<div class="prose prose-neutral prose-sm dark:prose-invert">
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html previews[reply_to]}
+					</div>
+				</div>
+			{:else}
+				<textarea
+					class="reply-editor block min-h-15 w-full"
+					name="comment"
+					bind:value={drafts[reply_to]}
+					use:autosize={drafts[reply_to] ?? ''}
+				></textarea>
+			{/if}
+			<div class="reply-actions">
+				<button type="button" class="h-15 p-3" onclick={() => togglePreview(reply_to)}>
+					{previewMode[reply_to] ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}
+				</button>
+				<input type="submit" class="h-15 p-3" value={m.inner_solid_toad_zap()} />
+			</div>
+		</div>
 	</form>
 {/snippet}
 
@@ -70,7 +113,10 @@
 				<time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time>
 			</address>
 		</div>
-		<p>{data.comment}</p>
+		<div class="prose prose-neutral prose-sm dark:prose-invert">
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html renderMarkdown(data.comment)}
+		</div>
 	</div>
 	<div class="ml-3">
 		{@render reply(data.id)}
@@ -97,9 +143,34 @@
 <style>
 	form.reply-form {
 		display: none;
+		flex-direction: column;
+		width: 100%;
 	}
 	h4 + form.reply-form {
 		display: flex;
+	}
+	div.reply-main {
+		display: flex;
+		width: 100%;
+		align-items: flex-start;
+		gap: 0.25rem;
+	}
+	.reply-editor {
+		flex: 1 1 auto;
+	}
+	div.editor-panel {
+		width: 100%;
+		min-height: 3.75rem;
+		padding: 0.5rem;
+		border: 1px solid var(--otodb-color-content-faint, #666);
+		background-color: var(--otodb-color-bg-primary);
+	}
+	div.reply-actions {
+		display: flex;
+		flex-direction: row;
+		gap: 0.25rem;
+		align-items: flex-start;
+		margin-left: auto;
 	}
 	div.comment {
 		background-color: var(--otodb-color-bg-primary);

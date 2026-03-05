@@ -21,6 +21,7 @@ services:
       OTODB_DB_BACKEND: postgresql
       OTODB_DB_HOST: db
       OTODB_DB_PORT: "5432"
+      OTODB_INTERNAL_API_BASE_URL: "http://frontend:5173"
     volumes:
       - /mnt/otodb-block/static:/app/static # Mount to specific location
       - ./backend/cookies.txt:/app/cookies.txt:ro # Mount cookies for yt-dlp

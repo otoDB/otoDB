@@ -12,7 +12,7 @@ from ninja.pagination import paginate
 from otodb.account.models import Account
 from otodb.models import ProfileConnection, UserPreferences, Notification
 
-from .comment import models_with_comments
+from .comment import ModelsWithComments
 
 from .common import (
 	ListSchema,
@@ -113,7 +113,8 @@ def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
 
 class NotificationSchema(ModelSchema):
 	id: int
-	comment: tuple[Literal[*models_with_comments], int | str] | None
+	comment: tuple[ModelsWithComments, int | str] | None
+	post: int | None = Field(None, alias='post_id')
 
 	class Meta:
 		model = Notification
@@ -121,7 +122,7 @@ class NotificationSchema(ModelSchema):
 
 	@field_validator('comment', mode='before', check_fields=False)
 	@classmethod
-	def cmt(cls, value) -> tuple[Literal[*models_with_comments], int | str] | None:
+	def cmt(cls, value) -> tuple[ModelsWithComments, int | str] | None:
 		from otodb.models.tag import OtodbTagModel
 
 		if value is None:

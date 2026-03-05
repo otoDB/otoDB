@@ -73,7 +73,6 @@ INSTALLED_APPS = [
 	'django.contrib.contenttypes',
 	'django.contrib.sessions',
 	'django.contrib.messages',
-	'markdownfield',
 	'django.contrib.staticfiles',
 	'otodb',
 	'otodb.account',
@@ -260,6 +259,11 @@ if OTODB_FRONTEND_DOMAIN:
 	]
 
 OTODB_PROTECT_API_DOCS = os.environ.get('OTODB_PROTECT_API_DOCS', '').lower() == 'true'
+
+OTODB_INTERNAL_API_BASE_URL = os.environ.get(
+	'OTODB_INTERNAL_API_BASE_URL',
+	'http://localhost:5173',
+).rstrip('/')
 
 # CDN Configuration
 OTODB_CDN_BUCKET_NAME = os.environ.get('OTODB_CDN_BUCKET_NAME')

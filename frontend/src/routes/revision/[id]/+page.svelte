@@ -13,9 +13,11 @@
 		Object.values(Object.groupBy(data.changes.items, (c) => c.route)).map((rent) => [
 			rent[0].route,
 			Object.values(Object.groupBy(rent, (c) => c.ent_type + c.ent_id))
-				.map((cs) => cs.filter((c) => c.target_value !== null))
+				// .map((cs) => cs.filter((c) => c.target_value !== null))
+				// Setting to null may be significant change
+				.map((cs) => cs.filter((c) => Object.hasOwn(CommentModelRoutes, c.ent_type)))
 				.map((tg) => tg?.map((c) => [[c.ent_type, c.ent_id], c]))
-				.filter((ec) => ec[1].length && Object.hasOwn(CommentModelRoutes, ec[0][0][0]))
+				.filter((ec) => ec.length)
 		])
 	);
 </script>

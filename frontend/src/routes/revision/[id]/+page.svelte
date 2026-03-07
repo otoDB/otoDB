@@ -16,8 +16,8 @@
 				// .map((cs) => cs.filter((c) => c.target_value !== null))
 				// Setting to null may be significant change
 				.map((cs) => cs.filter((c) => Object.hasOwn(CommentModelRoutes, c.ent_type)))
-				.map((tg) => tg?.map((c) => [[c.ent_type, c.ent_id], c]))
 				.filter((ec) => ec.length)
+				.map((tg) => [[tg[0].ent_type, tg[0].ent_id], tg])
 		])
 	);
 </script>
@@ -49,8 +49,7 @@
 			<li>{Route[r]}</li>
 			<li class="ml-2 list-none">
 				<ul>
-					{#each ecs as ec, j (j)}
-						{@const [ent_type, ent_id] = ec[0][0]}
+					{#each ecs as [[ent_type, ent_id], ec], j (j)}
 						<li>
 							<a href="/{CommentModelRoutes[ent_type]}/{ent_id}"
 								>/{CommentModelRoutes[ent_type]}/{ent_id}</a
@@ -59,7 +58,7 @@
 						<li class="list-none">
 							<table class="inline-block">
 								<tbody>
-									{#each ec as [_, c], k (k)}
+									{#each ec as c, k (k)}
 										<tr
 											><td
 												>{#if !(c.target_type === ent_type && c.tg_id === ent_id)}{c.target_type}

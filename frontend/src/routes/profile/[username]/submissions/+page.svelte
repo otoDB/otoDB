@@ -17,7 +17,7 @@
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	{#if data.user?.username === data.profile.username}
-		<a href="/work/add">{m.fluffy_crisp_horse_imagine()}</a>
+		<a href="/source/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}
 	<form method="get">
 		<table>
@@ -84,7 +84,6 @@
 					<th>{m.large_polite_otter_thrive()}</th>
 					<th>{m.noisy_moving_newt_belong()}</th>
 					{#if data.user}
-						<th>{m.tough_calm_hedgehog_wave()}</th>
 						<th>{m.mushy_proof_hornet_dig()}</th>
 					{/if}
 				</tr></thead
@@ -101,13 +100,6 @@
 							></td
 						>
 						{#if data.user}
-							<td class="whitespace-nowrap"
-								><a
-									href={`/request/new?pre_filled=source:attach_tag ${src.id}`}
-									target="_blank"
-									rel="noopener noreferrer">{m.tough_calm_hedgehog_wave()}</a
-								></td
-							>
 							<td><RefreshButton source={src} /></td>
 						{/if}
 					</tr>

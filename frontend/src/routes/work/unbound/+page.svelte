@@ -43,7 +43,7 @@
 						}
 					});
 				else if (v.menu === 'reject')
-					await client.POST('/api/work/reject_source', {
+					await client.POST('/api/source/reject', {
 						fetch,
 						params: { query: { source_id: data.sources[i].id, reason: v.reason } }
 					});
@@ -68,7 +68,7 @@
 		}
 	};
 	const updateStatus = (source_id: number) => async (e) => {
-		await client.PUT('/api/work/source_origin', {
+		await client.PUT('/api/source/origin', {
 			fetch,
 			params: { query: { source_id, status: e.target.value } }
 		});

@@ -1,4 +1,11 @@
-from .media import MediaWork, TagWorkInstance, MediaSong
+from .media import (
+	MediaWork,
+	TagWorkInstance,
+	MediaSong,
+	WorkFlag,
+	WorkAppeal,
+	WorkDisapproval,
+)
 from .pool import Pool, PoolItem, PoolUpstream
 from .tag import (
 	TagWork,
@@ -37,6 +44,9 @@ __all__ = [
 	'TagWorkParenthood',
 	'WorkSource',
 	'WorkSourceRejection',
+	'WorkFlag',
+	'WorkAppeal',
+	'WorkDisapproval',
 	'WorkRelation',
 	'SongRelation',
 	'Post',

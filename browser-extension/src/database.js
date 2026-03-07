@@ -94,7 +94,7 @@ const displayNotFound = (currentUrl) => {
     const resultsContainer = document.getElementById('results');
     let addLink = document.createElement('A');
     addLink.innerText = "Add this work to otoDB...";
-    addLink.href = `${OTODB_WEB}/work/add?${new URLSearchParams({ url: currentUrl })}`;
+    addLink.href = `${OTODB_WEB}/source/add?${new URLSearchParams({ url: currentUrl })}`;
     addLink.target = "_blank";
     addLink.rel = "noopener noreferrer";
     resultsContainer.appendChild(addLink);

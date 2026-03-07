@@ -18,11 +18,7 @@ from otodb.models import (
 	PoolItem,
 	PoolUpstream,
 	WorkSource,
-	TagWork,
-	TagWorkInstance,
-	MediaWork,
 )
-from otodb.account.models import Account
 
 from .common import ListSchema, ListItemSchema, WorkSourceSchema, track_revision
 
@@ -168,27 +164,14 @@ def import_ext_into_pool(info, list_: Pool, user):
 		)
 		if getattr(src, 'rejection', None):
 			continue
-		elif src.media is not None or user.level >= Account.Levels.EDITOR:
-			if src.media is not None:
-				work = src.media
-				if work.id in old_entries:
-					continue
-			else:
-				work = MediaWork.objects.create(
-					title=src.title, description=src.description, thumbnail_source=src
-				)
-				src.media = work
-				src.save()
-			for t in vid_info['tags']:
-				tt, _ = TagWork.objects.get_or_create(name=t)
-				if tt.aliased_to:
-					tt = tt.aliased_to
-				TagWorkInstance.objects.create(
-					work=work, work_tag=tt, instance_imported_from_source=True
-				)
 
-			pool_items.append(PoolItem(work=work, description='', pool=list_))
-		elif src.media is None:
+		if src.media is not None:
+			# Source already has a work, add to pool if not already there
+			if src.media.id not in old_entries:
+				pool_items.append(PoolItem(work=src.media, description='', pool=list_))
+				old_entries.add(src.media.id)
+		else:
+			# No work yet - add to pending for user review
 			list_.pending_items.add(src)
 
 	list_.save()

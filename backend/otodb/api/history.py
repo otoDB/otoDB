@@ -6,9 +6,9 @@ import logging
 import diff_match_patch as dmp_mod
 
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction, connection
+from django.db import transaction, connection, models
 
-from django.db.models import Window, F, Subquery, OuterRef, Exists
+from django.db.models import Window, F, Subquery, OuterRef, Exists, Case, When, Q
 from django.db.models.functions import RowNumber
 from django.db.models.fields.related import RelatedField
 
@@ -32,6 +32,7 @@ from otodb.models import (
 	MediaWork,
 )
 from otodb.models.enums import RevisionChain, Route
+from otodb.models.tag import OtodbTagModel
 from otodb.account.models import Account
 
 from .common import (
@@ -113,20 +114,14 @@ class RevisionSchema(ModelSchema):
 
 class RevisionChangeSchema(ModelSchema):
 	target_type: str = Field(..., alias='target_type.model')
+	ent_type: str
+	ent_id: str
+	route: int
+	tg_id: str
 
 	class Meta:
 		model = RevisionChange
-		fields = ['target_id', 'deleted', 'target_column', 'target_value']
-
-
-class RevisionChangeEntitySchema(Schema):
-	ent_type: str = Field(..., alias='entity_type__model')
-	ent_id: str
-	route: int
-
-
-class FullRevisionSchema(RevisionSchema):
-	actions: list[RevisionChangeEntitySchema] = Field(..., max_length=10)
+		fields = ['deleted', 'target_column', 'target_value']
 
 
 def get_history_dict(historical):
@@ -161,7 +156,7 @@ def recent(request: HttpRequest, username: str | None = None):
 	return q
 
 
-@history_router.get('revision', response=FullRevisionSchema)
+@history_router.get('revision', response=RevisionSchema)
 def revision(request: HttpRequest, revision_id: int):
 	return get_object_or_404(Revision, id=revision_id)
 
@@ -169,7 +164,61 @@ def revision(request: HttpRequest, revision_id: int):
 @history_router.get('revision_changes', response=list[RevisionChangeSchema])
 @paginate
 def revision_changes(request: HttpRequest, revision_id: int):
-	return get_object_or_404(Revision, id=revision_id).revisionchange_set.all()
+	rev = get_object_or_404(Revision, id=revision_id)
+	tag_models = [
+		ct.id
+		for ct in ContentType.objects.get_for_models(
+			*OtodbTagModel.__subclasses__()
+		).values()
+	]
+	qq = (
+		RevisionChange.objects.filter(rev=rev)
+		.filter(Q(deleted=True) | Q(target_value__isnull=False))
+		.filter(revisionchangeentity__isnull=False)
+		.annotate(
+			ent_id=(
+				Case(
+					When(
+						Q(revisionchangeentity__entity_type__id__in=tag_models),
+						then=Subquery(
+							RevisionChange.objects.filter(
+								target_type_id=OuterRef(
+									'revisionchangeentity__entity_type_id'
+								),
+								target_id=OuterRef('revisionchangeentity__entity_id'),
+								target_column='slug',
+							).values('target_value')[:1]
+						),
+					),
+					default=models.functions.Cast(
+						F('revisionchangeentity__entity_id'),
+						output_field=models.TextField(),
+					),
+				)
+			),
+			tg_id=(
+				Case(
+					When(
+						Q(target_type__id__in=tag_models),
+						then=Subquery(
+							RevisionChange.objects.filter(
+								target_type_id=OuterRef('target_type_id'),
+								target_id=OuterRef('target_id'),
+								target_column='slug',
+							).values('target_value')[:1]
+						),
+					),
+					default=models.functions.Cast(
+						F('target_id'), output_field=models.TextField()
+					),
+				)
+			),
+			ent_type=F('revisionchangeentity__entity_type__model'),
+			route=F('revisionchangeentity__route'),
+		)
+		.order_by('id')
+	)
+	return qq
 
 
 class EntitySchema(Schema):

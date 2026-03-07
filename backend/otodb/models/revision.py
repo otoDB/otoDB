@@ -15,33 +15,6 @@ class Revision(models.Model):
 	date = models.DateTimeField(auto_now_add=True)
 	message = models.TextField(null=False, default='')
 
-	@property
-	def actions(self):
-		return (
-			RevisionChangeEntity.objects.filter(change__rev=self)
-			.annotate(
-				ent_id=(
-					models.Case(
-						models.When(
-							entity_type__model__contains='tag',
-							then=models.Subquery(
-								RevisionChange.objects.filter(
-									target_type_id=models.OuterRef('entity_type_id'),
-									target_id=models.OuterRef('entity_id'),
-									target_column='slug',
-								).values('target_value')[:1]
-							),
-						),
-						default=models.functions.Cast(
-							models.F('entity_id'), output_field=models.TextField()
-						),
-					)
-				)
-			)
-			.values('route', 'entity_type__model', 'ent_id')
-			.distinct()
-		)
-
 
 class RevisionChange(models.Model):
 	rev = models.ForeignKey(Revision, null=False, on_delete=models.CASCADE)

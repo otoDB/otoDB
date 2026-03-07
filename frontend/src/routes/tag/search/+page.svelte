@@ -2,28 +2,13 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
+	import { LanguageNames, Languages, MediaType, WorkTagCategory } from '$lib/enums';
 	import WorkTag from '$lib/WorkTag.svelte';
-	import client from '$lib/api';
-	import { MediaType, WorkTagCategory } from '$lib/enums';
-	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import Pager from '$lib/Pager.svelte';
+	import { page } from '$app/state';
 
 	let { data }: PageProps = $props();
-	let results = $derived(data.results!.items);
 	let category = $state(data.category);
-
-	const fetchNextBatch = () =>
-		client.GET('/api/tag/search', {
-			fetch,
-			params: {
-				query: {
-					query: data.query,
-					limit: data.batch_size,
-					offset: results.length,
-					category: data.category,
-					media_type: data.media_type
-				}
-			}
-		});
 </script>
 
 <Section
@@ -60,15 +45,89 @@
 				{/each}
 			</select>
 		{/if}
-		<input type="submit" value={m.mean_top_antelope_love()} />
+		<h4>{m.good_heavy_mayfly_spin()}</h4>
+		<select name="order" value={data.order ?? 'newest'}>
+			<option value="newest">{m.shy_quiet_anaconda_enrich()}</option>
+			<option value="count">{m.low_icy_lizard_commend()}</option>
+			<option value="name">{m.livid_dull_parakeet_devour()}</option>
+		</select>
+		<div class="mt-2 flex flex-wrap items-start gap-4">
+			<label class="flex flex-col">
+				{m.loose_trite_bat_roam()}
+				<select name="wiki_lang" multiple value={data.wiki_lang}>
+					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
+						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
+					{/each}
+				</select>
+			</label>
+			<label class="flex flex-col">
+				{m.actual_flat_mayfly_expand()}
+				<select name="wiki_lang_missing" multiple value={data.wiki_lang_missing}>
+					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
+						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
+					{/each}
+				</select>
+			</label>
+			<label class="flex flex-col">
+				{m.lofty_house_nils_greet()}
+				<select name="lang_pref" multiple value={data.lang_pref}>
+					<option value={-1}>{m.mellow_alert_jan_leap()}</option>
+					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
+						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
+					{/each}
+				</select>
+			</label>
+			<label class="flex flex-col">
+				{m.strong_lower_firefox_exhale()}
+				<select name="lang_pref_missing" multiple value={data.lang_pref_missing}>
+					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
+						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
+					{/each}
+				</select>
+			</label>
+			<label class="flex flex-col">
+				{m.stout_same_insect_conquer()}
+				<select name="has_connections" value={data.has_connections ?? ''}>
+					<option value="">---</option>
+					<option value="true">{m.broad_large_squid_zoom()}</option>
+					<option value="false">{m.great_lucky_goldfish_sail()}</option>
+				</select>
+			</label>
+			<label>
+				<input type="checkbox" name="deprecated_only" checked={data.deprecated_only} />
+				{m.pink_funny_platypus_aim()}
+			</label>
+			<label>
+				<input type="hidden" name="hide_orphans" value="off" />
+				<input type="checkbox" name="hide_orphans" checked={data.hide_orphans} />
+				{m.spry_great_monkey_fry()}
+			</label>
+		</div>
+		<input type="submit" value={m.mean_top_antelope_love()} class="mt-2" />
 	</form>
 
 	<hr class="my-5" />
 
-	<div class="flex flex-wrap gap-3">
-		{#each results as tag, i (i)}
-			<WorkTag {tag} />
-		{/each}
-	</div>
-	<LoadMoreButton {fetchNextBatch} maxCount={data.results!.count} bind:results />
+	<table class="w-full">
+		<tbody>
+			{#each data.results?.items ?? [] as tag, i (i)}
+				<tr class="border-otodb-bg-fainter border-b">
+					<td class="py-1.5">
+						<WorkTag {tag} />
+						<span class="text-otodb-content-faint ml-1 tabular-nums"
+							>{tag.n_instance ?? 0}</span
+						>
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+	{#if data.results?.count}
+		<Pager
+			n_count={data.results.count}
+			page={data.page}
+			page_size={data.batch_size}
+			base_url={page.url}
+		/>
+	{/if}
 </Section>

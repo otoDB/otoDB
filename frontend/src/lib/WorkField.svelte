@@ -84,8 +84,10 @@
 						<td
 							><a
 								class="cursor-pointer"
-								href={null}
-								onclick={() => {
+								href={`/work/${v.id}`}
+								onclick={(e) => {
+									if (e.button !== 0) return;
+									e.preventDefault();
 									value = v;
 									input = getDisplayText(v.title, '');
 									suggestions = [];

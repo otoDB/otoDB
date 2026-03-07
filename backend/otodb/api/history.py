@@ -32,6 +32,7 @@ from otodb.models import (
 	MediaWork,
 )
 from otodb.models.enums import RevisionChain, Route
+from otodb.models.tag import OtodbTagModel
 from otodb.account.models import Account
 
 from .common import (
@@ -164,14 +165,21 @@ def revision(request: HttpRequest, revision_id: int):
 @paginate
 def revision_changes(request: HttpRequest, revision_id: int):
 	rev = get_object_or_404(Revision, id=revision_id)
+	tag_models = [
+		ct.id
+		for ct in ContentType.objects.get_for_models(
+			*OtodbTagModel.__subclasses__()
+		).values()
+	]
 	qq = (
 		RevisionChange.objects.filter(rev=rev)
 		.filter(Q(deleted=True) | Q(target_value__isnull=False))
+		.filter(revisionchangeentity__isnull=False)
 		.annotate(
 			ent_id=(
 				Case(
 					When(
-						revisionchangeentity__entity_type__model__contains='tag',
+						Q(revisionchangeentity__entity_type__id__in=tag_models),
 						then=Subquery(
 							RevisionChange.objects.filter(
 								target_type_id=OuterRef(
@@ -191,8 +199,7 @@ def revision_changes(request: HttpRequest, revision_id: int):
 			tg_id=(
 				Case(
 					When(
-						Q(target_type__model__contains='tag')
-						& ~Q(target_type__model__contains='instance'),
+						Q(target_type__id__in=tag_models),
 						then=Subquery(
 							RevisionChange.objects.filter(
 								target_type_id=OuterRef('target_type_id'),

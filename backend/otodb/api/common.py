@@ -69,7 +69,10 @@ class WorkSourceSchema(ModelSchema):
 	id: int
 	added_by: ProfileSchema
 	rejection: WorkSourceRejectionSchema | None = None
-	thumbnail: str | None = None  # Exposed as property
+
+	# Exposed as properties
+	thumbnail: str | None = None
+	thumbnail_preview: str | None = None
 
 	class Meta:
 		model = WorkSource
@@ -111,7 +114,8 @@ class RelationSchema(Schema):
 
 class SlimWorkSchema(ModelSchema):
 	id: int
-	thumbnail: str | None = None  # Exposed as property
+	thumbnail: str | None = None
+	thumbnail_preview: str | None = None
 
 	class Meta:
 		model = MediaWork
@@ -121,7 +125,8 @@ class SlimWorkSchema(ModelSchema):
 class WorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
-	thumbnail: str | None = None  # Exposed as property
+	thumbnail: str | None = None
+	thumbnail_preview: str | None = None
 	relations: tuple[list[RelationSchema], list[SlimWorkSchema]]
 
 	class Meta:
@@ -132,7 +137,8 @@ class WorkSchema(ModelSchema):
 class ThinWorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
-	thumbnail: str | None = None  # Exposed as property
+	thumbnail: str | None = None
+	thumbnail_preview: str | None = None
 
 	class Meta:
 		model = MediaWork

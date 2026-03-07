@@ -1,4 +1,18 @@
+FROM alpine:3.23 AS mozjpeg
+RUN apk --no-cache add cmake nasm make gcc g++ musl-dev curl && \
+    curl -L https://github.com/mozilla/mozjpeg/archive/refs/tags/v4.1.1.tar.gz | tar xz -C /tmp && \
+    cd /tmp/mozjpeg-4.1.1 && \
+    cmake -G"Unix Makefiles" \
+      -DBUILD_SHARED_LIBS=FALSE \
+      -DPNG_SUPPORTED=FALSE \
+      -DWITH_TURBOJPEG=FALSE \
+      -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+      . && \
+    make -j$(nproc)
+
 FROM ghcr.io/astral-sh/uv:bookworm-slim
+
+COPY --from=mozjpeg /tmp/mozjpeg-4.1.1/cjpeg-static /usr/local/bin/cjpeg
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1

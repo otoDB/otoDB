@@ -1,14 +1,15 @@
 <script lang="ts">
 	interface Props {
 		thumbnail: string | null | undefined;
+		preview?: string | null | undefined;
 		alt: string;
 		class?: string;
 	}
-	const { thumbnail, alt, ...props }: Props = $props();
+	const { thumbnail, preview, alt, ...props }: Props = $props();
 </script>
 
-{#if thumbnail}
-	<img src={thumbnail} {alt} class={[props.class]} />
+{#if thumbnail || preview}
+	<img src={preview ?? thumbnail} {alt} class={[props.class]} />
 {:else}
 	<div
 		class={[

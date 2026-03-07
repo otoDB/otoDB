@@ -55,7 +55,7 @@
 			<label class="flex flex-col">
 				{m.loose_trite_bat_roam()}
 				<select name="wiki_lang" multiple value={data.wiki_lang}>
-					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId}
+					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
 						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
 					{/each}
 				</select>
@@ -63,7 +63,7 @@
 			<label class="flex flex-col">
 				{m.actual_flat_mayfly_expand()}
 				<select name="wiki_lang_missing" multiple value={data.wiki_lang_missing}>
-					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId}
+					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
 						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
 					{/each}
 				</select>
@@ -72,7 +72,7 @@
 				{m.lofty_house_nils_greet()}
 				<select name="lang_pref" multiple value={data.lang_pref}>
 					<option value={-1}>{m.mellow_alert_jan_leap()}</option>
-					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId}
+					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
 						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
 					{/each}
 				</select>
@@ -80,7 +80,7 @@
 			<label class="flex flex-col">
 				{m.strong_lower_firefox_exhale()}
 				<select name="lang_pref_missing" multiple value={data.lang_pref_missing}>
-					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId}
+					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
 						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
 					{/each}
 				</select>

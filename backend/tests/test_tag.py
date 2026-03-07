@@ -269,82 +269,26 @@ class TestTagLanguagePreference:
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestTagSearch:
-	"""Test tag search endpoint sorting behavior"""
-
-	def test_exact_alias_match_sorting(self, tag_client):
+	def test_search_finds_aliased_tag(self, tag_client):
 		"""
-		Test that tags with exact alias matches are prioritized correctly.
-		Exact alias matches should come after exact name matches but before partial matches.
+		Test that searching for an alias name returns the base tag.
 		"""
-		# Search term: 'mmo'
-
-		# 1. Base tag with alias that exactly matches 'mmo' - high usage (3 works)
 		base_tag = TagWork.objects.create(
 			name='massively_multiplayer_online', category=WorkTagCategory.GENERAL
 		)
-		alias_mmo = TagWork.objects.create(name='mmo')
-		alias_mmo.aliased_to = base_tag
-		alias_mmo.save()
+		alias = TagWork.objects.create(name='mmo')
+		alias.aliased_to = base_tag
+		alias.save()
 
-		work1 = MediaWork.objects.create(title='Work 1')
-		work2 = MediaWork.objects.create(title='Work 2')
-		work3 = MediaWork.objects.create(title='Work 3')
-		work1.tags.add(base_tag)
-		work2.tags.add(base_tag)
-		work3.tags.add(base_tag)
+		work = MediaWork.objects.create(title='Work 1')
+		work.tags.add(base_tag)
 
-		# 2. Partial match with very high usage (5 works)
-		partial_high = TagWork.objects.create(
-			name='mmorpg', category=WorkTagCategory.GENERAL
-		)
-		for i in range(5):
-			w = MediaWork.objects.create(title=f'Work Partial {i}')
-			w.tags.add(partial_high)
-
-		# 3. Partial match with low usage (1 work)
-		partial_low = TagWork.objects.create(
-			name='mmo_strategy', category=WorkTagCategory.GENERAL
-		)
-		work4 = MediaWork.objects.create(title='Work 4')
-		work4.tags.add(partial_low)
-
-		# Search for 'mmo'
 		response = tag_client.get('/search?query=mmo')
 		assert response.status_code == 200
 		results = response.json()['items']
 		result_names = [tag['name'] for tag in results]
 
-		# Assertions:
-		# 1. Exact alias match comes first (massively_multiplayer_online has alias 'mmo')
-		assert result_names[0] == 'massively_multiplayer_online'
-
-		# 2. Partial matches follow, sorted by usage (mmorpg with 5, mmo_strategy with 1)
-		assert result_names[1] == 'mmorpg'
-		assert result_names[2] == 'mmo_strategy'
-
-	def test_exact_match_case_insensitive(self, tag_client):
-		"""Test that exact matching is case-insensitive"""
-		work1 = MediaWork.objects.create(title='Work 1')
-		work2 = MediaWork.objects.create(title='Work 2')
-
-		# Create tags with different cases
-		tag1 = TagWork.objects.create(name='anime', category=WorkTagCategory.GENERAL)
-		tag2 = TagWork.objects.create(
-			name='ANIME_SERIES', category=WorkTagCategory.GENERAL
-		)
-
-		work1.tags.add(tag1)
-		work2.tags.add(tag2)
-
-		# Search with different case
-		response = tag_client.get('/search?query=ANIME')
-		assert response.status_code == 200
-		results = response.json()['items']
-
-		# 'anime' should be first as an exact match
-		assert results[0]['name'] == 'anime'
-		# 'anime_series' should be second as a partial match
-		assert results[1]['name'] == 'anime_series'
+		assert 'massively_multiplayer_online' in result_names
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)

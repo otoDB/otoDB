@@ -832,6 +832,7 @@ def song_search(
 		| Q(work_tag__name__icontains=cleaned_query)
 		| Q(work_tag__aliases__name__icontains=cleaned_query),
 		author__icontains=author,
+		work_tag__aliased_to__isnull=True,
 	).distinct()
 	if tags:
 		for tag in tags.split():

@@ -824,10 +824,17 @@ def song_search(
 	tags: str | None = None,
 	bpm_range: tuple[int, int] | None = Query(None),
 ):
-	qs = MediaSong.objects.filter(title__icontains=query, author__icontains=author)
+	cleaned_query = clean_incoming_tag_name(query)
+	qs = MediaSong.objects.filter(
+		Q(title__icontains=query)
+		| Q(work_tag__name__icontains=cleaned_query)
+		| Q(work_tag__aliases__name__icontains=cleaned_query),
+		author__icontains=author,
+	).distinct()
 	if tags:
 		for tag in tags.split():
-			qs = qs.filter(tags__slug=clean_incoming_slug(tag))
+			tag_slug = clean_incoming_slug(tag)
+			qs = qs.filter(Q(tags__slug=tag_slug) | Q(tags__aliases__slug=tag_slug))
 	elif query.isdigit():
 		qs = qs.annotate(priority=Value(100))
 		qs = (

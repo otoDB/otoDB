@@ -131,7 +131,7 @@ class WorkSchema(ModelSchema):
 
 class ThinWorkSchema(ModelSchema):
 	id: int
-	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated')
+	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
 
 	class Meta:

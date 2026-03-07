@@ -2113,6 +2113,11 @@ export interface components {
              */
             lang: number;
         };
+        /** AliasResponse */
+        AliasResponse: {
+            /** Merged Slug */
+            merged_slug: string;
+        };
         /** WikiPageMDSchema */
         WikiPageMDSchema: {
             /** Page */
@@ -3936,7 +3941,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AliasResponse"];
+                };
             };
         };
     };

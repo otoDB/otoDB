@@ -166,7 +166,9 @@ def search(
 		qs = qs.filter(n_instance__gt=0)
 
 	wiki_sub = WikiPage.objects.filter(tag=OuterRef('pk'))
-	pref_sub = TagWorkLangPreference.objects.filter(tag=OuterRef('pk'))
+	pref_sub = TagWorkLangPreference.objects.filter(
+		Q(tag=OuterRef('pk')) | Q(tag__aliased_to=OuterRef('pk'))
+	)
 
 	if wiki_lang:
 		qs = qs.filter(Exists(wiki_sub.filter(lang__in=wiki_lang)))

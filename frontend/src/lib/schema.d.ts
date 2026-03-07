@@ -1320,6 +1320,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/comment/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent */
+        get: operations["otodb_api_comment_recent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/history/recent": {
         parameters: {
             query?: never;
@@ -2214,8 +2231,6 @@ export interface components {
         CommentSchema: {
             /** Id */
             id: number;
-            /** Level */
-            level: number;
             user: components["schemas"]["ProfileSchema"];
             /** Comment */
             comment: string;
@@ -2226,8 +2241,34 @@ export interface components {
             submit_date: string;
             /** Parent Id */
             parent_id: number;
+            /** Level */
+            level: number;
             /** Index */
             index: number;
+        };
+        /** ExtCommentSchema */
+        ExtCommentSchema: {
+            /** Id */
+            id: number;
+            user: components["schemas"]["ProfileSchema"];
+            /** Comment */
+            comment: string;
+            /**
+             * Submit Date
+             * Format: date-time
+             */
+            submit_date: string;
+            /** Entity Type */
+            entity_type: string;
+            /** Entity Id */
+            entity_id: string;
+        };
+        /** PagedExtCommentSchema */
+        PagedExtCommentSchema: {
+            /** Items */
+            items: components["schemas"]["ExtCommentSchema"][];
+            /** Count */
+            count: number;
         };
         /** PagedRevisionSchema */
         PagedRevisionSchema: {
@@ -2257,38 +2298,6 @@ export interface components {
              */
             message: string;
         };
-        /** FullRevisionSchema */
-        FullRevisionSchema: {
-            /** Id */
-            id: number;
-            /**
-             * Date
-             * Format: date-time
-             */
-            date: string;
-            /** User */
-            user: string;
-            /** Index */
-            index?: number | null;
-            /** Route */
-            route?: number | null;
-            /**
-             * Message
-             * @default
-             */
-            message: string;
-            /** Actions */
-            actions: components["schemas"]["RevisionChangeEntitySchema"][];
-        };
-        /** RevisionChangeEntitySchema */
-        RevisionChangeEntitySchema: {
-            /** Ent Type */
-            ent_type: string;
-            /** Ent Id */
-            ent_id: string;
-            /** Route */
-            route: number;
-        };
         /** PagedRevisionChangeSchema */
         PagedRevisionChangeSchema: {
             /** Items */
@@ -2300,8 +2309,14 @@ export interface components {
         RevisionChangeSchema: {
             /** Target Type */
             target_type: string;
-            /** Target Id */
-            target_id: number;
+            /** Ent Type */
+            ent_type: string;
+            /** Ent Id */
+            ent_id: string;
+            /** Route */
+            route: number;
+            /** Tg Id */
+            tg_id: string;
             /**
              * Deleted
              * @default false
@@ -3375,6 +3390,7 @@ export interface operations {
                 origin?: number | null;
                 status?: number | null;
                 order?: ("id" | "-id" | "published_date" | "-published_date") | null;
+                standing?: number;
                 limit?: number;
                 offset?: number;
             };
@@ -4624,6 +4640,29 @@ export interface operations {
             };
         };
     };
+    otodb_api_comment_recent: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedExtCommentSchema"];
+                };
+            };
+        };
+    };
     otodb_api_history_recent: {
         parameters: {
             query?: {
@@ -4665,7 +4704,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FullRevisionSchema"];
+                    "application/json": components["schemas"]["RevisionSchema"];
                 };
             };
         };

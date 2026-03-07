@@ -134,6 +134,7 @@ class ExtCommentSchema(BaseCommentSchema):
 def recent(request: HttpRequest):
 	return (
 		XtdComment.objects.filter(is_removed=False)
+		.exclude(content_type__model='post')
 		.order_by('-submit_date')
 		.annotate(
 			entity_id=Case(
@@ -150,10 +151,22 @@ def recent(request: HttpRequest):
 						).values('target_value')[:1]
 					),
 				),
+				When(
+					content_type__model='account',
+					then=Subquery(
+						Account.objects.filter(
+							id=models.functions.Cast(
+								OuterRef('object_pk'),
+								output_field=models.BigIntegerField(),
+							),
+						).values('username')[:1]
+					),
+				),
 				default=models.functions.Cast(
 					F('object_pk'),
 					output_field=models.TextField(),
 				),
+				output_field=models.TextField(),
 			),
 			entity_type=F('content_type__model'),
 		)

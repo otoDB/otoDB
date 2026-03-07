@@ -16,7 +16,7 @@
 		return u.href;
 	};
 
-	let pp = $derived(page);
+	let pp = $derived.by(() => page);
 </script>
 
 {#snippet btn(p)}

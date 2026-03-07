@@ -128,6 +128,14 @@ def search(
 	resolve_aliases: bool = True,
 	category: int | None = None,
 	media_type: list[int] | None = Query(None),
+	order: str = 'newest',
+	deprecated_only: bool = False,
+	hide_orphans: bool = True,
+	wiki_lang: list[int] | None = Query(None),
+	wiki_lang_missing: list[int] | None = Query(None),
+	lang_pref: list[int] | None = Query(None),
+	lang_pref_missing: list[int] | None = Query(None),
+	has_connections: bool | None = None,
 ):
 	cleaned_query = clean_incoming_tag_name(query)
 	qs = TagWork.objects.filter(name__contains=cleaned_query)
@@ -142,16 +150,57 @@ def search(
 		if category == WorkTagCategory.MEDIA and media_type:
 			qs = filter_tags_by_media_type(qs, media_type)
 
-	return (
-		qs.filter(deprecated=False)
-		.annotate(
-			n_instance=Case(
-				When(
-					aliased_to__isnull=False, then=Count('aliased_to__tagworkinstance')
-				),
-				default=Count('tagworkinstance'),
-				output_field=models.IntegerField(),
-			),
+	qs = qs.filter(deprecated=deprecated_only)
+	qs = qs.annotate(
+		n_instance=Case(
+			When(aliased_to__isnull=False, then=Count('aliased_to__tagworkinstance')),
+			default=Count('tagworkinstance'),
+			output_field=models.IntegerField(),
+		),
+		_has_connections=Exists(TagWorkConnection.objects.filter(tag=OuterRef('pk')))
+		| Exists(TagWorkMediaConnection.objects.filter(tag=OuterRef('pk')))
+		| Exists(TagWorkCreatorConnection.objects.filter(tag=OuterRef('pk'))),
+	)
+
+	if hide_orphans:
+		qs = qs.filter(n_instance__gt=0)
+
+	wiki_sub = WikiPage.objects.filter(tag=OuterRef('pk'))
+	pref_sub = TagWorkLangPreference.objects.filter(tag=OuterRef('pk'))
+
+	if wiki_lang:
+		qs = qs.filter(Exists(wiki_sub.filter(lang__in=wiki_lang)))
+	if wiki_lang_missing:
+		qs = qs.filter(~Exists(wiki_sub.filter(lang__in=wiki_lang_missing)))
+
+	if lang_pref:
+		values = [v for v in lang_pref if v > 0]
+		cond = Q()
+		if values:
+			cond |= Exists(pref_sub.filter(lang__in=values))
+		if -1 in lang_pref:
+			cond |= ~Exists(pref_sub)
+		qs = qs.filter(cond)
+	if lang_pref_missing:
+		values = [v for v in lang_pref_missing if v > 0]
+		cond = Q()
+		if values:
+			cond &= ~Exists(pref_sub.filter(lang__in=values))
+		if -1 in lang_pref_missing:
+			cond &= Exists(pref_sub)
+		qs = qs.filter(cond)
+
+	if has_connections is not None:
+		qs = qs.filter(_has_connections=has_connections)
+
+	order_field = {
+		'newest': '-id',
+		'count': '-n_instance',
+		'name': 'name',
+	}.get(order, '-id')
+
+	if cleaned_query:
+		qs = qs.annotate(
 			exact_match=Case(
 				When(name__iexact=cleaned_query, then=Value(0)),
 				When(
@@ -165,9 +214,11 @@ def search(
 				default=Value(99),
 				output_field=models.IntegerField(),
 			),
-		)
-		.order_by('exact_match', '-n_instance')
-	)
+		).order_by('exact_match', order_field)
+	else:
+		qs = qs.order_by(order_field)
+
+	return qs
 
 
 @tag_router.get('tag', response={200: FatTagWorkSchema, 300: str})
@@ -214,9 +265,7 @@ def details(request: HttpRequest, tag_slug: str):
 @tag_router.get('works', response=list[ThinWorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
-	return MediaWork.objects.filter(
-		moved_to__isnull=True, tags__slug=tag_slug
-	).select_related('thumbnail_source')
+	return MediaWork.active_objects.filter(tags__slug=tag_slug)
 
 
 def tag_route_switch(work_route: Route, song_route: Route):
@@ -247,7 +296,11 @@ def tag_route_switch(work_route: Route, song_route: Route):
 	return decorator
 
 
-@tag_router.post('alias', auth=django_auth)
+class AliasResponse(Schema):
+	merged_slug: str
+
+
+@tag_router.post('alias', auth=django_auth, response=AliasResponse)
 @user_is_trusted
 @tag_route_switch(Route.TAGWORK_ALIAS, Route.SONGTAG_ALIAS)
 def alias_tags(
@@ -277,7 +330,7 @@ def alias_tags(
 			if tag.can_be_deleted:
 				tag.delete()
 
-	return {'merged_slug': into.slug}
+	return AliasResponse(merged_slug=into.slug)
 
 
 @tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})

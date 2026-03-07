@@ -56,12 +56,22 @@
 		title="Twitter Embed"
 		loading="lazy"
 		{width}
-		{height}
+		height={Math.round(width / (src.work_width! / src.work_height!)) || height}
 		src="https://platform.twitter.com/embed/Tweet.html?dnt=true&embedId=twitter-widget-0&frame=false&hideCard=true&hideThread=true&id={src.source_id}&maxWidth={width}px&origin={encodeURIComponent(
 			window.location.origin
 		)}&width={width}px"
 		frameborder="0"
 		scrolling="no"
+	></iframe>
+{:else if src.platform === 6}
+	<iframe
+		title="AcFun Player"
+		{width}
+		{height}
+		src="https://www.acfun.cn/player/{src.source_id}"
+		frameborder="no"
+		scrolling="no"
+		allowfullscreen
 	></iframe>
 {/if}
 

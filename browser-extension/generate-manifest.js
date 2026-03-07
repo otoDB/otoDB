@@ -3,7 +3,7 @@ const fs = require('fs');
 const manifest = {
     "manifest_version": 3,
     "name": "otoDB",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
     "background": {
         "scripts": ["background.js"]
@@ -49,7 +49,8 @@ const manifest = {
     ],
     "host_permissions": [
       "https://otodb.net/*",
-      "https://*.nicovideo.jp/*"
+      "https://*.nicovideo.jp/*",
+      "https://www.nicochart.jp/*"
     ],
     "declarative_net_request": {
       "rule_resources": [

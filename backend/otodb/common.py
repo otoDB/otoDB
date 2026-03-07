@@ -20,6 +20,7 @@ from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 from yt_dlp.extractor.twitter import TwitterIE
+from yt_dlp.extractor.acfun import AcFunVideoIE
 
 from django.conf import settings
 
@@ -73,7 +74,14 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		opts['cookiefile'] = cookie_file
 	ydl = YoutubeDL(opts, auto_init=False)
 
-	for e in (YoutubeIE, NiconicoIECustom, BiliBiliIE, SoundcloudIE, TwitterIE):
+	for e in (
+		YoutubeIE,
+		NiconicoIECustom,
+		BiliBiliIE,
+		SoundcloudIE,
+		TwitterIE,
+		AcFunVideoIE,
+	):
 		ydl.add_info_extractor(e)
 
 
@@ -85,16 +93,22 @@ platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
 	(Platform.BILIBILI, BiliBiliIE),
 	(Platform.SOUNDCLOUD, SoundcloudIE),
 	(Platform.TWITTER, TwitterIE),
+	(Platform.ACFUN, AcFunVideoIE),
 ]  # type: ignore
 make_video_url = {
 	Platform.YOUTUBE: lambda s, uid=None: f'https://youtube.com/watch?v={s}',
 	Platform.NICONICO: lambda s, uid=None: f'https://nicovideo.jp/watch/{s}',
-	Platform.BILIBILI: lambda s, uid=None: f'https://www.bilibili.com/video/{s}/',
+	Platform.BILIBILI: lambda s, uid=None: (
+		f'https://www.bilibili.com/video/{s + "/" if "_p" not in s else s[: s.index("_p")] + "/" + "?p=" + s[s.index("_p") + 2 :]}'
+	),
 	Platform.SOUNDCLOUD: lambda s, uid=None: s,  # TODO
 	Platform.TWITTER: lambda s, uid=None: (
 		f'https://twitter.com/{uid}/status/{s}'
 		if uid
 		else f'https://twitter.com/i/status/{s}'
+	),
+	Platform.ACFUN: lambda s, uid=None: (
+		f'https://www.acfun.cn/v/{s if s.startswith("ac") else "ac" + s}'
 	),
 }
 
@@ -191,7 +205,10 @@ def process_video_info(full_info, link=None):
 			resolutions = [
 				(f['width'], f['height'])
 				for f in info['formats']
-				if 'width' in f and f['width'] is not None
+				if 'width' in f
+				and f['width'] is not None
+				# Exclude super-resolution (AI upscaled) formats
+				and not f.get('format_id', '').endswith('-sr')
 			]
 			if resolutions:
 				info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
@@ -212,13 +229,12 @@ def process_video_info(full_info, link=None):
 			case Platform.YOUTUBE:
 				info['tags'].extend(hashtag_re.findall(info['description']))
 			case Platform.BILIBILI:
-				info['id'] = _clean_bilibili_source_id(info['id'])
-				title_chapter_mark = info['title'].find(
-					' p01'
-				)  # TODO this is far from perfect
-				if title_chapter_mark != -1:
-					info['title'] = info['title'][:title_chapter_mark]
-				info['webpage_url'] = make_video_url[info['extractor']](info['id'])
+				if 'p' not in furl(info['webpage_url']).args:
+					info['id'] = _clean_bilibili_source_id(info['id'])
+					title_chapter_mark = info['title'].find(' p01')
+					if title_chapter_mark != -1:
+						info['title'] = info['title'][:title_chapter_mark]
+					info['webpage_url'] = make_video_url[info['extractor']](info['id'])
 				if 'tags' in info:
 					info['tags'] = [
 						tag[3:-1]
@@ -233,6 +249,8 @@ def process_video_info(full_info, link=None):
 			case Platform.TWITTER:
 				info['id'] = info['display_id']
 				info['title'] = None
+			case Platform.ACFUN:
+				info['id'] = 'ac' + info['id']
 			case _:
 				return None
 

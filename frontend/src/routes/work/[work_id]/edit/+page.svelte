@@ -10,6 +10,7 @@
 	import { dirtyEnhance } from '$lib/ui';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import RefreshButton from '../../RefreshButton.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let { data, form }: PageProps = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, '')),
@@ -93,13 +94,11 @@
 							{@const selectedSource = data.sources!.find(
 								(s) => s.id === thumbnail_source_id
 							)}
-							{#if selectedSource?.thumbnail}
-								<img
-									class="mt-2 w-20"
-									src={selectedSource.thumbnail}
-									alt={selectedSource.title}
-								/>
-							{/if}
+							<WorkThumbnail
+								class="mt-2 aspect-video w-20"
+								thumbnail={selectedSource?.thumbnail}
+								alt={selectedSource?.title ?? ''}
+							/>
 						{/if}</td
 					></tr
 				>

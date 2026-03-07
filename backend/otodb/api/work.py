@@ -114,11 +114,14 @@ def search(
 	order: Literal['id', '-id', 'pub', '-pub'] | None = '-id',
 ):
 	search_id = int(query) if query.isdigit() else -1
-	q = (
-		Q(title__icontains=query)
-		| Q(description__icontains=query)
-		| Q(worksource__title__icontains=query)
-	)
+	if query:
+		q = (
+			Q(title__icontains=query)
+			| Q(description__icontains=query)
+			| Q(worksource__title__icontains=query)
+		)
+	else:
+		q = Q()
 	if tags:
 		for tag in tags.split():
 			try:
@@ -149,17 +152,23 @@ def search(
 						q = q & Q(tags=t)
 			except TagWork.DoesNotExist:
 				return []
-	else:
+	elif query:
 		q = q | Q(worksource__source_id=query)
 		if query.startswith('https'):
 			q = q | Q(worksource__url=query)
 		if search_id > 0:
 			q = q | Q(id=search_id)
 
-	return (
-		MediaWork.objects.filter(moved_to__isnull=True)
-		.filter(q)
-		.annotate(
+	qs = MediaWork.active_objects.filter(q).annotate(
+		pub=Subquery(
+			WorkSource.objects.filter(media_id=OuterRef('id'))
+			.order_by('published_date')
+			.values('published_date')[:1]
+		),
+	)
+
+	if query:
+		qs = qs.annotate(
 			priority=Case(
 				When(id=search_id, then=Value(0)),
 				When(worksource__url=query, then=Value(1)),
@@ -170,23 +179,20 @@ def search(
 				default=Value(1000),
 				output_field=IntegerField(),
 			),
-			pub=Subquery(
-				WorkSource.objects.filter(media_id=OuterRef('id'))
-				.order_by('published_date')
-				.values('published_date')[:1]
-			),
-		)
-		.order_by('priority', order)
-		.distinct()
-	)
+		).order_by('priority', order)
+	else:
+		qs = qs.order_by(order)
+
+	return qs.distinct()
 
 
 @work_router.get('tags_needed', response=List[ThinWorkSchema], exclude_none=True)
 @paginate
 def tags_needed(request: HttpRequest):
 	return (
-		MediaWork.objects.filter(moved_to__isnull=True)
-		.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False)))
+		MediaWork.active_objects.annotate(
+			ntags=Count('tags', filter=Q(tags__deprecated=False))
+		)
 		.filter(ntags__lte=4)
 		.order_by('ntags')
 		.distinct()
@@ -195,7 +201,7 @@ def tags_needed(request: HttpRequest):
 
 @work_router.get('work', response={200: WorkSchema, 300: int})
 def work(request: HttpRequest, work_id: int):
-	work: MediaWork = get_object_or_404(MediaWork.objects, id=work_id)
+	work: MediaWork = get_object_or_404(MediaWork.active_objects, id=work_id)
 	if work.moved_to:
 		return 300, work.moved_to.id
 	return work
@@ -205,9 +211,7 @@ def work(request: HttpRequest, work_id: int):
 @user_is_editor
 @with_revision_route(Route.MEDIAWORK_DELETE)
 def delete_work(request: HttpRequest, work_id: int):
-	work = get_object_or_404(
-		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
-	)
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	work.worksource_set.update(media=None)
 	work.delete()
 
@@ -216,9 +220,7 @@ def delete_work(request: HttpRequest, work_id: int):
 @user_is_trusted
 @with_revision_route(Route.MEDIAWORK_SET_TAGS)
 def set_tags(request: HttpRequest, work_id: int, payload: List[str]):
-	work = get_object_or_404(
-		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
-	)
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 
 	tags = []
 	for v in payload:
@@ -270,9 +272,7 @@ def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
 @user_is_trusted
 @with_revision_route(Route.MEDIAWORK_REMOVE_TAG)
 def remove_tag(request: HttpRequest, work_id: int, tag_slug: str):
-	work = get_object_or_404(
-		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
-	)
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	work.tags.remove(tag)
 	if tag.can_be_deleted:
@@ -295,9 +295,7 @@ def recent(request: HttpRequest, n: int = 1):
 	'relations', response=tuple[list[RelationSchema], list[SlimWorkSchema]]
 )
 def relations(request: HttpRequest, work_id: int):
-	work = get_object_or_404(
-		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
-	)
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	relations = WorkRelation.get_component(work.id)
 	return 200, (relations, {w.id: w for r in relations for w in (r.A, r.B)}.values())
 
@@ -314,8 +312,8 @@ def relation(request: HttpRequest, payload: RelationSchema):
 @user_is_trusted
 @with_revision_route(Route.WORKRELATION_DELETE)
 def delete_relation(request: HttpRequest, A: int, B: int):
-	a = MediaWork.objects.filter(moved_to__isnull=True).get(id=A)
-	b = MediaWork.objects.filter(moved_to__isnull=True).get(id=B)
+	a = MediaWork.active_objects.get(id=A)
+	b = MediaWork.active_objects.get(id=B)
 	rel = WorkRelation.objects.get_relation(a, b)
 	rel.delete()
 	return
@@ -323,9 +321,7 @@ def delete_relation(request: HttpRequest, A: int, B: int):
 
 @work_router.get('sources', response=List[WorkSourceSchema])
 def sources(request: HttpRequest, work_id: int):
-	work = get_object_or_404(
-		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
-	)
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	return work.worksource_set
 
 
@@ -370,12 +366,8 @@ def merge_works(
 	request: HttpRequest, from_work_id: int, to_work_id: int, payload: WorkEditSchema
 ):
 	MediaWork.merge(
-		to_work=get_object_or_404(
-			MediaWork.objects.filter(moved_to__isnull=True), id=to_work_id
-		),
-		from_work=get_object_or_404(
-			MediaWork.objects.filter(moved_to__isnull=True), id=from_work_id
-		),
+		to_work=get_object_or_404(MediaWork.active_objects, id=to_work_id),
+		from_work=get_object_or_404(MediaWork.active_objects, id=from_work_id),
 		title=payload.title,
 		description=payload.description,
 		thumbnail_source=get_object_or_404(
@@ -392,9 +384,7 @@ def merge_works(
 def update_work(
 	request: HttpRequest, work_id: int, payload: WorkEditSchema, reason: str
 ):
-	work = get_object_or_404(
-		MediaWork.objects.filter(moved_to__isnull=True), id=work_id
-	)
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	for attr, value in payload.dict().items():
 		if attr == 'thumbnail_source' and value is not None:
 			value = get_object_or_404(WorkSource.active_objects, id=value)
@@ -512,17 +502,11 @@ def new_source_from_url(
 	# === Work check: editor flow or existing work found in request/sources ===
 
 	if work_id:
-		work = get_object_or_404(
-			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
-		)
+		work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	elif src.media:
-		work = get_object_or_404(
-			MediaWork.objects.filter(moved_to__isnull=True), id=src.media.id
-		)
+		work = get_object_or_404(MediaWork.active_objects, id=src.media.id)
 	elif original_src and original_src_media is not None:
-		work = get_object_or_404(
-			MediaWork.objects.filter(moved_to__isnull=True), id=original_src.media.id
-		)
+		work = get_object_or_404(MediaWork.active_objects, id=original_src.media.id)
 	else:
 		work = MediaWork.objects.create(
 			title=src.title,
@@ -561,11 +545,15 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 	"""
 
 	if not src.media:
-		# Build creator connections query only if we have uploader_id
 		creator_tags = []
-		if src.work_origin == WorkOrigin.AUTHOR and info.get('uploader_id'):
+		platform_name = Platform(src.platform).name
+		if (
+			src.work_origin == WorkOrigin.AUTHOR
+			and info.get('uploader_id')
+			and platform_name in ProfileConnectionTypes.__members__
+		):
 			q = TagWorkCreatorConnection.objects.filter(
-				site=ProfileConnectionTypes[Platform(src.platform).name]
+				site=ProfileConnectionTypes[platform_name]
 			)
 
 			if src.platform == Platform.YOUTUBE and info.get('channel_id'):
@@ -627,9 +615,7 @@ def assign_source_to_work(
 	assert src.media is None and not getattr(src, 'rejection', None)
 
 	if work_id is not None:
-		work = get_object_or_404(
-			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
-		)
+		work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	else:
 		work = MediaWork.objects.create(
 			title=src.title, description=src.description, thumbnail_source=src

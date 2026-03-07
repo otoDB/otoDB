@@ -1627,6 +1627,8 @@ export interface components {
             slug: string;
             /** Category */
             category: number;
+            /** Deprecated */
+            deprecated: boolean;
         };
         /** Input */
         Input: {
@@ -1663,6 +1665,8 @@ export interface components {
             slug: string;
             /** Category */
             category: number;
+            /** Deprecated */
+            deprecated: boolean;
             /** Sample */
             sample: boolean;
             /** Creator Roles */
@@ -1712,6 +1716,8 @@ export interface components {
             slug: string;
             /** Category */
             category: number;
+            /** Deprecated */
+            deprecated: boolean;
             /** Sample */
             sample: boolean;
             /** Creator Roles */
@@ -2123,6 +2129,11 @@ export interface components {
              * @default 0
              */
             lang: number;
+        };
+        /** AliasResponse */
+        AliasResponse: {
+            /** Merged Slug */
+            merged_slug: string;
         };
         /** WikiPageMDSchema */
         WikiPageMDSchema: {
@@ -3764,6 +3775,14 @@ export interface operations {
                 resolve_aliases?: boolean;
                 category?: number | null;
                 media_type?: number[] | null;
+                order?: string;
+                deprecated_only?: boolean;
+                hide_orphans?: boolean;
+                wiki_lang?: number[] | null;
+                wiki_lang_missing?: number[] | null;
+                lang_pref?: number[] | null;
+                lang_pref_missing?: number[] | null;
+                has_connections?: boolean | null;
                 limit?: number;
                 offset?: number;
             };
@@ -3938,7 +3957,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AliasResponse"];
+                };
             };
         };
     };

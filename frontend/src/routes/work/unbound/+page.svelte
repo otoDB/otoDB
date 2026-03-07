@@ -10,6 +10,7 @@
 	import { isSOV, isSVO } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkField from '$lib/WorkField.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -117,10 +118,10 @@
 						</td>
 						<td>
 							<a href={src.url} target="_blank" rel="noopener noreferrer"
-								><img
-									src={src.thumbnail}
+								><WorkThumbnail
+									thumbnail={src.thumbnail}
 									alt={src.title || src.url}
-									class="float-right clear-both w-50"
+									class="float-right clear-both aspect-video w-50"
 								/></a
 							>
 						</td>

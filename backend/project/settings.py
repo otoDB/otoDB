@@ -240,6 +240,8 @@ COMMENTS_XTD_APP_MODEL_OPTIONS = {
 }
 
 CORS_ALLOW_CREDENTIALS = True
+if DEBUG:
+	CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
 	'https://cdn.jsdelivr.net',
 	'https://unpkg.com',

@@ -11,12 +11,12 @@
 	let results = $derived(data.results!.items);
 
 	const fetchNextBatch = () =>
-		client.GET('/api/list/search', {
+		client.GET('/api/post/search', {
 			fetch,
 			params: {
 				query: {
 					query: data.query,
-					categry: data.category,
+					category: data.category,
 					limit: data.batch_size,
 					offset: results.length
 				}

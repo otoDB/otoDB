@@ -10,6 +10,7 @@
 	import { callSavingToast } from '$lib/toast';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let { data, form }: PageProps = $props();
 
@@ -137,9 +138,9 @@
 							</div></td
 						><td class="w-56">
 							<a target="_blank" href="/work/{entry.work.id}"
-								><img
-									class="w-56"
-									src={entry.work.thumbnail}
+								><WorkThumbnail
+									class="aspect-video w-56"
+									thumbnail={entry.work.thumbnail}
 									alt={getDisplayText(entry.work.title)}
 								/></a
 							>

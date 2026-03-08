@@ -422,3 +422,8 @@ export const CommentModelRoutes = {
 	post: 'post',
 	bulkrequest: 'request'
 };
+
+export const EntityModelRoutes = {
+	...CommentModelRoutes,
+	mediasong: 'song'
+};

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
-	import { CommentModelRoutes, Route, UserLevel } from '$lib/enums.js';
+	import { EntityModelRoutes, Route, UserLevel } from '$lib/enums.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
@@ -10,15 +10,17 @@
 
 	let { data } = $props();
 	let routes = $derived(
-		Object.values(Object.groupBy(data.changes.items, (c) => c.route)).map((rent) => [
-			rent[0].route,
-			Object.values(Object.groupBy(rent, (c) => c.ent_type + c.ent_id))
-				// .map((cs) => cs.filter((c) => c.target_value !== null))
-				// Setting to null may be significant change
-				.map((cs) => cs.filter((c) => Object.hasOwn(CommentModelRoutes, c.ent_type)))
-				.filter((ec) => ec.length)
-				.map((tg) => [[tg[0].ent_type, tg[0].ent_id], tg])
-		])
+		Object.values(Object.groupBy(data.changes.items, (c) => c.route))
+			.map((rent) => [
+				rent[0].route,
+				Object.values(Object.groupBy(rent, (c) => c.ent_type + c.ent_id))
+					// .map((cs) => cs.filter((c) => c.target_value !== null))
+					// Setting to null may be significant change
+					.map((cs) => cs.filter((c) => Object.hasOwn(EntityModelRoutes, c.ent_type)))
+					.filter((ec) => ec.length)
+					.map((tg) => [[tg[0].ent_type, tg[0].ent_id], tg])
+			])
+			.filter((rc) => rc[1].length)
 	);
 </script>
 
@@ -51,8 +53,8 @@
 				<ul>
 					{#each ecs as [[ent_type, ent_id], ec], j (j)}
 						<li>
-							<a href="/{CommentModelRoutes[ent_type]}/{ent_id}"
-								>/{CommentModelRoutes[ent_type]}/{ent_id}</a
+							<a href="/{EntityModelRoutes[ent_type]}/{ent_id}"
+								>/{EntityModelRoutes[ent_type]}/{ent_id}</a
 							>
 						</li>
 						<li class="list-none">

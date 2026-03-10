@@ -223,7 +223,7 @@ def revision_changes(request: HttpRequest, revision_id: int):
 
 class EntitySchema(Schema):
 	id: int | str
-	entity: Literal['mediawork', 'tagwork', 'tagsong']
+	entity: Literal['mediawork', 'tagwork', 'tagsong', 'mediasong']
 
 
 def find_rev_rst(ctpk, query_pk, rev):
@@ -722,6 +722,8 @@ def history(request: HttpRequest, entity: Query[EntitySchema]):
 				tag = tag.aliased_to
 			entity.id = tag.pk
 			query_ids = query_ids + [*tag.aliases.values_list('id', flat=True)]
+		case 'mediasong':
+			pass
 	query_ids.append(entity.id)
 	return (
 		Revision.objects.filter(

@@ -54,7 +54,6 @@ from .common import (
 	RouterWithRevision,
 	with_revision_route,
 	TagLangPreferenceSchema,
-	render_markdown,
 )
 
 tag_router = RouterWithRevision()
@@ -81,7 +80,7 @@ class FatTagWorkSchema(ModelSchema):
 class WikiPageSchema(ModelSchema):
 	class Meta:
 		model = WikiPage
-		fields = ['page_rendered', 'lang']
+		fields = ['page', 'lang']
 
 
 class TagWorkDetailsSchema(Schema):
@@ -509,14 +508,12 @@ def wiki_page(request: HttpRequest, tag_slug: str):
 def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
 	empty = md.strip() == ''
-	page_rendered = '' if empty else render_markdown(md)
 	try:
 		wp = WikiPage.objects.get(tag=tag, lang=LanguageTypes(lang).value)
 		if empty:
 			wp.delete()
 		else:
 			wp.page = md
-			wp.page_rendered = page_rendered
 			wp.save()
 	except WikiPage.DoesNotExist:
 		if not empty:
@@ -524,7 +521,6 @@ def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
 				tag=tag,
 				lang=LanguageTypes(lang).value,
 				page=md,
-				page_rendered=page_rendered,
 			)
 
 

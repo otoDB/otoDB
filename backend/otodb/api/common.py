@@ -1,20 +1,17 @@
-import logging
-import requests
 from typing import Optional, Annotated
 from functools import wraps, lru_cache
 
 from pydantic import field_validator
 
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
-
-from ninja import Schema, ModelSchema, Field, Query, Router
-from django_request_cache import get_request_cache
-
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+
+from django_request_cache import get_request_cache
+from ninja import Schema, ModelSchema, Field, Query, Router
+from ninja.utils import contribute_operation_args
+from ninja.errors import HttpError
 
 from otodb.account.models import Account
-from ninja.errors import HttpError
 from otodb.models import (
 	MediaWork,
 	WorkSource,
@@ -36,61 +33,6 @@ import re
 
 class Error(Schema):
 	message: str
-
-
-logger = logging.getLogger(__name__)
-
-
-def _call_internal_api(path: str, payload: dict):
-	base_url = getattr(settings, 'OTODB_INTERNAL_API_BASE_URL', 'http://localhost:5173')
-	path = path.lstrip('/')
-	url = f'{base_url.rstrip("/")}/internal/{path}'
-	try:
-		resp = requests.post(url, json=payload, timeout=5)
-		resp.raise_for_status()
-		data = resp.json()
-	except Exception:
-		logger.warning(
-			'Internal content endpoint request failed: %s', url, exc_info=True
-		)
-		raise HttpError(503, '')
-
-	value = data.get('data')
-	if value is None:
-		logger.warning('Internal content endpoint response missing key data at %s', url)
-		raise HttpError(503, '')
-	return value
-
-
-def render_markdown(text: str) -> str:
-	"""Render markdown via the internal content processing API."""
-	html = _call_internal_api('render', {'text': text})
-	if not isinstance(html, str):
-		logger.warning('Internal render endpoint returned non-string html payload')
-		raise HttpError(503, '')
-	return html
-
-
-def mentioned_user_ids(text: str, exclude_user_id: int | None = None) -> set[int]:
-	names = _call_internal_api('mentions', {'text': text})
-	if not isinstance(names, list):
-		logger.warning('Internal mention endpoint returned non-list payload')
-		raise HttpError(503, '')
-	if not all(isinstance(name, str) for name in names):
-		logger.warning('Internal mention endpoint returned non-string entries')
-		raise HttpError(503, '')
-
-	if not names:
-		return set()
-
-	q = Q()
-	for name in names:
-		q |= Q(username__iexact=name)
-
-	users = Account.objects.filter(q)
-	if exclude_user_id is not None:
-		users = users.exclude(id=exclude_user_id)
-	return set(users.values_list('id', flat=True))
 
 
 class ProfileSchema(ModelSchema):
@@ -230,7 +172,7 @@ def perm_decorator_ctor(uf):
 			if uf(request.user):
 				return f(request, *args, **kwargs)
 			else:
-				return 403
+				raise HttpError(403, 'Forbidden')
 
 		return wrapper
 
@@ -504,3 +446,17 @@ class RouterWithRevision(Router):
 	def add_api_operation(self, path, methods, view_func, **kwargs):
 		view_func = track_revision(view_func)
 		return super().add_api_operation(path, methods, view_func, **kwargs)
+
+
+def restrict_internal(f):
+	@wraps(f)
+	def wrapper(request, *args, **kwargs):
+		secret = kwargs.pop('secret')
+		if secret == settings.OTODB_INTERNAL_API_SECRET:
+			return f(request, *args, **kwargs)
+		else:
+			raise HttpError(403, 'Forbidden')
+
+	contribute_operation_args(wrapper, 'secret', str, Query(...))
+
+	return wrapper

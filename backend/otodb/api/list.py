@@ -11,6 +11,7 @@ from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 from ninja.throttling import AuthRateThrottle
+from ninja.errors import HttpError
 
 from otodb.common import video_info, playlist_info
 from otodb.models import (
@@ -81,7 +82,7 @@ def new(request: HttpRequest, payload: ListInSchema):
 def update(request: HttpRequest, list_id: int, payload: ListInSchema):
 	lst = get_object_or_404(Pool, id=list_id)
 	if lst.author != request.user:
-		return 403
+		raise HttpError(403, 'Forbidden')
 
 	lst.name = payload.name
 	lst.description = payload.description
@@ -126,7 +127,7 @@ def work_in_pool(request: HttpRequest, list_id: int, work_id: int):
 def toggle(request: HttpRequest, list_id: int, work_id: int):
 	lst = get_object_or_404(Pool, pk=list_id)
 	if lst.author != request.user:
-		return 403
+		raise HttpError(403, 'Forbidden')
 
 	if entries := lst.work_in_pool(work_id):
 		entries.delete()
@@ -140,7 +141,7 @@ def toggle(request: HttpRequest, list_id: int, work_id: int):
 def delete(request: HttpRequest, list_id: int):
 	lst = get_object_or_404(Pool, id=list_id)
 	if lst.author != request.user:
-		return 403
+		raise HttpError(403, 'Forbidden')
 	lst.delete()
 	return
 
@@ -216,7 +217,7 @@ def import_ext(request: HttpRequest, url: str):
 def pull_upstream(request: HttpRequest, list_id: int):
 	lst = get_object_or_404(Pool, id=list_id)
 	if lst.author != request.user:
-		return 403
+		raise HttpError(403, 'Forbidden')
 
 	info = playlist_info(lst.poolupstream.upstream)
 	import_ext_into_pool(info, lst, request.user)

@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 import client from './api';
 import { Languages } from './enums';
 import { getLocale, setLocale } from './paraglide/runtime';
-import { applyAction, enhance } from '$app/forms';
+import { enhance } from '$app/forms';
 import { m } from './paraglide/messages';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -33,27 +33,6 @@ export const clickOutside = (node: HTMLElement) => {
 	return {
 		destroy() {
 			document.removeEventListener('click', handleClick, true);
-		}
-	};
-};
-
-export const autosize = (node: HTMLTextAreaElement, _value = '') => {
-	const resize = () => {
-		node.style.height = 'auto';
-		node.style.height = `${node.scrollHeight}px`;
-	};
-
-	node.style.overflowY = 'hidden';
-	node.style.resize = 'none';
-	resize();
-	node.addEventListener('input', resize);
-
-	return {
-		update() {
-			resize();
-		},
-		destroy() {
-			node.removeEventListener('input', resize);
 		}
 	};
 };
@@ -93,9 +72,6 @@ export const dirtyEnhance = (node: HTMLFormElement) => {
 	return enhance(node, ({ cancel }) => {
 		if (Array.from(document.querySelectorAll('form')).some((f) => f !== node && isFormDirty(f)))
 			if (!confirm(m.active_lime_panther_buzz())) cancel();
-		return async ({ result }) => {
-			await applyAction(result);
-		};
 	});
 };
 

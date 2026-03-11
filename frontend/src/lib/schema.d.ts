@@ -2124,11 +2124,8 @@ export interface components {
         };
         /** WikiPageSchema */
         WikiPageSchema: {
-            /**
-             * Page Rendered
-             * @default
-             */
-            page_rendered: string | null;
+            /** Page */
+            page: string;
             /**
              * Lang
              * @default 0
@@ -2182,11 +2179,8 @@ export interface components {
         PostContentSchema: {
             /** Lang */
             lang: number;
-            /**
-             * Page Rendered
-             * @default
-             */
-            page_rendered: string | null;
+            /** Page */
+            page: string;
             /**
              * Modified
              * Format: date-time
@@ -2213,6 +2207,17 @@ export interface components {
          * @enum {integer}
          */
         PostCategory: 0 | 1 | 2 | 3;
+        /** PostInSchema */
+        PostInSchema: {
+            /** Title */
+            title: string;
+            /** Post */
+            post: string;
+            category: components["schemas"]["PostCategory"];
+            lang: components["schemas"]["LanguageTypes"];
+            /** Target Users */
+            target_users: string[];
+        };
         /** PostOverviewSchema */
         PostOverviewSchema: {
             /** Id */
@@ -2270,6 +2275,8 @@ export interface components {
              * @default 0
              */
             parent_id: number;
+            /** Mentioned Users */
+            mentioned_users: string[];
         };
         /** ExtCommentSchema */
         ExtCommentSchema: {
@@ -4483,16 +4490,17 @@ export interface operations {
     otodb_api_post_new: {
         parameters: {
             query: {
-                title: string;
-                post: string;
-                category: 0 | 1 | 2 | 3;
-                lang: 0 | 1 | 2 | 3 | 4;
+                secret: string;
             };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostInSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -4622,7 +4630,9 @@ export interface operations {
     };
     otodb_api_comment_post: {
         parameters: {
-            query?: never;
+            query: {
+                secret: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;

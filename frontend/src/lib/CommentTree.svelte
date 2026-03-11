@@ -4,8 +4,9 @@
 	import { UserLevel } from './enums';
 	import { renderMarkdown } from './markdown';
 	import { m } from './paraglide/messages';
-	import { autosize, timeAgo } from './ui';
+	import { timeAgo } from './ui';
 	import type { components } from './schema';
+	import { enhance } from '$app/forms';
 
 	interface Props {
 		comments: components['schemas']['CommentSchema'][];
@@ -21,24 +22,6 @@
 	let drafts = $state<Record<number, string>>({});
 	let previews = $state<Record<number, string>>({});
 	let previewMode = $state<Record<number, boolean>>({});
-
-	const post = (reply_to: number) => async (e: SubmitEvent) => {
-		e.preventDefault();
-		const comment_text = drafts[reply_to]?.trim();
-		if (comment_text) {
-			await client.POST('/api/comment/comment', {
-				fetch,
-				body: { model, pk, comment_text, parent_id: reply_to }
-			});
-			document
-				.querySelectorAll<HTMLInputElement>('.reply-toggle')
-				.forEach((e) => (e.checked = false));
-			drafts[reply_to] = '';
-			previews[reply_to] = '';
-			previewMode[reply_to] = false;
-			invalidateAll();
-		}
-	};
 
 	const togglePreview = (reply_to: number) => {
 		if (previewMode[reply_to]) {
@@ -65,7 +48,30 @@
 </script>
 
 {#snippet reply(reply_to: number)}
-	<form onsubmit={post(reply_to)} class="reply-form gap-2">
+	<form
+		class="reply-form gap-2"
+		method="POST"
+		action="/comments"
+		use:enhance={() => {
+			return async ({ update, result }) => {
+				if (result.type === 'success') {
+					const comment_text = drafts[reply_to]?.trim();
+					if (comment_text) {
+						document
+							.querySelectorAll('.reply-toggle')
+							.forEach((e) => (e.checked = false));
+						drafts[reply_to] = '';
+						previews[reply_to] = '';
+						previewMode[reply_to] = false;
+					}
+				}
+				await update({ reset: false });
+			};
+		}}
+	>
+		<input type="text" name="model" hidden value={model} />
+		<input type="number" name="pk" hidden value={pk} />
+		<input type="number" name="reply_to" hidden value={reply_to} />
 		<div class="reply-main">
 			{#if previewMode[reply_to]}
 				<div class="editor-panel reply-editor">
@@ -79,7 +85,6 @@
 					class="reply-editor block min-h-15 w-full"
 					name="comment"
 					bind:value={drafts[reply_to]}
-					use:autosize={drafts[reply_to] ?? ''}
 				></textarea>
 			{/if}
 			<div class="reply-actions">
@@ -179,5 +184,8 @@
 		&:has(input.reply-toggle:checked) + div > form.reply-form {
 			display: flex;
 		}
+	}
+	textarea {
+		field-sizing: content;
 	}
 </style>

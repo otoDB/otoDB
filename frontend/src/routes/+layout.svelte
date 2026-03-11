@@ -190,7 +190,7 @@
 							{@render link('/register', m.blue_whole_camel_type())}
 						{:else}
 							{@render link(
-								`/notifications`,
+								`/profile/${data.user.username}/notifications`,
 								m.free_keen_wren_exhale() +
 									(data.user.notifs_count > 0
 										? m.great_clean_beaver_amuse() +

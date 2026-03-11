@@ -15,10 +15,11 @@ from ninja import Router, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
+from ninja.errors import HttpError
 
 from otodb.account.models import Account
 from otodb.models import Notification, Subscription, RevisionChange
-from .common import user_is_trusted, ProfileSchema, mentioned_user_ids
+from .common import user_is_trusted, ProfileSchema, restrict_internal
 
 comment_router = Router()
 
@@ -51,6 +52,7 @@ class CommentInSchema(Schema):
 	pk: int
 	comment_text: str
 	parent_id: int = 0
+	mentioned_users: list[str]
 
 
 @comment_router.get('comments', response=list[CommentSchema])
@@ -72,6 +74,7 @@ def get(request: HttpRequest, model: ModelsWithComments, pk: int):
 
 @comment_router.post('comment', auth=django_auth, throttle=[AuthRateThrottle('1/8s')])
 @user_is_trusted
+@restrict_internal
 def post(
 	request: HttpRequest,
 	payload: CommentInSchema,
@@ -82,9 +85,7 @@ def post(
 	pk = payload.pk
 	parent = None if parent_id == 0 else XtdComment.objects.get(id=parent_id)
 	if parent is not None and parent.is_removed:
-		return 400
-
-	mention_ids = mentioned_user_ids(comment_text, exclude_user_id=request.user.pk)
+		raise HttpError(400, 'Bad Request')
 
 	comment = XtdComment.objects.create(
 		content_type=T,
@@ -94,27 +95,29 @@ def post(
 		comment=comment_text,
 		parent_id=parent_id,
 	)
-
-	target_ids: set[int] = set()
+	target_names: set[str] = set()
 	if parent is None:
-		target_ids |= set(
+		target_names |= set(
 			Subscription.objects.filter(entity_type=T, entity_id=pk)
 			.exclude(subscriber_id=request.user.pk)
-			.values_list('subscriber_id', flat=True)
+			.values_list('subscriber__username', flat=True)
 		)
 		Subscription.objects.get_or_create(
 			subscriber=request.user, entity_type=T, entity_id=pk
 		)
 	else:
-		target_ids.add(parent.user_id)
+		target_names.add(parent.user.username)
 	if payload.model == 'account' and pk != request.user.pk:
-		target_ids.add(pk)
+		target_names.add(Account.objects.get(id=pk).username)
 
-	target_ids |= mention_ids
-	target_ids.discard(request.user.pk)
+	target_names |= set(payload.mentioned_users)
+	target_names.discard(request.user.username)
 
 	Notification.objects.bulk_create(
-		[Notification(target_id=target_id, comment=comment) for target_id in target_ids]
+		[
+			Notification(target=u, comment=comment)
+			for u in Account.objects.filter(username__in=target_names)
+		]
 	)
 
 
@@ -135,7 +138,7 @@ def delete(
 		comment.save()
 		Notification.objects.filter(comment=comment).delete()
 	else:
-		return 403
+		raise HttpError(403, 'Forbidden')
 
 
 class ExtCommentSchema(BaseCommentSchema):
@@ -149,6 +152,7 @@ def recent(request: HttpRequest):
 	return (
 		XtdComment.objects.filter(is_removed=False)
 		.exclude(content_type__model='post')
+		.exclude(content_type__model='account')
 		.order_by('-submit_date')
 		.annotate(
 			entity_id=Case(

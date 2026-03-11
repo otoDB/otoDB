@@ -86,18 +86,12 @@ const processor = unified()
 /**
  * Render markdown text to HTML with otoDB extensions.
  */
-export function renderMarkdown(text: string): string {
-	return String(processor.processSync(text));
-}
+export const renderMarkdown = (text: string) => String(processor.processSync(text));
 
 /**
  * Extract unique @mentions from markdown source text.
- * Returns sorted list of mentioned usernames.
+ * Returns list of mentioned usernames.
  */
-export function parseMentions(text: string): string[] {
-	const names = new Set<string>();
-	for (const match of text.matchAll(new RegExp(MENTION_RE.source, 'gu'))) {
-		names.add(match[1]);
-	}
-	return [...names].sort();
-}
+export const parseMentions = (text: string) => [
+	...new Set(text.matchAll(MENTION_RE).map((n) => n[1]))
+];

@@ -487,7 +487,6 @@ class TagWorkLangPreference(RevisionTrackedModel):
 class WikiPage(RevisionTrackedModel):
 	tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
 	page = models.TextField(null=False)
-	page_rendered = models.TextField(default='', blank=True)
 	lang = models.IntegerField(
 		choices=LanguageTypes.choices,
 		default=LanguageTypes.NOT_APPLICABLE,

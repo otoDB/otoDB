@@ -31,7 +31,6 @@ class Post(models.Model):
 class PostContent(models.Model):
 	post = models.ForeignKey(Post, blank=False, null=False, on_delete=models.CASCADE)
 	page = models.TextField(null=False)
-	page_rendered = models.TextField(default='', blank=True)
 	lang = models.IntegerField(choices=LanguageTypes.choices, null=False, blank=False)
 	modified = models.DateTimeField(auto_now=True)
 

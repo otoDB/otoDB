@@ -1,6 +1,7 @@
 import client from '$lib/api';
 import { parseMentions, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
+import { OTODB_INTERNAL_API_SECRET } from '$env/static/private';
 import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
 
@@ -31,7 +32,7 @@ export const actions = {
 				parent_id: reply_to,
 				mentioned_users: parseMentions(comment_text)
 			},
-			params: { query: { secret: '' } }
+			params: { query: { secret: OTODB_INTERNAL_API_SECRET } }
 		});
 	}
 } satisfies Actions;

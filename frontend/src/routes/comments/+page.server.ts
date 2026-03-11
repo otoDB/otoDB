@@ -25,7 +25,7 @@ export const actions = {
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 		await client.POST('/api/comment/comment', {
 			fetch,
-			headers: { 'x-secret': OTODB_INTERNAL_API_SECRET },
+			headers: { 'otodb-internal-secret': OTODB_INTERNAL_API_SECRET },
 			body: {
 				model,
 				pk,

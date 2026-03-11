@@ -451,12 +451,12 @@ class RouterWithRevision(Router):
 def restrict_internal(f):
 	@wraps(f)
 	def wrapper(request, *args, **kwargs):
-		secret = request.headers.get('x-secret')
+		secret = request.headers.get('otodb-internal-secret')
 		if secret == settings.OTODB_INTERNAL_API_SECRET:
 			return f(request, *args, **kwargs)
 		else:
 			raise HttpError(403, 'Forbidden')
 
-	contribute_operation_args(wrapper, 'x-secret', str, Header(...))
+	contribute_operation_args(wrapper, 'otodb-internal-secret', str, Header(...))
 
 	return wrapper

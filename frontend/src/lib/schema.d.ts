@@ -4491,7 +4491,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                "x-secret": string;
+                "otodb-internal-secret": string;
             };
             path?: never;
             cookie?: never;
@@ -4632,7 +4632,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                "x-secret": string;
+                "otodb-internal-secret": string;
             };
             path?: never;
             cookie?: never;

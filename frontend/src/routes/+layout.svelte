@@ -9,7 +9,7 @@
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { beforeNavigate } from '$app/navigation';
-	import * as env from '$env/static/public';
+	import { env } from '$env/dynamic/public';
 
 	let { data, children } = $props();
 

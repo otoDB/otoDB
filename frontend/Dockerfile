@@ -14,11 +14,6 @@ FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-ARG OTODB_FRONTEND_DOMAIN
-ENV OTODB_FRONTEND_DOMAIN=${OTODB_FRONTEND_DOMAIN}
-ENV PUBLIC_BACKEND_URL_EXTERNAL=https://${OTODB_FRONTEND_DOMAIN}/
-ENV PUBLIC_BACKEND_URL_INTERNAL=http://backend:8000/
-
 ARG OTODB_HASH
 ENV PUBLIC_OTODB_HASH=${OTODB_HASH}
 
@@ -26,6 +21,8 @@ RUN bun run prepare
 RUN bun run build
 
 FROM base AS build
+ENV PUBLIC_BACKEND_URL_INTERNAL=http://backend:8000/
+ENV PUBLIC_BACKEND_URL_EXTERNAL=https://otodb.net/
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /app/build .
 

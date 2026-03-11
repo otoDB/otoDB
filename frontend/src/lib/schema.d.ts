@@ -4489,10 +4489,10 @@ export interface operations {
     };
     otodb_api_post_new: {
         parameters: {
-            query: {
-                secret: string;
+            query?: never;
+            header: {
+                "x-secret": string;
             };
-            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -4630,10 +4630,10 @@ export interface operations {
     };
     otodb_api_comment_post: {
         parameters: {
-            query: {
-                secret: string;
+            query?: never;
+            header: {
+                "x-secret": string;
             };
-            header?: never;
             path?: never;
             cookie?: never;
         };

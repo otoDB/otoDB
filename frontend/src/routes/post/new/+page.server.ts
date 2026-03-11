@@ -23,11 +23,7 @@ export const actions = {
 		if (renderMarkdown(post).trim() === '') fail(400);
 		const { data: r, error } = await client.POST('/api/post/post', {
 			fetch,
-			params: {
-				query: {
-					secret: OTODB_INTERNAL_API_SECRET
-				}
-			},
+			headers: { 'x-secret': OTODB_INTERNAL_API_SECRET },
 			body: {
 				category: +category,
 				post,

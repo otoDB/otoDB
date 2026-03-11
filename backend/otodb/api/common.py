@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 
 from django_request_cache import get_request_cache
-from ninja import Schema, ModelSchema, Field, Query, Router
+from ninja import Schema, ModelSchema, Field, Query, Header, Router
 from ninja.utils import contribute_operation_args
 from ninja.errors import HttpError
 
@@ -451,12 +451,12 @@ class RouterWithRevision(Router):
 def restrict_internal(f):
 	@wraps(f)
 	def wrapper(request, *args, **kwargs):
-		secret = kwargs.pop('secret')
+		secret = request.headers.get('x-secret')
 		if secret == settings.OTODB_INTERNAL_API_SECRET:
 			return f(request, *args, **kwargs)
 		else:
 			raise HttpError(403, 'Forbidden')
 
-	contribute_operation_args(wrapper, 'secret', str, Query(...))
+	contribute_operation_args(wrapper, 'x-secret', str, Header(...))
 
 	return wrapper

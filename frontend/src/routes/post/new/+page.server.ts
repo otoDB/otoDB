@@ -4,7 +4,7 @@ import type { PageServerLoad } from './$types';
 import { Languages } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
-import { OTODB_INTERNAL_API_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { parseMentions, renderMarkdown } from '$lib/markdown';
 
 export const load: PageServerLoad = ({ locals, url }) => {
@@ -23,7 +23,7 @@ export const actions = {
 		if (renderMarkdown(post).trim() === '') fail(400);
 		const { data: r, error } = await client.POST('/api/post/post', {
 			fetch,
-			headers: { 'otodb-internal-secret': OTODB_INTERNAL_API_SECRET },
+			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
 			body: {
 				category: +category,
 				post,

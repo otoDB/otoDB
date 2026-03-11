@@ -32,7 +32,7 @@ export const actions = {
 				comment_text,
 				parent_id: reply_to,
 				mentioned_users: parseMentions(comment_text)
-			},
+			}
 		});
 	}
 } satisfies Actions;

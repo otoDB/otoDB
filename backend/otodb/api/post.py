@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from django.db import transaction
 from django.db.models import Subquery, OuterRef, DateTimeField, CharField
 from django.db.models.functions import Greatest, Coalesce, Cast
 from django.http import HttpRequest
@@ -7,14 +8,20 @@ from django.shortcuts import get_object_or_404
 
 from django_comments_xtd.models import XtdComment
 
-from ninja import Router, ModelSchema
+from ninja import Router, ModelSchema, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.models import Post, PostContent, Subscription
+from otodb.models import (
+	Notification,
+	Post,
+	PostContent,
+	Subscription,
+)
+from otodb.account.models import Account
 from otodb.models.enums import PostCategory, LanguageTypes
 
-from .common import ProfileSchema, user_is_trusted
+from .common import ProfileSchema, user_is_trusted, restrict_internal
 
 post_router = Router()
 
@@ -22,7 +29,7 @@ post_router = Router()
 class PostContentSchema(ModelSchema):
 	class Meta:
 		model = PostContent
-		fields = ['lang', 'page_rendered', 'modified']
+		fields = ['lang', 'page', 'modified']
 
 
 class PostSchema(ModelSchema):
@@ -76,27 +83,50 @@ def category(request: HttpRequest, category: PostCategory):
 	)
 
 
+class PostInSchema(Schema):
+	title: str
+	post: str
+	category: PostCategory
+	lang: LanguageTypes
+	target_users: list[str]
+
+
 @post_router.post('post', response=int, auth=django_auth)
 @user_is_trusted
-def new(
-	request: HttpRequest,
-	title: str,
-	post: str,
-	category: PostCategory,
-	lang: LanguageTypes,
-):
-	assert category > 0
-	assert title
-	assert post
-	p = Post.objects.create(title=title, added_by=request.user, category=category)
-	PostContent.objects.create(post=p, lang=lang, page=post)
+@restrict_internal
+@transaction.atomic
+def new(request: HttpRequest, payload: PostInSchema):
+	assert payload.category > 0
+	assert payload.title
+	assert payload.post
+
+	p = Post.objects.create(
+		title=payload.title, added_by=request.user, category=payload.category
+	)
+	PostContent.objects.create(
+		post=p,
+		lang=payload.lang,
+		page=payload.post,
+	)
+
+	Notification.objects.bulk_create(
+		[
+			Notification(target=u, post=p)
+			for u in Account.objects.filter(username__in=payload.target_users)
+		]
+	)
+
 	Subscription.objects.create(subscriber=request.user, entity=p)
-	return p.id
+	return p.pk
 
 
 @post_router.get('search', response=list[PostOverviewSchema])
 @paginate
-def search(request: HttpRequest, query: str, category: PostCategory | None = None):
+def search(
+	request: HttpRequest,
+	query: str,
+	category: PostCategory | None = None,
+):
 	posts = annotate_modified(Post.objects.filter(title__icontains=query))
 	if category is not None and category >= 0:
 		posts = posts.filter(category=category)

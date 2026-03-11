@@ -1,5 +1,9 @@
 import client from '$lib/api';
+import { parseMentions, renderMarkdown } from '$lib/markdown';
+import { fail } from '@sveltejs/kit';
+import { OTODB_INTERNAL_API_SECRET } from '$env/static/private';
 import type { PageServerLoad } from './$types';
+import type { Actions } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, url }) => {
 	const batch_size = 20;
@@ -10,3 +14,25 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 	});
 	return { comments, page, batch_size };
 };
+
+export const actions = {
+	default: async ({ request, fetch }) => {
+		const data = await request.formData();
+		const model = data.get('model') as string,
+			pk = parseInt(data.get('pk') as string, 10),
+			comment_text = data.get('comment') as string,
+			reply_to = parseInt(data.get('reply_to') as string, 10);
+		if (renderMarkdown(comment_text).trim() === '') return fail(400);
+		await client.POST('/api/comment/comment', {
+			fetch,
+			headers: { 'otodb-internal-secret': OTODB_INTERNAL_API_SECRET },
+			body: {
+				model,
+				pk,
+				comment_text,
+				parent_id: reply_to,
+				mentioned_users: parseMentions(comment_text)
+			}
+		});
+	}
+} satisfies Actions;

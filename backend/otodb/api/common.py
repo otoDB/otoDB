@@ -3,10 +3,13 @@ from functools import wraps, lru_cache
 
 from pydantic import field_validator
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 
-from ninja import Schema, ModelSchema, Field, Query, Router
 from django_request_cache import get_request_cache
+from ninja import Schema, ModelSchema, Field, Query, Header, Router
+from ninja.utils import contribute_operation_args
+from ninja.errors import HttpError
 
 from otodb.account.models import Account
 from otodb.models import (
@@ -169,7 +172,7 @@ def perm_decorator_ctor(uf):
 			if uf(request.user):
 				return f(request, *args, **kwargs)
 			else:
-				return 403
+				raise HttpError(403, 'Forbidden')
 
 		return wrapper
 
@@ -443,3 +446,17 @@ class RouterWithRevision(Router):
 	def add_api_operation(self, path, methods, view_func, **kwargs):
 		view_func = track_revision(view_func)
 		return super().add_api_operation(path, methods, view_func, **kwargs)
+
+
+def restrict_internal(f):
+	@wraps(f)
+	def wrapper(request, *args, **kwargs):
+		secret = kwargs.pop('otodb-internal-secret')
+		if secret == settings.OTODB_INTERNAL_API_SECRET:
+			return f(request, *args, **kwargs)
+		else:
+			raise HttpError(403, 'Forbidden')
+
+	contribute_operation_args(wrapper, 'otodb-internal-secret', str, Header(...))
+
+	return wrapper

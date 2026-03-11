@@ -16,7 +16,7 @@
 		return u.href;
 	};
 
-	let pp = $derived.by(() => page);
+	let pp = $derived(page);
 </script>
 
 {#snippet btn(p)}
@@ -34,6 +34,7 @@
 		{#each page_range as index, i (i)}
 			{#if index === page}
 				<input
+					autocomplete="off"
 					class="p-2"
 					type="number"
 					min="1"

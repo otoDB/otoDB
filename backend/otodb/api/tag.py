@@ -80,7 +80,7 @@ class FatTagWorkSchema(ModelSchema):
 class WikiPageSchema(ModelSchema):
 	class Meta:
 		model = WikiPage
-		fields = ['page_rendered', 'lang']
+		fields = ['page', 'lang']
 
 
 class TagWorkDetailsSchema(Schema):
@@ -514,10 +514,14 @@ def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
 			wp.delete()
 		else:
 			wp.page = md
-			wp.save()  # Cannot use update_or_create here because the rendered page doesn't get rendered
+			wp.save()
 	except WikiPage.DoesNotExist:
 		if not empty:
-			WikiPage.objects.create(tag=tag, lang=LanguageTypes(lang).value, page=md)
+			WikiPage.objects.create(
+				tag=tag,
+				lang=LanguageTypes(lang).value,
+				page=md,
+			)
 
 
 @tag_router.get(

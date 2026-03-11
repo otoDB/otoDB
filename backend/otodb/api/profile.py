@@ -9,12 +9,13 @@ from django.shortcuts import get_object_or_404
 from ninja import Router, FilterSchema, Query, Field, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
+from ninja.errors import HttpError
 
 from otodb.account.models import Account
 from otodb.models import ProfileConnection, UserPreferences, Notification
 from otodb.models.enums import Status
 
-from .comment import models_with_comments
+from .comment import ModelsWithComments
 
 from .common import (
 	ListSchema,
@@ -123,7 +124,8 @@ def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
 
 class NotificationSchema(ModelSchema):
 	id: int
-	comment: tuple[Literal[*models_with_comments], int | str] | None
+	comment: tuple[ModelsWithComments, int | str] | None
+	post: int | None = Field(None, alias='post_id')
 
 	class Meta:
 		model = Notification
@@ -131,7 +133,7 @@ class NotificationSchema(ModelSchema):
 
 	@field_validator('comment', mode='before', check_fields=False)
 	@classmethod
-	def cmt(cls, value) -> tuple[Literal[*models_with_comments], int | str] | None:
+	def cmt(cls, value) -> tuple[ModelsWithComments, int | str] | None:
 		from otodb.models.tag import OtodbTagModel
 
 		if value is None:
@@ -160,7 +162,7 @@ def read_notif(request: HttpRequest, notif_id: int):
 	if request.user.notifs.filter(id=notif_id).update(dismissed=True) > 0:
 		return 200
 	else:
-		return 403
+		raise HttpError(403, 'Forbidden')
 
 
 @profile_router.delete('notification', auth=django_auth)
@@ -168,4 +170,4 @@ def del_notif(request: HttpRequest, notif_id: int):
 	if request.user.notifs.filter(id=notif_id).delete()[0] > 0:
 		return 200
 	else:
-		return 403
+		raise HttpError(403, 'Forbidden')

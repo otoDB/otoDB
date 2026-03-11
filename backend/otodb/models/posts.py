@@ -5,9 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 
 from django_comments_xtd.models import XtdComment
 
-from markdownfield.models import MarkdownField, RenderedMarkdownField
-from markdownfield.validators import VALIDATOR_CLASSY
-
 from otodb.account.models import Account
 from .enums import LanguageTypes, PostCategory
 from .revision import Revision
@@ -33,10 +30,7 @@ class Post(models.Model):
 
 class PostContent(models.Model):
 	post = models.ForeignKey(Post, blank=False, null=False, on_delete=models.CASCADE)
-	page = MarkdownField(
-		rendered_field='page_rendered', validator=VALIDATOR_CLASSY, null=False
-	)
-	page_rendered = RenderedMarkdownField()
+	page = models.TextField(null=False)
 	lang = models.IntegerField(choices=LanguageTypes.choices, null=False, blank=False)
 	modified = models.DateTimeField(auto_now=True)
 
@@ -66,12 +60,26 @@ class Notification(models.Model):
 		null=True,
 		on_delete=models.CASCADE,
 	)
+	post = models.ForeignKey(
+		Post,
+		blank=True,
+		null=True,
+		on_delete=models.CASCADE,
+	)
 
 	class Meta:
 		constraints = [
 			models.CheckConstraint(
-				check=(
-					models.Q(revision__isnull=True) ^ models.Q(comment__isnull=True)
+				condition=(
+					models.Q(
+						revision__isnull=False, comment__isnull=True, post__isnull=True
+					)
+					| models.Q(
+						revision__isnull=True, comment__isnull=False, post__isnull=True
+					)
+					| models.Q(
+						revision__isnull=True, comment__isnull=True, post__isnull=False
+					)
 				),
 				name='notification_union',
 			)

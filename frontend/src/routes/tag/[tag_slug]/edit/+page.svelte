@@ -16,9 +16,9 @@
 		MediaType
 	} from '$lib/enums';
 	import type { PageProps } from './$types';
-	import Markdown from 'svelte-exmarkdown';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client, { getTagDisplaySlug } from '$lib/api';
+	import { renderMarkdown } from '$lib/markdown';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
@@ -131,6 +131,8 @@
 			callErrorToast(m.that_new_mayfly_spur());
 		}
 	};
+
+	let previewHtml = $derived(renderMarkdown(mds[wikiView] ?? ''));
 </script>
 
 <Section title={data.tag.name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
@@ -325,7 +327,8 @@
 		<div class="grid grid-cols-2 gap-3">
 			<textarea name="md" bind:value={mds[wikiView]}></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
-				<Markdown md={mds[wikiView]} />
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html previewHtml}
 			</div>
 		</div>
 		<input type="submit" />

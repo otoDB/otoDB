@@ -5,6 +5,7 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
 	import { Languages, PostCategories } from '$lib/enums.js';
+	import { renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { isSOV, isSVO, timeAgo } from '$lib/ui.js';
@@ -18,7 +19,7 @@
 	);
 	let page_object = $derived(data.post.pages.find((p) => p.lang === Languages[lang_view]));
 	let page = $derived(
-		page_object.page_rendered.replaceAll(
+		renderMarkdown(page_object?.page ?? '').replaceAll(
 			/&lt;otodb-worktag\s*slug="(.+?)"\s*\/&gt;/g,
 			'<otodb-worktag data-slug="$1"></otodb-worktag>'
 		)

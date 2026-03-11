@@ -25,6 +25,7 @@
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import type { components } from '$lib/schema.js';
 	import RelationViewer from '$lib/RelationViewer.svelte';
+	import { renderMarkdown } from '$lib/markdown';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -151,19 +152,19 @@
 	<hr class="my-2" />
 
 	{#if data.wiki_page && data.wiki_page.length}
+		{@const wp = data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
 		<div class="float-right clear-left my-2">
 			<LangSwitch
 				availableLanguages={data.wiki_page.map((v) => Languages[v.lang])}
 				bind:value={wikiView}
 			/>
 		</div>
-		<div class="prose prose-neutral prose-sm dark:prose-invert max-w-4xl">
-			{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
+		{#if wp}
+			<div class="prose prose-neutral prose-sm dark:prose-invert max-w-4xl">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])
-					?.page_rendered}
-			{/if}
-		</div>
+				{@html renderMarkdown(wp.page)}
+			</div>
+		{/if}
 	{:else}
 		<p>{m.tame_dirty_goldfish_flow()}</p>
 	{/if}

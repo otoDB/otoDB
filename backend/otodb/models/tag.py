@@ -7,9 +7,6 @@ from tagulous.models import BaseTagModel, TagModelManager
 
 from django_cte import CTE, with_cte
 
-from markdownfield.models import MarkdownField, RenderedMarkdownField
-from markdownfield.validators import VALIDATOR_CLASSY
-
 from .enums import WorkTagCategory, SongTagCategory, LanguageTypes, MediaType
 from .revision import RevisionTrackedModel, RevisionTrackedManager
 
@@ -489,10 +486,7 @@ class TagWorkLangPreference(RevisionTrackedModel):
 
 class WikiPage(RevisionTrackedModel):
 	tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
-	page = MarkdownField(
-		rendered_field='page_rendered', validator=VALIDATOR_CLASSY, null=False
-	)  # type: ignore
-	page_rendered = RenderedMarkdownField()
+	page = models.TextField(null=False)
 	lang = models.IntegerField(
 		choices=LanguageTypes.choices,
 		default=LanguageTypes.NOT_APPLICABLE,

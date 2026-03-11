@@ -51,6 +51,16 @@
 									>/{CommentModelRoutes[n.comment[0]]}/{n.comment[1]}</button
 								></td
 							>
+						{:else if n.post}
+							<td class={{ 'opacity-40': n.dismissed }}
+								>{m.curly_these_mule_ascend()}</td
+							><td
+								><button
+									class={{ 'opacity-40': n.dismissed }}
+									onclick={() => dismiss(n.id, n.dismissed, `/post/${n.post}`)}
+									>/post/{n.post}</button
+								></td
+							>
 						{/if}
 						<td
 							>{#if n.dismissed}<button

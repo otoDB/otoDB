@@ -22,6 +22,7 @@ RUN bun run build
 
 FROM base AS build
 ENV PUBLIC_BACKEND_URL_INTERNAL=http://backend:8000/
+ENV PUBLIC_BACKEND_URL_EXTERNAL=https://otodb.net/
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /app/build .
 

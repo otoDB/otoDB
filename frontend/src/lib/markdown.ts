@@ -1,7 +1,10 @@
 import rehypeStringify from 'rehype-stringify';
+import rehypeSlug from 'rehype-slug';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import remarkBreaks from 'remark-breaks';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
+import remarkGfm from 'remark-gfm';
 import { unified } from 'unified';
 import { findAndReplace } from 'mdast-util-find-and-replace';
 import type { Root, PhrasingContent, Parent } from 'mdast';
@@ -77,10 +80,13 @@ function remarkOtodb() {
 
 const processor = unified()
 	.use(remarkParse)
-	.use(remarkStripImages)
+	.use(remarkGfm)
 	.use(remarkBreaks)
 	.use(remarkOtodb)
+	.use(remarkStripImages)
 	.use(remarkRehype)
+	.use(rehypeSlug)
+	.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
 	.use(rehypeStringify);
 
 /**

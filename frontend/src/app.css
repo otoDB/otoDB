@@ -140,3 +140,23 @@
 		color: var(--otodb-color-del);
 	}
 }
+
+/* Autolink headings */
+:is(h1, h2, h3, h4, h5, h6) {
+	& a[href^="#"] {
+		text-decoration: none;
+		color: inherit;
+		font-weight: inherit;
+		font-size: inherit;
+		&:hover {
+			text-decoration: dotted underline 1px;
+		}
+	}
+
+	&:target {
+		box-shadow: -4px 0 0 var(--otodb-color-content-faint);
+		padding-left: 0.5rem;
+		margin-left: -0.5rem;
+	}
+}
+

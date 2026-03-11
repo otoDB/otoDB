@@ -21,6 +21,7 @@ RUN bun run prepare
 RUN bun run build
 
 FROM base AS build
+ENV PUBLIC_BACKEND_URL_INTERNAL=http://backend:8000/
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /app/build .
 

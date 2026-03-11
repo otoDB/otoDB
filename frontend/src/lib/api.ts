@@ -1,6 +1,6 @@
 import createClient from 'openapi-fetch';
 import type { components, paths } from './schema';
-import { PUBLIC_BACKEND_URL_INTERNAL, PUBLIC_BACKEND_URL_EXTERNAL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import { browser } from '$app/environment';
 import type { Cookies } from '@sveltejs/kit';
 import setCookie from 'set-cookie-parser';
@@ -8,7 +8,9 @@ import { Languages } from './enums';
 import { getLocale } from './paraglide/runtime';
 import { m } from './paraglide/messages';
 
-const backend = browser ? PUBLIC_BACKEND_URL_EXTERNAL : PUBLIC_BACKEND_URL_INTERNAL;
+const backend = browser
+	? (env.PUBLIC_BACKEND_URL_EXTERNAL ?? '')
+	: (env.PUBLIC_BACKEND_URL_INTERNAL ?? env.PUBLIC_BACKEND_URL_EXTERNAL ?? '');
 
 const client = createClient<paths>({ baseUrl: backend, credentials: 'include' });
 export default client;

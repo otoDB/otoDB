@@ -3,6 +3,7 @@ from typing import List, Literal
 from pydantic import field_validator
 
 from django.http import HttpRequest
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from ninja import Router, FilterSchema, Query, Field, ModelSchema
@@ -11,6 +12,7 @@ from ninja.pagination import paginate
 
 from otodb.account.models import Account
 from otodb.models import ProfileConnection, UserPreferences, Notification
+from otodb.models.enums import Status
 
 from .comment import ModelsWithComments
 
@@ -94,12 +96,20 @@ def submissions(
 	username: str,
 	filters: SubmissionsFilterSchema = Query(...),
 	order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id',
+	standing: int = 1,
 ):
+	match Status(standing):
+		case Status.PENDING:
+			q = Q(media__isnull=True, rejection__isnull=True)
+		case Status.APPROVED:
+			q = Q(media__isnull=False)
+		case Status.UNAPPROVED:
+			q = Q(rejection__isnull=False)
+
 	user = get_object_or_404(Account, username__iexact=username)
-	submissions = user.worksource_set.all().select_related('rejection', 'media')
-	submissions = filters.filter(submissions)
-	submissions = submissions.order_by(order)
-	return submissions
+	submissions = user.worksource_set.filter(q).select_related('rejection', 'media')
+	filters.filter(submissions)
+	return submissions.order_by(order)
 
 
 @profile_router.post('prefs', auth=django_auth)

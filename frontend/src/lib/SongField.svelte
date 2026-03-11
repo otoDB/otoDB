@@ -69,8 +69,10 @@
 						<td
 							><a
 								class="cursor-pointer"
-								href={null}
-								onclick={() => {
+								href={`/tag/${v.work_tag}`}
+								onclick={(e) => {
+									if (e.button !== 0) return;
+									e.preventDefault();
 									value = v;
 									input = v.title;
 									suggestions = [];

@@ -11,20 +11,24 @@
 </script>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
-	<table class="w-full">
-		<tbody>
-			{#each data.revisions?.items as r, i (i)}
-				<tr
-					><td><a href="/revision/{r.id}">#{r.id}</a></td><td
-						>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
-					><td
-						><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
-						></td
-					></tr
-				>
-			{/each}
-		</tbody>
-	</table>
+	{#if data.revisions?.items.length}
+		<table class="w-full">
+			<tbody>
+				{#each data.revisions?.items as r, i (i)}
+					<tr
+						><td><a href="/revision/{r.id}">#{r.id}</a></td><td
+							>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+						><td
+							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
+							></td
+						></tr
+					>
+				{/each}
+			</tbody>
+		</table>
+	{:else}
+		<p>{m.spry_dizzy_mouse_roam()}</p>
+	{/if}
 	{#if data.revisions?.count}
 		<Pager
 			n_count={data.revisions.count}

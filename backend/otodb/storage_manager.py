@@ -53,6 +53,9 @@ class StorageManager:
 					Fileobj=BytesIO(file_content),
 					Bucket=self.bucket_name,
 					Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/'),
+					ExtraArgs={
+						'CacheControl': 'public, max-age=31536000, immutable',
+					},
 				)
 				return file_path
 			except Exception as e:

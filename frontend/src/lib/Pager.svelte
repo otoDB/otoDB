@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+
 	let { page, page_size, n_count, window_size = 2, base_url = null } = $props();
 
 	const n_pages = $derived(Math.ceil(n_count / page_size));
@@ -14,7 +16,7 @@
 		return u.href;
 	};
 
-	let pp = $derived(page);
+	let pp = $derived.by(() => page);
 </script>
 
 {#snippet btn(p)}
@@ -31,16 +33,14 @@
 		{/if}
 		{#each page_range as index, i (i)}
 			{#if index === page}
-				<form target="_self" method="get">
-					<input
-						class="p-2"
-						type="number"
-						name="page"
-						min="1"
-						max={n_pages}
-						bind:value={pp}
-					/>
-				</form>
+				<input
+					class="p-2"
+					type="number"
+					min="1"
+					max={n_pages}
+					bind:value={pp}
+					onchange={() => goto(url(pp))}
+				/>
 			{:else}
 				{@render btn(index)}
 			{/if}

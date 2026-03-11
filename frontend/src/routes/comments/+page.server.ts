@@ -1,7 +1,7 @@
 import client from '$lib/api';
 import { parseMentions, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
-import { OTODB_INTERNAL_API_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
 
@@ -25,7 +25,7 @@ export const actions = {
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 		await client.POST('/api/comment/comment', {
 			fetch,
-			headers: { 'otodb-internal-secret': OTODB_INTERNAL_API_SECRET },
+			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
 			body: {
 				model,
 				pk,

@@ -1,44 +1,50 @@
 from datetime import datetime, timezone
 
 from django.db import transaction
-from django.db.models import Subquery, OuterRef, DateTimeField, CharField
+from django.db.models import (
+	Subquery,
+	OuterRef,
+	DateTimeField,
+	CharField,
+	F,
+	Case,
+	When,
+	TextField,
+	Q,
+)
 from django.db.models.functions import Greatest, Coalesce, Cast
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+from django.contrib.contenttypes.models import ContentType
 
 from django_comments_xtd.models import XtdComment
 
-from ninja import Router, ModelSchema, Schema
+from ninja import Router, ModelSchema, Schema, Query
+from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
+from otodb.common import clean_incoming_slug
 from otodb.models import (
 	Notification,
 	Post,
 	PostContent,
 	Subscription,
+	EntityLink,
+	RevisionChange,
 )
+from otodb.models.tag import OtodbTagModel
 from otodb.account.models import Account
 from otodb.models.enums import PostCategory, LanguageTypes
 
-from .common import ProfileSchema, user_is_trusted, restrict_internal
+from .common import (
+	ProfileSchema,
+	user_is_trusted,
+	restrict_internal,
+	EntitySchema,
+)
 
 post_router = Router()
-
-
-class PostContentSchema(ModelSchema):
-	class Meta:
-		model = PostContent
-		fields = ['lang', 'page', 'modified']
-
-
-class PostSchema(ModelSchema):
-	added_by: ProfileSchema
-	pages: list[PostContentSchema]
-
-	class Meta:
-		model = Post
-		fields = ['title', 'category']
 
 
 class PostOverviewSchema(ModelSchema):
@@ -51,9 +57,54 @@ class PostOverviewSchema(ModelSchema):
 		fields = ['title', 'category']
 
 
+class PostContentSchema(ModelSchema):
+	class Meta:
+		model = PostContent
+		fields = ['lang', 'page', 'modified']
+
+
+class PostSchema(ModelSchema):
+	added_by: ProfileSchema
+	pages: list[PostContentSchema]
+	entities: list[EntitySchema] | None = None
+
+	class Meta:
+		model = Post
+		fields = ['title', 'category']
+
+
 @post_router.get('post', response=PostSchema)
 def post(request: HttpRequest, post_id: int):
 	post = get_object_or_404(Post, id=post_id)
+	if post.category == 3:
+		tag_models = [
+			ct.id
+			for ct in ContentType.objects.get_for_models(
+				*OtodbTagModel.__subclasses__()
+			).values()
+		]
+		post.entities = (
+			post.entitylink_set.annotate(
+				tg_id=(
+					Case(
+						When(
+							Q(entity_type__id__in=tag_models),
+							then=Subquery(
+								RevisionChange.objects.filter(
+									target_type_id=OuterRef('entity_type_id'),
+									target_id=OuterRef('entity_id'),
+									target_column='slug',
+								).values('target_value')[:1]
+							),
+						),
+						default=Cast(F('entity_id'), output_field=TextField()),
+					)
+				),
+				ent=F('entity_type__model'),
+			)
+			.values('ent', 'tg_id')
+			.annotate(entity=F('ent'), id=F('tg_id'))
+		)
 	return post
 
 
@@ -89,6 +140,21 @@ class PostInSchema(Schema):
 	category: PostCategory
 	lang: LanguageTypes
 	target_users: list[str]
+	entities: list[EntitySchema]
+
+
+def get_entity_link_ent(e: EntitySchema):
+	return (
+		ContentType.objects.get(model=e.entity)
+		.model_class()
+		.objects.get(
+			**(
+				{'slug': clean_incoming_slug(e.id)}
+				if 'tag' in e.entity
+				else {'id': e.id}
+			)
+		)
+	)
 
 
 @post_router.post('post', response=int, auth=django_auth)
@@ -108,6 +174,15 @@ def new(request: HttpRequest, payload: PostInSchema):
 		lang=payload.lang,
 		page=payload.post,
 	)
+	if payload.entities:
+		if payload.category != 3:
+			raise HttpError(400, 'Bad Request')
+		EntityLink.objects.bulk_create(
+			[
+				EntityLink(post=p, entity=get_entity_link_ent(e))
+				for e in payload.entities
+			]
+		)
 
 	Notification.objects.bulk_create(
 		[
@@ -118,6 +193,19 @@ def new(request: HttpRequest, payload: PostInSchema):
 
 	Subscription.objects.create(subscriber=request.user, entity=p)
 	return p.pk
+
+
+@post_router.get('threads', response=list[PostOverviewSchema])
+@paginate
+def threads(request: HttpRequest, entity: EntitySchema = Query(...)):
+	return annotate_modified(
+		Post.objects.filter(
+			id__in=EntityLink.objects.filter(
+				entity_type__model=entity.entity,
+				entity_id=get_entity_link_ent(entity).id,
+			).values('post_id')
+		)
+	)
 
 
 @post_router.get('search', response=list[PostOverviewSchema])

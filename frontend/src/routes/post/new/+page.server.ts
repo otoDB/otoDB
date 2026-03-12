@@ -5,12 +5,13 @@ import { Languages } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
 import { env } from '$env/dynamic/private';
-import { parseMentions, renderMarkdown } from '$lib/markdown';
+import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 
 export const load: PageServerLoad = ({ locals, url }) => {
 	userLevelGuard(locals.user);
 	const category = url.searchParams.get('category');
-	return { category, head: { title: m.antsy_aloof_horse_grace() } };
+	const entity = url.searchParams.get('entity');
+	return { category, entity, head: { title: m.antsy_aloof_horse_grace() } };
 };
 
 export const actions = {
@@ -20,6 +21,12 @@ export const actions = {
 		const post = data.get('post') as string;
 		const lang = data.get('lang') as string;
 		const title = data.get('title') as string;
+		const entities_raw = data.get('entities') as string;
+		const entities = entities_raw
+			.split('\n')
+			.map(get_entity)
+			.filter((x) => x);
+
 		if (renderMarkdown(post).trim() === '') fail(400);
 		const { data: r, error } = await client.POST('/api/post/post', {
 			fetch,
@@ -29,7 +36,8 @@ export const actions = {
 				post,
 				lang: Languages[lang],
 				title,
-				target_users: parseMentions(post)
+				target_users: parseMentions(post),
+				entities
 			}
 		});
 		if (error) fail(400);

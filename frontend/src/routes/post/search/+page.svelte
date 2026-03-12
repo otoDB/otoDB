@@ -2,26 +2,11 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import client from '$lib/api';
-	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import { PostCategories } from '$lib/enums';
 	import { timeAgo } from '$lib/ui';
+	import Pager from '$lib/Pager.svelte';
 
 	let { data }: PageProps = $props();
-	let results = $derived(data.results!.items);
-
-	const fetchNextBatch = () =>
-		client.GET('/api/post/search', {
-			fetch,
-			params: {
-				query: {
-					query: data.query,
-					category: data.category,
-					limit: data.batch_size,
-					offset: results.length
-				}
-			}
-		});
 </script>
 
 <Section
@@ -58,7 +43,7 @@
 				<th>{m.super_agent_pigeon_aim()}</th>
 			</tr>
 		</thead><tbody>
-			{#each results as post, i (i)}
+			{#each data.results.items as post, i (i)}
 				<tr>
 					<td><a href="/post/{post.id}">{post.title}</a></td>
 					<td>{PostCategories[post.category]()}</td>
@@ -73,5 +58,5 @@
 			{/each}
 		</tbody>
 	</table>
-	<LoadMoreButton bind:results maxCount={data.results!.count} {fetchNextBatch} />
+	<Pager n_count={data.results.count} page={data.page} page_size={data.batch_size} />
 </Section>

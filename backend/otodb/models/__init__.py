@@ -10,7 +10,7 @@ from .tag import (
 )
 from .work_source import WorkSource, WorkSourceRejection
 from .relations import WorkRelation, SongRelation
-from .posts import Post, PostContent, Notification, Subscription
+from .posts import Post, PostContent, Notification, Subscription, EntityLink
 from .connection import (
 	ProfileConnection,
 	MediaSongConnection,
@@ -43,6 +43,7 @@ __all__ = [
 	'PostContent',
 	'Notification',
 	'Subscription',
+	'EntityLink',
 	'ProfileConnection',
 	'MediaSongConnection',
 	'TagWorkConnection',

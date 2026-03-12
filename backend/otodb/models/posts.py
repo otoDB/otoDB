@@ -104,3 +104,18 @@ class Subscription(models.Model):
 				name='unique_subscription',
 			)
 		]
+
+
+class EntityLink(models.Model):
+	post = models.ForeignKey(Post, on_delete=models.CASCADE)
+	entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+	entity_id = models.PositiveBigIntegerField()
+	entity = GenericForeignKey('entity_type', 'entity_id')
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(
+				fields=['entity_type', 'entity_id', 'post'],
+				name='entitylink_unique_post',
+			)
+		]

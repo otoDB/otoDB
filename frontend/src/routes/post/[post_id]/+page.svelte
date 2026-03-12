@@ -4,7 +4,7 @@
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
-	import { Languages, PostCategories } from '$lib/enums.js';
+	import { EntityModelRoutes, Languages, PostCategories } from '$lib/enums.js';
 	import { renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
@@ -68,6 +68,15 @@
 		type: m.lower_full_opossum_bless(),
 		name: timeAgo(page_object.modified)
 	})}
+	{#if data.post.entities?.length}
+		<h4>{m.fine_zany_octopus_trim()}</h4>
+		<ul>
+			{#each data.post.entities as { id, entity }, i (i)}
+				{@const link = `/${EntityModelRoutes[entity]}/${id}`}
+				<li><a href={link}>{link}</a></li>
+			{/each}
+		</ul>
+	{/if}
 	<div class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto mt-4 max-w-4xl">
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html page}

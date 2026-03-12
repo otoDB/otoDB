@@ -202,6 +202,7 @@ class PostCategory(models.IntegerChoices):
 	FEATURE_REQUEST = 1, 'Feature Request'
 	BUG_REPORT = 2, 'Bug Report'
 	GARDENING = 3, 'Gardening'
+	GENERAL = 4, 'General'
 
 
 class RevisionChain(models.IntegerChoices):

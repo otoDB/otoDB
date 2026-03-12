@@ -146,19 +146,34 @@ class OtodbTagModel(BaseTagModel):
 	def alias(cls, from_tags: list[Self], into_tag: Self):
 		from django.contrib.contenttypes.models import ContentType
 		from django_comments_xtd.models import XtdComment
+		from otodb.models.posts import EntityLink
 
 		self_ct = ContentType.objects.get_for_model(cls)
+
 		for tag in from_tags:
 			if tag.aliased_to:
 				tag = tag.aliased_to
-			if tag.id != into_tag.id:
+			if tag.pk != into_tag.pk:
 				tag.aliased_to = into_tag
 				tag.save()
 				cls.transfer_data(tag, into_tag)
 				cls.objects.filter(aliased_to=tag).update(aliased_to=into_tag)
+
 				XtdComment.objects.filter(
 					content_type=self_ct, object_pk=str(tag.pk)
 				).update(object_pk=str(into_tag.pk))
+				EntityLink.objects.filter(
+					entity_type=self_ct,
+					entity_id=tag.pk,
+					post_id__in=EntityLink.objects.filter(
+						entity_type=self_ct,
+						entity_id=into_tag.pk,
+					).values('post_id'),
+				).delete()
+				EntityLink.objects.filter(
+					entity_type=self_ct,
+					entity_id=tag.pk,
+				).update(entity_id=into_tag.pk)
 
 
 class TagWork(RevisionTrackedModel, OtodbTagModel):

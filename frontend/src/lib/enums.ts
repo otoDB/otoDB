@@ -344,7 +344,8 @@ export const PostCategories = [
 	m.livid_loose_eel_pop,
 	m.crazy_loud_trout_peek,
 	m.new_honest_tapir_endure,
-	m.moving_trick_piranha_thrive
+	m.moving_trick_piranha_thrive,
+	m.fresh_lower_rook_trip
 ];
 
 export const Route = {

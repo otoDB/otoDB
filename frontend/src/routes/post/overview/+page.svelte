@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { PostCategories } from '$lib/enums';
+	import { EntityModelRoutes, PostCategories } from '$lib/enums';
 	import { timeAgo } from '$lib/ui';
 
 	let { data } = $props();
@@ -23,7 +23,20 @@
 				</thead><tbody>
 					{#each c as p, j (j)}
 						<tr>
-							<td><a href="/post/{p.id}">{p.title}</a></td>{#if i > 0}
+							<td>
+								<a href="/post/{p.id}">{p.title}</a>
+								{#if p.entities?.length}
+									<span class="text-otodb-content-fainter block text-xs">
+										{#each p.entities as { id, entity }, k (k)}
+											{#if k > 0},
+											{/if}
+											<a href="/{EntityModelRoutes[entity]}/{id}"
+												>{EntityModelRoutes[entity]}/{id}</a
+											>
+										{/each}
+									</span>
+								{/if}
+							</td>{#if i > 0}
 								<td
 									><a href="/profile/{p.added_by.username}"
 										>{p.added_by.username}</a

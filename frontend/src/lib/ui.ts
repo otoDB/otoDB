@@ -125,8 +125,8 @@ export const dirtyEnhance = (
 			const { resolve, reject } = props.barrier.reached[my_id];
 
 			return async ({ update, result }) => {
-				resolve();
 				if (result.type === 'success' || result.type === 'redirect') {
+					resolve();
 					node.dirty = undefined;
 					if (first) {
 						for (let i = my_id + 1; i < props.barrier.reached?.length; i++) {

@@ -52,6 +52,10 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				? []
 				: [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]),
 			{
+				pathname: `tag/${params.tag_slug}/threads`,
+				title: m.big_tiny_kitten_devour()
+			},
+			{
 				pathname: `tag/${params.tag_slug}/history`,
 				title: m.giant_away_scallop_hike()
 			}

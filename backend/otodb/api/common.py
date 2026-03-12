@@ -1,4 +1,4 @@
-from typing import Optional, Annotated
+from typing import Optional, Annotated, Literal
 from functools import wraps, lru_cache
 
 from pydantic import field_validator
@@ -473,3 +473,8 @@ def restrict_internal(f):
 	contribute_operation_args(wrapper, 'otodb-internal-secret', str, Header(...))
 
 	return wrapper
+
+
+class EntitySchema(Schema):
+	id: int | str
+	entity: Literal['mediawork', 'tagwork', 'tagsong', 'mediasong']

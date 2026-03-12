@@ -15,7 +15,19 @@ const ENTITIES = [
 	{ shortPrefix: 'r', longLabel: 'revision', urlPath: 'revision' }
 ] as const;
 
+const short_prefix_re_gen = (short_prefix: string) =>
+	new RegExp(`(?<![/\\w])${short_prefix}(\\d+)(?!\\w)`, 'gi');
+const long_label_re_gen = (long_label: string) =>
+	new RegExp(`(?<!\\w)${long_label}\\s+#(\\d+)(?!\\w)`, 'gi');
 const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N}\p{M}_])/gu;
+const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
+const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+
+const LinkableEntities = [
+	['mediawork', short_prefix_re_gen(ENTITIES[0].shortPrefix)],
+	['mediawork', long_label_re_gen(ENTITIES[0].longLabel)],
+	['tagwork', TAGWORK_NO_DISPLAY_RE]
+];
 
 function link(href: string, text: string): PhrasingContent {
 	return { type: 'link', url: href, children: [{ type: 'text', value: text }] };
@@ -51,32 +63,40 @@ function remarkOtodb() {
 		for (const { shortPrefix, longLabel, urlPath } of ENTITIES) {
 			// Short form: w123, l42, r99
 			replacements.push([
-				new RegExp(`(?<![/\\w])${shortPrefix}(\\d+)(?!\\w)`, 'gi'),
+				short_prefix_re_gen(shortPrefix),
 				(_, num) => link(`/${urlPath}/${num}`, `${shortPrefix}${num}`)
 			]);
 			// Long form: work #123, list #42, revision #99
 			replacements.push([
-				new RegExp(`(?<!\\w)${longLabel}\\s+#(\\d+)(?!\\w)`, 'gi'),
+				long_label_re_gen(longLabel),
 				(_, num) => link(`/${urlPath}/${num}`, `${longLabel} #${num}`)
 			]);
 		}
 
 		// Tag wiki links: [[slug]] or [[slug|Display Text]]
 		replacements.push([
-			/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+			TAGWORK_RE,
 			(_, slug, display) =>
 				link(`/tag/${encodeURIComponent(slug.trim())}`, display?.trim() || slug.trim())
 		]);
 
 		// Simple user mention: @username
 		replacements.push([
-			new RegExp(MENTION_RE.source, 'gu'),
+			MENTION_RE,
 			(_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)
 		]);
 
 		findAndReplace(tree, replacements);
 	};
 }
+
+export const get_entity = (s: string) => {
+	for (const [p, re] of LinkableEntities) {
+		const m = s.matchAll(re).next();
+		if (m.value) return { entity: p, id: m.value[1] };
+	}
+	return null;
+};
 
 const processor = unified()
 	.use(remarkParse)

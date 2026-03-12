@@ -1,4 +1,4 @@
-from typing import Literal, Any
+from typing import Any
 from datetime import datetime
 from itertools import groupby
 import logging
@@ -19,10 +19,11 @@ from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
 from django_request_cache import get_request_cache
 
-from ninja import Router, ModelSchema, Schema, Field, Query
+from ninja import Router, ModelSchema, Field, Query
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
+from .common import EntitySchema
 from otodb.models import (
 	TagWork,
 	TagSong,
@@ -173,7 +174,6 @@ def revision_changes(request: HttpRequest, revision_id: int):
 	]
 	qq = (
 		RevisionChange.objects.filter(rev=rev)
-		.filter(Q(deleted=True) | Q(target_value__isnull=False))
 		.filter(revisionchangeentity__isnull=False)
 		.annotate(
 			ent_id=(
@@ -219,11 +219,6 @@ def revision_changes(request: HttpRequest, revision_id: int):
 		.order_by('id')
 	)
 	return qq
-
-
-class EntitySchema(Schema):
-	id: int | str
-	entity: Literal['mediawork', 'tagwork', 'tagsong', 'mediasong']
 
 
 def find_rev_rst(ctpk, query_pk, rev):

@@ -1215,6 +1215,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/post/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Threads */
+        get: operations["otodb_api_post_threads"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/search": {
         parameters: {
             query?: never;
@@ -2139,6 +2156,16 @@ export interface components {
             /** Aliases */
             aliases: components["schemas"]["TagSongSchema"][];
         };
+        /** EntitySchema */
+        EntitySchema: {
+            /** Id */
+            id: number | string;
+            /**
+             * Entity
+             * @enum {string}
+             */
+            entity: "mediawork" | "tagwork" | "tagsong" | "mediasong";
+        };
         /** PostContentSchema */
         PostContentSchema: {
             /** Lang */
@@ -2156,6 +2183,11 @@ export interface components {
             added_by: components["schemas"]["ProfileSchema"];
             /** Pages */
             pages: components["schemas"]["PostContentSchema"][];
+            /**
+             * Entities
+             * @default []
+             */
+            entities: components["schemas"]["EntitySchema"][];
             /** Title */
             title: string;
             /** Category */
@@ -2170,7 +2202,7 @@ export interface components {
          * PostCategory
          * @enum {integer}
          */
-        PostCategory: 0 | 1 | 2 | 3;
+        PostCategory: 0 | 1 | 2 | 3 | 4;
         /** PostInSchema */
         PostInSchema: {
             /** Title */
@@ -2181,6 +2213,8 @@ export interface components {
             lang: components["schemas"]["LanguageTypes"];
             /** Target Users */
             target_users: string[];
+            /** Entities */
+            entities: components["schemas"]["EntitySchema"][];
         };
         /** PostOverviewSchema */
         PostOverviewSchema: {
@@ -2192,6 +2226,11 @@ export interface components {
              * Format: date-time
              */
             modified: string;
+            /**
+             * Entities
+             * @default []
+             */
+            entities: components["schemas"]["EntitySchema"][];
             /** Title */
             title: string;
             /** Category */
@@ -2322,16 +2361,6 @@ export interface components {
             target_column?: string | null;
             /** Target Value */
             target_value?: string | null;
-        };
-        /** EntitySchema */
-        EntitySchema: {
-            /** Id */
-            id: number | string;
-            /**
-             * Entity
-             * @enum {string}
-             */
-            entity: "mediawork" | "tagwork" | "tagsong" | "mediasong";
         };
         /**
          * Status
@@ -4419,7 +4448,32 @@ export interface operations {
     otodb_api_post_category: {
         parameters: {
             query: {
-                category: 0 | 1 | 2 | 3;
+                category: 0 | 1 | 2 | 3 | 4;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedPostOverviewSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_post_threads: {
+        parameters: {
+            query: {
+                id: number | string;
+                entity: "mediawork" | "tagwork" | "tagsong" | "mediasong";
                 limit?: number;
                 offset?: number;
             };

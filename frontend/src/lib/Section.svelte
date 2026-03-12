@@ -14,9 +14,12 @@
 				{#each menuLinks as { pathname, title }, i (i)}
 					<li
 						aria-current={page.url.pathname.endsWith(encodeURI(pathname))}
-						class="bg-otodb-bg-faint/75 border-otodb-content-faint border px-2 aria-current:border-b-0"
+						class="bg-otodb-bg-faint/75 border-otodb-content-faint group border px-2 aria-current:border-b-0"
 					>
-						<a href="/{pathname}" class="no-underline">{title}</a>
+						<a
+							href="/{pathname}"
+							class="no-underline group-aria-current:pointer-events-none">{title}</a
+						>
 					</li>
 				{/each}
 			</ul>

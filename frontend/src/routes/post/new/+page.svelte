@@ -4,12 +4,20 @@
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
 	import { m } from '$lib/paraglide/messages.js';
-	import { LanguageNames, PostCategories } from '$lib/enums';
+	import { EntityModelRoutes, LanguageNames, PostCategories } from '$lib/enums';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { renderMarkdown } from '$lib/markdown';
+	import { get_entity, renderMarkdown } from '$lib/markdown';
 
 	let md = $state('');
 	let previewHtml = $derived(renderMarkdown(md));
+	let category = $derived(data.category ?? '1');
+	let entities_raw = $derived(data.entity ?? '');
+	let entities = $derived(
+		entities_raw
+			.split('\n')
+			.map(get_entity)
+			.filter((x) => x)
+	);
 </script>
 
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
@@ -30,7 +38,7 @@
 					></tr
 				><tr
 					><th>{m.plane_awful_bobcat_spark()}</th><td
-						><select name="category" value={data.category ?? '1'}>
+						><select name="category" bind:value={category}>
 							{#each PostCategories as c, i (i)}
 								{#if i > 0}
 									<option value={i.toString()}>{c()}</option>
@@ -41,6 +49,16 @@
 				></tbody
 			>
 		</table>
+		{#if category === '3'}
+			<h4>{m.fine_zany_octopus_trim()}</h4>
+			<textarea name="entities" bind:value={entities_raw}></textarea>
+			<ul class="inline-block">
+				{#each entities as { entity, id }, i (i)}
+					{@const link = `/${EntityModelRoutes[entity]}/${id}`}
+					<li><a href={link}>{link}</a></li>
+				{/each}
+			</ul>
+		{/if}
 		<div class="grid grid-cols-2 gap-3">
 			<textarea rows="10" bind:value={md} class="w-full" name="post" required></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">

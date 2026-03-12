@@ -40,7 +40,7 @@
 	);
 
 	const expand_bit_field = (names) => (v) =>
-		[...parseInt(v, 10).toString('2')]
+		[...parseInt(v, 10).toString(2)]
 			.reduce(
 				(a, e, i, aa) => (e === '1' ? [...a, names[Math.pow(2, aa.length - 1 - i)]()] : a),
 				[]
@@ -89,6 +89,15 @@
 			lang: Languages
 		}
 	};
+
+	const displayValue = (type: string, col: string, val: string | null) => {
+		const handler = ValueDisplayMap[type]?.[col];
+		return handler
+			? typeof handler === 'function'
+				? handler(val)
+				: handler[val]()
+			: (val ?? 'None');
+	};
 </script>
 
 <Section title="{m.arable_direct_swan_glow()} #{data.revision.id}">
@@ -135,15 +144,11 @@
 												{c.target_column}</td
 											>
 											<td
-												>{#if c.deleted}Deleted{:else}<pre>{#if Object.hasOwn(ValueDisplayMap, c.target_type) && Object.hasOwn(ValueDisplayMap[c.target_type], c.target_column)}{@const handler =
-																ValueDisplayMap[c.target_type][
-																	c.target_column
-																]}{#if typeof handler === 'function'}{handler(
-																	c.target_value
-																)}{:else}{handler[
-																	c.target_value
-																]()}{/if}{:else}{c.target_value ??
-																'None'}{/if}</pre>{/if}</td
+												>{#if c.deleted}Deleted{:else}<pre>{displayValue(
+															c.target_type,
+															c.target_column,
+															c.target_value
+														)}</pre>{/if}</td
 											></tr
 										>
 									{/each}

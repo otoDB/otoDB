@@ -6,35 +6,53 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import TagsField from '$lib/TagsField.svelte';
 	import { Role, WorkTagCategoriesSettableAsSource } from '$lib/enums';
-	import { callSavingToast } from '$lib/toast.js';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import type { components } from '$lib/schema.js';
 
 	let { data } = $props();
 
-	let tags = $derived(data.tags.map((t) => getTagDisplaySlug(t)));
-	let cache: Record<string, components['schemas']['TagWorkInstanceThinSchema']> =
-		Object.fromEntries(data.tags.map((t) => [getTagDisplaySlug(t), t]));
+	let tags: string[] = $derived(data.tags.map((t) => getTagDisplaySlug(t)));
+	let cache: Record<string, components['schemas']['TagWorkInstanceThinSchema']> = $state(
+		Object.fromEntries(data.tags.map((t) => [getTagDisplaySlug(t), t]))
+	);
+
+	$effect(() => {
+		void tags;
+		const timeout = setTimeout(() => {
+			tags.filter((t) => !Object.hasOwn(cache, t)).forEach(async (t) => {
+				const { data } = await client.GET('/api/tag/tag', {
+					fetch,
+					params: { query: { tag_slug: t } }
+				});
+				cache[t] = data ?? {
+					aliased_to: null,
+					category: 0,
+					creator_roles: null,
+					deprecated: false,
+					id: -1,
+					lang_prefs: [],
+					name: t,
+					sample: false,
+					slug: t
+				};
+			});
+		}, 750);
+
+		return () => clearTimeout(timeout);
+	});
 
 	const toggle_creator_role = async (tag_slug: string, role_value: number) => {
-		const tag = data.tags.find((t) => t.slug === tag_slug);
-		if (!tag || tag.category !== 4) return; // Creator tags only
+		const tag = cache[tag_slug];
 
 		const current_roles = tag.creator_roles || [];
 		const new_roles = current_roles.includes(role_value)
 			? current_roles.filter((r: number) => r !== role_value)
 			: [...current_roles, role_value];
+		tag.creator_roles = new_roles;
+	};
 
-		const p = client.POST('/api/work/creator_roles', {
-			fetch,
-			body: { work_id: +data.id, tag_slug, creator_roles: new_roles }
-		});
-		callSavingToast(p);
-		const response = await p;
-
-		if (response.response.ok) {
-			tag.creator_roles = new_roles;
-		}
+	const toggle_sample = (tag_slug: string) => {
+		cache[tag_slug].sample = !cache[tag_slug].sample;
 	};
 
 	const submit_tags = async (e: SubmitEvent) => {
@@ -42,18 +60,9 @@
 		await client.PUT('/api/work/set_tags', {
 			fetch,
 			params: { query: { work_id: +data.id } },
-			body: tags
+			body: Object.values(cache).map(t => ({nameslug: t.slug, roles: t.creator_roles, sample: t.sample}))
 		});
 		goto(`/work/${data.id}`, { invalidateAll: true });
-	};
-
-	const toggle_sample = async (tag_slug: string) => {
-		const p = client.PUT('/api/work/toggle_sample', {
-			fetch,
-			params: { query: { work_id: data.id, tag_slug } }
-		});
-		callSavingToast(p);
-		await p;
 	};
 </script>
 
@@ -70,35 +79,38 @@
 				>
 			</thead><tbody>
 				{#each tags as slug, i (i)}
-					{@const tag = cache[slug]}
-					<tr>
-						<td><WorkTag {tag} /></td>
-						<td
-							>{#if WorkTagCategoriesSettableAsSource.includes(tag.category)}
-								<input
-									type="checkbox"
-									onclick={() => toggle_sample(tag.slug)}
-									checked={tag.sample}
-								/>
-							{:else}{m.simple_less_marlin_enchant()}{/if}</td
-						>
-						<td>
-							{#if tag.category === 4}
-								{#each Object.keys(Role).filter((e) => !isNaN(e)) as k, i (i)}
-									<label class="role-label">
-										<input
-											class="hidden"
-											type="checkbox"
-											checked={tag.creator_roles?.includes(+k) || false}
-											onchange={() => toggle_creator_role(tag.slug, +k)}
-										/>{Role[k]()}
-									</label>
-								{/each}
-							{:else}
-								{m.simple_less_marlin_enchant()}
-							{/if}
-						</td>
-					</tr>
+					{#if cache[slug]}
+						{@const tag = cache[slug]}
+						<tr>
+							<td><WorkTag {tag} /></td>
+							<td
+								>{#if WorkTagCategoriesSettableAsSource.includes(tag.category)}
+									<input
+										type="checkbox"
+										onclick={() => toggle_sample(getTagDisplaySlug(tag))}
+										checked={tag.sample}
+									/>
+								{:else}{m.simple_less_marlin_enchant()}{/if}</td
+							>
+							<td>
+								{#if tag.category === 4}
+									{#each Object.keys(Role).filter((e) => !isNaN(e)) as k, i (i)}
+										<label class="role-label">
+											<input
+												class="hidden"
+												type="checkbox"
+												checked={tag.creator_roles?.includes(+k) || false}
+												onchange={() =>
+													toggle_creator_role(getTagDisplaySlug(tag), +k)}
+											/>{Role[k]()}
+										</label>
+									{/each}
+								{:else}
+									{m.simple_less_marlin_enchant()}
+								{/if}
+							</td>
+						</tr>
+					{/if}
 				{/each}
 			</tbody>
 		</table>

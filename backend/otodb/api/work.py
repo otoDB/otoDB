@@ -216,56 +216,43 @@ def delete_work(request: HttpRequest, work_id: int):
 	work.delete()
 
 
+class TagWorkInstasnceInSchema(Schema):
+	nameslug: str
+	sample: bool | None = None
+	roles: list[int] | None = None
+
+
 @work_router.put('set_tags', auth=django_auth)
 @user_is_trusted
 @with_revision_route(Route.MEDIAWORK_SET_TAGS)
-def set_tags(request: HttpRequest, work_id: int, payload: List[str]):
+def set_tags(
+	request: HttpRequest, work_id: int, payload: list[TagWorkInstasnceInSchema]
+):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 
 	tags = []
-	for v in payload:
+	for t in payload:
 		try:
-			tag = TagWork.objects.get(slug=clean_incoming_slug(v))
+			tag = TagWork.objects.get(slug=clean_incoming_slug(t.nameslug))
 			tags.append(tag.aliased_to if tag.aliased_to else tag)
 		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=v))
+			tags.append(TagWork.objects.create(name=t.nameslug))
 
 	work.tags.remove(*work.tags.exclude(id__in=[t.id for t in tags]))
 	work.tags.add(*tags)
 
-	return 200
+	for tag, p in zip(tags, payload):
+		if p.role or p.sample:
+			instance = TagWorkInstance.objects.get(work=work, work_tag=tag)
 
+			if instance.work_tag.category == WorkTagCategory.CREATOR and p.role:
+				instance.set_creator_roles(payload.roles)
+			if p.sample:
+				instance.used_as_source = not instance.sample
 
-class CreatorRolesUpdateSchema(Schema):
-	work_id: int
-	tag_slug: str
-	creator_roles: List[int]
-
-
-@work_router.post('creator_roles', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.MEDIAWORK_UPDATE_CREATOR_ROLES)
-def update_creator_roles(request: HttpRequest, payload: CreatorRolesUpdateSchema):
-	instance = get_object_or_404(
-		TagWorkInstance, work_id=payload.work_id, work_tag__slug=payload.tag_slug
-	)
-
-	if instance.work_tag.category == WorkTagCategory.CREATOR:
-		instance.set_creator_roles(payload.creator_roles)
-		instance.save()
+			instance.save()
 
 	return 200
-
-
-@work_router.put('toggle_sample', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.MEDIAWORK_TOGGLE_SAMPLE)
-def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
-	instance = get_object_or_404(
-		TagWorkInstance, work_id=work_id, work_tag__slug=tag_slug
-	)
-	instance.used_as_source = not instance.used_as_source
-	instance.save()
 
 
 @work_router.put('remove_tag', auth=django_auth)

@@ -245,40 +245,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/work/creator_roles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Update Creator Roles */
-        post: operations["otodb_api_work_update_creator_roles"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/toggle_sample": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Toggle Sample */
-        put: operations["otodb_api_work_toggle_sample"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/work/remove_tag": {
         parameters: {
             query?: never;
@@ -1762,14 +1728,14 @@ export interface components {
              */
             rating: number;
         };
-        /** CreatorRolesUpdateSchema */
-        CreatorRolesUpdateSchema: {
-            /** Work Id */
-            work_id: number;
-            /** Tag Slug */
-            tag_slug: string;
-            /** Creator Roles */
-            creator_roles: number[];
+        /** TagWorkInstasnceInSchema */
+        TagWorkInstasnceInSchema: {
+            /** Nameslug */
+            nameslug: string;
+            /** Sample */
+            sample?: boolean | null;
+            /** Roles */
+            roles?: number[] | null;
         };
         /** WorkSourceRejectionSchema */
         WorkSourceRejectionSchema: {
@@ -2811,52 +2777,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": string[];
+                "application/json": components["schemas"]["TagWorkInstasnceInSchema"][];
             };
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_update_creator_roles: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatorRolesUpdateSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_toggle_sample: {
-        parameters: {
-            query: {
-                work_id: number;
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

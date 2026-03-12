@@ -46,7 +46,7 @@ from .common import (
 	ThinWorkSchema,
 	user_is_trusted,
 	RelationSchema,
-	post_relation,
+	post_relations,
 	ConnectionSchema,
 	profile_connection_parsers,
 	make_alt_value_parser,
@@ -867,20 +867,8 @@ def song_relations(request: HttpRequest, song_id: int):
 @tag_router.post('song_relation', auth=django_auth)
 @with_revision_route(Route.SONGRELATION_CREATE)
 @user_is_trusted
-def song_relation(request: HttpRequest, payload: RelationSchema):
-	post_relation(MediaSong, payload)
-	return
-
-
-@tag_router.delete('song_relation', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.SONGRELATION_DELETE)
-def delete_relation(request: HttpRequest, A: int, B: int):
-	a = MediaSong.objects.get(id=A)
-	b = MediaSong.objects.get(id=B)
-	rel = SongRelation.objects.get_relation(a, b)
-	rel.delete()
-	return
+def song_relation(request: HttpRequest, this_id: int, payload: list[RelationSchema]):
+	post_relations(MediaSong, this_id, payload)
 
 
 @tag_router.get('song_tag_search', response=list[TagSongSchema])

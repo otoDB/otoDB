@@ -358,8 +358,7 @@ export interface paths {
         put?: never;
         /** Relation */
         post: operations["otodb_api_work_relation"];
-        /** Delete Relation */
-        delete: operations["otodb_api_work_delete_relation"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1072,8 +1071,7 @@ export interface paths {
         put?: never;
         /** Song Relation */
         post: operations["otodb_api_tag_song_relation"];
-        /** Delete Relation */
-        delete: operations["otodb_api_tag_delete_relation"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2961,37 +2959,18 @@ export interface operations {
     };
     otodb_api_work_relation: {
         parameters: {
-            query?: never;
+            query: {
+                this_id: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RelationSchema"];
+                "application/json": components["schemas"]["RelationSchema"][];
             };
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_delete_relation: {
-        parameters: {
-            query: {
-                A: number;
-                B: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -4229,37 +4208,18 @@ export interface operations {
     };
     otodb_api_tag_song_relation: {
         parameters: {
-            query?: never;
+            query: {
+                this_id: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RelationSchema"];
+                "application/json": components["schemas"]["RelationSchema"][];
             };
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_delete_relation: {
-        parameters: {
-            query: {
-                A: number;
-                B: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

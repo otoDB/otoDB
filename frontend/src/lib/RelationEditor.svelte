@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidate } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import client from './api';
 	import { SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
 	import { m } from './paraglide/messages';
@@ -9,7 +9,6 @@
 	import SongField from './SongField.svelte';
 	import WorkCard from './WorkCard.svelte';
 	import WorkField from './WorkField.svelte';
-	import { callSavingToast } from './toast';
 
 	interface Props {
 		this_id: number;
@@ -18,8 +17,6 @@
 	}
 
 	let { this_id, init_relations, obj_type }: Props = $props();
-
-	const endpoint = obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation';
 
 	let relations: { swapped: boolean; item: any | null; relation: number }[] = $state(
 		init_relations[0]
@@ -30,42 +27,27 @@
 				relation
 			}))
 	);
-	const delete_relation = (i: number) => async () => {
-		const w = relations.splice(i, 1)[0];
-		await client.DELETE(endpoint, {
-			fetch,
-			params: { query: { A: w.item.id, B: this_id } }
-		});
-		if (obj_type === 'work') invalidate('otodb:work_layout');
-	};
-	const post_relation = (i: number, notify: boolean) => async () => {
-		const r = relations[i];
-		relations = relations.filter((rel, j) => rel.item.id !== r.item.id || j === i);
-		if (r.item.id) {
-			const p = client.POST(endpoint, {
-				fetch,
-				body: {
-					A_id: !r.swapped ? r.item.id : this_id!,
-					B_id: r.swapped ? r.item.id : this_id!,
-					relation: r.relation
-				}
-			});
-			if (notify) callSavingToast(p);
-			await p;
-			if (obj_type === 'work') invalidate('otodb:work_layout');
-		}
-	};
-	const swap_relation = (i: number) => async () => {
-		relations[i].swapped = !relations[i].swapped;
-		await post_relation(i, true)();
-	};
+
 	let new_item = $state(null);
 	const add_new_item = async () => {
 		if (new_item && new_item.id !== this_id) {
 			relations.unshift({ swapped: false, item: new_item, relation: 0 });
-			await post_relation(0, false)();
 			new_item = null;
 		}
+	};
+
+	const endpoint = obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation';
+	const post_relations = async () => {
+		await client.POST(endpoint, {
+			fetch,
+			params: { query: { this_id } },
+			body: relations.map((r) => ({
+				A_id: !r.swapped ? r.item.id : this_id!,
+				B_id: r.swapped ? r.item.id : this_id!,
+				relation: r.relation
+			}))
+		});
+		goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
 	};
 </script>
 
@@ -99,11 +81,7 @@
 					<td>{m.grand_vexed_snail_ripple()}</td>
 					<td class="w-64">{@render work(relation, relation.swapped)}</td>
 					<td
-						><select
-							name="relation"
-							bind:value={relation.relation}
-							onchange={post_relation(i, true)}
-						>
+						><select name="relation" bind:value={relation.relation}>
 							{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationPredicate as rel, j (j)}
 								<option value={j}>{rel()}</option>
 							{/each}
@@ -111,11 +89,7 @@
 					>
 				{:else}
 					<td
-						><select
-							name="relation"
-							bind:value={relation.relation}
-							onchange={post_relation(i, true)}
-						>
+						><select name="relation" bind:value={relation.relation}>
 							{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationPredicate as rel, j (j)}
 								<option value={j}>{rel()}</option>
 							{/each}
@@ -124,16 +98,23 @@
 					<td class="w-64">{@render work(relation, relation.swapped)}</td>
 				{/if}
 				<td
-					><button type="button" onclick={swap_relation(i)}
-						>{m.less_green_angelfish_hunt()}</button
+					><button
+						type="button"
+						onclick={() => {
+							relations[i].swapped = !relations[i].swapped;
+						}}>{m.less_green_angelfish_hunt()}</button
 					></td
 				>
 				<td
-					><button type="button" onclick={delete_relation(i)}
-						>{m.even_alert_grebe_taste()}</button
+					><button
+						type="button"
+						onclick={() => {
+							relations.splice(i, 1);
+						}}>{m.even_alert_grebe_taste()}</button
 					></td
 				>
 			</tr>
 		{/each}
 	</tbody>
 </table>
+<input type="submit" onclick={post_relations} />

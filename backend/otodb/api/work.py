@@ -55,7 +55,7 @@ from .common import (
 	user_is_trusted,
 	user_is_editor,
 	RelationSchema,
-	post_relation,
+	post_relations,
 	SlimWorkSchema,
 	RouterWithRevision,
 	with_revision_route,
@@ -303,20 +303,8 @@ def relations(request: HttpRequest, work_id: int):
 @work_router.post('relation', auth=django_auth)
 @user_is_trusted
 @with_revision_route(Route.WORKRELATION_CREATE)
-def relation(request: HttpRequest, payload: RelationSchema):
-	post_relation(MediaWork, payload)
-	return
-
-
-@work_router.delete('relation', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.WORKRELATION_DELETE)
-def delete_relation(request: HttpRequest, A: int, B: int):
-	a = MediaWork.active_objects.get(id=A)
-	b = MediaWork.active_objects.get(id=B)
-	rel = WorkRelation.objects.get_relation(a, b)
-	rel.delete()
-	return
+def relation(request: HttpRequest, this_id: int, payload: list[RelationSchema]):
+	post_relations(MediaWork, this_id, payload)
 
 
 @work_router.get('sources', response=List[WorkSourceSchema])

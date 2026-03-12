@@ -4,10 +4,8 @@ import client, { getDisplayText } from '$lib/api';
 import { error, redirect } from '@sveltejs/kit';
 import { userLevelCheck } from '$lib/route_guard';
 
-export const load: LayoutServerLoad = async ({ params, fetch, locals, url, depends }) => {
+export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
-
-	depends('otodb:work_layout');
 
 	const {
 		data,

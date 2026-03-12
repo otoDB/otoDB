@@ -18,7 +18,7 @@ export const actions = {
 			fetch,
 			params: { query: { s: actions } }
 		});
-		if (error) fail(400);
+		if (error) return fail(400);
 		else redirect(303, `/request/${r}`);
 	}
 } satisfies Actions;

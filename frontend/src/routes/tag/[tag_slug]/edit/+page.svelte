@@ -133,11 +133,13 @@
 	};
 
 	let previewHtml = $derived(renderMarkdown(mds[wikiView] ?? ''));
+
+	const form_barrier = {};
 </script>
 
 <Section title={data.tag.name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form method="POST" use:dirtyEnhance action="?/edit">
+	<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, pririoty: 0 }} action="?/edit">
 		{#if data.tag.category === 2 && category !== 2}
 			<p class="text-red-500">
 				{m.front_game_porpoise_pout()}
@@ -322,7 +324,11 @@
 		{/each}
 	</div>
 
-	<form action="?/wiki_page" method="POST" use:dirtyEnhance>
+	<form
+		action="?/wiki_page"
+		method="POST"
+		use:dirtyEnhance={{ barrier: form_barrier, pririoty: 1 }}
+	>
 		<input type="text" hidden value={wikiView} name="lang" />
 		<div class="grid grid-cols-2 gap-3">
 			<textarea name="md" bind:value={mds[wikiView]}></textarea>
@@ -340,7 +346,7 @@
 		<summary>{m.fit_noble_niklas_build()}</summary>
 		<table>
 			<tbody>
-				{#if category === 2 && data.tag.category === 2}
+				{#if category === 2}
 					{#each Object.keys(SongConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
 							><td>{SongConnectionTypes[k]}</td><td
@@ -348,7 +354,7 @@
 							></tr
 						>
 					{/each}
-				{:else if category === 6 && data.tag.category === 6}
+				{:else if category === 6}
 					{#each Object.keys(MediaConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
 							><td>{MediaConnectionTypes[k]}</td><td
@@ -356,7 +362,7 @@
 							></tr
 						>
 					{/each}
-				{:else if category === 4 && data.tag.category === 4}
+				{:else if category === 4}
 					{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
 						<tr
 							><td>{ProfileConnectionTypes[k]}</td><td
@@ -375,7 +381,11 @@
 			</tbody>
 		</table>
 	</details>
-	<form action="?/connections" method="POST" use:dirtyEnhance>
+	<form
+		action="?/connections"
+		method="POST"
+		use:dirtyEnhance={{ barrier: form_barrier, pririoty: 2 }}
+	>
 		<textarea
 			bind:value={urls}
 			name="urls"

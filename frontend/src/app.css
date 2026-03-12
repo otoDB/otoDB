@@ -110,10 +110,12 @@
 	input[type='reset'],
 	input[type='button'],
 	select,
-	button {
+	button,
+	label[role='button'] {
 		border: 1px solid var(--otodb-color-content-faint);
 		outline: none;
 		background-color: var(--otodb-color-bg-faint);
+		cursor: pointer;
 		&:disabled {
 			background-color: var(--otodb-color-bg-primary) !important;
 			color: var(--otodb-color-content-fainter);

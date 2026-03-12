@@ -98,7 +98,7 @@
 {/snippet}
 
 {#snippet comment(data, this_component, depth: number)}
-	<div class="comment my-2 grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">
+	<div class="comment grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">
 		<div
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
@@ -107,23 +107,26 @@
 				><time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time></a
 			>
 		</div>
-		<div class="px-4 py-2">
-			<div class="float-right flex gap-2">
+		<div>
+			<span class="text-otodb-content-fainter float-right text-xs leading-none"
+				>#{data.index}</span
+			>
+			<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html renderMarkdown(data.comment)}
+			</div>
+			<div class="comment-actions flex justify-end gap-2 pt-2">
 				{#if can_comment}
-					<label class="bg-otodb-bg-primary hover:bg-otodb-bg-fainter border">
+					<label class="cursor-pointer px-2 py-1" role="button">
 						{m.kind_brief_earthworm_dash()}
 						<input type="checkbox" class="reply-toggle hidden" value={false} />
 					</label>
 				{/if}
 				{#if user && (user.level >= UserLevel.ADMIN || data.user.username === user.username)}
-					<button onclick={() => delete_comment(data.id)}
+					<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 						>{m.even_alert_grebe_taste()}</button
 					>
 				{/if}
-			</div>
-			<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html renderMarkdown(data.comment)}
 			</div>
 		</div>
 	</div>
@@ -182,8 +185,20 @@
 		margin-left: auto;
 	}
 	div.comment {
+		background-color: var(--otodb-color-bg-primary);
+		padding: 0.5rem 1rem 0.8rem 1rem;
+		margin: 1.5rem 0;
+		& .comment-actions {
+			opacity: 0;
+		}
+		&:hover .comment-actions {
+			opacity: 1;
+		}
 		&:target {
 			box-shadow: -4px 0 0 var(--otodb-color-content-faint);
+		}
+		&:has(input.reply-toggle:checked) .comment-actions {
+			opacity: 1;
 		}
 		&:has(input.reply-toggle:checked) + div > form.reply-form {
 			display: flex;

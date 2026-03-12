@@ -74,7 +74,7 @@
 		bind:value={lang_view}
 	/>
 	{#if data.post.category > 0}
-		<div class="my-2 grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="p{data.post_id}">
+		<div class="op-post grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="p{data.post_id}">
 			<div
 				class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 			>
@@ -113,3 +113,14 @@
 		pk={+data.post_id}
 	/>
 </Section>
+
+<style>
+	div.op-post {
+		background-color: var(--otodb-color-bg-primary);
+		padding: 0.5rem 1rem 0.8rem 1rem;
+		margin: 0.5rem 0;
+		&:target {
+			box-shadow: -4px 0 0 var(--otodb-color-content-faint);
+		}
+	}
+</style>

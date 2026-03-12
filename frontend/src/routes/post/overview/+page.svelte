@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
+	import ThreadTable from '$lib/ThreadTable.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { EntityModelRoutes, PostCategories } from '$lib/enums';
-	import { timeAgo } from '$lib/ui';
+	import { PostCategories } from '$lib/enums';
 
 	let { data } = $props();
 </script>
@@ -13,47 +13,7 @@
 			<h2 class="mt-4 text-base">
 				<a href="/post/search?category={i}">{PostCategories[i]()}</a>
 			</h2>
-			<table class="w-full table-fixed">
-				<thead>
-					<tr>
-						<th class="text-left">{m.large_factual_octopus_exhale()}</th>
-						{#if i > 0}<th class="w-32 text-left">{m.crisp_red_canary_tickle()}</th
-							>{/if}
-						<th class="w-64 text-right">{m.super_agent_pigeon_aim()}</th>
-					</tr>
-				</thead><tbody>
-					{#each c as p, j (j)}
-						<tr>
-							<td>
-								<a href="/post/{p.id}">{p.title}</a>
-								{#if p.entities?.length}
-									<span class="text-otodb-content-fainter block text-xs">
-										{#each p.entities as { id, entity }, k (k)}
-											{#if k > 0},
-											{/if}
-											<a href="/{EntityModelRoutes[entity]}/{id}"
-												>{EntityModelRoutes[entity]}/{id}</a
-											>
-										{/each}
-									</span>
-								{/if}
-							</td>
-							{#if i > 0}
-								<td
-									><a href="/profile/{p.added_by.username}"
-										>{p.added_by.username}</a
-									></td
-								>
-							{/if}
-							<td class="text-right">
-								<time title={new Date(p.modified).toLocaleString()}
-									>{timeAgo(p.modified)}</time
-								>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
+			<ThreadTable posts={c} showAuthor={i > 0} />
 		{/if}
 	{/each}
 </Section>

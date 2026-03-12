@@ -45,7 +45,7 @@
 				(a, e, i, aa) => (e === '1' ? [...a, names[Math.pow(2, aa.length - 1 - i)]()] : a),
 				[]
 			)
-			.join() || 'N/A';
+			.join(', ') || 'N/A';
 
 	const ValueDisplayMap = {
 		mediawork: {

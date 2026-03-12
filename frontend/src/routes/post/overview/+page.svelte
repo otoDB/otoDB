@@ -26,10 +26,13 @@
 							<td>
 								<a href="/post/{p.id}">{p.title}</a>
 								{#if p.entities?.length}
-									<span class="text-otodb-content-fainter text-xs block">
+									<span class="text-otodb-content-fainter block text-xs">
 										{#each p.entities as { id, entity }, k (k)}
-											{#if k > 0}, {/if}
-											<a href="/{EntityModelRoutes[entity]}/{id}">{EntityModelRoutes[entity]}/{id}</a>
+											{#if k > 0},
+											{/if}
+											<a href="/{EntityModelRoutes[entity]}/{id}"
+												>{EntityModelRoutes[entity]}/{id}</a
+											>
 										{/each}
 									</span>
 								{/if}

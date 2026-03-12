@@ -21,15 +21,21 @@
 				</tr>
 			</thead><tbody>
 				{#each data.threads.items as post, i (i)}
-					{@const otherEntities = post.entities?.filter((e) => !(e.entity === 'mediawork' && String(e.id) === String(data.id))) ?? []}
+					{@const otherEntities =
+						post.entities?.filter(
+							(e) => !(e.entity === 'mediawork' && String(e.id) === String(data.id))
+						) ?? []}
 					<tr>
 						<td>
 							<a href="/post/{post.id}">{post.title}</a>
 							{#if otherEntities.length}
-								<span class="text-otodb-content-fainter text-xs block">
+								<span class="text-otodb-content-fainter block text-xs">
 									{#each otherEntities as { id, entity }, j (j)}
-										{#if j > 0}, {/if}
-										<a href="/{EntityModelRoutes[entity]}/{id}">{EntityModelRoutes[entity]}/{id}</a>
+										{#if j > 0},
+										{/if}
+										<a href="/{EntityModelRoutes[entity]}/{id}"
+											>{EntityModelRoutes[entity]}/{id}</a
+										>
 									{/each}
 								</span>
 							{/if}

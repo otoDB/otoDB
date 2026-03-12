@@ -21,8 +21,8 @@ export const actions = {
 		const post = data.get('post') as string;
 		const lang = data.get('lang') as string;
 		const title = data.get('title') as string;
-		const entities_raw = data.get('entities') as string;
-		const entities = entities_raw
+		const entities_raw = data.get('entities') as string | null;
+		const entities = (entities_raw ?? '')
 			.split('\n')
 			.map(get_entity)
 			.filter((x) => x);

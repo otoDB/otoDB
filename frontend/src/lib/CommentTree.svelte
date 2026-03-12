@@ -22,6 +22,12 @@
 	let drafts = $state<Record<number, string>>({});
 	let previews = $state<Record<number, string>>({});
 	let previewMode = $state<Record<number, boolean>>({});
+	let editingId = $state<number | null>(null);
+	let editingText = $state('');
+	let editPreview = $state('');
+	let editPreviewMode = $state(false);
+
+	const EDIT_WINDOW_MS = 180 * 24 * 60 * 60 * 1000;
 
 	const togglePreview = (reply_to: number) => {
 		if (previewMode[reply_to]) {
@@ -36,7 +42,46 @@
 		previewMode[reply_to] = true;
 	};
 
+	const toggleEditPreview = () => {
+		if (editPreviewMode) {
+			editPreviewMode = false;
+			return;
+		}
+
+		const text = editingText.trim();
+		if (!text) return;
+
+		editPreview = renderMarkdown(text);
+		editPreviewMode = true;
+	};
+
+	const startEdit = (id: number, currentText: string) => {
+		editingId = id;
+		editingText = currentText;
+		editPreviewMode = false;
+	};
+
+	const cancelEdit = () => {
+		editingId = null;
+		editingText = '';
+		editPreviewMode = false;
+	};
+
 	const can_comment = user && user.level >= UserLevel.MEMBER;
+	const is_admin = user && user.level >= UserLevel.ADMIN;
+
+	const canEdit = (data: {
+		user: { username: string };
+		time: Date;
+		edited_by: { username: string } | null;
+	}) => {
+		if (!user) return false;
+		if (is_admin) return true;
+		if (data.user.username !== user.username) return false;
+		// Lock: if edited by a different user (admin), original author can no longer edit
+		if (data.edited_by && data.edited_by.username !== data.user.username) return false;
+		return Date.now() - data.time.getTime() < EDIT_WINDOW_MS;
+	};
 
 	const delete_comment = async (comment_id: number) => {
 		await client.DELETE('/api/comment/comment', {
@@ -51,7 +96,7 @@
 	<form
 		class="reply-form gap-2"
 		method="POST"
-		action="/comments"
+		action="/comments?/create"
 		use:enhance={() => {
 			return async ({ update, result }) => {
 				if (result.type === 'success') {
@@ -59,7 +104,7 @@
 					if (comment_text) {
 						document
 							.querySelectorAll('.reply-toggle')
-							.forEach((e) => (e.checked = false));
+							.forEach((e) => ((e as HTMLInputElement).checked = false));
 						drafts[reply_to] = '';
 						previews[reply_to] = '';
 						previewMode[reply_to] = false;
@@ -106,28 +151,96 @@
 			<a href="#c{data.id}"
 				><time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time></a
 			>
+			{#if data.edited_at}
+				<span title={new Date(data.edited_at).toLocaleString()}>
+					{#if data.edited_by && data.edited_by.username !== data.user.username}
+						(edited {timeAgo(data.edited_at)} by
+						<a href="/profile/{data.edited_by.username}">{data.edited_by.username}</a>)
+					{:else}
+						(edited {timeAgo(data.edited_at)})
+					{/if}
+				</span>
+			{/if}
 		</div>
 		<div>
 			<span class="text-otodb-content-fainter float-right text-xs leading-none"
 				>#{data.index}</span
 			>
-			<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html renderMarkdown(data.comment)}
-			</div>
-			<div class="comment-actions flex justify-end gap-2 pt-2">
-				{#if can_comment}
-					<label class="cursor-pointer px-2 py-1" role="button">
-						{m.kind_brief_earthworm_dash()}
-						<input type="checkbox" class="reply-toggle hidden" value={false} />
-					</label>
-				{/if}
-				{#if user && (user.level >= UserLevel.ADMIN || data.user.username === user.username)}
-					<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
-						>{m.even_alert_grebe_taste()}</button
-					>
-				{/if}
-			</div>
+			{#if editingId === data.id}
+				<form
+					class="edit-form"
+					method="POST"
+					action="/comments?/edit"
+					use:enhance={() => {
+						return async ({ update, result }) => {
+							if (result.type === 'success') {
+								cancelEdit();
+							}
+							await update({ reset: false });
+						};
+					}}
+				>
+					<input type="hidden" name="comment_id" value={data.id} />
+					<div class="reply-main">
+						{#if editPreviewMode}
+							<div class="editor-panel reply-editor">
+								<div
+									class="prose prose-neutral prose-sm dark:prose-invert max-w-none"
+								>
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									{@html editPreview}
+								</div>
+							</div>
+						{:else}
+							<textarea
+								class="reply-editor block min-h-15 w-full"
+								name="comment"
+								bind:value={editingText}
+							></textarea>
+						{/if}
+						<div class="reply-actions">
+							<button type="button" class="h-15 p-3" onclick={toggleEditPreview}>
+								{editPreviewMode
+									? m.minor_crisp_cobra_list()
+									: m.many_each_wolf_arrive()}
+							</button>
+							<input
+								type="submit"
+								class="h-15 p-3"
+								value={m.last_late_penguin_bubble()}
+							/>
+							<button type="button" class="h-15 p-3" onclick={cancelEdit}>
+								{m.lower_whole_gopher_fulfill()}
+							</button>
+						</div>
+					</div>
+				</form>
+			{:else}
+				<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html renderMarkdown(data.comment)}
+				</div>
+			{/if}
+			{#if editingId === null}
+				<div class="comment-actions flex justify-end gap-2 pt-2">
+					{#if can_comment}
+						<label class="cursor-pointer px-2 py-1" role="button">
+							{m.kind_brief_earthworm_dash()}
+							<input type="checkbox" class="reply-toggle hidden" value={false} />
+						</label>
+					{/if}
+					{#if canEdit(data)}
+						<button class="px-2 py-1" onclick={() => startEdit(data.id, data.comment)}>
+							{m.minor_crisp_cobra_list()}
+						</button>
+					{/if}
+					{#if user && (user.level >= UserLevel.ADMIN || data.user.username === user.username)}
+						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
+							>{m.even_alert_grebe_taste()}</button
+						>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 	<div class="border-otodb-content-fainter ml-2 border-l-2 pl-3">
@@ -160,6 +273,11 @@
 	}
 	h4 + form.reply-form {
 		display: flex;
+	}
+	form.edit-form {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
 	}
 	div.reply-main {
 		display: flex;

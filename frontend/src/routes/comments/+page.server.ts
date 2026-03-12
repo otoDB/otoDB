@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 };
 
 export const actions = {
-	default: async ({ request, fetch }) => {
+	create: async ({ request, fetch }) => {
 		const data = await request.formData();
 		const model = data.get('model') as string,
 			pk = parseInt(data.get('pk') as string, 10),
@@ -33,6 +33,17 @@ export const actions = {
 				parent_id: reply_to,
 				mentioned_users: parseMentions(comment_text)
 			}
+		});
+	},
+	edit: async ({ request, fetch }) => {
+		const data = await request.formData();
+		const comment_id = parseInt(data.get('comment_id') as string, 10),
+			comment_text = data.get('comment') as string;
+		if (renderMarkdown(comment_text).trim() === '') return fail(400);
+		await client.PUT('/api/comment/comment', {
+			fetch,
+			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
+			body: { comment_id, comment_text }
 		});
 	}
 } satisfies Actions;

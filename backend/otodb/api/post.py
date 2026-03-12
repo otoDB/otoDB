@@ -61,10 +61,11 @@ class PostSchema(ModelSchema):
 	added_by: ProfileSchema
 	pages: list[PostContentSchema]
 	entities: list[EntitySchema] = []
+	edited_by: ProfileSchema | None = None
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category']
+		fields = ['title', 'category', 'edited_at']
 
 
 @post_router.get('post', response=PostSchema)
@@ -74,10 +75,17 @@ def post(request: HttpRequest, post_id: int):
 
 def annotate_modified(qs):
 	return qs.annotate(
-		modified=Subquery(
-			PostContent.objects.filter(post_id=OuterRef('id'))
-			.order_by('modified')
-			.values('modified')[:1]
+		modified=Greatest(
+			Subquery(
+				PostContent.objects.filter(post_id=OuterRef('id'))
+				.order_by('modified')
+				.values('modified')[:1]
+			),
+			Coalesce(
+				'edited_at',
+				datetime.fromtimestamp(0, tz=timezone.utc),
+				output_field=DateTimeField(),
+			),
 		)
 	)
 
@@ -162,6 +170,50 @@ def new(request: HttpRequest, payload: PostInSchema):
 	return p.pk
 
 
+class PostEditSchema(Schema):
+	post_id: int
+	title: str
+	post: str
+	lang: LanguageTypes
+	entities: list[EntitySchema]
+
+
+@post_router.put('post', auth=django_auth)
+@user_is_trusted
+@restrict_internal
+@transaction.atomic
+def edit(request: HttpRequest, payload: PostEditSchema):
+	p = get_object_or_404(Post, id=payload.post_id)
+	is_admin = request.user.level >= Account.Levels.ADMIN
+	if not is_admin:
+		if p.added_by_id != request.user.pk:
+			raise HttpError(403, 'Forbidden')
+		# Lock: if an admin has edited this post, original author can no longer edit
+		if p.edited_by_id and p.edited_by_id != p.added_by_id:
+			raise HttpError(403, 'Forbidden')
+
+	now = datetime.now(tz=timezone.utc)
+	p.title = payload.title
+	p.edited_at = now
+	p.edited_by = request.user
+	p.save(update_fields=['title', 'edited_at', 'edited_by'])
+
+	if not PostContent.objects.filter(post=p, lang=payload.lang).update(
+		page=payload.post
+	):
+		PostContent.objects.create(post=p, lang=payload.lang, page=payload.post)
+
+	if p.category == 3:
+		EntityLink.objects.filter(post=p).delete()
+		if payload.entities:
+			EntityLink.objects.bulk_create(
+				[
+					EntityLink(post=p, entity=get_entity_link_ent(e))
+					for e in payload.entities
+				]
+			)
+
+
 @post_router.get('threads', response=list[PostOverviewSchema])
 @paginate
 def threads(request: HttpRequest, entity: EntitySchema = Query(...)):
@@ -199,6 +251,11 @@ def recent_posts(request: HttpRequest):
 				PostContent.objects.filter(post_id=OuterRef('id'))
 				.order_by('modified')
 				.values('modified')[:1]
+			),
+			Coalesce(
+				'edited_at',
+				datetime.fromtimestamp(0, tz=timezone.utc),
+				output_field=DateTimeField(),
 			),
 			Coalesce(
 				Subquery(

@@ -39,7 +39,7 @@ services:
     build:
       context: ./frontend
       args:
-        OTODB_HASH: ${OTODB_HASH}
+        OTODB_HASH: ${OTODB_HASH:-}
     env_file:
       - .env
     restart: always

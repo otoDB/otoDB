@@ -216,7 +216,7 @@ def delete_work(request: HttpRequest, work_id: int):
 	work.delete()
 
 
-class TagWorkInstasnceInSchema(Schema):
+class TagWorkInstanceInSchema(Schema):
 	nameslug: str
 	sample: bool | None = None
 	roles: list[int] | None = None
@@ -226,7 +226,7 @@ class TagWorkInstasnceInSchema(Schema):
 @user_is_trusted
 @with_revision_route(Route.MEDIAWORK_SET_TAGS)
 def set_tags(
-	request: HttpRequest, work_id: int, payload: list[TagWorkInstasnceInSchema]
+	request: HttpRequest, work_id: int, payload: list[TagWorkInstanceInSchema]
 ):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 
@@ -242,13 +242,13 @@ def set_tags(
 	work.tags.add(*tags)
 
 	for tag, p in zip(tags, payload):
-		if p.role or p.sample:
+		if p.roles or p.sample is not None:
 			instance = TagWorkInstance.objects.get(work=work, work_tag=tag)
 
-			if instance.work_tag.category == WorkTagCategory.CREATOR and p.role:
-				instance.set_creator_roles(payload.roles)
-			if p.sample:
-				instance.used_as_source = not instance.sample
+			if instance.work_tag.category == WorkTagCategory.CREATOR and p.roles:
+				instance.set_creator_roles(p.roles)
+			if p.sample is not None:
+				instance.used_as_source = p.sample
 
 			instance.save()
 

@@ -43,7 +43,7 @@ class TestTagLanguagePreference:
 		# Now set tags using the alias slug (simulating language preference usage)
 		response = work_client.put(
 			f'/set_tags?work_id={work.id}',
-			json=['shingeki_no_kyojin'],
+			json=[{'nameslug': 'shingeki_no_kyojin'}],
 			user=editor,
 		)
 		assert response.status_code == 200
@@ -109,7 +109,7 @@ class TestTagLanguagePreference:
 		# Set tags using alias slug
 		response = work_client.put(
 			f'/set_tags?work_id={work.id}',
-			json=['alias_tag'],
+			json=[{'nameslug': 'alias_tag'}],
 			user=editor,
 		)
 		assert response.status_code == 200

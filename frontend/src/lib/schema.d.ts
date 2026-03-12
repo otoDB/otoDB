@@ -1745,8 +1745,8 @@ export interface components {
              */
             rating: number;
         };
-        /** TagWorkInstasnceInSchema */
-        TagWorkInstasnceInSchema: {
+        /** TagWorkInstanceInSchema */
+        TagWorkInstanceInSchema: {
             /** Nameslug */
             nameslug: string;
             /** Sample */
@@ -2806,7 +2806,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TagWorkInstasnceInSchema"][];
+                "application/json": components["schemas"]["TagWorkInstanceInSchema"][];
             };
         };
         responses: {

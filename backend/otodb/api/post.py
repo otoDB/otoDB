@@ -6,11 +6,6 @@ from django.db.models import (
 	OuterRef,
 	DateTimeField,
 	CharField,
-	F,
-	Case,
-	When,
-	TextField,
-	Q,
 )
 from django.db.models.functions import Greatest, Coalesce, Cast
 from django.http import HttpRequest
@@ -31,9 +26,7 @@ from otodb.models import (
 	PostContent,
 	Subscription,
 	EntityLink,
-	RevisionChange,
 )
-from otodb.models.tag import OtodbTagModel
 from otodb.account.models import Account
 from otodb.models.enums import PostCategory, LanguageTypes
 
@@ -51,6 +44,7 @@ class PostOverviewSchema(ModelSchema):
 	id: int
 	added_by: ProfileSchema
 	modified: datetime
+	entities: list[EntitySchema] = []
 
 	class Meta:
 		model = Post
@@ -66,7 +60,7 @@ class PostContentSchema(ModelSchema):
 class PostSchema(ModelSchema):
 	added_by: ProfileSchema
 	pages: list[PostContentSchema]
-	entities: list[EntitySchema] | None = None
+	entities: list[EntitySchema] = []
 
 	class Meta:
 		model = Post
@@ -75,37 +69,7 @@ class PostSchema(ModelSchema):
 
 @post_router.get('post', response=PostSchema)
 def post(request: HttpRequest, post_id: int):
-	post = get_object_or_404(Post, id=post_id)
-	if post.category == 3:
-		tag_models = [
-			ct.id
-			for ct in ContentType.objects.get_for_models(
-				*OtodbTagModel.__subclasses__()
-			).values()
-		]
-		post.entities = (
-			post.entitylink_set.annotate(
-				tg_id=(
-					Case(
-						When(
-							Q(entity_type__id__in=tag_models),
-							then=Subquery(
-								RevisionChange.objects.filter(
-									target_type_id=OuterRef('entity_type_id'),
-									target_id=OuterRef('entity_id'),
-									target_column='slug',
-								).values('target_value')[:1]
-							),
-						),
-						default=Cast(F('entity_id'), output_field=TextField()),
-					)
-				),
-				ent=F('entity_type__model'),
-			)
-			.values('ent', 'tg_id')
-			.annotate(entity=F('ent'), id=F('tg_id'))
-		)
-	return post
+	return get_object_or_404(Post, id=post_id)
 
 
 def annotate_modified(qs):
@@ -144,7 +108,7 @@ class PostInSchema(Schema):
 
 
 def get_entity_link_ent(e: EntitySchema):
-	return (
+	obj = (
 		ContentType.objects.get(model=e.entity)
 		.model_class()
 		.objects.get(
@@ -155,6 +119,9 @@ def get_entity_link_ent(e: EntitySchema):
 			)
 		)
 	)
+	if hasattr(obj, 'aliased_to') and obj.aliased_to:
+		obj = obj.aliased_to
+	return obj
 
 
 @post_router.post('post', response=int, auth=django_auth)
@@ -202,7 +169,7 @@ def threads(request: HttpRequest, entity: EntitySchema = Query(...)):
 		Post.objects.filter(
 			id__in=EntityLink.objects.filter(
 				entity_type__model=entity.entity,
-				entity_id=get_entity_link_ent(entity).id,
+				entity_id=get_entity_link_ent(entity).pk,
 			).values('post_id')
 		)
 	)

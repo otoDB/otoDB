@@ -162,6 +162,7 @@ class MediaWork(RevisionTrackedModel):
 	):
 		from django.contrib.contenttypes.models import ContentType
 		from django_comments_xtd.models import XtdComment
+		from otodb.models.posts import EntityLink
 
 		# Ensure we always merge into the work with the lower ID
 		if from_work.pk < to_work.pk:
@@ -189,9 +190,22 @@ class MediaWork(RevisionTrackedModel):
 		from_work.relation_B.update(B=to_work)
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+
 		XtdComment.objects.filter(
 			content_type=mediawork_ct, object_pk=str(from_work.pk)
 		).update(object_pk=str(to_work.pk))
+		EntityLink.objects.filter(
+			entity_type=mediawork_ct,
+			entity_id=from_work.pk,
+			post_id__in=EntityLink.objects.filter(
+				entity_type=mediawork_ct,
+				entity_id=to_work.pk,
+			).values('post_id'),
+		).delete()
+		EntityLink.objects.filter(
+			entity_type=mediawork_ct,
+			entity_id=from_work.pk,
+		).update(entity_id=to_work.pk)
 
 		from_work.moved_to = to_work
 		from_work.save()

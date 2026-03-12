@@ -2219,8 +2219,11 @@ export interface components {
             added_by: components["schemas"]["ProfileSchema"];
             /** Pages */
             pages: components["schemas"]["PostContentSchema"][];
-            /** Entities */
-            entities?: components["schemas"]["EntitySchema"][] | null;
+            /**
+             * Entities
+             * @default []
+             */
+            entities: components["schemas"]["EntitySchema"][];
             /** Title */
             title: string;
             /** Category */
@@ -2259,6 +2262,11 @@ export interface components {
              * Format: date-time
              */
             modified: string;
+            /**
+             * Entities
+             * @default []
+             */
+            entities: components["schemas"]["EntitySchema"][];
             /** Title */
             title: string;
             /** Category */

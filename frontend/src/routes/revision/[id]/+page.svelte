@@ -92,11 +92,13 @@
 
 	const displayValue = (type: string, col: string, val: string | null) => {
 		const handler = ValueDisplayMap[type]?.[col];
-		return handler
+		const raw = handler
 			? typeof handler === 'function'
 				? handler(val)
-				: handler[val]()
+				: (typeof handler[val] === 'function' ? handler[val]() : handler[val])
 			: (val ?? 'None');
+		const result = typeof raw === 'string' ? decodeURIComponent(raw) : raw;
+		return result;
 	};
 </script>
 

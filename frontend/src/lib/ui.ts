@@ -118,7 +118,8 @@ export const dirtyEnhance = (
 						await props.barrier.reached[i].promise;
 					} catch {
 						dirty_failure(dirty_forms, props.barrier);
-						break;
+						cancel();
+						return;
 					}
 				}
 			const { resolve, reject } = props.barrier.reached[my_id];
@@ -134,7 +135,7 @@ export const dirtyEnhance = (
 								await props.barrier.reached[i].promise;
 							} catch {
 								dirty_failure(dirty_forms, props.barrier);
-								break;
+								return;
 							}
 						}
 						await update();

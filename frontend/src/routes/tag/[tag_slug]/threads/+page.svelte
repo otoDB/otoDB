@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Pager from '$lib/Pager.svelte';
+	import { EntityModelRoutes } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
 	import { timeAgo } from '$lib/ui';
@@ -20,8 +21,19 @@
 				</tr>
 			</thead><tbody>
 				{#each data.threads.items as post, i (i)}
+					{@const otherEntities = post.entities?.filter((e) => !(e.entity === 'tagwork' && e.id === data.tag.slug)) ?? []}
 					<tr>
-						<td><a href="/post/{post.id}">{post.title}</a></td>
+						<td>
+							<a href="/post/{post.id}">{post.title}</a>
+							{#if otherEntities.length}
+								<span class="text-otodb-content-fainter text-xs block">
+									{#each otherEntities as { id, entity }, j (j)}
+										{#if j > 0}, {/if}
+										<a href="/{EntityModelRoutes[entity]}/{id}">{EntityModelRoutes[entity]}/{id}</a>
+									{/each}
+								</span>
+							{/if}
+						</td>
 						<td
 							><a href="/profile/{post.added_by.username}">{post.added_by.username}</a
 							></td

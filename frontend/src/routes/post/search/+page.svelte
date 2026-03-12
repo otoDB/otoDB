@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import { PostCategories } from '$lib/enums';
+	import { EntityModelRoutes, PostCategories } from '$lib/enums';
 	import { timeAgo } from '$lib/ui';
 	import Pager from '$lib/Pager.svelte';
 
@@ -45,7 +45,17 @@
 		</thead><tbody>
 			{#each data.results.items as post, i (i)}
 				<tr>
-					<td><a href="/post/{post.id}">{post.title}</a></td>
+					<td>
+						<a href="/post/{post.id}">{post.title}</a>
+						{#if post.entities?.length}
+							<span class="text-otodb-content-fainter text-xs block">
+								{#each post.entities as { id, entity }, j (j)}
+									{#if j > 0}, {/if}
+									<a href="/{EntityModelRoutes[entity]}/{id}">{EntityModelRoutes[entity]}/{id}</a>
+								{/each}
+							</span>
+						{/if}
+					</td>
 					<td>{PostCategories[post.category]()}</td>
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td
 					>

@@ -75,7 +75,7 @@
 		<div class="reply-main">
 			{#if previewMode[reply_to]}
 				<div class="editor-panel reply-editor">
-					<div class="prose prose-neutral prose-sm dark:prose-invert">
+					<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html previews[reply_to]}
 					</div>
@@ -98,32 +98,36 @@
 {/snippet}
 
 {#snippet comment(data, this_component, depth: number)}
-	<div class="comment">
-		<div class="float-right flex gap-2">
-			{#if can_comment}
-				<label class="bg-otodb-bg-primary hover:bg-otodb-bg-fainter border">
-					{m.kind_brief_earthworm_dash()}
-					<input type="checkbox" class="reply-toggle hidden" value={false} />
-				</label>
-			{/if}
-			{#if user && (user.level >= UserLevel.ADMIN || data.user.username === user.username)}
-				<button onclick={() => delete_comment(data.id)}>{m.even_alert_grebe_taste()}</button
-				>
-			{/if}
+	<div class="comment my-2 grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">
+		<div
+			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
+		>
+			<a href="/profile/{data.user.username}">{data.user.username}</a>
+			<a href="#c{data.id}"
+				><time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time></a
+			>
 		</div>
-		<div class="mb-3 flex items-end gap-2 align-bottom">
-			<p>#{data.index}</p>
-			<h4><a href="/profile/{data.user.username}">{data.user.username}</a></h4>
-			<address class="text-otodb-content-fainter text-xs">
-				<time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time>
-			</address>
-		</div>
-		<div class="prose prose-neutral prose-sm dark:prose-invert">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html renderMarkdown(data.comment)}
+		<div class="px-4 py-2">
+			<div class="float-right flex gap-2">
+				{#if can_comment}
+					<label class="bg-otodb-bg-primary hover:bg-otodb-bg-fainter border">
+						{m.kind_brief_earthworm_dash()}
+						<input type="checkbox" class="reply-toggle hidden" value={false} />
+					</label>
+				{/if}
+				{#if user && (user.level >= UserLevel.ADMIN || data.user.username === user.username)}
+					<button onclick={() => delete_comment(data.id)}
+						>{m.even_alert_grebe_taste()}</button
+					>
+				{/if}
+			</div>
+			<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html renderMarkdown(data.comment)}
+			</div>
 		</div>
 	</div>
-	<div class="ml-3">
+	<div class="border-otodb-content-fainter ml-2 border-l-2 pl-3">
 		{@render reply(data.id)}
 		{#each data.children as child, i (i)}
 			{@render this_component(child, this_component, depth + 1)}
@@ -178,9 +182,9 @@
 		margin-left: auto;
 	}
 	div.comment {
-		background-color: var(--otodb-color-bg-primary);
-		padding: 0.5rem 1rem 0.8rem 1rem;
-		margin: 0.5rem 0;
+		&:target {
+			box-shadow: -4px 0 0 var(--otodb-color-content-faint);
+		}
 		&:has(input.reply-toggle:checked) + div > form.reply-form {
 			display: flex;
 		}

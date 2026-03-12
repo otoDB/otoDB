@@ -13,13 +13,14 @@
 			<h2 class="mt-4 text-base">
 				<a href="/post/search?category={i}">{PostCategories[i]()}</a>
 			</h2>
-			<table class="w-full">
+			<table class="w-full table-fixed">
 				<thead>
-					<tr
-						><th>{m.large_factual_octopus_exhale()}</th>{#if i > 0}<th
-								>{m.crisp_red_canary_tickle()}</th
-							>{/if}<th>{m.super_agent_pigeon_aim()}</th></tr
-					>
+					<tr>
+						<th class="text-left">{m.large_factual_octopus_exhale()}</th>
+						{#if i > 0}<th class="w-32 text-left">{m.crisp_red_canary_tickle()}</th
+							>{/if}
+						<th class="w-64 text-right">{m.super_agent_pigeon_aim()}</th>
+					</tr>
 				</thead><tbody>
 					{#each c as p, j (j)}
 						<tr>
@@ -36,17 +37,19 @@
 										{/each}
 									</span>
 								{/if}
-							</td>{#if i > 0}
+							</td>
+							{#if i > 0}
 								<td
 									><a href="/profile/{p.added_by.username}"
 										>{p.added_by.username}</a
 									></td
-								>{/if}
-							<td
-								><time title={new Date(p.modified).toLocaleString()}
+								>
+							{/if}
+							<td class="text-right">
+								<time title={new Date(p.modified).toLocaleString()}
 									>{timeAgo(p.modified)}</time
-								></td
-							>
+								>
+							</td>
 						</tr>
 					{/each}
 				</tbody>

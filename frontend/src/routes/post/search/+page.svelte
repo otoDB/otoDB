@@ -34,13 +34,13 @@
 	</form>
 	<hr class="my-5" />
 
-	<table class="w-full">
+	<table class="w-full table-fixed">
 		<thead>
 			<tr>
-				<th>{m.large_factual_octopus_exhale()}</th>
-				<th>{m.plane_awful_bobcat_spark()}</th>
-				<th>{m.crisp_red_canary_tickle()}</th>
-				<th>{m.super_agent_pigeon_aim()}</th>
+				<th class="text-left">{m.large_factual_octopus_exhale()}</th>
+				<th class="w-32 text-left">{m.plane_awful_bobcat_spark()}</th>
+				<th class="w-32 text-left">{m.crisp_red_canary_tickle()}</th>
+				<th class="w-64 text-right">{m.super_agent_pigeon_aim()}</th>
 			</tr>
 		</thead><tbody>
 			{#each data.results.items as post, i (i)}
@@ -62,11 +62,11 @@
 					<td>{PostCategories[post.category]()}</td>
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td
 					>
-					<td
-						><time title={new Date(post.modified).toLocaleString()}
+					<td class="text-right">
+						<time title={new Date(post.modified).toLocaleString()}
 							>{timeAgo(post.modified)}</time
-						></td
-					>
+						>
+					</td>
 				</tr>
 			{/each}
 		</tbody>

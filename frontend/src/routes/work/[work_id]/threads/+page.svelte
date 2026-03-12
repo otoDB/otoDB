@@ -12,12 +12,12 @@
 <Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
 	<a href="/post/new?category=3&entity=w{data.id}">{m.antsy_aloof_horse_grace()}</a>
 	{#if data.threads.items.length}
-		<table class="w-full">
+		<table class="w-full table-fixed">
 			<thead>
 				<tr>
-					<th>{m.large_factual_octopus_exhale()}</th>
-					<th>{m.crisp_red_canary_tickle()}</th>
-					<th>{m.super_agent_pigeon_aim()}</th>
+					<th class="text-left">{m.large_factual_octopus_exhale()}</th>
+					<th class="w-32 text-left">{m.crisp_red_canary_tickle()}</th>
+					<th class="w-64 text-right">{m.super_agent_pigeon_aim()}</th>
 				</tr>
 			</thead><tbody>
 				{#each data.threads.items as post, i (i)}
@@ -44,7 +44,7 @@
 							><a href="/profile/{post.added_by.username}">{post.added_by.username}</a
 							></td
 						>
-						<td
+						<td class="text-right"
 							><time title={new Date(post.modified).toLocaleString()}
 								>{timeAgo(post.modified)}</time
 							></td

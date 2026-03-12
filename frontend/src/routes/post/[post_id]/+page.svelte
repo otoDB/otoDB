@@ -8,7 +8,7 @@
 	import { renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { isSOV, isSVO, timeAgo } from '$lib/ui.js';
+	import { timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 
 	let { data } = $props();
@@ -43,44 +43,66 @@
 </script>
 
 <Section title={data.post.title}>
+	<div class="text-otodb-content-fainter mb-6 text-xs">
+		<p>
+			<a href="/post/search?category={data.post.category}"
+				>{PostCategories[data.post.category]()}</a
+			>
+			{#if data.post.category === 0}
+				&middot;
+				<a href="#p{data.post_id}"
+					><time title={new Date(page_object.modified).toLocaleString()}
+						>{timeAgo(page_object.modified)}</time
+					></a
+				>
+			{/if}
+		</p>
+		{#if data.post.entities?.length}
+			<p class="mt-1">
+				{m.fine_zany_octopus_trim()}:
+				{#each data.post.entities as { id, entity }, i (i)}
+					{#if i > 0},
+					{/if}
+					{@const link = `/${EntityModelRoutes[entity]}/${id}`}
+					<a href={link}>{link}</a>
+				{/each}
+			</p>
+		{/if}
+	</div>
 	<LangSwitch
 		availableLanguages={data.post.pages.map((v) => Languages[v.lang])}
 		bind:value={lang_view}
 	/>
 	{#if data.post.category > 0}
-		<h3>
-			{#if isSVO(getLocale())}
-				{m.curly_safe_lynx_fond()}
-			{/if}
-			<a href="/profile/{data.post?.added_by.username}">{data.post?.added_by.username}</a>
-			{#if isSOV(getLocale())}
-				{m.curly_safe_lynx_fond()}
-			{/if}
-		</h3>
+		<div class="my-2 grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="p{data.post_id}">
+			<div
+				class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
+			>
+				<a href="/profile/{data.post?.added_by.username}">{data.post?.added_by.username}</a>
+				<a href="#p{data.post_id}"
+					><time title={new Date(page_object.modified).toLocaleString()}
+						>{timeAgo(page_object.modified)}</time
+					></a
+				>
+			</div>
+			<div class="px-4 py-2">
+				<div
+					class="post-content prose prose-neutral prose-sm dark:prose-invert mt-4 max-w-none"
+				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html page}
+				</div>
+			</div>
+		</div>
+	{:else}
+		<div
+			class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto mt-4 max-w-4xl"
+			id="p{data.post_id}"
+		>
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html page}
+		</div>
 	{/if}
-	<h4>
-		{m.mild_loud_shad_enchant({
-			type: m.plane_awful_bobcat_spark(),
-			name: PostCategories[data.post.category]()
-		})}
-	</h4>
-	{m.mild_loud_shad_enchant({
-		type: m.lower_full_opossum_bless(),
-		name: timeAgo(page_object.modified)
-	})}
-	{#if data.post.entities?.length}
-		<h4>{m.fine_zany_octopus_trim()}</h4>
-		<ul>
-			{#each data.post.entities as { id, entity }, i (i)}
-				{@const link = `/${EntityModelRoutes[entity]}/${id}`}
-				<li><a href={link}>{link}</a></li>
-			{/each}
-		</ul>
-	{/if}
-	<div class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto mt-4 max-w-4xl">
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html page}
-	</div>
 </Section>
 
 <Section title={m.same_broad_haddock_pinch()}>

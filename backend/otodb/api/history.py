@@ -173,7 +173,6 @@ def revision_changes(request: HttpRequest, revision_id: int):
 	]
 	qq = (
 		RevisionChange.objects.filter(rev=rev)
-		.filter(Q(deleted=True) | Q(target_value__isnull=False))
 		.filter(revisionchangeentity__isnull=False)
 		.annotate(
 			ent_id=(

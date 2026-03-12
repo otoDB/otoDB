@@ -1,7 +1,23 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
-	import { EntityModelRoutes, Route, UserLevel } from '$lib/enums.js';
+	import {
+		EntityModelRoutes,
+		Languages,
+		MediaConnectionTypes,
+		MediaType,
+		ProfileConnectionTypes,
+		Rating,
+		Role,
+		Route,
+		SongConnectionTypes,
+		SongRelationTypes,
+		SongTagCategory,
+		TagWorkConnectionTypes,
+		UserLevel,
+		WorkRelationTypes,
+		WorkTagCategory
+	} from '$lib/enums.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
@@ -22,6 +38,57 @@
 			])
 			.filter((rc) => rc[1].length)
 	);
+
+	const expand_bit_field = (names) => (v) =>
+		[...parseInt(v, 10).toString('2')]
+			.reduce(
+				(a, e, i, aa) => (e === '1' ? [...a, names[Math.pow(2, aa.length - 1 - i)]()] : a),
+				[]
+			)
+			.join() || 'N/A';
+
+	const ValueDisplayMap = {
+		mediawork: {
+			rating: Rating
+		},
+		tagwork: {
+			category: WorkTagCategory,
+			media_type: expand_bit_field(MediaType)
+		},
+		tagsong: {
+			category: SongTagCategory
+		},
+		tagworkconnection: {
+			site: TagWorkConnectionTypes
+		},
+		mediasongconnection: {
+			site: SongConnectionTypes
+		},
+		tagworkmediaconnection: {
+			site: MediaConnectionTypes
+		},
+		tagworkcreatorconnection: {
+			site: ProfileConnectionTypes
+		},
+		tagworklangpreference: {
+			lang: Languages
+		},
+		tagsonglangpreference: {
+			lang: Languages
+		},
+		workrelation: {
+			relation: WorkRelationTypes
+		},
+		songrelation: {
+			relation: SongRelationTypes
+		},
+		tagworkinstance: {
+			creator_roles: expand_bit_field(Role)
+		},
+		wikipage: {
+			lang: Languages
+		}
+	};
 </script>
 
 <Section title="{m.arable_direct_swan_glow()} #{data.revision.id}">
@@ -68,7 +135,15 @@
 												{c.target_column}</td
 											>
 											<td
-												>{#if c.deleted}Deleted{:else}<pre>{c.target_value}</pre>{/if}</td
+												>{#if c.deleted}Deleted{:else}<pre>{#if Object.hasOwn(ValueDisplayMap, c.target_type) && Object.hasOwn(ValueDisplayMap[c.target_type], c.target_column)}{@const handler =
+																ValueDisplayMap[c.target_type][
+																	c.target_column
+																]}{#if typeof handler === 'function'}{handler(
+																	c.target_value
+																)}{:else}{handler[
+																	c.target_value
+																]()}{/if}{:else}{c.target_value ??
+																'None'}{/if}</pre>{/if}</td
 											></tr
 										>
 									{/each}

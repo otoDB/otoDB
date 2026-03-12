@@ -60,7 +60,11 @@
 		await client.PUT('/api/work/set_tags', {
 			fetch,
 			params: { query: { work_id: +data.id } },
-			body: Object.values(cache).map(t => ({nameslug: t.slug, roles: t.creator_roles, sample: t.sample}))
+			body: Object.values(cache).map((t) => ({
+				nameslug: t.slug,
+				roles: t.creator_roles,
+				sample: t.sample
+			}))
 		});
 		goto(`/work/${data.id}`, { invalidateAll: true });
 	};

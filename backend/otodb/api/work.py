@@ -1,5 +1,6 @@
-from typing import List, Literal
+from typing import List, Literal, Annotated
 from datetime import date
+from functools import reduce
 
 from django.http import HttpRequest
 from django.db import transaction
@@ -15,7 +16,7 @@ from django.db.models import (
 	OuterRef,
 )
 
-from ninja import Schema, ModelSchema
+from ninja import Schema, ModelSchema, Field
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
@@ -43,6 +44,7 @@ from otodb.models.enums import (
 	ProfileConnectionTypes,
 	Route,
 	WorkStatus,
+	Role,
 )
 from otodb.account.models import Account
 
@@ -55,7 +57,7 @@ from .common import (
 	user_is_trusted,
 	user_is_editor,
 	RelationSchema,
-	post_relation,
+	post_relations,
 	SlimWorkSchema,
 	RouterWithRevision,
 	with_revision_route,
@@ -216,56 +218,46 @@ def delete_work(request: HttpRequest, work_id: int):
 	work.delete()
 
 
+class TagWorkInstanceInSchema(Schema):
+	nameslug: str
+	sample: bool | None = None
+	roles: list[Annotated[int, Field(ge=1, le=max(Role.values))]] | None = None
+
+
 @work_router.put('set_tags', auth=django_auth)
 @user_is_trusted
 @with_revision_route(Route.MEDIAWORK_SET_TAGS)
-def set_tags(request: HttpRequest, work_id: int, payload: List[str]):
+def set_tags(
+	request: HttpRequest, work_id: int, payload: list[TagWorkInstanceInSchema]
+):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 
 	tags = []
-	for v in payload:
+	for t in payload:
 		try:
-			tag = TagWork.objects.get(slug=clean_incoming_slug(v))
+			tag = TagWork.objects.get(slug=clean_incoming_slug(t.nameslug))
 			tags.append(tag.aliased_to if tag.aliased_to else tag)
 		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=v))
+			tags.append(TagWork.objects.create(name=t.nameslug))
 
 	work.tags.remove(*work.tags.exclude(id__in=[t.id for t in tags]))
-	work.tags.add(*tags)
+
+	for tag, p in zip(tags, payload):
+		changes = {}
+		if p.sample is not None and tag.category in [
+			WorkTagCategory.CREATOR,
+			WorkTagCategory.MEDIA,
+			WorkTagCategory.SONG,
+		]:
+			changes['used_as_source'] = p.sample
+		if p.roles and tag.category == WorkTagCategory.CREATOR:
+			changes['creator_roles'] = reduce(int.__or__, p.roles)
+
+		TagWorkInstance.objects.update_or_create(
+			work=work, work_tag=tag, defaults=changes
+		)
 
 	return 200
-
-
-class CreatorRolesUpdateSchema(Schema):
-	work_id: int
-	tag_slug: str
-	creator_roles: List[int]
-
-
-@work_router.post('creator_roles', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.MEDIAWORK_UPDATE_CREATOR_ROLES)
-def update_creator_roles(request: HttpRequest, payload: CreatorRolesUpdateSchema):
-	instance = get_object_or_404(
-		TagWorkInstance, work_id=payload.work_id, work_tag__slug=payload.tag_slug
-	)
-
-	if instance.work_tag.category == WorkTagCategory.CREATOR:
-		instance.set_creator_roles(payload.creator_roles)
-		instance.save()
-
-	return 200
-
-
-@work_router.put('toggle_sample', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.MEDIAWORK_TOGGLE_SAMPLE)
-def toggle_sample(request: HttpRequest, work_id: int, tag_slug: str):
-	instance = get_object_or_404(
-		TagWorkInstance, work_id=work_id, work_tag__slug=tag_slug
-	)
-	instance.used_as_source = not instance.used_as_source
-	instance.save()
 
 
 @work_router.put('remove_tag', auth=django_auth)
@@ -303,20 +295,8 @@ def relations(request: HttpRequest, work_id: int):
 @work_router.post('relation', auth=django_auth)
 @user_is_trusted
 @with_revision_route(Route.WORKRELATION_CREATE)
-def relation(request: HttpRequest, payload: RelationSchema):
-	post_relation(MediaWork, payload)
-	return
-
-
-@work_router.delete('relation', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.WORKRELATION_DELETE)
-def delete_relation(request: HttpRequest, A: int, B: int):
-	a = MediaWork.active_objects.get(id=A)
-	b = MediaWork.active_objects.get(id=B)
-	rel = WorkRelation.objects.get_relation(a, b)
-	rel.delete()
-	return
+def relation(request: HttpRequest, this_id: int, payload: list[RelationSchema]):
+	post_relations(MediaWork, this_id, payload)
 
 
 @work_router.get('sources', response=List[WorkSourceSchema])

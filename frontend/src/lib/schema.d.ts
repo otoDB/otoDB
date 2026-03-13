@@ -245,40 +245,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/work/creator_roles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Update Creator Roles */
-        post: operations["otodb_api_work_update_creator_roles"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/toggle_sample": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Toggle Sample */
-        put: operations["otodb_api_work_toggle_sample"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/work/remove_tag": {
         parameters: {
             query?: never;
@@ -358,8 +324,7 @@ export interface paths {
         put?: never;
         /** Relation */
         post: operations["otodb_api_work_relation"];
-        /** Delete Relation */
-        delete: operations["otodb_api_work_delete_relation"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -933,31 +898,13 @@ export interface paths {
         put?: never;
         /** Alias Tags */
         post: operations["otodb_api_tag_alias_tags"];
-        /** Remove Alias */
-        delete: operations["otodb_api_tag_remove_alias"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/lang_pref": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Add Lang Pref */
-        put: operations["otodb_api_tag_add_lang_pref"];
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/tag/set_base": {
+    "/api/tag/tag_aliases": {
         parameters: {
             query?: never;
             header?: never;
@@ -966,8 +913,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Set Base Tag */
-        post: operations["otodb_api_tag_set_base_tag"];
+        /** Tag Alias Control */
+        post: operations["otodb_api_tag_tag_alias_control"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1072,8 +1019,7 @@ export interface paths {
         put?: never;
         /** Song Relation */
         post: operations["otodb_api_tag_song_relation"];
-        /** Delete Relation */
-        delete: operations["otodb_api_tag_delete_relation"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1783,14 +1729,14 @@ export interface components {
              */
             rating: number;
         };
-        /** CreatorRolesUpdateSchema */
-        CreatorRolesUpdateSchema: {
-            /** Work Id */
-            work_id: number;
-            /** Tag Slug */
-            tag_slug: string;
-            /** Creator Roles */
-            creator_roles: number[];
+        /** TagWorkInstanceInSchema */
+        TagWorkInstanceInSchema: {
+            /** Nameslug */
+            nameslug: string;
+            /** Sample */
+            sample?: boolean | null;
+            /** Roles */
+            roles?: number[] | null;
         };
         /** WorkSourceRejectionSchema */
         WorkSourceRejectionSchema: {
@@ -2155,6 +2101,17 @@ export interface components {
         AliasResponse: {
             /** Merged Slug */
             merged_slug: string;
+        };
+        /** TagAliasControlSchema */
+        TagAliasControlSchema: {
+            /** Base Slug */
+            base_slug: string;
+            /** Unalias Slugs */
+            unalias_slugs: string[];
+            /** Lang Prefs */
+            lang_prefs: {
+                [key: string]: string | null;
+            };
         };
         /** WikiPageMDSchema */
         WikiPageMDSchema: {
@@ -2869,52 +2826,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": string[];
+                "application/json": components["schemas"]["TagWorkInstanceInSchema"][];
             };
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_update_creator_roles: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatorRolesUpdateSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_toggle_sample: {
-        parameters: {
-            query: {
-                work_id: number;
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -3017,37 +2931,18 @@ export interface operations {
     };
     otodb_api_work_relation: {
         parameters: {
-            query?: never;
+            query: {
+                this_id: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RelationSchema"];
+                "application/json": components["schemas"]["RelationSchema"][];
             };
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_delete_relation: {
-        parameters: {
-            query: {
-                A: number;
-                B: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -4051,51 +3946,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_tag_remove_alias: {
-        parameters: {
-            query: {
-                tag_slug: string;
-                alias: string;
-                type?: "work" | "song";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_add_lang_pref: {
-        parameters: {
-            query: {
-                tag_slug: string;
-                lang: number;
-                type?: "work" | "song";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_set_base_tag: {
+    otodb_api_tag_tag_alias_control: {
         parameters: {
             query: {
                 tag_slug: string;
@@ -4105,7 +3956,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagAliasControlSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -4285,37 +4140,18 @@ export interface operations {
     };
     otodb_api_tag_song_relation: {
         parameters: {
-            query?: never;
+            query: {
+                this_id: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RelationSchema"];
+                "application/json": components["schemas"]["RelationSchema"][];
             };
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_delete_relation: {
-        parameters: {
-            query: {
-                A: number;
-                B: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

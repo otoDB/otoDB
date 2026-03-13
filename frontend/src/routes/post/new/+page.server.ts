@@ -27,7 +27,7 @@ export const actions = {
 			.map(get_entity)
 			.filter((x) => x);
 
-		if (renderMarkdown(post).trim() === '') fail(400);
+		if (renderMarkdown(post).trim() === '') return fail(400);
 		const { data: r, error } = await client.POST('/api/post/post', {
 			fetch,
 			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
@@ -40,7 +40,7 @@ export const actions = {
 				entities
 			}
 		});
-		if (error) fail(400);
+		if (error) return fail(400);
 		else redirect(303, `/post/${r}`);
 	}
 } satisfies Actions;

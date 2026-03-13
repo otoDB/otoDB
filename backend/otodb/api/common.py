@@ -27,7 +27,13 @@ from otodb.models import (
 	Notification,
 	Subscription,
 )
-from otodb.models.enums import Role, ProfileConnectionTypes, Route
+from otodb.models.enums import (
+	Role,
+	ProfileConnectionTypes,
+	Route,
+	WorkRelationTypes,
+	SongRelationTypes,
+)
 import re
 
 
@@ -186,23 +192,39 @@ user_is_editor = perm_decorator_ctor(lambda user: user.is_editor)
 user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
 
 
-def post_relation(cls, payload: RelationSchema):
+def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 	assert cls is MediaWork or cls is MediaSong
-	manager = (
-		cls.objects.filter(moved_to__isnull=True) if cls is MediaWork else cls.objects
+	assert all(rel.A_id == obj_id or rel.B_id == obj_id for rel in payload)
+
+	rel_cls, rt_cls = (
+		(WorkRelation, WorkRelationTypes)
+		if cls is MediaWork
+		else (SongRelation, SongRelationTypes)
 	)
-	rel_cls = WorkRelation if cls is MediaWork else SongRelation
-	A = manager.get(id=payload.A_id)
-	B = manager.get(id=payload.B_id)
-	try:
-		rel = rel_cls.objects.get_relation(A, B)
-		rel.A = A
-		rel.B = B
-		rel.relation = payload.relation
-		rel.save()
-	except rel_cls.DoesNotExist:
-		rel = rel_cls.objects.create(A=A, B=B, relation=payload.relation)
-	return
+	old_As, old_Bs = (
+		rel_cls.objects.filter(A_id=obj_id),
+		rel_cls.objects.filter(B_id=obj_id),
+	)
+	new_As_B, new_Bs_A = (
+		[rel.B_id for rel in payload if rel.A_id == obj_id],
+		[rel.A_id for rel in payload if rel.B_id == obj_id],
+	)
+
+	old_As.exclude(B_id__in=new_As_B).delete()
+	old_Bs.exclude(A_id__in=new_Bs_A).delete()
+
+	if cls is MediaWork:
+		assert not cls.objects.filter(
+			id__in=new_As_B + new_Bs_A,
+			moved_to__isnull=False,
+		).exists()
+
+	for rel in payload:
+		rel_cls.objects.update_or_create(
+			A_id=rel.A_id,
+			B_id=rel.B_id,
+			defaults={'relation': rt_cls(rel.relation).value},
+		)
 
 
 class ConnectionSchema(Schema):

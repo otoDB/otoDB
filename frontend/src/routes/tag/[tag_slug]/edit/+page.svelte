@@ -19,10 +19,9 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client, { getTagDisplaySlug } from '$lib/api';
 	import { renderMarkdown } from '$lib/markdown';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import type { components } from '$lib/schema';
-	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { callErrorToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
 	import TagsField from '$lib/TagsField.svelte';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
@@ -69,31 +68,27 @@
 			])
 		)
 	);
+	let to_delete: string[] = $state([]);
+	let base = $state(data.tag.slug);
+	const aliases_post_gate = { p: Promise.withResolvers<void>() };
 
-	const removeAlias = async (alias: components['schemas']['TagWorkSchema']) => {
-		await client.DELETE('/api/tag/alias', {
+	const submit_aliases = async () => {
+		await aliases_post_gate.p.promise;
+		const { error } = await client.POST('/api/tag/tag_aliases', {
 			fetch,
-			params: { query: { tag_slug: data.tag.slug, alias: alias.slug } }
+			body: {
+				base_slug: base,
+				unalias_slugs: to_delete,
+				lang_prefs: Object.fromEntries(
+					Object.entries(tagLangPrefs).map(([k, v]) => [Languages[k], v])
+				)
+			},
+			params: { query: { type: 'work', tag_slug: data.tag.slug } }
 		});
-		invalidateAll();
-	};
-
-	const setBase = async (tag: components['schemas']['TagWorkSchema']) => {
-		await client.POST('/api/tag/set_base', {
-			fetch,
-			params: { query: { tag_slug: tag.slug } }
-		});
-		goto(`/tag/${tag.slug}/`, { invalidateAll: true });
-	};
-
-	const submitLangPref = async (lang: number, tag_slug: string) => {
-		const p = client.PUT('/api/tag/lang_pref', {
-			fetch,
-			params: { query: { lang, tag_slug } }
-		});
-		callSavingToast(p);
-		await p;
-		invalidateAll();
+		if (error) {
+			aliases_post_gate.p = Promise.withResolvers<void>();
+			callErrorToast(m.green_due_javelina_pop());
+		} else goto(`/tag/${base}/`, { invalidateAll: true });
 	};
 
 	let urls = $state(
@@ -244,6 +239,7 @@
 		</table>
 		<input type="submit" />
 	</form>
+	<hr class="my-2" />
 	<button onclick={del}>{m.chunky_giant_quail_breathe()}</button>
 </Section>
 
@@ -257,61 +253,95 @@
 			init_relations={data.song_relations}
 			obj_type="song"
 			this_id={data.tag.song?.id}
+			form_control={{ barrier: form_barrier, pririoty: 4 }}
 		></RelationEditor>
 	</Section>
 {/if}
 
 <Section title={m.alive_lofty_opossum_laugh()}>
+	<a href="/tag/alias?from={data.tag.slug}">{m.weary_moving_swallow_chop()}</a>
 	{#if data.details.aliases.length}
-		<table>
-			<thead>
-				<tr
-					><th>{m.alive_lofty_opossum_laugh()}</th>
-					{#each locales as locale, i (i)}
-						<th>{LanguageNames[locale]} {m.mellow_upper_finch_drip()}</th>
-					{/each}
-					<th>{m.mild_full_sloth_work()}</th></tr
-				>
-			</thead>
-			<tbody>
-				<tr
-					><td>{data.tag.name}</td>
-					{#each locales as locale, i (i)}
-						<td
-							><input
-								type="radio"
-								bind:group={tagLangPrefs[locale]}
-								value={data.tag.name}
-								onclick={() => submitLangPref(Languages[locale], data.tag.slug)}
-							/>{#if tagLangPrefs[locale] === null}{m.factual_house_antelope_arise()}{/if}</td
-						>
-					{/each}<td>{m.simple_less_marlin_enchant()}</td></tr
-				>
-				{#each data.details.aliases as a, i (i)}
+		<form
+			method="POST"
+			use:dirtyEnhance={{
+				barrier: form_barrier,
+				pririoty: 2,
+				manual_post: aliases_post_gate
+			}}
+			onsubmit={submit_aliases}
+		>
+			<table>
+				<thead>
 					<tr
-						><td>{a.name}</td>
+						><th>{m.alive_lofty_opossum_laugh()}</th>
+						{#each locales as locale, i (i)}
+							<th>{LanguageNames[locale]} {m.mellow_upper_finch_drip()}</th>
+						{/each}
+						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th
+						></tr
+					>
+				</thead>
+				<tbody>
+					<tr
+						><td>{data.tag.name}</td>
 						{#each locales as locale, i (i)}
 							<td
 								><input
 									type="radio"
 									bind:group={tagLangPrefs[locale]}
-									value={a.name}
-									onclick={() => submitLangPref(Languages[locale], a.slug)}
-								/></td
+									value={data.tag.name}
+								/>{#if tagLangPrefs[locale] === null}{m.factual_house_antelope_arise()}{/if}</td
 							>
-						{/each}
-						<td
-							><button onclick={() => removeAlias(a)}
-								>{m.that_true_owl_embrace()}</button
-							><button onclick={() => setBase(a)}>{m.even_such_wallaby_fond()}</button
-							></td
+						{/each}<td
+							><input
+								type="checkbox"
+								bind:group={to_delete}
+								value={data.tag.slug}
+								disabled={base === data.tag.slug}
+							/></td
+						><td
+							><input
+								type="radio"
+								bind:group={base}
+								value={data.tag.slug}
+								disabled={to_delete.includes(data.tag.slug)}
+							/></td
 						></tr
 					>
-				{/each}
-			</tbody>
-		</table>
+					{#each data.details.aliases as a, i (i)}
+						<tr
+							><td>{a.name}</td>
+							{#each locales as locale, i (i)}
+								<td
+									><input
+										type="radio"
+										bind:group={tagLangPrefs[locale]}
+										value={a.name}
+									/></td
+								>
+							{/each}
+							<td
+								><input
+									type="checkbox"
+									bind:group={to_delete}
+									value={a.slug}
+									disabled={base === a.slug}
+								/></td
+							><td
+								><input
+									type="radio"
+									bind:group={base}
+									value={a.slug}
+									disabled={to_delete.includes(a.slug)}
+								/></td
+							></tr
+						>
+					{/each}
+				</tbody>
+			</table>
+			<input type="submit" />
+		</form>
 	{/if}
-	<a href="/tag/alias?from={data.tag.slug}">{m.weary_moving_swallow_chop()}</a>
 </Section>
 
 <Section title={m.curly_zesty_pelican_aim()}>
@@ -384,7 +414,7 @@
 	<form
 		action="?/connections"
 		method="POST"
-		use:dirtyEnhance={{ barrier: form_barrier, pririoty: 2 }}
+		use:dirtyEnhance={{ barrier: form_barrier, pririoty: 3 }}
 	>
 		<textarea
 			bind:value={urls}

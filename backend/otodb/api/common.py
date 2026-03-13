@@ -27,7 +27,13 @@ from otodb.models import (
 	Notification,
 	Subscription,
 )
-from otodb.models.enums import Role, ProfileConnectionTypes, Route, WorkRelationTypes
+from otodb.models.enums import (
+	Role,
+	ProfileConnectionTypes,
+	Route,
+	WorkRelationTypes,
+	SongRelationTypes,
+)
 import re
 
 
@@ -189,33 +195,38 @@ user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
 def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 	assert cls is MediaWork or cls is MediaSong
 
-	rel_cls = WorkRelation if cls is MediaWork else SongRelation
+	rel_cls, rt_cls = (
+		(WorkRelation, WorkRelationTypes)
+		if cls is MediaWork
+		else (SongRelation, SongRelationTypes)
+	)
 	old_As, old_Bs = (
 		rel_cls.objects.filter(A_id=obj_id),
 		rel_cls.objects.filter(B_id=obj_id),
 	)
-	new_As, new_Bs = (
-		[rel for rel in payload if rel.A_id == obj_id],
-		[rel for rel in payload if rel.B_id == obj_id],
+	new_As_B, new_Bs_A = (
+		[rel.B_id for rel in payload if rel.A_id == obj_id],
+		[rel.A_id for rel in payload if rel.B_id == obj_id],
 	)
 
-	old_As.exclude(B_id__in=[rel.B_id for rel in new_As]).delete()
-	old_Bs.exclude(A_id__in=[rel.A_id for rel in new_Bs]).delete()
+	old_As.exclude(B_id__in=new_As_B).delete()
+	old_Bs.exclude(A_id__in=new_Bs_A).delete()
 
 	if cls is MediaWork:
 		assert not cls.objects.filter(
-			id__in=[rel.B_id for rel in new_As] + [rel.A_id for rel in new_Bs],
+			id__in=new_As_B + new_Bs_A,
 			moved_to__isnull=False,
 		).exists()
 
-	for rel in new_As:
-		old_As.update_or_create(
-			B_id=rel.B_id, relation=WorkRelationTypes(rel.relation).value
-		)
-	for rel in new_Bs:
-		old_Bs.update_or_create(
-			A_id=rel.A_id, relation=WorkRelationTypes(rel.relation).value
-		)
+	rel_cls.objects.bulk_create(
+		[
+			rel_cls(A_id=rel.A_id, B_id=rel.B_id, relation=rt_cls(rel.relation).value)
+			for rel in payload
+		],
+		update_conflicts=True,
+		update_fields=['relation'],
+		unique_fields=['A_id', 'B_id'],
+	)
 
 
 class ConnectionSchema(Schema):

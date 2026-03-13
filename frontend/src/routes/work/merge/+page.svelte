@@ -262,7 +262,13 @@
 		</table>
 		<input hidden type="number" name="A" value={work[0].work?.id} />
 		<input hidden type="number" name="B" value={work[1].work?.id} />
-		<input hidden type="text" name="title" value={work[selecting.title].title} />
+		<input
+			hidden
+			type="text"
+			name="title"
+			value={work[selecting.title].title}
+			autocomplete="off"
+		/>
 		<textarea hidden value={work[selecting.description].description} name="description"
 		></textarea>
 		<input

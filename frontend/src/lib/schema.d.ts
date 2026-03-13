@@ -898,31 +898,13 @@ export interface paths {
         put?: never;
         /** Alias Tags */
         post: operations["otodb_api_tag_alias_tags"];
-        /** Remove Alias */
-        delete: operations["otodb_api_tag_remove_alias"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/tag/lang_pref": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Add Lang Pref */
-        put: operations["otodb_api_tag_add_lang_pref"];
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/tag/set_base": {
+    "/api/tag/tag_aliases": {
         parameters: {
             query?: never;
             header?: never;
@@ -931,8 +913,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Set Base Tag */
-        post: operations["otodb_api_tag_set_base_tag"];
+        /** Tag Alias Control */
+        post: operations["otodb_api_tag_tag_alias_control"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2117,6 +2099,17 @@ export interface components {
         AliasResponse: {
             /** Merged Slug */
             merged_slug: string;
+        };
+        /** TagAliasControlSchema */
+        TagAliasControlSchema: {
+            /** Base Slug */
+            base_slug: string;
+            /** Unalias Slugs */
+            unalias_slugs: string[];
+            /** Lang Prefs */
+            lang_prefs: {
+                [key: string]: string | null;
+            };
         };
         /** WikiPageMDSchema */
         WikiPageMDSchema: {
@@ -3926,51 +3919,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_tag_remove_alias: {
-        parameters: {
-            query: {
-                tag_slug: string;
-                alias: string;
-                type?: "work" | "song";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_add_lang_pref: {
-        parameters: {
-            query: {
-                tag_slug: string;
-                lang: number;
-                type?: "work" | "song";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_tag_set_base_tag: {
+    otodb_api_tag_tag_alias_control: {
         parameters: {
             query: {
                 tag_slug: string;
@@ -3980,7 +3929,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagAliasControlSchema"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

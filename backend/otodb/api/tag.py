@@ -348,52 +348,74 @@ def delete(request: HttpRequest, tag_slug: str, **kwargs):
 		return 400, None
 
 
-@tag_router.delete('alias', auth=django_auth)
+class TagAliasControlSchema(Schema):
+	base_slug: str
+	unalias_slugs: list[str]
+	lang_prefs: dict[int, str | None]
+
+
+@tag_router.post('tag_aliases', auth=django_auth)
 @user_is_trusted
 @tag_route_switch(Route.TAGWORK_UNALIAS, Route.SONGTAG_UNALIAS)
-def remove_alias(request: HttpRequest, tag_slug: str, alias: str, **kwargs):
-	model, _ = kwargs['model']
-
-	tag = get_object_or_404(model, slug=tag_slug)
-	tag.aliases.filter(slug=alias).update(aliased_to=None)
-
-
-@tag_router.put('lang_pref', auth=django_auth)
-@user_is_trusted
-@tag_route_switch(Route.TAGWORK_ADD_LANG_PREF, Route.SONGTAG_ADD_LANG_PREF)
-def add_lang_pref(request: HttpRequest, tag_slug: str, lang: int, **kwargs):
+def tag_alias_control(
+	request: HttpRequest, tag_slug: str, payload: TagAliasControlSchema, **kwargs
+):
 	model, model_lang_prefs = kwargs['model']
 
 	tag = get_object_or_404(model, slug=tag_slug)
-	base_tag = tag.aliased_to if tag.aliased_to else tag
-	tags_to_clear = [base_tag] + list(base_tag.aliases.all())
-	model_lang_prefs.objects.filter(
-		tag__in=tags_to_clear, lang=LanguageTypes(lang).value
-	).delete()
-	model_lang_prefs.objects.create(tag=tag, lang=lang)
 
+	assert tag.aliased_to is None
+	assert payload.base_slug not in payload.lang_prefs.values()
+	curr_aliases = [*tag.aliases.all()]
 
-@tag_router.post('set_base', auth=django_auth)
-@user_is_trusted
-@tag_route_switch(Route.TAGWORK_SET_BASE, Route.SONGTAG_SET_BASE)
-def set_base_tag(request: HttpRequest, tag_slug: str, **kwargs):
-	model, _ = kwargs['model']
+	curr_aliases_slugs = [t.slug for t in curr_aliases]
+	assert payload.base_slug == tag.slug or payload.base_slug in curr_aliases_slugs
+	assert all(
+		[v == tag_slug or v in curr_aliases_slugs for v in payload.unalias_slugs]
+	)
 
-	tag = get_object_or_404(model, slug=tag_slug)
-	to = tag.aliased_to
-	assert to is not None
+	curr_aliases_names = [t.name for t in curr_aliases]
+	assert all(
+		[
+			v == tag.name or v in curr_aliases_names
+			for v in payload.lang_prefs.values()
+			if v is not None
+		]
+	)
 
-	if model is TagWork:
-		to.tagworkinstance_set.update(work_tag=tag)
-	elif model is TagSong:
-		to.tagsongkinstance_set.update(song_tag=tag)
-	model.transfer_data(to, tag)
+	# unalias
+	if payload.unalias_slugs:
+		model.objects.filter(slug__in=payload.unalias_slugs).update(aliased_to=None)
+	# They may be stale now, just requery
+	del curr_aliases, curr_aliases_slugs, curr_aliases_names
 
-	to.aliases.update(aliased_to_id=tag.id)
-	to.aliased_to = tag
-	to.save()
-	tag.aliased_to = None
-	tag.save()
+	# lang prefs
+	for lang, name in payload.lang_prefs.items():
+		lang = LanguageTypes(lang).value
+		assert lang != 0
+		if name:
+			tags_to_clear = list(tag.aliases.exclude(name=name))
+			if name != tag.name:
+				tags_to_clear.append(tag)
+			model_lang_prefs.objects.filter(tag__in=tags_to_clear, lang=lang).delete()
+			model_lang_prefs.objects.get_or_create(
+				tag=model.objects.get(name=name), lang=lang
+			)
+
+	# set base
+	if payload.base_slug != tag_slug:
+		new_base = tag.aliases.get(slug=payload.base_slug)
+		if model is TagWork:
+			tag.tagworkinstance_set.update(work_tag=tag)
+		elif model is TagSong:
+			tag.tagsongkinstance_set.update(song_tag=tag)
+		model.transfer_data(tag, new_base)
+
+		tag.aliases.update(aliased_to=new_base)
+		tag.aliased_to = new_base
+		tag.save()
+		new_base.aliased_to = None
+		new_base.save()
 
 
 class WorkTagInSchema(Schema):

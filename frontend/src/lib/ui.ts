@@ -4,7 +4,6 @@ import { Languages } from './enums';
 import { getLocale, setLocale } from './paraglide/runtime';
 import { enhance } from '$app/forms';
 import { m } from './paraglide/messages';
-import { page } from '$app/state';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export const debounce = (callback: Function, wait = 300) => {
@@ -76,22 +75,26 @@ const dirty_failure = (dirty_forms: HTMLFormElement[], barrier) => {
 export const dirtyEnhance = (
 	node: HTMLFormElement,
 	props:
-		| {
+		| ({
 				barrier: {
 					forms?: HTMLFormElement[];
 					reached?: ReturnType<typeof Promise.withResolvers<void>>[];
 				};
 				pririoty: number;
-		  }
+		  } & { form?: any; manual_post?: { p: ReturnType<typeof Promise.withResolvers<void>> } })
 		| undefined = undefined
 ) => {
+	node.dataset.priority = props?.pririoty?.toString();
 	node.addEventListener('change', () => {
 		node.dataset.dirty = 'true';
-		node.dataset.priority = props?.pririoty?.toString();
 	});
 
 	return enhance(node, async ({ cancel }) => {
 		const dirty_forms = Array.from(document.querySelectorAll('form')).filter(isFormDirty);
+		const me_dirty = node.dataset.dirty;
+
+		if (props?.manual_post) cancel();
+
 		if (props?.barrier) {
 			const first = !props?.barrier.reached?.length;
 			if (first) {
@@ -110,22 +113,23 @@ export const dirtyEnhance = (
 					.fill(null)
 					.map(() => Promise.withResolvers<void>());
 			}
-			const my_id = props.barrier.forms!.indexOf(node);
-			if (first)
-				for (let i = 0; i < my_id; i++) {
-					props.barrier.forms[i].requestSubmit();
-					try {
-						await props.barrier.reached[i].promise;
-					} catch {
-						dirty_failure(dirty_forms, props.barrier);
-						cancel();
-						return;
+			if (me_dirty) {
+				const my_id = props.barrier.forms!.indexOf(node);
+				if (first)
+					for (let i = 0; i < my_id; i++) {
+						props.barrier.forms[i].requestSubmit();
+						try {
+							await props.barrier.reached[i].promise;
+						} catch {
+							dirty_failure(dirty_forms, props.barrier);
+							props?.manual_post?.p.reject();
+							cancel();
+							return;
+						}
 					}
-				}
-			const { resolve, reject } = props.barrier.reached[my_id];
+				const { resolve, reject } = props.barrier.reached[my_id];
 
-			return async ({ update, result }) => {
-				if (result.type === 'success' || result.type === 'redirect') {
+				const on_success = async () => {
 					resolve();
 					node.dirty = undefined;
 					if (first) {
@@ -138,15 +142,39 @@ export const dirtyEnhance = (
 								return;
 							}
 						}
-						await update();
 					}
-				} else {
-					reject();
-					page.form = result;
+				};
+
+				if (props?.manual_post) {
+					props?.manual_post?.p.resolve();
+					on_success();
+				} else
+					return async ({ update, result }) => {
+						if (result.type === 'success' || result.type === 'redirect') {
+							on_success();
+							if (first) await update();
+						} else {
+							reject();
+							if (props.form !== undefined && result) props.form = result;
+						}
+					};
+			} else {
+				props.manual_post?.p.resolve();
+				for (let i = 0; i < props.barrier.forms?.length; i++) {
+					props.barrier.forms[i].requestSubmit();
+					try {
+						await props.barrier.reached[i].promise;
+					} catch {
+						dirty_failure(dirty_forms, props.barrier);
+						return;
+					}
 				}
-			};
-		} else if (dirty_forms.some((f) => f !== node) && !confirm(m.active_lime_panther_buzz()))
+			}
+		} else if (dirty_forms.some((f) => f !== node) && !confirm(m.active_lime_panther_buzz())) {
 			cancel();
+			props.manual_post?.p.reject();
+		}
+		props.manual_post?.p.resolve();
 	});
 };
 

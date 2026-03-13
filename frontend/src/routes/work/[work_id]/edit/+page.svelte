@@ -50,16 +50,23 @@
 			callErrorToast(m.green_due_javelina_pop());
 		}
 	});
+
+	const form_barrier = {};
 </script>
 
 <Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form method="POST" use:dirtyEnhance action="?/edit">
+	<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, pririoty: 0 }} action="?/edit">
 		<table class="inline">
 			<tbody>
 				<tr
 					><th><label for="title">{m.large_factual_octopus_exhale()}</label></th><td
-						><input type="text" name="title" bind:value={title} /></td
+						><input
+							type="text"
+							name="title"
+							bind:value={title}
+							autocomplete="off"
+						/></td
 					></tr
 				>
 				<tr
@@ -190,6 +197,10 @@
 </Section>
 
 <Section title={m.alive_these_jay_pick()}>
-	<RelationEditor init_relations={data.relations} obj_type="work" this_id={data.id}
+	<RelationEditor
+		init_relations={data.relations}
+		obj_type="work"
+		this_id={data.id}
+		form_control={{ barrier: form_barrier, pririoty: 1 }}
 	></RelationEditor>
 </Section>

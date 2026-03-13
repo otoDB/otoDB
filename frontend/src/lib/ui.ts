@@ -131,7 +131,7 @@ export const dirtyEnhance = (
 
 				const on_success = async () => {
 					resolve();
-					node.dirty = undefined;
+					node.dataset.dirty = undefined;
 					if (first) {
 						for (let i = my_id + 1; i < props.barrier.reached?.length; i++) {
 							props.barrier.forms[i].requestSubmit();

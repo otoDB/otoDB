@@ -218,15 +218,12 @@ def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 			moved_to__isnull=False,
 		).exists()
 
-	rel_cls.objects.bulk_create(
-		[
-			rel_cls(A_id=rel.A_id, B_id=rel.B_id, relation=rt_cls(rel.relation).value)
-			for rel in payload
-		],
-		update_conflicts=True,
-		update_fields=['relation'],
-		unique_fields=['A_id', 'B_id'],
-	)
+	for rel in payload:
+		rel_cls.objects.update_or_create(
+			A_id=rel.A_id,
+			B_id=rel.B_id,
+			defaults={'relation': rt_cls(rel.relation).value},
+		)
 
 
 class ConnectionSchema(Schema):

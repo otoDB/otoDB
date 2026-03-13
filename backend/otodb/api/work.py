@@ -1,5 +1,6 @@
-from typing import List, Literal
+from typing import List, Literal, Annotated
 from datetime import date
+from functools import reduce
 
 from django.http import HttpRequest
 from django.db import transaction
@@ -15,7 +16,7 @@ from django.db.models import (
 	OuterRef,
 )
 
-from ninja import Schema, ModelSchema
+from ninja import Schema, ModelSchema, Field
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
@@ -43,6 +44,7 @@ from otodb.models.enums import (
 	ProfileConnectionTypes,
 	Route,
 	WorkStatus,
+	Role,
 )
 from otodb.account.models import Account
 
@@ -219,7 +221,7 @@ def delete_work(request: HttpRequest, work_id: int):
 class TagWorkInstanceInSchema(Schema):
 	nameslug: str
 	sample: bool | None = None
-	roles: list[int] | None = None
+	roles: list[Annotated[int, Field(ge=1, le=max(Role.values))]] | None = None
 
 
 @work_router.put('set_tags', auth=django_auth)
@@ -239,34 +241,21 @@ def set_tags(
 			tags.append(TagWork.objects.create(name=t.nameslug))
 
 	work.tags.remove(*work.tags.exclude(id__in=[t.id for t in tags]))
-	work.tags.add(*tags)
 
-	twi_sample = []
-	twi_creator = []
 	for tag, p in zip(tags, payload):
-		instance = TagWorkInstance(work=work, work_tag=tag)
+		changes = {}
 		if p.sample is not None and tag.category in [
 			WorkTagCategory.CREATOR,
 			WorkTagCategory.MEDIA,
 			WorkTagCategory.SONG,
 		]:
-			instance.used_as_source = p.sample
-			twi_sample.append(instance)
+			changes['used_as_source'] = p.sample
 		if p.roles and tag.category == WorkTagCategory.CREATOR:
-			instance.set_creator_roles(p.roles)
-			twi_creator.append(instance)
-	TagWorkInstance.objects.bulk_create(
-		twi_sample,
-		update_conflicts=True,
-		update_fields=['used_as_source'],
-		unique_fields=['work_id', 'work_tag_id'],
-	)
-	TagWorkInstance.objects.bulk_create(
-		twi_creator,
-		update_conflicts=True,
-		update_fields=['creator_roles'],
-		unique_fields=['work_id', 'work_tag_id'],
-	)
+			changes['creator_roles'] = reduce(int.__or__, p.roles)
+
+		TagWorkInstance.objects.update_or_create(
+			work=work, work_tag=tag, defaults=changes
+		)
 
 	return 200
 

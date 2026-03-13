@@ -126,6 +126,9 @@ def _collect_cascade_deletions(
 
 class RevisionTrackedQuerySet(models.QuerySet):
 	def bulk_create(self, objs, *args, **kwargs):
+		if kwargs.get('update_conflicts'):
+			raise NotImplementedError
+
 		all_changes = _bulk_get_new_rev(self.model, objs)
 		cache = get_request_cache()
 		rev = cache.get('rev')

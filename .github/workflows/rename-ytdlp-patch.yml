@@ -1,0 +1,38 @@
+name: Rename yt-dlp patch file
+
+on:
+  pull_request:
+    paths:
+      - "backend/pyproject.toml"
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  rename-patch:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Rename patch file if version changed
+        run: |
+          OLD_PATCH=$(ls backend/patches/yt-dlp+*.patch 2>/dev/null | head -1)
+          [ -z "$OLD_PATCH" ] && { echo "No patch file found"; exit 0; }
+
+          NEW_VERSION=$(grep -oP 'yt-dlp\[default\](>=|==)\K[0-9.]+' backend/pyproject.toml)
+          NEW_PATCH="backend/patches/yt-dlp+${NEW_VERSION}.patch"
+
+          [ "$OLD_PATCH" = "$NEW_PATCH" ] && { echo "Already up to date"; exit 0; }
+
+          git mv "$OLD_PATCH" "$NEW_PATCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Rename yt-dlp patch file for ${NEW_VERSION}"
+          git push
+
+          echo "Renamed $OLD_PATCH -> $NEW_PATCH"

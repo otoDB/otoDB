@@ -406,10 +406,6 @@ def tag_alias_control(
 	# set base
 	if payload.base_slug != tag_slug:
 		new_base = tag.aliases.get(slug=payload.base_slug)
-		if model is TagWork:
-			tag.tagworkinstance_set.update(work_tag=tag)
-		elif model is TagSong:
-			tag.tagsonginstance_set.update(song_tag=tag)
 		model.transfer_data(tag, new_base)
 
 		tag.aliases.update(aliased_to=new_base)

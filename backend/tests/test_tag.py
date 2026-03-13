@@ -159,37 +159,58 @@ class TestTagLanguagePreference:
 
 	def test_add_lang_pref_basic(self, editor, tag_client):
 		"""
-		Test that adding a language preference to a tag works correctly.
-		Regression test for: 'list' object has no attribute 'filter' error.
+		Test that adding a language preference to a tag works correctly
+		via the tag_aliases endpoint.
 		"""
-		# Create a tag
+		# Create a base tag with an alias (tag_aliases requires aliases to exist)
 		tag = TagWork.objects.create(name='test_tag')
+		alias = TagWork.objects.create(name='test_tag_alias')
+		alias.aliased_to = tag
+		alias.save()
 
-		# Add a language preference
-		response = tag_client.put(
-			f'/lang_pref?tag_slug={tag.slug}&lang={LanguageTypes.JAPANESE}',
+		# Set language preference to the alias name
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={tag.slug}&type=work',
+			json={
+				'base_slug': tag.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {str(LanguageTypes.JAPANESE): alias.name},
+			},
 			user=editor,
 		)
 		assert response.status_code == 200
 
-		# Verify the preference was created
+		# Verify the preference was created on the alias
 		assert TagWorkLangPreference.objects.filter(
-			tag=tag, lang=LanguageTypes.JAPANESE
+			tag=alias, lang=LanguageTypes.JAPANESE
 		).exists()
 
 	def test_add_lang_pref_updates_existing(self, editor, tag_client):
 		"""
 		Test that adding a language preference replaces the existing one for that language.
 		"""
-		# Create a tag with an existing language preference
+		# Create a base tag with two aliases
 		tag = TagWork.objects.create(name='test_tag')
+		alias1 = TagWork.objects.create(name='alias_one')
+		alias2 = TagWork.objects.create(name='alias_two')
+		alias1.aliased_to = tag
+		alias2.aliased_to = tag
+		alias1.save()
+		alias2.save()
+
+		# Set initial preference to alias1
 		old_pref = TagWorkLangPreference.objects.create(
-			tag=tag, lang=LanguageTypes.ENGLISH
+			tag=alias1, lang=LanguageTypes.ENGLISH
 		)
 
-		# Update the same language preference
-		response = tag_client.put(
-			f'/lang_pref?tag_slug={tag.slug}&lang={LanguageTypes.ENGLISH}',
+		# Update the preference to alias2 via tag_aliases
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={tag.slug}&type=work',
+			json={
+				'base_slug': tag.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {str(LanguageTypes.ENGLISH): alias2.name},
+			},
 			user=editor,
 		)
 		assert response.status_code == 200
@@ -197,13 +218,13 @@ class TestTagLanguagePreference:
 		# Verify old preference was deleted and new one created
 		assert not TagWorkLangPreference.objects.filter(pk=old_pref.pk).exists()
 		new_pref = TagWorkLangPreference.objects.get(
-			tag=tag, lang=LanguageTypes.ENGLISH
+			tag=alias2, lang=LanguageTypes.ENGLISH
 		)
 		assert new_pref.pk != old_pref.pk
 
 	def test_add_lang_pref_with_aliases(self, editor, tag_client):
 		"""
-		Test that adding a language preference clears it from all aliases.
+		Test that setting a language preference to one alias clears it from others.
 		"""
 		# Create base tag with aliases
 		base_tag = TagWork.objects.create(name='attack_on_titan')
@@ -214,33 +235,34 @@ class TestTagLanguagePreference:
 		alias1.save()
 		alias2.save()
 
-		# Add language preferences to aliases
-		TagWorkLangPreference.objects.create(tag=alias1, lang=LanguageTypes.JAPANESE)
+		# Add language preference to alias2
 		TagWorkLangPreference.objects.create(tag=alias2, lang=LanguageTypes.JAPANESE)
 
-		# Add language preference to base tag
-		response = tag_client.put(
-			f'/lang_pref?tag_slug={base_tag.slug}&lang={LanguageTypes.JAPANESE}',
+		# Set language preference to alias1 (should clear alias2's pref)
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={base_tag.slug}&type=work',
+			json={
+				'base_slug': base_tag.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {str(LanguageTypes.JAPANESE): alias1.name},
+			},
 			user=editor,
 		)
 		assert response.status_code == 200
 
-		# Verify preferences on aliases were deleted
-		assert not TagWorkLangPreference.objects.filter(
-			tag=alias1, lang=LanguageTypes.JAPANESE
-		).exists()
+		# Verify preference on alias2 was deleted
 		assert not TagWorkLangPreference.objects.filter(
 			tag=alias2, lang=LanguageTypes.JAPANESE
 		).exists()
 
-		# Verify new preference exists on base tag
+		# Verify new preference exists on alias1
 		assert TagWorkLangPreference.objects.filter(
-			tag=base_tag, lang=LanguageTypes.JAPANESE
+			tag=alias1, lang=LanguageTypes.JAPANESE
 		).exists()
 
 	def test_add_lang_pref_to_alias_tag(self, editor, tag_client):
 		"""
-		Test that adding a language preference to an alias tag works correctly.
+		Test that setting a language preference to an alias name works correctly.
 		"""
 		# Create base tag and alias
 		base_tag = TagWork.objects.create(name='attack_on_titan')
@@ -251,9 +273,14 @@ class TestTagLanguagePreference:
 		# Add existing preference to base tag
 		TagWorkLangPreference.objects.create(tag=base_tag, lang=LanguageTypes.KOREAN)
 
-		# Add language preference using alias slug
-		response = tag_client.put(
-			f'/lang_pref?tag_slug={alias_tag.slug}&lang={LanguageTypes.KOREAN}',
+		# Set language preference to alias name via tag_aliases (on the base tag)
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={base_tag.slug}&type=work',
+			json={
+				'base_slug': base_tag.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {str(LanguageTypes.KOREAN): alias_tag.name},
+			},
 			user=editor,
 		)
 		assert response.status_code == 200

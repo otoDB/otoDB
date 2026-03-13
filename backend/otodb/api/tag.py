@@ -365,6 +365,7 @@ def tag_alias_control(
 	tag = get_object_or_404(model, slug=tag_slug)
 
 	assert tag.aliased_to is None
+	assert payload.base_slug not in payload.unalias_slugs
 	assert payload.base_slug not in payload.lang_prefs.values()
 	curr_aliases = [*tag.aliases.all()]
 
@@ -408,7 +409,7 @@ def tag_alias_control(
 		if model is TagWork:
 			tag.tagworkinstance_set.update(work_tag=tag)
 		elif model is TagSong:
-			tag.tagsongkinstance_set.update(song_tag=tag)
+			tag.tagsonginstance_set.update(song_tag=tag)
 		model.transfer_data(tag, new_base)
 
 		tag.aliases.update(aliased_to=new_base)

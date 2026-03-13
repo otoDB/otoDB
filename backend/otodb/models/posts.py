@@ -40,7 +40,7 @@ class PostManager(models.Manager):
 			.prefetch_related(
 				Prefetch(
 					'entitylink_set',
-					queryset=EntityLink.objects.annotate(
+					queryset=EntityLink.objects.order_by('id').annotate(
 						tg_id=Case(
 							When(
 								Q(entity_type__id__in=tag_models),
@@ -69,6 +69,14 @@ class Post(models.Model):
 	)
 	category = models.IntegerField(
 		choices=PostCategory.choices, null=False, blank=False
+	)
+	edited_at = models.DateTimeField(null=True, blank=True)
+	edited_by = models.ForeignKey(
+		Account,
+		null=True,
+		blank=True,
+		on_delete=models.SET_NULL,
+		related_name='edited_posts',
 	)
 
 	objects = PostManager()
@@ -169,6 +177,20 @@ class Subscription(models.Model):
 				name='unique_subscription',
 			)
 		]
+
+
+class CommentMeta(models.Model):
+	comment = models.OneToOneField(
+		XtdComment, on_delete=models.CASCADE, related_name='meta'
+	)
+	edited_at = models.DateTimeField(null=True, blank=True)
+	edited_by = models.ForeignKey(
+		Account,
+		null=True,
+		blank=True,
+		on_delete=models.SET_NULL,
+		related_name='edited_comments',
+	)
 
 
 class EntityLink(models.Model):

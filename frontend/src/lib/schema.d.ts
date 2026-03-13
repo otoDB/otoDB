@@ -1154,7 +1154,8 @@ export interface paths {
         };
         /** Post */
         get: operations["otodb_api_post_post"];
-        put?: never;
+        /** Edit */
+        put: operations["otodb_api_post_edit"];
         /** New */
         post: operations["otodb_api_post_new"];
         delete?: never;
@@ -1273,7 +1274,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        /** Edit */
+        put: operations["otodb_api_comment_edit"];
         /** Post */
         post: operations["otodb_api_comment_post"];
         /** Delete */
@@ -2181,10 +2183,13 @@ export interface components {
              * @default []
              */
             entities: components["schemas"]["EntitySchema"][];
+            edited_by?: components["schemas"]["ProfileSchema"] | null;
             /** Title */
             title: string;
             /** Category */
             category: number;
+            /** Edited At */
+            edited_at?: string | null;
         };
         /**
          * LanguageTypes
@@ -2206,6 +2211,18 @@ export interface components {
             lang: components["schemas"]["LanguageTypes"];
             /** Target Users */
             target_users: string[];
+            /** Entities */
+            entities: components["schemas"]["EntitySchema"][];
+        };
+        /** PostEditSchema */
+        PostEditSchema: {
+            /** Post Id */
+            post_id: number;
+            /** Title */
+            title: string;
+            /** Post */
+            post: string;
+            lang: components["schemas"]["LanguageTypes"];
             /** Entities */
             entities: components["schemas"]["EntitySchema"][];
         };
@@ -2254,6 +2271,9 @@ export interface components {
             level: number;
             /** Index */
             index: number;
+            /** Edited At */
+            edited_at?: string | null;
+            edited_by?: components["schemas"]["ProfileSchema"] | null;
         };
         /** CommentInSchema */
         CommentInSchema: {
@@ -2273,6 +2293,13 @@ export interface components {
             parent_id: number;
             /** Mentioned Users */
             mentioned_users: string[];
+        };
+        /** CommentEditSchema */
+        CommentEditSchema: {
+            /** Comment Id */
+            comment_id: number;
+            /** Comment Text */
+            comment_text: string;
         };
         /** ExtCommentSchema */
         ExtCommentSchema: {
@@ -4352,6 +4379,30 @@ export interface operations {
             };
         };
     };
+    otodb_api_post_edit: {
+        parameters: {
+            query?: never;
+            header: {
+                "otodb-internal-secret": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostEditSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     otodb_api_post_new: {
         parameters: {
             query?: never;
@@ -4515,6 +4566,30 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CommentSchema"][];
                 };
+            };
+        };
+    };
+    otodb_api_comment_edit: {
+        parameters: {
+            query?: never;
+            header: {
+                "otodb-internal-secret": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommentEditSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

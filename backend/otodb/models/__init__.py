@@ -10,7 +10,14 @@ from .tag import (
 )
 from .work_source import WorkSource, WorkSourceRejection
 from .relations import WorkRelation, SongRelation
-from .posts import Post, PostContent, Notification, Subscription, EntityLink
+from .posts import (
+	Post,
+	PostContent,
+	Notification,
+	Subscription,
+	EntityLink,
+	CommentMeta,
+)
 from .connection import (
 	ProfileConnection,
 	MediaSongConnection,
@@ -55,4 +62,5 @@ __all__ = [
 	'Revision',
 	'RevisionChange',
 	'RevisionChangeEntity',
+	'CommentMeta',
 ]

@@ -245,14 +245,16 @@ def set_tags(
 	twi_creator = []
 	for tag, p in zip(tags, payload):
 		instance = TagWorkInstance(work=work, work_tag=tag)
-		if p.sample is not None:
-			if tag.category in [WorkTagCategory.CREATOR, WorkTagCategory.MEDIA, WorkTagCategory.SONG]:
-				instance.used_as_source = p.sample
-				twi_sample.append(instance)
-		if p.roles:
-			if tag.category == WorkTagCategory.CREATOR:
-				instance.set_creator_roles(p.roles)
-				twi_creator.append(instance)
+		if p.sample is not None and tag.category in [
+			WorkTagCategory.CREATOR,
+			WorkTagCategory.MEDIA,
+			WorkTagCategory.SONG,
+		]:
+			instance.used_as_source = p.sample
+			twi_sample.append(instance)
+		if p.roles and tag.category == WorkTagCategory.CREATOR:
+			instance.set_creator_roles(p.roles)
+			twi_creator.append(instance)
 	TagWorkInstance.objects.bulk_create(
 		twi_sample,
 		update_conflicts=True,

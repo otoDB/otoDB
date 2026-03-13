@@ -258,13 +258,13 @@ def set_tags(
 	TagWorkInstance.objects.bulk_create(
 		twi_sample,
 		update_conflicts=True,
-		update_fields=['creator_roles'],
+		update_fields=['used_as_source'],
 		unique_fields=['work_id', 'work_tag_id'],
 	)
 	TagWorkInstance.objects.bulk_create(
 		twi_creator,
 		update_conflicts=True,
-		update_fields=['used_as_source'],
+		update_fields=['creator_roles'],
 		unique_fields=['work_id', 'work_tag_id'],
 	)
 

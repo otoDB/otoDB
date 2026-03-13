@@ -134,7 +134,7 @@
 
 <Section title={data.tag.name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, pririoty: 0 }} action="?/edit">
+	<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }} action="?/edit">
 		{#if data.tag.category === 2 && category !== 2}
 			<p class="text-red-500">
 				{m.front_game_porpoise_pout()}
@@ -253,7 +253,7 @@
 			init_relations={data.song_relations}
 			obj_type="song"
 			this_id={data.tag.song?.id}
-			form_control={{ barrier: form_barrier, pririoty: 4 }}
+			form_control={{ barrier: form_barrier, priority: 4 }}
 		></RelationEditor>
 	</Section>
 {/if}
@@ -265,7 +265,7 @@
 			method="POST"
 			use:dirtyEnhance={{
 				barrier: form_barrier,
-				pririoty: 2,
+				priority: 2,
 				manual_post: aliases_post_gate
 			}}
 			onsubmit={submit_aliases}
@@ -357,7 +357,7 @@
 	<form
 		action="?/wiki_page"
 		method="POST"
-		use:dirtyEnhance={{ barrier: form_barrier, pririoty: 1 }}
+		use:dirtyEnhance={{ barrier: form_barrier, priority: 1 }}
 	>
 		<input type="text" hidden value={wikiView} name="lang" />
 		<div class="grid grid-cols-2 gap-3">
@@ -414,7 +414,7 @@
 	<form
 		action="?/connections"
 		method="POST"
-		use:dirtyEnhance={{ barrier: form_barrier, pririoty: 3 }}
+		use:dirtyEnhance={{ barrier: form_barrier, priority: 3 }}
 	>
 		<textarea
 			bind:value={urls}

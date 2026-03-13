@@ -56,7 +56,7 @@
 
 <Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, pririoty: 0 }} action="?/edit">
+	<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }} action="?/edit">
 		<table class="inline">
 			<tbody>
 				<tr
@@ -201,6 +201,6 @@
 		init_relations={data.relations}
 		obj_type="work"
 		this_id={data.id}
-		form_control={{ barrier: form_barrier, pririoty: 1 }}
+		form_control={{ barrier: form_barrier, priority: 1 }}
 	></RelationEditor>
 </Section>

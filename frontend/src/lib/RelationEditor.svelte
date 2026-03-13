@@ -20,7 +20,7 @@
 				forms?: HTMLFormElement[];
 				reached?: ReturnType<typeof Promise.withResolvers<void>>[];
 			};
-			pririoty: number;
+			priority: number;
 		};
 	}
 

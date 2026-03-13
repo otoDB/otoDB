@@ -80,11 +80,11 @@ export const dirtyEnhance = (
 					forms?: HTMLFormElement[];
 					reached?: ReturnType<typeof Promise.withResolvers<void>>[];
 				};
-				pririoty: number;
+				priority: number;
 		  } & { form?: any; manual_post?: { p: ReturnType<typeof Promise.withResolvers<void>> } })
 		| undefined = undefined
 ) => {
-	node.dataset.priority = props?.pririoty?.toString();
+	node.dataset.priority = props?.priority?.toString();
 	node.addEventListener('change', () => {
 		node.dataset.dirty = 'true';
 	});

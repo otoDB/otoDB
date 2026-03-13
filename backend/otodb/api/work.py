@@ -241,20 +241,28 @@ def set_tags(
 	work.tags.remove(*work.tags.exclude(id__in=[t.id for t in tags]))
 	work.tags.add(*tags)
 
-	twi = []
+	twi_sample = []
+	twi_creator = []
 	for tag, p in zip(tags, payload):
 		instance = TagWorkInstance(work=work, work_tag=tag)
-		if p.roles or p.sample is not None:
-			instance.used_as_source = p.sample
-			if tag.category == WorkTagCategory.CREATOR and p.roles:
+		if p.sample is not None:
+			if tag.category in [WorkTagCategory.CREATOR, WorkTagCategory.MEDIA, WorkTagCategory.SONG]:
+				instance.used_as_source = p.sample
+				twi_sample.append(instance)
+		if p.roles:
+			if tag.category == WorkTagCategory.CREATOR:
 				instance.set_creator_roles(p.roles)
-
-		twi.append(instance)
-
+				twi_creator.append(instance)
 	TagWorkInstance.objects.bulk_create(
-		twi,
+		twi_sample,
 		update_conflicts=True,
-		update_fields=['used_as_source', 'creator_roles'],
+		update_fields=['creator_roles'],
+		unique_fields=['work_id', 'work_tag_id'],
+	)
+	TagWorkInstance.objects.bulk_create(
+		twi_creator,
+		update_conflicts=True,
+		update_fields=['used_as_source'],
 		unique_fields=['work_id', 'work_tag_id'],
 	)
 

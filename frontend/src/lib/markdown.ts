@@ -98,6 +98,14 @@ export const get_entity = (s: string) => {
 	return null;
 };
 
+const entityShorthands: Record<string, (id: string | number) => string> = {
+	mediawork: (id) => `${ENTITIES[0].shortPrefix}${id}`,
+	tagwork: (id) => `[[${id}]]`
+};
+
+export const entity_to_shorthand = (entity: string, id: string | number): string =>
+	entityShorthands[entity]?.(id) ?? `${entity}/${id}`;
+
 const processor = unified()
 	.use(remarkParse)
 	.use(remarkGfm)

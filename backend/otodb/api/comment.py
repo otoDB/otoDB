@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from typing import Literal
 
@@ -18,7 +18,7 @@ from ninja.throttling import AuthRateThrottle
 from ninja.errors import HttpError
 
 from otodb.account.models import Account
-from otodb.models import Notification, Subscription, RevisionChange
+from otodb.models import Notification, Subscription, RevisionChange, CommentMeta
 from .common import user_is_trusted, ProfileSchema, restrict_internal
 
 comment_router = Router()
@@ -45,6 +45,8 @@ class CommentSchema(BaseCommentSchema):
 	parent_id: int
 	level: int
 	index: int
+	edited_at: datetime | None = None
+	edited_by: ProfileSchema | None = None
 
 
 class CommentInSchema(Schema):
@@ -62,14 +64,23 @@ def get(request: HttpRequest, model: ModelsWithComments, pk: int):
 		expression=Rank(),
 		order_by='submit_date',
 	)
-	# Use comprehension to force filter after annotate
-	return [
-		c
-		for c in XtdComment.objects.filter(content_type=T, object_pk=pk)
+	result = []
+	for c in (
+		XtdComment.objects.filter(content_type=T, object_pk=pk)
+		.select_related('meta', 'meta__edited_by')
 		.order_by('id')
 		.annotate(index=index)
-		if not c.is_removed
-	]
+	):
+		if c.is_removed:
+			continue
+		try:
+			c.edited_at = c.meta.edited_at
+			c.edited_by = c.meta.edited_by
+		except CommentMeta.DoesNotExist:
+			c.edited_at = None
+			c.edited_by = None
+		result.append(c)
+	return result
 
 
 @comment_router.post('comment', auth=django_auth, throttle=[AuthRateThrottle('1/8s')])
@@ -139,6 +150,43 @@ def delete(
 		Notification.objects.filter(comment=comment).delete()
 	else:
 		raise HttpError(403, 'Forbidden')
+
+
+COMMENT_EDIT_WINDOW = timedelta(days=180)
+
+
+class CommentEditSchema(Schema):
+	comment_id: int
+	comment_text: str
+
+
+@comment_router.put('comment', auth=django_auth)
+@user_is_trusted
+@restrict_internal
+def edit(request: HttpRequest, payload: CommentEditSchema):
+	comment = XtdComment.objects.select_related('meta').get(id=payload.comment_id)
+	is_admin = request.user.level >= Account.Levels.ADMIN
+	if not is_admin:
+		if comment.user != request.user:
+			raise HttpError(403, 'Forbidden')
+		# Lock: if an admin has edited this comment, original author can no longer edit
+		try:
+			meta = comment.meta
+			if meta.edited_by_id and meta.edited_by_id != comment.user_id:
+				raise HttpError(403, 'Forbidden')
+		except CommentMeta.DoesNotExist:
+			pass
+		if datetime.now(tz=timezone.utc) - comment.submit_date > COMMENT_EDIT_WINDOW:
+			raise HttpError(403, 'Edit window has passed')
+	comment.comment = payload.comment_text
+	comment.save()
+	CommentMeta.objects.update_or_create(
+		comment=comment,
+		defaults={
+			'edited_at': datetime.now(tz=timezone.utc),
+			'edited_by': request.user,
+		},
+	)
 
 
 class ExtCommentSchema(BaseCommentSchema):

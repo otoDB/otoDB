@@ -194,6 +194,7 @@ user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
 
 def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 	assert cls is MediaWork or cls is MediaSong
+	assert all(rel.A_id == obj_id or rel.B_id == obj_id for rel in payload)
 
 	rel_cls, rt_cls = (
 		(WorkRelation, WorkRelationTypes)

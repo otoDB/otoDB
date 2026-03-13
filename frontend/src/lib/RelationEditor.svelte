@@ -38,7 +38,11 @@
 
 	let new_item = $state(null);
 	const add_new_item = async (e) => {
-		if (new_item && new_item.id !== this_id && !relations.some((r) => r.item.id === new_item.id)) {
+		if (
+			new_item &&
+			new_item.id !== this_id &&
+			!relations.some((r) => r.item.id === new_item.id)
+		) {
 			e.target.dispatchEvent(new Event('change', { bubbles: true }));
 			relations.unshift({ swapped: false, item: new_item, relation: 0 });
 			new_item = null;

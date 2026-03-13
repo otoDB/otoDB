@@ -28,7 +28,7 @@ dependencies = [
     "orjson>=3.11.5",
 
 	# has corresponding patch in patches/
-    "yt-dlp[default]>=2026.3.3",
+    "yt-dlp[default]==2026.3.3",
 
     # included for legacy migrations
     "django-simple-history>=3.10.1",

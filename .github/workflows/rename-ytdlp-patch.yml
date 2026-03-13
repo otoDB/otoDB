@@ -24,7 +24,7 @@ jobs:
           OLD_PATCH=$(ls backend/patches/yt-dlp+*.patch 2>/dev/null | head -1)
           [ -z "$OLD_PATCH" ] && { echo "No patch file found"; exit 0; }
 
-          NEW_VERSION=$(grep -oP 'yt-dlp\[default\](>=|==)\K[0-9.]+' backend/pyproject.toml)
+          NEW_VERSION=$(grep -oP 'yt-dlp\[default\]==\K[0-9.]+' backend/pyproject.toml)
           NEW_PATCH="backend/patches/yt-dlp+${NEW_VERSION}.patch"
 
           [ "$OLD_PATCH" = "$NEW_PATCH" ] && { echo "Already up to date"; exit 0; }

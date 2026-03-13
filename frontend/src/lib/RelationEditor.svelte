@@ -93,7 +93,9 @@
 		{:else if obj_type === 'song'}
 			<SongField bind:value={new_item} />
 		{/if}
-		<button onclick={add_new_item} disabled={!new_item}>{m.swift_dry_gecko_boost()}</button>
+		<button onclick={add_new_item} type="button" disabled={!new_item}
+			>{m.swift_dry_gecko_boost()}</button
+		>
 	</div>
 	<table>
 		<tbody>

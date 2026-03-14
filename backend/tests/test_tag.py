@@ -1,4 +1,5 @@
 import pytest
+from django.db import models
 
 from otodb.models import (
 	MediaWork,
@@ -429,3 +430,46 @@ class TestTagHierarchy:
 		assert len(all_edges) == len(set(all_edges)), (
 			f'Found duplicate edges: {all_edges}'
 		)
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+class TestTagAliasBaseSwap:
+	"""Test that swapping the base of an alias group doesn't create self-aliases."""
+
+	def test_swap_base_does_not_self_alias(self, editor, tag_client):
+		"""
+		When changing which tag is the base of an alias group,
+		the new base must not end up aliased to itself.
+		"""
+		base = TagWork.objects.create(name='base_tag')
+		alias = TagWork.objects.create(name='alias_tag')
+		alias.aliased_to = base
+		alias.save()
+
+		# Swap the base to the alias
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={base.slug}&type=work',
+			json={
+				'base_slug': alias.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {},
+			},
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		# The new base must not be aliased to itself
+		alias.refresh_from_db()
+		assert alias.aliased_to_id is None, (
+			f'New base tag is aliased to itself (id={alias.pk})'
+		)
+
+		# The old base should now be aliased to the new base
+		base.refresh_from_db()
+		assert base.aliased_to_id == alias.pk
+
+		# No tag in the group should be self-aliased
+		assert not TagWork.objects.filter(
+			pk__in=[base.pk, alias.pk],
+			aliased_to=models.F('pk'),
+		).exists()

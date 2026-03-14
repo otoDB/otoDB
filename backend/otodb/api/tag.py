@@ -409,8 +409,8 @@ def tag_alias_control(
 		new_base = tag.aliases.get(slug=payload.base_slug)
 		model.transfer_data(tag, new_base)
 
-		tag.aliases.update(aliased_to=new_base)
-		tag.aliased_to = None if tag_slug in payload.unalias else new_base
+		tag.aliases.exclude(pk=new_base.pk).update(aliased_to=new_base)
+		tag.aliased_to = None if tag_slug in payload.unalias_slugs else new_base
 		tag.save()
 		new_base.aliased_to = None
 		new_base.save()

@@ -1,12 +1,14 @@
 {
   "scripts": {
-    "build": "node build.js",
     "build:chrome": "node build.js chrome",
     "build:firefox": "node build.js firefox",
-    "watch": "node build.js --watch"
+    "watch:chrome": "node build.js chrome --watch",
+    "watch:firefox": "node build.js firefox --watch",
+    "pack": "node build.js pack"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "^4.2.1"
+    "@tailwindcss/cli": "^4.2.1",
+    "adm-zip": "^0.5.16"
   },
   "dependencies": {
     "dompurify": "^3.3.3"

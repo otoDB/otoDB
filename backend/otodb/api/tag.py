@@ -366,7 +366,6 @@ def tag_alias_control(
 
 	assert tag.aliased_to is None
 	assert payload.base_slug not in payload.unalias_slugs
-	assert payload.base_slug not in payload.lang_prefs.values()
 	curr_aliases = [*tag.aliases.all()]
 
 	curr_aliases_slugs = [t.slug for t in curr_aliases]
@@ -409,7 +408,7 @@ def tag_alias_control(
 		model.transfer_data(tag, new_base)
 
 		tag.aliases.update(aliased_to=new_base)
-		tag.aliased_to = new_base
+		tag.aliased_to = None if tag_slug in payload.unalias else new_base
 		tag.save()
 		new_base.aliased_to = None
 		new_base.save()

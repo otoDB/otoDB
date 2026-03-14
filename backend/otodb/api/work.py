@@ -53,7 +53,7 @@ from .common import (
 	ThinWorkSchema,
 	WorkSourceSchema,
 	Error,
-	TagWorkSchema,
+	TagWorkInstanceSchema,
 	user_is_trusted,
 	user_is_editor,
 	RelationSchema,
@@ -81,7 +81,7 @@ class WorkSourceMetadataSchema(Schema):
 
 class ExternalQuery(Schema):
 	work_id: int
-	tags: List[TagWorkSchema]
+	tags: List[TagWorkInstanceSchema]
 
 
 @work_router.get('query_external', response=ExternalQuery)
@@ -104,7 +104,7 @@ def query_external(
 			"Either 'url' or both 'platform' and 'id' parameters must be provided"
 		)
 
-	return {'tags': work.media.tags, 'work_id': work.media.id}
+	return {'tags': work.media.tags_annotated, 'work_id': work.media.id}
 
 
 @work_router.get('search', response=List[ThinWorkSchema], exclude_none=True)

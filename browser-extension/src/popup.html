@@ -2,14 +2,16 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="popup.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="otodb-header">
-		<a id="main" href="https://otodb.net" target="_blank" rel="noopener noreferrer">otoDB</a>
+    <div id="otodb-header" class="flex items-center p-4 border-b border-otodb-content-faint shrink-0" style="background-color: var(--otodb-color-bg-primary)">
+        <a id="main" href="https://otodb.net" target="_blank" rel="noopener noreferrer"
+           class="flex items-center justify-center no-underline bg-slate-500 rounded-full py-1.5 px-4 text-white text-[15px] font-medium hover:opacity-80">otoDB</a>
     </div>
-    <div id="status"></div>
-    <div id="results"></div>
+    <div id="status" class="text-sm text-center shrink-0" style="color: var(--otodb-color-content-fainter)"></div>
+    <div id="results" class="flex flex-row flex-wrap gap-x-3 text-[15px] p-4 flex-1 overflow-y-auto content-start"></div>
+    <script src="purify.min.js"></script>
     <script src="database.js"></script>
 </body>
 </html>

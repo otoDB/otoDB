@@ -66,6 +66,14 @@ class TagWorkSchema(Schema):
 	deprecated: bool
 
 
+class ConnectionTagResult(TagWorkSchema):
+	has_connection: bool
+
+
+class ConnectionLookupResponse(Schema):
+	entities: list[ConnectionTagResult]
+
+
 class WorkSourceRejectionSchema(ModelSchema):
 	by: ProfileSchema
 

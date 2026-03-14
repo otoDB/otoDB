@@ -2,7 +2,7 @@ from typing import Annotated, Literal, Dict, Optional
 from itertools import groupby
 from functools import reduce, wraps
 import re
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 
 from django.db import transaction, models
 from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists, Subquery
@@ -48,12 +48,14 @@ from .common import (
 	RelationSchema,
 	post_relations,
 	ConnectionSchema,
+	ConnectionLookupResponse,
 	profile_connection_parsers,
 	make_alt_value_parser,
 	re_to_parser,
 	RouterWithRevision,
 	with_revision_route,
 	TagLangPreferenceSchema,
+	Error,
 )
 
 tag_router = RouterWithRevision()
@@ -1008,3 +1010,80 @@ def similar(request: HttpRequest, tag_slug: str):
 		.order_by('-shared_works_count')
 		.filter(shared_works_count__gt=3)
 	)[:10]
+
+
+@tag_router.get(
+	'query_connection', response={200: ConnectionLookupResponse, 404: Error}
+)
+def query_connection(request: HttpRequest, url: str):
+	results = {}  # tag.pk -> (tag, has_connection)
+
+	# TagWork connections
+	twc_result = tag_work_connection_parser(url)
+	if twc_result:
+		site_type, content_id = twc_result
+		for tag in TagWork.objects.filter(
+			tagworkconnection__site=site_type,
+			tagworkconnection__content_id=content_id,
+			aliased_to__isnull=True,
+		):
+			results[tag.pk] = (tag, True)
+
+	# Song connections -> work_tag
+	sc_result = song_connection_parser(url)
+	if sc_result:
+		site_type, content_id = sc_result
+		for song in MediaSong.objects.filter(
+			mediasongconnection__site=site_type,
+			mediasongconnection__content_id=content_id,
+		):
+			tag = song.work_tag
+			if tag.pk not in results:
+				results[tag.pk] = (tag, True)
+
+	# Media connections -> tag
+	mc_result = media_connection_parser(url)
+	if mc_result:
+		site_type, content_id = mc_result
+		for tag in TagWork.objects.filter(
+			tagworkmediaconnection__site=site_type,
+			tagworkmediaconnection__content_id=content_id,
+			aliased_to__isnull=True,
+		):
+			if tag.pk not in results:
+				results[tag.pk] = (tag, True)
+
+	# Creator/profile connections -> tag
+	for conn_type, parser in profile_connection_parsers:
+		content_id = parser(url)
+		if content_id:
+			for tag in TagWork.objects.filter(
+				tagworkcreatorconnection__site=conn_type,
+				tagworkcreatorconnection__content_id=content_id,
+				aliased_to__isnull=True,
+			):
+				if tag.pk not in results:
+					results[tag.pk] = (tag, True)
+			break
+
+	# Fallback: match tag names/aliases by last path segment of the URL
+	last_segment = urlparse(url).path.rstrip('/').split('/')[-1]
+	if last_segment:
+		decoded_id = clean_incoming_tag_name(unquote(last_segment))
+		if decoded_id:
+			name_matched = TagWork.objects.filter(
+				Q(name=decoded_id) | Q(aliases__name=decoded_id),
+				aliased_to__isnull=True,
+			).exclude(pk__in=results.keys())
+			for tag in name_matched:
+				results[tag.pk] = (tag, False)
+
+	if not results:
+		return 404, {'message': 'No matching entities found'}
+
+	entities = []
+	for tag, has_connection in results.values():
+		tag.has_connection = has_connection
+		entities.append(tag)
+
+	return 200, {'entities': entities}

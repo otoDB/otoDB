@@ -10,9 +10,9 @@
 	let { data }: PageProps = $props();
 	let results = $derived(data.submissions!.items);
 
-	let approved = $derived(results.filter((s) => s.media));
-	let pending = $derived(results.filter((s) => !s.media && !s.rejection));
-	let rejected = $derived(results.filter((s) => s.rejection));
+	let approved = $derived(results.filter((s) => s.media && !s.is_pending));
+	let pending = $derived(results.filter((s) => s.is_pending));
+	let unbound = $derived(results.filter((s) => !s.media && !s.is_pending));
 </script>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
@@ -111,12 +111,11 @@
 	{/if}
 
 	<h2>{m.stale_vexed_hare_pray()}</h2>
-	{#if rejected?.length}
+	{#if unbound?.length}
 		<table class="w-full">
 			<thead
 				><tr>
 					<th>{m.large_factual_octopus_exhale()}</th>
-					<th>{m.weary_spicy_fly_attend()}</th>
 					<th>{m.sour_swift_sparrow_spin()}</th>
 					<th>{m.super_agent_pigeon_aim()}</th>
 					<th>{m.large_polite_otter_thrive()}</th>
@@ -127,10 +126,11 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each rejected as src, i (i)}
+				{#each unbound as src, i (i)}
 					<tr>
-						<td class="whitespace-nowrap">{src.title || src.url}</td>
-						<td class="whitespace-nowrap">{src.rejection.reason}</td>
+						<td class="whitespace-nowrap"
+							><a href="/source/{src.id}">{src.title || src.url}</a></td
+						>
 						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
 						<td class="whitespace-nowrap"

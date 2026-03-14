@@ -87,8 +87,8 @@ def refresh_source(request: AuthedHttpRequest, source_id: int):
 	return
 
 
-@source_router.get('source', auth=django_auth, response=WorkSourceSchema)
-def get_source(request: AuthedHttpRequest, source_id: int):
+@source_router.get('source', response=WorkSourceSchema)
+def get_source(request, source_id: int):
 	return get_object_or_404(WorkSource, id=source_id)
 
 
@@ -302,7 +302,7 @@ def approve_source(request: AuthedHttpRequest, source_id: int):
 @source_router.get('list', response=List[WorkSourceSchema])
 @paginate
 def list_sources(
-	request: AuthedHttpRequest,
+	request,
 	user_id: int | None = None,
 	unbound: bool | None = None,
 	is_pending: bool | None = None,

@@ -35,7 +35,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 			fetch
 		});
 		if (e) error(404, { message: 'Not found' });
-		if (data.rejection || data.work_status === 0) error(400, { message: 'Bad Request' });
+		if (data.work_status === 0) error(400, { message: 'Bad Request' });
 		unavailable_source = data;
 		title = unavailable_source.title;
 	}

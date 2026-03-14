@@ -12,7 +12,7 @@ const DIST = path.join(__dirname, 'dist');
 const manifest = {
     "manifest_version": 3,
     "name": "otoDB",
-    "version": "1.1.4",
+    "version": "1.2.0",
     "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
     "background": {
         "scripts": ["background.js"]

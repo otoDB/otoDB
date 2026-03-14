@@ -84,7 +84,6 @@ INSTALLED_APPS = [
 	'django_comments',
 	'rest_framework',
 	'corsheaders',
-	'django_scheduled_tasks',
 ]
 
 MIDDLEWARE = [
@@ -333,4 +332,5 @@ LOGGING = {
 OTODB_MAX_PENDING_WORKS = 10
 OTODB_MAX_FLAGGED_WORKS = 5
 
+OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)
 OTODB_MODERATION_PERIOD = timedelta(weeks=1)

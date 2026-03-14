@@ -148,7 +148,7 @@ class MediaWork(RevisionTrackedModel):
 	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
 	class RevisionMeta:
-		tracked_fields = ['title', 'description', 'rating', 'moved_to', 'status']
+		tracked_fields = ['title', 'description', 'rating', 'moved_to']
 		entity_attrs = ['self', 'moved_to']
 
 		def to_active(instance):

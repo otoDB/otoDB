@@ -1,11 +1,13 @@
 from django.core.management.base import BaseCommand
 
-from otodb.tasks import prune_expired_works
+from otodb.tasks import prune_all_expired
 
 
 class Command(BaseCommand):
-	help = 'Resolve expired pending, flagged, and appealed works'
+	help = (
+		'Resolve all expired pending, flagged, and appealed works and pending sources'
+	)
 
 	def handle(self, *args, **options):
-		total = prune_expired_works()
-		self.stdout.write(f'Done. Total resolved works: {total}')
+		total = prune_all_expired()
+		self.stdout.write(f'Done. Total resolved: {total}')

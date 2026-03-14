@@ -1,6 +1,5 @@
 from typing import List
 from datetime import date
-
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -23,8 +22,10 @@ from otodb.models.enums import (
 	ProfileConnectionTypes,
 	Route,
 	WorkStatus,
+	Status,
 )
 from otodb.account.models import Account
+from otodb.tasks import enqueue_deferred, resolve_expired_source_task
 
 from .common import (
 	AuthedHttpRequest,
@@ -112,7 +113,7 @@ def update_source(
 	src.save_thumbnail()
 	src.save()
 
-	return src.media.id
+	return src.media.pk
 
 
 @source_router.post(
@@ -161,6 +162,9 @@ def new_source_from_url(
 		work = get_object_or_404(
 			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
 		)
+		if not is_editor and work.status == Status.APPROVED:
+			src.is_pending = True
+			enqueue_deferred(resolve_expired_source_task, src.pk)
 		sync_work_source(work, src)
 		return {'work_id': work.pk}
 
@@ -225,7 +229,7 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 
 	info = process_video_info(src.info_payload.payload, src.url)
 	raw_tags = info.get('tags', [])
-	slug_to_name = {clean_incoming_slug(t): t for t in raw_tags}
+	slug_to_name: dict[str, str] = {clean_incoming_slug(t): t for t in raw_tags}
 	matched = TagWork.objects.filter(slug__in=slug_to_name.keys())
 	existing_names = {slug_to_name[t.slug] for t in matched}
 	resolved = {(t.aliased_to or t).pk: (t.aliased_to or t) for t in matched}
@@ -235,7 +239,15 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 		else []
 	)
 	new_tags = [
-		TagWorkSchema(id=0, name=t, slug=t, category=0, lang_prefs=[], aliased_to=None)
+		TagWorkSchema(
+			id=0,
+			name=t,
+			slug=t,
+			category=0,
+			lang_prefs=[],
+			aliased_to=None,
+			deprecated=False,
+		)
 		for t in raw_tags
 		if t not in existing_names
 	]

@@ -19,13 +19,14 @@ logger = logging.getLogger(__name__)
 
 class ActiveManager(RevisionTrackedManager):
 	def get_queryset(self):
-		return super().get_queryset().filter(rejection__isnull=True, is_pending=False)
+		return super().get_queryset().filter(rejection__isnull=True)
 
 
 class WorkSource(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		from .pool import Pool
 
+		active_objects: models.Manager['WorkSource']
 		pool_set: 'models.QuerySet[Pool]'
 
 	media = models.ForeignKey(
@@ -85,7 +86,6 @@ class WorkSource(RevisionTrackedModel):
 			'thumbnail_hash',
 			'uploader_id',
 			'added_by',
-			'is_pending',
 		]
 		entity_attrs = ['self', 'media']
 

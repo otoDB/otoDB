@@ -42,6 +42,12 @@ from otodb.models.enums import (
 	Role,
 )
 from otodb.account.models import Account
+from otodb.tasks import (
+	enqueue_deferred,
+	resolve_expired_work,
+	resolve_expired_flag,
+	resolve_expired_appeal,
+)
 
 from .common import (
 	AuthedHttpRequest,
@@ -397,6 +403,9 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 		status=Status.PENDING if not is_editor else Status.APPROVED,
 	)
 
+	if work.status == Status.PENDING:
+		enqueue_deferred(resolve_expired_work, work.pk)
+
 	# Add tags
 	tags = []
 	for v in payload.tags:
@@ -477,12 +486,14 @@ def flag_work(request: AuthedHttpRequest, work_id: int, reason: str):
 		if active_flags >= settings.OTODB_MAX_FLAGGED_WORKS:
 			return 429, {'message': 'Active flag limit reached'}
 
-	WorkFlag.objects.create(
+	flag = WorkFlag.objects.create(
 		work=work,
 		creator=request.user,
 		reason=reason,
 		status=FlagStatus.PENDING,
 	)
+
+	enqueue_deferred(resolve_expired_flag, flag.pk)
 
 
 @work_router.post('appeal', auth=django_auth, response={200: None, 429: Error})
@@ -513,12 +524,14 @@ def appeal_work(request: AuthedHttpRequest, work_id: int, reason: str):
 		if total_slots_used + 3 > settings.OTODB_MAX_PENDING_WORKS:
 			return 429, {'message': 'Not enough upload slots for appeal'}
 
-	WorkAppeal.objects.create(
+	appeal = WorkAppeal.objects.create(
 		work=work,
 		creator=request.user,
 		reason=reason,
 		status=FlagStatus.PENDING,
 	)
+
+	enqueue_deferred(resolve_expired_appeal, appeal.pk)
 
 
 @work_router.get('queue', auth=django_auth, response=List[ThinWorkSchema])

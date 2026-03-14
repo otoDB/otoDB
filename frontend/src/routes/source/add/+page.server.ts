@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 		if (e) error(404, { message: 'Not found' });
 		title = data.title;
 	} else if (source && !isNaN(+source)) {
-		const { data, error: e } = await client.GET('/api/work/source', {
+		const { data, error: e } = await client.GET('/api/source/source', {
 			params: {
 				query: {
 					source_id: +source
@@ -42,7 +42,6 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 	return {
 		title,
 		link,
-		isNewWork: work === null,
 		unavailable_source,
 		head: {
 			title: title
@@ -61,9 +60,7 @@ export const actions = {
 	default: async ({ request, fetch, url, locals }) => {
 		const data = await request.formData();
 		const link = data.get('url') as string,
-			is_official = data.get('origin') === 'true',
-			original_url = data.get('original_url'),
-			rating = data.get('rating');
+			is_official = data.get('origin') === 'true';
 		const work = url.searchParams.get('for_work');
 		const source = url.searchParams.get('for_source');
 		const editing_unavailable_source = source && !isNaN(+source);
@@ -101,43 +98,35 @@ export const actions = {
 			}
 		}
 
-		const {
-			data: work_id,
-			error,
-			response
-		} = await (editing_unavailable_source
-			? client.PUT('/api/work/source', {
-					fetch,
-					params: {
-						query: {
-							source_id: +source
-						}
-					},
-					body: metadata
-				})
-			: client.POST('/api/work/source', {
-					fetch,
-					params: {
-						query: {
-							url: link,
-							is_reupload: !is_official,
-							work_id: work ? +work : undefined,
-							rating: rating ? +rating : undefined,
-							original_url: (original_url as string) || undefined
-						}
-					},
-					body: metadata
-				}));
-
-		if (response.status === 409) {
-			return fail(409, {
-				url: link,
-				origin: is_official,
-				failed: true,
-				message: m.sour_loud_baboon_dance()
+		if (editing_unavailable_source) {
+			const { data: work_id, error } = await client.PUT('/api/source/source', {
+				fetch,
+				params: { query: { source_id: +source } },
+				body: metadata
 			});
+			if (error)
+				return fail(400, {
+					url: link,
+					origin: is_official,
+					failed: true,
+					message: m.careful_lost_jaguar_dart()
+				});
+			if (work_id) redirect(303, `/work/${work_id}`);
 		}
-		if (error)
+
+		const { data: result, error: sourceError } = await client.POST('/api/source/source', {
+			fetch,
+			params: {
+				query: {
+					url: link,
+					is_reupload: !is_official,
+					work_id: work ? +work : undefined
+				}
+			},
+			body: metadata
+		});
+
+		if (sourceError)
 			return fail(400, {
 				url: link,
 				origin: is_official,
@@ -145,13 +134,13 @@ export const actions = {
 				message: m.careful_lost_jaguar_dart()
 			});
 
-		if (editing_unavailable_source && work_id) redirect(303, `/work/${work_id}`);
+		// Source already has a work -> redirect to work page
+		if (result?.work_id) redirect(303, `/work/${result.work_id}`);
 
-		// New source to existing work flow
-		if (work && !isNaN(+work)) redirect(303, `/work/${+work}`);
+		// New source -> redirect to review page
+		if (result?.source_id) redirect(303, `/source/${result.source_id}/review`);
 
-		// New source to new work flow
-		if (work_id) redirect(303, `/work/${work_id}/tags`);
-		else redirect(303, `/profile/${locals.user.username}/submissions`);
+		// Fallback
+		redirect(303, `/profile/${locals.user.username}/submissions`);
 	}
 } satisfies Actions;

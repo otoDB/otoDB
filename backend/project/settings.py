@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import logging
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -83,6 +84,7 @@ INSTALLED_APPS = [
 	'django_comments',
 	'rest_framework',
 	'corsheaders',
+	'django_scheduled_tasks',
 ]
 
 MIDDLEWARE = [
@@ -283,6 +285,27 @@ OTODB_CDN_ENABLED = (
 )
 OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
 
+OTODB_REDIS_URL = os.environ.get('OTODB_REDIS_URL')
+if OTODB_REDIS_URL:
+	INSTALLED_APPS.append('django_rq')
+	RQ_QUEUES = {
+		'default': {
+			'URL': OTODB_REDIS_URL,
+		}
+	}
+	TASKS = {
+		'default': {
+			'BACKEND': 'django_tasks_rq.RQBackend',
+			'QUEUES': ['default'],
+		}
+	}
+else:
+	TASKS = {
+		'default': {
+			'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend',
+		}
+	}
+
 NINJA_PAGINATION_PER_PAGE = 30
 NINJA_PAGINATION_MAX_PER_PAGE_SIZE = 30
 NINJA_PAGINATION_MAX_LIMIT = 30
@@ -303,3 +326,11 @@ LOGGING = {
 		'level': 'INFO',
 	},
 }
+
+# Application specific
+
+# TODO: Consider making these dynamic per user rather than a fixed number
+OTODB_MAX_PENDING_WORKS = 10
+OTODB_MAX_FLAGGED_WORKS = 5
+
+OTODB_MODERATION_PERIOD = timedelta(weeks=1)

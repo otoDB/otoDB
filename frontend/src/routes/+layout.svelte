@@ -201,7 +201,7 @@
 							)}
 							{@render link(`/settings`, m.orange_born_seal_ascend())}
 							{@render link('/post/new?category=2', m.bald_ideal_gadfly_jest())}
-							{@render link('/work/add', m.fluffy_crisp_horse_imagine())}
+							{@render link('/source/add', m.fluffy_crisp_horse_imagine())}
 							{@render link(
 								`/profile/${data.user.username}`,
 								m.petty_basic_sheep_win()

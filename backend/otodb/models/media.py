@@ -2,13 +2,14 @@ from typing import TYPE_CHECKING, cast
 
 import nh3
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Prefetch
 from django.urls import reverse
 from django.utils.functional import cached_property
 from tagulous.models import TagField, TaggedManager
 
-from .enums import Rating, WorkTagCategory, Role
+from .enums import Rating, WorkTagCategory, Role, FlagStatus, Status
 from .tag import TagWork, TagSong, tagwork_ordering_case
 from .revision import RevisionTrackedModel
 
@@ -21,7 +22,12 @@ if TYPE_CHECKING:
 
 class ActiveManager(models.Manager):
 	def get_queryset(self):
-		qs = super().get_queryset().filter(moved_to__isnull=True)
+		qs = (
+			super()
+			.get_queryset()
+			.filter(moved_to__isnull=True)
+			.exclude(status=Status.UNAPPROVED)
+		)
 
 		instances_queryset = (
 			TagWorkInstance.objects.filter(work_tag__deprecated=False)
@@ -42,6 +48,16 @@ class ActiveManager(models.Manager):
 
 		return qs.select_related('thumbnail_source').prefetch_related(
 			Prefetch('tagworkinstance_set', queryset=instances_queryset),
+			Prefetch(
+				'flags',
+				queryset=WorkFlag.objects.filter(status=FlagStatus.PENDING)[:1],
+				to_attr='pending_flag',
+			),
+			Prefetch(
+				'appeals',
+				queryset=WorkAppeal.objects.filter(status=FlagStatus.PENDING)[:1],
+				to_attr='pending_appeal',
+			),
 			'worksource_set',
 		)
 
@@ -67,6 +83,8 @@ class TagWorkInstance(RevisionTrackedModel):
 	creator_roles = models.IntegerField(
 		null=True, blank=True, help_text='Creator role bitmask'
 	)
+
+	# NOTE: deprecated
 	instance_imported_from_source = models.BooleanField(null=False, default=True)
 
 	def set_creator_roles(self, roles: list[Role | int]):
@@ -101,11 +119,15 @@ class TagSongInstance(RevisionTrackedModel):
 
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
+		active_objects: models.Manager['MediaWork']
 		worksource_set: QuerySet['WorkSource']
 		poolitem_set: QuerySet['PoolItem']
 		relation_A: QuerySet['WorkRelation']
 		relation_B: QuerySet['WorkRelation']
 		tagworkinstance_set: QuerySet['TagWorkInstance']
+		flags: QuerySet['WorkFlag']
+		appeals: QuerySet['WorkAppeal']
+		disapprovals: QuerySet['WorkDisapproval']
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
@@ -122,8 +144,11 @@ class MediaWork(RevisionTrackedModel):
 		'self', null=True, blank=True, on_delete=models.CASCADE
 	)
 
+	status = models.IntegerField(choices=Status.choices, default=Status.APPROVED)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
 	class RevisionMeta:
-		tracked_fields = ['title', 'description', 'rating', 'moved_to']
+		tracked_fields = ['title', 'description', 'rating', 'moved_to', 'status']
 		entity_attrs = ['self', 'moved_to']
 
 		def to_active(instance):
@@ -287,3 +312,70 @@ class MediaSong(RevisionTrackedModel):
 
 	def __str__(self):
 		return self.title
+
+
+class WorkFlag(models.Model):
+	if TYPE_CHECKING:
+		work_id: int
+
+	work = models.ForeignKey(MediaWork, on_delete=models.CASCADE, related_name='flags')
+	creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
+	reason = models.CharField(max_length=1000, null=False, blank=False)
+	status = models.IntegerField(choices=FlagStatus.choices, default=FlagStatus.PENDING)
+	date = models.DateTimeField(auto_now_add=True)
+
+	def clean(self):
+		if self.status == FlagStatus.PENDING:
+			from django.core.exceptions import ValidationError
+
+			if self.work.status != Status.APPROVED:
+				raise ValidationError('Cannot flag a non-approved work')
+			if self.work.appeals.filter(status=FlagStatus.PENDING).exists():
+				raise ValidationError('Cannot flag a work with a pending appeal')
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(
+				fields=['work'],
+				condition=models.Q(status=FlagStatus.PENDING),
+				name='unique_pending_flag_per_work',
+				violation_error_message='A pending flag already exists for this work',
+			),
+		]
+
+
+class WorkAppeal(models.Model):
+	if TYPE_CHECKING:
+		work_id: int
+
+	work = models.ForeignKey(
+		MediaWork, on_delete=models.CASCADE, related_name='appeals'
+	)
+	creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
+	reason = models.CharField(max_length=1000, null=False, blank=False)
+	status = models.IntegerField(choices=FlagStatus.choices, default=FlagStatus.PENDING)
+	date = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(
+				fields=['work'],
+				condition=models.Q(status=FlagStatus.PENDING),
+				name='unique_pending_appeal_per_work',
+				violation_error_message='A pending appeal already exists for this work',
+			),
+		]
+
+
+class WorkDisapproval(models.Model):
+	work = models.ForeignKey(
+		MediaWork, on_delete=models.CASCADE, related_name='disapprovals'
+	)
+	reason = models.CharField(max_length=1000, null=False, blank=False)
+	by = models.ForeignKey(
+		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.RESTRICT
+	)
+	date = models.DateTimeField(auto_now_add=True, null=False)
+
+	class Meta:
+		unique_together = (('work', 'by'),)

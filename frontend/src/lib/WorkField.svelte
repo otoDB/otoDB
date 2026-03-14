@@ -19,6 +19,37 @@
 
 	let suggestions: components['schemas']['WorkSchema'][] = $state([]);
 	let locked_in = $state(false);
+	let selectedIndex = $state(0);
+
+	$effect(() => {
+		void suggestions;
+		selectedIndex = 0;
+	});
+
+	const selectWork = (v: components['schemas']['WorkSchema']) => {
+		value = v;
+		input = getDisplayText(v.title, '');
+		suggestions = [];
+		locked_in = true;
+		if (oninput) oninput(self, v);
+	};
+
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (!suggestions.length) return;
+
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			selectedIndex = (selectedIndex + 1) % suggestions.length;
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			selectedIndex = selectedIndex <= 0 ? suggestions.length - 1 : selectedIndex - 1;
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			selectWork(suggestions[selectedIndex]);
+		} else if (e.key === 'Escape') {
+			suggestions = [];
+		}
+	};
 
 	const search = async () => {
 		if (input === '') {
@@ -44,7 +75,13 @@
 </script>
 
 <span role="none" bind:this={self}>
-	<input type="text" oninput={debounce(search)} disabled={locked_in} bind:value={input} />
+	<input
+		type="text"
+		oninput={debounce(search)}
+		onkeydown={handleKeyDown}
+		disabled={locked_in}
+		bind:value={input}
+	/>
 	<input type="number" hidden value={value?.id ?? -1} {...props} />
 	{#if locked_in}
 		<button
@@ -73,7 +110,13 @@
 		>
 			<tbody>
 				{#each suggestions as v, i (i)}
-					<tr class="w bg-otodb-bg-fainter hover:bg-otodb-bg-faint p-1">
+					<tr
+						class={[
+							'p-1',
+							selectedIndex === i ? 'bg-otodb-bg-faint' : 'bg-otodb-bg-fainter'
+						]}
+						onmouseenter={() => (selectedIndex = i)}
+					>
 						<td
 							><WorkThumbnail
 								class="aspect-video w-20"
@@ -88,11 +131,7 @@
 								onclick={(e) => {
 									if (e.button !== 0) return;
 									e.preventDefault();
-									value = v;
-									input = getDisplayText(v.title, '');
-									suggestions = [];
-									locked_in = true;
-									if (oninput) oninput(self, v);
+									selectWork(v);
 								}}><DisplayText value={v.title} /> ({v.id})</a
 							>
 						</td>

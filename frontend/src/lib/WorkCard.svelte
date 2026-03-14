@@ -5,6 +5,7 @@
 	import WorkThumbnail from './WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getDisplayText } from './api';
+	import { StatusValue } from './enums';
 
 	interface Props {
 		work: components['schemas']['WorkSchema'];
@@ -16,7 +17,11 @@
 <div
 	class={[
 		props.class,
-		'group bg-otodb-bg-primary relative row-span-2 grid size-full grid-rows-subgrid gap-0'
+		'group bg-otodb-bg-primary relative row-span-2 grid size-full grid-rows-subgrid gap-0',
+		{
+			'outline outline-2 outline-sky-600':
+				work.status !== StatusValue.APPROVED || work?.pending_flag || work?.pending_appeal
+		}
 	]}
 >
 	<a href="/work/{work.id}" tabindex="-1" class="flex h-full items-center">

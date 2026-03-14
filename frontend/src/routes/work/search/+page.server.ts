@@ -9,7 +9,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const order = url.searchParams.get('order'),
 		dir = url.searchParams.get('dir');
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
-	const queue = url.searchParams.get('queue') || null;
 	const { data } = await client.GET('/api/work/search', {
 		fetch,
 		params: {
@@ -18,8 +17,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				tags,
 				limit: batch_size,
 				offset: batch_size * (page - 1),
-				order: order ? (dir === '-' ? '-' : '') + order : null,
-				...(queue ? { queue } : {})
+				order: order ? (dir === '-' ? '-' : '') + order : null
 			}
 		}
 	});
@@ -31,14 +29,11 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		order,
 		dir,
 		page,
-		queue,
 		head: {
-			title: queue
-				? 'Moderation Queue'
-				: m.mild_loud_shad_enchant({
-						type: m.mean_top_antelope_love(),
-						name: m.grand_merry_fly_succeed()
-					})
+			title: m.mild_loud_shad_enchant({
+				type: m.mean_top_antelope_love(),
+				name: m.grand_merry_fly_succeed()
+			})
 		}
 	};
 };

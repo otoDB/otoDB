@@ -17,7 +17,6 @@ from otodb.models import (
 	MediaWork,
 	WorkSource,
 	MediaSong,
-	WorkSourceRejection,
 	WorkFlag,
 	WorkAppeal,
 	WorkDisapproval,
@@ -82,19 +81,15 @@ class ConnectionLookupResponse(Schema):
 	entities: list[ConnectionTagResult]
 
 
-class WorkSourceRejectionSchema(ModelSchema):
-	by: ProfileSchema
-
-	class Meta:
-		model = WorkSourceRejection
-		fields = ['reason', 'date']
-
-
 class WorkSourceSchema(ModelSchema):
 	id: int
 	added_by: ProfileSchema
-	rejection: WorkSourceRejectionSchema | None = None
 	thumbnail: str | None = None  # Exposed as property
+	media_title: str | None = None
+
+	@staticmethod
+	def resolve_media_title(obj):
+		return obj.media.title if obj.media else None
 
 	class Meta:
 		model = WorkSource
@@ -111,6 +106,8 @@ class WorkSourceSchema(ModelSchema):
 			'work_status',
 			'source_id',
 			'uploader_id',
+			'is_pending',
+			'media',
 		]
 
 
@@ -189,12 +186,18 @@ class SourceCreationResponse(Schema):
 	work_id: int | None = None
 
 
+class TagWorkInstanceInSchema(Schema):
+	nameslug: str
+	sample: bool | None = None
+	roles: list[Annotated[int, Field(ge=1, le=max(Role.values))]] | None = None
+
+
 class CreateWorkPayload(Schema):
 	source_id: int
 	title: str | None = None
 	description: str | None = None
 	rating: int = 0
-	tags: list[str] = []
+	tags: list[TagWorkInstanceInSchema] = []
 
 
 class SourceSuggestionsResponse(Schema):
@@ -207,7 +210,7 @@ class SourceSuggestionsResponse(Schema):
 
 class WorkFlagSchema(ModelSchema):
 	id: int
-	creator: ProfileSchema
+	by: ProfileSchema | None = None
 
 	class Meta:
 		model = WorkFlag
@@ -216,7 +219,7 @@ class WorkFlagSchema(ModelSchema):
 
 class WorkAppealSchema(ModelSchema):
 	id: int
-	creator: ProfileSchema
+	by: ProfileSchema | None = None
 
 	class Meta:
 		model = WorkAppeal

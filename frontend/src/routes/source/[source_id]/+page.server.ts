@@ -1,34 +1,27 @@
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import client from '$lib/api';
 import { UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 
-export const load: PageServerLoad = async ({ fetch, params, locals, url }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
-
+export const load: PageServerLoad = async ({ fetch, params, locals, url, parent }) => {
 	const sourceId = +params.source_id;
-	if (isNaN(sourceId)) error(400, { message: 'Bad request' });
+	const { source } = (await parent()) as any;
 
-	const [{ data: source, error: sourceError }, { data: suggestions }] = await Promise.all([
-		client.GET('/api/source/source', {
+	// Only fetch suggestions for unbound sources (needed for work creation)
+	let suggestions = null;
+	if (!source.media) {
+		userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+		const { data: s } = await client.GET('/api/source/suggestions', {
 			fetch,
 			params: { query: { source_id: sourceId } }
-		}),
-		client.GET('/api/source/suggestions', {
-			fetch,
-			params: { query: { source_id: sourceId } }
-		})
-	]);
-
-	if (sourceError) error(404, { message: 'Source not found' });
+		});
+		suggestions = s;
+	}
 
 	return {
-		source,
 		suggestions,
-		head: {
-			title: `Review: ${source.title || 'Source #' + sourceId}`
-		}
+		isBound: !!source.media
 	};
 };
 
@@ -38,8 +31,8 @@ export const actions = {
 		const title = data.get('title') as string;
 		const description = data.get('description') as string;
 		const rating = +(data.get('rating') as string) || 0;
-		const tagsRaw = data.get('tags') as string;
-		const tags = tagsRaw ? tagsRaw.split(' ').filter(Boolean) : [];
+		const tagsJsonRaw = data.get('tags_json') as string;
+		const tags = tagsJsonRaw ? JSON.parse(tagsJsonRaw) : [];
 
 		const { data: workId, error: createError } = await client.POST('/api/work/create', {
 			fetch,

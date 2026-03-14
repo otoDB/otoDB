@@ -19,8 +19,11 @@
 		props.class,
 		'group bg-otodb-bg-primary relative row-span-2 grid size-full grid-rows-subgrid gap-0',
 		{
-			'outline outline-2 outline-sky-600':
-				work.status !== StatusValue.APPROVED || work?.pending_flag || work?.pending_appeal
+			'outline outline-2 outline-sky-600': work.status === StatusValue.PENDING,
+			'outline outline-2 outline-yellow-600': work?.pending_flag,
+			'outline outline-2 outline-orange-600': work?.pending_appeal,
+			'outline outline-2 outline-red-600':
+				work.status === StatusValue.UNAPPROVED && !work?.pending_appeal
 		}
 	]}
 >

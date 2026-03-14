@@ -137,8 +137,8 @@ export const actions = {
 		// Source already has a work -> redirect to work page
 		if (result?.work_id) redirect(303, `/work/${result.work_id}`);
 
-		// New source -> redirect to review page
-		if (result?.source_id) redirect(303, `/source/${result.source_id}/review`);
+		// New source -> redirect to source page (for review/work creation)
+		if (result?.source_id) redirect(303, `/source/${result.source_id}`);
 
 		// Fallback
 		redirect(303, `/profile/${locals.user.username}/submissions`);

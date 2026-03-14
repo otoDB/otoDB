@@ -629,7 +629,7 @@ export interface paths {
         put?: never;
         /**
          * Reject Source
-         * @description Reject a source (used for source-level approval on existing works).
+         * @description Reject a pending source on an existing work. Unbinds the source.
          */
         post: operations["otodb_api_source_reject_source"];
         delete?: never;
@@ -667,7 +667,7 @@ export interface paths {
         };
         /**
          * List Sources
-         * @description List sources with pagination, filterable by user and binding status.
+         * @description List sources with pagination, filterable by user, binding, and pending status.
          */
         get: operations["otodb_api_source_list_sources"];
         put?: never;
@@ -1636,6 +1636,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/moderation/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Moderation Events
+         * @description Query the unified moderation events view.
+         */
+        get: operations["otodb_api_moderation_moderation_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1855,7 +1875,7 @@ export interface components {
         WorkAppealSchema: {
             /** Id */
             id: number;
-            creator: components["schemas"]["ProfileSchema"];
+            by: components["schemas"]["ProfileSchema"];
             /** Reason */
             reason: string;
             /**
@@ -1873,7 +1893,7 @@ export interface components {
         WorkFlagSchema: {
             /** Id */
             id: number;
-            creator: components["schemas"]["ProfileSchema"];
+            by: components["schemas"]["ProfileSchema"];
             /** Reason */
             reason: string;
             /**
@@ -1965,23 +1985,11 @@ export interface components {
             /** Roles */
             roles?: number[] | null;
         };
-        /** WorkSourceRejectionSchema */
-        WorkSourceRejectionSchema: {
-            by: components["schemas"]["ProfileSchema"];
-            /** Reason */
-            reason: string;
-            /**
-             * Date
-             * Format: date-time
-             */
-            date: string;
-        };
         /** WorkSourceSchema */
         WorkSourceSchema: {
             /** Id */
             id: number;
             added_by: components["schemas"]["ProfileSchema"];
-            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
             /** Thumbnail */
             thumbnail?: string | null;
             /** Platform */
@@ -2014,6 +2022,13 @@ export interface components {
             source_id?: string | null;
             /** Uploader Id */
             uploader_id?: string | null;
+            /**
+             * Is Pending
+             * @default false
+             */
+            is_pending: boolean;
+            /** Media */
+            media?: number | null;
         };
         /** CreateWorkPayload */
         CreateWorkPayload: {
@@ -2032,7 +2047,7 @@ export interface components {
              * Tags
              * @default []
              */
-            tags: string[];
+            tags: components["schemas"]["TagWorkInstanceInSchema"][];
         };
         /**
          * WorkSourceMetadataSchema
@@ -2134,7 +2149,6 @@ export interface components {
             /** Id */
             id: number;
             added_by: components["schemas"]["ProfileSchema"];
-            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
             /** Thumbnail */
             thumbnail?: string | null;
             /** Platform */
@@ -2167,6 +2181,11 @@ export interface components {
             source_id?: string | null;
             /** Uploader Id */
             uploader_id?: string | null;
+            /**
+             * Is Pending
+             * @default false
+             */
+            is_pending: boolean;
             /** Media */
             media: number | null;
         };
@@ -2718,6 +2737,41 @@ export interface components {
             ];
             /** Command */
             command: number;
+        };
+        /** ModerationEventBySchema */
+        ModerationEventBySchema: {
+            /** Id */
+            id: number;
+            /** Username */
+            username: string;
+        };
+        /** ModerationEventResponse */
+        ModerationEventResponse: {
+            /** Items */
+            items: components["schemas"]["ModerationEventSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** ModerationEventSchema */
+        ModerationEventSchema: {
+            /** Event Type */
+            event_type: string;
+            /** Event Id */
+            event_id: number;
+            /** Work Id */
+            work_id: number | null;
+            /** Source Id */
+            source_id: number | null;
+            by: components["schemas"]["ModerationEventBySchema"] | null;
+            /** Reason */
+            reason: string;
+            /** Status */
+            status: number | null;
+            /**
+             * Event At
+             * Format: date-time
+             */
+            event_at: string;
         };
     };
     responses: never;
@@ -3473,6 +3527,7 @@ export interface operations {
         parameters: {
             query?: {
                 mode?: string;
+                category?: ("pending" | "flagged" | "appealed") | null;
                 limit?: number;
                 offset?: number;
             };
@@ -3738,6 +3793,8 @@ export interface operations {
             query?: {
                 user_id?: number | null;
                 unbound?: boolean | null;
+                is_pending?: boolean | null;
+                platform?: number | null;
                 limit?: number;
                 offset?: number;
             };
@@ -5396,6 +5453,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BulkRequestSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_moderation_moderation_events: {
+        parameters: {
+            query?: {
+                work_id?: number | null;
+                source_id?: number | null;
+                user_id?: number | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModerationEventResponse"];
                 };
             };
         };

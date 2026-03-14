@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ActiveManager(RevisionTrackedManager):
-	def get_queryset(self):
-		return super().get_queryset().filter(rejection__isnull=True)
+	pass
 
 
 class WorkSource(RevisionTrackedModel):
@@ -315,17 +314,6 @@ class WorkSource(RevisionTrackedModel):
 		if self.thumbnail_path:
 			return storage_manager.url(self.thumbnail_path)
 		return self.thumbnail_url  # type: ignore -- Fallback to 3rd-party remote thumbnail URL
-
-
-class WorkSourceRejection(models.Model):
-	source = models.OneToOneField(
-		WorkSource, null=False, on_delete=models.CASCADE, related_name='rejection'
-	)
-	reason = models.CharField(max_length=1000, null=False, blank=False)
-	by = models.ForeignKey(
-		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.RESTRICT
-	)
-	date = models.DateTimeField(auto_now_add=True, null=False)
 
 
 class WorkSourceInfoPayload(models.Model):

@@ -19,6 +19,7 @@ from .post import post_router
 from .comment import comment_router
 from .history import history_router
 from .requests import request_router
+from .moderation import moderation_router
 
 
 class ORJSONParser(Parser):
@@ -49,6 +50,7 @@ api.add_router('/post/', post_router)
 api.add_router('/comment/', comment_router)
 api.add_router('/history/', history_router)
 api.add_router('/request/', request_router)
+api.add_router('/moderation/', moderation_router)
 
 
 @api.get('stats')

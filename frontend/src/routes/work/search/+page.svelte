@@ -6,7 +6,6 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { UserLevel } from '$lib/enums';
 
 	let { data }: PageProps = $props();
 </script>
@@ -46,14 +45,6 @@
 				>{m.novel_orange_mantis_feast()}</option
 			></select
 		>
-		{#if data.user?.level >= UserLevel.EDITOR}
-			<hr />
-			<select name="queue" value={data.queue ?? ''}>
-				<option value="">--</option>
-				<option value="unseen">Unseen</option>
-				<option value="all">All</option>
-			</select>
-		{/if}
 	</form>
 	<hr />
 	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">

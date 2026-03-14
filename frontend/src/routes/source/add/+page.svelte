@@ -7,7 +7,6 @@
 	import { callErrorToast } from '$lib/toast';
 
 	let { data, form }: PageProps = $props();
-	let isOriginal = $derived(!!(form?.origin ?? !data.title));
 	let isUnavailable = $derived(!!data.unavailable_source);
 
 	let submitting = $state(false);
@@ -59,21 +58,13 @@
 							<label for="origin">{m.watery_fuzzy_fireant_thrive()}</label>
 						</th>
 						<td class="w-full">
-							<select name="origin" bind:value={isOriginal}>
+							<select id="origin" name="origin" required>
+								<option value="" selected disabled>---</option>
 								<option value={true}>{m.broad_large_squid_zoom()}</option>
 								<option value={false}>{m.great_lucky_goldfish_sail()}</option>
 							</select>
 						</td>
 					</tr>
-					{#if !isOriginal}
-						<tr>
-							<th
-								><label for="original_url">{m.crisp_steep_angelfish_bump()}</label
-								></th
-							>
-							<td><input type="text" name="original_url" /></td>
-						</tr>
-					{/if}
 					{#if data.user?.level >= UserLevel.EDITOR}
 						<tr>
 							<th class="w-min whitespace-nowrap">

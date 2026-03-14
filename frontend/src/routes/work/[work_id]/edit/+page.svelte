@@ -25,7 +25,7 @@
 				fetch,
 				params: { query: { work_id: data.id } }
 			});
-			goto('/work/unbound', { invalidateAll: true });
+			goto('/source', { invalidateAll: true });
 		}
 	};
 	const unbind = async (source_id: number) => {
@@ -33,7 +33,7 @@
 			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
 		await client.POST('/api/source/unbind', { fetch, params: { query: { source_id } } });
-		if (data.sources?.length === 1) goto('/work/unbound');
+		if (data.sources?.length === 1) goto('/source');
 		else invalidateAll();
 	};
 	const updateStatus = (source_id: number) => async (e) => {

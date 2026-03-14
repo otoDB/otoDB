@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, cast
 
 import nh3
 
-from django.conf import settings
 from django.db import models
 from django.db.models import Prefetch
 from django.urls import reverse
@@ -18,16 +17,14 @@ if TYPE_CHECKING:
 	from .work_source import WorkSource
 	from .pool import PoolItem
 	from .relations import WorkRelation
+	from .moderation import WorkFlag, WorkAppeal, WorkDisapproval
 
 
 class ActiveManager(models.Manager):
 	def get_queryset(self):
-		qs = (
-			super()
-			.get_queryset()
-			.filter(moved_to__isnull=True)
-			.exclude(status=Status.UNAPPROVED)
-		)
+		from .moderation import WorkFlag, WorkAppeal
+
+		qs = super().get_queryset().filter(moved_to__isnull=True)
 
 		instances_queryset = (
 			TagWorkInstance.objects.filter(work_tag__deprecated=False)
@@ -312,70 +309,3 @@ class MediaSong(RevisionTrackedModel):
 
 	def __str__(self):
 		return self.title
-
-
-class WorkFlag(models.Model):
-	if TYPE_CHECKING:
-		work_id: int
-
-	work = models.ForeignKey(MediaWork, on_delete=models.CASCADE, related_name='flags')
-	creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
-	reason = models.CharField(max_length=1000, null=False, blank=False)
-	status = models.IntegerField(choices=FlagStatus.choices, default=FlagStatus.PENDING)
-	date = models.DateTimeField(auto_now_add=True)
-
-	def clean(self):
-		if self.status == FlagStatus.PENDING:
-			from django.core.exceptions import ValidationError
-
-			if self.work.status != Status.APPROVED:
-				raise ValidationError('Cannot flag a non-approved work')
-			if self.work.appeals.filter(status=FlagStatus.PENDING).exists():
-				raise ValidationError('Cannot flag a work with a pending appeal')
-
-	class Meta:
-		constraints = [
-			models.UniqueConstraint(
-				fields=['work'],
-				condition=models.Q(status=FlagStatus.PENDING),
-				name='unique_pending_flag_per_work',
-				violation_error_message='A pending flag already exists for this work',
-			),
-		]
-
-
-class WorkAppeal(models.Model):
-	if TYPE_CHECKING:
-		work_id: int
-
-	work = models.ForeignKey(
-		MediaWork, on_delete=models.CASCADE, related_name='appeals'
-	)
-	creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
-	reason = models.CharField(max_length=1000, null=False, blank=False)
-	status = models.IntegerField(choices=FlagStatus.choices, default=FlagStatus.PENDING)
-	date = models.DateTimeField(auto_now_add=True)
-
-	class Meta:
-		constraints = [
-			models.UniqueConstraint(
-				fields=['work'],
-				condition=models.Q(status=FlagStatus.PENDING),
-				name='unique_pending_appeal_per_work',
-				violation_error_message='A pending appeal already exists for this work',
-			),
-		]
-
-
-class WorkDisapproval(models.Model):
-	work = models.ForeignKey(
-		MediaWork, on_delete=models.CASCADE, related_name='disapprovals'
-	)
-	reason = models.CharField(max_length=1000, null=False, blank=False)
-	by = models.ForeignKey(
-		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.RESTRICT
-	)
-	date = models.DateTimeField(auto_now_add=True, null=False)
-
-	class Meta:
-		unique_together = (('work', 'by'),)

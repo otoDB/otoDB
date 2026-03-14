@@ -89,13 +89,28 @@
 		<div class="mb-3 border border-sky-600 bg-sky-600/10 px-4 py-2 font-bold text-sky-600">
 			This work is pending approval.
 		</div>
+	{:else if data.status === StatusValue.UNAPPROVED && data?.pending_appeal}
+		<div class="mb-3 border border-orange-600 bg-orange-600/10 px-4 py-2 text-orange-600">
+			<div class="font-bold">This work has been appealed.</div>
+			{#if data.pending_appeal.reason}
+				<div class="mt-1 text-sm">
+					Reason: {data.pending_appeal.reason}
+				</div>
+			{/if}
+		</div>
+	{:else if data.status === StatusValue.UNAPPROVED}
+		<div class="mb-3 border border-red-600 bg-red-600/10 px-4 py-2 font-bold text-red-600">
+			This work has been delisted.
+		</div>
 	{/if}
 	{#if data?.pending_flag}
 		<div class="mb-3 border border-yellow-600 bg-yellow-600/10 px-4 py-2 text-yellow-600">
 			<div class="font-bold">This work has been flagged for review.</div>
-			<div class="mt-1 text-sm">
-				Reason: {data.pending_flag.reason}
-			</div>
+			{#if data.pending_flag.reason}
+				<div class="mt-1 text-sm">
+					Reason: {data.pending_flag.reason}
+				</div>
+			{/if}
 		</div>
 	{/if}
 	{#if data.user && (data.status === StatusValue.PENDING || data?.pending_flag || data?.pending_appeal)}
@@ -270,6 +285,31 @@
 										</td>
 									</tr>
 								{/if}
+								{#if data.status === StatusValue.UNAPPROVED && !data?.pending_appeal}
+									<tr>
+										<th class="w-24">Appeal</th>
+										<td>
+											<button
+												onclick={async () => {
+													const reason = prompt('Appeal reason:');
+													if (!reason) return;
+													const { error } = await client.POST(
+														'/api/work/appeal',
+														{
+															fetch,
+															params: {
+																query: { work_id: data.id, reason }
+															}
+														}
+													);
+													if (!error) location.reload();
+												}}
+											>
+												Appeal
+											</button>
+										</td>
+									</tr>
+								{/if}
 							</tbody>
 						</table>
 					</div>
@@ -324,9 +364,7 @@
 				<div class="text-lg">
 					<strong>
 						<a
-							href={src.url}
-							target="_blank"
-							rel="noopener noreferrer"
+							href="/source/{src.id}"
 							class={[src.work_status !== 0 ? 'text-otodb-content-fainter' : '']}
 						>
 							{Platform[src.platform]}
@@ -335,6 +373,9 @@
 							{src.title || src.url}
 						</a>
 					</strong>
+					<a href={src.url} target="_blank" rel="noopener noreferrer" class="ml-2 text-sm"
+						>[source]</a
+					>
 				</div>
 
 				<div class="mt-2 flex flex-wrap gap-x-2">

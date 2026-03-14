@@ -14,4 +14,4 @@ EXPOSE 5173/tcp
 
 COPY . .
 
-ENTRYPOINT [ "sh", "-c", "PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host PORT=5173 bun run dev --host 0.0.0.0" ]
+ENTRYPOINT [ "sh", "-c", "exec env PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host PORT=5173 bun run dev --host 0.0.0.0" ]

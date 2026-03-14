@@ -27,4 +27,4 @@ COPY --from=prerelease /app/build .
 
 EXPOSE 5173/tcp
 
-ENTRYPOINT [ "sh", "-c", "PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 bun ./" ]
+ENTRYPOINT [ "sh", "-c", "exec env PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 bun ./" ]

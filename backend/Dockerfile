@@ -26,4 +26,4 @@ RUN uv run p12y apply
 RUN touch cookies.txt
 
 EXPOSE 8000
-CMD ["sh", "-c", "uv run _setup.py && uv run manage.py collectstatic --noinput && uv run granian --interface wsgi project.wsgi:application --host 0.0.0.0 --workers 4"]
+CMD ["sh", "-c", "uv run _setup.py && uv run manage.py collectstatic --noinput && exec uv run granian --interface wsgi project.wsgi:application --host 0.0.0.0 --workers 4"]

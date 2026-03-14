@@ -5,3 +5,4 @@ docker-compose.dev.yml
 postgresql.conf
 browser-extension/dist/
 browser-extension/node_modules/
+browser-extension/*.zip

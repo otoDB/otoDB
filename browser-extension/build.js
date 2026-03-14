@@ -1,9 +1,19 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const AdmZip = require('adm-zip');
 
-const PLATFORM = process.argv.find(a => ['chrome', 'firefox'].includes(a)) || 'chrome';
+const VERSION = '1.2.0';
+
+const COMMANDS = ['chrome', 'firefox', 'pack'];
+const COMMAND = process.argv.find(a => COMMANDS.includes(a));
 const WATCH = process.argv.includes('--watch');
+
+if (!COMMAND) {
+    console.error('Usage: node build.js <chrome|firefox> [--watch]');
+    console.error('       node build.js pack');
+    process.exit(1);
+}
 
 const SRC = path.join(__dirname, 'src');
 const DIST = path.join(__dirname, 'dist');
@@ -12,7 +22,7 @@ const DIST = path.join(__dirname, 'dist');
 const manifest = {
     "manifest_version": 3,
     "name": "otoDB",
-    "version": "1.2.0",
+    "version": VERSION,
     "description": "otoDB is a community-driven website consisting of a collaborative user-managed database and wiki.",
     "background": {
         "scripts": ["background.js"]
@@ -99,13 +109,13 @@ function clean() {
     fs.mkdirSync(DIST, { recursive: true });
 }
 
-function generateManifest() {
-    const finalManifest = { ...manifest, ...configs[PLATFORM] };
+function generateManifest(platform) {
+    const finalManifest = { ...manifest, ...configs[platform] };
     fs.writeFileSync(
         path.join(DIST, 'manifest.json'),
         JSON.stringify(finalManifest, null, 2)
     );
-    console.log(`  manifest.json (${PLATFORM})`);
+    console.log(`  manifest.json (${platform})`);
 }
 
 function copyFiles() {
@@ -134,31 +144,50 @@ function compileCss() {
     console.log('  style.css (Tailwind compiled)');
 }
 
-function build() {
-    console.log(`Building for ${PLATFORM}...`);
+function build(platform) {
+    console.log(`Building for ${platform}...`);
     clean();
-    generateManifest();
+    generateManifest(platform);
     copyFiles();
     copyVendor();
     compileCss();
     console.log(`\nDone -> dist/`);
 }
 
-build();
+function pack() {
+    for (const platform of ['chrome', 'firefox']) {
+        build(platform);
+        const zipName = `otodb-${platform}-v${VERSION}.zip`;
+        const zipPath = path.join(__dirname, zipName);
+        if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+        console.log(`\nZipping ${platform}...`);
+        const zip = new AdmZip();
+        zip.addLocalFolder(DIST);
+        zip.writeZip(zipPath);
+        console.log(`  -> ${zipName}`);
+    }
+    console.log('\nPack complete!');
+}
 
-if (WATCH) {
-    console.log('\nWatching src/ for changes...');
-    let debounce = null;
-    fs.watch(SRC, { recursive: true }, (event, filename) => {
-        if (debounce) clearTimeout(debounce);
-        debounce = setTimeout(() => {
-            console.log(`\nChanged: ${filename}`);
-            if (filename && filename.endsWith('.css')) {
-                compileCss();
-            } else {
-                copyFiles();
-                generateManifest();
-            }
-        }, 100);
-    });
+if (COMMAND === 'pack') {
+    pack();
+} else {
+    build(COMMAND);
+
+    if (WATCH) {
+        console.log('\nWatching src/ for changes...');
+        let debounce = null;
+        fs.watch(SRC, { recursive: true }, (event, filename) => {
+            if (debounce) clearTimeout(debounce);
+            debounce = setTimeout(() => {
+                console.log(`\nChanged: ${filename}`);
+                if (filename && filename.endsWith('.css')) {
+                    compileCss();
+                } else {
+                    copyFiles();
+                    generateManifest(COMMAND);
+                }
+            }, 100);
+        });
+    }
 }

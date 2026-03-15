@@ -68,11 +68,11 @@ COMMANDS = {
 		TAGWORK_SLUG_VALIDATOR,
 		repeat(TAGWORK_SLUG_VALIDATOR),
 	),
-	'source:attach-tag': (
-		RequestActions.WORKSOURCE_ATTACHTAG,
-		SOURCEWORK_ID_VALIDATOR,
-		repeat(TAGWORK_SLUG_VALIDATOR),
-	),
+	# 'source:attach-tag': (
+	# 	RequestActions.WORKSOURCE_ATTACHTAG,
+	# 	SOURCEWORK_ID_VALIDATOR,
+	# 	repeat(TAGWORK_SLUG_VALIDATOR),
+	# ),
 	'work:attach-tag': (
 		RequestActions.MEDIAWORK_ATTACHTAG,
 		MEDIAWORK_ID_VALIDATOR,
@@ -97,9 +97,9 @@ ACTIONS = {
 	RequestActions.TAGWORK_UNPARENT: lambda A, B: TagWorkParenthood.objects.get(
 		tag=A, parent=B
 	).delete(),
-	RequestActions.WORKSOURCE_ATTACHTAG: lambda A, B: (
-		A.media.tags.add(B) if A.media else ...
-	),
+	# RequestActions.WORKSOURCE_ATTACHTAG: lambda A, B: (
+	# 	A.media.tags.add(B) if A.media else ...
+	# ),
 	RequestActions.MEDIAWORK_ATTACHTAG: lambda A, B: A.tags.add(B),
 }
 

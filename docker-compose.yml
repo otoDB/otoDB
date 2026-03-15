@@ -1,5 +1,21 @@
 name: otodb
 
+x-backend: &backend
+  image: ghcr.io/otodb/otodb-backend:latest
+  build: ./backend
+  env_file:
+    - .env
+  environment:
+    OTODB_DB_BACKEND: postgresql
+    OTODB_DB_HOST: db
+    OTODB_DB_PORT: "5432"
+    OTODB_REDIS_URL: redis://redis:6379/0
+  working_dir: /app
+  depends_on:
+    - db
+    - redis
+  restart: always
+
 services:
   db:
     image: postgres:17.6
@@ -15,24 +31,25 @@ services:
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
     command: -c config_file=/etc/postgresql/postgresql.conf
 
+  redis:
+    image: redis:8-alpine
+    restart: always
+
   backend:
-    image: ghcr.io/otodb/otodb-backend:latest
-    build: ./backend
-    env_file:
-      - .env
-    environment:
-      OTODB_DB_BACKEND: postgresql
-      OTODB_DB_HOST: db
-      OTODB_DB_PORT: "5432"
+    <<: *backend
     volumes:
       - /mnt/otodb-block/static:/app/static # Mount to specific location
       - ./cookies.txt:/app/cookies.txt:ro # Mount cookies for yt-dlp
       # - ./backend:/app  # For development purposes only
-    working_dir: /app
-    depends_on:
-      - db
-    restart: always
     stop_signal: SIGINT
+
+  worker:
+    <<: *backend
+    command: ["uv", "run", "manage.py", "rqworker", "--job-class", "django_tasks_rq.Job"]
+
+  scheduler:
+    <<: *backend
+    command: ["uv", "run", "manage.py", "run_task_scheduler"]
 
   frontend:
     image: ghcr.io/otodb/otodb-frontend:latest

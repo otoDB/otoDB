@@ -614,7 +614,7 @@ def rollback_entity(
 
 
 @history_router.post('rollback', auth=django_auth)
-@user_is_staff  # for now
+@user_is_staff  # TODO: for now
 @track_revision
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic

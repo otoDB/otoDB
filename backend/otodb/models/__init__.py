@@ -1,4 +1,8 @@
-from .media import MediaWork, TagWorkInstance, MediaSong
+from .media import (
+	MediaWork,
+	TagWorkInstance,
+	MediaSong,
+)
 from .pool import Pool, PoolItem, PoolUpstream
 from .tag import (
 	TagWork,
@@ -8,7 +12,15 @@ from .tag import (
 	TagWorkParenthood,
 	TagSongLangPreference,
 )
-from .work_source import WorkSource, WorkSourceRejection
+from .work_source import WorkSource
+from .moderation import (
+	WorkFlag,
+	WorkAppeal,
+	WorkDisapproval,
+	WorkApproval,
+	ModAction,
+	ModerationEvent,
+)
 from .relations import WorkRelation, SongRelation
 from .posts import (
 	Post,
@@ -43,7 +55,9 @@ __all__ = [
 	'TagWorkLangPreference',
 	'TagWorkParenthood',
 	'WorkSource',
-	'WorkSourceRejection',
+	'WorkFlag',
+	'WorkAppeal',
+	'WorkDisapproval',
 	'WorkRelation',
 	'SongRelation',
 	'Post',
@@ -63,4 +77,7 @@ __all__ = [
 	'RevisionChange',
 	'RevisionChangeEntity',
 	'CommentMeta',
+	'WorkApproval',
+	'ModAction',
+	'ModerationEvent',
 ]

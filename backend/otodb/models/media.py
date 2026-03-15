@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from tagulous.models import TagField, TaggedManager
 
-from .enums import Rating, WorkTagCategory, Role
+from .enums import Rating, WorkTagCategory, Role, FlagStatus, Status
 from .tag import TagWork, TagSong, tagwork_ordering_case
 from .revision import RevisionTrackedModel
 
@@ -17,10 +17,13 @@ if TYPE_CHECKING:
 	from .work_source import WorkSource
 	from .pool import PoolItem
 	from .relations import WorkRelation
+	from .moderation import WorkFlag, WorkAppeal, WorkDisapproval
 
 
 class ActiveManager(models.Manager):
 	def get_queryset(self):
+		from .moderation import WorkFlag, WorkAppeal
+
 		qs = super().get_queryset().filter(moved_to__isnull=True)
 
 		instances_queryset = (
@@ -42,6 +45,16 @@ class ActiveManager(models.Manager):
 
 		return qs.select_related('thumbnail_source').prefetch_related(
 			Prefetch('tagworkinstance_set', queryset=instances_queryset),
+			Prefetch(
+				'flags',
+				queryset=WorkFlag.objects.filter(status=FlagStatus.PENDING)[:1],
+				to_attr='pending_flag',
+			),
+			Prefetch(
+				'appeals',
+				queryset=WorkAppeal.objects.filter(status=FlagStatus.PENDING)[:1],
+				to_attr='pending_appeal',
+			),
 			'worksource_set',
 		)
 
@@ -67,6 +80,8 @@ class TagWorkInstance(RevisionTrackedModel):
 	creator_roles = models.IntegerField(
 		null=True, blank=True, help_text='Creator role bitmask'
 	)
+
+	# NOTE: deprecated
 	instance_imported_from_source = models.BooleanField(null=False, default=True)
 
 	def set_creator_roles(self, roles: list[Role | int]):
@@ -101,11 +116,15 @@ class TagSongInstance(RevisionTrackedModel):
 
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
+		active_objects: models.Manager['MediaWork']
 		worksource_set: QuerySet['WorkSource']
 		poolitem_set: QuerySet['PoolItem']
 		relation_A: QuerySet['WorkRelation']
 		relation_B: QuerySet['WorkRelation']
 		tagworkinstance_set: QuerySet['TagWorkInstance']
+		flags: QuerySet['WorkFlag']
+		appeals: QuerySet['WorkAppeal']
+		disapprovals: QuerySet['WorkDisapproval']
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
@@ -121,6 +140,9 @@ class MediaWork(RevisionTrackedModel):
 	moved_to = models.ForeignKey(
 		'self', null=True, blank=True, on_delete=models.CASCADE
 	)
+
+	status = models.IntegerField(choices=Status.choices, default=Status.APPROVED)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
 	class RevisionMeta:
 		tracked_fields = ['title', 'description', 'rating', 'moved_to']

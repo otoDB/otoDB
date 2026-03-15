@@ -25,19 +25,19 @@
 				fetch,
 				params: { query: { work_id: data.id } }
 			});
-			goto('/work/unbound', { invalidateAll: true });
+			goto('/source', { invalidateAll: true });
 		}
 	};
 	const unbind = async (source_id: number) => {
 		if (data.sources?.length === 1) {
 			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
-		await client.POST('/api/work/unbind_source', { fetch, params: { query: { source_id } } });
-		if (data.sources?.length === 1) goto('/work/unbound');
+		await client.POST('/api/source/unbind', { fetch, params: { query: { source_id } } });
+		if (data.sources?.length === 1) goto('/source');
 		else invalidateAll();
 	};
 	const updateStatus = (source_id: number) => async (e) => {
-		const p = client.PUT('/api/work/source_origin', {
+		const p = client.PUT('/api/source/origin', {
 			fetch,
 			params: { query: { source_id, status: e.target.value } }
 		});
@@ -178,7 +178,7 @@
 								<RefreshButton source={src} />
 							{:else if src.work_status === 1}
 								{#if data.user?.level >= UserLevel.EDITOR}
-									<a href="/work/add?for_source={src.id}"
+									<a href="/source/add?for_source={src.id}"
 										>{m.minor_crisp_cobra_list()}</a
 									>
 								{:else}
@@ -193,7 +193,9 @@
 		<br />
 		<input type="submit" />
 	</form>
-	<button onclick={del}>{m.suave_less_deer_grip()}</button>
+	{#if data.user?.level >= UserLevel.ADMIN}
+		<button onclick={del}>{m.suave_less_deer_grip()}</button>
+	{/if}
 </Section>
 
 <Section title={m.alive_these_jay_pick()}>

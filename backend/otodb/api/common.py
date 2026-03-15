@@ -5,6 +5,7 @@ from pydantic import field_validator
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.http import HttpRequest
 
 from django_request_cache import get_request_cache
 from ninja import Schema, ModelSchema, Field, Query, Header, Router
@@ -16,7 +17,9 @@ from otodb.models import (
 	MediaWork,
 	WorkSource,
 	MediaSong,
-	WorkSourceRejection,
+	WorkFlag,
+	WorkAppeal,
+	WorkDisapproval,
 	Pool,
 	PoolItem,
 	WorkRelation,
@@ -35,6 +38,10 @@ from otodb.models.enums import (
 	SongRelationTypes,
 )
 import re
+
+
+class AuthedHttpRequest(HttpRequest):
+	user: Account
 
 
 class Error(Schema):
@@ -74,19 +81,15 @@ class ConnectionLookupResponse(Schema):
 	entities: list[ConnectionTagResult]
 
 
-class WorkSourceRejectionSchema(ModelSchema):
-	by: ProfileSchema
-
-	class Meta:
-		model = WorkSourceRejection
-		fields = ['reason']
-
-
 class WorkSourceSchema(ModelSchema):
 	id: int
 	added_by: ProfileSchema
-	rejection: WorkSourceRejectionSchema | None = None
 	thumbnail: str | None = None  # Exposed as property
+	media_title: str | None = None
+
+	@staticmethod
+	def resolve_media_title(obj):
+		return obj.media.title if obj.media else None
 
 	class Meta:
 		model = WorkSource
@@ -103,6 +106,8 @@ class WorkSourceSchema(ModelSchema):
 			'work_status',
 			'source_id',
 			'uploader_id',
+			'is_pending',
+			'media',
 		]
 
 
@@ -132,7 +137,7 @@ class SlimWorkSchema(ModelSchema):
 
 	class Meta:
 		model = MediaWork
-		fields = ['title']
+		fields = ['title', 'status']
 
 
 class WorkSchema(ModelSchema):
@@ -140,20 +145,94 @@ class WorkSchema(ModelSchema):
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
 	relations: tuple[list[RelationSchema], list[SlimWorkSchema]]
+	pending_flag: 'WorkFlagSchema | None' = None
+	pending_appeal: 'WorkAppealSchema | None' = None
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'description', 'rating', 'thumbnail_source']
+		fields = ['title', 'description', 'rating', 'thumbnail_source', 'status']
+
+	@staticmethod
+	def resolve_pending_flag(obj):
+		return obj.pending_flag[0] if obj.pending_flag else None
+
+	@staticmethod
+	def resolve_pending_appeal(obj):
+		return obj.pending_appeal[0] if obj.pending_appeal else None
 
 
 class ThinWorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
+	pending_flag: 'WorkFlagSchema | None' = None
+	pending_appeal: 'WorkAppealSchema | None' = None
 
 	class Meta:
 		model = MediaWork
-		fields = ['title']
+		fields = ['title', 'status']
+
+	@staticmethod
+	def resolve_pending_flag(obj):
+		return obj.pending_flag[0] if obj.pending_flag else None
+
+	@staticmethod
+	def resolve_pending_appeal(obj):
+		return obj.pending_appeal[0] if obj.pending_appeal else None
+
+
+class SourceCreationResponse(Schema):
+	source_id: int | None = None
+	work_id: int | None = None
+
+
+class TagWorkInstanceInSchema(Schema):
+	nameslug: str
+	sample: bool | None = None
+	roles: list[Annotated[int, Field(ge=1, le=max(Role.values))]] | None = None
+
+
+class CreateWorkPayload(Schema):
+	source_id: int
+	title: str | None = None
+	description: str | None = None
+	rating: int = 0
+	tags: list[TagWorkInstanceInSchema] = []
+
+
+class SourceSuggestionsResponse(Schema):
+	title: str | None = None
+	description: str | None = None
+	source_tags: list[TagWorkSchema] = []
+	new_tags: list[TagWorkSchema] = []
+	creator_tags: list[TagWorkSchema] = []
+
+
+class WorkFlagSchema(ModelSchema):
+	id: int
+	by: ProfileSchema | None = None
+
+	class Meta:
+		model = WorkFlag
+		fields = ['reason', 'status', 'date']
+
+
+class WorkAppealSchema(ModelSchema):
+	id: int
+	by: ProfileSchema | None = None
+
+	class Meta:
+		model = WorkAppeal
+		fields = ['reason', 'status', 'date']
+
+
+class WorkDisapprovalSchema(ModelSchema):
+	id: int
+	by: ProfileSchema
+
+	class Meta:
+		model = WorkDisapproval
+		fields = ['reason', 'date']
 
 
 class ListItemSchema(ModelSchema):

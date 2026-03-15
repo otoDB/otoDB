@@ -11,6 +11,7 @@ from ninja.renderers import BaseRenderer
 
 from .auth import auth_router
 from .work import work_router
+from .source import source_router
 from .profile import profile_router
 from .list import list_router
 from .tag import tag_router
@@ -18,6 +19,7 @@ from .post import post_router
 from .comment import comment_router
 from .history import history_router
 from .requests import request_router
+from .moderation import moderation_router
 
 
 class ORJSONParser(Parser):
@@ -40,6 +42,7 @@ api = NinjaAPI(
 )
 api.add_router('/auth/', auth_router)
 api.add_router('/work/', work_router)
+api.add_router('/source/', source_router)
 api.add_router('/profile/', profile_router)
 api.add_router('/list/', list_router)
 api.add_router('/tag/', tag_router)
@@ -47,6 +50,7 @@ api.add_router('/post/', post_router)
 api.add_router('/comment/', comment_router)
 api.add_router('/history/', history_router)
 api.add_router('/request/', request_router)
+api.add_router('/moderation/', moderation_router)
 
 
 @api.get('stats')

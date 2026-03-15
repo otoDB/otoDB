@@ -330,74 +330,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/work/sources": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Sources */
-        get: operations["otodb_api_work_sources"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/unbind_source": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Unbind Sources */
-        post: operations["otodb_api_work_unbind_sources"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/source_origin": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Source Origin */
-        put: operations["otodb_api_work_source_origin"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/work/refresh_source": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Refresh Source */
-        post: operations["otodb_api_work_refresh_source"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/work/merge": {
         parameters: {
             query?: never;
@@ -415,44 +347,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/work/source": {
+    "/api/work/sources": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Source */
-        get: operations["otodb_api_work_get_source"];
-        /** Update Source */
-        put: operations["otodb_api_work_update_source"];
-        /**
-         * New Source From Url
-         * @description Creates a new source and, for editors, performs auto-validation as well as Work creation
-         *
-         *     The priority for redirections/merging is:.
-         *
-         *     The usage scenarios are as follows:
-         *     - For non-editors:
-         *         - Adding a new source leaves it in the approval queue, without creating a Work;
-         *         - If `work_id` is provided, or either of the original/reupload Source already has a Work, the new sources are added to them;
-         *             - If two out of three elements have works, the third element is added based on priority: `work_id` > `url` > `original_url`;
-         *         - Adding an existing source redirects to the corresponding work;
-         *         - Adding multiple sources, each with a different work, redirects based on priority: `work_id` > `url` > `original_url`;
-         *         - For existing sources/works, corrections (`rating`/`is_reupload`) are ignored;
-         *     - For editors:
-         *         - Adding a new source creates a new Work;
-         *         - For existing sources/works, corrections (`rating`/`is_reupload`) are applied;
-         *         - If any or all of `work_id`/`url`/`original_url` have different Works, a merge is performed based on priority: `work_id` > `url` > `original_url.
-         */
-        post: operations["otodb_api_work_new_source_from_url"];
+        /** Sources */
+        get: operations["otodb_api_work_sources"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/work/assign_source": {
+    "/api/work/create": {
         parameters: {
             query?: never;
             header?: never;
@@ -462,17 +374,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Assign Source To Work
-         * @description Omit work_id if creating new work from source.
+         * Create Work
+         * @description Creates a MediaWork from a source with user-chosen metadata and tags.
          */
-        post: operations["otodb_api_work_assign_source_to_work"];
+        post: operations["otodb_api_work_create_work"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/work/reject_source": {
+    "/api/work/approve": {
         parameters: {
             query?: never;
             header?: never;
@@ -481,23 +393,109 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Reject Source */
-        post: operations["otodb_api_work_reject_source"];
+        /**
+         * Approve Work
+         * @description Approve a pending or flagged work, making it active.
+         */
+        post: operations["otodb_api_work_approve_work"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/work/unbound": {
+    "/api/work/disapprove": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Unbound Sources */
-        get: operations["otodb_api_work_get_unbound_sources"];
+        get?: never;
+        put?: never;
+        /**
+         * Disapprove Work
+         * @description Record that a user reviewed a work and chose not to approve it.
+         */
+        post: operations["otodb_api_work_disapprove_work"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve Work Admin
+         * @description Immediate resolution by staff - same as expiry, skips the waiting period.
+         */
+        post: operations["otodb_api_work_resolve_work_admin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/flag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Flag Work
+         * @description Flag an active work for re-review.
+         */
+        post: operations["otodb_api_work_flag_work"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/appeal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Appeal Work
+         * @description Appeal an unapproved work to send it back to the mod queue.
+         */
+        post: operations["otodb_api_work_appeal_work"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mod Queue
+         * @description List works pending moderation: pending, flagged, or appealed.
+         */
+        get: operations["otodb_api_work_mod_queue"];
         put?: never;
         post?: never;
         delete?: never;
@@ -515,6 +513,163 @@ export interface paths {
         };
         /** Similar */
         get: operations["otodb_api_work_similar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/source/unbind": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unbind Source */
+        post: operations["otodb_api_source_unbind_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/source/origin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Source Origin */
+        put: operations["otodb_api_source_source_origin"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/source/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh Source */
+        post: operations["otodb_api_source_refresh_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/source/source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Source */
+        get: operations["otodb_api_source_get_source"];
+        /** Update Source */
+        put: operations["otodb_api_source_update_source"];
+        /**
+         * New Source From Url
+         * @description Creates or retrieves a source from a URL.
+         *
+         *     - If the source already has a work, returns work_id (redirect to work page).
+         *     - If work_id is provided, binds the source to that work.
+         *     - Otherwise, returns source_id for the user to review and create a work.
+         */
+        post: operations["otodb_api_source_new_source_from_url"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/source/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Source Suggestions
+         * @description Returns tag suggestions derived from a source's info_payload.
+         */
+        get: operations["otodb_api_source_source_suggestions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/source/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject Source
+         * @description Reject a pending source on an existing work. Unbinds the source.
+         */
+        post: operations["otodb_api_source_reject_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/source/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve Source
+         * @description Approve a pending source on an existing work.
+         */
+        post: operations["otodb_api_source_approve_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/source/list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Sources
+         * @description List sources with pagination, filterable by user, binding, and pending status.
+         */
+        get: operations["otodb_api_source_list_sources"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1145,6 +1300,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/query_connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Query Connection */
+        get: operations["otodb_api_tag_query_connection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/post": {
         parameters: {
             query?: never;
@@ -1464,6 +1636,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/moderation/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Moderation Events
+         * @description Query the unified moderation events view.
+         */
+        get: operations["otodb_api_moderation_moderation_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1566,7 +1758,7 @@ export interface components {
             /** Work Id */
             work_id: number;
             /** Tags */
-            tags: components["schemas"]["TagWorkSchema"][];
+            tags: components["schemas"]["TagWorkInstanceSchema"][];
         };
         /** TagLangPreferenceSchema */
         TagLangPreferenceSchema: {
@@ -1576,6 +1768,30 @@ export interface components {
             slug: string;
             /** Lang */
             lang: number;
+        };
+        /** TagWorkInstanceSchema */
+        TagWorkInstanceSchema: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Category */
+            category: number;
+            /** Deprecated */
+            deprecated: boolean;
+            /** Sample */
+            sample: boolean;
+            /** Creator Roles */
+            creator_roles: number[] | null;
+            /** Primary Path */
+            primary_path: components["schemas"]["TagWorkSchema"][];
         };
         /** TagWorkSchema */
         TagWorkSchema: {
@@ -1645,8 +1861,51 @@ export interface components {
             tags: components["schemas"]["TagWorkInstanceThinSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
+            pending_flag?: components["schemas"]["WorkFlagSchema"] | null;
+            pending_appeal?: components["schemas"]["WorkAppealSchema"] | null;
             /** Title */
             title?: string | null;
+            /**
+             * Status
+             * @default 1
+             */
+            status: number;
+        };
+        /** WorkAppealSchema */
+        WorkAppealSchema: {
+            /** Id */
+            id: number;
+            by: components["schemas"]["ProfileSchema"];
+            /** Reason */
+            reason: string;
+            /**
+             * Status
+             * @default 0
+             */
+            status: number;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+        };
+        /** WorkFlagSchema */
+        WorkFlagSchema: {
+            /** Id */
+            id: number;
+            by: components["schemas"]["ProfileSchema"];
+            /** Reason */
+            reason: string;
+            /**
+             * Status
+             * @default 0
+             */
+            status: number;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
         };
         /** RelationSchema */
         RelationSchema: {
@@ -1665,30 +1924,11 @@ export interface components {
             thumbnail?: string | null;
             /** Title */
             title?: string | null;
-        };
-        /** TagWorkInstanceSchema */
-        TagWorkInstanceSchema: {
-            /** Id */
-            id: number;
-            /** Lang Prefs */
-            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
-            aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-            /** Category */
-            category: number;
-            /** Deprecated */
-            deprecated: boolean;
-            /** Sample */
-            sample: boolean;
-            /** Creator Roles */
-            creator_roles: number[] | null;
-            /** Primary Path */
-            primary_path: components["schemas"]["TagWorkSchema"][];
+            /**
+             * Status
+             * @default 1
+             */
+            status: number;
         };
         /** WorkSchema */
         WorkSchema: {
@@ -1703,6 +1943,8 @@ export interface components {
                 components["schemas"]["RelationSchema"][],
                 components["schemas"]["SlimWorkSchema"][]
             ];
+            pending_flag?: components["schemas"]["WorkFlagSchema"] | null;
+            pending_appeal?: components["schemas"]["WorkAppealSchema"] | null;
             /** Title */
             title?: string | null;
             /** Description */
@@ -1714,6 +1956,11 @@ export interface components {
             rating: number;
             /** Thumbnail Source */
             thumbnail_source?: number | null;
+            /**
+             * Status
+             * @default 1
+             */
+            status: number;
         };
         /** WorkEditSchema */
         WorkEditSchema: {
@@ -1738,18 +1985,11 @@ export interface components {
             /** Roles */
             roles?: number[] | null;
         };
-        /** WorkSourceRejectionSchema */
-        WorkSourceRejectionSchema: {
-            by: components["schemas"]["ProfileSchema"];
-            /** Reason */
-            reason: string;
-        };
         /** WorkSourceSchema */
         WorkSourceSchema: {
             /** Id */
             id: number;
             added_by: components["schemas"]["ProfileSchema"];
-            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
             /** Thumbnail */
             thumbnail?: string | null;
             /** Platform */
@@ -1782,6 +2022,32 @@ export interface components {
             source_id?: string | null;
             /** Uploader Id */
             uploader_id?: string | null;
+            /**
+             * Is Pending
+             * @default false
+             */
+            is_pending: boolean;
+            /** Media */
+            media?: number | null;
+        };
+        /** CreateWorkPayload */
+        CreateWorkPayload: {
+            /** Source Id */
+            source_id: number;
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /**
+             * Rating
+             * @default 0
+             */
+            rating: number;
+            /**
+             * Tags
+             * @default []
+             */
+            tags: components["schemas"]["TagWorkInstanceInSchema"][];
         };
         /**
          * WorkSourceMetadataSchema
@@ -1804,6 +2070,42 @@ export interface components {
             work_duration?: number | null;
             /** Published Date */
             published_date?: string | null;
+        };
+        /** SourceCreationResponse */
+        SourceCreationResponse: {
+            /** Source Id */
+            source_id?: number | null;
+            /** Work Id */
+            work_id?: number | null;
+        };
+        /** SourceSuggestionsResponse */
+        SourceSuggestionsResponse: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /**
+             * Source Tags
+             * @default []
+             */
+            source_tags: components["schemas"]["TagWorkSchema"][];
+            /**
+             * New Tags
+             * @default []
+             */
+            new_tags: components["schemas"]["TagWorkSchema"][];
+            /**
+             * Creator Tags
+             * @default []
+             */
+            creator_tags: components["schemas"]["TagWorkSchema"][];
+        };
+        /** PagedWorkSourceSchema */
+        PagedWorkSourceSchema: {
+            /** Items */
+            items: components["schemas"]["WorkSourceSchema"][];
+            /** Count */
+            count: number;
         };
         /** ListSchema */
         ListSchema: {
@@ -1847,7 +2149,6 @@ export interface components {
             /** Id */
             id: number;
             added_by: components["schemas"]["ProfileSchema"];
-            rejection?: components["schemas"]["WorkSourceRejectionSchema"] | null;
             /** Thumbnail */
             thumbnail?: string | null;
             /** Platform */
@@ -1880,6 +2181,11 @@ export interface components {
             source_id?: string | null;
             /** Uploader Id */
             uploader_id?: string | null;
+            /**
+             * Is Pending
+             * @default false
+             */
+            is_pending: boolean;
             /** Media */
             media: number | null;
         };
@@ -1933,13 +2239,6 @@ export interface components {
         PagedListItemSchema: {
             /** Items */
             items: components["schemas"]["ListItemSchema"][];
-            /** Count */
-            count: number;
-        };
-        /** PagedWorkSourceSchema */
-        PagedWorkSourceSchema: {
-            /** Items */
-            items: components["schemas"]["WorkSourceSchema"][];
             /** Count */
             count: number;
         };
@@ -2150,6 +2449,31 @@ export interface components {
             tree: components["schemas"]["TagSongSchema"][];
             /** Aliases */
             aliases: components["schemas"]["TagSongSchema"][];
+        };
+        /** ConnectionLookupResponse */
+        ConnectionLookupResponse: {
+            /** Entities */
+            entities: components["schemas"]["ConnectionTagResult"][];
+        };
+        /** ConnectionTagResult */
+        ConnectionTagResult: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Category */
+            category: number;
+            /** Deprecated */
+            deprecated: boolean;
+            /** Has Connection */
+            has_connection: boolean;
         };
         /** EntitySchema */
         EntitySchema: {
@@ -2413,6 +2737,41 @@ export interface components {
             ];
             /** Command */
             command: number;
+        };
+        /** ModerationEventBySchema */
+        ModerationEventBySchema: {
+            /** Id */
+            id: number;
+            /** Username */
+            username: string;
+        };
+        /** ModerationEventResponse */
+        ModerationEventResponse: {
+            /** Items */
+            items: components["schemas"]["ModerationEventSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** ModerationEventSchema */
+        ModerationEventSchema: {
+            /** Event Type */
+            event_type: string;
+            /** Event Id */
+            event_id: number;
+            /** Work Id */
+            work_id: number | null;
+            /** Source Id */
+            source_id: number | null;
+            by: components["schemas"]["ModerationEventBySchema"] | null;
+            /** Reason */
+            reason: string;
+            /** Status */
+            status: number | null;
+            /**
+             * Event At
+             * Format: date-time
+             */
+            event_at: string;
         };
     };
     responses: never;
@@ -2696,6 +3055,7 @@ export interface operations {
                 query: string;
                 tags?: string | null;
                 order?: ("id" | "-id" | "pub" | "-pub") | null;
+                queue?: ("unseen" | "all") | null;
                 limit?: number;
                 offset?: number;
             };
@@ -2953,89 +3313,6 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_sources: {
-        parameters: {
-            query: {
-                work_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WorkSourceSchema"][];
-                };
-            };
-        };
-    };
-    otodb_api_work_unbind_sources: {
-        parameters: {
-            query: {
-                source_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_source_origin: {
-        parameters: {
-            query: {
-                source_id: number;
-                status: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_refresh_source: {
-        parameters: {
-            query: {
-                source_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     otodb_api_work_merge_works: {
         parameters: {
             query: {
@@ -3061,7 +3338,300 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_get_source: {
+    otodb_api_work_sources: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkSourceSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_work_create_work: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWorkPayload"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    otodb_api_work_approve_work: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_disapprove_work: {
+        parameters: {
+            query: {
+                work_id: number;
+                reason: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_resolve_work_admin: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_flag_work: {
+        parameters: {
+            query: {
+                work_id: number;
+                reason: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    otodb_api_work_appeal_work: {
+        parameters: {
+            query: {
+                work_id: number;
+                reason: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    otodb_api_work_mod_queue: {
+        parameters: {
+            query?: {
+                mode?: string;
+                category?: ("pending" | "flagged" | "appealed") | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedThinWorkSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_work_similar: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThinWorkSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_source_unbind_source: {
+        parameters: {
+            query: {
+                source_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_source_source_origin: {
+        parameters: {
+            query: {
+                source_id: number;
+                status: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_source_refresh_source: {
+        parameters: {
+            query: {
+                source_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_source_get_source: {
         parameters: {
             query: {
                 source_id: number;
@@ -3083,7 +3653,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_update_source: {
+    otodb_api_source_update_source: {
         parameters: {
             query: {
                 source_id: number;
@@ -3118,14 +3688,12 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_new_source_from_url: {
+    otodb_api_source_new_source_from_url: {
         parameters: {
             query: {
                 url: string;
                 is_reupload: boolean;
-                rating?: number | null;
                 work_id?: number | null;
-                original_url?: string | null;
             };
             header?: never;
             path?: never;
@@ -3143,7 +3711,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number | null;
+                    "application/json": components["schemas"]["SourceCreationResponse"];
                 };
             };
             /** @description Bad Request */
@@ -3155,22 +3723,12 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
         };
     };
-    otodb_api_work_assign_source_to_work: {
+    otodb_api_source_source_suggestions: {
         parameters: {
             query: {
                 source_id: number;
-                work_id?: number | null;
             };
             header?: never;
             path?: never;
@@ -3184,12 +3742,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["SourceSuggestionsResponse"];
                 };
             };
         };
     };
-    otodb_api_work_reject_source: {
+    otodb_api_source_reject_source: {
         parameters: {
             query: {
                 source_id: number;
@@ -3210,10 +3768,10 @@ export interface operations {
             };
         };
     };
-    otodb_api_work_get_unbound_sources: {
+    otodb_api_source_approve_source: {
         parameters: {
             query: {
-                pending: boolean;
+                source_id: number;
             };
             header?: never;
             path?: never;
@@ -3226,16 +3784,19 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["WorkSourceSchema"][];
-                };
+                content?: never;
             };
         };
     };
-    otodb_api_work_similar: {
+    otodb_api_source_list_sources: {
         parameters: {
-            query: {
-                work_id: number;
+            query?: {
+                user_id?: number | null;
+                unbound?: boolean | null;
+                is_pending?: boolean | null;
+                platform?: number | null;
+                limit?: number;
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -3249,7 +3810,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ThinWorkSchema"][];
+                    "application/json": components["schemas"]["PagedWorkSourceSchema"];
                 };
             };
         };
@@ -4357,6 +4918,37 @@ export interface operations {
             };
         };
     };
+    otodb_api_tag_query_connection: {
+        parameters: {
+            query: {
+                url: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionLookupResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     otodb_api_post_post: {
         parameters: {
             query: {
@@ -4861,6 +5453,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BulkRequestSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_moderation_moderation_events: {
+        parameters: {
+            query?: {
+                work_id?: number | null;
+                source_id?: number | null;
+                user_id?: number | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModerationEventResponse"];
                 };
             };
         };

@@ -101,14 +101,14 @@ def submissions(
 ):
 	match Status(standing):
 		case Status.PENDING:
-			q = Q(media__isnull=True, rejection__isnull=True)
+			q = Q(is_pending=True)
 		case Status.APPROVED:
-			q = Q(media__isnull=False)
+			q = Q(media__isnull=False, is_pending=False)
 		case Status.UNAPPROVED:
-			q = Q(rejection__isnull=False)
+			q = Q(media__isnull=True, is_pending=False)
 
 	user = get_object_or_404(Account, username__iexact=username)
-	submissions = user.worksource_set.filter(q).select_related('rejection', 'media')
+	submissions = user.worksource_set.filter(q).select_related('media')
 	filters.filter(submissions)
 	return submissions.order_by(order)
 

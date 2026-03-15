@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import client, { getTagDisplaySlug } from './api';
 	import { clickOutside, debounce } from './ui';
 	import { m } from './paraglide/messages';
@@ -69,8 +68,16 @@
 		textarea.focus();
 	};
 
-	onMount(() => {
-		if (value) {
+	$effect(() => {
+		if (!textarea) return;
+		const current = new Set(
+			textarea.value
+				.split(' ')
+				.map((s) => s.trim())
+				.filter(Boolean)
+		);
+		const target = new Set(value);
+		if (current.size !== target.size || ![...target].every((v) => current.has(v))) {
 			textarea.value = value.join(' ');
 		}
 	});

@@ -62,6 +62,12 @@ services:
       - backend
       - frontend
 
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
 volumes:
   postgres17_data:
   caddy_data:

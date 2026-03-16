@@ -27,8 +27,24 @@
 	import RelationViewer from '$lib/RelationViewer.svelte';
 	import { renderMarkdown } from '$lib/markdown';
 
+	import { page } from '$app/state';
+
 	let { data } = $props();
 	let results = $derived(data.works!.items);
+
+	const articleLd = $derived(
+		data.wiki_page?.length
+			? '<script type="application/ld+json">' +
+					JSON.stringify({
+						'@context': 'https://schema.org',
+						'@type': 'Article',
+						headline: data.display_name,
+						url: `https://otodb.net${page.url.pathname}`
+					}) +
+					'</' +
+					'script>'
+			: null
+	);
 
 	const aliases = $derived(
 		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])]
@@ -74,6 +90,13 @@
 		return get_paths(data.tag.slug);
 	});
 </script>
+
+<svelte:head>
+	{#if articleLd}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html articleLd}
+	{/if}
+</svelte:head>
 
 <Section title={data.display_name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<div>

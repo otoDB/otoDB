@@ -62,10 +62,12 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		...details,
 		display_name: getTagDisplayName(data),
 		head: {
-			title: m.mild_loud_shad_enchant({
-				type: m.dull_plain_angelfish_cuddle(),
-				name: data.name
-			})
+			title: getTagDisplayName(data),
+			breadcrumbs: [
+				{ name: m.fine_late_chicken_quiz(), url: '/' },
+				{ name: m.dull_plain_angelfish_cuddle(), url: '/song_attribute/search' },
+				{ name: getTagDisplayName(data), url: `/song_attribute/${params.tag_slug}` }
+			]
 		}
 	};
 };

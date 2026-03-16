@@ -68,11 +68,13 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		],
 		...data,
 		head: {
-			title: m.mild_loud_shad_enchant({
-				type: m.grand_merry_fly_succeed(),
-				name: getDisplayText(data.title)
-			}),
-			image: data.rating <= 1 ? data.thumbnail : null
+			title: getDisplayText(data.title),
+			image: data.rating <= 1 ? data.thumbnail : null,
+			breadcrumbs: [
+				{ name: m.fine_late_chicken_quiz(), url: '/' },
+				{ name: m.grand_merry_fly_succeed(), url: '/work/search' },
+				{ name: getDisplayText(data.title), url: `/work/${params.work_id}` }
+			]
 		}
 	};
 };

@@ -32,11 +32,50 @@
 	let search_type = $state('work');
 
 	const theme = Themes[data.user?.prefs?.theme ?? +get_prefs()?.theme];
+
+	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
+
+	const organizationLd = ldTag(
+		JSON.stringify({
+			'@context': 'https://schema.org',
+			'@type': 'Organization',
+			name: 'otoDB',
+			url: 'https://otodb.net',
+			sameAs: ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
+		})
+	);
+
+	const breadcrumbLd = $derived(
+		page.data.head?.breadcrumbs
+			? ldTag(
+					JSON.stringify({
+						'@context': 'https://schema.org',
+						'@type': 'BreadcrumbList',
+						itemListElement: (
+							page.data.head.breadcrumbs as { name: string; url: string }[]
+						).map(
+							(
+								crumb: { name: string; url: string },
+								i: number,
+								arr: { name: string; url: string }[]
+							) => ({
+								'@type': 'ListItem',
+								position: i + 1,
+								name: crumb.name,
+								...(i < arr.length - 1
+									? { item: `https://otodb.net${crumb.url}` }
+									: {})
+							})
+						)
+					})
+				)
+			: null
+	);
 </script>
 
 <svelte:head>
 	{#if page.data.head?.title}
-		<title>{page.data.head.title}</title>
+		<title>{page.data.head.title} | otoDB</title>
 		<meta property="og:title" content={page.data.head.title} />
 		<meta name="twitter:title" content={page.data.head.title} />
 	{:else}
@@ -57,6 +96,12 @@
 	<link rel="canonical" href={page.url.toString()} />
 	<meta property="og:url" content={page.url.toString()} />
 	<meta name="twitter:card" content="summary_large_image" />
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html organizationLd}
+	{#if breadcrumbLd}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html breadcrumbLd}
+	{/if}
 </svelte:head>
 
 <a href="#content" class="absolute z-50 transform-[translateY(-100%)] focus:transform-none">

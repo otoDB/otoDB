@@ -13,6 +13,31 @@
 	import { enhance } from '$app/forms';
 
 	let { data } = $props();
+
+	const postLd = $derived.by(() => {
+		const pageObj = data.post.pages.find((p) => p.lang === Languages[lang_view]);
+		if (!pageObj) return null;
+		return (
+			'<script type="application/ld+json">' +
+			JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'DiscussionForumPosting',
+				headline: data.post.title,
+				text: pageObj.page.slice(0, 500),
+				url: `https://otodb.net/post/${data.post_id}`,
+				author: {
+					'@type': 'Person',
+					name: data.post.added_by.username,
+					url: `https://otodb.net/profile/${data.post.added_by.username}`
+				},
+				datePublished: pageObj.modified,
+				...(data.post.edited_at ? { dateModified: data.post.edited_at } : {})
+			}) +
+			'</' +
+			'script>'
+		);
+	});
+
 	let lang_view = $derived(
 		data.post.pages.some((p) => p.lang === Languages[getLocale()])
 			? getLocale()
@@ -74,6 +99,13 @@
 		isEditing = false;
 	};
 </script>
+
+<svelte:head>
+	{#if postLd}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html postLd}
+	{/if}
+</svelte:head>
 
 <Section title={isEditing ? '' : data.post.title}>
 	{#if isEditing}

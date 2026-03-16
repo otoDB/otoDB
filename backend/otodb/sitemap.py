@@ -7,7 +7,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
 from otodb.account.models import Account
-from otodb.models import MediaWork, TagWork, MediaSong, TagSong, Pool, Post
+from otodb.models import MediaWork, TagWork, TagSong, Pool, Post
 
 CHUNK_SIZE = 10_000
 
@@ -31,12 +31,6 @@ SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
 		'filters': {'aliased_to__isnull': True, 'deprecated': False},
 		'url_pattern': '/tag/{value}',
 		'value_field': 'slug',
-	},
-	'songs': {
-		'model': MediaSong,
-		'filters': {},
-		'url_pattern': '/song/{value}',
-		'value_field': 'id',
 	},
 	'song_attributes': {
 		'model': TagSong,

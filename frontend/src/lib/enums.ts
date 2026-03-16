@@ -11,7 +11,7 @@ export const WorkTagCategory = [
 ];
 
 export const WorkTagCategoriesSettableAsSource = [2, 4, 6];
-export const WorkTagPresentationOrder = [4, 6, 3, 2, 0, 5];
+export const WorkTagPresentationOrder = [1, 4, 6, 3, 2, 0, 5];
 export const WorkTagPresentationColours = [
 	'rgb(159,163,169)',
 	'rgb(8,145,178)',

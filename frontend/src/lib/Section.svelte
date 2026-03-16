@@ -14,7 +14,7 @@
 				{#each menuLinks as { pathname, title }, i (i)}
 					<li
 						aria-current={page.url.pathname.endsWith(encodeURI(pathname))}
-						class="bg-otodb-bg-faint/75 border-otodb-content-faint group border px-2 aria-current:border-b-0"
+						class="bg-otodb-bg-faint/75 border-otodb-content-faint group relative border px-2"
 					>
 						<a
 							href="/{pathname}"
@@ -32,3 +32,20 @@
 
 	{@render children()}
 </section>
+
+<style>
+	li[aria-current='true'] {
+		border-bottom: 0;
+		background-color: var(--otodb-color-bg-faint);
+
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: -1px;
+			left: -1px;
+			right: -1px;
+			height: 1px;
+			background-color: var(--otodb-color-bg-faint);
+		}
+	}
+</style>

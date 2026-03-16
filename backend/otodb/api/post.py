@@ -31,6 +31,7 @@ from otodb.account.models import Account
 from otodb.models.enums import PostCategory, LanguageTypes
 
 from .common import (
+	AuthedHttpRequest,
 	ProfileSchema,
 	user_is_trusted,
 	restrict_internal,
@@ -136,7 +137,7 @@ def get_entity_link_ent(e: EntitySchema):
 @user_is_trusted
 @restrict_internal
 @transaction.atomic
-def new(request: HttpRequest, payload: PostInSchema):
+def new(request: AuthedHttpRequest, payload: PostInSchema):
 	assert payload.category > 0
 	assert payload.title
 	assert payload.post
@@ -167,6 +168,11 @@ def new(request: HttpRequest, payload: PostInSchema):
 	)
 
 	Subscription.objects.create(subscriber=request.user, entity=p)
+
+	from otodb.discord import discord_post
+
+	discord_post(p, request.user)
+
 	return p.pk
 
 

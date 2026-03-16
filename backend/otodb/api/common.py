@@ -5,6 +5,7 @@ from pydantic import field_validator
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.http import HttpRequest
 
 from django_request_cache import get_request_cache
 from ninja import Schema, ModelSchema, Field, Query, Header, Router
@@ -35,6 +36,10 @@ from otodb.models.enums import (
 	SongRelationTypes,
 )
 import re
+
+
+class AuthedHttpRequest(HttpRequest):
+	user: Account
 
 
 class Error(Schema):

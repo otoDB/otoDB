@@ -3,6 +3,7 @@
 }
 
 .theme-aniki {
+	color-scheme: dark;
 	--otodb-color-content-primary: white;
 	--otodb-color-content-fainter: rgb(184, 180, 212);
 	--otodb-color-content-faint: rgb(121, 122, 151);
@@ -24,6 +25,7 @@
 }
 
 .theme-otogroove {
+	color-scheme: light;
 	--otodb-color-content-primary: rgb(2, 27, 14);
 	--otodb-color-content-faint: rgb(230, 30, 30);
 	--otodb-color-content-fainter: rgb(189, 73, 102);
@@ -72,6 +74,7 @@
 }
 
 .theme-retro-voyage {
+	color-scheme: light;
 	--otodb-color-content-primary: rgb(36, 51, 80);
 	--otodb-color-content-faint: rgb(6, 25, 131);
 	--otodb-color-content-fainter: rgb(100, 128, 160);
@@ -121,6 +124,7 @@
 }
 
 .theme-sorimix {
+	color-scheme: dark;
 	--otodb-color-content-primary: rgb(197, 255, 195);
 	--otodb-color-content-fainter: rgb(45, 228, 75);
 	--otodb-color-content-faint: rgb(0, 255, 163);
@@ -156,6 +160,7 @@
 }
 
 .theme-resample {
+	color-scheme: light;
 	--otodb-color-content-primary: rgb(2, 20, 27);
 	--otodb-color-content-faint: rgb(30, 110, 230);
 	--otodb-color-content-fainter: rgb(73, 152, 189);

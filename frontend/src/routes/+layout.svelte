@@ -99,6 +99,9 @@
 	<link rel="canonical" href="{page.url.origin}{page.url.pathname}" />
 	<meta property="og:url" content="{page.url.origin}{page.url.pathname}" />
 	<meta name="twitter:card" content="summary_large_image" />
+	{#if page.data.head?.isExplicit}
+		<meta name="rating" content="adult" />
+	{/if}
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html organizationLd}
 	{#if breadcrumbLd}

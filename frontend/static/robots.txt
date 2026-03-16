@@ -44,6 +44,7 @@ Allow: /list
 Allow: /profile
 Allow: /comments
 Allow: /404
+Allow: /sitemap.xml
 
 Sitemap: https://otodb.net/sitemap.xml?type=works
 Sitemap: https://otodb.net/sitemap.xml?type=tags

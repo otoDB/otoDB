@@ -4,6 +4,7 @@ import { fail } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ fetch, url }) => {
 	const batch_size = 20;
@@ -12,7 +13,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 		params: { query: { limit: batch_size, offset: (page - 1) * batch_size } },
 		fetch
 	});
-	return { comments, page, batch_size };
+	return { comments, page, batch_size, head: { title: m.same_broad_haddock_pinch() } };
 };
 
 export const actions = {

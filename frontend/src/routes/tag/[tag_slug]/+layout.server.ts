@@ -88,10 +88,12 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		song_relations,
 		display_name,
 		head: {
-			title: m.mild_loud_shad_enchant({
-				type: m.empty_legal_chicken_taste(),
-				name: display_name
-			})
+			title: display_name,
+			breadcrumbs: [
+				{ name: m.fine_late_chicken_quiz(), url: '/' },
+				{ name: m.empty_legal_chicken_taste(), url: '/tag/search' },
+				{ name: display_name, url: `/tag/${params.tag_slug}` }
+			]
 		}
 	};
 };

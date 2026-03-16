@@ -8,7 +8,22 @@
 	import { version_end_dates } from '$lib/ui';
 
 	let { data }: PageProps = $props();
+
+	const profileJsonLd = JSON.stringify({
+		'@context': 'https://schema.org',
+		'@type': 'ProfilePage',
+		dateCreated: data.profile.date_created,
+		mainEntity: {
+			'@type': 'Person',
+			name: data.profile.username,
+			url: `https://otodb.net/profile/${data.profile.username}`
+		}
+	});
 </script>
+
+<svelte:head>
+	{@html `<script type="application/ld+json">${profileJsonLd}</script>`}
+</svelte:head>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	<p>{UserLevel[data.profile?.level]()}</p>

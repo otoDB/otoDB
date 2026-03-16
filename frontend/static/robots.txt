@@ -47,7 +47,6 @@ Allow: /404
 
 Sitemap: https://otodb.net/sitemap.xml?type=works
 Sitemap: https://otodb.net/sitemap.xml?type=tags
-Sitemap: https://otodb.net/sitemap.xml?type=songs
 Sitemap: https://otodb.net/sitemap.xml?type=song_attributes
 Sitemap: https://otodb.net/sitemap.xml?type=lists
 Sitemap: https://otodb.net/sitemap.xml?type=posts

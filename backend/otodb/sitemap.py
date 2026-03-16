@@ -1,13 +1,16 @@
-from typing import Any, TypedDict
+from datetime import datetime
+from typing import Any, NotRequired, TypedDict
 
 from django.conf import settings
-from django.db.models import Max, Model, QuerySet
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Max, Model, OuterRef, QuerySet, Subquery
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
 from otodb.account.models import Account
 from otodb.models import MediaWork, TagWork, TagSong, Pool, Post
+from otodb.models.revision import RevisionChange
 
 CHUNK_SIZE = 10_000
 
@@ -17,6 +20,8 @@ class SitemapTypeConfig(TypedDict):
 	filters: dict[str, Any]
 	url_pattern: str
 	value_field: str
+	date_field: NotRequired[str | None]
+	use_revision_date: NotRequired[bool]
 
 
 SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
@@ -25,18 +30,21 @@ SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
 		'filters': {'moved_to__isnull': True},
 		'url_pattern': '/work/{value}',
 		'value_field': 'id',
+		'use_revision_date': True,
 	},
 	'tags': {
 		'model': TagWork,
 		'filters': {'aliased_to__isnull': True, 'deprecated': False},
 		'url_pattern': '/tag/{value}',
 		'value_field': 'slug',
+		'use_revision_date': True,
 	},
 	'song_attributes': {
 		'model': TagSong,
 		'filters': {'aliased_to__isnull': True},
 		'url_pattern': '/song_attribute/{value}',
 		'value_field': 'slug',
+		'use_revision_date': True,
 	},
 	'lists': {
 		'model': Pool,
@@ -49,12 +57,14 @@ SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
 		'filters': {},
 		'url_pattern': '/post/{value}',
 		'value_field': 'id',
+		'date_field': 'edited_at',
 	},
 	'profiles': {
 		'model': Account,
 		'filters': {'is_active': True},
 		'url_pattern': '/profile/{value}',
 		'value_field': 'username',
+		'date_field': 'date_created',
 	},
 }
 
@@ -83,19 +93,46 @@ def _build_sitemap_index(
 	return '\n'.join(lines)
 
 
+def _annotate_lastmod(
+	config: SitemapTypeConfig,
+	queryset: QuerySet[Model],
+) -> tuple[QuerySet[Model], bool]:
+	if config.get('use_revision_date'):
+		ct = ContentType.objects.get_for_model(config['model'])
+		latest_rev = Subquery(
+			RevisionChange.objects.filter(
+				target_type=ct,
+				target_id=OuterRef('pk'),
+			)
+			.order_by('-rev__date')
+			.values('rev__date')[:1]
+		)
+		return queryset.annotate(lastmod=latest_rev), True
+
+	date_field = config.get('date_field')
+	if date_field:
+		from django.db.models import F
+
+		return queryset.annotate(lastmod=F(date_field)), True
+
+	return queryset, False
+
+
 def _build_urlset(
 	domain: str,
 	url_pattern: str,
 	value_field: str,
 	queryset: QuerySet[Model],
 	page: int,
+	has_lastmod: bool,
 ) -> str:
 	lo = page * CHUNK_SIZE
 	hi = (page + 1) * CHUNK_SIZE
-	values = (
+	fields = [value_field, 'lastmod'] if has_lastmod else [value_field]
+	rows = (
 		queryset.filter(pk__gte=lo, pk__lt=hi)
 		.prefetch_related(None)
-		.values_list(value_field, flat=True)
+		.values_list(*fields)
 		.iterator()
 	)
 
@@ -103,9 +140,19 @@ def _build_urlset(
 		'<?xml version="1.0" encoding="UTF-8"?>',
 		'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
 	]
-	for value in values:
+	for row in rows:
+		if has_lastmod:
+			value, lastmod = row
+		else:
+			value = row[0]
+			lastmod = None
 		loc = f'{domain}{url_pattern.format(value=value)}'
-		lines.append(f'  <url><loc>{loc}</loc></url>')
+		if lastmod and isinstance(lastmod, datetime):
+			lines.append(
+				f'  <url><loc>{loc}</loc><lastmod>{lastmod.isoformat()}</lastmod></url>'
+			)
+		else:
+			lines.append(f'  <url><loc>{loc}</loc></url>')
 	lines.append('</urlset>')
 	return '\n'.join(lines)
 
@@ -131,8 +178,14 @@ def sitemap(request: HttpRequest) -> HttpResponse:
 			page = int(page_param)
 		except ValueError:
 			return HttpResponseBadRequest('Invalid page parameter.')
+		queryset, has_lastmod = _annotate_lastmod(config, queryset)
 		xml = _build_urlset(
-			domain, config['url_pattern'], config['value_field'], queryset, page
+			domain,
+			config['url_pattern'],
+			config['value_field'],
+			queryset,
+			page,
+			has_lastmod,
 		)
 
 	return HttpResponse(xml, content_type='application/xml')

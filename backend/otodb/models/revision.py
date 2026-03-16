@@ -37,6 +37,11 @@ class RevisionChange(models.Model):
 				'target_column',
 			),
 		)
+		indexes = [
+			models.Index(
+				fields=['target_type', 'target_id'], name='revisionchange_target_idx'
+			),
+		]
 		constraints = [
 			models.CheckConstraint(
 				condition=~models.Q(deleted=True, restored=True),

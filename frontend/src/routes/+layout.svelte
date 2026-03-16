@@ -85,6 +85,8 @@
 	{/if}
 	{#if page.data.head?.description}
 		<meta name="description" content={page.data.head.description} />
+		<meta property="og:description" content={page.data.head.description} />
+		<meta name="twitter:description" content={page.data.head.description} />
 	{/if}
 	{#if page.data.head?.image}
 		<meta property="og:image" content={page.data.head.image} />
@@ -93,8 +95,9 @@
 		<meta property="og:image" content="https://otodb.net/thumb.png" />
 		<meta name="twitter:image" content="https://otodb.net/thumb.png" />
 	{/if}
-	<link rel="canonical" href={page.url.toString()} />
-	<meta property="og:url" content={page.url.toString()} />
+	<meta property="og:type" content={page.data.head?.ogType ?? 'website'} />
+	<link rel="canonical" href="{page.url.origin}{page.url.pathname}" />
+	<meta property="og:url" content="{page.url.origin}{page.url.pathname}" />
 	<meta name="twitter:card" content="summary_large_image" />
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html organizationLd}

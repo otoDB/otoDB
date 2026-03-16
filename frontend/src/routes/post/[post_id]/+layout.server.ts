@@ -15,6 +15,7 @@ export const load: LayoutServerLoad = async ({ fetch, params }) => {
 		post_id: params.post_id,
 		head: {
 			title: data.title,
+			ogType: 'article',
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
 				{ name: m.just_salty_anaconda_nourish(), url: '/post/overview' },

@@ -14,6 +14,19 @@
 
 	let { data } = $props();
 
+	let lang_view = $derived(
+		data.post.pages.some((p) => p.lang === Languages[getLocale()])
+			? getLocale()
+			: Languages[data.post.pages[0].lang]
+	);
+	let page_object = $derived(data.post.pages.find((p) => p.lang === Languages[lang_view]));
+	let page = $derived(
+		renderMarkdown(page_object?.page ?? '').replaceAll(
+			/&lt;otodb-worktag\s*slug="(.+?)"\s*\/&gt;/g,
+			'<otodb-worktag data-slug="$1"></otodb-worktag>'
+		)
+	);
+
 	const postLd = $derived.by(() => {
 		const pageObj = data.post.pages.find((p) => p.lang === Languages[lang_view]);
 		if (!pageObj) return null;
@@ -37,19 +50,6 @@
 			'script>'
 		);
 	});
-
-	let lang_view = $derived(
-		data.post.pages.some((p) => p.lang === Languages[getLocale()])
-			? getLocale()
-			: Languages[data.post.pages[0].lang]
-	);
-	let page_object = $derived(data.post.pages.find((p) => p.lang === Languages[lang_view]));
-	let page = $derived(
-		renderMarkdown(page_object?.page ?? '').replaceAll(
-			/&lt;otodb-worktag\s*slug="(.+?)"\s*\/&gt;/g,
-			'<otodb-worktag data-slug="$1"></otodb-worktag>'
-		)
-	);
 	$effect(() => {
 		if (page) {
 			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag')).map(

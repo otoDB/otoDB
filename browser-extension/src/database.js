@@ -71,7 +71,7 @@ function safeSetHTML(el, html) {
     // if (el.setHTML) {
     //     el.setHTML(html);
     // } else {
-        el.innerHTML = DOMPurify.sanitize(html);
+        el.innerHTML = DOMPurify.sanitize(html, { ADD_ATTR: ['target'] });
     // }
 }
 

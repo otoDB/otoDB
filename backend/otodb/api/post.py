@@ -38,6 +38,8 @@ from .common import (
 	EntitySchema,
 )
 
+from otodb import discord
+
 post_router = Router()
 
 
@@ -169,9 +171,7 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 
 	Subscription.objects.create(subscriber=request.user, entity=p)
 
-	from otodb.discord import discord_post
-
-	discord_post(p, request.user)
+	discord.notify('post', post_id=p.pk, username=request.user.username)
 
 	return p.pk
 

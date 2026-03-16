@@ -20,6 +20,7 @@ from ninja.errors import HttpError
 from otodb.account.models import Account
 from otodb.models import Notification, Subscription, RevisionChange, CommentMeta
 from .common import AuthedHttpRequest, user_is_trusted, ProfileSchema, restrict_internal
+from otodb import discord
 
 comment_router = Router()
 
@@ -131,9 +132,13 @@ def post(
 		]
 	)
 
-	from otodb.discord import discord_comment
-
-	discord_comment(comment, payload.model, payload.pk, request.user)
+	discord.notify(
+		'comment',
+		comment_id=comment.pk,
+		model_name=payload.model,
+		entity_pk=payload.pk,
+		username=request.user.username,
+	)
 
 
 @comment_router.delete('comment', auth=django_auth)

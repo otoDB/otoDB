@@ -32,14 +32,17 @@
 	let { data } = $props();
 	let results = $derived(data.works!.items);
 
-	const articleJsonLd = $derived(
+	const articleLd = $derived(
 		data.wiki_page?.length
-			? JSON.stringify({
-					'@context': 'https://schema.org',
-					'@type': 'Article',
-					headline: data.display_name,
-					url: `https://otodb.net${page.url.pathname}`
-				})
+			? '<script type="application/ld+json">' +
+					JSON.stringify({
+						'@context': 'https://schema.org',
+						'@type': 'Article',
+						headline: data.display_name,
+						url: `https://otodb.net${page.url.pathname}`
+					}) +
+					'</' +
+					'script>'
 			: null
 	);
 
@@ -89,8 +92,9 @@
 </script>
 
 <svelte:head>
-	{#if articleJsonLd}
-		{@html `<script type="application/ld+json">${articleJsonLd}</script>`}
+	{#if articleLd}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html articleLd}
 	{/if}
 </svelte:head>
 

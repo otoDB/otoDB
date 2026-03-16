@@ -14,23 +14,28 @@
 
 	let { data } = $props();
 
-	const postJsonLd = $derived.by(() => {
+	const postLd = $derived.by(() => {
 		const pageObj = data.post.pages.find((p) => p.lang === Languages[lang_view]);
 		if (!pageObj) return null;
-		return JSON.stringify({
-			'@context': 'https://schema.org',
-			'@type': 'DiscussionForumPosting',
-			headline: data.post.title,
-			text: pageObj.page.slice(0, 500),
-			url: `https://otodb.net/post/${data.post_id}`,
-			author: {
-				'@type': 'Person',
-				name: data.post.added_by.username,
-				url: `https://otodb.net/profile/${data.post.added_by.username}`
-			},
-			datePublished: pageObj.modified,
-			...(data.post.edited_at ? { dateModified: data.post.edited_at } : {})
-		});
+		return (
+			'<script type="application/ld+json">' +
+			JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'DiscussionForumPosting',
+				headline: data.post.title,
+				text: pageObj.page.slice(0, 500),
+				url: `https://otodb.net/post/${data.post_id}`,
+				author: {
+					'@type': 'Person',
+					name: data.post.added_by.username,
+					url: `https://otodb.net/profile/${data.post.added_by.username}`
+				},
+				datePublished: pageObj.modified,
+				...(data.post.edited_at ? { dateModified: data.post.edited_at } : {})
+			}) +
+			'</' +
+			'script>'
+		);
 	});
 
 	let lang_view = $derived(
@@ -96,8 +101,9 @@
 </script>
 
 <svelte:head>
-	{#if postJsonLd}
-		{@html `<script type="application/ld+json">${postJsonLd}</script>`}
+	{#if postLd}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html postLd}
 	{/if}
 </svelte:head>
 

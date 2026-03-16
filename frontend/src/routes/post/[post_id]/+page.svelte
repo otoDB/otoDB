@@ -149,8 +149,8 @@
 				</div>
 			</div>
 			<div class="mt-2 flex gap-2">
-				<input type="submit" value="Save" />
-				<button type="button" onclick={cancelEdit}>Cancel</button>
+				<input type="submit" value={m.last_late_penguin_bubble()} />
+				<button type="button" onclick={cancelEdit}>{m.lower_whole_gopher_fulfill()}</button>
 			</div>
 		</form>
 	{:else}

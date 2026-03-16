@@ -54,7 +54,7 @@ const i18n = {
 let uiLang = 'en';
 const t = (key) => (i18n[uiLang] ?? i18n.en)[key] ?? i18n.en[key];
 
-const WorkTagPresentationOrder = [4, 6, 3, 2, 0, 5];
+const WorkTagPresentationOrder = [1, 4, 6, 3, 2, 0, 5];
 const WorkTagCategoriesSettableAsSource = [2, 4, 6];
 const WorkTagPresentationColours = [
     'rgb(159,163,169)',

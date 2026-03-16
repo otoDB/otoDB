@@ -70,6 +70,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		head: {
 			title: getDisplayText(data.title),
 			image: data.rating <= 1 ? data.thumbnail : null,
+			isExplicit: data.rating === 2,
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
 				{ name: m.grand_merry_fly_succeed(), url: '/work/search' },

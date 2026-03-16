@@ -20,7 +20,7 @@ from ninja.errors import HttpError
 from otodb.account.models import Account
 from otodb.models import Notification, Subscription, RevisionChange, CommentMeta
 from .common import AuthedHttpRequest, user_is_trusted, ProfileSchema, restrict_internal
-from otodb import discord
+from otodb.discord import discord_comment
 
 comment_router = Router()
 
@@ -132,12 +132,8 @@ def post(
 		]
 	)
 
-	discord.notify(
-		'comment',
-		comment_id=comment.pk,
-		model_name=payload.model,
-		entity_pk=payload.pk,
-		username=request.user.username,
+	discord_comment.enqueue(
+		comment.pk, payload.model, payload.pk, request.user.username
 	)
 
 

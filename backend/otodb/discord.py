@@ -3,12 +3,7 @@ from typing import Any, cast
 
 import requests
 from django.conf import settings
-from django.db import transaction
 from django.tasks import task
-from django_comments_xtd.models import XtdComment
-
-from otodb.account.models import Account
-from otodb.models.posts import Post, PostContent
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +16,7 @@ BASE_URL: str | None = (
 ENABLED = bool(WEBHOOK_URL and BASE_URL)
 
 
-@task
-def send_webhook(embeds: list[dict[str, Any]]) -> None:
+def _send_webhook(embeds: list[dict[str, Any]]) -> None:
 	payload = {
 		'username': settings.OTODB_CONFIG_DICT['site_name'],
 		'embeds': embeds,
@@ -32,13 +26,6 @@ def send_webhook(embeds: list[dict[str, Any]]) -> None:
 		resp.raise_for_status()
 	except Exception:
 		logger.exception('Discord webhook failed')
-
-
-def _author(user: Account) -> dict[str, str]:
-	return {
-		'name': user.username,
-		'url': f'{BASE_URL}/profile/{user.username}',
-	}
 
 
 def _entity_info(
@@ -66,6 +53,8 @@ def _entity_info(
 			label = slug or f'tag #{entity_pk}'
 			return label, f'{BASE_URL}/tag/{slug}' if slug else None
 		case 'account':
+			from otodb.account.models import Account
+
 			username: str | None = (
 				Account.objects.filter(pk=entity_pk)
 				.values_list('username', flat=True)
@@ -77,35 +66,51 @@ def _entity_info(
 			return f'{model_name} #{entity_pk}', None
 
 
-def discord_post(post: Post, user: Account) -> None:
+@task
+def discord_post(post_id: int, username: str) -> None:
 	if not ENABLED:
 		return
 
+	from otodb.models.posts import Post, PostContent
+
+	post = Post.objects.get(pk=post_id)
 	content: PostContent = post.postcontent_set.earliest('pk')
 	page: str = content.page
 	description = (page[:2000] + '...') if len(page) > 2000 else page
 
-	embed: dict[str, Any] = {
-		'title': post.title,
-		'description': description,
-		'url': f'{BASE_URL}/post/{post.pk}',
-		'timestamp': content.modified.isoformat(),
-		'author': _author(user),
-	}
-	transaction.on_commit(lambda: send_webhook.enqueue([embed]))
+	_send_webhook(
+		[
+			{
+				'title': post.title,
+				'description': description,
+				'url': f'{BASE_URL}/post/{post.pk}',
+				'timestamp': content.modified.isoformat(),
+				'author': {
+					'name': username,
+					'url': f'{BASE_URL}/profile/{username}',
+				},
+			}
+		]
+	)
 
 
+@task
 def discord_comment(
-	comment: XtdComment, model_name: str, entity_pk: int, user: Account
+	comment_id: int,
+	model_name: str,
+	entity_pk: int,
+	username: str,
 ) -> None:
 	if not ENABLED:
 		return
 
+	from django.contrib.contenttypes.models import ContentType
+	from django_comments_xtd.models import XtdComment
+
+	comment = XtdComment.objects.get(pk=comment_id)
 	text: str = comment.comment
 	description = (text[:2000] + '...') if len(text) > 2000 else text
 	label, url = _entity_info(model_name, entity_pk, comment.pk)
-
-	from django.contrib.contenttypes.models import ContentType
 
 	ct = ContentType.objects.get(model=model_name)
 	comments = XtdComment.objects.filter(content_type=ct, object_pk=entity_pk)
@@ -114,7 +119,10 @@ def discord_comment(
 		'title': f'Comment on {label}',
 		'description': description,
 		'timestamp': comment.submit_date.isoformat(),
-		'author': _author(user),
+		'author': {
+			'name': username,
+			'url': f'{BASE_URL}/profile/{username}',
+		},
 		'fields': [
 			{'name': 'Replies', 'value': str(comments.count()), 'inline': True},
 			{
@@ -126,4 +134,4 @@ def discord_comment(
 	}
 	if url:
 		embed['url'] = url
-	transaction.on_commit(lambda: send_webhook.enqueue([embed]))
+	_send_webhook([embed])

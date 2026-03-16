@@ -1,15 +1,17 @@
-from datetime import datetime
-from typing import Any, NotRequired, TypedDict
+from datetime import datetime, timezone
+from typing import Any, Callable, NotRequired, TypedDict
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Max, Model, OuterRef, QuerySet, Subquery
+from django.db.models import DateTimeField, Max, Model, OuterRef, QuerySet, Subquery
+from django.db.models.functions import Coalesce, Greatest
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
 from otodb.account.models import Account
 from otodb.models import MediaWork, TagWork, TagSong, Pool, Post
+from otodb.models.posts import PostContent
 from otodb.models.revision import RevisionChange
 
 CHUNK_SIZE = 10_000
@@ -21,6 +23,7 @@ class SitemapTypeConfig(TypedDict):
 	url_pattern: str
 	value_field: str
 	date_field: NotRequired[str | None]
+	date_annotation: NotRequired[Callable]
 	use_revision_date: NotRequired[bool]
 
 
@@ -57,7 +60,18 @@ SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
 		'filters': {},
 		'url_pattern': '/post/{value}',
 		'value_field': 'id',
-		'date_field': 'edited_at',
+		'date_annotation': lambda: Greatest(
+			Subquery(
+				PostContent.objects.filter(post_id=OuterRef('id'))
+				.order_by('-modified')
+				.values('modified')[:1]
+			),
+			Coalesce(
+				'edited_at',
+				datetime.fromtimestamp(0, tz=timezone.utc),
+				output_field=DateTimeField(),
+			),
+		),
 	},
 	'profiles': {
 		'model': Account,
@@ -108,6 +122,10 @@ def _annotate_lastmod(
 			.values('rev__date')[:1]
 		)
 		return queryset.annotate(lastmod=latest_rev), True
+
+	date_annotation = config.get('date_annotation')
+	if date_annotation:
+		return queryset.annotate(lastmod=date_annotation()), True
 
 	date_field = config.get('date_field')
 	if date_field:

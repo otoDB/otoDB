@@ -12,33 +12,33 @@
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
-@custom-variant dark (@media (prefers-color-scheme: dark), &:where(.dark, .dark *), &:has(div.bg-marker.dark));
+@custom-variant dark (@media not (prefers-color-scheme: light), &:where(.dark, .dark *), &:has(div.bg-marker.dark));
 
 :root {
-	--otodb-color-bg-fainter: white;
-	--otodb-color-content-primary: black;
+	--otodb-color-bg-primary: black;
+	--otodb-color-content-primary: white;
 	--otodb-color-bg-faint: color-mix(
 		in hsl,
-		var(--otodb-color-bg-fainter) 95%,
+		var(--otodb-color-bg-primary) 90%,
 		var(--otodb-color-content-primary)
 	);
-	--otodb-color-bg-primary: color-mix(
+	--otodb-color-bg-fainter: color-mix(
 		in hsl,
-		var(--otodb-color-bg-fainter) 90%,
+		var(--otodb-color-bg-primary) 80%,
 		var(--otodb-color-content-primary)
 	);
 
-	@variant dark {
-		--otodb-color-bg-primary: black;
-		--otodb-color-content-primary: white;
+	@media (prefers-color-scheme: light) {
+		--otodb-color-bg-fainter: white;
+		--otodb-color-content-primary: black;
 		--otodb-color-bg-faint: color-mix(
 			in hsl,
-			var(--otodb-color-bg-primary) 90%,
+			var(--otodb-color-bg-fainter) 95%,
 			var(--otodb-color-content-primary)
 		);
-		--otodb-color-bg-fainter: color-mix(
+		--otodb-color-bg-primary: color-mix(
 			in hsl,
-			var(--otodb-color-bg-primary) 80%,
+			var(--otodb-color-bg-fainter) 90%,
 			var(--otodb-color-content-primary)
 		);
 	}

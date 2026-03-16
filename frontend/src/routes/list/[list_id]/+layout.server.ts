@@ -28,10 +28,12 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 				: [])
 		],
 		head: {
-			title: m.mild_loud_shad_enchant({
-				type: m.stale_loose_squid_cut(),
-				name: data.name
-			})
+			title: data.name,
+			breadcrumbs: [
+				{ name: m.fine_late_chicken_quiz(), url: '/' },
+				{ name: m.stale_loose_squid_cut(), url: '/list/search' },
+				{ name: data.name, url: `/list/${params.list_id}` }
+			]
 		}
 	};
 };

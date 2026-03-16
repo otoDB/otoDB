@@ -38,7 +38,7 @@ export const load: PageServerLoad = async ({ fetch, setHeaders, locals }) => {
 		changes: changes.data,
 		posts: posts.data,
 		head: {
-			title: m.fine_late_chicken_quiz(),
+			title: m.glad_born_mouse_taste(),
 			description: m.mild_loud_shad_enchant({
 				type: 'otoDB',
 				name: m.glad_born_mouse_taste()

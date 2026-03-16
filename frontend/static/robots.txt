@@ -5,18 +5,49 @@ Disallow: /
 Allow: /$
 
 Disallow: /api
-Disallow: */edit
-Disallow: */history
 Disallow: /work/random
+Disallow: /work/add
+Disallow: /work/merge
+Disallow: /work/unbound
+Disallow: /work/tags_needed
+Disallow: /tag/alias
+Disallow: /list/new
+Disallow: /list/import
+Disallow: /post/new
+Disallow: /*edit
+Disallow: /*history
+Disallow: /*threads
+Disallow: /*notifications
+Disallow: /*submissions
+Disallow: /*delete
 
+# SvelteKit build assets
+Allow: /_app/
+
+# Static resources
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.svg$
+Allow: /*.ico$
+Allow: /*.woff$
+Allow: /*.woff2$
+
+# Pages
 Allow: /post
 Allow: /work
 Allow: /tag
 Allow: /song
+Allow: /song_attribute
 Allow: /list
 Allow: /profile
-
+Allow: /comments
 Allow: /404
-Allow: /favicon.ico
-Allow: /favicon.svg
-Allow: /thumb.png
+
+Sitemap: https://otodb.net/sitemap.xml?type=works
+Sitemap: https://otodb.net/sitemap.xml?type=tags
+Sitemap: https://otodb.net/sitemap.xml?type=song_attributes
+Sitemap: https://otodb.net/sitemap.xml?type=lists
+Sitemap: https://otodb.net/sitemap.xml?type=posts
+Sitemap: https://otodb.net/sitemap.xml?type=profiles

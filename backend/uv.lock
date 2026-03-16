@@ -756,7 +756,7 @@ requires-dist = [
     { name = "django-tagulous", specifier = ">=2.1.1" },
     { name = "django-tasks-rq", specifier = ">=0.12.0" },
     { name = "furl", specifier = ">=2.1.4" },
-    { name = "granian", specifier = ">=2.1.0" },
+    { name = "granian", specifier = ">=2.4.0" },
     { name = "nh3", specifier = ">=0.2.21" },
     { name = "orjson", specifier = ">=3.11.5" },
     { name = "patch-package-py", specifier = ">=0.1.3" },

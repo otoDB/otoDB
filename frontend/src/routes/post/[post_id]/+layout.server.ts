@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import client from '$lib/api';
+import { m } from '$lib/paraglide/messages.js';
 
 export const load: LayoutServerLoad = async ({ fetch, params }) => {
 	if (isNaN(+params.post_id)) error(400, { message: 'Bad request' });
@@ -13,7 +14,13 @@ export const load: LayoutServerLoad = async ({ fetch, params }) => {
 		post: data,
 		post_id: params.post_id,
 		head: {
-			title: data.title
+			title: data.title,
+			ogType: 'article',
+			breadcrumbs: [
+				{ name: m.fine_late_chicken_quiz(), url: '/' },
+				{ name: m.just_salty_anaconda_nourish(), url: '/post/overview' },
+				{ name: data.title, url: `/post/${params.post_id}` }
+			]
 		}
 	};
 };

@@ -23,7 +23,7 @@ def send_email(
 		logger.exception('Failed to send email to %s', to)
 
 
-def reject_expired_source(src):
+def _reject_expired_source(src):
 	"""Reject an expired pending source by unbinding it from its work."""
 	from otodb.models.moderation import ModAction
 	from otodb.models.enums import ModerationAction
@@ -41,47 +41,6 @@ def reject_expired_source(src):
 			by=system_user,
 			description='Auto-expired',
 		)
-
-
-def prune_all_expired():
-	"""Bulk resolve all expired pending items. Used by the management command."""
-	from django.utils import timezone
-	from otodb.models import MediaWork
-	from otodb.models.moderation import WorkFlag, WorkAppeal
-	from otodb.models.enums import FlagStatus, Status
-	from otodb.models.work_source import WorkSource
-	from otodb.api.work import resolve_work
-
-	cutoff = timezone.now() - settings.OTODB_MODERATION_PERIOD
-	total = 0
-
-	for work in MediaWork.objects.filter(status=Status.PENDING, created_at__lt=cutoff):
-		resolve_work(work)
-		total += 1
-
-	expired_flag_work_ids = (
-		WorkFlag.objects.filter(status=FlagStatus.PENDING, date__lt=cutoff)
-		.values_list('work_id', flat=True)
-		.distinct()
-	)
-	for work in MediaWork.objects.filter(id__in=expired_flag_work_ids):
-		resolve_work(work)
-		total += 1
-
-	expired_appeal_work_ids = (
-		WorkAppeal.objects.filter(status=FlagStatus.PENDING, date__lt=cutoff)
-		.values_list('work_id', flat=True)
-		.distinct()
-	)
-	for work in MediaWork.objects.filter(id__in=expired_appeal_work_ids):
-		resolve_work(work)
-		total += 1
-
-	for src in WorkSource.objects.filter(is_pending=True, created_at__lt=cutoff):
-		reject_expired_source(src)
-		total += 1
-
-	return total
 
 
 @task
@@ -163,4 +122,4 @@ def resolve_expired_source_task(source_id: int):
 
 	cutoff = timezone.now() - settings.OTODB_MODERATION_PERIOD
 	if src.created_at < cutoff:
-		reject_expired_source(src)
+		_reject_expired_source(src)

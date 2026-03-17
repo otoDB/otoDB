@@ -1,11 +1,20 @@
 import logging
+from datetime import timedelta
 
-from django.tasks import task
+from django.tasks import task, default_task_backend
 from django.conf import settings
+from django.utils import timezone
 
 from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
+
+
+def enqueue_deferred(task_obj, *args, delay: timedelta):
+	"""Enqueue a task with run_after, skipping if the backend doesn't support defer."""
+	if not default_task_backend.supports_defer:
+		return
+	task_obj.using(run_after=timezone.now() + delay).enqueue(*args)
 
 
 @task

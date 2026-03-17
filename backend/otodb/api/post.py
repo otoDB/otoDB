@@ -146,7 +146,7 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 
 	Subscription.objects.create(subscriber=request.user, entity=p)
 
-	discord_post.enqueue(p.pk, request.user.username)
+	transaction.on_commit(lambda: discord_post.enqueue(p.pk, request.user.username))
 
 	return p.pk
 

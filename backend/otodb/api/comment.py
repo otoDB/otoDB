@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.contrib.contenttypes.models import ContentType
 
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Window, Case, When, Subquery, OuterRef, F
 from django.db.models.functions import Rank
 
@@ -133,8 +133,10 @@ def post(
 		]
 	)
 
-	discord_comment.enqueue(
-		comment.pk, payload.model, payload.pk, request.user.username
+	transaction.on_commit(
+		lambda: discord_comment.enqueue(
+			comment.pk, payload.model, payload.pk, request.user.username
+		)
 	)
 
 

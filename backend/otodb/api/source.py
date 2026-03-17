@@ -28,7 +28,7 @@ from otodb.models.enums import (
 	ModerationAction,
 )
 from otodb.account.models import Account
-from otodb.tasks import resolve_expired_source_task
+from otodb.tasks import enqueue_deferred, resolve_expired_source_task
 
 from .common import (
 	AuthedHttpRequest,
@@ -168,8 +168,12 @@ def new_source_from_url(
 			return 400, {'message': 'Cannot add sources to flagged works'}
 		if not is_editor and work.status == Status.APPROVED:
 			src.is_pending = True
-			resolve_expired_source_task.enqueue(
-				src.pk, run_after=settings.OTODB_MODERATION_PERIOD
+			transaction.on_commit(
+				lambda: enqueue_deferred(
+					resolve_expired_source_task,
+					src.pk,
+					delay=settings.OTODB_MODERATION_PERIOD,
+				)
 			)
 		sync_work_source(work, src)
 		return {'work_id': work.pk}

@@ -152,14 +152,6 @@ class WorkSchema(ModelSchema):
 		model = MediaWork
 		fields = ['title', 'description', 'rating', 'thumbnail_source', 'status']
 
-	@staticmethod
-	def resolve_pending_flag(obj):
-		return obj.pending_flag[0] if obj.pending_flag else None
-
-	@staticmethod
-	def resolve_pending_appeal(obj):
-		return obj.pending_appeal[0] if obj.pending_appeal else None
-
 
 class ThinWorkSchema(ModelSchema):
 	id: int
@@ -171,14 +163,6 @@ class ThinWorkSchema(ModelSchema):
 	class Meta:
 		model = MediaWork
 		fields = ['title', 'status']
-
-	@staticmethod
-	def resolve_pending_flag(obj):
-		return obj.pending_flag[0] if obj.pending_flag else None
-
-	@staticmethod
-	def resolve_pending_appeal(obj):
-		return obj.pending_appeal[0] if obj.pending_appeal else None
 
 
 class SourceCreationResponse(Schema):

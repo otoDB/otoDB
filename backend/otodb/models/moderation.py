@@ -3,12 +3,15 @@ from typing import TYPE_CHECKING
 from django.conf import settings
 from django.db import models
 
-from .enums import FlagStatus, ModerationAction, Status
+from .enums import FlagStatus, ModerationAction, ModerationEventType, Status
 
 
 class WorkFlag(models.Model):
 	if TYPE_CHECKING:
 		work_id: int
+		work_pk: int
+		by_id: int | None
+		by_pk: int | None
 
 	work = models.ForeignKey(
 		'MediaWork', on_delete=models.CASCADE, related_name='flags'
@@ -108,7 +111,7 @@ class ModAction(models.Model):
 class ModerationEvent(models.Model):
 	"""Read-only model backed by the moderation_events database VIEW."""
 
-	event_type = models.CharField(max_length=20)
+	event_type = models.IntegerField(choices=ModerationEventType.choices)
 	# Not truly unique across event types, but needed to suppress Django's auto-id
 	event_id = models.IntegerField(primary_key=True)
 	work_id = models.IntegerField(null=True)

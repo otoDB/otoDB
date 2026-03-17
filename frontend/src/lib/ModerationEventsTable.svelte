@@ -6,7 +6,7 @@
 	}: {
 		events: {
 			items: {
-				event_type: string;
+				event_type: number;
 				event_id: number;
 				work_id: number | null;
 				source_id: number | null;
@@ -21,12 +21,12 @@
 		showTarget?: boolean;
 	} = $props();
 
-	const eventLabels: Record<string, string> = {
-		flag: 'Flagged',
-		appeal: 'Appealed',
-		disapproval: 'Disapproved',
-		approval: 'Approved',
-		mod_action: 'Mod Action'
+	const eventLabels: Record<number, string> = {
+		0: 'Flagged',
+		1: 'Appealed',
+		2: 'Disapproved',
+		3: 'Approved',
+		4: 'Mod Action'
 	};
 
 	const modActionCategoryLabels: Record<number, string> = {
@@ -35,8 +35,8 @@
 		11: 'Source Rejected'
 	};
 
-	const getEventLabel = (event: { event_type: string; status: number | null }) => {
-		if (event.event_type === 'mod_action' && event.status !== null) {
+	const getEventLabel = (event: { event_type: number; status: number | null }) => {
+		if (event.event_type === 4 && event.status !== null) {
 			return modActionCategoryLabels[event.status] ?? 'Mod Action';
 		}
 		return eventLabels[event.event_type] ?? event.event_type;
@@ -52,9 +52,7 @@
 					<th>Target</th>
 				{/if}
 				<th>Reason</th>
-				{#if isEditor}
-					<th>By</th>
-				{/if}
+				<th>By</th>
 				<th>Date</th>
 			</tr>
 		</thead>
@@ -78,15 +76,13 @@
 						</td>
 					{/if}
 					<td class="max-w-xs truncate">{event.reason || '-'}</td>
-					{#if isEditor}
-						<td>
-							{#if event.by}
-								<a href="/profile/{event.by.username}">{event.by.username}</a>
-							{:else}
-								-
-							{/if}
-						</td>
-					{/if}
+					<td>
+						{#if event.by}
+							<a href="/profile/{event.by.username}">{event.by.username}</a>
+						{:else}
+							-
+						{/if}
+					</td>
 					<td>{new Date(event.event_at).toLocaleDateString()}</td>
 				</tr>
 			{/each}

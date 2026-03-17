@@ -206,6 +206,14 @@ class PostCategory(models.IntegerChoices):
 	GENERAL = 4, 'General'
 
 
+class ModerationEventType(models.IntegerChoices):
+	FLAG = 0, 'Flag'
+	APPEAL = 1, 'Appeal'
+	DISAPPROVAL = 2, 'Disapproval'
+	APPROVAL = 3, 'Approval'
+	MOD_ACTION = 4, 'Mod Action'
+
+
 class FlagStatus(models.IntegerChoices):
 	PENDING = 0, 'Pending'
 	SUCCEEDED = 1, 'Succeeded'

@@ -12,28 +12,28 @@ def _create_moderation_events_view(apps, schema_editor):
 	account_table = Account._meta.db_table
 	schema_editor.execute(f"""
         CREATE VIEW moderation_events AS
-        SELECT 'flag' AS event_type, f.id AS event_id, f.work_id,
+        SELECT 0 AS event_type, f.id AS event_id, f.work_id,
                CAST(NULL AS bigint) AS source_id, f.by_id, u.username AS by_username,
                f.reason, f.status, f.date AS event_at
         FROM otodb_workflag f
         JOIN {account_table} u ON u.id = f.by_id
         UNION ALL
-        SELECT 'appeal', a.id, a.work_id, CAST(NULL AS bigint), a.by_id, u.username,
+        SELECT 1, a.id, a.work_id, CAST(NULL AS bigint), a.by_id, u.username,
                a.reason, a.status, a.date
         FROM otodb_workappeal a
         JOIN {account_table} u ON u.id = a.by_id
         UNION ALL
-        SELECT 'disapproval', d.id, d.work_id, CAST(NULL AS bigint), d.by_id, u.username,
+        SELECT 2, d.id, d.work_id, CAST(NULL AS bigint), d.by_id, u.username,
                d.reason, CAST(NULL AS integer), d.date
         FROM otodb_workdisapproval d
         JOIN {account_table} u ON u.id = d.by_id
         UNION ALL
-        SELECT 'approval', ap.id, ap.work_id, CAST(NULL AS bigint), ap.by_id, u.username,
+        SELECT 3, ap.id, ap.work_id, CAST(NULL AS bigint), ap.by_id, u.username,
                '' AS reason, CAST(NULL AS integer), ap.date
         FROM otodb_workapproval ap
         JOIN {account_table} u ON u.id = ap.by_id
         UNION ALL
-        SELECT 'mod_action', m.id, m.work_id, m.source_id, m.by_id, u.username,
+        SELECT 4, m.id, m.work_id, m.source_id, m.by_id, u.username,
                m.description, m.category, m.date
         FROM otodb_modaction m
         JOIN {account_table} u ON u.id = m.by_id
@@ -50,7 +50,7 @@ class Migration(migrations.Migration):
 		migrations.CreateModel(
 			name='ModerationEvent',
 			fields=[
-				('event_type', models.CharField(max_length=20)),
+				('event_type', models.IntegerField()),
 				('event_id', models.IntegerField(primary_key=True, serialize=False)),
 				('work_id', models.IntegerField(null=True)),
 				('source_id', models.IntegerField(null=True)),

@@ -224,16 +224,12 @@ def work(request: AuthedHttpRequest, work_id: int):
 	is_editor = (
 		request.user.is_authenticated and request.user.level >= Account.Levels.EDITOR
 	)
-	for obj in [
-		work.pending_flag[0] if work.pending_flag else None,
-		work.pending_appeal[0] if work.pending_appeal else None,
-	]:
-		if obj is None:
-			continue
-		is_own = request.user.is_authenticated and obj.by_id == request.user.pk
+	if work.pending_flag:
+		is_own = (
+			request.user.is_authenticated and work.pending_flag.by_id == request.user.pk
+		)
 		if not is_editor and not is_own:
-			obj.by_id = None
-			obj.reason = ''
+			work.pending_flag.by_id = None
 
 	return work
 

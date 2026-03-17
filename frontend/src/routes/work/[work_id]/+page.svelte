@@ -97,6 +97,11 @@
 					Reason: {data.pending_appeal.reason}
 				</div>
 			{/if}
+			{#if data.pending_appeal.by}
+				<div class="mt-1 text-sm">
+					Appealed by: {data.pending_appeal.by.username}
+				</div>
+			{/if}
 		</div>
 	{:else if data.status === StatusValue.UNAPPROVED}
 		<div class="mb-3 border border-red-600 bg-red-600/10 px-4 py-2 font-bold text-red-600">
@@ -109,6 +114,11 @@
 			{#if data.pending_flag.reason}
 				<div class="mt-1 text-sm">
 					Reason: {data.pending_flag.reason}
+				</div>
+			{/if}
+			{#if data.pending_flag.by}
+				<div class="mt-1 text-sm">
+					Flagged by: {data.pending_flag.by.username}
 				</div>
 			{/if}
 		</div>

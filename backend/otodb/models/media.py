@@ -31,12 +31,12 @@ class ActiveManager(models.Manager):
 			Prefetch(
 				'flags',
 				queryset=WorkFlag.objects.filter(status=FlagStatus.PENDING)[:1],
-				to_attr='pending_flag',
+				to_attr='_pending_flag',
 			),
 			Prefetch(
 				'appeals',
 				queryset=WorkAppeal.objects.filter(status=FlagStatus.PENDING)[:1],
-				to_attr='pending_appeal',
+				to_attr='_pending_appeal',
 			),
 			'worksource_set',
 		)
@@ -124,6 +124,8 @@ class MediaWork(RevisionTrackedModel):
 		flags: QuerySet['WorkFlag']
 		appeals: QuerySet['WorkAppeal']
 		disapprovals: QuerySet['WorkDisapproval']
+		_pending_flag: list['WorkFlag']
+		_pending_appeal: list['WorkAppeal']
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
@@ -159,6 +161,16 @@ class MediaWork(RevisionTrackedModel):
 	)
 
 	active_objects = TaggedManager.cast_class(ActiveManager())
+
+	@property
+	def pending_flag(self) -> 'WorkFlag | None':
+		flags = getattr(self, '_pending_flag', [])
+		return flags[0] if flags else None
+
+	@property
+	def pending_appeal(self) -> 'WorkAppeal | None':
+		appeals = getattr(self, '_pending_appeal', [])
+		return appeals[0] if appeals else None
 
 	def __str__(self):
 		return f'{self.pk}: {self.title}'

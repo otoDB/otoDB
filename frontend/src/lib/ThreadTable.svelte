@@ -10,6 +10,8 @@
 		category?: number;
 		added_by: { username: string };
 		modified: string;
+		last_post_by: string | null;
+		last_post_at: string | null;
 	}
 
 	interface Props {
@@ -28,7 +30,7 @@
 			<th class="text-left">{m.large_factual_octopus_exhale()}</th>
 			{#if showCategory}<th class="w-32 text-left">{m.plane_awful_bobcat_spark()}</th>{/if}
 			{#if showAuthor}<th class="w-32 text-left">{m.crisp_red_canary_tickle()}</th>{/if}
-			<th class="w-64 text-right">{m.super_agent_pigeon_aim()}</th>
+			<th class="w-64 text-right">{m.plain_polite_eagle_build()}</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -36,6 +38,8 @@
 			{@const entities = entityFilter
 				? (post.entities?.filter(entityFilter) ?? [])
 				: (post.entities ?? [])}
+			{@const lastUser = post.last_post_by ?? post.added_by.username}
+			{@const lastTime = post.last_post_at ?? post.modified}
 			<tr>
 				<td>
 					<a href="/post/{post.id}">{post.title}</a>
@@ -56,8 +60,8 @@
 					>
 				{/if}
 				<td class="text-right">
-					<time title={new Date(post.modified).toLocaleString()}
-						>{timeAgo(post.modified)}</time
+					<time title={new Date(lastTime).toLocaleString()}
+						><a href="/profile/{lastUser}">{lastUser}</a> @ {timeAgo(lastTime)}</time
 					>
 				</td>
 			</tr>

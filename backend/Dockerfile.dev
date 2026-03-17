@@ -1,9 +1,10 @@
 FROM ghcr.io/astral-sh/uv:bookworm-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
@@ -17,4 +18,4 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
 EXPOSE 8000
-CMD ["sh", "-c", "uv run _setup.py && exec uv run manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python _setup.py && exec python manage.py runserver 0.0.0.0:8000"]

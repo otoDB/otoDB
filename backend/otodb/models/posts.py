@@ -1,5 +1,9 @@
+from datetime import datetime, timezone
+
 from django.db import models
 from django.db.models import (
+	CharField,
+	DateTimeField,
 	Prefetch,
 	Subquery,
 	OuterRef,
@@ -9,7 +13,7 @@ from django.db.models import (
 	TextField,
 	Q,
 )
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Coalesce, Greatest
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -23,7 +27,42 @@ from .revision import Revision
 from typing import TYPE_CHECKING
 
 
+class PostQuerySet(models.QuerySet):
+	def with_activity(self):
+		ct = ContentType.objects.get_for_model(Post)
+		latest_comment = XtdComment.objects.filter(
+			content_type=ct,
+			object_pk=Cast(OuterRef('id'), CharField()),
+			is_removed=False,
+		).order_by('-submit_date')
+
+		return self.annotate(
+			modified=Greatest(
+				Subquery(
+					PostContent.objects.filter(post_id=OuterRef('id'))
+					.order_by('-modified')
+					.values('modified')[:1]
+				),
+				Coalesce(
+					'edited_at',
+					datetime.fromtimestamp(0, tz=timezone.utc),
+					output_field=DateTimeField(),
+				),
+				Coalesce(
+					Subquery(latest_comment.values('submit_date')[:1]),
+					datetime.fromtimestamp(0, tz=timezone.utc),
+					output_field=DateTimeField(),
+				),
+			),
+			last_post_by=Subquery(latest_comment.values('user__username')[:1]),
+			last_post_at=Subquery(latest_comment.values('submit_date')[:1]),
+		).order_by('-modified')
+
+
 class PostManager(models.Manager):
+	def with_activity(self):
+		return self.get_queryset().with_activity()
+
 	def get_queryset(self):
 		from otodb.models.tag import OtodbTagModel
 		from .revision import RevisionChange
@@ -34,30 +73,26 @@ class PostManager(models.Manager):
 				*OtodbTagModel.__subclasses__()
 			).values()
 		]
-		return (
-			super()
-			.get_queryset()
-			.prefetch_related(
-				Prefetch(
-					'entitylink_set',
-					queryset=EntityLink.objects.order_by('id').annotate(
-						tg_id=Case(
-							When(
-								Q(entity_type__id__in=tag_models),
-								then=Subquery(
-									RevisionChange.objects.filter(
-										target_type_id=OuterRef('entity_type_id'),
-										target_id=OuterRef('entity_id'),
-										target_column='slug',
-									).values('target_value')[:1]
-								),
+		return PostQuerySet(self.model, using=self._db).prefetch_related(
+			Prefetch(
+				'entitylink_set',
+				queryset=EntityLink.objects.order_by('id').annotate(
+					tg_id=Case(
+						When(
+							Q(entity_type__id__in=tag_models),
+							then=Subquery(
+								RevisionChange.objects.filter(
+									target_type_id=OuterRef('entity_type_id'),
+									target_id=OuterRef('entity_id'),
+									target_column='slug',
+								).values('target_value')[:1]
 							),
-							default=Cast(F('entity_id'), output_field=TextField()),
 						),
-						ent=F('entity_type__model'),
+						default=Cast(F('entity_id'), output_field=TextField()),
 					),
-					to_attr='_entity_links',
-				)
+					ent=F('entity_type__model'),
+				),
+				to_attr='_entity_links',
 			)
 		)
 
@@ -79,7 +114,7 @@ class Post(models.Model):
 		related_name='edited_posts',
 	)
 
-	objects = PostManager()
+	objects: PostManager = PostManager()
 
 	if TYPE_CHECKING:
 		from django.db.models import QuerySet

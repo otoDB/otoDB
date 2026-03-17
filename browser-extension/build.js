@@ -3,7 +3,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 const AdmZip = require('adm-zip');
 
-const VERSION = '1.2.0';
+const VERSION = '1.2.1';
 
 const COMMANDS = ['chrome', 'firefox', 'pack'];
 const COMMAND = process.argv.find(a => COMMANDS.includes(a));

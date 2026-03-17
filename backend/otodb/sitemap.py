@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Any, NotRequired, TypedDict
+from typing import Any, Callable, NotRequired, TypedDict
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Max, Model, OuterRef, QuerySet, Subquery
+from django.db.models import F, Max, Model, OuterRef, QuerySet, Subquery
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
@@ -21,6 +21,7 @@ class SitemapTypeConfig(TypedDict):
 	url_pattern: str
 	value_field: str
 	date_field: NotRequired[str | None]
+	prepare_queryset: NotRequired[Callable[[QuerySet], QuerySet]]
 	use_revision_date: NotRequired[bool]
 
 
@@ -57,7 +58,9 @@ SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
 		'filters': {},
 		'url_pattern': '/post/{value}',
 		'value_field': 'id',
-		'date_field': 'edited_at',
+		'prepare_queryset': lambda qs: qs.with_activity().annotate(
+			lastmod=F('modified')
+		),
 	},
 	'profiles': {
 		'model': Account,
@@ -109,10 +112,12 @@ def _annotate_lastmod(
 		)
 		return queryset.annotate(lastmod=latest_rev), True
 
+	prepare_queryset = config.get('prepare_queryset')
+	if prepare_queryset:
+		return prepare_queryset(queryset), True
+
 	date_field = config.get('date_field')
 	if date_field:
-		from django.db.models import F
-
 		return queryset.annotate(lastmod=F(date_field)), True
 
 	return queryset, False

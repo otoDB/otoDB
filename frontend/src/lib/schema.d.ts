@@ -1875,7 +1875,7 @@ export interface components {
         WorkAppealSchema: {
             /** Id */
             id: number;
-            by: components["schemas"]["ProfileSchema"];
+            by?: components["schemas"]["ProfileSchema"] | null;
             /** Reason */
             reason: string;
             /**
@@ -1893,7 +1893,7 @@ export interface components {
         WorkFlagSchema: {
             /** Id */
             id: number;
-            by: components["schemas"]["ProfileSchema"];
+            by?: components["schemas"]["ProfileSchema"] | null;
             /** Reason */
             reason: string;
             /**
@@ -1992,6 +1992,8 @@ export interface components {
             added_by: components["schemas"]["ProfileSchema"];
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Media Title */
+            media_title?: string | null;
             /** Platform */
             platform: number;
             /** Url */
@@ -2151,6 +2153,8 @@ export interface components {
             added_by: components["schemas"]["ProfileSchema"];
             /** Thumbnail */
             thumbnail?: string | null;
+            /** Media Title */
+            media_title?: string | null;
             /** Platform */
             platform: number;
             /** Url */
@@ -2560,6 +2564,10 @@ export interface components {
              * Format: date-time
              */
             modified: string;
+            /** Last Post By */
+            last_post_by?: string | null;
+            /** Last Post At */
+            last_post_at?: string | null;
             /**
              * Entities
              * @default []

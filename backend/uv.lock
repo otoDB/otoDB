@@ -308,14 +308,14 @@ wheels = [
 
 [[package]]
 name = "django-dirtyfields"
-version = "1.9.7"
+version = "1.9.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a2/f6/800c94ff7312b6aed9e3763f07acdb71b1bf457dd4a602de24d888104550/django_dirtyfields-1.9.7.tar.gz", hash = "sha256:23cde794612499e8b5e0f840a1c389a6fd666fcc9c01e82299fcd8ba90af151b", size = 21988, upload-time = "2025-03-22T09:46:51.024Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8e/0d/0c7d727f7f14f82450b72e5213c6ed0da3d16add2de2e59d46aea6b6eaa2/django_dirtyfields-1.9.9.tar.gz", hash = "sha256:c11c8e03827166d2c91f6634a4d10f5aa5cc7ea430d60e5bd576b3ebf319172f", size = 22209, upload-time = "2026-01-22T13:48:58.777Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/49/34/e3095c10f3d6838329d11ecce36d8136bfe553b4e960cb10f1fcca434841/django_dirtyfields-1.9.7-py3-none-any.whl", hash = "sha256:084957fb8db092c05814ce92dc34276d52a0056e09a55b090bdab29f98eacc53", size = 8447, upload-time = "2025-03-22T09:46:49.601Z" },
+    { url = "https://files.pythonhosted.org/packages/18/82/d274e924565c2b11eb59fadb5c95885b10502755b4f458bea477a9a6f8af/django_dirtyfields-1.9.9-py3-none-any.whl", hash = "sha256:80da479ab989331e6f29c90576e5f7d7b3df65b36f16bfd6f5d37a0dbdeda6b0", size = 7685, upload-time = "2026-01-22T13:48:57.876Z" },
 ]
 
 [[package]]
@@ -715,6 +715,7 @@ dependencies = [
     { name = "django-ninja" },
     { name = "django-ordered-model" },
     { name = "django-request-cache" },
+    { name = "django-rq" },
     { name = "django-simple-history" },
     { name = "django-tagulous" },
     { name = "django-tasks-rq" },
@@ -745,13 +746,14 @@ requires-dist = [
     { name = "diff-match-patch", specifier = ">=20241021" },
     { name = "django", specifier = ">=6.0.2" },
     { name = "django-comments-xtd", specifier = ">=2.10.1" },
-    { name = "django-cors-headers", specifier = ">=4.6.0" },
+    { name = "django-cors-headers", specifier = ">=4.9.0" },
     { name = "django-cte", specifier = ">=2.0.0" },
-    { name = "django-dirtyfields", specifier = ">=1.9.7" },
+    { name = "django-dirtyfields", specifier = ">=1.9.9" },
     { name = "django-markdownfield", specifier = ">=0.11.0" },
-    { name = "django-ninja", specifier = ">=1.3.0" },
+    { name = "django-ninja", specifier = ">=1.5.1" },
     { name = "django-ordered-model", specifier = ">=3.7.4" },
     { name = "django-request-cache", specifier = ">=1.5.0" },
+    { name = "django-rq", specifier = ">=3.2.2,<4" },
     { name = "django-simple-history", specifier = ">=3.10.1" },
     { name = "django-tagulous", specifier = ">=2.1.1" },
     { name = "django-tasks-rq", specifier = ">=0.12.0" },

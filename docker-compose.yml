@@ -2,7 +2,6 @@ name: otodb
 
 x-backend: &backend
   image: ghcr.io/otodb/otodb-backend:latest
-  build: ./backend
   env_file:
     - .env
   environment:
@@ -37,19 +36,15 @@ services:
 
   backend:
     <<: *backend
+    build: ./backend
     volumes:
-      - /mnt/otodb-block/static:/app/static # Mount to specific location
       - ./cookies.txt:/app/cookies.txt:ro # Mount cookies for yt-dlp
-      # - ./backend:/app  # For development purposes only
+      - static:/srv/static
     stop_signal: SIGINT
 
   worker:
     <<: *backend
-    command: ["uv", "run", "manage.py", "rqworker", "--job-class", "django_tasks_rq.Job"]
-
-  scheduler:
-    <<: *backend
-    command: ["uv", "run", "manage.py", "run_task_scheduler"]
+    command: ["python", "manage.py", "rqworker", "--with-scheduler", "--job-class", "django_tasks_rq.Job"]
 
   frontend:
     image: ghcr.io/otodb/otodb-frontend:latest
@@ -74,7 +69,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-      - /mnt/otodb-block/static:/srv/static
+      - static:/srv/static
     depends_on:
       - backend
       - frontend
@@ -89,3 +84,4 @@ volumes:
   postgres17_data:
   caddy_data:
   caddy_config:
+  static:

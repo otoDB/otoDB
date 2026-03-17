@@ -26,25 +26,8 @@ class ActiveManager(models.Manager):
 
 		qs = super().get_queryset().filter(moved_to__isnull=True)
 
-		instances_queryset = (
-			TagWorkInstance.objects.filter(work_tag__deprecated=False)
-			.select_related(
-				'work_tag',
-				'work_tag__aliased_to',
-			)
-			.prefetch_related(
-				'work_tag__tagworklangpreference_set',
-				'work_tag__aliases',
-				'work_tag__aliases__tagworklangpreference_set',
-			)
-			.order_by(
-				tagwork_ordering_case(prefix='work_tag__'),
-				'work_tag__name',
-			)
-		)
-
 		return qs.select_related('thumbnail_source').prefetch_related(
-			Prefetch('tagworkinstance_set', queryset=instances_queryset),
+			Prefetch('tagworkinstance_set', queryset=TagWorkInstance.active_queryset()),
 			Prefetch(
 				'flags',
 				queryset=WorkFlag.objects.filter(status=FlagStatus.PENDING)[:1],
@@ -72,6 +55,22 @@ class TagWorkInstance(RevisionTrackedModel):
 
 	class Meta:
 		unique_together = (('work', 'work_tag'),)
+
+	@classmethod
+	def active_queryset(cls):
+		return (
+			cls.objects.filter(work_tag__deprecated=False)
+			.select_related('work_tag', 'work_tag__aliased_to')
+			.prefetch_related(
+				'work_tag__tagworklangpreference_set',
+				'work_tag__aliases',
+				'work_tag__aliases__tagworklangpreference_set',
+			)
+			.order_by(
+				tagwork_ordering_case(prefix='work_tag__'),
+				'work_tag__name',
+			)
+		)
 
 	work = models.ForeignKey('MediaWork', on_delete=models.CASCADE)
 	work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
@@ -250,7 +249,7 @@ class MediaWork(RevisionTrackedModel):
 
 	@cached_property
 	def tags_annotated(self):
-		twis = list(self.tagworkinstance_set.filter(work_tag__deprecated=False))
+		twis = list(TagWorkInstance.active_queryset().filter(work=self))
 		primary_paths = TagWork.get_primary_paths([i.work_tag_id for i in twis])
 		t = []
 		for instance in twis:

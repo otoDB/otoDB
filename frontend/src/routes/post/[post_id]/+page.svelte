@@ -149,8 +149,8 @@
 				</div>
 			</div>
 			<div class="mt-2 flex gap-2">
-				<input type="submit" value="Save" />
-				<button type="button" onclick={cancelEdit}>Cancel</button>
+				<input type="submit" value={m.last_late_penguin_bubble()} />
+				<button type="button" onclick={cancelEdit}>{m.lower_whole_gopher_fulfill()}</button>
 			</div>
 		</form>
 	{:else}
@@ -200,12 +200,13 @@
 					{#if data.post.edited_at}
 						<span title={new Date(data.post.edited_at).toLocaleString()}>
 							{#if editedByOther}
-								(edited {timeAgo(data.post.edited_at)} by
-								<a href="/profile/{data.post.edited_by.username}"
+								({m.free_tiny_badger_breathe({
+									time: timeAgo(data.post.edited_at)
+								})}<a href="/profile/{data.post.edited_by.username}"
 									>{data.post.edited_by.username}</a
-								>)
+								>{m.agent_honest_marten_renew()})
 							{:else}
-								(edited {timeAgo(data.post.edited_at)})
+								{m.same_only_emu_startle({ time: timeAgo(data.post.edited_at) })}
 							{/if}
 						</span>
 					{/if}

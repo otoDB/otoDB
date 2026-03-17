@@ -54,7 +54,7 @@ const i18n = {
 let uiLang = 'en';
 const t = (key) => (i18n[uiLang] ?? i18n.en)[key] ?? i18n.en[key];
 
-const WorkTagPresentationOrder = [4, 6, 3, 2, 0, 5];
+const WorkTagPresentationOrder = [1, 4, 6, 3, 2, 0, 5];
 const WorkTagCategoriesSettableAsSource = [2, 4, 6];
 const WorkTagPresentationColours = [
     'rgb(159,163,169)',
@@ -71,7 +71,7 @@ function safeSetHTML(el, html) {
     // if (el.setHTML) {
     //     el.setHTML(html);
     // } else {
-        el.innerHTML = DOMPurify.sanitize(html);
+        el.innerHTML = DOMPurify.sanitize(html, { ADD_ATTR: ['target'] });
     // }
 }
 

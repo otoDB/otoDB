@@ -1,20 +1,12 @@
 from datetime import datetime, timezone
 
 from django.db import transaction
-from django.db.models import (
-	Subquery,
-	OuterRef,
-	DateTimeField,
-	CharField,
-)
-from django.db.models.functions import Greatest, Coalesce, Cast
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 
-from django_comments_xtd.models import XtdComment
-
 from ninja import Router, ModelSchema, Schema, Query
+
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
@@ -31,11 +23,14 @@ from otodb.account.models import Account
 from otodb.models.enums import PostCategory, LanguageTypes
 
 from .common import (
+	AuthedHttpRequest,
 	ProfileSchema,
 	user_is_trusted,
 	restrict_internal,
 	EntitySchema,
 )
+
+from otodb.discord import discord_post
 
 post_router = Router()
 
@@ -44,6 +39,8 @@ class PostOverviewSchema(ModelSchema):
 	id: int
 	added_by: ProfileSchema
 	modified: datetime
+	last_post_by: str | None = None
+	last_post_at: datetime | None = None
 	entities: list[EntitySchema] = []
 
 	class Meta:
@@ -73,27 +70,10 @@ def post(request: HttpRequest, post_id: int):
 	return get_object_or_404(Post, id=post_id)
 
 
-def annotate_modified(qs):
-	return qs.annotate(
-		modified=Greatest(
-			Subquery(
-				PostContent.objects.filter(post_id=OuterRef('id'))
-				.order_by('modified')
-				.values('modified')[:1]
-			),
-			Coalesce(
-				'edited_at',
-				datetime.fromtimestamp(0, tz=timezone.utc),
-				output_field=DateTimeField(),
-			),
-		)
-	)
-
-
 @post_router.get('categories', response=list[list[PostOverviewSchema]])
 def categories(request: HttpRequest):
 	return [
-		annotate_modified(Post.objects.filter(category=i)).order_by('-modified')[:5]
+		Post.objects.filter(category=i).with_activity()[:5]
 		for i, _ in PostCategory.choices
 	]
 
@@ -101,9 +81,7 @@ def categories(request: HttpRequest):
 @post_router.get('category', response=list[PostOverviewSchema])
 @paginate
 def category(request: HttpRequest, category: PostCategory):
-	return annotate_modified(Post.objects.filter(category=category)).order_by(
-		'-modified'
-	)
+	return Post.objects.filter(category=category).with_activity()
 
 
 class PostInSchema(Schema):
@@ -136,7 +114,7 @@ def get_entity_link_ent(e: EntitySchema):
 @user_is_trusted
 @restrict_internal
 @transaction.atomic
-def new(request: HttpRequest, payload: PostInSchema):
+def new(request: AuthedHttpRequest, payload: PostInSchema):
 	assert payload.category > 0
 	assert payload.title
 	assert payload.post
@@ -167,6 +145,9 @@ def new(request: HttpRequest, payload: PostInSchema):
 	)
 
 	Subscription.objects.create(subscriber=request.user, entity=p)
+
+	discord_post.enqueue(p.pk, request.user.username)
+
 	return p.pk
 
 
@@ -217,14 +198,12 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 @post_router.get('threads', response=list[PostOverviewSchema])
 @paginate
 def threads(request: HttpRequest, entity: EntitySchema = Query(...)):
-	return annotate_modified(
-		Post.objects.filter(
-			id__in=EntityLink.objects.filter(
-				entity_type__model=entity.entity,
-				entity_id=get_entity_link_ent(entity).pk,
-			).values('post_id')
-		)
-	)
+	return Post.objects.filter(
+		id__in=EntityLink.objects.filter(
+			entity_type__model=entity.entity,
+			entity_id=get_entity_link_ent(entity).pk,
+		).values('post_id')
+	).with_activity()
 
 
 @post_router.get('search', response=list[PostOverviewSchema])
@@ -234,7 +213,7 @@ def search(
 	query: str,
 	category: PostCategory | None = None,
 ):
-	posts = annotate_modified(Post.objects.filter(title__icontains=query))
+	posts = Post.objects.filter(title__icontains=query).with_activity()
 	if category is not None and category >= 0:
 		posts = posts.filter(category=category)
 	return posts
@@ -243,31 +222,4 @@ def search(
 @post_router.get('recent', response=list[PostOverviewSchema])
 @paginate
 def recent_posts(request: HttpRequest):
-	from django.contrib.contenttypes.models import ContentType
-
-	return Post.objects.annotate(
-		modified=Greatest(
-			Subquery(
-				PostContent.objects.filter(post_id=OuterRef('id'))
-				.order_by('modified')
-				.values('modified')[:1]
-			),
-			Coalesce(
-				'edited_at',
-				datetime.fromtimestamp(0, tz=timezone.utc),
-				output_field=DateTimeField(),
-			),
-			Coalesce(
-				Subquery(
-					XtdComment.objects.filter(
-						content_type=ContentType.objects.get_for_model(Post),
-						object_pk=Cast(OuterRef('id'), CharField()),
-					)
-					.order_by('submit_date')
-					.values('submit_date')[:1]
-				),
-				datetime.fromtimestamp(0, tz=timezone.utc),
-				output_field=DateTimeField(),
-			),
-		)
-	).order_by('-modified')
+	return Post.objects.with_activity()

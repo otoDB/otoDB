@@ -101,7 +101,8 @@ make_video_url = {
 	Platform.BILIBILI: lambda s, uid=None: (
 		f'https://www.bilibili.com/video/{s + "/" if "_p" not in s else s[: s.index("_p")] + "/" + "?p=" + s[s.index("_p") + 2 :]}'
 	),
-	Platform.SOUNDCLOUD: lambda s, uid=None: s,  # TODO
+	# TODO
+	# Platform.SOUNDCLOUD: lambda s, uid=None: s,
 	Platform.TWITTER: lambda s, uid=None: (
 		f'https://twitter.com/{uid}/status/{s}'
 		if uid

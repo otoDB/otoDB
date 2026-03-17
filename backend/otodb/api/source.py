@@ -1,5 +1,6 @@
 from typing import List
 from datetime import date
+from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -27,7 +28,7 @@ from otodb.models.enums import (
 	ModerationAction,
 )
 from otodb.account.models import Account
-from otodb.tasks import enqueue_deferred, resolve_expired_source_task
+from otodb.tasks import resolve_expired_source_task
 
 from .common import (
 	AuthedHttpRequest,
@@ -167,7 +168,9 @@ def new_source_from_url(
 			return 400, {'message': 'Cannot add sources to flagged works'}
 		if not is_editor and work.status == Status.APPROVED:
 			src.is_pending = True
-			enqueue_deferred(resolve_expired_source_task, src.pk)
+			resolve_expired_source_task.enqueue(
+				src.pk, run_after=settings.OTODB_MODERATION_PERIOD
+			)
 		sync_work_source(work, src)
 		return {'work_id': work.pk}
 

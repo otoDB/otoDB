@@ -45,7 +45,6 @@ from otodb.models.enums import (
 )
 from otodb.account.models import Account
 from otodb.tasks import (
-	enqueue_deferred,
 	resolve_expired_work,
 	resolve_expired_flag,
 	resolve_expired_appeal,
@@ -419,7 +418,9 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	)
 
 	if work.status == Status.PENDING:
-		enqueue_deferred(resolve_expired_work, work.pk)
+		resolve_expired_work.enqueue(
+			work.pk, run_after=settings.OTODB_MODERATION_PERIOD
+		)
 
 	# Add tags
 	tags = []
@@ -529,7 +530,7 @@ def flag_work(request: AuthedHttpRequest, work_id: int, reason: str):
 		status=FlagStatus.PENDING,
 	)
 
-	enqueue_deferred(resolve_expired_flag, flag.pk)
+	resolve_expired_flag.enqueue(flag.pk, run_after=settings.OTODB_MODERATION_PERIOD)
 
 
 @work_router.post('appeal', auth=django_auth, response={200: None, 429: Error})
@@ -567,7 +568,9 @@ def appeal_work(request: AuthedHttpRequest, work_id: int, reason: str):
 		status=FlagStatus.PENDING,
 	)
 
-	enqueue_deferred(resolve_expired_appeal, appeal.pk)
+	resolve_expired_appeal.enqueue(
+		appeal.pk, run_after=settings.OTODB_MODERATION_PERIOD
+	)
 
 
 @work_router.get('queue', auth=django_auth, response=List[ThinWorkSchema])

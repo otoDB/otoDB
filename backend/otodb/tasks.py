@@ -1,6 +1,5 @@
 import logging
 
-from django.db import transaction
 from django.tasks import task
 from django.conf import settings
 
@@ -22,22 +21,6 @@ def send_email(
 		)
 	except Exception:
 		logger.exception('Failed to send email to %s', to)
-
-
-def enqueue_deferred(task_func, *args):
-	"""Enqueue a task to run after OTODB_MODERATION_PERIOD, via transaction.on_commit.
-
-	Silently skips if the backend doesn't support defer (e.g. ImmediateBackend in dev).
-	"""
-	from django.tasks import default_task_backend
-
-	if not default_task_backend.supports_defer:
-		return
-
-	def _enqueue():
-		task_func.using(run_after=settings.OTODB_MODERATION_PERIOD).enqueue(*args)
-
-	transaction.on_commit(_enqueue)
 
 
 def reject_expired_source(src):

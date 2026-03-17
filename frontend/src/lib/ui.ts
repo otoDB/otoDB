@@ -201,6 +201,9 @@ export function timeAgo(date: string | Date): string {
 	const d = date instanceof Date ? date : new Date(date);
 	const diff = (d.getTime() - Date.now()) / 1000;
 	const elapsed = Math.abs(diff);
+
+	if (elapsed <= 1) return m.busy_hour_bee_gasp();
+
 	const rtf = new Intl.RelativeTimeFormat(getLocale(), { numeric: 'always' });
 
 	const [divisor, unit]: [number, Intl.RelativeTimeFormatUnit] =

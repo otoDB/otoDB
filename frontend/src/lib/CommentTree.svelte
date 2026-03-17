@@ -154,10 +154,11 @@
 			{#if data.edited_at}
 				<span title={new Date(data.edited_at).toLocaleString()}>
 					{#if data.edited_by && data.edited_by.username !== data.user.username}
-						(edited {timeAgo(data.edited_at)} by
-						<a href="/profile/{data.edited_by.username}">{data.edited_by.username}</a>)
+						({m.free_tiny_badger_breathe({ time: timeAgo(data.edited_at) })}<a
+							href="/profile/{data.edited_by.username}">{data.edited_by.username}</a
+						>{m.agent_honest_marten_renew()})
 					{:else}
-						(edited {timeAgo(data.edited_at)})
+						{m.same_only_emu_startle({ time: timeAgo(data.edited_at) })}
 					{/if}
 				</span>
 			{/if}

@@ -45,7 +45,7 @@ services:
 
   worker:
     <<: *backend
-    command: ["uv", "run", "manage.py", "rqworker", "--with-scheduler", "--job-class", "django_tasks_rq.Job"]
+    command: ["python", "manage.py", "rqworker", "--with-scheduler", "--job-class", "django_tasks_rq.Job"]
 
   frontend:
     image: ghcr.io/otodb/otodb-frontend:latest

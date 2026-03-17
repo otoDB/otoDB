@@ -1145,6 +1145,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tag/query_connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Query Connection */
+        get: operations["otodb_api_tag_query_connection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/post": {
         parameters: {
             query?: never;
@@ -1566,7 +1583,7 @@ export interface components {
             /** Work Id */
             work_id: number;
             /** Tags */
-            tags: components["schemas"]["TagWorkSchema"][];
+            tags: components["schemas"]["TagWorkInstanceSchema"][];
         };
         /** TagLangPreferenceSchema */
         TagLangPreferenceSchema: {
@@ -1576,6 +1593,30 @@ export interface components {
             slug: string;
             /** Lang */
             lang: number;
+        };
+        /** TagWorkInstanceSchema */
+        TagWorkInstanceSchema: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Category */
+            category: number;
+            /** Deprecated */
+            deprecated: boolean;
+            /** Sample */
+            sample: boolean;
+            /** Creator Roles */
+            creator_roles: number[] | null;
+            /** Primary Path */
+            primary_path: components["schemas"]["TagWorkSchema"][];
         };
         /** TagWorkSchema */
         TagWorkSchema: {
@@ -1665,30 +1706,6 @@ export interface components {
             thumbnail?: string | null;
             /** Title */
             title?: string | null;
-        };
-        /** TagWorkInstanceSchema */
-        TagWorkInstanceSchema: {
-            /** Id */
-            id: number;
-            /** Lang Prefs */
-            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
-            aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
-            /** Name */
-            name: string;
-            /** Slug */
-            slug: string;
-            /** Category */
-            category: number;
-            /** Deprecated */
-            deprecated: boolean;
-            /** Sample */
-            sample: boolean;
-            /** Creator Roles */
-            creator_roles: number[] | null;
-            /** Primary Path */
-            primary_path: components["schemas"]["TagWorkSchema"][];
         };
         /** WorkSchema */
         WorkSchema: {
@@ -2151,6 +2168,31 @@ export interface components {
             /** Aliases */
             aliases: components["schemas"]["TagSongSchema"][];
         };
+        /** ConnectionLookupResponse */
+        ConnectionLookupResponse: {
+            /** Entities */
+            entities: components["schemas"]["ConnectionTagResult"][];
+        };
+        /** ConnectionTagResult */
+        ConnectionTagResult: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** N Instance */
+            n_instance?: number | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Category */
+            category: number;
+            /** Deprecated */
+            deprecated: boolean;
+            /** Has Connection */
+            has_connection: boolean;
+        };
         /** EntitySchema */
         EntitySchema: {
             /** Id */
@@ -2236,6 +2278,10 @@ export interface components {
              * Format: date-time
              */
             modified: string;
+            /** Last Post By */
+            last_post_by?: string | null;
+            /** Last Post At */
+            last_post_at?: string | null;
             /**
              * Entities
              * @default []
@@ -4353,6 +4399,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TagWorkSchema"][];
+                };
+            };
+        };
+    };
+    otodb_api_tag_query_connection: {
+        parameters: {
+            query: {
+                url: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionLookupResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

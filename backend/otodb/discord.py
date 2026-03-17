@@ -51,10 +51,18 @@ def _entity_info(
 	"""Return (display_label, url_or_None) for a commentable entity."""
 	match model_name:
 		case 'post':
+			from otodb.models.posts import Post
+
+			post_title: str | None = (
+				Post.objects.filter(pk=entity_pk)
+				.values_list('title', flat=True)
+				.first()
+			)
+			label = post_title or f'post #{entity_pk}'
 			url = f'{BASE_URL}/post/{entity_pk}'
 			if comment_pk:
 				url += f'#c{comment_pk}'
-			return f'post #{entity_pk}', url
+			return label, url
 		case 'mediawork':
 			from otodb.models.media import MediaWork
 
@@ -151,7 +159,7 @@ def discord_comment(
 		},
 		'fields': [
 			{
-				'name': '💬 Replies',
+				'name': '↩️ Replies',
 				'value': str(comments.count()),
 				'inline': True,
 			},

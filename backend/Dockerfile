@@ -5,6 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
+ENV PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
@@ -21,9 +22,10 @@ RUN apt-get update && apt-get install -y ca-certificates git patch curl unzip
 ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh -s -- -y
 RUN uv run p12y apply
+RUN uv run manage.py collectstatic --noinput
 
 # Ensure cookies.txt exists so volume mount doesn't create a directory
 RUN touch cookies.txt
 
 EXPOSE 8000
-CMD ["sh", "-c", "uv run _setup.py && uv run manage.py collectstatic --noinput && exec uv run granian --interface wsgi project.wsgi:application --host 0.0.0.0 --workers 4"]
+CMD ["sh", "-c", "python _setup.py && exec granian --interface wsgi project.wsgi:application --host 0.0.0.0 --workers 4"]

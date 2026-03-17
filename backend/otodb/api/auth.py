@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 import string
-import smtplib
 import logging
-from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpRequest
@@ -16,6 +14,7 @@ from ninja.security import django_auth
 
 from otodb.account.models import Account, Invitation
 from otodb.models.enums import LanguageTypes
+from otodb.tasks import send_email
 
 from .common import Error, UserPreferencesSchema, ProfileSchema, user_is_editor
 
@@ -220,17 +219,14 @@ def send_reset_password_token(request: HttpRequest, body: SendResetTokenRequestS
 		user.reset_token = get_random_string(120, string.ascii_letters + string.digits)
 		user.save()
 		language = get_user_language(user, request)
-		send_mail(
-			PASSWORD_RESET_EMAIL[language][0],
-			PASSWORD_RESET_EMAIL[language][1](user.username, user.reset_token),
-			'noreply@otodb.net',
-			[user.email],
-			fail_silently=False,
+		send_email.enqueue(
+			subject=PASSWORD_RESET_EMAIL[language][0],
+			body=PASSWORD_RESET_EMAIL[language][1](user.username, user.reset_token),
+			from_email='noreply@otodb.net',
+			to=[user.email],
 		)
 	except Account.DoesNotExist:
 		pass
-	except smtplib.SMTPException as e:
-		logger.error('Could not send mail:', e)
 
 
 class InvitationSchema(ModelSchema):

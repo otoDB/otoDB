@@ -283,6 +283,30 @@ OTODB_CDN_ENABLED = (
 )
 OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
 
+# Task queue (Redis + RQ in production, synchronous fallback for dev)
+OTODB_REDIS_URL = os.environ.get('OTODB_REDIS_URL')
+if OTODB_REDIS_URL:
+	INSTALLED_APPS.append('django_rq')
+	RQ_QUEUES = {
+		'default': {
+			'URL': OTODB_REDIS_URL,
+		}
+	}
+	TASKS = {
+		'default': {
+			'BACKEND': 'django_tasks_rq.RQBackend',
+			'QUEUES': ['default'],
+		}
+	}
+else:
+	TASKS = {
+		'default': {
+			'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend',
+		}
+	}
+
+OTODB_DISCORD_WEBHOOK_URL = os.environ.get('OTODB_DISCORD_WEBHOOK_URL')
+
 NINJA_PAGINATION_PER_PAGE = 30
 NINJA_PAGINATION_MAX_PER_PAGE_SIZE = 30
 NINJA_PAGINATION_MAX_LIMIT = 30

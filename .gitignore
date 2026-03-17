@@ -2,6 +2,7 @@
 .env
 Caddyfile
 docker-compose.dev.yml
+docker-compose.override.yml
 postgresql.conf
 browser-extension/dist/
 browser-extension/node_modules/

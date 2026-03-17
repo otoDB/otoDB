@@ -19,7 +19,8 @@ from ninja.errors import HttpError
 
 from otodb.account.models import Account
 from otodb.models import Notification, Subscription, RevisionChange, CommentMeta
-from .common import user_is_trusted, ProfileSchema, restrict_internal
+from .common import AuthedHttpRequest, user_is_trusted, ProfileSchema, restrict_internal
+from otodb.discord import discord_comment
 
 comment_router = Router()
 
@@ -87,7 +88,7 @@ def get(request: HttpRequest, model: ModelsWithComments, pk: int):
 @user_is_trusted
 @restrict_internal
 def post(
-	request: HttpRequest,
+	request: AuthedHttpRequest,
 	payload: CommentInSchema,
 ):
 	T = ContentType.objects.get(model=payload.model)
@@ -129,6 +130,10 @@ def post(
 			Notification(target=u, comment=comment)
 			for u in Account.objects.filter(username__in=target_names)
 		]
+	)
+
+	discord_comment.enqueue(
+		comment.pk, payload.model, payload.pk, request.user.username
 	)
 
 

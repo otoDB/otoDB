@@ -15,6 +15,23 @@ BASE_URL: str | None = (
 )
 ENABLED = bool(WEBHOOK_URL and BASE_URL)
 
+POST_EMOJI: dict[int, str] = {
+	0: '📢',
+	1: '💡',
+	2: '🐛',
+	3: '🌱',
+}
+POST_COLOR: dict[int, int] = {
+	# Matches frontend tag colors
+	0: 0xDC2626,  # red
+	1: 0xE879F9,  # pink
+	2: 0xFBBF24,  # orange
+	3: 0x65A30D,  # green
+}
+DEFAULT_POST_COLOR = 0x0891B2
+DEFAULT_COMMENT_COLOR = 0x9FA3A9
+# Comments on posts (replies) will use Discord default color
+
 
 def _send_webhook(embeds: list[dict[str, Any]]) -> None:
 	payload = {
@@ -39,7 +56,15 @@ def _entity_info(
 				url += f'#c{comment_pk}'
 			return f'post #{entity_pk}', url
 		case 'mediawork':
-			return f'work #{entity_pk}', f'{BASE_URL}/work/{entity_pk}'
+			from otodb.models.media import MediaWork
+
+			title: str | None = (
+				MediaWork.objects.filter(pk=entity_pk)
+				.values_list('title', flat=True)
+				.first()
+			)
+			label = f'{title} (work #{entity_pk})' if title else f'work #{entity_pk}'
+			return label, f'{BASE_URL}/work/{entity_pk}'
 		case 'pool':
 			return f'pool #{entity_pk}', f'{BASE_URL}/list/{entity_pk}'
 		case 'tagwork':
@@ -81,8 +106,9 @@ def discord_post(post_id: int, username: str) -> None:
 	_send_webhook(
 		[
 			{
-				'title': post.title,
+				'title': f'{POST_EMOJI.get(post.category, "")} {post.title}'.strip(),
 				'description': description,
+				'color': POST_COLOR.get(post.category, DEFAULT_POST_COLOR),
 				'url': f'{BASE_URL}/post/{post.pk}',
 				'timestamp': content.modified.isoformat(),
 				'author': {
@@ -116,7 +142,7 @@ def discord_comment(
 	comments = XtdComment.objects.filter(content_type=ct, object_pk=entity_pk)
 
 	embed: dict[str, Any] = {
-		'title': f'Comment on {label}',
+		'title': f'💬 {label}',
 		'description': description,
 		'timestamp': comment.submit_date.isoformat(),
 		'author': {
@@ -124,9 +150,13 @@ def discord_comment(
 			'url': f'{BASE_URL}/profile/{username}',
 		},
 		'fields': [
-			{'name': 'Replies', 'value': str(comments.count()), 'inline': True},
 			{
-				'name': 'Users',
+				'name': '💬 Replies',
+				'value': str(comments.count()),
+				'inline': True,
+			},
+			{
+				'name': '👥 Users',
 				'value': str(comments.values('user').distinct().count()),
 				'inline': True,
 			},
@@ -134,4 +164,6 @@ def discord_comment(
 	}
 	if url:
 		embed['url'] = url
+	if model_name != 'post':
+		embed['color'] = DEFAULT_COMMENT_COLOR
 	_send_webhook([embed])

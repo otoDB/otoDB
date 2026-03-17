@@ -63,11 +63,12 @@ ydl, jar = None, None
 def reset_cookies(cookie_file=settings.COOKIES_FILE):
 	global ydl, jar
 
-	jar = MozillaCookieJar(cookie_file)
-	try:
-		jar.load()
-	except OSError:
-		pass
+	jar = MozillaCookieJar(cookie_file) if cookie_file else MozillaCookieJar()
+	if cookie_file:
+		try:
+			jar.load()
+		except OSError:
+			pass
 
 	opts = {'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}
 	if cookie_file:

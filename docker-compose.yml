@@ -39,6 +39,7 @@ services:
     build: ./backend
     volumes:
       - ./cookies.txt:/app/cookies.txt:ro # Mount cookies for yt-dlp
+      - static:/srv/static
     stop_signal: SIGINT
 
   worker:
@@ -68,7 +69,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-      - /mnt/otodb-block/static:/srv/static
+      - static:/srv/static
     depends_on:
       - backend
       - frontend
@@ -83,3 +84,4 @@ volumes:
   postgres17_data:
   caddy_data:
   caddy_config:
+  static:

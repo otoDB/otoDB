@@ -46,4 +46,4 @@ ENV PATH="/app/.venv/bin:$PATH" \
     GRANIAN_WORKERS=4
 
 EXPOSE 8000
-CMD ["sh", "-c", "python _setup.py && exec granian project.wsgi:application"]
+CMD ["sh", "-c", "cp -r static/. /srv/static/ && python _setup.py && exec granian project.wsgi:application"]

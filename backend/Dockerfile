@@ -24,12 +24,17 @@ ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh -s -- -y
 RUN uv run p12y apply
 
-RUN OTODB_SECRET_KEY= uv run manage.py collectstatic --noinput
+RUN touch cookies.txt && OTODB_SECRET_KEY= uv run manage.py collectstatic --noinput
 
 FROM python:3.14-slim
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates git patch curl \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
+COPY --from=build /usr/local/bin/deno /usr/local/bin/deno
 COPY --from=build /app /app
 
 ENV PATH="/app/.venv/bin:$PATH" \
@@ -39,9 +44,6 @@ ENV PATH="/app/.venv/bin:$PATH" \
     GRANIAN_HOST=0.0.0.0 \
     GRANIAN_PORT=8000 \
     GRANIAN_WORKERS=4
-
-# Ensure cookies.txt exists so volume mount doesn't create a directory
-RUN touch cookies.txt
 
 EXPOSE 8000
 CMD ["sh", "-c", "python _setup.py && exec granian project.wsgi:application"]

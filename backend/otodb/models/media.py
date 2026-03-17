@@ -147,7 +147,7 @@ class MediaWork(RevisionTrackedModel):
 		tracked_fields = ['title', 'description', 'rating', 'moved_to']
 		entity_attrs = ['self', 'moved_to']
 
-		def to_active(instance):
+		def to_active(self, instance: 'MediaWork') -> 'MediaWork':
 			return instance.moved_to or instance
 
 	# deprecated!

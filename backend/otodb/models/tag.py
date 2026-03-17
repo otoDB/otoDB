@@ -220,7 +220,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		]
 		entity_attrs = ['self', 'aliased_to']
 
-		def to_active(instance):
+		def to_active(self, instance: 'TagWork') -> 'TagWork':
 			return instance.aliased_to or instance
 
 	@property

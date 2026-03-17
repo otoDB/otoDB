@@ -213,18 +213,21 @@ class FlagStatus(models.IntegerChoices):
 
 
 class ModerationAction(models.IntegerChoices):
+	# Work unapproved via auto-expiry or staff action
 	WORK_DELISTED = (
 		1,
 		'Work Delisted',
-	)  # Work unapproved via auto-expiry or staff action
+	)
+	# Pending source on existing work approved (immediate)
 	SOURCE_APPROVED = (
 		10,
 		'Source Approved',
-	)  # Pending source on existing work approved (immediate)
+	)
+	# Pending source on existing work rejected (immediate, unbinds)
 	SOURCE_REJECTED = (
 		11,
 		'Source Rejected',
-	)  # Pending source on existing work rejected (immediate, unbinds)
+	)
 
 
 class RevisionChain(models.IntegerChoices):

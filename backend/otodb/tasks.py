@@ -7,6 +7,8 @@ from django.utils import timezone
 
 from django.core.mail import send_mail
 
+from otodb.models.work_source import WorkSource
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,7 +34,7 @@ def send_email(
 		logger.exception('Failed to send email to %s', to)
 
 
-def _reject_expired_source(src):
+def _reject_expired_source(src: 'WorkSource'):
 	"""Reject an expired pending source by unbinding it from its work."""
 	from otodb.models.moderation import ModAction
 	from otodb.models.enums import ModerationAction

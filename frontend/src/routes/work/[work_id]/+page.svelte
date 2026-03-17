@@ -364,7 +364,9 @@
 				<div class="text-lg">
 					<strong>
 						<a
-							href="/source/{src.id}"
+							href={src.url}
+							target="_blank"
+							rel="noopener noreferrer"
 							class={[src.work_status !== 0 ? 'text-otodb-content-fainter' : '']}
 						>
 							{Platform[src.platform]}
@@ -373,9 +375,7 @@
 							{src.title || src.url}
 						</a>
 					</strong>
-					<a href={src.url} target="_blank" rel="noopener noreferrer" class="ml-2 text-sm"
-						>[source]</a
-					>
+					<a href="/source/{src.id}" class="ml-2 text-sm">»</a>
 				</div>
 
 				<div class="mt-2 flex flex-wrap gap-x-2">

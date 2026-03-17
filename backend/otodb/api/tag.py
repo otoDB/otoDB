@@ -29,6 +29,7 @@ from otodb.models import (
 	TagWorkLangPreference,
 	TagWorkMediaConnection,
 	TagWorkCreatorConnection,
+	TagWorkInstance,
 	TagWorkParenthood,
 )
 from otodb.models.enums import (
@@ -468,17 +469,28 @@ def update(
 		except MediaSong.DoesNotExist:
 			tag.category = WorkTagCategory.SONG
 			song = MediaSong.objects.create(work_tag=tag, **song_payload.dict())
+	# If category changed from source to creator or media, mark all instances with used_as_source
+	if tag.category == WorkTagCategory.SOURCE and payload.category in (
+		WorkTagCategory.CREATOR,
+		WorkTagCategory.MEDIA,
+	):
+		TagWorkInstance.objects.filter(work_tag=tag).update(used_as_source=True)
+
+	# Remove creator connections if no longer a creator
 	if (
 		tag.category == WorkTagCategory.CREATOR
 		and payload.category != WorkTagCategory.CREATOR
 	):
 		TagWorkCreatorConnection.objects.filter(tag=tag).delete()
+
+	# Remove media connections and media type if no longer media
 	if (
 		tag.category == WorkTagCategory.MEDIA
 		and payload.category != WorkTagCategory.MEDIA
 	):
 		TagWorkMediaConnection.objects.filter(tag=tag).delete()
 		tag.set_media_type([])
+
 	if payload.category == WorkTagCategory.MEDIA:
 		if payload.media_type:
 			tag.category = payload.category

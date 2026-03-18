@@ -147,7 +147,9 @@
 						<td class="whitespace-nowrap">{src.title || src.url}</td>
 						<td
 							><details>
-								<summary>[{m.tough_early_sparrow_bask()}]</summary>{src.description}
+								<summary>[{m.tough_early_sparrow_bask()}]</summary><span
+									class="whitespace-pre-wrap">{src.description}</span
+								>
 							</details></td
 						>
 						<td>{Platform[src.platform]}</td>

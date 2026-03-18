@@ -1,3 +1,5 @@
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
@@ -22,7 +24,6 @@ const long_label_re_gen = (long_label: string) =>
 const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N}\p{M}_])/gu;
 const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
 const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
-
 const LinkableEntities = [
 	['mediawork', short_prefix_re_gen(ENTITIES[0].shortPrefix)],
 	['mediawork', long_label_re_gen(ENTITIES[0].longLabel)],
@@ -106,13 +107,21 @@ const entityShorthands: Record<string, (id: string | number) => string> = {
 export const entity_to_shorthand = (entity: string, id: string | number): string =>
 	entityShorthands[entity]?.(id) ?? `${entity}/${id}`;
 
+const sanitizeSchema = {
+	...defaultSchema,
+	tagNames: [...(defaultSchema.tagNames ?? []), 'otodb-worktag'],
+	attributes: { ...defaultSchema.attributes, 'otodb-worktag': ['slug'] }
+};
+
 const processor = unified()
 	.use(remarkParse)
 	.use(remarkGfm)
 	.use(remarkBreaks)
 	.use(remarkOtodb)
 	.use(remarkStripImages)
-	.use(remarkRehype)
+	.use(remarkRehype, { allowDangerousHtml: true })
+	.use(rehypeRaw)
+	.use(rehypeSanitize, sanitizeSchema)
 	.use(rehypeSlug)
 	.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
 	.use(rehypeStringify);

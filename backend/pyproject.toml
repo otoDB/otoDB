@@ -30,7 +30,7 @@ dependencies = [
 	"django-rq>=3.2.2,<4",
 
 	# has corresponding patch in patches/
-    "yt-dlp[default]==2026.3.13",
+    "yt-dlp[default]==2026.3.17",
 
     # included for legacy migrations
     "django-simple-history>=3.10.1",

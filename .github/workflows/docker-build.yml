@@ -16,7 +16,6 @@ name: Docker Build
 on:
   push:
     branches: [master]
-  create:
   workflow_dispatch:
 
 permissions:
@@ -57,7 +56,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=tag
           flavor: |
-            latest=true
+            latest=auto
 
       # https://github.com/docker/build-push-action
       - name: Build backend image
@@ -83,7 +82,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=tag
           flavor: |
-            latest=true
+            latest=auto
 
       # https://github.com/docker/build-push-action
       - name: Build frontend image

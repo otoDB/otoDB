@@ -220,7 +220,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		]
 		entity_attrs = ['self', 'aliased_to']
 
-		def to_active(instance):
+		def to_active(self, instance: 'TagWork') -> 'TagWork':
 			return instance.aliased_to or instance
 
 	@property
@@ -410,13 +410,6 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 				if twi.used_as_source:
 					existing_twi.used_as_source = True
-
-				# keep instance_imported_from_source as True if either is True
-				if (
-					twi.instance_imported_from_source
-					or existing_twi.instance_imported_from_source
-				):
-					existing_twi.instance_imported_from_source = True
 
 				existing_twi.save()
 				twi.delete()

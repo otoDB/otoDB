@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import logging
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -326,3 +327,12 @@ LOGGING = {
 		'level': 'INFO',
 	},
 }
+
+# Application specific
+
+# TODO: Consider making these dynamic per user rather than a fixed number
+OTODB_MAX_PENDING_WORKS = 10
+OTODB_MAX_FLAGGED_WORKS = 5
+
+OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)
+OTODB_MODERATION_PERIOD = timedelta(weeks=1)

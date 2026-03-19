@@ -170,6 +170,7 @@ class RequestActions(models.IntegerChoices):
 	TAGWORK_PARENT = 5
 	TAGWORK_UNPARENT = 6
 
+	# NOTE: deprecated
 	WORKSOURCE_ATTACHTAG = 11
 
 	MEDIAWORK_ATTACHTAG = 21
@@ -239,6 +240,7 @@ class Route(models.IntegerChoices):
 	MEDIAWORK_TOGGLE_SAMPLE = 44, 'DEPRECATED - Media Work Toggle Sample'
 	MEDIAWORK_UPDATE = 45, 'Media Work Update'
 	MEDIAWORK_MERGE = 46, 'Media Work Merge'
+	MEDIAWORK_CREATE = 47, 'Media Work Create'
 
 	WORKRELATION_CREATE = 50, 'Work Relation Control'
 	WORKRELATION_DELETE = 51, 'DEPRECATED - Work Relation Delete'
@@ -249,5 +251,6 @@ class Route(models.IntegerChoices):
 	WORKSOURCE_REFRESH = 63, 'Work Source Refresh'
 	WORKSOURCE_ASSIGN = 64, 'Work Source Assign'
 	WORKSOURCE_REJECT = 65, 'Work Source Reject'
+	WORKSOURCE_UPDATE = 66, 'Work Source Update'
 
 	ROLLBACK = 100, 'Rollback'

@@ -5,9 +5,11 @@
 
 	interface Props {
 		tag: components['schemas']['TagWorkSchema'];
-		tree: boolean | undefined;
+		tree?: boolean;
+		selected?: boolean;
+		onclick?: (slug: string) => void;
 	}
-	const { tag, tree = false }: Props = $props();
+	const { tag, tree = false, selected = false, onclick = undefined }: Props = $props();
 
 	let overrideToSample = (tag) =>
 		WorkTagCategoriesSettableAsSource.includes(tag.category) && tag?.sample;
@@ -17,12 +19,19 @@
 	<a
 		href="/tag/{t.slug}"
 		class={[
-			'rounded-xl border-solid px-2',
+			'rounded-xl px-2',
 			border ? 'border-2' : 'border-1',
-			{ 'opacity-50': fade_out }
+			t.id === 0 ? 'border-dashed' : 'border-solid',
+			{ 'opacity-50': fade_out || (onclick && !selected) }
 		]}
 		style="border-color: {WorkTagPresentationColours[sample_override ? 3 : t.category]};"
-		>{getTagDisplayName(t)}</a
+		data-sveltekit-preload-data={onclick ? 'off' : undefined}
+		onclick={onclick
+			? (e) => {
+					e.preventDefault();
+					onclick(t);
+				}
+			: undefined}>{getTagDisplayName(t)}</a
 	>{#if t.category === 4 && t.creator_roles?.length}<address
 			class="text-otodb-content-fainter inline px-1 text-xs"
 		>

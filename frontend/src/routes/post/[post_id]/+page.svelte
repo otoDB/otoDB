@@ -20,12 +20,7 @@
 			: Languages[data.post.pages[0].lang]
 	);
 	let page_object = $derived(data.post.pages.find((p) => p.lang === Languages[lang_view]));
-	let page = $derived(
-		renderMarkdown(page_object?.page ?? '').replaceAll(
-			/&lt;otodb-worktag\s*slug="(.+?)"\s*\/&gt;/g,
-			'<otodb-worktag data-slug="$1"></otodb-worktag>'
-		)
-	);
+	let page = $derived(renderMarkdown(page_object?.page ?? ''));
 
 	const postLd = $derived.by(() => {
 		const pageObj = data.post.pages.find((p) => p.lang === Languages[lang_view]);
@@ -57,7 +52,7 @@
 					client
 						.GET('/api/tag/tag', {
 							fetch,
-							params: { query: { tag_slug: el.dataset.slug } }
+							params: { query: { tag_slug: el.getAttribute('slug') } }
 						})
 						.then((r) => mount(WorkTag, { target: el, props: { tag: r.data! } }))
 			);

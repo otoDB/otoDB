@@ -304,7 +304,7 @@
 					<details>
 						<summary>{m.clear_lucky_peacock_pick()}</summary>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html src.description}
+						<div class="whitespace-pre-wrap">{@html src.description}</div>
 					</details>
 				</div>
 			</div>

@@ -4,6 +4,7 @@
 	import TagEditTable from '$lib/TagEditTable.svelte';
 	import WorkField from '$lib/WorkField.svelte';
 	import SourceViewer from '$lib/SourceViewer.svelte';
+	import DisplayText from '$lib/DisplayText.svelte';
 	import { Rating, WorkOrigin, WorkStatus } from '$lib/enums';
 	import client, { getTagDisplaySlug } from '$lib/api';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -124,7 +125,7 @@
 					<tbody>
 						<tr>
 							<th class="w-24">{m.large_factual_octopus_exhale()}</th>
-							<td>{data.source.title || 'Untitled'}</td>
+							<td><DisplayText value={data.source.title} /></td>
 						</tr>
 						<tr>
 							<th class="w-24">{m.clear_lucky_peacock_pick()}</th>

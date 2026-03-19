@@ -1,4 +1,3 @@
-from typing import List
 from datetime import date
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -6,7 +5,6 @@ from django.db.models import Q
 
 from ninja import Schema
 from ninja.security import django_auth
-from ninja.pagination import paginate
 
 from otodb.common import process_video_info, clean_incoming_slug
 from otodb.models import (
@@ -251,22 +249,3 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 		'new_tags': new_tags,
 		'creator_tags': creator_tags,
 	}
-
-
-@source_router.get('list', response=List[WorkSourceSchema])
-@paginate
-def list_sources(
-	request,
-	user_id: int | None = None,
-	unbound: bool | None = None,
-	platform: int | None = None,
-):
-	"""List sources with pagination, filterable by user, binding"""
-	qs = WorkSource.objects.select_related('media', 'added_by').order_by('-created_at')
-	if user_id:
-		qs = qs.filter(added_by_id=user_id)
-	if unbound is not None:
-		qs = qs.filter(media__isnull=unbound)
-	if platform is not None:
-		qs = qs.filter(platform=platform)
-	return qs

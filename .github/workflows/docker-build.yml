@@ -56,7 +56,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=tag
           flavor: |
-            latest=auto
+            latest=true
 
       # https://github.com/docker/build-push-action
       - name: Build backend image
@@ -82,7 +82,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=tag
           flavor: |
-            latest=auto
+            latest=true
 
       # https://github.com/docker/build-push-action
       - name: Build frontend image

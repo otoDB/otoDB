@@ -18,7 +18,6 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 		sourceId,
 		links: [
 			{ pathname: `source/${sourceId}`, title: `Source #${sourceId}` },
-			{ pathname: `source/${sourceId}/moderation`, title: 'Moderation' }
 		],
 		head: {
 			title: source.title || `Source #${sourceId}`

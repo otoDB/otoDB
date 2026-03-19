@@ -32,6 +32,7 @@ export const SongTagCategory = [
 export const Rating = [m.fresh_lower_rook_trip, m.sound_such_sloth_talk, m.mad_sound_walrus_tap];
 
 export const Status = [m.such_actual_okapi_dare, m.spare_few_kudu_learn, m.stale_vexed_hare_pray];
+export const StatusValue = { PENDING: 0, APPROVED: 1, UNAPPROVED: 2 } as const;
 
 export const WorkOrigin = [m.crisp_red_canary_tickle, m.lucky_still_vulture_work];
 

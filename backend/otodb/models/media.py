@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from tagulous.models import TagField, TaggedManager
 
-from .enums import Rating, WorkTagCategory, Role
+from .enums import Rating, WorkTagCategory, Role, FlagStatus, Status
 from .tag import TagWork, TagSong, tagwork_ordering_case
 from .revision import RevisionTrackedModel
 
@@ -17,14 +17,27 @@ if TYPE_CHECKING:
 	from .work_source import WorkSource
 	from .pool import PoolItem
 	from .relations import WorkRelation
+	from .moderation import WorkFlag, WorkAppeal, WorkDisapproval
 
 
 class ActiveManager(models.Manager):
 	def get_queryset(self):
+		from .moderation import WorkFlag, WorkAppeal
+
 		qs = super().get_queryset().filter(moved_to__isnull=True)
 
 		return qs.select_related('thumbnail_source').prefetch_related(
 			Prefetch('tagworkinstance_set', queryset=TagWorkInstance.active_queryset()),
+			Prefetch(
+				'flags',
+				queryset=WorkFlag.objects.filter(status=FlagStatus.PENDING)[:1],
+				to_attr='_pending_flag',
+			),
+			Prefetch(
+				'appeals',
+				queryset=WorkAppeal.objects.filter(status=FlagStatus.PENDING)[:1],
+				to_attr='_pending_appeal',
+			),
 			'worksource_set',
 		)
 
@@ -108,6 +121,11 @@ class MediaWork(RevisionTrackedModel):
 		relation_A: QuerySet['WorkRelation']
 		relation_B: QuerySet['WorkRelation']
 		tagworkinstance_set: QuerySet['TagWorkInstance']
+		flags: QuerySet['WorkFlag']
+		appeals: QuerySet['WorkAppeal']
+		disapprovals: QuerySet['WorkDisapproval']
+		_pending_flag: list['WorkFlag']
+		_pending_appeal: list['WorkAppeal']
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
@@ -123,6 +141,9 @@ class MediaWork(RevisionTrackedModel):
 	moved_to = models.ForeignKey(
 		'self', null=True, blank=True, on_delete=models.CASCADE
 	)
+
+	status = models.IntegerField(choices=Status.choices, default=Status.APPROVED)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
 	class RevisionMeta:
 		tracked_fields = ['title', 'description', 'rating', 'moved_to']
@@ -140,6 +161,16 @@ class MediaWork(RevisionTrackedModel):
 	)
 
 	active_objects = TaggedManager.cast_class(ActiveManager())
+
+	@property
+	def pending_flag(self) -> 'WorkFlag | None':
+		flags = getattr(self, '_pending_flag', [])
+		return flags[0] if flags else None
+
+	@property
+	def pending_appeal(self) -> 'WorkAppeal | None':
+		appeals = getattr(self, '_pending_appeal', [])
+		return appeals[0] if appeals else None
 
 	def __str__(self):
 		return f'{self.pk}: {self.title}'

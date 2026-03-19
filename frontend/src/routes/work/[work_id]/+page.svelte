@@ -4,6 +4,7 @@
 	import {
 		Platform,
 		Rating,
+		StatusValue,
 		WorkOrigin,
 		WorkRelationDisplayBackward,
 		WorkRelationDisplayForward,
@@ -84,6 +85,90 @@
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
+	{#if data.status === StatusValue.PENDING}
+		<div class="mb-3 border border-sky-600 bg-sky-600/10 px-4 py-2 font-bold text-sky-600">
+			This work is pending approval.
+		</div>
+	{:else if data.status === StatusValue.UNAPPROVED && data?.pending_appeal}
+		<div class="mb-3 border border-orange-600 bg-orange-600/10 px-4 py-2 text-orange-600">
+			<div class="font-bold">This work has been appealed.</div>
+			{#if data.pending_appeal.reason}
+				<div class="mt-1 text-sm">
+					Reason: {data.pending_appeal.reason}
+				</div>
+			{/if}
+			{#if data.pending_appeal.by}
+				<div class="mt-1 text-sm">
+					Appealed by: {data.pending_appeal.by.username}
+				</div>
+			{/if}
+		</div>
+	{:else if data.status === StatusValue.UNAPPROVED}
+		<div class="mb-3 border border-red-600 bg-red-600/10 px-4 py-2 font-bold text-red-600">
+			This work has been delisted.
+		</div>
+	{/if}
+	{#if data?.pending_flag}
+		<div class="mb-3 border border-yellow-600 bg-yellow-600/10 px-4 py-2 text-yellow-600">
+			<div class="font-bold">This work has been flagged for review.</div>
+			{#if data.pending_flag.reason}
+				<div class="mt-1 text-sm">
+					Reason: {data.pending_flag.reason}
+				</div>
+			{/if}
+			{#if data.pending_flag.by}
+				<div class="mt-1 text-sm">
+					Flagged by: {data.pending_flag.by.username}
+				</div>
+			{/if}
+		</div>
+	{/if}
+	{#if data.user && (data.status === StatusValue.PENDING || data?.pending_flag || data?.pending_appeal)}
+		<div class="mb-3 flex flex-wrap gap-2">
+			{#if data.user.level >= 40}
+				<button
+					class="border border-green-600 px-3 py-1 text-green-600"
+					onclick={async () => {
+						const { error } = await client.POST('/api/work/approve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (!error) location.reload();
+					}}
+				>
+					Approve
+				</button>
+				<button
+					class="border px-3 py-1"
+					onclick={async () => {
+						const reason = prompt('Disapproval reason:');
+						if (!reason) return;
+						await client.POST('/api/work/disapprove', {
+							fetch,
+							params: { query: { work_id: data.id, reason: reason } }
+						});
+					}}
+				>
+					Disapprove
+				</button>
+			{/if}
+			{#if data.user.level >= 50}
+				<button
+					class="border border-red-600 px-3 py-1 text-red-600"
+					onclick={async () => {
+						if (!confirm('Immediately resolve this work?')) return;
+						const { error } = await client.POST('/api/work/resolve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (!error) location.reload();
+					}}
+				>
+					Force Resolve
+				</button>
+			{/if}
+		</div>
+	{/if}
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
@@ -185,6 +270,56 @@
 										{/if}
 									</td>
 								</tr>
+								{#if data.status === StatusValue.APPROVED && !data?.pending_flag}
+									<tr>
+										<th class="w-24">Flag</th>
+										<td>
+											<button
+												onclick={async () => {
+													const reason = prompt('Flag reason:');
+													if (!reason) return;
+													const { error } = await client.POST(
+														'/api/work/flag',
+														{
+															fetch,
+															params: {
+																query: { work_id: data.id, reason }
+															}
+														}
+													);
+													if (!error) location.reload();
+												}}
+											>
+												Flag
+											</button>
+										</td>
+									</tr>
+								{/if}
+								{#if data.status === StatusValue.UNAPPROVED && !data?.pending_appeal}
+									<tr>
+										<th class="w-24">Appeal</th>
+										<td>
+											<button
+												onclick={async () => {
+													const reason = prompt('Appeal reason:');
+													if (!reason) return;
+													const { error } = await client.POST(
+														'/api/work/appeal',
+														{
+															fetch,
+															params: {
+																query: { work_id: data.id, reason }
+															}
+														}
+													);
+													if (!error) location.reload();
+												}}
+											>
+												Appeal
+											</button>
+										</td>
+									</tr>
+								{/if}
 							</tbody>
 						</table>
 					</div>

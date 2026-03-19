@@ -2,12 +2,17 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import { Platform, Status, WorkOrigin, WorkStatus } from '$lib/enums';
+	import { Platform, WorkOrigin, WorkStatus } from '$lib/enums';
 	import RefreshButton from '../../../work/RefreshButton.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 
 	let { data }: PageProps = $props();
+	let results = $derived(data.submissions!.items);
+
+	let approved = $derived(results.filter((s) => s.media && !s.is_pending));
+	let pending = $derived(results.filter((s) => s.is_pending));
+	let unbound = $derived(results.filter((s) => !s.media && !s.is_pending));
 </script>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
@@ -18,15 +23,6 @@
 		<table>
 			<caption>{m.livid_same_wren_create()}</caption>
 			<tbody>
-				<tr>
-					<td>{m.just_noisy_moth_beam()}</td>
-					<td
-						><select name="standing" value={data.standing ?? 1}
-							>{#each Status as p, i (i)}<option value={i}>{p()}</option
-								>{/each}</select
-						></td
-					>
-				</tr>
 				<tr>
 					<td>{m.sour_swift_sparrow_spin()}</td>
 					<td
@@ -77,134 +73,123 @@
 		<input type="submit" />
 	</form>
 	<hr class="my-2" />
-	{#if data.standing === 0}
-		<h2>{m.such_actual_okapi_dare()}</h2>
-		{#if data.submissions?.items.length}
-			<table class="w-full">
-				<thead
-					><tr>
-						<th>{m.large_factual_octopus_exhale()}</th>
-						<th>{m.sour_swift_sparrow_spin()}</th>
-						<th>{m.super_agent_pigeon_aim()}</th>
-						<th>{m.large_polite_otter_thrive()}</th>
-						<th>{m.noisy_moving_newt_belong()}</th>
+	<h2>{m.such_actual_okapi_dare()}</h2>
+	{#if pending?.length}
+		<table class="w-full">
+			<thead
+				><tr>
+					<th>{m.large_factual_octopus_exhale()}</th>
+					<th>{m.sour_swift_sparrow_spin()}</th>
+					<th>{m.super_agent_pigeon_aim()}</th>
+					<th>{m.large_polite_otter_thrive()}</th>
+					<th>{m.noisy_moving_newt_belong()}</th>
+					{#if data.user}
+						<th>{m.mushy_proof_hornet_dig()}</th>
+					{/if}
+				</tr></thead
+			>
+			<tbody>
+				{#each pending as src, i (i)}
+					<tr>
+						<td class="whitespace-nowrap">{src.title || src.url}</td>
+						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
+						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+						<td class="whitespace-nowrap"
+							><a href={src.url} target="_blank" rel="noopener noreferrer"
+								>{m.noisy_moving_newt_belong()}</a
+							></td
+						>
 						{#if data.user}
-							<th>{m.tough_calm_hedgehog_wave()}</th>
-							<th>{m.mushy_proof_hornet_dig()}</th>
+							<td><RefreshButton source={src} /></td>
 						{/if}
-					</tr></thead
-				>
-				<tbody>
-					{#each data.submissions.items as src, i (i)}
-						<tr>
-							<td class="whitespace-nowrap">{src.title || src.url}</td>
-							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
-							<td class="whitespace-nowrap"
-								><a href={src.url} target="_blank" rel="noopener noreferrer"
-									>{m.noisy_moving_newt_belong()}</a
-								></td
-							>
-							{#if data.user}
-								<td class="whitespace-nowrap"
-									><a
-										href={`/request/new?pre_filled=source:attach_tag ${src.id}`}
-										target="_blank"
-										rel="noopener noreferrer">{m.tough_calm_hedgehog_wave()}</a
-									></td
-								>
-								<td><RefreshButton source={src} /></td>
-							{/if}
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{:else}
-			<p>{m.moving_such_seal_hug()}</p>
-		{/if}
-	{:else if data.standing === 1}
-		<h2>{m.spare_few_kudu_learn()}</h2>
-		{#if data.submissions?.items.length}
-			<table class="w-full">
-				<thead
-					><tr>
-						<th>{m.large_factual_octopus_exhale()}</th>
-						<th>{m.sour_swift_sparrow_spin()}</th>
-						<th>{m.super_agent_pigeon_aim()}</th>
-						<th>{m.large_polite_otter_thrive()}</th>
-						<th>{m.civil_trick_oryx_clap()}</th>
-						<th>{m.noisy_moving_newt_belong()}</th>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{:else}
+		<p>{m.moving_such_seal_hug()}</p>
+	{/if}
+
+	<h2>{m.stale_vexed_hare_pray()}</h2>
+	{#if unbound?.length}
+		<table class="w-full">
+			<thead
+				><tr>
+					<th>{m.large_factual_octopus_exhale()}</th>
+					<th>{m.sour_swift_sparrow_spin()}</th>
+					<th>{m.super_agent_pigeon_aim()}</th>
+					<th>{m.large_polite_otter_thrive()}</th>
+					<th>{m.noisy_moving_newt_belong()}</th>
+					{#if data.user}
+						<th>{m.mushy_proof_hornet_dig()}</th>
+					{/if}
+				</tr></thead
+			>
+			<tbody>
+				{#each unbound as src, i (i)}
+					<tr>
+						<td class="whitespace-nowrap"
+							><a href="/source/{src.id}">{src.title || src.url}</a></td
+						>
+						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
+						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+						<td class="whitespace-nowrap"
+							><a href={src.url} target="_blank" rel="noopener noreferrer"
+								>{m.noisy_moving_newt_belong()}</a
+							></td
+						>
 						{#if data.user}
-							<th>{m.mushy_proof_hornet_dig()}</th>
+							<td><RefreshButton source={src} /></td>
 						{/if}
-					</tr></thead
-				>
-				<tbody>
-					{#each data.submissions.items as src, i (i)}
-						<tr>
-							<td class="whitespace-nowrap"
-								><a href="/work/{src.media}"
-									>#{src.media} - {src.title || src.url}</a
-								></td
-							>
-							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td
-								class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td
-							>
-							<td class="whitespace-nowrap"
-								><a href={src.url} target="_blank" rel="noopener noreferrer"
-									>{m.noisy_moving_newt_belong()}</a
-								></td
-							>
-							{#if data.user}
-								<td><RefreshButton source={src} /></td>
-							{/if}
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{:else}
-			<p>{m.moving_such_seal_hug()}</p>
-		{/if}
-	{:else if data.standing === 2}
-		<h2>{m.stale_vexed_hare_pray()}</h2>
-		{#if data.submissions?.items.length}
-			<table class="w-full">
-				<thead
-					><tr>
-						<th>{m.large_factual_octopus_exhale()}</th>
-						<th>{m.weary_spicy_fly_attend()}</th>
-						<th>{m.sour_swift_sparrow_spin()}</th>
-						<th>{m.super_agent_pigeon_aim()}</th>
-						<th>{m.large_polite_otter_thrive()}</th>
-						<th>{m.noisy_moving_newt_belong()}</th>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{:else}
+		<p>{m.moving_such_seal_hug()}</p>
+	{/if}
+
+	<h2>{m.spare_few_kudu_learn()}</h2>
+	{#if approved?.length}
+		<table class="w-full">
+			<thead
+				><tr>
+					<th>{m.large_factual_octopus_exhale()}</th>
+					<th>{m.sour_swift_sparrow_spin()}</th>
+					<th>{m.super_agent_pigeon_aim()}</th>
+					<th>{m.large_polite_otter_thrive()}</th>
+					<th>{m.civil_trick_oryx_clap()}</th>
+					<th>{m.noisy_moving_newt_belong()}</th>
+					{#if data.user}
+						<th>{m.mushy_proof_hornet_dig()}</th>
+					{/if}
+				</tr></thead
+			>
+			<tbody>
+				{#each approved as src, i (i)}
+					<tr>
+						<td class="whitespace-nowrap"
+							><a href="/work/{src.media}">#{src.media} - {src.title || src.url}</a
+							></td
+						>
+						<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
+						<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td
+							class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td
+						>
+						<td class="whitespace-nowrap"
+							><a href={src.url} target="_blank" rel="noopener noreferrer"
+								>{m.noisy_moving_newt_belong()}</a
+							></td
+						>
 						{#if data.user}
-							<th>{m.mushy_proof_hornet_dig()}</th>
+							<td><RefreshButton source={src} /></td>
 						{/if}
-					</tr></thead
-				>
-				<tbody>
-					{#each data.submissions.items as src, i (i)}
-						<tr>
-							<td class="whitespace-nowrap">{src.title || src.url}</td>
-							<td class="whitespace-nowrap">{src.rejection.reason}</td>
-							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
-							<td class="whitespace-nowrap"
-								><a href={src.url} target="_blank" rel="noopener noreferrer"
-									>{m.noisy_moving_newt_belong()}</a
-								></td
-							>
-							{#if data.user}
-								<td><RefreshButton source={src} /></td>
-							{/if}
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{:else}
-			<p>{m.moving_such_seal_hug()}</p>
-		{/if}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{:else}
+		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 	{#if data.submissions?.count}
 		<Pager

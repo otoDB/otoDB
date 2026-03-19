@@ -115,13 +115,8 @@
 							>
 						</h3>
 						<h4>{Platform[src.platform]} {src.published_date}</h4>
-						{#if src.rejection}
-							<p class="text-red-400">
-								{m.mild_loud_shad_enchant({
-									type: m.weary_spicy_fly_attend(),
-									name: src.rejection.reason
-								})}
-							</p>
+						{#if src.is_pending}
+							<p class="text-sky-600">Pending</p>
 						{/if}
 					</span>
 					<span>

@@ -195,12 +195,6 @@
 								>
 							</tr>
 						{/if}
-						{#if data.source.is_pending}
-							<tr>
-								<th class="w-24">Status</th>
-								<td><span class="text-sky-600">Pending approval</span></td>
-							</tr>
-						{/if}
 					</tbody>
 				</table>
 			</div>

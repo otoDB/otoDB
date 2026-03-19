@@ -498,26 +498,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/source/list": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Sources
-         * @description List sources with pagination, filterable by user, binding
-         */
-        get: operations["otodb_api_source_list_sources"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/profile/profile": {
         parameters: {
             query?: never;
@@ -1862,13 +1842,6 @@ export interface components {
              */
             creator_tags: components["schemas"]["TagWorkSchema"][];
         };
-        /** PagedWorkSourceSchema */
-        PagedWorkSourceSchema: {
-            /** Items */
-            items: components["schemas"]["WorkSourceSchema"][];
-            /** Count */
-            count: number;
-        };
         /** ListSchema */
         ListSchema: {
             /** Id */
@@ -1998,6 +1971,13 @@ export interface components {
         PagedListItemSchema: {
             /** Items */
             items: components["schemas"]["ListItemSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** PagedWorkSourceSchema */
+        PagedWorkSourceSchema: {
+            /** Items */
+            items: components["schemas"]["WorkSourceSchema"][];
             /** Count */
             count: number;
         };
@@ -3324,32 +3304,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceSuggestionsResponse"];
-                };
-            };
-        };
-    };
-    otodb_api_source_list_sources: {
-        parameters: {
-            query?: {
-                user_id?: number | null;
-                unbound?: boolean | null;
-                platform?: number | null;
-                limit?: number;
-                offset?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PagedWorkSourceSchema"];
                 };
             };
         };

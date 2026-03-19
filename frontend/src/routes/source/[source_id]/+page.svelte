@@ -21,7 +21,7 @@
 
 	let title = $state(data.suggestions?.title ?? data.source.title ?? '');
 	let description = $state(data.suggestions?.description ?? data.source.description ?? '');
-	let rating = $state(0);
+	let rating = $state(null as number | null);
 	let bindWork = $state<components['schemas']['WorkSchema'] | null>(null);
 
 	// Tag cache for rich tag editing (sample toggles, creator roles)
@@ -108,7 +108,7 @@
 
 <Section
 	title={data.source.title || `Source #${data.source.id}`}
-	type="Source"
+	type={m.dizzy_glad_ray_endure()}
 	menuLinks={data.links}
 >
 	<div class="@container">
@@ -187,7 +187,7 @@
 						</tr>
 						{#if data.isBound}
 							<tr>
-								<th class="w-24">Work</th>
+								<th class="w-24">{m.grand_merry_fly_succeed()}</th>
 								<td
 									><a href="/work/{data.source.media}"
 										>{data.source.media_title ||
@@ -212,7 +212,7 @@
 				]}
 				onclick={() => (mode = 'create')}
 			>
-				Create New Work
+				{m.weary_late_thrush_grace()}
 			</button>
 			<button
 				class={[
@@ -221,84 +221,94 @@
 				]}
 				onclick={() => (mode = 'bind')}
 			>
-				Bind to Existing Work
+				{m.formal_ok_fly_buzz()}
 			</button>
 		</div>
 
 		{#if mode === 'create'}
 			<form method="POST" action="?/create" use:enhance>
-				<div class="flex flex-col gap-4">
-					<div>
-						<label for="title" class="block font-bold">Title</label>
-						<input
-							id="title"
-							name="title"
-							type="text"
-							class="w-full"
-							bind:value={title}
-						/>
-					</div>
-
-					<div>
-						<label for="description" class="block font-bold">Description</label>
-						<textarea
-							id="description"
-							name="description"
-							class="h-32 w-full"
-							bind:value={description}
-						></textarea>
-					</div>
-
-					<div>
-						<label for="rating" class="block font-bold">Rating</label>
-						<select id="rating" name="rating" class="border" bind:value={rating}>
-							{#each Rating as r, i (i)}
-								<option value={i}>{r()}</option>
-							{/each}
-						</select>
-					</div>
-
-					<div>
-						<label class="block font-bold">Tags</label>
-						{#if data.suggestions?.source_tags?.length || data.suggestions?.creator_tags?.length || data.suggestions?.new_tags?.length}
-							<div class="my-2 flex flex-wrap gap-1.5">
-								{#each [...(data.suggestions.source_tags ?? []), ...(data.suggestions.creator_tags ?? []), ...(data.suggestions.new_tags ?? [])] as t (t.slug)}
-									<WorkTag
-										tag={t}
-										selected={tags.includes(getTagDisplaySlug(t))}
-										onclick={toggleTag}
-									/>
-								{/each}
-							</div>
-						{/if}
-						<TagsField type="work" class="w-full" bind:value={tags} />
-						<TagEditTable
-							{tags}
-							{cache}
-							ontoggle_sample={toggle_sample}
-							ontoggle_creator_role={toggle_creator_role}
-						/>
-						<input type="hidden" name="tags_json" value={tagsJson} />
-					</div>
-
-					<div>
-						<input type="submit" />
-					</div>
-				</div>
+				<table>
+					<tbody>
+						<tr>
+							<th><label for="title">{m.large_factual_octopus_exhale()}</label></th>
+							<td>
+								<input
+									id="title"
+									name="title"
+									type="text"
+									class="w-full"
+									bind:value={title}
+								/>
+							</td>
+						</tr>
+						<tr>
+							<th><label for="description">{m.clear_lucky_peacock_pick()}</label></th>
+							<td>
+								<textarea
+									id="description"
+									name="description"
+									class="h-32 w-full"
+									bind:value={description}
+								></textarea>
+							</td>
+						</tr>
+						<tr>
+							<th><label for="rating">{m.good_dark_bumblebee_spur()}</label></th>
+							<td>
+								<select
+									id="rating"
+									name="rating"
+									class="border"
+									bind:value={rating}
+									required
+								>
+									<option value={null} selected disabled>---</option>
+									{#each Rating as r, i (i)}
+										<option value={i}>{r()}</option>
+									{/each}
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th><label>{m.any_slimy_cuckoo_snip()}</label></th>
+							<td>
+								{#if data.suggestions?.source_tags?.length || data.suggestions?.creator_tags?.length || data.suggestions?.new_tags?.length}
+									<div class="my-2 flex flex-wrap gap-1.5">
+										{#each [...(data.suggestions.source_tags ?? []), ...(data.suggestions.creator_tags ?? []), ...(data.suggestions.new_tags ?? [])] as t (t.slug)}
+											<WorkTag
+												tag={t}
+												selected={tags.includes(getTagDisplaySlug(t))}
+												onclick={toggleTag}
+											/>
+										{/each}
+									</div>
+								{/if}
+								<TagsField type="work" class="w-full" bind:value={tags} />
+								<TagEditTable
+									{tags}
+									{cache}
+									ontoggle_sample={toggle_sample}
+									ontoggle_creator_role={toggle_creator_role}
+								/>
+								<input type="hidden" name="tags_json" value={tagsJson} />
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<input type="submit" />
 			</form>
 		{:else}
 			<form method="POST" action="?/bind" use:enhance>
 				<input type="hidden" name="source_url" value={data.source.url} />
-				<div class="flex flex-col gap-4">
-					<div>
-						<label class="block font-bold">Work</label>
-						<WorkField bind:value={bindWork} name="work_id" />
-					</div>
-
-					<div>
-						<input type="submit" />
-					</div>
-				</div>
+				<table>
+					<tbody>
+						<tr>
+							<th><label>{m.grand_merry_fly_succeed()}</label></th>
+							<td><WorkField bind:value={bindWork} name="work_id" /></td>
+						</tr>
+					</tbody>
+				</table>
+				<input type="submit" />
 			</form>
 		{/if}
 	{/if}

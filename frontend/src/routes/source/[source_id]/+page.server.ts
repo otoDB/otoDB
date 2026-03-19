@@ -3,6 +3,7 @@ import type { PageServerLoad, Actions } from './$types';
 import client from '$lib/api';
 import { UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ fetch, params, locals, url, parent }) => {
 	const sourceId = +params.source_id;
@@ -46,7 +47,7 @@ export const actions = {
 		});
 
 		if (createError) {
-			return { failed: true, message: 'Failed to create work' };
+			return { failed: true, message: m.cool_same_polecat_climb() };
 		}
 
 		redirect(303, `/work/${workId}`);
@@ -55,7 +56,7 @@ export const actions = {
 		const data = await request.formData();
 		const workId = +(data.get('work_id') as string);
 		const sourceUrl = data.get('source_url') as string;
-		if (isNaN(workId)) return { failed: true, message: 'Invalid work ID' };
+		if (isNaN(workId)) return { failed: true, message: m.aloof_nice_bear_bask() };
 
 		const { error: bindError } = await client.POST('/api/source/source', {
 			fetch,
@@ -69,7 +70,7 @@ export const actions = {
 		});
 
 		if (bindError) {
-			return { failed: true, message: 'Failed to bind source to work' };
+			return { failed: true, message: m.trite_crazy_walrus_charm() };
 		}
 
 		redirect(303, `/work/${workId}`);

@@ -1,6 +1,5 @@
 from typing import List
 from datetime import date
-from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -13,7 +12,6 @@ from otodb.common import process_video_info, clean_incoming_slug
 from otodb.models import (
 	MediaWork,
 	WorkSource,
-	ModAction,
 	TagWork,
 	TagWorkCreatorConnection,
 )
@@ -23,12 +21,8 @@ from otodb.models.enums import (
 	ProfileConnectionTypes,
 	Route,
 	WorkStatus,
-	Status,
-	FlagStatus,
-	ModerationAction,
 )
 from otodb.account.models import Account
-from otodb.tasks import enqueue_deferred, resolve_expired_source_task
 
 from .common import (
 	AuthedHttpRequest,
@@ -162,19 +156,6 @@ def new_source_from_url(
 		work = get_object_or_404(
 			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
 		)
-		if work.status == Status.UNAPPROVED:
-			return 400, {'message': 'Cannot add sources to unapproved works'}
-		if work.flags.filter(status=FlagStatus.PENDING).exists():
-			return 400, {'message': 'Cannot add sources to flagged works'}
-		if not is_editor and work.status == Status.APPROVED:
-			src.is_pending = True
-			transaction.on_commit(
-				lambda: enqueue_deferred(
-					resolve_expired_source_task,
-					src.pk,
-					delay=settings.OTODB_MODERATION_PERIOD,
-				)
-			)
 		sync_work_source(work, src)
 		return {'work_id': work.pk}
 
@@ -272,57 +253,20 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 	}
 
 
-@source_router.post('reject', auth=django_auth)
-@user_is_editor
-@with_revision_route(Route.WORKSOURCE_REJECT)
-def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
-	"""Reject a pending source on an existing work. Unbinds the source."""
-	src = get_object_or_404(WorkSource.objects.filter(is_pending=True), id=source_id)
-	work = src.media  # Capture before unbinding
-	src.media = None
-	src.is_pending = False
-	src.save(update_fields=['media', 'is_pending'])
-	ModAction.objects.create(
-		work=work,
-		source=src,
-		category=ModerationAction.SOURCE_REJECTED,
-		by=request.user,
-		description=reason,
-	)
-
-
-@source_router.post('approve', auth=django_auth)
-@user_is_editor
-def approve_source(request: AuthedHttpRequest, source_id: int):
-	"""Approve a pending source on an existing work."""
-	src = get_object_or_404(WorkSource.objects.filter(is_pending=True), id=source_id)
-	src.is_pending = False
-	src.save(update_fields=['is_pending'])
-	ModAction.objects.create(
-		work=src.media,
-		source=src,
-		category=ModerationAction.SOURCE_APPROVED,
-		by=request.user,
-	)
-
-
 @source_router.get('list', response=List[WorkSourceSchema])
 @paginate
 def list_sources(
 	request,
 	user_id: int | None = None,
 	unbound: bool | None = None,
-	is_pending: bool | None = None,
 	platform: int | None = None,
 ):
-	"""List sources with pagination, filterable by user, binding, and pending status."""
+	"""List sources with pagination, filterable by user, binding"""
 	qs = WorkSource.objects.select_related('media', 'added_by').order_by('-created_at')
 	if user_id:
 		qs = qs.filter(added_by_id=user_id)
 	if unbound is not None:
 		qs = qs.filter(media__isnull=unbound)
-	if is_pending is not None:
-		qs = qs.filter(is_pending=is_pending)
 	if platform is not None:
 		qs = qs.filter(platform=platform)
 	return qs

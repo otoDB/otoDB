@@ -4,7 +4,6 @@ import client from '$lib/api';
 export const load: PageServerLoad = async ({ fetch, url }) => {
 	const page = +(url.searchParams.get('page') || '1');
 	const unbound = url.searchParams.get('unbound');
-	const pending = url.searchParams.get('pending');
 	const platform = url.searchParams.get('platform');
 	const batchSize = 30;
 
@@ -13,7 +12,6 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 		params: {
 			query: {
 				...(unbound === 'true' ? { unbound: true } : {}),
-				...(pending === 'true' ? { is_pending: true } : {}),
 				...(platform ? { platform: +platform } : {}),
 				limit: batchSize,
 				offset: (page - 1) * batchSize
@@ -25,7 +23,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 		sources,
 		page,
 		batchSize,
-		filters: { unbound, pending, platform },
+		filters: { unbound, platform },
 		head: {
 			title: 'Sources'
 		}

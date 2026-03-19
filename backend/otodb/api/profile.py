@@ -2,6 +2,7 @@ from typing import List, Literal
 
 from pydantic import field_validator
 
+from django.http import HttpRequest
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
@@ -17,7 +18,6 @@ from otodb.models.enums import Status
 from .comment import ModelsWithComments
 
 from .common import (
-	AuthedHttpRequest,
 	ListSchema,
 	ProfileSchema,
 	WorkSourceSchema,
@@ -31,19 +31,19 @@ profile_router = Router()
 
 
 @profile_router.get('profile', response=ProfileSchema)
-def profile(request: AuthedHttpRequest, username: str):
+def profile(request: HttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user
 
 
 @profile_router.get('lists', response=List[ListSchema])
-def lists(request: AuthedHttpRequest, username: str):
+def lists(request: HttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.pool_set
 
 
 @profile_router.get('connection', response=List[ConnectionSchema])
-def connection(request: AuthedHttpRequest, username: str):
+def connection(request: HttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.profileconnection_set
 
@@ -52,7 +52,7 @@ creator_tag_connection_parser = make_alt_value_parser(*profile_connection_parser
 
 
 @profile_router.put('connection', auth=django_auth)
-def edit_connections(request: AuthedHttpRequest, urls: str):
+def edit_connections(request: HttpRequest, urls: str):
 	user = request.user
 	ProfileConnection.objects.filter(profile=user).delete()
 	urls = [
@@ -69,7 +69,7 @@ def edit_connections(request: AuthedHttpRequest, urls: str):
 @profile_router.get(
 	'work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth
 )
-def work_in_lists(request: AuthedHttpRequest, work_id: int):
+def work_in_lists(request: HttpRequest, work_id: int):
 	return [
 		(lst, lst.work_in_pool(work_id).exists()) for lst in request.user.pool_set.all()
 	]
@@ -93,7 +93,7 @@ class SubmissionsFilterSchema(FilterSchema):
 @profile_router.get('submissions', response=List[SourceSubmissionSchema])
 @paginate
 def submissions(
-	request: AuthedHttpRequest,
+	request: HttpRequest,
 	username: str,
 	filters: SubmissionsFilterSchema = Query(...),
 	order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id',
@@ -101,20 +101,20 @@ def submissions(
 ):
 	match Status(standing):
 		case Status.PENDING:
-			q = Q(is_pending=True)
+			q = Q(media__isnull=True, rejection__isnull=True)
 		case Status.APPROVED:
-			q = Q(media__isnull=False, is_pending=False)
+			q = Q(media__isnull=False)
 		case Status.UNAPPROVED:
-			q = Q(media__isnull=True, is_pending=False)
+			q = Q(rejection__isnull=False)
 
 	user = get_object_or_404(Account, username__iexact=username)
-	submissions = user.worksource_set.filter(q).select_related('media')
+	submissions = user.worksource_set.filter(q).select_related('rejection', 'media')
 	filters.filter(submissions)
 	return submissions.order_by(order)
 
 
 @profile_router.post('prefs', auth=django_auth)
-def set_prefs(request: AuthedHttpRequest, payload: UserPreferencesSchema):
+def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
 	prefs, _ = UserPreferences.objects.get_or_create(user=request.user)
 	for attr, value in payload.dict().items():
 		if value is not None:
@@ -153,12 +153,12 @@ class NotificationSchema(ModelSchema):
 	'notifications', auth=django_auth, response=list[NotificationSchema]
 )
 @paginate
-def notifications(request: AuthedHttpRequest):
+def notifications(request: HttpRequest):
 	return request.user.notifs.order_by('dismissed')
 
 
 @profile_router.put('notification', auth=django_auth)
-def read_notif(request: AuthedHttpRequest, notif_id: int):
+def read_notif(request: HttpRequest, notif_id: int):
 	if request.user.notifs.filter(id=notif_id).update(dismissed=True) > 0:
 		return 200
 	else:
@@ -166,7 +166,7 @@ def read_notif(request: AuthedHttpRequest, notif_id: int):
 
 
 @profile_router.delete('notification', auth=django_auth)
-def del_notif(request: AuthedHttpRequest, notif_id: int):
+def del_notif(request: HttpRequest, notif_id: int):
 	if request.user.notifs.filter(id=notif_id).delete()[0] > 0:
 		return 200
 	else:

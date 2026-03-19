@@ -206,38 +206,6 @@ class PostCategory(models.IntegerChoices):
 	GENERAL = 4, 'General'
 
 
-class ModerationEventType(models.IntegerChoices):
-	FLAG = 0, 'Flag'
-	APPEAL = 1, 'Appeal'
-	DISAPPROVAL = 2, 'Disapproval'
-	APPROVAL = 3, 'Approval'
-	MOD_ACTION = 4, 'Mod Action'
-
-
-class FlagStatus(models.IntegerChoices):
-	PENDING = 0, 'Pending'
-	SUCCEEDED = 1, 'Succeeded'
-	REJECTED = 2, 'Rejected'
-
-
-class ModerationAction(models.IntegerChoices):
-	# Work unapproved via auto-expiry or staff action
-	WORK_DELISTED = (
-		1,
-		'Work Delisted',
-	)
-	# Pending source on existing work approved (immediate)
-	SOURCE_APPROVED = (
-		10,
-		'Source Approved',
-	)
-	# Pending source on existing work rejected (immediate, unbinds)
-	SOURCE_REJECTED = (
-		11,
-		'Source Rejected',
-	)
-
-
 class RevisionChain(models.IntegerChoices):
 	STRONG = 0, 'Strong'
 	WEAK = 1, 'Weak'

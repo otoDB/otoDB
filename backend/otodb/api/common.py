@@ -17,9 +17,6 @@ from otodb.models import (
 	MediaWork,
 	WorkSource,
 	MediaSong,
-	WorkFlag,
-	WorkAppeal,
-	WorkDisapproval,
 	Pool,
 	PoolItem,
 	WorkRelation,
@@ -106,7 +103,6 @@ class WorkSourceSchema(ModelSchema):
 			'work_status',
 			'source_id',
 			'uploader_id',
-			'is_pending',
 			'media',
 		]
 
@@ -137,7 +133,7 @@ class SlimWorkSchema(ModelSchema):
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'status']
+		fields = ['title']
 
 
 class WorkSchema(ModelSchema):
@@ -145,24 +141,20 @@ class WorkSchema(ModelSchema):
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
 	relations: tuple[list[RelationSchema], list[SlimWorkSchema]]
-	pending_flag: 'WorkFlagSchema | None' = None
-	pending_appeal: 'WorkAppealSchema | None' = None
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'description', 'rating', 'thumbnail_source', 'status']
+		fields = ['title', 'description', 'rating', 'thumbnail_source']
 
 
 class ThinWorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
-	pending_flag: 'WorkFlagSchema | None' = None
-	pending_appeal: 'WorkAppealSchema | None' = None
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'status']
+		fields = ['title']
 
 
 class SourceCreationResponse(Schema):
@@ -190,33 +182,6 @@ class SourceSuggestionsResponse(Schema):
 	source_tags: list[TagWorkSchema] = []
 	new_tags: list[TagWorkSchema] = []
 	creator_tags: list[TagWorkSchema] = []
-
-
-class WorkFlagSchema(ModelSchema):
-	id: int
-	by: ProfileSchema | None = None
-
-	class Meta:
-		model = WorkFlag
-		fields = ['reason', 'status', 'date']
-
-
-class WorkAppealSchema(ModelSchema):
-	id: int
-	by: ProfileSchema | None = None
-
-	class Meta:
-		model = WorkAppeal
-		fields = ['reason', 'status', 'date']
-
-
-class WorkDisapprovalSchema(ModelSchema):
-	id: int
-	by: ProfileSchema
-
-	class Meta:
-		model = WorkDisapproval
-		fields = ['reason', 'date']
 
 
 class ListItemSchema(ModelSchema):

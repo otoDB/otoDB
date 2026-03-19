@@ -8,7 +8,8 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		origin = parseInt(url.searchParams.get('origin') ?? '', 10) || null,
 		status = parseInt(url.searchParams.get('status') ?? '', 10) || null,
 		order = url.searchParams.get('order'),
-		dir = url.searchParams.get('dir');
+		dir = url.searchParams.get('dir'),
+		standing = parseInt(url.searchParams.get('standing') ?? '1', 10) || 0;
 	const { data: submissions } = await client.GET('/api/profile/submissions', {
 		fetch,
 		params: {
@@ -19,7 +20,8 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 				order: order ? (dir === '-' ? '-' : '') + order : null,
 				origin,
 				platform,
-				status
+				status,
+				standing
 			}
 		}
 	});
@@ -31,6 +33,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		origin,
 		platform,
 		status,
-		dir
+		dir,
+		standing
 	};
 };

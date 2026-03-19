@@ -27,15 +27,6 @@
 			/>
 			Unbound only
 		</label>
-		<label class="flex items-center gap-1">
-			<input
-				type="checkbox"
-				name="pending"
-				value="true"
-				checked={data.filters.pending === 'true'}
-			/>
-			Pending only
-		</label>
 		<input type="submit" value="Filter" class="border px-3 py-1" />
 	</form>
 
@@ -48,7 +39,6 @@
 					<th>Work</th>
 					<th>Added by</th>
 					<th>Date</th>
-					<th>Status</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -75,13 +65,6 @@
 							></td
 						>
 						<td>{source.published_date ?? '-'}</td>
-						<td>
-							{#if source.is_pending}
-								<span class="text-sky-600">Pending</span>
-							{:else}
-								Active
-							{/if}
-						</td>
 					</tr>
 				{/each}
 			</tbody>
@@ -94,7 +77,5 @@
 				base_url={page.url}
 			/>
 		{/if}
-	{:else}
-		<p>No sources found.</p>
 	{/if}
 </Section>

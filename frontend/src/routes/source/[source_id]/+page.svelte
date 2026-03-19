@@ -107,7 +107,7 @@
 
 <Section
 	title={data.source.title || `Source #${data.source.id}`}
-	type={data.isBound ? 'Source' : 'Review Source'}
+	type="Source"
 	menuLinks={data.links}
 >
 	<div class="@container">

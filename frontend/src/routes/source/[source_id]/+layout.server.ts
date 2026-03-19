@@ -17,7 +17,12 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 	return {
 		source,
 		sourceId,
-		links: [{ pathname: `source/${sourceId}`, title: m.whole_male_cow_mix({ id: String(sourceId) }) }],
+		links: [
+			{
+				pathname: `source/${sourceId}`,
+				title: m.whole_male_cow_mix({ id: String(sourceId) })
+			}
+		],
 		head: {
 			title: source.title || m.whole_male_cow_mix({ id: String(sourceId) })
 		}

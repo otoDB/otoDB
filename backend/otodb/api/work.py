@@ -547,6 +547,8 @@ def sync_work_source(work: MediaWork, src: WorkSource, info, can_merge):
 					| Q(content_id__endswith='/' + info['channel_id'])
 					| Q(content_id__endswith='user_id=' + info['channel_id'])
 				)
+			elif src.platform == Platform.SOUNDCLOUD:
+				q = q.filter(content_id=info['url'].split('/')[3])
 			else:
 				q = q.filter(content_id=info['uploader_id'])
 

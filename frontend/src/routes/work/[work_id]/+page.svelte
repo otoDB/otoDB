@@ -224,7 +224,7 @@
 <Section
 	title={m.extra_brave_tapir_skip()}
 	menuLinks={data.user
-		? [{ pathname: `source/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]
+		? [{ pathname: `upload/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]
 		: []}
 >
 	<div class="mt-2 flex w-full flex-col gap-y-4">

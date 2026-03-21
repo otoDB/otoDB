@@ -62,6 +62,33 @@ class ExternalQuery(Schema):
 	tags: List[TagWorkInstanceSchema]
 
 
+def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
+	tags = []
+	for t in payload:
+		try:
+			tag = TagWork.objects.get(slug=clean_incoming_slug(t.nameslug))
+			tags.append(tag.aliased_to if tag.aliased_to else tag)
+		except TagWork.DoesNotExist:
+			tags.append(TagWork.objects.create(name=t.nameslug))
+
+	for tag, p in zip(tags, payload):
+		changes = {}
+		if p.sample is not None and tag.category in [
+			WorkTagCategory.CREATOR,
+			WorkTagCategory.MEDIA,
+			WorkTagCategory.SONG,
+		]:
+			changes['used_as_source'] = p.sample
+		if p.roles and tag.category == WorkTagCategory.CREATOR:
+			changes['creator_roles'] = reduce(int.__or__, p.roles)
+
+		TagWorkInstance.objects.update_or_create(
+			work=work, work_tag=tag, defaults=changes
+		)
+
+	return tags
+
+
 @work_router.get('query_external', response=ExternalQuery)
 def query_external(
 	request: AuthedHttpRequest,
@@ -202,32 +229,8 @@ def set_tags(
 	request: AuthedHttpRequest, work_id: int, payload: list[TagWorkInstanceInSchema]
 ):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-
-	tags = []
-	for t in payload:
-		try:
-			tag = TagWork.objects.get(slug=clean_incoming_slug(t.nameslug))
-			tags.append(tag.aliased_to if tag.aliased_to else tag)
-		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=t.nameslug))
-
+	tags = _resolve_and_apply_tags(work, payload)
 	work.tags.remove(*work.tags.exclude(id__in=[t.id for t in tags]))
-
-	for tag, p in zip(tags, payload):
-		changes = {}
-		if p.sample is not None and tag.category in [
-			WorkTagCategory.CREATOR,
-			WorkTagCategory.MEDIA,
-			WorkTagCategory.SONG,
-		]:
-			changes['used_as_source'] = p.sample
-		if p.roles and tag.category == WorkTagCategory.CREATOR:
-			changes['creator_roles'] = reduce(int.__or__, p.roles)
-
-		TagWorkInstance.objects.update_or_create(
-			work=work, work_tag=tag, defaults=changes
-		)
-
 	return 200
 
 
@@ -341,28 +344,7 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 		rating=payload.rating,
 	)
 
-	# Add tags
-	tags = []
-	for t in payload.tags:
-		try:
-			tag = TagWork.objects.get(slug=clean_incoming_slug(t.nameslug))
-			tags.append(tag.aliased_to if tag.aliased_to else tag)
-		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=t.nameslug))
-
-	for tag, p in zip(tags, payload.tags):
-		changes = {}
-		if p.sample is not None and tag.category in [
-			WorkTagCategory.CREATOR,
-			WorkTagCategory.MEDIA,
-			WorkTagCategory.SONG,
-		]:
-			changes['used_as_source'] = p.sample
-		if p.roles and tag.category == WorkTagCategory.CREATOR:
-			changes['creator_roles'] = reduce(int.__or__, p.roles)
-		TagWorkInstance.objects.update_or_create(
-			work=work, work_tag=tag, defaults=changes
-		)
+	_resolve_and_apply_tags(work, payload.tags)
 
 	src.media = work
 	src.save()

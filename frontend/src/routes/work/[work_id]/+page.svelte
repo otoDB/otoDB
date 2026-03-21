@@ -22,7 +22,7 @@
 	import { callSavingToast } from '$lib/toast';
 	import { SvelteMap } from 'svelte/reactivity';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import SourceViewer from '$lib/SourceViewer.svelte';
+	import SourcesViewer from '$lib/SourcesViewer.svelte';
 
 	let { data } = $props();
 
@@ -87,7 +87,7 @@
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
-				<SourceViewer
+				<SourcesViewer
 					sources={data.sources ?? []}
 					thumbnail={data.thumbnail}
 					thumbnailAlt={getDisplayText(data.title)}
@@ -250,7 +250,7 @@
 							{src.title || src.url}
 						</a>
 					</strong>
-					<a href="/source/{src.id}" class="ml-2 text-sm">»</a>
+					<a href="/upload/{src.id}" class="ml-2 text-sm">»</a>
 				</div>
 
 				<div class="mt-2 flex flex-wrap gap-x-2">

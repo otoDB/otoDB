@@ -25,7 +25,7 @@
 				fetch,
 				params: { query: { work_id: data.id } }
 			});
-			goto('/source', { invalidateAll: true });
+			goto('/upload', { invalidateAll: true });
 		}
 	};
 	const unbind = async (source_id: number) => {
@@ -33,7 +33,7 @@
 			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
 		await client.POST('/api/source/unbind', { fetch, params: { query: { source_id } } });
-		if (data.sources?.length === 1) goto('/source');
+		if (data.sources?.length === 1) goto('/upload');
 		else invalidateAll();
 	};
 	const updateStatus = (source_id: number) => async (e) => {
@@ -180,7 +180,7 @@
 								<RefreshButton source={src} />
 							{:else if src.work_status === 1}
 								{#if data.user?.level >= UserLevel.EDITOR}
-									<a href="/source/add?for_source={src.id}"
+									<a href="/upload/add?for_source={src.id}"
 										>{m.minor_crisp_cobra_list()}</a
 									>
 								{:else}

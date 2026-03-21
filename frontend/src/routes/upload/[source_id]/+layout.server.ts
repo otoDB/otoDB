@@ -12,19 +12,19 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 		params: { query: { source_id: sourceId } }
 	});
 
-	if (e) error(404, { message: 'Source not found' });
+	if (e) error(404, { message: 'Not found' });
 
 	return {
 		source,
 		sourceId,
 		links: [
 			{
-				pathname: `source/${sourceId}`,
-				title: m.whole_male_cow_mix({ id: String(sourceId) })
+				pathname: `upload/${sourceId}`,
+				title: m.mild_loud_shad_enchant({ type: m.extra_brave_tapir_skip(), name: String(sourceId) })
 			}
 		],
 		head: {
-			title: source.title || m.whole_male_cow_mix({ id: String(sourceId) })
+			title: source.title || m.mild_loud_shad_enchant({ type: m.extra_brave_tapir_skip(), name: String(sourceId) })
 		}
 	};
 };

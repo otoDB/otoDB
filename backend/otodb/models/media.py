@@ -67,9 +67,6 @@ class TagWorkInstance(RevisionTrackedModel):
 		null=True, blank=True, help_text='Creator role bitmask'
 	)
 
-	# NOTE: deprecated
-	instance_imported_from_source = models.BooleanField(null=False, default=True)
-
 	def set_creator_roles(self, roles: list[Role | int]):
 		if self.work_tag.category != WorkTagCategory.CREATOR:
 			self.creator_roles = None

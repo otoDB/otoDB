@@ -12,7 +12,7 @@
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	{#if data.user?.username === data.profile.username}
-		<a href="/source/add">{m.fluffy_crisp_horse_imagine()}</a>
+		<a href="/upload/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}
 	<form method="get">
 		<table>

@@ -138,7 +138,7 @@ export const actions = {
 		if (result?.work_id) redirect(303, `/work/${result.work_id}`);
 
 		// New source -> redirect to source page (for review/work creation)
-		if (result?.source_id) redirect(303, `/source/${result.source_id}`);
+		if (result?.source_id) redirect(303, `/upload/${result.source_id}`);
 
 		// Fallback
 		redirect(303, `/profile/${locals.user.username}/submissions`);

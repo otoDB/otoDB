@@ -47,7 +47,7 @@ export const actions = {
 		});
 
 		if (createError) {
-			return { failed: true, message: m.cool_same_polecat_climb() };
+			return { failed: true, message: m.green_due_javelina_pop() };
 		}
 
 		redirect(303, `/work/${workId}`);
@@ -56,7 +56,7 @@ export const actions = {
 		const data = await request.formData();
 		const workId = +(data.get('work_id') as string);
 		const sourceUrl = data.get('source_url') as string;
-		if (isNaN(workId)) return { failed: true, message: m.aloof_nice_bear_bask() };
+		if (isNaN(workId)) return { failed: true, message: m.green_due_javelina_pop() };
 
 		const { error: bindError } = await client.POST('/api/source/source', {
 			fetch,
@@ -70,7 +70,7 @@ export const actions = {
 		});
 
 		if (bindError) {
-			return { failed: true, message: m.trite_crazy_walrus_charm() };
+			return { failed: true, message: m.green_due_javelina_pop() };
 		}
 
 		redirect(303, `/work/${workId}`);

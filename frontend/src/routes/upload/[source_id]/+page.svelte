@@ -3,7 +3,7 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import TagEditTable from '$lib/TagEditTable.svelte';
 	import WorkField from '$lib/WorkField.svelte';
-	import SourceViewer from '$lib/SourceViewer.svelte';
+	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { Rating, WorkOrigin, WorkStatus } from '$lib/enums';
 	import client, { getTagDisplaySlug } from '$lib/api';
@@ -107,14 +107,14 @@
 </script>
 
 <Section
-	title={data.source.title || `Source #${data.source.id}`}
-	type={m.dizzy_glad_ray_endure()}
+	title={data.source.title || `Upload #${data.source.id}`}
+	type={m.extra_brave_tapir_skip()}
 	menuLinks={data.links}
 >
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
-				<SourceViewer
+				<SourcesViewer
 					sources={sourceArray}
 					thumbnail={data.source.thumbnail}
 					thumbnailAlt={data.source.title ?? ''}
@@ -205,24 +205,24 @@
 	{#if !data.isBound}
 		<!-- Mode toggle -->
 		<div class="mt-4 mb-4 flex gap-2">
-			<button
+			<label
 				class={[
-					'border px-4 py-1',
+					'border px-4 py-1 cursor-pointer',
 					mode === 'create' ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
 				]}
-				onclick={() => (mode = 'create')}
 			>
-				{m.weary_late_thrush_grace()}
-			</button>
-			<button
+				<input type="radio" value="create" bind:group={mode} class="hidden" />
+				{m.careful_red_cow_evoke()}
+			</label>
+			<label
 				class={[
-					'border px-4 py-1',
+					'border px-4 py-1 cursor-pointer',
 					mode === 'bind' ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
 				]}
-				onclick={() => (mode = 'bind')}
 			>
+				<input type="radio" value="bind" bind:group={mode} class="hidden" />
 				{m.formal_ok_fly_buzz()}
-			</button>
+			</label>
 		</div>
 
 		{#if mode === 'create'}
@@ -270,7 +270,7 @@
 							</td>
 						</tr>
 						<tr>
-							<th><label>{m.any_slimy_cuckoo_snip()}</label></th>
+							<th><label>{m.empty_legal_chicken_taste()}</label></th>
 							<td>
 								{#if data.suggestions?.source_tags?.length || data.suggestions?.creator_tags?.length || data.suggestions?.new_tags?.length}
 									<div class="my-2 flex flex-wrap gap-1.5">

@@ -184,7 +184,7 @@
 		</div>
 		{#if wp}
 			<div
-				class="prose prose-neutral prose-sm dark:prose-invert max-w-none [&_:is(p,ul,ol,blockquote,h1,h2,h3,h4,h5,h6)]:max-w-4xl"
+				class="prose prose-neutral prose-sm dark:prose-invert prose-p:max-w-4xl prose-ul:max-w-4xl prose-ol:max-w-4xl prose-blockquote:max-w-4xl prose-headings:max-w-4xl max-w-none"
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html renderMarkdown(wp.page)}

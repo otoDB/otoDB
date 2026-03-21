@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+@config '../tailwind.config.js';
 @import './themes.css';
 
 @theme inline {
@@ -160,8 +161,4 @@
 		padding-left: 0.5rem;
 		margin-left: -0.5rem;
 	}
-}
-
-.prose table {
-	width: fit-content;
 }

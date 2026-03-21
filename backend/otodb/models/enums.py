@@ -170,11 +170,6 @@ class RequestActions(models.IntegerChoices):
 	TAGWORK_PARENT = 5
 	TAGWORK_UNPARENT = 6
 
-	# NOTE: deprecated
-	WORKSOURCE_ATTACHTAG = 11
-
-	MEDIAWORK_ATTACHTAG = 21
-
 
 class MimeType(models.IntegerChoices):
 	JPEG = 1, 'image/jpeg'

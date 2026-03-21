@@ -342,8 +342,6 @@ export const RequestActions = {
 	4: 'worktag:undeprecate',
 	5: 'worktag:parent',
 	6: 'worktag:unparent',
-	11: 'source:attach-tag',
-	21: 'work:attach-tag'
 };
 
 export const PostCategories = [

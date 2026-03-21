@@ -341,7 +341,7 @@ export const RequestActions = {
 	3: 'worktag:deprecate',
 	4: 'worktag:undeprecate',
 	5: 'worktag:parent',
-	6: 'worktag:unparent',
+	6: 'worktag:unparent'
 };
 
 export const PostCategories = [

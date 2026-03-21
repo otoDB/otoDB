@@ -49,11 +49,17 @@
 		void tags;
 		const timeout = setTimeout(() => {
 			tags.filter((t) => !Object.hasOwn(cache, t)).forEach(async (t) => {
-				const { data } = await client.GET('/api/tag/tag', {
+				let result = await client.GET('/api/tag/tag', {
 					fetch,
 					params: { query: { tag_slug: t } }
 				});
-				cache[t] = data ?? {
+				if (result.response.status === 300 && typeof result.error === 'string') {
+					result = await client.GET('/api/tag/tag', {
+						fetch,
+						params: { query: { tag_slug: result.error } }
+					});
+				}
+				cache[t] = result.data ?? {
 					aliased_to: null,
 					category: 0,
 					creator_roles: null,

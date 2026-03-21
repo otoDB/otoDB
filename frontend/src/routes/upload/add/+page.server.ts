@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 		if (e) error(404, { message: 'Not found' });
 		title = data.title;
 	} else if (source && !isNaN(+source)) {
-		const { data, error: e } = await client.GET('/api/source/source', {
+		const { data, error: e } = await client.GET('/api/upload/source', {
 			params: {
 				query: {
 					source_id: +source
@@ -99,7 +99,7 @@ export const actions = {
 		}
 
 		if (editing_unavailable_source) {
-			const { data: work_id, error } = await client.PUT('/api/source/source', {
+			const { data: work_id, error } = await client.PUT('/api/upload/source', {
 				fetch,
 				params: { query: { source_id: +source } },
 				body: metadata
@@ -114,7 +114,7 @@ export const actions = {
 			if (work_id) redirect(303, `/work/${work_id}`);
 		}
 
-		const { data: result, error: sourceError } = await client.POST('/api/source/source', {
+		const { data: result, error: sourceError } = await client.POST('/api/upload/source', {
 			fetch,
 			params: {
 				query: {

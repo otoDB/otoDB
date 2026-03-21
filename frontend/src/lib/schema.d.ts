@@ -401,7 +401,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/source/unbind": {
+    "/api/upload/unbind": {
         parameters: {
             query?: never;
             header?: never;
@@ -418,7 +418,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/source/origin": {
+    "/api/upload/origin": {
         parameters: {
             query?: never;
             header?: never;
@@ -435,7 +435,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/source/refresh": {
+    "/api/upload/refresh": {
         parameters: {
             query?: never;
             header?: never;
@@ -452,7 +452,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/source/source": {
+    "/api/upload/source": {
         parameters: {
             query?: never;
             header?: never;
@@ -478,7 +478,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/source/suggestions": {
+    "/api/upload/suggestions": {
         parameters: {
             query?: never;
             header?: never;

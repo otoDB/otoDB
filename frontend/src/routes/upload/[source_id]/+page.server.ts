@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ fetch, params, locals, url, parent 
 	let suggestions = null;
 	if (!source.media) {
 		userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
-		const { data: s } = await client.GET('/api/source/suggestions', {
+		const { data: s } = await client.GET('/api/upload/suggestions', {
 			fetch,
 			params: { query: { source_id: sourceId } }
 		});
@@ -58,7 +58,7 @@ export const actions = {
 		const sourceUrl = data.get('source_url') as string;
 		if (isNaN(workId)) return { failed: true, message: m.green_due_javelina_pop() };
 
-		const { error: bindError } = await client.POST('/api/source/source', {
+		const { error: bindError } = await client.POST('/api/upload/source', {
 			fetch,
 			params: {
 				query: {

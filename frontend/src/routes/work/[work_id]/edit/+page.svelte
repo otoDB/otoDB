@@ -32,12 +32,12 @@
 		if (data.sources?.length === 1) {
 			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
-		await client.POST('/api/source/unbind', { fetch, params: { query: { source_id } } });
+		await client.POST('/api/upload/unbind', { fetch, params: { query: { source_id } } });
 		if (data.sources?.length === 1) goto('/upload');
 		else invalidateAll();
 	};
 	const updateStatus = (source_id: number) => async (e) => {
-		const p = client.PUT('/api/source/origin', {
+		const p = client.PUT('/api/upload/origin', {
 			fetch,
 			params: { query: { source_id, status: e.target.value } }
 		});

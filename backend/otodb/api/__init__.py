@@ -41,7 +41,7 @@ api = NinjaAPI(
 )
 api.add_router('/auth/', auth_router)
 api.add_router('/work/', work_router)
-api.add_router('/source/', source_router)
+api.add_router('/upload/', source_router)
 api.add_router('/profile/', profile_router)
 api.add_router('/list/', list_router)
 api.add_router('/tag/', tag_router)

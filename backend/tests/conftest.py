@@ -9,6 +9,7 @@ from otodb.account.models import Account
 from otodb.api.auth import auth_router
 from otodb.api.tag import tag_router
 from otodb.api.work import work_router
+from otodb.api.source import source_router
 from otodb.models import MediaWork, Revision, RevisionChange
 
 
@@ -82,6 +83,12 @@ def work_client(member):
 def tag_client(member):
 	"""Create a test client for the tag router."""
 	return AuthenticatedTestClient(tag_router, member)
+
+
+@pytest.fixture
+def source_client(member):
+	"""Create a test client for the source router."""
+	return AuthenticatedTestClient(source_router, member)
 
 
 @pytest.fixture

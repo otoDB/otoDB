@@ -37,6 +37,12 @@ export const WorkOrigin = [m.crisp_red_canary_tickle, m.lucky_still_vulture_work
 
 export const WorkStatus = [m.this_lime_porpoise_launch, m.dizzy_mellow_pug_spur];
 
+export const MimeType = {
+	1: 'image/jpeg',
+	2: 'image/png',
+	3: 'image/webp'
+};
+
 export const Platform = [
 	'Invalid',
 	'YouTube',
@@ -335,9 +341,7 @@ export const RequestActions = {
 	3: 'worktag:deprecate',
 	4: 'worktag:undeprecate',
 	5: 'worktag:parent',
-	6: 'worktag:unparent',
-	11: 'source:attach-tag',
-	21: 'work:attach-tag'
+	6: 'worktag:unparent'
 };
 
 export const PostCategories = [
@@ -369,6 +373,7 @@ export const Route = {
 	MEDIAWORK_TOGGLE_SAMPLE: 44,
 	MEDIAWORK_UPDATE: 45,
 	MEDIAWORK_MERGE: 46,
+	MEDIAWORK_CREATE: 47,
 	WORKRELATION_CREATE: 50,
 	WORKRELATION_DELETE: 51,
 	WORKSOURCE_CREATE: 60,
@@ -377,6 +382,8 @@ export const Route = {
 	WORKSOURCE_REFRESH: 63,
 	WORKSOURCE_ASSIGN: 64,
 	WORKSOURCE_REJECT: 65,
+	WORKSOURCE_UPDATE: 66,
+	ROLLBACK: 100,
 
 	0: 'Unknown',
 	1: 'Tag: Alias',
@@ -403,6 +410,7 @@ export const Route = {
 	44: 'Work: Toggle Sample',
 	45: 'Work: Update',
 	46: 'Work: Merge',
+	47: 'Work: Create',
 	50: 'Work: Create Relation',
 	51: 'Work: Delete Relation',
 	60: 'Upload: Create',
@@ -411,6 +419,7 @@ export const Route = {
 	63: 'Upload: Refresh',
 	64: 'Upload: Assign',
 	65: 'Upload: Reject',
+	66: 'Upload: Update',
 	100: 'Rollback'
 };
 
@@ -426,5 +435,6 @@ export const CommentModelRoutes = {
 
 export const EntityModelRoutes = {
 	...CommentModelRoutes,
-	mediasong: 'song'
+	mediasong: 'song',
+	worksource: 'upload'
 };

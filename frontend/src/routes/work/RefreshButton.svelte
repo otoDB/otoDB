@@ -8,7 +8,7 @@
 	let clicked = $state(false);
 	const action = async () => {
 		clicked = true;
-		const p = client.POST('/api/work/refresh_source', {
+		const p = client.POST('/api/upload/refresh', {
 			fetch,
 			params: { query: { source_id: source.id } }
 		});

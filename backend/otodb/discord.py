@@ -35,7 +35,7 @@ DEFAULT_COMMENT_COLOR = 0x9FA3A9
 
 def _send_webhook(embeds: list[dict[str, Any]]) -> None:
 	payload = {
-		'username': settings.OTODB_CONFIG_DICT['site_name'],
+		'username': f'{settings.OTODB_CONFIG_DICT["site_name"]} Discussions',
 		'embeds': embeds,
 	}
 	try:

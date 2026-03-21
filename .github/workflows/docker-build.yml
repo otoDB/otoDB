@@ -16,7 +16,6 @@ name: Docker Build
 on:
   push:
     branches: [master]
-  create:
   workflow_dispatch:
 
 permissions:

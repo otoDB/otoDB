@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from ordered_model.models import OrderedModel
 
-from otodb.account.models import Account
+from django.conf import settings
 
 from .media import MediaWork
 
@@ -15,7 +15,7 @@ class Pool(models.Model):
 	description = models.TextField(null=True, blank=True)
 
 	author = models.ForeignKey(
-		Account, blank=False, null=False, on_delete=models.CASCADE
+		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.CASCADE
 	)
 
 	pending_items = models.ManyToManyField('WorkSource')

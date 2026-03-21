@@ -278,7 +278,7 @@ const displayNotFound = (currentUrl) => {
     clearResults();
     setStatus(t('notFound'));
 
-    const url = `${OTODB_WEB}/work/add?${new URLSearchParams({ url: currentUrl })}`;
+    const url = `${OTODB_WEB}/upload/add?${new URLSearchParams({ url: currentUrl })}`;
     safeAppendHTML(
         document.getElementById('results'),
         `<a href="${url}" target="_blank" rel="noopener noreferrer">${t('addWork')}</a>`

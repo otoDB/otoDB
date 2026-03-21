@@ -6,6 +6,8 @@
 		Languages,
 		MediaConnectionTypes,
 		MediaType,
+		MimeType,
+		Platform,
 		ProfileConnectionTypes,
 		Rating,
 		Role,
@@ -15,7 +17,9 @@
 		SongTagCategory,
 		TagWorkConnectionTypes,
 		UserLevel,
+		WorkOrigin,
 		WorkRelationTypes,
+		WorkStatus,
 		WorkTagCategory
 	} from '$lib/enums.js';
 	import Pager from '$lib/Pager.svelte';
@@ -87,6 +91,12 @@
 		},
 		wikipage: {
 			lang: Languages
+		},
+		worksource: {
+			platform: Platform,
+			thumbnail_mime: MimeType,
+			work_origin: WorkOrigin,
+			work_status: WorkStatus
 		}
 	};
 

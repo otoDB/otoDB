@@ -1,11 +1,12 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from typing import Literal
 
+from django.conf import settings
 from django.http import HttpRequest
 from django.contrib.contenttypes.models import ContentType
 
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Window, Case, When, Subquery, OuterRef, F
 from django.db.models.functions import Rank
 
@@ -132,8 +133,10 @@ def post(
 		]
 	)
 
-	discord_comment.enqueue(
-		comment.pk, payload.model, payload.pk, request.user.username
+	transaction.on_commit(
+		lambda: discord_comment.enqueue(
+			comment.pk, payload.model, payload.pk, request.user.username
+		)
 	)
 
 
@@ -157,9 +160,6 @@ def delete(
 		raise HttpError(403, 'Forbidden')
 
 
-COMMENT_EDIT_WINDOW = timedelta(days=180)
-
-
 class CommentEditSchema(Schema):
 	comment_id: int
 	comment_text: str
@@ -181,7 +181,10 @@ def edit(request: HttpRequest, payload: CommentEditSchema):
 				raise HttpError(403, 'Forbidden')
 		except CommentMeta.DoesNotExist:
 			pass
-		if datetime.now(tz=timezone.utc) - comment.submit_date > COMMENT_EDIT_WINDOW:
+		if (
+			datetime.now(tz=timezone.utc) - comment.submit_date
+			> settings.OTODB_COMMENT_EDIT_WINDOW
+		):
 			raise HttpError(403, 'Edit window has passed')
 	comment.comment = payload.comment_text
 	comment.save()

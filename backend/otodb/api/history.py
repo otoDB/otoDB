@@ -614,7 +614,7 @@ def rollback_entity(
 
 
 @history_router.post('rollback', auth=django_auth)
-@user_is_staff  # for now
+@user_is_staff  # TODO: for now
 @track_revision
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic
@@ -718,6 +718,8 @@ def history(request: HttpRequest, entity: Query[EntitySchema]):
 			entity.id = tag.pk
 			query_ids = query_ids + [*tag.aliases.values_list('id', flat=True)]
 		case 'mediasong':
+			pass
+		case 'worksource':
 			pass
 	query_ids.append(entity.id)
 	return (

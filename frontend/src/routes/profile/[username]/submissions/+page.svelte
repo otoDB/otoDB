@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import { Platform, Status, WorkOrigin, WorkStatus } from '$lib/enums';
+	import { Platform, Status, UserLevel, WorkOrigin, WorkStatus } from '$lib/enums';
 	import RefreshButton from '../../../work/RefreshButton.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
@@ -12,7 +12,7 @@
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	{#if data.user?.username === data.profile.username}
-		<a href="/work/add">{m.fluffy_crisp_horse_imagine()}</a>
+		<a href="/upload/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}
 	<form method="get">
 		<table>
@@ -88,8 +88,7 @@
 						<th>{m.super_agent_pigeon_aim()}</th>
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if data.user}
-							<th>{m.tough_calm_hedgehog_wave()}</th>
+						{#if data.user && data.user.level >= UserLevel.EDITOR}
 							<th>{m.mushy_proof_hornet_dig()}</th>
 						{/if}
 					</tr></thead
@@ -97,7 +96,9 @@
 				<tbody>
 					{#each data.submissions.items as src, i (i)}
 						<tr>
-							<td class="whitespace-nowrap">{src.title || src.url}</td>
+							<td class="whitespace-nowrap"
+								><a href="/upload/{src.id}">{src.title || src.url}</a></td
+							>
 							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
 							<td class="whitespace-nowrap"
@@ -105,14 +106,7 @@
 									>{m.noisy_moving_newt_belong()}</a
 								></td
 							>
-							{#if data.user}
-								<td class="whitespace-nowrap"
-									><a
-										href={`/request/new?pre_filled=source:attach_tag ${src.id}`}
-										target="_blank"
-										rel="noopener noreferrer">{m.tough_calm_hedgehog_wave()}</a
-									></td
-								>
+							{#if data.user && data.user.level >= UserLevel.EDITOR}
 								<td><RefreshButton source={src} /></td>
 							{/if}
 						</tr>

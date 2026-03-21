@@ -1,5 +1,5 @@
 import { UserLevel } from '$lib/enums';
-import type { PageServerLoad } from '../../work/unbound/$types';
+import type { PageServerLoad } from './$types';
 import userLevelGuard from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
 

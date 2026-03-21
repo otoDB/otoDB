@@ -1,4 +1,8 @@
-from .media import MediaWork, TagWorkInstance, MediaSong
+from .media import (
+	MediaWork,
+	TagWorkInstance,
+	MediaSong,
+)
 from .pool import Pool, PoolItem, PoolUpstream
 from .tag import (
 	TagWork,

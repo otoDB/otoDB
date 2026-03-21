@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import client, { getDisplayText } from '$lib/api';
+import client from '$lib/api';
 import { m } from '$lib/paraglide/messages';
 
 export const load: LayoutServerLoad = async ({ params, fetch }) => {
@@ -20,19 +20,11 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 		links: [
 			{
 				pathname: `upload/${sourceId}`,
-				title: m.mild_loud_shad_enchant({
-					type: m.extra_brave_tapir_skip(),
-					name: getDisplayText(source.title)
-				})
+				title: m.extra_brave_tapir_skip() + ' ' + sourceId
 			}
 		],
 		head: {
-			title:
-				source.title ||
-				m.mild_loud_shad_enchant({
-					type: m.extra_brave_tapir_skip(),
-					name: getDisplayText(source.title)
-				})
+			title: m.extra_brave_tapir_skip() + ' ' + sourceId
 		}
 	};
 };

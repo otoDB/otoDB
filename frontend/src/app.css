@@ -161,3 +161,7 @@
 		margin-left: -0.5rem;
 	}
 }
+
+.prose table {
+	width: fit-content;
+}

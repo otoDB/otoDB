@@ -2222,7 +2222,7 @@ export interface components {
              * Entity
              * @enum {string}
              */
-            entity: "mediawork" | "tagwork" | "tagsong" | "mediasong";
+            entity: "mediawork" | "tagwork" | "tagsong" | "mediasong" | "worksource";
         };
         /** PostContentSchema */
         PostContentSchema: {
@@ -4562,7 +4562,7 @@ export interface operations {
         parameters: {
             query: {
                 id: number | string;
-                entity: "mediawork" | "tagwork" | "tagsong" | "mediasong";
+                entity: "mediawork" | "tagwork" | "tagsong" | "mediasong" | "worksource";
                 limit?: number;
                 offset?: number;
             };
@@ -4866,7 +4866,7 @@ export interface operations {
         parameters: {
             query: {
                 id: number | string;
-                entity: "mediawork" | "tagwork" | "tagsong" | "mediasong";
+                entity: "mediawork" | "tagwork" | "tagsong" | "mediasong" | "worksource";
                 limit?: number;
                 offset?: number;
             };

@@ -431,5 +431,6 @@ export const CommentModelRoutes = {
 
 export const EntityModelRoutes = {
 	...CommentModelRoutes,
-	mediasong: 'song'
+	mediasong: 'song',
+	worksource: 'upload'
 };

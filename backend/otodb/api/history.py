@@ -719,6 +719,8 @@ def history(request: HttpRequest, entity: Query[EntitySchema]):
 			query_ids = query_ids + [*tag.aliases.values_list('id', flat=True)]
 		case 'mediasong':
 			pass
+		case 'worksource':
+			pass
 	query_ids.append(entity.id)
 	return (
 		Revision.objects.filter(

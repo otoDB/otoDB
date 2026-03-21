@@ -37,6 +37,12 @@ export const WorkOrigin = [m.crisp_red_canary_tickle, m.lucky_still_vulture_work
 
 export const WorkStatus = [m.this_lime_porpoise_launch, m.dizzy_mellow_pug_spur];
 
+export const MimeType = {
+	1: 'image/jpeg',
+	2: 'image/png',
+	3: 'image/webp'
+};
+
 export const Platform = [
 	'Invalid',
 	'YouTube',

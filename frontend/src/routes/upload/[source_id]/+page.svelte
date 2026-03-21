@@ -106,11 +106,7 @@
 	);
 </script>
 
-<Section
-	title={data.source.title}
-	type={m.extra_brave_tapir_skip()}
-	menuLinks={data.links}
->
+<Section title={data.source.title} type={m.extra_brave_tapir_skip()} menuLinks={data.links}>
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">

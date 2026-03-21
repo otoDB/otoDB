@@ -6,7 +6,7 @@
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { Rating, WorkOrigin, WorkStatus } from '$lib/enums';
-	import client, { getTagDisplaySlug } from '$lib/api';
+	import { getTagDisplaySlug } from '$lib/api';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import { enhance } from '$app/forms';
 	import type { components } from '$lib/schema';
@@ -44,38 +44,6 @@
 		}
 	});
 
-	// Fetch tag details for manually added tags not in cache
-	$effect(() => {
-		void tags;
-		const timeout = setTimeout(() => {
-			tags.filter((t) => !Object.hasOwn(cache, t)).forEach(async (t) => {
-				let result = await client.GET('/api/tag/tag', {
-					fetch,
-					params: { query: { tag_slug: t } }
-				});
-				if (result.response.status === 300 && typeof result.error === 'string') {
-					result = await client.GET('/api/tag/tag', {
-						fetch,
-						params: { query: { tag_slug: result.error } }
-					});
-				}
-				cache[t] = result.data ?? {
-					aliased_to: null,
-					category: 0,
-					creator_roles: null,
-					deprecated: false,
-					id: -1,
-					lang_prefs: [],
-					name: t,
-					sample: false,
-					slug: t
-				};
-			});
-		}, 750);
-
-		return () => clearTimeout(timeout);
-	});
-
 	const toggleTag = (tag: components['schemas']['TagWorkSchema']) => {
 		const slug = getTagDisplaySlug(tag);
 		if (tags.includes(slug)) {
@@ -83,19 +51,6 @@
 		} else {
 			tags = [...tags, slug];
 		}
-	};
-
-	const toggle_sample = (tag_slug: string) => {
-		cache[tag_slug].sample = !cache[tag_slug].sample;
-	};
-
-	const toggle_creator_role = (tag_slug: string, role_value: number) => {
-		const tag = cache[tag_slug];
-		const current_roles = tag.creator_roles || [];
-		const new_roles = current_roles.includes(role_value)
-			? current_roles.filter((r: number) => r !== role_value)
-			: [...current_roles, role_value];
-		tag.creator_roles = new_roles;
 	};
 
 	// Serialize rich tag data for form submission
@@ -286,12 +241,7 @@
 									</div>
 								{/if}
 								<TagsField type="work" class="w-full" bind:value={tags} />
-								<TagEditTable
-									{tags}
-									{cache}
-									ontoggle_sample={toggle_sample}
-									ontoggle_creator_role={toggle_creator_role}
-								/>
+								<TagEditTable {tags} bind:cache />
 								<input type="hidden" name="tags_json" value={tagsJson} />
 							</td>
 						</tr>

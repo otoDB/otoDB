@@ -247,7 +247,10 @@ def process_video_info(full_info, link=None):
 			case Platform.NICONICO:
 				pass  # webpage_url already set
 			case Platform.SOUNDCLOUD:
-				pass  # TODO
+				# TODO
+				info['tags'] = list(
+					set(info['tags'] + [info['genre']] + info['genres'])
+				)
 			case Platform.TWITTER:
 				info['id'] = info['display_id']
 				info['title'] = None

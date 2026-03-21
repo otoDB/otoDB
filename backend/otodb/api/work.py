@@ -325,9 +325,7 @@ def sources(request: AuthedHttpRequest, work_id: int):
 	return work.worksource_set
 
 
-@work_router.post(
-	'create', auth=django_auth, response={200: int, 400: Error, 409: Error}
-)
+@work_router.post('create', auth=django_auth, response={200: int, 409: Error})
 @user_is_trusted
 @transaction.atomic
 @with_revision_route(Route.MEDIAWORK_CREATE)
@@ -335,7 +333,7 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	"""Creates a MediaWork from a source with user-chosen metadata and tags."""
 	src = get_object_or_404(WorkSource.active_objects, id=payload.source_id)
 	if src.media is not None:
-		return 400, {'message': 'Source already has a work'}
+		return 409, {'message': 'Source already has a work'}
 
 	work = MediaWork.objects.create(
 		title=payload.title or src.title,

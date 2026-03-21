@@ -3089,15 +3089,6 @@ export interface operations {
                     "application/json": number;
                 };
             };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
             /** @description Conflict */
             409: {
                 headers: {

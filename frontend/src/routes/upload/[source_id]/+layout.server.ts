@@ -20,11 +20,19 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 		links: [
 			{
 				pathname: `upload/${sourceId}`,
-				title: m.mild_loud_shad_enchant({ type: m.extra_brave_tapir_skip(), name: String(sourceId) })
+				title: m.mild_loud_shad_enchant({
+					type: m.extra_brave_tapir_skip(),
+					name: String(sourceId)
+				})
 			}
 		],
 		head: {
-			title: source.title || m.mild_loud_shad_enchant({ type: m.extra_brave_tapir_skip(), name: String(sourceId) })
+			title:
+				source.title ||
+				m.mild_loud_shad_enchant({
+					type: m.extra_brave_tapir_skip(),
+					name: String(sourceId)
+				})
 		}
 	};
 };

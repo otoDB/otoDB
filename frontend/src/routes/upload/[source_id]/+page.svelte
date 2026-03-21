@@ -207,7 +207,7 @@
 		<div class="mt-4 mb-4 flex gap-2">
 			<label
 				class={[
-					'border px-4 py-1 cursor-pointer',
+					'cursor-pointer border px-4 py-1',
 					mode === 'create' ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
 				]}
 			>
@@ -216,7 +216,7 @@
 			</label>
 			<label
 				class={[
-					'border px-4 py-1 cursor-pointer',
+					'cursor-pointer border px-4 py-1',
 					mode === 'bind' ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
 				]}
 			>

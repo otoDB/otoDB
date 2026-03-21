@@ -107,7 +107,7 @@
 </script>
 
 <Section
-	title={data.source.title || `Upload #${data.source.id}`}
+	title={data.source.title}
 	type={m.extra_brave_tapir_skip()}
 	menuLinks={data.links}
 >

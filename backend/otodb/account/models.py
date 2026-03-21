@@ -42,6 +42,18 @@ class Account(AbstractBaseUser):
 		ADMIN = 50
 		OWNER = 100
 
+	if TYPE_CHECKING:
+		from django.db.models import QuerySet
+		from ..models.work_source import WorkSource
+		from ..models.posts import Notification
+		from ..models.pool import Pool
+		from ..models.connection import ProfileConnection
+
+		worksource_set: QuerySet['WorkSource']
+		notifs: QuerySet['Notification']
+		pool_set: QuerySet['Pool']
+		profileconnection_set: QuerySet['ProfileConnection']
+
 	username = models.CharField(
 		verbose_name='username',
 		max_length=127,

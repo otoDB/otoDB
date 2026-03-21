@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import logging
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -326,3 +327,7 @@ LOGGING = {
 		'level': 'INFO',
 	},
 }
+
+# Application specific
+
+OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)

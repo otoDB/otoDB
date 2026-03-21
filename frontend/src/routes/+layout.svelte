@@ -31,7 +31,7 @@
 
 	let search_type = $state('work');
 
-	const theme = Themes[data.user?.prefs?.theme ?? +get_prefs()?.theme];
+	const theme = $derived(Themes[data.user?.prefs?.theme ?? +(get_prefs()?.theme ?? 0)]);
 
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
 
@@ -252,7 +252,7 @@
 							)}
 							{@render link(`/settings`, m.orange_born_seal_ascend())}
 							{@render link('/post/new?category=2', m.bald_ideal_gadfly_jest())}
-							{@render link('/work/add', m.fluffy_crisp_horse_imagine())}
+							{@render link('/upload/add', m.fluffy_crisp_horse_imagine())}
 							{@render link(
 								`/profile/${data.user.username}`,
 								m.petty_basic_sheep_win()
@@ -289,7 +289,6 @@
 						</div>
 						<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 							{@render link('/post/4', m.arable_direct_cougar_win())}
-							{@render link('/work/unbound', m.tense_small_firefox_lock())}
 							{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 							{@render link('/work/merge', m.heroic_same_wasp_conquer())}
 						</ul>

@@ -66,7 +66,6 @@ class TagWorkInstance(RevisionTrackedModel):
 	creator_roles = models.IntegerField(
 		null=True, blank=True, help_text='Creator role bitmask'
 	)
-	instance_imported_from_source = models.BooleanField(null=False, default=True)
 
 	def set_creator_roles(self, roles: list[Role | int]):
 		if self.work_tag.category != WorkTagCategory.CREATOR:
@@ -100,6 +99,7 @@ class TagSongInstance(RevisionTrackedModel):
 
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
+		active_objects: models.Manager['MediaWork']
 		worksource_set: QuerySet['WorkSource']
 		poolitem_set: QuerySet['PoolItem']
 		relation_A: QuerySet['WorkRelation']
@@ -125,7 +125,7 @@ class MediaWork(RevisionTrackedModel):
 		tracked_fields = ['title', 'description', 'rating', 'moved_to']
 		entity_attrs = ['self', 'moved_to']
 
-		def to_active(instance):
+		def to_active(self, instance: 'MediaWork') -> 'MediaWork':
 			return instance.moved_to or instance
 
 	# deprecated!

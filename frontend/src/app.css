@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+@config '../tailwind.config.js';
 @import './themes.css';
 
 @theme inline {
@@ -140,6 +141,44 @@
 	main table > tbody > tr > th:has(+ td *:required) > label::after {
 		content: '*';
 		color: var(--otodb-color-del);
+	}
+
+	details {
+		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
+		padding: 0.5rem;
+		cursor: pointer;
+		user-select: none;
+		font-weight: bold;
+		margin: 0.5rem 0;
+
+		&:hover {
+			background-color: var(--otodb-color-bg-primary);
+		}
+
+		&[open] {
+			cursor: pointer;
+			user-select: auto;
+			background-color: var(--otodb-color-bg-faint);
+
+			&:hover {
+				background-color: var(--otodb-color-bg-faint);
+			}
+
+			> :not(summary) {
+				cursor: default;
+				font-weight: normal;
+			}
+		}
+
+		&[open] > summary {
+			cursor: pointer;
+			user-select: none;
+			margin-bottom: 0.5rem;
+
+			&:hover {
+				background-color: inherit;
+			}
+		}
 	}
 }
 

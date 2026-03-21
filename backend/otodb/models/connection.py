@@ -2,7 +2,7 @@ from django.db import models
 
 from .media import MediaSong
 from .tag import TagWork
-from otodb.account.models import Account
+from django.conf import settings
 from .enums import (
 	ProfileConnectionTypes,
 	SongConnectionTypes,
@@ -13,7 +13,7 @@ from .revision import RevisionTrackedModel
 
 
 class ProfileConnection(models.Model):
-	profile = models.ForeignKey(Account, on_delete=models.CASCADE)
+	profile = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 	site = models.IntegerField(choices=ProfileConnectionTypes.choices)
 	content_id = models.CharField(max_length=1000)
 

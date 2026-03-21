@@ -1,6 +1,7 @@
 from typing import List
 import multiprocessing
-from concurrent.futures import ProcessPoolExecutor
+import sys
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
@@ -143,10 +144,14 @@ def delete(request: HttpRequest, list_id: int):
 
 
 def import_ext_into_pool(info, list_: Pool, user):
-	with ProcessPoolExecutor(
-		mp_context=multiprocessing.get_context('fork')
-	) as executor:
-		infos = executor.map(video_info, info['entries'])
+	if sys.platform == 'win32':
+		with ThreadPoolExecutor() as executor:
+			infos = list(executor.map(video_info, info['entries']))
+	else:
+		with ProcessPoolExecutor(
+			mp_context=multiprocessing.get_context('fork')
+		) as executor:
+			infos = list(executor.map(video_info, info['entries']))
 
 	old_entries = list_.poolitem_set.values_list('work__id', flat=True)
 

@@ -23,6 +23,7 @@
 	import faviconRateYourMusic from './connection_favicon/Rate Your Music.png';
 	import faviconRemyWiki from './connection_favicon/RemyWiki.png';
 	import faviconSilentBlue from './connection_favicon/Silent Blue.png';
+	import faviconTouhouDB from './connection_favicon/TouhouDB.png';
 	import faviconTwitter from './connection_favicon/Twitter.png';
 	import faviconVGMdb from './connection_favicon/VGMdb.png';
 	import faviconVocaDB from './connection_favicon/VocaDB.png';
@@ -88,6 +89,8 @@
 				return faviconSilentBlue;
 			case 'Soundcloud':
 				return faviconSoundcloud;
+			case 'TouhouDB':
+				return faviconTouhouDB;
 			case 'Twitter':
 				return faviconTwitter;
 			case 'VGMdb':

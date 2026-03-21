@@ -3098,8 +3098,8 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Too Many Requests */
-            429: {
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

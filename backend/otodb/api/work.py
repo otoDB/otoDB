@@ -326,7 +326,7 @@ def sources(request: AuthedHttpRequest, work_id: int):
 
 
 @work_router.post(
-	'create', auth=django_auth, response={200: int, 400: Error, 429: Error}
+	'create', auth=django_auth, response={200: int, 400: Error, 409: Error}
 )
 @user_is_trusted
 @transaction.atomic

@@ -623,6 +623,10 @@ song_connection_parser = make_alt_value_parser(
 		),
 	),
 	(
+		SongConnectionTypes.TOUHOUDB,
+		re_to_parser(re.compile(r'https?:\/\/touhoudb\.com\/S\/(\d+)(?:\/*)?')),
+	),
+	(
 		SongConnectionTypes.REMYWIKI,
 		re_to_parser(re.compile(r'https?:\/\/remywiki\.com\/(.+?)(?:\/*)?')),
 	),

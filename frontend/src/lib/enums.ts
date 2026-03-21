@@ -175,6 +175,8 @@ export const SongConnectionTypes = {
 	4: 'Rate Your Music',
 	DOJINMUSICINFO: 5,
 	5: '同人音楽info',
+	TOUHOUDB: 6,
+	6: 'TouhouDB',
 
 	REMYWIKI: 20,
 	20: 'RemyWiki',
@@ -197,6 +199,7 @@ export const SongConnectionLink = {
 	3: (id: string) => `https://musicbrainz.org/recording/${id}`,
 	4: (id: string) => `https://rateyourmusic.com/song/${id}/`,
 	5: (id: string) => `https://www.dojin-music.info/song/${id}`,
+	6: (id: string) => `https://touhoudb.com/S/${id}`,
 	20: (id: string) => `https://remywiki.com/${id}`,
 	21: (id: string) => `https://silentblue.remywiki.com/${id}`,
 	22: (id: string) => `https://zenius-i-vanisher.com/v5.2/songdb.php?songid=${id}`,

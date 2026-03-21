@@ -31,7 +31,7 @@
 
 	let search_type = $state('work');
 
-	const theme = Themes[data.user?.prefs?.theme ?? +get_prefs()?.theme];
+	const theme = $derived(Themes[data.user?.prefs?.theme ?? +(get_prefs()?.theme ?? 0)]);
 
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
 

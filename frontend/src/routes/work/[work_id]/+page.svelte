@@ -168,7 +168,11 @@
 												<tbody>
 													{#each userLists as list, i (i)}
 														<tr>
-															<td>{list[0].name}</td>
+															<td
+																><a href="/list/{list[0].id}"
+																	>{list[0].name}</a
+																></td
+															>
 															<td>
 																<input
 																	type="checkbox"

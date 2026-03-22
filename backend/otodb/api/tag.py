@@ -65,7 +65,7 @@ tag_router = RouterWithRevision()
 class FatTagWorkSchema(ModelSchema):
 	id: int
 	children: list[TagWorkSchema]
-	song: Optional[SongSchema] = Field(None, alias='get_song')
+	song: Optional['SongSchema'] = Field(None, alias='get_song')
 	media_type: list[int] | None = None
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional[TagWorkSchema]

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import WorkTag from '$lib/WorkTag.svelte';
-	import { getTagDisplaySlug } from '$lib/api';
+	import client, { getTagDisplaySlug } from '$lib/api';
 	import { Role, WorkTagCategoriesSettableAsSource } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { components } from '$lib/schema.js';
@@ -9,15 +9,57 @@
 
 	let {
 		tags,
-		cache,
-		ontoggle_sample,
-		ontoggle_creator_role
+		cache = $bindable()
 	}: {
 		tags: string[];
 		cache: TagCache;
-		ontoggle_sample: (slug: string) => void;
-		ontoggle_creator_role: (slug: string, role_value: number) => void;
 	} = $props();
+
+	$effect(() => {
+		void tags;
+		const timeout = setTimeout(() => {
+			tags.filter((t) => !Object.hasOwn(cache, t)).forEach(async (t) => {
+				let {
+					data,
+					error: redirectSlug,
+					response
+				} = await client.GET('/api/tag/tag', {
+					params: { query: { tag_slug: t } }
+				});
+				if (response.status === 300 && typeof redirectSlug === 'string') {
+					({ data } = await client.GET('/api/tag/tag', {
+						params: { query: { tag_slug: redirectSlug } }
+					}));
+				}
+				cache[t] = data ?? {
+					aliased_to: null,
+					category: 0,
+					creator_roles: null,
+					deprecated: false,
+					id: -1,
+					lang_prefs: [],
+					name: t,
+					sample: false,
+					slug: t
+				};
+			});
+		}, 750);
+
+		return () => clearTimeout(timeout);
+	});
+
+	const toggle_sample = (tag_slug: string) => {
+		cache[tag_slug].sample = !cache[tag_slug].sample;
+	};
+
+	const toggle_creator_role = (tag_slug: string, role_value: number) => {
+		const tag = cache[tag_slug];
+		const current_roles = tag.creator_roles || [];
+		const new_roles = current_roles.includes(role_value)
+			? current_roles.filter((r: number) => r !== role_value)
+			: [...current_roles, role_value];
+		tag.creator_roles = new_roles;
+	};
 </script>
 
 <table>
@@ -38,7 +80,7 @@
 						{#if WorkTagCategoriesSettableAsSource.includes(tag.category)}
 							<input
 								type="checkbox"
-								onclick={() => ontoggle_sample(getTagDisplaySlug(tag))}
+								onclick={() => toggle_sample(getTagDisplaySlug(tag))}
 								checked={tag.sample}
 							/>
 						{:else}{m.simple_less_marlin_enchant()}{/if}
@@ -52,7 +94,7 @@
 										type="checkbox"
 										checked={tag.creator_roles?.includes(+k) || false}
 										onchange={() =>
-											ontoggle_creator_role(getTagDisplaySlug(tag), +k)}
+											toggle_creator_role(getTagDisplaySlug(tag), +k)}
 									/>{Role[k]()}
 								</label>
 							{/each}

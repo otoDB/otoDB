@@ -95,6 +95,7 @@
 		});
 		if (error) {
 			aliases_post_gate.p = Promise.withResolvers<void>();
+			// TODO: Update toast API to handle cases like this accordingly
 			callErrorToast(
 				(error && typeof error === 'object' && 'code' in error
 					? (Errors[error.code as number]?.(error.data as Record<string, string>) ??

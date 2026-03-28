@@ -12,6 +12,11 @@ from otodb.common import slugify_tag, clean_tag
 from .enums import WorkTagCategory, SongTagCategory, LanguageTypes, MediaType
 from .revision import RevisionTrackedModel, RevisionTrackedManager
 
+# Monkeypatch tagulous to use our slugify (underscores as separator, not hyphens)
+import tagulous.models.models as _tagulous_models
+
+_tagulous_models.slugify = lambda value, **_: slugify_tag(value)
+
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
 	from .connection import (
@@ -59,9 +64,14 @@ class TagModelManagerBase(RevisionTrackedManager, TagModelManager):
 			name = kwargs.pop('name')
 			slug = slugify_tag(name)
 			defaults = kwargs.pop('defaults', {})
-			defaults.setdefault('name', name)
+			defaults.setdefault('name', name.replace('_', ' '))
 			return super().get_or_create(slug=slug, defaults=defaults, **kwargs)
 		return super().get_or_create(*args, **kwargs)
+
+	def create(self, *args, **kwargs):
+		if 'name' in kwargs:
+			kwargs['name'] = kwargs['name'].replace('_', ' ')
+		return super().create(*args, **kwargs)
 
 	def get(self, *args, **kwargs):
 		if 'name' in kwargs:

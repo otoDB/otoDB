@@ -441,3 +441,20 @@ export const EntityModelRoutes = {
 	mediasong: 'song',
 	worksource: 'upload'
 };
+
+export const ErrorCode = {
+	LOGIN_FAILED: 10000,
+	NOT_LOGGED_IN: 10001,
+	USERNAME_TAKEN: 10002,
+	VALIDATION_ERROR: 10003,
+	EDITOR_ONLY: 10004,
+	BAD_URL: 10005,
+	SOURCE_HAS_WORK: 10006,
+	NO_MATCHING_ENTITIES: 10007,
+	NAME_SLUG_MISMATCH: 10008
+};
+
+export const Errors: Record<number, (params?: Record<string, string>) => string> = {
+	[ErrorCode.NAME_SLUG_MISMATCH]: (p) =>
+		m.caring_each_leopard_hint({ name: p!.name, slug: p!.slug, result: p!.result })
+};

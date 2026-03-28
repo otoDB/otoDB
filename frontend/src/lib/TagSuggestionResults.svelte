@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { WorkTagPresentationColours } from './enums';
-	import { makeTagDisplayName } from './api';
 
 	interface Props {
 		suggestions: any[];
@@ -37,14 +36,13 @@
 	};
 
 	const highlightMatch = (text: string, query: string) => {
-		const displayText = makeTagDisplayName(text);
-		if (!query) return { before: displayText, match: '', after: '' };
+		if (!query) return { before: text, match: '', after: '' };
 		const index = text.toLowerCase().indexOf(query.toLowerCase());
-		if (index === -1) return { before: displayText, match: '', after: '' };
+		if (index === -1) return { before: text, match: '', after: '' };
 		const result = {
-			before: displayText.slice(0, index),
-			match: displayText.slice(index, index + query.length),
-			after: displayText.slice(index + query.length)
+			before: text.slice(0, index),
+			match: text.slice(index, index + query.length),
+			after: text.slice(index + query.length)
 		};
 		return result;
 	};

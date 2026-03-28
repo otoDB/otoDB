@@ -3,10 +3,12 @@ from itertools import chain
 
 from django.db import models
 from django.db.models import Value, Q, Prefetch
+from django.core.exceptions import ValidationError
 from tagulous.models import BaseTagModel, TagModelManager
 
 from django_cte import CTE, with_cte
 
+from otodb.common import slugify_tag, clean_tag
 from .enums import WorkTagCategory, SongTagCategory, LanguageTypes, MediaType
 from .revision import RevisionTrackedModel, RevisionTrackedManager
 
@@ -18,10 +20,6 @@ if TYPE_CHECKING:
 		TagWorkCreatorConnection,
 	)
 	from .media import MediaSong
-
-
-def name_cleaner(s):
-	return s.lower()
 
 
 def tagwork_ordering_case(prefix=''):
@@ -53,21 +51,25 @@ def tagwork_ordering_case(prefix=''):
 	)
 
 
-class LowerCaseTagModelManager(RevisionTrackedManager, TagModelManager):
-	"""Base manager that handles lowercase name normalization for all tag models"""
+class TagModelManagerBase(RevisionTrackedManager, TagModelManager):
+	"""Base manager that converts name lookups to slug lookups"""
 
 	def get_or_create(self, *args, **kwargs):
 		if 'name' in kwargs:
-			kwargs['name'] = name_cleaner(kwargs['name'])
+			name = kwargs.pop('name')
+			slug = slugify_tag(name)
+			defaults = kwargs.pop('defaults', {})
+			defaults.setdefault('name', name)
+			return super().get_or_create(slug=slug, defaults=defaults, **kwargs)
 		return super().get_or_create(*args, **kwargs)
 
 	def get(self, *args, **kwargs):
 		if 'name' in kwargs:
-			kwargs['name'] = name_cleaner(kwargs['name'])
+			kwargs['slug'] = slugify_tag(kwargs.pop('name'))
 		return super().get(*args, **kwargs)
 
 
-class TagWorkManager(LowerCaseTagModelManager):
+class TagWorkManager(TagModelManagerBase):
 	def get_queryset(self):
 		# Prefetch language preferences with their tag relationship
 		lang_prefs_qs = TagWorkLangPreference.objects.select_related('tag')
@@ -91,7 +93,7 @@ class TagWorkManager(LowerCaseTagModelManager):
 		)
 
 
-class TagSongManager(LowerCaseTagModelManager):
+class TagSongManager(TagModelManagerBase):
 	def get_queryset(self):
 		# Prefetch language preferences with their tag relationship
 		lang_prefs_qs = TagSongLangPreference.objects.select_related('tag')
@@ -134,8 +136,18 @@ class OtodbTagModel(BaseTagModel):
 	)
 
 	def save(self, *args, **kwargs):
-		if self.name:
-			self.name = name_cleaner(self.name)
+		assert self.name
+		self.name = clean_tag(self.name)
+		if not self.slug:
+			self.slug = slugify_tag(self.name)
+			if not self.slug:
+				# TODO: Better handling for this case
+				pass
+		else:
+			if slugify_tag(self.name) != self.slug:
+				raise ValidationError(
+					f'Name "{self.name}" does not normalize to slug "{self.slug}"'
+				)
 		super().save(*args, **kwargs)
 
 	class Meta:
@@ -193,7 +205,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 	class TagMeta:
 		protect_all = True
 		case_sensitive = False
-		force_lowercase = True
+		force_lowercase = False
 
 	class Meta:
 		ordering = [
@@ -222,10 +234,6 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 		def to_active(self, instance: 'TagWork') -> 'TagWork':
 			return instance.aliased_to or instance
-
-	@property
-	def display_name(self):
-		return self.name.replace('_', ' ')
 
 	def __str__(self):
 		return self.name
@@ -516,7 +524,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 	class TagMeta:
 		protect_all = True
 		case_sensitive = False
-		force_lowercase = True
+		force_lowercase = False
 
 	category = models.IntegerField(
 		choices=SongTagCategory.choices, default=SongTagCategory.GENERAL
@@ -544,10 +552,6 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 				violation_error_message='tag cannot be own parent',
 			),
 		]
-
-	@property
-	def display_name(self):
-		return self.name.replace('_', ' ')
 
 	def __str__(self):
 		return self.name

@@ -6,7 +6,7 @@ from django.db.models import Q
 from ninja import Schema
 from ninja.security import django_auth
 
-from otodb.common import process_video_info, clean_incoming_slug
+from otodb.common import process_video_info, slugify_tag
 from otodb.models import (
 	MediaWork,
 	WorkSource,
@@ -14,6 +14,7 @@ from otodb.models import (
 	TagWorkCreatorConnection,
 )
 from otodb.models.enums import (
+	ErrorCode,
 	Platform,
 	WorkOrigin,
 	ProfileConnectionTypes,
@@ -135,7 +136,10 @@ def new_source_from_url(
 	is_editor = request.user.level >= Account.Levels.EDITOR
 
 	if metadata is not None and not is_editor:
-		return 403, {'message': 'Only editors can add unavailable sources'}
+		return 403, {
+			'code': ErrorCode.EDITOR_ONLY,
+			'data': {'message': 'Only editors can make changes here.'},
+		}
 
 	metadata_dict = metadata.dict() if metadata else None
 	src, info = WorkSource.from_url(
@@ -143,7 +147,10 @@ def new_source_from_url(
 	)
 
 	if src is None:
-		return 400, {'message': 'Bad request, is the URL correct?'}
+		return 400, {
+			'code': ErrorCode.BAD_URL,
+			'data': {'message': 'Bad request, is the URL correct?'},
+		}
 
 	# Source already has a work -> redirect
 	if src.media:
@@ -220,7 +227,7 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 
 	info = process_video_info(src.info_payload.payload, src.url)
 	raw_tags = info.get('tags', [])
-	slug_to_name: dict[str, str] = {clean_incoming_slug(t): t for t in raw_tags}
+	slug_to_name: dict[str, str] = {slugify_tag(t): t for t in raw_tags}
 	matched = TagWork.objects.filter(slug__in=slug_to_name.keys())
 	existing_names = {slug_to_name[t.slug] for t in matched}
 	resolved = {(t.aliased_to or t).pk: (t.aliased_to or t) for t in matched}

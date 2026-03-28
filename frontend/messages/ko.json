@@ -274,5 +274,6 @@
 	"same_only_emu_startle": "({time} 수정됨)",
 	"free_tiny_badger_breathe": "{time} ",
 	"agent_honest_marten_renew": " 수정됨",
-	"plain_polite_eagle_build": "최근 게시물"
+	"plain_polite_eagle_build": "최근 게시물",
+	"caring_each_leopard_hint": "\"{name}\"은(는) \"{result}\"(으)로 정규화되며, 슬러그 \"{slug}\"와 일치하지 않습니다."
 }

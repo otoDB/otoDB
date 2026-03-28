@@ -274,5 +274,6 @@
 	"same_only_emu_startle": "（{time}に編集）",
 	"free_tiny_badger_breathe": "{time}に",
 	"agent_honest_marten_renew": "が編集",
-	"plain_polite_eagle_build": "最新の投稿"
+	"plain_polite_eagle_build": "最新の投稿",
+	"caring_each_leopard_hint": "「{name}」は「{result}」に正規化されますが、スラッグ「{slug}」と一致しません。"
 }

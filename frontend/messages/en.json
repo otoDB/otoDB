@@ -306,5 +306,6 @@
 	"free_tiny_badger_breathe": "edited {time} by ",
 	"agent_honest_marten_renew": "",
 	"plain_polite_eagle_build": "Last post",
-	"formal_ok_fly_buzz": "Bind to Existing Work"
+	"formal_ok_fly_buzz": "Bind to Existing Work",
+	"caring_each_leopard_hint": "\"{name}\" normalizes to \"{result}\", not \"{slug}\"."
 }

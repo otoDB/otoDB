@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Self
 from itertools import chain
+import re
 
 from django.db import models
 from django.db.models import Value, Q, Prefetch
@@ -154,7 +155,8 @@ class OtodbTagModel(BaseTagModel):
 				# TODO: Better handling for this case
 				pass
 		else:
-			if slugify_tag(self.name) != self.slug:
+			expected = slugify_tag(self.name)
+			if not re.fullmatch(rf'{re.escape(expected)}(_\d+)?', self.slug):
 				raise ValidationError(
 					f'Name "{self.name}" does not normalize to slug "{self.slug}"'
 				)

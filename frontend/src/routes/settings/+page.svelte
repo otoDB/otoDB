@@ -6,6 +6,7 @@
 	import { LanguageNames, ThemeNames, Themes } from '$lib/enums';
 	import client from '$lib/api';
 	import { get_prefs, set_lang, update_prefs } from '$lib/ui.js';
+	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
 
@@ -15,11 +16,11 @@
 		} else {
 			update_prefs({ theme });
 		}
-		location.reload();
+		invalidateAll();
 	}
 
 	let current_locale = $state(getLocale());
-	let current_theme = $state(data.user?.prefs?.theme ?? +get_prefs()?.theme);
+	let current_theme = $derived(data.user?.prefs?.theme ?? +get_prefs()?.theme);
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>

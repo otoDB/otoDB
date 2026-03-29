@@ -8,10 +8,32 @@
 	import { LanguageNames, Themes, UserLevel } from '$lib/enums';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { beforeNavigate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { env } from '$env/dynamic/public';
+	import { callErrorToast } from '$lib/toast';
+	import Section from '$lib/Section.svelte';
 
 	let { data, children } = $props();
+
+	function handleError(e: Event) {
+		const err = e as ErrorEvent;
+		console.error(err.error ?? err.message);
+		callErrorToast(m.ideal_soft_falcon_urge());
+	}
+
+	function handleRejection(e: PromiseRejectionEvent) {
+		console.error(e.reason);
+		callErrorToast(m.ideal_soft_falcon_urge());
+	}
+
+	let boundaryError: unknown = $state(null);
+	let boundaryReset: () => void = $state(() => {});
+
+	function handleBoundaryError(e: unknown, reset: () => void) {
+		console.error(e);
+		boundaryError = e;
+		boundaryReset = reset;
+	}
 
 	let isMobileNavOpen = $state(false);
 	function toggleMobileNav() {
@@ -27,6 +49,12 @@
 			Array.from(document.querySelectorAll('form')).some(isFormDirty)
 		)
 			if (!confirm(m.raw_actual_mallard_exhale())) cancel();
+	});
+	afterNavigate(() => {
+		if (boundaryError) {
+			boundaryError = null;
+			boundaryReset();
+		}
 	});
 
 	let search_type = $state('work');
@@ -72,6 +100,8 @@
 			: null
 	);
 </script>
+
+<svelte:window onerror={handleError} onunhandledrejection={handleRejection} />
 
 <svelte:head>
 	{#if page.data.head?.title}
@@ -333,7 +363,21 @@
 		</div>
 		<div class="grow">
 			<main id="content">
-				{@render children()}
+				<svelte:boundary onerror={handleBoundaryError}>
+					{@render children()}
+					{#snippet failed()}
+						<Section title={m.careful_gross_husky_grasp()}>
+							<div
+								class="mx-[10%] my-1 border border-red-700 bg-red-950/50 p-4 text-left"
+							>
+								<h2 class="mb-1 text-lg font-bold">
+									{m.key_pink_pigeon_treasure()}
+								</h2>
+								<p>{m.ideal_soft_falcon_urge()}</p>
+							</div>
+						</Section>
+					{/snippet}
+				</svelte:boundary>
 			</main>
 			<footer>
 				<div class="footer-left">

@@ -5,7 +5,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
 	import { clickOutside, current_version, get_prefs, isFormDirty, set_lang } from '$lib/ui';
-	import { LanguageNames, Themes, UserLevel } from '$lib/enums';
+	import { getThemeNameById, LanguageNames, UserLevel } from '$lib/enums';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { beforeNavigate } from '$app/navigation';
@@ -31,7 +31,9 @@
 
 	let search_type = $state('work');
 
-	const theme = $derived(Themes[data.user?.prefs?.theme ?? +(get_prefs()?.theme ?? 0)]);
+	const theme: string = $derived(
+		getThemeNameById(data.user?.prefs?.theme ?? +(get_prefs()?.theme ?? 0))
+	);
 
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
 
@@ -125,7 +127,7 @@
 	</li>
 {/snippet}
 
-<div class="text-otodb-content-primary overflow-auto {theme}">
+<div class="text-otodb-content-primary overflow-auto {`theme-${theme}`}">
 	<div class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->

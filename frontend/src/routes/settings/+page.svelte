@@ -3,18 +3,20 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 
-	import { LanguageNames, ThemeNames, Themes } from '$lib/enums';
+	import { LanguageNames, themes } from '$lib/enums';
 	import client from '$lib/api';
 	import { get_prefs, set_lang, update_prefs } from '$lib/ui.js';
 	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
 
-	async function changeBackground(theme) {
+	async function changeBackground(theme: number) {
 		if (data.user) {
 			await client.POST('/api/profile/prefs', { fetch, body: { theme, language: null } });
 		} else {
-			update_prefs({ theme });
+			update_prefs({
+				theme: `${theme}` // TODO: MIGHT BE WRONG
+			});
 		}
 		invalidateAll();
 	}
@@ -50,7 +52,7 @@
 	<div
 		class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
 	>
-		{#each Themes as _, i (i)}
+		{#each Object.entries(themes) as [key, theme] (key)}
 			<label
 				class="bg-otodb-bg-faint has-checked:bg-otodb-bg-fainter hover:bg-otodb-bg-fainter mb-2 cursor-pointer border px-4 py-4 text-center text-lg"
 			>
@@ -58,10 +60,10 @@
 					class="hidden"
 					type="radio"
 					bind:group={current_theme}
-					value={i}
-					onchange={() => changeBackground(i)}
+					value={theme.id}
+					onchange={() => changeBackground(theme.id)}
 				/>
-				{ThemeNames[i]()}
+				{theme.nameFn()}
 			</label>
 		{/each}
 	</div>

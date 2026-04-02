@@ -131,10 +131,7 @@ DATABASE = {
 	'OPTIONS': {},
 }
 
-if (
-	os.environ.get('OTODB_DB_SERVICE')
-	and os.environ.get('OTODB_DB_PASSFILE')
-):
+if os.environ.get('OTODB_DB_SERVICE') and os.environ.get('OTODB_DB_PASSFILE'):
 	DATABASE['OPTIONS']['service'] = os.environ['OTODB_DB_SERVICE']
 	DATABASE['OPTIONS']['passfile'] = os.environ['OTODB_DB_PASSFILE']
 else:

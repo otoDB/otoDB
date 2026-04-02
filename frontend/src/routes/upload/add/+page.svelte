@@ -59,7 +59,6 @@
 						</th>
 						<td class="w-full">
 							<select id="origin" name="origin" required>
-								<option value="" disabled>---</option>
 								<option value={true} selected>{m.broad_large_squid_zoom()}</option>
 								<option value={false}>{m.great_lucky_goldfish_sail()}</option>
 							</select>

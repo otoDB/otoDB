@@ -21,7 +21,7 @@
 
 	let title = $state(data.suggestions?.title ?? data.source.title ?? '');
 	let description = $state(data.suggestions?.description ?? data.source.description ?? '');
-	let rating = $state(null as number | null);
+	let rating = $state(0 as number | null);
 	let bindWork = $state<components['schemas']['WorkSchema'] | null>(null);
 
 	// Tag cache for rich tag editing (sample toggles, creator roles)

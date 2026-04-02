@@ -91,7 +91,6 @@ SOURCES = [
 		'description': 'ドナルド300万再生おめでとう',
 		'thumbnail_url': 'https://img.cdn.nimg.jp/s/nicovideo/thumbnails/2057168/2057168.original/r1280x720l?key=64c3379f18890e6747830c596be0a7276dab4e0fe574a98671b3b0c58c1f54c8',
 		'thumbnail_mime': MimeType.JPEG,
-		'thumbnail_hash': 'fc6d1011a58ff0d3e8a033167e785086bb4b8edfe3afb162eb8a3dbdde8f3d28',
 		'uploader_id': '921777',
 		'set_as_thumbnail': True,
 	},

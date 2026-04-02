@@ -5,7 +5,7 @@
 
 	import { LanguageNames, themes } from '$lib/enums';
 	import client from '$lib/api';
-	import { get_prefs, set_lang, update_prefs } from '$lib/ui.js';
+	import { getLocalTheme, set_lang, updateLocalTheme } from '$lib/ui.js';
 	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
@@ -14,15 +14,13 @@
 		if (data.user) {
 			await client.POST('/api/profile/prefs', { fetch, body: { theme, language: null } });
 		} else {
-			update_prefs({
-				theme: `${theme}` // TODO: MIGHT BE WRONG
-			});
+			updateLocalTheme(theme);
 		}
 		invalidateAll();
 	}
 
 	let current_locale = $state(getLocale());
-	let current_theme = $derived(data.user?.prefs?.theme ?? +get_prefs()?.theme);
+	let current_theme = $derived(data.user?.prefs?.theme ?? getLocalTheme());
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>

@@ -27,22 +27,20 @@ jobs:
       matrix:
         python-version: ["3.14"]
         database:
-          - { type: sqlite3, name: SQLite }
-          - { type: postgresql, name: PostgreSQL 17, version: "17" }
+          - { name: PostgreSQL 17, version: "17" }
           # - { type: postgresql, name: PostgreSQL 18, version: "18" }
 
     env:
       OTODB_SECRET_KEY: test-secret-key-for-ci
-      OTODB_DB_BACKEND: ${{ matrix.database.type }}
-      OTODB_DB_HOST: ${{ matrix.database.type == 'postgresql' && 'localhost' || '' }}
-      OTODB_DB_PORT: ${{ matrix.database.type == 'postgresql' && '5432' || '' }}
-      OTODB_DB_NAME: ${{ matrix.database.type == 'postgresql' && 'otodb_test' || '' }}
-      OTODB_DB_USER: ${{ matrix.database.type == 'postgresql' && 'postgres' || '' }}
-      OTODB_DB_PASSWORD: ${{ matrix.database.type == 'postgresql' && 'postgres' || '' }}
+      OTODB_DB_HOST: localhost
+      OTODB_DB_PORT: 5432
+      OTODB_DB_NAME: "otodb_test"
+      OTODB_DB_USER: postgres
+      OTODB_DB_PASSWORD: postgres
 
     services:
       postgres:
-        image: ${{ matrix.database.type == 'postgresql' && format('postgres:{0}', matrix.database.version) || '' }}
+        image: ${{ format('postgres:{0}', matrix.database.version) }}
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: otodb_test

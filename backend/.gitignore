@@ -2,7 +2,6 @@ venv
 .venv
 __pycache__
 .env
-*.sqlite3
 media
 static
 .python-version

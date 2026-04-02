@@ -3,7 +3,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 const AdmZip = require('adm-zip');
 
-const VERSION = '1.2.1';
+const VERSION = '1.2.2';
 
 const COMMANDS = ['chrome', 'firefox', 'pack'];
 const COMMAND = process.argv.find(a => COMMANDS.includes(a));
@@ -63,7 +63,8 @@ const manifest = {
     "host_permissions": [
         "https://otodb.net/*",
         "https://*.nicovideo.jp/*",
-        "https://www.nicochart.jp/*"
+        "https://*.nicoseiga.jp/*",
+        "https://www.nicochart.jp/*",
     ],
     "declarative_net_request": {
         "rule_resources": [

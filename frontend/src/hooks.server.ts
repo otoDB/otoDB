@@ -45,6 +45,16 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 		const csrf = event.cookies.get('csrftoken');
 		if (csrf && cookies?.includes('csrftoken=' + csrf))
 			request.headers.set('X-CSRFToken', csrf);
+
+		for (const header of [
+			'X-Forwarded-For',
+			'X-Forwarded-Proto',
+			'X-Forwarded-Host',
+			'User-Agent'
+		]) {
+			const value = event.request.headers.get(header);
+			if (value) request.headers.set(header, value);
+		}
 	}
 
 	return fetch(request);

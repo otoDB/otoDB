@@ -21,7 +21,7 @@ from otodb.models import (
 	EntityLink,
 )
 from otodb.account.models import Account
-from otodb.models.enums import PostCategory, LanguageTypes
+from otodb.models.enums import NotificationReason, PostCategory, LanguageTypes
 
 from .common import (
 	AuthedHttpRequest,
@@ -138,23 +138,26 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 			]
 		)
 
-	notify_user_ids = set()
+	notify_reasons = {}  # user_id -> NotificationReason
 	if payload.target_users:
-		notify_user_ids.update(
-			Account.objects.filter(username__in=payload.target_users)
-			.values_list('id', flat=True)
-		)
+		for uid in Account.objects.filter(
+			username__in=payload.target_users
+		).values_list('id', flat=True):
+			notify_reasons[uid] = NotificationReason.MENTION
 	if payload.entities:
 		revision_ids = [e.id for e in payload.entities if e.entity == 'revision']
 		if revision_ids:
-			notify_user_ids.update(
-				Revision.objects.filter(id__in=revision_ids)
-				.values_list('user_id', flat=True)
-			)
-	notify_user_ids.discard(request.user.id)
-	if notify_user_ids:
+			for uid in Revision.objects.filter(id__in=revision_ids).values_list(
+				'user_id', flat=True
+			):
+				notify_reasons[uid] = NotificationReason.REVISION_LINKED
+	notify_reasons.pop(request.user.id, None)
+	if notify_reasons:
 		Notification.objects.bulk_create(
-			[Notification(target_id=uid, post=p) for uid in notify_user_ids]
+			[
+				Notification(target_id=uid, post=p, reason=reason)
+				for uid, reason in notify_reasons.items()
+			]
 		)
 
 	Subscription.objects.create(subscriber=request.user, entity=p)

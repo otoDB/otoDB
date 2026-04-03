@@ -1939,6 +1939,11 @@ export interface components {
             dismissed: boolean;
             /** Revision */
             revision?: number | null;
+            /**
+             * Reason
+             * @default 0
+             */
+            reason: number;
         };
         /** PagedNotificationSchema */
         PagedNotificationSchema: {

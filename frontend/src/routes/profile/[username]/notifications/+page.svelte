@@ -3,7 +3,7 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
-	import { CommentModelRoutes } from '$lib/enums';
+	import { CommentModelRoutes, NotificationReason } from '$lib/enums';
 	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 
@@ -53,7 +53,11 @@
 							>
 						{:else if n.post}
 							<td class={{ 'opacity-40': n.dismissed }}
-								>{m.curly_these_mule_ascend()}</td
+								>{n.reason === NotificationReason.REVISION_LINKED
+									? m.aqua_safe_beetle_list()
+									: n.reason === NotificationReason.MENTION
+										? m.vexed_polite_haddock_trim()
+										: m.curly_these_mule_ascend()}</td
 							><td
 								><button
 									class={{ 'opacity-40': n.dismissed }}

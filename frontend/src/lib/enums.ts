@@ -347,6 +347,12 @@ export const RequestActions = {
 	6: 'worktag:unparent'
 };
 
+export const NotificationReason = {
+	REPLY: 0,
+	MENTION: 1,
+	REVISION_LINKED: 2
+} as const;
+
 export const PostCategories = [
 	m.livid_loose_eel_pop,
 	m.crazy_loud_trout_peek,

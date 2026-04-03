@@ -13,7 +13,8 @@
 	{#if data.threads.items.length}
 		<ThreadTable
 			posts={data.threads.items}
-			entityFilter={(e) => !(e.entity === 'revision' && String(e.id) === String(data.revision.id))}
+			entityFilter={(e) =>
+				!(e.entity === 'revision' && String(e.id) === String(data.revision.id))}
 		/>
 		<Pager n_count={data.threads.count} page={data.page} page_size={data.batch_size} />
 	{/if}

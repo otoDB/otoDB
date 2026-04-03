@@ -194,6 +194,12 @@ class MimeType(models.IntegerChoices):
 		return None
 
 
+class NotificationReason(models.IntegerChoices):
+	REPLY = 0, 'Reply'
+	MENTION = 1, 'Mention'
+	REVISION_LINKED = 2, 'Revision Linked'
+
+
 class PostCategory(models.IntegerChoices):
 	ANNOUNCEMENT = 0, 'Announcement'
 	FEATURE_REQUEST = 1, 'Feature Request'

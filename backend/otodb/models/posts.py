@@ -21,7 +21,7 @@ from django.contrib.contenttypes.models import ContentType
 from django_comments_xtd.models import XtdComment
 
 from django.conf import settings
-from .enums import LanguageTypes, PostCategory
+from .enums import LanguageTypes, NotificationReason, PostCategory
 from .revision import Revision
 
 from typing import TYPE_CHECKING
@@ -155,6 +155,9 @@ class Notification(models.Model):
 		related_name='notifs',
 	)
 	dismissed = models.BooleanField(default=False)
+	reason = models.IntegerField(
+		choices=NotificationReason.choices, default=NotificationReason.REPLY
+	)
 
 	revision = models.ForeignKey(
 		Revision,

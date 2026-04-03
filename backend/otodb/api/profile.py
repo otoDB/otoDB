@@ -129,7 +129,7 @@ class NotificationSchema(ModelSchema):
 
 	class Meta:
 		model = Notification
-		fields = ['dismissed', 'revision']
+		fields = ['dismissed', 'revision', 'reason']
 
 	@field_validator('comment', mode='before', check_fields=False)
 	@classmethod

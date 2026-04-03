@@ -1,7 +1,7 @@
 import client from '$lib/api';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { Languages, UserLevel } from '$lib/enums';
+import { UserLevel } from '$lib/enums';
 import userLevelGuard from '$lib/route_guard';
 
 export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {
@@ -113,15 +113,14 @@ export const actions = {
 	},
 	wiki_page: async ({ request, fetch, params }) => {
 		const data = await request.formData();
+		const pages: { lang: number; md: string }[] = JSON.parse(data.get('wiki_pages') as string);
+		if (pages.length === 0) {
+			redirect(303, `/tag/${params.tag_slug}`);
+		}
 		await client.POST('/api/tag/wiki_page', {
 			fetch,
-			params: {
-				query: {
-					tag_slug: params.tag_slug!,
-					md: data.get('md') as string,
-					lang: Languages[data.get('lang') as string]
-				}
-			}
+			params: { query: { tag_slug: params.tag_slug! } },
+			body: pages
 		});
 		redirect(303, `/tag/${params.tag_slug}`);
 	},

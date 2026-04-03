@@ -59,6 +59,13 @@
 			])
 		)
 	);
+	const initialMds = Object.fromEntries(
+		locales.map((lang) => [
+			lang,
+			data.wiki_page?.find((p) => p.lang === Languages[lang])?.page ?? ''
+		])
+	);
+	let dirtyLocales = $derived(new Set(locales.filter((lang) => mds[lang] !== initialMds[lang])));
 
 	let tagLangPrefs = $state(
 		Object.fromEntries(
@@ -349,7 +356,7 @@
 		{#each locales as locale, i (i)}
 			<label class="wiki-lang-tab">
 				<input type="radio" bind:group={wikiView} value={locale} />
-				{LanguageNames[locale]}
+				{LanguageNames[locale]}{#if dirtyLocales.has(locale)}*{/if}
 			</label>
 		{/each}
 	</div>
@@ -359,9 +366,23 @@
 		method="POST"
 		use:dirtyEnhance={{ barrier: form_barrier, priority: 1 }}
 	>
-		<input type="text" hidden value={wikiView} name="lang" />
+		<input
+			type="text"
+			hidden
+			name="wiki_pages"
+			value={JSON.stringify(
+				locales
+					.filter((lang) => mds[lang] !== initialMds[lang])
+					.map((lang) => ({ lang: Languages[lang], md: mds[lang] }))
+			)}
+		/>
 		<div class="grid grid-cols-2 gap-3">
-			<textarea name="md" bind:value={mds[wikiView]}></textarea>
+			<textarea
+				bind:value={mds[wikiView]}
+				oninput={(e) => {
+					e.currentTarget.form!.dataset.dirty = 'true';
+				}}
+			></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html previewHtml}

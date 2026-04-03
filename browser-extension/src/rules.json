@@ -3,7 +3,7 @@
       "id": 1,
       "condition": {
         "urlFilter": "*://*.nicovideo.jp/*",
-        "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest"]
+        "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest", "stylesheet", "media", "image", "script"]
       },
       "action": {
         "type": "modifyHeaders",
@@ -20,7 +20,24 @@
       "id": 2,
       "condition": {
         "urlFilter": "*://www.nicochart.jp/*",
-        "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest"]
+        "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest", "stylesheet", "media", "image", "script"]
+      },
+      "action": {
+        "type": "modifyHeaders",
+        "requestHeaders": [
+          {
+            "operation": "set",
+            "header": "User-Agent",
+            "value": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "condition": {
+        "urlFilter": "*://*.nicoseiga.jp/*",
+        "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest", "stylesheet", "media", "image", "script"]
       },
       "action": {
         "type": "modifyHeaders",

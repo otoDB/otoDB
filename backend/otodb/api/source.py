@@ -246,8 +246,8 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 			aliased_to=None,
 			deprecated=False,
 		)
-		for t in raw_tags
-		if t not in existing_names
+		# Deduplicate -- see PR #467
+		for t in set(raw_tags) - existing_names
 	]
 	creator_tags = resolve_creator_tags(src, info)
 

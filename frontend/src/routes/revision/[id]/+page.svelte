@@ -114,7 +114,7 @@
 	};
 </script>
 
-<Section title="{m.arable_direct_swan_glow()} #{data.revision.id}">
+<Section title="{m.arable_direct_swan_glow()} #{data.revision.id}" menuLinks={data.links}>
 	<h3>
 		{#if isSVO(getLocale())}
 			{m.curly_safe_lynx_fond()}

@@ -522,4 +522,4 @@ def restrict_internal(f):
 
 class EntitySchema(Schema):
 	id: int | str
-	entity: Literal['mediawork', 'tagwork', 'tagsong', 'mediasong', 'worksource']
+	entity: Literal['mediawork', 'tagwork', 'tagsong', 'mediasong', 'worksource', 'revision']

@@ -16,6 +16,7 @@ from otodb.models import (
 	Notification,
 	Post,
 	PostContent,
+	Revision,
 	Subscription,
 	EntityLink,
 )
@@ -137,12 +138,24 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 			]
 		)
 
-	Notification.objects.bulk_create(
-		[
-			Notification(target=u, post=p)
-			for u in Account.objects.filter(username__in=payload.target_users)
-		]
-	)
+	notify_user_ids = set()
+	if payload.target_users:
+		notify_user_ids.update(
+			Account.objects.filter(username__in=payload.target_users)
+			.values_list('id', flat=True)
+		)
+	if payload.entities:
+		revision_ids = [e.id for e in payload.entities if e.entity == 'revision']
+		if revision_ids:
+			notify_user_ids.update(
+				Revision.objects.filter(id__in=revision_ids)
+				.values_list('user_id', flat=True)
+			)
+	notify_user_ids.discard(request.user.id)
+	if notify_user_ids:
+		Notification.objects.bulk_create(
+			[Notification(target_id=uid, post=p) for uid in notify_user_ids]
+		)
 
 	Subscription.objects.create(subscriber=request.user, entity=p)
 

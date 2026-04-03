@@ -27,6 +27,8 @@ const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 const LinkableEntities = [
 	['mediawork', short_prefix_re_gen(ENTITIES[0].shortPrefix)],
 	['mediawork', long_label_re_gen(ENTITIES[0].longLabel)],
+	['revision', short_prefix_re_gen(ENTITIES[2].shortPrefix)],
+	['revision', long_label_re_gen(ENTITIES[2].longLabel)],
 	['tagwork', TAGWORK_NO_DISPLAY_RE]
 ];
 
@@ -101,6 +103,7 @@ export const get_entity = (s: string) => {
 
 const entityShorthands: Record<string, (id: string | number) => string> = {
 	mediawork: (id) => `${ENTITIES[0].shortPrefix}${id}`,
+	revision: (id) => `${ENTITIES[2].shortPrefix}${id}`,
 	tagwork: (id) => `[[${id}]]`
 };
 

@@ -45,7 +45,7 @@ class PostOverviewSchema(ModelSchema):
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category']
+		fields = ['title', 'category', 'resolved_at']
 
 
 class PostContentSchema(ModelSchema):
@@ -62,7 +62,7 @@ class PostSchema(ModelSchema):
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category', 'edited_at']
+		fields = ['title', 'category', 'resolved_at', 'edited_at']
 
 
 @post_router.get('post', response=PostSchema)
@@ -84,15 +84,6 @@ def category(request: HttpRequest, category: PostCategory):
 	return Post.objects.filter(category=category).with_activity()
 
 
-class PostInSchema(Schema):
-	title: str
-	post: str
-	category: PostCategory
-	lang: LanguageTypes
-	target_users: list[str]
-	entities: list[EntitySchema]
-
-
 def get_entity_link_ent(e: EntitySchema):
 	obj = (
 		ContentType.objects.get(model=e.entity)
@@ -110,6 +101,15 @@ def get_entity_link_ent(e: EntitySchema):
 	return obj
 
 
+class PostInSchema(Schema):
+	title: str
+	post: str
+	category: PostCategory
+	lang: LanguageTypes
+	target_users: list[str]
+	entities: list[EntitySchema]
+
+
 @post_router.post('post', response=int, auth=django_auth)
 @user_is_trusted
 @restrict_internal
@@ -120,7 +120,9 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 	assert payload.post
 
 	p = Post.objects.create(
-		title=payload.title, added_by=request.user, category=payload.category
+		title=payload.title,
+		added_by=request.user,
+		category=payload.category,
 	)
 	PostContent.objects.create(
 		post=p,
@@ -193,6 +195,24 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 					for e in payload.entities
 				]
 			)
+
+
+class PostResolveSchema(Schema):
+	post_id: int
+
+
+@post_router.put('resolve', auth=django_auth)
+@transaction.atomic
+def resolve(request: AuthedHttpRequest, payload: PostResolveSchema):
+	if request.user.level < Account.Levels.ADMIN:
+		raise HttpError(403, 'Forbidden')
+
+	p = get_object_or_404(Post, id=payload.post_id)
+	if p.category not in (PostCategory.BUG_REPORT, PostCategory.FEATURE_REQUEST):
+		raise HttpError(400, 'Bad Request')
+
+	p.resolved_at = datetime.now(tz=timezone.utc)
+	p.save(update_fields=['resolved_at'])
 
 
 @post_router.get('threads', response=list[PostOverviewSchema])

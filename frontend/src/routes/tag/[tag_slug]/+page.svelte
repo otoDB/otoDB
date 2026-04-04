@@ -180,6 +180,7 @@
 			<LangSwitch
 				availableLanguages={data.wiki_page.map((v) => Languages[v.lang])}
 				bind:value={wikiView}
+				className="float-right"
 			/>
 		</div>
 		{#if wp}

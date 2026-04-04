@@ -38,5 +38,14 @@ export const actions = {
 				entities
 			}
 		});
+	},
+	resolve: async ({ request, fetch, params }) => {
+		await client.PUT('/api/post/resolve', {
+			fetch,
+			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
+			body: {
+				post_id: parseInt(params.post_id, 10)
+			}
+		});
 	}
 } satisfies Actions;

@@ -5,7 +5,7 @@
 	import { getLocale } from './paraglide/runtime';
 	import { onMount } from 'svelte';
 
-	let { value = $bindable(), availableLanguages = locales } = $props();
+	let { value = $bindable(), availableLanguages = locales, className = '' } = $props();
 	onMount(() => {
 		const i = availableLanguages.find((p) => p === getLocale());
 		if (i) value = i;
@@ -13,7 +13,7 @@
 	});
 </script>
 
-<div class="float-right">
+<div class={className}>
 	{#each availableLanguages as l, i (i)}
 		<label class="lang-tab">
 			<input type="radio" bind:group={value} value={l} />

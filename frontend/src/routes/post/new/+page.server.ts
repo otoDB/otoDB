@@ -28,6 +28,7 @@ export const actions = {
 			.filter((x) => x);
 
 		if (renderMarkdown(post).trim() === '') return fail(400);
+
 		const { data: r, error } = await client.POST('/api/post/post', {
 			fetch,
 			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
@@ -40,6 +41,8 @@ export const actions = {
 				entities
 			}
 		});
+		console.dir(error, { depth: null });
+
 		if (error) return fail(400);
 		else redirect(303, `/post/${r}`);
 	}

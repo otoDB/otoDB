@@ -1190,6 +1190,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/post/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Resolve */
+        put: operations["otodb_api_post_resolve"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/threads": {
         parameters: {
             query?: never;
@@ -2251,6 +2268,8 @@ export interface components {
             title: string;
             /** Category */
             category: number;
+            /** Resolved At */
+            resolved_at?: string | null;
             /** Edited At */
             edited_at?: string | null;
         };
@@ -2312,6 +2331,8 @@ export interface components {
             title: string;
             /** Category */
             category: number;
+            /** Resolved At */
+            resolved_at?: string | null;
         };
         /** PagedPostOverviewSchema */
         PagedPostOverviewSchema: {
@@ -2319,6 +2340,11 @@ export interface components {
             items: components["schemas"]["PostOverviewSchema"][];
             /** Count */
             count: number;
+        };
+        /** PostResolveSchema */
+        PostResolveSchema: {
+            /** Post Id */
+            post_id: number;
         };
         /** CommentSchema */
         CommentSchema: {
@@ -4546,6 +4572,28 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PagedPostOverviewSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_post_resolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostResolveSchema"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -60,6 +60,7 @@
 			])
 		)
 	);
+	let edited_md = $state(Object.fromEntries(locales.map((lang) => [lang, false])));
 
 	let tagLangPrefs = $state(
 		Object.fromEntries(
@@ -363,7 +364,11 @@
 		{#each locales as locale, i (i)}
 			<label class="wiki-lang-tab">
 				<input type="radio" bind:group={wikiView} value={locale} />
-				{LanguageNames[locale]}
+				{LanguageNames[
+					locale
+				]}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
+						content: '*'
+					})}{/if}
 			</label>
 		{/each}
 	</div>
@@ -373,9 +378,23 @@
 		method="POST"
 		use:dirtyEnhance={{ barrier: form_barrier, priority: 1 }}
 	>
-		<input type="text" hidden value={wikiView} name="lang" />
+		<input
+			type="text"
+			hidden
+			name="wiki_pages"
+			value={JSON.stringify(
+				locales
+					.filter((lang) => edited_md[lang])
+					.map((lang) => ({ lang: Languages[lang], md: mds[lang] }))
+			)}
+		/>
 		<div class="grid grid-cols-2 gap-3">
-			<textarea name="md" bind:value={mds[wikiView]}></textarea>
+			<textarea
+				onchange={() => {
+					edited_md[wikiView] = true;
+				}}
+				bind:value={mds[wikiView]}
+			></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html previewHtml}

@@ -2172,6 +2172,13 @@ export interface components {
              */
             lang: number;
         };
+        /** WikiPageEditSchema */
+        WikiPageEditSchema: {
+            /** Lang */
+            lang: number;
+            /** Md */
+            md: string;
+        };
         /** PagedSongSchema */
         PagedSongSchema: {
             /** Items */
@@ -4062,14 +4069,16 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                lang: number;
-                md: string;
             };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WikiPageEditSchema"][];
+            };
+        };
         responses: {
             /** @description OK */
             200: {

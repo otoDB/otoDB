@@ -559,26 +559,35 @@ def wiki_page(request: HttpRequest, tag_slug: str):
 	return pages
 
 
+class WikiPageEditSchema(Schema):
+	lang: int
+	md: str
+
+
 @tag_router.post('wiki_page', auth=django_auth)
 @user_is_trusted
+@transaction.atomic
 @with_revision_route(Route.TAGWORK_EDIT_WIKI)
-def edit_wiki_page(request: HttpRequest, tag_slug: str, lang: int, md: str):
+def edit_wiki_page(
+	request: HttpRequest, tag_slug: str, payload: list[WikiPageEditSchema]
+):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
-	empty = md.strip() == ''
-	try:
-		wp = WikiPage.objects.get(tag=tag, lang=LanguageTypes(lang).value)
-		if empty:
-			wp.delete()
-		else:
-			wp.page = md
-			wp.save()
-	except WikiPage.DoesNotExist:
-		if not empty:
-			WikiPage.objects.create(
-				tag=tag,
-				lang=LanguageTypes(lang).value,
-				page=md,
-			)
+	for item in payload:
+		empty = item.md.strip() == ''
+		try:
+			wp = WikiPage.objects.get(tag=tag, lang=LanguageTypes(item.lang).value)
+			if empty:
+				wp.delete()
+			else:
+				wp.page = item.md
+				wp.save()
+		except WikiPage.DoesNotExist:
+			if not empty:
+				WikiPage.objects.create(
+					tag=tag,
+					lang=LanguageTypes(item.lang).value,
+					page=item.md,
+				)
 
 
 @tag_router.get(

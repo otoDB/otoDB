@@ -59,13 +59,7 @@
 			])
 		)
 	);
-	const initialMds = Object.fromEntries(
-		locales.map((lang) => [
-			lang,
-			data.wiki_page?.find((p) => p.lang === Languages[lang])?.page ?? ''
-		])
-	);
-	let dirtyLocales = $derived(new Set(locales.filter((lang) => mds[lang] !== initialMds[lang])));
+	let edited_md = $state(Object.fromEntries(locales.map((lang) => [lang, false])));
 
 	let tagLangPrefs = $state(
 		Object.fromEntries(
@@ -356,7 +350,11 @@
 		{#each locales as locale, i (i)}
 			<label class="wiki-lang-tab">
 				<input type="radio" bind:group={wikiView} value={locale} />
-				{LanguageNames[locale]}{#if dirtyLocales.has(locale)}*{/if}
+				{LanguageNames[
+					locale
+				]}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
+						content: '*'
+					})}{/if}
 			</label>
 		{/each}
 	</div>
@@ -372,16 +370,16 @@
 			name="wiki_pages"
 			value={JSON.stringify(
 				locales
-					.filter((lang) => mds[lang] !== initialMds[lang])
+					.filter((lang) => edited_md[lang])
 					.map((lang) => ({ lang: Languages[lang], md: mds[lang] }))
 			)}
 		/>
 		<div class="grid grid-cols-2 gap-3">
 			<textarea
-				bind:value={mds[wikiView]}
-				oninput={(e) => {
-					e.currentTarget.form!.dataset.dirty = 'true';
+				onchange={() => {
+					edited_md[wikiView] = true;
 				}}
+				bind:value={mds[wikiView]}
 			></textarea>
 			<div class="prose prose-neutral prose-sm dark:prose-invert">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->

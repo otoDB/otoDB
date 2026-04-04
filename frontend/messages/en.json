@@ -309,5 +309,8 @@
 	"formal_ok_fly_buzz": "Bind to Existing Work",
 	"green_frail_gazelle_blink": "Closed",
 	"tough_sea_thrush_fear": "Edit",
-	"crisp_sound_rooster_mop": "Close"
+	"crisp_sound_rooster_mop": "Close",
+	"careful_gross_husky_grasp": "Error",
+	"key_pink_pigeon_treasure": "Oops!",
+	"ideal_soft_falcon_urge": "Something went wrong. Check the browser console for more info."
 }

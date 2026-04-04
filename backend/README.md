@@ -46,4 +46,3 @@ uv run pytest
 ### Notes
 
 - Default user username specified in .env.example: `admin` and password: `admin`.
-- Be careful: the script `_clear.py` deletes the database.

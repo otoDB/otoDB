@@ -24,7 +24,7 @@
 <div
 	class="grid grid-cols-[repeat(auto-fill,minmax(max(calc(50%-var(--spacing)*2),min(100%,576px)),1fr))] gap-x-4"
 >
-	<Section title={m.fuzzy_chunky_niklas_peek()}>
+	<Section title={m.fuzzy_chunky_niklas_peek()} href="/work/random">
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.random as w, i (i)}
 				<WorkCard work={w} />
@@ -32,7 +32,7 @@
 		</div>
 	</Section>
 
-	<Section title={m.big_long_squirrel_kiss()}>
+	<Section title={m.big_long_squirrel_kiss()} href="/work/search">
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.recent as w, i (i)}
 				<WorkCard work={w} />
@@ -40,7 +40,7 @@
 		</div>
 	</Section>
 
-	<Section title={m.sea_cute_beaver_file()}>
+	<Section title={m.sea_cute_beaver_file()} href="/revision/history">
 		<table class="w-full">
 			<tbody>
 				{#each data.changes.items as r, i (i)}
@@ -66,7 +66,7 @@
 		<a href="/revision/history" class="float-right">{m.fresh_deft_warbler_edit()}</a>
 	</Section>
 
-	<Section title={m.curly_fuzzy_turkey_launch()}>
+	<Section title={m.curly_fuzzy_turkey_launch()} href="/post/overview">
 		<table class="w-full">
 			<tbody>
 				{#each data.posts.items as p, i (i)}

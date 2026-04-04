@@ -45,7 +45,7 @@ class PostOverviewSchema(ModelSchema):
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category', 'resolved_at']
+		fields = ['title', 'category', 'closed_at']
 
 
 class PostContentSchema(ModelSchema):
@@ -62,7 +62,7 @@ class PostSchema(ModelSchema):
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category', 'resolved_at', 'edited_at']
+		fields = ['title', 'category', 'closed_at', 'edited_at']
 
 
 @post_router.get('post', response=PostSchema)
@@ -197,13 +197,13 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 			)
 
 
-class PostResolveSchema(Schema):
+class PostCloseSchema(Schema):
 	post_id: int
 
 
-@post_router.put('resolve', auth=django_auth)
+@post_router.put('close', auth=django_auth)
 @transaction.atomic
-def resolve(request: AuthedHttpRequest, payload: PostResolveSchema):
+def close(request: AuthedHttpRequest, payload: PostCloseSchema):
 	if request.user.level < Account.Levels.ADMIN:
 		raise HttpError(403, 'Forbidden')
 
@@ -211,8 +211,8 @@ def resolve(request: AuthedHttpRequest, payload: PostResolveSchema):
 	if p.category not in (PostCategory.BUG_REPORT, PostCategory.FEATURE_REQUEST):
 		raise HttpError(400, 'Bad Request')
 
-	p.resolved_at = datetime.now(tz=timezone.utc)
-	p.save(update_fields=['resolved_at'])
+	p.closed_at = datetime.now(tz=timezone.utc)
+	p.save(update_fields=['closed_at'])
 
 
 @post_router.get('threads', response=list[PostOverviewSchema])

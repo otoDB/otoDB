@@ -39,8 +39,8 @@ export const actions = {
 			}
 		});
 	},
-	resolve: async ({ request, fetch, params }) => {
-		await client.PUT('/api/post/resolve', {
+	close: async ({ request, fetch, params }) => {
+		await client.PUT('/api/post/close', {
 			fetch,
 			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
 			body: {

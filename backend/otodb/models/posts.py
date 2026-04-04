@@ -105,7 +105,7 @@ class Post(models.Model):
 	category = models.IntegerField(
 		choices=PostCategory.choices, null=False, blank=False
 	)
-	resolved_at = models.DateTimeField(null=True, blank=True)
+	closed_at = models.DateTimeField(null=True, blank=True)
 	edited_at = models.DateTimeField(null=True, blank=True)
 	edited_by = models.ForeignKey(
 		settings.AUTH_USER_MODEL,

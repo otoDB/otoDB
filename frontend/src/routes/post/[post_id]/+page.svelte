@@ -94,8 +94,10 @@
 		isEditing = false;
 	};
 
-	const canResolve = $derived.by(() => {
-		return true;
+	const canClose = $derived.by(() => {
+		return (
+			data.user.level == UserLevel.ADMIN && data.post.category === 0 && !data.post.closed_at
+		);
 	});
 </script>
 
@@ -222,8 +224,8 @@
 						{#if canEdit}
 							<button class="px-2 py-1" onclick={startEdit}>Edit</button>
 						{/if}
-						{#if canResolve}
-							<form method="POST" action={`/post/${data.post_id}?/resolve`}>
+						{#if canClose}
+							<form method="POST" action={`/post/${data.post_id}?/close`}>
 								<button type="submit" class="px-2 py-1">Resolve</button>
 							</form>
 						{/if}

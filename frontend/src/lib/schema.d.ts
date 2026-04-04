@@ -1190,7 +1190,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/post/resolve": {
+    "/api/post/close": {
         parameters: {
             query?: never;
             header?: never;
@@ -1198,8 +1198,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Resolve */
-        put: operations["otodb_api_post_resolve"];
+        /** Close */
+        put: operations["otodb_api_post_close"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2268,8 +2268,8 @@ export interface components {
             title: string;
             /** Category */
             category: number;
-            /** Resolved At */
-            resolved_at?: string | null;
+            /** Closed At */
+            closed_at?: string | null;
             /** Edited At */
             edited_at?: string | null;
         };
@@ -2331,8 +2331,8 @@ export interface components {
             title: string;
             /** Category */
             category: number;
-            /** Resolved At */
-            resolved_at?: string | null;
+            /** Closed At */
+            closed_at?: string | null;
         };
         /** PagedPostOverviewSchema */
         PagedPostOverviewSchema: {
@@ -2341,8 +2341,8 @@ export interface components {
             /** Count */
             count: number;
         };
-        /** PostResolveSchema */
-        PostResolveSchema: {
+        /** PostCloseSchema */
+        PostCloseSchema: {
             /** Post Id */
             post_id: number;
         };
@@ -4575,7 +4575,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_post_resolve: {
+    otodb_api_post_close: {
         parameters: {
             query?: never;
             header?: never;
@@ -4584,7 +4584,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PostResolveSchema"];
+                "application/json": components["schemas"]["PostCloseSchema"];
             };
         };
         responses: {

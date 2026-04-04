@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import client from '$lib/api';
 import { m } from '$lib/paraglide/messages.js';
+import { resolvePostCategory } from '$lib/enums';
 
 export const load: LayoutServerLoad = async ({ fetch, params }) => {
 	const postId = Number.parseInt(params.post_id, 10);
@@ -15,8 +16,14 @@ export const load: LayoutServerLoad = async ({ fetch, params }) => {
 
 	if (e) error(404, { message: 'Not found' });
 
+	const category = resolvePostCategory(data.category);
+	if (!category) error(500, { message: 'Server error' });
+
 	return {
-		post: data,
+		post: {
+			...data,
+			category: category
+		},
 		post_id: postId,
 		head: {
 			title: data.title,

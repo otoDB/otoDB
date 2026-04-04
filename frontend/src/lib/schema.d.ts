@@ -2264,14 +2264,16 @@ export interface components {
              */
             entities: components["schemas"]["EntitySchema"][];
             edited_by?: components["schemas"]["ProfileSchema"] | null;
+            /** Is Closable */
+            is_closable: boolean;
             /** Title */
             title: string;
             /** Category */
             category: number;
-            /** Closed At */
-            closed_at?: string | null;
             /** Edited At */
             edited_at?: string | null;
+            /** Closed At */
+            closed_at?: string | null;
         };
         /**
          * LanguageTypes

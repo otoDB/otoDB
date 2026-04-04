@@ -347,6 +347,9 @@ export const RequestActions = {
 	6: 'worktag:unparent'
 };
 
+/**
+ * @deprecated Use `PostCategory` and related functions instead.
+ */
 export const PostCategories = [
 	m.livid_loose_eel_pop,
 	m.crazy_loud_trout_peek,
@@ -354,6 +357,57 @@ export const PostCategories = [
 	m.moving_trick_piranha_thrive,
 	m.fresh_lower_rook_trip
 ];
+
+export type PostCategory =
+	| 'ANNOUNCEMENT'
+	| 'FEATURE_REQUEST'
+	| 'BUG_REPORT'
+	| 'GARDERNING'
+	| 'GENERAL';
+export const resolvePostCategory = (id: number): PostCategory | undefined => {
+	switch (id) {
+		case 0:
+			return 'ANNOUNCEMENT';
+		case 1:
+			return 'FEATURE_REQUEST';
+		case 2:
+			return 'BUG_REPORT';
+		case 3:
+			return 'GARDERNING';
+		case 4:
+			return 'GENERAL';
+		default:
+			return undefined;
+	}
+};
+export const decodePostCategory = (category: PostCategory): number => {
+	switch (category) {
+		case 'ANNOUNCEMENT':
+			return 0;
+		case 'FEATURE_REQUEST':
+			return 1;
+		case 'BUG_REPORT':
+			return 2;
+		case 'GARDERNING':
+			return 3;
+		case 'GENERAL':
+			return 4;
+	}
+};
+export const postCategoryName = (category: PostCategory) => {
+	switch (category) {
+		case 'ANNOUNCEMENT':
+			return m.livid_loose_eel_pop;
+		case 'FEATURE_REQUEST':
+			return m.crazy_loud_trout_peek;
+		case 'BUG_REPORT':
+			return m.new_honest_tapir_endure;
+		case 'GARDERNING':
+			return m.moving_trick_piranha_thrive;
+		case 'GENERAL':
+			return m.fresh_lower_rook_trip;
+	}
+};
 
 export const Route = {
 	UNKNOWN: 0,

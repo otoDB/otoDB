@@ -4,7 +4,7 @@
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
-	import { EntityModelRoutes, Languages, PostCategories, UserLevel } from '$lib/enums.js';
+	import { EntityModelRoutes, Languages, postCategoryName, UserLevel } from '$lib/enums.js';
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
@@ -62,6 +62,9 @@
 		}
 	});
 
+	const isClosed = $derived(data.post.closed_at !== null);
+	const canClose = $derived(data.user.level == UserLevel.OWNER && data.post.is_closable);
+
 	let isEditing = $state(false);
 	let editTitle = $state('');
 	let editContent = $state('');
@@ -74,12 +77,18 @@
 			.filter((x) => x)
 	);
 
-	const is_admin = data.user && data.user.level >= UserLevel.ADMIN;
-	const editedByOther =
-		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username;
-	const canEdit =
-		data.user &&
-		(is_admin || (data.post.added_by.username === data.user.username && !editedByOther));
+	const editedByOther = $derived(
+		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username
+	);
+	const canEdit = $derived.by(() => {
+		if (isClosed) return false;
+		if (!data.user) return false;
+
+		return (
+			data.user.level >= UserLevel.ADMIN || // TODO: might be `OWNER`.
+			(data.post.added_by.username === data.user.username && !editedByOther)
+		);
+	});
 
 	const startEdit = () => {
 		editTitle = data.post.title;
@@ -93,12 +102,6 @@
 	const cancelEdit = () => {
 		isEditing = false;
 	};
-
-	const canClose = $derived.by(() => {
-		return (
-			data.user.level == UserLevel.ADMIN && data.post.category === 0 && !data.post.closed_at
-		);
-	});
 </script>
 
 <svelte:head>
@@ -131,7 +134,7 @@
 					</tr>
 				</tbody>
 			</table>
-			{#if data.post.category === 3}
+			{#if data.post.category === 'GARDERNING'}
 				<h4>{m.fine_zany_octopus_trim()}</h4>
 				<textarea name="entities" bind:value={editEntities}></textarea>
 				<ul class="inline-block">
@@ -157,10 +160,10 @@
 	{:else}
 		<div class="text-otodb-content-fainter mb-6 space-y-2 text-xs">
 			<p>
-				<a href="/post/search?category={data.post.category}"
-					>{PostCategories[data.post.category]()}</a
-				>
-				{#if data.post.category === 0}
+				<a href="/post/search?category={data.post.category}">
+					{postCategoryName(data.post.category)()}
+				</a>
+				{#if data.post.category === 'ANNOUNCEMENT'}
 					&middot;
 					<a href="#p{data.post_id}"
 						><time title={new Date(page_object.modified).toLocaleString()}
@@ -186,7 +189,7 @@
 			{/if}
 		</div>
 
-		{#if data.post.category > 0}
+		{#if data.post.category !== 'ANNOUNCEMENT'}
 			<div class="op-post grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="p{data.post_id}">
 				<div
 					class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
@@ -199,6 +202,11 @@
 							{timeAgo(page_object.modified)}
 						</time>
 					</a>
+					{#if isClosed}
+						<div class="text-otodb-content-fainter text-xs">
+							{m.green_frail_gazelle_blink()}
+						</div>
+					{/if}
 					{#if data.post.edited_at}
 						<span title={new Date(data.post.edited_at).toLocaleString()} class="block">
 							{#if editedByOther}
@@ -222,11 +230,15 @@
 					</div>
 					<div class="invisible flex justify-end gap-2 pt-2 group-hover:visible">
 						{#if canEdit}
-							<button class="px-2 py-1" onclick={startEdit}>Edit</button>
+							<button class="px-2 py-1" onclick={startEdit}>
+								{m.tough_sea_thrush_fear()}
+							</button>
 						{/if}
 						{#if canClose}
 							<form method="POST" action={`/post/${data.post_id}?/close`}>
-								<button type="submit" class="px-2 py-1">Resolve</button>
+								<button type="submit" class="px-2 py-1">
+									{m.crisp_sound_rooster_mop()}
+								</button>
 							</form>
 						{/if}
 					</div>

@@ -59,10 +59,16 @@ class PostSchema(ModelSchema):
 	pages: list[PostContentSchema]
 	entities: list[EntitySchema] = []
 	edited_by: ProfileSchema | None = None
+	is_closable: bool
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category', 'closed_at', 'edited_at']
+		fields = [
+			'title',
+			'category',
+			'edited_at',
+			'closed_at',
+		]
 
 
 @post_router.get('post', response=PostSchema)
@@ -204,7 +210,7 @@ class PostCloseSchema(Schema):
 @post_router.put('close', auth=django_auth)
 @transaction.atomic
 def close(request: AuthedHttpRequest, payload: PostCloseSchema):
-	if request.user.level < Account.Levels.ADMIN:
+	if request.user.level < Account.Levels.OWNER:
 		raise HttpError(403, 'Forbidden')
 
 	p = get_object_or_404(Post, id=payload.post_id)

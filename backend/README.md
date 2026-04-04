@@ -4,7 +4,13 @@
 
 Install [uv](https://github.com/astral-sh/uv).
 
-```sh
+```shell
+# Install dependencies
+uv sync
+
+# Setup pre-commit
+pre-commit
+
 # Copy the base .env file
 cp .env.example .env
 
@@ -25,13 +31,18 @@ Optionally provide a `cookies.txt` file in Netscape cookies.txt format for use w
 
 ### Reset the database
 
-```sh
+```shell
 psql "postgresql://$OTODB_DB_USER:$OTODB_DB_PASSWORD@$OTODB_DB_HOST:$OTODB_DB_PORT/postgres" \
   -c "DROP DATABASE IF EXISTS \"$OTODB_DB_NAME\";" \
   -c "CREATE DATABASE \"$OTODB_DB_NAME\";"
 ```
 
+### Test
+
+```shell
+uv run pytest
+```
+
 ### Notes
 
 - Default user username specified in .env.example: `admin` and password: `admin`.
-- Be careful: the script `_clear.py` deletes the database.

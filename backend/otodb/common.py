@@ -199,8 +199,8 @@ def process_video_info(full_info, link=None):
 				'uploader_id': full_info['owner']['id'] if full_info['owner'] else 0,
 			}
 		else:
-			# Standard yt-dlp response
-			info = full_info.copy()
+			# Standard yt-dlp response, deep copied to avoid mutating original
+			info = json.loads(json.dumps(full_info))
 
 			if info.get('_type') == 'playlist':
 				info = info['entries'][0]  # TODO need some work...
@@ -268,6 +268,7 @@ def process_video_info(full_info, link=None):
 		# Process tags
 		if 'tags' in info:
 			info['tags'] = [clean_incoming_tag_name(tag) for tag in info['tags']]
+			info['tags'] = list(dict.fromkeys(info['tags']))
 
 		# Clean description
 		info['description'] = nh3.clean(info['description'])

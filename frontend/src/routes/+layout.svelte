@@ -6,7 +6,7 @@
 	import { navigating } from '$app/state';
 	import { clickOutside, current_version, get_prefs, isFormDirty, set_lang } from '$lib/ui';
 	import { getThemeNameById, UserLevel } from '$lib/enums';
-	import { languages } from '$lib/languages';
+	import { languages } from '$lib/Languages';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';

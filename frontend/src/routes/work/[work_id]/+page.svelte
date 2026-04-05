@@ -12,7 +12,7 @@
 	import client, { getDisplayText } from '$lib/api';
 	import type { components } from '$lib/schema';
 	import DisplayText from '$lib/DisplayText.svelte';
-	import RefreshButton from '../RefreshButton.svelte';
+	import RefreshButton from '$lib/RefreshButton.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { callSavingToast } from '$lib/toast';
 	import { SvelteMap } from 'svelte/reactivity';

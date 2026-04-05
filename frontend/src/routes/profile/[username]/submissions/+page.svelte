@@ -3,7 +3,7 @@
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Platform, Status, UserLevel, WorkOrigin, WorkStatus } from '$lib/enums';
-	import RefreshButton from '../../../work/RefreshButton.svelte';
+	import RefreshButton from '$lib/RefreshButton.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 

@@ -9,7 +9,7 @@
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
-	import RefreshButton from '../../RefreshButton.svelte';
+	import RefreshButton from '$lib/RefreshButton.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let { data, form }: PageProps = $props();

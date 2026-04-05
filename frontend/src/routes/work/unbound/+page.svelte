@@ -4,7 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { Platform, WorkOrigin } from '$lib/enums';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import RefreshButton from '../RefreshButton.svelte';
+	import RefreshButton from '$lib/RefreshButton.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { isSOV, isSVO } from '$lib/languages';

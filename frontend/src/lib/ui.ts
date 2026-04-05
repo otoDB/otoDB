@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import client from './api';
-import { languages, Languages, type SupportedLanguage } from './enums';
+import { languages, Languages, themes, type SupportedLanguage } from './enums';
 import { getLocale, setLocale } from './paraglide/runtime';
 import { enhance } from '$app/forms';
 import { m } from './paraglide/messages';
@@ -50,16 +50,20 @@ export const set_lang = async (lang: keyof typeof languages, logged_in: boolean)
 };
 
 interface Prefs {
-	theme: string | undefined;
+	theme?: number; // theme id
 }
 
 export const get_prefs = (): Prefs | undefined => {
 	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
+export const getLocalTheme = () => get_prefs()?.theme;
 
-export const update_prefs = (opts: Prefs) => {
-	if (browser) localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), ...opts }));
+export const updateLocalPref = (key: keyof Prefs, value: Prefs[typeof key]) => {
+	if (!browser) return;
+
+	localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), [key]: value }));
 };
+export const updateLocalTheme = (themeId: number) => updateLocalPref('theme', themeId);
 
 export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
 

@@ -351,3 +351,43 @@ export const EntityModelRoutes = {
 	mediasong: 'song',
 	worksource: 'upload'
 };
+
+export const buildCommentRoutes = (type: string, id: string) => {
+	switch (type) {
+		case 'mediawork':
+			return `/work/${id}`;
+		case 'account':
+			return `/profile/${id}`;
+		case 'pool':
+			return `/list/${id}`;
+		case 'tagwork':
+			return `/tag/${id}`;
+		case 'tagsong':
+			return `/song_attribute/${id}`;
+		case 'post':
+			return `/post/${id}`;
+		case 'bulkrequest':
+			return `/request/${id}`;
+		default:
+			return '/';
+	}
+};
+
+export const buildEntityRoutes = (type: string, id: string) => {
+	switch (type) {
+		case 'mediawork':
+		case 'account':
+		case 'pool':
+		case 'tagwork':
+		case 'tagsong':
+		case 'post':
+		case 'bulkrequest':
+			return buildCommentRoutes(type, id);
+		case 'mediasong':
+			return `/song/${id}`;
+		case 'worksource':
+			return `/upload/${id}`;
+		default:
+			return '/';
+	}
+};

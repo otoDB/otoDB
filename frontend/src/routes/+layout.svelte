@@ -347,16 +347,16 @@
 						{m.white_helpful_lion_rise()}
 					</div>
 					<div class="flex justify-between">
-						<span>{m.grand_merry_fly_succeed()}</span><span>{data.stats[0]}</span>
+						<span>{m.grand_merry_fly_succeed()}</span><span>{data.stats.works}</span>
 					</div>
 					<div class="flex justify-between">
-						<span>{m.empty_legal_chicken_taste()}</span><span>{data.stats[1]}</span>
+						<span>{m.empty_legal_chicken_taste()}</span><span>{data.stats.tags}</span>
 					</div>
 					<div class="flex justify-between">
-						<span>{m.grand_nice_pony_belong()}</span><span>{data.stats[2]}</span>
+						<span>{m.grand_nice_pony_belong()}</span><span>{data.stats.songs}</span>
 					</div>
 					<div class="flex justify-between">
-						<span>{m.stale_loose_squid_cut()}</span><span>{data.stats[3]}</span>
+						<span>{m.stale_loose_squid_cut()}</span><span>{data.stats.lists}</span>
 					</div>
 				</div>
 			</nav>
@@ -410,7 +410,9 @@
 				<div class="footer-right">
 					<ConnectionFavicon type="Website" class="size-4" />
 					<select
-						onchange={(e) => set_lang(e.target.value, !!data.user)}
+						onchange={(e) => {
+							set_lang(e.currentTarget.value, !!data.user);
+						}}
 						value={getLocale()}
 					>
 						{#each locales as l, i (i)}

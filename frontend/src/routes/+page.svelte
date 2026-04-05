@@ -3,7 +3,8 @@
 	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	import Section from '$lib/Section.svelte';
-	import {   timeAgo } from '$lib/ui.js';import { isSOV, isSVO } from '$lib/enums';
+	import { timeAgo } from '$lib/ui.js';
+	import { isSOV, isSVO } from '$lib/enums';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import { Route } from '$lib/enums.js';
 

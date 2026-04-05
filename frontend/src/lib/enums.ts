@@ -1,5 +1,4 @@
 import { m } from '$lib/paraglide/messages.js';
-import type { SupportedLanguage } from './ui';
 
 export const WorkTagCategory = [
 	m.fresh_lower_rook_trip,

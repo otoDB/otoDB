@@ -7,13 +7,8 @@
 		WorkOrigin,
 		WorkRelationDisplayBackward,
 		WorkRelationDisplayForward,
-		WorkStatus,
-		WorkTagCategoriesSettableAsSource,
-		WorkTagCategory,
-		WorkTagPresentationColours,
-		WorkTagPresentationOrder
+		WorkStatus
 	} from '$lib/enums';
-	import WorkTag from '$lib/WorkTag.svelte';
 	import client, { getDisplayText } from '$lib/api';
 	import type { components } from '$lib/schema';
 	import DisplayText from '$lib/DisplayText.svelte';
@@ -23,8 +18,15 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import type { ComponentProps } from 'svelte';
+	import type { PageProps } from './$types';
+	import {
+		resolveWorkTagCategoryKeyById,
+		WorkTagCategory as WorkTagCategory2
+	} from '$lib/WorkTagCategory';
+	import WorkTagTree from '$lib/WorkTagTree.svelte';
 
-	let { data } = $props();
+	let { data }: PageProps = $props();
 
 	let [userLists, userListsFetched]: [[components['schemas']['ListSchema'], boolean][], boolean] =
 			$derived(data && [[], false]),
@@ -55,19 +57,33 @@
 		}
 	};
 
-	const merge_paths = (paths) => {
-		const graph = new SvelteMap();
+	const groupedTags: [keyof typeof WorkTagCategory2, PageProps['data']['tags']][] = $derived(
+		(
+			Object.entries(
+				Object.groupBy(data.tags, (t) => {
+					const c = resolveWorkTagCategoryKeyById(t.category);
+					if (WorkTagCategory2[c].settable && t.sample) return 'SOURCE';
+					else return c;
+				})
+			) as [keyof typeof WorkTagCategory2, PageProps['data']['tags']][]
+		).toSorted(([a], [b]) => WorkTagCategory2[a].order - WorkTagCategory2[b].order)
+	);
+
+	const merge_paths = (
+		paths: (typeof groupedTags)[number][1]
+	): ComponentProps<typeof WorkTagTree>['tree'][] => {
+		const graph: SvelteMap<string, Set<string>> = new SvelteMap();
 		paths
 			.filter((p) => p.primary_path.length)
 			.forEach((path) =>
 				path.primary_path.forEach((p, i, a) => {
 					const next_node = (i + 1 === a.length ? path : a[i + 1]).slug;
-					if (graph.has(p.slug)) graph.get(p.slug).add(next_node);
+					if (graph.has(p.slug)) graph.get(p.slug)?.add(next_node);
 					else graph.set(p.slug, new Set([next_node]));
 				})
 			);
-		const traverse = (node) => ({
-			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node),
+		const traverse = (node: string): ComponentProps<typeof WorkTagTree>['tree'] => ({
+			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node)!,
 			real: paths.some((n) => n.slug === node),
 			children: Array.from(graph.get(node) ?? []).map((n) => traverse(n))
 		});
@@ -198,21 +214,21 @@
 		<div
 			class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}
 		>
-			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
+			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
-					style="border-color: {WorkTagPresentationColours[
-						cat[0]
-					]};background-color: color-mix(in hsl, {WorkTagPresentationColours[
-						cat[0]
-					]}, transparent 85%);"
+					style="border-color: {WorkTagCategory2[cat]
+						.color};background-color: color-mix(in hsl, {WorkTagCategory2[cat]
+						.color}, transparent 85%);"
 				>
 					<h5 class="my-2 font-bold">
-						{WorkTagCategory[cat[0]]()}
+						{WorkTagCategory2[cat].nameFn()}
 					</h5>
 					<ul class="flex list-none flex-wrap gap-2">
-						{#each merge_paths(cat[1]) as tag, j (j)}
-							<li class="m-0"><WorkTag {tag} tree={true} /></li>
+						{#each merge_paths(tags) as tree, j (j)}
+							<li class="m-0">
+								<WorkTagTree {tree} />
+							</li>
 						{/each}
 					</ul>
 				</span>

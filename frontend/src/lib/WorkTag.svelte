@@ -8,13 +8,14 @@
 			id: number;
 			slug: string;
 			category: Parameters<typeof resolveWorkTagCategoryKeyById>[0];
-			sample: boolean;
-			creator_roles: Parameters<typeof resolveCreatorRoleById>[0][] | null;
+			sample?: boolean;
+			creator_roles?: Parameters<typeof resolveCreatorRoleById>[0][] | null;
 		};
 		selected?: boolean;
 		onClick?: (tag: Props['tag']) => void;
+		fade?: boolean;
 	}
-	const { tag, selected = false, onClick }: Props = $props();
+	const { tag, selected = false, onClick, fade = false }: Props = $props();
 
 	const category = $derived(resolveWorkTagCategoryKeyById(tag.category));
 	const sampleOverride = $derived(tag.sample);
@@ -25,7 +26,7 @@
 	class={[
 		'rounded-xl border-2 px-2',
 		category === 'GENERAL' ? 'border-dashed' : 'border-solid',
-		{ 'opacity-50': onClick && !selected }
+		{ 'opacity-50': fade || (onClick && !selected) }
 	]}
 	style="border-color: {WorkTagCategory[sampleOverride ? 'SOURCE' : category].color};"
 	data-sveltekit-preload-data={onClick ? 'off' : undefined}
@@ -48,13 +49,5 @@
 <style>
 	a {
 		text-decoration: none;
-	}
-	ul > li > ul {
-		&::before {
-			content: '\21B3';
-		}
-		& > li > ul {
-			margin-left: 0.5rem;
-		}
 	}
 </style>

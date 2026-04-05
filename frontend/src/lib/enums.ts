@@ -297,18 +297,21 @@ export const Role = {
 	32: m.heavy_blue_parrot_mend
 };
 
-export const Themes = ['default', 'aniki', 'otogroove', 'retro-voyage', 'sorimix', 'resample'].map(
-	(t) => 'theme-' + t
-);
-
-export const ThemeNames = [
-	m.grassy_noble_walrus_wish,
-	m.next_ago_opossum_swim,
-	() => 'otogroove',
-	m.tiny_plane_ape_pull,
-	m.mean_zesty_ray_savor,
-	() => 'Re:Sample'
-];
+export const themes = {
+	default: { id: 0, nameFn: m.grassy_noble_walrus_wish },
+	aniki: { id: 1, nameFn: m.next_ago_opossum_swim },
+	otogroove: { id: 2, nameFn: () => 'otogroove' },
+	'retro-voyage': { id: 3, nameFn: m.tiny_plane_ape_pull },
+	sorimix: { id: 4, nameFn: m.mean_zesty_ray_savor },
+	resample: { id: 5, nameFn: () => 'Re:Sample' }
+} as const;
+/**
+ * @deprecated そもそもテーマIDを数値として扱うのを止めるべきだ．
+ */
+export const getThemeNameById = (id: number): keyof typeof themes => {
+	const theme = Object.entries(themes).find(([key, value]) => value.id === id)?.[0];
+	return theme ? (theme as keyof typeof themes) : 'default';
+};
 
 export const HistoryModelNames = {
 	mediawork: m.grand_merry_fly_succeed,

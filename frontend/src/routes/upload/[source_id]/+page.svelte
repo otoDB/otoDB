@@ -11,6 +11,7 @@
 	import { enhance } from '$app/forms';
 	import type { components } from '$lib/schema';
 	import { m } from '$lib/paraglide/messages.js';
+	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();
 
@@ -44,7 +45,7 @@
 		}
 	});
 
-	const toggleTag = (tag: components['schemas']['TagWorkSchema']) => {
+	const toggleTag: ComponentProps<typeof WorkTag>['onClick'] = (tag) => {
 		const slug = getTagDisplaySlug(tag);
 		if (tags.includes(slug)) {
 			tags = tags.filter((t) => t !== slug);
@@ -235,7 +236,7 @@
 											<WorkTag
 												tag={t}
 												selected={tags.includes(getTagDisplaySlug(t))}
-												onclick={toggleTag}
+												onClick={toggleTag}
 											/>
 										{/each}
 									</div>

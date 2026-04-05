@@ -111,6 +111,9 @@ export const UserLevel = {
 	100: m.tangy_formal_lionfish_tap
 };
 
+/**
+ * @deprecated
+ */
 export const Languages = {
 	NOT_APPLICABLE: 0,
 	en: 1,

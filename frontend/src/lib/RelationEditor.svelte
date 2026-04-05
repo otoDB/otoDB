@@ -3,7 +3,8 @@
 	import client from './api';
 	import { SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
 	import { m } from './paraglide/messages';
-	import { dirtyEnhance, isSOV } from './ui';
+	import { dirtyEnhance } from './ui';
+	import { isSOV } from '$lib/enums';
 	import { getLocale } from './paraglide/runtime';
 	import type { components } from './schema';
 	import SongField from './SongField.svelte';

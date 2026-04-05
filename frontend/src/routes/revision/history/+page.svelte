@@ -4,7 +4,8 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { isSOV, isSVO, timeAgo } from '$lib/ui';
+	import { timeAgo } from '$lib/ui';
+	import { isSOV, isSVO } from '$lib/enums';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { Route } from '$lib/enums';
 

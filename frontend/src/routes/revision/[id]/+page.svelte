@@ -26,7 +26,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO } from '$lib/ui';
+	import { isSOV, isSVO } from '$lib/enums';
 
 	let { data } = $props();
 	let routes = $derived(

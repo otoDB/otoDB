@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import client from './api';
-import { Languages } from './enums';
+import { languages, Languages, type SupportedLanguage } from './enums';
 import { getLocale, setLocale } from './paraglide/runtime';
 import { enhance } from '$app/forms';
 import { m } from './paraglide/messages';
@@ -36,15 +36,14 @@ export const clickOutside = (node: HTMLElement) => {
 		}
 	};
 };
-
-export const isSVO = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'en' || lang === 'zh-cn';
-export const isSOV = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'ko' || lang === 'ja';
-
-export const set_lang = async (lang, logged_in) => {
+export const set_lang = async (lang: keyof typeof languages, logged_in: boolean) => {
 	if (logged_in) {
 		await client.POST('/api/profile/prefs', {
 			fetch,
-			body: { theme: null, language: Languages[lang] }
+			body: {
+				theme: null,
+				language: languages[lang].id
+			}
 		});
 	}
 	setLocale(lang);

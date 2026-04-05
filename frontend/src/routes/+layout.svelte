@@ -5,7 +5,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
 	import { clickOutside, current_version, get_prefs, isFormDirty, set_lang } from '$lib/ui';
-	import { LanguageNames, Themes, UserLevel } from '$lib/enums';
+	import { languages, Themes, UserLevel } from '$lib/enums';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
@@ -411,12 +411,15 @@
 					<ConnectionFavicon type="Website" class="size-4" />
 					<select
 						onchange={(e) => {
-							set_lang(e.currentTarget.value, !!data.user);
+							set_lang(
+								e.currentTarget.value as (typeof locales)[number],
+								!!data.user
+							);
 						}}
 						value={getLocale()}
 					>
-						{#each locales as l, i (i)}
-							<option value={l}>{LanguageNames[l]}</option>
+						{#each locales as l (l)}
+							<option value={l}>{languages[l].name}</option>
 						{/each}
 					</select>
 				</div>

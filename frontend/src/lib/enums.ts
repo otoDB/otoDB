@@ -1,4 +1,5 @@
 import { m } from '$lib/paraglide/messages.js';
+import type { SupportedLanguage } from './ui';
 
 export const WorkTagCategory = [
 	m.fresh_lower_rook_trip,
@@ -123,6 +124,9 @@ export const Languages = {
 	4: 'ko'
 };
 
+/**
+ * @deprecated
+ */
 export const LanguageNames = {
 	en: 'English',
 	ja: '日本語',
@@ -132,6 +136,44 @@ export const LanguageNames = {
 	日本語: 'ja',
 	简体中文: 'zh-cn',
 	한국인: 'ko'
+};
+
+export const languages = {
+	en: {
+		id: 1,
+		name: 'English'
+	},
+	ja: {
+		id: 2,
+		name: '日本語'
+	},
+	'zh-cn': {
+		id: 3,
+		name: '简体中文'
+	},
+	ko: {
+		id: 4,
+		name: '한국어'
+	}
+};
+export const getLanguageId = (lang: keyof typeof languages): number => languages[lang].id;
+export const isSVO = (lang: keyof typeof languages) => {
+	switch (lang) {
+		case 'en':
+		case 'zh-cn':
+			return true;
+		default:
+			return false;
+	}
+};
+export const isSOV = (lang: keyof typeof languages) => {
+	switch (lang) {
+		case 'ko':
+		case 'ja':
+			return true;
+		default:
+			return false;
+	}
 };
 
 export const ProfileConnectionTypes = {

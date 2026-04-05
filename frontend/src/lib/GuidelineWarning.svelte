@@ -3,9 +3,11 @@
 	import client from './api';
 	import { m } from './paraglide/messages';
 	import { getLocale } from './paraglide/runtime';
-	import { FAQ_POST_ID, GUIDELINE_POST_ID, isSOV, isSVO } from './ui';
+	import { FAQ_POST_ID, GUIDELINE_POST_ID } from './ui';
+	import { isSOV, isSVO } from './Languages';
 
 	let r = null;
+
 	onMount(async () => {
 		r = await client.GET('/api/post/post', {
 			fetch,

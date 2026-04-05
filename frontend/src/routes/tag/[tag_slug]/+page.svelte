@@ -9,8 +9,6 @@
 		SongConnectionTypes,
 		MediaConnectionLink,
 		MediaConnectionTypes,
-		TagWorkConnectionLink,
-		TagWorkConnectionTypes,
 		WorkTagCategory,
 		MediaType
 	} from '$lib/enums';

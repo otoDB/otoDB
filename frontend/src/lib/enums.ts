@@ -1,6 +1,4 @@
 import { m } from '$lib/paraglide/messages.js';
-import type { Route } from './Route';
-
 export const WorkTagCategory = [
 	m.fresh_lower_rook_trip,
 	m.next_bland_goldfish_heart,

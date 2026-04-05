@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { Languages } from './enums';
 	import { locales } from './paraglide/runtime';
 
-	import { languages } from './languages';
 	import { getLocale } from './paraglide/runtime';
 	import { onMount } from 'svelte';
 
@@ -17,7 +17,7 @@
 	{#each availableLanguages as l (l)}
 		<label class="lang-tab">
 			<input type="radio" bind:group={value} value={l} />
-			{languages[l].name}
+			{Languages[l].name}
 		</label>
 	{/each}
 </div>

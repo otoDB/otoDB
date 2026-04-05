@@ -7,7 +7,7 @@
 	import RefreshButton from '../RefreshButton.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
-	import { isSOV, isSVO } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/languages';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkField from '$lib/WorkField.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';

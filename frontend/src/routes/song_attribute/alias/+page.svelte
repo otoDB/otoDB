@@ -4,7 +4,7 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import client from '$lib/api';
 	import { goto } from '$app/navigation';
-	import { isSOV, isSVO } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/Languages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 

@@ -6,7 +6,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/Languages';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 

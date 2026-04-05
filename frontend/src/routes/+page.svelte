@@ -4,9 +4,10 @@
 
 	import Section from '$lib/Section.svelte';
 	import { timeAgo } from '$lib/ui.js';
-	import { isSOV, isSVO } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/Languages';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import { Route } from '$lib/enums.js';
+	import { Route } from '$lib/Route.js';
+	import { resolveRouteKeyById } from '$lib/Route.js';
 
 	let { data } = $props();
 </script>
@@ -47,7 +48,7 @@
 				{#each data.changes.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-							>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+							>{r.route ? Route[resolveRouteKeyById(r.route)].title : ''}</td
 						><td>
 							{#if isSVO(getLocale())}
 								{m.curly_safe_lynx_fond()}

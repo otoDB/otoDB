@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import client from './api';
-import { languages, Languages, themes, type SupportedLanguage } from './enums';
+import { Languages, themes, type SupportedLanguage } from './enums';
+import { languages } from './Languages';
 import { getLocale, setLocale } from './paraglide/runtime';
 import { enhance } from '$app/forms';
 import { m } from './paraglide/messages';

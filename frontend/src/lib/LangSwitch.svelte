@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { locales } from './paraglide/runtime';
 
-	import { languages } from './enums';
+	import { languages } from './languages';
 	import { getLocale } from './paraglide/runtime';
 	import { onMount } from 'svelte';
 

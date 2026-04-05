@@ -2,10 +2,10 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import { Route } from '$lib/enums';
 	import { timeAgo } from '$lib/ui';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
+	import { resolveRouteKeyById, Route } from '$lib/Route';
 
 	let { data }: PageProps = $props();
 </script>
@@ -17,7 +17,7 @@
 				{#each data.revisions?.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a></td><td
-							>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+							>{r.route ? Route[resolveRouteKeyById(r.route)].title : ''}</td
 						><td
 							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
 							></td

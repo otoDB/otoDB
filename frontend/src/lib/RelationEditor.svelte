@@ -4,7 +4,7 @@
 	import { SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
 	import { m } from './paraglide/messages';
 	import { dirtyEnhance } from './ui';
-	import { isSOV } from '$lib/enums';
+	import { isSOV } from './languages';
 	import { getLocale } from './paraglide/runtime';
 	import type { components } from './schema';
 	import SongField from './SongField.svelte';

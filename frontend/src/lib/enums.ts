@@ -1,4 +1,5 @@
 import { m } from '$lib/paraglide/messages.js';
+import type { Route } from './Route';
 
 export const WorkTagCategory = [
 	m.fresh_lower_rook_trip,
@@ -140,44 +141,6 @@ export const LanguageNames = {
 	한국인: 'ko'
 };
 
-export const languages = {
-	en: {
-		id: 1,
-		name: 'English'
-	},
-	ja: {
-		id: 2,
-		name: '日本語'
-	},
-	'zh-cn': {
-		id: 3,
-		name: '简体中文'
-	},
-	ko: {
-		id: 4,
-		name: '한국어'
-	}
-};
-export const getLanguageId = (lang: keyof typeof languages): number => languages[lang].id;
-export const isSVO = (lang: keyof typeof languages) => {
-	switch (lang) {
-		case 'en':
-		case 'zh-cn':
-			return true;
-		default:
-			return false;
-	}
-};
-export const isSOV = (lang: keyof typeof languages) => {
-	switch (lang) {
-		case 'ko':
-		case 'ja':
-			return true;
-		default:
-			return false;
-	}
-};
-
 export const ProfileConnectionTypes = {
 	WEBSITE: 0,
 	NICONICO: 1,
@@ -249,35 +212,6 @@ export const SongConnectionLink = {
 	22: (id: string) => `https://zenius-i-vanisher.com/v5.2/songdb.php?songid=${id}`,
 	30: (id: string) => `https://medley.bepis.io/wiki/${id}`,
 	40: (id: string) => `https://modarchive.org/index.php?request=view_by_moduleid&query=${id}`
-};
-
-export const TagWorkConnectionTypes = {
-	OTOMADWIKI: 1,
-	1: 'otomad.wiki',
-	OTOMADFANDOM: 2,
-	2: '音MAD Wiki 2',
-
-	NICOPEDIA: 20,
-	20: 'Niconico Encyclopedia',
-	PIXIV_DICT: 21,
-	21: 'Pixiv Dictionary',
-	WIKIPEDIAEN: 22,
-	22: 'Wikipedia (en)',
-	NAMUWIKI: 23,
-	23: 'Namu Wiki',
-	KNOWYOURMEME: 24,
-	24: 'Know Your Meme'
-};
-
-export const TagWorkConnectionLink = {
-	0: (id: string) => id,
-	1: (id: string) => `https://otomad.wiki/${id}`,
-	2: (id: string) => `https://otomad.fandom.com/ja/wiki/${id}`,
-	20: (id: string) => `https://dic.nicovideo.jp/${id}`,
-	21: (id: string) => `https://dic.pixiv.net/a/${id}/`,
-	22: (id: string) => `https://en.wikipedia.org/wiki/${id}`,
-	23: (id: string) => `https://namu.wiki/w/${id}`,
-	24: (id: string) => `https://knowyourmeme.com/${id}`
 };
 
 export const MediaConnectionTypes = {
@@ -401,77 +335,6 @@ export const PostCategories = [
 	m.moving_trick_piranha_thrive,
 	m.fresh_lower_rook_trip
 ];
-
-export const Route = {
-	UNKNOWN: 0,
-	TAGWORK_ALIAS: 1,
-	TAGWORK_UNALIAS: 2,
-	TAGWORK_DELETE: 3,
-	TAGWORK_UPDATE: 4,
-	TAGWORK_SET_BASE: 5,
-	TAGWORK_ADD_LANG_PREF: 6,
-	TAGWORK_EDIT_WIKI: 7,
-	TAGWORK_EDIT_CONNECTIONS: 8,
-	SONGTAG_UPDATE: 20,
-	SONGTAG_SET_TAGS: 21,
-	SONGRELATION_CREATE: 30,
-	SONGRELATION_DELETE: 31,
-	MEDIAWORK_DELETE: 40,
-	MEDIAWORK_SET_TAGS: 41,
-	MEDIAWORK_REMOVE_TAG: 42,
-	MEDIAWORK_UPDATE_CREATOR_ROLES: 43,
-	MEDIAWORK_TOGGLE_SAMPLE: 44,
-	MEDIAWORK_UPDATE: 45,
-	MEDIAWORK_MERGE: 46,
-	MEDIAWORK_CREATE: 47,
-	WORKRELATION_CREATE: 50,
-	WORKRELATION_DELETE: 51,
-	WORKSOURCE_CREATE: 60,
-	WORKSOURCE_UNBIND: 61,
-	WORKSOURCE_SET_ORIGIN: 62,
-	WORKSOURCE_REFRESH: 63,
-	WORKSOURCE_ASSIGN: 64,
-	WORKSOURCE_REJECT: 65,
-	WORKSOURCE_UPDATE: 66,
-	ROLLBACK: 100,
-
-	0: 'Unknown',
-	1: 'Tag: Alias',
-	2: 'Tag: Unalias',
-	3: 'Tag: Delete',
-	4: 'Tag: Update',
-	5: 'Tag: Set Base',
-	6: 'Tag: Add Language',
-	7: 'Tag: Edit Wiki',
-	8: 'Tag: Edit Connections',
-	20: 'Song Attribute: Update',
-	21: 'Song: Set Tags',
-	22: 'Song Attribute: Alias',
-	23: 'Song Attribute: Unalias',
-	24: 'Song Attribute: Delete',
-	25: 'Song Attribute: Set Base',
-	26: 'Song Attribute: Add Language',
-	30: 'Song: Create Relation',
-	31: 'Song: Delete Relation',
-	40: 'Work: Delete',
-	41: 'Work: Set Tags',
-	42: 'Work: Remove Tag',
-	43: 'Work: Update Creator Roles',
-	44: 'Work: Toggle Sample',
-	45: 'Work: Update',
-	46: 'Work: Merge',
-	47: 'Work: Create',
-	50: 'Work: Create Relation',
-	51: 'Work: Delete Relation',
-	60: 'Upload: Create',
-	61: 'Upload: Unbind',
-	62: 'Upload: Set Origin',
-	63: 'Upload: Refresh',
-	64: 'Upload: Assign',
-	65: 'Upload: Reject',
-	66: 'Upload: Update',
-	100: 'Rollback'
-};
 
 export const CommentModelRoutes = {
 	mediawork: 'work',

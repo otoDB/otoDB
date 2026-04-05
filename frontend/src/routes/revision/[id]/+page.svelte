@@ -3,30 +3,29 @@
 	import client from '$lib/api.js';
 	import {
 		EntityModelRoutes,
-		Languages,
-		MediaConnectionTypes,
 		MediaType,
 		MimeType,
 		Platform,
-		ProfileConnectionTypes,
 		Rating,
 		Role,
-		Route,
-		SongConnectionTypes,
 		SongRelationTypes,
 		SongTagCategory,
-		TagWorkConnectionTypes,
 		UserLevel,
 		WorkOrigin,
 		WorkRelationTypes,
 		WorkStatus,
 		WorkTagCategory
 	} from '$lib/enums.js';
+	import { languages, resolveLanguageKeyById } from '$lib/Languages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/Languages.js';
+	import { resolveTagWorkConnectionNameById, TagWorkConnection } from '$lib/TagWorkConnection.js';
+	import { resolveSongConnectionNameById, SongConnection } from '$lib/SongConnection.js';
+	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/MediaConnection.js';
+	import { ProfileConnection, resolveProfileConnectionNameById } from '$lib/ProfileConnection.js';
 
 	let { data } = $props();
 	let routes = $derived(
@@ -51,66 +50,106 @@
 			)
 			.join(', ') || 'N/A';
 
-	const ValueDisplayMap = {
-		mediawork: {
-			rating: Rating
-		},
-		tagwork: {
-			category: WorkTagCategory,
-			media_type: expand_bit_field(MediaType)
-		},
-		tagsong: {
-			category: SongTagCategory
-		},
-		tagworkconnection: {
-			site: TagWorkConnectionTypes
-		},
-		mediasongconnection: {
-			site: SongConnectionTypes
-		},
-		tagworkmediaconnection: {
-			site: MediaConnectionTypes
-		},
-		tagworkcreatorconnection: {
-			site: ProfileConnectionTypes
-		},
-		tagworklangpreference: {
-			lang: Languages
-		},
-		tagsonglangpreference: {
-			lang: Languages
-		},
-		workrelation: {
-			relation: WorkRelationTypes
-		},
-		songrelation: {
-			relation: SongRelationTypes
-		},
-		tagworkinstance: {
-			creator_roles: expand_bit_field(Role)
-		},
-		wikipage: {
-			lang: Languages
-		},
-		worksource: {
-			platform: Platform,
-			thumbnail_mime: MimeType,
-			work_origin: WorkOrigin,
-			work_status: WorkStatus
+	// TODO: need more refactor
+	// TODO: `decodeURIComponent`を入れる必要があったが返ってくる値にそれをしないとならないものがあるとは思えないので削除．
+	const displayValue = (type: string, col: string, val: unknown): string => {
+		switch (type) {
+			case 'mediawork':
+				switch (col) {
+					case 'rating':
+						return Rating[val as number]();
+				}
+				break;
+			case 'tagwork':
+				switch (col) {
+					case 'category':
+						return WorkTagCategory[val as number]();
+					case 'media_type':
+						return expand_bit_field(MediaType)(val);
+				}
+				break;
+			case 'tagsong':
+				switch (col) {
+					case 'category':
+						return SongTagCategory[val as number]();
+				}
+				break;
+			case 'tagworkconnection':
+				switch (col) {
+					case 'site':
+						return TagWorkConnection[resolveTagWorkConnectionNameById(val as number)]
+							.name;
+				}
+				break;
+			case 'mediasongconnection':
+				switch (col) {
+					case 'site':
+						return SongConnection[resolveSongConnectionNameById(val as number)].name;
+				}
+				break;
+			case 'tagworkmediaconnection':
+				switch (col) {
+					case 'site':
+						return MediaConnection[resolveMediaConnectionNameById(val as number)].name;
+				}
+				break;
+			case 'tagworkcreatorconnection':
+				switch (col) {
+					case 'site':
+						return ProfileConnection[resolveProfileConnectionNameById(val as number)]
+							.name;
+				}
+				break;
+			case 'tagworklangpreference':
+				switch (col) {
+					case 'lang':
+						return languages[resolveLanguageKeyById(val as number)].name;
+				}
+				break;
+			case 'tagsonglangpreference':
+				switch (col) {
+					case 'lang':
+						return languages[resolveLanguageKeyById(val as number)].name;
+				}
+				break;
+			case 'workrelation':
+				switch (col) {
+					case 'relation':
+						return WorkRelationTypes[val as number]();
+				}
+				break;
+			case 'songrelation':
+				switch (col) {
+					case 'relation':
+						return SongRelationTypes[val as number]();
+				}
+				break;
+			case 'tagworkinstance':
+				switch (col) {
+					case 'creator_roles':
+						return expand_bit_field(Role)(val);
+				}
+				break;
+			case 'wikipage':
+				switch (col) {
+					case 'lang':
+						return languages[resolveLanguageKeyById(val as number)].name;
+				}
+				break;
+			case 'worksource':
+				switch (col) {
+					case 'platform':
+						return Platform[val as number];
+					case 'thumbnail_mime':
+						return MimeType[val as keyof typeof MimeType];
+					case 'work_origin':
+						return WorkOrigin[val as number]();
+					case 'work_status':
+						return WorkStatus[val as number]();
+				}
+				break;
 		}
-	};
-
-	const displayValue = (type: string, col: string, val: string | null) => {
-		const handler = ValueDisplayMap[type]?.[col];
-		const raw = handler
-			? typeof handler === 'function'
-				? handler(val)
-				: typeof handler[val] === 'function'
-					? handler[val]()
-					: handler[val]
-			: (val ?? 'None');
-		const result = typeof raw === 'string' ? decodeURIComponent(raw) : raw;
-		return result;
+		return 'None';
 	};
 </script>
 

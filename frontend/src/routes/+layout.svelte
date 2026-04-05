@@ -5,7 +5,8 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
 	import { clickOutside, current_version, get_prefs, isFormDirty, set_lang } from '$lib/ui';
-	import { getThemeNameById, languages, UserLevel } from '$lib/enums';
+	import { getThemeNameById, UserLevel } from '$lib/enums';
+	import { languages } from '$lib/languages';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';

@@ -2,6 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
+		Errors,
 		LanguageNames,
 		Languages,
 		ProfileConnectionLink,
@@ -63,9 +64,15 @@
 		Object.fromEntries(
 			locales.map((l) => [
 				l,
-				data.tag.lang_prefs.find(({ lang }) => lang === Languages[l])?.tag ?? null
+				data.tag.lang_prefs.find(({ lang }) => lang === Languages[l])?.slug ?? null
 			])
 		)
+	);
+	let tagNames: Record<string, string> = $state(
+		Object.fromEntries([
+			[data.tag.slug, data.tag.name],
+			...data.details.aliases.map((a) => [a.slug, a.name])
+		])
 	);
 	let to_delete: string[] = $state([]);
 	let base = $state(data.tag.slug);
@@ -80,13 +87,20 @@
 				unalias_slugs: to_delete,
 				lang_prefs: Object.fromEntries(
 					Object.entries(tagLangPrefs).map(([k, v]) => [Languages[k], v])
-				)
+				),
+				names: tagNames
 			},
 			params: { query: { type: 'work', tag_slug: data.tag.slug } }
 		});
 		if (error) {
 			aliases_post_gate.p = Promise.withResolvers<void>();
-			callErrorToast(m.green_due_javelina_pop());
+			// TODO: Update toast API to handle cases like this accordingly
+			callErrorToast(
+				(error && typeof error === 'object' && 'code' in error
+					? (Errors[error.code as number]?.(error.data as Record<string, string>) ??
+						(error.data as Record<string, string>)?.message)
+					: undefined) ?? m.green_due_javelina_pop()
+			);
 		} else goto(`/tag/${base}/`, { invalidateAll: true });
 	};
 
@@ -259,16 +273,16 @@
 
 <Section title={m.alive_lofty_opossum_laugh()}>
 	<a href="/tag/alias?from={data.tag.slug}">{m.weary_moving_swallow_chop()}</a>
-	{#if data.details.aliases.length}
-		<form
-			method="POST"
-			use:dirtyEnhance={{
-				barrier: form_barrier,
-				priority: 2,
-				manual_post: aliases_post_gate
-			}}
-			onsubmit={submit_aliases}
-		>
+	<form
+		method="POST"
+		use:dirtyEnhance={{
+			barrier: form_barrier,
+			priority: 2,
+			manual_post: aliases_post_gate
+		}}
+		onsubmit={submit_aliases}
+	>
+		{#if data.details.aliases.length}
 			<table>
 				<thead>
 					<tr
@@ -282,13 +296,13 @@
 				</thead>
 				<tbody>
 					<tr
-						><td>{data.tag.name}</td>
+						><td><input type="text" bind:value={tagNames[data.tag.slug]} /></td>
 						{#each locales as locale, i (i)}
 							<td
 								><input
 									type="radio"
 									bind:group={tagLangPrefs[locale]}
-									value={data.tag.name}
+									value={data.tag.slug}
 								/>{#if tagLangPrefs[locale] === null}{m.factual_house_antelope_arise()}{/if}</td
 							>
 						{/each}<td
@@ -309,13 +323,13 @@
 					>
 					{#each data.details.aliases as a, i (i)}
 						<tr
-							><td>{a.name}</td>
+							><td><input type="text" bind:value={tagNames[a.slug]} /></td>
 							{#each locales as locale, i (i)}
 								<td
 									><input
 										type="radio"
 										bind:group={tagLangPrefs[locale]}
-										value={a.name}
+										value={a.slug}
 									/></td
 								>
 							{/each}
@@ -338,9 +352,18 @@
 					{/each}
 				</tbody>
 			</table>
-			<input type="submit" />
-		</form>
-	{/if}
+		{:else}
+			<table>
+				<thead>
+					<tr><th>{m.alive_lofty_opossum_laugh()}</th></tr>
+				</thead>
+				<tbody>
+					<tr><td><input type="text" bind:value={tagNames[data.tag.slug]} /></td></tr>
+				</tbody>
+			</table>
+		{/if}
+		<input type="submit" />
+	</form>
 </Section>
 
 <Section title={m.curly_zesty_pelican_aim()}>

@@ -19,7 +19,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import (
-	clean_incoming_slug,
+	slugify_tag,
 )
 from otodb.models import (
 	MediaWork,
@@ -29,6 +29,7 @@ from otodb.models import (
 	TagWork,
 )
 from otodb.models.enums import (
+	ErrorCode,
 	Platform,
 	Rating,
 	WorkTagCategory,
@@ -66,7 +67,7 @@ def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
 	tags = []
 	for t in payload:
 		try:
-			tag = TagWork.objects.get(slug=clean_incoming_slug(t.nameslug))
+			tag = TagWork.objects.get(slug=slugify_tag(t.nameslug))
 			tags.append(tag.aliased_to if tag.aliased_to else tag)
 		except TagWork.DoesNotExist:
 			tags.append(TagWork.objects.create(name=t.nameslug))
@@ -133,7 +134,7 @@ def search(
 			try:
 				match tag[0]:
 					case '-' | '+' | '!':
-						t = TagWork.objects.get(slug=clean_incoming_slug(tag[1:]))
+						t = TagWork.objects.get(slug=slugify_tag(tag[1:]))
 						if t.aliased_to:
 							t = t.aliased_to
 
@@ -151,7 +152,7 @@ def search(
 								case '!':  # !: Exclude subtree
 									q = q & ~sub_q
 					case _:
-						t = TagWork.objects.get(slug=clean_incoming_slug(tag))
+						t = TagWork.objects.get(slug=slugify_tag(tag))
 						if t.aliased_to:
 							t = t.aliased_to
 
@@ -333,7 +334,10 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	"""Creates a MediaWork from a source with user-chosen metadata and tags."""
 	src = get_object_or_404(WorkSource.active_objects, id=payload.source_id)
 	if src.media is not None:
-		return 409, {'message': 'Source already has a work'}
+		return 409, {
+			'code': ErrorCode.SOURCE_HAS_WORK,
+			'data': {'message': 'Source already has a work'},
+		}
 
 	work = MediaWork.objects.create(
 		title=payload.title or src.title,

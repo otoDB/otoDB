@@ -2,8 +2,6 @@
  * Media Connection
  */
 
-import type { TagWorkConnection } from './TagWorkConnection';
-
 export const MediaConnection = {
 	ANIKORE: {
 		id: 1,
@@ -66,7 +64,7 @@ export const MediaConnection = {
 		name: 'VGMdb',
 		linkFn: (id: string) => `https://vgmdb.net/product/${id}`
 	}
-};
+} as const;
 
 /**
  * @deprecated

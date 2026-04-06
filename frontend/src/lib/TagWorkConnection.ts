@@ -38,7 +38,7 @@ export const TagWorkConnection = {
 		name: 'Know Your Meme',
 		linkFn: (id: string) => `https://knowyourmeme.com/${id}`
 	}
-};
+} as const;
 
 /**
  * @deprecated

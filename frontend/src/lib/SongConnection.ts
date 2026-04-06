@@ -64,7 +64,7 @@ export const SongConnection = {
 		linkFn: (id: string) =>
 			`https://modarchive.org/index.php?request=view_by_moduleid&query=${id}`
 	}
-};
+} as const;
 
 /**
  * @deprecated

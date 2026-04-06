@@ -258,20 +258,6 @@ export const MediaConnectionLink = {
 	50: (id: string) => `https://vgmdb.net/product/${id}`
 };
 
-export const Role = {
-	AUDIO: 1,
-	1: m.weary_yummy_lobster_kick,
-	VISUALS: 2,
-	2: m.great_flaky_spider_comfort,
-	DIRECTOR: 4,
-	4: m.brief_slow_robin_fond,
-	MUSIC: 8,
-	8: m.known_green_jackal_jolt,
-	ARTWORK: 16,
-	16: m.weird_quaint_jan_dazzle,
-	THANKS: 32,
-	32: m.heavy_blue_parrot_mend
-};
 
 export const themes = {
 	default: { id: 0, nameFn: m.grassy_noble_walrus_wish },
@@ -316,6 +302,8 @@ export const MediaType = {
 	4: m.drab_gaudy_fly_relish,
 	8: m.maroon_close_gorilla_bake
 };
+
+export const allMediaTypeKeys = Object.keys(MediaType).filter((e) => !isNaN(+e));
 
 export const RequestActions = {
 	1: 'worktag:alias',

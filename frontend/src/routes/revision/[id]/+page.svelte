@@ -7,7 +7,6 @@
 		MimeType,
 		Platform,
 		Rating,
-		Role,
 		SongRelationTypes,
 		SongTagCategory,
 		UserLevel,
@@ -16,6 +15,7 @@
 		WorkStatus,
 		WorkTagCategory
 	} from '$lib/enums.js';
+	import { creatorRole } from '$lib/enums/CreatorRole';
 	import { languages, resolveLanguageKeyById } from '$lib/Languages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -127,7 +127,7 @@
 			case 'tagworkinstance':
 				switch (col) {
 					case 'creator_roles':
-						return expand_bit_field(Role)(val);
+						return expand_bit_field(Object.fromEntries(Object.values(creatorRole).map((v) => [v.id, v.nameFn])))(val);
 				}
 				break;
 			case 'wikipage':

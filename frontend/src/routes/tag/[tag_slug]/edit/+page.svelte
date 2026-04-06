@@ -8,7 +8,8 @@
 		SongConnectionLink,
 		MediaConnectionLink,
 		WorkTagCategory,
-		MediaType
+		MediaType,
+		allMediaTypeKeys
 	} from '$lib/enums';
 	import type { PageProps } from './$types';
 	import RelationEditor from '$lib/RelationEditor.svelte';
@@ -239,7 +240,7 @@
 						<th>Media type</th>
 						<td>
 							<select name="media_type" multiple value={data.tag.media_type ?? []}>
-								{#each Object.keys(MediaType).filter((e) => !isNaN(e)) as t, i (i)}
+								{#each allMediaTypeKeys as t (t)}
 									<option value={+t}>{MediaType[t]()}</option>
 								{/each}
 							</select>

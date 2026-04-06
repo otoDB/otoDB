@@ -1,7 +1,8 @@
 <script lang="ts">
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client, { getTagDisplaySlug } from '$lib/api';
-	import { Role, WorkTagCategoriesSettableAsSource } from '$lib/enums';
+	import { WorkTagCategoriesSettableAsSource } from '$lib/enums';
+	import { allCreatorRoles, creatorRole } from '$lib/enums/CreatorRole';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { components } from '$lib/schema.js';
 
@@ -87,15 +88,15 @@
 					</td>
 					<td>
 						{#if tag.category === 4}
-							{#each Object.keys(Role).filter((e) => !isNaN(+e)) as k, i (i)}
+							{#each allCreatorRoles as k (k)}
 								<label class="role-label">
 									<input
 										class="hidden"
 										type="checkbox"
-										checked={tag.creator_roles?.includes(+k) || false}
+										checked={tag.creator_roles?.includes(creatorRole[k].id) || false}
 										onchange={() =>
-											toggle_creator_role(getTagDisplaySlug(tag), +k)}
-									/>{Role[k]()}
+											toggle_creator_role(getTagDisplaySlug(tag), creatorRole[k].id)}
+									/>{creatorRole[k].nameFn()}
 								</label>
 							{/each}
 						{:else}

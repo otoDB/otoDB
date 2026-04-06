@@ -1,6 +1,6 @@
 import { m } from '$lib/paraglide/messages.js';
 
-export const CreatorRole = {
+export const creatorRole = {
 	AUDIO: {
 		id: 1,
 		nameFn: m.weary_yummy_lobster_kick
@@ -27,12 +27,15 @@ export const CreatorRole = {
 	}
 } as const;
 
+export const allCreatorRoles = Object.keys(creatorRole) as (keyof typeof creatorRole)[];
+
 /**
- * @@deprecated
+ * @deprecated
  */
-export const resolveCreatorRoleById = (
-	id: number
-	// (typeof CreatorRole)[keyof typeof CreatorRole]['id']
-): (typeof CreatorRole)[keyof typeof CreatorRole] => {
-	return Object.values(CreatorRole).find((c) => c.id === id)!;
+export const resolveCreatorRoleKeyById = (
+	id: number // (typeof creatorRole)[keyof typeof creatorRole]['id']
+): keyof typeof creatorRole => {
+	return Object.entries(creatorRole).find(
+		([_, v]) => v.id === id
+	)?.[0] as keyof typeof creatorRole;
 };

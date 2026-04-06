@@ -97,6 +97,13 @@
 				.map((n) => ({ node: n, real: true }))
 		];
 	};
+
+	const www = $derived(
+		Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map((d) => [
+			d[0],
+			Object.entries(Object.groupBy(d[1], (r) => r.relation))
+		])
+	);
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
@@ -126,9 +133,9 @@
 							{#if data.relations[0].length}
 								<tr>
 									<th>{m.alive_these_jay_pick()}</th>
-									<td
-										><ul>
-											{#each Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map( (d) => [d[0], Object.entries(Object.groupBy(d[1], (r) => r.relation))] ) as [dir, rels], i (i)}
+									<td>
+										<ul>
+											{#each www as [dir, rels], i (i)}
 												{#each rels as [tp, relations], j (j)}
 													<li>
 														{m.mild_loud_shad_enchant({
@@ -157,8 +164,8 @@
 													</li>
 												{/each}
 											{/each}
-										</ul></td
-									>
+										</ul>
+									</td>
 								</tr>
 							{/if}
 							<tr>

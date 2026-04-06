@@ -38,7 +38,7 @@ export const ProfileConnection = {
 		name: 'Soundcloud',
 		linkFn: (id: string) => `https://soundcloud.com/${id}`
 	}
-};
+} as const;
 
 export const allProfileConnections = Object.keys(
 	ProfileConnection

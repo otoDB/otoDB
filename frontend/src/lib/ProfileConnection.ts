@@ -40,6 +40,10 @@ export const ProfileConnection = {
 	}
 };
 
+export const allProfileConnections = Object.keys(
+	ProfileConnection
+) as (keyof typeof ProfileConnection)[];
+
 /**
  * @deprecated
  */

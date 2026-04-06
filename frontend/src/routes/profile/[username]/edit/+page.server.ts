@@ -1,5 +1,5 @@
 import client from '$lib/api';
-import { redirect, type Actions } from '@sveltejs/kit';
+import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { UserLevel } from '$lib/enums';
 
@@ -7,6 +7,44 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	if (!locals.user || params.username !== locals.user?.username)
 		redirect(303, `/profile/${params.username}`);
 
+	const { data: dataConnections, error: errorConnection } = await client.GET(
+		'/api/profile/connection',
+		{
+			fetch,
+			params: {
+				query: {
+					username: params.username
+				}
+			}
+		}
+	);
+	if (errorConnection) error(500, 'Failed to load profile connections');
+	if (!dataConnections) error(500, 'Failed to load profile connections');
+
+	if (locals.user.level >= UserLevel.EDITOR) {
+		const { data: invitesData, error: errorInvites } = await client.GET('/api/auth/invites', {
+			fetch
+		});
+		if (errorInvites) error(500, 'Failed to load invites');
+		if (!invitesData) error(500, 'Failed to load invites');
+
+		const [invites, restrictedInvitee] = invitesData;
+
+		return {
+			connections: dataConnections,
+			invites: {
+				invites,
+				restrictedInvitee: restrictedInvitee
+			}
+		};
+	} else {
+		return {
+			connections: dataConnections,
+			invites: null
+		};
+	}
+
+	/*
 	const [{ data }, { data: invites }] = await Promise.all([
 		client.GET('/api/profile/connection', {
 			fetch,
@@ -21,10 +59,13 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 			: { data: [[], null] }
 	]);
 
+	console.dir(invites);
+
 	return {
 		connections: data,
 		invites
 	};
+	*/
 };
 
 export const actions = {

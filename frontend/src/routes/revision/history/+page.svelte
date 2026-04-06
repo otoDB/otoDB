@@ -5,7 +5,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 	import { timeAgo } from '$lib/ui';
-	import { isSOV, isSVO } from '$lib/languages';
+	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 

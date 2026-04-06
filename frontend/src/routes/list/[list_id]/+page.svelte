@@ -4,7 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { Platform, WorkOrigin } from '$lib/enums';
-	import { isSOV, isSVO } from '$lib/languages';
+	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import client from '$lib/api';
 	import type { components } from '$lib/schema';

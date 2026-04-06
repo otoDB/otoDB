@@ -26,7 +26,10 @@
 	import { renderMarkdown } from '$lib/markdown';
 
 	import { page } from '$app/state';
-	import { resolveTagWorkConnectionNameById, TagWorkConnection } from '$lib/enums/TagWorkConnection';
+	import {
+		resolveTagWorkConnectionNameById,
+		TagWorkConnection
+	} from '$lib/enums/TagWorkConnection';
 	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
 
 	let { data } = $props();

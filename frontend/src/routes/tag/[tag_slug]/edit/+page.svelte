@@ -2,7 +2,6 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
-		Errors,
 		LanguageNames,
 		Languages,
 		ProfileConnectionLink,
@@ -20,7 +19,7 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { goto } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { callErrorToast } from '$lib/toast';
+	import { callErrorToast, callErrorToast2 } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
 	import TagsField from '$lib/TagsField.svelte';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
@@ -94,13 +93,11 @@
 		});
 		if (error) {
 			aliases_post_gate.p = Promise.withResolvers<void>();
-			// TODO: Update toast API to handle cases like this accordingly
-			callErrorToast(
-				(error && typeof error === 'object' && 'code' in error
-					? (Errors[error.code as number]?.(error.data as Record<string, string>) ??
-						(error.data as Record<string, string>)?.message)
-					: undefined) ?? m.green_due_javelina_pop()
-			);
+			if (error && typeof error === 'object' && 'code' in error) {
+				callErrorToast2(error.code, error.data ?? {});
+			} else {
+				callErrorToast(m.green_due_javelina_pop());
+			}
 		} else goto(`/tag/${base}/`, { invalidateAll: true });
 	};
 

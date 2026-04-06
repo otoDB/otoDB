@@ -50,18 +50,16 @@
 	</form>
 	<hr />
 	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
-		{#each data.results?.items as work, i (i)}
+		{#each data.results.items as work, i (i)}
 			<WorkCard {work} />
 		{/each}
 	</div>
-	{#if data.results?.count}
-		<Pager
-			n_count={data.results.count}
-			page={data.page}
-			page_size={data.batch_size}
-			base_url={page.url}
-		/>
-	{/if}
+	<Pager
+		n_count={data.results.count}
+		page={data.page}
+		page_size={data.batch_size}
+		base_url={page.url.toString()}
+	/>
 </Section>
 
 <style>

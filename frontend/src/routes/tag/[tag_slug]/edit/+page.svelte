@@ -275,16 +275,16 @@
 
 <Section title={m.alive_lofty_opossum_laugh()}>
 	<a href="/tag/alias?from={data.tag.slug}">{m.weary_moving_swallow_chop()}</a>
-	{#if data.details.aliases.length}
-		<form
-			method="POST"
-			use:dirtyEnhance={{
-				barrier: form_barrier,
-				priority: 2,
-				manual_post: aliases_post_gate
-			}}
-			onsubmit={submit_aliases}
-		>
+	<form
+		method="POST"
+		use:dirtyEnhance={{
+			barrier: form_barrier,
+			priority: 2,
+			manual_post: aliases_post_gate
+		}}
+		onsubmit={submit_aliases}
+	>
+		{#if data.details.aliases.length}
 			<table>
 				<thead>
 					<tr
@@ -354,9 +354,18 @@
 					{/each}
 				</tbody>
 			</table>
-			<input type="submit" />
-		</form>
-	{/if}
+		{:else}
+			<table>
+				<thead>
+					<tr><th>{m.alive_lofty_opossum_laugh()}</th></tr>
+				</thead>
+				<tbody>
+					<tr><td><input type="text" bind:value={tagNames[data.tag.slug]} /></td></tr>
+				</tbody>
+			</table>
+		{/if}
+		<input type="submit" />
+	</form>
 </Section>
 
 <Section title={m.curly_zesty_pelican_aim()}>

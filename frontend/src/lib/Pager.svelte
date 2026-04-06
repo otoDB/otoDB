@@ -1,7 +1,19 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 
-	let { page, page_size, n_count, window_size = 2, base_url = null } = $props();
+	let {
+		page,
+		page_size,
+		n_count,
+		window_size = 2,
+		base_url = null
+	}: {
+		page: number;
+		n_count: number;
+		page_size: number;
+		window_size?: number;
+		base_url?: string | null;
+	} = $props();
 
 	const n_pages = $derived(Math.ceil(n_count / page_size));
 	const page_min = $derived(Math.max(1, page - window_size));

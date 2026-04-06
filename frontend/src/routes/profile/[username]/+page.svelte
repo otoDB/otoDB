@@ -2,7 +2,6 @@
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
-	import { ProfileConnectionTypes, ProfileConnectionLink } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getVersionKey, Version } from '$lib/ui';

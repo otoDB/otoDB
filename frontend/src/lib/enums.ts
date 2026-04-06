@@ -334,6 +334,9 @@ export const PostCategories = [
 	m.fresh_lower_rook_trip
 ];
 
+/**
+ * @deprecated
+ */
 export const CommentModelRoutes = {
 	mediawork: 'work',
 	account: 'profile',
@@ -344,13 +347,16 @@ export const CommentModelRoutes = {
 	bulkrequest: 'request'
 };
 
+/**
+ * @deprecated
+ */
 export const EntityModelRoutes = {
 	...CommentModelRoutes,
 	mediasong: 'song',
 	worksource: 'upload'
 };
 
-export const buildCommentRoutes = (type: string, id: string) => {
+export const buildCommentRoutes = (type: string, id: string | number) => {
 	switch (type) {
 		case 'mediawork':
 			return `/work/${id}`;
@@ -371,7 +377,7 @@ export const buildCommentRoutes = (type: string, id: string) => {
 	}
 };
 
-export const buildEntityRoutes = (type: string, id: string) => {
+export const buildEntityRoutes = (type: string, id: string | number) => {
 	switch (type) {
 		case 'mediawork':
 		case 'account':

@@ -92,11 +92,8 @@ async function getPreferredLang() {
     return { lang: null, uiLang: 'en' };
 }
 
-const makeTagDisplayName = (name) => name.replaceAll('_', ' ');
 const getTagDisplayName = (tag, lang) =>
-    makeTagDisplayName(
-        tag.lang_prefs?.find(p => p.lang === lang)?.tag ?? tag.name
-    );
+    tag.lang_prefs?.find(p => p.lang === lang)?.tag ?? tag.name;
 const getTagDisplaySlug = (tag, lang) =>
     tag.lang_prefs?.find(p => p.lang === lang)?.slug ?? tag.slug;
 

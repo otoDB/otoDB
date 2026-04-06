@@ -66,12 +66,8 @@ export const makeCommentTree = (comments: components['schemas']['CommentSchema']
 	}
 };
 
-export const makeTagDisplayName = (name) => name.replaceAll('_', ' ');
-
 export const getTagDisplayName = (tag) =>
-	makeTagDisplayName(
-		tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.tag ?? tag.name
-	);
+	tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.tag ?? tag.name;
 
 export const getTagDisplaySlug = (tag) =>
 	tag.lang_prefs.find(({ lang }) => lang === Languages[getLocale()])?.slug ?? tag.slug;

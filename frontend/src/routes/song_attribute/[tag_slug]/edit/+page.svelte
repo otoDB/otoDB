@@ -25,9 +25,15 @@
 		Object.fromEntries(
 			locales.map((l) => [
 				l,
-				data.tag.lang_prefs.find(({ lang }) => lang === Languages[l])?.tag ?? null
+				data.tag.lang_prefs.find(({ lang }) => lang === Languages[l])?.slug ?? null
 			])
 		)
+	);
+	let tagNames: Record<string, string> = $state(
+		Object.fromEntries([
+			[data.tag.slug, data.tag.name],
+			...data.aliases.map((a) => [a.slug, a.name])
+		])
 	);
 
 	const removeAlias = async (alias: components['schemas']['TagSongSchema']) => {
@@ -115,13 +121,13 @@
 			</thead>
 			<tbody>
 				<tr
-					><td>{data.tag.name}</td>
+					><td><input type="text" bind:value={tagNames[data.tag.slug]} /></td>
 					{#each locales as locale, i (i)}
 						<td
 							><input
 								type="radio"
 								bind:group={tagLangPrefs[locale]}
-								value={data.tag.name}
+								value={data.tag.slug}
 								onclick={() => submitLangPref(Languages[locale], data.tag.slug)}
 							/>{#if tagLangPrefs[locale] === null}{m.factual_house_antelope_arise()}{/if}</td
 						>
@@ -129,13 +135,13 @@
 				>
 				{#each data.aliases as a, i (i)}
 					<tr
-						><td>{a.name}</td>
+						><td><input type="text" bind:value={tagNames[a.slug]} /></td>
 						{#each locales as locale, i (i)}
 							<td
 								><input
 									type="radio"
 									bind:group={tagLangPrefs[locale]}
-									value={a.name}
+									value={a.slug}
 									onclick={() => submitLangPref(Languages[locale], a.slug)}
 								/></td
 							>

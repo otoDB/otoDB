@@ -11,7 +11,7 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.common import clean_incoming_slug
+from otodb.common import slugify_tag
 from otodb.models import (
 	Notification,
 	Post,
@@ -98,11 +98,7 @@ def get_entity_link_ent(e: EntitySchema):
 		ContentType.objects.get(model=e.entity)
 		.model_class()
 		.objects.get(
-			**(
-				{'slug': clean_incoming_slug(e.id)}
-				if 'tag' in e.entity
-				else {'id': e.id}
-			)
+			**({'slug': slugify_tag(e.id)} if 'tag' in e.entity else {'id': e.id})
 		)
 	)
 	if hasattr(obj, 'aliased_to') and obj.aliased_to:

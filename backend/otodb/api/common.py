@@ -42,7 +42,8 @@ class AuthedHttpRequest(HttpRequest):
 
 
 class Error(Schema):
-	message: str
+	code: int
+	data: dict | None = None
 
 
 class ProfileSchema(ModelSchema):

@@ -175,7 +175,7 @@ class TestTagLanguagePreference:
 			json={
 				'base_slug': tag.slug,
 				'unalias_slugs': [],
-				'lang_prefs': {str(LanguageTypes.JAPANESE): alias.name},
+				'lang_prefs': {str(LanguageTypes.JAPANESE): alias.slug},
 			},
 			user=editor,
 		)
@@ -210,7 +210,7 @@ class TestTagLanguagePreference:
 			json={
 				'base_slug': tag.slug,
 				'unalias_slugs': [],
-				'lang_prefs': {str(LanguageTypes.ENGLISH): alias2.name},
+				'lang_prefs': {str(LanguageTypes.ENGLISH): alias2.slug},
 			},
 			user=editor,
 		)
@@ -245,7 +245,7 @@ class TestTagLanguagePreference:
 			json={
 				'base_slug': base_tag.slug,
 				'unalias_slugs': [],
-				'lang_prefs': {str(LanguageTypes.JAPANESE): alias1.name},
+				'lang_prefs': {str(LanguageTypes.JAPANESE): alias1.slug},
 			},
 			user=editor,
 		)
@@ -280,7 +280,7 @@ class TestTagLanguagePreference:
 			json={
 				'base_slug': base_tag.slug,
 				'unalias_slugs': [],
-				'lang_prefs': {str(LanguageTypes.KOREAN): alias_tag.name},
+				'lang_prefs': {str(LanguageTypes.KOREAN): alias_tag.slug},
 			},
 			user=editor,
 		)
@@ -316,7 +316,7 @@ class TestTagSearch:
 		results = response.json()['items']
 		result_names = [tag['name'] for tag in results]
 
-		assert 'massively_multiplayer_online' in result_names
+		assert 'massively multiplayer online' in result_names
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)

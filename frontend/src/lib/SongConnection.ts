@@ -66,6 +66,8 @@ export const SongConnection = {
 	}
 } as const;
 
+export const allSongConnectionKeys = Object.keys(SongConnection) as (keyof typeof SongConnection)[];
+
 /**
  * @deprecated
  */

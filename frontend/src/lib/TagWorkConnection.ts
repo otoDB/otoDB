@@ -40,6 +40,10 @@ export const TagWorkConnection = {
 	}
 } as const;
 
+export const allTagWorkConnectionKeys = Object.keys(
+	TagWorkConnection
+) as (keyof typeof TagWorkConnection)[];
+
 /**
  * @deprecated
  */

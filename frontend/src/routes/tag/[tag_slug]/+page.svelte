@@ -26,6 +26,8 @@
 	import { renderMarkdown } from '$lib/markdown';
 
 	import { page } from '$app/state';
+	import { resolveTagWorkConnectionNameById, TagWorkConnection } from '$lib/TagWorkConnection.js';
+	import { resolveSongConnectionNameById, SongConnection } from '$lib/SongConnection.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -140,15 +142,21 @@
 			{#each data.connections[0] as s, i (i)}
 				<li>
 					<ConnectionFavicon
-						type={TagWorkConnectionTypes[s.site]}
+						type={TagWorkConnection[resolveTagWorkConnectionNameById(s.site)].name}
 						class="inline size-4"
 					/>
 					<a
-						href={TagWorkConnectionLink[s.site](s.content_id)}
+						href={TagWorkConnection[resolveTagWorkConnectionNameById(s.site)].linkFn(
+							s.content_id
+						)}
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{decodeURI(TagWorkConnectionLink[s.site](s.content_id))}
+						{decodeURI(
+							TagWorkConnection[resolveTagWorkConnectionNameById(s.site)].linkFn(
+								s.content_id
+							)
+						)}
 					</a>
 				</li>
 			{/each}
@@ -217,15 +225,21 @@
 				{#each data.song_connections as s, i (i)}
 					<li>
 						<ConnectionFavicon
-							type={SongConnectionTypes[s.site]}
+							type={SongConnection[resolveSongConnectionNameById(s.site)].name}
 							class="inline size-4"
 						/>
 						<a
-							href={SongConnectionLink[s.site](s.content_id)}
+							href={SongConnection[resolveSongConnectionNameById(s.site)].linkFn(
+								s.content_id
+							)}
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{decodeURI(SongConnectionLink[s.site](s.content_id))}
+							{decodeURI(
+								SongConnection[resolveSongConnectionNameById(s.site)].linkFn(
+									s.content_id
+								)
+							)}
 						</a>
 					</li>
 				{/each}

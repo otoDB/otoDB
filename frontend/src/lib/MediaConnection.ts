@@ -66,6 +66,10 @@ export const MediaConnection = {
 	}
 } as const;
 
+export const allMediaConnectionKeys = Object.keys(
+	MediaConnection
+) as (keyof typeof MediaConnection)[];
+
 /**
  * @deprecated
  */

@@ -5,11 +5,8 @@
 		LanguageNames,
 		Languages,
 		ProfileConnectionLink,
-		ProfileConnectionTypes,
 		SongConnectionLink,
-		SongConnectionTypes,
 		MediaConnectionLink,
-		MediaConnectionTypes,
 		WorkTagCategory,
 		MediaType
 	} from '$lib/enums';
@@ -23,6 +20,10 @@
 	import { dirtyEnhance } from '$lib/ui';
 	import TagsField from '$lib/TagsField.svelte';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
+	import { allSongConnectionKeys, SongConnection } from '$lib/SongConnection';
+	import { allMediaConnectionKeys, MediaConnection } from '$lib/MediaConnection';
+	import { allProfileConnectionKeys, ProfileConnection } from '$lib/ProfileConnection';
+	import { allTagWorkConnectionKeys, TagWorkConnection } from '$lib/TagWorkConnection';
 
 	let { data, form }: PageProps = $props();
 
@@ -414,36 +415,40 @@
 		<table>
 			<tbody>
 				{#if category === 2}
-					{#each Object.keys(SongConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
+					{#each allSongConnectionKeys as k (k)}
 						<tr
-							><td>{SongConnectionTypes[k]}</td><td
-								><code>{SongConnectionLink[k]('<code>')}</code></td
-							></tr
-						>
+							><td>{SongConnection[k].name}</td>
+							<td>
+								<code>{SongConnection[k].linkFn('<code>')}</code>
+							</td>
+						</tr>
 					{/each}
 				{:else if category === 6}
-					{#each Object.keys(MediaConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
-						<tr
-							><td>{MediaConnectionTypes[k]}</td><td
-								><code>{MediaConnectionLink[k]('<code>')}</code></td
-							></tr
-						>
+					{#each allMediaConnectionKeys as k (k)}
+						<tr>
+							<td>{MediaConnection[k].name}</td>
+							<td>
+								<code>{MediaConnection[k].linkFn('<code>')}</code>
+							</td>
+						</tr>
 					{/each}
 				{:else if category === 4}
-					{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
-						<tr
-							><td>{ProfileConnectionTypes[k]}</td><td
-								><code>{ProfileConnectionLink[k]('<code>')}</code></td
-							></tr
-						>
+					{#each allProfileConnectionKeys as k (k)}
+						<tr>
+							<td>{ProfileConnection[k].name}</td>
+							<td>
+								<code>{ProfileConnection[k].linkFn('<code>')}</code>
+							</td>
+						</tr>
 					{/each}
 				{/if}
-				{#each Object.keys(TagWorkConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
-					<tr
-						><td>{TagWorkConnectionTypes[k]}</td><td
-							><code>{TagWorkConnectionLink[k]('<code>')}</code></td
-						></tr
-					>
+				{#each allTagWorkConnectionKeys as k (k)}
+					<tr>
+						<td>{TagWorkConnection[k].name}</td>
+						<td>
+							<code>{TagWorkConnection[k].linkFn('<code>')}</code>
+						</td>
+					</tr>
 				{/each}
 			</tbody>
 		</table>

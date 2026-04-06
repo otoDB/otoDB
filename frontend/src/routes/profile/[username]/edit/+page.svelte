@@ -4,7 +4,7 @@
 	import client from '$lib/api.js';
 	import { m } from '$lib/paraglide/messages';
 	import {
-		allProfileConnections,
+		allProfileConnectionKeys,
 		ProfileConnection,
 		resolveProfileConnectionNameById
 	} from '$lib/ProfileConnection.js';
@@ -56,7 +56,7 @@
 		<summary>{m.fit_noble_niklas_build()}</summary>
 		<table>
 			<tbody>
-				{#each allProfileConnections as k (k)}
+				{#each allProfileConnectionKeys as k (k)}
 					<tr
 						><td>{ProfileConnection[k].name}</td><td
 							><code>{ProfileConnection[k].linkFn('<code>')}</code></td

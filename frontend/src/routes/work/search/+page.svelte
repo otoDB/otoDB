@@ -32,8 +32,10 @@
 			value={data.query}
 		/>
 		<input type="submit" value={m.mean_top_antelope_love()} />
+
 		<h4>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: '' })}</h4>
 		<TagsField type="work" name="tags" value={data.query_tags.split(' ')} class="w-full" />
+
 		<h4>{m.good_heavy_mayfly_spin()}</h4>
 		<select name="order" value={data.order ?? 'id'}
 			><option value="id">{m.kind_vivid_niklas_savor()}</option><option value="pub"

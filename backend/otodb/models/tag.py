@@ -152,8 +152,9 @@ class OtodbTagModel(BaseTagModel):
 		if not self.slug:
 			self.slug = slugify_tag(self.name)
 			if not self.slug:
-				# TODO: Better handling for this case
-				pass
+				raise ValidationError(
+					message=f'Tag name "{self.name}" cannot be converted to a valid slug'
+				)
 		else:
 			expected = slugify_tag(self.name)
 			if not re.fullmatch(rf'{re.escape(expected)}(_\d+)?', self.slug):

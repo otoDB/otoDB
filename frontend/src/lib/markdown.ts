@@ -24,7 +24,7 @@ const long_label_re_gen = (long_label: string) =>
 const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N}\p{M}_])/gu;
 const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
 const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
-const LinkableEntities = [
+const LinkableEntities: [string, RegExp][] = [
 	['mediawork', short_prefix_re_gen(ENTITIES[0].shortPrefix)],
 	['mediawork', long_label_re_gen(ENTITIES[0].longLabel)],
 	['tagwork', TAGWORK_NO_DISPLAY_RE]

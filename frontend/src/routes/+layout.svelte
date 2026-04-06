@@ -4,7 +4,14 @@
 	import { Toaster } from 'svelte-sonner';
 	import { m } from '$lib/paraglide/messages.js';
 	import { navigating } from '$app/state';
-	import { clickOutside, current_version, get_prefs, isFormDirty, set_lang } from '$lib/ui';
+	import {
+		clickOutside,
+		currentVersion,
+		get_prefs,
+		isFormDirty,
+		set_lang,
+		Version
+	} from '$lib/ui';
 	import { getThemeNameById, UserLevel } from '$lib/enums';
 	import { languages } from '$lib/enums/Languages';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
@@ -394,7 +401,7 @@
 							type: 'otoDB',
 							name: m.glad_born_mouse_taste()
 						})}
-						{current_version}
+						{Version[currentVersion].name}
 						{#if env.PUBLIC_OTODB_HASH}
 							- {env.PUBLIC_OTODB_HASH}{/if}
 					</span>

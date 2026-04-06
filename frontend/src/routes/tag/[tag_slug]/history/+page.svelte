@@ -2,7 +2,7 @@
 	import HistoryView from '$lib/HistoryView.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from '../$types';
+	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
@@ -16,6 +16,7 @@
 		title={data.tag.song.title}
 		type={m.giant_away_scallop_hike()}
 		menuLinks={data.song_links}
-		><HistoryView revisions={data.song_history.items} user={data.user} /></Section
 	>
+		<HistoryView revisions={data.song_history.items} user={data.user} />
+	</Section>
 {/if}

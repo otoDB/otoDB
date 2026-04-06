@@ -21,7 +21,7 @@ export const postCategory = {
 		id: 4,
 		nameFn: m.fresh_lower_rook_trip
 	}
-} as const;
+} as const satisfies Record<string, { id: number; nameFn: () => string }>;
 
 export const allPostCategories = Object.keys(postCategory) as (keyof typeof postCategory)[];
 

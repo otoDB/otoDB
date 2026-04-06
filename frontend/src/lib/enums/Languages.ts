@@ -15,7 +15,8 @@ export const languages = {
 		id: 4,
 		name: '한국어'
 	}
-};
+} as const satisfies Record<string, { id: number; name: string }>;
+
 /**
  * @deprecated
  */

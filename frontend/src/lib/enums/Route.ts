@@ -41,7 +41,7 @@ export const Route = {
 	WORKSOURCE_UPDATE: { id: 66, title: 'Upload: Update' },
 
 	ROLLBACK: { id: 100, title: 'Rollback' }
-};
+} as const satisfies Record<string, { id: number; title: string }>;
 
 /**
  * @deprecated

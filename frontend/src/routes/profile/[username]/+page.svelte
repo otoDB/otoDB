@@ -5,8 +5,8 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getVersionKey, Version } from '$lib/ui';
-	import { resolveUserLevelById, UserLevel } from '$lib/UserLevel';
-	import { ProfileConnection, resolveProfileConnectionNameById } from '$lib/ProfileConnection';
+	import { resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
+	import { ProfileConnection, resolveProfileConnectionNameById } from '$lib/enums/ProfileConnection';
 
 	let { data }: PageProps = $props();
 

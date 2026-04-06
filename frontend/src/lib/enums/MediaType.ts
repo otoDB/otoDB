@@ -17,9 +17,9 @@ export const mediaTypes = {
 		id: 8,
 		nameFn: m.maroon_close_gorilla_bake
 	}
-} as const;
+} as const satisfies Record<string, { id: number; nameFn: () => string }>;
 
-export const allMediaTypes: (keyof typeof mediaTypes)[] = ['ANIME', 'SHOW', 'FILM', 'GAME'];
+export const allMediaTypes = Object.keys(mediaTypes) as (keyof typeof mediaTypes)[];
 
 /**
  * @deprecated

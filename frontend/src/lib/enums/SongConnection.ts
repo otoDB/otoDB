@@ -64,7 +64,7 @@ export const SongConnection = {
 		linkFn: (id: string) =>
 			`https://modarchive.org/index.php?request=view_by_moduleid&query=${id}`
 	}
-} as const;
+} as const satisfies Record<string, { id: number; name: string; linkFn: (id: string) => string }>;
 
 export const allSongConnectionKeys = Object.keys(SongConnection) as (keyof typeof SongConnection)[];
 

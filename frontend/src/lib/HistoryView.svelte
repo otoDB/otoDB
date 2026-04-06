@@ -5,7 +5,7 @@
 	import { m } from './paraglide/messages';
 	import { timeAgo } from './ui';
 	import type { components } from './schema';
-	import { resolveRouteKeyById, Route } from './Route';
+	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
 		user: components['schemas']['UserStatusSchema'] | null;

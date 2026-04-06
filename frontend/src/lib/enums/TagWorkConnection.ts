@@ -38,7 +38,7 @@ export const TagWorkConnection = {
 		name: 'Know Your Meme',
 		linkFn: (id: string) => `https://knowyourmeme.com/${id}`
 	}
-} as const;
+} as const satisfies Record<string, { id: number; name: string; linkFn: (id: string) => string }>;
 
 export const allTagWorkConnectionKeys = Object.keys(
 	TagWorkConnection

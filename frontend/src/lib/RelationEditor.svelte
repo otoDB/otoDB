@@ -10,7 +10,7 @@
 	import WorkCard from './WorkCard.svelte';
 	import WorkField from './WorkField.svelte';
 	import { callErrorToast } from './toast';
-	import { isSOV } from './Languages';
+	import { isSOV } from '$lib/enums/Languages';
 
 	interface Props {
 		this_id: number;

@@ -64,7 +64,7 @@ export const MediaConnection = {
 		name: 'VGMdb',
 		linkFn: (id: string) => `https://vgmdb.net/product/${id}`
 	}
-} as const;
+} as const satisfies Record<string, { id: number; name: string; linkFn: (id: string) => string }>;
 
 export const allMediaConnectionKeys = Object.keys(
 	MediaConnection

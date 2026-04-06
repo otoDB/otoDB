@@ -25,7 +25,7 @@ export const creatorRole = {
 		id: 32,
 		nameFn: m.heavy_blue_parrot_mend
 	}
-} as const;
+} as const satisfies Record<string, { id: number; nameFn: () => string }>;
 
 export const allCreatorRoles = Object.keys(creatorRole) as (keyof typeof creatorRole)[];
 

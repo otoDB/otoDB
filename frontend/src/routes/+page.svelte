@@ -4,10 +4,10 @@
 
 	import Section from '$lib/Section.svelte';
 	import { timeAgo } from '$lib/ui.js';
-	import { isSOV, isSVO } from '$lib/Languages';
+	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import { Route } from '$lib/Route.js';
-	import { resolveRouteKeyById } from '$lib/Route.js';
+	import { Route } from '$lib/enums/Route.js';
+	import { resolveRouteKeyById } from '$lib/enums/Route.js';
 
 	let { data } = $props();
 </script>

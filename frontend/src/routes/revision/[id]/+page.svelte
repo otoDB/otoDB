@@ -16,7 +16,7 @@
 		WorkTagCategory
 	} from '$lib/enums.js';
 	import { creatorRole } from '$lib/enums/CreatorRole';
-	import { languages, resolveLanguageKeyById } from '$lib/Languages.js';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';

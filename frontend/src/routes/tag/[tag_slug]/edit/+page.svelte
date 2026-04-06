@@ -21,10 +21,10 @@
 	import { dirtyEnhance } from '$lib/ui';
 	import TagsField from '$lib/TagsField.svelte';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
-	import { allSongConnectionKeys, SongConnection } from '$lib/SongConnection';
-	import { allMediaConnectionKeys, MediaConnection } from '$lib/MediaConnection';
-	import { allProfileConnectionKeys, ProfileConnection } from '$lib/ProfileConnection';
-	import { allTagWorkConnectionKeys, TagWorkConnection } from '$lib/TagWorkConnection';
+	import { allSongConnectionKeys, SongConnection } from '$lib/enums/SongConnection';
+	import { allMediaConnectionKeys, MediaConnection } from '$lib/enums/MediaConnection';
+	import { allProfileConnectionKeys, ProfileConnection } from '$lib/enums/ProfileConnection';
+	import { allTagWorkConnectionKeys, TagWorkConnection } from '$lib/enums/TagWorkConnection';
 
 	let { data, form }: PageProps = $props();
 

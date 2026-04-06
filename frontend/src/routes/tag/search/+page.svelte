@@ -7,8 +7,8 @@
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 	import { locales } from '$lib/paraglide/runtime';
-	import { languages } from '$lib/Languages';
-	import { allMediaTypes, mediaTypes } from '$lib/MediaType';
+	import { languages } from '$lib/enums/Languages';
+	import { allMediaTypes, mediaTypes } from '$lib/enums/MediaType';
 
 	let { data }: PageProps = $props();
 

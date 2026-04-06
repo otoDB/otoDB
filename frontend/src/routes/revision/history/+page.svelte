@@ -7,7 +7,7 @@
 	import { timeAgo } from '$lib/ui';
 	import { isSOV, isSVO } from '$lib/languages';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { resolveRouteKeyById, Route } from '$lib/Route';
+	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 
 	let { data }: PageProps = $props();
 </script>

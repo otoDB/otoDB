@@ -5,7 +5,7 @@
 	import { timeAgo } from '$lib/ui';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { resolveRouteKeyById, Route } from '$lib/Route';
+	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 
 	let { data }: PageProps = $props();
 </script>

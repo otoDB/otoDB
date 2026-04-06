@@ -50,7 +50,10 @@ export const WorkTagCategory = {
 		settable: false,
 		order: 6
 	}
-} as const;
+} as const satisfies Record<
+	string,
+	{ id: number; nameFn: () => string; color: string; settable: boolean; order: number }
+>;
 
 /**
  * @deprecated

@@ -23,7 +23,7 @@
 	import {
 		resolveWorkTagCategoryKeyById,
 		WorkTagCategory as WorkTagCategory2
-	} from '$lib/WorkTagCategory';
+	} from '$lib/enums/WorkTagCategory';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
 
 	let { data }: PageProps = $props();

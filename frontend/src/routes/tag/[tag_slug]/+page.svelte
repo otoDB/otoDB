@@ -26,8 +26,8 @@
 	import { renderMarkdown } from '$lib/markdown';
 
 	import { page } from '$app/state';
-	import { resolveTagWorkConnectionNameById, TagWorkConnection } from '$lib/TagWorkConnection.js';
-	import { resolveSongConnectionNameById, SongConnection } from '$lib/SongConnection.js';
+	import { resolveTagWorkConnectionNameById, TagWorkConnection } from '$lib/enums/TagWorkConnection';
+	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);

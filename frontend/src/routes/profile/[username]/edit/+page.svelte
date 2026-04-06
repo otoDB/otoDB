@@ -7,10 +7,10 @@
 		allProfileConnectionKeys,
 		ProfileConnection,
 		resolveProfileConnectionNameById
-	} from '$lib/ProfileConnection.js';
+	} from '$lib/enums/ProfileConnection';
 	import Section from '$lib/Section.svelte';
 	import { timeAgo } from '$lib/ui';
-	import { resolveUserLevelById, UserLevel } from '$lib/UserLevel.js';
+	import { resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
 
 	let { data } = $props();
 

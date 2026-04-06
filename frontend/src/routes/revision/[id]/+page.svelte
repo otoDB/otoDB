@@ -21,11 +21,11 @@
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO } from '$lib/Languages.js';
-	import { resolveTagWorkConnectionNameById, TagWorkConnection } from '$lib/TagWorkConnection.js';
-	import { resolveSongConnectionNameById, SongConnection } from '$lib/SongConnection.js';
-	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/MediaConnection.js';
-	import { ProfileConnection, resolveProfileConnectionNameById } from '$lib/ProfileConnection.js';
+	import { isSOV, isSVO } from '$lib/enums/Languages';
+	import { resolveTagWorkConnectionNameById, TagWorkConnection } from '$lib/enums/TagWorkConnection';
+	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
+	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection';
+	import { ProfileConnection, resolveProfileConnectionNameById } from '$lib/enums/ProfileConnection';
 
 	let { data } = $props();
 	let routes = $derived(

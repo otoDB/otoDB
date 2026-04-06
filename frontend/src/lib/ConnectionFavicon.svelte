@@ -37,7 +37,9 @@
 	import faviconOtomadWiki2 from './connection_favicon/音MAD Wiki 2.png';
 	import faviconSoundcloud from './connection_favicon/Soundcloud.png';
 
-	const img = (type: string) => {
+	const img = (
+		type: string // TODO: use `keyof typeof ProfileConnection`
+	) => {
 		switch (type) {
 			case 'AniDB':
 				return faviconAniDB;

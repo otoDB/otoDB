@@ -4,13 +4,13 @@
 	import { SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
 	import { m } from './paraglide/messages';
 	import { dirtyEnhance } from './ui';
-	import { isSOV } from './languages';
 	import { getLocale } from './paraglide/runtime';
 	import type { components } from './schema';
 	import SongField from './SongField.svelte';
 	import WorkCard from './WorkCard.svelte';
 	import WorkField from './WorkField.svelte';
 	import { callErrorToast } from './toast';
+	import { isSOV } from './Languages';
 
 	interface Props {
 		this_id: number;

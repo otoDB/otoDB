@@ -26,7 +26,7 @@ export const actions = {
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 		await client.POST('/api/comment/comment', {
 			fetch,
-			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
+			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
 			body: {
 				model,
 				pk,
@@ -43,7 +43,7 @@ export const actions = {
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 		await client.PUT('/api/comment/comment', {
 			fetch,
-			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
+			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
 			body: { comment_id, comment_text }
 		});
 	}

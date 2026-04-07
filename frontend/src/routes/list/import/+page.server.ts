@@ -1,12 +1,11 @@
 import client from '$lib/api';
+import { m } from '$lib/paraglide/messages';
+import { userLevelGuard } from '$lib/route_guard';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
-import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER);
+	userLevelGuard(locals.user, 'MEMBER');
 	return { head: { title: m.proof_heroic_rat_cuddle() } };
 };
 

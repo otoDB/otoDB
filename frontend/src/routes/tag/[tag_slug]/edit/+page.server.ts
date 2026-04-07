@@ -1,11 +1,11 @@
 import client from '$lib/api';
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+
+import { userLevelGuard } from '$lib/route_guard';
 
 export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+	userLevelGuard(locals.user, 'MEMBER', url.pathname);
 
 	const [{ data: wiki_page }, { data: details }, { data: connections }] = await Promise.all([
 		client.GET('/api/tag/wiki_page', {

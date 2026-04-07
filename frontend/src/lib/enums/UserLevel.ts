@@ -25,7 +25,7 @@ export const UserLevel = {
 		id: 100,
 		nameFn: m.tangy_formal_lionfish_tap
 	}
-} as const;
+} as const satisfies Record<string, { id: number; nameFn: () => string }>;
 
 /**
  * @@deprecated
@@ -35,3 +35,17 @@ export const resolveUserLevelById = (
 	// (typeof UserLevel)[keyof typeof UserLevel]['id']
 ): keyof typeof UserLevel =>
 	Object.entries(UserLevel).find(([_, value]) => value.id === id)?.[0] as keyof typeof UserLevel;
+
+/**
+ * user level `target` has greather level than or equal to `level`
+ *
+ * @param target
+ * @param level
+ * @returns
+ */
+export const hasUserLevel = (
+	target: keyof typeof UserLevel,
+	level: keyof typeof UserLevel
+): boolean => {
+	return UserLevel[target].id >= UserLevel[level].id;
+};

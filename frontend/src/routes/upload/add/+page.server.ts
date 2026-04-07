@@ -1,12 +1,13 @@
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import client, { getDisplayText } from '$lib/api';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+
+import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
+import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+	userLevelGuard(locals.user, 'MEMBER', url.pathname);
 
 	const link = url.searchParams.get('url');
 	const work = url.searchParams.get('for_work');
@@ -67,7 +68,7 @@ export const actions = {
 
 		// Build metadata object only if user is editor AND manual fields provided
 		let metadata: Record<string, any> | undefined = undefined;
-		if (locals.user?.level >= UserLevel.EDITOR) {
+		if (locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'EDITOR')) {
 			const hasManualData =
 				data.get('manual_title') ||
 				data.get('manual_description') ||

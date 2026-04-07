@@ -2,13 +2,13 @@ import client from '$lib/api';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { Languages } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
 import { env } from '$env/dynamic/private';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 
 export const load: PageServerLoad = ({ locals, url }) => {
-	userLevelGuard(locals.user);
+	userLevelGuard(locals.user, 'MEMBER');
 	const category = url.searchParams.get('category');
 	const entity = url.searchParams.get('entity');
 	return { category, entity, head: { title: m.antsy_aloof_horse_grace() } };

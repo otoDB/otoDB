@@ -11,37 +11,37 @@ cd "$ROOT_DIR"
 
 RAW=$(bun run check 2>&1 || true)
 
-TOTALS=$(echo "$RAW" | grep -E '^[0-9]+ COMPLETED' | head -1)
-TOTAL_ERRORS=$(echo "$TOTALS" | grep -oP '\d+(?= ERRORS)' || echo 0)
-TOTAL_WARNINGS=$(echo "$TOTALS" | grep -oP '\d+(?= WARNINGS)' || echo 0)
-TOTAL_FILES=$(echo "$TOTALS" | grep -oP '\d+(?= FILES_WITH_PROBLEMS)' || echo 0)
-
-TABLE=$(echo "$RAW" | grep -E '^[0-9]+ (ERROR|WARNING)' | sed 's/^[0-9]* //' | awk '
-{
-  type=$1
-  match($0, /"([^"]+)"/, arr)
-  file=arr[1]
-  if (file != "") {
+RESULT=$(echo "$RAW" | awk '
+/^[0-9]+ (ERROR|WARNING)/ {
+  sub(/^[0-9]+ /, "")
+  type = $1
+  if (match($0, /"([^"]+)"/, arr)) {
+    file = arr[1]
     if (type == "ERROR") errors[file]++
     else if (type == "WARNING") warnings[file]++
-    seen[file]=1
+    seen[file] = 1
   }
 }
+/^[0-9]+ COMPLETED/ {
+  match($0, /([0-9]+) ERRORS/, a);   total_errors   = a[1]+0
+  match($0, /([0-9]+) WARNINGS/, a); total_warnings = a[1]+0
+  match($0, /([0-9]+) FILES_WITH_PROBLEMS/, a); total_files = a[1]+0
+}
 END {
+  print total_errors "\t" total_warnings "\t" total_files
   for (f in seen) {
     print (errors[f]+0) "\t" (warnings[f]+0) "\t" f
   }
-}' | sort -t$'\t' -k1 -rn | awk -F'\t' '{printf "| `%s` | %d | %d |\n", $3, $1, $2}')
+}')
 
-DATE=$(date +%Y-%m-%d)
-BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+TOTAL_ERRORS=$(echo "$RESULT" | head -1 | cut -f1)
+TOTAL_WARNINGS=$(echo "$RESULT" | head -1 | cut -f2)
+TOTAL_FILES=$(echo "$RESULT" | head -1 | cut -f3)
+
+TABLE=$(echo "$RESULT" | tail -n +2 | sort -t$'\t' -k1 -rn | awk -F'\t' '{printf "| `%s` | %d | %d |\n", $3, $1, $2}')
 
 cat > "$OUTPUT" <<EOF
 # Type Check Report
-
-Generated: $DATE
-Branch: \`$BRANCH\`
-Command: \`bun run check\`
 
 ## Summary
 

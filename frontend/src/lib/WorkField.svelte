@@ -13,9 +13,10 @@
 	interface Props {
 		value: components['schemas']['WorkSchema'] | null | undefined;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-		oninput: Function | undefined;
+		oninput?: Function;
+		name: string;
 	}
-	let { value = $bindable(undefined), oninput = undefined, ...props }: Props = $props();
+	let { value = $bindable(undefined), oninput = undefined, name }: Props = $props();
 
 	let suggestions: components['schemas']['WorkSchema'][] = $state([]);
 	let locked_in = $state(false);
@@ -82,7 +83,7 @@
 		disabled={locked_in}
 		bind:value={input}
 	/>
-	<input type="number" hidden value={value?.id ?? -1} {...props} />
+	<input type="number" hidden value={value?.id ?? -1} {name} />
 	{#if locked_in}
 		<button
 			type="button"

@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { error } from '@sveltejs/kit';
 import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
@@ -22,6 +23,10 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 			}
 		})
 	]);
+
+	// TODO: properly handle fetch errors (e.g. 404 for not found)
+	if (!data) error(500, 'Failed to fetch data.');
+	if (!comments) error(500, 'Failed to fetch data.');
 
 	return {
 		request: data,

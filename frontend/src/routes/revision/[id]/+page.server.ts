@@ -24,6 +24,9 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 
 	if (!revision) error(404, { message: 'Not found' });
 
+	if (!changes) error(500, { message: 'Internal server error' });
+	if (!revision) error(500, { message: 'Internal server error' });
+
 	return {
 		revision,
 		changes,

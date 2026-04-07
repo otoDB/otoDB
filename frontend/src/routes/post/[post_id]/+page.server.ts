@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { error } from '@sveltejs/kit';
 import { Languages } from '$lib/enums';
 import { get_entity, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
@@ -11,6 +12,8 @@ export const load: LayoutServerLoad = async ({ fetch, params }) => {
 		fetch,
 		params: { query: { model: 'post', pk: +params.post_id } }
 	});
+	// TODO: properly handle fetch errors
+	if (!comments) error(500, 'Failed to fetch data.');
 	return { comments };
 };
 

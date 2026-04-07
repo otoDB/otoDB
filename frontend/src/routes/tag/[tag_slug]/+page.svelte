@@ -31,6 +31,7 @@
 		TagWorkConnection
 	} from '$lib/enums/TagWorkConnection';
 	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -55,11 +56,15 @@
 		)
 	);
 
-	let wikiView = $derived(
-		Languages[data.wiki_page?.find(({ lang }) => lang === Languages[getLocale()])?.lang] ??
-			Languages[data.wiki_page?.at(0)?.lang] ??
-			undefined
-	);
+	let wikiView = $derived.by(() => {
+		const wikiUserLang = data.wiki_page.find(({ lang }) => lang === Languages[getLocale()]);
+		if (wikiUserLang) return resolveLanguageKeyById(wikiUserLang.lang);
+
+		const wikiFallback = data.wiki_page.at(0);
+		if (wikiFallback) return resolveLanguageKeyById(wikiFallback.lang);
+
+		return undefined;
+	});
 
 	const fetchNextBatch = () =>
 		client.GET('/api/tag/works', {
@@ -184,10 +189,10 @@
 	<hr class="my-2" />
 
 	{#if data.wiki_page && data.wiki_page.length}
-		{@const wp = data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
+		{@const wp = data.wiki_page.find(({ lang }) => lang === Languages[wikiView])}
 		<div class="float-right clear-left my-2">
 			<LangSwitch
-				availableLanguages={data.wiki_page.map((v) => Languages[v.lang])}
+				availableLanguages={data.wiki_page.map((v) => resolveLanguageKeyById(v.lang))}
 				bind:value={wikiView}
 			/>
 		</div>

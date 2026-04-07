@@ -11,6 +11,7 @@
 	import { timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { resolveLanguageKeyById } from '$lib/enums/Languages.js';
 
 	let { data } = $props();
 
@@ -176,7 +177,7 @@
 			{/if}
 		</div>
 		<LangSwitch
-			availableLanguages={data.post.pages.map((v) => Languages[v.lang])}
+			availableLanguages={data.post.pages.map((v) => resolveLanguageKeyById(v.lang))}
 			bind:value={lang_view}
 		/>
 		{#if data.post.category > 0}

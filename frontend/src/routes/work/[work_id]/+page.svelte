@@ -98,12 +98,22 @@
 		];
 	};
 
-	const www = $derived(
-		Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map((d) => [
-			d[0],
-			Object.entries(Object.groupBy(d[1], (r) => r.relation))
-		])
-	);
+	const www: [number, [number, { A_id: number; B_id: number; relation: number }][]][] =
+		$derived.by(() => {
+			const [rl, oh] = data.relations;
+
+			console.dir(data.relations);
+
+			const ww = Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id));
+			console.dir(ww, { depth: null });
+
+			const a = Object.entries(
+				Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))
+			).map((d) => [d[0], Object.entries(Object.groupBy(d[1], (r) => r.relation))]);
+
+			console.dir(a, { depth: null });
+			return a;
+		});
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>

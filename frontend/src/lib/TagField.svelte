@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ComponentProps } from 'svelte';
 	import client, { getTagDisplaySlug } from './api';
 	import TagSuggestionResults from './TagSuggestionResults.svelte';
 	import { clickOutside, debounce } from './ui';
@@ -10,20 +11,42 @@
 	}
 	let { value = $bindable(''), type, ...props }: Props = $props();
 
-	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
+	const endpoint = $derived.by(() => {
+		switch (type) {
+			case 'work':
+				return '/api/tag/search';
+			case 'song':
+				return '/api/tag/song_tag_search';
+		}
+	});
 
-	let suggestions = $state([]);
+	let suggestions: ComponentProps<typeof TagSuggestionResults>['suggestions'] = $state([]);
 
 	const search = async () => {
 		if (value === '') {
 			suggestions = [];
 			return;
 		}
-		const { data } = await client.GET(endpoint, {
-			params: {
-				query: { query: value, limit: 10, resolve_aliases: props.resolve_aliases ?? true }
+		const { data } = await client.GET(
+			(() => {
+				switch (type) {
+					case 'work':
+					case 'song':
+						// return '/api/tag/search' as const;
+						return '/api/tag/song_tag_search';
+				}
+			})(),
+			{
+				params: {
+					query: {
+						query: value,
+						limit: 10,
+						resolve_aliases: props.resolve_aliases ?? true
+					}
+				}
 			}
-		});
+		);
+		console.dir(data);
 		if (!data) return;
 		suggestions = data.items;
 	};

@@ -1,8 +1,18 @@
 <script lang="ts">
 	import { WorkTagPresentationColours } from './enums';
 
+	type SuggestionTag = {
+		id: number;
+		name: string;
+		slug: string;
+		category: number;
+		aliased_to: SuggestionTag | null;
+		n_instance: number | null | undefined;
+		lang_prefs: { tag: string }[];
+	};
+
 	interface Props {
-		suggestions: any[];
+		suggestions: SuggestionTag[];
 		onselect: (tag: any) => void;
 		onclose?: () => void;
 		type: 'work' | 'song';
@@ -93,12 +103,8 @@
 				{#if t.slug !== t.name}
 					{@const slugParts = highlightMatch(t.slug, query)}
 					<address class="inline">
-						({slugParts.before}<strong>{slugParts.match}</strong>{slugParts.after}{[
-							'',
-							...t.lang_prefs
-						]
-							.map((p) => p.tag)
-							.join(', ')})
+						({slugParts.before}<strong>{slugParts.match}</strong
+						>{slugParts.after}{t.lang_prefs.map((p) => p.tag).join(', ')})
 					</address>
 				{/if}
 			</span>

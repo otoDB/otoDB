@@ -1,23 +1,26 @@
 <script lang="ts">
-	import { Languages } from './enums';
-	import { locales } from './paraglide/runtime';
+	import { languages } from './enums/Languages';
 
 	import { getLocale } from './paraglide/runtime';
-	import { onMount } from 'svelte';
 
-	let { value = $bindable(), availableLanguages = locales } = $props();
-	onMount(() => {
-		const i = availableLanguages.find((p) => p === getLocale());
-		if (i) value = i;
-		else value = availableLanguages[0];
-	});
+	let {
+		availableLanguages,
+		value = $bindable(
+			availableLanguages.includes(getLocale() as keyof typeof languages)
+				? (getLocale() as keyof typeof languages)
+				: availableLanguages[0]
+		)
+	}: {
+		value: keyof typeof languages;
+		availableLanguages: (keyof typeof languages)[];
+	} = $props();
 </script>
 
 <div class="float-right">
 	{#each availableLanguages as l (l)}
 		<label class="lang-tab">
 			<input type="radio" bind:group={value} value={l} />
-			{Languages[l].name}
+			{languages[value].name}
 		</label>
 	{/each}
 </div>

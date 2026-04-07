@@ -39,7 +39,10 @@ TOTAL_ERRORS=$(echo "$RESULT" | head -1 | cut -f1)
 TOTAL_WARNINGS=$(echo "$RESULT" | head -1 | cut -f2)
 TOTAL_FILES=$(echo "$RESULT" | head -1 | cut -f3)
 
-TABLE=$(echo "$RESULT" | tail -n +2 | sort -t$'\t' -k1 -rn | awk -F'\t' '{printf "| `%s` | %d | %d |\n", $3, $1, $2}')
+TABLE=$(echo "$RESULT" | tail -n +2 | sort -t$'\t' -k1 -rn | awk -F'\t' -v root="$ROOT_DIR/" '{
+  rel = $3; sub(root, "", rel)
+  printf "| [%s](%s) | %d | %d |\n", rel, rel, $1, $2
+}')
 
 cat > "$OUTPUT" <<EOF
 # Type Check Report

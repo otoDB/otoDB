@@ -14,7 +14,7 @@
 		value: components['schemas']['WorkSchema'] | null | undefined;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 		oninput?: Function;
-		name: string;
+		name?: string;
 	}
 	let { value = $bindable(undefined), oninput = undefined, name }: Props = $props();
 

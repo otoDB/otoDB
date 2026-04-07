@@ -9,7 +9,8 @@ OUTPUT="$ROOT_DIR/type-check-report.md"
 
 cd "$ROOT_DIR"
 
-RAW=$(bun run check 2>&1 || true)
+bun run svelte-kit sync > /dev/null 2>&1 || true
+RAW=$(bunx svelte-check --tsconfig ./tsconfig.json --output machine 2>&1 || true)
 
 RESULT=$(echo "$RAW" | awk '
 /^[0-9]+ (ERROR|WARNING)/ {

@@ -33,12 +33,16 @@ def NFKC(s: str):
 	return unicodedata.normalize('NFKC', s)
 
 
-def clean_incoming_tag_name(s: str):
-	return NFKC(s).lower().replace(' ', '_')
+def clean_tag(s: str):
+	return NFKC(s).strip()
 
 
-def clean_incoming_slug(s: str):
-	return slugify(clean_incoming_tag_name(s), True)
+def canonicalize_tag(s: str):
+	return clean_tag(s).lower().replace(' ', '_')
+
+
+def slugify_tag(s: str):
+	return slugify(canonicalize_tag(s), allow_unicode=True)
 
 
 class NiconicoIECustom(NiconicoIE):
@@ -267,7 +271,7 @@ def process_video_info(full_info, link=None):
 
 		# Process tags
 		if 'tags' in info:
-			info['tags'] = [clean_incoming_tag_name(tag) for tag in info['tags']]
+			info['tags'] = [canonicalize_tag(tag) for tag in info['tags']]
 			info['tags'] = list(dict.fromkeys(info['tags']))
 
 		# Clean description

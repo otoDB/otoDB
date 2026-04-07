@@ -17,7 +17,7 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import SongTag from '$lib/SongTag.svelte';
-	import client, { getTagDisplayName, makeTagDisplayName } from '$lib/api.js';
+	import client, { getTagDisplayName } from '$lib/api.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
@@ -47,9 +47,9 @@
 	);
 
 	const aliases = $derived(
-		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])]
-			.map(makeTagDisplayName)
-			.filter((e) => e !== data.display_name)
+		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])].filter(
+			(e) => e !== data.display_name
+		)
 	);
 
 	let wikiView = $derived(

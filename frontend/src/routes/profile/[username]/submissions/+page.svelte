@@ -181,7 +181,7 @@
 					{#each data.submissions.items as src, i (i)}
 						<tr>
 							<td class="whitespace-nowrap">{src.title || src.url}</td>
-							<td class="whitespace-nowrap">{src.rejection.reason}</td>
+							<!-- <td class="whitespace-nowrap">{src.rejection.reason}</td> `src.rejection` might be no longer exists. -->
 							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
 							<td class="whitespace-nowrap"
@@ -205,7 +205,7 @@
 			n_count={data.submissions.count}
 			page={data.page}
 			page_size={data.batch_size}
-			base_url={page.url}
+			base_url={page.url.toString()}
 		/>
 	{/if}
 </Section>

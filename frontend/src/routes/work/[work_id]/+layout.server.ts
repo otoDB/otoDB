@@ -25,7 +25,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			303,
 			url.pathname.replace(
 				encodeURIComponent(params.work_id),
-				encodeURIComponent(e as string)
+				encodeURIComponent(e as unknown as string)
 			)
 		);
 	if (e) error(404, { message: 'Not found' });

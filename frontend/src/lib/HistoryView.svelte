@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import client from './api';
-	import { UserLevel } from './enums';
-	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
-	import type { components } from './schema';
 	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
+	import { m } from './paraglide/messages';
+	import type { components } from './schema';
+	import { timeAgo } from './ui';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
 		user: components['schemas']['UserStatusSchema'] | null;

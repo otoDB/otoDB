@@ -11,6 +11,7 @@
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 
 	let { data, form }: PageProps = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, '')),
@@ -179,7 +180,7 @@
 							{#if src.work_status === 0}
 								<RefreshButton source={src} />
 							{:else if src.work_status === 1}
-								{#if data.user?.level >= UserLevel.EDITOR}
+								{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 									<a href="/upload/add?for_source={src.id}"
 										>{m.minor_crisp_cobra_list()}</a
 									>
@@ -195,7 +196,7 @@
 		<br />
 		<input type="submit" />
 	</form>
-	{#if data.user?.level >= UserLevel.ADMIN}
+	{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 		<button onclick={del}>{m.suave_less_deer_grip()}</button>
 	{/if}
 </Section>

@@ -94,21 +94,6 @@ export const SongRelationPredicate = [
 	m.curly_many_orangutan_grip
 ];
 
-export const UserLevel = {
-	ANONYMOUS: 0,
-	RESTRICTED: 10,
-	MEMBER: 20,
-	EDITOR: 40,
-	ADMIN: 50,
-	OWNER: 100,
-	0: m.heroic_busy_shrimp_lend,
-	10: m.fancy_formal_falcon_quell,
-	20: m.drab_alive_midge_edit,
-	40: m.tasty_spry_firefox_fall,
-	50: m.silly_blue_felix_amuse,
-	100: m.tangy_formal_lionfish_tap
-};
-
 /**
  * @deprecated
  */
@@ -258,7 +243,6 @@ export const MediaConnectionLink = {
 	50: (id: string) => `https://vgmdb.net/product/${id}`
 };
 
-
 export const themes = {
 	default: { id: 0, nameFn: m.grassy_noble_walrus_wish },
 	aniki: { id: 1, nameFn: m.next_ago_opossum_swim },
@@ -266,12 +250,12 @@ export const themes = {
 	'retro-voyage': { id: 3, nameFn: m.tiny_plane_ape_pull },
 	sorimix: { id: 4, nameFn: m.mean_zesty_ray_savor },
 	resample: { id: 5, nameFn: () => 'Re:Sample' }
-} as const;
+} as const satisfies Record<string, { id: number; nameFn: () => string }>;
 /**
  * @deprecated そもそもテーマIDを数値として扱うのを止めるべきだ．
  */
 export const getThemeNameById = (id: number): keyof typeof themes => {
-	const theme = Object.entries(themes).find(([key, value]) => value.id === id)?.[0];
+	const theme = Object.entries(themes).find(([_, value]) => value.id === id)?.[0];
 	return theme ? (theme as keyof typeof themes) : 'default';
 };
 

@@ -1,7 +1,7 @@
 import client from '$lib/api';
+import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { UserLevel } from '$lib/enums';
 
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	if (!locals.user || params.username !== locals.user?.username)
@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	if (errorConnection) error(500, 'Failed to load profile connections');
 	if (!dataConnections) error(500, 'Failed to load profile connections');
 
-	if (locals.user.level >= UserLevel.EDITOR) {
+	if (hasUserLevel(resolveUserLevelById(locals.user.level), 'EDITOR')) {
 		const { data: invitesData, error: errorInvites } = await client.GET('/api/auth/invites', {
 			fetch
 		});

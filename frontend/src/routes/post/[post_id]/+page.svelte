@@ -1,17 +1,18 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
-	import { EntityModelRoutes, Languages, PostCategories, UserLevel } from '$lib/enums.js';
+	import { EntityModelRoutes, Languages, PostCategories } from '$lib/enums.js';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel.js';
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
-	import { enhance } from '$app/forms';
-	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
 
 	let { data } = $props();
 
@@ -75,7 +76,9 @@
 			.filter((x) => x)
 	);
 
-	const is_admin = data.user && data.user.level >= UserLevel.ADMIN;
+	const is_admin = $derived(
+		data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'ADMIN')
+	);
 	const editedByOther =
 		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username;
 	const canEdit =

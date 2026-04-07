@@ -2,15 +2,15 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
-	import { m } from '$lib/paraglide/messages';
 	import {
 		allProfileConnectionKeys,
 		ProfileConnection,
 		resolveProfileConnectionNameById
 	} from '$lib/enums/ProfileConnection';
+	import { hasUserLevel, resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
+	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
 	import { timeAgo } from '$lib/ui';
-	import { resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
 
 	let { data } = $props();
 
@@ -77,7 +77,7 @@
 	</form>
 </Section>
 
-{#if data.user.level >= UserLevel.EDITOR.id}
+{#if hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 	<Section title={m.true_male_kudu_cook()}>
 		<p>
 			{m.sound_flaky_goose_pinch()}

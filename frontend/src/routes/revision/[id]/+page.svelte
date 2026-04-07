@@ -9,7 +9,6 @@
 		Rating,
 		SongRelationTypes,
 		SongTagCategory,
-		UserLevel,
 		WorkOrigin,
 		WorkRelationTypes,
 		WorkStatus,
@@ -22,10 +21,17 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import Section from '$lib/Section.svelte';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
-	import { resolveTagWorkConnectionNameById, TagWorkConnection } from '$lib/enums/TagWorkConnection';
+	import {
+		resolveTagWorkConnectionNameById,
+		TagWorkConnection
+	} from '$lib/enums/TagWorkConnection';
 	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
 	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection';
-	import { ProfileConnection, resolveProfileConnectionNameById } from '$lib/enums/ProfileConnection';
+	import {
+		ProfileConnection,
+		resolveProfileConnectionNameById
+	} from '$lib/enums/ProfileConnection';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel.js';
 
 	let { data } = $props();
 	let routes = $derived(
@@ -127,7 +133,11 @@
 			case 'tagworkinstance':
 				switch (col) {
 					case 'creator_roles':
-						return expand_bit_field(Object.fromEntries(Object.values(creatorRole).map((v) => [v.id, v.nameFn])))(val);
+						return expand_bit_field(
+							Object.fromEntries(
+								Object.values(creatorRole).map((v) => [v.id, v.nameFn])
+							)
+						)(val);
 				}
 				break;
 			case 'wikipage':
@@ -164,7 +174,7 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
-	{#if data.user?.level >= UserLevel.ADMIN && data.revision.id > 1}<button
+	{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'ADMIN') && data.revision.id > 1}<button
 			class="my-5"
 			onclick={async () => {
 				if (!confirm('Are you sure?')) return;

@@ -12,7 +12,7 @@
 		set_lang,
 		Version
 	} from '$lib/ui';
-	import { getThemeNameById, UserLevel } from '$lib/enums';
+	import { getThemeNameById } from '$lib/enums';
 	import { languages } from '$lib/enums/Languages';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
@@ -20,6 +20,7 @@
 	import { env } from '$env/dynamic/public';
 	import { callErrorToast } from '$lib/toast';
 	import Section from '$lib/Section.svelte';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 
 	let { data, children } = $props();
 
@@ -252,7 +253,7 @@
 						{@render link('/', m.fine_late_chicken_quiz())}
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
 						{@render link('/work/search', m.grand_merry_fly_succeed())}
-						{#if data.user?.level >= UserLevel.MEMBER}
+						{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'MEMBER')}
 							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 						{/if}
 						{@render link('/tag/search', m.empty_legal_chicken_taste())}
@@ -320,7 +321,7 @@
 						{/if}
 					</ul>
 				</div>
-				{#if data.user?.level >= UserLevel.EDITOR}
+				{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -334,7 +335,7 @@
 						</ul>
 					</div>
 				{/if}
-				{#if data.user?.level >= UserLevel.ADMIN}
+				{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'ADMIN')}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>

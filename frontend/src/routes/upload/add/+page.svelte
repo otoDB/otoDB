@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { UserLevel, Platform } from '$lib/enums';
+	import { Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
 	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 

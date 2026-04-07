@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { Platform, Status, WorkOrigin, WorkStatus } from '$lib/enums';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import Pager from '$lib/Pager.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import RefreshButton from '$lib/RefreshButton.svelte';
 	import Section from '$lib/Section.svelte';
 	import type { PageProps } from './$types';
-	import { m } from '$lib/paraglide/messages.js';
-	import { Platform, Status, UserLevel, WorkOrigin, WorkStatus } from '$lib/enums';
-	import RefreshButton from '$lib/RefreshButton.svelte';
-	import Pager from '$lib/Pager.svelte';
-	import { page } from '$app/state';
 
 	let { data }: PageProps = $props();
 </script>
@@ -88,7 +89,7 @@
 						<th>{m.super_agent_pigeon_aim()}</th>
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if data.user && data.user.level >= UserLevel.EDITOR}
+						{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 							<th>{m.mushy_proof_hornet_dig()}</th>
 						{/if}
 					</tr></thead
@@ -106,7 +107,7 @@
 									>{m.noisy_moving_newt_belong()}</a
 								></td
 							>
-							{#if data.user && data.user.level >= UserLevel.EDITOR}
+							{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 								<td><RefreshButton source={src} /></td>
 							{/if}
 						</tr>

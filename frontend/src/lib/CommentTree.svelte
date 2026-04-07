@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import client, { makeCommentTree, type CommentModels } from './api';
-	import { UserLevel } from './enums';
+
+	import { enhance } from '$app/forms';
+	import { hasUserLevel, resolveUserLevelById } from './enums/UserLevel';
 	import { renderMarkdown } from './markdown';
 	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
 	import type { components } from './schema';
-	import { enhance } from '$app/forms';
+	import { timeAgo } from './ui';
 
 	interface Props {
 		comments: components['schemas']['CommentSchema'][];
@@ -67,8 +68,10 @@
 		editPreviewMode = false;
 	};
 
-	const can_comment = user && user.level >= UserLevel.MEMBER;
-	const is_admin = user && user.level >= UserLevel.ADMIN;
+	const can_comment = $derived(
+		!!user && hasUserLevel(resolveUserLevelById(user.level), 'MEMBER')
+	);
+	const is_admin = $derived(!!user && hasUserLevel(resolveUserLevelById(user.level), 'ADMIN'));
 
 	const canEdit = (data: {
 		user: { username: string };
@@ -235,7 +238,7 @@
 							{m.minor_crisp_cobra_list()}
 						</button>
 					{/if}
-					{#if user && (user.level >= UserLevel.ADMIN || data.user.username === user.username)}
+					{#if user && (hasUserLevel(resolveUserLevelById(user.level), 'ADMIN') || data.user.username === user.username)}
 						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 							>{m.even_alert_grebe_taste()}</button
 						>

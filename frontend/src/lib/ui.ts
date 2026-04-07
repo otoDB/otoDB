@@ -1,6 +1,5 @@
 import { browser } from '$app/environment';
 import client from './api';
-import { Languages, themes, type SupportedLanguage } from './enums';
 import { languages } from './enums/Languages';
 import { getLocale, setLocale } from './paraglide/runtime';
 import { enhance } from '$app/forms';
@@ -12,13 +11,6 @@ export const debounce = (callback: Function, wait = 300) => {
 	return (...args: any[]) => {
 		if (timeout) clearTimeout(timeout);
 		timeout = setTimeout(() => callback(...args), wait);
-	};
-};
-
-export const once = (fn) => {
-	return function (event) {
-		if (fn) fn.call(this, event);
-		fn = null;
 	};
 };
 

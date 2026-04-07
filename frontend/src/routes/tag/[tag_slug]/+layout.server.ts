@@ -19,15 +19,15 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		fetch
 	});
 
-	if (response.status === 300)
+	if (response.status === 300) {
 		redirect(
 			303,
 			url.pathname.replace(
 				encodeURIComponent(params.tag_slug),
-				encodeURIComponent(e as string)
+				encodeURIComponent(e as unknown as string)
 			)
 		);
-	else if (e) error(404, { message: 'Not found' });
+	} else if (e) error(404, { message: 'Not found' });
 
 	const song_relations = data.song
 		? (

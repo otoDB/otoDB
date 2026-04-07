@@ -11,14 +11,14 @@
 	import { timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 	import { enhance } from '$app/forms';
-	import { resolveLanguageKeyById } from '$lib/enums/Languages.js';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
 
 	let { data } = $props();
 
 	let lang_view = $derived(
-		data.post.pages.some((p) => p.lang === Languages[getLocale()])
+		data.post.pages.some((p) => p.lang === languages[getLocale()].id)
 			? getLocale()
-			: Languages[data.post.pages[0].lang]
+			: resolveLanguageKeyById(data.post.pages[0].lang)
 	);
 	let page_object = $derived(data.post.pages.find((p) => p.lang === Languages[lang_view]));
 	let page = $derived(renderMarkdown(page_object?.page ?? ''));

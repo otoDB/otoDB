@@ -1,13 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { UserLevel } from './enums';
 import { hasUserLevel, resolveUserLevelById, UserLevel as UserLevel2 } from './enums/UserLevel';
-
-/**
- * @deprecated
- */
-export const userLevelCheck = (user: App.Locals['user'], userLevel = UserLevel.MEMBER) => {
-	return !user || user.level < userLevel;
-};
 
 export const userLevelGuard = (
 	user: App.Locals['user'],

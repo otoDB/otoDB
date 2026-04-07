@@ -1,9 +1,8 @@
+import client, { getTagDisplayName } from '$lib/api';
+import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 import { m } from '$lib/paraglide/messages.js';
-import client from '$lib/api';
-import type { LayoutServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
-import { userLevelCheck } from '$lib/route_guard';
-import { getTagDisplayName } from '$lib/api';
+import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	const {
@@ -48,7 +47,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `tag/${params.tag_slug}`,
 				title: m.empty_legal_chicken_taste() + ' ' + params.tag_slug
 			},
-			...(userLevelCheck(locals.user)
+			...(hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
 				? []
 				: [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]),
 			{
@@ -66,7 +65,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 						pathname: `tag/${params.tag_slug}`,
 						title: m.grand_nice_pony_belong() + ' ' + data.song.id
 					},
-					...(userLevelCheck(locals.user)
+					...(hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
 						? []
 						: [
 								{

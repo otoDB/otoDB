@@ -1,8 +1,8 @@
-import type { LayoutServerLoad } from './$types';
-import { m } from '$lib/paraglide/messages.js';
 import client, { getDisplayText } from '$lib/api';
+import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+import { m } from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
-import { userLevelCheck } from '$lib/route_guard';
+import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
@@ -30,7 +30,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		);
 	if (e) error(404, { message: 'Not found' });
 
-	const loggedOut = userLevelCheck(locals.user);
+	const loggedOut = !hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER');
 
 	return {
 		links: [

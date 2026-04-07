@@ -30,7 +30,10 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		);
 	if (e) error(404, { message: 'Not found' });
 
-	const loggedOut = !hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER');
+	const loggedOut = !(
+		(locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER'))
+		// TODO: `locals.user`の存在確認をしないといけないのはよくわからない．型が間違っている可能性がある．
+	);
 
 	return {
 		links: [

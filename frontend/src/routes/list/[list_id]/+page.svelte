@@ -14,7 +14,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	let pending_items = $derived(data.pending_items!.items);
 

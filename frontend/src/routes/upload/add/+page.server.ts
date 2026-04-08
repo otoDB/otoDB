@@ -5,6 +5,7 @@ import client, { getDisplayText } from '$lib/api';
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
 import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+import type { components } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 	userLevelGuard(locals.user, 'MEMBER', url.pathname);
@@ -67,7 +68,7 @@ export const actions = {
 		const editing_unavailable_source = source && !isNaN(+source);
 
 		// Build metadata object only if user is editor AND manual fields provided
-		let metadata: Record<string, any> | undefined = undefined;
+		let metadata: components['schemas']['WorkSourceMetadataSchema'] | undefined = undefined;
 		if (locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'EDITOR')) {
 			const hasManualData =
 				data.get('manual_title') ||
@@ -99,7 +100,7 @@ export const actions = {
 			}
 		}
 
-		if (editing_unavailable_source) {
+		if (editing_unavailable_source && metadata) {
 			const { data: work_id, error } = await client.PUT('/api/upload/source', {
 				fetch,
 				params: { query: { source_id: +source } },

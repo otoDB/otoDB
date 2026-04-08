@@ -19,6 +19,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bunx prettier --check .
       - run: bunx eslint .
+      - run: bun run test
 
   # build_docker:
   #   name: Build Docker image

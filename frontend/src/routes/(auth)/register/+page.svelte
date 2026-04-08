@@ -3,9 +3,8 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import Section from '$lib/Section.svelte';
 	import { callErrorToast } from '$lib/toast';
-	import type { PageProps } from './$types';
 
-	let { form }: PageProps = $props();
+	let { form } = $props();
 
 	$effect(() => {
 		console.dir(form);

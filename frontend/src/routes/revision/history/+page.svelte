@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
@@ -9,7 +9,7 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section title={m.giant_away_scallop_hike()}>

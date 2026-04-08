@@ -19,14 +19,14 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import type { ComponentProps } from 'svelte';
-	import type { PageProps } from './$types';
+
 	import {
 		resolveWorkTagCategoryKeyById,
 		WorkTagCategory as WorkTagCategory2
 	} from '$lib/enums/WorkTagCategory';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	let [userLists, userListsFetched]: [[components['schemas']['ListSchema'], boolean][], boolean] =
 			$derived(data && [[], false]),

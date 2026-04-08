@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import { timeAgo } from '$lib/ui';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>

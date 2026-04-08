@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import client from '$lib/api';
 	import { SongTagCategory } from '$lib/enums';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import SongTag from '$lib/SongTag.svelte';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 	let results = $derived(data.results!.items);
 	let category = $state(data.category);
 

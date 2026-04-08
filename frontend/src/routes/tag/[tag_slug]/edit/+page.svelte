@@ -11,7 +11,7 @@
 		MediaType,
 		allMediaTypeKeys
 	} from '$lib/enums';
-	import type { PageProps } from './$types';
+
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import client, { getTagDisplaySlug } from '$lib/api';
 	import { renderMarkdown } from '$lib/markdown';
@@ -26,7 +26,7 @@
 	import { allProfileConnectionKeys, ProfileConnection } from '$lib/enums/ProfileConnection';
 	import { allTagWorkConnectionKeys, TagWorkConnection } from '$lib/enums/TagWorkConnection';
 
-	let { data, form }: PageProps = $props();
+	let { data, form } = $props();
 
 	let parents = $state(
 		form?.parent_slugs ?? data.parents?.map((t) => getTagDisplaySlug(t)) ?? []

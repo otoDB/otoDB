@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { debounce } from '$lib/ui';
@@ -12,7 +11,7 @@
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
-	let { data, form }: PageProps = $props();
+	let { data, form } = $props();
 
 	let entries = $derived.by(() => {
 		// https://github.com/sveltejs/svelte/issues/16189

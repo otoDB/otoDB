@@ -13,7 +13,7 @@
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 
-	let { data, form }: PageProps = $props();
+	let { data, form } = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, '')),
 		description: string = $state(form?.description ?? data.description!),
 		rating: number = $state(form?.rating ?? data.rating!),

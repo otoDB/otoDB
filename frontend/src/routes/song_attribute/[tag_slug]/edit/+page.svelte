@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { LanguageNames, Languages, SongTagCategory } from '$lib/enums';
 	import { enhance } from '$app/forms';
-	import type { PageProps } from './$types';
+
 	import TagField from '$lib/TagField.svelte';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import client from '$lib/api';
@@ -12,7 +12,7 @@
 	import { locales } from '$lib/paraglide/runtime';
 	import type { components } from '$lib/schema';
 
-	let { data, form }: PageProps = $props();
+	let { data, form } = $props();
 
 	let category = $state(form?.category ?? data.tag?.category);
 	$effect(() => {

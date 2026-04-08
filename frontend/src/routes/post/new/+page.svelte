@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
-	let { data }: PageProps = $props();
+
+	let { data } = $props();
 	import { m } from '$lib/paraglide/messages.js';
 	import {
 		buildEntityRoutes,

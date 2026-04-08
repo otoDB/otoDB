@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import { WorkTagCategory } from '$lib/enums';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -10,7 +10,7 @@
 	import { languages } from '$lib/enums/Languages';
 	import { allMediaTypes, mediaTypes } from '$lib/enums/MediaType';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	let category = $state(data.category);
 </script>

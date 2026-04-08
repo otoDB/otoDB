@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import ThreadTable from '$lib/ThreadTable.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { allPostCategories } from '$lib/enums/PostCategory';
 	import { postCategory } from '$lib/enums/PostCategory';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section

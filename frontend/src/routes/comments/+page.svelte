@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { buildCommentRoutes } from '$lib/enums';
 	import { timeAgo } from '$lib/ui';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section title={m.same_broad_haddock_pinch()}>

@@ -1,14 +1,17 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getVersionKey, Version } from '$lib/ui';
 	import { resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
-	import { ProfileConnection, resolveProfileConnectionNameById } from '$lib/enums/ProfileConnection';
+	import {
+		ProfileConnection,
+		resolveProfileConnectionNameById
+	} from '$lib/enums/ProfileConnection';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	const profileLd =
 		'<script type="application/ld+json">' +

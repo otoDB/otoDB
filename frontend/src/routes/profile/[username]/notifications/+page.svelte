@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { CommentModelRoutes } from '$lib/enums';
 	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	const dismiss = async (id: number, dismissed: boolean, target: string) => {
 		if (!dismissed)

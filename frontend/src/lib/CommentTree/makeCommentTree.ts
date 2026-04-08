@@ -3,7 +3,7 @@ import type { components } from '$lib/schema';
 
 type Comment = components['schemas']['CommentSchema'];
 type CommentTreeNodeWIP = Omit<Comment, 'submit_date'> & { time: Date };
-type CommentTreeNode = CommentTreeNodeWIP & { time: Date; children: CommentTreeNode[] };
+type CommentTreeNode = CommentTreeNodeWIP & { children: CommentTreeNode[] };
 
 export const makeCommentTree = (comments: Comment[]): CommentTreeNode[] => {
 	if (comments.length === 0) return [];
@@ -17,8 +17,7 @@ export const makeCommentTree = (comments: Comment[]): CommentTreeNode[] => {
 	)
 		.map(([level, comments]) => [parseInt(level, 10), comments] as const)
 		.toSorted(([a], [b]) => b - a)
-		.map(([_, v]) => v)
-		.filter((v) => !!v) // TODO: 一応入れているがas anyなりで握りつぶしても問題はないはず？
+		.map(([_, v]) => v as CommentTreeNodeWIP[]) // MEMO: In type `v` might be `undefined` but it won't be (maybe).
 		.reduce((acc, cur, i) => {
 			if (i === 0) return [cur.map((c) => ({ ...c, children: [] }))];
 			else

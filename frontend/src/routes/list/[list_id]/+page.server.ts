@@ -27,6 +27,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	]);
 	// TODO: properly handle fetch errors
 	if (!entries) error(500, 'Failed to fetch data.');
+	if (!comments) error(500, 'Failed to fetch comments.');
 
 	return { entries, comments, pending_items, batch_size, page };
 };

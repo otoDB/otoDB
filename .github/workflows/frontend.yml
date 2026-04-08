@@ -20,6 +20,7 @@ jobs:
       - run: bunx prettier --check .
       - run: bunx eslint .
       - run: bun run check
+      - run: bun run test
 
   # build_docker:
   #   name: Build Docker image

@@ -11,6 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
+		"test": "bun test",
+		"test:watch": "bun test --watch",
 		"lint": "prettier --check . && eslint .",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build"
@@ -24,7 +26,6 @@
 		"@storybook/addon-docs": "^9.1.20",
 		"@storybook/addon-svelte-csf": "^5.0.12",
 		"@storybook/addon-themes": "^9.1.20",
-		"@storybook/addon-vitest": "^9.1.20",
 		"@storybook/sveltekit": "^9.1.20",
 		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/kit": "^2.55.0",
@@ -32,8 +33,6 @@
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.2",
 		"@types/set-cookie-parser": "^2.4.10",
-		"@vitest/browser": "^4.1.0",
-		"@vitest/coverage-v8": "^4.1.0",
 		"eslint": "^9.39.4",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-storybook": "^9.1.20",
@@ -50,8 +49,7 @@
 		"tailwindcss": "^4.2.2",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.57.1",
-		"vite": "^7.3.1",
-		"vitest": "^4.1.0"
+		"vite": "^7.3.1"
 	},
 	"dependencies": {
 		"@inlang/paraglide-js": "^2.15.1",

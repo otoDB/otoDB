@@ -1,20 +1,27 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import client, { makeCommentTree, type CommentModels } from './api';
-
 	import { enhance } from '$app/forms';
 	import { hasUserLevel, resolveUserLevelById } from './enums/UserLevel';
+	import client from './api';
 	import { renderMarkdown } from './markdown';
 	import { m } from './paraglide/messages';
-	import type { components } from './schema';
 	import { timeAgo } from './ui';
+	import { makeCommentTree } from './CommentTree/makeCommentTree';
+	export type CommentModels =
+		| 'mediawork'
+		| 'account'
+		| 'pool'
+		| 'tagwork'
+		| 'tagsong'
+		| 'post'
+		| 'bulkrequest';
 
 	interface Props {
-		comments: components['schemas']['CommentSchema'][];
 		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
 		model: CommentModels;
 		pk: number;
+		comments: Parameters<typeof makeCommentTree>[0];
 	}
 
 	const { comments, user = null, model, pk }: Props = $props();

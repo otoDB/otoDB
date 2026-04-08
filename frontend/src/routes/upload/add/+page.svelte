@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-
+	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
 	import { Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';

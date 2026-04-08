@@ -56,7 +56,7 @@
 			</li>
 		{/each}
 	</ul>
-	{#if hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR') && data.request.status === 0}
+	{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR') && data.request.status === 0}
 		<button onclick={() => set(1)}>{m.lucky_bold_hornet_push()}</button>
 		<button onclick={() => set(2)}>{m.alive_blue_marlin_push()}</button>
 	{/if}

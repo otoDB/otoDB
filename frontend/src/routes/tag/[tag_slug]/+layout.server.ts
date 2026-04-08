@@ -47,7 +47,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `tag/${params.tag_slug}`,
 				title: m.empty_legal_chicken_taste() + ' ' + params.tag_slug
 			},
-			...(hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
+			...(locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
 				? []
 				: [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]),
 			{
@@ -65,7 +65,8 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 						pathname: `tag/${params.tag_slug}`,
 						title: m.grand_nice_pony_belong() + ' ' + data.song.id
 					},
-					...(hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
+					...(locals.user &&
+					hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
 						? []
 						: [
 								{

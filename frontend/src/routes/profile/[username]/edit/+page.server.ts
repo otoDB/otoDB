@@ -31,6 +31,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 		const [invites, restrictedInvitee] = invitesData;
 
 		return {
+			user: locals.user,
 			connections: dataConnections,
 			invites: {
 				invites,
@@ -39,6 +40,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 		};
 	} else {
 		return {
+			user: locals.user,
 			connections: dataConnections,
 			invites: null
 		};

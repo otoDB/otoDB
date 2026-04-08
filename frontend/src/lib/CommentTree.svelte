@@ -1,12 +1,22 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import client, { makeCommentTree, type CommentModels } from './api';
+	import client from './api';
 	import { UserLevel } from './enums';
 	import { renderMarkdown } from './markdown';
 	import { m } from './paraglide/messages';
 	import { timeAgo } from './ui';
 	import type { components } from './schema';
 	import { enhance } from '$app/forms';
+	import { makeCommentTree } from './CommentTree/makeCommentTree';
+
+	export type CommentModels =
+		| 'mediawork'
+		| 'account'
+		| 'pool'
+		| 'tagwork'
+		| 'tagsong'
+		| 'post'
+		| 'bulkrequest';
 
 	interface Props {
 		comments: components['schemas']['CommentSchema'][];

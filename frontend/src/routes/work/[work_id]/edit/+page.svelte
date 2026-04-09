@@ -1,17 +1,16 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import type { PageProps } from '../$types';
-	import { Platform, Rating, WorkOrigin, UserLevel } from '$lib/enums';
-	import RelationEditor from '$lib/RelationEditor.svelte';
-	import client, { getDisplayText } from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
-	import { callErrorToast, callSavingToast } from '$lib/toast';
-	import { dirtyEnhance } from '$lib/ui';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import RefreshButton from '$lib/RefreshButton.svelte';
+	import RelationEditor from '$lib/RelationEditor.svelte';
+	import Section from '$lib/Section.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import client, { getDisplayText } from '$lib/api';
+	import { Platform, Rating, WorkOrigin } from '$lib/enums';
 	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { m } from '$lib/paraglide/messages.js';
+	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { dirtyEnhance } from '$lib/ui';
 
 	let { data, form } = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, '')),

@@ -10,6 +10,8 @@
 			category: Parameters<typeof resolveWorkTagCategoryKeyById>[0];
 			sample?: boolean;
 			creator_roles?: Parameters<typeof resolveCreatorRoleKeyById>[0][] | null;
+			lang_prefs: { lang: number; tag: string; slug: string }[];
+			name: string;
 		};
 		selected?: boolean;
 		onClick?: (tag: Props['tag']) => void;
@@ -40,7 +42,9 @@
 </a>
 {#if category === 'CREATOR' && tag.creator_roles?.length}
 	<address class="text-otodb-content-fainter inline px-1 text-xs">
-		{#each tag.creator_roles as role, i (i)}{creatorRole[resolveCreatorRoleKeyById(role)].nameFn()}
+		{#each tag.creator_roles as role, i (i)}{creatorRole[
+				resolveCreatorRoleKeyById(role)
+			].nameFn()}
 			{#if i < tag.creator_roles.length - 1},&nbsp{/if}
 		{/each}
 	</address>

@@ -45,7 +45,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `song_attribute/${params.tag_slug}`,
 				title: m.dull_plain_angelfish_cuddle() + ' ' + params.tag_slug
 			},
-			...(hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
+			...(locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
 				? []
 				: [
 						{

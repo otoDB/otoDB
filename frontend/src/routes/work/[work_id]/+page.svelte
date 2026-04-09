@@ -25,6 +25,7 @@
 		WorkTagCategory as WorkTagCategory2
 	} from '$lib/enums/WorkTagCategory';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
+	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
 

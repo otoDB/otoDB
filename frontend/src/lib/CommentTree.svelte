@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
 	import { enhance } from '$app/forms';
-	import { hasUserLevel, resolveUserLevelById } from './enums/UserLevel';
+	import { invalidateAll } from '$app/navigation';
 	import client from './api';
+	import { makeCommentTree } from './CommentTree/makeCommentTree';
+	import { hasUserLevel, resolveUserLevelById } from './enums/UserLevel';
 	import { renderMarkdown } from './markdown';
 	import { m } from './paraglide/messages';
 	import { timeAgo } from './ui';
-	import { makeCommentTree } from './CommentTree/makeCommentTree';
 	export type CommentModels =
 		| 'mediawork'
 		| 'account'
@@ -80,11 +80,7 @@
 	);
 	const is_admin = $derived(!!user && hasUserLevel(resolveUserLevelById(user.level), 'ADMIN'));
 
-	const canEdit = (data: {
-		user: { username: string };
-		time: Date;
-		edited_by: { username: string } | null;
-	}) => {
+	const canEdit = (data: ReturnType<typeof makeCommentTree>[number]) => {
 		if (!user) return false;
 		if (is_admin) return true;
 		if (data.user.username !== user.username) return false;
@@ -152,7 +148,11 @@
 	</form>
 {/snippet}
 
-{#snippet comment(data, this_component, depth: number)}
+{#snippet comment(
+	data: ReturnType<typeof makeCommentTree>[number],
+	this_component: any, // TODO: 面倒なので`any`
+	depth: number
+)}
 	<div class="comment grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">
 		<div
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"

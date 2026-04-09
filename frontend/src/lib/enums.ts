@@ -296,7 +296,7 @@ export const RequestActions = {
 	4: 'worktag:undeprecate',
 	5: 'worktag:parent',
 	6: 'worktag:unparent'
-};
+} as const;
 
 export const PostCategories = [
 	m.livid_loose_eel_pop,

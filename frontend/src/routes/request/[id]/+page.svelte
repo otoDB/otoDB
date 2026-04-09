@@ -10,10 +10,11 @@
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
+	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();
 
-	const set = async (status: number) => {
+	const set = async (status: 0 | 1 | 2) => {
 		await client.POST('/api/request/confirm', {
 			fetch,
 			params: { query: { request_id: data.id, status } }
@@ -22,7 +23,11 @@
 	};
 </script>
 
-{#snippet render_entity(ent)}
+{#snippet render_entity(
+	ent:
+		| ['tagwork', ComponentProps<typeof WorkTag>['tag']]
+		| ['mediawork', ComponentProps<typeof WorkCard>['work']]
+)}
 	{#if ent[0] === 'tagwork'}
 		<WorkTag tag={ent[1]} />
 	{:else if ent[0] === 'mediawork'}
@@ -50,9 +55,17 @@
 	<ul>
 		{#each data.request.requests as r, i (i)}
 			<li>
-				<code>{RequestActions[r.command]}</code>
-				{@render render_entity(r.A)}
-				{@render render_entity(r.B)}
+				<code
+					>{RequestActions[
+						r.command as keyof typeof RequestActions /* TODO: need check */
+					]}</code
+				>
+				{@render render_entity(
+					r.A as Parameters<typeof render_entity>[0] // TODO: more better handling
+				)}
+				{@render render_entity(
+					r.B as Parameters<typeof render_entity>[0] // TODO: more better handling
+				)}
 			</li>
 		{/each}
 	</ul>

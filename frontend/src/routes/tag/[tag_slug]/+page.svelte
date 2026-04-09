@@ -10,7 +10,6 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client, { getTagDisplayName } from '$lib/api.js';
-	import { Languages, WorkTagCategory } from '$lib/enums';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
 	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection.js';
 	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
@@ -23,7 +22,11 @@
 		resolveTagWorkConnectionNameById,
 		TagWorkConnection
 	} from '$lib/enums/TagWorkConnection';
-	import { isMediaCategoryId } from '$lib/enums/WorkTagCategory.js';
+	import {
+		isMediaCategoryId,
+		resolveWorkTagCategoryKeyById,
+		WorkTagCategory
+	} from '$lib/enums/WorkTagCategory.js';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
@@ -112,7 +115,7 @@
 	<h2>
 		{m.mild_loud_shad_enchant({
 			type: m.plane_awful_bobcat_spark(),
-			name: WorkTagCategory[data.tag.category]()
+			name: WorkTagCategory[resolveWorkTagCategoryKeyById(data.tag.category)].nameFn()
 		})}
 		{#if isMediaCategoryId(data.tag.category) && data.tag.media_type?.length}
 			({#each data.tag.media_type as t, i (i)}{mediaTypes[
@@ -180,22 +183,23 @@
 
 	<hr class="my-2" />
 
-	{#if data.wiki_page.length > 0}
-		{@const wp = data.wiki_page.find(({ lang }) => lang === languages[wikiView].id)}
+	{#if wikiView && data.wiki_page.length > 0}
+		{@const wp = data.wiki_page.find(
+			({ lang }) =>
+				lang === languages[wikiView! /* MEMO: this non-null assertion is ad-hoc */].id
+		)!}
 		<div class="float-right clear-left my-2">
 			<LangSwitch
 				availableLanguages={data.wiki_page.map((v) => resolveLanguageKeyById(v.lang))}
 				bind:value={wikiView}
 			/>
 		</div>
-		{#if wp}
-			<div
-				class="prose prose-neutral prose-sm dark:prose-invert prose-p:max-w-4xl prose-ul:max-w-4xl prose-ol:max-w-4xl prose-blockquote:max-w-4xl prose-headings:max-w-4xl max-w-none"
-			>
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html renderMarkdown(wp.page)}
-			</div>
-		{/if}
+		<div
+			class="prose prose-neutral prose-sm dark:prose-invert prose-p:max-w-4xl prose-ul:max-w-4xl prose-ol:max-w-4xl prose-blockquote:max-w-4xl prose-headings:max-w-4xl max-w-none"
+		>
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html renderMarkdown(wp.page)}
+		</div>
 	{:else}
 		<p>{m.tame_dirty_goldfish_flow()}</p>
 	{/if}

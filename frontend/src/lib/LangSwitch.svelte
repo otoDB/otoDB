@@ -1,15 +1,9 @@
 <script lang="ts">
 	import { languages } from './enums/Languages';
 
-	import { getLocale } from './paraglide/runtime';
-
 	let {
 		availableLanguages,
-		value = $bindable(
-			availableLanguages.includes(getLocale() as keyof typeof languages)
-				? (getLocale() as keyof typeof languages)
-				: availableLanguages[0]
-		)
+		value = $bindable()
 	}: {
 		value: keyof typeof languages;
 		availableLanguages: (keyof typeof languages)[];

@@ -11,14 +11,14 @@
 
 	let input: string = $state('');
 	interface Props {
-		value: components['schemas']['WorkSchema'] | null | undefined;
+		value: components['schemas']['ThinWorkSchema'] | null | undefined;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 		oninput?: Function;
 		name?: string;
 	}
 	let { value = $bindable(undefined), oninput = undefined, name }: Props = $props();
 
-	let suggestions: components['schemas']['WorkSchema'][] = $state([]);
+	let suggestions: components['schemas']['ThinWorkSchema'][] = $state([]);
 	let locked_in = $state(false);
 	let selectedIndex = $state(0);
 
@@ -27,7 +27,7 @@
 		selectedIndex = 0;
 	});
 
-	const selectWork = (v: components['schemas']['WorkSchema']) => {
+	const selectWork = (v: (typeof suggestions)[number]) => {
 		value = v;
 		input = getDisplayText(v.title, '');
 		suggestions = [];

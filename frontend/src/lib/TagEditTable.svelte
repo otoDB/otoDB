@@ -4,9 +4,9 @@
 	import { WorkTagCategoriesSettableAsSource } from '$lib/enums';
 	import { allCreatorRoles, creatorRole } from '$lib/enums/CreatorRole';
 	import { m } from '$lib/paraglide/messages.js';
-	import type { components } from '$lib/schema.js';
+	import type { ComponentProps } from 'svelte';
 
-	type TagCache = Record<string, components['schemas']['TagWorkInstanceThinSchema']>;
+	type TagCache = Record<string, ComponentProps<typeof WorkTag>['tag']>;
 
 	let {
 		tags,
@@ -33,10 +33,8 @@
 					}));
 				}
 				cache[t] = data ?? {
-					aliased_to: null,
 					category: 0,
 					creator_roles: null,
-					deprecated: false,
 					id: -1,
 					lang_prefs: [],
 					name: t,
@@ -93,9 +91,13 @@
 									<input
 										class="hidden"
 										type="checkbox"
-										checked={tag.creator_roles?.includes(creatorRole[k].id) || false}
+										checked={tag.creator_roles?.includes(creatorRole[k].id) ||
+											false}
 										onchange={() =>
-											toggle_creator_role(getTagDisplaySlug(tag), creatorRole[k].id)}
+											toggle_creator_role(
+												getTagDisplaySlug(tag),
+												creatorRole[k].id
+											)}
 									/>{creatorRole[k].nameFn()}
 								</label>
 							{/each}

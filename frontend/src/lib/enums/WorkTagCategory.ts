@@ -65,3 +65,8 @@ export const resolveWorkTagCategoryKeyById = (
 		([, c]) => c.id === id
 	)![0] as keyof typeof WorkTagCategory;
 };
+
+/**
+ * @deprecated
+ */
+export const isMediaCategoryId = (categoryId: number) => categoryId === WorkTagCategory.MEDIA.id;

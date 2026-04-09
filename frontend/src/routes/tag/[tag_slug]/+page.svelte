@@ -1,37 +1,33 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import {
-		Languages,
-		ProfileConnectionLink,
-		ProfileConnectionTypes,
-		SongConnectionLink,
-		SongConnectionTypes,
-		MediaConnectionLink,
-		MediaConnectionTypes,
-		WorkTagCategory,
-		MediaType
-	} from '$lib/enums';
-	import WorkCard from '$lib/WorkCard.svelte';
-	import CommentTree from '$lib/CommentTree.svelte';
-	import SongTag from '$lib/SongTag.svelte';
-	import client, { getTagDisplayName } from '$lib/api.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import WorkTag from '$lib/WorkTag.svelte';
-	import LangSwitch from '$lib/LangSwitch.svelte';
-	import type { components } from '$lib/schema.js';
-	import RelationViewer from '$lib/RelationViewer.svelte';
-	import { renderMarkdown } from '$lib/markdown';
-
 	import { page } from '$app/state';
+	import CommentTree from '$lib/CommentTree.svelte';
+	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import LangSwitch from '$lib/LangSwitch.svelte';
+	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import RelationViewer from '$lib/RelationViewer.svelte';
+	import Section from '$lib/Section.svelte';
+	import SongTag from '$lib/SongTag.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
+	import client, { getTagDisplayName } from '$lib/api.js';
+	import { Languages, WorkTagCategory } from '$lib/enums';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
+	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection.js';
+	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
+	import {
+		ProfileConnection,
+		resolveProfileConnectionNameById
+	} from '$lib/enums/ProfileConnection.js';
+	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
 	import {
 		resolveTagWorkConnectionNameById,
 		TagWorkConnection
 	} from '$lib/enums/TagWorkConnection';
-	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
-	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
+	import { isMediaCategoryId } from '$lib/enums/WorkTagCategory.js';
+	import { renderMarkdown } from '$lib/markdown';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
+	import type { components } from '$lib/schema.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -57,7 +53,7 @@
 	);
 
 	let wikiView = $derived.by(() => {
-		const wikiUserLang = data.wiki_page.find(({ lang }) => lang === Languages[getLocale()]);
+		const wikiUserLang = data.wiki_page.find(({ lang }) => lang === languages[getLocale()].id);
 		if (wikiUserLang) return resolveLanguageKeyById(wikiUserLang.lang);
 
 		const wikiFallback = data.wiki_page.at(0);
@@ -77,13 +73,6 @@
 				}
 			}
 		});
-
-	const ext_cat_types = $derived(
-		data.tag.category === 6 ? MediaConnectionTypes : ProfileConnectionTypes
-	);
-	const ext_cat_links = $derived(
-		data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink
-	);
 
 	const paths = $derived.by(() => {
 		const get_paths = (node: string): components['schemas']['TagWorkSchema'][][] =>
@@ -125,10 +114,10 @@
 			type: m.plane_awful_bobcat_spark(),
 			name: WorkTagCategory[data.tag.category]()
 		})}
-		{#if data.tag.category === 6 && data.tag.media_type?.length}
-			({#each data.tag.media_type as t, i (i)}{MediaType[
-					t
-				]()}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
+		{#if isMediaCategoryId(data.tag.category) && data.tag.media_type?.length}
+			({#each data.tag.media_type as t, i (i)}{mediaTypes[
+					resolveMediaTypeKeyById(t)
+				].nameFn()}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
 		{/if}
 	</h2>
 
@@ -170,15 +159,18 @@
 			{/each}
 			{#if data.connections[1]}
 				{#each data.connections[1] as s, i (i)}
+					{@const conn = isMediaCategoryId(data.tag.category)
+						? MediaConnection[resolveMediaConnectionNameById(s.site)]
+						: ProfileConnection[resolveProfileConnectionNameById(s.site)]}
 					<li class={{ 'opacity-60': s.dead }}>
-						<ConnectionFavicon type={ext_cat_types[s.site]} class="inline size-4" />
+						<ConnectionFavicon type={conn.name} class="inline size-4" />
 						<a
-							href={ext_cat_links[s.site](s.content_id)}
+							href={conn.linkFn(s.content_id)}
 							target="_blank"
 							rel="noopener noreferrer"
 							class={{ 'line-through': s.dead }}
 						>
-							{ext_cat_links[s.site](s.content_id)}
+							{conn.linkFn(s.content_id)}
 						</a>
 					</li>
 				{/each}
@@ -188,8 +180,8 @@
 
 	<hr class="my-2" />
 
-	{#if data.wiki_page && data.wiki_page.length}
-		{@const wp = data.wiki_page.find(({ lang }) => lang === Languages[wikiView])}
+	{#if data.wiki_page.length > 0}
+		{@const wp = data.wiki_page.find(({ lang }) => lang === languages[wikiView].id)}
 		<div class="float-right clear-left my-2">
 			<LangSwitch
 				availableLanguages={data.wiki_page.map((v) => resolveLanguageKeyById(v.lang))}
@@ -260,7 +252,7 @@
 				{/each}
 			</ul>
 		{/if}
-		{#if data.song_relations[0]?.length}
+		{#if data.song_relations && data.song_relations[0].length}
 			<RelationViewer
 				id={data.tag.song.id}
 				objects={data.song_relations[1]}

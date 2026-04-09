@@ -38,6 +38,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			}
 		}
 	});
+	if (!details) error(500, { message: 'Failed to load tag details' });
 
 	return {
 		links: [

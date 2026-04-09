@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import client from './api';
-	import { makeCommentTree } from './CommentTree/makeCommentTree';
-	import { hasUserLevel, resolveUserLevelById } from './enums/UserLevel';
-	import { renderMarkdown } from './markdown';
-	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
+	import client from '$lib/api';
+	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { renderMarkdown } from '$lib/markdown';
+	import { m } from '$lib/paraglide/messages';
+	import { timeAgo } from '$lib/ui';
+
 	export type CommentModels =
 		| 'mediawork'
 		| 'account'

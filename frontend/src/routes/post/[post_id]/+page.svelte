@@ -21,7 +21,7 @@
 			? getLocale()
 			: resolveLanguageKeyById(data.post.pages[0].lang)
 	);
-	let page_object = $derived(data.post.pages.find((p) => p.lang === Languages[lang_view]));
+	let page_object = $derived(data.post.pages.find((p) => p.lang === languages[lang_view].id)!);
 	let page = $derived(renderMarkdown(page_object?.page ?? ''));
 
 	const postLd = $derived.by(() => {
@@ -54,7 +54,11 @@
 					client
 						.GET('/api/tag/tag', {
 							fetch,
-							params: { query: { tag_slug: el.getAttribute('slug') } }
+							params: {
+								query: {
+									tag_slug: el.getAttribute('slug')! // TODO: need check
+								}
+							}
 						})
 						.then((r) => mount(WorkTag, { target: el, props: { tag: r.data! } }))
 			);
@@ -73,7 +77,7 @@
 		editEntities
 			.split('\n')
 			.map(get_entity)
-			.filter((x) => x)
+			.filter((x) => !!x)
 	);
 
 	const is_admin = $derived(
@@ -197,13 +201,16 @@
 						></a
 					>
 					{#if data.post.edited_at}
+						{@const editUser =
+							// MEMO: if `edited_at` exists then `edited_by` is also available
+							data.post.edited_by!}
 						<span title={new Date(data.post.edited_at).toLocaleString()}>
 							{#if editedByOther}
 								({m.free_tiny_badger_breathe({
 									time: timeAgo(data.post.edited_at)
-								})}<a href="/profile/{data.post.edited_by.username}"
-									>{data.post.edited_by.username}</a
-								>{m.agent_honest_marten_renew()})
+								})}<a href="/profile/{editUser.username}"
+									>{editUser.username}
+								</a>{m.agent_honest_marten_renew()})
 							{:else}
 								{m.same_only_emu_startle({ time: timeAgo(data.post.edited_at) })}
 							{/if}

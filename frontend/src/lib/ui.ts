@@ -5,10 +5,9 @@ import { getLocale, setLocale } from './paraglide/runtime';
 import { enhance } from '$app/forms';
 import { m } from './paraglide/messages';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export const debounce = (callback: Function, wait = 300) => {
+export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
-	return (...args: any[]) => {
+	return (...args: T) => {
 		if (timeout) clearTimeout(timeout);
 		timeout = setTimeout(() => callback(...args), wait);
 	};

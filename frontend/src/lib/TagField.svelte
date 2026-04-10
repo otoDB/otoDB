@@ -12,15 +12,6 @@
 	}
 	let { value = $bindable(''), type, ...props }: Props = $props();
 
-	const endpoint = $derived.by(() => {
-		switch (type) {
-			case 'work':
-				return '/api/tag/search';
-			case 'song':
-				return '/api/tag/song_tag_search';
-		}
-	});
-
 	let suggestions: ComponentProps<typeof TagSuggestionResults>['suggestions'] = $state([]);
 
 	const search = async () => {
@@ -32,9 +23,9 @@
 			(() => {
 				switch (type) {
 					case 'work':
+						return '/api/tag/search' as const;
 					case 'song':
-						// return '/api/tag/search' as const;
-						return '/api/tag/song_tag_search';
+						return '/api/tag/song_tag_search' as const;
 				}
 			})(),
 			{

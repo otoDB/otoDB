@@ -1,9 +1,15 @@
 <script lang="ts">
-	import '../app.css';
-	import { page } from '$app/state';
-	import { Toaster } from 'svelte-sonner';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { navigating, page } from '$app/state';
+	import { env } from '$env/dynamic/public';
+	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import Section from '$lib/Section.svelte';
+	import { languages } from '$lib/enums/Languages';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { getThemeNameById } from '$lib/enums/themes';
 	import { m } from '$lib/paraglide/messages.js';
-	import { navigating } from '$app/state';
+	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { callErrorToast } from '$lib/toast';
 	import {
 		clickOutside,
 		currentVersion,
@@ -12,15 +18,8 @@
 		set_lang,
 		Version
 	} from '$lib/ui';
-	import { getThemeNameById } from '$lib/enums';
-	import { languages } from '$lib/enums/Languages';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { afterNavigate, beforeNavigate } from '$app/navigation';
-	import { env } from '$env/dynamic/public';
-	import { callErrorToast } from '$lib/toast';
-	import Section from '$lib/Section.svelte';
-	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { Toaster } from 'svelte-sonner';
+	import '../app.css';
 
 	let { data, children } = $props();
 

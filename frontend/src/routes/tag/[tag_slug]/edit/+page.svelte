@@ -1,30 +1,39 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import {
-		LanguageNames,
-		Languages,
-		ProfileConnectionLink,
-		SongConnectionLink,
-		MediaConnectionLink,
-		WorkTagCategory,
-		MediaType,
-		allMediaTypeKeys
-	} from '$lib/enums';
-
-	import RelationEditor from '$lib/RelationEditor.svelte';
-	import client, { getTagDisplaySlug } from '$lib/api';
-	import { renderMarkdown } from '$lib/markdown';
 	import { goto } from '$app/navigation';
+	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
+	import RelationEditor from '$lib/RelationEditor.svelte';
+	import Section from '$lib/Section.svelte';
+	import TagsField from '$lib/TagsField.svelte';
+	import client, { getTagDisplaySlug } from '$lib/api';
+	import { LanguageNames, Languages, WorkTagCategory } from '$lib/enums';
+	import { languages } from '$lib/enums/Languages.js';
+	import {
+		allMediaConnectionKeys,
+		MediaConnection,
+		resolveMediaConnectionNameById
+	} from '$lib/enums/MediaConnection';
+	import { allMediaTypes, mediaTypes } from '$lib/enums/MediaType.js';
+	import {
+		allProfileConnectionKeys,
+		ProfileConnection,
+		resolveProfileConnectionNameById
+	} from '$lib/enums/ProfileConnection';
+	import {
+		allSongConnectionKeys,
+		resolveSongConnectionNameById,
+		SongConnection
+	} from '$lib/enums/SongConnection';
+	import {
+		allTagWorkConnectionKeys,
+		resolveTagWorkConnectionNameById,
+		TagWorkConnection
+	} from '$lib/enums/TagWorkConnection';
+	import { isMediaCategoryId } from '$lib/enums/WorkTagCategory.js';
+	import { renderMarkdown } from '$lib/markdown';
+	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast, callErrorToast2 } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
-	import TagsField from '$lib/TagsField.svelte';
-	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
-	import { allSongConnectionKeys, SongConnection } from '$lib/enums/SongConnection';
-	import { allMediaConnectionKeys, MediaConnection } from '$lib/enums/MediaConnection';
-	import { allProfileConnectionKeys, ProfileConnection } from '$lib/enums/ProfileConnection';
-	import { allTagWorkConnectionKeys, TagWorkConnection } from '$lib/enums/TagWorkConnection';
 
 	let { data, form } = $props();
 
@@ -55,7 +64,7 @@
 		Object.fromEntries(
 			locales.map((lang) => [
 				lang,
-				data.wiki_page?.find((p) => p.lang === Languages[lang])?.page ?? ''
+				data.wiki_page?.find((p) => p.lang === languages[lang].id)?.page ?? ''
 			])
 		)
 	);
@@ -65,7 +74,7 @@
 		Object.fromEntries(
 			locales.map((l) => [
 				l,
-				data.tag.lang_prefs.find(({ lang }) => lang === Languages[l])?.slug ?? null
+				data.tag.lang_prefs.find(({ lang }) => lang === languages[l].id)?.slug ?? null
 			])
 		)
 	);
@@ -87,7 +96,10 @@
 				base_slug: base,
 				unalias_slugs: to_delete,
 				lang_prefs: Object.fromEntries(
-					Object.entries(tagLangPrefs).map(([k, v]) => [Languages[k], v])
+					Object.entries(tagLangPrefs).map(([k, v]) => [
+						languages[k as keyof typeof languages /* MEMO: see `tagLangPrefs` */],
+						v
+					])
 				),
 				names: tagNames
 			},
@@ -106,17 +118,19 @@
 	let urls = $state(
 		[
 			...data.connections[0]!.map(({ site, content_id }) =>
-				TagWorkConnectionLink[site](content_id)
+				TagWorkConnection[resolveTagWorkConnectionNameById(site)].linkFn(content_id)
 			),
 			...(data.connections[1]?.map(
 				({ site, content_id, dead }) =>
 					(dead ? '-' : '') +
-					(data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink)[site](
+					(isMediaCategoryId(data.tag.category)
+						? MediaConnection[resolveMediaConnectionNameById(site)].linkFn
+						: ProfileConnection[resolveProfileConnectionNameById(site)].linkFn)(
 						content_id
 					)
 			) ?? []),
 			...(data.song_connections?.map(({ site, content_id }) =>
-				SongConnectionLink[site](content_id)
+				SongConnection[resolveSongConnectionNameById(site)].linkFn(content_id)
 			) ?? [])
 		].join('\n') ?? ''
 	);
@@ -240,8 +254,10 @@
 						<th>Media type</th>
 						<td>
 							<select name="media_type" multiple value={data.tag.media_type ?? []}>
-								{#each allMediaTypeKeys as t (t)}
-									<option value={+t}>{MediaType[t]()}</option>
+								{#each allMediaTypes as t (t)}
+									<option value={mediaTypes[t].id}>
+										{mediaTypes[t].nameFn()}
+									</option>
 								{/each}
 							</select>
 						</td>

@@ -38,7 +38,11 @@
 	let { data, form } = $props();
 
 	let parents = $state(
-		form?.parent_slugs ?? data.parents?.map((t) => getTagDisplaySlug(t)) ?? []
+		form?.parent_slugs ??
+			data.parents?.map(
+				(t) => getTagDisplaySlug(t!) // TODO: check `t` is not null by type-level
+			) ??
+			[]
 	);
 	let prev_n_parents = parents.length;
 	let primary = $state(
@@ -46,7 +50,7 @@
 			(data.details?.primary_parent
 				? (() => {
 						const parentTag = data.parents?.find(
-							(t) => t.slug === data.details?.primary_parent
+							(t) => t!.slug === data.details?.primary_parent // TODO: check `t` is not null by type-level
 						);
 						return parentTag ? parents.indexOf(getTagDisplaySlug(parentTag)) : -1;
 					})()

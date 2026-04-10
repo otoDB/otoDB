@@ -64,7 +64,6 @@ class TagWorkSchema(Schema):
 	id: int
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional['TagWorkSchema']
-	n_instance: int | None = None
 	name: str
 	slug: str
 	category: int

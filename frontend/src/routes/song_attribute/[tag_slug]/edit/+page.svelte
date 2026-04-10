@@ -1,16 +1,16 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import { LanguageNames, Languages, SongTagCategory } from '$lib/enums';
 	import { enhance } from '$app/forms';
-
-	import TagField from '$lib/TagField.svelte';
-	import { callErrorCodeToast, callErrorToast, callSavingToast } from '$lib/toast';
-	import client from '$lib/api';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
+	import Section from '$lib/Section.svelte';
+	import TagField from '$lib/TagField.svelte';
+	import client from '$lib/api';
+	import { dirtyEnhance } from '$lib/dirty';
+	import { SongTagCategory } from '$lib/enums';
+	import { languages } from '$lib/enums/Languages.js';
+	import { m } from '$lib/paraglide/messages.js';
 	import { locales } from '$lib/paraglide/runtime';
-	import { dirtyEnhance } from '$lib/ui';
+	import { callErrorCodeToast, callErrorToast } from '$lib/toast';
 
 	let { data, form } = $props();
 
@@ -25,9 +25,9 @@
 		Object.fromEntries(
 			locales.map((l) => [
 				l,
-				data.tag.lang_prefs.find(({ lang }) => lang === Languages[l])?.slug ?? null
+				data.tag.lang_prefs.find(({ lang }) => lang === languages[l].id)?.slug ?? null
 			])
-		)
+		) as Record<keyof typeof languages, string | null>
 	);
 	let tagNames: Record<string, string> = $state(
 		Object.fromEntries([
@@ -47,7 +47,10 @@
 				base_slug: base,
 				unalias_slugs: to_delete,
 				lang_prefs: Object.fromEntries(
-					Object.entries(tagLangPrefs).map(([k, v]) => [Languages[k], v])
+					Object.entries(tagLangPrefs).map(([k, v]) => [
+						languages[k as keyof typeof languages].id,
+						v
+					])
 				),
 				names: tagNames
 			},
@@ -132,7 +135,7 @@
 					<tr
 						><th>{m.alive_lofty_opossum_laugh()}</th>
 						{#each locales as locale, i (i)}
-							<th>{LanguageNames[locale]} {m.mellow_upper_finch_drip()}</th>
+							<th>{languages[locale].name} {m.mellow_upper_finch_drip()}</th>
 						{/each}
 						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th
 						></tr

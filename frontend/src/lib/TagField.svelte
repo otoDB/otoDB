@@ -8,6 +8,7 @@
 		value: string;
 		type: 'work' | 'song';
 		resolve_aliases?: boolean;
+		name?: string;
 	}
 	let { value = $bindable(''), type, ...props }: Props = $props();
 

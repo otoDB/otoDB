@@ -1,6 +1,5 @@
-// TODO: Type of `dirtyEnhance` might be completely messed up, be careful to use.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
+// @ts-nocheck TODO: Type of `dirtyEnhance` might be completely messed up, be careful to use.
 import { enhance } from '$app/forms';
 
 export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');

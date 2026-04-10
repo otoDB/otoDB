@@ -10,10 +10,11 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast } from '$lib/toast';
-	import { clickOutside, get_prefs, isFormDirty, set_lang } from '$lib/ui';
+	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
 	import { currentVersion, Version } from '$lib/enums/version';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
+	import { isFormDirty } from '$lib/dirty';
 
 	let { data, children } = $props();
 

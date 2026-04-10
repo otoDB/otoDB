@@ -126,7 +126,11 @@ def filter_tags_by_media_type(qs, media_type: list[int]):
 	).filter(Q(mt__gt=0))
 
 
-@tag_router.get('search', response=list[TagWorkSchema])
+class TagWorkSearchResultSchema(TagWorkSchema):
+	n_instance: int
+
+
+@tag_router.get('search', response=list[TagWorkSearchResultSchema])
 @paginate
 def search(
 	request: HttpRequest,
@@ -941,7 +945,11 @@ def song_relation(request: HttpRequest, this_id: int, payload: list[RelationSche
 	post_relations(MediaSong, this_id, payload)
 
 
-@tag_router.get('song_tag_search', response=list[TagSongSchema])
+class TagSongSearchResultSchema(TagSongSchema):
+	n_instance: int
+
+
+@tag_router.get('song_tag_search', response=list[TagSongSearchResultSchema])
 @paginate
 def song_tag_search(
 	request: HttpRequest,

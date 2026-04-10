@@ -24,7 +24,7 @@ export const callSavingToast = (p: Promise<any>) =>
 		error: m.green_due_javelina_pop()
 	});
 
-export const callErrorToast2 = (code: number, payload: Record<string, unknown>) => {
+export const callErrorCodeToast = (code: number, payload: Record<string, unknown>) => {
 	switch (code) {
 		case ErrorCode.NAME_SLUG_MISMATCH:
 			if (

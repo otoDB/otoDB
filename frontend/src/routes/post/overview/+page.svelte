@@ -11,7 +11,7 @@
 	{#each data.categories as c, i (i)}
 		{#if c.length}
 			<h2 class="mt-4 text-base">
-				<a href="/post/search?category={i}">{PostCategories[i]()}</a>
+				<a href="/post?category={i}">{PostCategories[i]()}</a>
 			</h2>
 			<ThreadTable posts={c} showAuthor={i > 0} />
 		{/if}

@@ -14,14 +14,14 @@
 	title={m.grand_merry_fly_succeed()}
 	type={m.mean_top_antelope_love()}
 	menuLinks={[
-		{ title: m.grand_merry_fly_succeed(), pathname: `work/search` },
-		{ title: m.empty_legal_chicken_taste(), pathname: `tag/search?query=${data.query}` },
-		{ title: m.grand_nice_pony_belong(), pathname: `song/search?query=${data.query}` },
+		{ title: m.grand_merry_fly_succeed(), pathname: `work` },
+		{ title: m.empty_legal_chicken_taste(), pathname: `tag?query=${data.query}` },
+		{ title: m.grand_nice_pony_belong(), pathname: `song?query=${data.query}` },
 		{
 			title: m.dull_plain_angelfish_cuddle(),
-			pathname: `song_attribute/search?query=${data.query}`
+			pathname: `song_attribute?query=${data.query}`
 		},
-		{ title: m.stale_loose_squid_cut(), pathname: `list/search?query=${data.query}` }
+		{ title: m.stale_loose_squid_cut(), pathname: `list?query=${data.query}` }
 	]}
 >
 	<form target="_self" method="get">

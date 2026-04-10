@@ -206,12 +206,7 @@
 				use:clickOutside
 				onOutclick={() => (isMobileNavOpen = false)}
 			>
-				<form
-					target="_self"
-					method="get"
-					action="/{search_type}/search"
-					class="flex w-full"
-				>
+				<form target="_self" method="get" action="/{search_type}" class="flex w-full">
 					<select bind:value={search_type} class="bg-otodb-bg-faint/75 pl-1">
 						<option value="work">{m.grand_merry_fly_succeed()}</option>
 						<option value="tag">{m.empty_legal_chicken_taste()}</option>
@@ -243,17 +238,14 @@
 					<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 						{@render link('/', m.fine_late_chicken_quiz())}
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
-						{@render link('/work/search', m.grand_merry_fly_succeed())}
+						{@render link('/work', m.grand_merry_fly_succeed())}
 						{#if data.user?.level >= UserLevel.MEMBER}
 							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 						{/if}
-						{@render link('/tag/search', m.empty_legal_chicken_taste())}
-						{@render link('/song/search', m.grand_nice_pony_belong())}
-						{@render link(
-							'/song_attribute/search',
-							`> ${m.dull_plain_angelfish_cuddle()}`
-						)}
-						{@render link('/list/search', m.stale_loose_squid_cut())}
+						{@render link('/tag', m.empty_legal_chicken_taste())}
+						{@render link('/song', m.grand_nice_pony_belong())}
+						{@render link('/song_attribute', `> ${m.dull_plain_angelfish_cuddle()}`)}
+						{@render link('/list', m.stale_loose_squid_cut())}
 						{@render link('/post/overview', m.just_salty_anaconda_nourish())}
 						{@render link('/comments', m.same_broad_haddock_pinch())}
 						{@render link('/post/3', 'FAQ')}

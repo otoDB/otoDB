@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { buildEntityRoutes } from './enums';
+	import { buildEntityRoutes, type EntityModelType } from './enums';
 	import { postCategory, resolvePostCategoryKeyById } from '$lib/enums/PostCategory';
 	import { m } from './paraglide/messages';
 	import { timeAgo } from './ui';
@@ -7,7 +7,7 @@
 	interface Post {
 		id: number | string;
 		title: string;
-		entities?: { id: string | number; entity: string }[];
+		entities?: { id: string | number; entity: EntityModelType }[];
 		category: number;
 		added_by: { username: string };
 		modified: string;
@@ -19,7 +19,7 @@
 		posts: Post[];
 		showCategory?: boolean;
 		showAuthor?: boolean;
-		entityFilter?: (entity: { id: string | number; entity: string }) => boolean;
+		entityFilter?: (entity: { id: string | number; entity: EntityModelType }) => boolean;
 	}
 
 	let { posts, showCategory = false, showAuthor = true, entityFilter }: Props = $props();

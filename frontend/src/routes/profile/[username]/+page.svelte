@@ -4,7 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import { getVersionKey, Version } from '$lib/ui';
+	import { getVersionKey, Version } from '$lib/enums/version';
 	import { resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
 	import {
 		ProfileConnection,

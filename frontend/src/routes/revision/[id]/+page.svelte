@@ -2,8 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
 	import {
-		EntityModelRoutes,
-		MediaType,
+		buildEntityRoutes,
 		MimeType,
 		Platform,
 		Rating,
@@ -15,49 +14,30 @@
 		WorkTagCategory
 	} from '$lib/enums.js';
 	import { creatorRole } from '$lib/enums/CreatorRole';
-	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages';
-	import Pager from '$lib/Pager.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO } from '$lib/enums/Languages';
-	import {
-		resolveTagWorkConnectionNameById,
-		TagWorkConnection
-	} from '$lib/enums/TagWorkConnection';
-	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
+	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/Languages';
 	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection';
+	import { mediaTypes } from '$lib/enums/MediaType.js';
 	import {
 		ProfileConnection,
 		resolveProfileConnectionNameById
 	} from '$lib/enums/ProfileConnection';
+	import { resolveRouteKeyById, Route } from '$lib/enums/Route.js';
+	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
+	import {
+		resolveTagWorkConnectionNameById,
+		TagWorkConnection
+	} from '$lib/enums/TagWorkConnection';
 	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel.js';
+	import Pager from '$lib/Pager.svelte';
+	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
-	let routes = $derived(
-		Object.values(Object.groupBy(data.changes.items, (c) => c.route))
-			.map((rent) => [
-				rent[0].route,
-				Object.values(Object.groupBy(rent, (c) => c.ent_type + c.ent_id))
-					// .map((cs) => cs.filter((c) => c.target_value !== null))
-					// Setting to null may be significant change
-					.map((cs) => cs.filter((c) => Object.hasOwn(EntityModelRoutes, c.ent_type)))
-					.filter((ec) => ec.length)
-					.map((tg) => [[tg[0].ent_type, tg[0].ent_id], tg])
-			])
-			.filter((rc) => rc[1].length)
-	);
-
-	const expand_bit_field = (names) => (v) =>
-		[...parseInt(v, 10).toString(2)]
-			.reduce(
-				(a, e, i, aa) => (e === '1' ? [...a, names[Math.pow(2, aa.length - 1 - i)]()] : a),
-				[]
-			)
-			.join(', ') || 'N/A';
 
 	// TODO: need more refactor
 	// TODO: `decodeURIComponent`を入れる必要があったが返ってくる値にそれをしないとならないものがあるとは思えないので削除．
+	// TODO: `tagwork.media_type` および `tagworkinstance.creator_roles` がad-hocすぎる
 	const displayValue = (type: string, col: string, val: unknown): string => {
 		switch (type) {
 			case 'mediawork':
@@ -70,8 +50,22 @@
 				switch (col) {
 					case 'category':
 						return WorkTagCategory[val as number]();
-					case 'media_type':
-						return expand_bit_field(MediaType)(val);
+					case 'media_type': {
+						const [isGame, isFilm, isShow, isAnime] = parseInt(val as string, 10)
+							.toString(2)
+							.padStart(4, '0')
+							.split('')
+							.map((b) => b === '1');
+
+						if (!isGame && !isFilm && !isShow && !isAnime) return 'N/A';
+
+						return [
+							isAnime ? mediaTypes['ANIME'].nameFn() : '',
+							isShow ? mediaTypes['SHOW'].nameFn() : '',
+							isFilm ? mediaTypes['FILM'].nameFn() : '',
+							isGame ? mediaTypes['GAME'].nameFn() : ''
+						].join(', ');
+					}
 				}
 				break;
 			case 'tagsong':
@@ -132,12 +126,31 @@
 				break;
 			case 'tagworkinstance':
 				switch (col) {
-					case 'creator_roles':
-						return expand_bit_field(
-							Object.fromEntries(
-								Object.values(creatorRole).map((v) => [v.id, v.nameFn])
-							)
-						)(val);
+					case 'creator_roles': {
+						const [isThanks, isArtwork, isMusic, isDirector, isVisuals, isAudio] =
+							parseInt(val as string, 10)
+								.toString(2)
+								.padStart(6, '0')
+								.split('')
+								.map((b) => b === '1');
+						if (
+							!isThanks &&
+							!isArtwork &&
+							!isMusic &&
+							!isDirector &&
+							!isVisuals &&
+							!isAudio
+						)
+							return 'N/A';
+						return [
+							isAudio ? creatorRole['AUDIO'].nameFn() : '',
+							isVisuals ? creatorRole['VISUALS'].nameFn() : '',
+							isDirector ? creatorRole['DIRECTOR'].nameFn() : '',
+							isMusic ? creatorRole['MUSIC'].nameFn() : '',
+							isArtwork ? creatorRole['ARTWORK'].nameFn() : '',
+							isThanks ? creatorRole['THANKS'].nameFn() : ''
+						].join(', ');
+					}
 				}
 				break;
 			case 'wikipage':
@@ -186,15 +199,15 @@
 			}}>Revert changes made in this revision</button
 		>{/if}
 	<ul class="my-5">
-		{#each routes as [r, ecs], i (i)}
-			<li>{Route[r]}</li>
+		{#each data.routes as [r, ecs], i (i)}
+			<li>{Route[resolveRouteKeyById(r)].title}</li>
 			<li class="ml-2 list-none">
 				<ul>
 					{#each ecs as [[ent_type, ent_id], ec], j (j)}
 						<li>
-							<a href="/{EntityModelRoutes[ent_type]}/{ent_id}"
-								>/{EntityModelRoutes[ent_type]}/{ent_id}</a
-							>
+							<a href={buildEntityRoutes(ent_type, ent_id)}>
+								{buildEntityRoutes(ent_type, ent_id)}
+							</a>
 						</li>
 						<li class="list-none">
 							<table class="inline-block">
@@ -223,5 +236,5 @@
 			</li>
 		{/each}
 	</ul>
-	<Pager n_count={data.changes?.count} page={data.page} page_size={data.batch_size} />
+	<Pager n_count={data.changes.count} page={data.page} page_size={data.batch_size} />
 </Section>

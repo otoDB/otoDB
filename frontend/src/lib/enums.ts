@@ -197,7 +197,33 @@ export const buildCommentRoutes = (type: string, id: string | number) => {
 	}
 };
 
-export const buildEntityRoutes = (type: string, id: string | number) => {
+export type EntityModelType =
+	| 'post'
+	| 'mediasong'
+	| 'worksource'
+	| 'mediawork'
+	| 'account'
+	| 'pool'
+	| 'tagwork'
+	| 'tagsong'
+	| 'bulkrequest';
+export const isValidEntityModelType = (type: string): type is EntityModelType => {
+	switch (type) {
+		case 'mediawork':
+		case 'account':
+		case 'pool':
+		case 'tagwork':
+		case 'tagsong':
+		case 'post':
+		case 'bulkrequest':
+		case 'mediasong':
+		case 'worksource':
+			return true;
+		default:
+			return false;
+	}
+};
+export const buildEntityRoutes = (type: EntityModelType, id: string | number) => {
 	switch (type) {
 		case 'mediawork':
 		case 'account':

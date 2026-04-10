@@ -159,7 +159,7 @@
 	{:else}
 		<div class="text-otodb-content-fainter mb-6 text-xs">
 			<p>
-				<a href="/post/search?category={data.post.category}"
+				<a href="/post?category={data.post.category}"
 					>{PostCategories[data.post.category]()}</a
 				>
 				{#if data.post.category === 0}

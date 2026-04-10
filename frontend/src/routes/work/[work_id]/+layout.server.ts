@@ -75,7 +75,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			isExplicit: data.rating === 2,
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
-				{ name: m.grand_merry_fly_succeed(), url: '/work/search' },
+				{ name: m.grand_merry_fly_succeed(), url: '/work' },
 				{ name: getDisplayText(data.title), url: `/work/${params.work_id}` }
 			]
 		}

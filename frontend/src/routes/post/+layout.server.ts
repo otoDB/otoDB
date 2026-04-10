@@ -9,7 +9,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			...(locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
 				? []
 				: [{ pathname: `post/new`, title: m.antsy_aloof_horse_grace() }]),
-			{ pathname: `post/search`, title: m.mean_top_antelope_love() }
+			{ pathname: `post`, title: m.mean_top_antelope_love() }
 		]
 	};
 };

@@ -91,7 +91,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			title: display_name,
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
-				{ name: m.empty_legal_chicken_taste(), url: '/tag/search' },
+				{ name: m.empty_legal_chicken_taste(), url: '/tag' },
 				{ name: display_name, url: `/tag/${params.tag_slug}` }
 			]
 		}

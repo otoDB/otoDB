@@ -10,7 +10,7 @@
 	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages.js';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
-	import { dirtyEnhance } from '$lib/ui';
+	import { dirtyEnhance } from '$lib/dirty';
 
 	let { data, form } = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, ''));

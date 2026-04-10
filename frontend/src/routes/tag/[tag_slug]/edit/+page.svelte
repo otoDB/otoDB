@@ -33,7 +33,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast, callErrorToast2 } from '$lib/toast';
-	import { dirtyEnhance } from '$lib/ui';
+	import { dirtyEnhance } from '$lib/dirty';
 
 	let { data, form } = $props();
 

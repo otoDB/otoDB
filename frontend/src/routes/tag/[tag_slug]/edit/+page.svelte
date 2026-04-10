@@ -21,7 +21,7 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { goto } from '$app/navigation';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { callErrorToast, callErrorToast2 } from '$lib/toast';
+	import { callErrorToast, callErrorCodeToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/ui';
 	import TagsField from '$lib/TagsField.svelte';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
@@ -96,7 +96,7 @@
 		if (error) {
 			aliases_post_gate.p = Promise.withResolvers<void>();
 			if (error && typeof error === 'object' && 'code' in error) {
-				callErrorToast2(error.code, error.data ?? {});
+				callErrorCodeToast(error.code, error.data ?? {});
 			} else {
 				callErrorToast(m.green_due_javelina_pop());
 			}

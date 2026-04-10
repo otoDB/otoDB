@@ -1,6 +1,9 @@
+from typing import Annotated
 from datetime import datetime, timedelta
 import string
 import logging
+from pydantic import StringConstraints
+
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpRequest
@@ -29,7 +32,7 @@ class UserLoginSchema(Schema):
 
 
 class LoginRequestSchema(Schema):
-	username: str
+	username: Annotated[str, StringConstraints(strip_whitespace=True)]
 	password: str
 
 
@@ -73,10 +76,10 @@ def logout_endpoint(request: HttpRequest):
 
 
 class RegisterRequestSchema(Schema):
-	username: str
+	username: Annotated[str, StringConstraints(strip_whitespace=True)]
 	password: str
-	email: str
-	invite: str
+	email: Annotated[str, StringConstraints(strip_whitespace=True)]
+	invite: Annotated[str, StringConstraints(strip_whitespace=True)]
 
 
 @auth_router.post('/register', response={200: UserLoginSchema, 401: Error, 409: Error})

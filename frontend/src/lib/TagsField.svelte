@@ -6,7 +6,7 @@
 
 	interface Props {
 		value: string[];
-		class: string;
+		class?: string;
 		type: 'work' | 'song';
 		name?: string;
 	}

@@ -278,9 +278,11 @@
 		menuLinks={data.song_links}
 	>
 		<RelationEditor
-			init_relations={data.song_relations}
+			// TODO: if ctegory is `SONG` then `data.song_relations` exists, but not check
+			init_relations={data.song_relations!}
 			obj_type="song"
-			this_id={data.tag.song?.id}
+			// TODO: if ctegory is `SONG` then `data.tag.song` exists, but not check
+			this_id={data.tag.song!.id}
 			form_control={{ barrier: form_barrier, priority: 4 }}
 		></RelationEditor>
 	</Section>

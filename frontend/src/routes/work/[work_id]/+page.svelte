@@ -1,6 +1,11 @@
 <script lang="ts">
+	import CommentTree from '$lib/CommentTree.svelte';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import RefreshButton from '$lib/RefreshButton.svelte';
 	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import client, { getDisplayText } from '$lib/api';
 	import {
 		Platform,
 		Rating,
@@ -9,15 +14,10 @@
 		WorkRelationDisplayForward,
 		WorkStatus
 	} from '$lib/enums';
-	import client, { getDisplayText } from '$lib/api';
+	import { m } from '$lib/paraglide/messages.js';
 	import type { components } from '$lib/schema';
-	import DisplayText from '$lib/DisplayText.svelte';
-	import RefreshButton from '$lib/RefreshButton.svelte';
-	import CommentTree from '$lib/CommentTree.svelte';
 	import { callSavingToast } from '$lib/toast';
 	import { SvelteMap } from 'svelte/reactivity';
-	import WorkCard from '$lib/WorkCard.svelte';
-	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import type { ComponentProps } from 'svelte';
 
 	import {
@@ -99,22 +99,14 @@
 		];
 	};
 
-	const www: [number, [number, { A_id: number; B_id: number; relation: number }][]][] =
-		$derived.by(() => {
-			const [rl, oh] = data.relations;
-
-			console.dir(data.relations);
-
-			const ww = Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id));
-			console.dir(ww, { depth: null });
-
-			const a = Object.entries(
-				Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))
-			).map((d) => [d[0], Object.entries(Object.groupBy(d[1], (r) => r.relation))]);
-
-			console.dir(a, { depth: null });
-			return a;
-		});
+	// TODO: typing is messy
+	const relTree = $derived(
+		data.relations[0].length > 0
+			? (Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map(
+					(d) => [d[0], Object.entries(Object.groupBy(d[1]!, (r) => r.relation))]
+				) as [string, [string, { A_id: number; B_id: number }[]][]][])
+			: null
+	);
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
@@ -141,19 +133,19 @@
 								<td><div class="description-cell">{@html data.description}</div></td
 								>
 							</tr>
-							{#if data.relations[0].length}
+							{#if relTree}
 								<tr>
 									<th>{m.alive_these_jay_pick()}</th>
-									<td>
-										<ul>
-											{#each www as [dir, rels], i (i)}
+									<td
+										><ul>
+											{#each relTree as [dir, rels], i (i)}
 												{#each rels as [tp, relations], j (j)}
 													<li>
 														{m.mild_loud_shad_enchant({
 															type: [
 																WorkRelationDisplayBackward,
 																WorkRelationDisplayForward
-															][+dir][tp](),
+															][+dir][parseInt(tp, 10)](),
 															name: ''
 														})}
 														<ul class="ml-2">
@@ -164,7 +156,7 @@
 																		(r.A_id === data.id
 																			? r.B_id
 																			: r.A_id)
-																)}
+																)!}
 																<li>
 																	<a href="/work/{w.id}"
 																		>#{w.id} - {w.title}</a
@@ -175,8 +167,8 @@
 													</li>
 												{/each}
 											{/each}
-										</ul>
-									</td>
+										</ul></td
+									>
 								</tr>
 							{/if}
 							<tr>

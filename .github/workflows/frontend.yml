@@ -19,6 +19,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bunx prettier --check .
       - run: bunx eslint .
+      - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
       - run: bun run check
       - run: bun run test
 

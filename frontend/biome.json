@@ -23,20 +23,14 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"a11y": "warn"
 		}
 	},
 	"javascript": {
 		"formatter": {
-			"jsxQuoteStyle": "double",
-			"quoteProperties": "asNeeded",
-			"trailingCommas": "none",
-			"semicolons": "asNeeded",
-			"arrowParentheses": "always",
-			"bracketSameLine": false,
 			"quoteStyle": "single",
-			"attributePosition": "auto",
-			"bracketSpacing": true
+			"trailingCommas": "none"
 		}
 	},
 	"html": {
@@ -46,6 +40,23 @@
 			"selfCloseVoidElements": "always"
 		}
 	},
+	"overrides": [
+		{
+			"includes": [
+				"src/app.css",
+				"src/themes.css"
+			],
+			"linter": {
+				"enabled": false
+			},
+			"formatter": {
+				"enabled": false
+			},
+			"assist": {
+				"enabled": false
+			}
+		}
+	],
 	"assist": {
 		"enabled": true,
 		"actions": {

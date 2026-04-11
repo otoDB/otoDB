@@ -29,6 +29,12 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
     }}});
 ```
 
+### Test
+
+```
+bun run test
+```
+
 ### Storybook
 
 Component catalog.

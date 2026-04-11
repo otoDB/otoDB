@@ -65,7 +65,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			title: getTagDisplayName(data),
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
-				{ name: m.dull_plain_angelfish_cuddle(), url: '/song_attribute/search' },
+				{ name: m.dull_plain_angelfish_cuddle(), url: '/song_attribute' },
 				{ name: getTagDisplayName(data), url: `/song_attribute/${params.tag_slug}` }
 			]
 		}

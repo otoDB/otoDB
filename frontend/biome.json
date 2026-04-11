@@ -10,9 +10,9 @@
 	},
 	"formatter": {
 		"enabled": true,
-		"formatWithErrors": false,
+		"formatWithErrors": true,
 		"indentStyle": "tab",
-		"indentWidth": 2,
+		"indentWidth": 4,
 		"lineEnding": "lf",
 		"attributePosition": "auto",
 		"bracketSameLine": false,
@@ -42,10 +42,7 @@
 	},
 	"overrides": [
 		{
-			"includes": [
-				"src/app.css",
-				"src/themes.css"
-			],
+			"includes": ["src/app.css", "src/themes.css"],
 			"linter": {
 				"enabled": false
 			},

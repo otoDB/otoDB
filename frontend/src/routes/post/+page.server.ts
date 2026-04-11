@@ -42,7 +42,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		query,
 		category: ((): (typeof postCategory)[keyof typeof postCategory]['id'] | -1 => {
 			switch (category) {
-				// TODO: later rewrite e.g. `PostCategory.BUG_REPORT.id`.
 				case postCategory.ANNOUNCEMENT.id:
 				case postCategory.FEATURE_REQUEST.id:
 				case postCategory.BUG_REPORT.id:

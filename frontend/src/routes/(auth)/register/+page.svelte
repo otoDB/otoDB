@@ -7,7 +7,6 @@
 	let { form } = $props();
 
 	$effect(() => {
-		console.dir(form);
 		if (form?.missing) {
 			callErrorToast(m.tiny_round_shark_express());
 		}

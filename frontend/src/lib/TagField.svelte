@@ -38,7 +38,6 @@
 				}
 			}
 		);
-		console.dir(data);
 		if (!data) return;
 		suggestions = data.items;
 	};

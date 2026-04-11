@@ -14,40 +14,15 @@
 		},
 		{
 			"name": "backend",
-			"path": "backend"
+			"path": "backend",
 		},
 	],
 	"extensions": {
 		"recommendations": [
-			"dbaeumer.vscode-eslint",
 			"editorconfig.editorconfig",
-			"esbenp.prettier-vscode",
 			"inlang.vs-code-extension",
+			"biomejs.biome"
 		]
 	},
-	"settings": {
-		"eslint.probe": [
-			"javascript",
-			"javascriptreact",
-			"typescript",
-			"typescriptreact",
-			"svelte"
-		],
-		"eslint.validate": [
-			"javascript",
-			"javascriptreact",
-			"typescript",
-			"typescriptreact",
-			"svelte"
-		],
-		"[css]": {
-			"editor.defaultFormatter": "esbenp.prettier-vscode"
-		},
-		"[svelte]": {
-			"editor.defaultFormatter": "esbenp.prettier-vscode"
-		},
-		"[html]": {
-			"editor.defaultFormatter": "esbenp.prettier-vscode"
-		}
-	}
+	"settings": {}
 }

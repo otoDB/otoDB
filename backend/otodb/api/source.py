@@ -1,4 +1,7 @@
+from typing import Annotated
 from datetime import date
+from pydantic import StringConstraints
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -122,7 +125,7 @@ def update_source(
 @with_revision_route(Route.WORKSOURCE_CREATE)
 def new_source_from_url(
 	request: AuthedHttpRequest,
-	url: str,
+	url: Annotated[str, StringConstraints(strip_whitespace=True)],
 	is_reupload: bool,
 	work_id: int | None = None,
 	metadata: WorkSourceMetadataSchema | None = None,

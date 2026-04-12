@@ -184,7 +184,7 @@
 @utility external-link-icon {
 	a[href^='//'],
 	a[href^='http://'],
-	[href^='https://'] {
+	a[href^='https://'] {
 		&:not([href^='http://otodb.net']):not([href^='https://otodb.net'])::after {
 			content: '';
 			display: inline-block;

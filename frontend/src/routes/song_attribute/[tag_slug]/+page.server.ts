@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch, parent }) => {
@@ -18,6 +19,10 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 			params: { query: { model: 'tagsong', pk: data.tag.id } }
 		})
 	]);
+
+	// TODO: properly handle fetch errors
+	if (!songs) error(500, 'Failed to fetch data.');
+	if (!comments) error(500, 'Failed to fetch data.');
 
 	return {
 		songs,

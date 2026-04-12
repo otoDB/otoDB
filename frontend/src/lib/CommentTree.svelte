@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import client from './api';
-	import { UserLevel } from './enums';
-	import { renderMarkdown } from './markdown';
-	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
-	import type { components } from './schema';
 	import { enhance } from '$app/forms';
-	import { makeCommentTree } from './CommentTree/makeCommentTree';
+	import { invalidateAll } from '$app/navigation';
+	import client from '$lib/api';
+	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { renderMarkdown } from '$lib/markdown';
+	import { m } from '$lib/paraglide/messages';
+	import { timeAgo } from '$lib/ui';
+	import type { Snippet } from 'svelte';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -19,11 +19,11 @@
 		| 'bulkrequest';
 
 	interface Props {
-		comments: components['schemas']['CommentSchema'][];
 		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
 		model: CommentModels;
 		pk: number;
+		comments: Parameters<typeof makeCommentTree>[0];
 	}
 
 	const { comments, user = null, model, pk }: Props = $props();
@@ -77,14 +77,12 @@
 		editPreviewMode = false;
 	};
 
-	const can_comment = user && user.level >= UserLevel.MEMBER;
-	const is_admin = user && user.level >= UserLevel.ADMIN;
+	const can_comment = $derived(
+		!!user && hasUserLevel(resolveUserLevelById(user.level), 'MEMBER')
+	);
+	const is_admin = $derived(!!user && hasUserLevel(resolveUserLevelById(user.level), 'ADMIN'));
 
-	const canEdit = (data: {
-		user: { username: string };
-		time: Date;
-		edited_by: { username: string } | null;
-	}) => {
+	const canEdit = (data: ReturnType<typeof makeCommentTree>[number]) => {
 		if (!user) return false;
 		if (is_admin) return true;
 		if (data.user.username !== user.username) return false;
@@ -152,7 +150,17 @@
 	</form>
 {/snippet}
 
-{#snippet comment(data, this_component, depth: number)}
+{#snippet comment(
+	data: ReturnType<typeof makeCommentTree>[number],
+	this_component: Snippet<
+		[
+			ReturnType<typeof makeCommentTree>[number],
+			any, // TODO: 再帰的なのでとりあえず`any`で対応
+			number
+		]
+	>,
+	depth: number
+)}
 	<div class="comment grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">
 		<div
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
@@ -245,7 +253,7 @@
 							{m.minor_crisp_cobra_list()}
 						</button>
 					{/if}
-					{#if user && (user.level >= UserLevel.ADMIN || data.user.username === user.username)}
+					{#if user && (hasUserLevel(resolveUserLevelById(user.level), 'ADMIN') || data.user.username === user.username)}
 						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 							>{m.even_alert_grebe_taste()}</button
 						>

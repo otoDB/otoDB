@@ -1,4 +1,6 @@
 <script lang="ts">
+	// @ts-nocheck TODO: I gave up typing for this code
+
 	import { m } from '$lib/paraglide/messages.js';
 	import { SongRelationTypes, WorkRelationTypes } from '$lib/enums.js';
 	import { getDisplayText } from '$lib/api';

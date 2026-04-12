@@ -36,8 +36,18 @@
 	import faviconDoujinMusicInfo from './connection_favicon/同人音楽info.png';
 	import faviconOtomadWiki2 from './connection_favicon/音MAD Wiki 2.png';
 	import faviconSoundcloud from './connection_favicon/Soundcloud.png';
+	import type { TagWorkConnection } from '$lib/enums/TagWorkConnection';
+	import type { MediaConnection } from '$lib/enums/MediaConnection';
+	import type { SongConnection } from '$lib/enums/SongConnection';
+	import type { ProfileConnection } from '$lib/enums/ProfileConnection';
 
-	const img = (type: string) => {
+	type FaviconKey =
+		| (typeof TagWorkConnection)[keyof typeof TagWorkConnection]['name']
+		| (typeof MediaConnection)[keyof typeof MediaConnection]['name']
+		| (typeof SongConnection)[keyof typeof SongConnection]['name']
+		| (typeof ProfileConnection)[keyof typeof ProfileConnection]['name'];
+
+	const img = (type: FaviconKey) => {
 		switch (type) {
 			case 'AniDB':
 				return faviconAniDB;
@@ -111,12 +121,12 @@
 				return faviconDoujinMusicInfo;
 			case '音MAD Wiki 2':
 				return faviconOtomadWiki2;
-			default:
+			default: // e.g. Website
 				return faviconWebsite;
 		}
 	};
 
-	let { type, ...props }: { type: string; class?: string } = $props();
+	let { type, ...props }: { type: FaviconKey; class?: string } = $props();
 </script>
 
 <img alt={type} src={img(type)} class={[props.class]} />

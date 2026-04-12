@@ -1,24 +1,24 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import type { PageProps } from '../$types';
-	import { Platform, Rating, WorkOrigin, UserLevel } from '$lib/enums';
-	import RelationEditor from '$lib/RelationEditor.svelte';
-	import client, { getDisplayText } from '$lib/api';
 	import { goto, invalidateAll } from '$app/navigation';
-	import { callErrorToast, callSavingToast } from '$lib/toast';
-	import { dirtyEnhance } from '$lib/ui';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
-	import RefreshButton from '../../RefreshButton.svelte';
+	import RefreshButton from '$lib/RefreshButton.svelte';
+	import RelationEditor from '$lib/RelationEditor.svelte';
+	import Section from '$lib/Section.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import client, { getDisplayText } from '$lib/api';
+	import { Platform, Rating, WorkOrigin } from '$lib/enums';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { m } from '$lib/paraglide/messages.js';
+	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { dirtyEnhance } from '$lib/dirty';
 
-	let { data, form }: PageProps = $props();
-	let title: string = $state(form?.title ?? getDisplayText(data.title, '')),
-		description: string = $state(form?.description ?? data.description!),
-		rating: number = $state(form?.rating ?? data.rating!),
-		thumbnail_source_id: number | null = $state(
-			form?.thumbnail_source ?? data.thumbnail_source ?? data.sources?.[0]?.id ?? null
-		);
+	let { data, form } = $props();
+	let title: string = $state(form?.title ?? getDisplayText(data.title, ''));
+	let description: string | null = $state(form?.description ?? data.description ?? '');
+	let rating: number = $state(form?.rating ? parseInt(form.rating, 10) : data.rating);
+	let thumbnail_source_id = $state(
+		form?.thumbnail_source_id ?? data.thumbnail_source ?? data.sources?.[0]?.id ?? null
+	);
 	const del = async () => {
 		if (confirm(m.mad_brief_falcon_pop())) {
 			await client.DELETE('/api/work/work', {
@@ -36,10 +36,10 @@
 		if (data.sources?.length === 1) goto('/upload');
 		else invalidateAll();
 	};
-	const updateStatus = (source_id: number) => async (e) => {
+	const updateStatus = async (source_id: number, origin: number) => {
 		const p = client.PUT('/api/upload/origin', {
 			fetch,
-			params: { query: { source_id, status: e.target.value } }
+			params: { query: { source_id, status: origin } }
 		});
 		callSavingToast(p);
 		await p;
@@ -132,13 +132,13 @@
 				</tr></thead
 			>
 			<tbody>
-				{#each data.sources! as src, i (i)}
+				{#each data.sources as src, i (i)}
 					<tr>
 						<td
 							><button
 								onclick={() => {
-									title = src.title;
-									description = src.description;
+									title = src.title ?? '';
+									description = src.description ?? '';
 									thumbnail_source_id = src.id;
 								}}
 								type="button">&lt;&lt;</button
@@ -154,7 +154,9 @@
 						>
 						<td>{Platform[src.platform]}</td>
 						<td class="whitespace-nowrap"
-							><select value={src.work_origin} onchange={updateStatus(src.id)}
+							><select
+								value={src.work_origin}
+								onchange={() => updateStatus(src.id, src.work_origin)}
 								>{#each WorkOrigin as w, i (i)}
 									<option value={i}>{w()}</option>
 								{/each}</select
@@ -179,7 +181,7 @@
 							{#if src.work_status === 0}
 								<RefreshButton source={src} />
 							{:else if src.work_status === 1}
-								{#if data.user?.level >= UserLevel.EDITOR}
+								{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 									<a href="/upload/add?for_source={src.id}"
 										>{m.minor_crisp_cobra_list()}</a
 									>
@@ -195,7 +197,7 @@
 		<br />
 		<input type="submit" />
 	</form>
-	{#if data.user?.level >= UserLevel.ADMIN}
+	{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 		<button onclick={del}>{m.suave_less_deer_grip()}</button>
 	{/if}
 </Section>

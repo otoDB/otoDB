@@ -1,17 +1,20 @@
 <script lang="ts">
-	import '../app.css';
-	import { page } from '$app/state';
-	import { Toaster } from 'svelte-sonner';
-	import { m } from '$lib/paraglide/messages.js';
-	import { navigating } from '$app/state';
-	import { clickOutside, current_version, get_prefs, isFormDirty, set_lang } from '$lib/ui';
-	import { getThemeNameById, LanguageNames, UserLevel } from '$lib/enums';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { navigating, page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import { callErrorToast } from '$lib/toast';
+	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Section from '$lib/Section.svelte';
+	import { languages } from '$lib/enums/Languages';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { getThemeNameById } from '$lib/enums/themes';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { callErrorToast } from '$lib/toast';
+	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
+	import { currentVersion, Version } from '$lib/enums/version';
+	import { Toaster } from 'svelte-sonner';
+	import '../app.css';
+	import { isFormDirty } from '$lib/dirty';
 
 	let { data, children } = $props();
 
@@ -239,7 +242,7 @@
 						{@render link('/', m.fine_late_chicken_quiz())}
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
 						{@render link('/work', m.grand_merry_fly_succeed())}
-						{#if data.user?.level >= UserLevel.MEMBER}
+						{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'MEMBER')}
 							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 						{/if}
 						{@render link('/tag', m.empty_legal_chicken_taste())}
@@ -304,7 +307,7 @@
 						{/if}
 					</ul>
 				</div>
-				{#if data.user?.level >= UserLevel.EDITOR}
+				{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -318,7 +321,7 @@
 						</ul>
 					</div>
 				{/if}
-				{#if data.user?.level >= UserLevel.ADMIN}
+				{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'ADMIN')}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -341,16 +344,16 @@
 						{m.white_helpful_lion_rise()}
 					</div>
 					<div class="flex justify-between">
-						<span>{m.grand_merry_fly_succeed()}</span><span>{data.stats[0]}</span>
+						<span>{m.grand_merry_fly_succeed()}</span><span>{data.stats.works}</span>
 					</div>
 					<div class="flex justify-between">
-						<span>{m.empty_legal_chicken_taste()}</span><span>{data.stats[1]}</span>
+						<span>{m.empty_legal_chicken_taste()}</span><span>{data.stats.tags}</span>
 					</div>
 					<div class="flex justify-between">
-						<span>{m.grand_nice_pony_belong()}</span><span>{data.stats[2]}</span>
+						<span>{m.grand_nice_pony_belong()}</span><span>{data.stats.songs}</span>
 					</div>
 					<div class="flex justify-between">
-						<span>{m.stale_loose_squid_cut()}</span><span>{data.stats[3]}</span>
+						<span>{m.stale_loose_squid_cut()}</span><span>{data.stats.lists}</span>
 					</div>
 				</div>
 			</nav>
@@ -385,7 +388,7 @@
 							type: 'otoDB',
 							name: m.glad_born_mouse_taste()
 						})}
-						{current_version}
+						{Version[currentVersion].name}
 						{#if env.PUBLIC_OTODB_HASH}
 							- {env.PUBLIC_OTODB_HASH}{/if}
 					</span>
@@ -404,11 +407,16 @@
 				<div class="footer-right">
 					<ConnectionFavicon type="Website" class="size-4" />
 					<select
-						onchange={(e) => set_lang(e.target.value, !!data.user)}
+						onchange={(e) => {
+							set_lang(
+								e.currentTarget.value as (typeof locales)[number],
+								!!data.user
+							);
+						}}
 						value={getLocale()}
 					>
-						{#each locales as l, i (i)}
-							<option value={l}>{LanguageNames[l]}</option>
+						{#each locales as l (l)}
+							<option value={l}>{languages[l].name}</option>
 						{/each}
 					</select>
 				</div>

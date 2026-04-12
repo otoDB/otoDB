@@ -1,12 +1,12 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
 	import Section from '$lib/Section.svelte';
+	import client from '$lib/api';
+	import { languages } from '$lib/enums/Languages.js';
+	import { themes } from '$lib/enums/themes';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-
-	import { LanguageNames, themes } from '$lib/enums';
-	import client from '$lib/api';
 	import { getLocalTheme, set_lang, updateLocalTheme } from '$lib/ui.js';
-	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
 
@@ -39,7 +39,7 @@
 						set_lang(current_locale, !!data.user);
 					}}
 				/>
-				{LanguageNames[key]}
+				{languages[key].name}
 			</label>
 		{/each}
 	</div>

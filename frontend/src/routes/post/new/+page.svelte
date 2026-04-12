@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
-	let { data }: PageProps = $props();
+
+	let { data } = $props();
 	import { m } from '$lib/paraglide/messages.js';
-	import { EntityModelRoutes, LanguageNames, PostCategories } from '$lib/enums';
+	import {
+		buildEntityRoutes,
+		EntityModelRoutes,
+		LanguageNames,
+		PostCategories
+	} from '$lib/enums';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { get_entity, renderMarkdown } from '$lib/markdown';
 
@@ -16,7 +21,7 @@
 		entities_raw
 			.split('\n')
 			.map(get_entity)
-			.filter((x) => x)
+			.filter((x) => !!x)
 	);
 </script>
 
@@ -54,8 +59,10 @@
 			<textarea name="entities" bind:value={entities_raw}></textarea>
 			<ul class="inline-block">
 				{#each entities as { entity, id }, i (i)}
-					{@const link = `/${EntityModelRoutes[entity]}/${id}`}
-					<li><a href={link}>{link}</a></li>
+					{@const link = buildEntityRoutes(entity, id)}
+					<li>
+						<a href={link}>{link}</a>
+					</li>
 				{/each}
 			</ul>
 		{/if}

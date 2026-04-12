@@ -1,28 +1,27 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import client, { getDisplayText } from '$lib/api';
+	import CommentTree from '$lib/CommentTree.svelte';
+	import DisplayText from '$lib/DisplayText.svelte';
 	import {
 		Platform,
 		Rating,
 		WorkOrigin,
 		WorkRelationDisplayBackward,
 		WorkRelationDisplayForward,
-		WorkStatus,
-		WorkTagCategoriesSettableAsSource,
-		WorkTagCategory,
-		WorkTagPresentationColours,
-		WorkTagPresentationOrder
+		WorkStatus
 	} from '$lib/enums';
-	import WorkTag from '$lib/WorkTag.svelte';
-	import client, { getDisplayText } from '$lib/api';
+	import { resolveWorkTagCategoryKeyById, WorkTagCategory } from '$lib/enums/WorkTagCategory';
+	import { m } from '$lib/paraglide/messages.js';
+	import RefreshButton from '$lib/RefreshButton.svelte';
 	import type { components } from '$lib/schema';
-	import DisplayText from '$lib/DisplayText.svelte';
-	import RefreshButton from '../RefreshButton.svelte';
-	import CommentTree from '$lib/CommentTree.svelte';
-	import { callSavingToast } from '$lib/toast';
-	import { SvelteMap } from 'svelte/reactivity';
-	import WorkCard from '$lib/WorkCard.svelte';
+	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import { callSavingToast } from '$lib/toast';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkTagTree from '$lib/WorkTagTree.svelte';
+	import type { ComponentProps } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
+	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
 
@@ -55,19 +54,33 @@
 		}
 	};
 
-	const merge_paths = (paths) => {
-		const graph = new SvelteMap();
+	const groupedTags: [keyof typeof WorkTagCategory, PageProps['data']['tags']][] = $derived(
+		(
+			Object.entries(
+				Object.groupBy(data.tags, (t) => {
+					const c = resolveWorkTagCategoryKeyById(t.category);
+					if (WorkTagCategory[c].canSetAsSource && t.sample) return 'SOURCE';
+					else return c;
+				})
+			) as [keyof typeof WorkTagCategory, PageProps['data']['tags']][]
+		).toSorted(([a], [b]) => WorkTagCategory[a].order - WorkTagCategory[b].order)
+	);
+
+	const merge_paths = (
+		paths: (typeof groupedTags)[number][1]
+	): ComponentProps<typeof WorkTagTree>['tree'][] => {
+		const graph: SvelteMap<string, Set<string>> = new SvelteMap();
 		paths
 			.filter((p) => p.primary_path.length)
 			.forEach((path) =>
 				path.primary_path.forEach((p, i, a) => {
 					const next_node = (i + 1 === a.length ? path : a[i + 1]).slug;
-					if (graph.has(p.slug)) graph.get(p.slug).add(next_node);
+					if (graph.has(p.slug)) graph.get(p.slug)?.add(next_node);
 					else graph.set(p.slug, new Set([next_node]));
 				})
 			);
-		const traverse = (node) => ({
-			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node),
+		const traverse = (node: string): ComponentProps<typeof WorkTagTree>['tree'] => ({
+			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node)!,
 			real: paths.some((n) => n.slug === node),
 			children: Array.from(graph.get(node) ?? []).map((n) => traverse(n))
 		});
@@ -81,6 +94,15 @@
 				.map((n) => ({ node: n, real: true }))
 		];
 	};
+
+	// TODO: typing is messy
+	const relTree = $derived(
+		data.relations[0].length > 0
+			? (Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map(
+					(d) => [d[0], Object.entries(Object.groupBy(d[1]!, (r) => r.relation))]
+				) as [string, [string, { A_id: number; B_id: number }[]][]][])
+			: null
+	);
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
@@ -107,19 +129,19 @@
 								<td><div class="description-cell">{@html data.description}</div></td
 								>
 							</tr>
-							{#if data.relations[0].length}
+							{#if relTree}
 								<tr>
 									<th>{m.alive_these_jay_pick()}</th>
 									<td
 										><ul>
-											{#each Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map( (d) => [d[0], Object.entries(Object.groupBy(d[1], (r) => r.relation))] ) as [dir, rels], i (i)}
+											{#each relTree as [dir, rels], i (i)}
 												{#each rels as [tp, relations], j (j)}
 													<li>
 														{m.mild_loud_shad_enchant({
 															type: [
 																WorkRelationDisplayBackward,
 																WorkRelationDisplayForward
-															][+dir][tp](),
+															][+dir][parseInt(tp, 10)](),
 															name: ''
 														})}
 														<ul class="ml-2">
@@ -130,7 +152,7 @@
 																		(r.A_id === data.id
 																			? r.B_id
 																			: r.A_id)
-																)}
+																)!}
 																<li>
 																	<a href="/work/{w.id}"
 																		>#{w.id} - {w.title}</a
@@ -198,21 +220,21 @@
 		<div
 			class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}
 		>
-			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
+			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
-					style="border-color: {WorkTagPresentationColours[
-						cat[0]
-					]};background-color: color-mix(in hsl, {WorkTagPresentationColours[
-						cat[0]
-					]}, transparent 85%);"
+					style="border-color: {WorkTagCategory[cat]
+						.color};background-color: color-mix(in hsl, {WorkTagCategory[cat]
+						.color}, transparent 85%);"
 				>
 					<h5 class="my-2 font-bold">
-						{WorkTagCategory[cat[0]]()}
+						{WorkTagCategory[cat].nameFn()}
 					</h5>
 					<ul class="flex list-none flex-wrap gap-2">
-						{#each merge_paths(cat[1]) as tag, j (j)}
-							<li class="m-0"><WorkTag {tag} tree={true} /></li>
+						{#each merge_paths(tags) as tree, j (j)}
+							<li class="m-0">
+								<WorkTagTree {tree} />
+							</li>
 						{/each}
 					</ul>
 				</span>

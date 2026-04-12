@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import TagsField from '$lib/TagsField.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section
@@ -71,7 +71,7 @@
 			n_count={data.results.count}
 			page={data.page}
 			page_size={data.batch_size}
-			base_url={page.url}
+			base_url={page.url.toString()}
 		/>
 	{/if}
 </Section>

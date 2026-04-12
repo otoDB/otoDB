@@ -1,18 +1,17 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { debounce } from '$lib/ui';
 	import client, { getDisplayText } from '$lib/api';
 	import { goto } from '$app/navigation';
-	import { draggable, droppable } from '@thisux/sveltednd';
+	import { draggable, droppable, type DragDropCallbacks } from '@thisux/sveltednd';
 	import { callSavingToast } from '$lib/toast';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
-	let { data, form }: PageProps = $props();
+	let { data, form } = $props();
 
 	let entries = $derived.by(() => {
 		// https://github.com/sveltejs/svelte/issues/16189
@@ -20,7 +19,7 @@
 		return _;
 	});
 
-	async function handleDrop(state) {
+	const handleDrop: DragDropCallbacks<number[]>['onDrop'] = async (state) => {
 		const { draggedItem, targetContainer } = state;
 		const dragIndex = draggedItem[0];
 		const dropIndex = parseInt(targetContainer ?? '0');
@@ -40,14 +39,14 @@
 				}
 			});
 		}
-	}
+	};
 
-	async function update_description(el) {
+	async function update_description(index: number, value: string) {
 		const p = client.PUT('/api/list/items', {
 			fetch,
 			params: { query: { list_id: data.list.id } },
 			body: {
-				update_description: [[+el.target.closest('tr').dataset.ridx, el.target.value]],
+				update_description: [[index, value]],
 				move: [],
 				delete: [],
 				update_work: []
@@ -57,13 +56,12 @@
 		await p;
 	}
 
-	async function delete_item(el) {
-		const i = +el.target.closest('tr')!.dataset.ridx!;
+	async function delete_item(index: number) {
 		const { error } = await client.PUT('/api/list/items', {
 			fetch,
 			params: { query: { list_id: data.list.id } },
 			body: {
-				delete: [i],
+				delete: [index],
 				update_work: [],
 				update_description: [],
 				move: [],
@@ -71,7 +69,7 @@
 			}
 		});
 		if (!error) {
-			entries.splice(i, 1);
+			entries.splice(index, 1);
 			entries = entries;
 			data.entries.count--;
 		}
@@ -125,7 +123,6 @@
 							container: i.toString(),
 							callbacks: { onDrop: handleDrop }
 						}}
-						data-ridx={i}
 						><th>{i + 1}</th><td class="w-10"
 							><div
 								class="svelte-dnd-touch-feedback w-10 cursor-move border text-center select-none"
@@ -149,18 +146,23 @@
 									><DisplayText value={entry.work.title} /></a
 								>
 							</h3>
-						</td><td
-							><textarea
+						</td>
+						<td>
+							<textarea
 								class="min-h-30 w-full"
 								value={entry.description}
-								oninput={debounce(update_description, 1000)}
-							></textarea></td
-						><td
-							><button type="button" onclick={delete_item}
-								>{m.even_alert_grebe_taste()}</button
-							></td
-						></tr
-					>
+								oninput={debounce(
+									(el) => update_description(i, el.currentTarget.value),
+									1000
+								)}
+							></textarea>
+						</td>
+						<td>
+							<button type="button" onclick={() => delete_item(i)}>
+								{m.even_alert_grebe_taste()}
+							</button>
+						</td>
+					</tr>
 				{/each}
 			</tbody>
 		</table>

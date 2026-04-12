@@ -37,7 +37,12 @@ export const actions = {
 				message: m.red_raw_duck_evoke()
 			});
 		}
-		if (error) return fail(400, { username, failed: true });
+		if (error)
+			return fail(400, {
+				username,
+				failed: true,
+				message: 'An unknown error occurred' // TODO: i don't know what error message supposed to be.
+			});
 
 		forwardCookies(cookies, response);
 	}

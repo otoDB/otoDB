@@ -3,8 +3,8 @@
 
 	interface Props {
 		src: components['schemas']['WorkSourceSchema'];
-		width: number;
-		height: number;
+		width?: number;
+		height?: number;
 	}
 
 	let { src, width = 560, height = 315 }: Props = $props();

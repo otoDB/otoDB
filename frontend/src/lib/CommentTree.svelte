@@ -7,6 +7,7 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { timeAgo } from '$lib/ui';
+	import type { Snippet } from 'svelte';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -151,7 +152,7 @@
 
 {#snippet comment(
 	data: ReturnType<typeof makeCommentTree>[number],
-	this_component: any, // TODO: 面倒なので`any`
+	this_component: Snippet<any[] /* TODO: 再帰的なのでとりあえず`any`で対応 */>,
 	depth: number
 )}
 	<div class="comment grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">

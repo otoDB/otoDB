@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
 	import { Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
@@ -56,14 +55,17 @@
 					</tr>
 					<tr>
 						<th class="w-min whitespace-nowrap">
-							<label for="origin">{m.watery_fuzzy_fireant_thrive()}</label>
+							{m.watery_fuzzy_fireant_thrive()}
 						</th>
-						<td class="w-full">
-							<select id="origin" name="origin" required>
-								<option value="" selected disabled>---</option>
-								<option value={true}>{m.broad_large_squid_zoom()}</option>
-								<option value={false}>{m.great_lucky_goldfish_sail()}</option>
-							</select>
+						<td class="flex w-full gap-4">
+							<label>
+								<input type="radio" name="origin" value="true" required />
+								{m.broad_large_squid_zoom()}
+							</label>
+							<label>
+								<input type="radio" name="origin" value="false" required />
+								{m.great_lucky_goldfish_sail()}
+							</label>
 						</td>
 					</tr>
 					{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}

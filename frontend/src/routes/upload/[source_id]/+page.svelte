@@ -22,7 +22,7 @@
 
 	let title = $state(data.suggestions?.title ?? data.source.title ?? '');
 	let description = $state(data.suggestions?.description ?? data.source.description ?? '');
-	let rating = $state(null as number | null);
+	let rating = $state(0 as number | null);
 	let bindWork = $state<components['schemas']['WorkSchema'] | null>(null);
 
 	// Tag cache for rich tag editing (sample toggles, creator roles)
@@ -211,20 +211,30 @@
 							</td>
 						</tr>
 						<tr>
-							<th><label for="rating">{m.good_dark_bumblebee_spur()}</label></th>
+							<th>{m.good_dark_bumblebee_spur()}</th>
 							<td>
-								<select
-									id="rating"
-									name="rating"
-									class="border"
-									bind:value={rating}
-									required
-								>
-									<option value={null} selected disabled>---</option>
+								<div class="flex gap-2">
 									{#each Rating as r, i (i)}
-										<option value={i}>{r()}</option>
+										<label
+											class={[
+												'cursor-pointer border px-3 py-1',
+												rating === i
+													? 'bg-otodb-content-primary text-otodb-bg-primary'
+													: ''
+											]}
+										>
+											<input
+												type="radio"
+												name="rating"
+												value={i}
+												bind:group={rating}
+												class="hidden"
+												required
+											/>
+											{r()}
+										</label>
 									{/each}
-								</select>
+								</div>
 							</td>
 						</tr>
 						<tr>

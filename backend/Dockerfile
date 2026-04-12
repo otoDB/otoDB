@@ -24,13 +24,7 @@ ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh -s -- -y
 RUN uv run p12y apply
 
-RUN OTODB_SECRET_KEY=build \
-    OTODB_DB_NAME=build \
-    OTODB_DB_USER=build \
-    OTODB_DB_PASSWORD=build \
-    OTODB_DB_HOST=build \
-    OTODB_DB_PORT=5432 \
-    uv run manage.py collectstatic --noinput
+RUN OTODB_SECRET_KEY=build OTODB_SKIP_DB=1 uv run manage.py collectstatic --noinput
 
 FROM python:3.14-slim
 

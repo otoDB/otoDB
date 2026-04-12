@@ -7,7 +7,7 @@ export const userLevelGuard = (
 	from: string | null = null,
 	to = '/login'
 ): user is Exclude<App.Locals['user'], null> => {
-	if (!user || hasUserLevel(resolveUserLevelById(user.level), userLevel))
+	if (!user || !hasUserLevel(resolveUserLevelById(user.level), userLevel))
 		redirect(303, to === '/login' && from ? `${to}?from=${from}` : to);
 	return true;
 };

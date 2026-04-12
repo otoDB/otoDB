@@ -109,7 +109,7 @@
 					new_item &&
 					new_item.id !== this_id &&
 					!relations.some(
-						(r) => r.item.id === new_item!.id // TODO: maybe here null-assertion is redundant
+						(r) => r.item.id === new_item!.id // MEMO: maybe here null-assertion is redundant
 					)
 				) {
 					e.currentTarget.dispatchEvent(new Event('change', { bubbles: true }));

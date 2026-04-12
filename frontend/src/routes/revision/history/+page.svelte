@@ -1,14 +1,15 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { isSOV, isSVO, timeAgo } from '$lib/ui';
+	import { timeAgo } from '$lib/ui';
+	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { Route } from '$lib/enums';
+	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section title={m.giant_away_scallop_hike()}>
@@ -17,7 +18,7 @@
 			{#each data.results?.items as r, i (i)}
 				<tr
 					><td><a href="/revision/{r.id}">#{r.id}</a></td><td
-						>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+						>{r.route ? Route[resolveRouteKeyById(r.route)].title : ''}</td
 					><td>
 						{#if isSVO(getLocale())}
 							{m.curly_safe_lynx_fond()}
@@ -39,7 +40,7 @@
 			n_count={data.results.count}
 			page={data.page}
 			page_size={data.batch_size}
-			base_url={page.url}
+			base_url={page.url.toString()}
 		/>
 	{/if}
 </Section>

@@ -1,23 +1,15 @@
 import { browser } from '$app/environment';
 import client from './api';
-import { Languages } from './enums';
+import { languages } from './enums/Languages';
 import { getLocale, setLocale } from './paraglide/runtime';
 import { enhance } from '$app/forms';
 import { m } from './paraglide/messages';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export const debounce = (callback: Function, wait = 300) => {
+export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
-	return (...args: any[]) => {
+	return (...args: T) => {
 		if (timeout) clearTimeout(timeout);
 		timeout = setTimeout(() => callback(...args), wait);
-	};
-};
-
-export const once = (fn) => {
-	return function (event) {
-		if (fn) fn.call(this, event);
-		fn = null;
 	};
 };
 
@@ -36,155 +28,34 @@ export const clickOutside = (node: HTMLElement) => {
 		}
 	};
 };
-
-export const isSVO = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'en' || lang === 'zh-cn';
-export const isSOV = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'ko' || lang === 'ja';
-
-export const set_lang = async (lang, logged_in) => {
+export const set_lang = async (lang: keyof typeof languages, logged_in: boolean) => {
 	if (logged_in) {
 		await client.POST('/api/profile/prefs', {
 			fetch,
-			body: { theme: null, language: Languages[lang] }
+			body: {
+				theme: null,
+				language: languages[lang].id
+			}
 		});
 	}
 	setLocale(lang);
 };
 
 interface Prefs {
-	theme: string | undefined;
+	theme?: number; // theme id
 }
 
 export const get_prefs = (): Prefs | undefined => {
 	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
+export const getLocalTheme = () => get_prefs()?.theme;
 
-export const update_prefs = (opts: Prefs) => {
-	if (browser) localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), ...opts }));
+export const updateLocalPref = (key: keyof Prefs, value: Prefs[typeof key]) => {
+	if (!browser) return;
+
+	localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), [key]: value }));
 };
-
-export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
-
-const dirty_failure = (dirty_forms: HTMLFormElement[], barrier) => {
-	dirty_forms.forEach((f) => {
-		f.inert = false;
-	});
-	barrier.forms = undefined;
-	barrier.reached = undefined;
-};
-
-export const dirtyEnhance = (
-	node: HTMLFormElement,
-	props:
-		| ({
-				barrier: {
-					forms?: HTMLFormElement[];
-					reached?: ReturnType<typeof Promise.withResolvers<void>>[];
-				};
-				priority: number;
-		  } & { form?: any; manual_post?: { p: ReturnType<typeof Promise.withResolvers<void>> } })
-		| undefined = undefined
-) => {
-	node.dataset.priority = props?.priority?.toString();
-	node.addEventListener('change', () => {
-		node.dataset.dirty = 'true';
-	});
-
-	return enhance(node, async ({ cancel }) => {
-		const dirty_forms = Array.from(document.querySelectorAll('form')).filter(isFormDirty);
-		const me_dirty = node.dataset.dirty;
-
-		if (props?.manual_post) cancel();
-
-		if (props?.barrier) {
-			const first = !props?.barrier.reached?.length;
-			if (first) {
-				if (!dirty_forms.every((f) => f.reportValidity())) {
-					cancel();
-					return;
-				}
-
-				dirty_forms.forEach((f) => {
-					f.inert = true;
-				});
-				props.barrier.forms = dirty_forms.toSorted(
-					(a, b) => +a.dataset.priority - +b.dataset.priority
-				);
-				props.barrier.reached = Array(props.barrier.forms.length)
-					.fill(null)
-					.map(() => Promise.withResolvers<void>());
-			}
-			if (me_dirty) {
-				const my_id = props.barrier.forms!.indexOf(node);
-				if (first)
-					for (let i = 0; i < my_id; i++) {
-						props.barrier.forms[i].requestSubmit();
-						try {
-							await props.barrier.reached[i].promise;
-						} catch {
-							dirty_failure(dirty_forms, props.barrier);
-							props?.manual_post?.p.reject();
-							cancel();
-							return;
-						}
-					}
-				const { resolve, reject } = props.barrier.reached[my_id];
-
-				const on_success = async () => {
-					resolve();
-					delete node.dataset.dirty;
-					if (first) {
-						for (let i = my_id + 1; i < props.barrier.reached?.length; i++) {
-							props.barrier.forms[i].requestSubmit();
-							try {
-								await props.barrier.reached[i].promise;
-							} catch {
-								dirty_failure(dirty_forms, props.barrier);
-								return;
-							}
-						}
-					}
-				};
-
-				if (props?.manual_post) {
-					props?.manual_post?.p.resolve();
-					on_success();
-				} else
-					return async ({ update, result }) => {
-						if (result.type === 'success' || result.type === 'redirect') {
-							on_success();
-							if (first) await update();
-						} else {
-							reject();
-							if (props.form !== undefined && result) props.form = result;
-						}
-					};
-			} else {
-				props.manual_post?.p.resolve();
-				for (let i = 0; i < props.barrier.forms?.length; i++) {
-					props.barrier.forms[i].requestSubmit();
-					try {
-						await props.barrier.reached[i].promise;
-					} catch {
-						dirty_failure(dirty_forms, props.barrier);
-						return;
-					}
-				}
-			}
-		} else if (dirty_forms.some((f) => f !== node) && !confirm(m.active_lime_panther_buzz())) {
-			cancel();
-			props.manual_post?.p.reject();
-		}
-		props.manual_post?.p.resolve();
-	});
-};
-
-export const version_end_dates = [
-	['Pre-Alpha', 1752505560412],
-	['Alpha', 1766984874569],
-	['Beta', Number.POSITIVE_INFINITY]
-];
-
-export const current_version = version_end_dates.at(-1)![0];
+export const updateLocalTheme = (themeId: number) => updateLocalPref('theme', themeId);
 
 export const GUIDELINE_POST_ID = 4;
 export const FAQ_POST_ID = 3;

@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import client from './api';
-	import { UserLevel, Route } from './enums';
+	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
 	import type { components } from './schema';
+	import { timeAgo } from './ui';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
 		user: components['schemas']['UserStatusSchema'] | null;
@@ -30,7 +28,9 @@
 		{#each revisions as rev, i (i)}
 			<tr
 				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
-					>{rev.route !== null && rev.route !== undefined ? Route[rev.route] : ''}</td
+					>{rev.route !== null && rev.route !== undefined
+						? Route[resolveRouteKeyById(rev.route)].title
+						: ''}</td
 				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>
 				</td><td>

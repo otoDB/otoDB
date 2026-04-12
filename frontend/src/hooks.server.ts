@@ -13,11 +13,14 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 	});
 
 const handleAuth: Handle = async ({ event, resolve }) => {
-	const session = event.cookies.get('sessionid'),
-		csrf = event.cookies.get('csrftoken');
+	const session = event.cookies.get('sessionid');
+	const csrf = event.cookies.get('csrftoken');
+
 	if (session && csrf) {
 		const status = await client.GET('/api/auth/status', { fetch: event.fetch });
+
 		if (status.data) event.locals.user = { csrf: csrf, ...status.data };
+		else event.locals.user = null;
 	}
 
 	return resolve(event);

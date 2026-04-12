@@ -3,10 +3,11 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { UserLevel, Platform } from '$lib/enums';
+	import { Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 
-	let { data, form }: PageProps = $props();
+	let { data, form } = $props();
 	let isUnavailable = $derived(!!data.unavailable_source);
 
 	let submitting = $state(false);
@@ -68,7 +69,7 @@
 							</label>
 						</td>
 					</tr>
-					{#if data.user?.level >= UserLevel.EDITOR}
+					{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 						<tr>
 							<th class="w-min whitespace-nowrap">
 								<label for="isUnavailable">{m.that_large_mare_ascend()}</label>

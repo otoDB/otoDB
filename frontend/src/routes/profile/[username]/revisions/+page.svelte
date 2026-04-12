@@ -1,13 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
-	import { Route } from '$lib/enums';
 	import { timeAgo } from '$lib/ui';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
+	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
@@ -17,7 +17,7 @@
 				{#each data.revisions?.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a></td><td
-							>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+							>{r.route ? Route[resolveRouteKeyById(r.route)].title : ''}</td
 						><td
 							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
 							></td
@@ -34,7 +34,7 @@
 			n_count={data.revisions.count}
 			page={data.page}
 			page_size={data.batch_size}
-			base_url={page.url}
+			base_url={page.url.toString()}
 		/>
 	{/if}
 </Section>

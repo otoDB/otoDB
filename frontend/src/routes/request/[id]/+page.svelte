@@ -2,17 +2,19 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { RequestActions, Status, UserLevel } from '$lib/enums.js';
+	import { RequestActions, Status } from '$lib/enums.js';
+	import { isSOV, isSVO } from '$lib/enums/Languages';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO } from '$lib/ui.js';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
+	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();
 
-	const set = async (status: number) => {
+	const set = async (status: 0 | 1 | 2) => {
 		await client.POST('/api/request/confirm', {
 			fetch,
 			params: { query: { request_id: data.id, status } }
@@ -21,7 +23,11 @@
 	};
 </script>
 
-{#snippet render_entity(ent)}
+{#snippet render_entity(
+	ent:
+		| ['tagwork', ComponentProps<typeof WorkTag>['tag']]
+		| ['mediawork', ComponentProps<typeof WorkCard>['work']]
+)}
 	{#if ent[0] === 'tagwork'}
 		<WorkTag tag={ent[1]} />
 	{:else if ent[0] === 'mediawork'}
@@ -49,13 +55,21 @@
 	<ul>
 		{#each data.request.requests as r, i (i)}
 			<li>
-				<code>{RequestActions[r.command]}</code>
-				{@render render_entity(r.A)}
-				{@render render_entity(r.B)}
+				<code
+					>{RequestActions[
+						r.command as keyof typeof RequestActions /* TODO: need check */
+					]}</code
+				>
+				{@render render_entity(
+					r.A as Parameters<typeof render_entity>[0] // TODO: more better handling
+				)}
+				{@render render_entity(
+					r.B as Parameters<typeof render_entity>[0] // TODO: more better handling
+				)}
 			</li>
 		{/each}
 	</ul>
-	{#if data.user.level >= UserLevel.EDITOR && data.request.status === 0}
+	{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR') && data.request.status === 0}
 		<button onclick={() => set(1)}>{m.lucky_bold_hornet_push()}</button>
 		<button onclick={() => set(2)}>{m.alive_blue_marlin_push()}</button>
 	{/if}

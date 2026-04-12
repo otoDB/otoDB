@@ -1,6 +1,9 @@
+from typing import Annotated
 from datetime import datetime, timedelta
 import string
 import logging
+from pydantic import StringConstraints
+
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpRequest
@@ -13,7 +16,7 @@ from ninja import Schema, Router, Field, ModelSchema
 from ninja.security import django_auth
 
 from otodb.account.models import Account, Invitation
-from otodb.models.enums import LanguageTypes
+from otodb.models.enums import ErrorCode, LanguageTypes
 from otodb.tasks import send_email
 
 from .common import Error, UserPreferencesSchema, ProfileSchema, user_is_editor
@@ -29,7 +32,7 @@ class UserLoginSchema(Schema):
 
 
 class LoginRequestSchema(Schema):
-	username: str
+	username: Annotated[str, StringConstraints(strip_whitespace=True)]
 	password: str
 
 
@@ -46,7 +49,7 @@ def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 	if user is not None:
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
-	return 401, {'message': 'Login failed.'}
+	return 401, {'code': ErrorCode.LOGIN_FAILED, 'data': {'message': 'Login failed.'}}
 
 
 class UserStatusSchema(UserLoginSchema):
@@ -63,7 +66,7 @@ def status(request: HttpRequest):
 		u = request.user
 		u.notifs_count = u.notifs.filter(dismissed=False).count()
 		return u
-	return 401, {'message': 'Not logged in.'}
+	return 401, {'code': ErrorCode.NOT_LOGGED_IN, 'data': {'message': 'Not logged in.'}}
 
 
 @auth_router.post('/logout', auth=django_auth)
@@ -73,10 +76,10 @@ def logout_endpoint(request: HttpRequest):
 
 
 class RegisterRequestSchema(Schema):
-	username: str
+	username: Annotated[str, StringConstraints(strip_whitespace=True)]
 	password: str
-	email: str
-	invite: str
+	email: Annotated[str, StringConstraints(strip_whitespace=True)]
+	invite: Annotated[str, StringConstraints(strip_whitespace=True)]
 
 
 @auth_router.post('/register', response={200: UserLoginSchema, 401: Error, 409: Error})
@@ -94,9 +97,15 @@ def register(request: HttpRequest, body: RegisterRequestSchema):
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
 	except IntegrityError:
-		return 409, {'message': 'This username is already taken'}
+		return 409, {
+			'code': ErrorCode.USERNAME_TAKEN,
+			'data': {'message': 'This username is already taken'},
+		}
 	except ValueError:
-		return 400, {'message': 'A validation error occured'}
+		return 400, {
+			'code': ErrorCode.VALIDATION_ERROR,
+			'data': {'message': 'A validation error occurred'},
+		}
 
 
 class ResetPasswordRequestSchema(Schema):

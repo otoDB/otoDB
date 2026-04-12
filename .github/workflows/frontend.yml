@@ -2,8 +2,11 @@ name: CI for Frontend
 
 on:
   push:
-    paths:
-      - "frontend/**"
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 defaults:
   run:
@@ -19,6 +22,12 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bunx prettier --check .
       - run: bunx eslint .
+      - name: Compile Paraglide project
+        run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+      - name: Copy dotenv file to generate type-safe environment variables
+        run: cp .env.example .env
+      - run: bun run check
+      - run: bun run test
 
   # build_docker:
   #   name: Build Docker image

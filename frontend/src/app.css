@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
-@config '../tailwind.config.js';
 @import './themes.css';
 
 @theme inline {
@@ -180,6 +179,11 @@
 			}
 		}
 	}
+}
+
+/* Typography overrides */
+.prose table {
+	width: fit-content;
 }
 
 /* Autolink headings */

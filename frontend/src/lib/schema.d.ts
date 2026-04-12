@@ -1469,8 +1469,12 @@ export interface components {
         };
         /** Error */
         Error: {
-            /** Message */
-            message: string;
+            /** Code */
+            code: number;
+            /** Data */
+            data?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** LoginRequestSchema */
         LoginRequestSchema: {
@@ -1576,8 +1580,6 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -1600,8 +1602,6 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -1638,8 +1638,6 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -2013,12 +2011,30 @@ export interface components {
              */
             delete: number[];
         };
-        /** PagedTagWorkSchema */
-        PagedTagWorkSchema: {
+        /** PagedTagWorkSearchResultSchema */
+        PagedTagWorkSearchResultSchema: {
             /** Items */
-            items: components["schemas"]["TagWorkSchema"][];
+            items: components["schemas"]["TagWorkSearchResultSchema"][];
             /** Count */
             count: number;
+        };
+        /** TagWorkSearchResultSchema */
+        TagWorkSearchResultSchema: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Category */
+            category: number;
+            /** Deprecated */
+            deprecated: boolean;
+            /** N Instance */
+            n_instance: number;
         };
         /** FatTagWorkSchema */
         FatTagWorkSchema: {
@@ -2150,6 +2166,13 @@ export interface components {
             lang_prefs: {
                 [key: string]: string | null;
             };
+            /**
+             * Names
+             * @default {}
+             */
+            names: {
+                [key: string]: string;
+            };
         };
         /** WikiPageMDSchema */
         WikiPageMDSchema: {
@@ -2161,6 +2184,13 @@ export interface components {
              */
             lang: number;
         };
+        /** WikiPageEditSchema */
+        WikiPageEditSchema: {
+            /** Lang */
+            lang: number;
+            /** Md */
+            md: string;
+        };
         /** PagedSongSchema */
         PagedSongSchema: {
             /** Items */
@@ -2168,12 +2198,29 @@ export interface components {
             /** Count */
             count: number;
         };
-        /** PagedTagSongSchema */
-        PagedTagSongSchema: {
+        /** PagedTagSongSearchResultSchema */
+        PagedTagSongSearchResultSchema: {
             /** Items */
-            items: components["schemas"]["TagSongSchema"][];
+            items: components["schemas"]["TagSongSearchResultSchema"][];
             /** Count */
             count: number;
+        };
+        /** TagSongSearchResultSchema */
+        TagSongSearchResultSchema: {
+            /** Id */
+            id: number;
+            /** Children */
+            children: components["schemas"]["TagSongSchema"][];
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Category */
+            category: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
+            /** N Instance */
+            n_instance: number;
         };
         /** SongTagInSchema */
         SongTagInSchema: {
@@ -2201,8 +2248,6 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -3826,7 +3871,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedTagWorkSchema"];
+                    "application/json": components["schemas"]["PagedTagWorkSearchResultSchema"];
                 };
             };
         };
@@ -4014,6 +4059,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     otodb_api_tag_wiki_page: {
@@ -4042,14 +4096,16 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                lang: number;
-                md: string;
             };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WikiPageEditSchema"][];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -4228,7 +4284,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedTagSongSchema"];
+                    "application/json": components["schemas"]["PagedTagSongSearchResultSchema"];
                 };
             };
         };

@@ -1,5 +1,4 @@
 import { m } from '$lib/paraglide/messages.js';
-
 export const WorkTagCategory = [
 	m.fresh_lower_rook_trip,
 	m.next_bland_goldfish_heart,
@@ -95,21 +94,9 @@ export const SongRelationPredicate = [
 	m.curly_many_orangutan_grip
 ];
 
-export const UserLevel = {
-	ANONYMOUS: 0,
-	RESTRICTED: 10,
-	MEMBER: 20,
-	EDITOR: 40,
-	ADMIN: 50,
-	OWNER: 100,
-	0: m.heroic_busy_shrimp_lend,
-	10: m.fancy_formal_falcon_quell,
-	20: m.drab_alive_midge_edit,
-	40: m.tasty_spry_firefox_fall,
-	50: m.silly_blue_felix_amuse,
-	100: m.tangy_formal_lionfish_tap
-};
-
+/**
+ * @deprecated
+ */
 export const Languages = {
 	NOT_APPLICABLE: 0,
 	en: 1,
@@ -123,6 +110,9 @@ export const Languages = {
 	4: 'ko'
 };
 
+/**
+ * @deprecated
+ */
 export const LanguageNames = {
 	en: 'English',
 	ja: '日本語',
@@ -132,199 +122,6 @@ export const LanguageNames = {
 	日本語: 'ja',
 	简体中文: 'zh-cn',
 	한국인: 'ko'
-};
-
-export const ProfileConnectionTypes = {
-	WEBSITE: 0,
-	NICONICO: 1,
-	YOUTUBE: 2,
-	BILIBILI: 3,
-	TWITTER: 4,
-	BLUESKY: 5,
-	SOUNDCLOUD: 6,
-
-	0: 'Website',
-	1: 'Niconico',
-	2: 'YouTube',
-	3: 'Bilibili',
-	4: 'Twitter',
-	5: 'Bluesky',
-	6: 'Soundcloud'
-};
-
-export const ProfileConnectionLink = {
-	0: (id: string) => id,
-	1: (id: string) => `https://www.nicovideo.jp/user/${id}/`,
-	2: (id: string) => `https://www.youtube.com/${id}`,
-	3: (id: string) => `https://space.bilibili.com/${id}`,
-	4: (id: string) => `https://twitter.com/${id}/`,
-	5: (id: string) => `https://bsky.app/profile/${id}`,
-	6: (id: string) => `https://soundcloud.com/${id}`
-};
-
-export const SongConnectionTypes = {
-	VGMDB: 0,
-	0: 'VGMdb',
-	VOCADB: 1,
-	1: 'VocaDB',
-	DISCOGS: 2,
-	2: 'Discogs',
-	MUSICBRAINZ: 3,
-	3: 'MusicBrainz',
-	RATEYOURMUSIC: 4,
-	4: 'Rate Your Music',
-	DOJINMUSICINFO: 5,
-	5: '同人音楽info',
-	TOUHOUDB: 6,
-	6: 'TouhouDB',
-
-	REMYWIKI: 20,
-	20: 'RemyWiki',
-	SILENTBLUE: 21,
-	21: 'Silent Blue',
-	ZENIUS: 22,
-	22: 'Zenius -I- vanisher.com',
-
-	NNDMEDLEYWIKI: 30,
-	30: 'NND Medley Wiki',
-
-	MODARCHIVE: 40,
-	40: 'The Mod Archive'
-};
-
-export const SongConnectionLink = {
-	0: (id: string) => `https://vgmdb.net/album/${id}`,
-	1: (id: string) => `https://vocadb.net/S/${id}`,
-	2: (id: string) => `https://www.discogs.com/master/${id}`,
-	3: (id: string) => `https://musicbrainz.org/recording/${id}`,
-	4: (id: string) => `https://rateyourmusic.com/song/${id}/`,
-	5: (id: string) => `https://www.dojin-music.info/song/${id}`,
-	6: (id: string) => `https://touhoudb.com/S/${id}`,
-	20: (id: string) => `https://remywiki.com/${id}`,
-	21: (id: string) => `https://silentblue.remywiki.com/${id}`,
-	22: (id: string) => `https://zenius-i-vanisher.com/v5.2/songdb.php?songid=${id}`,
-	30: (id: string) => `https://medley.bepis.io/wiki/${id}`,
-	40: (id: string) => `https://modarchive.org/index.php?request=view_by_moduleid&query=${id}`
-};
-
-export const TagWorkConnectionTypes = {
-	OTOMADWIKI: 1,
-	1: 'otomad.wiki',
-	OTOMADFANDOM: 2,
-	2: '音MAD Wiki 2',
-
-	NICOPEDIA: 20,
-	20: 'Niconico Encyclopedia',
-	PIXIV_DICT: 21,
-	21: 'Pixiv Dictionary',
-	WIKIPEDIAEN: 22,
-	22: 'Wikipedia (en)',
-	NAMUWIKI: 23,
-	23: 'Namu Wiki',
-	KNOWYOURMEME: 24,
-	24: 'Know Your Meme'
-};
-
-export const TagWorkConnectionLink = {
-	0: (id: string) => id,
-	1: (id: string) => `https://otomad.wiki/${id}`,
-	2: (id: string) => `https://otomad.fandom.com/ja/wiki/${id}`,
-	20: (id: string) => `https://dic.nicovideo.jp/${id}`,
-	21: (id: string) => `https://dic.pixiv.net/a/${id}/`,
-	22: (id: string) => `https://en.wikipedia.org/wiki/${id}`,
-	23: (id: string) => `https://namu.wiki/w/${id}`,
-	24: (id: string) => `https://knowyourmeme.com/${id}`
-};
-
-export const MediaConnectionTypes = {
-	ANIKORE: 1,
-	1: 'AniKore',
-	BANGUMI: 2,
-	2: 'Bangumi',
-	ANIDB: 3,
-	3: 'AniDB',
-	MYANIMELIST: 4,
-	4: 'MyAnimeList',
-	ANILIST: 5,
-	5: 'AniList',
-	KITSU: 6,
-	6: 'Kitsu',
-	ANIMEPLANET: 7,
-	7: 'Anime-Planet',
-
-	IMDB: 20,
-	20: 'IMDb',
-	LETTERBOXD: 21,
-	21: 'Letterboxd',
-
-	VNDB: 40,
-	40: 'vndb',
-	EROGAMESCAPE: 41,
-	41: 'ErogameScape',
-
-	VGMDB: 50,
-	50: 'VGMdb'
-};
-
-export const MediaConnectionLink = {
-	1: (id: string) => `https://www.anikore.jp/anime/${id}/`,
-	2: (id: string) => `https://bangumi.tv/subject/${id}`,
-	3: (id: string) => `https://anidb.net/anime/${id}`,
-	4: (id: string) => `https://myanimelist.net/anime/${id}`,
-	5: (id: string) => `https://anilist.co/anime/${id}`,
-	6: (id: string) => `https://kitsu.io/anime/${id}`,
-	7: (id: string) => `https://www.anime-planet.com/anime/${id}`,
-	20: (id: string) => `https://www.imdb.com/title/${id}/`,
-	21: (id: string) => `https://letterboxd.com/film/${id}/`,
-	40: (id: string) => `https://vndb.org/${id}`,
-	41: (id: string) =>
-		`https://erogamescape.dyndns.org/~ap2/ero/toukei_kaiseki/game.php?game=${id}`,
-	50: (id: string) => `https://vgmdb.net/product/${id}`
-};
-
-export const Role = {
-	AUDIO: 1,
-	1: m.weary_yummy_lobster_kick,
-	VISUALS: 2,
-	2: m.great_flaky_spider_comfort,
-	DIRECTOR: 4,
-	4: m.brief_slow_robin_fond,
-	MUSIC: 8,
-	8: m.known_green_jackal_jolt,
-	ARTWORK: 16,
-	16: m.weird_quaint_jan_dazzle,
-	THANKS: 32,
-	32: m.heavy_blue_parrot_mend
-};
-
-export const Themes = ['default', 'aniki', 'otogroove', 'retro-voyage', 'sorimix', 'resample'].map(
-	(t) => 'theme-' + t
-);
-
-export const ThemeNames = [
-	m.grassy_noble_walrus_wish,
-	m.next_ago_opossum_swim,
-	() => 'otogroove',
-	m.tiny_plane_ape_pull,
-	m.mean_zesty_ray_savor,
-	() => 'Re:Sample'
-];
-
-export const HistoryModelNames = {
-	mediawork: m.grand_merry_fly_succeed,
-	workrelation: m.grand_merry_fly_succeed,
-	worksource: m.grand_merry_fly_succeed,
-	mediasong: m.grand_nice_pony_belong,
-	songrelation: m.grand_nice_pony_belong,
-	mediasongconnection: m.grand_nice_pony_belong,
-	tagwork: m.empty_legal_chicken_taste,
-	wikipage: m.curly_zesty_pelican_aim,
-	tagworkconnection: m.empty_legal_chicken_taste,
-	tagworkmediaconnection: m.empty_legal_chicken_taste,
-	tagworkcreatorconnection: m.empty_legal_chicken_taste,
-	tagworklangpreference: m.empty_legal_chicken_taste,
-	tagworkparenthood: m.empty_legal_chicken_taste,
-	tagsong: m.dull_plain_angelfish_cuddle
 };
 
 export const MediaType = {
@@ -338,6 +135,8 @@ export const MediaType = {
 	8: m.maroon_close_gorilla_bake
 };
 
+export const allMediaTypeKeys = Object.keys(MediaType).filter((e) => !isNaN(+e));
+
 export const RequestActions = {
 	1: 'worktag:alias',
 	2: 'worktag:unalias',
@@ -345,7 +144,7 @@ export const RequestActions = {
 	4: 'worktag:undeprecate',
 	5: 'worktag:parent',
 	6: 'worktag:unparent'
-};
+} as const;
 
 export const PostCategories = [
 	m.livid_loose_eel_pop,
@@ -355,77 +154,9 @@ export const PostCategories = [
 	m.fresh_lower_rook_trip
 ];
 
-export const Route = {
-	UNKNOWN: 0,
-	TAGWORK_ALIAS: 1,
-	TAGWORK_UNALIAS: 2,
-	TAGWORK_DELETE: 3,
-	TAGWORK_UPDATE: 4,
-	TAGWORK_SET_BASE: 5,
-	TAGWORK_ADD_LANG_PREF: 6,
-	TAGWORK_EDIT_WIKI: 7,
-	TAGWORK_EDIT_CONNECTIONS: 8,
-	SONGTAG_UPDATE: 20,
-	SONGTAG_SET_TAGS: 21,
-	SONGRELATION_CREATE: 30,
-	SONGRELATION_DELETE: 31,
-	MEDIAWORK_DELETE: 40,
-	MEDIAWORK_SET_TAGS: 41,
-	MEDIAWORK_REMOVE_TAG: 42,
-	MEDIAWORK_UPDATE_CREATOR_ROLES: 43,
-	MEDIAWORK_TOGGLE_SAMPLE: 44,
-	MEDIAWORK_UPDATE: 45,
-	MEDIAWORK_MERGE: 46,
-	MEDIAWORK_CREATE: 47,
-	WORKRELATION_CREATE: 50,
-	WORKRELATION_DELETE: 51,
-	WORKSOURCE_CREATE: 60,
-	WORKSOURCE_UNBIND: 61,
-	WORKSOURCE_SET_ORIGIN: 62,
-	WORKSOURCE_REFRESH: 63,
-	WORKSOURCE_ASSIGN: 64,
-	WORKSOURCE_REJECT: 65,
-	WORKSOURCE_UPDATE: 66,
-	ROLLBACK: 100,
-
-	0: 'Unknown',
-	1: 'Tag: Alias',
-	2: 'Tag: Unalias',
-	3: 'Tag: Delete',
-	4: 'Tag: Update',
-	5: 'Tag: Set Base',
-	6: 'Tag: Add Language',
-	7: 'Tag: Edit Wiki',
-	8: 'Tag: Edit Connections',
-	20: 'Song Attribute: Update',
-	21: 'Song: Set Tags',
-	22: 'Song Attribute: Alias',
-	23: 'Song Attribute: Unalias',
-	24: 'Song Attribute: Delete',
-	25: 'Song Attribute: Set Base',
-	26: 'Song Attribute: Add Language',
-	30: 'Song: Create Relation',
-	31: 'Song: Delete Relation',
-	40: 'Work: Delete',
-	41: 'Work: Set Tags',
-	42: 'Work: Remove Tag',
-	43: 'Work: Update Creator Roles',
-	44: 'Work: Toggle Sample',
-	45: 'Work: Update',
-	46: 'Work: Merge',
-	47: 'Work: Create',
-	50: 'Work: Create Relation',
-	51: 'Work: Delete Relation',
-	60: 'Upload: Create',
-	61: 'Upload: Unbind',
-	62: 'Upload: Set Origin',
-	63: 'Upload: Refresh',
-	64: 'Upload: Assign',
-	65: 'Upload: Reject',
-	66: 'Upload: Update',
-	100: 'Rollback'
-};
-
+/**
+ * @deprecated
+ */
 export const CommentModelRoutes = {
 	mediawork: 'work',
 	account: 'profile',
@@ -436,8 +167,89 @@ export const CommentModelRoutes = {
 	bulkrequest: 'request'
 };
 
+/**
+ * @deprecated
+ */
 export const EntityModelRoutes = {
 	...CommentModelRoutes,
 	mediasong: 'song',
 	worksource: 'upload'
 };
+
+export const buildCommentRoutes = (type: string, id: string | number) => {
+	switch (type) {
+		case 'mediawork':
+			return `/work/${id}`;
+		case 'account':
+			return `/profile/${id}`;
+		case 'pool':
+			return `/list/${id}`;
+		case 'tagwork':
+			return `/tag/${id}`;
+		case 'tagsong':
+			return `/song_attribute/${id}`;
+		case 'post':
+			return `/post/${id}`;
+		case 'bulkrequest':
+			return `/request/${id}`;
+		default:
+			return '/';
+	}
+};
+
+export type EntityModelType =
+	| 'post'
+	| 'mediasong'
+	| 'worksource'
+	| 'mediawork'
+	| 'account'
+	| 'pool'
+	| 'tagwork'
+	| 'tagsong'
+	| 'bulkrequest';
+export const isValidEntityModelType = (type: string): type is EntityModelType => {
+	switch (type) {
+		case 'mediawork':
+		case 'account':
+		case 'pool':
+		case 'tagwork':
+		case 'tagsong':
+		case 'post':
+		case 'bulkrequest':
+		case 'mediasong':
+		case 'worksource':
+			return true;
+		default:
+			return false;
+	}
+};
+export const buildEntityRoutes = (type: EntityModelType, id: string | number) => {
+	switch (type) {
+		case 'mediawork':
+		case 'account':
+		case 'pool':
+		case 'tagwork':
+		case 'tagsong':
+		case 'post':
+		case 'bulkrequest':
+			return buildCommentRoutes(type, id);
+		case 'mediasong':
+			return `/song/${id}`;
+		case 'worksource':
+			return `/upload/${id}`;
+		default:
+			return '/';
+	}
+};
+
+export const ErrorCode = {
+	LOGIN_FAILED: 10000,
+	NOT_LOGGED_IN: 10001,
+	USERNAME_TAKEN: 10002,
+	VALIDATION_ERROR: 10003,
+	EDITOR_ONLY: 10004,
+	BAD_URL: 10005,
+	SOURCE_HAS_WORK: 10006,
+	NO_MATCHING_ENTITIES: 10007,
+	NAME_SLUG_MISMATCH: 10008
+} as const;

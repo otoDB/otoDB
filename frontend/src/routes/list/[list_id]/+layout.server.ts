@@ -31,7 +31,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 			title: data.name,
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
-				{ name: m.stale_loose_squid_cut(), url: '/list/search' },
+				{ name: m.stale_loose_squid_cut(), url: '/list' },
 				{ name: data.name, url: `/list/${params.list_id}` }
 			]
 		}

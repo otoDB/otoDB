@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -24,5 +25,9 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			params: { query: { list_id: +params.list_id, limit: batch_size, offset: 0 } }
 		})
 	]);
+	// TODO: properly handle fetch errors
+	if (!entries) error(500, 'Failed to fetch data.');
+	if (!comments) error(500, 'Failed to fetch comments.');
+
 	return { entries, comments, pending_items, batch_size, page };
 };

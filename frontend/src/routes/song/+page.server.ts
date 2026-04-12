@@ -5,19 +5,24 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ url, fetch }) => {
 	const batch_size = 20;
 	const query = url.searchParams.get('query') ?? '';
+	const author = url.searchParams.get('author') ?? '';
 	const tags = url.searchParams.get('tags') ?? '';
-	const order = url.searchParams.get('order'),
-		dir = url.searchParams.get('dir');
+
+	const bpm_min = url.searchParams.get('bpm_min') ?? '';
+	const bpm_max = url.searchParams.get('bpm_max') ?? '';
+	const bpm_range: [number, number] | null = bpm_min && bpm_max ? [+bpm_min, +bpm_max] : null; // TODO: Use `parseInt()`
+
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
-	const { data } = await client.GET('/api/work/search', {
+	const { data } = await client.GET('/api/tag/song_search', {
 		fetch,
 		params: {
 			query: {
 				query,
 				tags,
+				author,
 				limit: batch_size,
-				offset: batch_size * (page - 1),
-				order: order ? (dir === '-' ? '-' : '') + order : null
+				offset: (page - 1) * batch_size,
+				bpm_range
 			}
 		}
 	});
@@ -26,13 +31,13 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		query_tags: tags,
 		results: data,
 		batch_size,
-		order,
-		dir,
+		bpm_range,
+		author,
 		page,
 		head: {
 			title: m.mild_loud_shad_enchant({
 				type: m.mean_top_antelope_love(),
-				name: m.grand_merry_fly_succeed()
+				name: m.grand_nice_pony_belong()
 			})
 		}
 	};

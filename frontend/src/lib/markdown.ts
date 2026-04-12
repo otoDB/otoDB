@@ -24,7 +24,8 @@ const long_label_re_gen = (long_label: string) =>
 const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N}\p{M}_])/gu;
 const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
 const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
-const LinkableEntities = [
+
+const LinkableEntities: ['mediawork' | 'tagwork', RegExp][] = [
 	['mediawork', short_prefix_re_gen(ENTITIES[0].shortPrefix)],
 	['mediawork', long_label_re_gen(ENTITIES[0].longLabel)],
 	['tagwork', TAGWORK_NO_DISPLAY_RE]
@@ -91,10 +92,19 @@ function remarkOtodb() {
 	};
 }
 
-export const get_entity = (s: string) => {
+export const get_entity = (
+	s: string
+): null | {
+	id: string | number;
+	entity: 'mediawork' | 'tagwork' | 'tagsong' | 'mediasong' | 'worksource';
+} => {
 	for (const [p, re] of LinkableEntities) {
 		const m = s.matchAll(re).next();
-		if (m.value) return { entity: p, id: m.value[1] };
+		if (m.value)
+			return {
+				entity: p,
+				id: m.value[1]
+			};
 	}
 	return null;
 };

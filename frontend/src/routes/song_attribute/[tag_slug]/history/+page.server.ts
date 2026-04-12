@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
@@ -11,6 +12,9 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 			}
 		}
 	});
+
+	// TODO: properly handle fetch errors
+	if (!history) error(500, 'Failed to fetch data.');
 
 	return {
 		history

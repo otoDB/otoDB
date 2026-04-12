@@ -1,25 +1,25 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section
 	title={m.stale_loose_squid_cut()}
 	type={m.mean_top_antelope_love()}
 	menuLinks={[
-		{ title: m.grand_merry_fly_succeed(), pathname: `work/search?query=${data.query}` },
-		{ title: m.empty_legal_chicken_taste(), pathname: `tag/search?query=${data.query}` },
-		{ title: m.grand_nice_pony_belong(), pathname: `song/search?query=${data.query}` },
+		{ title: m.grand_merry_fly_succeed(), pathname: `work?query=${data.query}` },
+		{ title: m.empty_legal_chicken_taste(), pathname: `tag?query=${data.query}` },
+		{ title: m.grand_nice_pony_belong(), pathname: `song?query=${data.query}` },
 		{
 			title: m.dull_plain_angelfish_cuddle(),
-			pathname: `song_attribute/search?query=${data.query}`
+			pathname: `song_attribute?query=${data.query}`
 		},
-		{ title: m.stale_loose_squid_cut(), pathname: 'list/search' }
+		{ title: m.stale_loose_squid_cut(), pathname: 'list' }
 	]}
 >
 	<form target="_self" method="get">
@@ -52,7 +52,7 @@
 			n_count={data.results.count}
 			page={data.page}
 			page_size={data.batch_size}
-			base_url={page.url}
+			base_url={page.url.toString()}
 		/>
 	{/if}
 </Section>

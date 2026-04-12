@@ -1,8 +1,8 @@
-import type { LayoutServerLoad } from './$types';
-import { m } from '$lib/paraglide/messages.js';
 import client, { getDisplayText } from '$lib/api';
+import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+import { m } from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
-import { userLevelCheck } from '$lib/route_guard';
+import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
@@ -25,12 +25,14 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			303,
 			url.pathname.replace(
 				encodeURIComponent(params.work_id),
-				encodeURIComponent(e as string)
+				encodeURIComponent(e as unknown as string)
 			)
 		);
 	if (e) error(404, { message: 'Not found' });
 
-	const loggedOut = userLevelCheck(locals.user);
+	const loggedOut = !(
+		locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
+	);
 
 	return {
 		links: [
@@ -73,7 +75,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			isExplicit: data.rating === 2,
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
-				{ name: m.grand_merry_fly_succeed(), url: '/work/search' },
+				{ name: m.grand_merry_fly_succeed(), url: '/work' },
 				{ name: getDisplayText(data.title), url: `/work/${params.work_id}` }
 			]
 		}

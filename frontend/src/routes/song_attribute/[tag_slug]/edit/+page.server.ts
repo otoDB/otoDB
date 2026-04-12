@@ -1,11 +1,11 @@
 import client from '$lib/api';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+
+import { userLevelGuard } from '$lib/route_guard';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+	userLevelGuard(locals.user, 'MEMBER', url.pathname);
 };
 
 export const actions = {

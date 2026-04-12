@@ -1,9 +1,23 @@
 <script lang="ts">
 	import { WorkTagPresentationColours } from './enums';
-	import { makeTagDisplayName } from './api';
+
+	type SuggestionTag = {
+		id: number;
+		name: string;
+		slug: string;
+		category: number;
+		aliased_to?: null | {
+			id: number;
+			name: string;
+			slug: string;
+			category: number;
+		};
+		lang_prefs: { tag: string }[];
+		n_instance: number;
+	};
 
 	interface Props {
-		suggestions: any[];
+		suggestions: SuggestionTag[];
 		onselect: (tag: any) => void;
 		onclose?: () => void;
 		type: 'work' | 'song';
@@ -37,14 +51,13 @@
 	};
 
 	const highlightMatch = (text: string, query: string) => {
-		const displayText = makeTagDisplayName(text);
-		if (!query) return { before: displayText, match: '', after: '' };
+		if (!query) return { before: text, match: '', after: '' };
 		const index = text.toLowerCase().indexOf(query.toLowerCase());
-		if (index === -1) return { before: displayText, match: '', after: '' };
+		if (index === -1) return { before: text, match: '', after: '' };
 		const result = {
-			before: displayText.slice(0, index),
-			match: displayText.slice(index, index + query.length),
-			after: displayText.slice(index + query.length)
+			before: text.slice(0, index),
+			match: text.slice(index, index + query.length),
+			after: text.slice(index + query.length)
 		};
 		return result;
 	};
@@ -95,12 +108,8 @@
 				{#if t.slug !== t.name}
 					{@const slugParts = highlightMatch(t.slug, query)}
 					<address class="inline">
-						({slugParts.before}<strong>{slugParts.match}</strong>{slugParts.after}{[
-							'',
-							...t.lang_prefs
-						]
-							.map((p) => p.tag)
-							.join(', ')})
+						({slugParts.before}<strong>{slugParts.match}</strong
+						>{slugParts.after}{t.lang_prefs.map((p) => p.tag).join(', ')})
 					</address>
 				{/if}
 			</span>

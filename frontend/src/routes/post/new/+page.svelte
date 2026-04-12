@@ -4,12 +4,7 @@
 
 	let { data } = $props();
 	import { m } from '$lib/paraglide/messages.js';
-	import {
-		buildEntityRoutes,
-		EntityModelRoutes,
-		LanguageNames,
-		PostCategories
-	} from '$lib/enums';
+	import { buildEntityRoutes, LanguageNames, PostCategories } from '$lib/enums';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { get_entity, renderMarkdown } from '$lib/markdown';
 

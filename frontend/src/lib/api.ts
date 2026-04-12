@@ -7,7 +7,7 @@ import setCookie from 'set-cookie-parser';
 import { languages } from './enums/Languages';
 import { m } from './paraglide/messages';
 import { getLocale } from './paraglide/runtime';
-import type { components, paths } from './schema';
+import type { paths } from './schema';
 
 const backend = browser
 	? (env.PUBLIC_BACKEND_URL_EXTERNAL ?? '')

@@ -293,17 +293,7 @@ def _get_all_previous_field_values(
 	)
 	if fields:
 		query = query.filter(target_column__in=fields)
-	if connection.vendor == 'postgresql':
-		qs = query.order_by('target_column', '-rev__date').distinct('target_column')
-	else:
-		annotated_qs = query.annotate(
-			row_number=Window(
-				expression=RowNumber(),
-				partition_by=[F('target_column')],
-				order_by=F('rev__date').desc(),
-			)
-		)
-		qs = annotated_qs.filter(row_number=1)
+	qs = query.order_by('target_column', '-rev__date').distinct('target_column')
 	latest_changes = dict(qs.values_list('target_column', 'target_value'))
 
 	# Check if we found all required fields

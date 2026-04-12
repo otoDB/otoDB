@@ -28,6 +28,24 @@ from .models.enums import Platform, MimeType
 
 logger = logging.getLogger(__name__)
 
+# https://qa.nicovideo.jp/faq/show/821
+# https://qa.nicovideo.jp/faq/show/822
+# Older Niconico uploads used <font> instead of <span style="...">
+# and <b> instead of <strong>
+ALLOWED_TAGS = {'a', 'b', 'br', 'font', 'strong', 'i', 's', 'u', 'span'}
+ALLOWED_ATTRIBUTES = {'a': {'href'}, 'font': {'color', 'size'}, 'span': {'style'}}
+ALLOWED_STYLE_PROPERTIES = {'color', 'font-size'}
+
+
+def clean_description(text: str) -> str:
+	"""Sanitize video HTML description using `nh3`"""
+	return nh3.clean(
+		text,
+		tags=ALLOWED_TAGS,
+		attributes=ALLOWED_ATTRIBUTES,
+		filter_style_properties=ALLOWED_STYLE_PROPERTIES,
+	)
+
 
 def NFKC(s: str):
 	return unicodedata.normalize('NFKC', s)
@@ -275,7 +293,7 @@ def process_video_info(full_info, link=None):
 			info['tags'] = list(dict.fromkeys(info['tags']))
 
 		# Clean description
-		info['description'] = nh3.clean(info['description'])
+		info['description'] = clean_description(info['description'])
 
 		# Get thumbnail mime type
 		info['thumbnail_mime'] = fetch_thumbnail_mime_type(info['thumbnail'])

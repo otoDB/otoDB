@@ -179,6 +179,9 @@
 			}
 		}
 	}
+}
+
+@utility external-link-icon {
 	a[href^='//']:after,
 	a[href^='http://']:after,
 	a[href^='https://']:after {
@@ -193,8 +196,11 @@
 }
 
 /* Typography overrides */
-.prose table {
-	width: fit-content;
+.prose {
+	table {
+		width: fit-content;
+	}
+	@apply external-link-icon;
 }
 
 /* Autolink headings */

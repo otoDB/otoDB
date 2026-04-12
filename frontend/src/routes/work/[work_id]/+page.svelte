@@ -126,7 +126,10 @@
 							<tr>
 								<th class="w-24">{m.clear_lucky_peacock_pick()}</th>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								<td><div class="description-cell">{@html data.description}</div></td
+								<td
+									><div class="description-cell external-link-icon">
+										{@html data.description}
+									</div></td
 								>
 							</tr>
 							{#if relTree}
@@ -330,7 +333,9 @@
 					<details>
 						<summary>{m.clear_lucky_peacock_pick()}</summary>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						<div class="whitespace-pre-wrap">{@html src.description}</div>
+						<div class="external-link-icon whitespace-pre-wrap">
+							{@html src.description}
+						</div>
 					</details>
 				</div>
 			</div>

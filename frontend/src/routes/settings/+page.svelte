@@ -20,7 +20,7 @@
 	}
 
 	let current_locale = $state(getLocale());
-	let current_theme = $derived(data.user?.prefs?.theme ?? getLocalTheme());
+	let current_theme = $derived(data.user?.prefs?.theme ?? getLocalTheme() ?? 0);
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>

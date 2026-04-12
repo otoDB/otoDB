@@ -20,7 +20,7 @@
 			return;
 		}
 		const { data } = await client.GET(
-			type === "work" ? '/api/tag/search' as const : '/api/tag/song_tag_search' as const,
+			type === 'work' ? ('/api/tag/search' as const) : ('/api/tag/song_tag_search' as const),
 
 			{
 				params: {

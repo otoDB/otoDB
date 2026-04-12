@@ -15,10 +15,7 @@
 	const { tree, onClickTag }: Props = $props();
 </script>
 
-{#snippet recur(
-	this_snippet: Snippet<[Snippet<any>, Tree]>,
-	tree: Tree
-)}
+{#snippet recur(this_snippet: Snippet<[Snippet<any>, Tree]>, tree: Tree)}
 	<ul class="my-0.5 list-none">
 		<li class="inline">
 			<WorkTag tag={tree.node} fade={!tree.real} onclick={onClickTag} forTree={true} />

@@ -59,7 +59,7 @@
 			<textarea name="entities" bind:value={entities_raw}></textarea>
 			<ul class="inline-block">
 				{#each entities as { entity, id }, i (i)}
-					{@const link = buildEntityRoutes(entity  , id)}
+					{@const link = buildEntityRoutes(entity, id)}
 					<li>
 						<a href={link}>{link}</a>
 					</li>

@@ -10,10 +10,7 @@
 		WorkRelationDisplayForward,
 		WorkStatus
 	} from '$lib/enums';
-	import {
-		resolveWorkTagCategoryKeyById,
-		WorkTagCategory
-	} from '$lib/enums/WorkTagCategory';
+	import { resolveWorkTagCategoryKeyById, WorkTagCategory } from '$lib/enums/WorkTagCategory';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import type { components } from '$lib/schema';

@@ -6,9 +6,14 @@
 		name: string;
 		slug: string;
 		category: number;
-		aliased_to?: SuggestionTag | null;
+		aliased_to?: null | {
+			id: number;
+			name: string;
+			slug: string;
+			category: number;
+		};
 		lang_prefs: { tag: string }[];
-		n_instance:number
+		n_instance: number;
 	};
 
 	interface Props {
@@ -108,7 +113,7 @@
 					</address>
 				{/if}
 			</span>
-			  <span>{t.n_instance}</span>
+			<span>{t.n_instance}</span>
 		</a>
 	</li>
 {/each}

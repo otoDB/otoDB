@@ -26,8 +26,9 @@
 	const deniedInviteCreationReason:
 		| { reason: 'no invites data' }
 		| { reason: 'restricted invitee exists'; username: string }
-		| { reason: 'expired invite exists'; next: number }
+		| { reason: 'next invite not yet available'; next: number }
 		| null = $derived.by(() => {
+		if(data.user && hasUserLevel( resolveUserLevelById(data.user.level), "ADMIN")) return null;
 		if (!data.invites) return { reason: 'no invites data' };
 		if (data.invites.restrictedInvitee)
 			return {
@@ -40,7 +41,7 @@
 			)
 		)
 			return {
-				reason: 'expired invite exists',
+				reason: 'next invite not yet available',
 				next: Date.parse(data.invites.invites[0].created_at) + invite_interval
 			};
 
@@ -128,7 +129,7 @@
 						username: deniedInviteCreationReason.username
 					})}
 				</p>
-			{:else if deniedInviteCreationReason?.reason === 'expired invite exists'}
+			{:else if deniedInviteCreationReason?.reason === 'next invite not yet available'}
 				<p>
 					{m.next_royal_carp_pride({
 						date: new Date(deniedInviteCreationReason.next).toLocaleString()

@@ -1,11 +1,11 @@
 import client from '$lib/api';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+
+import { userLevelGuard } from '$lib/route_guard';
 
 export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+	userLevelGuard(locals.user, 'MEMBER', url.pathname);
 
 	const [{ data: wiki_page }, { data: details }, { data: connections }] = await Promise.all([
 		client.GET('/api/tag/wiki_page', {
@@ -33,6 +33,10 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 			}
 		})
 	]);
+
+	// TODO: properly handle fetch errors
+	if (!details) error(500, 'Failed to fetch data.');
+	if (!connections) error(500, 'Failed to fetch data.');
 
 	const p = await parent();
 	// FIXME This is kind of waterfall but whatever...

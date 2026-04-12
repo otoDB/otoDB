@@ -1,4 +1,4 @@
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import client from '$lib/api';
 
@@ -17,6 +17,9 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 			}
 		}
 	});
+	// TODO: properly handle fetch errors
+	if (!entries) error(500, 'Failed to fetch data.');
+
 	return { batch_size, entries };
 };
 

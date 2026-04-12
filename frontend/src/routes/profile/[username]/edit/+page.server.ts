@@ -1,13 +1,13 @@
 import client from '$lib/api';
-import { redirect, type Actions } from '@sveltejs/kit';
+import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { UserLevel } from '$lib/enums';
 
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	if (!locals.user || params.username !== locals.user?.username)
 		redirect(303, `/profile/${params.username}`);
 
-	const [{ data }, { data: invites }] = await Promise.all([
+	const [payloadConnections, payloadInvites] = await Promise.all([
 		client.GET('/api/profile/connection', {
 			fetch,
 			params: {
@@ -16,14 +16,27 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 				}
 			}
 		}),
-		locals.user.level >= UserLevel.EDITOR
-			? client.GET('/api/auth/invites', { fetch })
-			: { data: [[], null] }
+		hasUserLevel(resolveUserLevelById(locals.user.level), 'EDITOR')
+			? client.GET('/api/auth/invites', {
+					fetch
+				})
+			: Promise.resolve(null)
 	]);
 
+	if (payloadConnections.error) error(500, 'Failed to load profile connections');
+	if (!payloadConnections.data) error(500, 'Failed to load profile connections');
+
+	if (payloadInvites?.error) error(500, 'Failed to load invites');
+
 	return {
-		connections: data,
-		invites
+		user: locals.user,
+		connections: payloadConnections.data,
+		invites: payloadInvites?.data
+			? {
+					invites: payloadInvites.data[0],
+					restrictedInvitee: payloadInvites.data[1]
+				}
+			: null
 	};
 };
 

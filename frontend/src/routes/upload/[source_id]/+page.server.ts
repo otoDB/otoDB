@@ -1,8 +1,8 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import client from '$lib/api';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+
+import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ fetch, params, locals, url, parent }) => {
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ fetch, params, locals, url, parent 
 	// Only fetch suggestions for unbound sources (needed for work creation)
 	let suggestions = null;
 	if (!source.media) {
-		userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+		userLevelGuard(locals.user, 'MEMBER', url.pathname);
 		const { data: s } = await client.GET('/api/upload/suggestions', {
 			fetch,
 			params: { query: { source_id: sourceId } }

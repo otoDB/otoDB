@@ -1,26 +1,25 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
-	import { m } from '$lib/paraglide/messages.js';
+	import client from '$lib/api';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { Platform, WorkOrigin } from '$lib/enums';
-	import { isSOV, isSVO } from '$lib/ui';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import client from '$lib/api';
-	import type { components } from '$lib/schema';
+	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
-	import WorkCard from '$lib/WorkCard.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import Pager from '$lib/Pager.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import Section from '$lib/Section.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import type { ComponentProps } from 'svelte';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	let pending_items = $derived(data.pending_items!.items);
 
 	let current = $state(0);
 	let select = $state(-1);
-	let sources: components['schemas']['WorkSourceSchema'][] | undefined = $state();
+	let sources: ComponentProps<typeof ExternalEmbed>['src'][] | undefined = $state();
 
 	$effect(() => {
 		client

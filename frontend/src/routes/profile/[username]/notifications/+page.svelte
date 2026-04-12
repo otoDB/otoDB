@@ -1,13 +1,12 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
-	import { m } from '$lib/paraglide/messages.js';
-	import Pager from '$lib/Pager.svelte';
-	import { CommentModelRoutes } from '$lib/enums';
 	import { goto, invalidateAll } from '$app/navigation';
+	import Pager from '$lib/Pager.svelte';
 	import client from '$lib/api';
+	import { buildCommentRoutes } from '$lib/enums';
+	import { m } from '$lib/paraglide/messages.js';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	const dismiss = async (id: number, dismissed: boolean, target: string) => {
 		if (!dismissed)
@@ -38,19 +37,18 @@
 							>
 						{:else if n.comment}
 							<td class={{ 'opacity-40': n.dismissed }}
-								>{m.curly_these_mule_ascend()}</td
-							><td
-								><button
-									class={{ 'opacity-40': n.dismissed }}
-									onclick={() =>
-										dismiss(
-											n.id,
-											n.dismissed,
-											`/${CommentModelRoutes[n.comment[0]]}/${n.comment[1]}`
-										)}
-									>/{CommentModelRoutes[n.comment[0]]}/{n.comment[1]}</button
-								></td
-							>
+								>{m.curly_these_mule_ascend()}
+							</td>
+							<td>
+								{#if n.comment}
+									{@const route = buildCommentRoutes(n.comment[0], n.comment[1])}
+									<button
+										class={{ 'opacity-40': n.dismissed }}
+										onclick={() => dismiss(n.id, n.dismissed, route)}
+										>{route}
+									</button>
+								{/if}
+							</td>
 						{:else if n.post}
 							<td class={{ 'opacity-40': n.dismissed }}
 								>{m.curly_these_mule_ascend()}</td

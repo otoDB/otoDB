@@ -1,13 +1,17 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
-	import { LanguageNames, Languages, MediaType, WorkTagCategory } from '$lib/enums';
+	import { WorkTagCategory } from '$lib/enums';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
+	import { locales } from '$lib/paraglide/runtime';
+	import { languages } from '$lib/enums/Languages';
+	import { allMediaTypes, mediaTypes } from '$lib/enums/MediaType';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
+
 	let category = $state(data.category);
 </script>
 
@@ -40,8 +44,8 @@
 		</select>
 		{#if category === 6}
 			<select name="media_type" multiple value={data.media_type ?? []}>
-				{#each Object.keys(MediaType).filter((e) => !isNaN(e)) as t, i (i)}
-					<option value={+t}>{MediaType[t]()}</option>
+				{#each allMediaTypes as t (t)}
+					<option value={mediaTypes[t].id}>{mediaTypes[t].nameFn()}</option>
 				{/each}
 			</select>
 		{/if}
@@ -55,16 +59,16 @@
 			<label class="flex flex-col">
 				{m.loose_trite_bat_roam()}
 				<select name="wiki_lang" multiple value={data.wiki_lang}>
-					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
-						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
+					{#each locales as lang (lang)}
+						<option value={languages[lang].id}>{languages[lang].name}</option>
 					{/each}
 				</select>
 			</label>
 			<label class="flex flex-col">
 				{m.actual_flat_mayfly_expand()}
 				<select name="wiki_lang_missing" multiple value={data.wiki_lang_missing}>
-					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
-						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
+					{#each locales as lang (lang)}
+						<option value={languages[lang].id}>{languages[lang].name}</option>
 					{/each}
 				</select>
 			</label>
@@ -72,16 +76,16 @@
 				{m.lofty_house_nils_greet()}
 				<select name="lang_pref" multiple value={data.lang_pref}>
 					<option value={-1}>{m.mellow_alert_jan_leap()}</option>
-					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
-						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
+					{#each locales as lang (lang)}
+						<option value={languages[lang].id}>{languages[lang].name}</option>
 					{/each}
 				</select>
 			</label>
 			<label class="flex flex-col">
 				{m.strong_lower_firefox_exhale()}
 				<select name="lang_pref_missing" multiple value={data.lang_pref_missing}>
-					{#each Object.keys(Languages).filter((e) => !isNaN(e) && +e > 0) as langId (langId)}
-						<option value={+langId}>{LanguageNames[Languages[langId]]}</option>
+					{#each locales as lang (lang)}
+						<option value={languages[lang].id}>{languages[lang].name}</option>
 					{/each}
 				</select>
 			</label>
@@ -127,7 +131,7 @@
 			n_count={data.results.count}
 			page={data.page}
 			page_size={data.batch_size}
-			base_url={page.url}
+			base_url={page.url.toString()}
 		/>
 	{/if}
 </Section>

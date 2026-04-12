@@ -1,13 +1,13 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
-	import { m } from '$lib/paraglide/messages.js';
-	import { Platform, Status, UserLevel, WorkOrigin, WorkStatus } from '$lib/enums';
-	import RefreshButton from '../../../work/RefreshButton.svelte';
-	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
+	import { Platform, Status, WorkOrigin, WorkStatus } from '$lib/enums';
+	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import Pager from '$lib/Pager.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import RefreshButton from '$lib/RefreshButton.svelte';
+	import Section from '$lib/Section.svelte';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
@@ -88,7 +88,7 @@
 						<th>{m.super_agent_pigeon_aim()}</th>
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if data.user && data.user.level >= UserLevel.EDITOR}
+						{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 							<th>{m.mushy_proof_hornet_dig()}</th>
 						{/if}
 					</tr></thead
@@ -106,7 +106,7 @@
 									>{m.noisy_moving_newt_belong()}</a
 								></td
 							>
-							{#if data.user && data.user.level >= UserLevel.EDITOR}
+							{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
 								<td><RefreshButton source={src} /></td>
 							{/if}
 						</tr>
@@ -181,7 +181,7 @@
 					{#each data.submissions.items as src, i (i)}
 						<tr>
 							<td class="whitespace-nowrap">{src.title || src.url}</td>
-							<td class="whitespace-nowrap">{src.rejection.reason}</td>
+							<!-- <td class="whitespace-nowrap">{src.rejection.reason}</td> `src.rejection` might be no longer exists. -->
 							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
 							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
 							<td class="whitespace-nowrap"
@@ -205,7 +205,7 @@
 			n_count={data.submissions.count}
 			page={data.page}
 			page_size={data.batch_size}
-			base_url={page.url}
+			base_url={page.url.toString()}
 		/>
 	{/if}
 </Section>

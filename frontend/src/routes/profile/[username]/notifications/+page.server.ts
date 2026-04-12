@@ -1,13 +1,13 @@
 import client from '$lib/api';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+
+import { userLevelGuard } from '$lib/route_guard';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages';
 import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ fetch, locals, url, params }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER);
+	userLevelGuard(locals.user, 'MEMBER');
 	if (params.username !== locals.user?.username) redirect(303, `/profile/${params.username}`);
 
 	const batch_size = 20;

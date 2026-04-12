@@ -1,24 +1,25 @@
 <script lang="ts">
-	import { EntityModelRoutes, PostCategories } from './enums';
+	import { buildEntityRoutes, type EntityModelType } from './enums';
+	import { postCategory, resolvePostCategoryKeyById } from '$lib/enums/PostCategory';
 	import { m } from './paraglide/messages';
 	import { timeAgo } from './ui';
 
 	interface Post {
 		id: number | string;
 		title: string;
-		entities?: { id: string | number; entity: string }[];
-		category?: number;
+		entities?: { id: string | number; entity: EntityModelType }[];
+		category: number;
 		added_by: { username: string };
 		modified: string;
-		last_post_by: string | null;
-		last_post_at: string | null;
+		last_post_by?: string | null;
+		last_post_at?: string | null;
 	}
 
 	interface Props {
 		posts: Post[];
 		showCategory?: boolean;
 		showAuthor?: boolean;
-		entityFilter?: (entity: { id: string | number; entity: string }) => boolean;
+		entityFilter?: (entity: { id: string | number; entity: EntityModelType }) => boolean;
 	}
 
 	let { posts, showCategory = false, showAuthor = true, entityFilter }: Props = $props();
@@ -47,14 +48,16 @@
 						<span class="text-otodb-content-fainter ml-3 text-xs">
 							{#each entities as { id, entity }, j (j)}
 								{#if j > 0},{/if}
-								<a href="/{EntityModelRoutes[entity]}/{id}"
-									>{EntityModelRoutes[entity]}/{id}</a
-								>
+								<a href={buildEntityRoutes(entity, id)}>
+									{buildEntityRoutes(entity, id)}
+								</a>
 							{/each}
 						</span>
 					{/if}
 				</td>
-				{#if showCategory}<td>{PostCategories[post.category]()}</td>{/if}
+				{#if showCategory}
+					<td>{postCategory[resolvePostCategoryKeyById(post.category)].nameFn()}</td>
+				{/if}
 				{#if showAuthor}
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td
 					>

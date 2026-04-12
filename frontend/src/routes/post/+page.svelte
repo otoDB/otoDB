@@ -1,12 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import ThreadTable from '$lib/ThreadTable.svelte';
-	import type { PageProps } from './$types';
-	import { m } from '$lib/paraglide/messages.js';
-	import { PostCategories } from '$lib/enums';
-	import Pager from '$lib/Pager.svelte';
 
-	let { data }: PageProps = $props();
+	import { m } from '$lib/paraglide/messages.js';
+	import Pager from '$lib/Pager.svelte';
+	import { allPostCategories } from '$lib/enums/PostCategory';
+	import { postCategory } from '$lib/enums/PostCategory';
+
+	let { data } = $props();
 </script>
 
 <Section
@@ -19,8 +20,8 @@
 			>{m.plane_awful_bobcat_spark()}
 			<select name="category" value={data.category ?? -1}>
 				<option value={-1}>{m.keen_soft_crow_relish()}</option>
-				{#each PostCategories as c, i (i)}
-					<option value={i}>{c()}</option>
+				{#each allPostCategories as c (c)}
+					<option value={postCategory[c].id}>{postCategory[c].nameFn()}</option>
 				{/each}
 			</select>
 		</label>

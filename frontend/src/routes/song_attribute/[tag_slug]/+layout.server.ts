@@ -2,9 +2,10 @@ import { m } from '$lib/paraglide/messages.js';
 import client from '$lib/api';
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { userLevelCheck } from '$lib/route_guard';
+
 import { getTagDisplayName } from '$lib/api';
 import { redirect } from '@sveltejs/kit';
+import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	const {
@@ -24,7 +25,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			303,
 			url.pathname.replace(
 				encodeURIComponent(params.tag_slug),
-				encodeURIComponent(e as string)
+				encodeURIComponent(e as unknown as string) // TODO: more safety?
 			)
 		);
 	else if (e) error(404, { message: 'Not found' });
@@ -37,6 +38,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			}
 		}
 	});
+	if (!details) error(500, { message: 'Failed to load tag details' });
 
 	return {
 		links: [
@@ -44,7 +46,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `song_attribute/${params.tag_slug}`,
 				title: m.dull_plain_angelfish_cuddle() + ' ' + params.tag_slug
 			},
-			...(userLevelCheck(locals.user)
+			...(locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
 				? []
 				: [
 						{

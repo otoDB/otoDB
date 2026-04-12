@@ -1,7 +1,19 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 
-	let { page, page_size, n_count, window_size = 2, base_url = null } = $props();
+	let {
+		page,
+		page_size,
+		n_count,
+		window_size = 2,
+		base_url = null
+	}: {
+		page: number;
+		n_count: number;
+		page_size: number;
+		window_size?: number;
+		base_url?: string | null;
+	} = $props();
 
 	const n_pages = $derived(Math.ceil(n_count / page_size));
 	const page_min = $derived(Math.max(1, page - window_size));
@@ -9,7 +21,8 @@
 	const page_range = $derived(
 		Array.from({ length: page_max - page_min + 1 }, (_, i) => i + page_min)
 	);
-	const url = (page: number) => {
+
+	const buildUrl = (page: number) => {
 		if (!base_url) return `?page=${page}`;
 		const u = new URL(base_url);
 		u.searchParams.set('page', page.toString());
@@ -19,8 +32,8 @@
 	let pp = $derived(page);
 </script>
 
-{#snippet btn(p)}
-	<a class="bg-otodb-bg-fainter border-otodb-content-faint border p-2" href={url(p)}>{p}</a>
+{#snippet btn(p: number)}
+	<a class="bg-otodb-bg-fainter border-otodb-content-faint border p-2" href={buildUrl(p)}>{p}</a>
 {/snippet}
 
 {#if page_range.length > 1}
@@ -40,7 +53,7 @@
 					min="1"
 					max={n_pages}
 					bind:value={pp}
-					onchange={() => goto(url(pp))}
+					onchange={() => goto(buildUrl(pp))}
 				/>
 			{:else}
 				{@render btn(index)}

@@ -6,8 +6,9 @@
 
 	interface Props {
 		value: string[];
-		class: string;
+		class?: string;
 		type: 'work' | 'song';
+		name?: string;
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
 

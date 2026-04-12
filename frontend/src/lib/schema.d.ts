@@ -1580,8 +1580,6 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -1604,8 +1602,6 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -1642,8 +1638,6 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -2017,12 +2011,30 @@ export interface components {
              */
             delete: number[];
         };
-        /** PagedTagWorkSchema */
-        PagedTagWorkSchema: {
+        /** PagedTagWorkSearchResultSchema */
+        PagedTagWorkSearchResultSchema: {
             /** Items */
-            items: components["schemas"]["TagWorkSchema"][];
+            items: components["schemas"]["TagWorkSearchResultSchema"][];
             /** Count */
             count: number;
+        };
+        /** TagWorkSearchResultSchema */
+        TagWorkSearchResultSchema: {
+            /** Id */
+            id: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
+            aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Category */
+            category: number;
+            /** Deprecated */
+            deprecated: boolean;
+            /** N Instance */
+            n_instance: number;
         };
         /** FatTagWorkSchema */
         FatTagWorkSchema: {
@@ -2186,12 +2198,29 @@ export interface components {
             /** Count */
             count: number;
         };
-        /** PagedTagSongSchema */
-        PagedTagSongSchema: {
+        /** PagedTagSongSearchResultSchema */
+        PagedTagSongSearchResultSchema: {
             /** Items */
-            items: components["schemas"]["TagSongSchema"][];
+            items: components["schemas"]["TagSongSearchResultSchema"][];
             /** Count */
             count: number;
+        };
+        /** TagSongSearchResultSchema */
+        TagSongSearchResultSchema: {
+            /** Id */
+            id: number;
+            /** Children */
+            children: components["schemas"]["TagSongSchema"][];
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Category */
+            category: number;
+            /** Lang Prefs */
+            lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
+            /** N Instance */
+            n_instance: number;
         };
         /** SongTagInSchema */
         SongTagInSchema: {
@@ -2219,8 +2248,6 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
-            /** N Instance */
-            n_instance?: number | null;
             /** Name */
             name: string;
             /** Slug */
@@ -3844,7 +3871,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedTagWorkSchema"];
+                    "application/json": components["schemas"]["PagedTagWorkSearchResultSchema"];
                 };
             };
         };
@@ -4257,7 +4284,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PagedTagSongSchema"];
+                    "application/json": components["schemas"]["PagedTagSongSearchResultSchema"];
                 };
             };
         };

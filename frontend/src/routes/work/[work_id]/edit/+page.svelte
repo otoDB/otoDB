@@ -75,11 +75,20 @@
 					></tr
 				>
 				<tr
-					><th><label for="rating">{m.good_dark_bumblebee_spur()}</label></th><td
-						><select name="rating" bind:value={rating}>
-							{#each Rating as r, i (i)}<option value={i}>{r()}</option
-								>{/each}</select
-						></td
+					><th>{m.good_dark_bumblebee_spur()}</th><td
+						><div class="flex gap-2">
+							{#each Rating as r, i (i)}
+								<label
+									class={[
+										'cursor-pointer border px-3 py-1',
+										rating === i ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
+									]}
+								>
+									<input type="radio" name="rating" value={i} bind:group={rating} class="hidden" />
+									{r()}
+								</label>
+							{/each}
+						</div></td
 					></tr
 				>
 				<tr

@@ -48,7 +48,9 @@
 				{#each data.changes.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-							>{!!r.route ? Route[resolveRouteKeyById(r.route)].title : ''}</td
+							>{typeof r.route === 'number'
+								? Route[resolveRouteKeyById(r.route)].title
+								: ''}</td
 						><td>
 							{#if isSVO(getLocale())}
 								{m.curly_safe_lynx_fond()}

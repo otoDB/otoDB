@@ -18,17 +18,11 @@
 		fade?: boolean;
 
 		forTree?: boolean;
-
 	}
-	const {
-		tag, onclick,
-		selected = false,
-		fade = false,
-		forTree = false,
-	}: Props = $props();
+	const { tag, onclick, selected = false, fade = false, forTree = false }: Props = $props();
 
 	const category = $derived(resolveWorkTagCategoryKeyById(tag.category));
-	const sampleOverride = $derived(WorkTagCategory[category].canSetAsSource &&  tag.sample);
+	const sampleOverride = $derived(WorkTagCategory[category].canSetAsSource && tag.sample);
 	const isTemporary = $derived(tag.id === 0);
 </script>
 
@@ -36,7 +30,7 @@
 	href="/tag/{tag.slug}"
 	class={[
 		'rounded-xl px-2',
-		forTree ? 'border-2' : 'border-1',
+		forTree ? 'border-1' : 'border-2',
 		isTemporary ? 'border-dashed' : 'border-solid',
 		{ 'opacity-50': fade || (onclick && !selected) }
 	]}

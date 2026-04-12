@@ -220,10 +220,12 @@
 												{c.target_column}</td
 											>
 											<td
-												>{#if c.deleted}Deleted{:else}<pre>{displayValue(
-															c.target_type,
-															c.target_column,
-															c.target_value
+												>{#if c.deleted}Deleted{:else}<pre>{decodeURIComponent(
+															displayValue(
+																c.target_type,
+																c.target_column,
+																c.target_value
+															)
 														)}</pre>{/if}</td
 											></tr
 										>

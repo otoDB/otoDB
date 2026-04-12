@@ -125,9 +125,9 @@
 							</tr>
 							<tr>
 								<th class="w-24">{m.clear_lucky_peacock_pick()}</th>
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								<td
 									><div class="description-cell external-link-icon">
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 										{@html data.description}
 									</div></td
 								>
@@ -332,8 +332,8 @@
 				<div class="my-2">
 					<details>
 						<summary>{m.clear_lucky_peacock_pick()}</summary>
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						<div class="external-link-icon whitespace-pre-wrap">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html src.description}
 						</div>
 					</details>

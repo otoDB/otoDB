@@ -152,7 +152,11 @@
 
 {#snippet comment(
 	data: ReturnType<typeof makeCommentTree>[number],
-	this_component: Snippet<any[] /* TODO: 再帰的なのでとりあえず`any`で対応 */>,
+	this_component: Snippet<[
+		ReturnType<typeof makeCommentTree>[number] ,
+			any // TODO: 再帰的なのでとりあえず`any`で対応
+			, number]
+			>,
 	depth: number
 )}
 	<div class="comment grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">

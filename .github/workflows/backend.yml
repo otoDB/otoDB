@@ -25,6 +25,8 @@ jobs:
   test:
     name: Test (Python ${{ matrix.python-version }}, ${{ matrix.database.name }})
     runs-on: ubuntu-latest
+    needs:
+      - migrations
     strategy:
       fail-fast: false
       matrix:

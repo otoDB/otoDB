@@ -29,4 +29,3 @@ All three commands must succeed without errors before committing. Do not skip or
 ## Boundaries
 
 - Do not edit `.env`
-

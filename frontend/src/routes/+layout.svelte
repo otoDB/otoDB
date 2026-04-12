@@ -390,14 +390,13 @@
 						})}
 						{Version[currentVersion].name}
 						{#if env.PUBLIC_OTODB_HASH}
-							- {env.PUBLIC_OTODB_HASH}{/if}
+							- <a href="https://github.com/otoDB/otoDB">{env.PUBLIC_OTODB_HASH}</a
+							>{/if}
 					</span>
 					<div class="social-links">
 						<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>
 						/
 						<a href="https://twitter.com/otoDBnet">Twitter</a>
-						/
-						<a href="https://github.com/otoDB/otoDB">GitHub</a>
 						/
 						<a href="irc://irc.rizon.net/otodb">#otodb @ Rizon</a>
 						/

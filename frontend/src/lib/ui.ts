@@ -2,7 +2,6 @@ import { browser } from '$app/environment';
 import client from './api';
 import { languages } from './enums/Languages';
 import { getLocale, setLocale } from './paraglide/runtime';
-import { enhance } from '$app/forms';
 import { m } from './paraglide/messages';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {

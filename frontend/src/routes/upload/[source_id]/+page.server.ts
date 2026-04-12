@@ -52,7 +52,7 @@ export const actions = {
 
 		redirect(303, `/work/${workId}`);
 	},
-	bind: async ({ request, fetch, params }) => {
+	bind: async ({ request, fetch }) => {
 		const data = await request.formData();
 		const workId = +(data.get('work_id') as string);
 		const sourceUrl = data.get('source_url') as string;

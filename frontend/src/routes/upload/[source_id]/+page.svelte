@@ -218,7 +218,9 @@
 										<label
 											class={[
 												'cursor-pointer border px-3 py-1',
-												rating === i ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
+												rating === i
+													? 'bg-otodb-content-primary text-otodb-bg-primary'
+													: ''
 											]}
 										>
 											<input

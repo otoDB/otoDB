@@ -81,10 +81,18 @@
 								<label
 									class={[
 										'cursor-pointer border px-3 py-1',
-										rating === i ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
+										rating === i
+											? 'bg-otodb-content-primary text-otodb-bg-primary'
+											: ''
 									]}
 								>
-									<input type="radio" name="rating" value={i} bind:group={rating} class="hidden" />
+									<input
+										type="radio"
+										name="rating"
+										value={i}
+										bind:group={rating}
+										class="hidden"
+									/>
 									{r()}
 								</label>
 							{/each}

@@ -88,7 +88,7 @@
 						<tr>
 							<th class="w-24">{m.clear_lucky_peacock_pick()}</th>
 							<td>
-								<div class="description-cell">
+								<div class="description-cell external-link-icon">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 									{@html data.source.description}
 								</div>

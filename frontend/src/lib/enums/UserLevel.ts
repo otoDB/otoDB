@@ -49,3 +49,11 @@ export const hasUserLevel = (
 ): boolean => {
 	return UserLevel[target].id >= UserLevel[level].id;
 };
+
+/**
+ * @deprecated Use `hasUserLevel(resolveUserLevelById(target), level)` instead.
+ */
+export const hasUserLevelOld = (target: number, level: keyof typeof UserLevel): boolean => hasUserLevel(
+	resolveUserLevelById(target),
+	level
+);

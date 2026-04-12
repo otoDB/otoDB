@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
 	import { Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
@@ -58,7 +57,7 @@
 						<th class="w-min whitespace-nowrap">
 							{m.watery_fuzzy_fireant_thrive()}
 						</th>
-						<td class="w-full flex gap-4">
+						<td class="flex w-full gap-4">
 							<label>
 								<input type="radio" name="origin" value="true" required />
 								{m.broad_large_squid_zoom()}

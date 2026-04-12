@@ -8,7 +8,7 @@
 		category: number;
 		aliased_to?: SuggestionTag | null;
 		lang_prefs: { tag: string }[];
-		// n_instance:number|null
+		n_instance:number
 	};
 
 	interface Props {
@@ -108,7 +108,7 @@
 					</address>
 				{/if}
 			</span>
-			<!-- <span>{t.n_instance}</span> -->
+			  <span>{t.n_instance}</span>
 		</a>
 	</li>
 {/each}

@@ -10,7 +10,7 @@
 
 	interface Props {
 		tree: Tree;
-		onClickTag?: ComponentProps<typeof WorkTag>['onClick'];
+		onClickTag?: ComponentProps<typeof WorkTag>['onclick'];
 	}
 	const { tree, onClickTag }: Props = $props();
 </script>
@@ -21,7 +21,7 @@
 )}
 	<ul class="my-0.5 list-none">
 		<li class="inline">
-			<WorkTag tag={tree.node} fade={!tree.real} onClick={onClickTag} />
+			<WorkTag tag={tree.node} fade={!tree.real} onclick={onClickTag} forTree={true} />
 		</li>
 		{#if tree.children?.length}
 			{#each tree.children as t, i (i)}

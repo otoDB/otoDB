@@ -14,28 +14,38 @@
 			name: string;
 		};
 		selected?: boolean;
-		onClick?: (tag: Props['tag']) => void;
+		onclick?: (tag: Props['tag']) => void;
 		fade?: boolean;
+
+		forTree?: boolean;
+
 	}
-	const { tag, selected = false, onClick, fade = false }: Props = $props();
+	const {
+		tag, onclick,
+		selected = false,
+		fade = false,
+		forTree = false,
+	}: Props = $props();
 
 	const category = $derived(resolveWorkTagCategoryKeyById(tag.category));
-	const sampleOverride = $derived(tag.sample);
+	const sampleOverride = $derived(WorkTagCategory[category].canSetAsSource &&  tag.sample);
+	const isTemporary = $derived(tag.id === 0);
 </script>
 
 <a
 	href="/tag/{tag.slug}"
 	class={[
-		'rounded-xl border-2 px-2',
-		category === 'GENERAL' ? 'border-dashed' : 'border-solid',
-		{ 'opacity-50': fade || (onClick && !selected) }
+		'rounded-xl px-2',
+		forTree ? 'border-2' : 'border-1',
+		isTemporary ? 'border-dashed' : 'border-solid',
+		{ 'opacity-50': fade || (onclick && !selected) }
 	]}
 	style="border-color: {WorkTagCategory[sampleOverride ? 'SOURCE' : category].color};"
-	data-sveltekit-preload-data={onClick ? 'off' : undefined}
+	data-sveltekit-preload-data={onclick ? 'off' : undefined}
 	onclick={(e) => {
-		if (onClick) {
+		if (onclick) {
 			e.preventDefault();
-			onClick(tag);
+			onclick(tag);
 		}
 	}}
 	>{getTagDisplayName(tag)}

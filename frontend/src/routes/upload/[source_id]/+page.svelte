@@ -45,7 +45,7 @@
 		}
 	});
 
-	const toggleTag: ComponentProps<typeof WorkTag>['onClick'] = (tag) => {
+	const toggleTag: ComponentProps<typeof WorkTag>['onclick'] = (tag) => {
 		const slug = getTagDisplaySlug(tag);
 		if (tags.includes(slug)) {
 			tags = tags.filter((t) => t !== slug);
@@ -236,7 +236,7 @@
 											<WorkTag
 												tag={t}
 												selected={tags.includes(getTagDisplaySlug(t))}
-												onClick={toggleTag}
+												onclick={toggleTag}
 											/>
 										{/each}
 									</div>

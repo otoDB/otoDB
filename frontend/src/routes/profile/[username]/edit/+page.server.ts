@@ -44,30 +44,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 			connections: dataConnections,
 			invites: null
 		};
-	}
-
-	/*
-	const [{ data }, { data: invites }] = await Promise.all([
-		client.GET('/api/profile/connection', {
-			fetch,
-			params: {
-				query: {
-					username: params.username
-				}
-			}
-		}),
-		locals.user.level >= UserLevel.EDITOR
-			? client.GET('/api/auth/invites', { fetch })
-			: { data: [[], null] }
-	]);
-
-	console.dir(invites);
-
-	return {
-		connections: data,
-		invites
-	};
-	*/
+	}　
 };
 
 export const actions = {

@@ -32,7 +32,6 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 
 	return {
 		request: data,
-		...params,
 		id: paramId,
 		comments,
 		head: {

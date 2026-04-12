@@ -28,7 +28,7 @@ const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 const LinkableEntities: ['mediawork' | 'tagwork', RegExp][] = [
 	['mediawork', short_prefix_re_gen(ENTITIES[0].shortPrefix)],
 	['mediawork', long_label_re_gen(ENTITIES[0].longLabel)],
-	['tagwork', TAGWORK_NO_DISPLAY_RE] as const
+	['tagwork', TAGWORK_NO_DISPLAY_RE]
 ];
 
 function link(href: string, text: string): PhrasingContent {

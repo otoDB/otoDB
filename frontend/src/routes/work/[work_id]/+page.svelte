@@ -1,11 +1,7 @@
 <script lang="ts">
+	import client, { getDisplayText } from '$lib/api';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
-	import RefreshButton from '$lib/RefreshButton.svelte';
-	import Section from '$lib/Section.svelte';
-	import SourcesViewer from '$lib/SourcesViewer.svelte';
-	import WorkCard from '$lib/WorkCard.svelte';
-	import client, { getDisplayText } from '$lib/api';
 	import {
 		Platform,
 		Rating,
@@ -14,17 +10,20 @@
 		WorkRelationDisplayForward,
 		WorkStatus
 	} from '$lib/enums';
-	import { m } from '$lib/paraglide/messages.js';
-	import type { components } from '$lib/schema';
-	import { callSavingToast } from '$lib/toast';
-	import { SvelteMap } from 'svelte/reactivity';
-	import type { ComponentProps } from 'svelte';
-
 	import {
 		resolveWorkTagCategoryKeyById,
-		WorkTagCategory as WorkTagCategory2
+		WorkTagCategory
 	} from '$lib/enums/WorkTagCategory';
+	import { m } from '$lib/paraglide/messages.js';
+	import RefreshButton from '$lib/RefreshButton.svelte';
+	import type { components } from '$lib/schema';
+	import Section from '$lib/Section.svelte';
+	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import { callSavingToast } from '$lib/toast';
+	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
+	import type { ComponentProps } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
@@ -58,16 +57,16 @@
 		}
 	};
 
-	const groupedTags: [keyof typeof WorkTagCategory2, PageProps['data']['tags']][] = $derived(
+	const groupedTags: [keyof typeof WorkTagCategory, PageProps['data']['tags']][] = $derived(
 		(
 			Object.entries(
 				Object.groupBy(data.tags, (t) => {
 					const c = resolveWorkTagCategoryKeyById(t.category);
-					if (WorkTagCategory2[c].settable && t.sample) return 'SOURCE';
+					if (WorkTagCategory[c].canSetAsSource && t.sample) return 'SOURCE';
 					else return c;
 				})
-			) as [keyof typeof WorkTagCategory2, PageProps['data']['tags']][]
-		).toSorted(([a], [b]) => WorkTagCategory2[a].order - WorkTagCategory2[b].order)
+			) as [keyof typeof WorkTagCategory, PageProps['data']['tags']][]
+		).toSorted(([a], [b]) => WorkTagCategory[a].order - WorkTagCategory[b].order)
 	);
 
 	const merge_paths = (
@@ -227,12 +226,12 @@
 			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
-					style="border-color: {WorkTagCategory2[cat]
-						.color};background-color: color-mix(in hsl, {WorkTagCategory2[cat]
+					style="border-color: {WorkTagCategory[cat]
+						.color};background-color: color-mix(in hsl, {WorkTagCategory[cat]
 						.color}, transparent 85%);"
 				>
 					<h5 class="my-2 font-bold">
-						{WorkTagCategory2[cat].nameFn()}
+						{WorkTagCategory[cat].nameFn()}
 					</h5>
 					<ul class="flex list-none flex-wrap gap-2">
 						{#each merge_paths(tags) as tree, j (j)}

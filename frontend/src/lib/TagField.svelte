@@ -20,14 +20,8 @@
 			return;
 		}
 		const { data } = await client.GET(
-			(() => {
-				switch (type) {
-					case 'work':
-						return '/api/tag/search' as const;
-					case 'song':
-						return '/api/tag/song_tag_search' as const;
-				}
-			})(),
+			type === "work" ? '/api/tag/search' as const : '/api/tag/song_tag_search' as const,
+
 			{
 				params: {
 					query: {

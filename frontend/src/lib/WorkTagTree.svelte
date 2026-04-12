@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ComponentProps } from 'svelte';
+	import type { ComponentProps, Snippet } from 'svelte';
 	import WorkTag from './WorkTag.svelte';
 
 	type Tree = {
@@ -16,7 +16,7 @@
 </script>
 
 {#snippet recur(
-	this_snippet: (this_snippet: any, tree: Tree) => ReturnType<import('svelte').Snippet>,
+	this_snippet: Snippet<[Snippet<any>, Tree]>,
 	tree: Tree
 )}
 	<ul class="my-0.5 list-none">

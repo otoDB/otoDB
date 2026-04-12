@@ -7,44 +7,37 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	if (!locals.user || params.username !== locals.user?.username)
 		redirect(303, `/profile/${params.username}`);
 
-	const { data: dataConnections, error: errorConnection } = await client.GET(
-		'/api/profile/connection',
-		{
+	const [payloadConnections, payloadInvites] = await Promise.all([
+		client.GET('/api/profile/connection', {
 			fetch,
 			params: {
 				query: {
 					username: params.username
 				}
 			}
-		}
-	);
-	if (errorConnection) error(500, 'Failed to load profile connections');
-	if (!dataConnections) error(500, 'Failed to load profile connections');
+		}),
+		hasUserLevel(resolveUserLevelById(locals.user.level), 'EDITOR')
+			? client.GET('/api/auth/invites', {
+					fetch
+				})
+			: Promise.resolve(null)
+	]);
 
-	if (hasUserLevel(resolveUserLevelById(locals.user.level), 'EDITOR')) {
-		const { data: invitesData, error: errorInvites } = await client.GET('/api/auth/invites', {
-			fetch
-		});
-		if (errorInvites) error(500, 'Failed to load invites');
-		if (!invitesData) error(500, 'Failed to load invites');
+	if (payloadConnections.error) error(500, 'Failed to load profile connections');
+	if (!payloadConnections.data) error(500, 'Failed to load profile connections');
 
-		const [invites, restrictedInvitee] = invitesData;
+	if (payloadInvites?.error) error(500, 'Failed to load invites');
 
-		return {
-			user: locals.user,
-			connections: dataConnections,
-			invites: {
-				invites,
-				restrictedInvitee: restrictedInvitee
-			}
-		};
-	} else {
-		return {
-			user: locals.user,
-			connections: dataConnections,
-			invites: null
-		};
-	}　
+	return {
+		user: locals.user,
+		connections: payloadConnections.data,
+		invites: payloadInvites?.data
+			? {
+					invites: payloadInvites.data[0],
+					restrictedInvitee: payloadInvites.data[1]
+				}
+			: null
+	};
 };
 
 export const actions = {

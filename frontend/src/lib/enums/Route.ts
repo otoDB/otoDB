@@ -1,7 +1,7 @@
 import { m } from '$lib/paraglide/messages';
 
 const c = (type: () => string, action: () => string) => () =>
-	m.mild_loud_shad_enchant({ name: type(), type: action() });
+	m.mild_loud_shad_enchant({ type: type(), name: action() });
 
 export const Route = {
 	UNKNOWN: { id: 0, title: () => 'Unknown' },

@@ -152,7 +152,11 @@
 								class="min-h-30 w-full"
 								value={entry.description}
 								oninput={debounce(
-									(el) => update_description(i, el.currentTarget.value),
+									(el) =>
+										update_description(
+											i,
+											(el.target as HTMLTextAreaElement).value
+										),
 									1000
 								)}
 							></textarea>

@@ -1,13 +1,13 @@
 import { redirect } from '@sveltejs/kit';
-import { hasUserLevel, resolveUserLevelById, UserLevel as UserLevel2 } from './enums/UserLevel';
+import { hasUserLevelOld, UserLevel } from './enums/UserLevel';
 
 export const userLevelGuard = (
 	user: App.Locals['user'],
-	userLevel: keyof typeof UserLevel2,
+	userLevel: keyof typeof UserLevel,
 	from: string | null = null,
 	to = '/login'
 ): user is Exclude<App.Locals['user'], null> => {
-	if (!user || !hasUserLevel(resolveUserLevelById(user.level), userLevel))
+	if (!hasUserLevelOld(user?.level, userLevel))
 		redirect(303, to === '/login' && from ? `${to}?from=${from}` : to);
 	return true;
 };

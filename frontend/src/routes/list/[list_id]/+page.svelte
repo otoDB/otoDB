@@ -22,15 +22,17 @@
 	let sources: ComponentProps<typeof ExternalEmbed>['src'][] | undefined = $state();
 
 	$effect(() => {
-		client
-			.GET('/api/work/sources', {
-				fetch,
-				params: { query: { work_id: data.entries.items[current].work.id } }
-			})
-			.then(({ data }) => {
-				sources = data;
-				select = 0;
-			});
+		if (data.entries.items[current]) {
+			client
+				.GET('/api/work/sources', {
+					fetch,
+					params: { query: { work_id: data.entries.items[current].work.id } }
+				})
+				.then(({ data }) => {
+					sources = data;
+					select = 0;
+				});
+		}
 	});
 </script>
 

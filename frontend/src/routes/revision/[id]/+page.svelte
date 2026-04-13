@@ -13,10 +13,15 @@
 		WorkStatus,
 		WorkTagCategory
 	} from '$lib/enums.js';
-	import { creatorRole } from '$lib/enums/CreatorRole';
-	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/Languages';
+	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
+	import {
+		isSOV,
+		isSVO,
+		languages,
+		resolveLanguageKeyById
+	} from '$lib/enums/Languages';
 	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection';
-	import { mediaTypes } from '$lib/enums/MediaType.js';
+	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
 	import {
 		ProfileConnection,
 		resolveProfileConnectionNameById
@@ -35,144 +40,97 @@
 
 	let { data } = $props();
 
-	// TODO: need more refactor
-	// TODO: `decodeURIComponent`を入れる必要があったが返ってくる値にそれをしないとならないものがあるとは思えないので削除．
-	// TODO: `tagwork.media_type` および `tagworkinstance.creator_roles` がad-hocすぎる
-	const displayValue = (type: string, col: string, val: unknown): string => {
-		switch (type) {
-			case 'mediawork':
-				switch (col) {
-					case 'rating':
-						return Rating[val as number]();
-				}
-				break;
-			case 'tagwork':
-				switch (col) {
-					case 'category':
-						return WorkTagCategory[val as number]();
-					case 'media_type': {
-						const [isGame, isFilm, isShow, isAnime] = parseInt(val as string, 10)
-							.toString(2)
-							.padStart(4, '0')
-							.split('')
-							.map((b) => b === '1');
+	type D = () => string;
+	const V_to_D =
+		(r: (b: number) => string, fs: Record<string, { nameFn: D }>) =>
+		(v: number): D =>
+			fs[r(v)].nameFn;
+	const SV_to_D =
+		(r: (b: number) => string, fs: Record<string, { name: string }>) =>
+		(v: number): D =>
+		() =>
+			fs[r(v)].name;
+	const SR_to_D =
+		<T extends number>(r: Record<T, string>) =>
+		(v: number): D =>
+		() =>
+			r[v as T];
+	const A_to_D = (r: D[]) => (v: number) => r[v];
+	const SA_to_D =
+		(r: string[]) =>
+		(v: number): D =>
+		() =>
+			r[v];
+	const expand_bit_field =
+		(r: (b: number) => string, fs: Record<string, { nameFn: D }>) =>
+		(v: number): D =>
+		() =>
+			[...v.toString(2)]
+				.reduce(
+					(a, e, i, aa) =>
+						e === '1' ? [...a, V_to_D(r, fs)(Math.pow(2, aa.length - 1 - i))()] : a,
+					[] as string[]
+				)
+				.join(', ') || 'N/A';
 
-						if (!isGame && !isFilm && !isShow && !isAnime) return 'N/A';
+	const Languages = SV_to_D(resolveLanguageKeyById, languages);
 
-						return [
-							isAnime ? mediaTypes['ANIME'].nameFn() : '',
-							isShow ? mediaTypes['SHOW'].nameFn() : '',
-							isFilm ? mediaTypes['FILM'].nameFn() : '',
-							isGame ? mediaTypes['GAME'].nameFn() : ''
-						].join(', ');
-					}
-				}
-				break;
-			case 'tagsong':
-				switch (col) {
-					case 'category':
-						return SongTagCategory[val as number]();
-				}
-				break;
-			case 'tagworkconnection':
-				switch (col) {
-					case 'site':
-						return TagWorkConnection[resolveTagWorkConnectionNameById(val as number)]
-							.name;
-				}
-				break;
-			case 'mediasongconnection':
-				switch (col) {
-					case 'site':
-						return SongConnection[resolveSongConnectionNameById(val as number)].name;
-				}
-				break;
-			case 'tagworkmediaconnection':
-				switch (col) {
-					case 'site':
-						return MediaConnection[resolveMediaConnectionNameById(val as number)].name;
-				}
-				break;
-			case 'tagworkcreatorconnection':
-				switch (col) {
-					case 'site':
-						return ProfileConnection[resolveProfileConnectionNameById(val as number)]
-							.name;
-				}
-				break;
-			case 'tagworklangpreference':
-				switch (col) {
-					case 'lang':
-						return languages[resolveLanguageKeyById(val as number)].name;
-				}
-				break;
-			case 'tagsonglangpreference':
-				switch (col) {
-					case 'lang':
-						return languages[resolveLanguageKeyById(val as number)].name;
-				}
-				break;
-			case 'workrelation':
-				switch (col) {
-					case 'relation':
-						return WorkRelationTypes[val as number]();
-				}
-				break;
-			case 'songrelation':
-				switch (col) {
-					case 'relation':
-						return SongRelationTypes[val as number]();
-				}
-				break;
-			case 'tagworkinstance':
-				switch (col) {
-					case 'creator_roles': {
-						const [isThanks, isArtwork, isMusic, isDirector, isVisuals, isAudio] =
-							parseInt(val as string, 10)
-								.toString(2)
-								.padStart(6, '0')
-								.split('')
-								.map((b) => b === '1');
-						if (
-							!isThanks &&
-							!isArtwork &&
-							!isMusic &&
-							!isDirector &&
-							!isVisuals &&
-							!isAudio
-						)
-							return 'N/A';
-						return [
-							isAudio ? creatorRole['AUDIO'].nameFn() : '',
-							isVisuals ? creatorRole['VISUALS'].nameFn() : '',
-							isDirector ? creatorRole['DIRECTOR'].nameFn() : '',
-							isMusic ? creatorRole['MUSIC'].nameFn() : '',
-							isArtwork ? creatorRole['ARTWORK'].nameFn() : '',
-							isThanks ? creatorRole['THANKS'].nameFn() : ''
-						].join(', ');
-					}
-				}
-				break;
-			case 'wikipage':
-				switch (col) {
-					case 'lang':
-						return languages[resolveLanguageKeyById(val as number)].name;
-				}
-				break;
-			case 'worksource':
-				switch (col) {
-					case 'platform':
-						return Platform[val as number];
-					case 'thumbnail_mime':
-						return MimeType[val as keyof typeof MimeType];
-					case 'work_origin':
-						return WorkOrigin[val as number]();
-					case 'work_status':
-						return WorkStatus[val as number]();
-				}
-				break;
+	const ValueDisplayMap: Record<string, Record<string, (v: number) => D>> = {
+		mediawork: {
+			rating: A_to_D(Rating)
+		},
+		tagwork: {
+			category: A_to_D(WorkTagCategory),
+			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
+		},
+		tagsong: {
+			category: A_to_D(SongTagCategory)
+		},
+		tagworkconnection: {
+			site: SV_to_D(resolveTagWorkConnectionNameById, TagWorkConnection)
+		},
+		mediasongconnection: {
+			site: SV_to_D(resolveSongConnectionNameById, SongConnection)
+		},
+		tagworkmediaconnection: {
+			site: SV_to_D(resolveMediaConnectionNameById, MediaConnection)
+		},
+		tagworkcreatorconnection: {
+			site: SV_to_D(resolveProfileConnectionNameById, ProfileConnection)
+		},
+		tagworklangpreference: {
+			lang: Languages
+		},
+		tagsonglangpreference: {
+			lang: Languages
+		},
+		workrelation: {
+			relation: A_to_D(WorkRelationTypes)
+		},
+		songrelation: {
+			relation: A_to_D(SongRelationTypes)
+		},
+		tagworkinstance: {
+			creator_roles: expand_bit_field(resolveCreatorRoleKeyById, creatorRole)
+		},
+		wikipage: {
+			lang: Languages
+		},
+		worksource: {
+			platform: SA_to_D(Platform),
+			thumbnail_mime: SR_to_D(MimeType),
+			work_origin: A_to_D(WorkOrigin),
+			work_status: A_to_D(WorkStatus)
 		}
-		return 'None';
+	};
+
+	const displayValue = (
+		type: keyof typeof ValueDisplayMap,
+		col: string,
+		val: string | null | undefined
+	) => {
+		const handler = ValueDisplayMap[type]?.[col];
+		return decodeURIComponent((val ? (handler ? handler(+val)() : val) : null) ?? 'None');
 	};
 </script>
 
@@ -220,12 +178,10 @@
 												{c.target_column}</td
 											>
 											<td
-												>{#if c.deleted}Deleted{:else}<pre>{decodeURIComponent(
-															displayValue(
-																c.target_type,
-																c.target_column,
-																c.target_value
-															)
+												>{#if c.deleted}Deleted{:else}<pre>{displayValue(
+															c.target_type,
+															c.target_column,
+															c.target_value
 														)}</pre>{/if}</td
 											></tr
 										>

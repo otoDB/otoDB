@@ -231,7 +231,7 @@ class Route(models.IntegerChoices):
 
 	MEDIAWORK_DELETE = 40, 'Media Work Delete'
 	MEDIAWORK_SET_TAGS = 41, 'Media Work Set Tags'
-	MEDIAWORK_REMOVE_TAG = 42, 'Media Work Remove Tag'
+	MEDIAWORK_REMOVE_TAG = 42, 'DEPRECATED - Media Work Remove Tag'
 	MEDIAWORK_UPDATE_CREATOR_ROLES = 43, 'DEPRECATED - Media Work Update Creator Roles'
 	MEDIAWORK_TOGGLE_SAMPLE = 44, 'DEPRECATED - Media Work Toggle Sample'
 	MEDIAWORK_UPDATE = 45, 'Media Work Update'

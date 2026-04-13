@@ -29,7 +29,7 @@
 			<tr
 				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
 					>{rev.route !== null && rev.route !== undefined
-						? Route[resolveRouteKeyById(rev.route)].title
+						? Route[resolveRouteKeyById(rev.route)].title()
 						: ''}</td
 				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>

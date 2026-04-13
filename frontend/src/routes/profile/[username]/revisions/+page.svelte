@@ -17,7 +17,7 @@
 				{#each data.revisions?.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a></td><td
-							>{r.route ? Route[resolveRouteKeyById(r.route)].title : ''}</td
+							>{r.route ? Route[resolveRouteKeyById(r.route)].title() : ''}</td
 						><td
 							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
 							></td

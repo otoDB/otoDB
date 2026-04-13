@@ -14,12 +14,7 @@
 		WorkTagCategory
 	} from '$lib/enums.js';
 	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
-	import {
-		isSOV,
-		isSVO,
-		languages,
-		resolveLanguageKeyById
-	} from '$lib/enums/Languages';
+	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/Languages';
 	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection';
 	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
 	import {
@@ -158,7 +153,7 @@
 		>{/if}
 	<ul class="my-5">
 		{#each data.routes as [r, ecs], i (i)}
-			<li>{Route[resolveRouteKeyById(r)].title}</li>
+			<li>{Route[resolveRouteKeyById(r)].title()}</li>
 			<li class="ml-2 list-none">
 				<ul>
 					{#each ecs as [[ent_type, ent_id], ec], j (j)}

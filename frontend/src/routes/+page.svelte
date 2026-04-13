@@ -49,7 +49,7 @@
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
 							>{typeof r.route === 'number'
-								? Route[resolveRouteKeyById(r.route)].title
+								? Route[resolveRouteKeyById(r.route)].title()
 								: ''}</td
 						><td>
 							{#if isSVO(getLocale())}

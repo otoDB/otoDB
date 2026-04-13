@@ -1,46 +1,49 @@
-/**
- * Recent Update
- */
+import { m } from '$lib/paraglide/messages';
+
+const c = (type: () => string, action: () => string) => () =>
+	m.mild_loud_shad_enchant({ name: type(), type: action() });
 
 export const Route = {
-	UNKNOWN: { id: 0, title: 'Unknown' },
+	UNKNOWN: { id: 0, title: () => 'Unknown' },
 
-	TAGWORK_ALIAS: { id: 1, title: 'Tag: Alias' },
-	TAGWORK_UNALIAS: { id: 2, title: 'Tag: Unalias' },
-	TAGWORK_DELETE: { id: 3, title: 'Tag: Delete' },
-	TAGWORK_UPDATE: { id: 4, title: 'Tag: Update' },
+	TAGWORK_ALIAS: { id: 1, title: c(m.empty_legal_chicken_taste, () => 'Alias') },
+	TAGWORK_UNALIAS: { id: 2, title: c(m.empty_legal_chicken_taste, () => 'Alias Control') },
+	TAGWORK_DELETE: { id: 3, title: c(m.empty_legal_chicken_taste, m.real_born_goat_snap) },
+	TAGWORK_UPDATE: { id: 4, title: c(m.empty_legal_chicken_taste, () => 'Update') },
 
-	TAGWORK_EDIT_WIKI: { id: 7, title: 'Tag: Edit Wiki' },
-	TAGWORK_EDIT_CONNECTIONS: { id: 8, title: 'Tag: Edit Connections' },
+	TAGWORK_EDIT_WIKI: { id: 7, title: c(m.empty_legal_chicken_taste, () => 'Edit Wiki') },
+	TAGWORK_EDIT_CONNECTIONS: {
+		id: 8,
+		title: c(m.empty_legal_chicken_taste, () => 'Edit Connections')
+	},
 
-	SONGTAG_UPDATE: { id: 20, title: 'Song Attribute: Update' },
-	SONGTAG_SET_TAGS: { id: 21, title: 'Song: Set Tags' },
-	SONGTAG_ALIAS: { id: 22, title: 'Song Attribute: Alias' },
-	SONGTAG_UNALIAS: { id: 23, title: 'Song Attribute: Alias Control' },
-	SONGTAG_DELETE: { id: 24, title: 'Song Attribute: Delete' },
+	SONGTAG_UPDATE: { id: 20, title: c(m.dull_plain_angelfish_cuddle, () => 'Update') },
+	SONGTAG_SET_TAGS: { id: 21, title: c(m.grand_nice_pony_belong, () => 'Set Tags') },
+	SONGTAG_ALIAS: { id: 22, title: c(m.dull_plain_angelfish_cuddle, () => 'Alias') },
+	SONGTAG_UNALIAS: { id: 23, title: c(m.dull_plain_angelfish_cuddle, () => 'Alias Control') },
+	SONGTAG_DELETE: { id: 24, title: c(m.dull_plain_angelfish_cuddle, m.real_born_goat_snap) },
 
-	SONGRELATION_CREATE: { id: 30, title: 'Song: Create Relation' },
+	SONGRELATION_CREATE: { id: 30, title: c(m.grand_nice_pony_belong, () => 'Relation Control') },
 
-	MEDIAWORK_DELETE: { id: 40, title: 'Work: Delete' },
-	MEDIAWORK_SET_TAGS: { id: 41, title: 'Work: Set Tags' },
-	MEDIAWORK_REMOVE_TAG: { id: 42, title: 'Work: Remove Tag' },
+	MEDIAWORK_DELETE: { id: 40, title: c(m.grand_merry_fly_succeed, m.real_born_goat_snap) },
+	MEDIAWORK_SET_TAGS: { id: 41, title: c(m.grand_merry_fly_succeed, () => 'Set Tags') },
 
-	MEDIAWORK_UPDATE: { id: 45, title: 'Work: Update' },
-	MEDIAWORK_MERGE: { id: 46, title: 'Work: Merge' },
-	MEDIAWORK_CREATE: { id: 47, title: 'Work: Create' },
+	MEDIAWORK_UPDATE: { id: 45, title: c(m.grand_merry_fly_succeed, () => 'Update') },
+	MEDIAWORK_MERGE: { id: 46, title: c(m.grand_merry_fly_succeed, () => 'Merge') },
+	MEDIAWORK_CREATE: { id: 47, title: c(m.grand_merry_fly_succeed, () => 'Create') },
 
-	WORKRELATION_CREATE: { id: 50, title: 'Work: Create Relation' },
+	WORKRELATION_CREATE: { id: 50, title: c(m.grand_merry_fly_succeed, () => 'Relation Control') },
 
-	WORKSOURCE_CREATE: { id: 60, title: 'Upload: Create' },
-	WORKSOURCE_UNBIND: { id: 61, title: 'Upload: Unbind' },
-	WORKSOURCE_SET_ORIGIN: { id: 62, title: 'Upload: Set Origin' },
-	WORKSOURCE_REFRESH: { id: 63, title: 'Upload: Refresh' },
-	WORKSOURCE_ASSIGN: { id: 64, title: 'Upload: Assign' },
-	WORKSOURCE_REJECT: { id: 65, title: 'Upload: Reject' },
-	WORKSOURCE_UPDATE: { id: 66, title: 'Upload: Update' },
+	WORKSOURCE_CREATE: { id: 60, title: c(m.extra_brave_tapir_skip, () => 'Create') },
+	WORKSOURCE_UNBIND: { id: 61, title: c(m.extra_brave_tapir_skip, m.sour_lime_shad_edit) },
+	WORKSOURCE_SET_ORIGIN: { id: 62, title: c(m.extra_brave_tapir_skip, () => 'Set Origin') },
+	WORKSOURCE_REFRESH: { id: 63, title: c(m.extra_brave_tapir_skip, m.mushy_proof_hornet_dig) },
+	WORKSOURCE_ASSIGN: { id: 64, title: c(m.extra_brave_tapir_skip, () => 'Assign') },
+	WORKSOURCE_REJECT: { id: 65, title: c(m.extra_brave_tapir_skip, m.alive_blue_marlin_push) },
+	WORKSOURCE_UPDATE: { id: 66, title: c(m.extra_brave_tapir_skip, () => 'Update') },
 
-	ROLLBACK: { id: 100, title: 'Rollback' }
-} as const satisfies Record<string, { id: number; title: string }>;
+	ROLLBACK: { id: 100, title: m.legal_mean_slug_link }
+} as const satisfies Record<string, { id: number; title: () => string }>;
 
 /**
  * @deprecated

@@ -245,23 +245,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/work/remove_tag": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Remove Tag */
-        put: operations["otodb_api_work_remove_tag"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/work/random": {
         parameters: {
             query?: never;
@@ -2941,27 +2924,6 @@ export interface operations {
                 "application/json": components["schemas"]["TagWorkInstanceInSchema"][];
             };
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_work_remove_tag: {
-        parameters: {
-            query: {
-                work_id: number;
-                tag_slug: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

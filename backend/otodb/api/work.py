@@ -235,17 +235,6 @@ def set_tags(
 	return 200
 
 
-@work_router.put('remove_tag', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.MEDIAWORK_REMOVE_TAG)
-def remove_tag(request: AuthedHttpRequest, work_id: int, tag_slug: str):
-	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	tag = get_object_or_404(TagWork, slug=tag_slug)
-	work.tags.remove(tag)
-	if tag.can_be_deleted:
-		tag.delete()
-
-
 @work_router.get('random', response=list[ThinWorkSchema], exclude_none=True)
 def random(request: AuthedHttpRequest, n: int = 1):
 	return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by('?')[

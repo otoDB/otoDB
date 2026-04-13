@@ -18,7 +18,7 @@ export const Route = {
 	},
 
 	SONGTAG_UPDATE: { id: 20, title: c(m.dull_plain_angelfish_cuddle, () => 'Update') },
-	SONGTAG_SET_TAGS: { id: 21, title: c(m.grand_nice_pony_belong, () => 'Set Tags') },
+	SONGTAG_SET_TAGS: { id: 21, title: c(m.grand_nice_pony_belong, () => 'Tag Control') },
 	SONGTAG_ALIAS: { id: 22, title: c(m.dull_plain_angelfish_cuddle, () => 'Alias') },
 	SONGTAG_UNALIAS: { id: 23, title: c(m.dull_plain_angelfish_cuddle, () => 'Alias Control') },
 	SONGTAG_DELETE: { id: 24, title: c(m.dull_plain_angelfish_cuddle, m.real_born_goat_snap) },
@@ -26,7 +26,7 @@ export const Route = {
 	SONGRELATION_CREATE: { id: 30, title: c(m.grand_nice_pony_belong, () => 'Relation Control') },
 
 	MEDIAWORK_DELETE: { id: 40, title: c(m.grand_merry_fly_succeed, m.real_born_goat_snap) },
-	MEDIAWORK_SET_TAGS: { id: 41, title: c(m.grand_merry_fly_succeed, () => 'Set Tags') },
+	MEDIAWORK_SET_TAGS: { id: 41, title: c(m.grand_merry_fly_succeed, () => 'Tag Control') },
 
 	MEDIAWORK_UPDATE: { id: 45, title: c(m.grand_merry_fly_succeed, () => 'Update') },
 	MEDIAWORK_MERGE: { id: 46, title: c(m.grand_merry_fly_succeed, () => 'Merge') },

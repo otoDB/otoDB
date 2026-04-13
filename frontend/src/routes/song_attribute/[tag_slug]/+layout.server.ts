@@ -5,7 +5,7 @@ import { error } from '@sveltejs/kit';
 
 import { getTagDisplayName } from '$lib/api';
 import { redirect } from '@sveltejs/kit';
-import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+import { hasUserLevelOld } from '$lib/enums/UserLevel';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	const {
@@ -46,14 +46,14 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `song_attribute/${params.tag_slug}`,
 				title: m.dull_plain_angelfish_cuddle() + ' ' + params.tag_slug
 			},
-			...(locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
-				? []
-				: [
+			...(hasUserLevelOld(locals.user?.level, 'MEMBER')
+				? [
 						{
 							pathname: `song_attribute/${params.tag_slug}/edit`,
 							title: m.minor_crisp_cobra_list()
 						}
-					]),
+					]
+				: []),
 
 			{
 				pathname: `song_attribute/${params.tag_slug}/history`,

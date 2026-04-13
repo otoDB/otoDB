@@ -4,7 +4,7 @@
 	import { enhance } from '$app/forms';
 	import { Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
-	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 
 	let { data, form } = $props();
 	let isUnavailable = $derived(!!data.unavailable_source);
@@ -68,7 +68,7 @@
 							</label>
 						</td>
 					</tr>
-					{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
+					{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
 						<tr>
 							<th class="w-min whitespace-nowrap">
 								<label for="isUnavailable">{m.that_large_mare_ascend()}</label>

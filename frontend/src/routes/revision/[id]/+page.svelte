@@ -27,7 +27,7 @@
 		resolveTagWorkConnectionNameById,
 		TagWorkConnection
 	} from '$lib/enums/TagWorkConnection';
-	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel.js';
+	import { hasUserLevelOld } from '$lib/enums/UserLevel.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
@@ -187,7 +187,7 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
-	{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'ADMIN') && data.revision.id > 1}<button
+	{#if hasUserLevelOld(data.user?.level, 'ADMIN') && data.revision.id > 1}<button
 			class="my-5"
 			onclick={async () => {
 				if (!confirm('Are you sure?')) return;

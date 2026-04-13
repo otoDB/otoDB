@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Platform, Status, WorkOrigin, WorkStatus } from '$lib/enums';
-	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
@@ -88,7 +88,7 @@
 						<th>{m.super_agent_pigeon_aim()}</th>
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
+						{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
 							<th>{m.mushy_proof_hornet_dig()}</th>
 						{/if}
 					</tr></thead
@@ -106,7 +106,7 @@
 									>{m.noisy_moving_newt_belong()}</a
 								></td
 							>
-							{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
+							{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
 								<td><RefreshButton source={src} /></td>
 							{/if}
 						</tr>

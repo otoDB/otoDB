@@ -14,7 +14,7 @@
 	{#each availableLanguages as l (l)}
 		<label class="lang-tab">
 			<input type="radio" bind:group={value} value={l} />
-			{languages[value].name}
+			{languages[l].name}
 		</label>
 	{/each}
 </div>

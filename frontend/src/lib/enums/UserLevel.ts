@@ -53,5 +53,7 @@ export const hasUserLevel = (
 /**
  * @deprecated Use `hasUserLevel(resolveUserLevelById(target), level)` instead.
  */
-export const hasUserLevelOld = (target: number, level: keyof typeof UserLevel): boolean =>
-	hasUserLevel(resolveUserLevelById(target), level);
+export const hasUserLevelOld = (
+	target: number | undefined,
+	level: keyof typeof UserLevel
+): boolean => !!target && hasUserLevel(resolveUserLevelById(target), level);

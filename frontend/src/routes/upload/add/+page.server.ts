@@ -4,7 +4,7 @@ import client, { getDisplayText } from '$lib/api';
 
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
-import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+import { hasUserLevelOld } from '$lib/enums/UserLevel';
 import type { components } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
@@ -69,7 +69,7 @@ export const actions = {
 
 		// Build metadata object only if user is editor AND manual fields provided
 		let metadata: components['schemas']['WorkSourceMetadataSchema'] | undefined = undefined;
-		if (locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'EDITOR')) {
+		if (hasUserLevelOld(locals.user?.level, 'EDITOR')) {
 			const hasManualData =
 				data.get('manual_title') ||
 				data.get('manual_description') ||

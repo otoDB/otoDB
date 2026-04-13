@@ -5,7 +5,7 @@
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Section from '$lib/Section.svelte';
 	import { languages } from '$lib/enums/Languages';
-	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import { getThemeNameById } from '$lib/enums/themes';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
@@ -242,7 +242,7 @@
 						{@render link('/', m.fine_late_chicken_quiz())}
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
 						{@render link('/work', m.grand_merry_fly_succeed())}
-						{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'MEMBER')}
+						{#if hasUserLevelOld(data.user?.level, 'MEMBER')}
 							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 						{/if}
 						{@render link('/tag', m.empty_legal_chicken_taste())}
@@ -307,7 +307,7 @@
 						{/if}
 					</ul>
 				</div>
-				{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
+				{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -321,7 +321,7 @@
 						</ul>
 					</div>
 				{/if}
-				{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'ADMIN')}
+				{#if hasUserLevelOld(data.user?.level, 'ADMIN')}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>

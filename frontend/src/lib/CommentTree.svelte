@@ -3,7 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
-	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { timeAgo } from '$lib/ui';
@@ -77,10 +77,8 @@
 		editPreviewMode = false;
 	};
 
-	const can_comment = $derived(
-		!!user && hasUserLevel(resolveUserLevelById(user.level), 'MEMBER')
-	);
-	const is_admin = $derived(!!user && hasUserLevel(resolveUserLevelById(user.level), 'ADMIN'));
+	const can_comment = $derived(hasUserLevelOld(user?.level, 'MEMBER'));
+	const is_admin = $derived(!!user && hasUserLevelOld(user?.level, 'ADMIN'));
 
 	const canEdit = (data: ReturnType<typeof makeCommentTree>[number]) => {
 		if (!user) return false;
@@ -243,7 +241,7 @@
 			{#if editingId === null}
 				<div class="comment-actions flex justify-end gap-2 pt-2">
 					{#if can_comment}
-						<label class="cursor-pointer px-2 py-1" role="button">
+						<label class="cursor-pointer px-2 py-1">
 							{m.kind_brief_earthworm_dash()}
 							<input type="checkbox" class="reply-toggle hidden" value={false} />
 						</label>
@@ -253,7 +251,7 @@
 							{m.minor_crisp_cobra_list()}
 						</button>
 					{/if}
-					{#if user && (hasUserLevel(resolveUserLevelById(user.level), 'ADMIN') || data.user.username === user.username)}
+					{#if user && (hasUserLevelOld(user?.level, 'ADMIN') || data.user.username === user.username)}
 						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 							>{m.even_alert_grebe_taste()}</button
 						>

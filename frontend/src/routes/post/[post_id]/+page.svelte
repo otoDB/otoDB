@@ -7,7 +7,7 @@
 	import client from '$lib/api.js';
 	import { EntityModelRoutes, Languages, PostCategories } from '$lib/enums.js';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
-	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel.js';
+	import { hasUserLevelOld } from '$lib/enums/UserLevel.js';
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
@@ -80,9 +80,7 @@
 			.filter((x) => !!x)
 	);
 
-	const is_admin = $derived(
-		data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'ADMIN')
-	);
+	const is_admin = $derived(hasUserLevelOld(data.user?.level, 'ADMIN'));
 	const editedByOther =
 		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username;
 	const canEdit =

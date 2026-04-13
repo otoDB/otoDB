@@ -1,5 +1,5 @@
 import client, { getTagDisplayName } from '$lib/api';
-import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+import { hasUserLevelOld } from '$lib/enums/UserLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
@@ -47,9 +47,9 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `tag/${params.tag_slug}`,
 				title: m.empty_legal_chicken_taste() + ' ' + params.tag_slug
 			},
-			...(locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
-				? []
-				: [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]),
+			...(hasUserLevelOld(locals.user.level, 'MEMBER')
+				? [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]
+				: []),
 			{
 				pathname: `tag/${params.tag_slug}/threads`,
 				title: m.big_tiny_kitten_devour()
@@ -65,10 +65,8 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 						pathname: `tag/${params.tag_slug}`,
 						title: m.grand_nice_pony_belong() + ' ' + data.song.id
 					},
-					...(locals.user &&
-					hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
-						? []
-						: [
+					...(hasUserLevelOld(locals.user?.level, 'MEMBER')
+						? [
 								{
 									pathname: `tag/${params.tag_slug}/song_tags`,
 									title: m.dull_plain_angelfish_cuddle()
@@ -77,7 +75,8 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 									pathname: `tag/${params.tag_slug}/edit`,
 									title: m.minor_crisp_cobra_list()
 								}
-							]),
+							]
+						: []),
 					{
 						pathname: `tag/${params.tag_slug}/history`,
 						title: m.giant_away_scallop_hike()

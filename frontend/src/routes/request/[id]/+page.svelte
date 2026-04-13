@@ -4,7 +4,7 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { RequestActions, Status } from '$lib/enums.js';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
-	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import Section from '$lib/Section.svelte';
@@ -69,7 +69,7 @@
 			</li>
 		{/each}
 	</ul>
-	{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR') && data.request.status === 0}
+	{#if hasUserLevelOld(data.user?.level, 'EDITOR') && data.request.status === 0}
 		<button onclick={() => set(1)}>{m.lucky_bold_hornet_push()}</button>
 		<button onclick={() => set(2)}>{m.alive_blue_marlin_push()}</button>
 	{/if}

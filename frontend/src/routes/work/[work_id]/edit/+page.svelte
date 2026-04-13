@@ -7,7 +7,7 @@
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import client, { getDisplayText } from '$lib/api';
 	import { Platform, Rating, WorkOrigin } from '$lib/enums';
-	import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages.js';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/dirty';
@@ -198,7 +198,7 @@
 							{#if src.work_status === 0}
 								<RefreshButton source={src} />
 							{:else if src.work_status === 1}
-								{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
+								{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
 									<a href="/upload/add?for_source={src.id}"
 										>{m.minor_crisp_cobra_list()}</a
 									>
@@ -214,7 +214,7 @@
 		<br />
 		<input type="submit" />
 	</form>
-	{#if data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
+	{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
 		<button onclick={del}>{m.suave_less_deer_grip()}</button>
 	{/if}
 </Section>

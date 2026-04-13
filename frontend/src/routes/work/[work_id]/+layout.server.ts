@@ -1,5 +1,5 @@
 import client, { getDisplayText } from '$lib/api';
-import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+import { hasUserLevelOld } from '$lib/enums/UserLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
@@ -30,9 +30,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		);
 	if (e) error(404, { message: 'Not found' });
 
-	const loggedOut = !(
-		locals.user && hasUserLevel(resolveUserLevelById(locals.user.level), 'MEMBER')
-	);
+	const loggedOut = !hasUserLevelOld(locals.user?.level, 'MEMBER');
 
 	return {
 		links: [

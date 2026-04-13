@@ -7,7 +7,7 @@
 		ProfileConnection,
 		resolveProfileConnectionNameById
 	} from '$lib/enums/ProfileConnection';
-	import { hasUserLevel, resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
+	import { hasUserLevelOld, resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
 	import { timeAgo } from '$lib/ui';
@@ -28,7 +28,7 @@
 		| { reason: 'restricted invitee exists'; username: string }
 		| { reason: 'next invite not yet available'; next: number }
 		| null = $derived.by(() => {
-		if (data.user && hasUserLevel(resolveUserLevelById(data.user.level), 'ADMIN')) return null;
+		if (hasUserLevelOld(data.user?.level, 'ADMIN')) return null;
 		if (!data.invites) return { reason: 'no invites data' };
 		if (data.invites.restrictedInvitee)
 			return {
@@ -78,7 +78,7 @@
 	</form>
 </Section>
 
-{#if hasUserLevel(resolveUserLevelById(data.user.level), 'EDITOR')}
+{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
 	<Section title={m.true_male_kudu_cook()}>
 		<p>
 			{m.sound_flaky_goose_pinch()}

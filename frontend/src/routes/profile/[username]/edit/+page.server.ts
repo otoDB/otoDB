@@ -1,5 +1,5 @@
 import client from '$lib/api';
-import { hasUserLevel, resolveUserLevelById } from '$lib/enums/UserLevel';
+import { hasUserLevelOld } from '$lib/enums/UserLevel';
 import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 				}
 			}
 		}),
-		hasUserLevel(resolveUserLevelById(locals.user.level), 'EDITOR')
+		hasUserLevelOld(locals.user?.level, 'EDITOR')
 			? client.GET('/api/auth/invites', {
 					fetch
 				})

@@ -56,84 +56,93 @@
 
 <Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }} action="?/edit">
-		<table class="inline">
-			<tbody>
-				<tr
-					><th><label for="title">{m.large_factual_octopus_exhale()}</label></th><td
-						><input
-							type="text"
-							name="title"
-							bind:value={title}
-							autocomplete="off"
-						/></td
-					></tr
-				>
-				<tr
-					><th><label for="description">{m.clear_lucky_peacock_pick()}</label></th><td
-						><textarea name="description" bind:value={description}></textarea></td
-					></tr
-				>
-				<tr
-					><th>{m.good_dark_bumblebee_spur()}</th><td
-						><div class="flex gap-2">
-							{#each Rating as r, i (i)}
-								<label
-									class={[
-										'cursor-pointer border px-3 py-1',
-										rating === i
-											? 'bg-otodb-content-primary text-otodb-bg-primary'
-											: ''
-									]}
-								>
-									<input
-										type="radio"
-										name="rating"
-										value={i}
-										bind:group={rating}
-										class="hidden"
-									/>
-									{r()}
-								</label>
-							{/each}
-						</div></td
-					></tr
-				>
-				<tr
-					><th><label for="thumbnail_source">{m.heroic_ideal_orangutan_aid()}</label></th
-					><td
-						><select name="thumbnail_source" bind:value={thumbnail_source_id}>
-							{#each data.sources! as src (src.id)}
-								<option value={src.id}
-									>{Platform[src.platform]}
-									{src.work_origin === 0
-										? ''
-										: ' ' + WorkOrigin[src.work_origin]()}
-									-
-									{src.title || src.url}</option
-								>
-							{/each}
-						</select>
-						{#if thumbnail_source_id}
-							{@const selectedSource = data.sources!.find(
-								(s) => s.id === thumbnail_source_id
-							)}
-							<WorkThumbnail
-								class="mt-2 aspect-video w-20"
-								thumbnail={selectedSource?.thumbnail}
-								alt={selectedSource?.title ?? ''}
-							/>
-						{/if}</td
-					></tr
-				>
-				<tr
-					><th><label for="reason">{m.wide_just_gull_glow()}</label></th><td
-						><input type="text" name="reason" value={form?.reason ?? ''} /></td
-					></tr
-				>
-			</tbody>
-		</table>
-		<table class="inline">
+	<div class="flex text-xs">
+		<form
+			method="POST"
+			use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }}
+			action="?/edit"
+		>
+			<table>
+				<tbody>
+					<tr
+						><th><label for="title">{m.large_factual_octopus_exhale()}</label></th><td
+							><input
+								type="text"
+								name="title"
+								bind:value={title}
+								autocomplete="off"
+							/></td
+						></tr
+					>
+					<tr
+						><th><label for="description">{m.clear_lucky_peacock_pick()}</label></th><td
+							><textarea name="description" bind:value={description}></textarea></td
+						></tr
+					>
+					<tr
+						><th>{m.good_dark_bumblebee_spur()}</th><td
+							><div class="flex gap-2">
+								{#each Rating as r, i (i)}
+									<label
+										class={[
+											'cursor-pointer border px-3 py-1',
+											rating === i
+												? 'bg-otodb-content-primary text-otodb-bg-primary'
+												: ''
+										]}
+									>
+										<input
+											type="radio"
+											name="rating"
+											value={i}
+											bind:group={rating}
+											class="hidden"
+										/>
+										{r()}
+									</label>
+								{/each}
+							</div></td
+						></tr
+					>
+					<tr
+						><th
+							><label for="thumbnail_source">{m.heroic_ideal_orangutan_aid()}</label
+							></th
+						><td
+							><select name="thumbnail_source" bind:value={thumbnail_source_id}>
+								{#each data.sources! as src (src.id)}
+									<option value={src.id}
+										>{Platform[src.platform]}
+										{src.work_origin === 0
+											? ''
+											: ' ' + WorkOrigin[src.work_origin]()}
+										-
+										{src.title || src.url}</option
+									>
+								{/each}
+							</select>
+							{#if thumbnail_source_id}
+								{@const selectedSource = data.sources!.find(
+									(s) => s.id === thumbnail_source_id
+								)}
+								<WorkThumbnail
+									class="mt-2 aspect-video w-20"
+									thumbnail={selectedSource?.thumbnail}
+									alt={selectedSource?.title ?? ''}
+								/>
+							{/if}</td
+						></tr
+					>
+					<tr
+						><th><label for="reason">{m.wide_just_gull_glow()}</label></th><td
+							><input type="text" name="reason" value={form?.reason ?? ''} /></td
+						></tr
+					>
+				</tbody>
+			</table>
+			<input type="submit" />
+		</form>
+		<table class="inline-block">
 			<thead
 				><tr>
 					<th></th>
@@ -172,7 +181,7 @@
 						<td>{Platform[src.platform]}</td>
 						<td class="whitespace-nowrap"
 							><select
-								value={src.work_origin}
+								bind:value={src.work_origin}
 								onchange={() => updateStatus(src.id, src.work_origin)}
 								>{#each WorkOrigin as w, i (i)}
 									<option value={i}>{w()}</option>
@@ -211,9 +220,7 @@
 				{/each}
 			</tbody>
 		</table>
-		<br />
-		<input type="submit" />
-	</form>
+	</div>
 	{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
 		<button onclick={del}>{m.suave_less_deer_grip()}</button>
 	{/if}

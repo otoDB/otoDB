@@ -101,7 +101,7 @@
 				unalias_slugs: to_delete,
 				lang_prefs: Object.fromEntries(
 					Object.entries(tagLangPrefs).map(([k, v]) => [
-						languages[k as keyof typeof languages /* MEMO: see `tagLangPrefs` */],
+						languages[k as keyof typeof languages].id,
 						v
 					])
 				),

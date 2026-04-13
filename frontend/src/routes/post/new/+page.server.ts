@@ -6,6 +6,7 @@ import { userLevelGuard } from '$lib/route_guard';
 import type { components } from '$lib/schema';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { getLanguageId, languages } from '$lib/enums/Languages';
 
 export const load: PageServerLoad = ({ locals, url }) => {
 	userLevelGuard(locals.user, 'MEMBER');
@@ -29,7 +30,7 @@ export const actions = {
 		const category = parseInt(paramCategory, 10) as components['schemas']['PostCategory']; // TODO: more better validate
 
 		const paramLang = data.get('lang') as string;
-		const language = parseInt(paramLang, 10) as components['schemas']['LanguageTypes']; // TODO: more better validate
+		const language = getLanguageId(paramLang as keyof typeof languages) as components['schemas']['LanguageTypes'];
 
 		if (renderMarkdown(post).trim() === '') return fail(400);
 

@@ -15,7 +15,6 @@
 	} from '$lib/enums.js';
 	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
 	import {
-		getLanguageId,
 		isSOV,
 		isSVO,
 		languages,

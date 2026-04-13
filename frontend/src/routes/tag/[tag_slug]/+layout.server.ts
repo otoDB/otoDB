@@ -47,7 +47,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `tag/${params.tag_slug}`,
 				title: m.empty_legal_chicken_taste() + ' ' + params.tag_slug
 			},
-			...(hasUserLevelOld(locals.user.level, 'MEMBER')
+			...(hasUserLevelOld(locals.user?.level, 'MEMBER')
 				? [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]
 				: []),
 			{

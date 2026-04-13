@@ -208,7 +208,7 @@ def tags_needed(request: AuthedHttpRequest):
 
 @work_router.get('work', response={200: WorkSchema, 300: int})
 def work(request: AuthedHttpRequest, work_id: int):
-	work: MediaWork = get_object_or_404(MediaWork, id=work_id)
+	work: MediaWork = get_object_or_404(MediaWork.objects, id=work_id)
 	if work.moved_to:
 		return 300, work.moved_to.id
 	return work

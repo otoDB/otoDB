@@ -30,7 +30,9 @@ export const actions = {
 		const category = parseInt(paramCategory, 10) as components['schemas']['PostCategory']; // TODO: more better validate
 
 		const paramLang = data.get('lang') as string;
-		const language = getLanguageId(paramLang as keyof typeof languages) as components['schemas']['LanguageTypes'];
+		const language = getLanguageId(
+			paramLang as keyof typeof languages
+		) as components['schemas']['LanguageTypes'];
 
 		if (renderMarkdown(post).trim() === '') return fail(400);
 

@@ -17,6 +17,13 @@ export const load: PageServerLoad = async ({ fetch, params, locals, url, parent 
 			fetch,
 			params: { query: { source_id: sourceId } }
 		});
+		if (s) {
+			s.creator_tags = s.creator_tags.filter(
+				(t) =>
+					!s.new_tags.find((tt) => t.slug === tt.slug) &&
+					!s.source_tags.find((tt) => t.slug === tt.slug)
+			);
+		}
 		suggestions = s;
 	}
 

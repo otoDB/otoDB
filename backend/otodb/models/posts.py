@@ -105,6 +105,7 @@ class Post(models.Model):
 	category = models.IntegerField(
 		choices=PostCategory.choices, null=False, blank=False
 	)
+	closed_at = models.DateTimeField(null=True, blank=True)
 	edited_at = models.DateTimeField(null=True, blank=True)
 	edited_by = models.ForeignKey(
 		settings.AUTH_USER_MODEL,
@@ -126,6 +127,16 @@ class Post(models.Model):
 	class Meta:
 		verbose_name = 'Post'
 		verbose_name_plural = 'Posts'
+
+	@property
+	def is_closable(self):
+		if self.closed_at is not None:
+			return False
+		match self.category:
+			case PostCategory.ANNOUNCEMENT:
+				return False
+			case _:
+				return True
 
 	@property
 	def pages(self):

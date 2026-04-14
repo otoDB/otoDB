@@ -11,7 +11,7 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.common import slugify_tag
+from otodb.common import clean_incoming_slug
 from otodb.models import (
 	Notification,
 	Post,
@@ -45,7 +45,7 @@ class PostOverviewSchema(ModelSchema):
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category']
+		fields = ['title', 'category', 'closed_at']
 
 
 class PostContentSchema(ModelSchema):
@@ -59,10 +59,16 @@ class PostSchema(ModelSchema):
 	pages: list[PostContentSchema]
 	entities: list[EntitySchema] = []
 	edited_by: ProfileSchema | None = None
+	is_closable: bool
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category', 'edited_at']
+		fields = [
+			'title',
+			'category',
+			'edited_at',
+			'closed_at',
+		]
 
 
 @post_router.get('post', response=PostSchema)
@@ -84,6 +90,23 @@ def category(request: HttpRequest, category: PostCategory):
 	return Post.objects.filter(category=category).with_activity()
 
 
+def get_entity_link_ent(e: EntitySchema):
+	obj = (
+		ContentType.objects.get(model=e.entity)
+		.model_class()
+		.objects.get(
+			**(
+				{'slug': clean_incoming_slug(e.id)}
+				if 'tag' in e.entity
+				else {'id': e.id}
+			)
+		)
+	)
+	if hasattr(obj, 'aliased_to') and obj.aliased_to:
+		obj = obj.aliased_to
+	return obj
+
+
 class PostInSchema(Schema):
 	title: str
 	post: str
@@ -91,19 +114,6 @@ class PostInSchema(Schema):
 	lang: LanguageTypes
 	target_users: list[str]
 	entities: list[EntitySchema]
-
-
-def get_entity_link_ent(e: EntitySchema):
-	obj = (
-		ContentType.objects.get(model=e.entity)
-		.model_class()
-		.objects.get(
-			**({'slug': slugify_tag(e.id)} if 'tag' in e.entity else {'id': e.id})
-		)
-	)
-	if hasattr(obj, 'aliased_to') and obj.aliased_to:
-		obj = obj.aliased_to
-	return obj
 
 
 @post_router.post('post', response=int, auth=django_auth)
@@ -116,7 +126,9 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 	assert payload.post
 
 	p = Post.objects.create(
-		title=payload.title, added_by=request.user, category=payload.category
+		title=payload.title,
+		added_by=request.user,
+		category=payload.category,
 	)
 	PostContent.objects.create(
 		post=p,
@@ -189,6 +201,24 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 					for e in payload.entities
 				]
 			)
+
+
+class PostCloseSchema(Schema):
+	post_id: int
+
+
+@post_router.put('close', auth=django_auth)
+@transaction.atomic
+def close(request: AuthedHttpRequest, payload: PostCloseSchema):
+	if request.user.level < Account.Levels.OWNER:
+		raise HttpError(403, 'Forbidden')
+
+	p = get_object_or_404(Post, id=payload.post_id)
+	if p.category not in (PostCategory.BUG_REPORT, PostCategory.FEATURE_REQUEST):
+		raise HttpError(400, 'Bad Request')
+
+	p.closed_at = datetime.now(tz=timezone.utc)
+	p.save(update_fields=['closed_at'])
 
 
 @post_router.get('threads', response=list[PostOverviewSchema])

@@ -3,6 +3,7 @@
 ## Tooling
 
 - Test: `uv run pytest`
+- Test for specific file: `uv run pytest foo.py`
 
 ## Boundaries
 

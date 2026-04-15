@@ -70,13 +70,13 @@ def test_close_post_forbidden_for_non_owner(post_client, member):
 
 
 @pytest.mark.django_db
-def test_close_announcement_returns_400(owner_post_client, owner):
-	"""ANNOUNCEMENT is not closable (is_closable=False) and returns 400."""
+def test_close_announcement_returns_403(owner_post_client, owner):
+	"""ANNOUNCEMENT is not closable (is_closable=False) and returns 403."""
 	p = make_post(owner, PostCategory.ANNOUNCEMENT)
 
 	response = owner_post_client.put('/close', json={'post_id': p.pk})
 
-	assert response.status_code == 400
+	assert response.status_code == 403
 	p.refresh_from_db()
 	assert p.closed_at is None
 

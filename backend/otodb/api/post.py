@@ -215,6 +215,20 @@ def close(request: AuthedHttpRequest, payload: PostCloseSchema):
 	p.save(update_fields=['closed_at'])
 
 
+@post_router.put('unclose', auth=django_auth)
+@transaction.atomic
+def unclose(request: AuthedHttpRequest, payload: PostCloseSchema):
+	if request.user.level < Account.Levels.OWNER:
+		raise HttpError(403, 'Forbidden')
+
+	p = get_object_or_404(Post, id=payload.post_id)
+	if not p.is_closable:
+		raise HttpError(403, 'This post is not supposed to be unclosed.')
+
+	p.closed_at = None
+	p.save(update_fields=['closed_at'])
+
+
 @post_router.get('threads', response=list[PostOverviewSchema])
 @paginate
 def threads(request: HttpRequest, entity: EntitySchema = Query(...)):

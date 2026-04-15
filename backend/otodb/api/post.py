@@ -11,7 +11,7 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.common import clean_incoming_slug
+from otodb.common import slugify_tag
 from otodb.models import (
 	Notification,
 	Post,
@@ -90,23 +90,6 @@ def category(request: HttpRequest, category: PostCategory):
 	return Post.objects.filter(category=category).with_activity()
 
 
-def get_entity_link_ent(e: EntitySchema):
-	obj = (
-		ContentType.objects.get(model=e.entity)
-		.model_class()
-		.objects.get(
-			**(
-				{'slug': clean_incoming_slug(e.id)}
-				if 'tag' in e.entity
-				else {'id': e.id}
-			)
-		)
-	)
-	if hasattr(obj, 'aliased_to') and obj.aliased_to:
-		obj = obj.aliased_to
-	return obj
-
-
 class PostInSchema(Schema):
 	title: str
 	post: str
@@ -114,6 +97,19 @@ class PostInSchema(Schema):
 	lang: LanguageTypes
 	target_users: list[str]
 	entities: list[EntitySchema]
+
+
+def get_entity_link_ent(e: EntitySchema):
+	obj = (
+		ContentType.objects.get(model=e.entity)
+		.model_class()
+		.objects.get(
+			**({'slug': slugify_tag(e.id)} if 'tag' in e.entity else {'id': e.id})
+		)
+	)
+	if hasattr(obj, 'aliased_to') and obj.aliased_to:
+		obj = obj.aliased_to
+	return obj
 
 
 @post_router.post('post', response=int, auth=django_auth)
@@ -126,9 +122,7 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 	assert payload.post
 
 	p = Post.objects.create(
-		title=payload.title,
-		added_by=request.user,
-		category=payload.category,
+		title=payload.title, added_by=request.user, category=payload.category
 	)
 	PostContent.objects.create(
 		post=p,

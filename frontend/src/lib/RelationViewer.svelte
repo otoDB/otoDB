@@ -69,7 +69,7 @@ flowchart ${direction}
     ${(nodes as S[])
 		.map(
 			(
-				w: S
+				w
 			) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
     click ${w.id} "${`/tag/${w.work_tag}`}"`
 		)

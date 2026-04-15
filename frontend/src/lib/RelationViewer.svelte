@@ -8,17 +8,17 @@
 	import { SVGViewer } from 'svelte-svg-viewer';
 	import type { components } from './schema';
 
-	type W = components['schemas']['SlimWorkSchema'];
-	type S = components['schemas']['SongSchema'];
-	type N = (S | W) & { distance?: number };
-	type E = { A_id: number; B_id: number; relation: number };
+	type Work = components['schemas']['SlimWorkSchema'];
+	type Song = components['schemas']['SongSchema'];
+	type Node = (Song | Work) & { distance?: number };
+	type Edge = { A_id: number; B_id: number; relation: number };
 	interface Props {
 		id: number;
 		type: 'work' | 'song';
 		min_height?: number;
 		defaultDir: 'TB' | 'LR';
-		objects: N[];
-		relations: E[];
+		objects: Node[];
+		relations: Edge[];
 	}
 	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 }: Props = $props();
 
@@ -28,7 +28,7 @@
 	let direction = $state(defaultDir);
 	let allowed_types = $state(new Array(RelationTypes.length).fill(true));
 
-	const get_svg_mermaid = (nodes: N[], links: E[], ext: number[]) =>
+	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: number[]) =>
 		mermaid.render(
 			'Relations',
 			`---
@@ -43,7 +43,7 @@ flowchart ${direction}
 	classDef untitled font-style:italic;` +
 				(type === 'work'
 					? `
-    ${(nodes as W[])
+    ${(nodes as Work[])
 		.map(
 			(w) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
     ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
@@ -66,7 +66,7 @@ flowchart ${direction}
 		)
 		.join('\n')}`
 					: `
-    ${(nodes as S[])
+    ${(nodes as Song[])
 		.map(
 			(
 				w
@@ -78,12 +78,12 @@ flowchart ${direction}
 		);
 
 	const mermaid_BFS = (
-		ns: N[],
-		ls: E[],
+		ns: Node[],
+		ls: Edge[],
 		start: number,
 		max_distance: number = Number.POSITIVE_INFINITY,
 		allowed_types: boolean[] = new Array(WorkRelationTypes.length).fill(true)
-	): [(N & { distance: number })[], E[], number[]] => {
+	): [(Node & { distance: number })[], Edge[], number[]] => {
 		const nodes = structuredClone(ns),
 			links = structuredClone(ls);
 		let queue = [[start, 0]];
@@ -109,7 +109,7 @@ flowchart ${direction}
 			queue = next_queue;
 		}
 		return [
-			(nodes as (N & { distance: number })[]).filter((v) => v.distance !== undefined),
+			(nodes as (Node & { distance: number })[]).filter((v) => v.distance !== undefined),
 			links.filter(
 				(v) =>
 					allowed_types[v.relation] &&

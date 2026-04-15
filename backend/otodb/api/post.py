@@ -209,7 +209,7 @@ def close(request: AuthedHttpRequest, payload: PostCloseSchema):
 
 	p = get_object_or_404(Post, id=payload.post_id)
 	if not p.is_closable:
-		raise HttpError(400, 'Bad Request')
+		raise HttpError(403, 'This post is not supposed to be closed.')
 
 	p.closed_at = datetime.now(tz=timezone.utc)
 	p.save(update_fields=['closed_at'])

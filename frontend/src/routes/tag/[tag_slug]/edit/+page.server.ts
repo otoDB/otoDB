@@ -34,6 +34,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 		})
 	]);
 
+	// TODO: Error forwarding
 	if (!details) error(500, 'Failed to fetch data.');
 	if (!connections) error(500, 'Failed to fetch data.');
 

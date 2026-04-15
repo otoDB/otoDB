@@ -29,6 +29,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		}
 	});
 
+	// TODO: Error forwarding
 	if (!data) error(500, 'Failed to fetch search results.');
 
 	return {

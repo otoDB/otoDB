@@ -13,6 +13,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		}
 	});
 
+	// TODO: Error forwarding
 	if (!history) error(500, 'Failed to fetch data.');
 
 	return {

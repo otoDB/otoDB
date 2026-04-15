@@ -166,11 +166,11 @@
 			}}>Revert changes made in this revision</button
 		>{/if}
 	<ul class="my-5">
-		{#each data.routes as [r, ecs], i (i)}
-			<li>{Route[resolveRouteKeyById(r)].title()}</li>
+		{#each data.routes as { route, entities }, i (i)}
+			<li>{Route[resolveRouteKeyById(route)].title()}</li>
 			<li class="ml-2 list-none">
 				<ul>
-					{#each ecs as [[ent_type, ent_id], ec], j (j)}
+					{#each entities as { ent_type, ent_id, rcs }, j (j)}
 						<li>
 							<a href={buildEntityRoutes(ent_type, ent_id)}>
 								{buildEntityRoutes(ent_type, ent_id)}
@@ -179,21 +179,23 @@
 						<li class="list-none">
 							<table class="inline-block">
 								<tbody>
-									{#each ec as c, k (k)}
-										<tr
-											><td
-												>{#if !(c.target_type === ent_type && c.tg_id === ent_id)}{c.target_type}
-													#{c.tg_id}{/if}
-												{c.target_column}</td
+									{#each rcs as c, k (k)}
+										{#if c.target_column}
+											<tr
+												><td
+													>{#if !(c.target_type === ent_type && c.tg_id === ent_id)}{c.target_type}
+														#{c.tg_id}{/if}
+													{c.target_column}</td
+												>
+												<td
+													>{#if c.deleted}Deleted{:else}<pre>{displayValue(
+																c.target_type,
+																c.target_column,
+																c.target_value
+															)}</pre>{/if}</td
+												></tr
 											>
-											<td
-												>{#if c.deleted}Deleted{:else}<pre>{displayValue(
-															c.target_type,
-															c.target_column,
-															c.target_value
-														)}</pre>{/if}</td
-											></tr
-										>
+										{/if}
 									{/each}
 								</tbody>
 							</table>

@@ -11,9 +11,9 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const paramOrder = url.searchParams.get('order');
 	const paramDir = url.searchParams.get('dir');
 
-	type OT = 'id' | 'pub';
-	const order: OT | null =
-		paramOrder && ['id', 'pub'].includes(paramOrder) ? (paramOrder as OT) : null;
+	type Order = 'id' | 'pub';
+	const order: Order | null =
+		paramOrder && ['id', 'pub'].includes(paramOrder) ? (paramOrder as Order) : null;
 
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/work/search', {

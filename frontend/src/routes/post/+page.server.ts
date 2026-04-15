@@ -10,13 +10,13 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const query = url.searchParams.get('query') ?? '';
 
 	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
-	type PC = (typeof postCategory)[keyof typeof postCategory]['id'];
+	type Category = (typeof postCategory)[keyof typeof postCategory]['id'];
 	const category =
 		paramCategory &&
 		!Object.values(postCategory)
 			.map((v) => v.id)
-			.includes(paramCategory as PC)
-			? (paramCategory as PC)
+			.includes(paramCategory as Category)
+			? (paramCategory as Category)
 			: null;
 
 	const { data } = await client.GET('/api/post/search', {

@@ -109,7 +109,7 @@ flowchart ${direction}
 			queue = next_queue;
 		}
 		return [
-			(nodes as (Node & { distance: number })[]).filter((v) => v.distance !== undefined),
+			nodes.filter((v) => v.distance !== undefined) as (Node & { distance: number })[],
 			links.filter(
 				(v) =>
 					allowed_types[v.relation] &&

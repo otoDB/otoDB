@@ -130,13 +130,7 @@ class Post(models.Model):
 
 	@property
 	def is_closable(self):
-		if self.closed_at is not None:
-			return False
-		match self.category:
-			case PostCategory.ANNOUNCEMENT:
-				return False
-			case _:
-				return True
+		return self.category not in (PostCategory.ANNOUNCEMENT,)
 
 	@property
 	def pages(self):

@@ -214,7 +214,7 @@ def close(request: AuthedHttpRequest, payload: PostCloseSchema):
 		raise HttpError(403, 'Forbidden')
 
 	p = get_object_or_404(Post, id=payload.post_id)
-	if p.category not in (PostCategory.BUG_REPORT, PostCategory.FEATURE_REQUEST):
+	if not p.is_closable:
 		raise HttpError(400, 'Bad Request')
 
 	p.closed_at = datetime.now(tz=timezone.utc)

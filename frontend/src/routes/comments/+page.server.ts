@@ -29,11 +29,9 @@ export const actions = {
 
 		type Model = components['schemas']['CommentInSchema']['model'];
 		// TODO: Remove when error forwarding is complete
-		const model: Model | null = Object.keys(CommentModelRoutes).includes(
-			data.get('model') as string
-		)
-			? (data.get('model') as Model)
-			: null;
+		if (!Object.keys(CommentModelRoutes).includes(data.get('model') as string))
+			return fail(400);
+		const model: Model = data.get('model') as Model;
 		const pk = parseInt(data.get('pk') as string, 10);
 		const comment_text = data.get('comment') as string;
 		const reply_to = parseInt(data.get('reply_to') as string, 10);

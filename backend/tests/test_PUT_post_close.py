@@ -1,7 +1,6 @@
 """Tests for PUT /api/post/close endpoint."""
 
 import pytest
-from ninja.testing import TestClient
 
 from otodb.account.models import Account
 from otodb.api.post import post_router
@@ -30,7 +29,7 @@ def owner_post_client(owner):
 
 def make_post(member, category: PostCategory) -> Post:
 	p = Post.objects.create(title='Test Post', added_by=member, category=category)
-	PostContent.objects.create(post=p, lang=LanguageTypes.JA, page='content')
+	PostContent.objects.create(post=p, lang=LanguageTypes.JAPANESE, page='content')
 	return p
 
 

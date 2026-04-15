@@ -48,7 +48,7 @@ export const dirtyEnhance = (
 					f.inert = true;
 				});
 				props.barrier.forms = dirty_forms.toSorted(
-					(a, b) => +a.dataset.priority! - +b.dataset.priority!
+					(a, b) => +(a.dataset.priority ?? 0) - +(b.dataset.priority ?? 0)
 				);
 				props.barrier.reached = Array(props.barrier.forms.length)
 					.fill(null)

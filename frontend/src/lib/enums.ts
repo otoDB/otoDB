@@ -186,6 +186,10 @@ export type EntityModelType =
 	| 'tagwork'
 	| 'tagsong'
 	| 'bulkrequest';
+
+export const isValidEntityModelType = (type: string) =>
+	Object.keys(EntityModelRoutes).includes(type);
+
 export const buildEntityRoutes = (type: EntityModelType, id: string | number) =>
 	`/${EntityModelRoutes[type]}/${id}`;
 

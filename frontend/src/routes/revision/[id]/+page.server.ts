@@ -1,7 +1,7 @@
 import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { type EntityModelType } from '$lib/enums';
+import { isValidEntityModelType, type EntityModelType } from '$lib/enums';
 
 export const _buildRoutes = (
 	items: {
@@ -19,8 +19,9 @@ export const _buildRoutes = (
 		Object.values(Object.groupBy(items, (c) => c.route)).map((rent) => [
 			rent![0].route,
 			Object.values(Object.groupBy(rent!, (c) => c.ent_type + c.ent_id))
-				.filter((ec) => ec!.length)
-				.map((tg) => [[tg![0].ent_type, tg![0].ent_id], tg])
+				.map((cs) => cs!.filter((c) => isValidEntityModelType(c.ent_type)))
+				.filter((ec) => ec.length)
+				.map((tg) => [[tg[0].ent_type, tg[0].ent_id], tg])
 		]) as [
 			number,
 			[

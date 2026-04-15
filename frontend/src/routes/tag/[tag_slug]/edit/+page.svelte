@@ -270,6 +270,7 @@
 </Section>
 
 {#if category === 2 && data.tag.category === 2}
+	<!-- data.tag.song & data.song_relations would be available -->
 	<Section
 		title={data.tag!.song!.title}
 		type={m.grand_nice_pony_belong() + ' ' + m.alive_these_jay_pick()}

@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			params: { query: { list_id: +params.list_id, limit: batch_size, offset: 0 } }
 		})
 	]);
-	// TODO: properly handle fetch errors
+
 	if (!entries) error(500, 'Failed to fetch data.');
 	if (!comments) error(500, 'Failed to fetch comments.');
 

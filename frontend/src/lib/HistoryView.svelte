@@ -7,7 +7,7 @@
 		revisions: components['schemas']['RevisionSchema'][];
 		user: components['schemas']['UserStatusSchema'] | null;
 	}
-	let { revisions, user = null }: Props = $props();
+	let { revisions }: Props = $props();
 	// const rollback = async (entry) => {
 	// 	await client.POST('/api/history/rollback', {
 	// 		fetch,

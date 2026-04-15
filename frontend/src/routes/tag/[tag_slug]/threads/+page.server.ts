@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 			}
 		}
 	});
-	// TODO: properly handle fetch errors
+
 	if (!data) error(500, 'Failed to fetch data.');
 
 	return {

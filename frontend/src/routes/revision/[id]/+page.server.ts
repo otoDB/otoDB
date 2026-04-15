@@ -1,9 +1,8 @@
 import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { isValidEntityModelType, type EntityModelType } from '$lib/enums';
+import { type EntityModelType } from '$lib/enums';
 
-// TODO: Fix and test this. it is not well-typed.
 export const _buildRoutes = (
 	items: {
 		target_type: string;
@@ -20,11 +19,8 @@ export const _buildRoutes = (
 		Object.values(Object.groupBy(items, (c) => c.route)).map((rent) => [
 			rent![0].route,
 			Object.values(Object.groupBy(rent!, (c) => c.ent_type + c.ent_id))
-				// .map((cs) => cs.filter((c) => c.target_value !== null))
-				// Setting to null may be significant change
-				.map((cs) => cs!.filter((c) => isValidEntityModelType(c.ent_type)))
-				.filter((ec) => ec.length)
-				.map((tg) => [[tg[0].ent_type, tg[0].ent_id], tg])
+				.filter((ec) => ec!.length)
+				.map((tg) => [[tg![0].ent_type, tg![0].ent_id], tg])
 		]) as [
 			number,
 			[

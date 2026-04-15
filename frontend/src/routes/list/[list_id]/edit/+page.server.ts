@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 			}
 		}
 	});
-	// TODO: properly handle fetch errors
+
 	if (!entries) error(500, 'Failed to fetch data.');
 
 	return { batch_size, entries };

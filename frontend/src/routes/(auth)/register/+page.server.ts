@@ -41,7 +41,7 @@ export const actions = {
 			return fail(400, {
 				username,
 				failed: true,
-				message: 'An unknown error occurred' // TODO: i don't know what error message supposed to be.
+				message: 'An unknown error occurred'
 			});
 
 		forwardCookies(cookies, response);

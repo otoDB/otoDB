@@ -207,7 +207,7 @@
 					}
 				]}
 				use:clickOutside
-				onOutclick={() => (isMobileNavOpen = false)}
+				onoutclick={() => (isMobileNavOpen = false)}
 			>
 				<form target="_self" method="get" action="/{search_type}" class="flex w-full">
 					<select bind:value={search_type} class="bg-otodb-bg-faint/75 pl-1">

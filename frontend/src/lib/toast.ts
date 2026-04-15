@@ -43,7 +43,6 @@ export const callErrorCodeToast = (code: number, payload: Record<string, unknown
 					})
 				);
 			else {
-				// TODO: more detailed message for the broken payload.
 				toast.error(m.green_due_javelina_pop());
 			}
 			break;

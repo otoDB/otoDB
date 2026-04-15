@@ -49,19 +49,20 @@
 	});
 	$effect(() => {
 		if (page) {
-			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag')).map(
-				(el) =>
+			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag'))
+				.filter((e) => e.hasAttribute('slug'))
+				.map((el) =>
 					client
 						.GET('/api/tag/tag', {
 							fetch,
 							params: {
 								query: {
-									tag_slug: el.getAttribute('slug')! // TODO: need check
+									tag_slug: el.getAttribute('slug')!
 								}
 							}
 						})
 						.then((r) => mount(WorkTag, { target: el, props: { tag: r.data! } }))
-			);
+				);
 			return () => {
 				tags.forEach((p) => p.then(unmount));
 			};
@@ -199,9 +200,7 @@
 						></a
 					>
 					{#if data.post.edited_at}
-						{@const editUser =
-							// MEMO: if `edited_at` exists then `edited_by` is also available
-							data.post.edited_by!}
+						{@const editUser = data.post.edited_by!}
 						<span title={new Date(data.post.edited_at).toLocaleString()}>
 							{#if editedByOther}
 								({m.free_tiny_badger_breathe({

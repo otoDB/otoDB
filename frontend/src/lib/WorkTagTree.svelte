@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ComponentProps, Snippet } from 'svelte';
+	import type { ComponentProps } from 'svelte';
 	import WorkTag from './WorkTag.svelte';
 
 	type Tree = {
@@ -15,7 +15,7 @@
 	const { tree, onClickTag }: Props = $props();
 </script>
 
-{#snippet recur(this_snippet: Snippet<[Snippet<any>, Tree]>, tree: Tree)}
+{#snippet recur(tree: Tree)}
 	<ul class="my-0.5 list-none">
 		<li class="inline">
 			<WorkTag tag={tree.node} fade={!tree.real} onclick={onClickTag} forTree={true} />
@@ -23,14 +23,14 @@
 		{#if tree.children?.length}
 			{#each tree.children as t, i (i)}
 				<li>
-					{@render this_snippet(this_snippet, t)}
+					{@render recur(t)}
 				</li>
 			{/each}
 		{/if}
 	</ul>
 {/snippet}
 
-{@render recur(recur, tree)}
+{@render recur(tree)}
 
 <style>
 	ul > li > ul {

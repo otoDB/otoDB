@@ -26,7 +26,7 @@ export const actions = {
 	create: async ({ request, fetch }) => {
 		const data = await request.formData();
 
-		const model = data.get('model') as components['schemas']['CommentInSchema']['model']; // TODO: need validate data.
+		const model = data.get('model') as components['schemas']['CommentInSchema']['model'];
 		const pk = parseInt(data.get('pk') as string, 10);
 		const comment_text = data.get('comment') as string;
 		const reply_to = parseInt(data.get('reply_to') as string, 10);

@@ -27,7 +27,7 @@ export const actions = {
 			.filter((x) => !!x);
 
 		const paramCategory = data.get('category') as string;
-		const category = parseInt(paramCategory, 10) as components['schemas']['PostCategory']; // TODO: more better validate
+		const category = parseInt(paramCategory, 10) as components['schemas']['PostCategory'];
 
 		const paramLang = data.get('lang') as string;
 		const language = getLanguageId(

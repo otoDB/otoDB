@@ -9,27 +9,22 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const query = url.searchParams.get('query') ?? '';
 
-	const paramCategory = url.searchParams.get('category');
-	const category = paramCategory ? parseInt(paramCategory, 10) : -1;
+	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
+	type PC = (typeof postCategory)[keyof typeof postCategory]['id'];
+	const category =
+		paramCategory &&
+		!Object.values(postCategory)
+			.map((v) => v.id)
+			.includes(paramCategory as PC)
+			? (paramCategory as PC)
+			: null;
 
 	const { data } = await client.GET('/api/post/search', {
 		fetch,
 		params: {
 			query: {
 				query,
-				category: (() => {
-					switch (category) {
-						// TODO: later rewrite e.g. `PostCategory.BUG_REPORT.id`.
-						case postCategory.ANNOUNCEMENT.id:
-						case postCategory.FEATURE_REQUEST.id:
-						case postCategory.BUG_REPORT.id:
-						case postCategory.GARDENING.id:
-						case postCategory.GENERAL.id:
-							return category;
-						default:
-							return null;
-					}
-				})(),
+				category,
 				limit: batch_size,
 				offset: (page - 1) * batch_size
 			}
@@ -40,18 +35,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 
 	return {
 		query,
-		category: ((): (typeof postCategory)[keyof typeof postCategory]['id'] | -1 => {
-			switch (category) {
-				case postCategory.ANNOUNCEMENT.id:
-				case postCategory.FEATURE_REQUEST.id:
-				case postCategory.BUG_REPORT.id:
-				case postCategory.GARDENING.id:
-				case postCategory.GENERAL.id:
-					return category;
-				default:
-					return -1;
-			}
-		})(),
+		category,
 		results: data,
 		batch_size,
 		page,

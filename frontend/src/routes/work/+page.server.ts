@@ -11,15 +11,9 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const paramOrder = url.searchParams.get('order');
 	const paramDir = url.searchParams.get('dir');
 
-	const order = (() => {
-		switch (paramOrder) {
-			case 'id':
-			case 'pub':
-				return `${paramDir === '-' ? '-' : ''}${paramOrder}` as const;
-			default:
-				return null;
-		}
-	})();
+	type OT = 'id' | 'pub';
+	const order: OT | null =
+		paramOrder && ['id', 'pub'].includes(paramOrder) ? (paramOrder as OT) : null;
 
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/work/search', {
@@ -30,12 +24,11 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				tags,
 				limit: batch_size,
 				offset: batch_size * (page - 1),
-				order: order
+				order: order ? `${paramDir === '-' ? '-' : ''}${order}` : null
 			}
 		}
 	});
 
-	// TODO: need payload validation
 	if (!data) error(500, 'Failed to fetch search results.');
 
 	return {

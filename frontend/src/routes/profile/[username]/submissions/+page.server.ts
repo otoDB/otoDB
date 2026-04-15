@@ -13,15 +13,9 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	const dir: '' | '-' = paramDir === '-' ? '-' : '';
 
 	const paramOrder = url.searchParams.get('order');
-	const order: 'id' | 'published_date' | null = (() => {
-		switch (paramOrder) {
-			case 'id':
-			case 'published_date':
-				return paramOrder;
-			default:
-				return null;
-		}
-	})();
+	type OT = 'id' | 'published_date';
+	const order: OT | null =
+		paramOrder && ['id', 'published_date'].includes(paramOrder) ? (paramOrder as OT) : null;
 
 	const { data: submissions } = await client.GET('/api/profile/submissions', {
 		fetch,

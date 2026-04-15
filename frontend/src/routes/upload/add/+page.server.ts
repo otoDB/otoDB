@@ -144,6 +144,6 @@ export const actions = {
 
 		// Fallback
 		if (locals.user) redirect(303, `/profile/${locals.user.username}/submissions`);
-		else redirect(303, '/'); // TODO: more better redirect.
+		else redirect(303, '/login');
 	}
 } satisfies Actions;

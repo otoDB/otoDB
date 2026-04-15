@@ -55,17 +55,9 @@
 	<ul>
 		{#each data.request.requests as r, i (i)}
 			<li>
-				<code
-					>{RequestActions[
-						r.command as keyof typeof RequestActions /* TODO: need check */
-					]}</code
-				>
-				{@render render_entity(
-					r.A as Parameters<typeof render_entity>[0] // TODO: more better handling
-				)}
-				{@render render_entity(
-					r.B as Parameters<typeof render_entity>[0] // TODO: more better handling
-				)}
+				<code>{RequestActions[r.command as keyof typeof RequestActions]}</code>
+				{@render render_entity(r.A as Parameters<typeof render_entity>[0])}
+				{@render render_entity(r.B as Parameters<typeof render_entity>[0])}
 			</li>
 		{/each}
 	</ul>

@@ -95,7 +95,6 @@
 		];
 	};
 
-	// TODO: typing is messy
 	const relTree = $derived(
 		data.relations[0].length > 0
 			? (Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map(

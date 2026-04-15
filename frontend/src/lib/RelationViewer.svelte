@@ -1,6 +1,4 @@
 <script lang="ts">
-	// @ts-nocheck TODO: I gave up typing for this code
-
 	import { m } from '$lib/paraglide/messages.js';
 	import { SongRelationTypes, WorkRelationTypes } from '$lib/enums.js';
 	import { getDisplayText } from '$lib/api';
@@ -8,8 +6,21 @@
 	import elkLayouts from '@mermaid-js/layout-elk';
 	import { onMount } from 'svelte';
 	import { SVGViewer } from 'svelte-svg-viewer';
+	import type { components } from './schema';
 
-	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 } = $props();
+	type W = components['schemas']['SlimWorkSchema'];
+	type S = components['schemas']['SongSchema'];
+	type N = (S | W) & { distance?: number };
+	type E = { A_id: number; B_id: number; relation: number };
+	interface Props {
+		id: number;
+		type: 'work' | 'song';
+		min_height?: number;
+		defaultDir: 'TB' | 'LR';
+		objects: N[];
+		relations: E[];
+	}
+	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 }: Props = $props();
 
 	const RelationTypes = { work: WorkRelationTypes, song: SongRelationTypes }[type];
 
@@ -17,7 +28,7 @@
 	let direction = $state(defaultDir);
 	let allowed_types = $state(new Array(RelationTypes.length).fill(true));
 
-	const get_svg_mermaid = (nodes, links, ext) =>
+	const get_svg_mermaid = (nodes: N[], links: E[], ext: number[]) =>
 		mermaid.render(
 			'Relations',
 			`---
@@ -32,7 +43,7 @@ flowchart ${direction}
 	classDef untitled font-style:italic;` +
 				(type === 'work'
 					? `
-    ${nodes
+    ${(nodes as W[])
 		.map(
 			(w) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
     ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
@@ -55,10 +66,10 @@ flowchart ${direction}
 		)
 		.join('\n')}`
 					: `
-    ${nodes
+    ${(nodes as S[])
 		.map(
 			(
-				w
+				w: S
 			) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
     click ${w.id} "${`/tag/${w.work_tag}`}"`
 		)
@@ -66,13 +77,13 @@ flowchart ${direction}
     ${links.map((r) => `${r.A_id} -->|${RelationTypes[r.relation]()}| ${r.B_id}`).join('\n')}`)
 		);
 
-	export const mermaid_BFS = (
-		ns,
-		ls,
+	const mermaid_BFS = (
+		ns: N[],
+		ls: E[],
 		start: number,
 		max_distance: number = Number.POSITIVE_INFINITY,
 		allowed_types: boolean[] = new Array(WorkRelationTypes.length).fill(true)
-	) => {
+	): [(N & { distance: number })[], E[], number[]] => {
 		const nodes = structuredClone(ns),
 			links = structuredClone(ls);
 		let queue = [[start, 0]];
@@ -98,18 +109,18 @@ flowchart ${direction}
 			queue = next_queue;
 		}
 		return [
-			nodes.filter((v) => v.distance !== undefined),
+			(nodes as (N & { distance: number })[]).filter((v) => v.distance !== undefined),
 			links.filter(
 				(v) =>
 					allowed_types[v.relation] &&
-					nodes.find((w) => w.id === v.A_id).distance !== undefined &&
-					nodes.find((w) => w.id === v.B_id).distance !== undefined
+					nodes.find((w) => w.id === v.A_id)?.distance !== undefined &&
+					nodes.find((w) => w.id === v.B_id)?.distance !== undefined
 			),
 			[
 				...new Set(
 					links
 						.filter((v) => allowed_types[v.relation])
-						.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)))
+						.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)!))
 						.filter(
 							([a, b]) => (a.distance === undefined) !== (b.distance === undefined)
 						)
@@ -138,7 +149,7 @@ flowchart ${direction}
 	function svgMouseOver(event: MouseEvent) {
 		const target = event.target as HTMLElement;
 		const node = target.closest('[id^="flowchart-"]');
-		const label = target.closest('.label:has(.edgeLabel)');
+		const label: HTMLElement | null = target.closest('.label:has(.edgeLabel)');
 
 		if (svgContainer) {
 			if (node) {
@@ -156,7 +167,7 @@ flowchart ${direction}
 				}
 			}
 			if (label) {
-				const edge = svgContainer.querySelector(`[data-id="${label.dataset.id}"`);
+				const edge = svgContainer.querySelector(`[data-id="${label.dataset.id}"`)!;
 				edge.classList.add('highlighted');
 				label.classList.add('highlighted');
 			}

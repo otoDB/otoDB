@@ -35,7 +35,7 @@ def make_post(member, category: PostCategory) -> Post:
 
 @pytest.mark.django_db
 def test_close_post_as_owner(owner_post_client, owner):
-	"""OWNER が BUG_REPORT を close できる."""
+	"""OWNER can close a BUG_REPORT post."""
 	p = make_post(owner, PostCategory.BUG_REPORT)
 
 	response = owner_post_client.put('/close', json={'post_id': p.pk})
@@ -47,7 +47,7 @@ def test_close_post_as_owner(owner_post_client, owner):
 
 @pytest.mark.django_db
 def test_close_post_feature_request(owner_post_client, owner):
-	"""OWNER が FEATURE_REQUEST を close できる."""
+	"""OWNER can close a FEATURE_REQUEST post."""
 	p = make_post(owner, PostCategory.FEATURE_REQUEST)
 
 	response = owner_post_client.put('/close', json={'post_id': p.pk})
@@ -59,7 +59,7 @@ def test_close_post_feature_request(owner_post_client, owner):
 
 @pytest.mark.django_db
 def test_close_post_forbidden_for_non_owner(post_client, member):
-	"""OWNER 未満は 403."""
+	"""Users below OWNER level receive 403."""
 	p = make_post(member, PostCategory.BUG_REPORT)
 
 	response = post_client.put('/close', json={'post_id': p.pk})
@@ -71,7 +71,7 @@ def test_close_post_forbidden_for_non_owner(post_client, member):
 
 @pytest.mark.django_db
 def test_close_announcement_returns_400(owner_post_client, owner):
-	"""ANNOUNCEMENT は close 不可（is_closable=False）で 400."""
+	"""ANNOUNCEMENT is not closable (is_closable=False) and returns 400."""
 	p = make_post(owner, PostCategory.ANNOUNCEMENT)
 
 	response = owner_post_client.put('/close', json={'post_id': p.pk})
@@ -83,7 +83,7 @@ def test_close_announcement_returns_400(owner_post_client, owner):
 
 @pytest.mark.django_db
 def test_close_nonexistent_post_returns_404(owner_post_client):
-	"""存在しない post_id は 404."""
+	"""Non-existent post_id returns 404."""
 	response = owner_post_client.put('/close', json={'post_id': 99999})
 
 	assert response.status_code == 404

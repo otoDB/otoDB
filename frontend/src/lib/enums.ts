@@ -98,11 +98,11 @@ export const SongRelationPredicate = [
  * @deprecated
  */
 export const Languages = {
-	NOT_APPLICABLE: 0,
-	en: 1,
-	ja: 2,
+	'NOT_APPLICABLE': 0,
+	'en': 1,
+	'ja': 2,
 	'zh-cn': 3,
-	ko: 4,
+	'ko': 4,
 	0: 'N/A',
 	1: 'en',
 	2: 'ja',
@@ -114,14 +114,14 @@ export const Languages = {
  * @deprecated
  */
 export const LanguageNames = {
-	en: 'English',
-	ja: '日本語',
+	'en': 'English',
+	'ja': '日本語',
 	'zh-cn': '简体中文',
-	ko: '한국어',
-	English: 'en',
-	日本語: 'ja',
-	简体中文: 'zh-cn',
-	한국인: 'ko'
+	'ko': '한국어',
+	'English': 'en',
+	'日本語': 'ja',
+	'简体中文': 'zh-cn',
+	'한국인': 'ko'
 };
 
 export const MediaType = {

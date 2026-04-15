@@ -1,12 +1,12 @@
 import { m } from '$lib/paraglide/messages';
 
 export const themes = {
-	default: { id: 0, nameFn: m.grassy_noble_walrus_wish },
-	aniki: { id: 1, nameFn: m.next_ago_opossum_swim },
-	otogroove: { id: 2, nameFn: () => 'otogroove' },
+	'default': { id: 0, nameFn: m.grassy_noble_walrus_wish },
+	'aniki': { id: 1, nameFn: m.next_ago_opossum_swim },
+	'otogroove': { id: 2, nameFn: () => 'otogroove' },
 	'retro-voyage': { id: 3, nameFn: m.tiny_plane_ape_pull },
-	sorimix: { id: 4, nameFn: m.mean_zesty_ray_savor },
-	resample: { id: 5, nameFn: () => 'Re:Sample' }
+	'sorimix': { id: 4, nameFn: m.mean_zesty_ray_savor },
+	'resample': { id: 5, nameFn: () => 'Re:Sample' }
 } as const satisfies Record<string, { id: number; nameFn: () => string }>;
 
 /**

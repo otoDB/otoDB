@@ -32,15 +32,15 @@
 			JSON.stringify({
 				'@context': 'https://schema.org',
 				'@type': 'DiscussionForumPosting',
-				headline: data.post.title,
-				text: pageObj.page.slice(0, 500),
-				url: `https://otodb.net/post/${data.post_id}`,
-				author: {
+				'headline': data.post.title,
+				'text': pageObj.page.slice(0, 500),
+				'url': `https://otodb.net/post/${data.post_id}`,
+				'author': {
 					'@type': 'Person',
-					name: data.post.added_by.username,
-					url: `https://otodb.net/profile/${data.post.added_by.username}`
+					'name': data.post.added_by.username,
+					'url': `https://otodb.net/profile/${data.post.added_by.username}`
 				},
-				datePublished: pageObj.modified,
+				'datePublished': pageObj.modified,
 				...(data.post.edited_at ? { dateModified: data.post.edited_at } : {})
 			}) +
 			'</' +

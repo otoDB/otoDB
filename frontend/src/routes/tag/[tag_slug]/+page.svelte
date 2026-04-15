@@ -41,8 +41,8 @@
 					JSON.stringify({
 						'@context': 'https://schema.org',
 						'@type': 'Article',
-						headline: data.display_name,
-						url: `https://otodb.net${page.url.pathname}`
+						'headline': data.display_name,
+						'url': `https://otodb.net${page.url.pathname}`
 					}) +
 					'</' +
 					'script>'

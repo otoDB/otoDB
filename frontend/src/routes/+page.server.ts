@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({ fetch, setHeaders, locals }) => {
 	if (!locals.user) {
 		setHeaders({
 			'Cache-Control': 'public, s-maxage=600, max-age=0',
-			Vary: 'Accept-Language'
+			'Vary': 'Accept-Language'
 		});
 	}
 

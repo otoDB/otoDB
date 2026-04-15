@@ -72,9 +72,9 @@
 		JSON.stringify({
 			'@context': 'https://schema.org',
 			'@type': 'Organization',
-			name: 'otoDB',
-			url: 'https://otodb.net',
-			sameAs: ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
+			'name': 'otoDB',
+			'url': 'https://otodb.net',
+			'sameAs': ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
 		})
 	);
 
@@ -84,7 +84,7 @@
 					JSON.stringify({
 						'@context': 'https://schema.org',
 						'@type': 'BreadcrumbList',
-						itemListElement: (
+						'itemListElement': (
 							page.data.head.breadcrumbs as { name: string; url: string }[]
 						).map(
 							(
@@ -93,8 +93,8 @@
 								arr: { name: string; url: string }[]
 							) => ({
 								'@type': 'ListItem',
-								position: i + 1,
-								name: crumb.name,
+								'position': i + 1,
+								'name': crumb.name,
 								...(i < arr.length - 1
 									? { item: `https://otodb.net${crumb.url}` }
 									: {})

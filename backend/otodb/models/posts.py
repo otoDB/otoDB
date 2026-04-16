@@ -129,10 +129,6 @@ class Post(models.Model):
 		verbose_name_plural = 'Posts'
 
 	@property
-	def is_closable(self):
-		return self.category not in (PostCategory.ANNOUNCEMENT,)
-
-	@property
 	def pages(self):
 		return self.postcontent_set
 

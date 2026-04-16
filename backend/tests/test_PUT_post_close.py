@@ -10,6 +10,15 @@ from otodb.models.enums import PostCategory, LanguageTypes
 from tests.conftest import AuthenticatedTestClient
 
 
+ALL_CATEGORIES = [
+	PostCategory.ANNOUNCEMENT,
+	PostCategory.FEATURE_REQUEST,
+	PostCategory.BUG_REPORT,
+	PostCategory.GARDENING,
+	PostCategory.GENERAL,
+]
+
+
 @pytest.fixture
 def owner(db):
 	return Account.objects.create_user(
@@ -34,9 +43,10 @@ def make_post(member, category: PostCategory) -> Post:
 
 
 @pytest.mark.django_db
-def test_close_post_as_owner(owner_post_client, owner):
-	"""OWNER can close a BUG_REPORT post."""
-	p = make_post(owner, PostCategory.BUG_REPORT)
+@pytest.mark.parametrize('category', ALL_CATEGORIES)
+def test_close_post_as_owner(owner_post_client, owner, category):
+	"""OWNER can close any category post."""
+	p = make_post(owner, category)
 
 	response = owner_post_client.put('/close', json={'post_id': p.pk})
 
@@ -45,36 +55,34 @@ def test_close_post_as_owner(owner_post_client, owner):
 	assert p.closed_at is not None
 
 
-@pytest.mark.django_db
-def test_close_post_feature_request(owner_post_client, owner):
-	"""OWNER can close a FEATURE_REQUEST post."""
-	p = make_post(owner, PostCategory.FEATURE_REQUEST)
-
-	response = owner_post_client.put('/close', json={'post_id': p.pk})
-
-	assert response.status_code == 200
-	p.refresh_from_db()
-	assert p.closed_at is not None
+@pytest.fixture
+def other_member(db):
+	return Account.objects.create_user(
+		'other', 'other@test.com', password='other_pass', level=Account.Levels.MEMBER
+	)
 
 
 @pytest.mark.django_db
-def test_close_post_forbidden_for_non_owner(post_client, member):
-	"""Users below OWNER level receive 403."""
-	p = make_post(member, PostCategory.BUG_REPORT)
+@pytest.mark.parametrize('category', ALL_CATEGORIES)
+def test_close_post_as_author(post_client, member, category):
+	"""Post author can close their own post for any category."""
+	p = make_post(member, category)
 
 	response = post_client.put('/close', json={'post_id': p.pk})
 
-	assert response.status_code == 403
+	assert response.status_code == 200
 	p.refresh_from_db()
-	assert p.closed_at is None
+	assert p.closed_at is not None
 
 
 @pytest.mark.django_db
-def test_close_announcement_returns_403(owner_post_client, owner):
-	"""ANNOUNCEMENT is not closable (is_closable=False) and returns 403."""
-	p = make_post(owner, PostCategory.ANNOUNCEMENT)
+@pytest.mark.parametrize('category', ALL_CATEGORIES)
+def test_close_post_forbidden_for_non_owner_non_author(other_member, member, category):
+	"""Users who are neither OWNER nor the post author receive 403."""
+	p = make_post(member, category)
+	other_client = AuthenticatedTestClient(post_router, other_member)
 
-	response = owner_post_client.put('/close', json={'post_id': p.pk})
+	response = other_client.put('/close', json={'post_id': p.pk})
 
 	assert response.status_code == 403
 	p.refresh_from_db()
@@ -85,8 +93,8 @@ def test_close_announcement_returns_403(owner_post_client, owner):
 TODO(sno2wman): I think there should also be a error test for fetching a non-existent Post.
 @pytest.mark.django_db
 def test_close_nonexistent_post_returns_404(owner_post_client):
-	"""Non-existent post_id returns 404."""
-	response = owner_post_client.put('/close', json={'post_id': 99999})
+    """Non-existent post_id returns 404."""
+    response = owner_post_client.put('/close', json={'post_id': 99999})
 
-	assert response.status_code == 404
+    assert response.status_code == 404
 '''

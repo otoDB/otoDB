@@ -59,7 +59,6 @@ class PostSchema(ModelSchema):
 	pages: list[PostContentSchema]
 	entities: list[EntitySchema] = []
 	edited_by: ProfileSchema | None = None
-	is_closable: bool
 
 	class Meta:
 		model = Post
@@ -204,12 +203,11 @@ class PostCloseSchema(Schema):
 @post_router.put('close', auth=django_auth)
 @transaction.atomic
 def close(request: AuthedHttpRequest, payload: PostCloseSchema):
-	if request.user.level < Account.Levels.OWNER:
-		raise HttpError(403, 'Forbidden')
-
 	p = get_object_or_404(Post, id=payload.post_id)
-	if not p.is_closable:
-		raise HttpError(403, 'This post is not supposed to be closed.')
+	is_owner = request.user.level >= Account.Levels.OWNER
+	is_author = p.added_by_id == request.user.pk
+	if not (is_owner or is_author):
+		raise HttpError(403, 'Forbidden')
 
 	p.closed_at = datetime.now(tz=timezone.utc)
 	p.save(update_fields=['closed_at'])
@@ -218,12 +216,11 @@ def close(request: AuthedHttpRequest, payload: PostCloseSchema):
 @post_router.put('unclose', auth=django_auth)
 @transaction.atomic
 def unclose(request: AuthedHttpRequest, payload: PostCloseSchema):
-	if request.user.level < Account.Levels.OWNER:
-		raise HttpError(403, 'Forbidden')
-
 	p = get_object_or_404(Post, id=payload.post_id)
-	if not p.is_closable:
-		raise HttpError(403, 'This post is not supposed to be unclosed.')
+	is_owner = request.user.level >= Account.Levels.OWNER
+	is_author = p.added_by_id == request.user.pk
+	if not (is_owner or is_author):
+		raise HttpError(403, 'Forbidden')
 
 	p.closed_at = None
 	p.save(update_fields=['closed_at'])

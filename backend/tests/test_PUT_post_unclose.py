@@ -10,6 +10,15 @@ from otodb.models.enums import PostCategory, LanguageTypes
 from tests.conftest import AuthenticatedTestClient
 
 
+ALL_CATEGORIES = [
+	PostCategory.ANNOUNCEMENT,
+	PostCategory.FEATURE_REQUEST,
+	PostCategory.BUG_REPORT,
+	PostCategory.GARDENING,
+	PostCategory.GENERAL,
+]
+
+
 @pytest.fixture
 def owner(db):
 	return Account.objects.create_user(
@@ -29,6 +38,7 @@ def owner_post_client(owner):
 
 def make_closed_post(member, category: PostCategory) -> Post:
 	from datetime import datetime, timezone
+
 	p = Post.objects.create(
 		title='Test Post',
 		added_by=member,
@@ -40,9 +50,10 @@ def make_closed_post(member, category: PostCategory) -> Post:
 
 
 @pytest.mark.django_db
-def test_unclose_post_as_owner(owner_post_client, owner):
-	"""OWNER can unclose a closed BUG_REPORT post."""
-	p = make_closed_post(owner, PostCategory.BUG_REPORT)
+@pytest.mark.parametrize('category', ALL_CATEGORIES)
+def test_unclose_post_as_owner(owner_post_client, owner, category):
+	"""OWNER can unclose a closed post for any category."""
+	p = make_closed_post(owner, category)
 	assert p.closed_at is not None
 
 	response = owner_post_client.put('/unclose', json={'post_id': p.pk})
@@ -52,12 +63,21 @@ def test_unclose_post_as_owner(owner_post_client, owner):
 	assert p.closed_at is None
 
 
-@pytest.mark.django_db
-def test_unclose_post_feature_request(owner_post_client, owner):
-	"""OWNER can unclose a closed FEATURE_REQUEST post."""
-	p = make_closed_post(owner, PostCategory.FEATURE_REQUEST)
+@pytest.fixture
+def other_member(db):
+	return Account.objects.create_user(
+		'other', 'other@test.com', password='other_pass', level=Account.Levels.MEMBER
+	)
 
-	response = owner_post_client.put('/unclose', json={'post_id': p.pk})
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('category', ALL_CATEGORIES)
+def test_unclose_post_as_author(post_client, member, category):
+	"""Post author can unclose their own closed post for any category."""
+	p = make_closed_post(member, category)
+	assert p.closed_at is not None
+
+	response = post_client.put('/unclose', json={'post_id': p.pk})
 
 	assert response.status_code == 200
 	p.refresh_from_db()
@@ -65,25 +85,17 @@ def test_unclose_post_feature_request(owner_post_client, owner):
 
 
 @pytest.mark.django_db
-def test_unclose_post_forbidden_for_non_owner(post_client, member):
-	"""Users below OWNER level receive 403."""
-	p = make_closed_post(member, PostCategory.BUG_REPORT)
+@pytest.mark.parametrize('category', ALL_CATEGORIES)
+def test_unclose_post_forbidden_for_non_owner_non_author(
+	other_member, member, category
+):
+	"""Users who are neither OWNER nor the post author receive 403."""
+	p = make_closed_post(member, category)
 	original_closed_at = p.closed_at
+	other_client = AuthenticatedTestClient(post_router, other_member)
 
-	response = post_client.put('/unclose', json={'post_id': p.pk})
+	response = other_client.put('/unclose', json={'post_id': p.pk})
 
 	assert response.status_code == 403
 	p.refresh_from_db()
 	assert p.closed_at == original_closed_at
-
-
-@pytest.mark.django_db
-def test_unclose_announcement_returns_403(owner_post_client, owner):
-	"""ANNOUNCEMENT is not closable (is_closable=False) and returns 403."""
-	p = make_closed_post(owner, PostCategory.ANNOUNCEMENT)
-
-	response = owner_post_client.put('/unclose', json={'post_id': p.pk})
-
-	assert response.status_code == 403
-	p.refresh_from_db()
-	assert p.closed_at is not None

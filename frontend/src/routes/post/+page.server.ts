@@ -2,23 +2,44 @@ import client from '$lib/api';
 import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 import { postCategory } from '$lib/enums/PostCategory';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
+import * as v from 'valibot';
+
+const batch_size = 20;
+
+type CategoryId = (typeof postCategory)[keyof typeof postCategory]['id'];
+const validCategoryIds = Object.values(postCategory).map((c) => c.id) as CategoryId[];
+
+const SearchParamsSchema = v.object({
+	page: v.fallback(
+		v.pipe(
+			v.string(),
+			v.transform((s) => parseInt(s, 10)),
+			v.integer(),
+			v.minValue(1)
+		),
+		1
+	),
+	query: v.optional(v.string(), ''),
+	category: v.fallback(
+		v.optional(
+			v.pipe(
+				v.string(),
+				v.transform((s) => parseInt(s, 10) as CategoryId),
+				v.check((n) => validCategoryIds.includes(n), 'Invalid category ID')
+			)
+		),
+		undefined
+	)
+});
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
-	const batch_size = 20;
-	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
-	const query = url.searchParams.get('query') ?? '';
+	const parsedParams = v.safeParse(SearchParamsSchema, Object.fromEntries(url.searchParams));
+	if (!parsedParams.success) {
+		redirect(302, '/post');
+	}
 
-	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
-	type Category = (typeof postCategory)[keyof typeof postCategory]['id'];
-	const category =
-		paramCategory &&
-		!Object.values(postCategory)
-			.map((v) => v.id)
-			.includes(paramCategory as Category)
-			? (paramCategory as Category)
-			: null;
-
+	const { page, query, category } = parsedParams.output;
 	const { data } = await client.GET('/api/post/search', {
 		fetch,
 		params: {

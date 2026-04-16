@@ -138,7 +138,7 @@ function getQuery(url) {
         }
     }
     else if (url.hostname.endsWith('nicovideo.jp')) {
-        const match = url.href.match(/\/watch\/([ns]m[0-9]+)/);
+        const match = url.href.match(/\/watch\/([a-zA-Z]{2}[0-9]+)/);
         if (match) {
             return { platform: 'niconico', id: match[1] };
         }

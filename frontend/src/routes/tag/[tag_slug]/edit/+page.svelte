@@ -385,9 +385,12 @@
 		{#each locales as locale, i (i)}
 			<label class="wiki-lang-tab">
 				<input type="radio" bind:group={wikiView} value={locale} />
-				{languages[locale].name}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
-						content: '*'
-					})}{/if}
+				{languages[locale]
+					.name}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand(
+						{
+							content: '*'
+						}
+					)}{/if}
 			</label>
 		{/each}
 	</div>

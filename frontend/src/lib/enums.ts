@@ -94,7 +94,6 @@ export const SongRelationPredicate = [
 	m.curly_many_orangutan_grip
 ];
 
-
 export const MediaType = {
 	ANIME: 1,
 	SHOW: 2,

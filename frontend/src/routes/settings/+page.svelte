@@ -3,7 +3,7 @@
 	import Section from '$lib/Section.svelte';
 	import client from '$lib/api';
 	import { languages } from '$lib/enums/Languages.js';
-	import { themes } from '$lib/enums/themes';
+	import { themes } from '$lib/themes/themes.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { getLocalTheme, set_lang, updateLocalTheme } from '$lib/ui.js';
@@ -48,21 +48,34 @@
 
 	<h2 class="text-lg">{m.acidic_sound_opossum_bump()}</h2>
 	<div
-		class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+		class="3xl:grid-cols-5 mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+		role="radiogroup"
 	>
 		{#each Object.entries(themes) as [key, theme] (key)}
-			<label
-				class="bg-otodb-bg-faint has-checked:bg-otodb-bg-fainter hover:bg-otodb-bg-fainter mb-2 cursor-pointer border px-4 py-4 text-center text-lg"
+			<div
+				role="radio"
+				aria-checked={current_theme === theme.id}
+				tabindex="0"
+				class="hover:bg-otodb-bg-fainter aria-checked:bg-otodb-bg-fainter cursor-pointer border"
+				onclick={() => changeBackground(theme.id)}
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						changeBackground(theme.id);
+					}
+				}}
 			>
-				<input
-					class="hidden"
-					type="radio"
-					bind:group={current_theme}
-					value={theme.id}
-					onchange={() => changeBackground(theme.id)}
-				/>
-				{theme.nameFn()}
-			</label>
+				{#if theme.preview}
+					<img
+						src={theme.preview}
+						alt={theme.nameFn()}
+						class="h-48 w-full object-cover"
+					/>
+				{:else}
+					<div class="h-48 w-full bg-black"></div>
+				{/if}
+				<div class="px-4 py-4 text-center text-lg">{theme.nameFn()}</div>
+			</div>
 		{/each}
 	</div>
 </Section>

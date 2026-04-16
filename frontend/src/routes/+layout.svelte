@@ -6,7 +6,7 @@
 	import Section from '$lib/Section.svelte';
 	import { languages } from '$lib/enums/Languages';
 	import { hasUserLevelOld } from '$lib/enums/UserLevel';
-	import { getThemeNameById } from '$lib/enums/themes';
+	import { getThemeNameById } from '$lib/themes/themes';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast } from '$lib/toast';

@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 		})
 	]);
 
-	// TODO: properly handle fetch errors
+	// TODO: Error forwarding
 	if (!details) error(500, 'Failed to fetch data.');
 	if (!connections) error(500, 'Failed to fetch data.');
 
@@ -51,8 +51,8 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 
 	return {
 		wiki_page,
-		parents: details?.paths[1][params.tag_slug]?.map((s) =>
-			details?.paths[0].find((t) => t.slug === s)
+		parents: details.paths[1][params.tag_slug]?.map(
+			(s) => details.paths[0].find((t) => t.slug === s)!
 		),
 		details,
 		connections,

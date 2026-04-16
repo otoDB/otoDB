@@ -3,7 +3,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import Pager from '$lib/Pager.svelte';
 	import client from '$lib/api';
-	import { buildCommentRoutes } from '$lib/enums';
+	import { buildEntityRoutes } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
 
 	let { data } = $props();
@@ -41,7 +41,7 @@
 							</td>
 							<td>
 								{#if n.comment}
-									{@const route = buildCommentRoutes(n.comment[0], n.comment[1])}
+									{@const route = buildEntityRoutes(n.comment[0], n.comment[1])}
 									<button
 										class={{ 'opacity-40': n.dismissed }}
 										onclick={() => dismiss(n.id, n.dismissed, route)}

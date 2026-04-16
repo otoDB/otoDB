@@ -37,20 +37,14 @@
 
 	let { data, form } = $props();
 
-	let parents = $state(
-		form?.parent_slugs ??
-			data.parents?.map(
-				(t) => getTagDisplaySlug(t!) // TODO: check `t` is not null by type-level
-			) ??
-			[]
-	);
+	let parents = $state(form?.parent_slugs ?? data.parents.map(getTagDisplaySlug) ?? []);
 	let prev_n_parents = parents.length;
 	let primary = $state(
 		form?.primary ??
 			(data.details?.primary_parent
 				? (() => {
-						const parentTag = data.parents?.find(
-							(t) => t!.slug === data.details?.primary_parent // TODO: check `t` is not null by type-level
+						const parentTag = data.parents.find(
+							(t) => t.slug === data.details.primary_parent
 						);
 						return parentTag ? parents.indexOf(getTagDisplaySlug(parentTag)) : -1;
 					})()
@@ -276,16 +270,15 @@
 </Section>
 
 {#if category === 2 && data.tag.category === 2}
+	<!-- data.tag.song & data.song_relations would be available -->
 	<Section
 		title={data.tag!.song!.title}
 		type={m.grand_nice_pony_belong() + ' ' + m.alive_these_jay_pick()}
 		menuLinks={data.song_links}
 	>
 		<RelationEditor
-			// TODO: if ctegory is `SONG` then `data.song_relations` exists, but not check
 			init_relations={data.song_relations!}
 			obj_type="song"
-			// TODO: if ctegory is `SONG` then `data.tag.song` exists, but not check
 			this_id={data.tag.song!.id}
 			form_control={{ barrier: form_barrier, priority: 4 }}
 		></RelationEditor>

@@ -18,11 +18,11 @@
 		JSON.stringify({
 			'@context': 'https://schema.org',
 			'@type': 'ProfilePage',
-			dateCreated: data.profile.date_created,
-			mainEntity: {
+			'dateCreated': data.profile.date_created,
+			'mainEntity': {
 				'@type': 'Person',
-				name: data.profile.username,
-				url: `https://otodb.net/profile/${data.profile.username}`
+				'name': data.profile.username,
+				'url': `https://otodb.net/profile/${data.profile.username}`
 			}
 		}) +
 		'</' +

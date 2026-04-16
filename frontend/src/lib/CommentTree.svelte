@@ -7,7 +7,6 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { timeAgo } from '$lib/ui';
-	import type { Snippet } from 'svelte';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -148,17 +147,7 @@
 	</form>
 {/snippet}
 
-{#snippet comment(
-	data: ReturnType<typeof makeCommentTree>[number],
-	this_component: Snippet<
-		[
-			ReturnType<typeof makeCommentTree>[number],
-			any, // TODO: 再帰的なのでとりあえず`any`で対応
-			number
-		]
-	>,
-	depth: number
-)}
+{#snippet comment(data: ReturnType<typeof makeCommentTree>[number], depth: number)}
 	<div class="comment grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">
 		<div
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
@@ -263,7 +252,7 @@
 	<div class="border-otodb-content-fainter ml-2 border-l-2 pl-3">
 		{@render reply(data.id)}
 		{#each data.children as child, i (i)}
-			{@render this_component(child, this_component, depth + 1)}
+			{@render comment(child, depth + 1)}
 		{/each}
 	</div>
 {/snippet}
@@ -271,7 +260,7 @@
 <div>
 	{#if tree.length}
 		{#each tree as c, i (i)}
-			{@render comment(c, comment, 0)}
+			{@render comment(c, 0)}
 		{/each}
 	{:else}
 		{m.new_basic_dove_love()}

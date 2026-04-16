@@ -35,63 +35,77 @@
 
 	let { data } = $props();
 
-	type D = () => string;
-	const V_to_D =
-		(r: (b: number) => string, fs: Record<string, { nameFn: D }>) =>
-		(v: number): D =>
+	type DisplayFunction = () => string;
+	const Values_to_DisplayFunction =
+		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
+		(v: number): DisplayFunction =>
 			fs[r(v)].nameFn;
-	const SV_to_D =
+	const StraightValues_to_DisplayFunction =
 		(r: (b: number) => string, fs: Record<string, { name: string }>) =>
-		(v: number): D =>
+		(v: number): DisplayFunction =>
 		() =>
 			fs[r(v)].name;
-	const SR_to_D =
+	const StraightRecord_to_DisplayFunction =
 		<T extends number>(r: Record<T, string>) =>
-		(v: number): D =>
+		(v: number): DisplayFunction =>
 		() =>
 			r[v as T];
-	const A_to_D = (r: D[]) => (v: number) => r[v];
-	const SA_to_D =
+	const Array_to_DisplayFunction = (r: DisplayFunction[]) => (v: number) => r[v];
+	const StraightArray_to_DisplayFunction =
 		(r: string[]) =>
-		(v: number): D =>
+		(v: number): DisplayFunction =>
 		() =>
 			r[v];
 	const expand_bit_field =
-		(r: (b: number) => string, fs: Record<string, { nameFn: D }>) =>
-		(v: number): D =>
+		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
+		(v: number): DisplayFunction =>
 		() =>
 			[...v.toString(2)]
 				.reduce(
 					(a, e, i, aa) =>
-						e === '1' ? [...a, V_to_D(r, fs)(Math.pow(2, aa.length - 1 - i))()] : a,
+						e === '1'
+							? [
+									...a,
+									Values_to_DisplayFunction(
+										r,
+										fs
+									)(Math.pow(2, aa.length - 1 - i))()
+								]
+							: a,
 					[] as string[]
 				)
 				.join(', ') || 'N/A';
 
-	const Languages = SV_to_D(resolveLanguageKeyById, languages);
+	const Languages = StraightValues_to_DisplayFunction(resolveLanguageKeyById, languages);
 
-	const ValueDisplayMap: Record<string, Record<string, (v: number) => D>> = {
+	const ValueDisplayMap: Record<string, Record<string, (v: number) => DisplayFunction>> = {
 		mediawork: {
-			rating: A_to_D(Rating)
+			rating: Array_to_DisplayFunction(Rating)
 		},
 		tagwork: {
-			category: A_to_D(WorkTagCategory),
+			category: Array_to_DisplayFunction(WorkTagCategory),
 			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
 		},
 		tagsong: {
-			category: A_to_D(SongTagCategory)
+			category: Array_to_DisplayFunction(SongTagCategory)
 		},
 		tagworkconnection: {
-			site: SV_to_D(resolveTagWorkConnectionNameById, TagWorkConnection)
+			site: StraightValues_to_DisplayFunction(
+				resolveTagWorkConnectionNameById,
+				TagWorkConnection
+			)
 		},
 		mediasongconnection: {
-			site: SV_to_D(resolveSongConnectionNameById, SongConnection)
+			site: StraightValues_to_DisplayFunction(resolveSongConnectionNameById, SongConnection)
 		},
 		tagworkmediaconnection: {
-			site: SV_to_D(resolveMediaConnectionNameById, MediaConnection)
+			site: StraightValues_to_DisplayFunction(resolveMediaConnectionNameById, MediaConnection)
 		},
 		tagworkcreatorconnection: {
-			site: SV_to_D(resolveProfileConnectionNameById, ProfileConnection)
+			site: StraightValues_to_DisplayFunction(
+				resolveProfileConnectionNameById,
+				ProfileConnection
+			)
 		},
 		tagworklangpreference: {
 			lang: Languages
@@ -100,10 +114,10 @@
 			lang: Languages
 		},
 		workrelation: {
-			relation: A_to_D(WorkRelationTypes)
+			relation: Array_to_DisplayFunction(WorkRelationTypes)
 		},
 		songrelation: {
-			relation: A_to_D(SongRelationTypes)
+			relation: Array_to_DisplayFunction(SongRelationTypes)
 		},
 		tagworkinstance: {
 			creator_roles: expand_bit_field(resolveCreatorRoleKeyById, creatorRole)
@@ -112,10 +126,10 @@
 			lang: Languages
 		},
 		worksource: {
-			platform: SA_to_D(Platform),
-			thumbnail_mime: SR_to_D(MimeType),
-			work_origin: A_to_D(WorkOrigin),
-			work_status: A_to_D(WorkStatus)
+			platform: StraightArray_to_DisplayFunction(Platform),
+			thumbnail_mime: StraightRecord_to_DisplayFunction(MimeType),
+			work_origin: Array_to_DisplayFunction(WorkOrigin),
+			work_status: Array_to_DisplayFunction(WorkStatus)
 		}
 	};
 
@@ -152,11 +166,11 @@
 			}}>Revert changes made in this revision</button
 		>{/if}
 	<ul class="my-5">
-		{#each data.routes as [r, ecs], i (i)}
-			<li>{Route[resolveRouteKeyById(r)].title()}</li>
+		{#each data.routes as { route, entities }, i (i)}
+			<li>{Route[resolveRouteKeyById(route)].title()}</li>
 			<li class="ml-2 list-none">
 				<ul>
-					{#each ecs as [[ent_type, ent_id], ec], j (j)}
+					{#each entities as { ent_type, ent_id, rcs }, j (j)}
 						<li>
 							<a href={buildEntityRoutes(ent_type, ent_id)}>
 								{buildEntityRoutes(ent_type, ent_id)}
@@ -165,21 +179,23 @@
 						<li class="list-none">
 							<table class="inline-block">
 								<tbody>
-									{#each ec as c, k (k)}
-										<tr
-											><td
-												>{#if !(c.target_type === ent_type && c.tg_id === ent_id)}{c.target_type}
-													#{c.tg_id}{/if}
-												{c.target_column}</td
+									{#each rcs as c, k (k)}
+										{#if c.target_column}
+											<tr
+												><td
+													>{#if !(c.target_type === ent_type && c.tg_id === ent_id)}{c.target_type}
+														#{c.tg_id}{/if}
+													{c.target_column}</td
+												>
+												<td
+													>{#if c.deleted}Deleted{:else}<pre>{displayValue(
+																c.target_type,
+																c.target_column,
+																c.target_value
+															)}</pre>{/if}</td
+												></tr
 											>
-											<td
-												>{#if c.deleted}Deleted{:else}<pre>{displayValue(
-															c.target_type,
-															c.target_column,
-															c.target_value
-														)}</pre>{/if}</td
-											></tr
-										>
+										{/if}
 									{/each}
 								</tbody>
 							</table>

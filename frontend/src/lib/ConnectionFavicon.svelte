@@ -47,86 +47,47 @@
 		| (typeof SongConnection)[keyof typeof SongConnection]['name']
 		| (typeof ProfileConnection)[keyof typeof ProfileConnection]['name'];
 
-	const img = (type: FaviconKey) => {
-		switch (type) {
-			case 'AniDB':
-				return faviconAniDB;
-			case 'AniKore':
-				return faviconAniKore;
-			case 'AniList':
-				return faviconAniList;
-			case 'Anime-Planet':
-				return faviconAnimePlanet;
-			case 'Bangumi':
-				return faviconBangumi;
-			case 'Bilibili':
-				return faviconBilibili;
-			case 'Bluesky':
-				return faviconBluesky;
-			case 'Discogs':
-				return faviconDiscogs;
-			case 'ErogameScape':
-				return faviconErogameScape;
-			case 'IMDb':
-				return faviconIMDb;
-			case 'Kitsu':
-				return faviconKitsu;
-			case 'Know Your Meme':
-				return faviconKnowYourMeme;
-			case 'Letterboxd':
-				return faviconLetterboxd;
-			case 'The Mod Archive':
-				return faviconModArchive;
-			case 'MusicBrainz':
-				return faviconMusicBrainz;
-			case 'MyAnimeList':
-				return faviconMyAnimeList;
-			case 'NND Medley Wiki':
-				return faviconNNDMedleyWiki;
-			case 'Namu Wiki':
-				return faviconNamuWiki;
-			case 'Niconico Encyclopedia':
-				return faviconNiconicoEncyclopedia;
-			case 'Niconico':
-				return faviconNiconico;
-			case 'Pixiv Dictionary':
-				return faviconPixivDictionary;
-			case 'Rate Your Music':
-				return faviconRateYourMusic;
-			case 'RemyWiki':
-				return faviconRemyWiki;
-			case 'Silent Blue':
-				return faviconSilentBlue;
-			case 'Soundcloud':
-				return faviconSoundcloud;
-			case 'TouhouDB':
-				return faviconTouhouDB;
-			case 'Twitter':
-				return faviconTwitter;
-			case 'VGMdb':
-				return faviconVGMdb;
-			case 'VocaDB':
-				return faviconVocaDB;
-			case 'Wikipedia (en)':
-				return faviconWikipediaEn;
-			case 'YouTube':
-				return faviconYouTube;
-			case 'Zenius -I- vanisher.com':
-				return faviconZenius;
-			case 'otomad.wiki':
-				return faviconOtomadWiki;
-			case 'vndb':
-				return faviconVndb;
-			case '同人音楽info':
-				return faviconDoujinMusicInfo;
-			case '音MAD Wiki 2':
-				return faviconOtomadWiki2;
-			default: // e.g. Website
-				return faviconWebsite;
-		}
+	const img: Record<FaviconKey, string> = {
+		'AniDB': faviconAniDB,
+		'AniKore': faviconAniKore,
+		'AniList': faviconAniList,
+		'Anime-Planet': faviconAnimePlanet,
+		'Bangumi': faviconBangumi,
+		'Bilibili': faviconBilibili,
+		'Bluesky': faviconBluesky,
+		'Discogs': faviconDiscogs,
+		'ErogameScape': faviconErogameScape,
+		'IMDb': faviconIMDb,
+		'Kitsu': faviconKitsu,
+		'Know Your Meme': faviconKnowYourMeme,
+		'Letterboxd': faviconLetterboxd,
+		'The Mod Archive': faviconModArchive,
+		'MusicBrainz': faviconMusicBrainz,
+		'MyAnimeList': faviconMyAnimeList,
+		'NND Medley Wiki': faviconNNDMedleyWiki,
+		'Namu Wiki': faviconNamuWiki,
+		'Niconico Encyclopedia': faviconNiconicoEncyclopedia,
+		'Niconico': faviconNiconico,
+		'Pixiv Dictionary': faviconPixivDictionary,
+		'Rate Your Music': faviconRateYourMusic,
+		'RemyWiki': faviconRemyWiki,
+		'Silent Blue': faviconSilentBlue,
+		'Soundcloud': faviconSoundcloud,
+		'TouhouDB': faviconTouhouDB,
+		'Twitter': faviconTwitter,
+		'VGMdb': faviconVGMdb,
+		'VocaDB': faviconVocaDB,
+		'Wikipedia (en)': faviconWikipediaEn,
+		'YouTube': faviconYouTube,
+		'Zenius -I- vanisher.com': faviconZenius,
+		'otomad.wiki': faviconOtomadWiki,
+		'vndb': faviconVndb,
+		'同人音楽info': faviconDoujinMusicInfo,
+		'音MAD Wiki 2': faviconOtomadWiki2,
+		'Website': faviconWebsite
 	};
 
 	let { type, ...props }: { type: FaviconKey; class?: string } = $props();
 </script>
 
-<img alt={type} src={img(type)} class={[props.class]} />
+<img alt={type} src={img[type]} class={[props.class]} />

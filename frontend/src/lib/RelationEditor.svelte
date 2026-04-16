@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { dirtyEnhance } from '$lib/dirty';
+	import { dirtyEnhance, type Barrier } from '$lib/dirty';
 	import { isSOV } from '$lib/enums/Languages';
 	import type { ComponentProps } from 'svelte';
 	import client from './api';
@@ -18,27 +18,29 @@
 		obj_type: 'work' | 'song';
 		init_relations: [components['schemas']['RelationSchema'][], { id: number }[]];
 		form_control?: {
-			barrier: {
-				forms?: HTMLFormElement[];
-				reached?: ReturnType<typeof Promise.withResolvers<void>>[];
-			};
+			barrier: Partial<Barrier>;
 			priority: number;
 		};
 	}
 
 	let { this_id, init_relations, obj_type, form_control }: Props = $props();
 
-	let relations: { swapped: boolean; item: any | null; relation: number }[] = $state(
+	type WorkTag = ComponentProps<typeof WorkCard>['work'];
+	type SongTag = { work_tag: string; title: string; id: number };
+
+	let relations: { swapped: boolean; item: WorkTag | SongTag; relation: number }[] = $state(
 		init_relations[0]
 			.filter(({ A_id, B_id }) => A_id === this_id || B_id === this_id)
 			.map(({ A_id, B_id, relation }) => ({
 				swapped: A_id === this_id,
-				item: init_relations[1].find((e) => e.id === (A_id === this_id ? B_id : A_id)),
+				item: init_relations[1].find((e) => e.id === (A_id === this_id ? B_id : A_id))! as
+					| WorkTag
+					| SongTag,
 				relation
 			}))
 	);
 
-	let new_item: null | { id: number } = $state(null);
+	let new_item: null | WorkTag | SongTag = $state(null);
 
 	const endpoint = obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation';
 	const post_gate = { p: Promise.withResolvers<void>() };
@@ -68,16 +70,9 @@
 )}
 	{#if swapped}
 		{#if obj_type === 'work'}
-			<WorkCard
-				// TODO: Too ad-hoc for typing
-				work={relation.item as ComponentProps<typeof WorkCard>['work']}
-			/>
+			<WorkCard work={relation.item as WorkTag} />
 		{:else if obj_type === 'song'}
-			<a
-				// TODO: Too ad-hoc for typing
-				href="/tag/{(relation.item as { work_tag: string; title: string }).work_tag}"
-				>{relation.item.title}</a
-			>
+			<a href="/tag/{(relation.item as SongTag).work_tag}">{relation.item.title}</a>
 		{/if}
 	{:else}
 		{m.stout_frail_warbler_support()}{m.great_clean_beaver_amuse()}{#if obj_type === 'work'}{m.grand_merry_fly_succeed()}{:else if obj_type === 'song'}{m.grand_nice_pony_belong()}{/if}
@@ -108,9 +103,7 @@
 				if (
 					new_item &&
 					new_item.id !== this_id &&
-					!relations.some(
-						(r) => r.item.id === new_item!.id // MEMO: maybe here null-assertion is redundant
-					)
+					!relations.some((r) => r.item.id === new_item!.id)
 				) {
 					e.currentTarget.dispatchEvent(new Event('change', { bubbles: true }));
 					relations.unshift({ swapped: false, item: new_item, relation: 0 });

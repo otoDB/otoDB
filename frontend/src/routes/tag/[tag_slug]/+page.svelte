@@ -41,8 +41,8 @@
 					JSON.stringify({
 						'@context': 'https://schema.org',
 						'@type': 'Article',
-						headline: data.display_name,
-						url: `https://otodb.net${page.url.pathname}`
+						'headline': data.display_name,
+						'url': `https://otodb.net${page.url.pathname}`
 					}) +
 					'</' +
 					'script>'
@@ -184,10 +184,7 @@
 	<hr class="my-2" />
 
 	{#if wikiView && data.wiki_page.length > 0}
-		{@const wp = data.wiki_page.find(
-			({ lang }) =>
-				lang === languages[wikiView! /* MEMO: this non-null assertion is ad-hoc */].id
-		)!}
+		{@const wp = data.wiki_page.find(({ lang }) => lang === languages[wikiView!].id)!}
 		<div class="float-right clear-left my-2">
 			<LangSwitch
 				availableLanguages={data.wiki_page.map((v) => resolveLanguageKeyById(v.lang))}

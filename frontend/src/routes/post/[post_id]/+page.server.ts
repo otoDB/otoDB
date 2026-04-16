@@ -10,7 +10,8 @@ export const load: LayoutServerLoad = async ({ fetch, params }) => {
 		fetch,
 		params: { query: { model: 'post', pk: +params.post_id } }
 	});
-	// TODO: properly handle fetch errors
+
+	// TODO: Error forwarding
 	if (!comments) error(500, 'Failed to fetch data.');
 
 	return { comments };
@@ -21,7 +22,9 @@ export const actions = {
 		const data = await request.formData();
 		const title = data.get('title') as string;
 		const post = data.get('post') as string;
-		const lang = data.get('lang') as keyof typeof languages; // TODO: ensure check `lang` is available (e.g. `en` | `ja` | ...)
+		// TODO: Remove when error forwarding is complete
+		if (!Object.keys(languages).includes(data.get('lang') as string)) return fail(400);
+		const lang = data.get('lang') as keyof typeof languages;
 		const entities_raw = data.get('entities') as string | null;
 		const entities = (entities_raw ?? '')
 			.split('\n')

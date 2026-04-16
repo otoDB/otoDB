@@ -98,11 +98,11 @@ export const SongRelationPredicate = [
  * @deprecated
  */
 export const Languages = {
-	NOT_APPLICABLE: 0,
-	en: 1,
-	ja: 2,
+	'NOT_APPLICABLE': 0,
+	'en': 1,
+	'ja': 2,
 	'zh-cn': 3,
-	ko: 4,
+	'ko': 4,
 	0: 'N/A',
 	1: 'en',
 	2: 'ja',
@@ -114,14 +114,14 @@ export const Languages = {
  * @deprecated
  */
 export const LanguageNames = {
-	en: 'English',
-	ja: '日本語',
+	'en': 'English',
+	'ja': '日本語',
 	'zh-cn': '简体中文',
-	ko: '한국어',
-	English: 'en',
-	日本語: 'ja',
-	简体中文: 'zh-cn',
-	한국인: 'ko'
+	'ko': '한국어',
+	'English': 'en',
+	'日本語': 'ja',
+	'简体中文': 'zh-cn',
+	'한국인': 'ko'
 };
 
 export const MediaType = {
@@ -176,27 +176,6 @@ export const EntityModelRoutes = {
 	worksource: 'upload'
 };
 
-export const buildCommentRoutes = (type: string, id: string | number) => {
-	switch (type) {
-		case 'mediawork':
-			return `/work/${id}`;
-		case 'account':
-			return `/profile/${id}`;
-		case 'pool':
-			return `/list/${id}`;
-		case 'tagwork':
-			return `/tag/${id}`;
-		case 'tagsong':
-			return `/song_attribute/${id}`;
-		case 'post':
-			return `/post/${id}`;
-		case 'bulkrequest':
-			return `/request/${id}`;
-		default:
-			return '/';
-	}
-};
-
 export type EntityModelType =
 	| 'post'
 	| 'mediasong'
@@ -207,40 +186,12 @@ export type EntityModelType =
 	| 'tagwork'
 	| 'tagsong'
 	| 'bulkrequest';
-export const isValidEntityModelType = (type: string): type is EntityModelType => {
-	switch (type) {
-		case 'mediawork':
-		case 'account':
-		case 'pool':
-		case 'tagwork':
-		case 'tagsong':
-		case 'post':
-		case 'bulkrequest':
-		case 'mediasong':
-		case 'worksource':
-			return true;
-		default:
-			return false;
-	}
-};
-export const buildEntityRoutes = (type: EntityModelType, id: string | number) => {
-	switch (type) {
-		case 'mediawork':
-		case 'account':
-		case 'pool':
-		case 'tagwork':
-		case 'tagsong':
-		case 'post':
-		case 'bulkrequest':
-			return buildCommentRoutes(type, id);
-		case 'mediasong':
-			return `/song/${id}`;
-		case 'worksource':
-			return `/upload/${id}`;
-		default:
-			return '/';
-	}
-};
+
+export const isValidEntityModelType = (type: string): type is EntityModelType =>
+	Object.keys(EntityModelRoutes).includes(type);
+
+export const buildEntityRoutes = (type: EntityModelType, id: string | number) =>
+	`/${EntityModelRoutes[type]}/${id}`;
 
 export const ErrorCode = {
 	LOGIN_FAILED: 10000,

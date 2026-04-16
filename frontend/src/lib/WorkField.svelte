@@ -105,7 +105,7 @@
 		<table
 			class="absolute z-1 px-1"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>

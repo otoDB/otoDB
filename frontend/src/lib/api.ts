@@ -34,7 +34,7 @@ export const forwardCookies = (cookies: Cookies, response: Response) => {
 			path: '/',
 			expires,
 			maxAge,
-			sameSite: sameSite as CookieSerializeOptions['sameSite'] // MEMO: 流石にそうだとは思うが，変だったら修正すること．
+			sameSite: sameSite as CookieSerializeOptions['sameSite']
 		});
 };
 

@@ -15,7 +15,7 @@ declare global {
 	}
 	namespace svelteHTML {
 		interface HTMLAttributes<T> {
-			onOutclick?: () => void;
+			onoutclick?: () => void;
 		}
 	}
 }

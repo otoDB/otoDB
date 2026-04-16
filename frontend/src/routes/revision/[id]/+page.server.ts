@@ -2,47 +2,25 @@ import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { isValidEntityModelType, type EntityModelType } from '$lib/enums';
+import type { components } from '$lib/schema';
 
-// TODO: Fix and test this. it is not well-typed.
-export const _buildRoutes = (
-	items: {
-		target_type: string;
-		ent_type: string;
-		ent_id: string;
-		route: number;
-		tg_id: string;
-		deleted: boolean;
-		target_column?: string | null;
-		target_value?: string | null;
-	}[]
-) => {
-	return (
-		Object.values(Object.groupBy(items, (c) => c.route)).map((rent) => [
-			rent![0].route,
-			Object.values(Object.groupBy(rent!, (c) => c.ent_type + c.ent_id))
-				// .map((cs) => cs.filter((c) => c.target_value !== null))
-				// Setting to null may be significant change
-				.map((cs) => cs!.filter((c) => isValidEntityModelType(c.ent_type)))
+type RC = components['schemas']['RevisionChangeSchema'];
+const group_RCs = (
+	items: RC[]
+): { route: number; entities: { rcs: RC[]; ent_type: EntityModelType; ent_id: string }[] }[] =>
+	(Object.values(Object.groupBy(items, (c) => c.route)) as RC[][])
+		.map((rent) => ({
+			route: rent![0].route,
+			entities: (Object.values(Object.groupBy(rent!, (c) => c.ent_type + c.ent_id)) as RC[][])
+				.map((cs) => cs.filter((c) => isValidEntityModelType(c.ent_type)))
 				.filter((ec) => ec.length)
-				.map((tg) => [[tg[0].ent_type, tg[0].ent_id], tg])
-		]) as [
-			number,
-			[
-				[EntityModelType, string],
-				{
-					target_type: string;
-					ent_type: string;
-					ent_id: string;
-					route: number;
-					tg_id: string;
-					deleted: boolean;
-					target_column: string;
-					target_value?: string | null;
-				}[]
-			][]
-		][]
-	).filter((rc) => rc[1].length > 0);
-};
+				.map((tg) => ({
+					ent_type: tg[0].ent_type as EntityModelType,
+					ent_id: tg[0].ent_id,
+					rcs: tg
+				}))
+		}))
+		.filter(({ entities }) => entities.length);
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	const revision_id = +params.id;
@@ -74,6 +52,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		changes,
 		page,
 		batch_size,
-		routes: _buildRoutes(changes.items)
+		routes: group_RCs(changes.items)
 	};
 };

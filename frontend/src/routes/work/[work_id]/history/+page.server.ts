@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		}
 	});
 
-	// TODO: more better error handling
+	// TOOD: Error forwarding
 	if (!history) error(500, { message: 'Failed to load history' });
 
 	return {

@@ -32,15 +32,15 @@
 			JSON.stringify({
 				'@context': 'https://schema.org',
 				'@type': 'DiscussionForumPosting',
-				headline: data.post.title,
-				text: pageObj.page.slice(0, 500),
-				url: `https://otodb.net/post/${data.post_id}`,
-				author: {
+				'headline': data.post.title,
+				'text': pageObj.page.slice(0, 500),
+				'url': `https://otodb.net/post/${data.post_id}`,
+				'author': {
 					'@type': 'Person',
-					name: data.post.added_by.username,
-					url: `https://otodb.net/profile/${data.post.added_by.username}`
+					'name': data.post.added_by.username,
+					'url': `https://otodb.net/profile/${data.post.added_by.username}`
 				},
-				datePublished: pageObj.modified,
+				'datePublished': pageObj.modified,
 				...(data.post.edited_at ? { dateModified: data.post.edited_at } : {})
 			}) +
 			'</' +
@@ -49,19 +49,20 @@
 	});
 	$effect(() => {
 		if (page) {
-			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag')).map(
-				(el) =>
+			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag'))
+				.filter((e) => e.hasAttribute('slug'))
+				.map((el) =>
 					client
 						.GET('/api/tag/tag', {
 							fetch,
 							params: {
 								query: {
-									tag_slug: el.getAttribute('slug')! // TODO: need check
+									tag_slug: el.getAttribute('slug')!
 								}
 							}
 						})
 						.then((r) => mount(WorkTag, { target: el, props: { tag: r.data! } }))
-			);
+				);
 			return () => {
 				tags.forEach((p) => p.then(unmount));
 			};
@@ -198,10 +199,8 @@
 							>{timeAgo(page_object.modified)}</time
 						></a
 					>
-					{#if data.post.edited_at}
-						{@const editUser =
-							// MEMO: if `edited_at` exists then `edited_by` is also available
-							data.post.edited_by!}
+					{#if data.post.edited_at && data.post.edited_by}
+						{@const editUser = data.post.edited_by}
 						<span title={new Date(data.post.edited_at).toLocaleString()}>
 							{#if editedByOther}
 								({m.free_tiny_badger_breathe({

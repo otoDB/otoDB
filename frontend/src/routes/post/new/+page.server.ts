@@ -26,8 +26,11 @@ export const actions = {
 			.map(get_entity)
 			.filter((x) => !!x);
 
-		const paramCategory = data.get('category') as string;
-		const category = parseInt(paramCategory, 10) as components['schemas']['PostCategory']; // TODO: more better validate
+		const paramCategory = parseInt(data.get('category') as string, 10);
+		// TODO: Remove when error forwarding is complete
+		if (![0, 1, 2, 3, 4].includes(paramCategory)) return fail(400);
+		type Category = components['schemas']['PostCategory'];
+		const category = paramCategory as Category;
 
 		const paramLang = data.get('lang') as string;
 		const language = getLanguageId(

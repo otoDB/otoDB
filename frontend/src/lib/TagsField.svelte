@@ -99,7 +99,7 @@
 		<ul
 			class="absolute z-1 list-none"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>

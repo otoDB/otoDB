@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		})
 	]);
 
-	// TODO: properly handle fetch errors
+	// TODO: Error forwarding
 	if (!songs) error(500, 'Failed to fetch data.');
 	if (!comments) error(500, 'Failed to fetch data.');
 

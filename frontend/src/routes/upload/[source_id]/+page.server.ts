@@ -7,7 +7,7 @@ import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ fetch, params, locals, url, parent }) => {
 	const sourceId = +params.source_id;
-	const { source } = (await parent()) as any;
+	const { source } = await parent();
 
 	// Only fetch suggestions for unbound sources (needed for work creation)
 	let suggestions = null;

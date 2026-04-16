@@ -94,36 +94,6 @@ export const SongRelationPredicate = [
 	m.curly_many_orangutan_grip
 ];
 
-/**
- * @deprecated
- */
-export const Languages = {
-	'NOT_APPLICABLE': 0,
-	'en': 1,
-	'ja': 2,
-	'zh-cn': 3,
-	'ko': 4,
-	0: 'N/A',
-	1: 'en',
-	2: 'ja',
-	3: 'zh-cn',
-	4: 'ko'
-};
-
-/**
- * @deprecated
- */
-export const LanguageNames = {
-	'en': 'English',
-	'ja': '日本語',
-	'zh-cn': '简体中文',
-	'ko': '한국어',
-	'English': 'en',
-	'日本語': 'ja',
-	'简体中文': 'zh-cn',
-	'한국인': 'ko'
-};
-
 export const MediaType = {
 	ANIME: 1,
 	SHOW: 2,

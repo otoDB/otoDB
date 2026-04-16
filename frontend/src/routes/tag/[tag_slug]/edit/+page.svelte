@@ -5,7 +5,7 @@
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
 	import client, { getTagDisplaySlug } from '$lib/api';
-	import { LanguageNames, Languages, WorkTagCategory } from '$lib/enums';
+	import { WorkTagCategory } from '$lib/enums';
 	import { languages } from '$lib/enums/Languages.js';
 	import {
 		allMediaConnectionKeys,
@@ -302,7 +302,7 @@
 					<tr
 						><th>{m.alive_lofty_opossum_laugh()}</th>
 						{#each locales as locale, i (i)}
-							<th>{LanguageNames[locale]} {m.mellow_upper_finch_drip()}</th>
+							<th>{languages[locale].name} {m.mellow_upper_finch_drip()}</th>
 						{/each}
 						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th
 						></tr
@@ -385,11 +385,12 @@
 		{#each locales as locale, i (i)}
 			<label class="wiki-lang-tab">
 				<input type="radio" bind:group={wikiView} value={locale} />
-				{LanguageNames[
-					locale
-				]}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
-						content: '*'
-					})}{/if}
+				{languages[locale]
+					.name}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand(
+						{
+							content: '*'
+						}
+					)}{/if}
 			</label>
 		{/each}
 	</div>
@@ -406,7 +407,7 @@
 			value={JSON.stringify(
 				locales
 					.filter((lang) => edited_md[lang])
-					.map((lang) => ({ lang: Languages[lang], md: mds[lang] }))
+					.map((lang) => ({ lang: languages[lang].id, md: mds[lang] }))
 			)}
 		/>
 		<div class="grid grid-cols-2 gap-3">

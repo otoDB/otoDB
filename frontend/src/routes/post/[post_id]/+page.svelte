@@ -5,7 +5,7 @@
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
-	import { EntityModelRoutes, Languages, PostCategories } from '$lib/enums.js';
+	import { EntityModelRoutes, PostCategories } from '$lib/enums.js';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
 	import { hasUserLevelOld } from '$lib/enums/UserLevel.js';
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
@@ -25,7 +25,7 @@
 	let page = $derived(renderMarkdown(page_object?.page ?? ''));
 
 	const postLd = $derived.by(() => {
-		const pageObj = data.post.pages.find((p) => p.lang === Languages[lang_view]);
+		const pageObj = data.post.pages.find((p) => p.lang === languages[lang_view].id);
 		if (!pageObj) return null;
 		return (
 			'<script type="application/ld+json">' +

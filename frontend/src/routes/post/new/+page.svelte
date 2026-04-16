@@ -4,7 +4,8 @@
 
 	let { data } = $props();
 	import { m } from '$lib/paraglide/messages.js';
-	import { buildEntityRoutes, LanguageNames, PostCategories } from '$lib/enums';
+	import { buildEntityRoutes, PostCategories } from '$lib/enums';
+	import { languages } from '$lib/enums/Languages';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { get_entity, renderMarkdown } from '$lib/markdown';
 
@@ -32,7 +33,7 @@
 					><th>{m.hour_loud_squirrel_ascend()}</th><td
 						><select name="lang" value={getLocale()}>
 							{#each locales as l, i (i)}
-								<option value={l}>{LanguageNames[l]}</option>
+								<option value={l}>{languages[l].name}</option>
 							{/each}
 						</select></td
 					></tr

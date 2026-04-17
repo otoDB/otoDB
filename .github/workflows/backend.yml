@@ -131,3 +131,32 @@ jobs:
           platforms: linux/amd64
           cache-from: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache
           cache-to: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache,mode=max
+
+  openapi-typespec:
+    name: Verify Generated Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: oven-sh/setup-bun@v1
+      - name: Start Backend Server
+        working-directory: backend
+        run: |
+          run: uv sync
+          cp .env.example .env
+          uv run _setup.py
+          uv run python manage.py runserver &
+          # Wait for the server to be ready (adjust port as needed)
+          timeout 2s bash -c 'until nc -z localhost 8000; do sleep 1; done'
+        
+      - name: Run Frontend Generation
+        working-directory: frontend
+        run: |
+          bun install
+
+      - name: Verify no changes (Fail if stale)
+        working-directory: frontend
+        run: |
+          bun run sync-schema --check

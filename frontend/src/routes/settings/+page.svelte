@@ -53,7 +53,7 @@
 	>
 		{#each Object.entries(themes) as [key, theme] (key)}
 			<label
-				class="hover:bg-otodb-bg-fainter has-checked:bg-otodb-bg-fainter cursor-pointer border pb-4 text-center text-lg"
+				class="bg-otodb-bg-faint hover:bg-otodb-bg-fainter has-checked:bg-otodb-bg-fainter cursor-pointer border pb-4 text-center text-lg"
 			>
 				<img
 					src={theme.preview}

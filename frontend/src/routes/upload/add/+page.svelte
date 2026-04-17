@@ -71,13 +71,17 @@
 					{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
 						<tr>
 							<th class="w-min whitespace-nowrap">
-								<label for="isUnavailable">{m.that_large_mare_ascend()}</label>
+								{m.that_large_mare_ascend()}
 							</th>
-							<td class="w-full">
-								<select id="isUnavailable" bind:value={isUnavailable}>
-									<option value={false}>{m.great_lucky_goldfish_sail()}</option>
-									<option value={true}>{m.broad_large_squid_zoom()}</option>
-								</select>
+							<td class="flex w-full gap-4">
+								<label>
+									<input type="radio" name="isUnavailable" bind:group={isUnavailable} value={true} />
+									{m.broad_large_squid_zoom()}
+								</label>
+								<label>
+									<input type="radio" name="isUnavailable" bind:group={isUnavailable} value={false} />
+									{m.great_lucky_goldfish_sail()}
+								</label>
 							</td>
 						</tr>
 					{/if}

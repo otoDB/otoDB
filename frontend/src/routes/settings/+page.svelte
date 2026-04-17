@@ -3,7 +3,7 @@
 	import Section from '$lib/Section.svelte';
 	import client from '$lib/api';
 	import { languages } from '$lib/enums/Languages.js';
-	import { themes } from '$lib/enums/themes';
+	import { themes } from '$lib/themes/themes.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { getLocalTheme, set_lang, updateLocalTheme } from '$lib/ui.js';
@@ -48,20 +48,30 @@
 
 	<h2 class="text-lg">{m.acidic_sound_opossum_bump()}</h2>
 	<div
-		class="mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+		class="3xl:grid-cols-5 mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+		role="radiogroup"
 	>
 		{#each Object.entries(themes) as [key, theme] (key)}
 			<label
-				class="bg-otodb-bg-faint has-checked:bg-otodb-bg-fainter hover:bg-otodb-bg-fainter mb-2 cursor-pointer border px-4 py-4 text-center text-lg"
+				class="bg-otodb-bg-faint hover:bg-otodb-bg-fainter has-checked:bg-otodb-bg-fainter cursor-pointer border pb-4 text-center text-lg"
 			>
+				<img
+					src={theme.preview}
+					alt={theme.nameFn()}
+					class={[
+						'mb-4 h-48 w-full object-cover',
+						key === 'default' && 'invert dark:filter-none'
+					]}
+					width={240}
+					height={180}
+				/>
 				<input
 					class="hidden"
-					type="radio"
+					onclick={() => changeBackground(theme.id)}
 					bind:group={current_theme}
 					value={theme.id}
-					onchange={() => changeBackground(theme.id)}
-				/>
-				{theme.nameFn()}
+					type="radio"
+				/>{theme.nameFn()}
 			</label>
 		{/each}
 	</div>

@@ -1908,7 +1908,7 @@ export interface components {
             id: number;
             /** Comment */
             comment: [
-                "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest",
+                NotificationSchemaCommentAnyOf0,
                 number | string
             ] | null;
             /** Post */
@@ -2250,7 +2250,7 @@ export interface components {
              * Entity
              * @enum {string}
              */
-            entity: "mediawork" | "tagwork" | "tagsong" | "mediasong" | "worksource";
+            entity: EntitySchemaEntity;
         };
         /** PostContentSchema */
         PostContentSchema: {
@@ -2286,12 +2286,12 @@ export interface components {
          * LanguageTypes
          * @enum {integer}
          */
-        LanguageTypes: 0 | 1 | 2 | 3 | 4;
+        LanguageTypes: LanguageTypes;
         /**
          * PostCategory
          * @enum {integer}
          */
-        PostCategory: 0 | 1 | 2 | 3 | 4;
+        PostCategory: PostCategory;
         /** PostInSchema */
         PostInSchema: {
             /** Title */
@@ -2376,7 +2376,7 @@ export interface components {
              * Model
              * @enum {string}
              */
-            model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
+            model: CommentInSchemaModel;
             /** Pk */
             pk: number;
             /** Comment Text */
@@ -2481,7 +2481,7 @@ export interface components {
          * Status
          * @enum {integer}
          */
-        Status: 0 | 1 | 2;
+        Status: Status;
         /** BulkRequestSchema */
         BulkRequestSchema: {
             /** Requests */
@@ -2790,7 +2790,7 @@ export interface operations {
             query: {
                 query: string;
                 tags?: string | null;
-                order?: ("id" | "-id" | "pub" | "-pub") | null;
+                order?: PathsApiWorkSearchGetParametersQueryOrderAnyOf0 | null;
                 limit?: number;
                 offset?: number;
             };
@@ -3424,7 +3424,7 @@ export interface operations {
                 platform?: number | null;
                 origin?: number | null;
                 status?: number | null;
-                order?: ("id" | "-id" | "published_date" | "-published_date") | null;
+                order?: PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 | null;
                 standing?: number;
                 limit?: number;
                 offset?: number;
@@ -3900,7 +3900,7 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                type?: "work" | "song";
+                type?: PathsApiTagTagDeleteParametersQueryType;
             };
             header?: never;
             path?: never;
@@ -3975,7 +3975,7 @@ export interface operations {
             query: {
                 into_tag: string;
                 delete: boolean;
-                type?: "work" | "song";
+                type?: PathsApiTagAliasPostParametersQueryType;
             };
             header?: never;
             path?: never;
@@ -4002,7 +4002,7 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                type?: "work" | "song";
+                type?: PathsApiTagTag_aliasesPostParametersQueryType;
             };
             header?: never;
             path?: never;
@@ -4546,7 +4546,7 @@ export interface operations {
     otodb_api_post_category: {
         parameters: {
             query: {
-                category: 0 | 1 | 2 | 3 | 4;
+                category: PathsApiPostCategoryGetParametersQueryCategory;
                 limit?: number;
                 offset?: number;
             };
@@ -4571,7 +4571,7 @@ export interface operations {
         parameters: {
             query: {
                 id: number | string;
-                entity: "mediawork" | "tagwork" | "tagsong" | "mediasong" | "worksource";
+                entity: PathsApiPostThreadsGetParametersQueryEntity;
                 limit?: number;
                 offset?: number;
             };
@@ -4643,7 +4643,7 @@ export interface operations {
     otodb_api_comment_get: {
         parameters: {
             query: {
-                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
+                model: PathsApiCommentCommentsGetParametersQueryModel;
                 pk: number;
             };
             header?: never;
@@ -4714,7 +4714,7 @@ export interface operations {
     otodb_api_comment_delete: {
         parameters: {
             query: {
-                model: "mediawork" | "account" | "pool" | "tagwork" | "tagsong" | "post" | "bulkrequest";
+                model: PathsApiCommentCommentDeleteParametersQueryModel;
                 pk: number;
                 comment_id: number;
             };
@@ -4875,7 +4875,7 @@ export interface operations {
         parameters: {
             query: {
                 id: number | string;
-                entity: "mediawork" | "tagwork" | "tagsong" | "mediasong" | "worksource";
+                entity: PathsApiHistoryHistoryGetParametersQueryEntity;
                 limit?: number;
                 offset?: number;
             };
@@ -4920,7 +4920,7 @@ export interface operations {
         parameters: {
             query: {
                 request_id: number;
-                status: 0 | 1 | 2;
+                status: PathsApiRequestConfirmPostParametersQueryStatus;
             };
             header?: never;
             path?: never;
@@ -4959,4 +4959,116 @@ export interface operations {
             };
         };
     };
+}
+export enum PathsApiWorkSearchGetParametersQueryOrderAnyOf0 {
+    id = "id",
+    ValueMinusid = "-id",
+    pub = "pub",
+    ValueMinuspub = "-pub"
+}
+export enum PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 {
+    id = "id",
+    ValueMinusid = "-id",
+    published_date = "published_date",
+    ValueMinuspublished_date = "-published_date"
+}
+export enum PathsApiTagTagDeleteParametersQueryType {
+    work = "work",
+    song = "song"
+}
+export enum PathsApiTagAliasPostParametersQueryType {
+    work = "work",
+    song = "song"
+}
+export enum PathsApiTagTag_aliasesPostParametersQueryType {
+    work = "work",
+    song = "song"
+}
+export enum PathsApiPostCategoryGetParametersQueryCategory {
+    Announcement = 0,
+    Feature_Request = 1,
+    Bug_Report = 2,
+    Gardening = 3,
+    General = 4
+}
+export enum PathsApiPostThreadsGetParametersQueryEntity {
+    mediawork = "mediawork",
+    tagwork = "tagwork",
+    tagsong = "tagsong",
+    mediasong = "mediasong",
+    worksource = "worksource"
+}
+export enum PathsApiCommentCommentsGetParametersQueryModel {
+    mediawork = "mediawork",
+    account = "account",
+    pool = "pool",
+    tagwork = "tagwork",
+    tagsong = "tagsong",
+    post = "post",
+    bulkrequest = "bulkrequest"
+}
+export enum PathsApiCommentCommentDeleteParametersQueryModel {
+    mediawork = "mediawork",
+    account = "account",
+    pool = "pool",
+    tagwork = "tagwork",
+    tagsong = "tagsong",
+    post = "post",
+    bulkrequest = "bulkrequest"
+}
+export enum PathsApiHistoryHistoryGetParametersQueryEntity {
+    mediawork = "mediawork",
+    tagwork = "tagwork",
+    tagsong = "tagsong",
+    mediasong = "mediasong",
+    worksource = "worksource"
+}
+export enum PathsApiRequestConfirmPostParametersQueryStatus {
+    Pending = 0,
+    Approved = 1,
+    Unapproved = 2
+}
+export enum NotificationSchemaCommentAnyOf0 {
+    mediawork = "mediawork",
+    account = "account",
+    pool = "pool",
+    tagwork = "tagwork",
+    tagsong = "tagsong",
+    post = "post",
+    bulkrequest = "bulkrequest"
+}
+export enum EntitySchemaEntity {
+    mediawork = "mediawork",
+    tagwork = "tagwork",
+    tagsong = "tagsong",
+    mediasong = "mediasong",
+    worksource = "worksource"
+}
+export enum LanguageTypes {
+    N_A = 0,
+    en = 1,
+    ja = 2,
+    zh_cn = 3,
+    ko = 4
+}
+export enum PostCategory {
+    Announcement = 0,
+    Feature_Request = 1,
+    Bug_Report = 2,
+    Gardening = 3,
+    General = 4
+}
+export enum CommentInSchemaModel {
+    mediawork = "mediawork",
+    account = "account",
+    pool = "pool",
+    tagwork = "tagwork",
+    tagsong = "tagsong",
+    post = "post",
+    bulkrequest = "bulkrequest"
+}
+export enum Status {
+    Pending = 0,
+    Approved = 1,
+    Unapproved = 2
 }

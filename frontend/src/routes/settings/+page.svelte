@@ -52,32 +52,27 @@
 		role="radiogroup"
 	>
 		{#each Object.entries(themes) as [key, theme] (key)}
-			<div
-				role="radio"
-				aria-checked={current_theme === theme.id}
-				tabindex="0"
-				class="hover:bg-otodb-bg-fainter aria-checked:bg-otodb-bg-fainter cursor-pointer border"
-				onclick={() => changeBackground(theme.id)}
-				onkeydown={(e) => {
-					if (e.key === 'Enter' || e.key === ' ') {
-						e.preventDefault();
-						changeBackground(theme.id);
-					}
-				}}
+			<label
+				class="hover:bg-otodb-bg-fainter has-checked:bg-otodb-bg-fainter cursor-pointer border pb-4 text-center text-lg"
 			>
-				{#if theme.preview}
-					<img
-						src={theme.preview}
-						alt={theme.nameFn()}
-						class="h-48 w-full object-cover"
-						width={240}
-						height={180}
-					/>
-				{:else}
-					<div class="h-48 w-full bg-black"></div>
-				{/if}
-				<div class="px-4 py-4 text-center text-lg">{theme.nameFn()}</div>
-			</div>
+				<img
+					src={theme.preview}
+					alt={theme.nameFn()}
+					class={[
+						'mb-4 h-48 w-full object-cover',
+						key === 'default' && 'invert dark:filter-none'
+					]}
+					width={240}
+					height={180}
+				/>
+				<input
+					class="hidden"
+					onclick={() => changeBackground(theme.id)}
+					bind:group={current_theme}
+					value={theme.id}
+					type="radio"
+				/>{theme.nameFn()}
+			</label>
 		{/each}
 	</div>
 </Section>

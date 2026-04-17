@@ -75,11 +75,21 @@
 							</th>
 							<td class="flex w-full gap-4">
 								<label>
-									<input type="radio" name="isUnavailable" bind:group={isUnavailable} value={true} />
+									<input
+										type="radio"
+										name="isUnavailable"
+										bind:group={isUnavailable}
+										value={true}
+									/>
 									{m.broad_large_squid_zoom()}
 								</label>
 								<label>
-									<input type="radio" name="isUnavailable" bind:group={isUnavailable} value={false} />
+									<input
+										type="radio"
+										name="isUnavailable"
+										bind:group={isUnavailable}
+										value={false}
+									/>
 									{m.great_lucky_goldfish_sail()}
 								</label>
 							</td>

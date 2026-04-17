@@ -1,9 +1,9 @@
 import { m } from '$lib/paraglide/messages';
-import previewAniki from '$lib/themes/aniki.png';
-import previewOtogroove from '$lib/themes/otogroove.png';
-import previewRetroVoyage from '$lib/themes/retro-voyage.png';
-import previewSorimix from '$lib/themes/sorimix.png';
-import previewResample from '$lib/themes/resample.png';
+import previewAniki from '$lib/themes/aniki.webp';
+import previewOtogroove from '$lib/themes/otogroove.webp';
+import previewRetroVoyage from '$lib/themes/retro-voyage.webp';
+import previewSorimix from '$lib/themes/sorimix.webp';
+import previewResample from '$lib/themes/resample.webp';
 
 export const themes = {
 	'default': { id: 0, nameFn: m.grassy_noble_walrus_wish, preview: null },

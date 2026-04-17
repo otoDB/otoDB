@@ -37,7 +37,7 @@
 
 	let { data, form } = $props();
 
-	let parents = $state(form?.parent_slugs ?? data.parents.map(getTagDisplaySlug) ?? []);
+	let parents = $state(form?.parent_slugs ?? data.parents.map(getTagDisplaySlug));
 	let prev_n_parents = parents.length;
 	let primary = $state(
 		form?.primary ??

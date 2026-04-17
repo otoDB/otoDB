@@ -64,8 +64,8 @@ def slugify_tag(s: str):
 
 
 class NiconicoIECustom(NiconicoIE):
-	# Support nico.ms short URLs
-	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/watch|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
+	# Support nico.ms short URLs and /shorts/ URLs
+	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/(?:watch|shorts)|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
 
 
 ydl_playlist = YoutubeDL(

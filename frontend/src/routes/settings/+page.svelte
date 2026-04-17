@@ -70,6 +70,8 @@
 						src={theme.preview}
 						alt={theme.nameFn()}
 						class="h-48 w-full object-cover"
+						width={240}
+						height={180}
 					/>
 				{:else}
 					<div class="h-48 w-full bg-black"></div>

@@ -135,49 +135,24 @@ jobs:
   openapi-typespec:
     name: Verify schema is fresh
     runs-on: ubuntu-latest
+    env:
+      OTODB_SECRET_KEY: dummy
+      OTODB_SKIP_DB: 1
     needs:
       - lint
       - test
-      - migrations
-    
-    env:
-      OTODB_SECRET_KEY: test-secret-key-for-ci
-      OTODB_DB_HOST: localhost
-      OTODB_DB_PORT: 5432
-      OTODB_DB_NAME: "otodb_test"
-      OTODB_DB_USER: postgres
-      OTODB_DB_PASSWORD: postgres
-
-    services:
-      postgres:
-        image: 'postgres:17'
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: otodb_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
       - uses: oven-sh/setup-bun@v1
-      - name: Start Backend Server
+      - name: Generate JSON
         working-directory: backend
         run: |
-          uv sync
-          cp .env.example .env
-          uv run _setup.py
-          uv run python manage.py runserver &
-          # Wait for the server to be ready (adjust port as needed)
-          timeout 2s bash -c 'until nc -z localhost 8000; do sleep 1; done'
+          uv run manage.py openapi_schema > ../frontend/openapi.json
         
-      - name: Run Frontend Generation
+      - name: Install dependencies
         working-directory: frontend
         run: |
           bun install
@@ -185,4 +160,5 @@ jobs:
       - name: Verify no changes (Fail if stale)
         working-directory: frontend
         run: |
-          bun run sync-schema --check
+          rm redocly.yaml
+          bun run sync-schema openapi.json --check -o src/lib/schema.ts

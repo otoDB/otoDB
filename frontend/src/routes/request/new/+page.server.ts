@@ -15,14 +15,15 @@ export const actions = {
 	default: async ({ request, fetch }) => {
 		const data = await request.formData();
 		const actions = data.get('actions') as string;
+		let request_id: null | number = null;
 		try {
-			const { data: r } = await client.POST('/api/request/new', {
+			({ data: request_id } = await client.POST('/api/request/new', {
 				fetch,
 				params: { query: { s: actions } }
-			});
-			redirect(303, `/request/${r}`);
+			}));
 		} catch {
 			return fail(400);
 		}
+		redirect(303, `/request/${request_id}`);
 	}
 } satisfies Actions;

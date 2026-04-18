@@ -16,17 +16,19 @@ export const actions = {
 		const data = await request.formData();
 		const name = data.get('name') as string,
 			description = data.get('description') as string;
+
+		let list_id: number | null = null;
 		try {
-			const { data: list_id } = await client.POST('/api/list/list', {
+			({ data: list_id } = await client.POST('/api/list/list', {
 				fetch,
 				body: {
 					name,
 					description
 				}
-			});
-			redirect(303, `/list/${list_id}`);
+			}));
 		} catch {
 			return fail(400, { name, description, failed: true });
 		}
+		redirect(303, `/list/${list_id}`);
 	}
 } satisfies Actions;

@@ -36,9 +36,9 @@ export const actions = {
 					description
 				}
 			});
-			redirect(303, `/list/${params.list_id}`);
 		} catch {
 			return fail(400, { name, description, failed: true });
 		}
+		redirect(303, `/list/${params.list_id}`);
 	}
 } satisfies Actions;

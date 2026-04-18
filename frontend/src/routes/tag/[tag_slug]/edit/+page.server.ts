@@ -101,7 +101,6 @@ export const actions = {
 					song_payload: song
 				}
 			});
-			redirect(303, `/tag/${params.tag_slug}`);
 		} catch {
 			return fail(400, {
 				category,
@@ -111,6 +110,7 @@ export const actions = {
 				primary: +primary
 			});
 		}
+		redirect(303, `/tag/${params.tag_slug}`);
 	},
 	wiki_page: async ({ request, fetch, params }) => {
 		const data = await request.formData();

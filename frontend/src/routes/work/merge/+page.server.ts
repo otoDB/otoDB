@@ -43,9 +43,9 @@ export const actions = {
 					rating: +rating
 				}
 			});
-			redirect(303, `/work/${+B!}`);
 		} catch {
 			return fail(400);
 		}
+		redirect(303, `/work/${+B!}`);
 	}
 } satisfies Actions;

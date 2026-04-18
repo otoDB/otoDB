@@ -7,10 +7,15 @@ import { Levels, type components } from '$lib/schema';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getLanguageId, languages } from '$lib/enums/Languages';
+import { PostCategory } from '$lib/schema';
+import { EnumValues } from '$lib/enums';
 
 export const load: PageServerLoad = ({ locals, url }) => {
 	userLevelGuard(locals.user, Levels.Member);
-	const category = url.searchParams.get('category');
+	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
+	const category: PostCategory | null =
+		paramCategory && (EnumValues(PostCategory).includes(paramCategory) ? paramCategory : null);
+
 	const entity = url.searchParams.get('entity');
 	return { category, entity, head: { title: m.antsy_aloof_horse_grace() } };
 };
@@ -37,8 +42,9 @@ export const actions = {
 
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
+		let post_id: number | null = null;
 		try {
-			const { data: r } = await client.POST('/api/post/post', {
+			({ data: post_id } = await client.POST('/api/post/post', {
 				fetch,
 				params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
 				body: {
@@ -49,10 +55,10 @@ export const actions = {
 					target_users: parseMentions(post),
 					entities
 				}
-			});
-			redirect(303, `/post/${r}`);
+			}));
 		} catch {
 			return fail(400);
 		}
+		redirect(303, `/post/${post_id}`);
 	}
 } satisfies Actions;

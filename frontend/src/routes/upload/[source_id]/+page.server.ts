@@ -44,8 +44,9 @@ export const actions = {
 		const tagsJsonRaw = data.get('tags_json') as string;
 		const tags = tagsJsonRaw ? JSON.parse(tagsJsonRaw) : [];
 
+		let workId: number | null = null;
 		try {
-			const { data: workId } = await client.POST('/api/work/create', {
+			({ data: workId } = await client.POST('/api/work/create', {
 				fetch,
 				body: {
 					source_id: +params.source_id,
@@ -54,11 +55,11 @@ export const actions = {
 					rating,
 					tags
 				}
-			});
-			redirect(303, `/work/${workId}`);
+			}));
 		} catch {
 			return fail(400, { failed: true, message: m.green_due_javelina_pop() });
 		}
+		redirect(303, `/work/${workId}`);
 	},
 	bind: async ({ request, fetch }) => {
 		const data = await request.formData();
@@ -77,9 +78,9 @@ export const actions = {
 					}
 				}
 			});
-			redirect(303, `/work/${workId}`);
 		} catch {
 			return { failed: true, message: m.green_due_javelina_pop() };
 		}
+		redirect(303, `/work/${workId}`);
 	}
 } satisfies Actions;

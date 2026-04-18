@@ -175,7 +175,7 @@ jobs:
           uv run _setup.py
           uv run python manage.py runserver &
           # Wait for the server to be ready (adjust port as needed)
-          timeout 2s bash -c 'until nc -z localhost 8000; do sleep 1; done'
+          timeout 30s bash -c 'until nc -z localhost 8000; do sleep 1; done'
         
       - name: Run Frontend Generation
         working-directory: frontend

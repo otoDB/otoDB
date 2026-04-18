@@ -20,7 +20,7 @@
 					query: data.query,
 					limit: data.batch_size,
 					offset: results.length,
-					category: data.category
+					category: data.category === -1 ? null : data.category
 				}
 			}
 		});

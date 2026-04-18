@@ -47,7 +47,6 @@ export const actions = {
 					thumbnail_source_id: thumbnail_source_id ? +thumbnail_source_id : null
 				}
 			});
-			redirect(303, `/work/${params.work_id}`);
 		} catch {
 			return fail(400, {
 				title,
@@ -58,5 +57,6 @@ export const actions = {
 				failed: true
 			});
 		}
+		redirect(303, `/work/${params.work_id}`);
 	}
 } satisfies Actions;

@@ -100,13 +100,13 @@ export const actions = {
 		}
 
 		if (editing_unavailable_source && metadata) {
+			let work_id: number | null = null;
 			try {
-				const { data: work_id } = await client.PUT('/api/upload/source', {
+				({ data: work_id } = await client.PUT('/api/upload/source', {
 					fetch,
 					params: { query: { source_id: +source } },
 					body: metadata
-				});
-				if (work_id) redirect(303, `/work/${work_id}`);
+				}));
 			} catch {
 				return fail(400, {
 					url: link,
@@ -115,10 +115,12 @@ export const actions = {
 					message: m.careful_lost_jaguar_dart()
 				});
 			}
+			redirect(303, `/work/${work_id}`);
 		}
 
+		let result: components['schemas']['SourceCreationResponse'] | null = null;
 		try {
-			const { data: result } = await client.POST('/api/upload/source', {
+			({ data: result } = await client.POST('/api/upload/source', {
 				fetch,
 				params: {
 					query: {
@@ -128,17 +130,7 @@ export const actions = {
 					}
 				},
 				body: metadata
-			});
-
-			// Source already has a work -> redirect to work page
-			if (result.work_id) redirect(303, `/work/${result.work_id}`);
-
-			// New source -> redirect to source page (for review/work creation)
-			if (result.source_id) redirect(303, `/upload/${result.source_id}`);
-
-			// Fallback
-			if (locals.user) redirect(303, `/profile/${locals.user.username}/submissions`);
-			else redirect(303, '/login');
+			}));
 		} catch {
 			return fail(400, {
 				url: link,
@@ -147,5 +139,14 @@ export const actions = {
 				message: m.careful_lost_jaguar_dart()
 			});
 		}
+		// Source already has a work -> redirect to work page
+		if (result.work_id) redirect(303, `/work/${result.work_id}`);
+
+		// New source -> redirect to source page (for review/work creation)
+		if (result.source_id) redirect(303, `/upload/${result.source_id}`);
+
+		// Fallback
+		if (locals.user) redirect(303, `/profile/${locals.user.username}/submissions`);
+		else redirect(303, '/login');
 	}
 } satisfies Actions;

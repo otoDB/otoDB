@@ -139,28 +139,6 @@ jobs:
       - lint
       - test
       - migrations
-    
-    env:
-      OTODB_SECRET_KEY: test-secret-key-for-ci
-      OTODB_DB_HOST: localhost
-      OTODB_DB_PORT: 5432
-      OTODB_DB_NAME: "otodb_test"
-      OTODB_DB_USER: postgres
-      OTODB_DB_PASSWORD: postgres
-
-    services:
-      postgres:
-        image: 'postgres:17'
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: otodb_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -170,12 +148,7 @@ jobs:
       - name: Start Backend Server
         working-directory: backend
         run: |
-          uv sync
-          cp .env.example .env
-          uv run _setup.py
-          uv run python manage.py runserver &
-          # Wait for the server to be ready (adjust port as needed)
-          timeout 30s bash -c 'until nc -z localhost 8000; do sleep 1; done'
+          uv run manage.py openapi_schema > ../frontend/openapi.json
         
       - name: Run Frontend Generation
         working-directory: frontend
@@ -185,4 +158,5 @@ jobs:
       - name: Verify no changes (Fail if stale)
         working-directory: frontend
         run: |
-          bun run sync-schema --check
+          rm redocly.yaml
+          bun run sync-schema openapi.json --check -o src/lib/schema.ts

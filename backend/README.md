@@ -5,9 +5,6 @@
 Install [uv](https://github.com/astral-sh/uv).
 
 ```shell
-# Install dependencies
-uv sync
-
 # Setup pre-commit
 pre-commit
 

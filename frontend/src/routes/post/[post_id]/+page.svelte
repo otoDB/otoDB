@@ -13,6 +13,7 @@
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import TimeAgo from '$lib/TimeAgo.svelte';
 	import { mount, unmount } from 'svelte';
+	import EditBy from '$lib/EditBy.svelte';
 
 	let { data } = $props();
 
@@ -193,6 +194,7 @@
 					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
 					{#if data.post.edited_at && data.post.edited_by}
 						{@const editUser = data.post.edited_by}
+						<EditBy date={data.post.edited_at} user={editUser} />
 						<span title={new Date(data.post.edited_at).toLocaleString()}>
 							{#if editedByOther}
 								({m.free_tiny_badger_breathe({

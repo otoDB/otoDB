@@ -2,6 +2,7 @@
 	import { buildEntityRoutes, type EntityModelType } from './enums';
 	import { postCategory, resolvePostCategoryKeyById } from '$lib/enums/PostCategory';
 	import { m } from './paraglide/messages';
+	import TimeAgo from './TimeAgo.svelte';
 
 	interface Post {
 		id: number | string;
@@ -62,9 +63,9 @@
 					>
 				{/if}
 				<td class="text-right">
-					<time title={new Date(lastTime).toLocaleString()}
-						><a href="/profile/{lastUser}">{lastUser}</a> @ {timeAgo(lastTime)}</time
-					>
+					<a href="/profile/{lastUser}">{lastUser}</a>
+					@
+					<TimeAgo date={lastTime} />
 				</td>
 			</tr>
 		{/each}

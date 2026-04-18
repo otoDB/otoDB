@@ -10,6 +10,7 @@
 	import { hasUserLevelOld, resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 
 	let { data } = $props();
 
@@ -95,9 +96,7 @@
 					{#each data.invites.invites as inv, i (i)}
 						<tr>
 							<td>
-								<time title={new Date(inv.created_at).toLocaleString()}>
-									{timeAgo(inv.created_at)}
-								</time>
+								<TimeAgo date={inv.created_at} />
 							</td>
 							<td><pre>{inv.secret}</pre></td>
 							<td>{UserLevel[resolveUserLevelById(inv.level)].nameFn()}</td>

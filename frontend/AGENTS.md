@@ -13,6 +13,7 @@
 - Format: `bun run format`
 - Lint: `bun run lint`
 - Type check: `bun run check`
+- Update i18n files: `bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide`
 
 ## Workflow
 

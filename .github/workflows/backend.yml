@@ -135,6 +135,9 @@ jobs:
   openapi-typespec:
     name: Verify schema is fresh
     runs-on: ubuntu-latest
+    env:
+      OTODB_SECRET_KEY: dummy
+      OTODB_SKIP_DB: 1
     needs:
       - lint
       - test

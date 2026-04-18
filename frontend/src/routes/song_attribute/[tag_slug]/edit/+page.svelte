@@ -6,8 +6,8 @@
 	import TagField from '$lib/TagField.svelte';
 	import client from '$lib/api';
 	import { dirtyEnhance } from '$lib/dirty';
-	import { EnumValues, SongTagCategoryNames } from '$lib/enums';
-	import { languages } from '$lib/enums/Languages.js';
+	import { enumValues, SongTagCategoryNames } from '$lib/enums';
+	import { languages } from '$lib/enums/language.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { locales } from '$lib/paraglide/runtime';
 	import {
@@ -112,7 +112,7 @@
 					<th><label for="category">{m.plane_awful_bobcat_spark()}</label></th>
 					<td
 						><select name="category" bind:value={category}>
-							{#each EnumValues(SongTagCategory) as cat, i (i)}
+							{#each enumValues(SongTagCategory) as cat, i (i)}
 								<option value={cat}>{SongTagCategoryNames[cat]()}</option>
 							{/each}
 						</select></td

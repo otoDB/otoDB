@@ -1,5 +1,5 @@
 import { enhance } from '$app/forms';
-import { m } from './paraglide/messages';
+import { m } from '$lib/paraglide/messages';
 
 export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
 

@@ -1,6 +1,9 @@
 import { SongConnectionTypes } from '$lib/schema';
 
-export const SongConnectionMap = {
+export const songConnectionMap: Record<
+	SongConnectionTypes,
+	{ name: string; linkFn: (id: string) => string }
+> = {
 	[SongConnectionTypes.VGMdb]: {
 		name: 'VGMdb',
 		linkFn: (id: string) => `https://vgmdb.net/album/${id}`
@@ -50,4 +53,4 @@ export const SongConnectionMap = {
 		linkFn: (id: string) =>
 			`https://modarchive.org/index.php?request=view_by_moduleid&query=${id}`
 	}
-} as const satisfies Record<SongConnectionTypes, { name: string; linkFn: (id: string) => string }>;
+};

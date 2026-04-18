@@ -1,6 +1,9 @@
 import { MediaConnectionTypes } from '$lib/schema';
 
-export const MediaConnectionMap = {
+export const mediaConnectionMap: Record<
+	MediaConnectionTypes,
+	{ name: string; linkFn: (id: string) => string }
+> = {
 	[MediaConnectionTypes.AniKore]: {
 		name: 'AniKore',
 		linkFn: (id: string) => `https://www.anikore.jp/anime/${id}/`
@@ -50,4 +53,4 @@ export const MediaConnectionMap = {
 		name: 'VGMdb',
 		linkFn: (id: string) => `https://vgmdb.net/product/${id}`
 	}
-} as const satisfies Record<MediaConnectionTypes, { name: string; linkFn: (id: string) => string }>;
+};

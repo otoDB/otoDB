@@ -8,7 +8,7 @@ import {
 	WorkOrigin,
 	WorkRelationTypes,
 	WorkStatus
-} from './schema';
+} from '$lib/schema';
 
 export const SongTagCategoryNames = {
 	[SongTagCategory.General]: m.fresh_lower_rook_trip,
@@ -135,7 +135,7 @@ export const RequestActions = {
 } as const;
 
 export type Enum<E> = Record<keyof E, number | string> & { [k: number]: string };
-export const EnumValues = <E extends Enum<E>>(Enum: E): E[keyof E][] =>
+export const enumValues = <E extends Enum<E>>(Enum: E): E[keyof E][] =>
 	Object.values(Enum).filter(
 		(value) => !(typeof value === 'string' && Enum[value as keyof E] !== undefined)
 	) as E[keyof E][];

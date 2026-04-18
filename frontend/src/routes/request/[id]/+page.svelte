@@ -3,8 +3,8 @@
 	import client from '$lib/api.js';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { RequestActions, StatusNames } from '$lib/enums.js';
-	import { isSOV, isSVO } from '$lib/enums/Languages';
-	import { hasUserLevel } from '$lib/enums/UserLevel';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { Levels, PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';

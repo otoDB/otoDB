@@ -4,7 +4,7 @@ import client, { getDisplayText } from '$lib/api';
 
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
-import { hasUserLevel } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/userLevel';
 import { Levels, type components } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {

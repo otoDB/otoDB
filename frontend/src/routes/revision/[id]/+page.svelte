@@ -13,16 +13,16 @@
 		WorkStatusNames,
 		type Enum
 	} from '$lib/enums.js';
-	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
-	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/Languages';
-	import { MediaConnectionMap } from '$lib/enums/MediaConnection.js';
-	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
-	import { ProfileConnectionMap } from '$lib/enums/ProfileConnection.js';
-	import { RouteNames } from '$lib/enums/Route.js';
-	import { SongConnectionMap } from '$lib/enums/SongConnection.js';
-	import { TagWorkConnectionMap } from '$lib/enums/TagWorkConnection.js';
-	import { hasUserLevel } from '$lib/enums/UserLevel.js';
-	import { WorkTagCategoryMap } from '$lib/enums/WorkTagCategory.js';
+	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/creatorRole.js';
+	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/language.js';
+	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
+	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/mediaType.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { routeNames } from '$lib/enums/route.js';
+	import { songConnectionMap } from '$lib/enums/songConnection.js';
+	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
@@ -95,13 +95,13 @@
 			site: EnumMap_to_DisplayFunction(TagWorkConnectionMap)
 		},
 		mediasongconnection: {
-			site: EnumMap_to_DisplayFunction(SongConnectionMap)
+			site: EnumMap_to_DisplayFunction(songConnectionMap)
 		},
 		tagworkmediaconnection: {
-			site: EnumMap_to_DisplayFunction(MediaConnectionMap)
+			site: EnumMap_to_DisplayFunction(mediaConnectionMap)
 		},
 		tagworkcreatorconnection: {
-			site: EnumMap_to_DisplayFunction(ProfileConnectionMap)
+			site: EnumMap_to_DisplayFunction(profileConnectionMap)
 		},
 		tagworklangpreference: {
 			lang: Languages
@@ -164,7 +164,7 @@
 		>{/if}
 	<ul class="my-5">
 		{#each data.routes as { route, entities }, i (i)}
-			<li>{RouteNames[route]()}</li>
+			<li>{routeNames[route]()}</li>
 			<li class="ml-2 list-none">
 				<ul>
 					{#each entities as { ent_type, ent_id, rcs }, j (j)}

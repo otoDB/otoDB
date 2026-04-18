@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import client from '$lib/api';
-import { languages } from '$lib/enums/Languages';
+import { languages } from '$lib/enums/language';
 import { get_entity, renderMarkdown } from '$lib/markdown';
 import { error, fail } from '@sveltejs/kit';
 import type { Actions, LayoutServerLoad } from './$types';

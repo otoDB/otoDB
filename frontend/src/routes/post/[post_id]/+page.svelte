@@ -6,9 +6,9 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
 	import { EntityModelRoutes } from '$lib/enums.js';
-	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
-	import { PostCategoryNames } from '$lib/enums/PostCategory.js';
-	import { hasUserLevel } from '$lib/enums/UserLevel.js';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/language.js';
+	import { postCategoryNames } from '$lib/enums/postCategory.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
@@ -161,7 +161,7 @@
 		<div class="text-otodb-content-fainter mb-6 text-xs">
 			<p>
 				<a href="/post?category={data.post.category}"
-					>{PostCategoryNames[data.post.category]()}</a
+					>{postCategoryNames[data.post.category]()}</a
 				>
 				{#if data.post.category === 0}
 					&middot;

@@ -10,7 +10,7 @@
 		WorkRelationDisplayForward,
 		WorkStatusNames
 	} from '$lib/enums';
-	import { WorkTagCategoryMap } from '$lib/enums/WorkTagCategory';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import {

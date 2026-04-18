@@ -1,12 +1,12 @@
 <script lang="ts" generics="T extends 'work' | 'song'">
 	import { m } from '$lib/paraglide/messages.js';
-	import { EnumValues, SongRelationNames, WorkRelationNames } from '$lib/enums.js';
+	import { enumValues, SongRelationNames, WorkRelationNames } from '$lib/enums.js';
 	import { getDisplayText } from '$lib/api';
 	import mermaid from 'mermaid';
 	import elkLayouts from '@mermaid-js/layout-elk';
 	import { onMount } from 'svelte';
 	import { SVGViewer } from 'svelte-svg-viewer';
-	import { SongRelationTypes, WorkRelationTypes, type components } from './schema';
+	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
 
 	type Work = components['schemas']['SlimWorkSchema'];
 	type Song = components['schemas']['SongSchema'];
@@ -30,7 +30,7 @@
 
 	let deg = $state(1);
 	let direction = $state(defaultDir);
-	let allowed_types: RelationType[] = $state(EnumValues(RelationTypes) as RelationType[]);
+	let allowed_types: RelationType[] = $state(enumValues(RelationTypes) as RelationType[]);
 
 	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: number[]) =>
 		mermaid.render(
@@ -206,7 +206,7 @@ flowchart ${direction}
 </label>
 {m.mild_loud_shad_enchant({ type: m.mellow_upper_finch_drip(), name: '' })}
 <select multiple bind:value={allowed_types}>
-	{#each EnumValues(RelationTypes) as t, i (i)}
+	{#each enumValues(RelationTypes) as t, i (i)}
 		<option value={t} class="type-label">{RelationNames[t]()}</option>
 	{/each}
 </select>
@@ -248,7 +248,7 @@ flowchart ${direction}
 />
 
 <style>
-	@reference "../app.css";
+	@reference ".$lib/app.css";
 	option.type-label {
 		&:checked {
 			@apply text-otodb-bg-primary;

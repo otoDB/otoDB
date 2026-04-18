@@ -1,6 +1,6 @@
 import { toast } from 'svelte-sonner';
-import { m } from './paraglide/messages';
-import { ErrorCode } from './schema';
+import { m } from '$lib/paraglide/messages';
+import { ErrorCode } from '$lib/schema';
 
 export const callErrorToast = (message: string) => toast.error(message, {});
 

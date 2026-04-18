@@ -1,5 +1,5 @@
 import client from '$lib/api';
-import { EnumValues } from '$lib/enums';
+import { enumValues } from '$lib/enums';
 import { m } from '$lib/paraglide/messages';
 import { PostCategory } from '$lib/schema';
 import type { PageServerLoad } from './$types';
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 
 	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
 	const category: PostCategory | null =
-		paramCategory && !EnumValues(PostCategory).includes(paramCategory) ? paramCategory : null;
+		paramCategory && !enumValues(PostCategory).includes(paramCategory) ? paramCategory : null;
 
 	const { data } = await client.GET('/api/post/search', {
 		fetch,

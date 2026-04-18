@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { buildEntityRoutes, type EntityModelType } from './enums';
-	import { PostCategoryNames } from './enums/PostCategory';
-	import { m } from './paraglide/messages';
-	import type { PostCategory } from './schema';
-	import { timeAgo } from './ui';
+	import { buildEntityRoutes, type EntityModelType } from '$lib/enums';
+	import { postCategoryNames } from '$lib/enums/postCategory';
+	import { m } from '$lib/paraglide/messages';
+	import type { PostCategory } from '$lib/schema';
+	import { timeAgo } from '$lib/ui';
 
 	interface Post {
 		id: number | string;
@@ -57,7 +57,7 @@
 					{/if}
 				</td>
 				{#if showCategory}
-					<td>{PostCategoryNames[post.category]()}</td>
+					<td>{postCategoryNames[post.category]()}</td>
 				{/if}
 				{#if showAuthor}
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td

@@ -10,12 +10,12 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client, { getTagDisplayName } from '$lib/api.js';
-	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
-	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
-	import { MediaConnectionMap } from '$lib/enums/MediaConnection';
-	import { ProfileConnectionMap } from '$lib/enums/ProfileConnection';
-	import { SongConnectionMap } from '$lib/enums/SongConnection';
-	import { TagWorkConnectionMap } from '$lib/enums/TagWorkConnection';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/language.js';
+	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/mediaType.js';
+	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { songConnectionMap } from '$lib/enums/songConnection.js';
+	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
 
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
@@ -27,7 +27,7 @@
 		WorkTagCategory,
 		type components
 	} from '$lib/schema.js';
-	import { WorkTagCategoryMap } from '$lib/enums/WorkTagCategory.js';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -155,8 +155,8 @@
 				{#each data.connections[1] as s, i (i)}
 					{@const conn =
 						data.tag.category === WorkTagCategory.Media
-							? MediaConnectionMap[s.site as MediaConnectionTypes]
-							: ProfileConnectionMap[s.site as ProfileConnectionTypes]}
+							? mediaConnectionMap[s.site as MediaConnectionTypes]
+							: profileConnectionMap[s.site as ProfileConnectionTypes]}
 					<li class={{ 'opacity-60': s.dead }}>
 						<ConnectionFavicon type={conn.name} class="inline size-4" />
 						<a
@@ -218,15 +218,15 @@
 				{#each data.song_connections as s, i (i)}
 					<li>
 						<ConnectionFavicon
-							type={SongConnectionMap[s.site].name}
+							type={songConnectionMap[s.site].name}
 							class="inline size-4"
 						/>
 						<a
-							href={SongConnectionMap[s.site].linkFn(s.content_id)}
+							href={songConnectionMap[s.site].linkFn(s.content_id)}
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{decodeURI(SongConnectionMap[s.site].linkFn(s.content_id))}
+							{decodeURI(songConnectionMap[s.site].linkFn(s.content_id))}
 						</a>
 					</li>
 				{/each}

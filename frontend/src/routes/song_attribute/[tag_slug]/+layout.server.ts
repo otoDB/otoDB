@@ -5,7 +5,7 @@ import { error } from '@sveltejs/kit';
 
 import { getTagDisplayName } from '$lib/api';
 import { redirect } from '@sveltejs/kit';
-import { hasUserLevel } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/userLevel';
 import { Levels } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {

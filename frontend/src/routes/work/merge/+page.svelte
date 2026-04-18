@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkField from '$lib/WorkField.svelte';
 	import { Rating, type components } from '$lib/schema';
-	import { EnumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
+	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import client, { getDisplayText } from '$lib/api';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
@@ -232,7 +232,7 @@
 							disabled={!work['a'].work || selectingRating !== 'a'}
 							bind:value={work['a'].rating}
 						>
-							{#each EnumValues(Rating) as r, i (i)}<option value={r}
+							{#each enumValues(Rating) as r, i (i)}<option value={r}
 									>{RatingNames[r]()}</option
 								>{/each}
 						</select></td
@@ -258,7 +258,7 @@
 							disabled={!work['b'].work || selectingRating !== 'b'}
 							bind:value={work['b'].rating}
 						>
-							{#each EnumValues(Rating) as r, i (i)}<option value={r}
+							{#each enumValues(Rating) as r, i (i)}<option value={r}
 									>{RatingNames[r]()}</option
 								>{/each}
 						</select></td

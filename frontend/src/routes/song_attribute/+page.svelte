@@ -3,7 +3,7 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import client from '$lib/api';
-	import { EnumValues, SongTagCategoryNames } from '$lib/enums';
+	import { enumValues, SongTagCategoryNames } from '$lib/enums';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import SongTag from '$lib/SongTag.svelte';
 	import { SongTagCategory } from '$lib/schema.js';
@@ -46,7 +46,7 @@
 		/>
 		<select name="category" bind:value={category}>
 			<option value={-1}>{m.keen_soft_crow_relish()}</option>
-			{#each EnumValues(SongTagCategory) as cat, i (i)}
+			{#each enumValues(SongTagCategory) as cat, i (i)}
 				<option value={cat}>{SongTagCategoryNames[cat]()}</option>
 			{/each}
 		</select>

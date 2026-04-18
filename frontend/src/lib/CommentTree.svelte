@@ -3,11 +3,11 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
-	import { hasUserLevel } from '$lib/enums/UserLevel';
+	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { timeAgo } from '$lib/ui';
-	import { Levels, type PathsApiCommentCommentDeleteParametersQueryModel } from './schema';
+	import { Levels, type PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
 
 	export type CommentModels =
 		| 'mediawork'

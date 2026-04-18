@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { WorkTagCategoryMap } from './enums/WorkTagCategory';
-	import type { WorkTagCategory } from './schema';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
+	import type { WorkTagCategory } from '$lib/schema';
 
 	type SuggestionTag = {
 		id: number;

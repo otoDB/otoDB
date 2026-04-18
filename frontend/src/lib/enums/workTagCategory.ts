@@ -1,7 +1,15 @@
 import { m } from '$lib/paraglide/messages.js';
 import { WorkTagCategory } from '$lib/schema';
 
-export const WorkTagCategoryMap = {
+export const WorkTagCategoryMap: Record<
+	WorkTagCategory,
+	{
+		nameFn: () => string;
+		color: string;
+		canSetAsSource: boolean;
+		order: number;
+	}
+> = {
 	[WorkTagCategory.Event]: {
 		nameFn: m.next_bland_goldfish_heart,
 		color: 'rgb(8,145,178)',
@@ -44,7 +52,4 @@ export const WorkTagCategoryMap = {
 		canSetAsSource: false,
 		order: 6
 	}
-} as const satisfies Record<
-	WorkTagCategory,
-	{ nameFn: () => string; color: string; canSetAsSource: boolean; order: number }
->;
+};

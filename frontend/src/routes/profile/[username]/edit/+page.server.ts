@@ -1,5 +1,5 @@
 import client from '$lib/api';
-import { hasUserLevel } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/userLevel';
 import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { Levels } from '$lib/schema';

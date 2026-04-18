@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import client from './api';
-	import { m } from './paraglide/messages';
-	import { getLocale } from './paraglide/runtime';
-	import { FAQ_POST_ID, GUIDELINE_POST_ID } from './ui';
-	import { isSOV, isSVO } from '$lib/enums/Languages';
+	import client from '$lib/api';
+	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import { FAQ_POST_ID, GUIDELINE_POST_ID } from '$lib/ui';
+	import { isSOV, isSVO } from '$lib/enums/language';
 
 	let latestMod: null | Date = $state(null);
 

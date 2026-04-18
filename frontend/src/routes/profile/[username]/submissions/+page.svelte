@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import {
-		EnumValues,
+		enumValues,
 		PlatformNames,
 		StatusNames,
 		WorkOriginNames,
 		WorkStatusNames
 	} from '$lib/enums';
-	import { hasUserLevel } from '$lib/enums/UserLevel';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
@@ -29,7 +29,7 @@
 					<td>{m.just_noisy_moth_beam()}</td>
 					<td
 						><select name="standing" value={data.standing ?? 1}
-							>{#each EnumValues(Status) as p, i (i)}<option value={p}
+							>{#each enumValues(Status) as p, i (i)}<option value={p}
 									>{StatusNames[p]()}</option
 								>{/each}</select
 						></td
@@ -40,7 +40,7 @@
 					<td
 						><select name="platform" value={data.platform ?? null}
 							><option value={null}>---</option
-							>{#each EnumValues(Platform) as p, i (i)}<option value={p}
+							>{#each enumValues(Platform) as p, i (i)}<option value={p}
 									>{PlatformNames[p]}</option
 								>{/each}</select
 						></td

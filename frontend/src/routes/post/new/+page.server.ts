@@ -6,7 +6,7 @@ import { userLevelGuard } from '$lib/route_guard';
 import { Levels, type components } from '$lib/schema';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getLanguageId, languages } from '$lib/enums/Languages';
+import { getLanguageId, languages } from '$lib/enums/language';
 
 export const load: PageServerLoad = ({ locals, url }) => {
 	userLevelGuard(locals.user, Levels.Member);

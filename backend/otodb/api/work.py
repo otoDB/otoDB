@@ -48,7 +48,7 @@ from .common import (
 	user_is_trusted,
 	user_is_editor,
 	user_is_staff,
-	RelationSchema,
+	WorkRelationSchema,
 	post_relations,
 	SlimWorkSchema,
 	RouterWithRevision,
@@ -206,12 +206,9 @@ def tags_needed(request: AuthedHttpRequest):
 	)
 
 
-@work_router.get('work', response={200: WorkSchema, 300: int})
+@work_router.get('work', response=WorkSchema)
 def work(request: AuthedHttpRequest, work_id: int):
-	work: MediaWork = get_object_or_404(MediaWork.objects, id=work_id)
-	if work.moved_to:
-		return 300, work.moved_to.id
-	return work
+	return get_object_or_404(MediaWork.objects, id=work_id)
 
 
 @work_router.delete('work', auth=django_auth)
@@ -248,7 +245,7 @@ def recent(request: AuthedHttpRequest, n: int = 1):
 
 
 @work_router.get(
-	'relations', response=tuple[list[RelationSchema], list[SlimWorkSchema]]
+	'relations', response=tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 )
 def relations(request: AuthedHttpRequest, work_id: int):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
@@ -259,7 +256,9 @@ def relations(request: AuthedHttpRequest, work_id: int):
 @work_router.post('relation', auth=django_auth)
 @user_is_trusted
 @with_revision_route(Route.WORKRELATION_CREATE)
-def relation(request: AuthedHttpRequest, this_id: int, payload: list[RelationSchema]):
+def relation(
+	request: AuthedHttpRequest, this_id: int, payload: list[WorkRelationSchema]
+):
 	post_relations(MediaWork, this_id, payload)
 
 

@@ -1452,13 +1452,17 @@ export interface components {
         };
         /** Error */
         Error: {
-            /** Code */
-            code: number;
+            code: components["schemas"]["ErrorCode"];
             /** Data */
             data?: {
                 [key: string]: unknown;
             } | null;
         };
+        /**
+         * ErrorCode
+         * @enum {integer}
+         */
+        ErrorCode: ErrorCode;
         /** LoginRequestSchema */
         LoginRequestSchema: {
             /** Username */
@@ -1466,12 +1470,25 @@ export interface components {
             /** Password */
             password: string;
         };
+        /**
+         * LanguageTypes
+         * @enum {integer}
+         */
+        LanguageTypes: LanguageTypes;
+        /**
+         * Levels
+         * @enum {integer}
+         */
+        Levels: Levels;
+        /**
+         * ThemePref
+         * @enum {integer}
+         */
+        ThemePref: ThemePref;
         /** UserPreferencesSchema */
         UserPreferencesSchema: {
-            /** Language */
-            language: number | null;
-            /** Theme */
-            theme: number | null;
+            language: components["schemas"]["LanguageTypes"] | null;
+            theme: components["schemas"]["ThemePref"] | null;
         };
         /** UserStatusSchema */
         UserStatusSchema: {
@@ -1479,8 +1496,7 @@ export interface components {
             user_id: number;
             /** Username */
             username: string;
-            /** Level */
-            level: number;
+            level: components["schemas"]["Levels"];
             prefs?: components["schemas"]["UserPreferencesSchema"] | null;
             /** Notifs Count */
             notifs_count: number;
@@ -1553,8 +1569,7 @@ export interface components {
             tag: string;
             /** Slug */
             slug: string;
-            /** Lang */
-            lang: number;
+            lang: components["schemas"]["LanguageTypes"];
         };
         /** TagWorkInstanceSchema */
         TagWorkInstanceSchema: {
@@ -1567,8 +1582,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /** Category */
-            category: number;
+            category: components["schemas"]["WorkTagCategory"];
             /** Deprecated */
             deprecated: boolean;
             /** Sample */
@@ -1589,11 +1603,15 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /** Category */
-            category: number;
+            category: components["schemas"]["WorkTagCategory"];
             /** Deprecated */
             deprecated: boolean;
         };
+        /**
+         * WorkTagCategory
+         * @enum {integer}
+         */
+        WorkTagCategory: WorkTagCategory;
         /** Input */
         Input: {
             /**
@@ -1625,8 +1643,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /** Category */
-            category: number;
+            category: components["schemas"]["WorkTagCategory"];
             /** Deprecated */
             deprecated: boolean;
             /** Sample */
@@ -1645,15 +1662,6 @@ export interface components {
             /** Title */
             title?: string | null;
         };
-        /** RelationSchema */
-        RelationSchema: {
-            /** A Id */
-            A_id: number;
-            /** B Id */
-            B_id: number;
-            /** Relation */
-            relation: number;
-        };
         /** SlimWorkSchema */
         SlimWorkSchema: {
             /** Id */
@@ -1663,6 +1671,19 @@ export interface components {
             /** Title */
             title?: string | null;
         };
+        /** WorkRelationSchema */
+        WorkRelationSchema: {
+            /** A Id */
+            A_id: number;
+            /** B Id */
+            B_id: number;
+            relation: components["schemas"]["WorkRelationTypes"];
+        };
+        /**
+         * WorkRelationTypes
+         * @enum {integer}
+         */
+        WorkRelationTypes: WorkRelationTypes;
         /** WorkSchema */
         WorkSchema: {
             /** Id */
@@ -1673,7 +1694,7 @@ export interface components {
             thumbnail?: string | null;
             /** Relations */
             relations: [
-                components["schemas"]["RelationSchema"][],
+                components["schemas"]["WorkRelationSchema"][],
                 components["schemas"]["SlimWorkSchema"][]
             ];
             /** Title */
@@ -1761,17 +1782,24 @@ export interface components {
             title?: string | null;
             /** Description */
             description?: string | null;
-            /**
-             * Rating
-             * @default 0
-             */
-            rating: number;
+            /** @default 0 */
+            rating: components["schemas"]["Rating"];
             /**
              * Tags
              * @default []
              */
             tags: components["schemas"]["TagWorkInstanceInSchema"][];
         };
+        /**
+         * Rating
+         * @enum {integer}
+         */
+        Rating: Rating;
+        /**
+         * WorkOrigin
+         * @enum {integer}
+         */
+        WorkOrigin: WorkOrigin;
         /**
          * WorkSourceMetadataSchema
          * @description Manual WorkSource metadata input
@@ -1835,24 +1863,40 @@ export interface components {
             /** Description */
             description?: string | null;
         };
-        /** ConnectionSchema */
-        ConnectionSchema: {
-            /** Site */
-            site: number;
+        /**
+         * ProfileConnectionTypes
+         * @enum {integer}
+         */
+        ProfileConnectionTypes: ProfileConnectionTypes;
+        /** UserConnectionSchema */
+        UserConnectionSchema: {
+            site: components["schemas"]["ProfileConnectionTypes"];
             /** Content Id */
             content_id: string;
             /** Dead */
             dead?: boolean | null;
         };
+        /**
+         * Platform
+         * @enum {integer}
+         */
+        Platform: Platform;
+        /**
+         * Status
+         * @enum {integer}
+         */
+        Status: Status;
         /** SubmissionsFilterSchema */
         SubmissionsFilterSchema: {
-            /** Platform */
-            platform?: number | null;
-            /** Origin */
-            origin?: number | null;
-            /** Status */
-            status?: number | null;
+            platform?: components["schemas"]["Platform"] | null;
+            origin?: components["schemas"]["WorkOrigin"] | null;
+            status?: components["schemas"]["WorkStatus"] | null;
         };
+        /**
+         * WorkStatus
+         * @enum {integer}
+         */
+        WorkStatus: WorkStatus;
         /** PagedSourceSubmissionSchema */
         PagedSourceSubmissionSchema: {
             /** Items */
@@ -2012,8 +2056,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /** Category */
-            category: number;
+            category: components["schemas"]["WorkTagCategory"];
             /** Deprecated */
             deprecated: boolean;
             /** N Instance */
@@ -2066,6 +2109,11 @@ export interface components {
             /** Author */
             author: string;
         };
+        /**
+         * SongTagCategory
+         * @enum {integer}
+         */
+        SongTagCategory: SongTagCategory;
         /** TagSongSchema */
         TagSongSchema: {
             /** Id */
@@ -2076,8 +2124,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /** Category */
-            category: number;
+            category: components["schemas"]["SongTagCategory"];
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
         };
@@ -2097,8 +2144,7 @@ export interface components {
         };
         /** WorkTagInSchema */
         WorkTagInSchema: {
-            /** Category */
-            category: number;
+            category: components["schemas"]["WorkTagCategory"];
             /** Deprecated */
             deprecated: boolean;
             /** Parent Slugs */
@@ -2169,10 +2215,36 @@ export interface components {
         };
         /** WikiPageEditSchema */
         WikiPageEditSchema: {
-            /** Lang */
-            lang: number;
+            lang: components["schemas"]["LanguageTypes"];
             /** Md */
             md: string;
+        };
+        /**
+         * MediaConnectionTypes
+         * @enum {integer}
+         */
+        MediaConnectionTypes: MediaConnectionTypes;
+        /** TagWorkConnectionSchema */
+        TagWorkConnectionSchema: {
+            site: components["schemas"]["TagWorkConnectionTypes"];
+            /** Content Id */
+            content_id: string;
+            /** Dead */
+            dead?: boolean | null;
+        };
+        /**
+         * TagWorkConnectionTypes
+         * @enum {integer}
+         */
+        TagWorkConnectionTypes: TagWorkConnectionTypes;
+        /** TagWorkExtraConnectionSchema */
+        TagWorkExtraConnectionSchema: {
+            /** Site */
+            site: components["schemas"]["MediaConnectionTypes"] | components["schemas"]["ProfileConnectionTypes"];
+            /** Content Id */
+            content_id: string;
+            /** Dead */
+            dead?: boolean | null;
         };
         /** PagedSongSchema */
         PagedSongSchema: {
@@ -2181,6 +2253,19 @@ export interface components {
             /** Count */
             count: number;
         };
+        /** SongRelationSchema */
+        SongRelationSchema: {
+            /** A Id */
+            A_id: number;
+            /** B Id */
+            B_id: number;
+            relation: components["schemas"]["SongRelationTypes"];
+        };
+        /**
+         * SongRelationTypes
+         * @enum {integer}
+         */
+        SongRelationTypes: SongRelationTypes;
         /** PagedTagSongSearchResultSchema */
         PagedTagSongSearchResultSchema: {
             /** Items */
@@ -2198,8 +2283,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /** Category */
-            category: number;
+            category: components["schemas"]["SongTagCategory"];
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             /** N Instance */
@@ -2209,8 +2293,7 @@ export interface components {
         SongTagInSchema: {
             /** Parent Slug */
             parent_slug: string | null;
-            /** Category */
-            category: number;
+            category: components["schemas"]["SongTagCategory"];
         };
         /** TagSongDetailsSchema */
         TagSongDetailsSchema: {
@@ -2218,6 +2301,15 @@ export interface components {
             tree: components["schemas"]["TagSongSchema"][];
             /** Aliases */
             aliases: components["schemas"]["TagSongSchema"][];
+        };
+        /** ConnectionSchema */
+        ConnectionSchema: {
+            /** Site */
+            site: number;
+            /** Content Id */
+            content_id: string;
+            /** Dead */
+            dead?: boolean | null;
         };
         /** ConnectionLookupResponse */
         ConnectionLookupResponse: {
@@ -2235,8 +2327,7 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
-            /** Category */
-            category: number;
+            category: components["schemas"]["WorkTagCategory"];
             /** Deprecated */
             deprecated: boolean;
             /** Has Connection */
@@ -2282,11 +2373,6 @@ export interface components {
             /** Edited At */
             edited_at?: string | null;
         };
-        /**
-         * LanguageTypes
-         * @enum {integer}
-         */
-        LanguageTypes: LanguageTypes;
         /**
          * PostCategory
          * @enum {integer}
@@ -2463,8 +2549,7 @@ export interface components {
             ent_type: string;
             /** Ent Id */
             ent_id: string;
-            /** Route */
-            route: number;
+            route: components["schemas"]["Route"];
             /** Tg Id */
             tg_id: string;
             /**
@@ -2478,10 +2563,10 @@ export interface components {
             target_value?: string | null;
         };
         /**
-         * Status
+         * Route
          * @enum {integer}
          */
-        Status: Status;
+        Route: Route;
         /** BulkRequestSchema */
         BulkRequestSchema: {
             /** Requests */
@@ -2854,15 +2939,6 @@ export interface operations {
                     "application/json": components["schemas"]["WorkSchema"];
                 };
             };
-            /** @description Multiple Choices */
-            300: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": number;
-                };
-            };
         };
     };
     otodb_api_work_update_work: {
@@ -2996,7 +3072,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": [
-                        components["schemas"]["RelationSchema"][],
+                        components["schemas"]["WorkRelationSchema"][],
                         components["schemas"]["SlimWorkSchema"][]
                     ];
                 };
@@ -3014,7 +3090,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RelationSchema"][];
+                "application/json": components["schemas"]["WorkRelationSchema"][];
             };
         };
         responses: {
@@ -3153,7 +3229,7 @@ export interface operations {
         parameters: {
             query: {
                 source_id: number;
-                status: number;
+                status: PathsApiUploadOriginPutParametersQueryStatus;
             };
             header?: never;
             path?: never;
@@ -3367,7 +3443,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ConnectionSchema"][];
+                    "application/json": components["schemas"]["UserConnectionSchema"][];
                 };
             };
         };
@@ -3421,11 +3497,11 @@ export interface operations {
         parameters: {
             query: {
                 username: string;
-                platform?: number | null;
-                origin?: number | null;
-                status?: number | null;
+                platform?: components["schemas"]["Platform"] | null;
+                origin?: components["schemas"]["WorkOrigin"] | null;
+                status?: components["schemas"]["WorkStatus"] | null;
                 order?: PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 | null;
-                standing?: number;
+                standing?: PathsApiProfileSubmissionsGetParametersQueryStanding;
                 limit?: number;
                 offset?: number;
             };
@@ -3808,7 +3884,7 @@ export interface operations {
             query: {
                 query: string;
                 resolve_aliases?: boolean;
-                category?: number | null;
+                category?: components["schemas"]["WorkTagCategory"] | null;
                 media_type?: number[] | null;
                 order?: string;
                 deprecated_only?: boolean;
@@ -3856,15 +3932,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FatTagWorkSchema"];
-                };
-            };
-            /** @description Multiple Choices */
-            300: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": string;
                 };
             };
         };
@@ -4096,8 +4163,8 @@ export interface operations {
                 };
                 content: {
                     "application/json": [
-                        components["schemas"]["ConnectionSchema"][],
-                        components["schemas"]["ConnectionSchema"][] | null
+                        components["schemas"]["TagWorkConnectionSchema"][],
+                        components["schemas"]["TagWorkExtraConnectionSchema"][] | null
                     ];
                 };
             };
@@ -4194,7 +4261,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": [
-                        components["schemas"]["RelationSchema"][],
+                        components["schemas"]["SongRelationSchema"][],
                         components["schemas"]["SongSchema"][]
                     ];
                 };
@@ -4212,7 +4279,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RelationSchema"][];
+                "application/json": components["schemas"]["SongRelationSchema"][];
             };
         };
         responses: {
@@ -4230,7 +4297,7 @@ export interface operations {
             query: {
                 query: string;
                 resolve_aliases?: boolean;
-                category?: number | null;
+                category?: components["schemas"]["SongTagCategory"] | null;
                 limit?: number;
                 offset?: number;
             };
@@ -4293,15 +4360,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TagSongSchema"];
-                };
-            };
-            /** @description Multiple Choices */
-            300: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": string;
                 };
             };
         };
@@ -4966,11 +5024,20 @@ export enum PathsApiWorkSearchGetParametersQueryOrderAnyOf0 {
     pub = "pub",
     ValueMinuspub = "-pub"
 }
+export enum PathsApiUploadOriginPutParametersQueryStatus {
+    Author = 0,
+    Reupload = 1
+}
 export enum PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 {
     id = "id",
     ValueMinusid = "-id",
     published_date = "published_date",
     ValueMinuspublished_date = "-published_date"
+}
+export enum PathsApiProfileSubmissionsGetParametersQueryStanding {
+    Pending = 0,
+    Approved = 1,
+    Unapproved = 2
 }
 export enum PathsApiTagTagDeleteParametersQueryType {
     work = "work",
@@ -5028,6 +5095,90 @@ export enum PathsApiRequestConfirmPostParametersQueryStatus {
     Approved = 1,
     Unapproved = 2
 }
+export enum ErrorCode {
+    Login_Failed = 10000,
+    Not_Logged_In = 10001,
+    Username_Taken = 10002,
+    Validation_Error = 10003,
+    Editor_Only = 10004,
+    Bad_Url = 10005,
+    Source_Has_Work = 10006,
+    No_Matching_Entities = 10007,
+    Name_Slug_Mismatch = 10008
+}
+export enum LanguageTypes {
+    N_A = 0,
+    en = 1,
+    ja = 2,
+    zh_cn = 3,
+    ko = 4
+}
+export enum Levels {
+    Value0 = 0,
+    Value10 = 10,
+    Value20 = 20,
+    Value40 = 40,
+    Value50 = 50,
+    Value100 = 100
+}
+export enum ThemePref {
+    Default = 0,
+    Aniki = 1,
+    otogroove = 2,
+    Retro_Voyage = 3,
+    SORIMIX = 4,
+    Re_Sample = 5
+}
+export enum WorkTagCategory {
+    General = 0,
+    Event = 1,
+    Song = 2,
+    Source = 3,
+    Creator = 4,
+    Meta = 5,
+    Media = 6
+}
+export enum WorkRelationTypes {
+    Sequel = 0,
+    Respect = 1,
+    Collab_Part = 2,
+    Sample = 3
+}
+export enum Rating {
+    General = 0,
+    Sensitive = 1,
+    Explicit = 2
+}
+export enum WorkOrigin {
+    Author = 0,
+    Reupload = 1
+}
+export enum ProfileConnectionTypes {
+    Website = 0,
+    Niconico = 1,
+    YouTube = 2,
+    Bilibili = 3,
+    Twitter = 4,
+    Bluesky = 5,
+    Soundcloud = 6
+}
+export enum Platform {
+    YouTube = 1,
+    Niconico = 2,
+    Bilibili = 3,
+    SoundCloud = 4,
+    Twitter = 5,
+    AcFun = 6
+}
+export enum Status {
+    Pending = 0,
+    Approved = 1,
+    Unapproved = 2
+}
+export enum WorkStatus {
+    Available = 0,
+    Down = 1
+}
 export enum NotificationSchemaCommentAnyOf0 {
     mediawork = "mediawork",
     account = "account",
@@ -5037,19 +5188,47 @@ export enum NotificationSchemaCommentAnyOf0 {
     post = "post",
     bulkrequest = "bulkrequest"
 }
+export enum SongTagCategory {
+    General = 0,
+    Genre = 1,
+    Author = 2,
+    Meta = 3
+}
+export enum MediaConnectionTypes {
+    AniKore = 1,
+    Bangumi = 2,
+    AniDB = 3,
+    MyAnimeList = 4,
+    AniList = 5,
+    Kitsu = 6,
+    Anime_Planet = 7,
+    IMDb = 20,
+    Letterboxd = 21,
+    vndb = 40,
+    ErogameScape = 41,
+    VGMdb = 50
+}
+export enum TagWorkConnectionTypes {
+    otomad_wiki = 1,
+    Otomad_Wiki_2 = 2,
+    Niconico_Encyclopedia = 20,
+    Pixiv_Dictionary = 21,
+    Wikipedia = 22,
+    Namu_Wiki = 23,
+    Know_Your_Meme = 24
+}
+export enum SongRelationTypes {
+    Remix = 0,
+    Remaster = 1,
+    Medley = 2,
+    Sequel = 3
+}
 export enum EntitySchemaEntity {
     mediawork = "mediawork",
     tagwork = "tagwork",
     tagsong = "tagsong",
     mediasong = "mediasong",
     worksource = "worksource"
-}
-export enum LanguageTypes {
-    N_A = 0,
-    en = 1,
-    ja = 2,
-    zh_cn = 3,
-    ko = 4
 }
 export enum PostCategory {
     Announcement = 0,
@@ -5067,8 +5246,41 @@ export enum CommentInSchemaModel {
     post = "post",
     bulkrequest = "bulkrequest"
 }
-export enum Status {
-    Pending = 0,
-    Approved = 1,
-    Unapproved = 2
+export enum Route {
+    Unknown = 0,
+    Tag_Work_Alias = 1,
+    Tag_Work_Alias_Control = 2,
+    Tag_Work_Delete = 3,
+    Tag_Work_Update = 4,
+    DEPRECATED_Tag_Work_Set_Base = 5,
+    DEPRECATED_Tag_Work_Add_Language_Preference = 6,
+    Tag_Work_Edit_Wiki = 7,
+    Tag_Work_Edit_Connections = 8,
+    Song_Tag_Update = 20,
+    Song_Tag_Set_Tags = 21,
+    Song_Tag_Alias = 22,
+    Song_Tag_Alias_Control = 23,
+    Song_Tag_Delete = 24,
+    DEPRECATED_Song_Tag_Set_Base = 25,
+    DEPRECATED_Song_Tag_Add_Language_Preference = 26,
+    Song_Relation_Control = 30,
+    DEPRECATED_Song_Relation_Delete = 31,
+    Media_Work_Delete = 40,
+    Media_Work_Set_Tags = 41,
+    DEPRECATED_Media_Work_Remove_Tag = 42,
+    DEPRECATED_Media_Work_Update_Creator_Roles = 43,
+    DEPRECATED_Media_Work_Toggle_Sample = 44,
+    Media_Work_Update = 45,
+    Media_Work_Merge = 46,
+    Media_Work_Create = 47,
+    Work_Relation_Control = 50,
+    DEPRECATED_Work_Relation_Delete = 51,
+    Work_Source_Create = 60,
+    Work_Source_Unbind = 61,
+    Work_Source_Set_Origin = 62,
+    Work_Source_Refresh = 63,
+    Work_Source_Assign = 64,
+    Work_Source_Reject = 65,
+    Work_Source_Update = 66,
+    Rollback = 100
 }

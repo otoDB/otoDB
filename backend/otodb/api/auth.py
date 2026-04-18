@@ -53,7 +53,7 @@ def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 
 
 class UserStatusSchema(UserLoginSchema):
-	level: int
+	level: Account.Levels
 	user_id: int = Field(..., alias='id')
 	username: str
 	prefs: UserPreferencesSchema | None = None

@@ -117,7 +117,7 @@ class RevisionChangeSchema(ModelSchema):
 	target_type: str = Field(..., alias='target_type.model')
 	ent_type: str
 	ent_id: str
-	route: int
+	route: Route
 	tg_id: str
 
 	class Meta:

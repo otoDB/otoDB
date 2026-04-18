@@ -33,6 +33,11 @@ from otodb.models.enums import (
 	Route,
 	WorkRelationTypes,
 	SongRelationTypes,
+	WorkTagCategory,
+	Rating,
+	LanguageTypes,
+	ThemePref,
+	ErrorCode,
 )
 import re
 
@@ -42,7 +47,7 @@ class AuthedHttpRequest(HttpRequest):
 
 
 class Error(Schema):
-	code: int
+	code: ErrorCode
 	data: dict | None = None
 
 
@@ -57,7 +62,7 @@ class ProfileSchema(ModelSchema):
 class TagLangPreferenceSchema(Schema):
 	tag: str = Field(..., alias='tag.name')
 	slug: str = Field(..., alias='tag.slug')
-	lang: int
+	lang: LanguageTypes = Field(..., gt=0)
 
 
 class TagWorkSchema(Schema):
@@ -66,7 +71,7 @@ class TagWorkSchema(Schema):
 	aliased_to: Optional['TagWorkSchema']
 	name: str
 	slug: str
-	category: int
+	category: WorkTagCategory
 	deprecated: bool
 
 
@@ -127,6 +132,14 @@ class RelationSchema(Schema):
 	relation: int
 
 
+class WorkRelationSchema(RelationSchema):
+	relation: WorkRelationTypes
+
+
+class SongRelationSchema(RelationSchema):
+	relation: SongRelationTypes
+
+
 class SlimWorkSchema(ModelSchema):
 	id: int
 	thumbnail: str | None = None  # Exposed as property
@@ -140,7 +153,7 @@ class WorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
-	relations: tuple[list[RelationSchema], list[SlimWorkSchema]]
+	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 
 	class Meta:
 		model = MediaWork
@@ -172,7 +185,7 @@ class CreateWorkPayload(Schema):
 	source_id: int
 	title: str | None = None
 	description: str | None = None
-	rating: int = 0
+	rating: Rating = Rating.GENERAL
 	tags: list[TagWorkInstanceInSchema] = []
 
 
@@ -232,7 +245,7 @@ def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 	assert cls is MediaWork or cls is MediaSong
 	assert all(rel.A_id == obj_id or rel.B_id == obj_id for rel in payload)
 
-	rel_cls, rt_cls = (
+	rel_cls, _rt_cls = (
 		(WorkRelation, WorkRelationTypes)
 		if cls is MediaWork
 		else (SongRelation, SongRelationTypes)
@@ -259,7 +272,7 @@ def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 		rel_cls.objects.update_or_create(
 			A_id=rel.A_id,
 			B_id=rel.B_id,
-			defaults={'relation': rt_cls(rel.relation).value},
+			defaults={'relation': rel.relation},
 		)
 
 
@@ -270,8 +283,8 @@ class ConnectionSchema(Schema):
 
 
 class UserPreferencesSchema(Schema):
-	language: int | None
-	theme: int | None
+	language: LanguageTypes | None = Field(..., gt=0)
+	theme: ThemePref | None
 
 
 def re_to_parser(regex):

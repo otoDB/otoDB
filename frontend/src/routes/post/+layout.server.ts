@@ -1,4 +1,4 @@
-import { hasUserLevel } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/userLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { Levels } from '$lib/schema';
 import type { LayoutServerLoad } from './$types';

@@ -4,10 +4,10 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import { getVersionKey, Version } from '$lib/enums/version';
+	import { getVersionKey, versions } from '$lib/enums/version';
 	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
-	import { UserLevelNames } from '$lib/enums/UserLevel.js';
-	import { ProfileConnectionMap } from '$lib/enums/ProfileConnection.js';
+	import { userLevelNames } from '$lib/enums/userLevel.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 
 	let { data } = $props();
 
@@ -33,13 +33,13 @@
 </svelte:head>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
-	<p>{UserLevelNames[data.profile.level]()}</p>
+	<p>{userLevelNames[data.profile.level]()}</p>
 	{#if data.profile.date_created}
 		<p>
 			{m.sharp_witty_jackdaw_treat({
 				date: new Date(data.profile.date_created).toLocaleDateString()
 			})}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
-				content: Version[getVersionKey(new Date(data.profile.date_created))].name
+				content: versions[getVersionKey(new Date(data.profile.date_created))].name
 			})}
 		</p>
 	{/if}
@@ -49,15 +49,15 @@
 			{#each data.connections as s, i (i)}
 				<li>
 					<ConnectionFavicon
-						type={ProfileConnectionMap[s.site].name}
+						type={profileConnectionMap[s.site].name}
 						class="inline size-4"
 					/>
 					<a
-						href={ProfileConnectionMap[s.site].linkFn(s.content_id)}
+						href={profileConnectionMap[s.site].linkFn(s.content_id)}
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{decodeURI(ProfileConnectionMap[s.site].linkFn(s.content_id))}
+						{decodeURI(profileConnectionMap[s.site].linkFn(s.content_id))}
 					</a>
 				</li>
 			{/each}

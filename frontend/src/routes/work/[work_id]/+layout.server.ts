@@ -1,6 +1,5 @@
-import client from '$lib/api.server';
-import { getDisplayText } from '$lib/api';
-import { hasUserLevel } from '$lib/enums/UserLevel';
+import client, { getDisplayText } from '$lib/api';
+import { hasUserLevel } from '$lib/enums/userLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
@@ -9,7 +8,7 @@ import { Levels } from '$lib/schema';
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
 
-	const { data } = await client.GET('/api/work/work', {
+	const { data, error: e } = await client.GET('/api/work/work', {
 		params: {
 			query: {
 				work_id: +params.work_id
@@ -17,6 +16,8 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		},
 		fetch
 	});
+
+	if (e) error(404, { message: 'Not found' });
 
 	if (data.id !== +params.work_id)
 		redirect(

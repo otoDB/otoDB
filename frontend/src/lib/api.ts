@@ -4,10 +4,10 @@ import { type Cookies } from '@sveltejs/kit';
 import type { CookieSerializeOptions } from 'cookie';
 import createClient from 'openapi-fetch';
 import setCookie from 'set-cookie-parser';
-import { languages } from './enums/Languages';
-import { m } from './paraglide/messages';
-import { getLocale } from './paraglide/runtime';
-import type { paths } from './schema';
+import { languages } from '$lib/enums/language';
+import { m } from '$lib/paraglide/messages';
+import { getLocale } from '$lib/paraglide/runtime';
+import type { paths } from '$lib/schema';
 
 const backend = browser
 	? (env.PUBLIC_BACKEND_URL_EXTERNAL ?? '')

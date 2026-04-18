@@ -1,9 +1,9 @@
 <script lang="ts">
-	import WorkTag from './WorkTag.svelte';
-	import DisplayText from './DisplayText.svelte';
-	import WorkThumbnail from './WorkThumbnail.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getDisplayText } from './api';
+	import { getDisplayText } from '$lib/api';
 	import type { ComponentProps } from 'svelte';
 
 	interface Props {

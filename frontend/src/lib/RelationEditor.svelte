@@ -1,17 +1,17 @@
 <script lang="ts" generics="T extends 'work' | 'song'">
 	import { goto } from '$app/navigation';
 	import { dirtyEnhance, type Barrier } from '$lib/dirty';
-	import { isSOV } from '$lib/enums/Languages';
+	import { isSOV } from '$lib/enums/language';
 	import type { ComponentProps } from 'svelte';
-	import client from './api';
-	import { EnumValues, SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
-	import { m } from './paraglide/messages';
-	import { getLocale } from './paraglide/runtime';
-	import { SongRelationTypes, WorkRelationTypes, type components } from './schema';
-	import SongField from './SongField.svelte';
-	import { callErrorToast } from './toast';
-	import WorkCard from './WorkCard.svelte';
-	import WorkField from './WorkField.svelte';
+	import client from '$lib/api';
+	import { enumValues, SongRelationPredicate, WorkRelationEditorPredicate } from '$lib/enums';
+	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
+	import SongField from '$lib/SongField.svelte';
+	import { callErrorToast } from '$lib/toast';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkField from '$lib/WorkField.svelte';
 
 	interface Props {
 		this_id: number;
@@ -134,7 +134,7 @@
 						<td class="w-64">{@render work(relation, relation.swapped)}</td>
 						<td
 							><select name="relation" bind:value={relation.relation}>
-								{#each EnumValues(RelationType) as rel, j (j)}
+								{#each enumValues(RelationType) as rel, j (j)}
 									<option value={rel}>{Predicates[rel]()}</option>
 								{/each}
 							</select></td
@@ -142,7 +142,7 @@
 					{:else}
 						<td
 							><select name="relation" bind:value={relation.relation}>
-								{#each EnumValues(RelationType) as rel, j (j)}
+								{#each enumValues(RelationType) as rel, j (j)}
 									<option value={rel}>{Predicates[rel]()}</option>
 								{/each}
 							</select></td

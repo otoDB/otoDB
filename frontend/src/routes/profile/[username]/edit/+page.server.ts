@@ -1,6 +1,6 @@
-import client from '$lib/api.server';
-import { hasUserLevel } from '$lib/enums/UserLevel';
-import { redirect, type Actions } from '@sveltejs/kit';
+import client from '$lib/api';
+import { hasUserLevel } from '$lib/enums/userLevel';
+import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { Levels } from '$lib/schema';
 
@@ -23,6 +23,11 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 				})
 			: Promise.resolve(null)
 	]);
+
+	if (payloadConnections.error) error(500, 'Failed to load profile connections');
+	if (!payloadConnections.data) error(500, 'Failed to load profile connections');
+
+	if (payloadInvites?.error) error(500, 'Failed to load invites');
 
 	return {
 		user: locals.user,

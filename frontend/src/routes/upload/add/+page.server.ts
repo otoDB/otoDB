@@ -1,11 +1,10 @@
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client from '$lib/api.server';
-import { getDisplayText } from '$lib/api';
+import client, { getDisplayText } from '$lib/api';
 
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
-import { hasUserLevel } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/userLevel';
 import { Levels, type components } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
@@ -18,7 +17,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 	let title = null;
 	let unavailable_source = null;
 	if (work && !isNaN(+work)) {
-		const { data } = await client.GET('/api/work/work', {
+		const { data, error: e } = await client.GET('/api/work/work', {
 			params: {
 				query: {
 					work_id: +work
@@ -26,9 +25,10 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 			},
 			fetch
 		});
+		if (e) error(404, { message: 'Not found' });
 		title = data.title;
 	} else if (source && !isNaN(+source)) {
-		const { data } = await client.GET('/api/upload/source', {
+		const { data, error: e } = await client.GET('/api/upload/source', {
 			params: {
 				query: {
 					source_id: +source
@@ -36,6 +36,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 			},
 			fetch
 		});
+		if (e) error(404, { message: 'Not found' });
 		if (data.work_status === 0) error(400, { message: 'Bad Request' });
 		unavailable_source = data;
 		title = unavailable_source.title;
@@ -100,50 +101,46 @@ export const actions = {
 		}
 
 		if (editing_unavailable_source && metadata) {
-			let work_id: number | null = null;
-			try {
-				({ data: work_id } = await client.PUT('/api/upload/source', {
-					fetch,
-					params: { query: { source_id: +source } },
-					body: metadata
-				}));
-			} catch {
+			const { data: work_id, error } = await client.PUT('/api/upload/source', {
+				fetch,
+				params: { query: { source_id: +source } },
+				body: metadata
+			});
+			if (error)
 				return fail(400, {
 					url: link,
 					origin: is_official,
 					failed: true,
 					message: m.careful_lost_jaguar_dart()
 				});
-			}
-			redirect(303, `/work/${work_id}`);
+			if (work_id) redirect(303, `/work/${work_id}`);
 		}
 
-		let result: components['schemas']['SourceCreationResponse'] | null = null;
-		try {
-			({ data: result } = await client.POST('/api/upload/source', {
-				fetch,
-				params: {
-					query: {
-						url: link,
-						is_reupload: !is_official,
-						work_id: work ? +work : undefined
-					}
-				},
-				body: metadata
-			}));
-		} catch {
+		const { data: result, error: sourceError } = await client.POST('/api/upload/source', {
+			fetch,
+			params: {
+				query: {
+					url: link,
+					is_reupload: !is_official,
+					work_id: work ? +work : undefined
+				}
+			},
+			body: metadata
+		});
+
+		if (sourceError)
 			return fail(400, {
 				url: link,
 				origin: is_official,
 				failed: true,
 				message: m.careful_lost_jaguar_dart()
 			});
-		}
+
 		// Source already has a work -> redirect to work page
-		if (result.work_id) redirect(303, `/work/${result.work_id}`);
+		if (result?.work_id) redirect(303, `/work/${result.work_id}`);
 
 		// New source -> redirect to source page (for review/work creation)
-		if (result.source_id) redirect(303, `/upload/${result.source_id}`);
+		if (result?.source_id) redirect(303, `/upload/${result.source_id}`);
 
 		// Fallback
 		if (locals.user) redirect(303, `/profile/${locals.user.username}/submissions`);

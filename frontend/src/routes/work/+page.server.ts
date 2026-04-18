@@ -1,6 +1,7 @@
-import client from '$lib/api.server';
+import client from '$lib/api';
 import { m } from '$lib/paraglide/messages';
 import { PathsApiWorkSearchGetParametersQueryOrderAnyOf0 } from '$lib/schema';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
@@ -31,6 +32,9 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 			}
 		}
 	});
+
+	// TODO: Error forwarding
+	if (!data) error(500, 'Failed to fetch search results.');
 
 	return {
 		query: query,

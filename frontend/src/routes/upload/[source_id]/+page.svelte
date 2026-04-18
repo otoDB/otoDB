@@ -5,7 +5,7 @@
 	import WorkField from '$lib/WorkField.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
-	import { EnumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
+	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
 	import { getTagDisplaySlug } from '$lib/api';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import { enhance } from '$app/forms';
@@ -214,7 +214,7 @@
 							<th>{m.good_dark_bumblebee_spur()}</th>
 							<td>
 								<div class="flex gap-2">
-									{#each EnumValues(Rating) as r, i (i)}
+									{#each enumValues(Rating) as r, i (i)}
 										<label
 											class={[
 												'cursor-pointer border px-3 py-1',

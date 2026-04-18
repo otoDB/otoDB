@@ -4,16 +4,16 @@
 
 	let { data } = $props();
 	import { m } from '$lib/paraglide/messages.js';
-	import { buildEntityRoutes, EnumValues } from '$lib/enums';
-	import { languages } from '$lib/enums/Languages';
+	import { buildEntityRoutes, enumValues } from '$lib/enums';
+	import { languages } from '$lib/enums/language.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { get_entity, renderMarkdown } from '$lib/markdown';
 	import { PostCategory } from '$lib/schema.js';
-	import { PostCategoryNames } from '$lib/enums/PostCategory.js';
+	import { postCategoryNames } from '$lib/enums/postCategory.js';
 
 	let md = $state('');
 	let previewHtml = $derived(renderMarkdown(md));
-	let category: PostCategory = $derived(data.category ?? PostCategory.Bug_Report);
+	let category = $derived(data.category ?? '1');
 	let entities_raw = $derived(data.entity ?? '');
 	let entities = $derived(
 		entities_raw
@@ -42,9 +42,9 @@
 				><tr
 					><th>{m.plane_awful_bobcat_spark()}</th><td
 						><select name="category" bind:value={category}>
-							{#each EnumValues(PostCategory) as c, i (i)}
-								{#if c !== PostCategory.Announcement}
-									<option value={c}>{PostCategoryNames[c]()}</option>
+							{#each enumValues(PostCategory) as c, i (i)}
+								{#if i > 0}
+									<option value={c}>{postCategoryNames[c]()}</option>
 								{/if}
 							{/each}
 						</select></td
@@ -52,7 +52,7 @@
 				></tbody
 			>
 		</table>
-		{#if category === PostCategory.Gardening}
+		{#if category === '3'}
 			<h4>{m.fine_zany_octopus_trim()}</h4>
 			<textarea name="entities" bind:value={entities_raw}></textarea>
 			<ul class="inline-block">

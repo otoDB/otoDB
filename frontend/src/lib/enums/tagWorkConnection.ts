@@ -1,6 +1,9 @@
 import { TagWorkConnectionTypes } from '$lib/schema';
 
-export const TagWorkConnectionMap = {
+export const TagWorkConnectionMap: Record<
+	TagWorkConnectionTypes,
+	{ name: string; linkFn: (id: string) => string }
+> = {
 	[TagWorkConnectionTypes.otomad_wiki]: {
 		name: 'otomad.wiki',
 		linkFn: (id: string) => `https://otomad.wiki/tag/${id}`
@@ -29,7 +32,4 @@ export const TagWorkConnectionMap = {
 		name: 'Know Your Meme',
 		linkFn: (id: string) => `https://knowyourmeme.com/${id}`
 	}
-} as const satisfies Record<
-	TagWorkConnectionTypes,
-	{ name: string; linkFn: (id: string) => string }
->;
+};

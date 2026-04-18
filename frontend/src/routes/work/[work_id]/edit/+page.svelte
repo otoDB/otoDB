@@ -6,8 +6,8 @@
 	import Section from '$lib/Section.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import client, { getDisplayText } from '$lib/api';
-	import { EnumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
-	import { hasUserLevel } from '$lib/enums/UserLevel';
+	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/dirty';
@@ -83,7 +83,7 @@
 					<tr
 						><th>{m.good_dark_bumblebee_spur()}</th><td
 							><div class="flex gap-2">
-								{#each EnumValues(Rating) as r, i (i)}
+								{#each enumValues(Rating) as r, i (i)}
 									<label
 										class={[
 											'cursor-pointer border px-3 py-1',
@@ -184,7 +184,7 @@
 							><select
 								bind:value={src.work_origin}
 								onchange={() => updateStatus(src.id, src.work_origin)}
-								>{#each EnumValues(WorkOrigin) as w, i (i)}
+								>{#each enumValues(WorkOrigin) as w, i (i)}
 									<option value={w}>{WorkOriginNames[w]()}</option>
 								{/each}</select
 							></td

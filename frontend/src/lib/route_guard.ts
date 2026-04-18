@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
-import { hasUserLevel } from './enums/UserLevel';
-import type { Levels } from './schema';
+import { hasUserLevel } from '$lib/enums/userLevel';
+import type { Levels } from '$lib/schema';
 
 export const userLevelGuard = (
 	user: App.Locals['user'],

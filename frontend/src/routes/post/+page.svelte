@@ -5,8 +5,8 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { PostCategory } from '$lib/schema.js';
-	import { EnumValues } from '$lib/enums.js';
-	import { PostCategoryNames } from '$lib/enums/PostCategory.js';
+	import { enumValues } from '$lib/enums.js';
+	import { postCategoryNames } from '$lib/enums/postCategory.js';
 
 	let { data } = $props();
 </script>
@@ -21,8 +21,8 @@
 			>{m.plane_awful_bobcat_spark()}
 			<select name="category" value={data.category ?? -1}>
 				<option value={-1}>{m.keen_soft_crow_relish()}</option>
-				{#each EnumValues(PostCategory) as c (c)}
-					<option value={c}>{PostCategoryNames[c]()}</option>
+				{#each enumValues(PostCategory) as c (c)}
+					<option value={c}>{postCategoryNames[c]()}</option>
 				{/each}
 			</select>
 		</label>

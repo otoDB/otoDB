@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getTagDisplayName } from './api';
-	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
-	import { WorkTagCategory } from './schema';
-	import { WorkTagCategoryMap } from './enums/WorkTagCategory';
+	import { getTagDisplayName } from '$lib/api';
+	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/creatorRole';
+	import { WorkTagCategory } from '$lib/schema';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 
 	interface Props {
 		tag: {

@@ -4,7 +4,7 @@ import { Route } from '$lib/schema';
 const c = (type: () => string, action: () => string) => () =>
 	m.mild_loud_shad_enchant({ type: type(), name: action() });
 
-export const RouteNames = {
+export const routeNames: Record<Route, () => string> = {
 	[Route.Unknown]: () => 'Unknown',
 
 	[Route.Tag_Work_Alias]: c(m.empty_legal_chicken_taste, m.civil_civil_ray_forgive),
@@ -41,4 +41,4 @@ export const RouteNames = {
 	[Route.Work_Source_Update]: c(m.extra_brave_tapir_skip, m.dry_raw_finch_devour),
 
 	[Route.Rollback]: m.legal_mean_slug_link
-} as const satisfies Record<Route, () => string>;
+};

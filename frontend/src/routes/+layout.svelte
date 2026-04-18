@@ -4,14 +4,14 @@
 	import { env } from '$env/dynamic/public';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Section from '$lib/Section.svelte';
-	import { languages } from '$lib/enums/Languages';
-	import { hasUserLevel } from '$lib/enums/UserLevel';
+	import { languages } from '$lib/enums/language';
+	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { getThemeNameById } from '$lib/themes/themes';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast } from '$lib/toast';
 	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
-	import { currentVersion, Version } from '$lib/enums/version';
+	import { currentVersion, versions } from '$lib/enums/version';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
 	import { isFormDirty } from '$lib/dirty';
@@ -389,7 +389,7 @@
 							type: 'otoDB',
 							name: m.glad_born_mouse_taste()
 						})}
-						{Version[currentVersion].name}
+						{versions[currentVersion].name}
 						{#if env.PUBLIC_OTODB_HASH}
 							- <a href="https://github.com/otoDB/otoDB">{env.PUBLIC_OTODB_HASH}</a
 							>{/if}

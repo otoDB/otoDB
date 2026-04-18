@@ -2,9 +2,9 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
-	import { EnumValues } from '$lib/enums.js';
-	import { ProfileConnectionMap } from '$lib/enums/ProfileConnection.js';
-	import { hasUserLevel, UserLevelNames } from '$lib/enums/UserLevel.js';
+	import { enumValues } from '$lib/enums.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { hasUserLevel, userLevelNames } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, ProfileConnectionTypes } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
@@ -14,7 +14,7 @@
 
 	let urls = $state(
 		data.connections
-			?.map(({ site, content_id }) => ProfileConnectionMap[site].linkFn(content_id))
+			?.map(({ site, content_id }) => profileConnectionMap[site].linkFn(content_id))
 			.join('\n') ?? ''
 	);
 
@@ -53,10 +53,10 @@
 		<summary>{m.fit_noble_niklas_build()}</summary>
 		<table>
 			<tbody>
-				{#each EnumValues(ProfileConnectionTypes) as k (k)}
+				{#each enumValues(ProfileConnectionTypes) as k (k)}
 					<tr
-						><td>{ProfileConnectionMap[k].name}</td><td
-							><code>{ProfileConnectionMap[k].linkFn('<code>')}</code></td
+						><td>{profileConnectionMap[k].name}</td><td
+							><code>{profileConnectionMap[k].linkFn('<code>')}</code></td
 						></tr
 					>
 				{/each}
@@ -97,7 +97,7 @@
 								</time>
 							</td>
 							<td><pre>{inv.secret}</pre></td>
-							<td>{UserLevelNames[inv.level]()}</td>
+							<td>{userLevelNames[inv.level]()}</td>
 							<td>
 								{#if inv.used_by}
 									<a href="/profile/{inv.used_by.username}">
@@ -134,7 +134,7 @@
 			{/if}
 
 			<button type="submit" disabled={!!deniedInviteCreationReason}>
-				{m.muddy_that_bobcat_gleam({ level: UserLevelNames[Levels.Editor]() })}
+				{m.muddy_that_bobcat_gleam({ level: userLevelNames[Levels.Editor]() })}
 			</button>
 		</form>
 	</Section>

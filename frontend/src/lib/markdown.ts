@@ -1,16 +1,16 @@
+import { EntitySchemaEntity } from '$lib/schema';
+import type { Parent, PhrasingContent, Root } from 'mdast';
+import { findAndReplace } from 'mdast-util-find-and-replace';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import rehypeStringify from 'rehype-stringify';
 import rehypeSlug from 'rehype-slug';
-import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
-import remarkGfm from 'remark-gfm';
 import { unified } from 'unified';
-import { findAndReplace } from 'mdast-util-find-and-replace';
-import type { Root, PhrasingContent, Parent } from 'mdast';
-import { EntitySchemaEntity } from './schema';
 
 const ENTITIES = [
 	{ shortPrefix: 'w', longLabel: 'work', urlPath: 'work' },

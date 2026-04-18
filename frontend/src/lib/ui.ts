@@ -1,8 +1,8 @@
 import { browser } from '$app/environment';
-import client from './api';
-import { languages } from './enums/Languages';
-import { getLocale, setLocale } from './paraglide/runtime';
-import { m } from './paraglide/messages';
+import client from '$lib/api';
+import { languages } from '$lib/enums/language';
+import { getLocale, setLocale } from '$lib/paraglide/runtime';
+import { m } from '$lib/paraglide/messages';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;

@@ -1,6 +1,9 @@
 import { ProfileConnectionTypes } from '$lib/schema';
 
-export const ProfileConnectionMap = {
+export const profileConnectionMap: Record<
+	ProfileConnectionTypes,
+	{ name: string; linkFn: (id: string) => string }
+> = {
 	[ProfileConnectionTypes.Website]: {
 		name: 'Website',
 		linkFn: (id: string) => id
@@ -29,7 +32,4 @@ export const ProfileConnectionMap = {
 		name: 'Soundcloud',
 		linkFn: (id: string) => `https://soundcloud.com/${id}`
 	}
-} as const satisfies Record<
-	ProfileConnectionTypes,
-	{ name: string; linkFn: (id: string) => string }
->;
+};

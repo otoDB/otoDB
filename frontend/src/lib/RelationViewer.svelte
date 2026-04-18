@@ -248,7 +248,7 @@ flowchart ${direction}
 />
 
 <style>
-	@reference ".$lib/app.css";
+	@reference "../app.css";
 	option.type-label {
 		&:checked {
 			@apply text-otodb-bg-primary;

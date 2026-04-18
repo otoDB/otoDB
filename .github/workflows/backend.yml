@@ -133,8 +133,34 @@ jobs:
           cache-to: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache,mode=max
 
   openapi-typespec:
-    name: Verify schema is frash
+    name: Verify schema is fresh
     runs-on: ubuntu-latest
+    needs:
+      - lint
+      - test
+      - migrations
+    
+    env:
+      OTODB_SECRET_KEY: test-secret-key-for-ci
+      OTODB_DB_HOST: localhost
+      OTODB_DB_PORT: 5432
+      OTODB_DB_NAME: "otodb_test"
+      OTODB_DB_USER: postgres
+      OTODB_DB_PASSWORD: postgres
+
+    services:
+      postgres:
+        image: 'postgres:17'
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: otodb_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5

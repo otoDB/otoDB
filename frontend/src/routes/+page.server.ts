@@ -1,5 +1,4 @@
 import client from '$lib/api';
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages';
 
@@ -29,8 +28,6 @@ export const load: PageServerLoad = async ({ fetch, setHeaders, locals }) => {
 			params: { query: { limit: 8, offset: 0 } }
 		})
 	]);
-	if (randomWork.error || recentWork.error || changes.error || posts.error)
-		error(500, { message: 'Internal server error' });
 
 	return {
 		random: randomWork.data,

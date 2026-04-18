@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 	let title = null;
 	let unavailable_source = null;
 	if (work && !isNaN(+work)) {
-		const { data, error: e } = await client.GET('/api/work/work', {
+		const { data } = await client.GET('/api/work/work', {
 			params: {
 				query: {
 					work_id: +work
@@ -25,10 +25,9 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 			},
 			fetch
 		});
-		if (e) error(404, { message: 'Not found' });
 		title = data.title;
 	} else if (source && !isNaN(+source)) {
-		const { data, error: e } = await client.GET('/api/upload/source', {
+		const { data } = await client.GET('/api/upload/source', {
 			params: {
 				query: {
 					source_id: +source
@@ -36,7 +35,6 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 			},
 			fetch
 		});
-		if (e) error(404, { message: 'Not found' });
 		if (data.work_status === 0) error(400, { message: 'Bad Request' });
 		unavailable_source = data;
 		title = unavailable_source.title;
@@ -101,49 +99,52 @@ export const actions = {
 		}
 
 		if (editing_unavailable_source && metadata) {
-			const { data: work_id, error } = await client.PUT('/api/upload/source', {
-				fetch,
-				params: { query: { source_id: +source } },
-				body: metadata
-			});
-			if (error)
+			try {
+				const { data: work_id } = await client.PUT('/api/upload/source', {
+					fetch,
+					params: { query: { source_id: +source } },
+					body: metadata
+				});
+				if (work_id) redirect(303, `/work/${work_id}`);
+			} catch {
 				return fail(400, {
 					url: link,
 					origin: is_official,
 					failed: true,
 					message: m.careful_lost_jaguar_dart()
 				});
-			if (work_id) redirect(303, `/work/${work_id}`);
+			}
 		}
 
-		const { data: result, error: sourceError } = await client.POST('/api/upload/source', {
-			fetch,
-			params: {
-				query: {
-					url: link,
-					is_reupload: !is_official,
-					work_id: work ? +work : undefined
-				}
-			},
-			body: metadata
-		});
+		try {
+			const { data: result } = await client.POST('/api/upload/source', {
+				fetch,
+				params: {
+					query: {
+						url: link,
+						is_reupload: !is_official,
+						work_id: work ? +work : undefined
+					}
+				},
+				body: metadata
+			});
 
-		if (sourceError)
+			// Source already has a work -> redirect to work page
+			if (result.work_id) redirect(303, `/work/${result.work_id}`);
+
+			// New source -> redirect to source page (for review/work creation)
+			if (result.source_id) redirect(303, `/upload/${result.source_id}`);
+
+			// Fallback
+			if (locals.user) redirect(303, `/profile/${locals.user.username}/submissions`);
+			else redirect(303, '/login');
+		} catch {
 			return fail(400, {
 				url: link,
 				origin: is_official,
 				failed: true,
 				message: m.careful_lost_jaguar_dart()
 			});
-
-		// Source already has a work -> redirect to work page
-		if (result?.work_id) redirect(303, `/work/${result.work_id}`);
-
-		// New source -> redirect to source page (for review/work creation)
-		if (result?.source_id) redirect(303, `/upload/${result.source_id}`);
-
-		// Fallback
-		if (locals.user) redirect(303, `/profile/${locals.user.username}/submissions`);
-		else redirect(303, '/login');
+		}
 	}
 } satisfies Actions;

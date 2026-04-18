@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 
 	import WorkCard from '$lib/WorkCard.svelte';
-	import client from '$lib/api';
+	import { clientRaw as client } from '$lib/api';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import { m } from '$lib/paraglide/messages';
 

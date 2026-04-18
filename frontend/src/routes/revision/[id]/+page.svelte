@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import client from '$lib/api.js';
+	import { clientRaw as client } from '$lib/api.js';
 	import {
 		buildEntityRoutes,
 		MimeType,

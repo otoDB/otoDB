@@ -1,6 +1,6 @@
 import client from '$lib/api';
 import { m } from '$lib/paraglide/messages';
-import { error } from '@sveltejs/kit';
+import { PathsApiWorkSearchGetParametersQueryOrderAnyOf0 } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
@@ -8,12 +8,12 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const query = url.searchParams.get('query') ?? '';
 	const tags = url.searchParams.get('tags') ?? '';
 
-	const paramOrder = url.searchParams.get('order');
-	const paramDir = url.searchParams.get('dir');
+	const paramDir = url.searchParams.get('dir') === '-' ? '-' : '';
+	const paramOrder = `${paramDir}${url.searchParams.get('order')}`;
 
-	type Order = 'id' | 'pub';
+	type Order = PathsApiWorkSearchGetParametersQueryOrderAnyOf0;
 	const order: Order | null =
-		paramOrder && ['id', 'pub'].includes(paramOrder) ? (paramOrder as Order) : null;
+		paramOrder && Object.values(PathsApiWorkSearchGetParametersQueryOrderAnyOf0).includes(paramOrder as Order) ? (paramOrder as Order) : null;
 
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/work/search', {
@@ -24,13 +24,10 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				tags,
 				limit: batch_size,
 				offset: batch_size * (page - 1),
-				order: order ? `${paramDir === '-' ? '-' : ''}${order}` : null
+				order: order
 			}
 		}
 	});
-
-	// TODO: Error forwarding
-	if (!data) error(500, 'Failed to fetch search results.');
 
 	return {
 		query: query,

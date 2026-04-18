@@ -1,9 +1,9 @@
-<script lang="ts">
+<script lang="ts" generics="T extends 'work' | 'song'">
 	import { goto } from '$app/navigation';
 	import { dirtyEnhance, type Barrier } from '$lib/dirty';
 	import { isSOV } from '$lib/enums/Languages';
 	import type { ComponentProps } from 'svelte';
-	import client from './api';
+	import { clientRaw as client } from './api';
 	import { SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
 	import { m } from './paraglide/messages';
 	import { getLocale } from './paraglide/runtime';
@@ -15,8 +15,13 @@
 
 	interface Props {
 		this_id: number;
-		obj_type: 'work' | 'song';
-		init_relations: [components['schemas']['RelationSchema'][], { id: number }[]];
+		obj_type: T;
+		init_relations: [
+			T extends 'work'
+				? components['schemas']['WorkRelationSchema'][]
+				: components['schemas']['SongRelationSchema'][],
+			{ id: number }[]
+		];
 		form_control?: {
 			barrier: Partial<Barrier>;
 			priority: number;

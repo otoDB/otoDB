@@ -2,11 +2,12 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import TagsField from '$lib/TagsField.svelte';
-	import client from '$lib/api';
+	import { clientRaw as client } from '$lib/api';
 	import { goto } from '$app/navigation';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
+	import { PathsApiTagAliasPostParametersQueryType } from '$lib/schema.js';
 
 	let { data } = $props();
 
@@ -18,7 +19,13 @@
 		e.preventDefault();
 		const { error, data } = await client.POST('/api/tag/alias', {
 			fetch,
-			params: { query: { into_tag: selected, delete: del, type: 'song' } },
+			params: {
+				query: {
+					into_tag: selected,
+					delete: del,
+					type: PathsApiTagAliasPostParametersQueryType.song
+				}
+			},
 			body: tags
 		});
 		if (!error) goto(`/song_attribute/${data.merged_slug}`, { invalidateAll: true });

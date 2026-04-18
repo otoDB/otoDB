@@ -28,12 +28,15 @@ const backend = browser
 
 export const clientRaw = createClient<paths>({ baseUrl: backend, credentials: 'include' });
 
+// The following types are re-specializations lifted from openapi-typescript-helpers with a custom FetchResponse.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FetchResponse<T extends Record<string | number, any>, Options, Media extends MediaType> = {
 	data: ParseAsResponse<SuccessResponse<ResponseObjectMap<T>, Media>, Options>;
 	response: Response;
 };
 type ClientMethod<
-	Paths extends Record<string, Record<HttpMethod, object>>,
+	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+	Paths extends Record<string, Record<HttpMethod, {}>>,
 	Method extends HttpMethod,
 	Media extends MediaType
 > = <
@@ -43,10 +46,8 @@ type ClientMethod<
 	url: Path,
 	...init: InitParam<Init>
 ) => Promise<FetchResponse<Paths[Path][Method], Init, Media>>;
-interface Client<
-	Paths extends Record<string, Record<HttpMethod, object>>,
-	Media extends MediaType = MediaType
-> {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface Client<Paths extends {}, Media extends MediaType = MediaType> {
 	request: ClientRequestMethod<Paths, Media>;
 	GET: ClientMethod<Paths, 'get', Media>;
 	PUT: ClientMethod<Paths, 'put', Media>;
@@ -62,9 +63,11 @@ interface Client<
 const client = createClient<paths>({ baseUrl: backend, credentials: 'include' });
 client.use({
 	onResponse: async ({ response }) => {
-		if (!response.ok) {
+		if (!response.ok && !browser) {
 			const content = await response.json();
-			error(response.status, content.details);
+			error(response.status, {
+				message: content.details ?? content.data?.message ?? 'Bad Request'
+			});
 		}
 		return response;
 	}

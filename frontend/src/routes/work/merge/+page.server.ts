@@ -26,23 +26,25 @@ export const actions = {
 			return fail(400, { error: 'A thumbnail source must be selected' });
 		}
 
-		const { error } = await client.POST('/api/work/merge', {
-			fetch,
-			params: {
-				query: {
-					from_work_id: +A,
-					to_work_id: +B
+		try {
+			await client.POST('/api/work/merge', {
+				fetch,
+				params: {
+					query: {
+						from_work_id: +A,
+						to_work_id: +B
+					}
+				},
+				body: {
+					title,
+					description,
+					thumbnail_source_id: +thumbnail_source_id,
+					rating: +rating
 				}
-			},
-			body: {
-				title,
-				description,
-				thumbnail_source_id: +thumbnail_source_id,
-				rating: +rating
-			}
-		});
-		if (error) return fail(400);
-
-		redirect(303, `/work/${+B!}`);
+			});
+			redirect(303, `/work/${+B!}`);
+		} catch {
+			return fail(400);
+		}
 	}
 } satisfies Actions;

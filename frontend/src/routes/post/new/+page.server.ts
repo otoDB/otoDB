@@ -39,19 +39,22 @@ export const actions = {
 
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
-		const { data: r, error } = await client.POST('/api/post/post', {
-			fetch,
-			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
-			body: {
-				category: category,
-				post,
-				lang: language,
-				title,
-				target_users: parseMentions(post),
-				entities
-			}
-		});
-		if (error) return fail(400);
-		else redirect(303, `/post/${r}`);
+		try {
+			const { data: r } = await client.POST('/api/post/post', {
+				fetch,
+				params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
+				body: {
+					category: category,
+					post,
+					lang: language,
+					title,
+					target_users: parseMentions(post),
+					entities
+				}
+			});
+			redirect(303, `/post/${r}`);
+		} catch {
+			return fail(400);
+		}
 	}
 } satisfies Actions;

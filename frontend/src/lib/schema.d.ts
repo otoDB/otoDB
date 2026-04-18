@@ -2617,7 +2617,14 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": [
+                        number,
+                        number,
+                        number,
+                        number
+                    ];
+                };
             };
         };
     };
@@ -4970,7 +4977,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": number;
+                };
             };
         };
     };

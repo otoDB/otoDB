@@ -1,5 +1,5 @@
 <script lang="ts">
-	import client from './api';
+	import { clientRaw as client } from './api';
 	import { m } from './paraglide/messages';
 	import type { components } from './schema';
 	import { clickOutside, debounce } from './ui';

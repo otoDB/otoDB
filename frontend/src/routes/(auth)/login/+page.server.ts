@@ -20,13 +20,15 @@ export const actions = {
 
 		if (!username || !password) return fail(400, { username, missing: true });
 
-		const { response, error } = await client.POST('/api/auth/login', {
-			fetch,
-			body: { username, password },
-			headers: { 'X-CSRFToken': cookies.get('csrftoken') }
-		});
-		if (error) return fail(400, { username, failed: true });
-
-		forwardCookies(cookies, response);
+		try {
+			const { response } = await client.POST('/api/auth/login', {
+				fetch,
+				body: { username, password },
+				headers: { 'X-CSRFToken': cookies.get('csrftoken') }
+			});
+			forwardCookies(cookies, response);
+		} catch {
+			return fail(400, { username, failed: true });
+		}
 	}
 } satisfies Actions;

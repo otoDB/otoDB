@@ -1,5 +1,5 @@
 import client from '$lib/api';
-import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 import { userLevelGuard } from '$lib/route_guard';
@@ -33,10 +33,6 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 			}
 		})
 	]);
-
-	// TODO: Error forwarding
-	if (!details) error(500, 'Failed to fetch data.');
-	if (!connections) error(500, 'Failed to fetch data.');
 
 	const p = await parent();
 	// FIXME This is kind of waterfall but whatever...
@@ -85,26 +81,27 @@ export const actions = {
 					}
 				: null;
 
-		const { error } = await client.PUT('/api/tag/tag', {
-			fetch,
-			params: {
-				query: {
-					tag_slug: params.tag_slug!
-				}
-			},
-			body: {
-				payload: {
-					parent_slugs,
-					category: +category,
-					deprecated,
-					media_type,
-					primary: +primary === -1 ? null : +primary
+		try {
+			await client.PUT('/api/tag/tag', {
+				fetch,
+				params: {
+					query: {
+						tag_slug: params.tag_slug!
+					}
 				},
-				song_payload: song
-			}
-		});
-
-		if (error)
+				body: {
+					payload: {
+						parent_slugs,
+						category: +category,
+						deprecated,
+						media_type,
+						primary: +primary === -1 ? null : +primary
+					},
+					song_payload: song
+				}
+			});
+			redirect(303, `/tag/${params.tag_slug}`);
+		} catch {
 			return fail(400, {
 				category,
 				parent_slugs,
@@ -112,8 +109,7 @@ export const actions = {
 				failed: true,
 				primary: +primary
 			});
-
-		redirect(303, `/tag/${params.tag_slug}`);
+		}
 	},
 	wiki_page: async ({ request, fetch, params }) => {
 		const data = await request.formData();

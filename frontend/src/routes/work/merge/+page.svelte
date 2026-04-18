@@ -4,7 +4,7 @@
 	import WorkField from '$lib/WorkField.svelte';
 	import type { components } from '$lib/schema';
 	import { Platform, Rating, WorkOrigin } from '$lib/enums';
-	import client, { getDisplayText } from '$lib/api';
+	import { clientRaw as client, getDisplayText } from '$lib/api';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import Section from '$lib/Section.svelte';
-	import client from '$lib/api';
+	import { clientRaw as client } from '$lib/api';
 	import { languages } from '$lib/enums/Languages.js';
 	import { themes } from '$lib/themes/themes.js';
 	import { m } from '$lib/paraglide/messages.js';

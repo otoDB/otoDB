@@ -1,4 +1,4 @@
-import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import client from '$lib/api';
 
@@ -18,9 +18,6 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		}
 	});
 
-	// TODO: Error forwarding
-	if (!entries) error(500, 'Failed to fetch data.');
-
 	return { batch_size, entries };
 };
 
@@ -30,16 +27,18 @@ export const actions = {
 		const name = data.get('name') as string,
 			description = data.get('description') as string;
 
-		const { error, data: _list_id } = await client.PUT('/api/list/list', {
-			fetch,
-			params: { query: { list_id: +params.list_id! } },
-			body: {
-				name,
-				description
-			}
-		});
-		if (error) return fail(400, { name, description, failed: true });
-
-		redirect(303, `/list/${params.list_id}`);
+		try {
+			await client.PUT('/api/list/list', {
+				fetch,
+				params: { query: { list_id: +params.list_id! } },
+				body: {
+					name,
+					description
+				}
+			});
+			redirect(303, `/list/${params.list_id}`);
+		} catch {
+			return fail(400, { name, description, failed: true });
+		}
 	}
 } satisfies Actions;

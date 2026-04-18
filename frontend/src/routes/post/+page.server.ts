@@ -2,7 +2,6 @@ import client from '$lib/api';
 import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 import { postCategory } from '$lib/enums/PostCategory';
-import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
 	const batch_size = 20;
@@ -30,8 +29,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 			}
 		}
 	});
-
-	if (!data) error(500, 'Failed to fetch search results.');
 
 	return {
 		query,

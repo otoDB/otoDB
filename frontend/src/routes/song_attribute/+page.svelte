@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 
 	import { m } from '$lib/paraglide/messages.js';
-	import client from '$lib/api';
+	import { clientRaw as client } from '$lib/api';
 	import { SongTagCategory } from '$lib/enums';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import SongTag from '$lib/SongTag.svelte';

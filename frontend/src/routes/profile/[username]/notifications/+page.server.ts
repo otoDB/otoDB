@@ -1,7 +1,6 @@
 import client from '$lib/api';
 
 import { userLevelGuard } from '$lib/route_guard';
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages';
 import { redirect } from '@sveltejs/kit';
@@ -16,8 +15,6 @@ export const load: PageServerLoad = async ({ fetch, locals, url, params }) => {
 		fetch,
 		params: { query: { limit: batch_size, offset: (page - 1) * batch_size } }
 	});
-
-	if (!data) error(500, { message: 'Internal server error' });
 
 	return {
 		notifications: data,

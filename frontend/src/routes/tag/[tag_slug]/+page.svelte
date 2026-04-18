@@ -9,7 +9,7 @@
 	import SongTag from '$lib/SongTag.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
-	import client, { getTagDisplayName } from '$lib/api.js';
+	import { clientRaw as client, getTagDisplayName } from '$lib/api.js';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
 	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection.js';
 	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
@@ -30,7 +30,10 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import type { components } from '$lib/schema.js';
+	import {
+		PathsApiCommentCommentDeleteParametersQueryModel,
+		type components
+	} from '$lib/schema.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -307,7 +310,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="tagwork"
+		model={PathsApiCommentCommentDeleteParametersQueryModel.tagwork}
 		pk={data.tag.id}
 	/>
 </Section>

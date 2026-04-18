@@ -4,6 +4,7 @@ import client from '$lib/api';
 
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
+import { fail } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ fetch, params, locals, url, parent }) => {
 	const sourceId = +params.source_id;
@@ -42,22 +43,21 @@ export const actions = {
 		const tagsJsonRaw = data.get('tags_json') as string;
 		const tags = tagsJsonRaw ? JSON.parse(tagsJsonRaw) : [];
 
-		const { data: workId, error: createError } = await client.POST('/api/work/create', {
-			fetch,
-			body: {
-				source_id: +params.source_id,
-				title: title || null,
-				description: description || null,
-				rating,
-				tags
-			}
-		});
-
-		if (createError) {
-			return { failed: true, message: m.green_due_javelina_pop() };
+		try {
+			const { data: workId } = await client.POST('/api/work/create', {
+				fetch,
+				body: {
+					source_id: +params.source_id,
+					title: title || null,
+					description: description || null,
+					rating,
+					tags
+				}
+			});
+			redirect(303, `/work/${workId}`);
+		} catch {
+			return fail(400, { failed: true, message: m.green_due_javelina_pop() });
 		}
-
-		redirect(303, `/work/${workId}`);
 	},
 	bind: async ({ request, fetch }) => {
 		const data = await request.formData();
@@ -65,21 +65,20 @@ export const actions = {
 		const sourceUrl = data.get('source_url') as string;
 		if (isNaN(workId)) return { failed: true, message: m.green_due_javelina_pop() };
 
-		const { error: bindError } = await client.POST('/api/upload/source', {
-			fetch,
-			params: {
-				query: {
-					url: sourceUrl,
-					is_reupload: false,
-					work_id: workId
+		try {
+			await client.POST('/api/upload/source', {
+				fetch,
+				params: {
+					query: {
+						url: sourceUrl,
+						is_reupload: false,
+						work_id: workId
+					}
 				}
-			}
-		});
-
-		if (bindError) {
+			});
+			redirect(303, `/work/${workId}`);
+		} catch {
 			return { failed: true, message: m.green_due_javelina_pop() };
 		}
-
-		redirect(303, `/work/${workId}`);
 	}
 } satisfies Actions;

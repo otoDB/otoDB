@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import client from '$lib/api';
+	import { clientRaw as client } from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
 	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { timeAgo } from '$lib/ui';
+	import type { PathsApiCommentCommentDeleteParametersQueryModel } from './schema';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -20,7 +21,7 @@
 	interface Props {
 		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
-		model: CommentModels;
+		model: PathsApiCommentCommentDeleteParametersQueryModel;
 		pk: number;
 		comments: Parameters<typeof makeCommentTree>[0];
 	}

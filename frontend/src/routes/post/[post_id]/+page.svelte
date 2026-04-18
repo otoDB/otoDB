@@ -4,13 +4,14 @@
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
-	import client from '$lib/api.js';
+	import { clientRaw as client } from '$lib/api.js';
 	import { EntityModelRoutes, PostCategories } from '$lib/enums.js';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
 	import { hasUserLevelOld } from '$lib/enums/UserLevel.js';
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
 	import { timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 
@@ -249,7 +250,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="post"
+		model={PathsApiCommentCommentDeleteParametersQueryModel.post}
 		pk={+data.post_id}
 	/>
 </Section>

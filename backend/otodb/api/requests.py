@@ -92,7 +92,7 @@ ACTIONS = {
 request_router = Router()
 
 
-@request_router.post('new', auth=django_auth)
+@request_router.post('new', auth=django_auth, response=int)
 @transaction.atomic
 def make_bulk(request: HttpRequest, s: str):
 	lines = [line for line in s.splitlines() if line.strip()]

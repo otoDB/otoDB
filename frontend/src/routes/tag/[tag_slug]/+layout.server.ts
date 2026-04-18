@@ -1,15 +1,11 @@
 import client, { getTagDisplayName } from '$lib/api';
 import { hasUserLevelOld } from '$lib/enums/UserLevel';
 import { m } from '$lib/paraglide/messages.js';
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
-	const {
-		data,
-		error: e,
-		response
-	} = await client.GET('/api/tag/tag', {
+	const { data } = await client.GET('/api/tag/tag', {
 		params: {
 			query: {
 				tag_slug: params.tag_slug!
@@ -18,15 +14,11 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		fetch
 	});
 
-	if (response.status === 300) {
+	if (data.slug !== params.tag_slug)
 		redirect(
 			303,
-			url.pathname.replace(
-				encodeURIComponent(params.tag_slug),
-				encodeURIComponent(e as unknown as string)
-			)
+			url.pathname.replace(encodeURIComponent(params.tag_slug), encodeURIComponent(data.slug))
 		);
-	} else if (e) error(404, { message: 'Not found' });
 
 	const song_relations = data.song
 		? (

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ComponentProps } from 'svelte';
-	import client, { getTagDisplaySlug } from './api';
+	import { clientRaw as client, getTagDisplaySlug } from './api';
 	import TagSuggestionResults from './TagSuggestionResults.svelte';
 	import { clickOutside, debounce } from './ui';
 

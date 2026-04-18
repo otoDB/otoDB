@@ -4,7 +4,7 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
-	import client, { getTagDisplaySlug } from '$lib/api';
+	import { clientRaw as client, getTagDisplaySlug } from '$lib/api';
 	import { WorkTagCategory } from '$lib/enums';
 	import { languages } from '$lib/enums/Languages.js';
 	import {
@@ -34,6 +34,7 @@
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast, callErrorCodeToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/dirty';
+	import { PathsApiTagTag_aliasesPostParametersQueryType } from '$lib/schema.js';
 
 	let { data, form } = $props();
 
@@ -101,7 +102,12 @@
 				),
 				names: tagNames
 			},
-			params: { query: { type: 'work', tag_slug: data.tag.slug } }
+			params: {
+				query: {
+					type: PathsApiTagTag_aliasesPostParametersQueryType.work,
+					tag_slug: data.tag.slug
+				}
+			}
 		});
 		if (error) {
 			aliases_post_gate.p = Promise.withResolvers<void>();

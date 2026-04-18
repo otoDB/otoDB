@@ -14,20 +14,22 @@ export const actions = {
 		const category = data.get('category') as string,
 			parent_slug = data.get('parent') as string;
 
-		const { error } = await client.PUT('/api/tag/song_tag', {
-			fetch,
-			params: {
-				query: {
-					tag_slug: params.tag_slug!
+		try {
+			await client.PUT('/api/tag/song_tag', {
+				fetch,
+				params: {
+					query: {
+						tag_slug: params.tag_slug!
+					}
+				},
+				body: {
+					category: +category,
+					parent_slug
 				}
-			},
-			body: {
-				category: +category,
-				parent_slug
-			}
-		});
-
-		if (error) return fail(400, { category, parent_slug, failed: true });
+			});
+		} catch {
+			return fail(400, { category, parent_slug, failed: true });
+		}
 
 		redirect(303, `/song_attribute/${params.tag_slug}`);
 	}

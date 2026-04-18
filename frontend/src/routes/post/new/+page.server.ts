@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/private';
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';

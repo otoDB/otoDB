@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { clientRaw as client } from '$lib/api';
+	import client from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
 	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import { renderMarkdown } from '$lib/markdown';

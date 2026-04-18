@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { isValidEntityModelType, type EntityModelType } from '$lib/enums';

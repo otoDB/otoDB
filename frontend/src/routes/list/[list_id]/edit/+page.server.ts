@@ -1,6 +1,6 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client from '$lib/api';
+import client from '$lib/api.server';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const data = await parent();

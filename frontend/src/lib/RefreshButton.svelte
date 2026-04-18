@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { clientRaw as client } from '$lib/api';
+	import client from '$lib/api';
 	import { m } from '$lib/paraglide/messages.js';
 	import { toast } from 'svelte-sonner';
 

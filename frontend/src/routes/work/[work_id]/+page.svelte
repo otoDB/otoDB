@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { clientRaw as client, getDisplayText } from '$lib/api';
+	import client, { getDisplayText } from '$lib/api';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {

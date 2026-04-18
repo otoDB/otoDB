@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { clientRaw as client } from '$lib/api';
+	import client from '$lib/api';
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
 	import { m } from '$lib/paraglide/messages.js';

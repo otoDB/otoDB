@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import client from '$lib/api';
+import client from '$lib/api.server';
 
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';

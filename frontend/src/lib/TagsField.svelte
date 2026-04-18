@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { clientRaw as client, getTagDisplaySlug } from './api';
+	import client, { getTagDisplaySlug } from './api';
 	import { clickOutside, debounce } from './ui';
 	import { m } from './paraglide/messages';
 	import TagSuggestionResults from './TagSuggestionResults.svelte';

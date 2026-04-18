@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 
 import { userLevelGuard } from '$lib/route_guard';
 import type { PageServerLoad } from './$types';

@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import TagsField from '$lib/TagsField.svelte';
-	import { clientRaw as client } from '$lib/api';
+	import client from '$lib/api';
 	import { goto } from '$app/navigation';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import { getLocale } from '$lib/paraglide/runtime';

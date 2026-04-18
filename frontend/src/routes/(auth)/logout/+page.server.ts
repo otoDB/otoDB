@@ -1,4 +1,4 @@
-import { clientRaw as client } from '$lib/api';
+import client from '$lib/api';
 import { redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 

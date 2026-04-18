@@ -5,7 +5,7 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
-	import { clientRaw as client, getDisplayText } from '$lib/api';
+	import client, { getDisplayText } from '$lib/api';
 	import { Platform, Rating, WorkOrigin } from '$lib/enums';
 	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages.js';

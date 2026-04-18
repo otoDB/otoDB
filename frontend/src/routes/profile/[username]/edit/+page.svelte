@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { clientRaw as client } from '$lib/api.js';
+	import client from '$lib/api.js';
 	import {
 		allProfileConnectionKeys,
 		ProfileConnection,

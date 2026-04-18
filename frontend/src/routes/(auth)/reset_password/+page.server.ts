@@ -1,6 +1,7 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client, { clientRaw, forwardCookies } from '$lib/api';
+import client from '$lib/api.server';
+import clientRaw, { forwardCookies } from '$lib/api';
 import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {

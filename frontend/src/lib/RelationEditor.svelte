@@ -3,7 +3,7 @@
 	import { dirtyEnhance, type Barrier } from '$lib/dirty';
 	import { isSOV } from '$lib/enums/Languages';
 	import type { ComponentProps } from 'svelte';
-	import { clientRaw as client } from './api';
+	import client from './api';
 	import { SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
 	import { m } from './paraglide/messages';
 	import { getLocale } from './paraglide/runtime';

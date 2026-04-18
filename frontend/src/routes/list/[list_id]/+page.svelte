@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { clientRaw as client } from '$lib/api';
+	import client from '$lib/api';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { Platform, WorkOrigin } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/enums/Languages';

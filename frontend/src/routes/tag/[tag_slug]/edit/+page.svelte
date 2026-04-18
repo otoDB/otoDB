@@ -4,7 +4,7 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
-	import { clientRaw as client, getTagDisplaySlug } from '$lib/api';
+	import client, { getTagDisplaySlug } from '$lib/api';
 	import { WorkTagCategory } from '$lib/enums';
 	import { languages } from '$lib/enums/Languages.js';
 	import {

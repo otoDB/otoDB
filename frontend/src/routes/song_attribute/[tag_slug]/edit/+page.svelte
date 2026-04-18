@@ -4,7 +4,7 @@
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import Section from '$lib/Section.svelte';
 	import TagField from '$lib/TagField.svelte';
-	import { clientRaw as client } from '$lib/api';
+	import client from '$lib/api';
 	import { dirtyEnhance } from '$lib/dirty';
 	import { SongTagCategory } from '$lib/enums';
 	import { languages } from '$lib/enums/Languages.js';

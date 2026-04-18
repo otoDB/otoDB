@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 

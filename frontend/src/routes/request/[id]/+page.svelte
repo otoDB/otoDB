@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { clientRaw as client } from '$lib/api.js';
+	import client from '$lib/api.js';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { RequestActions, Status } from '$lib/enums.js';
 	import { isSOV, isSVO } from '$lib/enums/Languages';

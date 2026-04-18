@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { clientRaw as client } from './api';
+	import client from './api';
 	import { m } from './paraglide/messages';
 	import { getLocale } from './paraglide/runtime';
 	import { FAQ_POST_ID, GUIDELINE_POST_ID } from './ui';

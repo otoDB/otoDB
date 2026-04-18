@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { debounce } from '$lib/ui';
-	import { clientRaw as client, getDisplayText } from '$lib/api';
+	import client, { getDisplayText } from '$lib/api';
 	import { goto } from '$app/navigation';
 	import { draggable, droppable, type DragDropCallbacks } from '@thisux/sveltednd';
 	import { callSavingToast } from '$lib/toast';

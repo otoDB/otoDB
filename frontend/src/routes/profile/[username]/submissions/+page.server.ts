@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		origin,
 		platform,
 		status,
-		paramDir,
+		dir: paramDir,
 		standing
 	};
 };

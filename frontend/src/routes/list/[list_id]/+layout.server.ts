@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages';

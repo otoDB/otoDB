@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import Pager from '$lib/Pager.svelte';
-	import { clientRaw as client } from '$lib/api';
+	import client from '$lib/api';
 	import { buildEntityRoutes } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
 

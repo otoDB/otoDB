@@ -1,5 +1,5 @@
 import { m } from '$lib/paraglide/messages.js';
-import client from '$lib/api';
+import client from '$lib/api.server';
 import type { LayoutServerLoad } from './$types';
 
 import { getTagDisplayName } from '$lib/api';

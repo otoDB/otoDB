@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { parseMentions, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
@@ -6,7 +6,6 @@ import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
 import { m } from '$lib/paraglide/messages';
 import type { components } from '$lib/schema';
-import { CommentModelRoutes } from '$lib/enums';
 
 export const load: PageServerLoad = async ({ fetch, url }) => {
 	const batch_size = 20;

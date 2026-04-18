@@ -1,6 +1,6 @@
 <script lang="ts">
 	import WorkTag from '$lib/WorkTag.svelte';
-	import { clientRaw as client, getTagDisplaySlug } from '$lib/api';
+	import client, { getTagDisplaySlug } from '$lib/api';
 	import { WorkTagCategoriesSettableAsSource } from '$lib/enums';
 	import { allCreatorRoles, creatorRole } from '$lib/enums/CreatorRole';
 	import { m } from '$lib/paraglide/messages.js';

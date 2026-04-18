@@ -1,16 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Section from '$lib/Section.svelte';
-
-	let { data } = $props();
-	import { m } from '$lib/paraglide/messages.js';
 	import { buildEntityRoutes, enumValues } from '$lib/enums';
 	import { languages } from '$lib/enums/language.js';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { get_entity, renderMarkdown } from '$lib/markdown';
-	import { PostCategory } from '$lib/schema.js';
 	import { postCategoryNames } from '$lib/enums/postCategory.js';
+	import { get_entity, renderMarkdown } from '$lib/markdown';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { PostCategory } from '$lib/schema.js';
 
+	let { data } = $props();
 	let md = $state('');
 	let previewHtml = $derived(renderMarkdown(md));
 	let category: PostCategory = $derived(data.category ?? PostCategory.Bug_Report);

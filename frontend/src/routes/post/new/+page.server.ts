@@ -4,10 +4,10 @@ import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
 import { Levels, PostCategory, type components } from '$lib/schema';
+import { enumValues } from '$lib/enums';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getLanguageId, languages } from '$lib/enums/language';
-import { enumValues } from '$lib/enums';
 
 export const load: PageServerLoad = ({ locals, url }) => {
 	userLevelGuard(locals.user, Levels.Member);

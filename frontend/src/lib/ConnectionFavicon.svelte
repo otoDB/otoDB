@@ -36,16 +36,16 @@
 	import faviconDoujinMusicInfo from './connection_favicon/同人音楽info.png';
 	import faviconOtomadWiki2 from './connection_favicon/音MAD Wiki 2.png';
 	import faviconSoundcloud from './connection_favicon/Soundcloud.png';
-	import type { TagWorkConnection } from '$lib/enums/TagWorkConnection';
-	import type { MediaConnection } from '$lib/enums/MediaConnection';
-	import type { SongConnection } from '$lib/enums/SongConnection';
-	import type { ProfileConnection } from '$lib/enums/ProfileConnection';
+	import type { TagWorkConnectionMap } from '$lib/enums/TagWorkConnection';
+	import type { MediaConnectionMap } from '$lib/enums/MediaConnection';
+	import type { SongConnectionMap } from '$lib/enums/SongConnection';
+	import type { ProfileConnectionMap } from '$lib/enums/ProfileConnection';
 
 	type FaviconKey =
-		| (typeof TagWorkConnection)[keyof typeof TagWorkConnection]['name']
-		| (typeof MediaConnection)[keyof typeof MediaConnection]['name']
-		| (typeof SongConnection)[keyof typeof SongConnection]['name']
-		| (typeof ProfileConnection)[keyof typeof ProfileConnection]['name'];
+		| (typeof TagWorkConnectionMap)[keyof typeof TagWorkConnectionMap]['name']
+		| (typeof MediaConnectionMap)[keyof typeof MediaConnectionMap]['name']
+		| (typeof SongConnectionMap)[keyof typeof SongConnectionMap]['name']
+		| (typeof ProfileConnectionMap)[keyof typeof ProfileConnectionMap]['name'];
 
 	const img: Record<FaviconKey, string> = {
 		'AniDB': faviconAniDB,

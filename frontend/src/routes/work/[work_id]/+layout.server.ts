@@ -1,8 +1,9 @@
 import client, { getDisplayText } from '$lib/api';
-import { hasUserLevelOld } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/UserLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
+import { Levels } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
@@ -24,7 +25,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			url.pathname.replace(encodeURIComponent(params.work_id), encodeURIComponent(data.id))
 		);
 
-	const loggedOut = !hasUserLevelOld(locals.user?.level, 'MEMBER');
+	const loggedOut = !hasUserLevel(locals.user?.level, Levels.Member);
 
 	return {
 		links: [

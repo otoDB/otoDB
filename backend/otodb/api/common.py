@@ -53,10 +53,11 @@ class Error(Schema):
 
 class ProfileSchema(ModelSchema):
 	id: int
+	level: Account.Levels
 
 	class Meta:
 		model = Account
-		fields = ['username', 'level', 'date_created']
+		fields = ['username', 'date_created']
 
 
 class TagLangPreferenceSchema(Schema):

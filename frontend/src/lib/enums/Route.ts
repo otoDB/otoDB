@@ -1,53 +1,44 @@
 import { m } from '$lib/paraglide/messages';
+import { Route } from '$lib/schema';
 
 const c = (type: () => string, action: () => string) => () =>
 	m.mild_loud_shad_enchant({ type: type(), name: action() });
 
-export const Route = {
-	UNKNOWN: { id: 0, title: () => 'Unknown' },
+export const RouteNames = {
+	[Route.Unknown]: () => 'Unknown',
 
-	TAGWORK_ALIAS: { id: 1, title: c(m.empty_legal_chicken_taste, () => 'Alias') },
-	TAGWORK_UNALIAS: { id: 2, title: c(m.empty_legal_chicken_taste, () => 'Alias Control') },
-	TAGWORK_DELETE: { id: 3, title: c(m.empty_legal_chicken_taste, m.real_born_goat_snap) },
-	TAGWORK_UPDATE: { id: 4, title: c(m.empty_legal_chicken_taste, () => 'Update') },
+	[Route.Tag_Work_Alias]: c(m.empty_legal_chicken_taste, m.civil_civil_ray_forgive),
+	[Route.Tag_Work_Alias_Control]: c(m.empty_legal_chicken_taste, m.good_vivid_weasel_launch),
+	[Route.Tag_Work_Delete]: c(m.empty_legal_chicken_taste, m.real_born_goat_snap),
+	[Route.Tag_Work_Update]: c(m.empty_legal_chicken_taste, m.dry_raw_finch_devour),
 
-	TAGWORK_EDIT_WIKI: { id: 7, title: c(m.empty_legal_chicken_taste, () => 'Edit Wiki') },
-	TAGWORK_EDIT_CONNECTIONS: {
-		id: 8,
-		title: c(m.empty_legal_chicken_taste, () => 'Edit Connections')
-	},
+	[Route.Tag_Work_Edit_Wiki]: c(m.empty_legal_chicken_taste, m.male_known_pony_rise),
+	[Route.Tag_Work_Edit_Connections]: c(m.empty_legal_chicken_taste, m.plane_heavy_gorilla_grip),
 
-	SONGTAG_UPDATE: { id: 20, title: c(m.dull_plain_angelfish_cuddle, () => 'Update') },
-	SONGTAG_SET_TAGS: { id: 21, title: c(m.grand_nice_pony_belong, () => 'Tag Control') },
-	SONGTAG_ALIAS: { id: 22, title: c(m.dull_plain_angelfish_cuddle, () => 'Alias') },
-	SONGTAG_UNALIAS: { id: 23, title: c(m.dull_plain_angelfish_cuddle, () => 'Alias Control') },
-	SONGTAG_DELETE: { id: 24, title: c(m.dull_plain_angelfish_cuddle, m.real_born_goat_snap) },
+	[Route.Song_Tag_Update]: c(m.dull_plain_angelfish_cuddle, m.dry_raw_finch_devour),
+	[Route.Song_Tag_Set_Tags]: c(m.grand_nice_pony_belong, m.agent_cuddly_robin_succeed),
+	[Route.Song_Tag_Alias]: c(m.dull_plain_angelfish_cuddle, m.civil_civil_ray_forgive),
+	[Route.Song_Tag_Alias_Control]: c(m.dull_plain_angelfish_cuddle, m.good_vivid_weasel_launch),
+	[Route.Song_Tag_Delete]: c(m.dull_plain_angelfish_cuddle, m.real_born_goat_snap),
 
-	SONGRELATION_CREATE: { id: 30, title: c(m.grand_nice_pony_belong, () => 'Relation Control') },
+	[Route.Song_Relation_Control]: c(m.grand_nice_pony_belong, m.few_misty_jurgen_roam),
 
-	MEDIAWORK_DELETE: { id: 40, title: c(m.grand_merry_fly_succeed, m.real_born_goat_snap) },
-	MEDIAWORK_SET_TAGS: { id: 41, title: c(m.grand_merry_fly_succeed, () => 'Tag Control') },
+	[Route.Media_Work_Delete]: c(m.grand_merry_fly_succeed, m.real_born_goat_snap),
+	[Route.Media_Work_Set_Tags]: c(m.grand_merry_fly_succeed, m.agent_cuddly_robin_succeed),
 
-	MEDIAWORK_UPDATE: { id: 45, title: c(m.grand_merry_fly_succeed, () => 'Update') },
-	MEDIAWORK_MERGE: { id: 46, title: c(m.grand_merry_fly_succeed, () => 'Merge') },
-	MEDIAWORK_CREATE: { id: 47, title: c(m.grand_merry_fly_succeed, () => 'Create') },
+	[Route.Media_Work_Update]: c(m.grand_merry_fly_succeed, m.dry_raw_finch_devour),
+	[Route.Media_Work_Merge]: c(m.grand_merry_fly_succeed, m.noisy_fluffy_shrike_wish),
+	[Route.Media_Work_Create]: c(m.grand_merry_fly_succeed, m.pretty_heroic_buzzard_splash),
 
-	WORKRELATION_CREATE: { id: 50, title: c(m.grand_merry_fly_succeed, () => 'Relation Control') },
+	[Route.Work_Relation_Control]: c(m.grand_merry_fly_succeed, m.few_misty_jurgen_roam),
 
-	WORKSOURCE_CREATE: { id: 60, title: c(m.extra_brave_tapir_skip, () => 'Create') },
-	WORKSOURCE_UNBIND: { id: 61, title: c(m.extra_brave_tapir_skip, m.sour_lime_shad_edit) },
-	WORKSOURCE_SET_ORIGIN: { id: 62, title: c(m.extra_brave_tapir_skip, () => 'Set Origin') },
-	WORKSOURCE_REFRESH: { id: 63, title: c(m.extra_brave_tapir_skip, m.mushy_proof_hornet_dig) },
-	WORKSOURCE_ASSIGN: { id: 64, title: c(m.extra_brave_tapir_skip, () => 'Assign') },
-	WORKSOURCE_REJECT: { id: 65, title: c(m.extra_brave_tapir_skip, m.alive_blue_marlin_push) },
-	WORKSOURCE_UPDATE: { id: 66, title: c(m.extra_brave_tapir_skip, () => 'Update') },
+	[Route.Work_Source_Create]: c(m.extra_brave_tapir_skip, m.pretty_heroic_buzzard_splash),
+	[Route.Work_Source_Unbind]: c(m.extra_brave_tapir_skip, m.sour_lime_shad_edit),
+	[Route.Work_Source_Set_Origin]: c(m.extra_brave_tapir_skip, m.lofty_calm_dingo_zip),
+	[Route.Work_Source_Refresh]: c(m.extra_brave_tapir_skip, m.mushy_proof_hornet_dig),
+	[Route.Work_Source_Assign]: c(m.extra_brave_tapir_skip, m.small_fair_lark_savor),
+	[Route.Work_Source_Reject]: c(m.extra_brave_tapir_skip, m.alive_blue_marlin_push),
+	[Route.Work_Source_Update]: c(m.extra_brave_tapir_skip, m.dry_raw_finch_devour),
 
-	ROLLBACK: { id: 100, title: m.legal_mean_slug_link }
-} as const satisfies Record<string, { id: number; title: () => string }>;
-
-/**
- * @deprecated
- */
-export function resolveRouteKeyById(id: number): keyof typeof Route {
-	return Object.entries(Route).find(([_, value]) => value.id === id)?.[0] as keyof typeof Route;
-}
+	[Route.Rollback]: m.legal_mean_slug_link
+} as const satisfies Record<Route, () => string>;

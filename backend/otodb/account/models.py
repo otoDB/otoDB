@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 from django.db import IntegrityError, models
 from django.utils import timezone
 
+from otodb.models.enums import OtodbIntegerEnum
 
 class AccountManager(BaseUserManager):
 	def get_by_natural_key(self, username):
@@ -34,7 +35,7 @@ class AccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser):
-	class Levels(models.IntegerChoices):
+	class Levels(OtodbIntegerEnum):
 		ANONYMOUS = 0
 		RESTRICTED = 10
 		MEMBER = 20

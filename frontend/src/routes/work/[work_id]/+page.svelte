@@ -10,10 +10,14 @@
 		WorkRelationDisplayForward,
 		WorkStatus
 	} from '$lib/enums';
-	import { resolveWorkTagCategoryKeyById, WorkTagCategory } from '$lib/enums/WorkTagCategory';
+	import { WorkTagCategoryMap } from '$lib/enums/WorkTagCategory';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
-	import { PathsApiCommentCommentDeleteParametersQueryModel, type components } from '$lib/schema';
+	import {
+		PathsApiCommentCommentDeleteParametersQueryModel,
+		WorkTagCategory,
+		type components
+	} from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callSavingToast } from '$lib/toast';
@@ -54,16 +58,14 @@
 		}
 	};
 
-	const groupedTags: [keyof typeof WorkTagCategory, PageProps['data']['tags']][] = $derived(
-		(
-			Object.entries(
-				Object.groupBy(data.tags, (t) => {
-					const c = resolveWorkTagCategoryKeyById(t.category);
-					if (WorkTagCategory[c].canSetAsSource && t.sample) return 'SOURCE';
-					else return c;
-				})
-			) as [keyof typeof WorkTagCategory, PageProps['data']['tags']][]
-		).toSorted(([a], [b]) => WorkTagCategory[a].order - WorkTagCategory[b].order)
+	const groupedTags: [WorkTagCategory, PageProps['data']['tags']][] = $derived(
+		[
+			...Map.groupBy(data.tags, (t) => {
+				const c = t.category;
+				if (WorkTagCategoryMap[c].canSetAsSource && t.sample) return WorkTagCategory.Source;
+				else return c;
+			}).entries()
+		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
 
 	const merge_paths = (
@@ -225,12 +227,12 @@
 			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
-					style="border-color: {WorkTagCategory[cat]
-						.color};background-color: color-mix(in hsl, {WorkTagCategory[cat]
+					style="border-color: {WorkTagCategoryMap[cat]
+						.color};background-color: color-mix(in hsl, {WorkTagCategoryMap[cat]
 						.color}, transparent 85%);"
 				>
 					<h5 class="my-2 font-bold">
-						{WorkTagCategory[cat].nameFn()}
+						{WorkTagCategoryMap[cat].nameFn()}
 					</h5>
 					<ul class="flex list-none flex-wrap gap-2">
 						{#each merge_paths(tags) as tree, j (j)}

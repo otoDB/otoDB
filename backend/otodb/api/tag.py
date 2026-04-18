@@ -74,10 +74,11 @@ class FatTagWorkSchema(ModelSchema):
 	media_type: list[int] | None = None
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional[TagWorkSchema]
+	category: WorkTagCategory
 
 	class Meta:
 		model = TagWork
-		fields = ['name', 'slug', 'category', 'deprecated']
+		fields = ['name', 'slug', 'deprecated']
 
 	@field_validator('media_type', mode='before', check_fields=False)
 	@classmethod
@@ -1055,7 +1056,10 @@ def songs(request: HttpRequest, tag_slug: str):
 	return MediaSong.objects.filter(tags__slug=tag_slug)
 
 
-@tag_router.get('song_connection', response=list[ConnectionSchema])
+class SongConnectionSchema(ConnectionSchema):
+	site: SongConnectionTypes
+
+@tag_router.get('song_connection', response=list[SongConnectionSchema])
 def song_connection(request: HttpRequest, song_id: int):
 	song = get_object_or_404(MediaSong.objects, id=song_id)
 	return song.mediasongconnection_set

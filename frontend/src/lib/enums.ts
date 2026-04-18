@@ -1,25 +1,4 @@
 import { m } from '$lib/paraglide/messages.js';
-export const WorkTagCategory = [
-	m.fresh_lower_rook_trip,
-	m.next_bland_goldfish_heart,
-	m.grand_nice_pony_belong,
-	m.knotty_due_hamster_wave,
-	m.empty_fresh_mare_jump,
-	m.sad_next_jaguar_renew,
-	m.wise_keen_beaver_pick
-];
-
-export const WorkTagCategoriesSettableAsSource = [2, 4, 6];
-export const WorkTagPresentationOrder = [1, 4, 6, 3, 2, 0, 5];
-export const WorkTagPresentationColours = [
-	'rgb(159,163,169)',
-	'rgb(8,145,178)',
-	'rgb(232,121,249)',
-	'rgb(101,163,13)',
-	'rgb(220,38,38)',
-	'rgb(251,191,36)',
-	'rgb(112,26,117)'
-];
 
 export const SongTagCategory = [
 	m.fresh_lower_rook_trip,
@@ -94,58 +73,6 @@ export const SongRelationPredicate = [
 	m.curly_many_orangutan_grip
 ];
 
-export const MediaType = {
-	ANIME: 1,
-	SHOW: 2,
-	FILM: 4,
-	GAME: 8,
-	1: m.sea_new_barbel_rest,
-	2: m.every_vivid_dolphin_dash,
-	4: m.drab_gaudy_fly_relish,
-	8: m.maroon_close_gorilla_bake
-};
-
-export const allMediaTypeKeys = Object.keys(MediaType).filter((e) => !isNaN(+e));
-
-export const RequestActions = {
-	1: 'worktag:alias',
-	2: 'worktag:unalias',
-	3: 'worktag:deprecate',
-	4: 'worktag:undeprecate',
-	5: 'worktag:parent',
-	6: 'worktag:unparent'
-} as const;
-
-export const PostCategories = [
-	m.livid_loose_eel_pop,
-	m.crazy_loud_trout_peek,
-	m.new_honest_tapir_endure,
-	m.moving_trick_piranha_thrive,
-	m.fresh_lower_rook_trip
-];
-
-/**
- * @deprecated
- */
-export const CommentModelRoutes = {
-	mediawork: 'work',
-	account: 'profile',
-	pool: 'list',
-	tagwork: 'tag',
-	tagsong: 'song_attribute',
-	post: 'post',
-	bulkrequest: 'request'
-};
-
-/**
- * @deprecated
- */
-export const EntityModelRoutes = {
-	...CommentModelRoutes,
-	mediasong: 'song',
-	worksource: 'upload'
-};
-
 export type EntityModelType =
 	| 'post'
 	| 'mediasong'
@@ -157,20 +84,35 @@ export type EntityModelType =
 	| 'tagsong'
 	| 'bulkrequest';
 
+export const EntityModelRoutes: Record<EntityModelType, string> = {
+	mediawork: 'work',
+	account: 'profile',
+	pool: 'list',
+	tagwork: 'tag',
+	tagsong: 'song_attribute',
+	post: 'post',
+	bulkrequest: 'request',
+	mediasong: 'song',
+	worksource: 'upload'
+};
+
 export const isValidEntityModelType = (type: string): type is EntityModelType =>
 	Object.keys(EntityModelRoutes).includes(type);
 
 export const buildEntityRoutes = (type: EntityModelType, id: string | number) =>
 	`/${EntityModelRoutes[type]}/${id}`;
 
-export const ErrorCode = {
-	LOGIN_FAILED: 10000,
-	NOT_LOGGED_IN: 10001,
-	USERNAME_TAKEN: 10002,
-	VALIDATION_ERROR: 10003,
-	EDITOR_ONLY: 10004,
-	BAD_URL: 10005,
-	SOURCE_HAS_WORK: 10006,
-	NO_MATCHING_ENTITIES: 10007,
-	NAME_SLUG_MISMATCH: 10008
+export const RequestActions = {
+	1: 'worktag:alias',
+	2: 'worktag:unalias',
+	3: 'worktag:deprecate',
+	4: 'worktag:undeprecate',
+	5: 'worktag:parent',
+	6: 'worktag:unparent'
 } as const;
+
+export type Enum<E> = Record<keyof E, number | string> & { [k: number]: string };
+export const EnumValues = <E extends Enum<E>>(Enum: E): E[keyof E][] =>
+	Object.values(Enum).filter(
+		(value) => !(typeof value === 'string' && Enum[value as keyof E] !== undefined)
+	) as E[keyof E][];

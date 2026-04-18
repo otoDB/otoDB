@@ -242,10 +242,11 @@ class InvitationSchema(ModelSchema):
 	used_by: ProfileSchema | None
 	used_at: datetime | None
 	created_at: datetime
+	level: Account.Levels
 
 	class Meta:
 		model = Invitation
-		fields = ['secret', 'level']
+		fields = ['secret']
 
 
 @auth_router.get(

@@ -1,54 +1,54 @@
 import { env } from '$env/dynamic/private';
 import client from '$lib/api';
-import { languages } from '$lib/enums/Languages.js';
+import { languages } from '$lib/enums/Languages';
 import { get_entity, renderMarkdown } from '$lib/markdown';
 import { error, fail } from '@sveltejs/kit';
 import type { Actions, LayoutServerLoad } from './$types';
-import { LanguageTypes, PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
+import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ fetch, params }) => {
-	const { data: comments } = await client.GET('/api/comment/comments', {
-		fetch,
-		params: {
-			query: {
-				model: PathsApiCommentCommentsGetParametersQueryModel.post,
-				pk: +params.post_id
-			}
-		}
-	});
+const { data: comments } = await client.GET('/api/comment/comments', {
+fetch,
+params: {
+query: {
+model: PathsApiCommentCommentsGetParametersQueryModel.post,
+pk: +params.post_id
+}
+}
+});
 
-	// TODO: Error forwarding
-	if (!comments) error(500, 'Failed to fetch data.');
+// TODO: Error forwarding
+if (!comments) error(500, 'Failed to fetch data.');
 
-	return { comments };
+return { comments };
 };
 
 export const actions = {
-	edit: async ({ request, fetch, params }) => {
-		const data = await request.formData();
-		const title = data.get('title') as string;
-		const post = data.get('post') as string;
-		const lang = data.get('lang') as keyof typeof LanguageTypes;
-		// TODO: Remove when error forwarding is complete
-		if (!Object.keys(LanguageTypes).includes(lang)) return fail(400);
-		const entities_raw = data.get('entities') as string | null;
-		const entities = (entities_raw ?? '')
-			.split('\n')
-			.map(get_entity)
-			.filter((x) => !!x);
+edit: async ({ request, fetch, params }) => {
+const data = await request.formData();
+const title = data.get('title') as string;
+const post = data.get('post') as string;
+const lang = data.get('lang') as keyof typeof languages;
+// TODO: Remove when error forwarding is complete
+if (!Object.keys(languages).includes(lang)) return fail(400);
+const entities_raw = data.get('entities') as string | null;
+const entities = (entities_raw ?? '')
+.split('\n')
+.map(get_entity)
+.filter((x) => !!x);
 
-		if (renderMarkdown(post).trim() === '') return fail(400);
+if (renderMarkdown(post).trim() === '') return fail(400);
 
-		await client.PUT('/api/post/post', {
-			fetch,
-			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
-			body: {
-				post_id: +params.post_id,
-				title,
-				post,
-				lang: LanguageTypes[lang],
-				entities
-			}
-		});
-	}
+await client.PUT('/api/post/post', {
+fetch,
+params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
+body: {
+post_id: +params.post_id,
+title,
+post,
+lang: languages[lang].id,
+entities
+}
+});
+}
 } satisfies Actions;

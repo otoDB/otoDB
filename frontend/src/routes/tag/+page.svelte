@@ -2,13 +2,15 @@
 	import Section from '$lib/Section.svelte';
 
 	import { m } from '$lib/paraglide/messages.js';
-	import { WorkTagCategory } from '$lib/enums';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 	import { locales } from '$lib/paraglide/runtime';
 	import { languages } from '$lib/enums/Languages';
 	import { allMediaTypes, mediaTypes } from '$lib/enums/MediaType';
+	import { EnumValues } from '$lib/enums.js';
+	import { WorkTagCategory } from '$lib/schema.js';
+	import { WorkTagCategoryMap } from '$lib/enums/WorkTagCategory.js';
 
 	let { data } = $props();
 
@@ -38,8 +40,8 @@
 		/>
 		<select name="category" bind:value={category}>
 			<option value={-1}>{m.keen_soft_crow_relish()}</option>
-			{#each WorkTagCategory as cat, i (i)}
-				<option value={i}>{cat()}</option>
+			{#each EnumValues(WorkTagCategory) as cat, i (i)}
+				<option value={cat}>{WorkTagCategoryMap[cat].nameFn()}</option>
 			{/each}
 		</select>
 		{#if category === 6}

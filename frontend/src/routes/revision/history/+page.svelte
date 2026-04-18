@@ -7,7 +7,7 @@
 	import { timeAgo } from '$lib/ui';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
+	import { RouteNames } from '$lib/enums/Route.js';
 
 	let { data } = $props();
 </script>
@@ -18,7 +18,7 @@
 			{#each data.results?.items as r, i (i)}
 				<tr
 					><td><a href="/revision/{r.id}">#{r.id}</a></td><td
-						>{r.route ? Route[resolveRouteKeyById(r.route)].title() : ''}</td
+						>{r.route ? RouteNames[r.route]() : ''}</td
 					><td>
 						{#if isSVO(getLocale())}
 							{m.curly_safe_lynx_fond()}

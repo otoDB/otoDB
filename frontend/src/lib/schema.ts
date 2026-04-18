@@ -1534,22 +1534,17 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            level: components["schemas"]["Levels"];
             /** Secret */
             secret: string;
-            /** Level */
-            level: number;
         };
         /** ProfileSchema */
         ProfileSchema: {
             /** Id */
             id: number;
+            level: components["schemas"]["Levels"];
             /** Username */
             username: string;
-            /**
-             * Level
-             * @default 20
-             */
-            level: number;
             /**
              * Date Created
              * Format: date-time
@@ -2074,15 +2069,11 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
+            category: components["schemas"]["WorkTagCategory"];
             /** Name */
             name: string;
             /** Slug */
             slug: string;
-            /**
-             * Category
-             * @default 0
-             */
-            category: number;
             /**
              * Deprecated
              * @default false
@@ -2302,15 +2293,19 @@ export interface components {
             /** Aliases */
             aliases: components["schemas"]["TagSongSchema"][];
         };
-        /** ConnectionSchema */
-        ConnectionSchema: {
-            /** Site */
-            site: number;
+        /** SongConnectionSchema */
+        SongConnectionSchema: {
+            site: components["schemas"]["SongConnectionTypes"];
             /** Content Id */
             content_id: string;
             /** Dead */
             dead?: boolean | null;
         };
+        /**
+         * SongConnectionTypes
+         * @enum {integer}
+         */
+        SongConnectionTypes: SongConnectionTypes;
         /** ConnectionLookupResponse */
         ConnectionLookupResponse: {
             /** Entities */
@@ -2343,6 +2338,11 @@ export interface components {
              */
             entity: EntitySchemaEntity;
         };
+        /**
+         * PostCategory
+         * @enum {integer}
+         */
+        PostCategory: PostCategory;
         /** PostContentSchema */
         PostContentSchema: {
             /** Lang */
@@ -2366,18 +2366,12 @@ export interface components {
              */
             entities: components["schemas"]["EntitySchema"][];
             edited_by?: components["schemas"]["ProfileSchema"] | null;
+            category: components["schemas"]["PostCategory"];
             /** Title */
             title: string;
-            /** Category */
-            category: number;
             /** Edited At */
             edited_at?: string | null;
         };
-        /**
-         * PostCategory
-         * @enum {integer}
-         */
-        PostCategory: PostCategory;
         /** PostInSchema */
         PostInSchema: {
             /** Title */
@@ -2422,10 +2416,9 @@ export interface components {
              * @default []
              */
             entities: components["schemas"]["EntitySchema"][];
+            category: components["schemas"]["PostCategory"];
             /** Title */
             title: string;
-            /** Category */
-            category: number;
         };
         /** PagedPostOverviewSchema */
         PagedPostOverviewSchema: {
@@ -2526,14 +2519,18 @@ export interface components {
             user: string;
             /** Index */
             index?: number | null;
-            /** Route */
-            route?: number | null;
+            route?: components["schemas"]["Route"] | null;
             /**
              * Message
              * @default
              */
             message: string;
         };
+        /**
+         * Route
+         * @enum {integer}
+         */
+        Route: Route;
         /** PagedRevisionChangeSchema */
         PagedRevisionChangeSchema: {
             /** Items */
@@ -2562,11 +2559,6 @@ export interface components {
             /** Target Value */
             target_value?: string | null;
         };
-        /**
-         * Route
-         * @enum {integer}
-         */
-        Route: Route;
         /** BulkRequestSchema */
         BulkRequestSchema: {
             /** Requests */
@@ -4458,7 +4450,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ConnectionSchema"][];
+                    "application/json": components["schemas"]["SongConnectionSchema"][];
                 };
             };
         };
@@ -4603,7 +4595,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PostOverviewSchema"][][];
+                    "application/json": {
+                        [key: string]: components["schemas"]["PostOverviewSchema"][];
+                    };
                 };
             };
         };
@@ -5123,12 +5117,12 @@ export enum LanguageTypes {
     ko = 4
 }
 export enum Levels {
-    Value0 = 0,
-    Value10 = 10,
-    Value20 = 20,
-    Value40 = 40,
-    Value50 = 50,
-    Value100 = 100
+    Anonymous = 0,
+    Restricted = 10,
+    Member = 20,
+    Editor = 40,
+    Admin = 50,
+    Owner = 100
 }
 export enum ThemePref {
     Default = 0,
@@ -5232,6 +5226,20 @@ export enum SongRelationTypes {
     Medley = 2,
     Sequel = 3
 }
+export enum SongConnectionTypes {
+    VGMdb = 0,
+    VocaDB = 1,
+    Discogs = 2,
+    MusicBrainz = 3,
+    Rate_Your_Music = 4,
+    dojin_music_info = 5,
+    TouhouDB = 6,
+    RemyWiki = 20,
+    Silent_Blue = 21,
+    Zenius_I_vanisher_com = 22,
+    NND_Medley_Wiki = 30,
+    The_Mod_Archive = 40
+}
 export enum EntitySchemaEntity {
     mediawork = "mediawork",
     tagwork = "tagwork",
@@ -5261,8 +5269,6 @@ export enum Route {
     Tag_Work_Alias_Control = 2,
     Tag_Work_Delete = 3,
     Tag_Work_Update = 4,
-    DEPRECATED_Tag_Work_Set_Base = 5,
-    DEPRECATED_Tag_Work_Add_Language_Preference = 6,
     Tag_Work_Edit_Wiki = 7,
     Tag_Work_Edit_Connections = 8,
     Song_Tag_Update = 20,
@@ -5270,20 +5276,13 @@ export enum Route {
     Song_Tag_Alias = 22,
     Song_Tag_Alias_Control = 23,
     Song_Tag_Delete = 24,
-    DEPRECATED_Song_Tag_Set_Base = 25,
-    DEPRECATED_Song_Tag_Add_Language_Preference = 26,
     Song_Relation_Control = 30,
-    DEPRECATED_Song_Relation_Delete = 31,
     Media_Work_Delete = 40,
     Media_Work_Set_Tags = 41,
-    DEPRECATED_Media_Work_Remove_Tag = 42,
-    DEPRECATED_Media_Work_Update_Creator_Roles = 43,
-    DEPRECATED_Media_Work_Toggle_Sample = 44,
     Media_Work_Update = 45,
     Media_Work_Merge = 46,
     Media_Work_Create = 47,
     Work_Relation_Control = 50,
-    DEPRECATED_Work_Relation_Delete = 51,
     Work_Source_Create = 60,
     Work_Source_Unbind = 61,
     Work_Source_Set_Origin = 62,

@@ -2,13 +2,11 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
-	import {
-		allProfileConnectionKeys,
-		ProfileConnection,
-		resolveProfileConnectionNameById
-	} from '$lib/enums/ProfileConnection';
-	import { hasUserLevelOld, resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
+	import { EnumValues } from '$lib/enums.js';
+	import { ProfileConnectionMap } from '$lib/enums/ProfileConnection.js';
+	import { hasUserLevel, UserLevelNames } from '$lib/enums/UserLevel.js';
 	import { m } from '$lib/paraglide/messages';
+	import { Levels, ProfileConnectionTypes } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import { timeAgo } from '$lib/ui';
 
@@ -16,9 +14,7 @@
 
 	let urls = $state(
 		data.connections
-			?.map(({ site, content_id }) =>
-				ProfileConnection[resolveProfileConnectionNameById(site)].linkFn(content_id)
-			)
+			?.map(({ site, content_id }) => ProfileConnectionMap[site].linkFn(content_id))
 			.join('\n') ?? ''
 	);
 
@@ -28,7 +24,7 @@
 		| { reason: 'restricted invitee exists'; username: string }
 		| { reason: 'next invite not yet available'; next: number }
 		| null = $derived.by(() => {
-		if (hasUserLevelOld(data.user?.level, 'ADMIN')) return null;
+		if (hasUserLevel(data.user?.level, Levels.Admin)) return null;
 		if (!data.invites) return { reason: 'no invites data' };
 		if (data.invites.restrictedInvitee)
 			return {
@@ -57,10 +53,10 @@
 		<summary>{m.fit_noble_niklas_build()}</summary>
 		<table>
 			<tbody>
-				{#each allProfileConnectionKeys as k (k)}
+				{#each EnumValues(ProfileConnectionTypes) as k (k)}
 					<tr
-						><td>{ProfileConnection[k].name}</td><td
-							><code>{ProfileConnection[k].linkFn('<code>')}</code></td
+						><td>{ProfileConnectionMap[k].name}</td><td
+							><code>{ProfileConnectionMap[k].linkFn('<code>')}</code></td
 						></tr
 					>
 				{/each}
@@ -78,7 +74,7 @@
 	</form>
 </Section>
 
-{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+{#if hasUserLevel(data.user?.level, Levels.Editor)}
 	<Section title={m.true_male_kudu_cook()}>
 		<p>
 			{m.sound_flaky_goose_pinch()}
@@ -101,7 +97,7 @@
 								</time>
 							</td>
 							<td><pre>{inv.secret}</pre></td>
-							<td>{UserLevel[resolveUserLevelById(inv.level)].nameFn()}</td>
+							<td>{UserLevelNames[inv.level]()}</td>
 							<td>
 								{#if inv.used_by}
 									<a href="/profile/{inv.used_by.username}">
@@ -138,7 +134,7 @@
 			{/if}
 
 			<button type="submit" disabled={!!deniedInviteCreationReason}>
-				{m.muddy_that_bobcat_gleam({ level: UserLevel.EDITOR.nameFn() })}
+				{m.muddy_that_bobcat_gleam({ level: UserLevelNames[Levels.Editor]() })}
 			</button>
 		</form>
 	</Section>

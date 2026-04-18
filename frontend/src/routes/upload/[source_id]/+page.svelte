@@ -9,7 +9,7 @@
 	import { getTagDisplaySlug } from '$lib/api';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import { enhance } from '$app/forms';
-	import type { components } from '$lib/schema';
+	import type { components } from '$lib/schema.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { ComponentProps } from 'svelte';
 

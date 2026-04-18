@@ -1,19 +1,21 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import ThreadTable from '$lib/ThreadTable.svelte';
+	import { EnumValues } from '$lib/enums.js';
+	import { PostCategoryNames } from '$lib/enums/PostCategory.js';
 	import { m } from '$lib/paraglide/messages.js';
-	import { PostCategories } from '$lib/enums';
+	import { PostCategory } from '$lib/schema.js';
 
 	let { data } = $props();
 </script>
 
 <Section title={m.just_salty_anaconda_nourish()} menuLinks={data.links}>
-	{#each data.categories as c, i (i)}
-		{#if c.length}
+	{#each EnumValues(PostCategory) as c, i (i)}
+		{#if data.categories[c].length}
 			<h2 class="mt-4 text-base">
-				<a href="/post?category={i}">{PostCategories[i]()}</a>
+				<a href="/post?category={i}">{PostCategoryNames[c]()}</a>
 			</h2>
-			<ThreadTable posts={c} showAuthor={i > 0} />
+			<ThreadTable posts={data.categories[c]} showAuthor={i > 0} />
 		{/if}
 	{/each}
 </Section>

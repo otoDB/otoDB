@@ -1,54 +1,35 @@
-/**
- * Tag Work Connection
- */
+import { TagWorkConnectionTypes } from '$lib/schema';
 
-export const TagWorkConnection = {
-	OTOMADWIKI: {
-		id: 1,
+export const TagWorkConnectionMap = {
+	[TagWorkConnectionTypes.otomad_wiki]: {
 		name: 'otomad.wiki',
 		linkFn: (id: string) => `https://otomad.wiki/tag/${id}`
 	},
-	OTOMADFANDOM: {
-		id: 2,
+	[TagWorkConnectionTypes.Otomad_Wiki_2]: {
 		name: '音MAD Wiki 2',
 		linkFn: (id: string) => `https://otomad.fandom.com/ja/wiki/${id}`
 	},
-	NICOPEDIA: {
-		id: 20,
+	[TagWorkConnectionTypes.Niconico_Encyclopedia]: {
 		name: 'Niconico Encyclopedia',
 		linkFn: (id: string) => `https://dic.nicovideo.jp/${id}`
 	},
-	PIXIV_DICT: {
-		id: 21,
+	[TagWorkConnectionTypes.Pixiv_Dictionary]: {
 		name: 'Pixiv Dictionary',
 		linkFn: (id: string) => `https://dic.pixiv.net/a/${id}/`
 	},
-	WIKIPEDIAEN: {
-		id: 22,
+	[TagWorkConnectionTypes.Wikipedia]: {
 		name: 'Wikipedia (en)',
 		linkFn: (id: string) => `https://en.wikipedia.org/wiki/${id}`
 	},
-	NAMUWIKI: {
-		id: 23,
+	[TagWorkConnectionTypes.Namu_Wiki]: {
 		name: 'Namu Wiki',
 		linkFn: (id: string) => `https://namu.wiki/w/${id}`
 	},
-	KNOWYOURMEME: {
-		id: 24,
+	[TagWorkConnectionTypes.Know_Your_Meme]: {
 		name: 'Know Your Meme',
 		linkFn: (id: string) => `https://knowyourmeme.com/${id}`
 	}
-} as const satisfies Record<string, { id: number; name: string; linkFn: (id: string) => string }>;
-
-export const allTagWorkConnectionKeys = Object.keys(
-	TagWorkConnection
-) as (keyof typeof TagWorkConnection)[];
-
-/**
- * @deprecated
- */
-export const resolveTagWorkConnectionNameById = (id: number): keyof typeof TagWorkConnection => {
-	return Object.entries(TagWorkConnection).find(
-		([_, value]) => value.id === id
-	)?.[0] as keyof typeof TagWorkConnection;
-};
+} as const satisfies Record<
+	TagWorkConnectionTypes,
+	{ name: string; linkFn: (id: string) => string }
+>;

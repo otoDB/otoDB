@@ -4,10 +4,10 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { RequestActions, Status } from '$lib/enums.js';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
+	import { hasUserLevel } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
+	import { Levels, PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -62,7 +62,7 @@
 			</li>
 		{/each}
 	</ul>
-	{#if hasUserLevelOld(data.user?.level, 'EDITOR') && data.request.status === 0}
+	{#if hasUserLevel(data.user?.level, Levels.Editor) && data.request.status === 0}
 		<button onclick={() => set(1)}>{m.lucky_bold_hornet_push()}</button>
 		<button onclick={() => set(2)}>{m.alive_blue_marlin_push()}</button>
 	{/if}

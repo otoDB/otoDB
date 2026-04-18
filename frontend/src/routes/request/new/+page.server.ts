@@ -3,9 +3,10 @@ import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
+import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = ({ locals, url }) => {
-	userLevelGuard(locals.user, 'MEMBER');
+	userLevelGuard(locals.user, Levels.Member);
 	const preFilledData = url.searchParams.get('pre_filled');
 	return { preFilledData, head: { title: m.muddy_tough_swan_view() } };
 };

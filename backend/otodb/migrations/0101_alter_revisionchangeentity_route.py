@@ -4,15 +4,45 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0100_alter_revisionchangeentity_route'),
+	]
 
-    dependencies = [
-        ('otodb', '0100_alter_revisionchangeentity_route'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='revisionchangeentity',
-            name='route',
-            field=models.IntegerField(choices=[(0, 'Unknown'), (1, 'Tag Work Alias'), (2, 'Tag Work Alias Control'), (3, 'Tag Work Delete'), (4, 'Tag Work Update'), (7, 'Tag Work Edit Wiki'), (8, 'Tag Work Edit Connections'), (20, 'Song Tag Update'), (21, 'Song Tag Set Tags'), (22, 'Song Tag Alias'), (23, 'Song Tag Alias Control'), (24, 'Song Tag Delete'), (30, 'Song Relation Control'), (40, 'Media Work Delete'), (41, 'Media Work Set Tags'), (45, 'Media Work Update'), (46, 'Media Work Merge'), (47, 'Media Work Create'), (50, 'Work Relation Control'), (60, 'Work Source Create'), (61, 'Work Source Unbind'), (62, 'Work Source Set Origin'), (63, 'Work Source Refresh'), (64, 'Work Source Assign'), (65, 'Work Source Reject'), (66, 'Work Source Update'), (100, 'Rollback')], default=0),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name='revisionchangeentity',
+			name='route',
+			field=models.IntegerField(
+				choices=[
+					(0, 'Unknown'),
+					(1, 'Tag Work Alias'),
+					(2, 'Tag Work Alias Control'),
+					(3, 'Tag Work Delete'),
+					(4, 'Tag Work Update'),
+					(7, 'Tag Work Edit Wiki'),
+					(8, 'Tag Work Edit Connections'),
+					(20, 'Song Tag Update'),
+					(21, 'Song Tag Set Tags'),
+					(22, 'Song Tag Alias'),
+					(23, 'Song Tag Alias Control'),
+					(24, 'Song Tag Delete'),
+					(30, 'Song Relation Control'),
+					(40, 'Media Work Delete'),
+					(41, 'Media Work Set Tags'),
+					(45, 'Media Work Update'),
+					(46, 'Media Work Merge'),
+					(47, 'Media Work Create'),
+					(50, 'Work Relation Control'),
+					(60, 'Work Source Create'),
+					(61, 'Work Source Unbind'),
+					(62, 'Work Source Set Origin'),
+					(63, 'Work Source Refresh'),
+					(64, 'Work Source Assign'),
+					(65, 'Work Source Reject'),
+					(66, 'Work Source Update'),
+					(100, 'Rollback'),
+				],
+				default=0,
+			),
+		),
+	]

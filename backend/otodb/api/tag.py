@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction, models
 from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists, Subquery
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_object_or_404
 
 from pydantic import AfterValidator, field_validator
 from ninja import ModelSchema, Schema, Query, Field
@@ -555,8 +555,7 @@ class WikiPageMDSchema(ModelSchema):
 
 @tag_router.get('wiki_page', auth=django_auth, response=list[WikiPageMDSchema])
 def wiki_page(request: HttpRequest, tag_slug: str):
-	pages = get_list_or_404(WikiPage, tag__slug=tag_slug)
-	return pages
+	return WikiPage.objects.filter(tag__slug=tag_slug)
 
 
 class WikiPageEditSchema(Schema):

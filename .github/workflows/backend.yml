@@ -148,12 +148,12 @@ jobs:
         with:
           enable-cache: true
       - uses: oven-sh/setup-bun@v1
-      - name: Start Backend Server
+      - name: Generate JSON
         working-directory: backend
         run: |
           uv run manage.py openapi_schema > ../frontend/openapi.json
         
-      - name: Run Frontend Generation
+      - name: Install dependencies
         working-directory: frontend
         run: |
           bun install

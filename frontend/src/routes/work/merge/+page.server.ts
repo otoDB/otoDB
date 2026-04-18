@@ -3,9 +3,10 @@ import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	userLevelGuard(locals.user, 'EDITOR', url.pathname);
+	userLevelGuard(locals.user, Levels.Editor, url.pathname);
 	return { head: { title: m.heroic_same_wasp_conquer() } };
 };
 

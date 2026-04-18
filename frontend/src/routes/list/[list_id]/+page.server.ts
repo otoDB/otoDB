@@ -1,6 +1,7 @@
 import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	const batch_size = 20;
@@ -17,7 +18,12 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			}
 		}),
 		client.GET('/api/comment/comments', {
-			params: { query: { pk: +params.list_id, model: 'pool' } },
+			params: {
+				query: {
+					pk: +params.list_id,
+					model: PathsApiCommentCommentsGetParametersQueryModel.pool
+				}
+			},
 			fetch
 		}),
 		client.GET('/api/list/pending', {

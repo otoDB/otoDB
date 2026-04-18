@@ -16,7 +16,7 @@ bun run dev
 On the default dev backend, the schema is served on `http://127.0.0.1:8000/api/openapi.json`, which is specified in `redocly.yaml` for API type regeneration:
 
 ```sh
-bunx openapi-typescript
+bun run sync-schema
 ```
 
 Whenever you make a request on the server-side of the metaframework through the API client, you have to inject SvelteKit's `fetch` as follows (otherwise cookies will not be passed along):

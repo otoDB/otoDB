@@ -1,10 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Platform, Status, WorkOrigin, WorkStatus } from '$lib/enums';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
+	import {
+		enumValues,
+		PlatformNames,
+		StatusNames,
+		WorkOriginNames,
+		WorkStatusNames
+	} from '$lib/enums';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
+	import { Levels, Platform, Status, WorkStatus } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
@@ -22,7 +29,8 @@
 					<td>{m.just_noisy_moth_beam()}</td>
 					<td
 						><select name="standing" value={data.standing ?? 1}
-							>{#each Status as p, i (i)}<option value={i}>{p()}</option
+							>{#each enumValues(Status) as p, i (i)}<option value={p}
+									>{StatusNames[p]()}</option
 								>{/each}</select
 						></td
 					>
@@ -32,7 +40,8 @@
 					<td
 						><select name="platform" value={data.platform ?? null}
 							><option value={null}>---</option
-							>{#each Platform.slice(1) as p, i (i)}<option value={i + 1}>{p}</option
+							>{#each enumValues(Platform) as p, i (i)}<option value={p}
+									>{PlatformNames[p]}</option
 								>{/each}</select
 						></td
 					>
@@ -42,8 +51,8 @@
 					<td
 						><select name="origin" value={data.origin ?? null}
 							><option value={null}>---</option><option value={0}
-								>{WorkOrigin[0]()}</option
-							><option value={1}>{WorkOrigin[1]()}</option></select
+								>{WorkOriginNames[0]()}</option
+							><option value={1}>{WorkOriginNames[1]()}</option></select
 						></td
 					>
 				</tr>
@@ -51,9 +60,11 @@
 					<td>{m.civil_trick_oryx_clap()}</td>
 					<td
 						><select name="status" value={data.status ?? null}
-							><option value={null}>---</option><option value={0}
-								>{WorkStatus[0]()}</option
-							><option value={1}>{WorkStatus[1]()}</option></select
+							><option value={null}>---</option><option value={WorkStatus.Available}
+								>{WorkStatusNames[WorkStatus.Available]()}</option
+							><option value={WorkStatus.Down}
+								>{WorkStatusNames[WorkStatus.Down]()}</option
+							></select
 						></td
 					>
 				</tr>
@@ -88,7 +99,7 @@
 						<th>{m.super_agent_pigeon_aim()}</th>
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+						{#if hasUserLevel(data.user?.level, Levels.Editor)}
 							<th>{m.mushy_proof_hornet_dig()}</th>
 						{/if}
 					</tr></thead
@@ -99,14 +110,14 @@
 							<td class="whitespace-nowrap"
 								><a href="/upload/{src.id}">{src.title || src.url}</a></td
 							>
-							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
+							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
 							<td class="whitespace-nowrap"
 								><a href={src.url} target="_blank" rel="noopener noreferrer"
 									>{m.noisy_moving_newt_belong()}</a
 								></td
 							>
-							{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+							{#if hasUserLevel(data.user?.level, Levels.Editor)}
 								<td><RefreshButton source={src} /></td>
 							{/if}
 						</tr>
@@ -141,10 +152,9 @@
 									>#{src.media} - {src.title || src.url}</a
 								></td
 							>
-							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td
-								class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td
-							>
+							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
+							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td
+							><td class="whitespace-nowrap">{WorkStatusNames[src.work_status]()}</td>
 							<td class="whitespace-nowrap"
 								><a href={src.url} target="_blank" rel="noopener noreferrer"
 									>{m.noisy_moving_newt_belong()}</a
@@ -182,8 +192,8 @@
 						<tr>
 							<td class="whitespace-nowrap">{src.title || src.url}</td>
 							<!-- <td class="whitespace-nowrap">{src.rejection.reason}</td> `src.rejection` might be no longer exists. -->
-							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
+							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
 							<td class="whitespace-nowrap"
 								><a href={src.url} target="_blank" rel="noopener noreferrer"
 									>{m.noisy_moving_newt_belong()}</a

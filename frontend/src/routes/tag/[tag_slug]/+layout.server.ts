@@ -1,15 +1,12 @@
 import client, { getTagDisplayName } from '$lib/api';
-import { hasUserLevelOld } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/userLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
+import { Levels } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
-	const {
-		data,
-		error: e,
-		response
-	} = await client.GET('/api/tag/tag', {
+	const { data, error: e } = await client.GET('/api/tag/tag', {
 		params: {
 			query: {
 				tag_slug: params.tag_slug!
@@ -18,15 +15,13 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		fetch
 	});
 
-	if (response.status === 300) {
+	if (e) error(404, { message: 'Not found' });
+
+	if (data.slug !== params.tag_slug)
 		redirect(
 			303,
-			url.pathname.replace(
-				encodeURIComponent(params.tag_slug),
-				encodeURIComponent(e as unknown as string)
-			)
+			url.pathname.replace(encodeURIComponent(params.tag_slug), encodeURIComponent(data.slug))
 		);
-	} else if (e) error(404, { message: 'Not found' });
 
 	const song_relations = data.song
 		? (
@@ -47,7 +42,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `tag/${params.tag_slug}`,
 				title: m.empty_legal_chicken_taste() + ' ' + params.tag_slug
 			},
-			...(hasUserLevelOld(locals.user?.level, 'MEMBER')
+			...(hasUserLevel(locals.user?.level, Levels.Member)
 				? [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]
 				: []),
 			{
@@ -65,7 +60,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 						pathname: `tag/${params.tag_slug}`,
 						title: m.grand_nice_pony_belong() + ' ' + data.song.id
 					},
-					...(hasUserLevelOld(locals.user?.level, 'MEMBER')
+					...(hasUserLevel(locals.user?.level, Levels.Member)
 						? [
 								{
 									pathname: `tag/${params.tag_slug}/song_tags`,

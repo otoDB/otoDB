@@ -2,12 +2,12 @@ import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { isValidEntityModelType, type EntityModelType } from '$lib/enums';
-import type { components } from '$lib/schema';
+import type { components, Route } from '$lib/schema';
 
 type RC = components['schemas']['RevisionChangeSchema'];
 const group_RCs = (
 	items: RC[]
-): { route: number; entities: { rcs: RC[]; ent_type: EntityModelType; ent_id: string }[] }[] =>
+): { route: Route; entities: { rcs: RC[]; ent_type: EntityModelType; ent_id: string }[] }[] =>
 	(Object.values(Object.groupBy(items, (c) => c.route)) as RC[][])
 		.map((rent) => ({
 			route: rent![0].route,

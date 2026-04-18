@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				query,
 				limit: batch_size,
 				offset: batch_size * (page - 1),
-				category,
+				category: category === -1 ? null : category,
 				media_type,
 				order,
 				deprecated_only,

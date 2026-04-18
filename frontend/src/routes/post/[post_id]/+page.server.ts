@@ -1,14 +1,20 @@
 import { env } from '$env/dynamic/private';
 import client from '$lib/api';
-import { languages } from '$lib/enums/Languages.js';
+import { languages } from '$lib/enums/language';
 import { get_entity, renderMarkdown } from '$lib/markdown';
 import { error, fail } from '@sveltejs/kit';
 import type { Actions, LayoutServerLoad } from './$types';
+import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ fetch, params }) => {
 	const { data: comments } = await client.GET('/api/comment/comments', {
 		fetch,
-		params: { query: { model: 'post', pk: +params.post_id } }
+		params: {
+			query: {
+				model: PathsApiCommentCommentsGetParametersQueryModel.post,
+				pk: +params.post_id
+			}
+		}
 	});
 
 	// TODO: Error forwarding
@@ -22,9 +28,9 @@ export const actions = {
 		const data = await request.formData();
 		const title = data.get('title') as string;
 		const post = data.get('post') as string;
-		// TODO: Remove when error forwarding is complete
-		if (!Object.keys(languages).includes(data.get('lang') as string)) return fail(400);
 		const lang = data.get('lang') as keyof typeof languages;
+		// TODO: Remove when error forwarding is complete
+		if (!Object.keys(languages).includes(lang)) return fail(400);
 		const entities_raw = data.get('entities') as string | null;
 		const entities = (entities_raw ?? '')
 			.split('\n')

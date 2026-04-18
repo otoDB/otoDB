@@ -2,9 +2,10 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
-	import { Platform } from '$lib/enums';
+	import { enumValues, PlatformNames } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
+	import { Levels, Platform } from '$lib/schema.js';
 
 	let { data, form } = $props();
 	let isUnavailable = $derived(!!data.unavailable_source);
@@ -23,8 +24,8 @@
 	{#if !data.unavailable_source}
 		<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 		<ul>
-			{#each Platform.slice(1) as platform, i (i)}
-				<li>{platform}</li>
+			{#each enumValues(Platform) as platform, i (i)}
+				<li>{PlatformNames[platform]}</li>
 			{/each}
 		</ul>
 	{/if}
@@ -68,7 +69,7 @@
 							</label>
 						</td>
 					</tr>
-					{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+					{#if hasUserLevel(data.user?.level, Levels.Editor)}
 						<tr>
 							<th class="w-min whitespace-nowrap">
 								{m.that_large_mare_ascend()}

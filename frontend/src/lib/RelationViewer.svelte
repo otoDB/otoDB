@@ -1,17 +1,18 @@
-<script lang="ts">
+<script lang="ts" generics="T extends 'work' | 'song'">
 	import { m } from '$lib/paraglide/messages.js';
-	import { SongRelationTypes, WorkRelationTypes } from '$lib/enums.js';
+	import { enumValues, SongRelationNames, WorkRelationNames } from '$lib/enums.js';
 	import { getDisplayText } from '$lib/api';
 	import mermaid from 'mermaid';
 	import elkLayouts from '@mermaid-js/layout-elk';
 	import { onMount } from 'svelte';
 	import { SVGViewer } from 'svelte-svg-viewer';
-	import type { components } from './schema';
+	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
 
 	type Work = components['schemas']['SlimWorkSchema'];
 	type Song = components['schemas']['SongSchema'];
-	type Node = (Song | Work) & { distance?: number };
-	type Edge = { A_id: number; B_id: number; relation: number };
+	type RelationType = T extends 'work' ? WorkRelationTypes : SongRelationTypes;
+	type Node = (T extends 'work' ? Work : Song) & { distance?: number };
+	type Edge = { A_id: number; B_id: number; relation: RelationType };
 	interface Props {
 		id: number;
 		type: 'work' | 'song';
@@ -22,11 +23,14 @@
 	}
 	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 }: Props = $props();
 
-	const RelationTypes = { work: WorkRelationTypes, song: SongRelationTypes }[type];
+	const [RelationTypes, RelationNames] =
+		type === 'work'
+			? [WorkRelationTypes, WorkRelationNames]
+			: [SongRelationTypes, SongRelationNames];
 
 	let deg = $state(1);
 	let direction = $state(defaultDir);
-	let allowed_types = $state(new Array(RelationTypes.length).fill(true));
+	let allowed_types: RelationType[] = $state(enumValues(RelationTypes) as RelationType[]);
 
 	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: number[]) =>
 		mermaid.render(
@@ -54,8 +58,8 @@ flowchart ${direction}
 		.map((r) =>
 			//  Reverse relation for 'sequel'
 			r.relation === 0
-				? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationTypes[r.relation]()}| ${r.A_id}`
-				: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationTypes[r.relation]()}| ${r.B_id}`
+				? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationNames[r.relation]()}| ${r.A_id}`
+				: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationNames[r.relation]()}| ${r.B_id}`
 		)
 		.join('\n')}
 	${ext
@@ -66,23 +70,22 @@ flowchart ${direction}
 		)
 		.join('\n')}`
 					: `
-    ${(nodes as Song[])
+    ${nodes
 		.map(
 			(
 				w
 			) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
-    click ${w.id} "${`/tag/${w.work_tag}`}"`
+    click ${w.id} "${`/tag/${(w as Song).work_tag}`}"`
 		)
 		.join('\n')}
-    ${links.map((r) => `${r.A_id} -->|${RelationTypes[r.relation]()}| ${r.B_id}`).join('\n')}`)
+    ${links.map((r) => `${r.A_id} -->|${RelationNames[r.relation]()}| ${r.B_id}`).join('\n')}`)
 		);
 
 	const mermaid_BFS = (
 		ns: Node[],
 		ls: Edge[],
 		start: number,
-		max_distance: number = Number.POSITIVE_INFINITY,
-		allowed_types: boolean[] = new Array(WorkRelationTypes.length).fill(true)
+		max_distance: number = Number.POSITIVE_INFINITY
 	): [(Node & { distance: number })[], Edge[], number[]] => {
 		const nodes = structuredClone(ns),
 			links = structuredClone(ls);
@@ -99,7 +102,8 @@ flowchart ${direction}
 							links
 								.filter(
 									(v) =>
-										allowed_types[v.relation] && (v.A_id === n || v.B_id === n)
+										allowed_types.includes(v.relation) &&
+										(v.A_id === n || v.B_id === n)
 								)
 								.flatMap((v) => [v.A_id, v.B_id])
 						)
@@ -112,14 +116,14 @@ flowchart ${direction}
 			nodes.filter((v) => v.distance !== undefined) as (Node & { distance: number })[],
 			links.filter(
 				(v) =>
-					allowed_types[v.relation] &&
+					allowed_types.includes(v.relation) &&
 					nodes.find((w) => w.id === v.A_id)?.distance !== undefined &&
 					nodes.find((w) => w.id === v.B_id)?.distance !== undefined
 			),
 			[
 				...new Set(
 					links
-						.filter((v) => allowed_types[v.relation])
+						.filter((v) => allowed_types.includes(v.relation))
 						.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)!))
 						.filter(
 							([a, b]) => (a.distance === undefined) !== (b.distance === undefined)
@@ -130,13 +134,13 @@ flowchart ${direction}
 		];
 	};
 
-	const max_distance = Math.max(...mermaid_BFS(objects, relations, id)[0].map((n) => n.distance));
+	const max_distance = $derived(
+		Math.max(...mermaid_BFS(objects, relations, id)[0].map((n) => n.distance))
+	);
 
 	let distance = $derived(Math.max(Math.min(deg, max_distance), 1));
 
-	let [nodes, links, ext] = $derived(
-		mermaid_BFS(objects, relations, id, distance, allowed_types)
-	);
+	let [nodes, links, ext] = $derived(mermaid_BFS(objects, relations, id, distance));
 	let svg = $derived(get_svg_mermaid(nodes, links, ext));
 
 	onMount(() => {
@@ -201,11 +205,11 @@ flowchart ${direction}
 	>
 </label>
 {m.mild_loud_shad_enchant({ type: m.mellow_upper_finch_drip(), name: '' })}
-{#each RelationTypes as t, i (i)}
-	<label class="type-label"
-		><input type="checkbox" class="hidden" bind:checked={allowed_types[i]} />{t()}</label
-	>
-{/each}
+<select multiple bind:value={allowed_types}>
+	{#each enumValues(RelationTypes) as t, i (i)}
+		<option value={t} class="type-label">{RelationNames[t]()}</option>
+	{/each}
+</select>
 {#await svg}
 	{m.sunny_light_duck_surge()}
 {:then s}
@@ -245,11 +249,8 @@ flowchart ${direction}
 
 <style>
 	@reference "../app.css";
-	label.type-label {
-		padding: 0 0.3rem;
-		margin: 0.1rem;
-		border: 1px solid var(--otodb-color-content-primary);
-		&:has(input:checked) {
+	option.type-label {
+		&:checked {
 			@apply text-otodb-bg-primary;
 			@apply bg-otodb-content-primary;
 		}

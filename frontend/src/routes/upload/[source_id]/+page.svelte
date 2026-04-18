@@ -5,11 +5,11 @@
 	import WorkField from '$lib/WorkField.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
-	import { Rating, WorkOrigin, WorkStatus } from '$lib/enums';
+	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
 	import { getTagDisplaySlug } from '$lib/api';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import { enhance } from '$app/forms';
-	import type { components } from '$lib/schema';
+	import { Rating, type components } from '$lib/schema.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { ComponentProps } from 'svelte';
 
@@ -106,11 +106,11 @@
 						</tr>
 						<tr>
 							<th class="w-24">{m.large_polite_otter_thrive()}</th>
-							<td>{WorkOrigin[data.source.work_origin]()}</td>
+							<td>{WorkOriginNames[data.source.work_origin]()}</td>
 						</tr>
 						<tr>
 							<th class="w-24">{m.civil_trick_oryx_clap()}</th>
-							<td>{WorkStatus[data.source.work_status]()}</td>
+							<td>{WorkStatusNames[data.source.work_status]()}</td>
 						</tr>
 						<tr>
 							<th class="w-24">{m.big_dry_seahorse_succeed()}</th>
@@ -214,24 +214,23 @@
 							<th>{m.good_dark_bumblebee_spur()}</th>
 							<td>
 								<div class="flex gap-2">
-									{#each Rating as r, i (i)}
+									{#each enumValues(Rating) as r, i (i)}
 										<label
 											class={[
 												'cursor-pointer border px-3 py-1',
-												rating === i
-													? 'bg-otodb-content-primary text-otodb-bg-primary'
-													: ''
+												rating === i &&
+													'bg-otodb-content-primary text-otodb-bg-primary'
 											]}
 										>
 											<input
 												type="radio"
 												name="rating"
-												value={i}
+												value={r}
 												bind:group={rating}
 												class="hidden"
 												required
 											/>
-											{r()}
+											{RatingNames[r]()}
 										</label>
 									{/each}
 								</div>

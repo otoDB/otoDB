@@ -3,6 +3,7 @@ import client from '$lib/api';
 import { languages } from '$lib/enums/language';
 import { getLocale, setLocale } from '$lib/paraglide/runtime';
 import { m } from '$lib/paraglide/messages';
+import type { ThemePref } from './schema';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -41,7 +42,7 @@ export const set_lang = async (lang: keyof typeof languages, logged_in: boolean)
 };
 
 interface Prefs {
-	theme?: number; // theme id
+	theme?: ThemePref; // theme id
 }
 
 export const get_prefs = (): Prefs | undefined => {

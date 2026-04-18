@@ -4,13 +4,13 @@
 	import {
 		buildEntityRoutes,
 		MimeType,
-		Platform,
-		Rating,
-		SongRelationTypes,
-		SongTagCategory,
-		WorkOrigin,
-		WorkRelationTypes,
-		WorkStatus,
+		PlatformNames,
+		RatingNames,
+		SongRelationNames,
+		SongTagCategoryNames,
+		WorkOriginNames,
+		WorkRelationNames,
+		WorkStatusNames,
 		type Enum
 	} from '$lib/enums.js';
 	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
@@ -29,9 +29,16 @@
 	import {
 		Levels,
 		MediaConnectionTypes,
+		Platform,
 		ProfileConnectionTypes,
+		Rating,
 		SongConnectionTypes,
+		SongRelationTypes,
+		SongTagCategory,
 		TagWorkConnectionTypes,
+		WorkOrigin,
+		WorkRelationTypes,
+		WorkStatus,
 		WorkTagCategory
 	} from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
@@ -57,17 +64,20 @@
 		(v: number): DisplayFunction =>
 		() =>
 			fs[r(v)].name;
+	const EnumStraightRecord_to_DisplayFunction =
+		<E extends Enum<E>>(r: E, fs: Record<E[keyof E], string>) =>
+		(v: number): DisplayFunction =>
+		() =>
+			fs[r[v as keyof E]];
 	const StraightRecord_to_DisplayFunction =
 		<T extends number>(r: Record<T, string>) =>
 		(v: number): DisplayFunction =>
 		() =>
 			r[v as T];
-	const Array_to_DisplayFunction = (r: DisplayFunction[]) => (v: number) => r[v];
-	const StraightArray_to_DisplayFunction =
-		(r: string[]) =>
+	const EnumRecord_to_DisplayFunction =
+		<E extends Enum<E>>(r: E, fs: Record<E[keyof E], DisplayFunction>) =>
 		(v: number): DisplayFunction =>
-		() =>
-			r[v];
+			fs[r[v as keyof E]];
 	const expand_bit_field =
 		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
 		(v: number): DisplayFunction =>
@@ -86,14 +96,14 @@
 
 	const ValueDisplayMap: Record<string, Record<string, (v: number) => DisplayFunction>> = {
 		mediawork: {
-			rating: Array_to_DisplayFunction(Rating)
+			rating: EnumRecord_to_DisplayFunction(Rating, RatingNames)
 		},
 		tagwork: {
 			category: EnumValues_to_DisplayFunction(WorkTagCategory, WorkTagCategoryMap),
 			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
 		},
 		tagsong: {
-			category: Array_to_DisplayFunction(SongTagCategory)
+			category: EnumMap_to_DisplayFunction(SongTagCategory, SongTagCategoryNames)
 		},
 		tagworkconnection: {
 			site: EnumMap_to_DisplayFunction(TagWorkConnectionTypes, TagWorkConnectionMap)
@@ -114,10 +124,10 @@
 			lang: Languages
 		},
 		workrelation: {
-			relation: Array_to_DisplayFunction(WorkRelationTypes)
+			relation: EnumRecord_to_DisplayFunction(WorkRelationTypes, WorkRelationNames)
 		},
 		songrelation: {
-			relation: Array_to_DisplayFunction(SongRelationTypes)
+			relation: EnumRecord_to_DisplayFunction(SongRelationTypes, SongRelationNames)
 		},
 		tagworkinstance: {
 			creator_roles: expand_bit_field(resolveCreatorRoleKeyById, creatorRole)
@@ -126,10 +136,10 @@
 			lang: Languages
 		},
 		worksource: {
-			platform: StraightArray_to_DisplayFunction(Platform),
+			platform: EnumStraightRecord_to_DisplayFunction(Platform, PlatformNames),
 			thumbnail_mime: StraightRecord_to_DisplayFunction(MimeType),
-			work_origin: Array_to_DisplayFunction(WorkOrigin),
-			work_status: Array_to_DisplayFunction(WorkStatus)
+			work_origin: EnumRecord_to_DisplayFunction(WorkOrigin, WorkOriginNames),
+			work_status: EnumRecord_to_DisplayFunction(WorkStatus, WorkStatusNames)
 		}
 	};
 

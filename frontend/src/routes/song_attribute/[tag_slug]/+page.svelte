@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { SongTagCategory } from '$lib/enums';
+	import { SongTagCategoryNames } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { getTagDisplayName } from '$lib/api.js';
 	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
@@ -27,7 +27,7 @@
 	<h2>
 		{m.mild_loud_shad_enchant({
 			type: m.plane_awful_bobcat_spark(),
-			name: SongTagCategory[data.tag.category]()
+			name: SongTagCategoryNames[data.tag.category]()
 		})}
 	</h2>
 

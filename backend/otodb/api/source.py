@@ -71,7 +71,7 @@ def unbind_source(request: AuthedHttpRequest, source_id: int):
 @with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
 def source_origin(request: AuthedHttpRequest, source_id: int, status: WorkOrigin):
 	src = get_object_or_404(WorkSource.active_objects, id=source_id)
-	src.work_origin = status.value
+	src.work_origin = status
 	src.save()
 
 

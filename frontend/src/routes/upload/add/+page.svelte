@@ -2,10 +2,10 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
-	import { Platform } from '$lib/enums';
+	import { EnumValues, PlatformNames } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
 	import { hasUserLevel } from '$lib/enums/UserLevel';
-	import { Levels } from '$lib/schema.js';
+	import { Levels, Platform } from '$lib/schema.js';
 
 	let { data, form } = $props();
 	let isUnavailable = $derived(!!data.unavailable_source);
@@ -24,8 +24,8 @@
 	{#if !data.unavailable_source}
 		<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 		<ul>
-			{#each Platform.slice(1) as platform, i (i)}
-				<li>{platform}</li>
+			{#each EnumValues(Platform) as platform, i (i)}
+				<li>{PlatformNames[platform]}</li>
 			{/each}
 		</ul>
 	{/if}

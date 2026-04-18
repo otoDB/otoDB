@@ -74,8 +74,8 @@ def post(request: HttpRequest, post_id: int):
 
 @post_router.get('categories', response=dict[PostCategory, list[PostOverviewSchema]])
 def categories(request: HttpRequest):
-	return { i:
-		Post.objects.filter(category=i).with_activity()[:5]
+	return {
+		i: Post.objects.filter(category=i).with_activity()[:5]
 		for i, _ in PostCategory.choices
 	}
 

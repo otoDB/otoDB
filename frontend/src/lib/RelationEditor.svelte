@@ -4,10 +4,10 @@
 	import { isSOV } from '$lib/enums/Languages';
 	import type { ComponentProps } from 'svelte';
 	import client from './api';
-	import { SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
+	import { EnumValues, SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
 	import { m } from './paraglide/messages';
 	import { getLocale } from './paraglide/runtime';
-	import type { components } from './schema';
+	import { SongRelationTypes, WorkRelationTypes, type components } from './schema';
 	import SongField from './SongField.svelte';
 	import { callErrorToast } from './toast';
 	import WorkCard from './WorkCard.svelte';
@@ -65,6 +65,11 @@
 			callErrorToast(m.green_due_javelina_pop());
 		} else goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
 	};
+
+	const [RelationType, Predicates] =
+		obj_type === 'work'
+			? [WorkRelationTypes, WorkRelationEditorPredicate]
+			: [SongRelationTypes, SongRelationPredicate];
 </script>
 
 {#snippet work(
@@ -129,16 +134,16 @@
 						<td class="w-64">{@render work(relation, relation.swapped)}</td>
 						<td
 							><select name="relation" bind:value={relation.relation}>
-								{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationPredicate as rel, j (j)}
-									<option value={j}>{rel()}</option>
+								{#each EnumValues(RelationType) as rel, j (j)}
+									<option value={rel}>{Predicates[rel]()}</option>
 								{/each}
 							</select></td
 						>
 					{:else}
 						<td
 							><select name="relation" bind:value={relation.relation}>
-								{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationPredicate as rel, j (j)}
-									<option value={j}>{rel()}</option>
+								{#each EnumValues(RelationType) as rel, j (j)}
+									<option value={rel}>{Predicates[rel]()}</option>
 								{/each}
 							</select></td
 						>

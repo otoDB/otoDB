@@ -6,7 +6,7 @@ from pydantic import field_validator
 from django.http import HttpRequest
 from django.contrib.contenttypes.models import ContentType
 
-from ninja import Router, ModelSchema
+from ninja import Router, Schema, ModelSchema
 from ninja.security import django_auth
 
 from django.db import transaction
@@ -119,7 +119,7 @@ def confirm(request: HttpRequest, request_id: int, status: Status):
 	bulk = get_object_or_404(BulkRequest, id=request_id, status=Status.PENDING)
 	for r in bulk.requests.all():
 		ACTIONS[r.command](r.A, r.B)
-	bulk.status = Status(status).value
+	bulk.status = status
 	bulk.processed_by = request.user
 	bulk.save()
 	add_revision_message(f'Via request {bulk.id} from {bulk.user.username}')
@@ -144,14 +144,11 @@ class RequestSchema(ModelSchema):
 		return ContentType.objects.get_for_model(value).model, value
 
 
-class BulkRequestSchema(ModelSchema):
+class BulkRequestSchema(Schema):
 	requests: list[RequestSchema]
 	user: ProfileSchema
 	processed_by: ProfileSchema | None
-
-	class Meta:
-		model = BulkRequest
-		fields = ['status']
+	status: Status
 
 
 @request_router.get('request', response=BulkRequestSchema)

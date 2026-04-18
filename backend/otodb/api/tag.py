@@ -361,7 +361,7 @@ def delete(request: HttpRequest, tag_slug: str, **kwargs):
 class TagAliasControlSchema(Schema):
 	base_slug: str
 	unalias_slugs: list[str]
-	lang_prefs: dict[int, str | None]
+	lang_prefs: dict[LanguageTypes, str | None]
 	names: dict[str, str] = {}
 
 
@@ -419,7 +419,7 @@ def tag_alias_control(
 
 	# lang prefs
 	for lang, slug_val in payload.lang_prefs.items():
-		lang = LanguageTypes(lang).value
+		lang = lang
 		assert lang != 0
 		if slug_val:
 			tags_to_clear = list(tag.aliases.exclude(slug=slug_val))
@@ -1058,6 +1058,7 @@ def songs(request: HttpRequest, tag_slug: str):
 
 class SongConnectionSchema(ConnectionSchema):
 	site: SongConnectionTypes
+
 
 @tag_router.get('song_connection', response=list[SongConnectionSchema])
 def song_connection(request: HttpRequest, song_id: int):

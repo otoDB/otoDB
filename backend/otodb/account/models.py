@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from otodb.models.enums import OtodbIntegerEnum
 
+
 class AccountManager(BaseUserManager):
 	def get_by_natural_key(self, username):
 		return self.get(username__iexact=username)

@@ -7,11 +7,36 @@ import previewResample from '$lib/themes/resample.webp';
 import previewDefault from '$lib/themes/default.webp';
 import { ThemePref } from '$lib/schema';
 
-export const themes: Record<ThemePref, { cssKey: string, nameFn: () => string; preview: string }> = {
-	[ThemePref.Default]: { cssKey: 'theme-default', nameFn: m.grassy_noble_walrus_wish, preview: previewDefault },
-	[ThemePref.Aniki]: { cssKey: 'theme-aniki', nameFn: m.next_ago_opossum_swim, preview: previewAniki },
-	[ThemePref.otogroove]: { cssKey: 'theme-otogroove', nameFn: () => 'otogroove', preview: previewOtogroove },
-	[ThemePref.Retro_Voyage]: { cssKey: 'theme-retro-voyage', nameFn: m.tiny_plane_ape_pull, preview: previewRetroVoyage },
-	[ThemePref.SORIMIX]: { cssKey: 'theme-sorimix', nameFn: m.mean_zesty_ray_savor, preview: previewSorimix },
-	[ThemePref.Re_Sample]: { cssKey: 'theme-resample', nameFn: () => 'Re:Sample', preview: previewResample }
-};
+export const themes: Record<ThemePref, { cssKey: string; nameFn: () => string; preview: string }> =
+	{
+		[ThemePref.Default]: {
+			cssKey: 'theme-default',
+			nameFn: m.grassy_noble_walrus_wish,
+			preview: previewDefault
+		},
+		[ThemePref.Aniki]: {
+			cssKey: 'theme-aniki',
+			nameFn: m.next_ago_opossum_swim,
+			preview: previewAniki
+		},
+		[ThemePref.otogroove]: {
+			cssKey: 'theme-otogroove',
+			nameFn: () => 'otogroove',
+			preview: previewOtogroove
+		},
+		[ThemePref.Retro_Voyage]: {
+			cssKey: 'theme-retro-voyage',
+			nameFn: m.tiny_plane_ape_pull,
+			preview: previewRetroVoyage
+		},
+		[ThemePref.SORIMIX]: {
+			cssKey: 'theme-sorimix',
+			nameFn: m.mean_zesty_ray_savor,
+			preview: previewSorimix
+		},
+		[ThemePref.Re_Sample]: {
+			cssKey: 'theme-resample',
+			nameFn: () => 'Re:Sample',
+			preview: previewResample
+		}
+	};

@@ -19,6 +19,8 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	});
 
 	// TODO: Error forwarding
+	if (!data) error(500, 'Failed to fetch threads.');
+
 	return {
 		threads: data,
 		batch_size,

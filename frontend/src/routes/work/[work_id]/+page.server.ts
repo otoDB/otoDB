@@ -28,6 +28,8 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		})
 	]);
 
+	if (!comments) error(500, 'Failed to load comments');
+
 	return {
 		sources: sources,
 		comments: comments,

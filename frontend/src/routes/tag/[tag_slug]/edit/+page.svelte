@@ -54,7 +54,7 @@
 		Object.fromEntries(
 			locales.map((lang) => [
 				lang,
-				data.wiki_page.find((p) => p.lang === languages[lang].id)?.page ?? ''
+				data.wiki_page?.find((p) => p.lang === languages[lang].id)?.page ?? ''
 			])
 		)
 	);

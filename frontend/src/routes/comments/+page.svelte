@@ -4,7 +4,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { buildEntityRoutes, type EntityModelType } from '$lib/enums';
-	import { timeAgo } from '$lib/ui';
 
 	let { data } = $props();
 </script>

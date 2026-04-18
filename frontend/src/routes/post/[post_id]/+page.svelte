@@ -11,7 +11,7 @@
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { timeAgo } from '$lib/ui.js';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	import { mount, unmount } from 'svelte';
 
 	let { data } = $props();
@@ -163,11 +163,7 @@
 				>
 				{#if data.post.category === 0}
 					&middot;
-					<a href="#p{data.post_id}"
-						><time title={new Date(page_object.modified).toLocaleString()}
-							>{timeAgo(page_object.modified)}</time
-						></a
-					>
+					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
 				{/if}
 			</p>
 			{#if data.post.entities?.length}
@@ -194,11 +190,7 @@
 					<a href="/profile/{data.post?.added_by.username}"
 						>{data.post?.added_by.username}</a
 					>
-					<a href="#p{data.post_id}"
-						><time title={new Date(page_object.modified).toLocaleString()}
-							>{timeAgo(page_object.modified)}</time
-						></a
-					>
+					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
 					{#if data.post.edited_at && data.post.edited_by}
 						{@const editUser = data.post.edited_by}
 						<span title={new Date(data.post.edited_at).toLocaleString()}>

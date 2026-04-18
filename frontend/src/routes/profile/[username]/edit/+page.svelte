@@ -10,7 +10,6 @@
 	import { hasUserLevelOld, resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
-	import { timeAgo } from '$lib/ui';
 
 	let { data } = $props();
 

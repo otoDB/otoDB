@@ -6,7 +6,7 @@
 	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
-	import { timeAgo } from '$lib/ui';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -153,9 +153,7 @@
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
 			<a href="/profile/{data.user.username}">{data.user.username}</a>
-			<a href="#c{data.id}"
-				><time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time></a
-			>
+			<a href="#c{data.id}"><TimeAgo date={data.time} /></a>
 			{#if data.edited_at}
 				<span title={new Date(data.edited_at).toLocaleString()}>
 					{#if data.edited_by && data.edited_by.username !== data.user.username}

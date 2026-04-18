@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 
 	import { m } from '$lib/paraglide/messages.js';
-	import { timeAgo } from '$lib/ui';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
@@ -18,10 +18,7 @@
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a></td><td
 							>{r.route ? Route[resolveRouteKeyById(r.route)].title() : ''}</td
-						><td
-							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
-							></td
-						></tr
+						><td><TimeAgo date={r.date} /></td></tr
 					>
 				{/each}
 			</tbody>

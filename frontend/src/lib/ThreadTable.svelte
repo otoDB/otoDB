@@ -2,7 +2,6 @@
 	import { buildEntityRoutes, type EntityModelType } from './enums';
 	import { postCategory, resolvePostCategoryKeyById } from '$lib/enums/PostCategory';
 	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
 
 	interface Post {
 		id: number | string;

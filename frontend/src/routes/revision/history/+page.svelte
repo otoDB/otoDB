@@ -4,7 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { timeAgo } from '$lib/ui';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
@@ -27,10 +27,7 @@
 						{#if isSOV(getLocale())}
 							{m.curly_safe_lynx_fond()}
 						{/if}</td
-					><td
-						><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
-						></td
-					></tr
+					><td><TimeAgo date={r.date} /></td></tr
 				>
 			{/each}
 		</tbody>

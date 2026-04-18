@@ -2,7 +2,7 @@
 	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
 	import { m } from './paraglide/messages';
 	import type { components } from './schema';
-	import { timeAgo } from './ui';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
 		user: components['schemas']['UserStatusSchema'] | null;
@@ -26,7 +26,7 @@
 				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>
 				</td><td>
-					<time title={new Date(rev.date).toLocaleString()}>{timeAgo(rev.date)}</time>
+					<TimeAgo date={rev.date} />
 				</td><td>
 					{rev.message}
 				</td>

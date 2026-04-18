@@ -26,6 +26,10 @@ When making any changes to frontend code, you MUST run the following commands in
 
 All three commands must succeed without errors before committing. Do not skip or bypass these checks.
 
+## Coding
+
+- When importing components or libraries in `lib`, use `$lib` for import path.
+
 ## Boundaries
 
 - Do not edit `.env`

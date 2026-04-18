@@ -13,7 +13,7 @@
 	import { resolveWorkTagCategoryKeyById, WorkTagCategory } from '$lib/enums/WorkTagCategory';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
-	import type { components } from '$lib/schema';
+	import { PathsApiCommentCommentDeleteParametersQueryModel, type components } from '$lib/schema';
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callSavingToast } from '$lib/toast';
@@ -357,7 +357,12 @@
 {/await}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree comments={data.comments} user={data.user ?? null} model="mediawork" pk={data.id} />
+	<CommentTree
+		comments={data.comments}
+		user={data.user ?? null}
+		model={PathsApiCommentCommentDeleteParametersQueryModel.mediawork}
+		pk={data.id}
+	/>
 </Section>
 
 <style>

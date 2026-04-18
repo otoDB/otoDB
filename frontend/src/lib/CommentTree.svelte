@@ -7,6 +7,7 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { timeAgo } from '$lib/ui';
+	import type { PathsApiCommentCommentDeleteParametersQueryModel } from './schema';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -20,7 +21,7 @@
 	interface Props {
 		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
-		model: CommentModels;
+		model: PathsApiCommentCommentDeleteParametersQueryModel;
 		pk: number;
 		comments: Parameters<typeof makeCommentTree>[0];
 	}

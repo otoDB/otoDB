@@ -10,6 +10,10 @@
 	import { languages } from '$lib/enums/Languages.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { locales } from '$lib/paraglide/runtime';
+	import {
+		PathsApiTagTag_aliasesPostParametersQueryType,
+		PathsApiTagTagDeleteParametersQueryType
+	} from '$lib/schema.js';
 	import { callErrorCodeToast, callErrorToast } from '$lib/toast';
 
 	let { data, form } = $props();
@@ -54,7 +58,12 @@
 				),
 				names: tagNames
 			},
-			params: { query: { type: 'song', tag_slug: data.tag.slug } }
+			params: {
+				query: {
+					type: PathsApiTagTag_aliasesPostParametersQueryType.song,
+					tag_slug: data.tag.slug
+				}
+			}
 		});
 		if (error) {
 			aliases_post_gate.p = Promise.withResolvers<void>();
@@ -69,7 +78,12 @@
 	const del = async () => {
 		const { response } = await client.DELETE('/api/tag/tag', {
 			fetch,
-			params: { query: { tag_slug: data.tag.slug, type: 'song' } }
+			params: {
+				query: {
+					tag_slug: data.tag.slug,
+					type: PathsApiTagTagDeleteParametersQueryType.song
+				}
+			}
 		});
 		if (response.ok) {
 			goto('/', { invalidateAll: true });

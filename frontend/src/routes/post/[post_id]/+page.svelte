@@ -11,6 +11,7 @@
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
 	import { timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 
@@ -249,7 +250,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="post"
+		model={PathsApiCommentCommentDeleteParametersQueryModel.post}
 		pk={+data.post_id}
 	/>
 </Section>

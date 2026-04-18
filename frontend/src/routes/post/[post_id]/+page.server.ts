@@ -4,11 +4,17 @@ import { languages } from '$lib/enums/Languages.js';
 import { get_entity, renderMarkdown } from '$lib/markdown';
 import { error, fail } from '@sveltejs/kit';
 import type { Actions, LayoutServerLoad } from './$types';
+import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ fetch, params }) => {
 	const { data: comments } = await client.GET('/api/comment/comments', {
 		fetch,
-		params: { query: { model: 'post', pk: +params.post_id } }
+		params: {
+			query: {
+				model: PathsApiCommentCommentsGetParametersQueryModel.post,
+				pk: +params.post_id
+			}
+		}
 	});
 
 	// TODO: Error forwarding

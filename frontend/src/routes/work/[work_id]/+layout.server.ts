@@ -7,11 +7,7 @@ import type { LayoutServerLoad } from './$types';
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
 
-	const {
-		data,
-		error: e,
-		response
-	} = await client.GET('/api/work/work', {
+	const { data, error: e } = await client.GET('/api/work/work', {
 		params: {
 			query: {
 				work_id: +params.work_id
@@ -20,15 +16,13 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		fetch
 	});
 
-	if (response.status === 300)
+	if (e) error(404, { message: 'Not found' });
+
+	if (data.id !== +params.work_id)
 		redirect(
 			303,
-			url.pathname.replace(
-				encodeURIComponent(params.work_id),
-				encodeURIComponent(e as unknown as string)
-			)
+			url.pathname.replace(encodeURIComponent(params.work_id), encodeURIComponent(data.id))
 		);
-	if (e) error(404, { message: 'Not found' });
 
 	const loggedOut = !hasUserLevelOld(locals.user?.level, 'MEMBER');
 

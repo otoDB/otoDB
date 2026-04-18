@@ -1,6 +1,7 @@
 import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 	const data = await parent();
@@ -16,14 +17,17 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		}),
 		client.GET('/api/comment/comments', {
 			fetch,
-			params: { query: { model: 'tagsong', pk: data.tag.id } }
+			params: {
+				query: {
+					model: PathsApiCommentCommentsGetParametersQueryModel.tagsong,
+					pk: data.tag.id
+				}
+			}
 		})
 	]);
 
-	// TODO: Error forwarding
-	if (!songs) error(500, 'Failed to fetch data.');
-	if (!comments) error(500, 'Failed to fetch data.');
 
+	// TODO: Error forwarding
 	return {
 		songs,
 		comments

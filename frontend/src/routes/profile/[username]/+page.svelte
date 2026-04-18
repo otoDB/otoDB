@@ -10,6 +10,7 @@
 		ProfileConnection,
 		resolveProfileConnectionNameById
 	} from '$lib/enums/ProfileConnection';
+	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
 
 	let { data } = $props();
 
@@ -77,7 +78,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="account"
+		model={PathsApiCommentCommentDeleteParametersQueryModel.account}
 		pk={data.profile.id}
 	/>
 </Section>

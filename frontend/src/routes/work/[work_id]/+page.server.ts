@@ -1,6 +1,7 @@
 import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
 	const [{ data: sources }, { data: comments }, { data: similar }] = await Promise.all([
@@ -14,7 +15,12 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		}),
 		client.GET('/api/comment/comments', {
 			fetch,
-			params: { query: { model: 'mediawork', pk: +params.work_id } }
+			params: {
+				query: {
+					model: PathsApiCommentCommentsGetParametersQueryModel.mediawork,
+					pk: +params.work_id
+				}
+			}
 		}),
 		client.GET('/api/work/similar', {
 			fetch,
@@ -22,7 +28,6 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		})
 	]);
 
-	if (!comments) error(500, 'Failed to load comments');
 
 	return {
 		sources: sources,

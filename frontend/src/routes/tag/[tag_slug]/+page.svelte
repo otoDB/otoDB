@@ -30,7 +30,10 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import type { components } from '$lib/schema.js';
+	import {
+		PathsApiCommentCommentDeleteParametersQueryModel,
+		type components
+	} from '$lib/schema.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -307,7 +310,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="tagwork"
+		model={PathsApiCommentCommentDeleteParametersQueryModel.tagwork}
 		pk={data.tag.id}
 	/>
 </Section>

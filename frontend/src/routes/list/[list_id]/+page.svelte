@@ -8,6 +8,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
@@ -146,7 +147,12 @@
 {/if}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree comments={data.comments} user={data.user ?? null} model="pool" pk={data.list.id} />
+	<CommentTree
+		comments={data.comments}
+		user={data.user ?? null}
+		model={PathsApiCommentCommentDeleteParametersQueryModel.pool}
+		pk={data.list.id}
+	/>
 </Section>
 
 <style>

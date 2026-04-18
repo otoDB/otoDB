@@ -1,6 +1,7 @@
 import client from '$lib/api';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { PathsApiPostThreadsGetParametersQueryEntity } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	const batch_size = 20;
@@ -9,7 +10,7 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		fetch,
 		params: {
 			query: {
-				entity: 'mediawork',
+				entity: PathsApiPostThreadsGetParametersQueryEntity.mediawork,
 				id: params.work_id,
 				limit: batch_size,
 				offset: (page - 1) * batch_size
@@ -17,9 +18,8 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		}
 	});
 
-	// TODO: Error forwarding
-	if (!data) error(500, 'Failed to fetch threads.');
 
+	// TODO: Error forwarding
 	return {
 		threads: data,
 		batch_size,

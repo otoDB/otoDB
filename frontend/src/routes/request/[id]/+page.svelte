@@ -7,6 +7,7 @@
 	import { hasUserLevelOld } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -71,7 +72,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="bulkrequest"
+		model={PathsApiCommentCommentDeleteParametersQueryModel.bulkrequest}
 		pk={data.id}
 	/>
 </Section>

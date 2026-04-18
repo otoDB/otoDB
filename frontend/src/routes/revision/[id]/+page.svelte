@@ -26,35 +26,21 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import {
-		Levels,
-		MediaConnectionTypes,
-		Platform,
-		ProfileConnectionTypes,
-		Rating,
-		SongConnectionTypes,
-		SongRelationTypes,
-		SongTagCategory,
-		TagWorkConnectionTypes,
-		WorkOrigin,
-		WorkRelationTypes,
-		WorkStatus,
-		WorkTagCategory
-	} from '$lib/schema.js';
+	import { Levels } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
 
 	type DisplayFunction = () => string;
 	const EnumMap_to_DisplayFunction =
-		<E extends Enum<E>>(r: E, fs: Record<E[keyof E], { name: string }>) =>
+		<E extends Enum<E>>(fs: Record<E[keyof E], { name: string }>) =>
 		(v: number): DisplayFunction =>
 		() =>
-			fs[r[v as keyof E]].name;
+			fs[v as E[keyof E]].name;
 	const EnumValues_to_DisplayFunction =
-		<E extends Enum<E>>(r: E, fs: Record<E[keyof E], { nameFn: DisplayFunction }>) =>
+		<E extends Enum<E>>(fs: Record<E[keyof E], { nameFn: DisplayFunction }>) =>
 		(v: number): DisplayFunction =>
-			fs[r[v as keyof E]].nameFn;
+			fs[v as E[keyof E]].nameFn;
 	const Values_to_DisplayFunction =
 		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
 		(v: number): DisplayFunction =>
@@ -65,19 +51,19 @@
 		() =>
 			fs[r(v)].name;
 	const EnumStraightRecord_to_DisplayFunction =
-		<E extends Enum<E>>(r: E, fs: Record<E[keyof E], string>) =>
+		<E extends Enum<E>>(fs: Record<E[keyof E], string>) =>
 		(v: number): DisplayFunction =>
 		() =>
-			fs[r[v as keyof E]];
+			fs[v as E[keyof E]];
 	const StraightRecord_to_DisplayFunction =
 		<T extends number>(r: Record<T, string>) =>
 		(v: number): DisplayFunction =>
 		() =>
 			r[v as T];
 	const EnumRecord_to_DisplayFunction =
-		<E extends Enum<E>>(r: E, fs: Record<E[keyof E], DisplayFunction>) =>
+		<E extends Enum<E>>(fs: Record<E[keyof E], DisplayFunction>) =>
 		(v: number): DisplayFunction =>
-			fs[r[v as keyof E]];
+			fs[v as E[keyof E]];
 	const expand_bit_field =
 		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
 		(v: number): DisplayFunction =>
@@ -96,26 +82,26 @@
 
 	const ValueDisplayMap: Record<string, Record<string, (v: number) => DisplayFunction>> = {
 		mediawork: {
-			rating: EnumRecord_to_DisplayFunction(Rating, RatingNames)
+			rating: EnumRecord_to_DisplayFunction(RatingNames)
 		},
 		tagwork: {
-			category: EnumValues_to_DisplayFunction(WorkTagCategory, WorkTagCategoryMap),
+			category: EnumValues_to_DisplayFunction(WorkTagCategoryMap),
 			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
 		},
 		tagsong: {
-			category: EnumMap_to_DisplayFunction(SongTagCategory, SongTagCategoryNames)
+			category: EnumMap_to_DisplayFunction(SongTagCategoryNames)
 		},
 		tagworkconnection: {
-			site: EnumMap_to_DisplayFunction(TagWorkConnectionTypes, TagWorkConnectionMap)
+			site: EnumMap_to_DisplayFunction(TagWorkConnectionMap)
 		},
 		mediasongconnection: {
-			site: EnumMap_to_DisplayFunction(SongConnectionTypes, SongConnectionMap)
+			site: EnumMap_to_DisplayFunction(SongConnectionMap)
 		},
 		tagworkmediaconnection: {
-			site: EnumMap_to_DisplayFunction(MediaConnectionTypes, MediaConnectionMap)
+			site: EnumMap_to_DisplayFunction(MediaConnectionMap)
 		},
 		tagworkcreatorconnection: {
-			site: EnumMap_to_DisplayFunction(ProfileConnectionTypes, ProfileConnectionMap)
+			site: EnumMap_to_DisplayFunction(ProfileConnectionMap)
 		},
 		tagworklangpreference: {
 			lang: Languages
@@ -124,10 +110,10 @@
 			lang: Languages
 		},
 		workrelation: {
-			relation: EnumRecord_to_DisplayFunction(WorkRelationTypes, WorkRelationNames)
+			relation: EnumRecord_to_DisplayFunction(WorkRelationNames)
 		},
 		songrelation: {
-			relation: EnumRecord_to_DisplayFunction(SongRelationTypes, SongRelationNames)
+			relation: EnumRecord_to_DisplayFunction(SongRelationNames)
 		},
 		tagworkinstance: {
 			creator_roles: expand_bit_field(resolveCreatorRoleKeyById, creatorRole)
@@ -136,10 +122,10 @@
 			lang: Languages
 		},
 		worksource: {
-			platform: EnumStraightRecord_to_DisplayFunction(Platform, PlatformNames),
+			platform: EnumStraightRecord_to_DisplayFunction(PlatformNames),
 			thumbnail_mime: StraightRecord_to_DisplayFunction(MimeType),
-			work_origin: EnumRecord_to_DisplayFunction(WorkOrigin, WorkOriginNames),
-			work_status: EnumRecord_to_DisplayFunction(WorkStatus, WorkStatusNames)
+			work_origin: EnumRecord_to_DisplayFunction(WorkOriginNames),
+			work_status: EnumRecord_to_DisplayFunction(WorkStatusNames)
 		}
 	};
 
@@ -149,6 +135,7 @@
 		val: string | null | undefined
 	) => {
 		const handler = ValueDisplayMap[type]?.[col];
+		console.log(handler, type, col);
 		return decodeURIComponent((val ? (handler ? handler(+val)() : val) : null) ?? 'None');
 	};
 </script>

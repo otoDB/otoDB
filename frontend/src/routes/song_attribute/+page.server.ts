@@ -8,7 +8,14 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const category = parseInt(url.searchParams.get('category') ?? '-1', 10);
 	const { data } = await client.GET('/api/tag/song_tag_search', {
 		fetch,
-		params: { query: { query: query, limit: batch_size, offset: 0, category } }
+		params: {
+			query: {
+				query: query,
+				limit: batch_size,
+				offset: 0,
+				category: category === -1 ? null : category
+			}
+		}
 	});
 	return {
 		query,

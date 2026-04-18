@@ -72,10 +72,10 @@ def post(request: HttpRequest, post_id: int):
 	return get_object_or_404(Post, id=post_id)
 
 
-@post_router.get('categories', response=dict[PostCategory, list[PostOverviewSchema]])
+@post_router.get('categories', response=dict[str, list[PostOverviewSchema]])
 def categories(request: HttpRequest):
 	return {
-		i: Post.objects.filter(category=i).with_activity()[:5]
+		str(i): Post.objects.filter(category=i).with_activity()[:5]
 		for i, _ in PostCategory.choices
 	}
 

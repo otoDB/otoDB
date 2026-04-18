@@ -33,7 +33,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		}
 	});
 
-
 	// TODO: Error forwarding
 	return {
 		query: query,

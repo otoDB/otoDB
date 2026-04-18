@@ -26,7 +26,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		})
 	]);
 
-
 	// TODO: Error forwarding
 	return {
 		songs,

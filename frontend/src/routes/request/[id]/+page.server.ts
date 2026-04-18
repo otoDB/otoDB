@@ -27,7 +27,6 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 		})
 	]);
 
-
 	// TODO: Error forwarding
 	return {
 		request: data,

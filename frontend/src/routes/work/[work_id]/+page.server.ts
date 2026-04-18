@@ -28,7 +28,6 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		})
 	]);
 
-
 	return {
 		sources: sources,
 		comments: comments,

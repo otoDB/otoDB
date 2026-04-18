@@ -18,7 +18,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		}
 	});
 
-
 	// TODO: Error forwarding
 	return {
 		threads: data,

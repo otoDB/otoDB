@@ -14,7 +14,6 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		}
 	});
 
-
 	// TOOD: Error forwarding
 	return {
 		history

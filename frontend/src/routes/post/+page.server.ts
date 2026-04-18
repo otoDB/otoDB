@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 
 	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
 	const category: PostCategory | null =
-		paramCategory && !enumValues(PostCategory).includes(paramCategory) ? paramCategory : null;
+		paramCategory && (enumValues(PostCategory).includes(paramCategory) ? paramCategory : null);
 
 	const { data } = await client.GET('/api/post/search', {
 		fetch,

@@ -16,15 +16,27 @@ defaults:
     working-directory: frontend
 
 jobs:
-  test:
-    name: Test
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install --frozen-lockfile
       - run: bunx prettier --check .
       - run: bunx eslint .
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install --frozen-lockfile
       - name: Compile Paraglide project
         run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
       - name: Copy dotenv file to generate type-safe environment variables
@@ -36,6 +48,7 @@ jobs:
     name: Build Docker image
     runs-on: ubuntu-latest
     needs:
+      - lint
       - test
     permissions:
       packages: write

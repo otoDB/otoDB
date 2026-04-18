@@ -13,7 +13,10 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 
 	type Order = PathsApiWorkSearchGetParametersQueryOrderAnyOf0;
 	const order: Order | null =
-		paramOrder && Object.values(PathsApiWorkSearchGetParametersQueryOrderAnyOf0).includes(paramOrder as Order) ? (paramOrder as Order) : null;
+		paramOrder &&
+		Object.values(PathsApiWorkSearchGetParametersQueryOrderAnyOf0).includes(paramOrder as Order)
+			? (paramOrder as Order)
+			: null;
 
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/work/search', {

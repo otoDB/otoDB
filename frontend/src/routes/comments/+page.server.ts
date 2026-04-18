@@ -28,9 +28,6 @@ export const actions = {
 		const data = await request.formData();
 
 		type Model = components['schemas']['CommentInSchema']['model'];
-		// TODO: Remove when error forwarding is complete
-		if (!Object.keys(CommentModelRoutes).includes(data.get('model') as string))
-			return fail(400);
 		const model: Model = data.get('model') as Model;
 		const pk = parseInt(data.get('pk') as string, 10);
 		const comment_text = data.get('comment') as string;

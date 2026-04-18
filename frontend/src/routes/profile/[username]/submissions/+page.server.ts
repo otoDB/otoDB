@@ -15,8 +15,12 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 
 	type Order = PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0;
 	const order: Order | null =
-		paramOrder && Object.values(PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0).includes(paramOrder as Order) ? (paramOrder as Order) : null;
-
+		paramOrder &&
+		Object.values(PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0).includes(
+			paramOrder as Order
+		)
+			? (paramOrder as Order)
+			: null;
 
 	const { data: submissions } = await client.GET('/api/profile/submissions', {
 		fetch,

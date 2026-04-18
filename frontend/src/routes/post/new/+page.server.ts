@@ -27,8 +27,6 @@ export const actions = {
 			.filter((x) => !!x);
 
 		const paramCategory = parseInt(data.get('category') as string, 10);
-		// TODO: Remove when error forwarding is complete
-		if (![0, 1, 2, 3, 4].includes(paramCategory)) return fail(400);
 		type Category = components['schemas']['PostCategory'];
 		const category = paramCategory as Category;
 

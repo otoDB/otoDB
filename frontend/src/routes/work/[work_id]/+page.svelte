@@ -3,18 +3,19 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {
-		Platform,
-		Rating,
-		WorkOrigin,
+		PlatformNames,
+		RatingNames,
+		WorkOriginNames,
 		WorkRelationDisplayBackward,
 		WorkRelationDisplayForward,
-		WorkStatus
+		WorkStatusNames
 	} from '$lib/enums';
 	import { WorkTagCategoryMap } from '$lib/enums/WorkTagCategory';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import {
 		PathsApiCommentCommentDeleteParametersQueryModel,
+		WorkRelationTypes,
 		WorkTagCategory,
 		type components
 	} from '$lib/schema.js';
@@ -99,9 +100,9 @@
 
 	const relTree = $derived(
 		data.relations[0].length > 0
-			? (Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map(
-					(d) => [d[0], Object.entries(Object.groupBy(d[1]!, (r) => r.relation))]
-				) as [string, [string, { A_id: number; B_id: number }[]][]][])
+			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
+					(d) => [+d[0], [...Map.groupBy(d[1]!, (r) => r.relation).entries()]]
+				) as [0 | 1, [WorkRelationTypes, { A_id: number; B_id: number }[]][]][])
 			: null
 	);
 </script>
@@ -145,7 +146,7 @@
 															type: [
 																WorkRelationDisplayBackward,
 																WorkRelationDisplayForward
-															][+dir][parseInt(tp, 10)](),
+															][dir][tp](),
 															name: ''
 														})}
 														<ul class="ml-2">
@@ -173,7 +174,7 @@
 							{/if}
 							<tr>
 								<th class="w-24">{m.good_dark_bumblebee_spur()}</th>
-								<td>{Rating[data.rating]()}</td>
+								<td>{RatingNames[data.rating]()}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -274,8 +275,8 @@
 							rel="noopener noreferrer"
 							class={[src.work_status !== 0 ? 'text-otodb-content-fainter' : '']}
 						>
-							{Platform[src.platform]}
-							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
+							{PlatformNames[src.platform]}
+							{src.work_origin === 0 ? '' : ' ' + WorkOriginNames[src.work_origin]()}
 							-
 							{src.title || src.url}
 						</a>
@@ -299,12 +300,12 @@
 					<div>
 						{m.large_polite_otter_thrive()}:
 						<strong>
-							{WorkOrigin[src.work_origin]()}
+							{WorkOriginNames[src.work_origin]()}
 						</strong>
 					</div>
 					<div>
 						{m.civil_trick_oryx_clap()}:
-						<strong>{WorkStatus[src.work_status]()}</strong>
+						<strong>{WorkStatusNames[src.work_status]()}</strong>
 					</div>
 					<div>
 						{m.big_dry_seahorse_succeed()}:

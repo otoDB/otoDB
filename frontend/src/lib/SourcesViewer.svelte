@@ -1,7 +1,7 @@
 <script lang="ts">
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
-	import { Platform, WorkOrigin } from '$lib/enums';
+	import { PlatformNames, WorkOriginNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
 	import type { components } from '$lib/schema';
 
@@ -60,7 +60,9 @@
 				selected = i;
 			}}
 		>
-			{Platform[s.platform]}{s.work_origin === 0 ? '' : ' ' + WorkOrigin[s.work_origin]()}
+			{PlatformNames[s.platform]}{s.work_origin === 0
+				? ''
+				: ' ' + WorkOriginNames[s.work_origin]()}
 		</a>{/each}
 </div>
 

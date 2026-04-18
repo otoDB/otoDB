@@ -6,17 +6,17 @@
 	import Section from '$lib/Section.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import client, { getDisplayText } from '$lib/api';
-	import { Platform, Rating, WorkOrigin } from '$lib/enums';
+	import { EnumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import { hasUserLevel } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages.js';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/dirty';
-	import { Levels } from '$lib/schema.js';
+	import { Levels, Rating, WorkOrigin } from '$lib/schema.js';
 
 	let { data, form } = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, ''));
 	let description: string | null = $state(form?.description ?? data.description ?? '');
-	let rating: number = $state(form?.rating ? parseInt(form.rating, 10) : data.rating);
+	let rating: Rating = $state(form?.rating ? parseInt(form.rating, 10) : data.rating);
 	let thumbnail_source_id = $state(
 		form?.thumbnail_source_id ?? data.thumbnail_source ?? data.sources?.[0]?.id ?? null
 	);
@@ -83,11 +83,11 @@
 					<tr
 						><th>{m.good_dark_bumblebee_spur()}</th><td
 							><div class="flex gap-2">
-								{#each Rating as r, i (i)}
+								{#each EnumValues(Rating) as r, i (i)}
 									<label
 										class={[
 											'cursor-pointer border px-3 py-1',
-											rating === i
+											rating === r
 												? 'bg-otodb-content-primary text-otodb-bg-primary'
 												: ''
 										]}
@@ -95,11 +95,11 @@
 										<input
 											type="radio"
 											name="rating"
-											value={i}
+											value={r}
 											bind:group={rating}
 											class="hidden"
 										/>
-										{r()}
+										{RatingNames[r]()}
 									</label>
 								{/each}
 							</div></td
@@ -113,10 +113,10 @@
 							><select name="thumbnail_source" bind:value={thumbnail_source_id}>
 								{#each data.sources! as src (src.id)}
 									<option value={src.id}
-										>{Platform[src.platform]}
+										>{PlatformNames[src.platform]}
 										{src.work_origin === 0
 											? ''
-											: ' ' + WorkOrigin[src.work_origin]()}
+											: ' ' + WorkOriginNames[src.work_origin]()}
 										-
 										{src.title || src.url}</option
 									>
@@ -179,13 +179,13 @@
 								>
 							</details></td
 						>
-						<td>{Platform[src.platform]}</td>
+						<td>{PlatformNames[src.platform]}</td>
 						<td class="whitespace-nowrap"
 							><select
 								bind:value={src.work_origin}
 								onchange={() => updateStatus(src.id, src.work_origin)}
-								>{#each WorkOrigin as w, i (i)}
-									<option value={i}>{w()}</option>
+								>{#each EnumValues(WorkOrigin) as w, i (i)}
+									<option value={w}>{WorkOriginNames[w]()}</option>
 								{/each}</select
 							></td
 						>

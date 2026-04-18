@@ -1657,6 +1657,11 @@ export interface components {
             /** Title */
             title?: string | null;
         };
+        /**
+         * Rating
+         * @enum {integer}
+         */
+        Rating: Rating;
         /** SlimWorkSchema */
         SlimWorkSchema: {
             /** Id */
@@ -1692,15 +1697,11 @@ export interface components {
                 components["schemas"]["WorkRelationSchema"][],
                 components["schemas"]["SlimWorkSchema"][]
             ];
+            rating: components["schemas"]["Rating"];
             /** Title */
             title?: string | null;
             /** Description */
             description?: string | null;
-            /**
-             * Rating
-             * @default 0
-             */
-            rating: number;
             /** Thumbnail Source */
             thumbnail_source?: number | null;
         };
@@ -1727,6 +1728,16 @@ export interface components {
             /** Roles */
             roles?: number[] | null;
         };
+        /**
+         * Platform
+         * @enum {integer}
+         */
+        Platform: Platform;
+        /**
+         * WorkOrigin
+         * @enum {integer}
+         */
+        WorkOrigin: WorkOrigin;
         /** WorkSourceSchema */
         WorkSourceSchema: {
             /** Id */
@@ -1736,8 +1747,9 @@ export interface components {
             thumbnail?: string | null;
             /** Media Title */
             media_title?: string | null;
-            /** Platform */
-            platform: number;
+            platform: components["schemas"]["Platform"];
+            work_origin: components["schemas"]["WorkOrigin"];
+            work_status: components["schemas"]["WorkStatus"];
             /** Url */
             url: string;
             /** Published Date */
@@ -1752,16 +1764,6 @@ export interface components {
             title?: string | null;
             /** Description */
             description?: string | null;
-            /**
-             * Work Origin
-             * @default 0
-             */
-            work_origin: number;
-            /**
-             * Work Status
-             * @default 0
-             */
-            work_status: number;
             /** Source Id */
             source_id?: string | null;
             /** Uploader Id */
@@ -1769,6 +1771,11 @@ export interface components {
             /** Media */
             media?: number | null;
         };
+        /**
+         * WorkStatus
+         * @enum {integer}
+         */
+        WorkStatus: WorkStatus;
         /** CreateWorkPayload */
         CreateWorkPayload: {
             /** Source Id */
@@ -1785,16 +1792,6 @@ export interface components {
              */
             tags: components["schemas"]["TagWorkInstanceInSchema"][];
         };
-        /**
-         * Rating
-         * @enum {integer}
-         */
-        Rating: Rating;
-        /**
-         * WorkOrigin
-         * @enum {integer}
-         */
-        WorkOrigin: WorkOrigin;
         /**
          * WorkSourceMetadataSchema
          * @description Manual WorkSource metadata input
@@ -1872,11 +1869,6 @@ export interface components {
             dead?: boolean | null;
         };
         /**
-         * Platform
-         * @enum {integer}
-         */
-        Platform: Platform;
-        /**
          * Status
          * @enum {integer}
          */
@@ -1887,11 +1879,6 @@ export interface components {
             origin?: components["schemas"]["WorkOrigin"] | null;
             status?: components["schemas"]["WorkStatus"] | null;
         };
-        /**
-         * WorkStatus
-         * @enum {integer}
-         */
-        WorkStatus: WorkStatus;
         /** PagedSourceSubmissionSchema */
         PagedSourceSubmissionSchema: {
             /** Items */
@@ -1908,8 +1895,9 @@ export interface components {
             thumbnail?: string | null;
             /** Media Title */
             media_title?: string | null;
-            /** Platform */
-            platform: number;
+            platform: components["schemas"]["Platform"];
+            work_origin: components["schemas"]["WorkOrigin"];
+            work_status: components["schemas"]["WorkStatus"];
             /** Url */
             url: string;
             /** Published Date */
@@ -1924,16 +1912,6 @@ export interface components {
             title?: string | null;
             /** Description */
             description?: string | null;
-            /**
-             * Work Origin
-             * @default 0
-             */
-            work_origin: number;
-            /**
-             * Work Status
-             * @default 0
-             */
-            work_status: number;
             /** Source Id */
             source_id?: string | null;
             /** Uploader Id */
@@ -2565,11 +2543,7 @@ export interface components {
             requests: components["schemas"]["RequestSchema"][];
             user: components["schemas"]["ProfileSchema"];
             processed_by: components["schemas"]["ProfileSchema"] | null;
-            /**
-             * Status
-             * @default 0
-             */
-            status: number;
+            status: components["schemas"]["Status"];
         };
         /** RequestSchema */
         RequestSchema: {
@@ -5141,20 +5115,32 @@ export enum WorkTagCategory {
     Meta = 5,
     Media = 6
 }
+export enum Rating {
+    General = 0,
+    Sensitive = 1,
+    Explicit = 2
+}
 export enum WorkRelationTypes {
     Sequel = 0,
     Respect = 1,
     Collab_Part = 2,
     Sample = 3
 }
-export enum Rating {
-    General = 0,
-    Sensitive = 1,
-    Explicit = 2
+export enum Platform {
+    YouTube = 1,
+    Niconico = 2,
+    Bilibili = 3,
+    SoundCloud = 4,
+    Twitter = 5,
+    AcFun = 6
 }
 export enum WorkOrigin {
     Author = 0,
     Reupload = 1
+}
+export enum WorkStatus {
+    Available = 0,
+    Down = 1
 }
 export enum ProfileConnectionTypes {
     Website = 0,
@@ -5165,22 +5151,10 @@ export enum ProfileConnectionTypes {
     Bluesky = 5,
     Soundcloud = 6
 }
-export enum Platform {
-    YouTube = 1,
-    Niconico = 2,
-    Bilibili = 3,
-    SoundCloud = 4,
-    Twitter = 5,
-    AcFun = 6
-}
 export enum Status {
     Pending = 0,
     Approved = 1,
     Unapproved = 2
-}
-export enum WorkStatus {
-    Available = 0,
-    Down = 1
 }
 export enum NotificationSchemaCommentAnyOf0 {
     mediawork = "mediawork",

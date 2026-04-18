@@ -1,7 +1,7 @@
 <script lang="ts">
 	import client from '$lib/api';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { Platform, WorkOrigin } from '$lib/enums';
+	import { PlatformNames, WorkOriginNames } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
@@ -65,9 +65,9 @@
 						name="cover_select"
 						value={i}
 						bind:group={select}
-					/>{Platform[s.platform]}{s.work_origin === 0
+					/>{PlatformNames[s.platform]}{s.work_origin === 0
 						? ''
-						: ' ' + WorkOrigin[s.work_origin]()}</label
+						: ' ' + WorkOriginNames[s.work_origin]()}</label
 				>
 			{/each}
 		</div>
@@ -114,7 +114,7 @@
 						<h3>
 							<a href="/upload/{src.id}">{src.title || src.url}</a>
 						</h3>
-						<h4>{Platform[src.platform]} {src.published_date}</h4>
+						<h4>{PlatformNames[src.platform]} {src.published_date}</h4>
 					</span>
 					<span>
 						<a href={src.url} target="_blank" rel="noopener noreferrer"

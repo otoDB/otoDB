@@ -2,7 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { RequestActions, Status } from '$lib/enums.js';
+	import { RequestActions, StatusNames } from '$lib/enums.js';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import { hasUserLevel } from '$lib/enums/UserLevel';
 	import { m } from '$lib/paraglide/messages.js';
@@ -47,7 +47,7 @@
 		{/if}
 	</h3>
 	<h4>
-		{Status[data.request.status]()}{#if data.request?.processed_by}(<a
+		{StatusNames[data.request.status]()}{#if data.request?.processed_by}(<a
 				href="/profile/{data.request.processed_by.username}"
 				>{data.request.processed_by.username}</a
 			>){/if}

@@ -1,11 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Platform, Status, WorkOrigin, WorkStatus } from '$lib/enums';
+	import {
+		EnumValues,
+		PlatformNames,
+		StatusNames,
+		WorkOriginNames,
+		WorkStatusNames
+	} from '$lib/enums';
 	import { hasUserLevel } from '$lib/enums/UserLevel';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
-	import { Levels } from '$lib/schema.js';
+	import { Levels, Platform, Status, WorkStatus } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
@@ -23,7 +29,8 @@
 					<td>{m.just_noisy_moth_beam()}</td>
 					<td
 						><select name="standing" value={data.standing ?? 1}
-							>{#each Status as p, i (i)}<option value={i}>{p()}</option
+							>{#each EnumValues(Status) as p, i (i)}<option value={p}
+									>{StatusNames[p]()}</option
 								>{/each}</select
 						></td
 					>
@@ -33,7 +40,8 @@
 					<td
 						><select name="platform" value={data.platform ?? null}
 							><option value={null}>---</option
-							>{#each Platform.slice(1) as p, i (i)}<option value={i + 1}>{p}</option
+							>{#each EnumValues(Platform) as p, i (i)}<option value={p}
+									>{PlatformNames[p]}</option
 								>{/each}</select
 						></td
 					>
@@ -43,8 +51,8 @@
 					<td
 						><select name="origin" value={data.origin ?? null}
 							><option value={null}>---</option><option value={0}
-								>{WorkOrigin[0]()}</option
-							><option value={1}>{WorkOrigin[1]()}</option></select
+								>{WorkOriginNames[0]()}</option
+							><option value={1}>{WorkOriginNames[1]()}</option></select
 						></td
 					>
 				</tr>
@@ -52,9 +60,11 @@
 					<td>{m.civil_trick_oryx_clap()}</td>
 					<td
 						><select name="status" value={data.status ?? null}
-							><option value={null}>---</option><option value={0}
-								>{WorkStatus[0]()}</option
-							><option value={1}>{WorkStatus[1]()}</option></select
+							><option value={null}>---</option><option value={WorkStatus.Available}
+								>{WorkStatusNames[WorkStatus.Available]()}</option
+							><option value={WorkStatus.Down}
+								>{WorkStatusNames[WorkStatus.Down]()}</option
+							></select
 						></td
 					>
 				</tr>
@@ -100,8 +110,8 @@
 							<td class="whitespace-nowrap"
 								><a href="/upload/{src.id}">{src.title || src.url}</a></td
 							>
-							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
+							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
 							<td class="whitespace-nowrap"
 								><a href={src.url} target="_blank" rel="noopener noreferrer"
 									>{m.noisy_moving_newt_belong()}</a
@@ -142,10 +152,9 @@
 									>#{src.media} - {src.title || src.url}</a
 								></td
 							>
-							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td><td
-								class="whitespace-nowrap">{WorkStatus[src.work_status]()}</td
-							>
+							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
+							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td
+							><td class="whitespace-nowrap">{WorkStatusNames[src.work_status]()}</td>
 							<td class="whitespace-nowrap"
 								><a href={src.url} target="_blank" rel="noopener noreferrer"
 									>{m.noisy_moving_newt_belong()}</a
@@ -183,8 +192,8 @@
 						<tr>
 							<td class="whitespace-nowrap">{src.title || src.url}</td>
 							<!-- <td class="whitespace-nowrap">{src.rejection.reason}</td> `src.rejection` might be no longer exists. -->
-							<td>{Platform[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOrigin[src.work_origin]()}</td>
+							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
+							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
 							<td class="whitespace-nowrap"
 								><a href={src.url} target="_blank" rel="noopener noreferrer"
 									>{m.noisy_moving_newt_belong()}</a

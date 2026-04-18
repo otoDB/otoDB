@@ -38,6 +38,9 @@ from otodb.models.enums import (
 	LanguageTypes,
 	ThemePref,
 	ErrorCode,
+	WorkOrigin,
+	WorkStatus,
+	Platform,
 )
 import re
 
@@ -89,6 +92,9 @@ class WorkSourceSchema(ModelSchema):
 	added_by: ProfileSchema
 	thumbnail: str | None = None  # Exposed as property
 	media_title: str | None = None
+	platform: Platform
+	work_origin: WorkOrigin
+	work_status: WorkStatus
 
 	@staticmethod
 	def resolve_media_title(obj):
@@ -97,7 +103,6 @@ class WorkSourceSchema(ModelSchema):
 	class Meta:
 		model = WorkSource
 		fields = [
-			'platform',
 			'url',
 			'published_date',
 			'work_width',
@@ -105,8 +110,6 @@ class WorkSourceSchema(ModelSchema):
 			'work_duration',
 			'title',
 			'description',
-			'work_origin',
-			'work_status',
 			'source_id',
 			'uploader_id',
 			'media',
@@ -155,10 +158,11 @@ class WorkSchema(ModelSchema):
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
+	rating: Rating
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'description', 'rating', 'thumbnail_source']
+		fields = ['title', 'description', 'thumbnail_source']
 
 
 class ThinWorkSchema(ModelSchema):

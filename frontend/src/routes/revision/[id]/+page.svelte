@@ -76,13 +76,7 @@
 				.reduce(
 					(a, e, i, aa) =>
 						e === '1'
-							? [
-									...a,
-									Values_to_DisplayFunction(
-										r,
-										fs
-									)(Math.pow(2, aa.length - 1 - i))()
-								]
+							? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()]
 							: a,
 					[] as string[]
 				)

@@ -1,12 +1,13 @@
-import client, { getTagDisplayName } from '$lib/api';
+import client from '$lib/api.server';
+import { getTagDisplayName } from '$lib/api';
 import { hasUserLevel } from '$lib/enums/userLevel';
 import { m } from '$lib/paraglide/messages.js';
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { Levels } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
-	const { data, error: e } = await client.GET('/api/tag/tag', {
+	const { data } = await client.GET('/api/tag/tag', {
 		params: {
 			query: {
 				tag_slug: params.tag_slug!
@@ -14,8 +15,6 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		},
 		fetch
 	});
-
-	if (e) error(404, { message: 'Not found' });
 
 	if (data.slug !== params.tag_slug)
 		redirect(

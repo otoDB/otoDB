@@ -13,7 +13,7 @@
 
 	let md = $state('');
 	let previewHtml = $derived(renderMarkdown(md));
-	let category = $derived(data.category ?? '1');
+	let category: PostCategory = $derived(data.category ?? PostCategory.Bug_Report);
 	let entities_raw = $derived(data.entity ?? '');
 	let entities = $derived(
 		entities_raw
@@ -43,7 +43,7 @@
 					><th>{m.plane_awful_bobcat_spark()}</th><td
 						><select name="category" bind:value={category}>
 							{#each enumValues(PostCategory) as c, i (i)}
-								{#if i > 0}
+								{#if c !== PostCategory.Announcement}
 									<option value={c}>{postCategoryNames[c]()}</option>
 								{/if}
 							{/each}
@@ -52,7 +52,7 @@
 				></tbody
 			>
 		</table>
-		{#if category === '3'}
+		{#if category === PostCategory.Gardening}
 			<h4>{m.fine_zany_octopus_trim()}</h4>
 			<textarea name="entities" bind:value={entities_raw}></textarea>
 			<ul class="inline-block">

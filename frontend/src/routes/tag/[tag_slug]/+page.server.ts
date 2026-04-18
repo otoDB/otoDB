@@ -64,10 +64,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		})
 		.then((res) => res.data);
 
-	// TODO: Error forwarding
-	if (!details) error(500, 'Failed to fetch data.');
-	if (!comments) error(500, 'Failed to fetch comments.');
-
 	return {
 		...details,
 		works,

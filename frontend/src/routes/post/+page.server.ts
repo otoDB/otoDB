@@ -1,9 +1,8 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { enumValues } from '$lib/enums';
 import { m } from '$lib/paraglide/messages';
 import { PostCategory } from '$lib/schema';
 import type { PageServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
 	const batch_size = 20;
@@ -12,7 +11,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 
 	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
 	const category: PostCategory | null =
-		paramCategory && !enumValues(PostCategory).includes(paramCategory) ? paramCategory : null;
+		paramCategory && (enumValues(PostCategory).includes(paramCategory) ? paramCategory : null);
 
 	const { data } = await client.GET('/api/post/search', {
 		fetch,
@@ -25,8 +24,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 			}
 		}
 	});
-
-	if (!data) error(500, 'Failed to fetch search results.');
 
 	return {
 		query,

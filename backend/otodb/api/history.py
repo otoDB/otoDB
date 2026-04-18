@@ -106,7 +106,7 @@ class RevisionSchema(ModelSchema):
 	date: datetime
 	user: str = Field(..., alias='user.username')
 	index: None | int = None
-	route: None | int = None
+	route: None | Route = None
 
 	class Meta:
 		model = Revision

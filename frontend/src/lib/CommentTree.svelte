@@ -3,11 +3,11 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
+	import { hasUserLevel } from '$lib/enums/UserLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { timeAgo } from '$lib/ui';
-	import type { PathsApiCommentCommentDeleteParametersQueryModel } from './schema';
+	import { Levels, type PathsApiCommentCommentDeleteParametersQueryModel } from './schema';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -77,8 +77,8 @@
 		editPreviewMode = false;
 	};
 
-	const can_comment = $derived(hasUserLevelOld(user?.level, 'MEMBER'));
-	const is_admin = $derived(!!user && hasUserLevelOld(user?.level, 'ADMIN'));
+	const can_comment = $derived(hasUserLevel(user?.level, Levels.Member));
+	const is_admin = $derived(!!user && hasUserLevel(user?.level, Levels.Admin));
 
 	const canEdit = (data: ReturnType<typeof makeCommentTree>[number]) => {
 		if (!user) return false;
@@ -241,7 +241,7 @@
 							{m.minor_crisp_cobra_list()}
 						</button>
 					{/if}
-					{#if user && (hasUserLevelOld(user?.level, 'ADMIN') || data.user.username === user.username)}
+					{#if user && (hasUserLevel(user?.level, Levels.Admin) || data.user.username === user.username)}
 						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 							>{m.even_alert_grebe_taste()}</button
 						>

@@ -6,8 +6,7 @@
 	import { timeAgo } from '$lib/ui.js';
 	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import { Route } from '$lib/enums/Route.js';
-	import { resolveRouteKeyById } from '$lib/enums/Route.js';
+	import { RouteNames } from '$lib/enums/Route.js';
 
 	let { data } = $props();
 </script>
@@ -48,9 +47,7 @@
 				{#each data.changes.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-							>{typeof r.route === 'number'
-								? Route[resolveRouteKeyById(r.route)].title()
-								: ''}</td
+							>{typeof r.route === 'number' ? RouteNames[r.route]() : ''}</td
 						><td>
 							{#if isSVO(getLocale())}
 								{m.curly_safe_lynx_fond()}

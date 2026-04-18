@@ -11,31 +11,43 @@
 		WorkOrigin,
 		WorkRelationTypes,
 		WorkStatus,
-		WorkTagCategory
+		type Enum
 	} from '$lib/enums.js';
 	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
 	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/Languages';
-	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection';
+	import { MediaConnectionMap } from '$lib/enums/MediaConnection.js';
 	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
-	import {
-		ProfileConnection,
-		resolveProfileConnectionNameById
-	} from '$lib/enums/ProfileConnection';
-	import { resolveRouteKeyById, Route } from '$lib/enums/Route.js';
-	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
-	import {
-		resolveTagWorkConnectionNameById,
-		TagWorkConnection
-	} from '$lib/enums/TagWorkConnection';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel.js';
+	import { ProfileConnectionMap } from '$lib/enums/ProfileConnection.js';
+	import { RouteNames } from '$lib/enums/Route.js';
+	import { SongConnectionMap } from '$lib/enums/SongConnection.js';
+	import { TagWorkConnectionMap } from '$lib/enums/TagWorkConnection.js';
+	import { hasUserLevel } from '$lib/enums/UserLevel.js';
+	import { WorkTagCategoryMap } from '$lib/enums/WorkTagCategory.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import {
+		Levels,
+		MediaConnectionTypes,
+		ProfileConnectionTypes,
+		SongConnectionTypes,
+		TagWorkConnectionTypes,
+		WorkTagCategory
+	} from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
 
 	type DisplayFunction = () => string;
+	const EnumMap_to_DisplayFunction =
+		<E extends Enum<E>>(r: E, fs: Record<E[keyof E], { name: string }>) =>
+		(v: number): DisplayFunction =>
+		() =>
+			fs[r[v as keyof E]].name;
+	const EnumValues_to_DisplayFunction =
+		<E extends Enum<E>>(r: E, fs: Record<E[keyof E], { nameFn: DisplayFunction }>) =>
+		(v: number): DisplayFunction =>
+			fs[r[v as keyof E]].nameFn;
 	const Values_to_DisplayFunction =
 		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
 		(v: number): DisplayFunction =>
@@ -83,29 +95,23 @@
 			rating: Array_to_DisplayFunction(Rating)
 		},
 		tagwork: {
-			category: Array_to_DisplayFunction(WorkTagCategory),
+			category: EnumValues_to_DisplayFunction(WorkTagCategory, WorkTagCategoryMap),
 			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
 		},
 		tagsong: {
 			category: Array_to_DisplayFunction(SongTagCategory)
 		},
 		tagworkconnection: {
-			site: StraightValues_to_DisplayFunction(
-				resolveTagWorkConnectionNameById,
-				TagWorkConnection
-			)
+			site: EnumMap_to_DisplayFunction(TagWorkConnectionTypes, TagWorkConnectionMap)
 		},
 		mediasongconnection: {
-			site: StraightValues_to_DisplayFunction(resolveSongConnectionNameById, SongConnection)
+			site: EnumMap_to_DisplayFunction(SongConnectionTypes, SongConnectionMap)
 		},
 		tagworkmediaconnection: {
-			site: StraightValues_to_DisplayFunction(resolveMediaConnectionNameById, MediaConnection)
+			site: EnumMap_to_DisplayFunction(MediaConnectionTypes, MediaConnectionMap)
 		},
 		tagworkcreatorconnection: {
-			site: StraightValues_to_DisplayFunction(
-				resolveProfileConnectionNameById,
-				ProfileConnection
-			)
+			site: EnumMap_to_DisplayFunction(ProfileConnectionTypes, ProfileConnectionMap)
 		},
 		tagworklangpreference: {
 			lang: Languages
@@ -154,7 +160,7 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
-	{#if hasUserLevelOld(data.user?.level, 'ADMIN') && data.revision.id > 1}<button
+	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id > 1}<button
 			class="my-5"
 			onclick={async () => {
 				if (!confirm('Are you sure?')) return;
@@ -167,7 +173,7 @@
 		>{/if}
 	<ul class="my-5">
 		{#each data.routes as { route, entities }, i (i)}
-			<li>{Route[resolveRouteKeyById(route)].title()}</li>
+			<li>{RouteNames[route]()}</li>
 			<li class="ml-2 list-none">
 				<ul>
 					{#each entities as { ent_type, ent_id, rcs }, j (j)}

@@ -4,7 +4,8 @@ import type { LayoutServerLoad } from './$types';
 
 import { getTagDisplayName } from '$lib/api';
 import { redirect } from '@sveltejs/kit';
-import { hasUserLevelOld } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/UserLevel';
+import { Levels } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	const { data } = await client.GET('/api/tag/song_tag', {
@@ -36,7 +37,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `song_attribute/${params.tag_slug}`,
 				title: m.dull_plain_angelfish_cuddle() + ' ' + params.tag_slug
 			},
-			...(hasUserLevelOld(locals.user?.level, 'MEMBER')
+			...(hasUserLevel(locals.user?.level, Levels.Member)
 				? [
 						{
 							pathname: `song_attribute/${params.tag_slug}/edit`,

@@ -5,13 +5,14 @@
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
-	import { EntityModelRoutes, PostCategories } from '$lib/enums.js';
+	import { EntityModelRoutes } from '$lib/enums.js';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel.js';
+	import { PostCategoryNames } from '$lib/enums/PostCategory.js';
+	import { hasUserLevel } from '$lib/enums/UserLevel.js';
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
+	import { Levels, PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
 	import { timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 
@@ -82,7 +83,7 @@
 			.filter((x) => !!x)
 	);
 
-	const is_admin = $derived(hasUserLevelOld(data.user?.level, 'ADMIN'));
+	const is_admin = $derived(hasUserLevel(data.user?.level, Levels.Admin));
 	const editedByOther =
 		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username;
 	const canEdit =
@@ -160,7 +161,7 @@
 		<div class="text-otodb-content-fainter mb-6 text-xs">
 			<p>
 				<a href="/post?category={data.post.category}"
-					>{PostCategories[data.post.category]()}</a
+					>{PostCategoryNames[data.post.category]()}</a
 				>
 				{#if data.post.category === 0}
 					&middot;

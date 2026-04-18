@@ -5,36 +5,27 @@
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
 	import client, { getTagDisplaySlug } from '$lib/api';
-	import { WorkTagCategory } from '$lib/enums';
 	import { languages } from '$lib/enums/Languages.js';
-	import {
-		allMediaConnectionKeys,
-		MediaConnection,
-		resolveMediaConnectionNameById
-	} from '$lib/enums/MediaConnection';
+	import { MediaConnectionMap } from '$lib/enums/MediaConnection';
 	import { allMediaTypes, mediaTypes } from '$lib/enums/MediaType.js';
-	import {
-		allProfileConnectionKeys,
-		ProfileConnection,
-		resolveProfileConnectionNameById
-	} from '$lib/enums/ProfileConnection';
-	import {
-		allSongConnectionKeys,
-		resolveSongConnectionNameById,
-		SongConnection
-	} from '$lib/enums/SongConnection';
-	import {
-		allTagWorkConnectionKeys,
-		resolveTagWorkConnectionNameById,
-		TagWorkConnection
-	} from '$lib/enums/TagWorkConnection';
-	import { isMediaCategoryId } from '$lib/enums/WorkTagCategory.js';
+	import { ProfileConnectionMap } from '$lib/enums/ProfileConnection';
+	import { SongConnectionMap } from '$lib/enums/SongConnection';
+	import { TagWorkConnectionMap } from '$lib/enums/TagWorkConnection';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast, callErrorCodeToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/dirty';
-	import { PathsApiTagTag_aliasesPostParametersQueryType } from '$lib/schema.js';
+	import {
+		MediaConnectionTypes,
+		PathsApiTagTag_aliasesPostParametersQueryType,
+		ProfileConnectionTypes,
+		SongConnectionTypes,
+		TagWorkConnectionTypes,
+		WorkTagCategory
+	} from '$lib/schema.js';
+	import { WorkTagCategoryMap } from '$lib/enums/WorkTagCategory.js';
+	import { EnumValues } from '$lib/enums';
 
 	let { data, form } = $props();
 
@@ -122,19 +113,17 @@
 	let urls = $state(
 		[
 			...data.connections[0]!.map(({ site, content_id }) =>
-				TagWorkConnection[resolveTagWorkConnectionNameById(site)].linkFn(content_id)
+				TagWorkConnectionMap[site].linkFn(content_id)
 			),
 			...(data.connections[1]?.map(
 				({ site, content_id, dead }) =>
 					(dead ? '-' : '') +
-					(isMediaCategoryId(data.tag.category)
-						? MediaConnection[resolveMediaConnectionNameById(site)].linkFn
-						: ProfileConnection[resolveProfileConnectionNameById(site)].linkFn)(
-						content_id
-					)
+					(data.tag.category === WorkTagCategory.Media
+						? MediaConnectionMap[site as MediaConnectionTypes].linkFn
+						: ProfileConnectionMap[site as ProfileConnectionTypes].linkFn)(content_id)
 			) ?? []),
 			...(data.song_connections?.map(({ site, content_id }) =>
-				SongConnection[resolveSongConnectionNameById(site)].linkFn(content_id)
+				SongConnectionMap[site].linkFn(content_id)
 			) ?? [])
 		].join('\n') ?? ''
 	);
@@ -176,8 +165,8 @@
 					<th><label for="category">{m.plane_awful_bobcat_spark()}</label></th>
 					<td
 						><select name="category" bind:value={category}>
-							{#each WorkTagCategory as cat, i (i)}
-								<option value={i}>{cat()}</option>
+							{#each EnumValues(WorkTagCategory) as cat, i (i)}
+								<option value={cat}>{WorkTagCategoryMap[cat].nameFn()}</option>
 							{/each}
 						</select></td
 					>
@@ -438,38 +427,38 @@
 		<table>
 			<tbody>
 				{#if category === 2}
-					{#each allSongConnectionKeys as k (k)}
+					{#each EnumValues(SongConnectionTypes) as k (k)}
 						<tr
-							><td>{SongConnection[k].name}</td>
+							><td>{SongConnectionMap[k].name}</td>
 							<td>
-								<code>{SongConnection[k].linkFn('<code>')}</code>
+								<code>{SongConnectionMap[k].linkFn('<code>')}</code>
 							</td>
 						</tr>
 					{/each}
 				{:else if category === 6}
-					{#each allMediaConnectionKeys as k (k)}
+					{#each EnumValues(MediaConnectionTypes) as k (k)}
 						<tr>
-							<td>{MediaConnection[k].name}</td>
+							<td>{MediaConnectionMap[k].name}</td>
 							<td>
-								<code>{MediaConnection[k].linkFn('<code>')}</code>
+								<code>{MediaConnectionMap[k].linkFn('<code>')}</code>
 							</td>
 						</tr>
 					{/each}
 				{:else if category === 4}
-					{#each allProfileConnectionKeys as k (k)}
+					{#each EnumValues(ProfileConnectionTypes) as k (k)}
 						<tr>
-							<td>{ProfileConnection[k].name}</td>
+							<td>{ProfileConnectionMap[k].name}</td>
 							<td>
-								<code>{ProfileConnection[k].linkFn('<code>')}</code>
+								<code>{ProfileConnectionMap[k].linkFn('<code>')}</code>
 							</td>
 						</tr>
 					{/each}
 				{/if}
-				{#each allTagWorkConnectionKeys as k (k)}
+				{#each EnumValues(TagWorkConnectionTypes) as k (k)}
 					<tr>
-						<td>{TagWorkConnection[k].name}</td>
+						<td>{TagWorkConnectionMap[k].name}</td>
 						<td>
-							<code>{TagWorkConnection[k].linkFn('<code>')}</code>
+							<code>{TagWorkConnectionMap[k].linkFn('<code>')}</code>
 						</td>
 					</tr>
 				{/each}

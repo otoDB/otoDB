@@ -11,29 +11,23 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client, { getTagDisplayName } from '$lib/api.js';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
-	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection.js';
 	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
-	import {
-		ProfileConnection,
-		resolveProfileConnectionNameById
-	} from '$lib/enums/ProfileConnection.js';
-	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
-	import {
-		resolveTagWorkConnectionNameById,
-		TagWorkConnection
-	} from '$lib/enums/TagWorkConnection';
-	import {
-		isMediaCategoryId,
-		resolveWorkTagCategoryKeyById,
-		WorkTagCategory
-	} from '$lib/enums/WorkTagCategory.js';
+	import { MediaConnectionMap } from '$lib/enums/MediaConnection';
+	import { ProfileConnectionMap } from '$lib/enums/ProfileConnection';
+	import { SongConnectionMap } from '$lib/enums/SongConnection';
+	import { TagWorkConnectionMap } from '$lib/enums/TagWorkConnection';
+
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import {
+		MediaConnectionTypes,
 		PathsApiCommentCommentDeleteParametersQueryModel,
+		ProfileConnectionTypes,
+		WorkTagCategory,
 		type components
 	} from '$lib/schema.js';
+	import { WorkTagCategoryMap } from '$lib/enums/WorkTagCategory.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -118,9 +112,9 @@
 	<h2>
 		{m.mild_loud_shad_enchant({
 			type: m.plane_awful_bobcat_spark(),
-			name: WorkTagCategory[resolveWorkTagCategoryKeyById(data.tag.category)].nameFn()
+			name: WorkTagCategoryMap[data.tag.category].nameFn()
 		})}
-		{#if isMediaCategoryId(data.tag.category) && data.tag.media_type?.length}
+		{#if data.tag.category === WorkTagCategory.Media && data.tag.media_type?.length}
 			({#each data.tag.media_type as t, i (i)}{mediaTypes[
 					resolveMediaTypeKeyById(t)
 				].nameFn()}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
@@ -145,29 +139,24 @@
 			{#each data.connections[0] as s, i (i)}
 				<li>
 					<ConnectionFavicon
-						type={TagWorkConnection[resolveTagWorkConnectionNameById(s.site)].name}
+						type={TagWorkConnectionMap[s.site].name}
 						class="inline size-4"
 					/>
 					<a
-						href={TagWorkConnection[resolveTagWorkConnectionNameById(s.site)].linkFn(
-							s.content_id
-						)}
+						href={TagWorkConnectionMap[s.site].linkFn(s.content_id)}
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{decodeURI(
-							TagWorkConnection[resolveTagWorkConnectionNameById(s.site)].linkFn(
-								s.content_id
-							)
-						)}
+						{decodeURI(TagWorkConnectionMap[s.site].linkFn(s.content_id))}
 					</a>
 				</li>
 			{/each}
 			{#if data.connections[1]}
 				{#each data.connections[1] as s, i (i)}
-					{@const conn = isMediaCategoryId(data.tag.category)
-						? MediaConnection[resolveMediaConnectionNameById(s.site)]
-						: ProfileConnection[resolveProfileConnectionNameById(s.site)]}
+					{@const conn =
+						data.tag.category === WorkTagCategory.Media
+							? MediaConnectionMap[s.site as MediaConnectionTypes]
+							: ProfileConnectionMap[s.site as ProfileConnectionTypes]}
 					<li class={{ 'opacity-60': s.dead }}>
 						<ConnectionFavicon type={conn.name} class="inline size-4" />
 						<a
@@ -229,21 +218,15 @@
 				{#each data.song_connections as s, i (i)}
 					<li>
 						<ConnectionFavicon
-							type={SongConnection[resolveSongConnectionNameById(s.site)].name}
+							type={SongConnectionMap[s.site].name}
 							class="inline size-4"
 						/>
 						<a
-							href={SongConnection[resolveSongConnectionNameById(s.site)].linkFn(
-								s.content_id
-							)}
+							href={SongConnectionMap[s.site].linkFn(s.content_id)}
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{decodeURI(
-								SongConnection[resolveSongConnectionNameById(s.site)].linkFn(
-									s.content_id
-								)
-							)}
+							{decodeURI(SongConnectionMap[s.site].linkFn(s.content_id))}
 						</a>
 					</li>
 				{/each}

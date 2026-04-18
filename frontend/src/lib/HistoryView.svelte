@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
+	import { RouteNames } from '$lib/enums/Route';
 	import { m } from './paraglide/messages';
-	import type { components } from './schema';
+	import { type components } from './schema';
 	import { timeAgo } from './ui';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
@@ -21,7 +21,7 @@
 			<tr
 				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
 					>{rev.route !== null && rev.route !== undefined
-						? Route[resolveRouteKeyById(rev.route)].title()
+						? RouteNames[rev.route]()
 						: ''}</td
 				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>

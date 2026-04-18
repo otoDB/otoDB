@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Platform, Status, WorkOrigin, WorkStatus } from '$lib/enums';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
+	import { hasUserLevel } from '$lib/enums/UserLevel';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
+	import { Levels } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
@@ -88,7 +89,7 @@
 						<th>{m.super_agent_pigeon_aim()}</th>
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+						{#if hasUserLevel(data.user?.level, Levels.Editor)}
 							<th>{m.mushy_proof_hornet_dig()}</th>
 						{/if}
 					</tr></thead
@@ -106,7 +107,7 @@
 									>{m.noisy_moving_newt_belong()}</a
 								></td
 							>
-							{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+							{#if hasUserLevel(data.user?.level, Levels.Editor)}
 								<td><RefreshButton source={src} /></td>
 							{/if}
 						</tr>

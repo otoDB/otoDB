@@ -3,7 +3,8 @@ import client from '$lib/api.server';
 import { get_entity, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
 import type { Actions, LayoutServerLoad } from './$types';
-import { LanguageTypes, PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
+import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
+import { languages } from '$lib/enums/Languages';
 
 export const load: LayoutServerLoad = async ({ fetch, params }) => {
 	const { data: comments } = await client.GET('/api/comment/comments', {
@@ -24,7 +25,7 @@ export const actions = {
 		const data = await request.formData();
 		const title = data.get('title') as string;
 		const post = data.get('post') as string;
-		const lang = data.get('lang') as keyof typeof LanguageTypes;
+		const lang = data.get('lang') as keyof typeof languages;
 		const entities_raw = data.get('entities') as string | null;
 		const entities = (entities_raw ?? '')
 			.split('\n')
@@ -40,7 +41,7 @@ export const actions = {
 				post_id: +params.post_id,
 				title,
 				post,
-				lang: LanguageTypes[lang],
+				lang: languages[lang].id,
 				entities
 			}
 		});

@@ -5,12 +5,9 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getVersionKey, Version } from '$lib/enums/version';
-	import { resolveUserLevelById, UserLevel } from '$lib/enums/UserLevel';
-	import {
-		ProfileConnection,
-		resolveProfileConnectionNameById
-	} from '$lib/enums/ProfileConnection';
-	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
+	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
+	import { UserLevelNames } from '$lib/enums/UserLevel.js';
+	import { ProfileConnectionMap } from '$lib/enums/ProfileConnection.js';
 
 	let { data } = $props();
 
@@ -36,7 +33,7 @@
 </svelte:head>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
-	<p>{UserLevel[resolveUserLevelById(data.profile.level)].nameFn()}</p>
+	<p>{UserLevelNames[data.profile.level]()}</p>
 	{#if data.profile.date_created}
 		<p>
 			{m.sharp_witty_jackdaw_treat({
@@ -52,21 +49,15 @@
 			{#each data.connections as s, i (i)}
 				<li>
 					<ConnectionFavicon
-						type={ProfileConnection[resolveProfileConnectionNameById(s.site)].name}
+						type={ProfileConnectionMap[s.site].name}
 						class="inline size-4"
 					/>
 					<a
-						href={ProfileConnection[resolveProfileConnectionNameById(s.site)].linkFn(
-							s.content_id
-						)}
+						href={ProfileConnectionMap[s.site].linkFn(s.content_id)}
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{decodeURI(
-							ProfileConnection[resolveProfileConnectionNameById(s.site)].linkFn(
-								s.content_id
-							)
-						)}
+						{decodeURI(ProfileConnectionMap[s.site].linkFn(s.content_id))}
 					</a>
 				</li>
 			{/each}

@@ -1,9 +1,10 @@
 import client from '$lib/api.server';
 import { getTagDisplayName } from '$lib/api';
-import { hasUserLevelOld } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/UserLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
+import { Levels } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	const { data } = await client.GET('/api/tag/tag', {
@@ -40,7 +41,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `tag/${params.tag_slug}`,
 				title: m.empty_legal_chicken_taste() + ' ' + params.tag_slug
 			},
-			...(hasUserLevelOld(locals.user?.level, 'MEMBER')
+			...(hasUserLevel(locals.user?.level, Levels.Member)
 				? [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]
 				: []),
 			{
@@ -58,7 +59,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 						pathname: `tag/${params.tag_slug}`,
 						title: m.grand_nice_pony_belong() + ' ' + data.song.id
 					},
-					...(hasUserLevelOld(locals.user?.level, 'MEMBER')
+					...(hasUserLevel(locals.user?.level, Levels.Member)
 						? [
 								{
 									pathname: `tag/${params.tag_slug}/song_tags`,

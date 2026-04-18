@@ -3,14 +3,17 @@ import client from '$lib/api';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
-import { Levels, type components } from '$lib/schema';
+import { Levels, PostCategory, type components } from '$lib/schema';
+import { enumValues } from '$lib/enums';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getLanguageId, languages } from '$lib/enums/language';
 
 export const load: PageServerLoad = ({ locals, url }) => {
 	userLevelGuard(locals.user, Levels.Member);
-	const category = url.searchParams.get('category');
+	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
+	const category: PostCategory | null =
+		paramCategory && (enumValues(PostCategory).includes(paramCategory) ? paramCategory : null);
 	const entity = url.searchParams.get('entity');
 	return { category, entity, head: { title: m.antsy_aloof_horse_grace() } };
 };

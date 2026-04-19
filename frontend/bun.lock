@@ -6,6 +6,7 @@
       "name": "frontend",
       "dependencies": {
         "@inlang/paraglide-js": "^2.15.1",
+        "@inlang/paraglide-js-svelte": "^1.0.1",
         "@mermaid-js/layout-elk": "^0.2.1",
         "@thisux/sveltednd": "^0.0.20",
         "mdast-util-find-and-replace": "^3.0.2",
@@ -171,6 +172,8 @@
     "@iconify/utils": ["@iconify/utils@3.1.0", "", { "dependencies": { "@antfu/install-pkg": "^1.1.0", "@iconify/types": "^2.0.0", "mlly": "^1.8.0" } }, "sha512-Zlzem1ZXhI1iHeeERabLNzBHdOa4VhQbqAcOQaMKuTuyZCpwKbC2R4Dd0Zo3g9EAc+Y4fiarO8HIHRAth7+skw=="],
 
     "@inlang/paraglide-js": ["@inlang/paraglide-js@2.15.2", "", { "dependencies": { "@inlang/recommend-sherlock": "^0.2.1", "@inlang/sdk": "^2.9.1", "commander": "11.1.0", "consola": "3.4.0", "json5": "2.2.3", "unplugin": "^2.1.2", "urlpattern-polyfill": "^10.0.0" }, "bin": { "paraglide-js": "bin/run.js" } }, "sha512-1S2jBvc8jzJAZFRf3gKu3Z2+9zQRhvIzALEE4vvWDNIoiiOn0vF3cJHf3xFqgfN/JY5IVS//zQsvAT0jWXH69g=="],
+
+    "@inlang/paraglide-js-svelte": ["@inlang/paraglide-js-svelte@1.0.1", "", { "peerDependencies": { "@inlang/paraglide-js": ">=2.11.0 <3", "svelte": "^5.0.0" } }, "sha512-mqtUaoMEz3rhLMGdkd9QC+9yeFhGSooCFcW4fw+0xKzqty7WLc9xSBTC24xmRastmxFy6zxutko7VH1W3JkHLQ=="],
 
     "@inlang/recommend-sherlock": ["@inlang/recommend-sherlock@0.2.1", "", { "dependencies": { "comment-json": "^4.2.3" } }, "sha512-ckv8HvHy/iTqaVAEKrr+gnl+p3XFNwe5D2+6w6wJk2ORV2XkcRkKOJ/XsTUJbPSiyi4PI+p+T3bqbmNx/rDUlg=="],
 

@@ -88,10 +88,3 @@
 		</table>
 	{/if}
 </span>
-
-<style>
-	ul {
-		background-color: var(--otodb-color-bg-primary);
-		z-index: 10;
-	}
-</style>

@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
@@ -15,12 +15,15 @@ export const actions = {
 		const data = await request.formData();
 		const link = data.get('url') as string;
 
-		const { error, data: list_id } = await client.POST('/api/list/import', {
-			fetch,
-			params: { query: { url: link } }
-		});
-		if (error) return fail(400, { url: link, failed: true });
-
+		let list_id: number | null = null;
+		try {
+			({ data: list_id } = await client.POST('/api/list/import', {
+				fetch,
+				params: { query: { url: link } }
+			}));
+		} catch {
+			return fail(400, { url: link, failed: true });
+		}
 		redirect(303, `/list/${list_id}`);
 	}
 } satisfies Actions;

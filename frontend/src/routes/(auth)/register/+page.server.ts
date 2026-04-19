@@ -1,6 +1,7 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client, { forwardCookies } from '$lib/api';
+import client from '$lib/api.server';
+import clientRaw, { forwardCookies } from '$lib/api';
 import { m } from '$lib/paraglide/messages.js';
 
 export const load: PageServerLoad = async ({ cookies, fetch, locals }) => {
@@ -24,7 +25,7 @@ export const actions = {
 			return fail(400, { username, email, missing: true });
 		else if (password != confirm) return fail(400, { username, email, mismatch: true });
 
-		const { response, error } = await client.POST('/api/auth/register', {
+		const { response, error } = await clientRaw.POST('/api/auth/register', {
 			body: { username, password, email, invite },
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') },
 			fetch

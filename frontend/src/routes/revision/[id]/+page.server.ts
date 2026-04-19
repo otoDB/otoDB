@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { isValidEntityModelType, type EntityModelType } from '$lib/enums';
@@ -41,11 +41,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		}),
 		client.GET('/api/history/revision', { fetch, params: { query: { revision_id } } })
 	]);
-
-	if (!revision) error(404, { message: 'Not found' });
-
-	if (!changes) error(500, { message: 'Internal server error' });
-	if (!revision) error(500, { message: 'Internal server error' });
 
 	return {
 		revision,

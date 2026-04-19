@@ -1,5 +1,4 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
 import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
@@ -27,8 +26,6 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 			params: { query: { work_id: +params.work_id } }
 		})
 	]);
-
-	if (!comments) error(500, 'Failed to load comments');
 
 	return {
 		sources: sources,

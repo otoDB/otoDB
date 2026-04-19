@@ -1,8 +1,8 @@
 import { env } from '$env/dynamic/private';
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { languages } from '$lib/enums/language';
 import { get_entity, renderMarkdown } from '$lib/markdown';
-import { error, fail } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { Actions, LayoutServerLoad } from './$types';
 import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
@@ -17,9 +17,6 @@ export const load: LayoutServerLoad = async ({ fetch, params }) => {
 		}
 	});
 
-	// TODO: Error forwarding
-	if (!comments) error(500, 'Failed to fetch data.');
-
 	return { comments };
 };
 
@@ -29,8 +26,6 @@ export const actions = {
 		const title = data.get('title') as string;
 		const post = data.get('post') as string;
 		const lang = data.get('lang') as keyof typeof languages;
-		// TODO: Remove when error forwarding is complete
-		if (!Object.keys(languages).includes(lang)) return fail(400);
 		const entities_raw = data.get('entities') as string | null;
 		const entities = (entities_raw ?? '')
 			.split('\n')

@@ -10,7 +10,7 @@
 
 	let { data } = $props();
 	let results = $derived(data.results!.items);
-	let category = $state(data.category);
+	let category = $derived(data.category);
 
 	const fetchNextBatch = () =>
 		client.GET('/api/tag/song_tag_search', {
@@ -20,7 +20,7 @@
 					query: data.query,
 					limit: data.batch_size,
 					offset: results.length,
-					category: data.category
+					category: data.category === -1 ? null : data.category
 				}
 			}
 		});

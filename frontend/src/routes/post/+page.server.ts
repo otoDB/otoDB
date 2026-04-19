@@ -1,9 +1,8 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { enumValues } from '$lib/enums';
 import { m } from '$lib/paraglide/messages';
 import { PostCategory } from '$lib/schema';
 import type { PageServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
 	const batch_size = 20;
@@ -25,8 +24,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 			}
 		}
 	});
-
-	if (!data) error(500, 'Failed to fetch search results.');
 
 	return {
 		query,

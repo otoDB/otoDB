@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import client from '$lib/api';
+import client from '$lib/api.server';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
 	const { data } = await client.GET('/api/work/relations', {

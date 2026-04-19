@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -17,15 +17,18 @@ export const actions = {
 		const name = data.get('name') as string,
 			description = data.get('description') as string;
 
-		const { error, data: list_id } = await client.POST('/api/list/list', {
-			fetch,
-			body: {
-				name,
-				description
-			}
-		});
-		if (error) return fail(400, { name, description, failed: true });
-
+		let list_id: number | null = null;
+		try {
+			({ data: list_id } = await client.POST('/api/list/list', {
+				fetch,
+				body: {
+					name,
+					description
+				}
+			}));
+		} catch {
+			return fail(400, { name, description, failed: true });
+		}
 		redirect(303, `/list/${list_id}`);
 	}
 } satisfies Actions;

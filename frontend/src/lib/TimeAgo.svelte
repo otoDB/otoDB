@@ -27,13 +27,13 @@
 
 		// prettier-ignore
 		const [divisor, unit]: [number, Intl.RelativeTimeFormatUnit] =
-			elapsed > YEAR   * 2 ? [YEAR,   'year']   :
-			elapsed > MONTH  * 2 ? [MONTH,  'month']  :
-			elapsed > WEEK   * 2 ? [WEEK,   'week']   :
-			elapsed > DAY    * 2 ? [DAY,    'day']    :
-			elapsed > HOUR   * 2 ? [HOUR,   'hour']   :
-			elapsed > MINUTE * 2 ? [MINUTE, 'minute'] :
-								   [1,      'second']
+			elapsed > YEAR   * 2  ? [YEAR,   'year']   :
+			elapsed > MONTH  * 2  ? [MONTH,  'month']  :
+			elapsed > WEEK   * 2  ? [WEEK,   'week']   :
+			elapsed > DAY    * 1  ? [DAY,    'day']    :
+			elapsed > HOUR   * 1  ? [HOUR,   'hour']   :
+			elapsed > MINUTE * 10 ? [MINUTE, 'minute'] :
+								    [1,      'second']
 
 		return rtf.format(Math.trunc(diff / divisor), unit);
 	});

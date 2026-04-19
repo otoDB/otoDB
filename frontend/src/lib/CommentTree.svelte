@@ -8,7 +8,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, type PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
 	import TimeAgo from '$lib/TimeAgo.svelte';
-	import EditBy from './EditBy.svelte';
+	import EditedBy from './EditedBy.svelte';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -157,7 +157,7 @@
 			<a href="/profile/{data.user.username}">{data.user.username}</a>
 			<a href="#c{data.id}"><TimeAgo date={data.time} /></a>
 			{#if data.edited_at}
-				<EditBy
+				<EditedBy
 					date={data.edited_at}
 					user={data.edited_by && data.edited_by.username !== data.user.username
 						? data.edited_by

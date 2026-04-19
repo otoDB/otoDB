@@ -81,6 +81,7 @@ def test_close_post_forbidden_for_non_admin_non_author(other_member, member):
 
 def make_closed_post(member) -> Post:
 	from datetime import datetime, timezone
+
 	p = make_post(member)
 	p.closed_at = datetime.now(tz=timezone.utc)
 	p.save()

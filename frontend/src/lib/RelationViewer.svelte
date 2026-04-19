@@ -247,7 +247,7 @@ flowchart ${direction}
 	}}
 />
 
-<style>
+<style lang="postcss">
 	@reference "../app.css";
 	option.type-label {
 		&:checked {

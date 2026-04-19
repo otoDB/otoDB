@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public';
-import type { Cookies } from '@sveltejs/kit';
+import { type Cookies } from '@sveltejs/kit';
 import type { CookieSerializeOptions } from 'cookie';
 import createClient from 'openapi-fetch';
 import setCookie from 'set-cookie-parser';
@@ -13,7 +13,7 @@ const backend = browser
 	? (env.PUBLIC_BACKEND_URL_EXTERNAL ?? '')
 	: (env.PUBLIC_BACKEND_URL_INTERNAL ?? env.PUBLIC_BACKEND_URL_EXTERNAL ?? '');
 
-const client = createClient<paths>({ baseUrl: backend, credentials: 'include' });
+export const client = createClient<paths>({ baseUrl: backend, credentials: 'include' });
 export default client;
 
 export const setToken = (token: string) => {

@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -31,23 +31,23 @@ export const actions = {
 			thumbnail_source_id = data.get('thumbnail_source') as string,
 			reason = data.get('reason') as string;
 
-		const { error } = await client.PUT('/api/work/work', {
-			fetch,
-			params: {
-				query: {
-					work_id: +params.work_id!,
-					reason
+		try {
+			await client.PUT('/api/work/work', {
+				fetch,
+				params: {
+					query: {
+						work_id: +params.work_id!,
+						reason
+					}
+				},
+				body: {
+					title,
+					description,
+					rating: +rating,
+					thumbnail_source_id: thumbnail_source_id ? +thumbnail_source_id : null
 				}
-			},
-			body: {
-				title,
-				description,
-				rating: +rating,
-				thumbnail_source_id: thumbnail_source_id ? +thumbnail_source_id : null
-			}
-		});
-
-		if (error)
+			});
+		} catch {
 			return fail(400, {
 				title,
 				description,
@@ -56,6 +56,7 @@ export const actions = {
 				reason,
 				failed: true
 			});
+		}
 		redirect(303, `/work/${params.work_id}`);
 	}
 } satisfies Actions;

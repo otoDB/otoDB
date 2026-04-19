@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { error } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages';
@@ -6,7 +6,7 @@ import { m } from '$lib/paraglide/messages';
 export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 	if (isNaN(+params.list_id)) error(400, { message: 'Bad request' });
 
-	const { data, error: e } = await client.GET('/api/list/list', {
+	const { data } = await client.GET('/api/list/list', {
 		fetch,
 		params: {
 			query: {
@@ -14,7 +14,6 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 			}
 		}
 	});
-	if (e) error(404, { message: 'Not found' });
 
 	return {
 		list: data,

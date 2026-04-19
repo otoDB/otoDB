@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
@@ -27,23 +27,25 @@ export const actions = {
 			return fail(400, { error: 'A thumbnail source must be selected' });
 		}
 
-		const { error } = await client.POST('/api/work/merge', {
-			fetch,
-			params: {
-				query: {
-					from_work_id: +A,
-					to_work_id: +B
+		try {
+			await client.POST('/api/work/merge', {
+				fetch,
+				params: {
+					query: {
+						from_work_id: +A,
+						to_work_id: +B
+					}
+				},
+				body: {
+					title,
+					description,
+					thumbnail_source_id: +thumbnail_source_id,
+					rating: +rating
 				}
-			},
-			body: {
-				title,
-				description,
-				thumbnail_source_id: +thumbnail_source_id,
-				rating: +rating
-			}
-		});
-		if (error) return fail(400);
-
+			});
+		} catch {
+			return fail(400);
+		}
 		redirect(303, `/work/${+B!}`);
 	}
 } satisfies Actions;

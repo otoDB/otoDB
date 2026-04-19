@@ -1,5 +1,4 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
 import { PathsApiHistoryHistoryGetParametersQueryEntity } from '$lib/schema';
 
@@ -16,8 +15,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		}
 	});
 
-	if (!history) error(500, 'Failed to load history');
-
 	if (tag.song) {
 		const { data: song_history } = await client.GET('/api/history/history', {
 			fetch,
@@ -28,7 +25,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 				}
 			}
 		});
-		if (!song_history) error(500, 'Failed to load song history');
 
 		return {
 			history,

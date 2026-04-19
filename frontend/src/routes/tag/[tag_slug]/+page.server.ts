@@ -1,5 +1,4 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
 import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
@@ -64,10 +63,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 			params: { query: { tag_slug: params.tag_slug } }
 		})
 		.then((res) => res.data);
-
-	// TODO: Error forwarding
-	if (!details) error(500, 'Failed to fetch data.');
-	if (!comments) error(500, 'Failed to fetch comments.');
 
 	return {
 		...details,

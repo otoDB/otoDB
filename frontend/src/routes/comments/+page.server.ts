@@ -6,7 +6,6 @@ import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
 import { m } from '$lib/paraglide/messages';
 import type { components } from '$lib/schema';
-import { EntityModelRoutes } from '$lib/enums';
 
 export const load: PageServerLoad = async ({ fetch, url }) => {
 	const batch_size = 20;
@@ -28,8 +27,6 @@ export const actions = {
 		const data = await request.formData();
 
 		type Model = components['schemas']['CommentInSchema']['model'];
-		// TODO: Remove when error forwarding is complete
-		if (!Object.keys(EntityModelRoutes).includes(data.get('model') as string)) return fail(400);
 		const model: Model = data.get('model') as Model;
 		const pk = parseInt(data.get('pk') as string, 10);
 		const comment_text = data.get('comment') as string;

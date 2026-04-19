@@ -1,5 +1,4 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
 import { PathsApiPostThreadsGetParametersQueryEntity } from '$lib/schema';
 
@@ -17,8 +16,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 			}
 		}
 	});
-
-	if (!data) error(500, 'Failed to fetch data.');
 
 	return {
 		threads: data,

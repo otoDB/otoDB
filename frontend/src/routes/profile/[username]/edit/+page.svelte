@@ -8,7 +8,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, ProfileConnectionTypes } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
-	import TimeAgo from '$lib/TimeAgo.svelte';
+	import Timestamp from '$lib/Timestamp.svelte';
 
 	let { data } = $props();
 
@@ -92,7 +92,7 @@
 					{#each data.invites.invites as inv, i (i)}
 						<tr>
 							<td>
-								<TimeAgo date={inv.created_at} />
+								<Timestamp date={inv.created_at} />
 							</td>
 							<td><pre>{inv.secret}</pre></td>
 							<td>{userLevelNames[inv.level]()}</td>

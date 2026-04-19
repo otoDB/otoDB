@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	interface Props {
 		date: string | Date;
+		user?: { username: string } | null;
+		action?: string;
 	}
 
-	const { date }: Props = $props();
+	const { date, user, action }: Props = $props();
 
 	const parsedDate = $derived(date instanceof Date ? date : new Date(date));
 	const text = $derived.by(() => {
@@ -39,4 +42,28 @@
 	});
 </script>
 
-<time title={parsedDate.toLocaleString()} class="whitespace-nowrap">{text}</time>
+{#snippet Time()}
+	<time title={parsedDate.toLocaleString()} class="whitespace-nowrap">{text}</time>
+{/snippet}
+
+{#if user && action}
+	<ParaglideMessage
+		message={m.free_tiny_badger_breathe}
+		inputs={{ user: user.username, verb: action }}
+	>
+		{#snippet link({ options })}
+			<a href="/profile/{options.name}">{options.name}</a>
+		{/snippet}
+		{#snippet time()}
+			{@render Time()}
+		{/snippet}
+	</ParaglideMessage>
+{:else if action}
+	<ParaglideMessage message={m.lazy_clean_kangaroo_chop} inputs={{ verb: action }}>
+		{#snippet time()}
+			{@render Time()}
+		{/snippet}
+	</ParaglideMessage>
+{:else}
+	{@render Time()}
+{/if}

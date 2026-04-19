@@ -276,12 +276,13 @@
 	"last_late_penguin_bubble": "保存",
 	"lower_whole_gopher_fulfill": "取消",
 	"busy_hour_bee_gasp": "刚刚",
-	"same_only_emu_startle": "（{time}编辑）",
-	"free_tiny_badger_breathe": "{time}由",
+	"same_only_emu_startle": "编辑",
+	"free_tiny_badger_breathe": "由{#link name=$user/}于{#time/}{verb}",
 	"agent_honest_marten_renew": "编辑",
 	"plain_polite_eagle_build": "最新回复",
 	"caring_each_leopard_hint": "\"{name}\"被规范化为\"{result}\"，与slug\"{slug}\"不匹配。",
 	"careful_gross_husky_grasp": "错误",
 	"key_pink_pigeon_treasure": "哎呀！",
-	"ideal_soft_falcon_urge": "出了点问题。请查看浏览器控制台了解更多信息。"
+	"ideal_soft_falcon_urge": "出了点问题。请查看浏览器控制台了解更多信息。",
+	"lazy_clean_kangaroo_chop": "于{#time/}{verb}"
 }

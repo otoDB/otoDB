@@ -1,11 +1,14 @@
 import client from '$lib/api.server';
+import { asEnum } from '$lib/enums';
 import { m } from '$lib/paraglide/messages';
+import { WorkTagCategory } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
 	const batch_size = 20;
 	const query = url.searchParams.get('query') ?? '';
-	const category = parseInt(url.searchParams.get('category') ?? '-1', 10);
+	const paramCategory = parseInt(url.searchParams.get('category') ?? '-1', 10);
+	const category = asEnum(WorkTagCategory, paramCategory);
 	const media_type = (url.searchParams.getAll('media_type') as string[]).map((s) => +s);
 	const order = url.searchParams.get('order') ?? 'newest';
 	const deprecated_only = url.searchParams.get('deprecated_only') === 'on';
@@ -29,7 +32,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				query,
 				limit: batch_size,
 				offset: batch_size * (page - 1),
-				category: category === -1 ? null : category,
+				category: category,
 				media_type,
 				order,
 				deprecated_only,

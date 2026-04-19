@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkField from '$lib/WorkField.svelte';
-	import { Rating, type components } from '$lib/schema';
+	import { Rating, WorkOrigin, type components } from '$lib/schema';
 	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import client, { getDisplayText } from '$lib/api';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
@@ -169,7 +169,7 @@
 								{#each work['a'].sources as source (source.id)}
 									<option value={source.id}
 										>{PlatformNames[source.platform]}
-										{source.work_origin === 0
+										{source.work_origin === WorkOrigin.Author
 											? ''
 											: ' ' + WorkOriginNames[source.work_origin]()}
 										-

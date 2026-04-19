@@ -154,7 +154,7 @@
 <Section title={data.tag.name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<GuidelineWarning />
 	<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }} action="?/edit">
-		{#if data.tag.category === 2 && category !== 2}
+		{#if data.tag.category === WorkTagCategory.Song && category !== WorkTagCategory.Song}
 			<p class="text-red-500">
 				{m.front_game_porpoise_pout()}
 			</p>
@@ -197,7 +197,7 @@
 						/></td
 					>
 				</tr>
-				{#if category === 2}
+				{#if category === WorkTagCategory.Song}
 					<tr
 						><th><label for="song_title">{m.large_factual_octopus_exhale()}</label></th
 						><td
@@ -242,9 +242,9 @@
 							/></td
 						></tr
 					>
-				{:else if category === 6}
+				{:else if category === WorkTagCategory.Media}
 					<tr>
-						<th>Media type</th>
+						<th>{m.green_inclusive_meerkat_earn()}</th>
 						<td>
 							<select name="media_type" multiple value={data.tag.media_type ?? []}>
 								{#each allMediaTypes as t (t)}
@@ -264,7 +264,7 @@
 	<button onclick={del}>{m.chunky_giant_quail_breathe()}</button>
 </Section>
 
-{#if category === 2 && data.tag.category === 2}
+{#if category === WorkTagCategory.Song && data.tag.category === WorkTagCategory.Song}
 	<!-- data.tag.song & data.song_relations would be available -->
 	<Section
 		title={data.tag!.song!.title}
@@ -426,7 +426,7 @@
 		<summary>{m.fit_noble_niklas_build()}</summary>
 		<table>
 			<tbody>
-				{#if category === 2}
+				{#if category === WorkTagCategory.Song}
 					{#each enumValues(SongConnectionTypes) as k (k)}
 						<tr
 							><td>{songConnectionMap[k].name}</td>
@@ -435,7 +435,7 @@
 							</td>
 						</tr>
 					{/each}
-				{:else if category === 6}
+				{:else if category === WorkTagCategory.Media}
 					{#each enumValues(MediaConnectionTypes) as k (k)}
 						<tr>
 							<td>{mediaConnectionMap[k].name}</td>
@@ -444,7 +444,7 @@
 							</td>
 						</tr>
 					{/each}
-				{:else if category === 4}
+				{:else if category === WorkTagCategory.Creator}
 					{#each enumValues(ProfileConnectionTypes) as k (k)}
 						<tr>
 							<td>{profileConnectionMap[k].name}</td>

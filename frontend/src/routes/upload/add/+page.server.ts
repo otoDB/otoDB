@@ -6,7 +6,7 @@ import { getDisplayText } from '$lib/api';
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
 import { hasUserLevel } from '$lib/enums/userLevel';
-import { Levels, type components } from '$lib/schema';
+import { Levels, WorkStatus, type components } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 	userLevelGuard(locals.user, Levels.Member, url.pathname);
@@ -36,7 +36,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 			},
 			fetch
 		});
-		if (data.work_status === 0) error(400, { message: 'Bad Request' });
+		if (data.work_status === WorkStatus.Available) error(400, { message: 'Bad Request' });
 		unavailable_source = data;
 		title = unavailable_source.title;
 	}

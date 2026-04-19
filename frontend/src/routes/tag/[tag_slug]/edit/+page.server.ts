@@ -3,7 +3,7 @@ import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 import { userLevelGuard } from '$lib/route_guard';
-import { Levels } from '$lib/schema';
+import { Levels, WorkTagCategory } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {
 	userLevelGuard(locals.user, Levels.Member, url.pathname);
@@ -103,7 +103,7 @@ export const actions = {
 			});
 		} catch {
 			return fail(400, {
-				category,
+				category: +category as WorkTagCategory,
 				parent_slugs,
 				deprecated,
 				failed: true,

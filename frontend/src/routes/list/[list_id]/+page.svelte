@@ -8,7 +8,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
+	import { PathsApiCommentCommentDeleteParametersQueryModel, WorkOrigin } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
@@ -65,7 +65,7 @@
 						name="cover_select"
 						value={i}
 						bind:group={select}
-					/>{PlatformNames[s.platform]}{s.work_origin === 0
+					/>{PlatformNames[s.platform]}{s.work_origin === WorkOrigin.Author
 						? ''
 						: ' ' + WorkOriginNames[s.work_origin]()}</label
 				>

@@ -14,7 +14,11 @@
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { Levels, PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
+	import {
+		Levels,
+		PathsApiCommentCommentDeleteParametersQueryModel,
+		PostCategory
+	} from '$lib/schema.js';
 	import { mount, unmount } from 'svelte';
 
 	let { data } = $props();
@@ -135,7 +139,7 @@
 					</tr>
 				</tbody>
 			</table>
-			{#if data.post.category === 3}
+			{#if data.post.category === PostCategory.Gardening}
 				<h4>{m.fine_zany_octopus_trim()}</h4>
 				<textarea name="entities" bind:value={editEntities}></textarea>
 				<ul class="inline-block">
@@ -164,7 +168,7 @@
 				<a href="/post?category={data.post.category}"
 					>{postCategoryNames[data.post.category]()}</a
 				>
-				{#if data.post.category === 0}
+				{#if data.post.category === PostCategory.Announcement}
 					&middot;
 					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
 				{/if}

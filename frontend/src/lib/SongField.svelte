@@ -88,4 +88,3 @@
 		</table>
 	{/if}
 </span>
-

@@ -302,8 +302,6 @@
 	"last_late_penguin_bubble": "Save",
 	"lower_whole_gopher_fulfill": "Cancel",
 	"busy_hour_bee_gasp": "just now",
-	"same_only_emu_startle": "(edited {time})",
-	"free_tiny_badger_breathe": "edited {time} by ",
 	"agent_honest_marten_renew": "",
 	"plain_polite_eagle_build": "Last post",
 	"formal_ok_fly_buzz": "Bind to Existing Work",
@@ -321,5 +319,7 @@
 	"lofty_calm_dingo_zip": "Set Origin",
 	"few_misty_jurgen_roam": "Relation Control",
 	"agent_cuddly_robin_succeed": "Tag Control",
-	"good_vivid_weasel_launch": "Alias Control"
+	"good_vivid_weasel_launch": "Alias Control",
+	"free_tiny_badger_breathe": "Edited by {#username/} {#time/}",
+	"light_sunny_kitten_slide": "Edited {#time/}"
 }

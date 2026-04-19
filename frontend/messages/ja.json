@@ -275,12 +275,12 @@
 	"last_late_penguin_bubble": "保存",
 	"lower_whole_gopher_fulfill": "キャンセル",
 	"busy_hour_bee_gasp": "たった今",
-	"same_only_emu_startle": "（{time}に編集）",
-	"free_tiny_badger_breathe": "{time}に",
 	"agent_honest_marten_renew": "が編集",
 	"plain_polite_eagle_build": "最新の投稿",
 	"caring_each_leopard_hint": "「{name}」は「{result}」に正規化されますが、スラッグ「{slug}」と一致しません。",
 	"careful_gross_husky_grasp": "エラー",
 	"key_pink_pigeon_treasure": "おっと！",
-	"ideal_soft_falcon_urge": "問題が発生しました。詳細はブラウザのコンソールをご確認ください。"
+	"ideal_soft_falcon_urge": "問題が発生しました。詳細はブラウザのコンソールをご確認ください。",
+	"free_tiny_badger_breathe": "{#username/}が{#time/}に編集",
+	"light_sunny_kitten_slide": "{#time/}に編集"
 }

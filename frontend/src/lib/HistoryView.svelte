@@ -1,8 +1,8 @@
 <script lang="ts">
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	import { routeNames } from '$lib/enums/route';
-	import { m } from '$lib/paraglide/messages';
-	import { type components } from '$lib/schema';
-	import { timeAgo } from '$lib/ui';
+	import { m } from './paraglide/messages';
+	import type { components } from './schema';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
 		user: components['schemas']['UserStatusSchema'] | null;
@@ -26,7 +26,7 @@
 				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>
 				</td><td>
-					<time title={new Date(rev.date).toLocaleString()}>{timeAgo(rev.date)}</time>
+					<TimeAgo date={rev.date} />
 				</td><td>
 					{rev.message}
 				</td>

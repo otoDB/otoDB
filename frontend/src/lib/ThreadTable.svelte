@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { buildEntityRoutes, type EntityModelType } from '$lib/enums';
 	import { postCategoryNames } from '$lib/enums/postCategory';
-	import { m } from '$lib/paraglide/messages';
 	import type { PostCategory } from '$lib/schema';
-	import { timeAgo } from '$lib/ui';
+	import { buildEntityRoutes, type EntityModelType } from './enums';
+	import { m } from './paraglide/messages';
+	import TimeAgo from './TimeAgo.svelte';
 
 	interface Post {
 		id: number | string;
@@ -64,9 +64,9 @@
 					>
 				{/if}
 				<td class="text-right">
-					<time title={new Date(lastTime).toLocaleString()}
-						><a href="/profile/{lastUser}">{lastUser}</a> @ {timeAgo(lastTime)}</time
-					>
+					<a href="/profile/{lastUser}">{lastUser}</a>
+					@
+					<TimeAgo date={lastTime} />
 				</td>
 			</tr>
 		{/each}

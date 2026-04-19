@@ -1,13 +1,12 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-
-	import { m } from '$lib/paraglide/messages.js';
-	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { timeAgo } from '$lib/ui';
+	import Pager from '$lib/Pager.svelte';
+	import Section from '$lib/Section.svelte';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	import { isSOV, isSVO } from '$lib/enums/language.js';
-	import { getLocale } from '$lib/paraglide/runtime';
 	import { routeNames } from '$lib/enums/route.js';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime';
 
 	let { data } = $props();
 </script>
@@ -27,10 +26,7 @@
 						{#if isSOV(getLocale())}
 							{m.curly_safe_lynx_fond()}
 						{/if}</td
-					><td
-						><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
-						></td
-					></tr
+					><td><TimeAgo date={r.date} /></td></tr
 				>
 			{/each}
 		</tbody>

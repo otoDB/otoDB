@@ -4,7 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
 	import { buildEntityRoutes, type EntityModelType } from '$lib/enums';
-	import { timeAgo } from '$lib/ui';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 
 	let { data } = $props();
 </script>
@@ -26,8 +26,10 @@
 					<td>
 						{c.comment}
 					</td>
-					<td>{timeAgo(c.submit_date)}</td></tr
-				>
+					<td>
+						<TimeAgo date={c.submit_date} />
+					</td>
+				</tr>
 			{/each}
 		</tbody>
 	</table>

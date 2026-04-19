@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import EditedBy from '$lib/EditedBy.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import Section from '$lib/Section.svelte';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
 	import { EntityModelRoutes } from '$lib/enums.js';
@@ -13,7 +15,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { Levels, PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
-	import { timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 
 	let { data } = $props();
@@ -165,11 +166,7 @@
 				>
 				{#if data.post.category === 0}
 					&middot;
-					<a href="#p{data.post_id}"
-						><time title={new Date(page_object.modified).toLocaleString()}
-							>{timeAgo(page_object.modified)}</time
-						></a
-					>
+					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
 				{/if}
 			</p>
 			{#if data.post.entities?.length}
@@ -196,24 +193,12 @@
 					<a href="/profile/{data.post?.added_by.username}"
 						>{data.post?.added_by.username}</a
 					>
-					<a href="#p{data.post_id}"
-						><time title={new Date(page_object.modified).toLocaleString()}
-							>{timeAgo(page_object.modified)}</time
-						></a
-					>
+					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
 					{#if data.post.edited_at && data.post.edited_by}
-						{@const editUser = data.post.edited_by}
-						<span title={new Date(data.post.edited_at).toLocaleString()}>
-							{#if editedByOther}
-								({m.free_tiny_badger_breathe({
-									time: timeAgo(data.post.edited_at)
-								})}<a href="/profile/{editUser.username}"
-									>{editUser.username}
-								</a>{m.agent_honest_marten_renew()})
-							{:else}
-								{m.same_only_emu_startle({ time: timeAgo(data.post.edited_at) })}
-							{/if}
-						</span>
+						<EditedBy
+							date={data.post.edited_at}
+							user={editedByOther ? data.post.edited_by : null}
+						/>
 					{/if}
 				</div>
 				<div class="px-4 py-2">

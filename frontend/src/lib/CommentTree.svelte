@@ -6,8 +6,9 @@
 	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
-	import { timeAgo } from '$lib/ui';
 	import { Levels, type PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
+	import TimeAgo from '$lib/TimeAgo.svelte';
+	import EditedBy from './EditedBy.svelte';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -154,19 +155,14 @@
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
 			<a href="/profile/{data.user.username}">{data.user.username}</a>
-			<a href="#c{data.id}"
-				><time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time></a
-			>
+			<a href="#c{data.id}"><TimeAgo date={data.time} /></a>
 			{#if data.edited_at}
-				<span title={new Date(data.edited_at).toLocaleString()}>
-					{#if data.edited_by && data.edited_by.username !== data.user.username}
-						({m.free_tiny_badger_breathe({ time: timeAgo(data.edited_at) })}<a
-							href="/profile/{data.edited_by.username}">{data.edited_by.username}</a
-						>{m.agent_honest_marten_renew()})
-					{:else}
-						{m.same_only_emu_startle({ time: timeAgo(data.edited_at) })}
-					{/if}
-				</span>
+				<EditedBy
+					date={data.edited_at}
+					user={data.edited_by && data.edited_by.username !== data.user.username
+						? data.edited_by
+						: null}
+				/>
 			{/if}
 		</div>
 		<div>

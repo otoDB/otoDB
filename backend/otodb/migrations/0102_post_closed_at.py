@@ -3,7 +3,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0100_alter_revisionchangeentity_route'),
+		('otodb', '0101_alter_revisionchangeentity_route'),
 	]
 
 	operations = [

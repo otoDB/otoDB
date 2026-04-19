@@ -195,19 +195,10 @@
 					>
 					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
 					{#if data.post.edited_at && data.post.edited_by}
-						{@const editUser = data.post.edited_by}
-						<EditBy date={data.post.edited_at} user={editUser} />
-						<span title={new Date(data.post.edited_at).toLocaleString()}>
-							{#if editedByOther}
-								({m.free_tiny_badger_breathe({
-									time: timeAgo(data.post.edited_at)
-								})}<a href="/profile/{editUser.username}"
-									>{editUser.username}
-								</a>{m.agent_honest_marten_renew()})
-							{:else}
-								{m.same_only_emu_startle({ time: timeAgo(data.post.edited_at) })}
-							{/if}
-						</span>
+						<EditBy
+							date={data.post.edited_at}
+							user={editedByOther ? data.post.edited_by : null}
+						/>
 					{/if}
 				</div>
 				<div class="px-4 py-2">

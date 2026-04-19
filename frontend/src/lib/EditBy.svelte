@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import { getLocale } from '$lib/paraglide/runtime';
 	import TimeAgo from '$lib/TimeAgo.svelte';
 
 	interface Props {
@@ -12,10 +11,12 @@
 </script>
 
 <span>
-	{m.plain_plain_manatee_treasure()}
-	:
-	<TimeAgo {date}></TimeAgo>
 	{#if user}
-		<a href="/profile/{user.username}">{user.username}</a>
+		<a href="/profile/{user.username}">
+			{m.these_free_toucan_promise({ username: user.username })}
+		</a>
+	{:else}
+		{m.misty_ideal_bumblebee_jest()}
 	{/if}
+	<TimeAgo {date} />
 </span>

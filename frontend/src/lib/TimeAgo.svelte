@@ -39,4 +39,4 @@
 	});
 </script>
 
-<time title={parsedDate.toLocaleString()}>{text}</time>
+<time title={parsedDate.toLocaleString()} class="whitespace-nowrap">{text}</time>

@@ -10,19 +10,10 @@ from otodb.models.enums import PostCategory, LanguageTypes
 from tests.conftest import AuthenticatedTestClient
 
 
-ALL_CATEGORIES = [
-	PostCategory.ANNOUNCEMENT,
-	PostCategory.FEATURE_REQUEST,
-	PostCategory.BUG_REPORT,
-	PostCategory.GARDENING,
-	PostCategory.GENERAL,
-]
-
-
 @pytest.fixture
-def owner(db):
+def admin(db):
 	return Account.objects.create_user(
-		'owner', 'owner@test.com', password='owner_pass', level=Account.Levels.OWNER
+		'admin', 'admin@test.com', password='admin_pass', level=Account.Levels.ADMIN
 	)
 
 
@@ -32,23 +23,24 @@ def post_client(member):
 
 
 @pytest.fixture
-def owner_post_client(owner):
-	return AuthenticatedTestClient(post_router, owner)
+def admin_post_client(admin):
+	return AuthenticatedTestClient(post_router, admin)
 
 
-def make_post(member, category: PostCategory) -> Post:
-	p = Post.objects.create(title='Test Post', added_by=member, category=category)
+def make_post(member) -> Post:
+	p = Post.objects.create(
+		title='Test Post', added_by=member, category=PostCategory.GENERAL
+	)
 	PostContent.objects.create(post=p, lang=LanguageTypes.JAPANESE, page='content')
 	return p
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('category', ALL_CATEGORIES)
-def test_close_post_as_owner(owner_post_client, owner, category):
-	"""OWNER can close any category post."""
-	p = make_post(owner, category)
+def test_close_post_as_admin(admin_post_client, admin):
+	"""ADMIN can close any post."""
+	p = make_post(admin)
 
-	response = owner_post_client.put('/close', json={'post_id': p.pk})
+	response = admin_post_client.put(f'/close?post_id={p.pk}')
 
 	assert response.status_code == 200
 	p.refresh_from_db()
@@ -63,38 +55,73 @@ def other_member(db):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('category', ALL_CATEGORIES)
-def test_close_post_as_author(post_client, member, category):
-	"""Post author can close their own post for any category."""
-	p = make_post(member, category)
+def test_close_post_as_author(post_client, member):
+	"""Post author cannot close their own post."""
+	p = make_post(member)
 
-	response = post_client.put('/close', json={'post_id': p.pk})
-
-	assert response.status_code == 200
-	p.refresh_from_db()
-	assert p.closed_at is not None
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize('category', ALL_CATEGORIES)
-def test_close_post_forbidden_for_non_owner_non_author(other_member, member, category):
-	"""Users who are neither OWNER nor the post author receive 403."""
-	p = make_post(member, category)
-	other_client = AuthenticatedTestClient(post_router, other_member)
-
-	response = other_client.put('/close', json={'post_id': p.pk})
+	response = post_client.put(f'/close?post_id={p.pk}')
 
 	assert response.status_code == 403
 	p.refresh_from_db()
 	assert p.closed_at is None
 
 
-'''
-TODO(sno2wman): I think there should also be a error test for fetching a non-existent Post.
 @pytest.mark.django_db
-def test_close_nonexistent_post_returns_404(owner_post_client):
-    """Non-existent post_id returns 404."""
-    response = owner_post_client.put('/close', json={'post_id': 99999})
+def test_close_post_forbidden_for_non_admin_non_author(other_member, member):
+	"""Users who are neither ADMIN nor the post author receive 403."""
+	p = make_post(member)
+	other_client = AuthenticatedTestClient(post_router, other_member)
 
-    assert response.status_code == 404
-'''
+	response = other_client.put(f'/close?post_id={p.pk}')
+
+	assert response.status_code == 403
+	p.refresh_from_db()
+	assert p.closed_at is None
+
+
+def make_closed_post(member) -> Post:
+	from datetime import datetime, timezone
+	p = make_post(member)
+	p.closed_at = datetime.now(tz=timezone.utc)
+	p.save()
+	return p
+
+
+@pytest.mark.django_db
+def test_unclose_post_as_admin(admin_post_client, admin):
+	"""ADMIN can unclose a closed post."""
+	p = make_closed_post(admin)
+	assert p.closed_at is not None
+
+	response = admin_post_client.put(f'/close?post_id={p.pk}')
+
+	assert response.status_code == 200
+	p.refresh_from_db()
+	assert p.closed_at is None
+
+
+@pytest.mark.django_db
+def test_unclose_post_as_author(post_client, member):
+	"""Post author can unclose their own closed post."""
+	p = make_closed_post(member)
+	assert p.closed_at is not None
+
+	response = post_client.put(f'/close?post_id={p.pk}')
+
+	assert response.status_code == 200
+	p.refresh_from_db()
+	assert p.closed_at is None
+
+
+@pytest.mark.django_db
+def test_unclose_post_forbidden_for_non_admin_non_author(other_member, member):
+	"""Users who are neither ADMIN nor the post author receive 403."""
+	p = make_closed_post(member)
+	original_closed_at = p.closed_at
+	other_client = AuthenticatedTestClient(post_router, other_member)
+
+	response = other_client.put(f'/close?post_id={p.pk}')
+
+	assert response.status_code == 403
+	p.refresh_from_db()
+	assert p.closed_at == original_closed_at

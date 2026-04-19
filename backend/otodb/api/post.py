@@ -193,34 +193,23 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 			)
 
 
-class PostCloseSchema(Schema):
-	post_id: int
-
-
 @post_router.put('close', auth=django_auth)
 @transaction.atomic
-def close(request: AuthedHttpRequest, payload: PostCloseSchema):
-	p = get_object_or_404(Post, id=payload.post_id)
-	is_owner = request.user.level >= Account.Levels.OWNER
-	is_author = p.added_by_id == request.user.pk
-	if not (is_owner or is_author):
-		raise HttpError(403, 'Forbidden')
-
-	p.closed_at = datetime.now(tz=timezone.utc)
-	p.save(update_fields=['closed_at'])
-
-
-@post_router.put('unclose', auth=django_auth)
-@transaction.atomic
-def unclose(request: AuthedHttpRequest, payload: PostCloseSchema):
-	p = get_object_or_404(Post, id=payload.post_id)
-	is_owner = request.user.level >= Account.Levels.OWNER
-	is_author = p.added_by_id == request.user.pk
-	if not (is_owner or is_author):
-		raise HttpError(403, 'Forbidden')
-
-	p.closed_at = None
-	p.save(update_fields=['closed_at'])
+def toggle_close(request: AuthedHttpRequest, post_id: int):
+	post = get_object_or_404(Post, id=post_id)
+	is_admin = request.user.level >= Account.Levels.ADMIN
+	is_author = post.added_by == request.user
+	if not post.closed_at:
+		if is_admin:
+			post.closed_at = datetime.now(tz=timezone.utc)
+		else:
+			raise HttpError(403, 'Forbidden')
+	else:
+		if is_admin or is_author:
+			post.closed_at = None
+		else:
+			raise HttpError(403, 'Forbidden')
+	post.save(update_fields=['closed_at'])
 
 
 @post_router.get('threads', response=list[PostOverviewSchema])

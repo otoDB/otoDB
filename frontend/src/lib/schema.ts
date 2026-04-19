@@ -1181,25 +1181,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Close */
-        put: operations["otodb_api_post_close"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/post/unclose": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Unclose */
-        put: operations["otodb_api_post_unclose"];
+        /** Toggle Close */
+        put: operations["otodb_api_post_toggle_close"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2442,11 +2425,6 @@ export interface components {
             items: components["schemas"]["PostOverviewSchema"][];
             /** Count */
             count: number;
-        };
-        /** PostCloseSchema */
-        PostCloseSchema: {
-            /** Post Id */
-            post_id: number;
         };
         /** CommentSchema */
         CommentSchema: {
@@ -4643,40 +4621,16 @@ export interface operations {
             };
         };
     };
-    otodb_api_post_close: {
+    otodb_api_post_toggle_close: {
         parameters: {
-            query?: never;
+            query: {
+                post_id: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PostCloseSchema"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    otodb_api_post_unclose: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PostCloseSchema"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {

@@ -3,7 +3,7 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import Section from '$lib/Section.svelte';
-	import Timestamp from '$lib/Timestamp.svelte';
+	import ActionTimestamp from '$lib/ActionTimestamp.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
 	import { EntityModelRoutes } from '$lib/enums.js';
@@ -165,7 +165,7 @@
 				>
 				{#if data.post.category === 0}
 					&middot;
-					<a href="#p{data.post_id}"><Timestamp date={page_object.modified} /></a>
+					<a href="#p{data.post_id}"><ActionTimestamp date={page_object.modified} /></a>
 				{/if}
 			</p>
 			{#if data.post.entities?.length}
@@ -192,9 +192,9 @@
 					<a href="/profile/{data.post?.added_by.username}"
 						>{data.post?.added_by.username}</a
 					>
-					<a href="#p{data.post_id}"><Timestamp date={page_object.modified} /></a>
+					<a href="#p{data.post_id}"><ActionTimestamp date={page_object.modified} /></a>
 					{#if data.post.edited_at}
-						<Timestamp
+						<ActionTimestamp
 							date={data.post.edited_at}
 							user={editedByOther ? data.post.edited_by : null}
 							action={m.same_only_emu_startle()}

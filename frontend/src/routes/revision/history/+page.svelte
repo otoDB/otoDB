@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import Pager from '$lib/Pager.svelte';
 	import Section from '$lib/Section.svelte';
-	import Timestamp from '$lib/Timestamp.svelte';
+	import ActionTimestamp from '$lib/ActionTimestamp.svelte';
 	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
@@ -26,7 +26,7 @@
 						{#if isSOV(getLocale())}
 							{m.curly_safe_lynx_fond()}
 						{/if}</td
-					><td><Timestamp date={r.date} /></td></tr
+					><td><ActionTimestamp date={r.date} /></td></tr
 				>
 			{/each}
 		</tbody>

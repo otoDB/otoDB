@@ -7,7 +7,7 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, type PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
-	import Timestamp from '$lib/Timestamp.svelte';
+	import ActionTimestamp from '$lib/ActionTimestamp.svelte';
 
 	export type CommentModels =
 		| 'mediawork'
@@ -154,9 +154,9 @@
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
 			<a href="/profile/{data.user.username}">{data.user.username}</a>
-			<a href="#c{data.id}"><Timestamp date={data.time} /></a>
+			<a href="#c{data.id}"><ActionTimestamp date={data.time} /></a>
 			{#if data.edited_at}
-				<Timestamp
+				<ActionTimestamp
 					date={data.edited_at}
 					user={data.edited_by && data.edited_by.username !== data.user.username
 						? data.edited_by

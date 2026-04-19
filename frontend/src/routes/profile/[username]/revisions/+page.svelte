@@ -4,7 +4,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import Section from '$lib/Section.svelte';
-	import Timestamp from '$lib/Timestamp.svelte';
+	import ActionTimestamp from '$lib/ActionTimestamp.svelte';
 
 	let { data } = $props();
 </script>
@@ -20,7 +20,7 @@
 						</td>
 						<td>{r.route ? routeNames[r.route]() : ''}</td>
 						<td>
-							<Timestamp date={r.date} />
+							<ActionTimestamp date={r.date} />
 						</td>
 					</tr>
 				{/each}

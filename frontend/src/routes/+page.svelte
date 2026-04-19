@@ -4,7 +4,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import Section from '$lib/Section.svelte';
-	import Timestamp from '$lib/Timestamp.svelte';
+	import ActionTimestamp from '$lib/ActionTimestamp.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 
 	let { data } = $props();
@@ -55,7 +55,7 @@
 							{#if isSOV(getLocale())}
 								{m.curly_safe_lynx_fond()}
 							{/if}</td
-						><td><Timestamp date={r.date} /></td></tr
+						><td><ActionTimestamp date={r.date} /></td></tr
 					>
 				{/each}
 			</tbody>
@@ -69,7 +69,7 @@
 				{#each data.posts.items as p, i (i)}
 					<tr>
 						<td><a href="/post/{p.id}">{p.title}</a></td>
-						<td><Timestamp date={p.modified} /></td>
+						<td><ActionTimestamp date={p.modified} /></td>
 					</tr>
 				{/each}
 			</tbody>

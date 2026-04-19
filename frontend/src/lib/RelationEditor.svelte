@@ -1,44 +1,51 @@
-<script lang="ts">
+<script lang="ts" generics="T extends 'work' | 'song'">
 	import { goto } from '$app/navigation';
-	import { dirtyEnhance } from '$lib/dirty';
-	import { isSOV } from '$lib/enums/Languages';
+	import { dirtyEnhance, type Barrier } from '$lib/dirty';
+	import { isSOV } from '$lib/enums/language';
 	import type { ComponentProps } from 'svelte';
-	import client from './api';
-	import { SongRelationPredicate, WorkRelationEditorPredicate } from './enums';
-	import { m } from './paraglide/messages';
-	import { getLocale } from './paraglide/runtime';
-	import type { components } from './schema';
-	import SongField from './SongField.svelte';
-	import { callErrorToast } from './toast';
-	import WorkCard from './WorkCard.svelte';
-	import WorkField from './WorkField.svelte';
+	import client from '$lib/api';
+	import { enumValues, SongRelationPredicate, WorkRelationEditorPredicate } from '$lib/enums';
+	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
+	import SongField from '$lib/SongField.svelte';
+	import { callErrorToast } from '$lib/toast';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkField from '$lib/WorkField.svelte';
 
 	interface Props {
 		this_id: number;
-		obj_type: 'work' | 'song';
-		init_relations: [components['schemas']['RelationSchema'][], { id: number }[]];
+		obj_type: T;
+		init_relations: [
+			T extends 'work'
+				? components['schemas']['WorkRelationSchema'][]
+				: components['schemas']['SongRelationSchema'][],
+			{ id: number }[]
+		];
 		form_control?: {
-			barrier: {
-				forms?: HTMLFormElement[];
-				reached?: ReturnType<typeof Promise.withResolvers<void>>[];
-			};
+			barrier: Partial<Barrier>;
 			priority: number;
 		};
 	}
 
 	let { this_id, init_relations, obj_type, form_control }: Props = $props();
 
-	let relations: { swapped: boolean; item: any | null; relation: number }[] = $state(
+	type WorkTag = ComponentProps<typeof WorkCard>['work'];
+	type SongTag = { work_tag: string; title: string; id: number };
+
+	let relations: { swapped: boolean; item: WorkTag | SongTag; relation: number }[] = $state(
 		init_relations[0]
 			.filter(({ A_id, B_id }) => A_id === this_id || B_id === this_id)
 			.map(({ A_id, B_id, relation }) => ({
 				swapped: A_id === this_id,
-				item: init_relations[1].find((e) => e.id === (A_id === this_id ? B_id : A_id)),
+				item: init_relations[1].find((e) => e.id === (A_id === this_id ? B_id : A_id))! as
+					| WorkTag
+					| SongTag,
 				relation
 			}))
 	);
 
-	let new_item: null | { id: number } = $state(null);
+	let new_item: null | WorkTag | SongTag = $state(null);
 
 	const endpoint = obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation';
 	const post_gate = { p: Promise.withResolvers<void>() };
@@ -58,6 +65,11 @@
 			callErrorToast(m.green_due_javelina_pop());
 		} else goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
 	};
+
+	const [RelationType, Predicates] =
+		obj_type === 'work'
+			? [WorkRelationTypes, WorkRelationEditorPredicate]
+			: [SongRelationTypes, SongRelationPredicate];
 </script>
 
 {#snippet work(
@@ -68,16 +80,9 @@
 )}
 	{#if swapped}
 		{#if obj_type === 'work'}
-			<WorkCard
-				// TODO: Too ad-hoc for typing
-				work={relation.item as ComponentProps<typeof WorkCard>['work']}
-			/>
+			<WorkCard work={relation.item as WorkTag} />
 		{:else if obj_type === 'song'}
-			<a
-				// TODO: Too ad-hoc for typing
-				href="/tag/{(relation.item as { work_tag: string; title: string }).work_tag}"
-				>{relation.item.title}</a
-			>
+			<a href="/tag/{(relation.item as SongTag).work_tag}">{relation.item.title}</a>
 		{/if}
 	{:else}
 		{m.stout_frail_warbler_support()}{m.great_clean_beaver_amuse()}{#if obj_type === 'work'}{m.grand_merry_fly_succeed()}{:else if obj_type === 'song'}{m.grand_nice_pony_belong()}{/if}
@@ -108,9 +113,7 @@
 				if (
 					new_item &&
 					new_item.id !== this_id &&
-					!relations.some(
-						(r) => r.item.id === new_item!.id // MEMO: maybe here null-assertion is redundant
-					)
+					!relations.some((r) => r.item.id === new_item!.id)
 				) {
 					e.currentTarget.dispatchEvent(new Event('change', { bubbles: true }));
 					relations.unshift({ swapped: false, item: new_item, relation: 0 });
@@ -131,16 +134,16 @@
 						<td class="w-64">{@render work(relation, relation.swapped)}</td>
 						<td
 							><select name="relation" bind:value={relation.relation}>
-								{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationPredicate as rel, j (j)}
-									<option value={j}>{rel()}</option>
+								{#each enumValues(RelationType) as rel, j (j)}
+									<option value={rel}>{Predicates[rel]()}</option>
 								{/each}
 							</select></td
 						>
 					{:else}
 						<td
 							><select name="relation" bind:value={relation.relation}>
-								{#each obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationPredicate as rel, j (j)}
-									<option value={j}>{rel()}</option>
+								{#each enumValues(RelationType) as rel, j (j)}
+									<option value={rel}>{Predicates[rel]()}</option>
 								{/each}
 							</select></td
 						>

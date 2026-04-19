@@ -51,7 +51,7 @@ api.add_router('/history/', history_router)
 api.add_router('/request/', request_router)
 
 
-@api.get('stats')
+@api.get('stats', response=tuple[int, int, int, int])
 @decorate_view(cache_page(60))
 def statistics(request):
 	from otodb.models import MediaWork, TagWork, MediaSong, Pool

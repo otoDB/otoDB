@@ -4,17 +4,18 @@
 	import { env } from '$env/dynamic/public';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Section from '$lib/Section.svelte';
-	import { languages } from '$lib/enums/Languages';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
-	import { getThemeNameById } from '$lib/enums/themes';
+	import { languages } from '$lib/enums/language';
+	import { hasUserLevel } from '$lib/enums/userLevel';
+	import { themes } from '$lib/themes/themes';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast } from '$lib/toast';
 	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
-	import { currentVersion, Version } from '$lib/enums/version';
+	import { currentVersion, versions } from '$lib/enums/version';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
 	import { isFormDirty } from '$lib/dirty';
+	import { Levels, ThemePref } from '$lib/schema';
 
 	let { data, children } = $props();
 
@@ -63,7 +64,7 @@
 	let search_type = $state('work');
 
 	const theme: string = $derived(
-		getThemeNameById(data.user?.prefs?.theme ?? +(get_prefs()?.theme ?? 0))
+		themes[data.user?.prefs?.theme ?? get_prefs()?.theme ?? ThemePref.Default].cssKey
 	);
 
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
@@ -72,9 +73,9 @@
 		JSON.stringify({
 			'@context': 'https://schema.org',
 			'@type': 'Organization',
-			name: 'otoDB',
-			url: 'https://otodb.net',
-			sameAs: ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
+			'name': 'otoDB',
+			'url': 'https://otodb.net',
+			'sameAs': ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
 		})
 	);
 
@@ -84,7 +85,7 @@
 					JSON.stringify({
 						'@context': 'https://schema.org',
 						'@type': 'BreadcrumbList',
-						itemListElement: (
+						'itemListElement': (
 							page.data.head.breadcrumbs as { name: string; url: string }[]
 						).map(
 							(
@@ -93,8 +94,8 @@
 								arr: { name: string; url: string }[]
 							) => ({
 								'@type': 'ListItem',
-								position: i + 1,
-								name: crumb.name,
+								'position': i + 1,
+								'name': crumb.name,
 								...(i < arr.length - 1
 									? { item: `https://otodb.net${crumb.url}` }
 									: {})
@@ -160,7 +161,7 @@
 	</li>
 {/snippet}
 
-<div class="text-otodb-content-primary overflow-auto {`theme-${theme}`}">
+<div class="text-otodb-content-primary overflow-auto {theme}">
 	<div class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
@@ -207,7 +208,7 @@
 					}
 				]}
 				use:clickOutside
-				onOutclick={() => (isMobileNavOpen = false)}
+				onoutclick={() => (isMobileNavOpen = false)}
 			>
 				<form target="_self" method="get" action="/{search_type}" class="flex w-full">
 					<select bind:value={search_type} class="bg-otodb-bg-faint/75 pl-1">
@@ -242,7 +243,7 @@
 						{@render link('/', m.fine_late_chicken_quiz())}
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
 						{@render link('/work', m.grand_merry_fly_succeed())}
-						{#if hasUserLevelOld(data.user?.level, 'MEMBER')}
+						{#if hasUserLevel(data.user?.level, Levels.Member)}
 							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 						{/if}
 						{@render link('/tag', m.empty_legal_chicken_taste())}
@@ -307,7 +308,7 @@
 						{/if}
 					</ul>
 				</div>
-				{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+				{#if hasUserLevel(data.user?.level, Levels.Editor)}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -321,7 +322,7 @@
 						</ul>
 					</div>
 				{/if}
-				{#if hasUserLevelOld(data.user?.level, 'ADMIN')}
+				{#if hasUserLevel(data.user?.level, Levels.Admin)}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -388,7 +389,7 @@
 							type: 'otoDB',
 							name: m.glad_born_mouse_taste()
 						})}
-						{Version[currentVersion].name}
+						{versions[currentVersion].name}
 						{#if env.PUBLIC_OTODB_HASH}
 							- <a href="https://github.com/otoDB/otoDB">{env.PUBLIC_OTODB_HASH}</a
 							>{/if}

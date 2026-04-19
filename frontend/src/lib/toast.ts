@@ -1,6 +1,6 @@
 import { toast } from 'svelte-sonner';
-import { m } from './paraglide/messages';
-import { ErrorCode } from './enums';
+import { m } from '$lib/paraglide/messages';
+import { ErrorCode } from '$lib/schema';
 
 export const callErrorToast = (message: string) => toast.error(message, {});
 
@@ -26,7 +26,7 @@ export const callSavingToast = (p: Promise<any>) =>
 
 export const callErrorCodeToast = (code: number, payload: Record<string, unknown>) => {
 	switch (code) {
-		case ErrorCode.NAME_SLUG_MISMATCH:
+		case ErrorCode.Name_Slug_Mismatch:
 			if (
 				'name' in payload &&
 				typeof payload.name === 'string' &&
@@ -43,7 +43,6 @@ export const callErrorCodeToast = (code: number, payload: Record<string, unknown
 					})
 				);
 			else {
-				// TODO: more detailed message for the broken payload.
 				toast.error(m.green_due_javelina_pop());
 			}
 			break;

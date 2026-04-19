@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { languages } from './enums/Languages';
+	import { languages } from '$lib/enums/language';
 
 	let {
 		availableLanguages,

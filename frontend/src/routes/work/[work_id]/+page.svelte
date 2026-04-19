@@ -3,17 +3,22 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {
-		Platform,
-		Rating,
-		WorkOrigin,
+		PlatformNames,
+		RatingNames,
+		WorkOriginNames,
 		WorkRelationDisplayBackward,
 		WorkRelationDisplayForward,
-		WorkStatus
+		WorkStatusNames
 	} from '$lib/enums';
-	import { resolveWorkTagCategoryKeyById, WorkTagCategory } from '$lib/enums/WorkTagCategory';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
-	import type { components } from '$lib/schema';
+	import {
+		PathsApiCommentCommentDeleteParametersQueryModel,
+		WorkRelationTypes,
+		WorkTagCategory,
+		type components
+	} from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callSavingToast } from '$lib/toast';
@@ -54,16 +59,14 @@
 		}
 	};
 
-	const groupedTags: [keyof typeof WorkTagCategory, PageProps['data']['tags']][] = $derived(
-		(
-			Object.entries(
-				Object.groupBy(data.tags, (t) => {
-					const c = resolveWorkTagCategoryKeyById(t.category);
-					if (WorkTagCategory[c].canSetAsSource && t.sample) return 'SOURCE';
-					else return c;
-				})
-			) as [keyof typeof WorkTagCategory, PageProps['data']['tags']][]
-		).toSorted(([a], [b]) => WorkTagCategory[a].order - WorkTagCategory[b].order)
+	const groupedTags: [WorkTagCategory, PageProps['data']['tags']][] = $derived(
+		[
+			...Map.groupBy(data.tags, (t) => {
+				const c = t.category;
+				if (WorkTagCategoryMap[c].canSetAsSource && t.sample) return WorkTagCategory.Source;
+				else return c;
+			}).entries()
+		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
 
 	const merge_paths = (
@@ -95,12 +98,11 @@
 		];
 	};
 
-	// TODO: typing is messy
 	const relTree = $derived(
 		data.relations[0].length > 0
-			? (Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map(
-					(d) => [d[0], Object.entries(Object.groupBy(d[1]!, (r) => r.relation))]
-				) as [string, [string, { A_id: number; B_id: number }[]][]][])
+			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
+					(d) => [+d[0], [...Map.groupBy(d[1]!, (r) => r.relation).entries()]]
+				) as [0 | 1, [WorkRelationTypes, { A_id: number; B_id: number }[]][]][])
 			: null
 	);
 </script>
@@ -144,7 +146,7 @@
 															type: [
 																WorkRelationDisplayBackward,
 																WorkRelationDisplayForward
-															][+dir][parseInt(tp, 10)](),
+															][dir][tp](),
 															name: ''
 														})}
 														<ul class="ml-2">
@@ -172,7 +174,7 @@
 							{/if}
 							<tr>
 								<th class="w-24">{m.good_dark_bumblebee_spur()}</th>
-								<td>{Rating[data.rating]()}</td>
+								<td>{RatingNames[data.rating]()}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -226,12 +228,12 @@
 			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
-					style="border-color: {WorkTagCategory[cat]
-						.color};background-color: color-mix(in hsl, {WorkTagCategory[cat]
+					style="border-color: {WorkTagCategoryMap[cat]
+						.color};background-color: color-mix(in hsl, {WorkTagCategoryMap[cat]
 						.color}, transparent 85%);"
 				>
 					<h5 class="my-2 font-bold">
-						{WorkTagCategory[cat].nameFn()}
+						{WorkTagCategoryMap[cat].nameFn()}
 					</h5>
 					<ul class="flex list-none flex-wrap gap-2">
 						{#each merge_paths(tags) as tree, j (j)}
@@ -273,8 +275,8 @@
 							rel="noopener noreferrer"
 							class={[src.work_status !== 0 ? 'text-otodb-content-fainter' : '']}
 						>
-							{Platform[src.platform]}
-							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
+							{PlatformNames[src.platform]}
+							{src.work_origin === 0 ? '' : ' ' + WorkOriginNames[src.work_origin]()}
 							-
 							{src.title || src.url}
 						</a>
@@ -298,12 +300,12 @@
 					<div>
 						{m.large_polite_otter_thrive()}:
 						<strong>
-							{WorkOrigin[src.work_origin]()}
+							{WorkOriginNames[src.work_origin]()}
 						</strong>
 					</div>
 					<div>
 						{m.civil_trick_oryx_clap()}:
-						<strong>{WorkStatus[src.work_status]()}</strong>
+						<strong>{WorkStatusNames[src.work_status]()}</strong>
 					</div>
 					<div>
 						{m.big_dry_seahorse_succeed()}:
@@ -358,7 +360,12 @@
 {/await}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree comments={data.comments} user={data.user ?? null} model="mediawork" pk={data.id} />
+	<CommentTree
+		comments={data.comments}
+		user={data.user ?? null}
+		model={PathsApiCommentCommentDeleteParametersQueryModel.mediawork}
+		pk={data.id}
+	/>
 </Section>
 
 <style>

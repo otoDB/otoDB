@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
@@ -10,7 +10,8 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 
 	const bpm_min = url.searchParams.get('bpm_min') ?? '';
 	const bpm_max = url.searchParams.get('bpm_max') ?? '';
-	const bpm_range: [number, number] | null = bpm_min && bpm_max ? [+bpm_min, +bpm_max] : null; // TODO: Use `parseInt()`
+	const bpm_range: [number, number] | null =
+		bpm_min && bpm_max ? [parseInt(bpm_min, 10), parseInt(bpm_max, 10)] : null;
 
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/tag/song_search', {

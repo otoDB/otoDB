@@ -42,10 +42,11 @@ class PostOverviewSchema(ModelSchema):
 	last_post_by: str | None = None
 	last_post_at: datetime | None = None
 	entities: list[EntitySchema] = []
+	category: PostCategory
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category', 'closed_at']
+		fields = ['title', 'closed_at']
 
 
 class PostContentSchema(ModelSchema):
@@ -59,15 +60,11 @@ class PostSchema(ModelSchema):
 	pages: list[PostContentSchema]
 	entities: list[EntitySchema] = []
 	edited_by: ProfileSchema | None = None
+	category: PostCategory
 
 	class Meta:
 		model = Post
-		fields = [
-			'title',
-			'category',
-			'edited_at',
-			'closed_at',
-		]
+		fields = ['title', 'edited_at', 'closed_at']
 
 
 @post_router.get('post', response=PostSchema)
@@ -75,12 +72,12 @@ def post(request: HttpRequest, post_id: int):
 	return get_object_or_404(Post, id=post_id)
 
 
-@post_router.get('categories', response=list[list[PostOverviewSchema]])
+@post_router.get('categories', response=dict[str, list[PostOverviewSchema]])
 def categories(request: HttpRequest):
-	return [
-		Post.objects.filter(category=i).with_activity()[:5]
+	return {
+		str(i): Post.objects.filter(category=i).with_activity()[:5]
 		for i, _ in PostCategory.choices
-	]
+	}
 
 
 @post_router.get('category', response=list[PostOverviewSchema])

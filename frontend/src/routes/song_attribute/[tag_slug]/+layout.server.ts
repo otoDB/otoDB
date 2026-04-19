@@ -1,18 +1,14 @@
 import { m } from '$lib/paraglide/messages.js';
-import client from '$lib/api';
+import client from '$lib/api.server';
 import type { LayoutServerLoad } from './$types';
-import { error } from '@sveltejs/kit';
 
 import { getTagDisplayName } from '$lib/api';
 import { redirect } from '@sveltejs/kit';
-import { hasUserLevelOld } from '$lib/enums/UserLevel';
+import { hasUserLevel } from '$lib/enums/userLevel';
+import { Levels } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
-	const {
-		data,
-		error: e,
-		response
-	} = await client.GET('/api/tag/song_tag', {
+	const { data } = await client.GET('/api/tag/song_tag', {
 		params: {
 			query: {
 				tag_slug: params.tag_slug!
@@ -20,15 +16,11 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		},
 		fetch
 	});
-	if (response.status === 300)
+	if (data.slug !== params.tag_slug)
 		redirect(
 			303,
-			url.pathname.replace(
-				encodeURIComponent(params.tag_slug),
-				encodeURIComponent(e as unknown as string) // TODO: more safety?
-			)
+			url.pathname.replace(encodeURIComponent(params.tag_slug), encodeURIComponent(data.slug))
 		);
-	else if (e) error(404, { message: 'Not found' });
 
 	const { data: details } = await client.GET('/api/tag/song_tag_details', {
 		fetch,
@@ -38,7 +30,6 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			}
 		}
 	});
-	if (!details) error(500, { message: 'Failed to load tag details' });
 
 	return {
 		links: [
@@ -46,7 +37,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `song_attribute/${params.tag_slug}`,
 				title: m.dull_plain_angelfish_cuddle() + ' ' + params.tag_slug
 			},
-			...(hasUserLevelOld(locals.user?.level, 'MEMBER')
+			...(hasUserLevel(locals.user?.level, Levels.Member)
 				? [
 						{
 							pathname: `song_attribute/${params.tag_slug}/edit`,

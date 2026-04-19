@@ -6,15 +6,22 @@
 	import TagField from '$lib/TagField.svelte';
 	import client from '$lib/api';
 	import { dirtyEnhance } from '$lib/dirty';
-	import { SongTagCategory } from '$lib/enums';
-	import { languages } from '$lib/enums/Languages.js';
+	import { enumValues, SongTagCategoryNames } from '$lib/enums';
+	import { languages } from '$lib/enums/language.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { locales } from '$lib/paraglide/runtime';
+	import {
+		PathsApiTagTag_aliasesPostParametersQueryType,
+		PathsApiTagTagDeleteParametersQueryType,
+		SongTagCategory
+	} from '$lib/schema.js';
 	import { callErrorCodeToast, callErrorToast } from '$lib/toast';
 
 	let { data, form } = $props();
 
-	let category = $state(form?.category ?? data.tag?.category);
+	let category: SongTagCategory = $state(
+		(form?.category ? +form.category : null) ?? data.tag?.category
+	);
 	$effect(() => {
 		if (form?.failed) {
 			callErrorToast(m.green_due_javelina_pop());
@@ -54,7 +61,12 @@
 				),
 				names: tagNames
 			},
-			params: { query: { type: 'song', tag_slug: data.tag.slug } }
+			params: {
+				query: {
+					type: PathsApiTagTag_aliasesPostParametersQueryType.song,
+					tag_slug: data.tag.slug
+				}
+			}
 		});
 		if (error) {
 			aliases_post_gate.p = Promise.withResolvers<void>();
@@ -69,7 +81,12 @@
 	const del = async () => {
 		const { response } = await client.DELETE('/api/tag/tag', {
 			fetch,
-			params: { query: { tag_slug: data.tag.slug, type: 'song' } }
+			params: {
+				query: {
+					tag_slug: data.tag.slug,
+					type: PathsApiTagTagDeleteParametersQueryType.song
+				}
+			}
 		});
 		if (response.ok) {
 			goto('/', { invalidateAll: true });
@@ -95,8 +112,8 @@
 					<th><label for="category">{m.plane_awful_bobcat_spark()}</label></th>
 					<td
 						><select name="category" bind:value={category}>
-							{#each SongTagCategory as cat, i (i)}
-								<option value={i}>{cat()}</option>
+							{#each enumValues(SongTagCategory) as cat, i (i)}
+								<option value={cat}>{SongTagCategoryNames[cat]()}</option>
 							{/each}
 						</select></td
 					>

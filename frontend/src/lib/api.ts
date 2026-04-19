@@ -1,19 +1,19 @@
 import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public';
-import type { Cookies } from '@sveltejs/kit';
+import { type Cookies } from '@sveltejs/kit';
 import type { CookieSerializeOptions } from 'cookie';
 import createClient from 'openapi-fetch';
 import setCookie from 'set-cookie-parser';
-import { languages } from './enums/Languages';
-import { m } from './paraglide/messages';
-import { getLocale } from './paraglide/runtime';
-import type { paths } from './schema';
+import { languages } from '$lib/enums/language';
+import { m } from '$lib/paraglide/messages';
+import { getLocale } from '$lib/paraglide/runtime';
+import type { paths } from '$lib/schema';
 
 const backend = browser
 	? (env.PUBLIC_BACKEND_URL_EXTERNAL ?? '')
 	: (env.PUBLIC_BACKEND_URL_INTERNAL ?? env.PUBLIC_BACKEND_URL_EXTERNAL ?? '');
 
-const client = createClient<paths>({ baseUrl: backend, credentials: 'include' });
+export const client = createClient<paths>({ baseUrl: backend, credentials: 'include' });
 export default client;
 
 export const setToken = (token: string) => {
@@ -34,7 +34,7 @@ export const forwardCookies = (cookies: Cookies, response: Response) => {
 			path: '/',
 			expires,
 			maxAge,
-			sameSite: sameSite as CookieSerializeOptions['sameSite'] // MEMO: 流石にそうだとは思うが，変だったら修正すること．
+			sameSite: sameSite as CookieSerializeOptions['sameSite']
 		});
 };
 

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import client from './api';
-	import { m } from './paraglide/messages';
-	import type { components } from './schema';
-	import { clickOutside, debounce } from './ui';
+	import client from '$lib/api';
+	import { m } from '$lib/paraglide/messages';
+	import type { components } from '$lib/schema';
+	import { clickOutside, debounce } from '$lib/ui';
 
 	let self: HTMLElement;
 
@@ -59,7 +59,7 @@
 		<table
 			class="absolute z-1 px-1"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>

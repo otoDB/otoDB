@@ -1,7 +1,7 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
+import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
 	const paramId = parseInt(params.id, 10);
@@ -19,16 +19,12 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 			fetch,
 			params: {
 				query: {
-					model: 'bulkrequest',
+					model: PathsApiCommentCommentsGetParametersQueryModel.bulkrequest,
 					pk: +params.id
 				}
 			}
 		})
 	]);
-
-	// TODO: properly handle fetch errors (e.g. 404 for not found)
-	if (!data) error(500, 'Failed to fetch data.');
-	if (!comments) error(500, 'Failed to fetch data.');
 
 	return {
 		request: data,

@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				query,
 				limit: batch_size,
 				offset: batch_size * (page - 1),
-				category,
+				category: category === -1 ? null : category,
 				media_type,
 				order,
 				deprecated_only,

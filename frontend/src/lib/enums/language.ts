@@ -1,9 +1,9 @@
 export const languages = {
-	en: {
+	'en': {
 		id: 1,
 		name: 'English'
 	},
-	ja: {
+	'ja': {
 		id: 2,
 		name: '日本語'
 	},
@@ -11,7 +11,7 @@ export const languages = {
 		id: 3,
 		name: '简体中文'
 	},
-	ko: {
+	'ko': {
 		id: 4,
 		name: '한국어'
 	}

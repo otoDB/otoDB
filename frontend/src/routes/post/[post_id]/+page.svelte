@@ -5,12 +5,14 @@
 	import Section from '$lib/Section.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
-	import { EntityModelRoutes, Languages, PostCategories } from '$lib/enums.js';
-	import { languages, resolveLanguageKeyById } from '$lib/enums/Languages.js';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel.js';
+	import { EntityModelRoutes } from '$lib/enums.js';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/language.js';
+	import { postCategoryNames } from '$lib/enums/postCategory.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { Levels, PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
 	import { timeAgo } from '$lib/ui.js';
 	import { mount, unmount } from 'svelte';
 
@@ -25,22 +27,22 @@
 	let page = $derived(renderMarkdown(page_object?.page ?? ''));
 
 	const postLd = $derived.by(() => {
-		const pageObj = data.post.pages.find((p) => p.lang === Languages[lang_view]);
+		const pageObj = data.post.pages.find((p) => p.lang === languages[lang_view].id);
 		if (!pageObj) return null;
 		return (
 			'<script type="application/ld+json">' +
 			JSON.stringify({
 				'@context': 'https://schema.org',
 				'@type': 'DiscussionForumPosting',
-				headline: data.post.title,
-				text: pageObj.page.slice(0, 500),
-				url: `https://otodb.net/post/${data.post_id}`,
-				author: {
+				'headline': data.post.title,
+				'text': pageObj.page.slice(0, 500),
+				'url': `https://otodb.net/post/${data.post_id}`,
+				'author': {
 					'@type': 'Person',
-					name: data.post.added_by.username,
-					url: `https://otodb.net/profile/${data.post.added_by.username}`
+					'name': data.post.added_by.username,
+					'url': `https://otodb.net/profile/${data.post.added_by.username}`
 				},
-				datePublished: pageObj.modified,
+				'datePublished': pageObj.modified,
 				...(data.post.edited_at ? { dateModified: data.post.edited_at } : {})
 			}) +
 			'</' +
@@ -49,19 +51,20 @@
 	});
 	$effect(() => {
 		if (page) {
-			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag')).map(
-				(el) =>
+			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag'))
+				.filter((e) => e.hasAttribute('slug'))
+				.map((el) =>
 					client
 						.GET('/api/tag/tag', {
 							fetch,
 							params: {
 								query: {
-									tag_slug: el.getAttribute('slug')! // TODO: need check
+									tag_slug: el.getAttribute('slug')!
 								}
 							}
 						})
 						.then((r) => mount(WorkTag, { target: el, props: { tag: r.data! } }))
-			);
+				);
 			return () => {
 				tags.forEach((p) => p.then(unmount));
 			};
@@ -80,7 +83,7 @@
 			.filter((x) => !!x)
 	);
 
-	const is_admin = $derived(hasUserLevelOld(data.user?.level, 'ADMIN'));
+	const is_admin = $derived(hasUserLevel(data.user?.level, Levels.Admin));
 	const editedByOther =
 		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username;
 	const canEdit =
@@ -158,7 +161,7 @@
 		<div class="text-otodb-content-fainter mb-6 text-xs">
 			<p>
 				<a href="/post?category={data.post.category}"
-					>{PostCategories[data.post.category]()}</a
+					>{postCategoryNames[data.post.category]()}</a
 				>
 				{#if data.post.category === 0}
 					&middot;
@@ -198,10 +201,8 @@
 							>{timeAgo(page_object.modified)}</time
 						></a
 					>
-					{#if data.post.edited_at}
-						{@const editUser =
-							// MEMO: if `edited_at` exists then `edited_by` is also available
-							data.post.edited_by!}
+					{#if data.post.edited_at && data.post.edited_by}
+						{@const editUser = data.post.edited_by}
 						<span title={new Date(data.post.edited_at).toLocaleString()}>
 							{#if editedByOther}
 								({m.free_tiny_badger_breathe({
@@ -250,7 +251,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="post"
+		model={PathsApiCommentCommentDeleteParametersQueryModel.post}
 		pk={+data.post_id}
 	/>
 </Section>

@@ -1,10 +1,14 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck TODO: Type of `dirtyEnhance` might be completely messed up, be careful to use.
 import { enhance } from '$app/forms';
+import { m } from '$lib/paraglide/messages';
 
 export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
 
-const dirty_failure = (dirty_forms: HTMLFormElement[], barrier: any) => {
+export type Barrier = {
+	forms: HTMLFormElement[];
+	reached: ReturnType<typeof Promise.withResolvers<void>>[];
+};
+
+const dirty_failure = (dirty_forms: HTMLFormElement[], barrier: Partial<Barrier>) => {
 	dirty_forms.forEach((f) => {
 		f.inert = false;
 	});
@@ -16,10 +20,7 @@ export const dirtyEnhance = (
 	node: HTMLFormElement,
 	props:
 		| ({
-				barrier: {
-					forms?: HTMLFormElement[];
-					reached?: ReturnType<typeof Promise.withResolvers<void>>[];
-				};
+				barrier: Partial<Barrier>;
 				priority: number;
 		  } & { form?: any; manual_post?: { p: ReturnType<typeof Promise.withResolvers<void>> } })
 		| undefined = undefined
@@ -47,7 +48,7 @@ export const dirtyEnhance = (
 					f.inert = true;
 				});
 				props.barrier.forms = dirty_forms.toSorted(
-					(a, b) => +a.dataset.priority - +b.dataset.priority
+					(a, b) => +(a.dataset.priority ?? 0) - +(b.dataset.priority ?? 0)
 				);
 				props.barrier.reached = Array(props.barrier.forms.length)
 					.fill(null)
@@ -57,9 +58,9 @@ export const dirtyEnhance = (
 				const my_id = props.barrier.forms!.indexOf(node);
 				if (first)
 					for (let i = 0; i < my_id; i++) {
-						props.barrier.forms[i].requestSubmit();
+						props.barrier.forms![i].requestSubmit();
 						try {
-							await props.barrier.reached[i].promise;
+							await props.barrier.reached![i].promise;
 						} catch {
 							dirty_failure(dirty_forms, props.barrier);
 							props?.manual_post?.p.reject();
@@ -67,16 +68,16 @@ export const dirtyEnhance = (
 							return;
 						}
 					}
-				const { resolve, reject } = props.barrier.reached[my_id];
+				const { resolve, reject } = props.barrier.reached![my_id];
 
 				const on_success = async () => {
 					resolve();
 					delete node.dataset.dirty;
 					if (first) {
-						for (let i = my_id + 1; i < props.barrier.reached?.length; i++) {
-							props.barrier.forms[i].requestSubmit();
+						for (let i = my_id + 1; i < props.barrier.reached!.length; i++) {
+							props.barrier.forms![i].requestSubmit();
 							try {
-								await props.barrier.reached[i].promise;
+								await props.barrier.reached![i].promise;
 							} catch {
 								dirty_failure(dirty_forms, props.barrier);
 								return;
@@ -100,10 +101,10 @@ export const dirtyEnhance = (
 					};
 			} else {
 				props.manual_post?.p.resolve();
-				for (let i = 0; i < props.barrier.forms?.length; i++) {
-					props.barrier.forms[i].requestSubmit();
+				for (let i = 0; i < props.barrier.forms!.length; i++) {
+					props.barrier.forms![i].requestSubmit();
 					try {
-						await props.barrier.reached[i].promise;
+						await props.barrier.reached![i].promise;
 					} catch {
 						dirty_failure(dirty_forms, props.barrier);
 						return;
@@ -112,8 +113,8 @@ export const dirtyEnhance = (
 			}
 		} else if (dirty_forms.some((f) => f !== node) && !confirm(m.active_lime_panther_buzz())) {
 			cancel();
-			props.manual_post?.p.reject();
+			props?.manual_post?.p.reject();
 		}
-		props.manual_post?.p.resolve();
+		props?.manual_post?.p.resolve();
 	});
 };

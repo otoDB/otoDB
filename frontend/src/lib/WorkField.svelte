@@ -1,11 +1,11 @@
 <script lang="ts">
-	import client from './api';
-	import { getDisplayText } from './api';
-	import { m } from './paraglide/messages';
-	import type { components } from './schema';
-	import { clickOutside, debounce } from './ui';
-	import DisplayText from './DisplayText.svelte';
-	import WorkThumbnail from './WorkThumbnail.svelte';
+	import client from '$lib/api';
+	import { getDisplayText } from '$lib/api';
+	import { m } from '$lib/paraglide/messages';
+	import type { components } from '$lib/schema';
+	import { clickOutside, debounce } from '$lib/ui';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let self: HTMLElement;
 
@@ -105,7 +105,7 @@
 		<table
 			class="absolute z-1 px-1"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>

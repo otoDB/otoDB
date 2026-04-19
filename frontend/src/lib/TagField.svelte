@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { ComponentProps } from 'svelte';
-	import client, { getTagDisplaySlug } from './api';
-	import TagSuggestionResults from './TagSuggestionResults.svelte';
-	import { clickOutside, debounce } from './ui';
+	import client, { getTagDisplaySlug } from '$lib/api';
+	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
+	import { clickOutside, debounce } from '$lib/ui';
 
 	interface Props {
 		value: string;
@@ -43,7 +43,7 @@
 		<ul
 			class="absolute z-1 list-none"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>

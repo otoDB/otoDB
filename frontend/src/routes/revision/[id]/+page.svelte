@@ -4,94 +4,104 @@
 	import {
 		buildEntityRoutes,
 		MimeType,
-		Platform,
-		Rating,
-		SongRelationTypes,
-		SongTagCategory,
-		WorkOrigin,
-		WorkRelationTypes,
-		WorkStatus,
-		WorkTagCategory
+		PlatformNames,
+		RatingNames,
+		SongRelationNames,
+		SongTagCategoryNames,
+		WorkOriginNames,
+		WorkRelationNames,
+		WorkStatusNames,
+		type Enum
 	} from '$lib/enums.js';
-	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
-	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/Languages';
-	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection';
-	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
-	import {
-		ProfileConnection,
-		resolveProfileConnectionNameById
-	} from '$lib/enums/ProfileConnection';
-	import { resolveRouteKeyById, Route } from '$lib/enums/Route.js';
-	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
-	import {
-		resolveTagWorkConnectionNameById,
-		TagWorkConnection
-	} from '$lib/enums/TagWorkConnection';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel.js';
+	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/creatorRole.js';
+	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/language.js';
+	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
+	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/mediaType.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { routeNames } from '$lib/enums/route.js';
+	import { songConnectionMap } from '$lib/enums/songConnection.js';
+	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { Levels } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
 
-	type D = () => string;
-	const V_to_D =
-		(r: (b: number) => string, fs: Record<string, { nameFn: D }>) =>
-		(v: number): D =>
+	type DisplayFunction = () => string;
+	const EnumMap_to_DisplayFunction =
+		<E extends Enum<E>>(fs: Record<E[keyof E], { name: string }>) =>
+		(v: number): DisplayFunction =>
+		() =>
+			fs[v as E[keyof E]].name;
+	const EnumValues_to_DisplayFunction =
+		<E extends Enum<E>>(fs: Record<E[keyof E], { nameFn: DisplayFunction }>) =>
+		(v: number): DisplayFunction =>
+			fs[v as E[keyof E]].nameFn;
+	const Values_to_DisplayFunction =
+		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
+		(v: number): DisplayFunction =>
 			fs[r(v)].nameFn;
-	const SV_to_D =
+	const StraightValues_to_DisplayFunction =
 		(r: (b: number) => string, fs: Record<string, { name: string }>) =>
-		(v: number): D =>
+		(v: number): DisplayFunction =>
 		() =>
 			fs[r(v)].name;
-	const SR_to_D =
+	const EnumStraightRecord_to_DisplayFunction =
+		<E extends Enum<E>>(fs: Record<E[keyof E], string>) =>
+		(v: number): DisplayFunction =>
+		() =>
+			fs[v as E[keyof E]];
+	const StraightRecord_to_DisplayFunction =
 		<T extends number>(r: Record<T, string>) =>
-		(v: number): D =>
+		(v: number): DisplayFunction =>
 		() =>
 			r[v as T];
-	const A_to_D = (r: D[]) => (v: number) => r[v];
-	const SA_to_D =
-		(r: string[]) =>
-		(v: number): D =>
-		() =>
-			r[v];
+	const EnumRecord_to_DisplayFunction =
+		<E extends Enum<E>>(fs: Record<E[keyof E], DisplayFunction>) =>
+		(v: number): DisplayFunction =>
+			fs[v as E[keyof E]];
 	const expand_bit_field =
-		(r: (b: number) => string, fs: Record<string, { nameFn: D }>) =>
-		(v: number): D =>
+		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
+		(v: number): DisplayFunction =>
 		() =>
 			[...v.toString(2)]
 				.reduce(
 					(a, e, i, aa) =>
-						e === '1' ? [...a, V_to_D(r, fs)(Math.pow(2, aa.length - 1 - i))()] : a,
+						e === '1'
+							? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()]
+							: a,
 					[] as string[]
 				)
 				.join(', ') || 'N/A';
 
-	const Languages = SV_to_D(resolveLanguageKeyById, languages);
+	const Languages = StraightValues_to_DisplayFunction(resolveLanguageKeyById, languages);
 
-	const ValueDisplayMap: Record<string, Record<string, (v: number) => D>> = {
+	const ValueDisplayMap: Record<string, Record<string, (v: number) => DisplayFunction>> = {
 		mediawork: {
-			rating: A_to_D(Rating)
+			rating: EnumRecord_to_DisplayFunction(RatingNames)
 		},
 		tagwork: {
-			category: A_to_D(WorkTagCategory),
+			category: EnumValues_to_DisplayFunction(WorkTagCategoryMap),
 			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
 		},
 		tagsong: {
-			category: A_to_D(SongTagCategory)
+			category: EnumMap_to_DisplayFunction(SongTagCategoryNames)
 		},
 		tagworkconnection: {
-			site: SV_to_D(resolveTagWorkConnectionNameById, TagWorkConnection)
+			site: EnumMap_to_DisplayFunction(TagWorkConnectionMap)
 		},
 		mediasongconnection: {
-			site: SV_to_D(resolveSongConnectionNameById, SongConnection)
+			site: EnumMap_to_DisplayFunction(songConnectionMap)
 		},
 		tagworkmediaconnection: {
-			site: SV_to_D(resolveMediaConnectionNameById, MediaConnection)
+			site: EnumMap_to_DisplayFunction(mediaConnectionMap)
 		},
 		tagworkcreatorconnection: {
-			site: SV_to_D(resolveProfileConnectionNameById, ProfileConnection)
+			site: EnumMap_to_DisplayFunction(profileConnectionMap)
 		},
 		tagworklangpreference: {
 			lang: Languages
@@ -100,10 +110,10 @@
 			lang: Languages
 		},
 		workrelation: {
-			relation: A_to_D(WorkRelationTypes)
+			relation: EnumRecord_to_DisplayFunction(WorkRelationNames)
 		},
 		songrelation: {
-			relation: A_to_D(SongRelationTypes)
+			relation: EnumRecord_to_DisplayFunction(SongRelationNames)
 		},
 		tagworkinstance: {
 			creator_roles: expand_bit_field(resolveCreatorRoleKeyById, creatorRole)
@@ -112,10 +122,10 @@
 			lang: Languages
 		},
 		worksource: {
-			platform: SA_to_D(Platform),
-			thumbnail_mime: SR_to_D(MimeType),
-			work_origin: A_to_D(WorkOrigin),
-			work_status: A_to_D(WorkStatus)
+			platform: EnumStraightRecord_to_DisplayFunction(PlatformNames),
+			thumbnail_mime: StraightRecord_to_DisplayFunction(MimeType),
+			work_origin: EnumRecord_to_DisplayFunction(WorkOriginNames),
+			work_status: EnumRecord_to_DisplayFunction(WorkStatusNames)
 		}
 	};
 
@@ -125,6 +135,7 @@
 		val: string | null | undefined
 	) => {
 		const handler = ValueDisplayMap[type]?.[col];
+		console.log(handler, type, col);
 		return decodeURIComponent((val ? (handler ? handler(+val)() : val) : null) ?? 'None');
 	};
 </script>
@@ -140,7 +151,7 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
-	{#if hasUserLevelOld(data.user?.level, 'ADMIN') && data.revision.id > 1}<button
+	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id > 1}<button
 			class="my-5"
 			onclick={async () => {
 				if (!confirm('Are you sure?')) return;
@@ -152,11 +163,11 @@
 			}}>Revert changes made in this revision</button
 		>{/if}
 	<ul class="my-5">
-		{#each data.routes as [r, ecs], i (i)}
-			<li>{Route[resolveRouteKeyById(r)].title()}</li>
+		{#each data.routes as { route, entities }, i (i)}
+			<li>{routeNames[route]()}</li>
 			<li class="ml-2 list-none">
 				<ul>
-					{#each ecs as [[ent_type, ent_id], ec], j (j)}
+					{#each entities as { ent_type, ent_id, rcs }, j (j)}
 						<li>
 							<a href={buildEntityRoutes(ent_type, ent_id)}>
 								{buildEntityRoutes(ent_type, ent_id)}
@@ -165,21 +176,23 @@
 						<li class="list-none">
 							<table class="inline-block">
 								<tbody>
-									{#each ec as c, k (k)}
-										<tr
-											><td
-												>{#if !(c.target_type === ent_type && c.tg_id === ent_id)}{c.target_type}
-													#{c.tg_id}{/if}
-												{c.target_column}</td
+									{#each rcs as c, k (k)}
+										{#if c.target_column}
+											<tr
+												><td
+													>{#if !(c.target_type === ent_type && c.tg_id === ent_id)}{c.target_type}
+														#{c.tg_id}{/if}
+													{c.target_column}</td
+												>
+												<td
+													>{#if c.deleted}Deleted{:else}<pre>{displayValue(
+																c.target_type,
+																c.target_column,
+																c.target_value
+															)}</pre>{/if}</td
+												></tr
 											>
-											<td
-												>{#if c.deleted}Deleted{:else}<pre>{displayValue(
-															c.target_type,
-															c.target_column,
-															c.target_value
-														)}</pre>{/if}</td
-											></tr
-										>
+										{/if}
 									{/each}
 								</tbody>
 							</table>

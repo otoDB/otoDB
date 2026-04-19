@@ -5,7 +5,7 @@
 	import { timeAgo } from '$lib/ui';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
+	import { routeNames } from '$lib/enums/route.js';
 
 	let { data } = $props();
 </script>
@@ -17,7 +17,7 @@
 				{#each data.revisions?.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a></td><td
-							>{r.route ? Route[resolveRouteKeyById(r.route)].title() : ''}</td
+							>{r.route ? routeNames[r.route]() : ''}</td
 						><td
 							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
 							></td

@@ -107,7 +107,7 @@ def submissions(
 	username: str,
 	filters: SubmissionsFilterSchema = Query(...),
 	order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id',
-	standing: Status = Query(Status.APPROVED),
+	standing: Status = Status.APPROVED,
 ):
 	match standing:
 		case Status.PENDING:

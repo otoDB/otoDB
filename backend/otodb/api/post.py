@@ -46,7 +46,7 @@ class PostOverviewSchema(ModelSchema):
 
 	class Meta:
 		model = Post
-		fields = ['title']
+		fields = ['title', 'closed_at']
 
 
 class PostContentSchema(ModelSchema):
@@ -64,7 +64,7 @@ class PostSchema(ModelSchema):
 
 	class Meta:
 		model = Post
-		fields = ['title', 'edited_at']
+		fields = ['title', 'edited_at', 'closed_at']
 
 
 @post_router.get('post', response=PostSchema)
@@ -191,6 +191,25 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 					for e in payload.entities
 				]
 			)
+
+
+@post_router.put('close', auth=django_auth)
+@transaction.atomic
+def toggle_close(request: AuthedHttpRequest, post_id: int):
+	post = get_object_or_404(Post, id=post_id)
+	is_admin = request.user.level >= Account.Levels.ADMIN
+	is_author = post.added_by == request.user
+	if not post.closed_at:
+		if is_admin:
+			post.closed_at = datetime.now(tz=timezone.utc)
+		else:
+			raise HttpError(403, 'Forbidden')
+	else:
+		if is_admin or is_author:
+			post.closed_at = None
+		else:
+			raise HttpError(403, 'Forbidden')
+	post.save(update_fields=['closed_at'])
 
 
 @post_router.get('threads', response=list[PostOverviewSchema])

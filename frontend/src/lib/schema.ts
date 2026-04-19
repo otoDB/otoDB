@@ -1173,6 +1173,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/post/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Toggle Close */
+        put: operations["otodb_api_post_toggle_close"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/threads": {
         parameters: {
             query?: never;
@@ -2349,6 +2366,8 @@ export interface components {
             title: string;
             /** Edited At */
             edited_at?: string | null;
+            /** Closed At */
+            closed_at?: string | null;
         };
         /** PostInSchema */
         PostInSchema: {
@@ -2397,6 +2416,8 @@ export interface components {
             category: components["schemas"]["PostCategory"];
             /** Title */
             title: string;
+            /** Closed At */
+            closed_at?: string | null;
         };
         /** PagedPostOverviewSchema */
         PagedPostOverviewSchema: {
@@ -4597,6 +4618,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PagedPostOverviewSchema"];
                 };
+            };
+        };
+    };
+    otodb_api_post_toggle_close: {
+        parameters: {
+            query: {
+                post_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

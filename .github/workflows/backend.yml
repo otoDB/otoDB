@@ -131,3 +131,34 @@ jobs:
           platforms: linux/amd64
           cache-from: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache
           cache-to: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache,mode=max
+
+  openapi-typespec:
+    name: Verify schema is fresh
+    runs-on: ubuntu-latest
+    env:
+      OTODB_SECRET_KEY: dummy
+      OTODB_SKIP_DB: 1
+    needs:
+      - lint
+      - test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: oven-sh/setup-bun@v1
+      - name: Generate JSON
+        working-directory: backend
+        run: |
+          uv run manage.py openapi_schema > ../frontend/openapi.json
+        
+      - name: Install dependencies
+        working-directory: frontend
+        run: |
+          bun install
+
+      - name: Verify no changes (Fail if stale)
+        working-directory: frontend
+        run: |
+          rm redocly.yaml
+          bun run sync-schema openapi.json --check -o src/lib/schema.ts

@@ -1,4 +1,5 @@
 import client from '$lib/api';
+import { PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -9,13 +10,17 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		status = parseInt(url.searchParams.get('status') ?? '', 10) || null,
 		standing = parseInt(url.searchParams.get('standing') ?? '1', 10) || 0;
 
-	const paramDir = url.searchParams.get('dir');
-	const dir: '' | '-' = paramDir === '-' ? '-' : '';
+	const paramDir = url.searchParams.get('dir') === '-' ? '-' : '';
+	const paramOrder = `${paramDir}${url.searchParams.get('order')}`;
 
-	const paramOrder = url.searchParams.get('order');
-	type Order = 'id' | 'published_date';
+	type Order = PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0;
 	const order: Order | null =
-		paramOrder && ['id', 'published_date'].includes(paramOrder) ? (paramOrder as Order) : null;
+		paramOrder &&
+		Object.values(PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0).includes(
+			paramOrder as Order
+		)
+			? (paramOrder as Order)
+			: null;
 
 	const { data: submissions } = await client.GET('/api/profile/submissions', {
 		fetch,
@@ -24,7 +29,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 				username: params.username,
 				limit: batch_size,
 				offset: (page - 1) * batch_size,
-				order: order ? `${dir}${order}` : null,
+				order: order,
 				origin,
 				platform,
 				status,
@@ -40,7 +45,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		origin,
 		platform,
 		status,
-		dir,
+		dir: paramDir,
 		standing
 	};
 };

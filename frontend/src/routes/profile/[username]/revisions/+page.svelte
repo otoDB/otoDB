@@ -1,11 +1,10 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-
-	import { m } from '$lib/paraglide/messages.js';
-	import TimeAgo from '$lib/TimeAgo.svelte';
-	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
+	import { routeNames } from '$lib/enums/route.js';
+	import Pager from '$lib/Pager.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import Section from '$lib/Section.svelte';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 
 	let { data } = $props();
 </script>
@@ -15,11 +14,15 @@
 		<table class="w-full">
 			<tbody>
 				{#each data.revisions?.items as r, i (i)}
-					<tr
-						><td><a href="/revision/{r.id}">#{r.id}</a></td><td
-							>{r.route ? Route[resolveRouteKeyById(r.route)].title() : ''}</td
-						><td><TimeAgo date={r.date} /></td></tr
-					>
+					<tr>
+						<td>
+							<a href="/revision/{r.id}">#{r.id}</a>
+						</td>
+						<td>{r.route ? routeNames[r.route]() : ''}</td>
+						<td>
+							<TimeAgo date={r.date} />
+						</td>
+					</tr>
 				{/each}
 			</tbody>
 		</table>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ComponentProps } from 'svelte';
-	import WorkTag from './WorkTag.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
 
 	type Tree = {
 		node: ComponentProps<typeof WorkTag>['tag'];

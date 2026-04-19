@@ -3,9 +3,10 @@ import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	userLevelGuard(locals.user, 'MEMBER');
+	userLevelGuard(locals.user, Levels.Member);
 	return { head: { title: m.proof_heroic_rat_cuddle() } };
 };
 

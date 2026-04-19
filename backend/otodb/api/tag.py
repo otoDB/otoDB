@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction, models
 from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists, Subquery
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_object_or_404
 
 from pydantic import AfterValidator, field_validator
 from ninja import ModelSchema, Schema, Query, Field
@@ -36,12 +36,14 @@ from otodb.models import (
 from otodb.models.enums import (
 	ErrorCode,
 	WorkTagCategory,
+	SongTagCategory,
 	LanguageTypes,
 	SongConnectionTypes,
 	TagWorkConnectionTypes,
 	MediaConnectionTypes,
 	Route,
 	MediaType,
+	ProfileConnectionTypes,
 )
 
 from .common import (
@@ -49,7 +51,7 @@ from .common import (
 	ThinWorkSchema,
 	user_is_trusted,
 	user_is_editor,
-	RelationSchema,
+	SongRelationSchema,
 	post_relations,
 	ConnectionSchema,
 	ConnectionLookupResponse,
@@ -72,10 +74,11 @@ class FatTagWorkSchema(ModelSchema):
 	media_type: list[int] | None = None
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional[TagWorkSchema]
+	category: WorkTagCategory
 
 	class Meta:
 		model = TagWork
-		fields = ['name', 'slug', 'category', 'deprecated']
+		fields = ['name', 'slug', 'deprecated']
 
 	@field_validator('media_type', mode='before', check_fields=False)
 	@classmethod
@@ -101,7 +104,7 @@ class TagSongSchema(Schema):
 	children: list['TagSongSchema']
 	name: str
 	slug: str
-	category: int
+	category: SongTagCategory
 	lang_prefs: list[TagLangPreferenceSchema]
 
 
@@ -136,7 +139,7 @@ def search(
 	request: HttpRequest,
 	query: str,
 	resolve_aliases: bool = True,
-	category: int | None = None,
+	category: WorkTagCategory | None = None,
 	media_type: list[int] | None = Query(None),
 	order: str = 'newest',
 	deprecated_only: bool = False,
@@ -237,17 +240,10 @@ def search(
 	return qs
 
 
-@tag_router.get('tag', response={200: FatTagWorkSchema, 300: str})
+@tag_router.get('tag', response=FatTagWorkSchema)
 def tag(request: HttpRequest, tag_slug: str):
 	cleaned = slugify_tag(tag_slug)
-	tag = get_object_or_404(TagWork, slug=cleaned)
-	# Check only after querying
-	# want 404 without redirection if the cleaned doesn't exist either
-	if cleaned != tag_slug:
-		return 300, cleaned
-	if tag.aliased_to:
-		return 300, tag.aliased_to.slug
-	return tag
+	return get_object_or_404(TagWork, slug=cleaned)
 
 
 @tag_router.get('details', response=TagWorkDetailsSchema)
@@ -365,7 +361,7 @@ def delete(request: HttpRequest, tag_slug: str, **kwargs):
 class TagAliasControlSchema(Schema):
 	base_slug: str
 	unalias_slugs: list[str]
-	lang_prefs: dict[int, str | None]
+	lang_prefs: dict[LanguageTypes, str | None]
 	names: dict[str, str] = {}
 
 
@@ -423,7 +419,7 @@ def tag_alias_control(
 
 	# lang prefs
 	for lang, slug_val in payload.lang_prefs.items():
-		lang = LanguageTypes(lang).value
+		lang = lang
 		assert lang != 0
 		if slug_val:
 			tags_to_clear = list(tag.aliases.exclude(slug=slug_val))
@@ -447,7 +443,7 @@ def tag_alias_control(
 
 
 class WorkTagInSchema(Schema):
-	category: int
+	category: WorkTagCategory
 	deprecated: bool
 	parent_slugs: list[str]
 	media_type: list[int] | None = None
@@ -456,7 +452,7 @@ class WorkTagInSchema(Schema):
 
 class SongTagInSchema(Schema):
 	parent_slug: str | None
-	category: int
+	category: SongTagCategory
 
 
 class SongInSchema(ModelSchema):
@@ -559,12 +555,11 @@ class WikiPageMDSchema(ModelSchema):
 
 @tag_router.get('wiki_page', auth=django_auth, response=list[WikiPageMDSchema])
 def wiki_page(request: HttpRequest, tag_slug: str):
-	pages = get_list_or_404(WikiPage, tag__slug=tag_slug)
-	return pages
+	return WikiPage.objects.filter(tag__slug=tag_slug)
 
 
 class WikiPageEditSchema(Schema):
-	lang: int
+	lang: LanguageTypes = Field(..., gt=0)
 	md: str
 
 
@@ -579,7 +574,7 @@ def edit_wiki_page(
 	for item in payload:
 		empty = item.md.strip() == ''
 		try:
-			wp = WikiPage.objects.get(tag=tag, lang=LanguageTypes(item.lang).value)
+			wp = WikiPage.objects.get(tag=tag, lang=item.lang)
 			if empty:
 				wp.delete()
 			else:
@@ -589,13 +584,24 @@ def edit_wiki_page(
 			if not empty:
 				WikiPage.objects.create(
 					tag=tag,
-					lang=LanguageTypes(item.lang).value,
+					lang=item.lang,
 					page=item.md,
 				)
 
 
+class TagWorkConnectionSchema(ConnectionSchema):
+	site: TagWorkConnectionTypes
+
+
+class TagWorkExtraConnectionSchema(ConnectionSchema):
+	site: MediaConnectionTypes | ProfileConnectionTypes
+
+
 @tag_router.get(
-	'connection', response=tuple[list[ConnectionSchema], list[ConnectionSchema] | None]
+	'connection',
+	response=tuple[
+		list[TagWorkConnectionSchema], list[TagWorkExtraConnectionSchema] | None
+	],
 )
 def connection(request: HttpRequest, tag_slug: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
@@ -930,7 +936,7 @@ def song_search(
 
 
 @tag_router.get(
-	'song_relations', response=tuple[list[RelationSchema], list[SongSchema]]
+	'song_relations', response=tuple[list[SongRelationSchema], list[SongSchema]]
 )
 def song_relations(request: HttpRequest, song_id: int):
 	song = get_object_or_404(MediaSong.objects, id=song_id)
@@ -941,7 +947,9 @@ def song_relations(request: HttpRequest, song_id: int):
 @tag_router.post('song_relation', auth=django_auth)
 @with_revision_route(Route.SONGRELATION_CREATE)
 @user_is_trusted
-def song_relation(request: HttpRequest, this_id: int, payload: list[RelationSchema]):
+def song_relation(
+	request: HttpRequest, this_id: int, payload: list[SongRelationSchema]
+):
 	post_relations(MediaSong, this_id, payload)
 
 
@@ -955,7 +963,7 @@ def song_tag_search(
 	request: HttpRequest,
 	query: str,
 	resolve_aliases: bool = True,
-	category: int | None = None,
+	category: SongTagCategory | None = None,
 ):
 	cleaned_slug_query = canonicalize_tag(query)
 	cleaned_name_query = NFKC(query)
@@ -1007,17 +1015,10 @@ def song_tags(
 	return
 
 
-@tag_router.get('song_tag', response={200: TagSongSchema, 300: str})
+@tag_router.get('song_tag', response=TagSongSchema)
 def song_tag(request: HttpRequest, tag_slug: str):
 	cleaned = slugify_tag(tag_slug)
-	tag = get_object_or_404(TagSong, slug=cleaned)
-	# Check only after querying
-	# want 404 without redirection if the cleaned doesn't exist either
-	if cleaned != tag_slug:
-		return 300, cleaned
-	if tag.aliased_to:
-		return 300, tag.aliased_to.slug
-	return tag
+	return get_object_or_404(TagSong, slug=cleaned)
 
 
 @tag_router.get('song_tag_details', response=TagSongDetailsSchema)
@@ -1054,7 +1055,11 @@ def songs(request: HttpRequest, tag_slug: str):
 	return MediaSong.objects.filter(tags__slug=tag_slug)
 
 
-@tag_router.get('song_connection', response=list[ConnectionSchema])
+class SongConnectionSchema(ConnectionSchema):
+	site: SongConnectionTypes
+
+
+@tag_router.get('song_connection', response=list[SongConnectionSchema])
 def song_connection(request: HttpRequest, song_id: int):
 	song = get_object_or_404(MediaSong.objects, id=song_id)
 	return song.mediasongconnection_set

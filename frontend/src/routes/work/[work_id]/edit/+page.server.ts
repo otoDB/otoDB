@@ -3,9 +3,10 @@ import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 import { userLevelGuard } from '$lib/route_guard';
+import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
-	userLevelGuard(locals.user, 'MEMBER', url.pathname);
+	userLevelGuard(locals.user, Levels.Member, url.pathname);
 
 	const { data } = await client.GET('/api/work/sources', {
 		params: {

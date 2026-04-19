@@ -15,7 +15,8 @@
 		"test:watch": "bun test --watch",
 		"lint": "prettier --check . && eslint .",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"sync-schema": "openapi-typescript --enum"
 	},
 	"devDependencies": {
 		"@chromatic-com/storybook": "^4.1.3",

@@ -2,25 +2,25 @@
 	import { invalidateAll } from '$app/navigation';
 	import Section from '$lib/Section.svelte';
 	import client from '$lib/api';
-	import { languages } from '$lib/enums/Languages.js';
+	import { languages } from '$lib/enums/language.js';
 	import { themes } from '$lib/themes/themes.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { getLocalTheme, set_lang, updateLocalTheme } from '$lib/ui.js';
+	import { ThemePref } from '$lib/schema.js';
+	import { enumValues } from '$lib/enums.js';
 
 	let { data } = $props();
 
-	async function changeBackground(theme: number) {
-		if (data.user) {
+	async function changeBackground(theme: ThemePref) {
+		if (data.user)
 			await client.POST('/api/profile/prefs', { fetch, body: { theme, language: null } });
-		} else {
-			updateLocalTheme(theme);
-		}
+		else updateLocalTheme(theme);
 		invalidateAll();
 	}
 
 	let current_locale = $state(getLocale());
-	let current_theme = $derived(data.user?.prefs?.theme ?? getLocalTheme() ?? 0);
+	let current_theme = $derived(data.user?.prefs?.theme ?? getLocalTheme() ?? ThemePref.Default);
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>
@@ -51,27 +51,27 @@
 		class="3xl:grid-cols-5 mt-4 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
 		role="radiogroup"
 	>
-		{#each Object.entries(themes) as [key, theme] (key)}
+		{#each enumValues(ThemePref) as theme (theme)}
 			<label
 				class="bg-otodb-bg-faint hover:bg-otodb-bg-fainter has-checked:bg-otodb-bg-fainter cursor-pointer border pb-4 text-center text-lg"
 			>
 				<img
-					src={theme.preview}
-					alt={theme.nameFn()}
+					src={themes[theme].preview}
+					alt={themes[theme].nameFn()}
 					class={[
 						'mb-4 h-48 w-full object-cover',
-						key === 'default' && 'invert dark:filter-none'
+						theme === ThemePref.Default && 'invert dark:filter-none'
 					]}
 					width={240}
 					height={180}
 				/>
 				<input
 					class="hidden"
-					onclick={() => changeBackground(theme.id)}
+					onclick={() => changeBackground(theme)}
 					bind:group={current_theme}
-					value={theme.id}
+					value={theme}
 					type="radio"
-				/>{theme.nameFn()}
+				/>{themes[theme].nameFn()}
 			</label>
 		{/each}
 	</div>

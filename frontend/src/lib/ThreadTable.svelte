@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { postCategoryNames } from '$lib/enums/postCategory';
+	import type { PostCategory } from '$lib/schema';
 	import { buildEntityRoutes, type EntityModelType } from './enums';
-	import { postCategory, resolvePostCategoryKeyById } from '$lib/enums/PostCategory';
 	import { m } from './paraglide/messages';
 	import TimeAgo from './TimeAgo.svelte';
 
@@ -8,7 +9,7 @@
 		id: number | string;
 		title: string;
 		entities?: { id: string | number; entity: EntityModelType }[];
-		category: number;
+		category: PostCategory;
 		added_by: { username: string };
 		modified: string;
 		last_post_by?: string | null;
@@ -56,7 +57,7 @@
 					{/if}
 				</td>
 				{#if showCategory}
-					<td>{postCategory[resolvePostCategoryKeyById(post.category)].nameFn()}</td>
+					<td>{postCategoryNames[post.category]()}</td>
 				{/if}
 				{#if showAuthor}
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td

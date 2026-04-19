@@ -69,9 +69,9 @@ def unbind_source(request: AuthedHttpRequest, source_id: int):
 @source_router.put('origin', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
-def source_origin(request: AuthedHttpRequest, source_id: int, status: int):
+def source_origin(request: AuthedHttpRequest, source_id: int, status: WorkOrigin):
 	src = get_object_or_404(WorkSource.active_objects, id=source_id)
-	src.work_origin = WorkOrigin(status).value
+	src.work_origin = status
 	src.save()
 
 

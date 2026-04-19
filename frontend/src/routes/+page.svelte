@@ -1,13 +1,11 @@
 <script lang="ts">
+	import { isSOV, isSVO } from '$lib/enums/language';
+	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-
 	import Section from '$lib/Section.svelte';
 	import TimeAgo from '$lib/TimeAgo.svelte';
-	import { isSOV, isSVO } from '$lib/enums/Languages';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import { Route } from '$lib/enums/Route.js';
-	import { resolveRouteKeyById } from '$lib/enums/Route.js';
 
 	let { data } = $props();
 </script>
@@ -48,9 +46,7 @@
 				{#each data.changes.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-							>{typeof r.route === 'number'
-								? Route[resolveRouteKeyById(r.route)].title()
-								: ''}</td
+							>{typeof r.route === 'number' ? routeNames[r.route]() : ''}</td
 						><td>
 							{#if isSVO(getLocale())}
 								{m.curly_safe_lynx_fond()}

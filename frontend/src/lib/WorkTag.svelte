@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { getTagDisplayName } from './api';
-	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
-	import { resolveWorkTagCategoryKeyById, WorkTagCategory } from '$lib/enums/WorkTagCategory';
+	import { getTagDisplayName } from '$lib/api';
+	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/creatorRole';
+	import { WorkTagCategory } from '$lib/schema';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 
 	interface Props {
 		tag: {
 			id: number;
 			slug: string;
-			category: Parameters<typeof resolveWorkTagCategoryKeyById>[0];
+			category: WorkTagCategory;
 			sample?: boolean;
 			creator_roles?: Parameters<typeof resolveCreatorRoleKeyById>[0][] | null;
 			lang_prefs: { lang: number; tag: string; slug: string }[];
@@ -21,8 +22,8 @@
 	}
 	const { tag, onclick, selected = false, fade = false, forTree = false }: Props = $props();
 
-	const category = $derived(resolveWorkTagCategoryKeyById(tag.category));
-	const sampleOverride = $derived(WorkTagCategory[category].canSetAsSource && tag.sample);
+	const category = $derived(tag.category);
+	const sampleOverride = $derived(WorkTagCategoryMap[category].canSetAsSource && tag.sample);
 	const isTemporary = $derived(tag.id === 0);
 </script>
 
@@ -30,11 +31,12 @@
 	href="/tag/{tag.slug}"
 	class={[
 		'rounded-xl px-2',
-		forTree ? 'border-1' : 'border-2',
+		forTree ? 'border' : 'border-2',
 		isTemporary ? 'border-dashed' : 'border-solid',
 		{ 'opacity-50': fade || (onclick && !selected) }
 	]}
-	style="border-color: {WorkTagCategory[sampleOverride ? 'SOURCE' : category].color};"
+	style="border-color: {WorkTagCategoryMap[sampleOverride ? WorkTagCategory.Source : category]
+		.color};"
 	data-sveltekit-preload-data={onclick ? 'off' : undefined}
 	onclick={(e) => {
 		if (onclick) {
@@ -44,7 +46,7 @@
 	}}
 	>{getTagDisplayName(tag)}
 </a>
-{#if category === 'CREATOR' && tag.creator_roles?.length}
+{#if category === WorkTagCategory.Creator && tag.creator_roles?.length}
 	<address class="text-otodb-content-fainter inline px-1 text-xs">
 		{#each tag.creator_roles as role, i (i)}{creatorRole[
 				resolveCreatorRoleKeyById(role)

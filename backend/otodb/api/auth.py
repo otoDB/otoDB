@@ -53,7 +53,7 @@ def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 
 
 class UserStatusSchema(UserLoginSchema):
-	level: int
+	level: Account.Levels
 	user_id: int = Field(..., alias='id')
 	username: str
 	prefs: UserPreferencesSchema | None = None
@@ -242,10 +242,11 @@ class InvitationSchema(ModelSchema):
 	used_by: ProfileSchema | None
 	used_at: datetime | None
 	created_at: datetime
+	level: Account.Levels
 
 	class Meta:
 		model = Invitation
-		fields = ['secret', 'level']
+		fields = ['secret']
 
 
 @auth_router.get(

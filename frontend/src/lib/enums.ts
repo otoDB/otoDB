@@ -139,3 +139,7 @@ export const enumValues = <E extends Enum<E>>(Enum: E): E[keyof E][] =>
 	Object.values(Enum).filter(
 		(value) => !(typeof value === 'string' && Enum[value as keyof E] !== undefined)
 	) as E[keyof E][];
+export const isEnum = <E extends Enum<E>>(Enum: E, v: string | number): boolean =>
+	enumValues(Enum).includes(v as E[keyof E]);
+export const asEnum = <E extends Enum<E>>(Enum: E, v: string | number): E[keyof E] | null =>
+	isEnum(Enum, v) ? (v as E[keyof E]) : null;

@@ -44,7 +44,7 @@
 				<option value={cat}>{WorkTagCategoryMap[cat].nameFn()}</option>
 			{/each}
 		</select>
-		{#if category === 6}
+		{#if category === WorkTagCategory.Media}
 			<select name="media_type" multiple value={data.media_type ?? []}>
 				{#each allMediaTypes as t (t)}
 					<option value={mediaTypes[t].id}>{mediaTypes[t].nameFn()}</option>

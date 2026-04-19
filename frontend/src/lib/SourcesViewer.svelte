@@ -3,7 +3,7 @@
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import { PlatformNames, WorkOriginNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
-	import type { components } from '$lib/schema';
+	import { WorkOrigin, type components } from '$lib/schema';
 
 	interface Props {
 		sources: components['schemas']['WorkSourceSchema'][];
@@ -60,7 +60,7 @@
 				selected = i;
 			}}
 		>
-			{PlatformNames[s.platform]}{s.work_origin === 0
+			{PlatformNames[s.platform]}{s.work_origin === WorkOrigin.Author
 				? ''
 				: ' ' + WorkOriginNames[s.work_origin]()}
 		</a>{/each}

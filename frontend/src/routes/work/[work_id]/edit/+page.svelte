@@ -11,7 +11,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { callErrorToast, callSavingToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/dirty';
-	import { Levels, Rating, WorkOrigin } from '$lib/schema.js';
+	import { Levels, Rating, WorkOrigin, WorkStatus } from '$lib/schema.js';
 
 	let { data, form } = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, ''));
@@ -114,7 +114,7 @@
 								{#each data.sources! as src (src.id)}
 									<option value={src.id}
 										>{PlatformNames[src.platform]}
-										{src.work_origin === 0
+										{src.work_origin === WorkOrigin.Author
 											? ''
 											: ' ' + WorkOriginNames[src.work_origin]()}
 										-
@@ -205,9 +205,9 @@
 								>{m.sour_lime_shad_edit()}</button
 							></td
 						><td>
-							{#if src.work_status === 0}
+							{#if src.work_status === WorkStatus.Available}
 								<RefreshButton source={src} />
-							{:else if src.work_status === 1}
+							{:else if src.work_status === WorkStatus.Down}
 								{#if hasUserLevel(data.user?.level, Levels.Editor)}
 									<a href="/upload/add?for_source={src.id}"
 										>{m.minor_crisp_cobra_list()}</a

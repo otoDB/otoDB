@@ -57,7 +57,7 @@ flowchart ${direction}
     ${links
 		.map((r) =>
 			//  Reverse relation for 'sequel'
-			r.relation === 0
+			r.relation === WorkRelationTypes.Sequel
 				? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationNames[r.relation]()}| ${r.A_id}`
 				: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationNames[r.relation]()}| ${r.B_id}`
 		)

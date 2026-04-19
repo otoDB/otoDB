@@ -7,7 +7,11 @@
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { Levels, PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
+	import {
+		Levels,
+		PathsApiCommentCommentDeleteParametersQueryModel,
+		Status
+	} from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -62,7 +66,7 @@
 			</li>
 		{/each}
 	</ul>
-	{#if hasUserLevel(data.user?.level, Levels.Editor) && data.request.status === 0}
+	{#if hasUserLevel(data.user?.level, Levels.Editor) && data.request.status === Status.Pending}
 		<button onclick={() => set(1)}>{m.lucky_bold_hornet_push()}</button>
 		<button onclick={() => set(2)}>{m.alive_blue_marlin_push()}</button>
 	{/if}

@@ -15,6 +15,7 @@
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import {
 		PathsApiCommentCommentDeleteParametersQueryModel,
+		WorkOrigin,
 		WorkRelationTypes,
 		WorkTagCategory,
 		type components
@@ -276,7 +277,9 @@
 							class={[src.work_status !== 0 ? 'text-otodb-content-fainter' : '']}
 						>
 							{PlatformNames[src.platform]}
-							{src.work_origin === 0 ? '' : ' ' + WorkOriginNames[src.work_origin]()}
+							{src.work_origin === WorkOrigin.Author
+								? ''
+								: ' ' + WorkOriginNames[src.work_origin]()}
 							-
 							{src.title || src.url}
 						</a>

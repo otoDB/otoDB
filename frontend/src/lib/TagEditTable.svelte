@@ -5,6 +5,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { ComponentProps } from 'svelte';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
+	import { WorkTagCategory } from './schema';
 
 	type TagCache = Record<string, ComponentProps<typeof WorkTag>['tag']>;
 
@@ -85,7 +86,7 @@
 						{:else}{m.simple_less_marlin_enchant()}{/if}
 					</td>
 					<td>
-						{#if tag.category === 4}
+						{#if tag.category === WorkTagCategory.Creator}
 							{#each allCreatorRoles as k (k)}
 								<label class="role-label">
 									<input

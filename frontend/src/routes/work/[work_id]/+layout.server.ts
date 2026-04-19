@@ -4,7 +4,7 @@ import { hasUserLevel } from '$lib/enums/userLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { error, redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import { Levels } from '$lib/schema';
+import { Levels, Rating } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
@@ -64,7 +64,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		head: {
 			title: getDisplayText(data.title),
 			image: data.rating <= 1 ? data.thumbnail : null,
-			isExplicit: data.rating === 2,
+			isExplicit: data.rating === Rating.Explicit,
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
 				{ name: m.grand_merry_fly_succeed(), url: '/work' },

@@ -1,5 +1,10 @@
 import client from '$lib/api.server';
-import { PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 } from '$lib/schema';
+import { asEnum } from '$lib/enums';
+import {
+	PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0,
+	PathsApiProfileSubmissionsGetParametersQueryStanding,
+	Status
+} from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -8,7 +13,9 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	const platform = parseInt(url.searchParams.get('platform') ?? '', 10) || null,
 		origin = parseInt(url.searchParams.get('origin') ?? '', 10) || null,
 		status = parseInt(url.searchParams.get('status') ?? '', 10) || null,
-		standing = parseInt(url.searchParams.get('standing') ?? '1', 10) || 0;
+		paramStanding = parseInt(url.searchParams.get('standing') ?? '1', 10) || 0;
+
+	const standing = asEnum(Status, paramStanding);
 
 	const paramDir = url.searchParams.get('dir') === '-' ? '-' : '';
 	const paramOrder = `${paramDir}${url.searchParams.get('order')}`;
@@ -33,7 +40,10 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 				origin,
 				platform,
 				status,
-				standing
+				standing:
+					// Duplicated enum
+					(standing as PathsApiProfileSubmissionsGetParametersQueryStanding | null) ??
+					undefined
 			}
 		}
 	});

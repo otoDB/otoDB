@@ -16,7 +16,7 @@ from ninja import Schema, Router, Field, ModelSchema
 from ninja.security import django_auth
 
 from otodb.account.models import Account, Invitation
-from otodb.models.enums import ErrorCode, LanguageTypes
+from otodb.models.enums import ErrorCode, LanguageTypes, Preferences
 from otodb.tasks import send_email
 
 from .common import Error, UserPreferenceSchema, ProfileSchema, user_is_editor
@@ -201,7 +201,7 @@ https://otodb.net/
 
 def get_user_language(user, request):
 	if user and hasattr(user, 'prefs'):
-		if lang := user.prefs.language:
+		if lang := user.prefs.filter(setting=Preferences.LANGUAGE).first():
 			return lang
 	if request:
 		if locale := request.COOKIES.get('PARAGLIDE_LOCALE'):

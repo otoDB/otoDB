@@ -1,6 +1,6 @@
 import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
-import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
+import { ModelsWithComments } from '$lib/schema.js';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
 	const [{ data: sources }, { data: comments }, { data: similar }] = await Promise.all([
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 			fetch,
 			params: {
 				query: {
-					model: PathsApiCommentCommentsGetParametersQueryModel.mediawork,
+					model: ModelsWithComments.mediawork,
 					pk: +params.work_id
 				}
 			}

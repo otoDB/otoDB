@@ -6,22 +6,13 @@
 	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
-	import { Levels, type PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema';
+	import { Levels, ModelsWithComments } from '$lib/schema';
 	import TimeAgo from '$lib/TimeAgo.svelte';
 	import EditedBy from './EditedBy.svelte';
 
-	export type CommentModels =
-		| 'mediawork'
-		| 'account'
-		| 'pool'
-		| 'tagwork'
-		| 'tagsong'
-		| 'post'
-		| 'bulkrequest';
-
 	interface Props {
 		user: App.Locals['user'] | null;
-		model: PathsApiCommentCommentDeleteParametersQueryModel;
+		model: ModelsWithComments;
 		pk: number;
 		comments: Parameters<typeof makeCommentTree>[0];
 	}

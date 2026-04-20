@@ -7,7 +7,7 @@
 	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
-	import { PathsApiTagAliasPostParametersQueryType } from '$lib/schema.js';
+	import { TagTypes } from '$lib/schema.js';
 
 	let { data } = $props();
 
@@ -23,7 +23,7 @@
 				query: {
 					into_tag: selected,
 					delete: del,
-					type: PathsApiTagAliasPostParametersQueryType.song
+					type: TagTypes.song
 				}
 			},
 			body: tags

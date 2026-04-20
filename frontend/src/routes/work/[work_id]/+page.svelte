@@ -14,7 +14,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import {
-		PathsApiCommentCommentDeleteParametersQueryModel,
+		ModelsWithComments,
 		WorkOrigin,
 		WorkRelationTypes,
 		WorkTagCategory,
@@ -366,7 +366,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model={PathsApiCommentCommentDeleteParametersQueryModel.mediawork}
+		model={ModelsWithComments.mediawork}
 		pk={data.id}
 	/>
 </Section>

@@ -1,6 +1,6 @@
 import client from '$lib/api.server';
+import { PostEntities } from '$lib/schema';
 import type { PageServerLoad } from './$types';
-import { PathsApiPostThreadsGetParametersQueryEntity } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	const batch_size = 20;
@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		fetch,
 		params: {
 			query: {
-				entity: PathsApiPostThreadsGetParametersQueryEntity.mediawork,
+				entity: PostEntities.mediawork,
 				id: params.work_id,
 				limit: batch_size,
 				offset: (page - 1) * batch_size

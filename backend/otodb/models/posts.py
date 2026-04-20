@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from django.apps import apps
 from django.db import models
 from django.db.models import (
 	CharField,
@@ -73,6 +74,8 @@ class PostManager(models.Manager):
 				*OtodbTagModel.__subclasses__()
 			).values()
 		]
+		user_model_class = apps.get_model(settings.AUTH_USER_MODEL)
+		user_model = ContentType.objects.get_for_model(user_model_class).id
 		return PostQuerySet(self.model, using=self._db).prefetch_related(
 			Prefetch(
 				'entitylink_set',
@@ -86,6 +89,17 @@ class PostManager(models.Manager):
 									target_id=OuterRef('entity_id'),
 									target_column='slug',
 								).values('target_value')[:1]
+							),
+						),
+						When(
+							Q(entity_type__id=user_model),
+							then=Cast(
+								Subquery(
+									user_model_class.objects.filter(
+										id=OuterRef('entity_id'),
+									).values('username')[:1],
+								),
+								output_field=TextField(),
 							),
 						),
 						default=Cast(F('entity_id'), output_field=TextField()),

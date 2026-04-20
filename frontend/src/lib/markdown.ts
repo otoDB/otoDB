@@ -15,7 +15,7 @@ import { unified } from 'unified';
 const ENTITIES = [
 	{ shortPrefix: 'w', longLabel: 'work', urlPath: 'work' },
 	{ shortPrefix: 'l', longLabel: 'list', urlPath: 'list' },
-	{ shortPrefix: '@', longLabel: 'account', urlPath: 'profile' }
+	{ shortPrefix: 'r', longLabel: 'revision', urlPath: 'revision' }
 ] as const;
 
 const short_prefix_re_gen = (short_prefix: string) =>
@@ -29,8 +29,7 @@ const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 const LinkableEntities: [PostEntities, RegExp][] = [
 	[PostEntities.mediawork, short_prefix_re_gen(ENTITIES[0].shortPrefix)],
 	[PostEntities.mediawork, long_label_re_gen(ENTITIES[0].longLabel)],
-	[PostEntities.account, short_prefix_re_gen(ENTITIES[2].shortPrefix)],
-	[PostEntities.account, long_label_re_gen(ENTITIES[2].longLabel)],
+	[PostEntities.account, MENTION_RE],
 	[PostEntities.tagwork, TAGWORK_NO_DISPLAY_RE]
 ];
 

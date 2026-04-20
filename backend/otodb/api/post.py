@@ -17,7 +17,6 @@ from otodb.models import (
 	Notification,
 	Post,
 	PostContent,
-	Revision,
 	Subscription,
 	EntityLink,
 )
@@ -115,7 +114,13 @@ def get_entity_link_ent(e: PostEntitySchema):
 		ContentType.objects.get(model=e.entity)
 		.model_class()
 		.objects.get(
-			**({'slug': slugify_tag(e.id)} if 'tag' in e.entity else {'id': e.id})
+			**(
+				{'slug': slugify_tag(e.id)}
+				if 'tag' in e.entity
+				else {'username__iexact': e.id}
+				if e.entity == PostEntities.PROFILE
+				else {'id': e.id}
+			)
 		)
 	)
 	if hasattr(obj, 'aliased_to') and obj.aliased_to:
@@ -157,12 +162,10 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 		).values_list('id', flat=True):
 			notify_reasons[uid] = NotificationReason.MENTION
 	if payload.entities:
-		revision_ids = [e.id for e in payload.entities if e.entity == 'revision']
-		if revision_ids:
-			for uid in Revision.objects.filter(id__in=revision_ids).values_list(
-				'user_id', flat=True
-			):
-				notify_reasons[uid] = NotificationReason.REVISION_LINKED
+		usernames = [e.id for e in payload.entities if e.entity == PostEntities.PROFILE]
+		for name in usernames:
+			if account := Account.objects.filter(username__iexact=usernames).first():
+				notify_reasons[account.id] = NotificationReason.REVISION_LINKED
 	notify_reasons.pop(request.user.id, None)
 	if notify_reasons:
 		Notification.objects.bulk_create(

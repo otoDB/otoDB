@@ -20,6 +20,10 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 			},
 			{ pathname: `profile/${params.username}/lists`, title: m.stale_loose_squid_cut() },
 			{
+				pathname: `profile/${params.username}/threads`,
+				title: m.big_tiny_kitten_devour()
+			},
+			{
 				pathname: `profile/${params.username}/submissions`,
 				title: m.active_front_anteater_cry()
 			},

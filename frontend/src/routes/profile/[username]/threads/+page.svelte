@@ -9,7 +9,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<Section title="{m.arable_direct_swan_glow()} #{data.profile.username}" menuLinks={data.links}>
+<Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	<a href="/post/new?category=3&entity=@{data.profile.username}">{m.antsy_aloof_horse_grace()}</a>
 	{#if data.threads.items.length}
 		<ThreadTable

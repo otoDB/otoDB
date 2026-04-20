@@ -69,6 +69,10 @@ def status(request: HttpRequest):
 	if request.user.is_authenticated:
 		u = request.user
 		u.notifs_count = u.notifs.filter(dismissed=False).count()
+		u.prefs = {
+			Preferences(setting).name: value
+			for setting, value in u.preferences.values_list('setting', 'value')
+		}
 		return u
 	return 401, {'code': ErrorCode.NOT_LOGGED_IN, 'data': {'message': 'Not logged in.'}}
 
@@ -204,8 +208,8 @@ https://otodb.net/
 
 
 def get_user_language(user, request):
-	if user and hasattr(user, 'prefs'):
-		if lang := user.prefs.filter(setting=Preferences.LANGUAGE).first():
+	if user and hasattr(user, 'preferences'):
+		if lang := user.preferences.filter(setting=Preferences.LANGUAGE).first():
 			return lang
 	if request:
 		if locale := request.COOKIES.get('PARAGLIDE_LOCALE'):

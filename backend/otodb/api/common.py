@@ -293,11 +293,13 @@ def _UserPreferenceSchema_verify_value(self) -> Self:
 	disallowed_values = {
 		Preferences.LANGUAGE: [LanguageTypes.NOT_APPLICABLE],
 	}
-	setting, value = self.setting
-	v = PreferencesValueTypeMap[setting](value)
-	if setting in disallowed_values:
-		assert v not in disallowed_values[setting]
-	self.setting = (setting, value)
+	for setting, value in self.dict().items():
+		if value is not None:
+			setting = getattr(Preferences, setting)
+			v = PreferencesValueTypeMap[setting](value)
+			if setting in disallowed_values:
+				assert v not in disallowed_values[setting]
+			setattr(self, setting.name, v)
 	return self
 
 
@@ -306,7 +308,10 @@ UserPreferenceSchema = create_model(
 	__base__=Schema,
 	__validators__={'verify_value': _UserPreferenceSchema_verify_value},
 	**{
-		name: (PreferencesValueTypeMap[value] | None, None)
+		name: (
+			PreferencesValueTypeMap[value] | None,
+			Field(default=None, nullable=False),
+		)
 		for name, value in zip(Preferences.names, Preferences.values)
 	},
 )

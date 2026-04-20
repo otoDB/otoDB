@@ -8,7 +8,7 @@ class UserPreference(models.Model):
 	user = models.ForeignKey(
 		settings.AUTH_USER_MODEL,
 		on_delete=models.CASCADE,
-		related_name='prefs',
+		related_name='preferences',
 		null=False,
 	)
 	setting = models.IntegerField(choices=Preferences.choices, null=False)

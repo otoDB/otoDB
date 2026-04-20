@@ -128,7 +128,7 @@ def submissions(
 def set_prefs(request: HttpRequest, payload: UserPreferenceSchema):
 	UserPreference.objects.bulk_create(
 		[
-			UserPreference.objects(
+			UserPreference(
 				user=request.user,
 				setting=getattr(Preferences, attr),
 				value=value,
@@ -136,7 +136,9 @@ def set_prefs(request: HttpRequest, payload: UserPreferenceSchema):
 			for attr, value in payload.dict().items()
 			if value is not None
 		],
+		unique_fields=['user', 'setting'],
 		update_conflicts=True,
+		update_fields=['value'],
 	)
 
 

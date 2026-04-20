@@ -46,17 +46,17 @@ const defaultPrefs: Prefs = {
 	THEME: ThemePref.Default
 };
 
-export const get_prefs = (): Partial<Prefs> | undefined => {
+export const getLocalPrefs = (): Partial<Prefs> | undefined => {
 	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
 
-export const getLocalPref = (setting: keyof Prefs) =>
-	get_prefs()?.[setting] ?? defaultPrefs[setting];
+export const getLocalPref = <T extends keyof Prefs>(setting: T): Prefs[T] =>
+	getLocalPrefs()?.[setting] ?? defaultPrefs[setting];
 
-export const updateLocalPref = (key: keyof Prefs, value: Prefs[typeof key]) => {
+export const updateLocalPref = <T extends keyof Prefs>(key: T, value: Prefs[T]) => {
 	if (!browser) return;
 
-	localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), [key]: value }));
+	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), [key]: value }));
 };
 
 export const GUIDELINE_POST_ID = 4;

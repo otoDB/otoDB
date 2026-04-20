@@ -7,7 +7,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user: { csrf: string } & components['schemas']['UserStatusSchema'];
+			user: ({ csrf: string } & components['schemas']['UserStatusSchema']) | null;
 		}
 		// interface PageData {}
 		// interface PageState {}
@@ -15,7 +15,7 @@ declare global {
 	}
 	namespace svelteHTML {
 		interface HTMLAttributes<T> {
-			onOutclick?: () => void;
+			onoutclick?: () => void;
 		}
 	}
 }

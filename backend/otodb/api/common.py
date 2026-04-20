@@ -33,6 +33,14 @@ from otodb.models.enums import (
 	Route,
 	WorkRelationTypes,
 	SongRelationTypes,
+	WorkTagCategory,
+	Rating,
+	LanguageTypes,
+	ThemePref,
+	ErrorCode,
+	WorkOrigin,
+	WorkStatus,
+	Platform,
 )
 import re
 
@@ -42,31 +50,32 @@ class AuthedHttpRequest(HttpRequest):
 
 
 class Error(Schema):
-	message: str
+	code: ErrorCode
+	data: dict | None = None
 
 
 class ProfileSchema(ModelSchema):
 	id: int
+	level: Account.Levels
 
 	class Meta:
 		model = Account
-		fields = ['username', 'level', 'date_created']
+		fields = ['username', 'date_created']
 
 
 class TagLangPreferenceSchema(Schema):
 	tag: str = Field(..., alias='tag.name')
 	slug: str = Field(..., alias='tag.slug')
-	lang: int
+	lang: LanguageTypes = Field(..., gt=0)
 
 
 class TagWorkSchema(Schema):
 	id: int
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional['TagWorkSchema']
-	n_instance: int | None = None
 	name: str
 	slug: str
-	category: int
+	category: WorkTagCategory
 	deprecated: bool
 
 
@@ -83,6 +92,9 @@ class WorkSourceSchema(ModelSchema):
 	added_by: ProfileSchema
 	thumbnail: str | None = None  # Exposed as property
 	media_title: str | None = None
+	platform: Platform
+	work_origin: WorkOrigin
+	work_status: WorkStatus
 
 	@staticmethod
 	def resolve_media_title(obj):
@@ -91,7 +103,6 @@ class WorkSourceSchema(ModelSchema):
 	class Meta:
 		model = WorkSource
 		fields = [
-			'platform',
 			'url',
 			'published_date',
 			'work_width',
@@ -99,8 +110,6 @@ class WorkSourceSchema(ModelSchema):
 			'work_duration',
 			'title',
 			'description',
-			'work_origin',
-			'work_status',
 			'source_id',
 			'uploader_id',
 			'media',
@@ -127,6 +136,14 @@ class RelationSchema(Schema):
 	relation: int
 
 
+class WorkRelationSchema(RelationSchema):
+	relation: WorkRelationTypes
+
+
+class SongRelationSchema(RelationSchema):
+	relation: SongRelationTypes
+
+
 class SlimWorkSchema(ModelSchema):
 	id: int
 	thumbnail: str | None = None  # Exposed as property
@@ -140,11 +157,12 @@ class WorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
-	relations: tuple[list[RelationSchema], list[SlimWorkSchema]]
+	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
+	rating: Rating
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'description', 'rating', 'thumbnail_source']
+		fields = ['title', 'description', 'thumbnail_source']
 
 
 class ThinWorkSchema(ModelSchema):
@@ -172,7 +190,7 @@ class CreateWorkPayload(Schema):
 	source_id: int
 	title: str | None = None
 	description: str | None = None
-	rating: int = 0
+	rating: Rating = Rating.GENERAL
 	tags: list[TagWorkInstanceInSchema] = []
 
 
@@ -232,7 +250,7 @@ def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 	assert cls is MediaWork or cls is MediaSong
 	assert all(rel.A_id == obj_id or rel.B_id == obj_id for rel in payload)
 
-	rel_cls, rt_cls = (
+	rel_cls, _rt_cls = (
 		(WorkRelation, WorkRelationTypes)
 		if cls is MediaWork
 		else (SongRelation, SongRelationTypes)
@@ -259,7 +277,7 @@ def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 		rel_cls.objects.update_or_create(
 			A_id=rel.A_id,
 			B_id=rel.B_id,
-			defaults={'relation': rt_cls(rel.relation).value},
+			defaults={'relation': rel.relation},
 		)
 
 
@@ -270,8 +288,8 @@ class ConnectionSchema(Schema):
 
 
 class UserPreferencesSchema(Schema):
-	language: int | None
-	theme: int | None
+	language: LanguageTypes | None = Field(..., gt=0)
+	theme: ThemePref | None
 
 
 def re_to_parser(regex):

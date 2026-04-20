@@ -1,37 +1,39 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
-	import { m } from '$lib/paraglide/messages.js';
-	import CommentTree from '$lib/CommentTree.svelte';
-	import { Platform, WorkOrigin } from '$lib/enums';
-	import { isSOV, isSVO } from '$lib/ui';
-	import { getLocale } from '$lib/paraglide/runtime';
 	import client from '$lib/api';
-	import type { components } from '$lib/schema';
+	import CommentTree from '$lib/CommentTree.svelte';
+	import { PlatformNames, WorkOriginNames } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
-	import WorkCard from '$lib/WorkCard.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import Pager from '$lib/Pager.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import { PathsApiCommentCommentDeleteParametersQueryModel, WorkOrigin } from '$lib/schema.js';
+	import Section from '$lib/Section.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import type { ComponentProps } from 'svelte';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	let pending_items = $derived(data.pending_items!.items);
 
 	let current = $state(0);
 	let select = $state(-1);
-	let sources: components['schemas']['WorkSourceSchema'][] | undefined = $state();
+	let sources: ComponentProps<typeof ExternalEmbed>['src'][] | undefined = $state();
 
 	$effect(() => {
-		client
-			.GET('/api/work/sources', {
-				fetch,
-				params: { query: { work_id: data.entries.items[current].work.id } }
-			})
-			.then(({ data }) => {
-				sources = data;
-				select = 0;
-			});
+		if (data.entries.items[current]) {
+			client
+				.GET('/api/work/sources', {
+					fetch,
+					params: { query: { work_id: data.entries.items[current].work.id } }
+				})
+				.then(({ data }) => {
+					sources = data;
+					select = 0;
+				});
+		}
 	});
 </script>
 
@@ -63,9 +65,9 @@
 						name="cover_select"
 						value={i}
 						bind:group={select}
-					/>{Platform[s.platform]}{s.work_origin === 0
+					/>{PlatformNames[s.platform]}{s.work_origin === WorkOrigin.Author
 						? ''
-						: ' ' + WorkOrigin[s.work_origin]()}</label
+						: ' ' + WorkOriginNames[s.work_origin]()}</label
 				>
 			{/each}
 		</div>
@@ -112,7 +114,7 @@
 						<h3>
 							<a href="/upload/{src.id}">{src.title || src.url}</a>
 						</h3>
-						<h4>{Platform[src.platform]} {src.published_date}</h4>
+						<h4>{PlatformNames[src.platform]} {src.published_date}</h4>
 					</span>
 					<span>
 						<a href={src.url} target="_blank" rel="noopener noreferrer"
@@ -145,7 +147,12 @@
 {/if}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree comments={data.comments} user={data.user ?? null} model="pool" pk={data.list.id} />
+	<CommentTree
+		comments={data.comments}
+		user={data.user ?? null}
+		model={PathsApiCommentCommentDeleteParametersQueryModel.pool}
+		pk={data.list.id}
+	/>
 </Section>
 
 <style>

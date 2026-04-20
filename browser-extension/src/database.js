@@ -92,11 +92,8 @@ async function getPreferredLang() {
     return { lang: null, uiLang: 'en' };
 }
 
-const makeTagDisplayName = (name) => name.replaceAll('_', ' ');
 const getTagDisplayName = (tag, lang) =>
-    makeTagDisplayName(
-        tag.lang_prefs?.find(p => p.lang === lang)?.tag ?? tag.name
-    );
+    tag.lang_prefs?.find(p => p.lang === lang)?.tag ?? tag.name;
 const getTagDisplaySlug = (tag, lang) =>
     tag.lang_prefs?.find(p => p.lang === lang)?.slug ?? tag.slug;
 
@@ -141,7 +138,7 @@ function getQuery(url) {
         }
     }
     else if (url.hostname.endsWith('nicovideo.jp')) {
-        const match = url.href.match(/\/watch\/([ns]m[0-9]+)/);
+        const match = url.href.match(/\/watch\/([a-zA-Z]{2}[0-9]+)/);
         if (match) {
             return { platform: 'niconico', id: match[1] };
         }

@@ -5,12 +5,13 @@
 	import WorkField from '$lib/WorkField.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
-	import { Rating, WorkOrigin, WorkStatus } from '$lib/enums';
+	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
 	import { getTagDisplaySlug } from '$lib/api';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import { enhance } from '$app/forms';
-	import type { components } from '$lib/schema';
+	import { Rating, type components } from '$lib/schema.js';
 	import { m } from '$lib/paraglide/messages.js';
+	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();
 
@@ -21,7 +22,7 @@
 
 	let title = $state(data.suggestions?.title ?? data.source.title ?? '');
 	let description = $state(data.suggestions?.description ?? data.source.description ?? '');
-	let rating = $state(null as number | null);
+	let rating = $state(0 as number | null);
 	let bindWork = $state<components['schemas']['WorkSchema'] | null>(null);
 
 	// Tag cache for rich tag editing (sample toggles, creator roles)
@@ -44,7 +45,7 @@
 		}
 	});
 
-	const toggleTag = (tag: components['schemas']['TagWorkSchema']) => {
+	const toggleTag: ComponentProps<typeof WorkTag>['onclick'] = (tag) => {
 		const slug = getTagDisplaySlug(tag);
 		if (tags.includes(slug)) {
 			tags = tags.filter((t) => t !== slug);
@@ -87,7 +88,7 @@
 						<tr>
 							<th class="w-24">{m.clear_lucky_peacock_pick()}</th>
 							<td>
-								<div class="description-cell">
+								<div class="description-cell external-link-icon">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 									{@html data.source.description}
 								</div>
@@ -105,11 +106,11 @@
 						</tr>
 						<tr>
 							<th class="w-24">{m.large_polite_otter_thrive()}</th>
-							<td>{WorkOrigin[data.source.work_origin]()}</td>
+							<td>{WorkOriginNames[data.source.work_origin]()}</td>
 						</tr>
 						<tr>
 							<th class="w-24">{m.civil_trick_oryx_clap()}</th>
-							<td>{WorkStatus[data.source.work_status]()}</td>
+							<td>{WorkStatusNames[data.source.work_status]()}</td>
 						</tr>
 						<tr>
 							<th class="w-24">{m.big_dry_seahorse_succeed()}</th>
@@ -210,20 +211,29 @@
 							</td>
 						</tr>
 						<tr>
-							<th><label for="rating">{m.good_dark_bumblebee_spur()}</label></th>
+							<th>{m.good_dark_bumblebee_spur()}</th>
 							<td>
-								<select
-									id="rating"
-									name="rating"
-									class="border"
-									bind:value={rating}
-									required
-								>
-									<option value={null} selected disabled>---</option>
-									{#each Rating as r, i (i)}
-										<option value={i}>{r()}</option>
+								<div class="flex gap-2">
+									{#each enumValues(Rating) as r, i (i)}
+										<label
+											class={[
+												'cursor-pointer border px-3 py-1',
+												rating === i &&
+													'bg-otodb-content-primary text-otodb-bg-primary'
+											]}
+										>
+											<input
+												type="radio"
+												name="rating"
+												value={r}
+												bind:group={rating}
+												class="hidden"
+												required
+											/>
+											{RatingNames[r]()}
+										</label>
 									{/each}
-								</select>
+								</div>
 							</td>
 						</tr>
 						<tr>

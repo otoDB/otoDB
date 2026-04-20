@@ -1,77 +1,63 @@
 <script lang="ts">
-	import { getTagDisplayName } from './api';
-	import { Role, WorkTagCategoriesSettableAsSource, WorkTagPresentationColours } from './enums';
-	import type { components } from './schema';
+	import { getTagDisplayName } from '$lib/api';
+	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/creatorRole';
+	import { WorkTagCategory } from '$lib/schema';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 
 	interface Props {
-		tag: components['schemas']['TagWorkSchema'];
-		tree?: boolean;
+		tag: {
+			id: number;
+			slug: string;
+			category: WorkTagCategory;
+			sample?: boolean;
+			creator_roles?: Parameters<typeof resolveCreatorRoleKeyById>[0][] | null;
+			lang_prefs: { lang: number; tag: string; slug: string }[];
+			name: string;
+		};
 		selected?: boolean;
-		onclick?: (slug: string) => void;
-	}
-	const { tag, tree = false, selected = false, onclick = undefined }: Props = $props();
+		onclick?: (tag: Props['tag']) => void;
+		fade?: boolean;
 
-	let overrideToSample = (tag) =>
-		WorkTagCategoriesSettableAsSource.includes(tag.category) && tag?.sample;
+		forTree?: boolean;
+	}
+	const { tag, onclick, selected = false, fade = false, forTree = false }: Props = $props();
+
+	const category = $derived(tag.category);
+	const sampleOverride = $derived(WorkTagCategoryMap[category].canSetAsSource && tag.sample);
+	const isTemporary = $derived(tag.id === 0);
 </script>
 
-{#snippet render_tag(t, border = true, sample_override = false, fade_out = false)}
-	<a
-		href="/tag/{t.slug}"
-		class={[
-			'rounded-xl px-2',
-			border ? 'border-2' : 'border-1',
-			t.id === 0 ? 'border-dashed' : 'border-solid',
-			{ 'opacity-50': fade_out || (onclick && !selected) }
-		]}
-		style="border-color: {WorkTagPresentationColours[sample_override ? 3 : t.category]};"
-		data-sveltekit-preload-data={onclick ? 'off' : undefined}
-		onclick={onclick
-			? (e) => {
-					e.preventDefault();
-					onclick(t);
-				}
-			: undefined}>{getTagDisplayName(t)}</a
-	>{#if t.category === 4 && t.creator_roles?.length}<address
-			class="text-otodb-content-fainter inline px-1 text-xs"
-		>
-			{#each t.creator_roles as role, i (i)}{Role[
-					role
-				]()}{#if i < t.creator_roles.length - 1},&nbsp{/if}{/each}
-		</address>{/if}
-{/snippet}
-
-{#snippet recur(this_snippet, tree)}
-	<ul class="my-0.5 list-none">
-		<li class="inline">
-			{@render render_tag(tree.node, false, overrideToSample(tree.node), !tree.real)}
-		</li>
-		{#if tree.children?.length}
-			{#each tree.children as t, i (i)}
-				<li>
-					{@render this_snippet(this_snippet, t)}
-				</li>
-			{/each}
-		{/if}
-	</ul>
-{/snippet}
-
-{#if tree}
-	{@render recur(recur, tag)}
-{:else}
-	{@render render_tag(tag, true, overrideToSample(tag))}
+<a
+	href="/tag/{tag.slug}"
+	class={[
+		'rounded-xl px-2',
+		forTree ? 'border' : 'border-2',
+		isTemporary ? 'border-dashed' : 'border-solid',
+		{ 'opacity-50': fade || (onclick && !selected) }
+	]}
+	style="border-color: {WorkTagCategoryMap[sampleOverride ? WorkTagCategory.Source : category]
+		.color};"
+	data-sveltekit-preload-data={onclick ? 'off' : undefined}
+	onclick={(e) => {
+		if (onclick) {
+			e.preventDefault();
+			onclick(tag);
+		}
+	}}
+	>{getTagDisplayName(tag)}
+</a>
+{#if category === WorkTagCategory.Creator && tag.creator_roles?.length}
+	<address class="text-otodb-content-fainter inline px-1 text-xs">
+		{#each tag.creator_roles as role, i (i)}{creatorRole[
+				resolveCreatorRoleKeyById(role)
+			].nameFn()}
+			{#if i < tag.creator_roles.length - 1},&nbsp{/if}
+		{/each}
+	</address>
 {/if}
 
 <style>
 	a {
 		text-decoration: none;
-	}
-	ul > li > ul {
-		&::before {
-			content: '\21B3';
-		}
-		& > li > ul {
-			margin-left: 0.5rem;
-		}
 	}
 </style>

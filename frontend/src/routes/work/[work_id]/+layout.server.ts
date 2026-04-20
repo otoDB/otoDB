@@ -1,17 +1,15 @@
-import type { LayoutServerLoad } from './$types';
+import client from '$lib/api.server';
+import { getDisplayText } from '$lib/api';
+import { hasUserLevel } from '$lib/enums/userLevel';
 import { m } from '$lib/paraglide/messages.js';
-import client, { getDisplayText } from '$lib/api';
 import { error, redirect } from '@sveltejs/kit';
-import { userLevelCheck } from '$lib/route_guard';
+import type { LayoutServerLoad } from './$types';
+import { Levels, Rating } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	if (isNaN(+params.work_id)) error(400, { message: 'Bad request' });
 
-	const {
-		data,
-		error: e,
-		response
-	} = await client.GET('/api/work/work', {
+	const { data } = await client.GET('/api/work/work', {
 		params: {
 			query: {
 				work_id: +params.work_id
@@ -20,17 +18,13 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		fetch
 	});
 
-	if (response.status === 300)
+	if (data.id !== +params.work_id)
 		redirect(
 			303,
-			url.pathname.replace(
-				encodeURIComponent(params.work_id),
-				encodeURIComponent(e as string)
-			)
+			url.pathname.replace(encodeURIComponent(params.work_id), encodeURIComponent(data.id))
 		);
-	if (e) error(404, { message: 'Not found' });
 
-	const loggedOut = userLevelCheck(locals.user);
+	const loggedOut = !hasUserLevel(locals.user?.level, Levels.Member);
 
 	return {
 		links: [
@@ -70,10 +64,10 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		head: {
 			title: getDisplayText(data.title),
 			image: data.rating <= 1 ? data.thumbnail : null,
-			isExplicit: data.rating === 2,
+			isExplicit: data.rating === Rating.Explicit,
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
-				{ name: m.grand_merry_fly_succeed(), url: '/work/search' },
+				{ name: m.grand_merry_fly_succeed(), url: '/work' },
 				{ name: getDisplayText(data.title), url: `/work/${params.work_id}` }
 			]
 		}

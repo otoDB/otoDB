@@ -1,4 +1,10 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
+import { asEnum } from '$lib/enums';
+import {
+	PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0,
+	PathsApiProfileSubmissionsGetParametersQueryStanding,
+	Status
+} from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -7,9 +13,22 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	const platform = parseInt(url.searchParams.get('platform') ?? '', 10) || null,
 		origin = parseInt(url.searchParams.get('origin') ?? '', 10) || null,
 		status = parseInt(url.searchParams.get('status') ?? '', 10) || null,
-		order = url.searchParams.get('order'),
-		dir = url.searchParams.get('dir'),
-		standing = parseInt(url.searchParams.get('standing') ?? '1', 10) || 0;
+		paramStanding = parseInt(url.searchParams.get('standing') ?? '1', 10) || 0;
+
+	const standing = asEnum(Status, paramStanding);
+
+	const paramDir = url.searchParams.get('dir') === '-' ? '-' : '';
+	const paramOrder = `${paramDir}${url.searchParams.get('order')}`;
+
+	type Order = PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0;
+	const order: Order | null =
+		paramOrder &&
+		Object.values(PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0).includes(
+			paramOrder as Order
+		)
+			? (paramOrder as Order)
+			: null;
+
 	const { data: submissions } = await client.GET('/api/profile/submissions', {
 		fetch,
 		params: {
@@ -17,11 +36,14 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 				username: params.username,
 				limit: batch_size,
 				offset: (page - 1) * batch_size,
-				order: order ? (dir === '-' ? '-' : '') + order : null,
+				order: order,
 				origin,
 				platform,
 				status,
-				standing
+				standing:
+					// Duplicated enum
+					(standing as PathsApiProfileSubmissionsGetParametersQueryStanding | null) ??
+					undefined
 			}
 		}
 	});
@@ -33,7 +55,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		origin,
 		platform,
 		status,
-		dir,
+		dir: paramDir,
 		standing
 	};
 };

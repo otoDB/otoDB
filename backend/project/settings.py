@@ -126,45 +126,34 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-ALLOWED_DATABASE_BACKENDS = ['sqlite3', 'postgresql']
-if (
-	'OTODB_DB_BACKEND' in os.environ
-	and os.environ['OTODB_DB_BACKEND'] not in ALLOWED_DATABASE_BACKENDS
-):
-	logger.critical(
-		f'Database backend {os.environ["OTODB_DB_BACKEND"]} not allowed -- exiting'
-	)
-	exit(1)
-
-DATABASE_BACKEND = os.environ.get('OTODB_DB_BACKEND', 'sqlite3')
-DATABASE = {
-	'ENGINE': f'django.db.backends.{DATABASE_BACKEND}',
-	'OPTIONS': {},
-}
-
-if (
-	DATABASE_BACKEND == 'postgresql'
-	and os.environ.get('OTODB_DB_SERVICE')
-	and os.environ.get('OTODB_DB_PASSFILE')
-):
-	DATABASE['OPTIONS']['service'] = os.environ['OTODB_DB_SERVICE']
-	DATABASE['OPTIONS']['passfile'] = os.environ['OTODB_DB_PASSFILE']
-elif DATABASE_BACKEND == 'postgresql':
-	DATABASE['NAME'] = os.environ['OTODB_DB_NAME']
-	DATABASE['USER'] = os.environ['OTODB_DB_USER']
-	DATABASE['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
-	DATABASE['HOST'] = os.environ['OTODB_DB_HOST']
-	DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
-	DATABASE['CONN_MAX_AGE'] = 0
-	DATABASE['OPTIONS']['pool'] = {
-		'min_size': int(os.environ.get('OTODB_DB_POOL_MIN_SIZE', '4')),
-		'max_size': int(os.environ.get('OTODB_DB_POOL_MAX_SIZE', '16')),
-		'timeout': int(os.environ.get('OTODB_DB_POOL_TIMEOUT', '10')),
-		'max_lifetime': int(os.environ.get('OTODB_DB_POOL_MAX_LIFETIME', '1800')),
-		'max_idle': int(os.environ.get('OTODB_DB_POOL_MAX_IDLE', '300')),
+if os.environ.get('OTODB_SKIP_DB'):
+	DATABASE = {
+		'ENGINE': 'django.db.backends.sqlite3',
+		'NAME': ':memory:',
 	}
 else:
-	DATABASE['NAME'] = BASE_DIR / f'{os.environ.get("OTODB_DB_NAME", "db")}.sqlite3'
+	DATABASE = {
+		'ENGINE': 'django.db.backends.postgresql',
+		'OPTIONS': {},
+	}
+
+	if os.environ.get('OTODB_DB_SERVICE') and os.environ.get('OTODB_DB_PASSFILE'):
+		DATABASE['OPTIONS']['service'] = os.environ['OTODB_DB_SERVICE']
+		DATABASE['OPTIONS']['passfile'] = os.environ['OTODB_DB_PASSFILE']
+	else:
+		DATABASE['NAME'] = os.environ['OTODB_DB_NAME']
+		DATABASE['USER'] = os.environ['OTODB_DB_USER']
+		DATABASE['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
+		DATABASE['HOST'] = os.environ['OTODB_DB_HOST']
+		DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
+		DATABASE['CONN_MAX_AGE'] = 0
+		DATABASE['OPTIONS']['pool'] = {
+			'min_size': int(os.environ.get('OTODB_DB_POOL_MIN_SIZE', '4')),
+			'max_size': int(os.environ.get('OTODB_DB_POOL_MAX_SIZE', '16')),
+			'timeout': int(os.environ.get('OTODB_DB_POOL_TIMEOUT', '10')),
+			'max_lifetime': int(os.environ.get('OTODB_DB_POOL_MAX_LIFETIME', '1800')),
+			'max_idle': int(os.environ.get('OTODB_DB_POOL_MAX_IDLE', '300')),
+		}
 
 DATABASES = {
 	'default': DATABASE,

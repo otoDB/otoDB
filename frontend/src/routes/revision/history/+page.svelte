@@ -1,14 +1,14 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
-	import { m } from '$lib/paraglide/messages.js';
-	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { isSOV, isSVO, timeAgo } from '$lib/ui';
+	import Pager from '$lib/Pager.svelte';
+	import Section from '$lib/Section.svelte';
+	import TimeAgo from '$lib/TimeAgo.svelte';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
+	import { routeNames } from '$lib/enums/route.js';
+	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { Route } from '$lib/enums';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section title={m.giant_away_scallop_hike()}>
@@ -17,7 +17,7 @@
 			{#each data.results?.items as r, i (i)}
 				<tr
 					><td><a href="/revision/{r.id}">#{r.id}</a></td><td
-						>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+						>{r.route ? routeNames[r.route]() : ''}</td
 					><td>
 						{#if isSVO(getLocale())}
 							{m.curly_safe_lynx_fond()}
@@ -26,10 +26,7 @@
 						{#if isSOV(getLocale())}
 							{m.curly_safe_lynx_fond()}
 						{/if}</td
-					><td
-						><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
-						></td
-					></tr
+					><td><TimeAgo date={r.date} /></td></tr
 				>
 			{/each}
 		</tbody>
@@ -39,7 +36,7 @@
 			n_count={data.results.count}
 			page={data.page}
 			page_size={data.batch_size}
-			base_url={page.url}
+			base_url={page.url.toString()}
 		/>
 	{/if}
 </Section>

@@ -2,28 +2,47 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
-	import { ProfileConnectionLink, ProfileConnectionTypes, UserLevel } from '$lib/enums';
+	import { enumValues } from '$lib/enums.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { hasUserLevel, userLevelNames } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages';
+	import { Levels, ProfileConnectionTypes } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
-	import { timeAgo } from '$lib/ui';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 
 	let { data } = $props();
 
 	let urls = $state(
 		data.connections
-			?.map(({ site, content_id }) => ProfileConnectionLink[site](content_id))
+			?.map(({ site, content_id }) => profileConnectionMap[site].linkFn(content_id))
 			.join('\n') ?? ''
 	);
 
 	const invite_interval = 1 * 7 * 24 * 60 * 60 * 1000; // two weeks
-	const can_create_invite = $derived(
-		data.user.level >= UserLevel.ADMIN ||
-			(!data.invites[1] &&
-				(data.invites[0].length === 0 ||
-					data.invites[0].some(
-						(inv) => Date.now() - Date.parse(inv.created_at) >= invite_interval
-					)))
-	);
+	const deniedInviteCreationReason:
+		| { reason: 'no invites data' }
+		| { reason: 'restricted invitee exists'; username: string }
+		| { reason: 'next invite not yet available'; next: number }
+		| null = $derived.by(() => {
+		if (hasUserLevel(data.user?.level, Levels.Admin)) return null;
+		if (!data.invites) return { reason: 'no invites data' };
+		if (data.invites.restrictedInvitee)
+			return {
+				reason: 'restricted invitee exists',
+				username: data.invites.restrictedInvitee.username
+			};
+		if (
+			data.invites.invites.some(
+				(inv) => Date.now() - Date.parse(inv.created_at) < invite_interval
+			)
+		)
+			return {
+				reason: 'next invite not yet available',
+				next: Date.parse(data.invites.invites[0].created_at) + invite_interval
+			};
+
+		return null;
+	});
 </script>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
@@ -34,10 +53,10 @@
 		<summary>{m.fit_noble_niklas_build()}</summary>
 		<table>
 			<tbody>
-				{#each Object.keys(ProfileConnectionTypes).filter((e) => !isNaN(e)) as k, i (i)}
+				{#each enumValues(ProfileConnectionTypes) as k (k)}
 					<tr
-						><td>{ProfileConnectionTypes[k]}</td><td
-							><code>{ProfileConnectionLink[k]('<code>')}</code></td
+						><td>{profileConnectionMap[k].name}</td><td
+							><code>{profileConnectionMap[k].linkFn('<code>')}</code></td
 						></tr
 					>
 				{/each}
@@ -55,12 +74,12 @@
 	</form>
 </Section>
 
-{#if data.user.level >= UserLevel.EDITOR}
+{#if hasUserLevel(data.user?.level, Levels.Editor)}
 	<Section title={m.true_male_kudu_cook()}>
 		<p>
 			{m.sound_flaky_goose_pinch()}
 		</p>
-		{#if data.invites[0].length}
+		{#if data.invites && data.invites?.invites.length > 0}
 			<table>
 				<tbody>
 					<tr
@@ -70,45 +89,51 @@
 							>{m.suave_royal_jurgen_shine()}</th
 						></tr
 					>
-					{#each data.invites[0] as inv, i (i)}
-						<tr
-							><td
-								><time title={new Date(inv.created_at).toLocaleString()}
-									>{timeAgo(inv.created_at)}</time
-								></td
-							><td><pre>{inv.secret}</pre></td><td>{UserLevel[inv.level]()}</td><td
-								>{#if inv.used_by}<a href="/profile/{inv.used_by.username}"
-										>{inv.used_by.username}</a
-									>{:else}N/A{/if}</td
-							></tr
-						>
+					{#each data.invites.invites as inv, i (i)}
+						<tr>
+							<td>
+								<TimeAgo date={inv.created_at} />
+							</td>
+							<td><pre>{inv.secret}</pre></td>
+							<td>{userLevelNames[inv.level]()}</td>
+							<td>
+								{#if inv.used_by}
+									<a href="/profile/{inv.used_by.username}">
+										{inv.used_by.username}
+									</a>
+								{:else}
+									N/A
+								{/if}
+							</td>
+						</tr>
 					{/each}
 				</tbody>
 			</table>
 		{/if}
 		<form
-			inert={!can_create_invite}
+			inert={!!deniedInviteCreationReason}
 			onsubmit={async () => {
 				await client.POST('/api/auth/invite', { fetch });
 				invalidateAll();
 			}}
 		>
-			{#if !can_create_invite}
-				{#if data.invites[1]}
-					<p>{m.just_mushy_ladybug_twist({ username: data.invites[1].username })}</p>
-				{:else}
-					<p>
-						{m.next_royal_carp_pride({
-							date: new Date(
-								Date.parse(data.invites[0][0].created_at) + invite_interval
-							).toLocaleString()
-						})}
-					</p>
-				{/if}
+			{#if deniedInviteCreationReason?.reason === 'restricted invitee exists'}
+				<p>
+					{m.just_mushy_ladybug_twist({
+						username: deniedInviteCreationReason.username
+					})}
+				</p>
+			{:else if deniedInviteCreationReason?.reason === 'next invite not yet available'}
+				<p>
+					{m.next_royal_carp_pride({
+						date: new Date(deniedInviteCreationReason.next).toLocaleString()
+					})}
+				</p>
 			{/if}
-			<button type="submit" disabled={!can_create_invite}
-				>{m.muddy_that_bobcat_gleam({ level: UserLevel[UserLevel.EDITOR]() })}</button
-			>
+
+			<button type="submit" disabled={!!deniedInviteCreationReason}>
+				{m.muddy_that_bobcat_gleam({ level: userLevelNames[Levels.Editor]() })}
+			</button>
 		</form>
 	</Section>
 {/if}

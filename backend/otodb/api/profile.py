@@ -13,7 +13,14 @@ from ninja.errors import HttpError
 
 from otodb.account.models import Account
 from otodb.models import ProfileConnection, UserPreferences, Notification
-from otodb.models.enums import Status
+from otodb.models.enums import (
+	Status,
+	Platform,
+	WorkOrigin,
+	WorkStatus,
+	ProfileConnectionTypes,
+	NotificationReason,
+)
 
 from .comment import ModelsWithComments
 
@@ -42,7 +49,11 @@ def lists(request: HttpRequest, username: str):
 	return user.pool_set
 
 
-@profile_router.get('connection', response=List[ConnectionSchema])
+class UserConnectionSchema(ConnectionSchema):
+	site: ProfileConnectionTypes
+
+
+@profile_router.get('connection', response=List[UserConnectionSchema])
 def connection(request: HttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.profileconnection_set
@@ -85,9 +96,9 @@ class SourceSubmissionSchema(WorkSourceSchema):
 
 
 class SubmissionsFilterSchema(FilterSchema):
-	platform: int | None = None
-	origin: int | None = Field(None, json_schema_extra={'q': 'work_origin'})
-	status: int | None = Field(None, json_schema_extra={'q': 'work_status'})
+	platform: Platform | None = None
+	origin: WorkOrigin | None = Field(None, json_schema_extra={'q': 'work_origin'})
+	status: WorkStatus | None = Field(None, json_schema_extra={'q': 'work_status'})
 
 
 @profile_router.get('submissions', response=List[SourceSubmissionSchema])
@@ -97,9 +108,9 @@ def submissions(
 	username: str,
 	filters: SubmissionsFilterSchema = Query(...),
 	order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id',
-	standing: int = 1,
+	standing: Status = Status.APPROVED,
 ):
-	match Status(standing):
+	match standing:
 		case Status.PENDING:
 			q = Q(media__isnull=True, rejection__isnull=True)
 		case Status.APPROVED:
@@ -126,10 +137,11 @@ class NotificationSchema(ModelSchema):
 	id: int
 	comment: tuple[ModelsWithComments, int | str] | None
 	post: int | None = Field(None, alias='post_id')
+	reason: NotificationReason
 
 	class Meta:
 		model = Notification
-		fields = ['dismissed', 'revision', 'reason']
+		fields = ['dismissed', 'revision']
 
 	@field_validator('comment', mode='before', check_fields=False)
 	@classmethod

@@ -1,6 +1,26 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { isValidEntityModelType, type EntityModelType } from '$lib/enums';
+import type { components, Route } from '$lib/schema';
+
+type RC = components['schemas']['RevisionChangeSchema'];
+const group_RCs = (
+	items: RC[]
+): { route: Route; entities: { rcs: RC[]; ent_type: EntityModelType; ent_id: string }[] }[] =>
+	(Object.values(Object.groupBy(items, (c) => c.route)) as RC[][])
+		.map((rent) => ({
+			route: rent![0].route,
+			entities: (Object.values(Object.groupBy(rent!, (c) => c.ent_type + c.ent_id)) as RC[][])
+				.map((cs) => cs.filter((c) => isValidEntityModelType(c.ent_type)))
+				.filter((ec) => ec.length)
+				.map((tg) => ({
+					ent_type: tg[0].ent_type as EntityModelType,
+					ent_id: tg[0].ent_id,
+					rcs: tg
+				}))
+		}))
+		.filter(({ entities }) => entities.length);
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	const revision_id = +params.id;
@@ -19,5 +39,10 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		}
 	});
 
-	return { changes, page, batch_size };
+	return {
+		changes,
+		page,
+		batch_size,
+		routes: group_RCs(changes.items)
+	};
 };

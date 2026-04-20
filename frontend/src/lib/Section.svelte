@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import DisplayText from './DisplayText.svelte';
-	import { m } from './paraglide/messages';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import { m } from '$lib/paraglide/messages';
 	let {
 		title = undefined,
 		type = undefined,

@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
-@config '../tailwind.config.js';
 @import './themes.css';
 
 @theme inline {
@@ -180,6 +179,30 @@
 			}
 		}
 	}
+}
+
+@utility external-link-icon {
+	a[href^='//'],
+	a[href^='http://'],
+	a[href^='https://'] {
+		&:not([href^='http://otodb.net']):not([href^='https://otodb.net'])::after {
+			content: '';
+			display: inline-block;
+			background-image: url(/external-link.svg);
+			background-size: 100%;
+			width: 0.6em;
+			height: 0.6em;
+			margin-left: 0.2em;
+		}
+	}
+}
+
+/* Typography overrides */
+.prose {
+	table {
+		width: fit-content;
+	}
+	@apply external-link-icon;
 }
 
 /* Autolink headings */

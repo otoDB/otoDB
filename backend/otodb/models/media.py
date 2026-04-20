@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, cast
 
-import nh3
-
 from django.db import models
 from django.db.models import Prefetch
 from django.urls import reverse
@@ -11,6 +9,7 @@ from tagulous.models import TagField, TaggedManager
 from .enums import Rating, WorkTagCategory, Role
 from .tag import TagWork, TagSong, tagwork_ordering_case
 from .revision import RevisionTrackedModel
+from otodb.common import clean_description
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
@@ -211,7 +210,7 @@ class MediaWork(RevisionTrackedModel):
 
 	def save(self, *args, **kwargs):
 		if self.description:
-			self.description = nh3.clean(self.description)
+			self.description = clean_description(self.description)
 		super().save(*args, **kwargs)
 
 	@cached_property

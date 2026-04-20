@@ -2,8 +2,14 @@ name: CI for Backend
 
 on:
   push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
     paths:
-      - "backend/**"
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
 
 defaults:
   run:
@@ -22,27 +28,27 @@ jobs:
   test:
     name: Test (Python ${{ matrix.python-version }}, ${{ matrix.database.name }})
     runs-on: ubuntu-latest
+    needs:
+      - migrations
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.14"]
         database:
-          - { type: sqlite3, name: SQLite }
-          - { type: postgresql, name: PostgreSQL 17, version: "17" }
+          - { name: PostgreSQL 17, version: "17" }
           # - { type: postgresql, name: PostgreSQL 18, version: "18" }
 
     env:
       OTODB_SECRET_KEY: test-secret-key-for-ci
-      OTODB_DB_BACKEND: ${{ matrix.database.type }}
-      OTODB_DB_HOST: ${{ matrix.database.type == 'postgresql' && 'localhost' || '' }}
-      OTODB_DB_PORT: ${{ matrix.database.type == 'postgresql' && '5432' || '' }}
-      OTODB_DB_NAME: ${{ matrix.database.type == 'postgresql' && 'otodb_test' || '' }}
-      OTODB_DB_USER: ${{ matrix.database.type == 'postgresql' && 'postgres' || '' }}
-      OTODB_DB_PASSWORD: ${{ matrix.database.type == 'postgresql' && 'postgres' || '' }}
+      OTODB_DB_HOST: localhost
+      OTODB_DB_PORT: 5432
+      OTODB_DB_NAME: "otodb_test"
+      OTODB_DB_USER: postgres
+      OTODB_DB_PASSWORD: postgres
 
     services:
       postgres:
-        image: ${{ matrix.database.type == 'postgresql' && format('postgres:{0}', matrix.database.version) || '' }}
+        image: ${{ format('postgres:{0}', matrix.database.version) }}
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: otodb_test
@@ -71,17 +77,88 @@ jobs:
       - name: Check server can start
         run: timeout 10 uv run python manage.py runserver || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
-  # build_docker:
-  #   name: Build Docker image
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     # - uses: hadolint/hadolint-action@v3.1.0
-  #     #   with:
-  #     #     dockerfile: web/Dockerfile
-  #     - uses: docker/setup-buildx-action@v3
-  #     - uses: docker/build-push-action@v5
-  #       with:
-  #         push: false
-  #         context: backend
-  #         file: backend/Dockerfile
+  migrations:
+    name: Check for missing migrations
+    runs-on: ubuntu-latest
+    env:
+      OTODB_SECRET_KEY: dummy
+      OTODB_SKIP_DB: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Set up Python
+        run: uv python install 3.14
+      - name: Install dependencies
+        run: uv sync
+      - name: Check for missing migrations
+        run: uv run python manage.py makemigrations --check --dry-run
+
+  build_docker:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - test
+      - migrations
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+      - uses: docker/metadata-action@v6
+        id: backend-metadata
+        with:
+          images: ghcr.io/otodb/otodb-backend
+          tags: |
+            type=sha,format=long,prefix=
+            type=ref,event=branch
+            type=ref,event=tag
+          flavor: |
+            latest=true
+      - name: ${{ github.ref == 'refs/heads/master' && 'Build and publish image' || 'Only build image' }}
+        uses: docker/build-push-action@v7
+        with:
+          push: ${{ github.ref == 'refs/heads/master' }}
+          context: backend
+          file: backend/Dockerfile
+          tags: ${{ steps.backend-metadata.outputs.tags }}
+          labels: ${{ steps.backend-metadata.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache
+          cache-to: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache,mode=max
+
+  openapi-typespec:
+    name: Verify schema is fresh
+    runs-on: ubuntu-latest
+    env:
+      OTODB_SECRET_KEY: dummy
+      OTODB_SKIP_DB: 1
+    needs:
+      - lint
+      - test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: oven-sh/setup-bun@v1
+      - name: Generate JSON
+        working-directory: backend
+        run: |
+          uv run manage.py openapi_schema > ../frontend/openapi.json
+        
+      - name: Install dependencies
+        working-directory: frontend
+        run: |
+          bun install
+
+      - name: Verify no changes (Fail if stale)
+        working-directory: frontend
+        run: |
+          rm redocly.yaml
+          bun run sync-schema openapi.json --check -o src/lib/schema.ts

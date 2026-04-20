@@ -1,33 +1,33 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import {
-		Languages,
-		ProfileConnectionLink,
-		ProfileConnectionTypes,
-		SongConnectionLink,
-		SongConnectionTypes,
-		MediaConnectionLink,
-		MediaConnectionTypes,
-		TagWorkConnectionLink,
-		TagWorkConnectionTypes,
-		WorkTagCategory,
-		MediaType
-	} from '$lib/enums';
-	import WorkCard from '$lib/WorkCard.svelte';
-	import CommentTree from '$lib/CommentTree.svelte';
-	import SongTag from '$lib/SongTag.svelte';
-	import client, { getTagDisplayName, makeTagDisplayName } from '$lib/api.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import WorkTag from '$lib/WorkTag.svelte';
-	import LangSwitch from '$lib/LangSwitch.svelte';
-	import type { components } from '$lib/schema.js';
-	import RelationViewer from '$lib/RelationViewer.svelte';
-	import { renderMarkdown } from '$lib/markdown';
-
 	import { page } from '$app/state';
+	import CommentTree from '$lib/CommentTree.svelte';
+	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import LangSwitch from '$lib/LangSwitch.svelte';
+	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import RelationViewer from '$lib/RelationViewer.svelte';
+	import Section from '$lib/Section.svelte';
+	import SongTag from '$lib/SongTag.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
+	import client, { getTagDisplayName } from '$lib/api.js';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/language.js';
+	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/mediaType.js';
+	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { songConnectionMap } from '$lib/enums/songConnection.js';
+	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
+
+	import { renderMarkdown } from '$lib/markdown';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
+	import {
+		MediaConnectionTypes,
+		PathsApiCommentCommentDeleteParametersQueryModel,
+		ProfileConnectionTypes,
+		WorkTagCategory,
+		type components
+	} from '$lib/schema.js';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -38,8 +38,8 @@
 					JSON.stringify({
 						'@context': 'https://schema.org',
 						'@type': 'Article',
-						headline: data.display_name,
-						url: `https://otodb.net${page.url.pathname}`
+						'headline': data.display_name,
+						'url': `https://otodb.net${page.url.pathname}`
 					}) +
 					'</' +
 					'script>'
@@ -47,16 +47,20 @@
 	);
 
 	const aliases = $derived(
-		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])]
-			.map(makeTagDisplayName)
-			.filter((e) => e !== data.display_name)
+		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])].filter(
+			(e) => e !== data.display_name
+		)
 	);
 
-	let wikiView = $derived(
-		Languages[data.wiki_page?.find(({ lang }) => lang === Languages[getLocale()])?.lang] ??
-			Languages[data.wiki_page?.at(0)?.lang] ??
-			undefined
-	);
+	let wikiView = $derived.by(() => {
+		const wikiUserLang = data.wiki_page.find(({ lang }) => lang === languages[getLocale()].id);
+		if (wikiUserLang) return resolveLanguageKeyById(wikiUserLang.lang);
+
+		const wikiFallback = data.wiki_page.at(0);
+		if (wikiFallback) return resolveLanguageKeyById(wikiFallback.lang);
+
+		return undefined;
+	});
 
 	const fetchNextBatch = () =>
 		client.GET('/api/tag/works', {
@@ -69,13 +73,6 @@
 				}
 			}
 		});
-
-	const ext_cat_types = $derived(
-		data.tag.category === 6 ? MediaConnectionTypes : ProfileConnectionTypes
-	);
-	const ext_cat_links = $derived(
-		data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink
-	);
 
 	const paths = $derived.by(() => {
 		const get_paths = (node: string): components['schemas']['TagWorkSchema'][][] =>
@@ -115,12 +112,12 @@
 	<h2>
 		{m.mild_loud_shad_enchant({
 			type: m.plane_awful_bobcat_spark(),
-			name: WorkTagCategory[data.tag.category]()
+			name: WorkTagCategoryMap[data.tag.category].nameFn()
 		})}
-		{#if data.tag.category === 6 && data.tag.media_type?.length}
-			({#each data.tag.media_type as t, i (i)}{MediaType[
-					t
-				]()}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
+		{#if data.tag.category === WorkTagCategory.Media && data.tag.media_type?.length}
+			({#each data.tag.media_type as t, i (i)}{mediaTypes[
+					resolveMediaTypeKeyById(t)
+				].nameFn()}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
 		{/if}
 	</h2>
 
@@ -142,29 +139,33 @@
 			{#each data.connections[0] as s, i (i)}
 				<li>
 					<ConnectionFavicon
-						type={TagWorkConnectionTypes[s.site]}
+						type={TagWorkConnectionMap[s.site].name}
 						class="inline size-4"
 					/>
 					<a
-						href={TagWorkConnectionLink[s.site](s.content_id)}
+						href={TagWorkConnectionMap[s.site].linkFn(s.content_id)}
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{decodeURI(TagWorkConnectionLink[s.site](s.content_id))}
+						{decodeURI(TagWorkConnectionMap[s.site].linkFn(s.content_id))}
 					</a>
 				</li>
 			{/each}
 			{#if data.connections[1]}
 				{#each data.connections[1] as s, i (i)}
+					{@const conn =
+						data.tag.category === WorkTagCategory.Media
+							? mediaConnectionMap[s.site as MediaConnectionTypes]
+							: profileConnectionMap[s.site as ProfileConnectionTypes]}
 					<li class={{ 'opacity-60': s.dead }}>
-						<ConnectionFavicon type={ext_cat_types[s.site]} class="inline size-4" />
+						<ConnectionFavicon type={conn.name} class="inline size-4" />
 						<a
-							href={ext_cat_links[s.site](s.content_id)}
+							href={conn.linkFn(s.content_id)}
 							target="_blank"
 							rel="noopener noreferrer"
 							class={{ 'line-through': s.dead }}
 						>
-							{ext_cat_links[s.site](s.content_id)}
+							{conn.linkFn(s.content_id)}
 						</a>
 					</li>
 				{/each}
@@ -174,22 +175,20 @@
 
 	<hr class="my-2" />
 
-	{#if data.wiki_page && data.wiki_page.length}
-		{@const wp = data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
+	{#if wikiView && data.wiki_page.length > 0}
+		{@const wp = data.wiki_page.find(({ lang }) => lang === languages[wikiView!].id)!}
 		<div class="float-right clear-left my-2">
 			<LangSwitch
-				availableLanguages={data.wiki_page.map((v) => Languages[v.lang])}
+				availableLanguages={data.wiki_page.map((v) => resolveLanguageKeyById(v.lang))}
 				bind:value={wikiView}
 			/>
 		</div>
-		{#if wp}
-			<div
-				class="prose prose-neutral prose-sm dark:prose-invert prose-p:max-w-4xl prose-ul:max-w-4xl prose-ol:max-w-4xl prose-blockquote:max-w-4xl prose-headings:max-w-4xl max-w-none"
-			>
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html renderMarkdown(wp.page)}
-			</div>
-		{/if}
+		<div
+			class="prose prose-neutral prose-sm dark:prose-invert prose-p:max-w-4xl prose-ul:max-w-4xl prose-ol:max-w-4xl prose-blockquote:max-w-4xl prose-headings:max-w-4xl max-w-none"
+		>
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html renderMarkdown(wp.page)}
+		</div>
 	{:else}
 		<p>{m.tame_dirty_goldfish_flow()}</p>
 	{/if}
@@ -219,15 +218,15 @@
 				{#each data.song_connections as s, i (i)}
 					<li>
 						<ConnectionFavicon
-							type={SongConnectionTypes[s.site]}
+							type={songConnectionMap[s.site].name}
 							class="inline size-4"
 						/>
 						<a
-							href={SongConnectionLink[s.site](s.content_id)}
+							href={songConnectionMap[s.site].linkFn(s.content_id)}
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{decodeURI(SongConnectionLink[s.site](s.content_id))}
+							{decodeURI(songConnectionMap[s.site].linkFn(s.content_id))}
 						</a>
 					</li>
 				{/each}
@@ -240,7 +239,7 @@
 				{/each}
 			</ul>
 		{/if}
-		{#if data.song_relations[0]?.length}
+		{#if data.song_relations && data.song_relations[0].length}
 			<RelationViewer
 				id={data.tag.song.id}
 				objects={data.song_relations[1]}
@@ -294,7 +293,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="tagwork"
+		model={PathsApiCommentCommentDeleteParametersQueryModel.tagwork}
 		pk={data.tag.id}
 	/>
 </Section>

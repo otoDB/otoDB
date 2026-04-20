@@ -1,13 +1,18 @@
 <script lang="ts">
-	import type { components } from './schema';
-	import WorkTag from './WorkTag.svelte';
-	import DisplayText from './DisplayText.svelte';
-	import WorkThumbnail from './WorkThumbnail.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getDisplayText } from './api';
+	import { getDisplayText } from '$lib/api';
+	import type { ComponentProps } from 'svelte';
 
 	interface Props {
-		work: components['schemas']['WorkSchema'];
+		work: {
+			id: number;
+			title?: string | null | undefined;
+			thumbnail?: string | null | undefined;
+			tags: ComponentProps<typeof WorkTag>['tag'][];
+		};
 		class?: string;
 	}
 	const { work, ...props }: Props = $props();

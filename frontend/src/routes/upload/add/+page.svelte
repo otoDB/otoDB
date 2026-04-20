@@ -1,12 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { UserLevel, Platform } from '$lib/enums';
+	import { enumValues, PlatformNames } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
+	import { Levels, Platform } from '$lib/schema.js';
 
-	let { data, form }: PageProps = $props();
+	let { data, form } = $props();
 	let isUnavailable = $derived(!!data.unavailable_source);
 
 	let submitting = $state(false);
@@ -23,8 +24,8 @@
 	{#if !data.unavailable_source}
 		<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 		<ul>
-			{#each Platform.slice(1) as platform, i (i)}
-				<li>{platform}</li>
+			{#each enumValues(Platform) as platform, i (i)}
+				<li>{PlatformNames[platform]}</li>
 			{/each}
 		</ul>
 	{/if}
@@ -55,26 +56,43 @@
 					</tr>
 					<tr>
 						<th class="w-min whitespace-nowrap">
-							<label for="origin">{m.watery_fuzzy_fireant_thrive()}</label>
+							{m.watery_fuzzy_fireant_thrive()}
 						</th>
-						<td class="w-full">
-							<select id="origin" name="origin" required>
-								<option value="" selected disabled>---</option>
-								<option value={true}>{m.broad_large_squid_zoom()}</option>
-								<option value={false}>{m.great_lucky_goldfish_sail()}</option>
-							</select>
+						<td class="flex w-full gap-4">
+							<label>
+								<input type="radio" name="origin" value="true" required />
+								{m.broad_large_squid_zoom()}
+							</label>
+							<label>
+								<input type="radio" name="origin" value="false" required />
+								{m.great_lucky_goldfish_sail()}
+							</label>
 						</td>
 					</tr>
-					{#if data.user?.level >= UserLevel.EDITOR}
+					{#if hasUserLevel(data.user?.level, Levels.Editor)}
 						<tr>
 							<th class="w-min whitespace-nowrap">
-								<label for="isUnavailable">{m.that_large_mare_ascend()}</label>
+								{m.that_large_mare_ascend()}
 							</th>
-							<td class="w-full">
-								<select id="isUnavailable" bind:value={isUnavailable}>
-									<option value={false}>{m.great_lucky_goldfish_sail()}</option>
-									<option value={true}>{m.broad_large_squid_zoom()}</option>
-								</select>
+							<td class="flex w-full gap-4">
+								<label>
+									<input
+										type="radio"
+										name="isUnavailable"
+										bind:group={isUnavailable}
+										value={true}
+									/>
+									{m.broad_large_squid_zoom()}
+								</label>
+								<label>
+									<input
+										type="radio"
+										name="isUnavailable"
+										bind:group={isUnavailable}
+										value={false}
+									/>
+									{m.great_lucky_goldfish_sail()}
+								</label>
 							</td>
 						</tr>
 					{/if}

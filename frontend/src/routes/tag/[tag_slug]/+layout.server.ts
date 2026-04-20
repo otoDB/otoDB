@@ -1,16 +1,13 @@
-import { m } from '$lib/paraglide/messages.js';
-import client from '$lib/api';
-import type { LayoutServerLoad } from './$types';
-import { error, redirect } from '@sveltejs/kit';
-import { userLevelCheck } from '$lib/route_guard';
+import client from '$lib/api.server';
 import { getTagDisplayName } from '$lib/api';
+import { hasUserLevel } from '$lib/enums/userLevel';
+import { m } from '$lib/paraglide/messages.js';
+import { redirect } from '@sveltejs/kit';
+import type { LayoutServerLoad } from './$types';
+import { Levels } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
-	const {
-		data,
-		error: e,
-		response
-	} = await client.GET('/api/tag/tag', {
+	const { data } = await client.GET('/api/tag/tag', {
 		params: {
 			query: {
 				tag_slug: params.tag_slug!
@@ -19,15 +16,11 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		fetch
 	});
 
-	if (response.status === 300)
+	if (data.slug !== params.tag_slug)
 		redirect(
 			303,
-			url.pathname.replace(
-				encodeURIComponent(params.tag_slug),
-				encodeURIComponent(e as string)
-			)
+			url.pathname.replace(encodeURIComponent(params.tag_slug), encodeURIComponent(data.slug))
 		);
-	else if (e) error(404, { message: 'Not found' });
 
 	const song_relations = data.song
 		? (
@@ -48,9 +41,9 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				pathname: `tag/${params.tag_slug}`,
 				title: m.empty_legal_chicken_taste() + ' ' + params.tag_slug
 			},
-			...(userLevelCheck(locals.user)
-				? []
-				: [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]),
+			...(hasUserLevel(locals.user?.level, Levels.Member)
+				? [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]
+				: []),
 			{
 				pathname: `tag/${params.tag_slug}/threads`,
 				title: m.big_tiny_kitten_devour()
@@ -66,9 +59,8 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 						pathname: `tag/${params.tag_slug}`,
 						title: m.grand_nice_pony_belong() + ' ' + data.song.id
 					},
-					...(userLevelCheck(locals.user)
-						? []
-						: [
+					...(hasUserLevel(locals.user?.level, Levels.Member)
+						? [
 								{
 									pathname: `tag/${params.tag_slug}/song_tags`,
 									title: m.dull_plain_angelfish_cuddle()
@@ -77,7 +69,8 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 									pathname: `tag/${params.tag_slug}/edit`,
 									title: m.minor_crisp_cobra_list()
 								}
-							]),
+							]
+						: []),
 					{
 						pathname: `tag/${params.tag_slug}/history`,
 						title: m.giant_away_scallop_hike()
@@ -91,7 +84,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			title: display_name,
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
-				{ name: m.empty_legal_chicken_taste(), url: '/tag/search' },
+				{ name: m.empty_legal_chicken_taste(), url: '/tag' },
 				{ name: display_name, url: `/tag/${params.tag_slug}` }
 			]
 		}

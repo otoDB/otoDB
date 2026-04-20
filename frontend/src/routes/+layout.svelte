@@ -1,17 +1,43 @@
 <script lang="ts">
-	import '../app.css';
-	import { page } from '$app/state';
-	import { Toaster } from 'svelte-sonner';
-	import { m } from '$lib/paraglide/messages.js';
-	import { navigating } from '$app/state';
-	import { clickOutside, current_version, get_prefs, isFormDirty, set_lang } from '$lib/ui';
-	import { LanguageNames, Themes, UserLevel } from '$lib/enums';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { beforeNavigate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { navigating, page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import Section from '$lib/Section.svelte';
+	import { languages } from '$lib/enums/language';
+	import { hasUserLevel } from '$lib/enums/userLevel';
+	import { themes } from '$lib/themes/themes';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { callErrorToast } from '$lib/toast';
+	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
+	import { currentVersion, versions } from '$lib/enums/version';
+	import { Toaster } from 'svelte-sonner';
+	import '../app.css';
+	import { isFormDirty } from '$lib/dirty';
+	import { Levels, ThemePref } from '$lib/schema';
 
 	let { data, children } = $props();
+
+	function handleError(e: Event) {
+		const err = e as ErrorEvent;
+		console.error(err.error ?? err.message);
+		callErrorToast(m.ideal_soft_falcon_urge());
+	}
+
+	function handleRejection(e: PromiseRejectionEvent) {
+		console.error(e.reason);
+		callErrorToast(m.ideal_soft_falcon_urge());
+	}
+
+	let boundaryError: unknown = $state(null);
+	let boundaryReset: () => void = $state(() => {});
+
+	function handleBoundaryError(e: unknown, reset: () => void) {
+		console.error(e);
+		boundaryError = e;
+		boundaryReset = reset;
+	}
 
 	let isMobileNavOpen = $state(false);
 	function toggleMobileNav() {
@@ -28,10 +54,18 @@
 		)
 			if (!confirm(m.raw_actual_mallard_exhale())) cancel();
 	});
+	afterNavigate(() => {
+		if (boundaryError) {
+			boundaryError = null;
+			boundaryReset();
+		}
+	});
 
 	let search_type = $state('work');
 
-	const theme = $derived(Themes[data.user?.prefs?.theme ?? +(get_prefs()?.theme ?? 0)]);
+	const theme: string = $derived(
+		themes[data.user?.prefs?.theme ?? get_prefs()?.theme ?? ThemePref.Default].cssKey
+	);
 
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
 
@@ -39,9 +73,9 @@
 		JSON.stringify({
 			'@context': 'https://schema.org',
 			'@type': 'Organization',
-			name: 'otoDB',
-			url: 'https://otodb.net',
-			sameAs: ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
+			'name': 'otoDB',
+			'url': 'https://otodb.net',
+			'sameAs': ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
 		})
 	);
 
@@ -51,7 +85,7 @@
 					JSON.stringify({
 						'@context': 'https://schema.org',
 						'@type': 'BreadcrumbList',
-						itemListElement: (
+						'itemListElement': (
 							page.data.head.breadcrumbs as { name: string; url: string }[]
 						).map(
 							(
@@ -60,8 +94,8 @@
 								arr: { name: string; url: string }[]
 							) => ({
 								'@type': 'ListItem',
-								position: i + 1,
-								name: crumb.name,
+								'position': i + 1,
+								'name': crumb.name,
 								...(i < arr.length - 1
 									? { item: `https://otodb.net${crumb.url}` }
 									: {})
@@ -72,6 +106,8 @@
 			: null
 	);
 </script>
+
+<svelte:window onerror={handleError} onunhandledrejection={handleRejection} />
 
 <svelte:head>
 	{#if page.data.head?.title}
@@ -172,14 +208,9 @@
 					}
 				]}
 				use:clickOutside
-				onOutclick={() => (isMobileNavOpen = false)}
+				onoutclick={() => (isMobileNavOpen = false)}
 			>
-				<form
-					target="_self"
-					method="get"
-					action="/{search_type}/search"
-					class="flex w-full"
-				>
+				<form target="_self" method="get" action="/{search_type}" class="flex w-full">
 					<select bind:value={search_type} class="bg-otodb-bg-faint/75 pl-1">
 						<option value="work">{m.grand_merry_fly_succeed()}</option>
 						<option value="tag">{m.empty_legal_chicken_taste()}</option>
@@ -211,17 +242,14 @@
 					<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 						{@render link('/', m.fine_late_chicken_quiz())}
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
-						{@render link('/work/search', m.grand_merry_fly_succeed())}
-						{#if data.user?.level >= UserLevel.MEMBER}
+						{@render link('/work', m.grand_merry_fly_succeed())}
+						{#if hasUserLevel(data.user?.level, Levels.Member)}
 							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 						{/if}
-						{@render link('/tag/search', m.empty_legal_chicken_taste())}
-						{@render link('/song/search', m.grand_nice_pony_belong())}
-						{@render link(
-							'/song_attribute/search',
-							`> ${m.dull_plain_angelfish_cuddle()}`
-						)}
-						{@render link('/list/search', m.stale_loose_squid_cut())}
+						{@render link('/tag', m.empty_legal_chicken_taste())}
+						{@render link('/song', m.grand_nice_pony_belong())}
+						{@render link('/song_attribute', `> ${m.dull_plain_angelfish_cuddle()}`)}
+						{@render link('/list', m.stale_loose_squid_cut())}
 						{@render link('/post/overview', m.just_salty_anaconda_nourish())}
 						{@render link('/comments', m.same_broad_haddock_pinch())}
 						{@render link('/post/3', 'FAQ')}
@@ -280,7 +308,7 @@
 						{/if}
 					</ul>
 				</div>
-				{#if data.user?.level >= UserLevel.EDITOR}
+				{#if hasUserLevel(data.user?.level, Levels.Editor)}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -294,7 +322,7 @@
 						</ul>
 					</div>
 				{/if}
-				{#if data.user?.level >= UserLevel.ADMIN}
+				{#if hasUserLevel(data.user?.level, Levels.Admin)}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -317,23 +345,37 @@
 						{m.white_helpful_lion_rise()}
 					</div>
 					<div class="flex justify-between">
-						<span>{m.grand_merry_fly_succeed()}</span><span>{data.stats[0]}</span>
+						<span>{m.grand_merry_fly_succeed()}</span><span>{data.stats.works}</span>
 					</div>
 					<div class="flex justify-between">
-						<span>{m.empty_legal_chicken_taste()}</span><span>{data.stats[1]}</span>
+						<span>{m.empty_legal_chicken_taste()}</span><span>{data.stats.tags}</span>
 					</div>
 					<div class="flex justify-between">
-						<span>{m.grand_nice_pony_belong()}</span><span>{data.stats[2]}</span>
+						<span>{m.grand_nice_pony_belong()}</span><span>{data.stats.songs}</span>
 					</div>
 					<div class="flex justify-between">
-						<span>{m.stale_loose_squid_cut()}</span><span>{data.stats[3]}</span>
+						<span>{m.stale_loose_squid_cut()}</span><span>{data.stats.lists}</span>
 					</div>
 				</div>
 			</nav>
 		</div>
 		<div class="grow">
 			<main id="content">
-				{@render children()}
+				<svelte:boundary onerror={handleBoundaryError}>
+					{@render children()}
+					{#snippet failed()}
+						<Section title={m.careful_gross_husky_grasp()}>
+							<div
+								class="mx-[10%] my-1 border border-red-700 bg-red-950/50 p-4 text-left"
+							>
+								<h2 class="mb-1 text-lg font-bold">
+									{m.key_pink_pigeon_treasure()}
+								</h2>
+								<p>{m.ideal_soft_falcon_urge()}</p>
+							</div>
+						</Section>
+					{/snippet}
+				</svelte:boundary>
 			</main>
 			<footer>
 				<div class="footer-left">
@@ -347,16 +389,15 @@
 							type: 'otoDB',
 							name: m.glad_born_mouse_taste()
 						})}
-						{current_version}
+						{versions[currentVersion].name}
 						{#if env.PUBLIC_OTODB_HASH}
-							- {env.PUBLIC_OTODB_HASH}{/if}
+							- <a href="https://github.com/otoDB/otoDB">{env.PUBLIC_OTODB_HASH}</a
+							>{/if}
 					</span>
 					<div class="social-links">
 						<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>
 						/
 						<a href="https://twitter.com/otoDBnet">Twitter</a>
-						/
-						<a href="https://github.com/otoDB/otoDB">GitHub</a>
 						/
 						<a href="irc://irc.rizon.net/otodb">#otodb @ Rizon</a>
 						/
@@ -366,11 +407,16 @@
 				<div class="footer-right">
 					<ConnectionFavicon type="Website" class="size-4" />
 					<select
-						onchange={(e) => set_lang(e.target.value, !!data.user)}
+						onchange={(e) => {
+							set_lang(
+								e.currentTarget.value as (typeof locales)[number],
+								!!data.user
+							);
+						}}
 						value={getLocale()}
 					>
-						{#each locales as l, i (i)}
-							<option value={l}>{LanguageNames[l]}</option>
+						{#each locales as l (l)}
+							<option value={l}>{languages[l].name}</option>
 						{/each}
 					</select>
 				</div>

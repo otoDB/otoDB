@@ -1,13 +1,14 @@
 <script lang="ts">
-	import client, { getTagDisplaySlug } from './api';
-	import { clickOutside, debounce } from './ui';
-	import { m } from './paraglide/messages';
-	import TagSuggestionResults from './TagSuggestionResults.svelte';
+	import client, { getTagDisplaySlug } from '$lib/api';
+	import { clickOutside, debounce } from '$lib/ui';
+	import { m } from '$lib/paraglide/messages';
+	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
 
 	interface Props {
 		value: string[];
-		class: string;
+		class?: string;
 		type: 'work' | 'song';
+		name?: string;
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
 
@@ -98,7 +99,7 @@
 		<ul
 			class="absolute z-1 list-none"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>

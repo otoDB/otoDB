@@ -1,0 +1,18 @@
+name: otodb-backend-development
+
+services:
+  postgres:
+    image: postgres:17.6
+    restart: always
+    environment:
+      POSTGRES_DB: $OTODB_DB_NAME
+      POSTGRES_USER: $OTODB_DB_USER
+      POSTGRES_PASSWORD: $OTODB_DB_PASSWORD
+    ports:
+      - target: 5432
+        published: 15432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

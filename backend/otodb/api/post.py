@@ -11,7 +11,7 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from otodb.common import clean_incoming_slug
+from otodb.common import slugify_tag
 from otodb.models import (
 	Notification,
 	Post,
@@ -43,10 +43,11 @@ class PostOverviewSchema(ModelSchema):
 	last_post_by: str | None = None
 	last_post_at: datetime | None = None
 	entities: list[EntitySchema] = []
+	category: PostCategory
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category']
+		fields = ['title', 'closed_at']
 
 
 class PostContentSchema(ModelSchema):
@@ -60,10 +61,11 @@ class PostSchema(ModelSchema):
 	pages: list[PostContentSchema]
 	entities: list[EntitySchema] = []
 	edited_by: ProfileSchema | None = None
+	category: PostCategory
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category', 'edited_at']
+		fields = ['title', 'edited_at', 'closed_at']
 
 
 @post_router.get('post', response=PostSchema)
@@ -71,12 +73,12 @@ def post(request: HttpRequest, post_id: int):
 	return get_object_or_404(Post, id=post_id)
 
 
-@post_router.get('categories', response=list[list[PostOverviewSchema]])
+@post_router.get('categories', response=dict[str, list[PostOverviewSchema]])
 def categories(request: HttpRequest):
-	return [
-		Post.objects.filter(category=i).with_activity()[:5]
+	return {
+		str(i): Post.objects.filter(category=i).with_activity()[:5]
 		for i, _ in PostCategory.choices
-	]
+	}
 
 
 @post_router.get('category', response=list[PostOverviewSchema])
@@ -99,11 +101,7 @@ def get_entity_link_ent(e: EntitySchema):
 		ContentType.objects.get(model=e.entity)
 		.model_class()
 		.objects.get(
-			**(
-				{'slug': clean_incoming_slug(e.id)}
-				if 'tag' in e.entity
-				else {'id': e.id}
-			)
+			**({'slug': slugify_tag(e.id)} if 'tag' in e.entity else {'id': e.id})
 		)
 	)
 	if hasattr(obj, 'aliased_to') and obj.aliased_to:
@@ -209,6 +207,25 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 					for e in payload.entities
 				]
 			)
+
+
+@post_router.put('close', auth=django_auth)
+@transaction.atomic
+def toggle_close(request: AuthedHttpRequest, post_id: int):
+	post = get_object_or_404(Post, id=post_id)
+	is_admin = request.user.level >= Account.Levels.ADMIN
+	is_author = post.added_by == request.user
+	if not post.closed_at:
+		if is_admin:
+			post.closed_at = datetime.now(tz=timezone.utc)
+		else:
+			raise HttpError(403, 'Forbidden')
+	else:
+		if is_admin or is_author:
+			post.closed_at = None
+		else:
+			raise HttpError(403, 'Forbidden')
+	post.save(update_fields=['closed_at'])
 
 
 @post_router.get('threads', response=list[PostOverviewSchema])

@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { isSOV, isSVO } from '$lib/enums/language';
+	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-
 	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO, timeAgo } from '$lib/ui.js';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import { Route } from '$lib/enums.js';
 
 	let { data } = $props();
 </script>
@@ -32,7 +32,7 @@
 		</div>
 	</Section>
 
-	<Section title={m.big_long_squirrel_kiss()} href="/work/search">
+	<Section title={m.big_long_squirrel_kiss()} href="/work">
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.recent as w, i (i)}
 				<WorkCard work={w} />
@@ -46,7 +46,7 @@
 				{#each data.changes.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-							>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
+							>{typeof r.route === 'number' ? routeNames[r.route]() : ''}</td
 						><td>
 							{#if isSVO(getLocale())}
 								{m.curly_safe_lynx_fond()}
@@ -55,10 +55,7 @@
 							{#if isSOV(getLocale())}
 								{m.curly_safe_lynx_fond()}
 							{/if}</td
-						><td
-							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
-							></td
-						></tr
+						><td><TimeAgo date={r.date} /></td></tr
 					>
 				{/each}
 			</tbody>
@@ -72,11 +69,7 @@
 				{#each data.posts.items as p, i (i)}
 					<tr>
 						<td><a href="/post/{p.id}">{p.title}</a></td>
-						<td
-							><time title={new Date(p.modified).toLocaleString()}
-								>{timeAgo(p.modified)}</time
-							></td
-						>
+						<td><TimeAgo date={p.modified} /></td>
 					</tr>
 				{/each}
 			</tbody>

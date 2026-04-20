@@ -19,9 +19,6 @@ from otodb.models.enums import (
 	WorkOrigin,
 	WorkStatus,
 	ProfileConnectionTypes,
-	Preferences,
-	LanguageTypes,
-	ThemePref,
 )
 
 from .comment import ModelsWithComments
@@ -128,21 +125,11 @@ def submissions(
 
 @profile_router.post('pref', auth=django_auth)
 def set_pref(request: HttpRequest, payload: list[UserPreferenceSchema]):
-	setting_value_map = {
-		Preferences.LANGUAGE: LanguageTypes,
-		Preferences.THEME: ThemePref,
-	}
-	disallowed_values = {
-		Preferences.LANGUAGE: [LanguageTypes.NOT_APPLICABLE],
-	}
 	for p in payload:
-		v = setting_value_map[p.setting](p.value)
-		if p.setting in disallowed_values:
-			assert v not in disallowed_values[p.setting]
 		UserPreference.objects.update_or_create(
 			user=request.user,
 			setting=p.setting,
-			defaults={'value': v},
+			defaults={'value': p.value},
 		)
 
 

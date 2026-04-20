@@ -1,7 +1,7 @@
-from typing import Optional, Annotated, Literal
+from typing import Optional, Annotated, Literal, Self
 from functools import wraps, lru_cache
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -291,6 +291,21 @@ class ConnectionSchema(Schema):
 class UserPreferenceSchema(Schema):
 	setting: Preferences
 	value: LanguageTypes | ThemePref | int
+
+	@model_validator(mode='after')
+	def verify_value(self) -> Self:
+		setting_value_map = {
+			Preferences.LANGUAGE: LanguageTypes,
+			Preferences.THEME: ThemePref,
+		}
+		disallowed_values = {
+			Preferences.LANGUAGE: [LanguageTypes.NOT_APPLICABLE],
+		}
+		v = setting_value_map[self.setting](self.value)
+		if self.setting in disallowed_values:
+			assert v not in disallowed_values[self.setting]
+		self.value = v.value
+		return self
 
 
 def re_to_parser(regex):

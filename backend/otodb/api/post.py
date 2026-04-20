@@ -44,6 +44,7 @@ class PostEntities(str, Enum):
 	UPLOAD = 'worksource'
 	PROFILE = 'account'
 
+
 class PostEntitySchema(Schema):
 	id: int | str
 	entity: PostEntities

@@ -1,4 +1,5 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
+import { PostEntities } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
@@ -8,8 +9,8 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		fetch,
 		params: {
 			query: {
-				entity: 'revision',
-				id: params.id,
+				entity: PostEntities.account,
+				id: params.username,
 				limit: batch_size,
 				offset: (page - 1) * batch_size
 			}

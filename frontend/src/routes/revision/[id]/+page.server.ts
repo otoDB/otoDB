@@ -28,18 +28,25 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const batch_size = 30;
 
-	const { data: changes } = await client.GET('/api/history/revision_changes', {
-		fetch,
-		params: {
-			query: {
-				revision_id,
-				limit: batch_size,
-				offset: batch_size * (page - 1)
+	const [{ data: revision }, { data: changes }] = await Promise.all([
+		client.GET('/api/history/revision', {
+			fetch,
+			params: { query: { revision_id } }
+		}),
+		client.GET('/api/history/revision_changes', {
+			fetch,
+			params: {
+				query: {
+					revision_id,
+					limit: batch_size,
+					offset: batch_size * (page - 1)
+				}
 			}
-		}
-	});
+		})
+	]);
 
 	return {
+		revision,
 		changes,
 		page,
 		batch_size,

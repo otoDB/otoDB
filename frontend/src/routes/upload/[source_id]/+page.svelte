@@ -6,7 +6,7 @@
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
-	import { getTagDisplaySlug } from '$lib/api';
+	import { getTagDisplaySlug } from '$lib/tag.js';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import { enhance } from '$app/forms';
 	import { Rating, type components } from '$lib/schema.js';

@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { SongTagCategoryNames } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { getTagDisplayName } from '$lib/api.js';
+	import { getTagDisplayName } from '$lib/tag.js';
 	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
 
 	let { data } = $props();

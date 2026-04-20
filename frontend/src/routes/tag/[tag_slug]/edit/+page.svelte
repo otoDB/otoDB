@@ -4,7 +4,8 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
-	import client, { getTagDisplaySlug } from '$lib/api';
+	import client from '$lib/api';
+	import { getTagDisplaySlug } from '$lib/tag.js';
 	import { languages } from '$lib/enums/language.js';
 	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
 	import { allMediaTypes, mediaTypes } from '$lib/enums/mediaType.js';

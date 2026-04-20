@@ -9,7 +9,8 @@
 	import SongTag from '$lib/SongTag.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
-	import client, { getTagDisplayName } from '$lib/api.js';
+	import client from '$lib/api.js';
+	import { getTagDisplayName } from '$lib/tag.js';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language.js';
 	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/mediaType.js';
 	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';

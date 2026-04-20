@@ -3,7 +3,7 @@
 	import DisplayText from '$lib/DisplayText.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getDisplayText } from '$lib/api';
+	import { getDisplayText } from '$lib/tag';
 	import type { ComponentProps } from 'svelte';
 
 	interface Props {

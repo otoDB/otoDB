@@ -1,7 +1,7 @@
 <script lang="ts" generics="T extends 'work' | 'song'">
 	import { m } from '$lib/paraglide/messages.js';
 	import { enumValues, SongRelationNames, WorkRelationNames } from '$lib/enums.js';
-	import { getDisplayText } from '$lib/api';
+	import { getDisplayText } from '$lib/tag';
 	import mermaid from 'mermaid';
 	import elkLayouts from '@mermaid-js/layout-elk';
 	import { onMount } from 'svelte';

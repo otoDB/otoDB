@@ -1,6 +1,6 @@
 <script lang="ts">
 	import client from '$lib/api';
-	import { getDisplayText } from '$lib/api';
+	import { getDisplayText } from '$lib/tag';
 	import { m } from '$lib/paraglide/messages';
 	import type { components } from '$lib/schema';
 	import { clickOutside, debounce } from '$lib/ui';

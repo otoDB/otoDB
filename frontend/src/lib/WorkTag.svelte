@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getTagDisplayName } from '$lib/api';
+	import { getTagDisplayName } from '$lib/tag';
 	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/creatorRole';
 	import { WorkTagCategory } from '$lib/schema';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
@@ -48,9 +48,8 @@
 </a>
 {#if category === WorkTagCategory.Creator && tag.creator_roles?.length}
 	<address class="text-otodb-content-fainter inline px-1 text-xs">
-		{#each tag.creator_roles as role, i (i)}{creatorRole[
-				resolveCreatorRoleKeyById(role)
-			].nameFn()}
+		{#each tag.creator_roles as role, i (i)}
+			{creatorRole[resolveCreatorRoleKeyById(role)].nameFn()}
 			{#if i < tag.creator_roles.length - 1},&nbsp{/if}
 		{/each}
 	</address>

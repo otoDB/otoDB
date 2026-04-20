@@ -1,5 +1,6 @@
 <script lang="ts">
-	import client, { getDisplayText } from '$lib/api';
+	import client from '$lib/api';
+	import { getDisplayText } from '$lib/tag.js';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {

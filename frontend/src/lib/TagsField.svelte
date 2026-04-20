@@ -1,5 +1,6 @@
 <script lang="ts">
-	import client, { getTagDisplaySlug } from '$lib/api';
+	import client from '$lib/api';
+	import { getTagDisplaySlug } from '$lib/tag';
 	import { clickOutside, debounce } from '$lib/ui';
 	import { m } from '$lib/paraglide/messages';
 	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';

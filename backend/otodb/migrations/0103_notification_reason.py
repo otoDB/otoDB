@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0097_alter_mediasongconnection_site'),
+		('otodb', '0102_post_closed_at'),
 	]
 
 	operations = [

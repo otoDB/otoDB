@@ -4,18 +4,18 @@
 	import { env } from '$env/dynamic/public';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Section from '$lib/Section.svelte';
+	import { isFormDirty } from '$lib/dirty';
 	import { languages } from '$lib/enums/language';
 	import { hasUserLevel } from '$lib/enums/userLevel';
-	import { themes } from '$lib/themes/themes';
+	import { currentVersion, versions } from '$lib/enums/version';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { Levels, ThemePref } from '$lib/schema';
+	import { themes } from '$lib/themes/themes';
 	import { callErrorToast } from '$lib/toast';
-	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
-	import { currentVersion, versions } from '$lib/enums/version';
+	import { clickOutside, getLocalTheme, set_lang } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
-	import { isFormDirty } from '$lib/dirty';
-	import { Levels, ThemePref } from '$lib/schema';
 
 	let { data, children } = $props();
 
@@ -63,10 +63,6 @@
 
 	let search_type = $state('work');
 
-	const theme: string = $derived(
-		themes[data.user?.prefs?.theme ?? get_prefs()?.theme ?? ThemePref.Default].cssKey
-	);
-
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
 
 	const organizationLd = ldTag(
@@ -105,6 +101,14 @@
 				)
 			: null
 	);
+
+	// theme switcher
+	$effect(() => {
+		document.documentElement.setAttribute(
+			'data-theme',
+			themes[data.user?.prefs?.theme ?? getLocalTheme() ?? ThemePref.Default].key
+		);
+	});
 </script>
 
 <svelte:window onerror={handleError} onunhandledrejection={handleRejection} />
@@ -161,8 +165,8 @@
 	</li>
 {/snippet}
 
-<div class="text-otodb-content-primary overflow-auto {theme}">
-	<div class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full"></div>
+<div class="text-otodb-content-primary overflow-auto">
+	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
 		<button

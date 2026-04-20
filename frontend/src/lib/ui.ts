@@ -44,17 +44,19 @@ interface Prefs {
 	theme?: ThemePref; // theme id
 }
 
-export const get_prefs = (): Prefs | undefined => {
-	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
+const getLocalPrefs = (): Prefs => {
+	if (!browser) return {};
+
+	return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
-export const getLocalTheme = () => get_prefs()?.theme;
+export const getLocalTheme = () => getLocalPrefs()?.theme;
 
 export const updateLocalPref = (key: keyof Prefs, value: Prefs[typeof key]) => {
 	if (!browser) return;
 
-	localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), [key]: value }));
+	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), [key]: value }));
 };
-export const updateLocalTheme = (themeId: number) => updateLocalPref('theme', themeId);
+export const updateLocalTheme = (themeId: ThemePref) => updateLocalPref('theme', themeId);
 
 export const GUIDELINE_POST_ID = 4;
 export const FAQ_POST_ID = 3;

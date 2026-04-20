@@ -1,29 +1,25 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
 	import Section from '$lib/Section.svelte';
 	import client from '$lib/api';
+	import { enumValues } from '$lib/enums.js';
 	import { languages } from '$lib/enums/language.js';
-	import { themes } from '$lib/themes/themes.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { getLocalTheme, set_lang, updateLocalTheme } from '$lib/ui.js';
 	import { ThemePref } from '$lib/schema.js';
-	import { enumValues } from '$lib/enums.js';
+	import { themes } from '$lib/themes/themes.js';
+	import { getLocalPref, set_lang, updateLocalPref } from '$lib/ui.js';
 
 	let { data } = $props();
 
 	let current_locale = $state(getLocale());
-	let current_theme = $state(data.user?.prefs?.theme ?? getLocalTheme() ?? ThemePref.Default);
+	let current_theme = $state(data.user?.prefs?.THEME ?? getLocalPref('THEME'));
 
 	async function changeTheme(theme: ThemePref) {
 		current_theme = theme;
 		document.documentElement.setAttribute('data-theme', themes[theme].key);
 
-		if (data.user)
-			await client.POST('/api/profile/prefs', { fetch, body: { theme, language: null } });
-		else updateLocalTheme(theme);
-
-		invalidateAll();
+		if (data.user) await client.POST('/api/profile/prefs', { fetch, body: { THEME: theme } });
+		else updateLocalPref('THEME', theme);
 	}
 </script>
 

@@ -1,7 +1,7 @@
-from typing import Optional, Annotated, Literal
+from typing import Optional, Annotated, Literal, Self
 from functools import wraps, lru_cache
 
-from pydantic import field_validator
+from pydantic import field_validator, create_model, model_validator
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -36,11 +36,12 @@ from otodb.models.enums import (
 	WorkTagCategory,
 	Rating,
 	LanguageTypes,
-	ThemePref,
 	ErrorCode,
 	WorkOrigin,
 	WorkStatus,
 	Platform,
+	Preferences,
+	PreferencesValueTypeMap,
 )
 import re
 
@@ -287,9 +288,30 @@ class ConnectionSchema(Schema):
 	dead: bool | None = None
 
 
-class UserPreferencesSchema(Schema):
-	language: LanguageTypes | None = Field(..., gt=0)
-	theme: ThemePref | None
+@model_validator(mode='after')
+def _UserPreferenceSchema_verify_value(self) -> Self:
+	disallowed_values = {
+		Preferences.LANGUAGE: [LanguageTypes.NOT_APPLICABLE],
+	}
+	for setting, value in self.dict().items():
+		if value is not None:
+			setting = getattr(Preferences, setting)
+			v = PreferencesValueTypeMap[setting](value)
+			if setting in disallowed_values:
+				assert v not in disallowed_values[setting]
+			setattr(self, setting.name, v)
+	return self
+
+
+UserPreferenceSchema = create_model(
+	'UserPreferenceSchema',
+	__base__=Schema,
+	__validators__={'verify_value': _UserPreferenceSchema_verify_value},
+	**{
+		name: (PreferencesValueTypeMap[value], None)
+		for name, value in zip(Preferences.names, Preferences.values)
+	},
+)
 
 
 def re_to_parser(regex):

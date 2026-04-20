@@ -12,13 +12,14 @@ from ninja.pagination import paginate
 from ninja.errors import HttpError
 
 from otodb.account.models import Account
-from otodb.models import ProfileConnection, UserPreferences, Notification
+from otodb.models import ProfileConnection, UserPreference, Notification
 from otodb.models.enums import (
 	Status,
 	Platform,
 	WorkOrigin,
 	WorkStatus,
 	ProfileConnectionTypes,
+	Preferences,
 )
 
 from .comment import ModelsWithComments
@@ -28,9 +29,9 @@ from .common import (
 	ProfileSchema,
 	WorkSourceSchema,
 	ConnectionSchema,
-	UserPreferencesSchema,
 	profile_connection_parsers,
 	make_alt_value_parser,
+	UserPreferenceSchema,
 )
 
 profile_router = Router()
@@ -124,12 +125,21 @@ def submissions(
 
 
 @profile_router.post('prefs', auth=django_auth)
-def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
-	prefs, _ = UserPreferences.objects.get_or_create(user=request.user)
-	for attr, value in payload.dict().items():
-		if value is not None:
-			setattr(prefs, attr, value)
-	prefs.save()
+def set_prefs(request: HttpRequest, payload: UserPreferenceSchema):
+	UserPreference.objects.bulk_create(
+		[
+			UserPreference(
+				user=request.user,
+				setting=getattr(Preferences, attr),
+				value=value,
+			)
+			for attr, value in payload.dict().items()
+			if value is not None
+		],
+		unique_fields=['user', 'setting'],
+		update_conflicts=True,
+		update_fields=['value'],
+	)
 
 
 class NotificationSchema(ModelSchema):

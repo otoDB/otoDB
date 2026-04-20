@@ -5,19 +5,30 @@
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Section from '$lib/Section.svelte';
 	import { isFormDirty } from '$lib/dirty';
-	import { languages } from '$lib/enums/language';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { currentVersion, versions } from '$lib/enums/version';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { defineCustomClientStrategy, getLocale, locales } from '$lib/paraglide/runtime';
 	import { Levels, ThemePref } from '$lib/schema';
 	import { themes } from '$lib/themes/themes';
 	import { callErrorToast } from '$lib/toast';
-	import { clickOutside, getLocalTheme, set_lang } from '$lib/ui';
+	import { clickOutside, getLocalPref, getLocalPrefs, set_lang, updateLocalPref } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
 
 	let { data, children } = $props();
+
+	defineCustomClientStrategy('custom-userPreference', {
+		getLocale: () => {
+			const lang = data.user?.prefs.LANGUAGE ?? getLocalPrefs()?.LANGUAGE; // Don't want our default behaviour here
+			return lang ? resolveLanguageKeyById(lang) : undefined;
+		},
+		setLocale: (locale) => {
+			if (!data.user)
+				updateLocalPref('LANGUAGE', languages[locale as keyof typeof languages].id);
+		}
+	});
 
 	function handleError(e: Event) {
 		const err = e as ErrorEvent;
@@ -106,7 +117,7 @@
 	$effect(() => {
 		document.documentElement.setAttribute(
 			'data-theme',
-			themes[data.user?.prefs?.theme ?? getLocalTheme() ?? ThemePref.Default].key
+			themes[data.user?.prefs?.THEME ?? getLocalPref('THEME') ?? ThemePref.Default].key
 		);
 	});
 </script>

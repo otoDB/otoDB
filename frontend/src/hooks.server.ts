@@ -3,6 +3,8 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/public';
 import client from '$lib/api';
 import { paraglideMiddleware } from '$lib/paraglide/server';
+import { themes } from '$lib/themes/themes';
+import { ThemePref } from '$lib/schema';
 
 const handleParaglide: Handle = ({ event, resolve }) =>
 	paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
@@ -35,7 +37,42 @@ const handleContentLength: Handle = async ({ event, resolve }) => {
 	});
 };
 
-export const handle: Handle = sequence(handleAuth, handleContentLength, handleParaglide);
+const handleTheme: Handle = async ({ event, resolve }) => {
+	// login-user preference
+	const userTheme = event.locals.user?.prefs?.theme;
+	if (userTheme)
+		return resolve(event, {
+			transformPageChunk: ({ html }) => html.replace('%otodb.theme%', themes[userTheme].key)
+		});
+
+	// cookie preference
+	const cookieTheme = event.cookies.get('theme');
+	if (cookieTheme) {
+		const parsed = parseInt(cookieTheme);
+		if (!isNaN(parsed) && Object.values(ThemePref).includes(parsed))
+			return resolve(event, {
+				transformPageChunk: ({ html }) =>
+					html.replace('%otodb.theme%', themes[parsed as ThemePref].key)
+			});
+	}
+
+	// fallback
+	event.cookies.set('theme', ThemePref.Default.toString(), {
+		path: '/',
+		maxAge: 60 * 60 * 24 * 365
+	});
+	return resolve(event, {
+		transformPageChunk: ({ html }) =>
+			html.replace('%otodb.theme%', themes[ThemePref.Default].key)
+	});
+};
+
+export const handle: Handle = sequence(
+	handleAuth,
+	handleContentLength,
+	handleParaglide,
+	handleTheme
+);
 
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 	if (

@@ -63,10 +63,6 @@
 
 	let search_type = $state('work');
 
-	const theme: string = $derived(
-		themes[data.user?.prefs?.theme ?? get_prefs()?.theme ?? ThemePref.Default].cssKey
-	);
-
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
 
 	const organizationLd = ldTag(
@@ -161,8 +157,8 @@
 	</li>
 {/snippet}
 
-<div class="text-otodb-content-primary overflow-auto {theme}">
-	<div class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full"></div>
+<div class="text-otodb-content-primary overflow-auto">
+	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
 		<button

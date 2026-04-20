@@ -1,4 +1,48 @@
-.theme-aniki {
+:root {
+	--otodb-color-bg-primary: black;
+	--otodb-color-content-primary: white;
+	--otodb-color-bg-faint: color-mix(
+		in hsl,
+		var(--otodb-color-bg-primary) 90%,
+		var(--otodb-color-content-primary)
+	);
+	--otodb-color-bg-fainter: color-mix(
+		in hsl,
+		var(--otodb-color-bg-primary) 80%,
+		var(--otodb-color-content-primary)
+	);
+
+	@media (prefers-color-scheme: light) {
+		--otodb-color-bg-fainter: white;
+		--otodb-color-content-primary: black;
+		--otodb-color-bg-faint: color-mix(
+			in hsl,
+			var(--otodb-color-bg-fainter) 95%,
+			var(--otodb-color-content-primary)
+		);
+		--otodb-color-bg-primary: color-mix(
+			in hsl,
+			var(--otodb-color-bg-fainter) 90%,
+			var(--otodb-color-content-primary)
+		);
+	}
+
+	--otodb-color-content-faint: color-mix(
+		in hsl,
+		var(--otodb-color-bg-primary) 12.5%,
+		var(--otodb-color-content-primary)
+	);
+	--otodb-color-content-fainter: color-mix(
+		in hsl,
+		var(--otodb-color-bg-primary) 30%,
+		var(--otodb-color-content-primary)
+	);
+
+	--otodb-color-ins: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, green);
+	--otodb-color-del: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, red);
+}
+
+:root[data-theme='aniki'] {
 	color-scheme: dark;
 	--otodb-color-content-primary: white;
 	--otodb-color-content-fainter: rgb(184, 180, 212);
@@ -7,7 +51,7 @@
 	--otodb-color-bg-faint: rgb(10, 10, 32);
 	--otodb-color-bg-primary: black;
 
-	> div.bg-marker:first-child {
+	#bg-marker {
 		background-image: url('/aniki-bg.png'), url('/aniki-right.png');
 		background-position:
 			left top,
@@ -20,7 +64,7 @@
 	}
 }
 
-.theme-otogroove {
+:root[data-theme='otogroove'] {
 	color-scheme: light;
 	--otodb-color-content-primary: rgb(2, 27, 14);
 	--otodb-color-content-faint: rgb(230, 30, 30);
@@ -33,7 +77,7 @@
 		@apply prose-neutral;
 	}
 
-	> div.bg-marker:first-child {
+	#bg-marker {
 		&::before {
 			content: '';
 			position: fixed;
@@ -69,7 +113,7 @@
 	}
 }
 
-.theme-retro-voyage {
+:root[data-theme='retro-voyage'] {
 	color-scheme: light;
 	--otodb-color-content-primary: rgb(36, 51, 80);
 	--otodb-color-content-faint: rgb(6, 25, 131);
@@ -82,7 +126,7 @@
 		@apply prose-neutral;
 	}
 
-	> div.bg-marker:first-child {
+	& div.bg-marker {
 		&::after {
 			content: '';
 			position: fixed;
@@ -119,7 +163,7 @@
 	}
 }
 
-.theme-sorimix {
+:root[data-theme='sorimix'] {
 	color-scheme: dark;
 	--otodb-color-content-primary: rgb(197, 255, 195);
 	--otodb-color-content-fainter: rgb(45, 228, 75);
@@ -132,7 +176,7 @@
 		@apply prose-invert;
 	}
 
-	> div.bg-marker:first-child {
+	& div.bg-marker {
 		&::after {
 			content: '';
 			position: fixed;
@@ -155,7 +199,7 @@
 	}
 }
 
-.theme-resample {
+:root[data-theme='resample'] {
 	color-scheme: light;
 	--otodb-color-content-primary: rgb(2, 20, 27);
 	--otodb-color-content-faint: rgb(30, 110, 230);
@@ -168,7 +212,7 @@
 		@apply prose-neutral;
 	}
 
-	> div.bg-marker:first-child {
+	& div.bg-marker {
 		&::after {
 			content: '';
 			position: fixed;

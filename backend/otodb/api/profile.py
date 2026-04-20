@@ -137,7 +137,8 @@ def set_pref(request: HttpRequest, payload: list[UserPreferenceSchema]):
 	}
 	for p in payload:
 		v = setting_value_map[p.setting](p.value)
-		assert v not in disallowed_values[p.setting]
+		if p.setting in disallowed_values
+			assert v not in disallowed_values[p.setting]
 		UserPreference.objects.update_or_create(
 			user=request.user,
 			setting=p.setting,

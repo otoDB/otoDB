@@ -1502,10 +1502,10 @@ export interface components {
          * @enum {integer}
          */
         ThemePref: ThemePref;
-        /** UserPreferencesSchema */
-        UserPreferencesSchema: {
-            language: components["schemas"]["LanguageTypes"] | null;
-            theme: components["schemas"]["ThemePref"] | null;
+        /** UserPreferenceSchema */
+        UserPreferenceSchema: {
+            LANGUAGE?: components["schemas"]["LanguageTypes"];
+            THEME?: components["schemas"]["ThemePref"];
         };
         /** UserStatusSchema */
         UserStatusSchema: {
@@ -1514,7 +1514,7 @@ export interface components {
             /** Username */
             username: string;
             level: components["schemas"]["Levels"];
-            prefs?: components["schemas"]["UserPreferencesSchema"] | null;
+            prefs: components["schemas"]["UserPreferenceSchema"];
             /** Notifs Count */
             notifs_count: number;
         };
@@ -3531,7 +3531,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UserPreferencesSchema"];
+                "application/json": components["schemas"]["UserPreferenceSchema"];
             };
         };
         responses: {

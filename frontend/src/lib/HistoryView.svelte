@@ -5,7 +5,7 @@
 	import type { components } from './schema';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
-		user: components['schemas']['UserStatusSchema'] | null;
+		user: App.Locals['user'] | null;
 	}
 	let { revisions }: Props = $props();
 </script>

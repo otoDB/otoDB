@@ -16,10 +16,14 @@ from ninja import Schema, Router, Field, ModelSchema
 from ninja.security import django_auth
 
 from otodb.account.models import Account, Invitation
-from otodb.models.enums import ErrorCode, LanguageTypes
+from otodb.models.enums import (
+	ErrorCode,
+	LanguageTypes,
+	Preferences,
+)
 from otodb.tasks import send_email
 
-from .common import Error, UserPreferencesSchema, ProfileSchema, user_is_editor
+from .common import Error, ProfileSchema, user_is_editor, UserPreferenceSchema
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +60,7 @@ class UserStatusSchema(UserLoginSchema):
 	level: Account.Levels
 	user_id: int = Field(..., alias='id')
 	username: str
-	prefs: UserPreferencesSchema | None = None
+	prefs: UserPreferenceSchema
 	notifs_count: int
 
 
@@ -65,6 +69,10 @@ def status(request: HttpRequest):
 	if request.user.is_authenticated:
 		u = request.user
 		u.notifs_count = u.notifs.filter(dismissed=False).count()
+		u.prefs = {
+			Preferences(setting).name: value
+			for setting, value in u.preferences.values_list('setting', 'value')
+		}
 		return u
 	return 401, {'code': ErrorCode.NOT_LOGGED_IN, 'data': {'message': 'Not logged in.'}}
 
@@ -200,8 +208,8 @@ https://otodb.net/
 
 
 def get_user_language(user, request):
-	if user and hasattr(user, 'prefs'):
-		if lang := user.prefs.language:
+	if user and hasattr(user, 'preferences'):
+		if lang := user.preferences.filter(setting=Preferences.LANGUAGE).first():
 			return lang
 	if request:
 		if locale := request.COOKIES.get('PARAGLIDE_LOCALE'):

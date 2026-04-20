@@ -6,7 +6,7 @@
 	import { themes } from '$lib/themes/themes.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { getLocalTheme, set_lang, updateLocalTheme } from '$lib/ui.js';
+	import { getLocalPref, set_lang, updateLocalPref } from '$lib/ui.js';
 	import { Preferences, ThemePref } from '$lib/schema.js';
 	import { enumValues } from '$lib/enums.js';
 
@@ -18,15 +18,13 @@
 				fetch,
 				body: [{ setting: Preferences.Theme, value: theme }]
 			});
-		else updateLocalTheme(theme);
+		else updateLocalPref(Preferences.Theme, theme);
 		invalidateAll();
 	}
 
 	let current_locale = $state(getLocale());
 	let current_theme = $derived(
-		(data.user?.prefs?.get(Preferences.Theme) as ThemePref) ??
-			getLocalTheme() ??
-			ThemePref.Default
+		(data.user?.prefs?.get(Preferences.Theme) as ThemePref) ?? getLocalPref(Preferences.Theme)
 	);
 </script>
 

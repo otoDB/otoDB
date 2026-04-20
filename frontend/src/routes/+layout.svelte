@@ -10,7 +10,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { defineCustomClientStrategy, getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast } from '$lib/toast';
-	import { clickOutside, get_prefs, getLocalTheme, set_lang, updateLocalPref } from '$lib/ui';
+	import { clickOutside, get_prefs, getLocalPref, set_lang, updateLocalPref } from '$lib/ui';
 	import { currentVersion, versions } from '$lib/enums/version';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
@@ -22,7 +22,7 @@
 	defineCustomClientStrategy('custom-userPreference', {
 		getLocale: () => {
 			const lang =
-				data.user?.prefs.get(Preferences.Language) ?? get_prefs()?.[Preferences.Language];
+				data.user?.prefs.get(Preferences.Language) ?? get_prefs()?.[Preferences.Language]; // Don't want our default behaviour here
 			return lang ? resolveLanguageKeyById(lang) : undefined;
 		},
 		setLocale: (locale) => {
@@ -81,8 +81,7 @@
 	const theme: string = $derived(
 		themes[
 			(data.user?.prefs?.get(Preferences.Theme) as ThemePref) ??
-				getLocalTheme() ??
-				ThemePref.Default
+				getLocalPref(Preferences.Theme)
 		].cssKey
 	);
 

@@ -1,10 +1,6 @@
 import client from '$lib/api.server';
 import { asEnum } from '$lib/enums';
-import {
-	PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0,
-	PathsApiProfileSubmissionsGetParametersQueryStanding,
-	Status
-} from '$lib/schema';
+import { PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0, Status } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -40,10 +36,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 				origin,
 				platform,
 				status,
-				standing:
-					// Duplicated enum
-					(standing as PathsApiProfileSubmissionsGetParametersQueryStanding | null) ??
-					undefined
+				standing: standing ?? undefined
 			}
 		}
 	});

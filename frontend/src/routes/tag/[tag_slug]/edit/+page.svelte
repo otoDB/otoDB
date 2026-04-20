@@ -18,9 +18,9 @@
 	import { dirtyEnhance } from '$lib/dirty';
 	import {
 		MediaConnectionTypes,
-		PathsApiTagTag_aliasesPostParametersQueryType,
 		ProfileConnectionTypes,
 		SongConnectionTypes,
+		TagTypes,
 		TagWorkConnectionTypes,
 		WorkTagCategory
 	} from '$lib/schema.js';
@@ -95,7 +95,7 @@
 			},
 			params: {
 				query: {
-					type: PathsApiTagTag_aliasesPostParametersQueryType.work,
+					type: TagTypes.work,
 					tag_slug: data.tag.slug
 				}
 			}

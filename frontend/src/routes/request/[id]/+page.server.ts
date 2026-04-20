@@ -1,7 +1,7 @@
 import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
+import { ModelsWithComments } from '$lib/schema';
 import type { PageServerLoad } from './$types';
-import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
 	const paramId = parseInt(params.id, 10);
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 			fetch,
 			params: {
 				query: {
-					model: PathsApiCommentCommentsGetParametersQueryModel.bulkrequest,
+					model: ModelsWithComments.bulkrequest,
 					pk: +params.id
 				}
 			}

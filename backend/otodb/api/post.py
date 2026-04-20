@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from enum import Enum
 
 from django.db import transaction
 from django.http import HttpRequest
@@ -28,12 +29,24 @@ from .common import (
 	ProfileSchema,
 	user_is_trusted,
 	restrict_internal,
-	EntitySchema,
 )
 
 from otodb.discord import discord_post
 
 post_router = Router()
+
+
+class PostEntities(str, Enum):
+	WORK = 'mediawork'
+	TAG = 'tagwork'
+	SONG_ATTRIBUTE = 'tagsong'
+	SONG = 'mediasong'
+	UPLOAD = 'worksource'
+	PROFILE = 'account'
+
+class PostEntitySchema(Schema):
+	id: int | str
+	entity: PostEntities
 
 
 class PostOverviewSchema(ModelSchema):
@@ -42,7 +55,7 @@ class PostOverviewSchema(ModelSchema):
 	modified: datetime
 	last_post_by: str | None = None
 	last_post_at: datetime | None = None
-	entities: list[EntitySchema] = []
+	entities: list[PostEntitySchema] = []
 	category: PostCategory
 
 	class Meta:
@@ -59,7 +72,7 @@ class PostContentSchema(ModelSchema):
 class PostSchema(ModelSchema):
 	added_by: ProfileSchema
 	pages: list[PostContentSchema]
-	entities: list[EntitySchema] = []
+	entities: list[PostEntitySchema] = []
 	edited_by: ProfileSchema | None = None
 	category: PostCategory
 
@@ -93,10 +106,10 @@ class PostInSchema(Schema):
 	category: PostCategory
 	lang: LanguageTypes
 	target_users: list[str]
-	entities: list[EntitySchema]
+	entities: list[PostEntitySchema]
 
 
-def get_entity_link_ent(e: EntitySchema):
+def get_entity_link_ent(e: PostEntitySchema):
 	obj = (
 		ContentType.objects.get(model=e.entity)
 		.model_class()
@@ -170,7 +183,7 @@ class PostEditSchema(Schema):
 	title: str
 	post: str
 	lang: LanguageTypes
-	entities: list[EntitySchema]
+	entities: list[PostEntitySchema]
 
 
 @post_router.put('post', auth=django_auth)
@@ -230,7 +243,7 @@ def toggle_close(request: AuthedHttpRequest, post_id: int):
 
 @post_router.get('threads', response=list[PostOverviewSchema])
 @paginate
-def threads(request: HttpRequest, entity: EntitySchema = Query(...)):
+def threads(request: HttpRequest, entity: PostEntitySchema = Query(...)):
 	return Post.objects.filter(
 		id__in=EntityLink.objects.filter(
 			entity_type__model=entity.entity,

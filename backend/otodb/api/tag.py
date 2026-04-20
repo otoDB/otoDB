@@ -1,4 +1,5 @@
-from typing import Annotated, Literal, Dict, Optional
+from typing import Annotated, Dict, Optional
+from enum import Enum
 from itertools import groupby
 from functools import reduce, wraps
 import re
@@ -280,6 +281,11 @@ def works(request: HttpRequest, tag_slug: str):
 	return MediaWork.active_objects.filter(tags__slug=tag_slug)
 
 
+class TagTypes(str, Enum):
+	WORK = 'work'
+	SONG = 'song'
+
+
 def tag_route_switch(work_route: Route, song_route: Route):
 	def decorator(f):
 		@wraps(f)
@@ -299,8 +305,8 @@ def tag_route_switch(work_route: Route, song_route: Route):
 		contribute_operation_args(
 			wrapper,
 			'type',
-			Literal['work', 'song'],
-			Query(default='work'),
+			TagTypes,
+			Query(TagTypes.WORK),
 		)
 
 		return wrapper

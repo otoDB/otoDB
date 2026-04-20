@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0102_post_closed_at'),
+		('otodb', '0103_userpreference'),
 	]
 
 	operations = [

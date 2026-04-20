@@ -1936,13 +1936,18 @@ export interface components {
             /** Media */
             media: number | null;
         };
+        /**
+         * ModelsWithComments
+         * @enum {string}
+         */
+        ModelsWithComments: ModelsWithComments;
         /** NotificationSchema */
         NotificationSchema: {
             /** Id */
             id: number;
             /** Comment */
             comment: [
-                NotificationSchemaCommentAnyOf0,
+                components["schemas"]["ModelsWithComments"],
                 number | string
             ] | null;
             /** Post */
@@ -2114,6 +2119,11 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
         };
+        /**
+         * TagTypes
+         * @enum {string}
+         */
+        TagTypes: TagTypes;
         /** SongInSchema */
         SongInSchema: {
             /** Title */
@@ -2323,16 +2333,6 @@ export interface components {
             /** Has Connection */
             has_connection: boolean;
         };
-        /** EntitySchema */
-        EntitySchema: {
-            /** Id */
-            id: number | string;
-            /**
-             * Entity
-             * @enum {string}
-             */
-            entity: EntitySchemaEntity;
-        };
         /**
          * PostCategory
          * @enum {integer}
@@ -2350,6 +2350,17 @@ export interface components {
              */
             modified: string;
         };
+        /**
+         * PostEntities
+         * @enum {string}
+         */
+        PostEntities: PostEntities;
+        /** PostEntitySchema */
+        PostEntitySchema: {
+            /** Id */
+            id: number | string;
+            entity: components["schemas"]["PostEntities"];
+        };
         /** PostSchema */
         PostSchema: {
             added_by: components["schemas"]["ProfileSchema"];
@@ -2359,7 +2370,7 @@ export interface components {
              * Entities
              * @default []
              */
-            entities: components["schemas"]["EntitySchema"][];
+            entities: components["schemas"]["PostEntitySchema"][];
             edited_by?: components["schemas"]["ProfileSchema"] | null;
             category: components["schemas"]["PostCategory"];
             /** Title */
@@ -2380,7 +2391,7 @@ export interface components {
             /** Target Users */
             target_users: string[];
             /** Entities */
-            entities: components["schemas"]["EntitySchema"][];
+            entities: components["schemas"]["PostEntitySchema"][];
         };
         /** PostEditSchema */
         PostEditSchema: {
@@ -2392,7 +2403,7 @@ export interface components {
             post: string;
             lang: components["schemas"]["LanguageTypes"];
             /** Entities */
-            entities: components["schemas"]["EntitySchema"][];
+            entities: components["schemas"]["PostEntitySchema"][];
         };
         /** PostOverviewSchema */
         PostOverviewSchema: {
@@ -2412,7 +2423,7 @@ export interface components {
              * Entities
              * @default []
              */
-            entities: components["schemas"]["EntitySchema"][];
+            entities: components["schemas"]["PostEntitySchema"][];
             category: components["schemas"]["PostCategory"];
             /** Title */
             title: string;
@@ -2450,11 +2461,7 @@ export interface components {
         };
         /** CommentInSchema */
         CommentInSchema: {
-            /**
-             * Model
-             * @enum {string}
-             */
-            model: CommentInSchemaModel;
+            model: components["schemas"]["ModelsWithComments"];
             /** Pk */
             pk: number;
             /** Comment Text */
@@ -2557,6 +2564,17 @@ export interface components {
             target_column?: string | null;
             /** Target Value */
             target_value?: string | null;
+        };
+        /**
+         * HistoricalEntities
+         * @enum {string}
+         */
+        HistoricalEntities: HistoricalEntities;
+        /** HistoricalEntitySchema */
+        HistoricalEntitySchema: {
+            /** Id */
+            id: number | string;
+            entity: components["schemas"]["HistoricalEntities"];
         };
         /** BulkRequestSchema */
         BulkRequestSchema: {
@@ -3223,7 +3241,7 @@ export interface operations {
         parameters: {
             query: {
                 source_id: number;
-                status: PathsApiUploadOriginPutParametersQueryStatus;
+                status: components["schemas"]["WorkOrigin"];
             };
             header?: never;
             path?: never;
@@ -3495,7 +3513,7 @@ export interface operations {
                 origin?: components["schemas"]["WorkOrigin"] | null;
                 status?: components["schemas"]["WorkStatus"] | null;
                 order?: PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 | null;
-                standing?: PathsApiProfileSubmissionsGetParametersQueryStanding;
+                standing?: components["schemas"]["Status"];
                 limit?: number;
                 offset?: number;
             };
@@ -3961,7 +3979,7 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                type?: PathsApiTagTagDeleteParametersQueryType;
+                type?: components["schemas"]["TagTypes"];
             };
             header?: never;
             path?: never;
@@ -4036,7 +4054,7 @@ export interface operations {
             query: {
                 into_tag: string;
                 delete: boolean;
-                type?: PathsApiTagAliasPostParametersQueryType;
+                type?: components["schemas"]["TagTypes"];
             };
             header?: never;
             path?: never;
@@ -4063,7 +4081,7 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                type?: PathsApiTagTag_aliasesPostParametersQueryType;
+                type?: components["schemas"]["TagTypes"];
             };
             header?: never;
             path?: never;
@@ -4600,7 +4618,7 @@ export interface operations {
     otodb_api_post_category: {
         parameters: {
             query: {
-                category: PathsApiPostCategoryGetParametersQueryCategory;
+                category: components["schemas"]["PostCategory"];
                 limit?: number;
                 offset?: number;
             };
@@ -4645,7 +4663,7 @@ export interface operations {
         parameters: {
             query: {
                 id: number | string;
-                entity: PathsApiPostThreadsGetParametersQueryEntity;
+                entity: components["schemas"]["PostEntities"];
                 limit?: number;
                 offset?: number;
             };
@@ -4717,7 +4735,7 @@ export interface operations {
     otodb_api_comment_get: {
         parameters: {
             query: {
-                model: PathsApiCommentCommentsGetParametersQueryModel;
+                model: components["schemas"]["ModelsWithComments"];
                 pk: number;
             };
             header?: never;
@@ -4788,7 +4806,7 @@ export interface operations {
     otodb_api_comment_delete: {
         parameters: {
             query: {
-                model: PathsApiCommentCommentDeleteParametersQueryModel;
+                model: components["schemas"]["ModelsWithComments"];
                 pk: number;
                 comment_id: number;
             };
@@ -4911,7 +4929,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["EntitySchema"] | null;
+                "application/json": components["schemas"]["HistoricalEntitySchema"] | null;
             };
         };
         responses: {
@@ -4949,7 +4967,7 @@ export interface operations {
         parameters: {
             query: {
                 id: number | string;
-                entity: PathsApiHistoryHistoryGetParametersQueryEntity;
+                entity: components["schemas"]["HistoricalEntities"];
                 limit?: number;
                 offset?: number;
             };
@@ -4996,7 +5014,7 @@ export interface operations {
         parameters: {
             query: {
                 request_id: number;
-                status: PathsApiRequestConfirmPostParametersQueryStatus;
+                status: components["schemas"]["Status"];
             };
             header?: never;
             path?: never;
@@ -5042,76 +5060,11 @@ export enum PathsApiWorkSearchGetParametersQueryOrderAnyOf0 {
     pub = "pub",
     ValueMinuspub = "-pub"
 }
-export enum PathsApiUploadOriginPutParametersQueryStatus {
-    Author = 0,
-    Reupload = 1
-}
 export enum PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 {
     id = "id",
     ValueMinusid = "-id",
     published_date = "published_date",
     ValueMinuspublished_date = "-published_date"
-}
-export enum PathsApiProfileSubmissionsGetParametersQueryStanding {
-    Pending = 0,
-    Approved = 1,
-    Unapproved = 2
-}
-export enum PathsApiTagTagDeleteParametersQueryType {
-    work = "work",
-    song = "song"
-}
-export enum PathsApiTagAliasPostParametersQueryType {
-    work = "work",
-    song = "song"
-}
-export enum PathsApiTagTag_aliasesPostParametersQueryType {
-    work = "work",
-    song = "song"
-}
-export enum PathsApiPostCategoryGetParametersQueryCategory {
-    Announcement = 0,
-    Feature_Request = 1,
-    Bug_Report = 2,
-    Gardening = 3,
-    General = 4
-}
-export enum PathsApiPostThreadsGetParametersQueryEntity {
-    mediawork = "mediawork",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    mediasong = "mediasong",
-    worksource = "worksource"
-}
-export enum PathsApiCommentCommentsGetParametersQueryModel {
-    mediawork = "mediawork",
-    account = "account",
-    pool = "pool",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    post = "post",
-    bulkrequest = "bulkrequest"
-}
-export enum PathsApiCommentCommentDeleteParametersQueryModel {
-    mediawork = "mediawork",
-    account = "account",
-    pool = "pool",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    post = "post",
-    bulkrequest = "bulkrequest"
-}
-export enum PathsApiHistoryHistoryGetParametersQueryEntity {
-    mediawork = "mediawork",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    mediasong = "mediasong",
-    worksource = "worksource"
-}
-export enum PathsApiRequestConfirmPostParametersQueryStatus {
-    Pending = 0,
-    Approved = 1,
-    Unapproved = 2
 }
 export enum ErrorCode {
     Login_Failed = 10000,
@@ -5197,7 +5150,7 @@ export enum Status {
     Approved = 1,
     Unapproved = 2
 }
-export enum NotificationSchemaCommentAnyOf0 {
+export enum ModelsWithComments {
     mediawork = "mediawork",
     account = "account",
     pool = "pool",
@@ -5211,6 +5164,10 @@ export enum SongTagCategory {
     Genre = 1,
     Author = 2,
     Meta = 3
+}
+export enum TagTypes {
+    work = "work",
+    song = "song"
 }
 export enum MediaConnectionTypes {
     AniKore = 1,
@@ -5255,13 +5212,6 @@ export enum SongConnectionTypes {
     NND_Medley_Wiki = 30,
     The_Mod_Archive = 40
 }
-export enum EntitySchemaEntity {
-    mediawork = "mediawork",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    mediasong = "mediasong",
-    worksource = "worksource"
-}
 export enum PostCategory {
     Announcement = 0,
     Feature_Request = 1,
@@ -5269,14 +5219,12 @@ export enum PostCategory {
     Gardening = 3,
     General = 4
 }
-export enum CommentInSchemaModel {
+export enum PostEntities {
     mediawork = "mediawork",
-    account = "account",
-    pool = "pool",
     tagwork = "tagwork",
     tagsong = "tagsong",
-    post = "post",
-    bulkrequest = "bulkrequest"
+    mediasong = "mediasong",
+    worksource = "worksource"
 }
 export enum Route {
     Unknown = 0,
@@ -5306,4 +5254,11 @@ export enum Route {
     Work_Source_Reject = 65,
     Work_Source_Update = 66,
     Rollback = 100
+}
+export enum HistoricalEntities {
+    mediawork = "mediawork",
+    tagwork = "tagwork",
+    tagsong = "tagsong",
+    mediasong = "mediasong",
+    worksource = "worksource"
 }

@@ -1,6 +1,9 @@
 import { m } from '$lib/paraglide/messages.js';
 import {
+	HistoricalEntities,
+	ModelsWithComments,
 	Platform,
+	PostEntities,
 	Rating,
 	SongRelationTypes,
 	SongTagCategory,
@@ -105,7 +108,11 @@ export type EntityModelType =
 	| 'pool'
 	| 'tagwork'
 	| 'tagsong'
-	| 'bulkrequest';
+	| 'bulkrequest'
+	// This is obvious but we make it explicit
+	| PostEntities
+	| ModelsWithComments
+	| HistoricalEntities;
 
 export const EntityModelRoutes: Record<EntityModelType, string> = {
 	mediawork: 'work',

@@ -4,14 +4,14 @@ import { languages } from '$lib/enums/language';
 import { get_entity, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
 import type { Actions, LayoutServerLoad } from './$types';
-import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
+import { ModelsWithComments } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ fetch, params }) => {
 	const { data: comments } = await client.GET('/api/comment/comments', {
 		fetch,
 		params: {
 			query: {
-				model: PathsApiCommentCommentsGetParametersQueryModel.post,
+				model: ModelsWithComments.post,
 				pk: +params.post_id
 			}
 		}

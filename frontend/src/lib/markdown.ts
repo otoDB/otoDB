@@ -1,4 +1,4 @@
-import { EntitySchemaEntity } from '$lib/schema';
+import { PostEntities } from '$lib/schema';
 import type { Parent, PhrasingContent, Root } from 'mdast';
 import { findAndReplace } from 'mdast-util-find-and-replace';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
@@ -26,10 +26,10 @@ const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N
 const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
 const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 
-const LinkableEntities: [EntitySchemaEntity, RegExp][] = [
-	[EntitySchemaEntity.mediawork, short_prefix_re_gen(ENTITIES[0].shortPrefix)],
-	[EntitySchemaEntity.mediawork, long_label_re_gen(ENTITIES[0].longLabel)],
-	[EntitySchemaEntity.tagwork, TAGWORK_NO_DISPLAY_RE]
+const LinkableEntities: [PostEntities, RegExp][] = [
+	[PostEntities.mediawork, short_prefix_re_gen(ENTITIES[0].shortPrefix)],
+	[PostEntities.mediawork, long_label_re_gen(ENTITIES[0].longLabel)],
+	[PostEntities.tagwork, TAGWORK_NO_DISPLAY_RE]
 ];
 
 function link(href: string, text: string): PhrasingContent {
@@ -97,7 +97,7 @@ export const get_entity = (
 	s: string
 ): null | {
 	id: string | number;
-	entity: EntitySchemaEntity;
+	entity: PostEntities;
 } => {
 	for (const [p, re] of LinkableEntities) {
 		const m = s.matchAll(re).next();

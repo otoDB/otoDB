@@ -14,11 +14,7 @@
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import {
-		Levels,
-		PathsApiCommentCommentDeleteParametersQueryModel,
-		PostCategory
-	} from '$lib/schema.js';
+	import { Levels, ModelsWithComments, PostCategory } from '$lib/schema.js';
 	import { mount, unmount } from 'svelte';
 
 	let { data } = $props();
@@ -240,7 +236,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model={PathsApiCommentCommentDeleteParametersQueryModel.post}
+		model={ModelsWithComments.post}
 		pk={+data.post_id}
 	/>
 </Section>

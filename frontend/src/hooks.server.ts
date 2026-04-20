@@ -3,6 +3,16 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/public';
 import client from '$lib/api';
 import { paraglideMiddleware } from '$lib/paraglide/server';
+import { defineCustomServerStrategy } from '$lib/paraglide/runtime';
+import { getRequestEvent } from '$app/server';
+import { resolveLanguageKeyById } from '$lib/enums/language';
+
+defineCustomServerStrategy('custom-userPreference', {
+	getLocale: () => {
+		const lang = getRequestEvent().locals.user?.prefs.LANGUAGE;
+		return lang ? resolveLanguageKeyById(lang) : undefined;
+	}
+});
 
 const handleParaglide: Handle = ({ event, resolve }) =>
 	paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {

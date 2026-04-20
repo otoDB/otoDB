@@ -48,5 +48,11 @@ export default defineConfig(
 			}
 		}
 	},
-	storybook.configs['flat/recommended']
+	storybook.configs['flat/recommended'],
+	{
+		files: ['**/*.{ts,tsx,mts,cts,svelte}'],
+		rules: {
+			'no-undef': 'off'
+		}
+	}
 );

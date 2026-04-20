@@ -276,3 +276,8 @@ class ErrorCode(OtodbIntegerEnum):
 	SOURCE_HAS_WORK = 10006
 	NO_MATCHING_ENTITIES = 10007
 	NAME_SLUG_MISMATCH = 10008
+
+
+class Preferences(OtodbIntegerEnum):
+	LANGUAGE = 1
+	THEME = 2

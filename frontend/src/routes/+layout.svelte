@@ -4,20 +4,35 @@
 	import { env } from '$env/dynamic/public';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Section from '$lib/Section.svelte';
-	import { languages } from '$lib/enums/language';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { themes } from '$lib/themes/themes';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { defineCustomClientStrategy, getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast } from '$lib/toast';
-	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
+	import { clickOutside, get_prefs, getLocalTheme, set_lang, updateLocalPref } from '$lib/ui';
 	import { currentVersion, versions } from '$lib/enums/version';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
 	import { isFormDirty } from '$lib/dirty';
-	import { Levels, ThemePref } from '$lib/schema';
+	import { Levels, Preferences, ThemePref } from '$lib/schema';
 
 	let { data, children } = $props();
+
+	defineCustomClientStrategy('custom-userPreference', {
+		getLocale: () => {
+			const lang =
+				data.user?.prefs.get(Preferences.Language) ?? get_prefs()?.[Preferences.Language];
+			return lang ? resolveLanguageKeyById(lang) : undefined;
+		},
+		setLocale: (locale) => {
+			if (!data.user)
+				updateLocalPref(
+					Preferences.Language,
+					languages[locale as keyof typeof languages].id
+				);
+		}
+	});
 
 	function handleError(e: Event) {
 		const err = e as ErrorEvent;
@@ -64,7 +79,11 @@
 	let search_type = $state('work');
 
 	const theme: string = $derived(
-		themes[data.user?.prefs?.theme ?? get_prefs()?.theme ?? ThemePref.Default].cssKey
+		themes[
+			(data.user?.prefs?.get(Preferences.Theme) as ThemePref) ??
+				getLocalTheme() ??
+				ThemePref.Default
+		].cssKey
 	);
 
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';

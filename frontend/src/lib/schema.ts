@@ -567,7 +567,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/profile/prefs": {
+    "/api/profile/pref": {
         parameters: {
             query?: never;
             header?: never;
@@ -576,8 +576,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Set Prefs */
-        post: operations["otodb_api_profile_set_prefs"];
+        /** Set Pref */
+        post: operations["otodb_api_profile_set_pref"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1498,14 +1498,20 @@ export interface components {
          */
         Levels: Levels;
         /**
+         * Preferences
+         * @enum {integer}
+         */
+        Preferences: Preferences;
+        /**
          * ThemePref
          * @enum {integer}
          */
         ThemePref: ThemePref;
-        /** UserPreferencesSchema */
-        UserPreferencesSchema: {
-            language: components["schemas"]["LanguageTypes"] | null;
-            theme: components["schemas"]["ThemePref"] | null;
+        /** UserPreferenceSchema */
+        UserPreferenceSchema: {
+            setting: components["schemas"]["Preferences"];
+            /** Value */
+            value: components["schemas"]["LanguageTypes"] | components["schemas"]["ThemePref"] | number;
         };
         /** UserStatusSchema */
         UserStatusSchema: {
@@ -1514,7 +1520,8 @@ export interface components {
             /** Username */
             username: string;
             level: components["schemas"]["Levels"];
-            prefs?: components["schemas"]["UserPreferencesSchema"] | null;
+            /** Prefs */
+            prefs: components["schemas"]["UserPreferenceSchema"][];
             /** Notifs Count */
             notifs_count: number;
         };
@@ -3516,7 +3523,7 @@ export interface operations {
             };
         };
     };
-    otodb_api_profile_set_prefs: {
+    otodb_api_profile_set_pref: {
         parameters: {
             query?: never;
             header?: never;
@@ -3525,7 +3532,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UserPreferencesSchema"];
+                "application/json": components["schemas"]["UserPreferenceSchema"][];
             };
         };
         responses: {
@@ -5138,6 +5145,10 @@ export enum Levels {
     Editor = 40,
     Admin = 50,
     Owner = 100
+}
+export enum Preferences {
+    Language = 1,
+    Theme = 2
 }
 export enum ThemePref {
     Default = 0,

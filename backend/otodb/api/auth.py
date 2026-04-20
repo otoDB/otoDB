@@ -19,7 +19,7 @@ from otodb.account.models import Account, Invitation
 from otodb.models.enums import ErrorCode, LanguageTypes
 from otodb.tasks import send_email
 
-from .common import Error, UserPreferencesSchema, ProfileSchema, user_is_editor
+from .common import Error, UserPreferenceSchema, ProfileSchema, user_is_editor
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ class UserStatusSchema(UserLoginSchema):
 	level: Account.Levels
 	user_id: int = Field(..., alias='id')
 	username: str
-	prefs: UserPreferencesSchema | None = None
+	prefs: list[UserPreferenceSchema]
 	notifs_count: int
 
 

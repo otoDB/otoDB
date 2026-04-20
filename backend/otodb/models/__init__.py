@@ -29,7 +29,7 @@ from .connection import (
 	TagWorkMediaConnection,
 	TagWorkCreatorConnection,
 )
-from .prefs import UserPreferences
+from .prefs import UserPreference
 from .request import BulkRequest, UserRequest
 from .revision import Revision, RevisionChange, RevisionChangeEntity
 
@@ -60,7 +60,7 @@ __all__ = [
 	'TagWorkConnection',
 	'TagWorkMediaConnection',
 	'TagWorkCreatorConnection',
-	'UserPreferences',
+	'UserPreference',
 	'BulkRequest',
 	'UserRequest',
 	'Revision',

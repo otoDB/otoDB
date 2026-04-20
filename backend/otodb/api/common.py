@@ -37,6 +37,7 @@ from otodb.models.enums import (
 	Rating,
 	LanguageTypes,
 	ThemePref,
+	Preferences,
 	ErrorCode,
 	WorkOrigin,
 	WorkStatus,
@@ -287,9 +288,9 @@ class ConnectionSchema(Schema):
 	dead: bool | None = None
 
 
-class UserPreferencesSchema(Schema):
-	language: LanguageTypes | None = Field(..., gt=0)
-	theme: ThemePref | None
+class UserPreferenceSchema(Schema):
+	setting: Preferences
+	value: LanguageTypes | ThemePref | int
 
 
 def re_to_parser(regex):

@@ -20,7 +20,6 @@
 		| 'bulkrequest';
 
 	interface Props {
-		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
 		model: PathsApiCommentCommentDeleteParametersQueryModel;
 		pk: number;

@@ -12,13 +12,16 @@ from ninja.pagination import paginate
 from ninja.errors import HttpError
 
 from otodb.account.models import Account
-from otodb.models import ProfileConnection, UserPreferences, Notification
+from otodb.models import ProfileConnection, UserPreference, Notification
 from otodb.models.enums import (
 	Status,
 	Platform,
 	WorkOrigin,
 	WorkStatus,
 	ProfileConnectionTypes,
+	Preferences,
+	LanguageTypes,
+	ThemePref,
 )
 
 from .comment import ModelsWithComments
@@ -28,7 +31,7 @@ from .common import (
 	ProfileSchema,
 	WorkSourceSchema,
 	ConnectionSchema,
-	UserPreferencesSchema,
+	UserPreferenceSchema,
 	profile_connection_parsers,
 	make_alt_value_parser,
 )
@@ -123,13 +126,23 @@ def submissions(
 	return submissions.order_by(order)
 
 
-@profile_router.post('prefs', auth=django_auth)
-def set_prefs(request: HttpRequest, payload: UserPreferencesSchema):
-	prefs, _ = UserPreferences.objects.get_or_create(user=request.user)
-	for attr, value in payload.dict().items():
-		if value is not None:
-			setattr(prefs, attr, value)
-	prefs.save()
+@profile_router.post('pref', auth=django_auth)
+def set_pref(request: HttpRequest, payload: list[UserPreferenceSchema]):
+	setting_value_map = {
+		Preferences.LANGUAGE: LanguageTypes,
+		Preferences.THEME: ThemePref,
+	}
+	disallowed_values = {
+		Preferences.LANGUAGE: [LanguageTypes.NOT_APPLICABLE],
+	}
+	for p in payload:
+		v = setting_value_map[p.setting](p.value)
+		assert v not in disallowed_values[p.setting]
+		UserPreference.objects.update_or_create(
+			user=request.user,
+			setting=p.setting,
+			defaults={'value': v},
+		)
 
 
 class NotificationSchema(ModelSchema):

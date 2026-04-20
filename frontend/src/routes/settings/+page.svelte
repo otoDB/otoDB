@@ -7,20 +7,27 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { getLocalTheme, set_lang, updateLocalTheme } from '$lib/ui.js';
-	import { ThemePref } from '$lib/schema.js';
+	import { Preferences, ThemePref } from '$lib/schema.js';
 	import { enumValues } from '$lib/enums.js';
 
 	let { data } = $props();
 
 	async function changeBackground(theme: ThemePref) {
 		if (data.user)
-			await client.POST('/api/profile/prefs', { fetch, body: { theme, language: null } });
+			await client.POST('/api/profile/pref', {
+				fetch,
+				body: [{ setting: Preferences.Theme, value: theme }]
+			});
 		else updateLocalTheme(theme);
 		invalidateAll();
 	}
 
 	let current_locale = $state(getLocale());
-	let current_theme = $derived(data.user?.prefs?.theme ?? getLocalTheme() ?? ThemePref.Default);
+	let current_theme = $derived(
+		(data.user?.prefs?.get(Preferences.Theme) as ThemePref) ??
+			getLocalTheme() ??
+			ThemePref.Default
+	);
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>

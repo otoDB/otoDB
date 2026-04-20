@@ -1,7 +1,7 @@
 from typing import Optional, Annotated, Literal, Self
 from functools import wraps, lru_cache
 
-from pydantic import field_validator, model_validator
+from pydantic import field_validator, create_model, model_validator
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -36,12 +36,12 @@ from otodb.models.enums import (
 	WorkTagCategory,
 	Rating,
 	LanguageTypes,
-	ThemePref,
-	Preferences,
 	ErrorCode,
 	WorkOrigin,
 	WorkStatus,
 	Platform,
+	Preferences,
+	PreferencesValueTypeMap,
 )
 import re
 
@@ -288,24 +288,28 @@ class ConnectionSchema(Schema):
 	dead: bool | None = None
 
 
-class UserPreferenceSchema(Schema):
-	setting: Preferences
-	value: LanguageTypes | ThemePref | int
+@model_validator(mode='after')
+def _UserPreferenceSchema_verify_value(self) -> Self:
+	disallowed_values = {
+		Preferences.LANGUAGE: [LanguageTypes.NOT_APPLICABLE],
+	}
+	setting, value = self.setting
+	v = PreferencesValueTypeMap[setting](value)
+	if setting in disallowed_values:
+		assert v not in disallowed_values[setting]
+	self.setting = (setting, value)
+	return self
 
-	@model_validator(mode='after')
-	def verify_value(self) -> Self:
-		setting_value_map = {
-			Preferences.LANGUAGE: LanguageTypes,
-			Preferences.THEME: ThemePref,
-		}
-		disallowed_values = {
-			Preferences.LANGUAGE: [LanguageTypes.NOT_APPLICABLE],
-		}
-		v = setting_value_map[self.setting](self.value)
-		if self.setting in disallowed_values:
-			assert v not in disallowed_values[self.setting]
-		self.value = v.value
-		return self
+
+UserPreferenceSchema = create_model(
+	'UserPreferenceSchema',
+	__base__=Schema,
+	__validators__={'verify_value': _UserPreferenceSchema_verify_value},
+	**{
+		name: (PreferencesValueTypeMap[value] | None, None)
+		for name, value in zip(Preferences.names, Preferences.values)
+	},
+)
 
 
 def re_to_parser(regex):

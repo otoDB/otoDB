@@ -16,10 +16,14 @@ from ninja import Schema, Router, Field, ModelSchema
 from ninja.security import django_auth
 
 from otodb.account.models import Account, Invitation
-from otodb.models.enums import ErrorCode, LanguageTypes, Preferences
+from otodb.models.enums import (
+	ErrorCode,
+	LanguageTypes,
+	Preferences,
+)
 from otodb.tasks import send_email
 
-from .common import Error, UserPreferenceSchema, ProfileSchema, user_is_editor
+from .common import Error, ProfileSchema, user_is_editor, UserPreferenceSchema
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +60,7 @@ class UserStatusSchema(UserLoginSchema):
 	level: Account.Levels
 	user_id: int = Field(..., alias='id')
 	username: str
-	prefs: list[UserPreferenceSchema]
+	prefs: UserPreferenceSchema
 	notifs_count: int
 
 

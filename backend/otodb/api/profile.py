@@ -19,6 +19,7 @@ from otodb.models.enums import (
 	WorkOrigin,
 	WorkStatus,
 	ProfileConnectionTypes,
+	Preferences,
 )
 
 from .comment import ModelsWithComments
@@ -28,9 +29,9 @@ from .common import (
 	ProfileSchema,
 	WorkSourceSchema,
 	ConnectionSchema,
-	UserPreferenceSchema,
 	profile_connection_parsers,
 	make_alt_value_parser,
+	UserPreferenceSchema,
 )
 
 profile_router = Router()
@@ -123,14 +124,20 @@ def submissions(
 	return submissions.order_by(order)
 
 
-@profile_router.post('pref', auth=django_auth)
-def set_pref(request: HttpRequest, payload: list[UserPreferenceSchema]):
-	for p in payload:
-		UserPreference.objects.update_or_create(
-			user=request.user,
-			setting=p.setting,
-			defaults={'value': p.value},
-		)
+@profile_router.post('prefs', auth=django_auth)
+def set_prefs(request: HttpRequest, payload: UserPreferenceSchema):
+	UserPreference.objects.bulk_create(
+		[
+			UserPreference.objects(
+				user=request.user,
+				setting=getattr(Preferences, attr),
+				value=value,
+			)
+			for attr, value in payload.dict().items()
+			if value is not None
+		],
+		update_conflicts=True,
+	)
 
 
 class NotificationSchema(ModelSchema):

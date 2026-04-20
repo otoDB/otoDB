@@ -1,17 +1,13 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 
-import type { components, Preferences } from '$lib/schema';
+import type { components } from '$lib/schema';
 
 // for information about these interfaces
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user:
-				| ({ csrf: string } & Omit<components['schemas']['UserStatusSchema'], 'prefs'> & {
-							prefs: Map<Preferences, number>;
-						})
-				| null;
+			user: ({ csrf: string } & components['schemas']['UserStatusSchema']) | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

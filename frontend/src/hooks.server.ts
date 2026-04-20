@@ -5,12 +5,11 @@ import client from '$lib/api';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { defineCustomServerStrategy } from '$lib/paraglide/runtime';
 import { getRequestEvent } from '$app/server';
-import { Preferences } from '$lib/schema';
 import { resolveLanguageKeyById } from '$lib/enums/language';
 
 defineCustomServerStrategy('custom-userPreference', {
 	getLocale: () => {
-		const lang = getRequestEvent().locals.user?.prefs.get(Preferences.Language);
+		const lang = getRequestEvent().locals.user?.prefs.LANGUAGE;
 		return lang ? resolveLanguageKeyById(lang) : undefined;
 	}
 });
@@ -30,12 +29,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	if (session && csrf) {
 		const status = await client.GET('/api/auth/status', { fetch: event.fetch });
 
-		if (status.data)
-			event.locals.user = {
-				csrf: csrf,
-				...status.data,
-				prefs: new Map(status.data.prefs.map(({ setting, value }) => [setting, value]))
-			};
+		if (status.data) event.locals.user = { csrf: csrf, ...status.data };
 		else event.locals.user = null;
 	}
 

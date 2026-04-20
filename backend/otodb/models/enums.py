@@ -281,3 +281,9 @@ class ErrorCode(OtodbIntegerEnum):
 class Preferences(OtodbIntegerEnum):
 	LANGUAGE = 1
 	THEME = 2
+
+
+PreferencesValueTypeMap = {
+	Preferences.LANGUAGE: LanguageTypes,
+	Preferences.THEME: ThemePref,
+}

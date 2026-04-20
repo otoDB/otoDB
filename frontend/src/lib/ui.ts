@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 import client from '$lib/api';
 import { languages } from '$lib/enums/language';
 import { setLocale } from '$lib/paraglide/runtime';
-import { LanguageTypes, Preferences, ThemePref } from './schema';
+import { LanguageTypes, ThemePref, type components } from './schema';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -29,30 +29,28 @@ export const clickOutside = (node: HTMLElement) => {
 };
 export const set_lang = async (lang: keyof typeof languages, logged_in: boolean) => {
 	if (logged_in) {
-		await client.POST('/api/profile/pref', {
+		await client.POST('/api/profile/prefs', {
 			fetch,
-			body: [
-				{
-					setting: Preferences.Language,
-					value: languages[lang].id
-				}
-			]
+			body: {
+				LANGUAGE: languages[lang].id
+			}
 		});
 	}
 	setLocale(lang);
 };
 
-type Prefs = Record<Preferences, number>;
+type Prefs = components['schemas']['UserPreferenceSchema'];
 
 const defaultPrefs: Prefs = {
-	[Preferences.Language]: LanguageTypes.en, // reflects baseLocale
-	[Preferences.Theme]: ThemePref.Default
+	LANGUAGE: LanguageTypes.en, // reflects baseLocale
+	THEME: ThemePref.Default
 };
 
 export const get_prefs = (): Partial<Prefs> | undefined => {
 	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
-export const getLocalPref = (setting: Preferences) =>
+
+export const getLocalPref = (setting: keyof Prefs) =>
 	get_prefs()?.[setting] ?? defaultPrefs[setting];
 
 export const updateLocalPref = (key: keyof Prefs, value: Prefs[typeof key]) => {

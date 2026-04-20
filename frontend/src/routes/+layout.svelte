@@ -10,27 +10,23 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { defineCustomClientStrategy, getLocale, locales } from '$lib/paraglide/runtime';
 	import { callErrorToast } from '$lib/toast';
-	import { clickOutside, get_prefs, getLocalPref, set_lang, updateLocalPref } from '$lib/ui';
+	import { clickOutside, getLocalPref, get_prefs, set_lang, updateLocalPref } from '$lib/ui';
 	import { currentVersion, versions } from '$lib/enums/version';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
 	import { isFormDirty } from '$lib/dirty';
-	import { Levels, Preferences, ThemePref } from '$lib/schema';
+	import { Levels, ThemePref } from '$lib/schema';
 
 	let { data, children } = $props();
 
 	defineCustomClientStrategy('custom-userPreference', {
 		getLocale: () => {
-			const lang =
-				data.user?.prefs.get(Preferences.Language) ?? get_prefs()?.[Preferences.Language]; // Don't want our default behaviour here
+			const lang = data.user?.prefs.LANGUAGE ?? get_prefs()?.LANGUAGE; // Don't want our default behaviour here
 			return lang ? resolveLanguageKeyById(lang) : undefined;
 		},
 		setLocale: (locale) => {
 			if (!data.user)
-				updateLocalPref(
-					Preferences.Language,
-					languages[locale as keyof typeof languages].id
-				);
+				updateLocalPref('LANGUAGE', languages[locale as keyof typeof languages].id);
 		}
 	});
 
@@ -79,10 +75,7 @@
 	let search_type = $state('work');
 
 	const theme: string = $derived(
-		themes[
-			(data.user?.prefs?.get(Preferences.Theme) as ThemePref) ??
-				getLocalPref(Preferences.Theme)
-		].cssKey
+		themes[(data.user?.prefs?.THEME as ThemePref) ?? getLocalPref('THEME')].cssKey
 	);
 
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';

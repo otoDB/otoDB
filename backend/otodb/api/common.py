@@ -308,10 +308,7 @@ UserPreferenceSchema = create_model(
 	__base__=Schema,
 	__validators__={'verify_value': _UserPreferenceSchema_verify_value},
 	**{
-		name: (
-			PreferencesValueTypeMap[value] | None,
-			Field(default=None, nullable=False),
-		)
+		name: (PreferencesValueTypeMap[value], None)
 		for name, value in zip(Preferences.names, Preferences.values)
 	},
 )

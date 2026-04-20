@@ -1504,8 +1504,8 @@ export interface components {
         ThemePref: ThemePref;
         /** UserPreferenceSchema */
         UserPreferenceSchema: {
-            LANGUAGE?: components["schemas"]["LanguageTypes"] | null;
-            THEME?: components["schemas"]["ThemePref"] | null;
+            LANGUAGE?: components["schemas"]["LanguageTypes"];
+            THEME?: components["schemas"]["ThemePref"];
         };
         /** UserStatusSchema */
         UserStatusSchema: {

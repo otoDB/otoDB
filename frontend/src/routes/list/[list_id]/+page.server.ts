@@ -1,4 +1,5 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
+import { ModelsWithComments } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -16,7 +17,12 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			}
 		}),
 		client.GET('/api/comment/comments', {
-			params: { query: { pk: +params.list_id, model: 'pool' } },
+			params: {
+				query: {
+					pk: +params.list_id,
+					model: ModelsWithComments.pool
+				}
+			},
 			fetch
 		}),
 		client.GET('/api/list/pending', {
@@ -24,5 +30,6 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			params: { query: { list_id: +params.list_id, limit: batch_size, offset: 0 } }
 		})
 	]);
+
 	return { entries, comments, pending_items, batch_size, page };
 };

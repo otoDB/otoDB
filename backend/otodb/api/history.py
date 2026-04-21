@@ -1,4 +1,5 @@
 from typing import Any
+from enum import Enum
 from datetime import datetime
 from itertools import groupby
 import logging
@@ -19,11 +20,10 @@ from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
 from django_request_cache import get_request_cache
 
-from ninja import Router, ModelSchema, Field, Query
+from ninja import Router, ModelSchema, Field, Query, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from .common import EntitySchema
 from otodb.models import (
 	TagWork,
 	TagSong,
@@ -101,12 +101,25 @@ def get_diff(delta):
 	return diffs_html
 
 
+class HistoricalEntities(str, Enum):
+	WORK = 'mediawork'
+	TAG = 'tagwork'
+	SONG_ATTRIBUTE = 'tagsong'
+	SONG = 'mediasong'
+	UPLOAD = 'worksource'
+
+
+class HistoricalEntitySchema(Schema):
+	id: int | str
+	entity: HistoricalEntities
+
+
 class RevisionSchema(ModelSchema):
 	id: int
 	date: datetime
 	user: str = Field(..., alias='user.username')
 	index: None | int = None
-	route: None | int = None
+	route: None | Route = None
 
 	class Meta:
 		model = Revision
@@ -117,7 +130,7 @@ class RevisionChangeSchema(ModelSchema):
 	target_type: str = Field(..., alias='target_type.model')
 	ent_type: str
 	ent_id: str
-	route: int
+	route: Route
 	tg_id: str
 
 	class Meta:
@@ -293,17 +306,7 @@ def _get_all_previous_field_values(
 	)
 	if fields:
 		query = query.filter(target_column__in=fields)
-	if connection.vendor == 'postgresql':
-		qs = query.order_by('target_column', '-rev__date').distinct('target_column')
-	else:
-		annotated_qs = query.annotate(
-			row_number=Window(
-				expression=RowNumber(),
-				partition_by=[F('target_column')],
-				order_by=F('rev__date').desc(),
-			)
-		)
-		qs = annotated_qs.filter(row_number=1)
+	qs = query.order_by('target_column', '-rev__date').distinct('target_column')
 	latest_changes = dict(qs.values_list('target_column', 'target_value'))
 
 	# Check if we found all required fields
@@ -619,7 +622,7 @@ def rollback_entity(
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic
 def rollback(
-	request: HttpRequest, revision_id: int, entity: EntitySchema | None = None
+	request: HttpRequest, revision_id: int, entity: HistoricalEntitySchema | None = None
 ):
 	"""
 	Rollback changes of a specific revision.
@@ -675,7 +678,7 @@ def user_rollback(request: HttpRequest, date: datetime, username: str):
 
 @history_router.get('history', response=list[RevisionSchema])
 @paginate
-def history(request: HttpRequest, entity: Query[EntitySchema]):
+def history(request: HttpRequest, entity: Query[HistoricalEntitySchema]):
 	query_ids = []
 	match entity.entity:
 		case 'mediawork':
@@ -718,6 +721,8 @@ def history(request: HttpRequest, entity: Query[EntitySchema]):
 			entity.id = tag.pk
 			query_ids = query_ids + [*tag.aliases.values_list('id', flat=True)]
 		case 'mediasong':
+			pass
+		case 'worksource':
 			pass
 	query_ids.append(entity.id)
 	return (

@@ -1,10 +1,11 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { parseMentions, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
 import { m } from '$lib/paraglide/messages';
+import type { components } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, url }) => {
 	const batch_size = 20;
@@ -13,20 +14,32 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 		params: { query: { limit: batch_size, offset: (page - 1) * batch_size } },
 		fetch
 	});
-	return { comments, page, batch_size, head: { title: m.same_broad_haddock_pinch() } };
+	return {
+		comments,
+		page,
+		batch_size,
+		head: { title: m.same_broad_haddock_pinch() }
+	};
 };
 
 export const actions = {
 	create: async ({ request, fetch }) => {
 		const data = await request.formData();
-		const model = data.get('model') as string,
-			pk = parseInt(data.get('pk') as string, 10),
-			comment_text = data.get('comment') as string,
-			reply_to = parseInt(data.get('reply_to') as string, 10);
+
+		type Model = components['schemas']['CommentInSchema']['model'];
+		const model: Model = data.get('model') as Model;
+		const pk = parseInt(data.get('pk') as string, 10);
+		const comment_text = data.get('comment') as string;
+		const reply_to = parseInt(data.get('reply_to') as string, 10);
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
+
 		await client.POST('/api/comment/comment', {
 			fetch,
-			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
+			params: {
+				header: {
+					'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET
+				}
+			},
 			body: {
 				model,
 				pk,
@@ -41,9 +54,10 @@ export const actions = {
 		const comment_id = parseInt(data.get('comment_id') as string, 10),
 			comment_text = data.get('comment') as string;
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
+
 		await client.PUT('/api/comment/comment', {
 			fetch,
-			headers: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET },
+			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
 			body: { comment_id, comment_text }
 		});
 	}

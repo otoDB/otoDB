@@ -20,7 +20,7 @@ from ninja.security import django_auth
 from ninja.pagination import paginate
 
 from otodb.common import (
-	clean_incoming_slug,
+	slugify_tag,
 )
 from otodb.models import (
 	MediaWork,
@@ -35,6 +35,7 @@ from otodb.models import (
 	TagWork,
 )
 from otodb.models.enums import (
+	ErrorCode,
 	Platform,
 	Rating,
 	WorkTagCategory,
@@ -63,7 +64,7 @@ from .common import (
 	user_is_trusted,
 	user_is_editor,
 	user_is_staff,
-	RelationSchema,
+	WorkRelationSchema,
 	post_relations,
 	SlimWorkSchema,
 	RouterWithRevision,
@@ -76,6 +77,33 @@ work_router = RouterWithRevision()
 class ExternalQuery(Schema):
 	work_id: int
 	tags: List[TagWorkInstanceSchema]
+
+
+def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
+	tags = []
+	for t in payload:
+		try:
+			tag = TagWork.objects.get(slug=slugify_tag(t.nameslug))
+			tags.append(tag.aliased_to if tag.aliased_to else tag)
+		except TagWork.DoesNotExist:
+			tags.append(TagWork.objects.create(name=t.nameslug))
+
+	for tag, p in zip(tags, payload):
+		changes = {}
+		if p.sample is not None and tag.category in [
+			WorkTagCategory.CREATOR,
+			WorkTagCategory.MEDIA,
+			WorkTagCategory.SONG,
+		]:
+			changes['used_as_source'] = p.sample
+		if p.roles and tag.category == WorkTagCategory.CREATOR:
+			changes['creator_roles'] = reduce(int.__or__, p.roles)
+
+		TagWorkInstance.objects.update_or_create(
+			work=work, work_tag=tag, defaults=changes
+		)
+
+	return tags
 
 
 @work_router.get('query_external', response=ExternalQuery)
@@ -129,7 +157,7 @@ def search(
 			try:
 				match tag[0]:
 					case '-' | '+' | '!':
-						t = TagWork.objects.get(slug=clean_incoming_slug(tag[1:]))
+						t = TagWork.objects.get(slug=slugify_tag(tag[1:]))
 						if t.aliased_to:
 							t = t.aliased_to
 
@@ -147,7 +175,7 @@ def search(
 								case '!':  # !: Exclude subtree
 									q = q & ~sub_q
 					case _:
-						t = TagWork.objects.get(slug=clean_incoming_slug(tag))
+						t = TagWork.objects.get(slug=slugify_tag(tag))
 						if t.aliased_to:
 							t = t.aliased_to
 
@@ -215,11 +243,9 @@ def tags_needed(request: AuthedHttpRequest):
 	)
 
 
-@work_router.get('work', response={200: WorkSchema, 300: int})
+@work_router.get('work', response=WorkSchema)
 def work(request: AuthedHttpRequest, work_id: int):
-	work: MediaWork = get_object_or_404(MediaWork.active_objects, id=work_id)
-	if work.moved_to:
-		return 300, work.moved_to.id
+	work = get_object_or_404(MediaWork.objects, id=work_id)
 
 	is_editor = (
 		request.user.is_authenticated and request.user.level >= Account.Levels.EDITOR
@@ -250,44 +276,9 @@ def set_tags(
 	request: AuthedHttpRequest, work_id: int, payload: list[TagWorkInstanceInSchema]
 ):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-
-	tags = []
-	for t in payload:
-		try:
-			tag = TagWork.objects.get(slug=clean_incoming_slug(t.nameslug))
-			tags.append(tag.aliased_to if tag.aliased_to else tag)
-		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=t.nameslug))
-
+	tags = _resolve_and_apply_tags(work, payload)
 	work.tags.remove(*work.tags.exclude(id__in=[t.id for t in tags]))
-
-	for tag, p in zip(tags, payload):
-		changes = {}
-		if p.sample is not None and tag.category in [
-			WorkTagCategory.CREATOR,
-			WorkTagCategory.MEDIA,
-			WorkTagCategory.SONG,
-		]:
-			changes['used_as_source'] = p.sample
-		if p.roles and tag.category == WorkTagCategory.CREATOR:
-			changes['creator_roles'] = reduce(int.__or__, p.roles)
-
-		TagWorkInstance.objects.update_or_create(
-			work=work, work_tag=tag, defaults=changes
-		)
-
 	return 200
-
-
-@work_router.put('remove_tag', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.MEDIAWORK_REMOVE_TAG)
-def remove_tag(request: AuthedHttpRequest, work_id: int, tag_slug: str):
-	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	tag = get_object_or_404(TagWork, slug=tag_slug)
-	work.tags.remove(tag)
-	if tag.can_be_deleted:
-		tag.delete()
 
 
 @work_router.get('random', response=list[ThinWorkSchema], exclude_none=True)
@@ -307,7 +298,7 @@ def recent(request: AuthedHttpRequest, n: int = 1):
 
 
 @work_router.get(
-	'relations', response=tuple[list[RelationSchema], list[SlimWorkSchema]]
+	'relations', response=tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 )
 def relations(request: AuthedHttpRequest, work_id: int):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
@@ -318,7 +309,9 @@ def relations(request: AuthedHttpRequest, work_id: int):
 @work_router.post('relation', auth=django_auth)
 @user_is_trusted
 @with_revision_route(Route.WORKRELATION_CREATE)
-def relation(request: AuthedHttpRequest, this_id: int, payload: list[RelationSchema]):
+def relation(
+	request: AuthedHttpRequest, this_id: int, payload: list[WorkRelationSchema]
+):
 	post_relations(MediaWork, this_id, payload)
 
 
@@ -374,9 +367,7 @@ def sources(request: AuthedHttpRequest, work_id: int):
 	return work.worksource_set
 
 
-@work_router.post(
-	'create', auth=django_auth, response={200: int, 400: Error, 429: Error}
-)
+@work_router.post('create', auth=django_auth, response={200: int, 409: Error})
 @user_is_trusted
 @transaction.atomic
 @with_revision_route(Route.MEDIAWORK_CREATE)
@@ -384,7 +375,10 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	"""Creates a MediaWork from a source with user-chosen metadata and tags."""
 	src = get_object_or_404(WorkSource.active_objects, id=payload.source_id)
 	if src.media is not None:
-		return 400, {'message': 'Source already has a work'}
+		return 409, {
+			'code': ErrorCode.SOURCE_HAS_WORK,
+			'data': {'message': 'Source already has a work'},
+		}
 
 	is_editor = request.user.level >= Account.Levels.EDITOR
 
@@ -404,7 +398,10 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 		).count()
 		total_slots_used = pending_uploads + (pending_appeals * 3)
 		if total_slots_used >= settings.OTODB_MAX_PENDING_WORKS:
-			return 429, {'message': 'Not enough upload slots'}
+			return 429, {
+				'code': ErrorCode.NO_MORE_UPLOAD_SLOTS,
+				'data': {'message': 'Not enough upload slots'},
+			}
 
 	work = MediaWork.objects.create(
 		title=payload.title or src.title,
@@ -413,35 +410,13 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 		rating=payload.rating,
 		status=Status.PENDING if not is_editor else Status.APPROVED,
 	)
+	_resolve_and_apply_tags(work, payload.tags)
 
 	if work.status == Status.PENDING:
 		transaction.on_commit(
 			lambda: enqueue_deferred(
 				resolve_expired_work, work.pk, delay=settings.OTODB_MODERATION_PERIOD
 			)
-		)
-
-	# Add tags
-	tags = []
-	for t in payload.tags:
-		try:
-			tag = TagWork.objects.get(slug=clean_incoming_slug(t.nameslug))
-			tags.append(tag.aliased_to if tag.aliased_to else tag)
-		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=t.nameslug))
-
-	for tag, p in zip(tags, payload.tags):
-		changes = {}
-		if p.sample is not None and tag.category in [
-			WorkTagCategory.CREATOR,
-			WorkTagCategory.MEDIA,
-			WorkTagCategory.SONG,
-		]:
-			changes['used_as_source'] = p.sample
-		if p.roles and tag.category == WorkTagCategory.CREATOR:
-			changes['creator_roles'] = reduce(int.__or__, p.roles)
-		TagWorkInstance.objects.update_or_create(
-			work=work, work_tag=tag, defaults=changes
 		)
 
 	src.media = work

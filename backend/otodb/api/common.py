@@ -1,7 +1,7 @@
-from typing import Optional, Annotated, Literal
+from typing import Optional, Annotated, Self
 from functools import wraps, lru_cache
 
-from pydantic import field_validator
+from pydantic import field_validator, create_model, model_validator
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -36,6 +36,16 @@ from otodb.models.enums import (
 	Route,
 	WorkRelationTypes,
 	SongRelationTypes,
+	WorkTagCategory,
+	Rating,
+	LanguageTypes,
+	ErrorCode,
+	WorkOrigin,
+	WorkStatus,
+	Platform,
+	Preferences,
+	PreferencesValueTypeMap,
+	Status,
 )
 import re
 
@@ -45,31 +55,32 @@ class AuthedHttpRequest(HttpRequest):
 
 
 class Error(Schema):
-	message: str
+	code: ErrorCode
+	data: dict | None = None
 
 
 class ProfileSchema(ModelSchema):
 	id: int
+	level: Account.Levels
 
 	class Meta:
 		model = Account
-		fields = ['username', 'level', 'date_created']
+		fields = ['username', 'date_created']
 
 
 class TagLangPreferenceSchema(Schema):
 	tag: str = Field(..., alias='tag.name')
 	slug: str = Field(..., alias='tag.slug')
-	lang: int
+	lang: LanguageTypes = Field(..., gt=0)
 
 
 class TagWorkSchema(Schema):
 	id: int
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional['TagWorkSchema']
-	n_instance: int | None = None
 	name: str
 	slug: str
-	category: int
+	category: WorkTagCategory
 	deprecated: bool
 
 
@@ -86,6 +97,9 @@ class WorkSourceSchema(ModelSchema):
 	added_by: ProfileSchema
 	thumbnail: str | None = None  # Exposed as property
 	media_title: str | None = None
+	platform: Platform
+	work_origin: WorkOrigin
+	work_status: WorkStatus
 
 	@staticmethod
 	def resolve_media_title(obj):
@@ -94,7 +108,6 @@ class WorkSourceSchema(ModelSchema):
 	class Meta:
 		model = WorkSource
 		fields = [
-			'platform',
 			'url',
 			'published_date',
 			'work_width',
@@ -102,8 +115,6 @@ class WorkSourceSchema(ModelSchema):
 			'work_duration',
 			'title',
 			'description',
-			'work_origin',
-			'work_status',
 			'source_id',
 			'uploader_id',
 			'is_pending',
@@ -131,6 +142,14 @@ class RelationSchema(Schema):
 	relation: int
 
 
+class WorkRelationSchema(RelationSchema):
+	relation: WorkRelationTypes
+
+
+class SongRelationSchema(RelationSchema):
+	relation: SongRelationTypes
+
+
 class SlimWorkSchema(ModelSchema):
 	id: int
 	thumbnail: str | None = None  # Exposed as property
@@ -144,13 +163,15 @@ class WorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
-	relations: tuple[list[RelationSchema], list[SlimWorkSchema]]
 	pending_flag: 'WorkFlagSchema | None' = None
 	pending_appeal: 'WorkAppealSchema | None' = None
+	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
+	rating: Rating
+	status: Status
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'description', 'rating', 'thumbnail_source', 'status']
+		fields = ['title', 'description', 'thumbnail_source']
 
 
 class ThinWorkSchema(ModelSchema):
@@ -267,7 +288,7 @@ def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 	assert cls is MediaWork or cls is MediaSong
 	assert all(rel.A_id == obj_id or rel.B_id == obj_id for rel in payload)
 
-	rel_cls, rt_cls = (
+	rel_cls, _rt_cls = (
 		(WorkRelation, WorkRelationTypes)
 		if cls is MediaWork
 		else (SongRelation, SongRelationTypes)
@@ -294,7 +315,7 @@ def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 		rel_cls.objects.update_or_create(
 			A_id=rel.A_id,
 			B_id=rel.B_id,
-			defaults={'relation': rt_cls(rel.relation).value},
+			defaults={'relation': rel.relation},
 		)
 
 
@@ -304,9 +325,30 @@ class ConnectionSchema(Schema):
 	dead: bool | None = None
 
 
-class UserPreferencesSchema(Schema):
-	language: int | None
-	theme: int | None
+@model_validator(mode='after')
+def _UserPreferenceSchema_verify_value(self) -> Self:
+	disallowed_values = {
+		Preferences.LANGUAGE: [LanguageTypes.NOT_APPLICABLE],
+	}
+	for setting, value in self.dict().items():
+		if value is not None:
+			setting = getattr(Preferences, setting)
+			v = PreferencesValueTypeMap[setting](value)
+			if setting in disallowed_values:
+				assert v not in disallowed_values[setting]
+			setattr(self, setting.name, v)
+	return self
+
+
+UserPreferenceSchema = create_model(
+	'UserPreferenceSchema',
+	__base__=Schema,
+	__validators__={'verify_value': _UserPreferenceSchema_verify_value},
+	**{
+		name: (PreferencesValueTypeMap[value], None)
+		for name, value in zip(Preferences.names, Preferences.values)
+	},
+)
 
 
 def re_to_parser(regex):
@@ -553,8 +595,3 @@ def restrict_internal(f):
 	contribute_operation_args(wrapper, 'otodb-internal-secret', str, Header(...))
 
 	return wrapper
-
-
-class EntitySchema(Schema):
-	id: int | str
-	entity: Literal['mediawork', 'tagwork', 'tagsong', 'mediasong']

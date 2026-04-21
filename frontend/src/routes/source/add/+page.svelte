@@ -3,8 +3,10 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { UserLevel, Platform } from '$lib/enums';
 	import { callErrorToast } from '$lib/toast';
+	import { hasUserLevel } from '$lib/enums/userLevel';
+	import { Levels, Platform } from '$lib/schema';
+	import { enumValues, PlatformNames } from '$lib/enums';
 
 	let { data, form }: PageProps = $props();
 	let isUnavailable = $derived(!!data.unavailable_source);
@@ -23,8 +25,8 @@
 	{#if !data.unavailable_source}
 		<p>{m.mild_loud_shad_enchant({ type: m.fit_noble_niklas_build(), name: '' })}</p>
 		<ul>
-			{#each Platform.slice(1) as platform, i (i)}
-				<li>{platform}</li>
+			{#each enumValues(Platform) as platform, i (i)}
+				<li>{PlatformNames[platform]}</li>
 			{/each}
 		</ul>
 	{/if}
@@ -65,7 +67,7 @@
 							</select>
 						</td>
 					</tr>
-					{#if data.user?.level >= UserLevel.EDITOR}
+					{#if hasUserLevel(data.user?.level, Levels.Editor)}
 						<tr>
 							<th class="w-min whitespace-nowrap">
 								<label for="isUnavailable">{m.that_large_mare_ascend()}</label>

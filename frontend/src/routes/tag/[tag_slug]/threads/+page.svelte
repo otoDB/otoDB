@@ -3,9 +3,8 @@
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
 	import ThreadTable from '$lib/ThreadTable.svelte';
-	import type { PageProps } from './$types';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section title={data.tag.name} type={m.big_tiny_kitten_devour()} menuLinks={data.links}>

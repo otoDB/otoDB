@@ -1,6 +1,8 @@
-from typing import List
 from datetime import date
 from django.conf import settings
+from typing import Annotated
+from pydantic import StringConstraints
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -9,7 +11,7 @@ from ninja import Schema
 from ninja.security import django_auth
 from ninja.pagination import paginate
 
-from otodb.common import process_video_info, clean_incoming_slug
+from otodb.common import process_video_info, slugify_tag
 from otodb.models import (
 	MediaWork,
 	WorkSource,
@@ -18,6 +20,7 @@ from otodb.models import (
 	TagWorkCreatorConnection,
 )
 from otodb.models.enums import (
+	ErrorCode,
 	Platform,
 	WorkOrigin,
 	ProfileConnectionTypes,
@@ -73,9 +76,9 @@ def unbind_source(request: AuthedHttpRequest, source_id: int):
 @source_router.put('origin', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
-def source_origin(request: AuthedHttpRequest, source_id: int, status: int):
+def source_origin(request: AuthedHttpRequest, source_id: int, status: WorkOrigin):
 	src = get_object_or_404(WorkSource.active_objects, id=source_id)
-	src.work_origin = WorkOrigin(status).value
+	src.work_origin = status
 	src.save()
 
 
@@ -129,7 +132,7 @@ def update_source(
 @with_revision_route(Route.WORKSOURCE_CREATE)
 def new_source_from_url(
 	request: AuthedHttpRequest,
-	url: str,
+	url: Annotated[str, StringConstraints(strip_whitespace=True)],
 	is_reupload: bool,
 	work_id: int | None = None,
 	metadata: WorkSourceMetadataSchema | None = None,
@@ -143,7 +146,10 @@ def new_source_from_url(
 	is_editor = request.user.level >= Account.Levels.EDITOR
 
 	if metadata is not None and not is_editor:
-		return 403, {'message': 'Only editors can add unavailable sources'}
+		return 403, {
+			'code': ErrorCode.EDITOR_ONLY,
+			'data': {'message': 'Only editors can make changes here.'},
+		}
 
 	metadata_dict = metadata.dict() if metadata else None
 	src, info = WorkSource.from_url(
@@ -151,7 +157,10 @@ def new_source_from_url(
 	)
 
 	if src is None:
-		return 400, {'message': 'Bad request, is the URL correct?'}
+		return 400, {
+			'code': ErrorCode.BAD_URL,
+			'data': {'message': 'Bad request, is the URL correct?'},
+		}
 
 	# Source already has a work -> redirect
 	if src.media:
@@ -163,9 +172,15 @@ def new_source_from_url(
 			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
 		)
 		if work.status == Status.UNAPPROVED:
-			return 400, {'message': 'Cannot add sources to unapproved works'}
+			return 400, {
+				'code': ErrorCode.SOURCE_UNAPPROVED,
+				'data': {'message': 'Cannot add sources to unapproved works'},
+			}
 		if work.flags.filter(status=FlagStatus.PENDING).exists():
-			return 400, {'message': 'Cannot add sources to flagged works'}
+			return 400, {
+				'code': ErrorCode.SOURCE_FLAGGED,
+				'data': {'message': 'Cannot add sources to flagged works'},
+			}
 		if not is_editor and work.status == Status.APPROVED:
 			src.is_pending = True
 			transaction.on_commit(
@@ -206,6 +221,8 @@ def resolve_creator_tags(src: WorkSource, info: dict) -> list:
 				| Q(content_id__endswith='/' + info['channel_id'])
 				| Q(content_id__endswith='user_id=' + info['channel_id'])
 			)
+		elif src.platform == Platform.SOUNDCLOUD:
+			q = q.filter(content_id=info['url'].split('/')[3])
 		else:
 			q = q.filter(content_id=info['uploader_id'])
 
@@ -239,7 +256,7 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 
 	info = process_video_info(src.info_payload.payload, src.url)
 	raw_tags = info.get('tags', [])
-	slug_to_name: dict[str, str] = {clean_incoming_slug(t): t for t in raw_tags}
+	slug_to_name: dict[str, str] = {slugify_tag(t): t for t in raw_tags}
 	matched = TagWork.objects.filter(slug__in=slug_to_name.keys())
 	existing_names = {slug_to_name[t.slug] for t in matched}
 	resolved = {(t.aliased_to or t).pk: (t.aliased_to or t) for t in matched}
@@ -258,8 +275,8 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 			aliased_to=None,
 			deprecated=False,
 		)
-		for t in raw_tags
-		if t not in existing_names
+		# Deduplicate -- see PR #467
+		for t in set(raw_tags) - existing_names
 	]
 	creator_tags = resolve_creator_tags(src, info)
 
@@ -306,7 +323,7 @@ def approve_source(request: AuthedHttpRequest, source_id: int):
 	)
 
 
-@source_router.get('list', response=List[WorkSourceSchema])
+@source_router.get('list', response=list[WorkSourceSchema])
 @paginate
 def list_sources(
 	request,

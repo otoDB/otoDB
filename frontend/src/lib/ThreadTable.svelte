@@ -1,24 +1,26 @@
 <script lang="ts">
-	import { EntityModelRoutes, PostCategories } from './enums';
+	import { postCategoryNames } from '$lib/enums/postCategory';
+	import type { PostCategory } from '$lib/schema';
+	import { buildEntityRoutes, type EntityModelType } from './enums';
 	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
+	import TimeAgo from './TimeAgo.svelte';
 
 	interface Post {
 		id: number | string;
 		title: string;
-		entities?: { id: string | number; entity: string }[];
-		category?: number;
+		entities?: { id: string | number; entity: EntityModelType }[];
+		category: PostCategory;
 		added_by: { username: string };
 		modified: string;
-		last_post_by: string | null;
-		last_post_at: string | null;
+		last_post_by?: string | null;
+		last_post_at?: string | null;
 	}
 
 	interface Props {
 		posts: Post[];
 		showCategory?: boolean;
 		showAuthor?: boolean;
-		entityFilter?: (entity: { id: string | number; entity: string }) => boolean;
+		entityFilter?: (entity: { id: string | number; entity: EntityModelType }) => boolean;
 	}
 
 	let { posts, showCategory = false, showAuthor = true, entityFilter }: Props = $props();
@@ -47,22 +49,24 @@
 						<span class="text-otodb-content-fainter ml-3 text-xs">
 							{#each entities as { id, entity }, j (j)}
 								{#if j > 0},{/if}
-								<a href="/{EntityModelRoutes[entity]}/{id}"
-									>{EntityModelRoutes[entity]}/{id}</a
-								>
+								<a href={buildEntityRoutes(entity, id)}>
+									{buildEntityRoutes(entity, id)}
+								</a>
 							{/each}
 						</span>
 					{/if}
 				</td>
-				{#if showCategory}<td>{PostCategories[post.category]()}</td>{/if}
+				{#if showCategory}
+					<td>{postCategoryNames[post.category]()}</td>
+				{/if}
 				{#if showAuthor}
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td
 					>
 				{/if}
 				<td class="text-right">
-					<time title={new Date(lastTime).toLocaleString()}
-						><a href="/profile/{lastUser}">{lastUser}</a> @ {timeAgo(lastTime)}</time
-					>
+					<a href="/profile/{lastUser}">{lastUser}</a>
+					@
+					<TimeAgo date={lastTime} />
 				</td>
 			</tr>
 		{/each}

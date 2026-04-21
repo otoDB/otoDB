@@ -1,34 +1,39 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
+import { HistoricalEntities } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch, parent }) => {
-	const p = await parent();
+	const { tag: tag } = await parent();
 
-	const [{ data: history }, song_history] = await Promise.all([
-		client.GET('/api/history/history', {
+	const { data: history } = await client.GET('/api/history/history', {
+		fetch,
+		params: {
+			query: {
+				entity: HistoricalEntities.tagwork,
+				id: params.tag_slug
+			}
+		}
+	});
+
+	if (tag.song) {
+		const { data: song_history } = await client.GET('/api/history/history', {
 			fetch,
 			params: {
 				query: {
-					entity: 'tagwork',
-					id: params.tag_slug
+					entity: HistoricalEntities.mediasong,
+					id: tag.song.id
 				}
 			}
-		}),
-		p.tag.song
-			? client.GET('/api/history/history', {
-					fetch,
-					params: {
-						query: {
-							entity: 'mediasong',
-							id: p.tag.song.id
-						}
-					}
-				})
-			: null
-	]);
+		});
 
-	return {
-		history,
-		song_history: song_history?.data
-	};
+		return {
+			history,
+			song_history
+		};
+	} else {
+		return {
+			history,
+			song_history: null
+		};
+	}
 };

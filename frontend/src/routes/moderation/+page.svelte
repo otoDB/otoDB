@@ -16,7 +16,7 @@
 	];
 
 	const approveSource = async (sourceId: number) => {
-		await client.POST('/api/source/approve', {
+		await client.POST('/api/upload/approve', {
 			params: { query: { source_id: sourceId } }
 		});
 		invalidateAll();
@@ -25,7 +25,7 @@
 	const rejectSource = async (sourceId: number) => {
 		const reason = prompt('Rejection reason:');
 		if (reason === null) return;
-		await client.POST('/api/source/reject', {
+		await client.POST('/api/upload/reject', {
 			params: { query: { source_id: sourceId, reason } }
 		});
 		invalidateAll();
@@ -106,7 +106,7 @@
 				n_count={data.sources.count}
 				page={data.page}
 				page_size={data.batchSize}
-				base_url={page.url}
+				base_url={page.url.toString()}
 			/>
 		{/if}
 	{/if}
@@ -124,7 +124,7 @@
 				n_count={data.queue.count}
 				page={data.page}
 				page_size={data.batchSize}
-				base_url={page.url}
+				base_url={page.url.toString()}
 			/>
 		{/if}
 	{/if}

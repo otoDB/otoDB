@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
-import client from '$lib/api';
-import { UserLevel } from '$lib/enums';
+import client from '$lib/api.server';
+import { hasUserLevel } from '$lib/enums/userLevel';
+import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, params, locals }) => {
 	const { data: events } = await client.GET('/api/moderation/events', {
@@ -10,6 +11,6 @@ export const load: PageServerLoad = async ({ fetch, params, locals }) => {
 
 	return {
 		events,
-		isEditor: (locals.user?.level ?? 0) >= UserLevel.EDITOR
+		isEditor: hasUserLevel(locals.user?.level, Levels.Editor)
 	};
 };

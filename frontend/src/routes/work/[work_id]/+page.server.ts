@@ -1,8 +1,9 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
+import { ModelsWithComments } from '$lib/schema.js';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
-	const [{ data }, { data: comments }] = await Promise.all([
+	const [{ data: sources }, { data: comments }, { data: similar }] = await Promise.all([
 		client.GET('/api/work/sources', {
 			params: {
 				query: {
@@ -13,20 +14,22 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		}),
 		client.GET('/api/comment/comments', {
 			fetch,
-			params: { query: { model: 'mediawork', pk: +params.work_id } }
-		})
-	]);
-
-	const similar = client
-		.GET('/api/work/similar', {
+			params: {
+				query: {
+					model: ModelsWithComments.mediawork,
+					pk: +params.work_id
+				}
+			}
+		}),
+		client.GET('/api/work/similar', {
 			fetch,
 			params: { query: { work_id: +params.work_id } }
 		})
-		.then((res) => res.data);
+	]);
 
 	return {
-		sources: data,
-		comments,
-		similar
+		sources: sources,
+		comments: comments,
+		similar: similar
 	};
 };

@@ -4,12 +4,12 @@
 	import TagEditTable from '$lib/TagEditTable.svelte';
 	import WorkField from '$lib/WorkField.svelte';
 	import SourceViewer from '$lib/SourceViewer.svelte';
-	import { Rating, WorkOrigin, WorkStatus } from '$lib/enums';
 	import client, { getTagDisplaySlug } from '$lib/api';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import { enhance } from '$app/forms';
-	import type { components } from '$lib/schema';
+	import { Rating, type components } from '$lib/schema';
 	import { m } from '$lib/paraglide/messages.js';
+	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums.js';
 
 	let { data } = $props();
 
@@ -147,11 +147,11 @@
 						</tr>
 						<tr>
 							<th class="w-24">{m.large_polite_otter_thrive()}</th>
-							<td>{WorkOrigin[data.source.work_origin]()}</td>
+							<td>{WorkOriginNames[data.source.work_origin]()}</td>
 						</tr>
 						<tr>
 							<th class="w-24">{m.civil_trick_oryx_clap()}</th>
-							<td>{WorkStatus[data.source.work_status]()}</td>
+							<td>{WorkStatusNames[data.source.work_status]()}</td>
 						</tr>
 						<tr>
 							<th class="w-24">{m.big_dry_seahorse_succeed()}</th>
@@ -257,8 +257,8 @@
 					<div>
 						<label for="rating" class="block font-bold">Rating</label>
 						<select id="rating" name="rating" class="border" bind:value={rating}>
-							{#each Rating as r, i (i)}
-								<option value={i}>{r()}</option>
+							{#each enumValues(Rating) as r, i (i)}
+								<option value={r}>{RatingNames[r]()}</option>
 							{/each}
 						</select>
 					</div>

@@ -11,8 +11,15 @@ from ninja.pagination import paginate
 from ninja.errors import HttpError
 
 from otodb.account.models import Account
-from otodb.models import ProfileConnection, UserPreferences, Notification
-from otodb.models.enums import Status
+from otodb.models import ProfileConnection, UserPreference, Notification
+from otodb.models.enums import (
+	Status,
+	Platform,
+	WorkOrigin,
+	WorkStatus,
+	ProfileConnectionTypes,
+	Preferences,
+)
 
 from .comment import ModelsWithComments
 
@@ -22,9 +29,9 @@ from .common import (
 	ProfileSchema,
 	WorkSourceSchema,
 	ConnectionSchema,
-	UserPreferencesSchema,
 	profile_connection_parsers,
 	make_alt_value_parser,
+	UserPreferenceSchema,
 )
 
 profile_router = Router()
@@ -42,7 +49,11 @@ def lists(request: AuthedHttpRequest, username: str):
 	return user.pool_set
 
 
-@profile_router.get('connection', response=List[ConnectionSchema])
+class UserConnectionSchema(ConnectionSchema):
+	site: ProfileConnectionTypes
+
+
+@profile_router.get('connection', response=List[UserConnectionSchema])
 def connection(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.profileconnection_set
@@ -85,9 +96,9 @@ class SourceSubmissionSchema(WorkSourceSchema):
 
 
 class SubmissionsFilterSchema(FilterSchema):
-	platform: int | None = None
-	origin: int | None = Field(None, json_schema_extra={'q': 'work_origin'})
-	status: int | None = Field(None, json_schema_extra={'q': 'work_status'})
+	platform: Platform | None = None
+	origin: WorkOrigin | None = Field(None, json_schema_extra={'q': 'work_origin'})
+	status: WorkStatus | None = Field(None, json_schema_extra={'q': 'work_status'})
 
 
 @profile_router.get('submissions', response=List[SourceSubmissionSchema])
@@ -97,9 +108,9 @@ def submissions(
 	username: str,
 	filters: SubmissionsFilterSchema = Query(...),
 	order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id',
-	standing: int = 1,
+	standing: Status = Status.APPROVED,
 ):
-	match Status(standing):
+	match standing:
 		case Status.PENDING:
 			q = Q(is_pending=True)
 		case Status.APPROVED:
@@ -114,12 +125,21 @@ def submissions(
 
 
 @profile_router.post('prefs', auth=django_auth)
-def set_prefs(request: AuthedHttpRequest, payload: UserPreferencesSchema):
-	prefs, _ = UserPreferences.objects.get_or_create(user=request.user)
-	for attr, value in payload.dict().items():
-		if value is not None:
-			setattr(prefs, attr, value)
-	prefs.save()
+def set_prefs(request: AuthedHttpRequest, payload: UserPreferenceSchema):
+	UserPreference.objects.bulk_create(
+		[
+			UserPreference(
+				user=request.user,
+				setting=getattr(Preferences, attr),
+				value=value,
+			)
+			for attr, value in payload.dict().items()
+			if value is not None
+		],
+		unique_fields=['user', 'setting'],
+		update_conflicts=True,
+		update_fields=['value'],
+	)
 
 
 class NotificationSchema(ModelSchema):

@@ -1,20 +1,13 @@
 <script lang="ts">
+	import type { components } from './schema';
+
 	let {
 		events,
 		isEditor = false,
 		showTarget = true
 	}: {
 		events: {
-			items: {
-				event_type: number;
-				event_id: number;
-				work_id: number | null;
-				source_id: number | null;
-				by: { id: number; username: string } | null;
-				reason: string;
-				status: number | null;
-				event_at: string;
-			}[];
+			items: components['schemas']['ModerationEventSchema'][];
 			count: number;
 		} | null;
 		isEditor?: boolean;

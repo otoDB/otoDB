@@ -1,23 +1,24 @@
 <script lang="ts">
-	import client from './api';
-	import { getDisplayText } from './api';
-	import { m } from './paraglide/messages';
-	import type { components } from './schema';
-	import { clickOutside, debounce } from './ui';
-	import DisplayText from './DisplayText.svelte';
-	import WorkThumbnail from './WorkThumbnail.svelte';
+	import client from '$lib/api';
+	import { getDisplayText } from '$lib/api';
+	import { m } from '$lib/paraglide/messages';
+	import type { components } from '$lib/schema';
+	import { clickOutside, debounce } from '$lib/ui';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let self: HTMLElement;
 
 	let input: string = $state('');
 	interface Props {
-		value: components['schemas']['WorkSchema'] | null | undefined;
+		value: components['schemas']['ThinWorkSchema'] | null | undefined;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-		oninput: Function | undefined;
+		oninput?: Function;
+		name?: string;
 	}
-	let { value = $bindable(undefined), oninput = undefined, ...props }: Props = $props();
+	let { value = $bindable(undefined), oninput = undefined, name }: Props = $props();
 
-	let suggestions: components['schemas']['WorkSchema'][] = $state([]);
+	let suggestions: components['schemas']['ThinWorkSchema'][] = $state([]);
 	let locked_in = $state(false);
 	let selectedIndex = $state(0);
 
@@ -26,7 +27,7 @@
 		selectedIndex = 0;
 	});
 
-	const selectWork = (v: components['schemas']['WorkSchema']) => {
+	const selectWork = (v: (typeof suggestions)[number]) => {
 		value = v;
 		input = getDisplayText(v.title, '');
 		suggestions = [];
@@ -82,7 +83,7 @@
 		disabled={locked_in}
 		bind:value={input}
 	/>
-	<input type="number" hidden value={value?.id ?? -1} {...props} />
+	<input type="number" hidden value={value?.id ?? -1} {name} />
 	{#if locked_in}
 		<button
 			type="button"
@@ -104,7 +105,7 @@
 		<table
 			class="absolute z-1 px-1"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>
@@ -141,10 +142,3 @@
 		</table>
 	{/if}
 </span>
-
-<style>
-	ul {
-		background-color: var(--otodb-color-bg-primary);
-		z-index: 10;
-	}
-</style>

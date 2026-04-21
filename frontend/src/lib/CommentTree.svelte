@@ -1,19 +1,20 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import client, { makeCommentTree, type CommentModels } from './api';
-	import { UserLevel } from './enums';
-	import { renderMarkdown } from './markdown';
-	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
-	import type { components } from './schema';
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import client from '$lib/api';
+	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
+	import { hasUserLevel } from '$lib/enums/userLevel';
+	import { renderMarkdown } from '$lib/markdown';
+	import { m } from '$lib/paraglide/messages';
+	import { Levels, ModelsWithComments } from '$lib/schema';
+	import TimeAgo from '$lib/TimeAgo.svelte';
+	import EditedBy from './EditedBy.svelte';
 
 	interface Props {
-		comments: components['schemas']['CommentSchema'][];
-		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
-		model: CommentModels;
+		model: ModelsWithComments;
 		pk: number;
+		comments: Parameters<typeof makeCommentTree>[0];
 	}
 
 	const { comments, user = null, model, pk }: Props = $props();
@@ -67,14 +68,10 @@
 		editPreviewMode = false;
 	};
 
-	const can_comment = user && user.level >= UserLevel.MEMBER;
-	const is_admin = user && user.level >= UserLevel.ADMIN;
+	const can_comment = $derived(hasUserLevel(user?.level, Levels.Member));
+	const is_admin = $derived(!!user && hasUserLevel(user?.level, Levels.Admin));
 
-	const canEdit = (data: {
-		user: { username: string };
-		time: Date;
-		edited_by: { username: string } | null;
-	}) => {
+	const canEdit = (data: ReturnType<typeof makeCommentTree>[number]) => {
 		if (!user) return false;
 		if (is_admin) return true;
 		if (data.user.username !== user.username) return false;
@@ -142,25 +139,20 @@
 	</form>
 {/snippet}
 
-{#snippet comment(data, this_component, depth: number)}
+{#snippet comment(data: ReturnType<typeof makeCommentTree>[number], depth: number)}
 	<div class="comment grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">
 		<div
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
 			<a href="/profile/{data.user.username}">{data.user.username}</a>
-			<a href="#c{data.id}"
-				><time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time></a
-			>
+			<a href="#c{data.id}"><TimeAgo date={data.time} /></a>
 			{#if data.edited_at}
-				<span title={new Date(data.edited_at).toLocaleString()}>
-					{#if data.edited_by && data.edited_by.username !== data.user.username}
-						({m.free_tiny_badger_breathe({ time: timeAgo(data.edited_at) })}<a
-							href="/profile/{data.edited_by.username}">{data.edited_by.username}</a
-						>{m.agent_honest_marten_renew()})
-					{:else}
-						{m.same_only_emu_startle({ time: timeAgo(data.edited_at) })}
-					{/if}
-				</span>
+				<EditedBy
+					date={data.edited_at}
+					user={data.edited_by && data.edited_by.username !== data.user.username
+						? data.edited_by
+						: null}
+				/>
 			{/if}
 		</div>
 		<div>
@@ -225,7 +217,7 @@
 			{#if editingId === null}
 				<div class="comment-actions flex justify-end gap-2 pt-2">
 					{#if can_comment}
-						<label class="cursor-pointer px-2 py-1" role="button">
+						<label class="cursor-pointer px-2 py-1">
 							{m.kind_brief_earthworm_dash()}
 							<input type="checkbox" class="reply-toggle hidden" value={false} />
 						</label>
@@ -235,7 +227,7 @@
 							{m.minor_crisp_cobra_list()}
 						</button>
 					{/if}
-					{#if user && (user.level >= UserLevel.ADMIN || data.user.username === user.username)}
+					{#if user && (hasUserLevel(user?.level, Levels.Admin) || data.user.username === user.username)}
 						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 							>{m.even_alert_grebe_taste()}</button
 						>
@@ -247,7 +239,7 @@
 	<div class="border-otodb-content-fainter ml-2 border-l-2 pl-3">
 		{@render reply(data.id)}
 		{#each data.children as child, i (i)}
-			{@render this_component(child, this_component, depth + 1)}
+			{@render comment(child, depth + 1)}
 		{/each}
 	</div>
 {/snippet}
@@ -255,7 +247,7 @@
 <div>
 	{#if tree.length}
 		{#each tree as c, i (i)}
-			{@render comment(c, comment, 0)}
+			{@render comment(c, 0)}
 		{/each}
 	{:else}
 		{m.new_basic_dove_love()}

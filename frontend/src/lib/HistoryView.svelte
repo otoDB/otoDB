@@ -1,22 +1,13 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import client from './api';
-	import { UserLevel, Route } from './enums';
+	import TimeAgo from '$lib/TimeAgo.svelte';
+	import { routeNames } from '$lib/enums/route';
 	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
 	import type { components } from './schema';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
-		user: components['schemas']['UserStatusSchema'] | null;
+		user: App.Locals['user'] | null;
 	}
-	let { revisions, user = null }: Props = $props();
-	// const rollback = async (entry) => {
-	// 	await client.POST('/api/history/rollback', {
-	// 		fetch,
-	// 		params: { query: { history_id: entry.id, model: entry.model } }
-	// 	});
-	// 	invalidateAll();
-	// };
+	let { revisions }: Props = $props();
 </script>
 
 <table class="w-full table-auto text-center">
@@ -25,23 +16,20 @@
 			<th>Version</th><th>Revision</th><th>Action</th><th>{m.fuzzy_crazy_cobra_lead()}</th><th
 				>{m.super_agent_pigeon_aim()}</th
 			><th>{m.weary_spicy_fly_attend()}</th>
-			<!-- {#if user && user.level >= UserLevel.ADMIN}<th>{m.legal_mean_slug_link()}</th>{/if} -->
 		</tr>
 		{#each revisions as rev, i (i)}
 			<tr
 				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
-					>{rev.route !== null && rev.route !== undefined ? Route[rev.route] : ''}</td
+					>{rev.route !== null && rev.route !== undefined
+						? routeNames[rev.route]()
+						: ''}</td
 				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>
 				</td><td>
-					<time title={new Date(rev.date).toLocaleString()}>{timeAgo(rev.date)}</time>
+					<TimeAgo date={rev.date} />
 				</td><td>
 					{rev.message}
 				</td>
-				<!-- {#if user && user.level >= UserLevel.ADMIN}<td
-						><button onclick={() => rollback(entry)}>{m.legal_mean_slug_link()}</button
-						></td
-					>{/if} -->
 			</tr>
 		{/each}
 	</tbody>

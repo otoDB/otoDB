@@ -1,8 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import DisplayText from './DisplayText.svelte';
-	import { m } from './paraglide/messages';
-	let { title = undefined, type = undefined, children, menuLinks = null } = $props();
+	import DisplayText from '$lib/DisplayText.svelte';
+	import { m } from '$lib/paraglide/messages';
+	let {
+		title = undefined,
+		type = undefined,
+		children,
+		menuLinks = null,
+		href = undefined
+	} = $props();
 </script>
 
 <section
@@ -27,7 +33,17 @@
 	{/if}
 
 	<h1 class="mb-2 text-2xl font-bold">
-		{#if type}{m.mild_loud_shad_enchant({ type, name: '' })}{/if}<DisplayText value={title} />
+		{#if href}
+			<a {href}>
+				{#if type}{m.mild_loud_shad_enchant({ type, name: '' })}{/if}<DisplayText
+					value={title}
+				/>
+			</a>
+		{:else}
+			{#if type}{m.mild_loud_shad_enchant({ type, name: '' })}{/if}<DisplayText
+				value={title}
+			/>
+		{/if}
 	</h1>
 
 	{@render children()}

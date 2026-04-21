@@ -1,4 +1,5 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
+import { HistoricalEntities } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
@@ -6,7 +7,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		fetch,
 		params: {
 			query: {
-				entity: 'tagsong',
+				entity: HistoricalEntities.tagsong,
 				id: params.tag_slug
 			}
 		}

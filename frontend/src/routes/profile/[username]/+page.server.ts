@@ -1,5 +1,6 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
+import { ModelsWithComments } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, parent, params }) => {
 	const data = await parent();
@@ -15,7 +16,12 @@ export const load: PageServerLoad = async ({ fetch, parent, params }) => {
 		}),
 		client.GET('/api/comment/comments', {
 			fetch,
-			params: { query: { model: 'account', pk: data.profile.id } }
+			params: {
+				query: {
+					model: ModelsWithComments.account,
+					pk: data.profile.id
+				}
+			}
 		})
 	]);
 

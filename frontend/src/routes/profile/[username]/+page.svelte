@@ -1,24 +1,26 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
-	import { ProfileConnectionTypes, ProfileConnectionLink, UserLevel } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import { version_end_dates } from '$lib/ui';
+	import { getVersionKey, versions } from '$lib/enums/version';
+	import { userLevelNames } from '$lib/enums/userLevel.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { ModelsWithComments } from '$lib/schema.js';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	const profileLd =
 		'<script type="application/ld+json">' +
 		JSON.stringify({
 			'@context': 'https://schema.org',
 			'@type': 'ProfilePage',
-			dateCreated: data.profile.date_created,
-			mainEntity: {
+			'dateCreated': data.profile.date_created,
+			'mainEntity': {
 				'@type': 'Person',
-				name: data.profile.username,
-				url: `https://otodb.net/profile/${data.profile.username}`
+				'name': data.profile.username,
+				'url': `https://otodb.net/profile/${data.profile.username}`
 			}
 		}) +
 		'</' +
@@ -31,31 +33,31 @@
 </svelte:head>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
-	<p>{UserLevel[data.profile?.level]()}</p>
-	<p>
-		{m.sharp_witty_jackdaw_treat({
-			date: new Date(data.profile.date_created).toLocaleDateString()
-		})}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
-			content: version_end_dates.find(
-				(d) => d[1] - Date.parse(data.profile.date_created) >= 0
-			)?.[0]
-		})}
-	</p>
+	<p>{userLevelNames[data.profile.level]()}</p>
+	{#if data.profile.date_created}
+		<p>
+			{m.sharp_witty_jackdaw_treat({
+				date: new Date(data.profile.date_created).toLocaleDateString()
+			})}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
+				content: versions[getVersionKey(new Date(data.profile.date_created))].name
+			})}
+		</p>
+	{/if}
 
 	{#if data.connections}
 		<ul class="list-none">
 			{#each data.connections as s, i (i)}
 				<li>
 					<ConnectionFavicon
-						type={ProfileConnectionTypes[s.site]}
+						type={profileConnectionMap[s.site].name}
 						class="inline size-4"
 					/>
 					<a
-						href={ProfileConnectionLink[s.site](s.content_id)}
+						href={profileConnectionMap[s.site].linkFn(s.content_id)}
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{decodeURI(ProfileConnectionLink[s.site](s.content_id))}
+						{decodeURI(profileConnectionMap[s.site].linkFn(s.content_id))}
 					</a>
 				</li>
 			{/each}
@@ -67,7 +69,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="account"
+		model={ModelsWithComments.account}
 		pk={data.profile.id}
 	/>
 </Section>

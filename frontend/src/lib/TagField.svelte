@@ -1,29 +1,37 @@
 <script lang="ts">
-	import client, { getTagDisplaySlug } from './api';
-	import TagSuggestionResults from './TagSuggestionResults.svelte';
-	import { clickOutside, debounce } from './ui';
+	import type { ComponentProps } from 'svelte';
+	import client, { getTagDisplaySlug } from '$lib/api';
+	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
+	import { clickOutside, debounce } from '$lib/ui';
 
 	interface Props {
 		value: string;
 		type: 'work' | 'song';
 		resolve_aliases?: boolean;
+		name?: string;
 	}
 	let { value = $bindable(''), type, ...props }: Props = $props();
 
-	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
-
-	let suggestions = $state([]);
+	let suggestions: ComponentProps<typeof TagSuggestionResults>['suggestions'] = $state([]);
 
 	const search = async () => {
 		if (value === '') {
 			suggestions = [];
 			return;
 		}
-		const { data } = await client.GET(endpoint, {
-			params: {
-				query: { query: value, limit: 10, resolve_aliases: props.resolve_aliases ?? true }
+		const { data } = await client.GET(
+			type === 'work' ? ('/api/tag/search' as const) : ('/api/tag/song_tag_search' as const),
+
+			{
+				params: {
+					query: {
+						query: value,
+						limit: 10,
+						resolve_aliases: props.resolve_aliases ?? true
+					}
+				}
 			}
-		});
+		);
 		if (!data) return;
 		suggestions = data.items;
 	};
@@ -35,7 +43,7 @@
 		<ul
 			class="absolute z-1 list-none"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>

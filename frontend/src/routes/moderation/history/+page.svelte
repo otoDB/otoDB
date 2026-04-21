@@ -13,6 +13,6 @@
 		n_count={data.events.count}
 		page={data.page}
 		page_size={data.batchSize}
-		base_url={page.url}
+		base_url={page.url.toString()}
 	/>
 {/if}

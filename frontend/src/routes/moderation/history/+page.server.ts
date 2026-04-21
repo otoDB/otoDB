@@ -1,10 +1,11 @@
 import type { PageServerLoad } from './$types';
-import client from '$lib/api';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+import client from '$lib/api.server';
+import { hasUserLevel } from '$lib/enums/userLevel';
+import { Levels } from '$lib/schema';
+import { userLevelGuard } from '$lib/route_guard';
 
 export const load: PageServerLoad = async ({ fetch, locals, url }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+	userLevelGuard(locals.user, Levels.Member, url.pathname);
 
 	const page = +(url.searchParams.get('page') || '1');
 	const userId = url.searchParams.get('user_id') ? +url.searchParams.get('user_id')! : undefined;
@@ -25,6 +26,6 @@ export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 		page,
 		batchSize: 30,
 		userId,
-		isEditor: (locals.user?.level ?? 0) >= UserLevel.EDITOR
+		isEditor: hasUserLevel(locals.user?.level, Levels.Editor)
 	};
 };

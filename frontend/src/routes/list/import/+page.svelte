@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { callErrorToast } from '$lib/toast';
 
-	let { form }: PageProps = $props();
+	let { form } = $props();
 
 	$effect(() => {
 		if (form?.failed) {

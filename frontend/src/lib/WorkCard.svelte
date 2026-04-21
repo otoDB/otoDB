@@ -1,14 +1,19 @@
 <script lang="ts">
-	import type { components } from './schema';
-	import WorkTag from './WorkTag.svelte';
-	import DisplayText from './DisplayText.svelte';
-	import WorkThumbnail from './WorkThumbnail.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getDisplayText } from './api';
-	import { StatusValue } from './enums';
+	import { getDisplayText } from '$lib/api';
+	import type { ComponentProps } from 'svelte';
+	import { Status } from './schema';
 
 	interface Props {
-		work: components['schemas']['WorkSchema'];
+		work: {
+			id: number;
+			title?: string | null | undefined;
+			thumbnail?: string | null | undefined;
+			tags: ComponentProps<typeof WorkTag>['tag'][];
+		};
 		class?: string;
 	}
 	const { work, ...props }: Props = $props();
@@ -19,11 +24,10 @@
 		props.class,
 		'group bg-otodb-bg-primary relative row-span-2 grid size-full grid-rows-subgrid gap-0',
 		{
-			'outline outline-2 outline-sky-600': work.status === StatusValue.PENDING,
-			'outline outline-2 outline-yellow-600': work?.pending_flag,
-			'outline outline-2 outline-orange-600': work?.pending_appeal,
-			'outline outline-2 outline-red-600':
-				work.status === StatusValue.UNAPPROVED && !work?.pending_appeal
+			'outline-2 outline-sky-600': work.status === Status.Pending,
+			'outline-2 outline-yellow-600': work?.pending_flag,
+			'outline-2 outline-orange-600': work?.pending_appeal,
+			'outline-2 outline-red-600': work.status === Status.Unapproved && !work?.pending_appeal
 		}
 	]}
 >

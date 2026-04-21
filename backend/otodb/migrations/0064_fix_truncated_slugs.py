@@ -6,7 +6,7 @@ from django.db.models.functions import Length
 
 def fix_truncated_slugs(apps, schema_editor):
 	# This migration isn't bulletproof but works for our cases
-	from otodb.common import clean_incoming_slug
+	from otodb.common import slugify_tag
 
 	TagWork = apps.get_model('otodb', 'TagWork')
 	TagSong = apps.get_model('otodb', 'TagSong')
@@ -14,7 +14,7 @@ def fix_truncated_slugs(apps, schema_editor):
 		for tag in model.objects.annotate(slug_length=Length('slug')).filter(
 			slug_length__gt=49
 		):
-			expected_slug = clean_incoming_slug(tag.name)
+			expected_slug = slugify_tag(tag.name)
 			if tag.slug != expected_slug:
 				if (
 					not model.objects.filter(slug=expected_slug)

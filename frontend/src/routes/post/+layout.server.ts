@@ -1,15 +1,16 @@
-import type { LayoutServerLoad } from './$types';
+import { hasUserLevel } from '$lib/enums/userLevel';
 import { m } from '$lib/paraglide/messages.js';
-import { userLevelCheck } from '$lib/route_guard';
+import { Levels } from '$lib/schema';
+import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	return {
 		links: [
 			{ pathname: 'post/overview', title: m.just_salty_anaconda_nourish() },
-			...(userLevelCheck(locals.user)
-				? []
-				: [{ pathname: `post/new`, title: m.antsy_aloof_horse_grace() }]),
-			{ pathname: `post/search`, title: m.mean_top_antelope_love() }
+			...(hasUserLevel(locals.user?.level, Levels.Member)
+				? [{ pathname: `post/new`, title: m.antsy_aloof_horse_grace() }]
+				: []),
+			{ pathname: `post`, title: m.mean_top_antelope_love() }
 		]
 	};
 };

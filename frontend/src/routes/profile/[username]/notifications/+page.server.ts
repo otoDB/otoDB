@@ -1,13 +1,13 @@
-import client from '$lib/api';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
+
+import { userLevelGuard } from '$lib/route_guard';
 import type { PageServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages';
 import { redirect } from '@sveltejs/kit';
+import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, locals, url, params }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER);
+	userLevelGuard(locals.user, Levels.Member);
 	if (params.username !== locals.user?.username) redirect(303, `/profile/${params.username}`);
 
 	const batch_size = 20;
@@ -16,8 +16,6 @@ export const load: PageServerLoad = async ({ fetch, locals, url, params }) => {
 		fetch,
 		params: { query: { limit: batch_size, offset: (page - 1) * batch_size } }
 	});
-
-	if (!data) error(500, { message: 'Internal server error' });
 
 	return {
 		notifications: data,

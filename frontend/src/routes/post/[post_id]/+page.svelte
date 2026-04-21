@@ -1,44 +1,49 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import EditedBy from '$lib/EditedBy.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import Section from '$lib/Section.svelte';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
-	import { EntityModelRoutes, Languages, PostCategories, UserLevel } from '$lib/enums.js';
+	import { EntityModelRoutes } from '$lib/enums.js';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/language.js';
+	import { postCategoryNames } from '$lib/enums/postCategory.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-	import { timeAgo } from '$lib/ui.js';
+	import { Levels, ModelsWithComments, PostCategory } from '$lib/schema.js';
 	import { mount, unmount } from 'svelte';
-	import { enhance } from '$app/forms';
 
 	let { data } = $props();
 
 	let lang_view = $derived(
-		data.post.pages.some((p) => p.lang === Languages[getLocale()])
+		data.post.pages.some((p) => p.lang === languages[getLocale()].id)
 			? getLocale()
-			: Languages[data.post.pages[0].lang]
+			: resolveLanguageKeyById(data.post.pages[0].lang)
 	);
-	let page_object = $derived(data.post.pages.find((p) => p.lang === Languages[lang_view]));
+	let page_object = $derived(data.post.pages.find((p) => p.lang === languages[lang_view].id)!);
 	let page = $derived(renderMarkdown(page_object?.page ?? ''));
 
 	const postLd = $derived.by(() => {
-		const pageObj = data.post.pages.find((p) => p.lang === Languages[lang_view]);
+		const pageObj = data.post.pages.find((p) => p.lang === languages[lang_view].id);
 		if (!pageObj) return null;
 		return (
 			'<script type="application/ld+json">' +
 			JSON.stringify({
 				'@context': 'https://schema.org',
 				'@type': 'DiscussionForumPosting',
-				headline: data.post.title,
-				text: pageObj.page.slice(0, 500),
-				url: `https://otodb.net/post/${data.post_id}`,
-				author: {
+				'headline': data.post.title,
+				'text': pageObj.page.slice(0, 500),
+				'url': `https://otodb.net/post/${data.post_id}`,
+				'author': {
 					'@type': 'Person',
-					name: data.post.added_by.username,
-					url: `https://otodb.net/profile/${data.post.added_by.username}`
+					'name': data.post.added_by.username,
+					'url': `https://otodb.net/profile/${data.post.added_by.username}`
 				},
-				datePublished: pageObj.modified,
+				'datePublished': pageObj.modified,
 				...(data.post.edited_at ? { dateModified: data.post.edited_at } : {})
 			}) +
 			'</' +
@@ -47,15 +52,20 @@
 	});
 	$effect(() => {
 		if (page) {
-			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag')).map(
-				(el) =>
+			const tags = Array.from(document.querySelectorAll('.post-content otodb-worktag'))
+				.filter((e) => e.hasAttribute('slug'))
+				.map((el) =>
 					client
 						.GET('/api/tag/tag', {
 							fetch,
-							params: { query: { tag_slug: el.getAttribute('slug') } }
+							params: {
+								query: {
+									tag_slug: el.getAttribute('slug')!
+								}
+							}
 						})
 						.then((r) => mount(WorkTag, { target: el, props: { tag: r.data! } }))
-			);
+				);
 			return () => {
 				tags.forEach((p) => p.then(unmount));
 			};
@@ -71,10 +81,10 @@
 		editEntities
 			.split('\n')
 			.map(get_entity)
-			.filter((x) => x)
+			.filter((x) => !!x)
 	);
 
-	const is_admin = data.user && data.user.level >= UserLevel.ADMIN;
+	const is_admin = $derived(hasUserLevel(data.user?.level, Levels.Admin));
 	const editedByOther =
 		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username;
 	const canEdit =
@@ -125,7 +135,7 @@
 					</tr>
 				</tbody>
 			</table>
-			{#if data.post.category === 3}
+			{#if data.post.category === PostCategory.Gardening}
 				<h4>{m.fine_zany_octopus_trim()}</h4>
 				<textarea name="entities" bind:value={editEntities}></textarea>
 				<ul class="inline-block">
@@ -151,16 +161,12 @@
 	{:else}
 		<div class="text-otodb-content-fainter mb-6 text-xs">
 			<p>
-				<a href="/post/search?category={data.post.category}"
-					>{PostCategories[data.post.category]()}</a
+				<a href="/post?category={data.post.category}"
+					>{postCategoryNames[data.post.category]()}</a
 				>
-				{#if data.post.category === 0}
+				{#if data.post.category === PostCategory.Announcement}
 					&middot;
-					<a href="#p{data.post_id}"
-						><time title={new Date(page_object.modified).toLocaleString()}
-							>{timeAgo(page_object.modified)}</time
-						></a
-					>
+					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
 				{/if}
 			</p>
 			{#if data.post.entities?.length}
@@ -176,7 +182,7 @@
 			{/if}
 		</div>
 		<LangSwitch
-			availableLanguages={data.post.pages.map((v) => Languages[v.lang])}
+			availableLanguages={data.post.pages.map((v) => resolveLanguageKeyById(v.lang))}
 			bind:value={lang_view}
 		/>
 		{#if data.post.category > 0}
@@ -187,23 +193,12 @@
 					<a href="/profile/{data.post?.added_by.username}"
 						>{data.post?.added_by.username}</a
 					>
-					<a href="#p{data.post_id}"
-						><time title={new Date(page_object.modified).toLocaleString()}
-							>{timeAgo(page_object.modified)}</time
-						></a
-					>
-					{#if data.post.edited_at}
-						<span title={new Date(data.post.edited_at).toLocaleString()}>
-							{#if editedByOther}
-								({m.free_tiny_badger_breathe({
-									time: timeAgo(data.post.edited_at)
-								})}<a href="/profile/{data.post.edited_by.username}"
-									>{data.post.edited_by.username}</a
-								>{m.agent_honest_marten_renew()})
-							{:else}
-								{m.same_only_emu_startle({ time: timeAgo(data.post.edited_at) })}
-							{/if}
-						</span>
+					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
+					{#if data.post.edited_at && data.post.edited_by}
+						<EditedBy
+							date={data.post.edited_at}
+							user={editedByOther ? data.post.edited_by : null}
+						/>
 					{/if}
 				</div>
 				<div class="px-4 py-2">
@@ -241,7 +236,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="post"
+		model={ModelsWithComments.post}
 		pk={+data.post_id}
 	/>
 </Section>

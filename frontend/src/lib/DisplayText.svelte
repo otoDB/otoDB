@@ -1,7 +1,12 @@
 <script lang="ts">
-	import { getDisplayText } from './api';
-	export let value;
-	export let placeholder = undefined;
+	import { getDisplayText } from '$lib/api';
+
+	interface Props {
+		value: string | null | undefined;
+		placeholder?: string;
+	}
+
+	const { value, placeholder }: Props = $props();
 </script>
 
 <span class={value ?? 'text-otodb-content-fainter italic'}>

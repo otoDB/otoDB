@@ -28,22 +28,44 @@ from .models.enums import Platform, MimeType
 
 logger = logging.getLogger(__name__)
 
+# https://qa.nicovideo.jp/faq/show/821
+# https://qa.nicovideo.jp/faq/show/822
+# Older Niconico uploads used <font> instead of <span style="...">
+# and <b> instead of <strong>
+ALLOWED_TAGS = {'a', 'b', 'br', 'font', 'strong', 'i', 's', 'u', 'span'}
+ALLOWED_ATTRIBUTES = {'a': {'href'}, 'font': {'color', 'size'}, 'span': {'style'}}
+ALLOWED_STYLE_PROPERTIES = {'color', 'font-size'}
+
+
+def clean_description(text: str) -> str:
+	"""Sanitize video HTML description using `nh3`"""
+	return nh3.clean(
+		text,
+		tags=ALLOWED_TAGS,
+		attributes=ALLOWED_ATTRIBUTES,
+		filter_style_properties=ALLOWED_STYLE_PROPERTIES,
+	)
+
 
 def NFKC(s: str):
 	return unicodedata.normalize('NFKC', s)
 
 
-def clean_incoming_tag_name(s: str):
-	return NFKC(s).lower().replace(' ', '_')
+def clean_tag(s: str):
+	return NFKC(s).strip()
 
 
-def clean_incoming_slug(s: str):
-	return slugify(clean_incoming_tag_name(s), True)
+def canonicalize_tag(s: str):
+	return clean_tag(s).lower().replace(' ', '_')
+
+
+def slugify_tag(s: str):
+	return slugify(canonicalize_tag(s), allow_unicode=True)
 
 
 class NiconicoIECustom(NiconicoIE):
-	# Support nico.ms short URLs
-	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/watch|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
+	# Support nico.ms short URLs and /shorts/ URLs
+	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/(?:watch|shorts)|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
 
 
 ydl_playlist = YoutubeDL(
@@ -199,8 +221,8 @@ def process_video_info(full_info, link=None):
 				'uploader_id': full_info['owner']['id'] if full_info['owner'] else 0,
 			}
 		else:
-			# Standard yt-dlp response
-			info = full_info.copy()
+			# Standard yt-dlp response, deep copied to avoid mutating original
+			info = json.loads(json.dumps(full_info))
 
 			if info.get('_type') == 'playlist':
 				info = info['entries'][0]  # TODO need some work...
@@ -247,7 +269,10 @@ def process_video_info(full_info, link=None):
 			case Platform.NICONICO:
 				pass  # webpage_url already set
 			case Platform.SOUNDCLOUD:
-				pass  # TODO
+				# TODO
+				info['tags'] = list(
+					set(info['tags'] + [info['genre']] + info['genres'])
+				)
 			case Platform.TWITTER:
 				info['id'] = info['display_id']
 				info['title'] = None
@@ -264,10 +289,11 @@ def process_video_info(full_info, link=None):
 
 		# Process tags
 		if 'tags' in info:
-			info['tags'] = [clean_incoming_tag_name(tag) for tag in info['tags']]
+			info['tags'] = [canonicalize_tag(tag) for tag in info['tags']]
+			info['tags'] = list(dict.fromkeys(info['tags']))
 
 		# Clean description
-		info['description'] = nh3.clean(info['description'])
+		info['description'] = clean_description(info['description'])
 
 		# Get thumbnail mime type
 		info['thumbnail_mime'] = fetch_thumbnail_mime_type(info['thumbnail'])

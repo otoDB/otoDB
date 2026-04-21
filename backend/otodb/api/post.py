@@ -164,8 +164,8 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 	if payload.entities:
 		usernames = [e.id for e in payload.entities if e.entity == PostEntities.PROFILE]
 		for name in usernames:
-			if account := Account.objects.filter(username__iexact=usernames).first():
-				notify_reasons[account.id] = NotificationReason.REVISION_LINKED
+			if account := Account.objects.filter(username__iexact=name).first():
+				notify_reasons[account.id] = NotificationReason.THREAD_LINKED
 	notify_reasons.pop(request.user.id, None)
 	if notify_reasons:
 		Notification.objects.bulk_create(

@@ -5168,7 +5168,7 @@ export enum ModelsWithComments {
 export enum NotificationReason {
     Reply = 0,
     Mention = 1,
-    Revision_Linked = 2
+    Thread_Linked = 2
 }
 export enum SongTagCategory {
     General = 0,

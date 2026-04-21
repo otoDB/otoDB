@@ -52,7 +52,7 @@
 							</td>
 						{:else if n.post}
 							<td class={{ 'opacity-40': n.dismissed }}
-								>{n.reason === NotificationReason.Revision_Linked
+								>{n.reason === NotificationReason.Thread_Linked
 									? m.aqua_safe_beetle_list()
 									: n.reason === NotificationReason.Mention
 										? m.vexed_polite_haddock_trim()

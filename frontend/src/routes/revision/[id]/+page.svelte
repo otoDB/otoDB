@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
 	import {
 		buildEntityRoutes,
@@ -150,15 +150,6 @@
 			{m.curly_safe_lynx_fond()}
 		{/if}
 	</h3>
-	{#if data.user && data.user.username !== data.revision.user}
-		<h4 class="text-lg">
-			<a
-				href="/post/new?category={PostCategory.Gardening}&entity=@{data.revision
-					.user}&title={m.silly_quiet_fireant_quell({ id: data.revision.id })}"
-				>{m.frail_loose_gecko_play({ user: data.revision.user })}</a
-			>
-		</h4>
-	{/if}
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
 	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id > 1}<button
 			class="my-5"
@@ -171,6 +162,15 @@
 				invalidateAll();
 			}}>Revert changes made in this revision</button
 		>{/if}
+	{#if data.user && data.user.username !== data.revision.user}
+		<button
+			onclick={() =>
+				goto(
+					`/post/new?category=${PostCategory.Gardening}&entity=@${data.revision.user}&title=${m.silly_quiet_fireant_quell({ id: data.revision.id })}`
+				)}>{m.frail_loose_gecko_play({ user: data.revision.user })}</button
+		>
+	{/if}
+
 	<ul class="my-5">
 		{#each data.routes as { route, entities }, i (i)}
 			<li>{routeNames[route]()}</li>

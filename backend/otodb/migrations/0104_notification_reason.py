@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 			model_name='notification',
 			name='reason',
 			field=models.IntegerField(
-				choices=[(0, 'Reply'), (1, 'Mention'), (2, 'Revision Linked')],
+				choices=[(0, 'Reply'), (1, 'Mention'), (2, 'Thread Linked')],
 				default=0,
 			),
 		),

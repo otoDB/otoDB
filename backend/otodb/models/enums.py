@@ -211,7 +211,7 @@ class MimeType(OtodbIntegerEnum):
 class NotificationReason(OtodbIntegerEnum):
 	REPLY = 0, 'Reply'
 	MENTION = 1, 'Mention'
-	REVISION_LINKED = 2, 'Revision Linked'
+	THREAD_LINKED = 2, 'Thread Linked'
 
 
 class PostCategory(OtodbIntegerEnum):

@@ -1,6 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 import { Levels } from '$lib/schema';
 import { hasUserLevel } from '$lib/enums/userLevel';
+import { m } from '$lib/paraglide/messages';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	return {

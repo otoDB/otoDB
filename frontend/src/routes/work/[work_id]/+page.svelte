@@ -152,7 +152,7 @@
 			{/if}
 			{#if data.pending_flag.by}
 				<div class="mt-1 text-sm">
-					{mild_loud_shad_enchant({
+					{m.mild_loud_shad_enchant({
 						type: m.arable_keen_rook_nail(),
 						name: data.pending_flag.by.username
 					})}

@@ -5,15 +5,10 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getDisplayText } from '$lib/api';
 	import type { ComponentProps } from 'svelte';
-	import { Status } from './schema';
+	import { Status, type components } from './schema';
 
 	interface Props {
-		work: {
-			id: number;
-			title?: string | null | undefined;
-			thumbnail?: string | null | undefined;
-			tags: ComponentProps<typeof WorkTag>['tag'][];
-		};
+		work: components['schemas']['ThinWorkSchema'];
 		class?: string;
 	}
 	const { work, ...props }: Props = $props();

@@ -22,7 +22,7 @@
 
 	let title = $state(data.suggestions?.title ?? data.source.title ?? '');
 	let description = $state(data.suggestions?.description ?? data.source.description ?? '');
-	let rating = $state(0 as number | null);
+	let rating: Rating | null = $state(0);
 	let bindWork = $state<components['schemas']['WorkSchema'] | null>(null);
 
 	// Tag cache for rich tag editing (sample toggles, creator roles)
@@ -68,7 +68,11 @@
 	);
 </script>
 
-<Section title={data.source.title} type={m.extra_brave_tapir_skip()} menuLinks={data.links}>
+<Section
+	title={data.source.title || `#${data.source.id}`}
+	type={m.extra_brave_tapir_skip()}
+	menuLinks={data.links}
+>
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
@@ -154,6 +158,12 @@
 								>
 							</tr>
 						{/if}
+						{#if data.source.is_pending}
+							<tr>
+								<th class="w-24">Status</th>
+								<td><span class="text-sky-600">Pending approval</span></td>
+							</tr>
+						{/if}
 					</tbody>
 				</table>
 			</div>
@@ -161,7 +171,6 @@
 	</div>
 
 	{#if !data.isBound}
-		<!-- Mode toggle -->
 		<div class="mt-4 mb-4 flex gap-2">
 			<label
 				class={[
@@ -218,7 +227,7 @@
 										<label
 											class={[
 												'cursor-pointer border px-3 py-1',
-												rating === i &&
+												rating === r &&
 													'bg-otodb-content-primary text-otodb-bg-primary'
 											]}
 										>

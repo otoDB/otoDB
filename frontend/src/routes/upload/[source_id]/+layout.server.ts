@@ -19,7 +19,8 @@ export const load: LayoutServerLoad = async ({ params, fetch }) => {
 			{
 				pathname: `upload/${sourceId}`,
 				title: m.extra_brave_tapir_skip() + ' ' + sourceId
-			}
+			},
+			{ pathname: `upload/${sourceId}/moderation`, title: 'Moderation' }
 		],
 		head: {
 			title: m.extra_brave_tapir_skip() + ' ' + sourceId

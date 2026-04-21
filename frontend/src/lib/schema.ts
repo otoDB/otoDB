@@ -1941,6 +1941,11 @@ export interface components {
          * @enum {string}
          */
         ModelsWithComments: ModelsWithComments;
+        /**
+         * NotificationReason
+         * @enum {integer}
+         */
+        NotificationReason: NotificationReason;
         /** NotificationSchema */
         NotificationSchema: {
             /** Id */
@@ -1952,6 +1957,7 @@ export interface components {
             ] | null;
             /** Post */
             post?: number | null;
+            reason: components["schemas"]["NotificationReason"];
             /**
              * Dismissed
              * @default false
@@ -5159,6 +5165,11 @@ export enum ModelsWithComments {
     post = "post",
     bulkrequest = "bulkrequest"
 }
+export enum NotificationReason {
+    Reply = 0,
+    Mention = 1,
+    Thread_Linked = 2
+}
 export enum SongTagCategory {
     General = 0,
     Genre = 1,
@@ -5224,7 +5235,8 @@ export enum PostEntities {
     tagwork = "tagwork",
     tagsong = "tagsong",
     mediasong = "mediasong",
-    worksource = "worksource"
+    worksource = "worksource",
+    account = "account"
 }
 export enum Route {
     Unknown = 0,

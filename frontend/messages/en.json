@@ -272,6 +272,8 @@
 	"wacky_weird_swallow_trust": "No notifications.",
 	"livid_real_platypus_borrow": "An entity you are subscribed to was modified in a revision.",
 	"curly_these_mule_ascend": "New reply.",
+	"vexed_polite_haddock_trim": "You were mentioned in a thread.",
+	"aqua_safe_beetle_list": "Your revision was referenced in a thread.",
 	"lost_game_mink_loop": "[Untitled]",
 	"misty_great_gazelle_comfort": "Child song attributes",
 	"red_petty_jurgen_sway": "Songs associated with \"{name}\"",
@@ -322,5 +324,7 @@
 	"good_vivid_weasel_launch": "Alias Control",
 	"free_tiny_badger_breathe": "Edited by {#username/} {#time/}",
 	"light_sunny_kitten_slide": "Edited {#time/}",
-	"green_inclusive_meerkat_earn": "Media type"
+	"green_inclusive_meerkat_earn": "Media type",
+	"frail_loose_gecko_play": "Inquire {user} about this revision",
+	"silly_quiet_fireant_quell": "Regarding r{id}"
 }

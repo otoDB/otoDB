@@ -19,6 +19,7 @@ from otodb.models.enums import (
 	WorkOrigin,
 	WorkStatus,
 	ProfileConnectionTypes,
+	NotificationReason,
 	Preferences,
 )
 
@@ -146,6 +147,7 @@ class NotificationSchema(ModelSchema):
 	id: int
 	comment: tuple[ModelsWithComments, int | str] | None
 	post: int | None = Field(None, alias='post_id')
+	reason: NotificationReason
 
 	class Meta:
 		model = Notification
@@ -174,7 +176,7 @@ class NotificationSchema(ModelSchema):
 )
 @paginate
 def notifications(request: HttpRequest):
-	return request.user.notifs.order_by('dismissed')
+	return request.user.notifs.all()
 
 
 @profile_router.put('notification', auth=django_auth)
@@ -182,7 +184,7 @@ def read_notif(request: HttpRequest, notif_id: int):
 	if request.user.notifs.filter(id=notif_id).update(dismissed=True) > 0:
 		return 200
 	else:
-		raise HttpError(403, 'Forbidden')
+		raise HttpError(400, 'Bad Request')
 
 
 @profile_router.delete('notification', auth=django_auth)
@@ -190,4 +192,4 @@ def del_notif(request: HttpRequest, notif_id: int):
 	if request.user.notifs.filter(id=notif_id).delete()[0] > 0:
 		return 200
 	else:
-		raise HttpError(403, 'Forbidden')
+		raise HttpError(400, 'Bad Request')

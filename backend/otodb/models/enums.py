@@ -208,6 +208,12 @@ class MimeType(OtodbIntegerEnum):
 		return None
 
 
+class NotificationReason(OtodbIntegerEnum):
+	REPLY = 0, 'Reply'
+	MENTION = 1, 'Mention'
+	THREAD_LINKED = 2, 'Thread Linked'
+
+
 class PostCategory(OtodbIntegerEnum):
 	ANNOUNCEMENT = 0, 'Announcement'
 	FEATURE_REQUEST = 1, 'Feature Request'

@@ -11,7 +11,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
-	import { Levels, Platform, Status, WorkStatus } from '$lib/schema.js';
+	import { Levels, Platform, Status, WorkOrigin, WorkStatus } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
@@ -50,9 +50,10 @@
 					<td>{m.large_polite_otter_thrive()}</td>
 					<td
 						><select name="origin" value={data.origin ?? null}
-							><option value={null}>---</option><option value={0}
+							><option value={null}>---</option><option value={WorkOrigin.Author}
 								>{WorkOriginNames[0]()}</option
-							><option value={1}>{WorkOriginNames[1]()}</option></select
+							><option value={WorkOrigin.Reupload}>{WorkOriginNames[1]()}</option
+							></select
 						></td
 					>
 				</tr>

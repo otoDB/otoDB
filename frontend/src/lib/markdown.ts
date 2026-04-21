@@ -60,39 +60,56 @@ function remarkStripImages() {
 	};
 }
 
+const OtodbReplacements: [RegExp, (...args: string[]) => PhrasingContent | false][] = [
+	...ENTITIES.flatMap(({ shortPrefix, longLabel, urlPath }) => [
+		// Short form: w123, l42, r99
+		[
+			short_prefix_re_gen(shortPrefix),
+			(_, num) => link(`/${urlPath}/${num}`, `${shortPrefix}${num}`)
+		] as [RegExp, (...args: string[]) => PhrasingContent | false],
+		// Long form: work #123, list #42, revision #99
+		[
+			long_label_re_gen(longLabel),
+			(_, num) => link(`/${urlPath}/${num}`, `${longLabel} #${num}`)
+		] as [RegExp, (...args: string[]) => PhrasingContent | false]
+	]),
+	// Tag wiki links: [[slug]] or [[slug|Display Text]]
+	[
+		TAGWORK_RE,
+		(_, slug, display) =>
+			link(`/tag/${encodeURIComponent(slug.trim())}`, display?.trim() || slug.trim())
+	],
+	// Simple user mention: @username
+	[MENTION_RE, (_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)]
+];
+
 function remarkOtodb() {
 	return (tree: Root) => {
-		const replacements: [RegExp, (...args: string[]) => PhrasingContent | false][] = [];
-
-		for (const { shortPrefix, longLabel, urlPath } of ENTITIES) {
-			// Short form: w123, l42, r99
-			replacements.push([
-				short_prefix_re_gen(shortPrefix),
-				(_, num) => link(`/${urlPath}/${num}`, `${shortPrefix}${num}`)
-			]);
-			// Long form: work #123, list #42, revision #99
-			replacements.push([
-				long_label_re_gen(longLabel),
-				(_, num) => link(`/${urlPath}/${num}`, `${longLabel} #${num}`)
-			]);
-		}
-
-		// Tag wiki links: [[slug]] or [[slug|Display Text]]
-		replacements.push([
-			TAGWORK_RE,
-			(_, slug, display) =>
-				link(`/tag/${encodeURIComponent(slug.trim())}`, display?.trim() || slug.trim())
-		]);
-
-		// Simple user mention: @username
-		replacements.push([
-			MENTION_RE,
-			(_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)
-		]);
-
-		findAndReplace(tree, replacements);
+		findAndReplace(tree, OtodbReplacements);
 	};
 }
+
+export const string_link_entities = (s: string) => {
+	let parts: (string | { url: string; text: string })[] = [s];
+	for (const [regex, tf] of OtodbReplacements) {
+		parts = parts.flatMap((v) => {
+			if (typeof v === 'string') {
+				const result = [];
+				let lastIndex = 0;
+				let match;
+				while ((match = regex.exec(v)) !== null) {
+					if (match.index > lastIndex) result.push(v.slice(lastIndex, match.index));
+					const l = tf(...match) as { url: string; children: { value: string }[] };
+					result.push({ url: l.url, text: l.children[0].value });
+					lastIndex = regex.lastIndex;
+				}
+				if (lastIndex < v.length) result.push(v.slice(lastIndex));
+				return result;
+			} else return [v];
+		});
+	}
+	return parts;
+};
 
 export const get_entity = (
 	s: string
@@ -114,7 +131,8 @@ export const get_entity = (
 const entityShorthands: Record<string, (id: string | number) => string> = {
 	mediawork: (id) => `${ENTITIES[0].shortPrefix}${id}`,
 	revision: (id) => `${ENTITIES[2].shortPrefix}${id}`,
-	tagwork: (id) => `[[${id}]]`
+	tagwork: (id) => `[[${id}]]`,
+	account: (id) => `@${id}`
 };
 
 export const entity_to_shorthand = (entity: string, id: string | number): string =>

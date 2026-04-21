@@ -26,7 +26,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { Levels } from '$lib/schema.js';
+	import { Levels, PostCategory } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
@@ -150,6 +150,15 @@
 			{m.curly_safe_lynx_fond()}
 		{/if}
 	</h3>
+	{#if data.user && data.user.username !== data.revision.user}
+		<h4 class="text-lg">
+			<a
+				href="/post/new?category={PostCategory.Gardening}&entity=@{data.revision
+					.user}&title={m.silly_quiet_fireant_quell({ id: data.revision.id })}"
+				>{m.frail_loose_gecko_play({ user: data.revision.user })}</a
+			>
+		</h4>
+	{/if}
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
 	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id > 1}<button
 			class="my-5"

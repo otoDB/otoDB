@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { m } from './paraglide/messages';
 	import type { components } from './schema';
 
 	let {
@@ -15,22 +16,22 @@
 	} = $props();
 
 	const eventLabels: Record<number, string> = {
-		0: 'Flagged',
-		1: 'Appealed',
-		2: 'Disapproved',
-		3: 'Approved',
-		4: 'Mod Action'
+		0: m.tangy_busy_liger_burn(),
+		1: m.brief_flat_bullock_dance(),
+		2: m.stale_vexed_hare_pray(),
+		3: m.spare_few_kudu_learn(),
+		4: m.loud_heroic_chipmunk_gasp()
 	};
 
 	const modActionCategoryLabels: Record<number, string> = {
-		1: 'Delisted',
-		10: 'Source Approved',
-		11: 'Source Rejected'
+		1: m.quiet_upper_pig_yell(),
+		10: m.ideal_aloof_racoon_blend(),
+		11: m.silly_slimy_lemur_link()
 	};
 
 	const getEventLabel = (event: { event_type: number; status: number | null }) => {
 		if (event.event_type === 4 && event.status !== null) {
-			return modActionCategoryLabels[event.status] ?? 'Mod Action';
+			return modActionCategoryLabels[event.status] ?? m.loud_heroic_chipmunk_gasp();
 		}
 		return eventLabels[event.event_type] ?? event.event_type;
 	};
@@ -42,11 +43,11 @@
 			<tr>
 				<th>Event</th>
 				{#if showTarget}
-					<th>Target</th>
+					<th>{m.funny_muddy_skate_learn()}</th>
 				{/if}
-				<th>Reason</th>
-				<th>By</th>
-				<th>Date</th>
+				<th>{m.weary_spicy_fly_attend()}</th>
+				<th>{m.last_sleek_butterfly_quiz()}</th>
+				<th>{m.super_agent_pigeon_aim()}</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -82,5 +83,5 @@
 		</tbody>
 	</table>
 {:else}
-	<p>No moderation history.</p>
+	<p>{m.gray_still_wolf_nurture()}</p>
 {/if}

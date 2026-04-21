@@ -11,7 +11,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			{ pathname: 'moderation/history', title: 'History' }
 		],
 		head: {
-			title: 'Moderation'
+			title: m.minor_inner_lynx_adapt()
 		}
 	};
 };

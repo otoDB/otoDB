@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { Platform } from '$lib/schema.js';
 	import { enumValues } from '$lib/enums.js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let { data } = $props();
 </script>
@@ -26,7 +27,7 @@
 				value="true"
 				checked={data.filters.unbound === 'true'}
 			/>
-			Unbound only
+			{m.top_bald_piranha_clap()}
 		</label>
 		<label class="flex items-center gap-1">
 			<input
@@ -35,7 +36,7 @@
 				value="true"
 				checked={data.filters.pending === 'true'}
 			/>
-			Pending only
+			{m.mean_simple_flea_aid()}
 		</label>
 		<input type="submit" value="Filter" class="border px-3 py-1" />
 	</form>
@@ -44,12 +45,12 @@
 		<table class="w-full">
 			<thead>
 				<tr>
-					<th>Title</th>
-					<th>Platform</th>
-					<th>Work</th>
-					<th>Added by</th>
-					<th>Date</th>
-					<th>Status</th>
+					<th>{m.large_factual_octopus_exhale()}</th>
+					<th>{m.sour_swift_sparrow_spin()}</th>
+					<th>{m.grand_merry_fly_succeed()}</th>
+					<th>{m.each_born_quail_gleam()}</th>
+					<th>{m.super_agent_pigeon_aim()}</th>
+					<th>{m.just_noisy_moth_beam()}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -78,7 +79,7 @@
 						<td>{source.published_date ?? '-'}</td>
 						<td>
 							{#if source.is_pending}
-								<span class="text-sky-600">Pending</span>
+								<span class="text-sky-600">{m.such_actual_okapi_dare()}</span>
 							{:else}
 								Active
 							{/if}
@@ -96,6 +97,6 @@
 			/>
 		{/if}
 	{:else}
-		<p>No sources found.</p>
+		<p>{m.dull_every_wasp_win()}</p>
 	{/if}
 </Section>

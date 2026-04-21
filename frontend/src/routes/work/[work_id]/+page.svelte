@@ -112,38 +112,50 @@
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
 	{#if data.status === Status.Pending}
 		<div class="mb-3 border border-sky-600 bg-sky-600/10 px-4 py-2 font-bold text-sky-600">
-			This work is pending approval.
+			{m.broad_inner_boar_devour()}
 		</div>
 	{:else if data.status === Status.Unapproved && data?.pending_appeal}
 		<div class="mb-3 border border-orange-600 bg-orange-600/10 px-4 py-2 text-orange-600">
-			<div class="font-bold">This work has been appealed.</div>
+			<div class="font-bold">{m.quiet_tasty_earthworm_trip()}</div>
 			{#if data.pending_appeal.reason}
 				<div class="mt-1 text-sm">
-					Reason: {data.pending_appeal.reason}
+					{m.mild_loud_shad_enchant({
+						type: m.weary_spicy_fly_attend(),
+						name: data.pending_appeal.reason
+					})}
 				</div>
 			{/if}
 			{#if data.pending_appeal.by}
 				<div class="mt-1 text-sm">
-					Appealed by: {data.pending_appeal.by.username}
+					{m.mild_loud_shad_enchant({
+						type: m.any_light_lamb_gaze(),
+						name: data.pending_appeal.by.username
+					})}
 				</div>
 			{/if}
 		</div>
 	{:else if data.status === Status.Unapproved}
 		<div class="mb-3 border border-red-600 bg-red-600/10 px-4 py-2 font-bold text-red-600">
-			This work has been delisted.
+			{m.livid_main_bat_lift()}
 		</div>
 	{/if}
 	{#if data?.pending_flag}
 		<div class="mb-3 border border-yellow-600 bg-yellow-600/10 px-4 py-2 text-yellow-600">
-			<div class="font-bold">This work has been flagged for review.</div>
+			<div class="font-bold">{m.small_red_finch_lock()}</div>
 			{#if data.pending_flag.reason}
 				<div class="mt-1 text-sm">
-					Reason: {data.pending_flag.reason}
+					{m.mild_loud_shad_enchant({
+						type: m.weary_spicy_fly_attend(),
+						name: data.pending_flag.reason
+					})}
 				</div>
 			{/if}
 			{#if data.pending_flag.by}
 				<div class="mt-1 text-sm">
-					Flagged by: {data.pending_flag.by.username}
+					{mild_loud_shad_enchant({
+						type: m.arable_keen_rook_nail(),
+						name: data.pending_flag.by.username
+					})}
 				</div>
 			{/if}
 		</div>
@@ -174,7 +186,7 @@
 						});
 					}}
 				>
-					Disapprove
+					{m.alive_blue_marlin_push()}
 				</button>
 			{/if}
 			{#if data.user.level >= 50}
@@ -189,7 +201,7 @@
 						if (!error) location.reload();
 					}}
 				>
-					Force Resolve
+					{m.proof_deft_reindeer_smile()}
 				</button>
 			{/if}
 		</div>
@@ -304,11 +316,13 @@
 								</tr>
 								{#if data.status === Status.Approved && !data?.pending_flag}
 									<tr>
-										<th class="w-24">Flag</th>
+										<th class="w-24">{m.nimble_gaudy_scallop_fold()}</th>
 										<td>
 											<button
 												onclick={async () => {
-													const reason = prompt('Flag reason:');
+													const reason = prompt(
+														m.royal_big_chipmunk_absorb()
+													);
 													if (!reason) return;
 													const { error } = await client.POST(
 														'/api/work/flag',
@@ -322,18 +336,20 @@
 													if (!error) location.reload();
 												}}
 											>
-												Flag
+												{m.nimble_gaudy_scallop_fold()}
 											</button>
 										</td>
 									</tr>
 								{/if}
 								{#if data.status === Status.Unapproved && !data?.pending_appeal}
 									<tr>
-										<th class="w-24">Appeal</th>
+										<th class="w-24">{m.key_last_racoon_clasp()}</th>
 										<td>
 											<button
 												onclick={async () => {
-													const reason = prompt('Appeal reason:');
+													const reason = prompt(
+														m.zippy_dark_mayfly_cut()
+													);
 													if (!reason) return;
 													const { error } = await client.POST(
 														'/api/work/appeal',
@@ -347,7 +363,7 @@
 													if (!error) location.reload();
 												}}
 											>
-												Appeal
+												{m.key_last_racoon_clasp()}
 											</button>
 										</td>
 									</tr>

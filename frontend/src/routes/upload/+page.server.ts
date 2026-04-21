@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import client from '$lib/api.server';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ fetch, url }) => {
 	const page = +(url.searchParams.get('page') || '1');
@@ -27,7 +28,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 		batchSize,
 		filters: { unbound, pending, platform },
 		head: {
-			title: 'Sources'
+			title: m.extra_brave_tapir_skip()
 		}
 	};
 };

@@ -328,7 +328,7 @@
 						</div>
 						<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 							{@render link('/post/4', m.arable_direct_cougar_win())}
-							{@render link('/moderation', 'Moderation')}
+							{@render link('/moderation', m.minor_inner_lynx_adapt())}
 							{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 							{@render link('/work/merge', m.heroic_same_wasp_conquer())}
 						</ul>

@@ -61,7 +61,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			},
 			{
 				pathname: `work/${params.work_id}/moderation`,
-				title: 'Moderation'
+				title: m.minor_inner_lynx_adapt()
 			}
 		],
 		...data,

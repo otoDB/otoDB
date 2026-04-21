@@ -161,7 +161,10 @@
 						{#if data.source.is_pending}
 							<tr>
 								<th class="w-24">Status</th>
-								<td><span class="text-sky-600">Pending approval</span></td>
+								<td
+									><span class="text-sky-600">{m.lost_weird_squid_commend()}</span
+									></td
+								>
 							</tr>
 						{/if}
 					</tbody>

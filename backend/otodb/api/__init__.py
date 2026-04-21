@@ -35,7 +35,6 @@ def flatten_properties(
 	(used f.e. in GET params with multiple arguments and models)
 	"""
 
-	# 1. Handle allOf (often used by Ninja to wrap refs with defaults)
 	if 'allOf' in prop_details:
 		for item in prop_details['allOf']:
 			if '$ref' in item:

@@ -4,15 +4,16 @@
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
+	import { m } from '$lib/paraglide/messages.js';
 
 	let { data } = $props();
 
 	const tabs = [
-		{ key: 'all', label: 'All' },
-		{ key: 'pending', label: 'Pending' },
-		{ key: 'flagged', label: 'Flagged' },
-		{ key: 'appealed', label: 'Appealed' },
-		{ key: 'sources', label: 'Pending Sources' }
+		{ key: 'all', label: m.keen_soft_crow_relish() },
+		{ key: 'pending', label: m.such_actual_okapi_dare() },
+		{ key: 'flagged', label: m.tangy_busy_liger_burn() },
+		{ key: 'appealed', label: m.brief_flat_bullock_dance() },
+		{ key: 'sources', label: m.suave_gray_stork_type() }
 	];
 
 	const approveSource = async (sourceId: number) => {
@@ -48,16 +49,16 @@
 
 {#if data.tab === 'sources' && data.sources}
 	{#if data.sources.items.length === 0}
-		<p>No pending sources.</p>
+		<p>{m.proud_orange_parrot_amuse()}</p>
 	{:else}
 		<table class="w-full">
 			<thead>
 				<tr>
-					<th>Source</th>
-					<th>Work</th>
-					<th>Added by</th>
-					<th>Date</th>
-					<th>Actions</th>
+					<th>{m.extra_brave_tapir_skip()}</th>
+					<th>{m.grand_merry_fly_succeed()}</th>
+					<th>{m.each_born_quail_gleam()}</th>
+					<th>{m.super_agent_pigeon_aim()}</th>
+					<th>{m.mild_full_sloth_work()}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -88,13 +89,13 @@
 								class="border px-2 py-0.5"
 								onclick={() => approveSource(source.id)}
 							>
-								Approve
+								{m.lucky_bold_hornet_push()}
 							</button>
 							<button
 								class="border px-2 py-0.5"
 								onclick={() => rejectSource(source.id)}
 							>
-								Reject
+								{m.alive_blue_marlin_push()}
 							</button>
 						</td>
 					</tr>
@@ -112,7 +113,7 @@
 	{/if}
 {:else if data.queue}
 	{#if data.queue.items.length === 0}
-		<p>Queue is empty.</p>
+		<p>{m.elegant_these_chicken_bless()}</p>
 	{:else}
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each data.queue.items as work (work.id)}

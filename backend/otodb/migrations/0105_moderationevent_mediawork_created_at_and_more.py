@@ -42,7 +42,7 @@ def _create_moderation_events_view(apps, schema_editor):
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0094_alter_revisionchangeentity_route'),
+		('otodb', '0104_notification_reason_and_order'),
 		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
 	]
 

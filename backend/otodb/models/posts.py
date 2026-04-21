@@ -194,6 +194,7 @@ class Notification(models.Model):
 	)
 
 	class Meta:
+		ordering = ['dismissed', '-id']
 		constraints = [
 			models.CheckConstraint(
 				condition=(

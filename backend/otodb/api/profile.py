@@ -176,7 +176,7 @@ class NotificationSchema(ModelSchema):
 )
 @paginate
 def notifications(request: HttpRequest):
-	return request.user.notifs.order_by('dismissed')
+	return request.user.notifs.all()
 
 
 @profile_router.put('notification', auth=django_auth)

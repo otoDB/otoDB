@@ -17,4 +17,8 @@ class Migration(migrations.Migration):
 				default=0,
 			),
 		),
+		migrations.AlterModelOptions(
+			name='notification',
+			options={'ordering': ['dismissed', '-id']},
+		),
 	]

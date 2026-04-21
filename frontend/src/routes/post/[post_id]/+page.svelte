@@ -11,7 +11,12 @@
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language.js';
 	import { postCategoryNames } from '$lib/enums/postCategory.js';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
-	import { entity_to_shorthand, get_entity, renderMarkdown } from '$lib/markdown.js';
+	import {
+		entity_to_shorthand,
+		get_entity,
+		renderMarkdown,
+		string_link_entities
+	} from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { Levels, ModelsWithComments, PostCategory } from '$lib/schema.js';
@@ -112,7 +117,18 @@
 	{/if}
 </svelte:head>
 
-<Section title={isEditing ? '' : data.post.title}>
+<Section>
+	{#snippet title()}
+		{#if !isEditing}
+			{#each string_link_entities(data.post.title) as node, i (i)}
+				{#if typeof node === 'string'}
+					{node}
+				{:else}
+					<a href={node.url}>{node.text}</a>
+				{/if}
+			{/each}
+		{/if}
+	{/snippet}
 	{#if isEditing}
 		<form
 			method="POST"

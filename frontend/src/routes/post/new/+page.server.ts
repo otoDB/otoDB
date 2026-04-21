@@ -14,7 +14,8 @@ export const load: PageServerLoad = ({ locals, url }) => {
 	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
 	const category = asEnum(PostCategory, paramCategory);
 	const entity = url.searchParams.get('entity');
-	return { category, entity, head: { title: m.antsy_aloof_horse_grace() } };
+	const title = url.searchParams.get('title');
+	return { category, entity, title, head: { title: m.antsy_aloof_horse_grace() } };
 };
 
 export const actions = {

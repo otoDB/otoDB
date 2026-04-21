@@ -5,6 +5,7 @@
 	import client from '$lib/api';
 	import { buildEntityRoutes } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
+	import { NotificationReason } from '$lib/schema.js';
 
 	let { data } = $props();
 
@@ -51,7 +52,11 @@
 							</td>
 						{:else if n.post}
 							<td class={{ 'opacity-40': n.dismissed }}
-								>{m.curly_these_mule_ascend()}</td
+								>{n.reason === NotificationReason.Thread_Linked
+									? m.aqua_safe_beetle_list()
+									: n.reason === NotificationReason.Mention
+										? m.vexed_polite_haddock_trim()
+										: m.curly_these_mule_ascend()}</td
 							><td
 								><button
 									class={{ 'opacity-40': n.dismissed }}

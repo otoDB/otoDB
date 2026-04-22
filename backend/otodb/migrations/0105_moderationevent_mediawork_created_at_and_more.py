@@ -104,7 +104,7 @@ class Migration(migrations.Migration):
 					models.ForeignKey(
 						blank=True,
 						null=True,
-						on_delete=django.db.models.deletion.CASCADE,
+						on_delete=django.db.models.deletion.SET_NULL,
 						related_name='moderation_events',
 						to='otodb.mediawork',
 					),

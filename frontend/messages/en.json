@@ -360,5 +360,12 @@
 	"direct_fluffy_finch_believe": "Queue",
 	"awake_aware_quail_bake": "Moderation Event",
 	"cool_house_barbel_cheer": "Immediately resolve this work?",
-	"honest_tangy_butterfly_dream": "Reject reason"
+	"honest_tangy_butterfly_dream": "Reject reason",
+	"noisy_proud_robin_gaze": "View on otoDB",
+	"calm_silver_bison_wait": "Fetching…",
+	"tiny_lost_marmot_roam": "This work is not in the database.",
+	"merry_brisk_owl_submit": "Add this work to otoDB…",
+	"quiet_dusty_fox_search": "No connections found for this page.",
+	"weary_broken_eagle_sigh": "Cannot reach the database.",
+	"grim_plain_crane_crash": "An error occurred while fetching data."
 }

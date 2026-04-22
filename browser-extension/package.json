@@ -1,16 +1,33 @@
 {
+  "type": "module",
   "scripts": {
     "build:chrome": "node build.js chrome",
     "build:firefox": "node build.js firefox",
     "watch:chrome": "node build.js chrome --watch",
     "watch:firefox": "node build.js firefox --watch",
-    "pack": "node build.js pack"
+    "pack": "node build.js pack",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "^4.2.1",
-    "adm-zip": "^0.5.16"
+    "@inlang/paraglide-js": "2.15.2",
+    "@sveltejs/adapter-static": "^3.0.9",
+    "@sveltejs/kit": "^2.55.0",
+    "sveltekit-adapter-chrome-extension": "^2.0.1",
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/chrome": "^0.0.278",
+    "@types/node": "^22.10.5",
+    "@types/set-cookie-parser": "^2.4.10",
+    "adm-zip": "^0.5.16",
+    "svelte": "^5.55.0",
+    "svelte-check": "^4.4.5",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
   },
   "dependencies": {
-    "dompurify": "^3.3.3"
+    "openapi-fetch": "^0.15.2",
+    "set-cookie-parser": "^2.7.2"
   }
 }

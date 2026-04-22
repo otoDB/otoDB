@@ -22,7 +22,13 @@ from otodb.models import (
 	WorkSource,
 )
 
-from .common import ListSchema, ListItemSchema, WorkSourceSchema, track_revision
+from .common import (
+	ListSchema,
+	ListItemSchema,
+	WorkSourceSchema,
+	track_revision,
+	user_is_editor,
+)
 
 list_router = Router()
 
@@ -185,6 +191,7 @@ def import_ext_into_pool(info, list_: Pool, user):
 @list_router.post(
 	'import', auth=django_auth, response=int, throttle=[AuthRateThrottle('3/30m')]
 )
+@user_is_editor
 @transaction.atomic
 @track_revision
 def import_ext(request: HttpRequest, url: str):

@@ -326,5 +326,12 @@
 	"light_sunny_kitten_slide": "Edited {#time/}",
 	"green_inclusive_meerkat_earn": "Media type",
 	"frail_loose_gecko_play": "Inquire {user} about this revision",
-	"silly_quiet_fireant_quell": "Regarding r{id}"
+	"silly_quiet_fireant_quell": "Regarding r{id}",
+	"noisy_proud_robin_gaze": "View on otoDB",
+	"calm_silver_bison_wait": "Fetching…",
+	"tiny_lost_marmot_roam": "This work is not in the database.",
+	"merry_brisk_owl_submit": "Add this work to otoDB…",
+	"quiet_dusty_fox_search": "No connections found for this page.",
+	"weary_broken_eagle_sigh": "Cannot reach the database.",
+	"grim_plain_crane_crash": "An error occurred while fetching data."
 }

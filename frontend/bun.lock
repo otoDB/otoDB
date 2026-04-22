@@ -26,6 +26,7 @@
         "svelte-sonner": "^1.1.0",
         "svelte-svg-viewer": "^0.2.1",
         "unified": "^11.0.5",
+        "unist-util-visit": "^5.1.0",
       },
       "devDependencies": {
         "@chromatic-com/storybook": "^4.1.3",

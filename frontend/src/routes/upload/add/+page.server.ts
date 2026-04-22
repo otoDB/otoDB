@@ -100,14 +100,11 @@ export const actions = {
 		}
 
 		if (editing_unavailable_source && metadata) {
-			const { data: work_id, error: putError } = await clientRaw.PUT(
-				'/api/upload/source',
-				{
-					fetch,
-					params: { query: { source_id: +source } },
-					body: metadata
-				}
-			);
+			const { data: work_id, error: putError } = await clientRaw.PUT('/api/upload/source', {
+				fetch,
+				params: { query: { source_id: +source } },
+				body: metadata
+			});
 			if (putError)
 				return fail(400, {
 					url: link,
@@ -120,20 +117,17 @@ export const actions = {
 			redirect(303, `/work/${work_id}`);
 		}
 
-		const { data: result, error: postError } = await clientRaw.POST(
-			'/api/upload/source',
-			{
-				fetch,
-				params: {
-					query: {
-						url: link,
-						is_reupload: !is_official,
-						work_id: work ? +work : undefined
-					}
-				},
-				body: metadata
-			}
-		);
+		const { data: result, error: postError } = await clientRaw.POST('/api/upload/source', {
+			fetch,
+			params: {
+				query: {
+					url: link,
+					is_reupload: !is_official,
+					work_id: work ? +work : undefined
+				}
+			},
+			body: metadata
+		});
 		if (postError)
 			return fail(400, {
 				url: link,

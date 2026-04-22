@@ -21,16 +21,12 @@
 		void tags;
 		const timeout = setTimeout(() => {
 			tags.filter((t) => !Object.hasOwn(cache, t)).forEach(async (t) => {
-				let {
-					data,
-					error: redirectSlug,
-					response
-				} = await client.GET('/api/tag/tag', {
+				let { data } = await client.GET('/api/tag/tag', {
 					params: { query: { tag_slug: t } }
 				});
-				if (response.status === 300 && typeof redirectSlug === 'string') {
+				if (data?.aliased_to) {
 					({ data } = await client.GET('/api/tag/tag', {
-						params: { query: { tag_slug: redirectSlug } }
+						params: { query: { tag_slug: data.aliased_to.slug } }
 					}));
 				}
 				cache[t] = data ?? {

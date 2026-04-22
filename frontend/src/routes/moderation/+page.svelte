@@ -8,7 +8,7 @@
 
 	let { data } = $props();
 
-	const tabs = [
+	const tabs: { key: typeof data.tab; label: string }[] = [
 		{ key: 'all', label: m.keen_soft_crow_relish() },
 		{ key: 'pending', label: m.such_actual_okapi_dare() },
 		{ key: 'flagged', label: m.tangy_busy_liger_burn() },

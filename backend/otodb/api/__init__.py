@@ -34,7 +34,6 @@ def flatten_properties(
 	extracts all nested model's properties into flat properties
 	(used f.e. in GET params with multiple arguments and models)
 	"""
-
 	if 'allOf' in prop_details:
 		for item in prop_details['allOf']:
 			if '$ref' in item:

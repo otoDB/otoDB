@@ -178,7 +178,7 @@
 				<button
 					class="border px-3 py-1"
 					onclick={async () => {
-						const reason = prompt('Disapproval reason:');
+						const reason = prompt(m.honest_tangy_butterfly_dream());
 						if (!reason) return;
 						await client.POST('/api/work/disapprove', {
 							fetch,
@@ -193,7 +193,7 @@
 				<button
 					class="border border-red-600 px-3 py-1 text-red-600"
 					onclick={async () => {
-						if (!confirm('Immediately resolve this work?')) return;
+						if (!confirm(m.cool_house_barbel_cheer())) return;
 						const { error } = await client.POST('/api/work/resolve', {
 							fetch,
 							params: { query: { work_id: data.id } }

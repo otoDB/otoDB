@@ -313,7 +313,7 @@ def reject_pending_source(src: WorkSource, by, reason: str):
 @with_revision_route(Route.WORKSOURCE_REJECT)
 def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
 	"""Reject a pending source on an existing work. Unbinds the source."""
-	src = get_object_or_404(WorkSource.objects.filter(is_pending=True), id=source_id)
+	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
 	reject_pending_source(src, by=request.user, reason=reason)
 
 
@@ -321,7 +321,7 @@ def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
 @user_is_editor
 def approve_source(request: AuthedHttpRequest, source_id: int):
 	"""Approve a pending source on an existing work."""
-	src = get_object_or_404(WorkSource.objects.filter(is_pending=True), id=source_id)
+	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
 	src.is_pending = False
 	src.save(update_fields=['is_pending'])
 	ModerationEvent.objects.create(

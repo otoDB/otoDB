@@ -39,7 +39,7 @@
 	<table class="w-full">
 		<thead>
 			<tr>
-				<th>Event</th>
+				<th>{m.awake_aware_quail_bake()}</th>
 				{#if showTarget}
 					<th>{m.funny_muddy_skate_learn()}</th>
 				{/if}

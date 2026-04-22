@@ -30,7 +30,7 @@ class ModerationEvent(models.Model):
 	)
 	by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
 	reason = models.CharField(max_length=1000, blank=True, default='')
-	status = models.IntegerField(null=True, blank=True)
+	status = models.IntegerField(null=True, blank=True, choices=FlagStatus.choices)
 	date = models.DateTimeField(auto_now_add=True, db_index=True)
 
 	class Meta:

@@ -4,7 +4,7 @@ from django.http import HttpRequest
 from ninja import Schema, Router
 
 from otodb.models import ModerationEvent
-from otodb.models.enums import ModerationEventType
+from otodb.models.enums import ModerationEventType, FlagStatus
 from otodb.account.models import Account
 
 
@@ -17,13 +17,13 @@ class ModerationEventBySchema(Schema):
 
 
 class ModerationEventSchema(Schema):
-	event_type: int
+	event_type: ModerationEventType
 	event_id: int
 	work_id: int | None
 	source_id: int | None
 	by: ModerationEventBySchema | None
 	reason: str
-	status: int | None
+	status: FlagStatus | None
 	event_at: datetime
 
 

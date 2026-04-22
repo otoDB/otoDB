@@ -17,20 +17,18 @@ from .enums import (
 from .tag import TagWork, TagSong, tagwork_ordering_case
 from .revision import RevisionTrackedModel, RevisionTrackedQuerySet
 from otodb.common import clean_description
+from .moderation import ModerationEvent
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
 	from .work_source import WorkSource
 	from .pool import PoolItem
 	from .relations import WorkRelation
-	from .moderation import ModerationEvent
 
 
 class MediaWorkQuerySet(RevisionTrackedQuerySet):
 	def with_pending_moderation(self):
 		"""Prefetch the pending flag and appeal so `pending_flag`/`pending_appeal` read from cache."""
-		from .moderation import ModerationEvent
-
 		return self.select_related('thumbnail_source').prefetch_related(
 			Prefetch('tagworkinstance_set', queryset=TagWorkInstance.active_queryset()),
 			Prefetch(
@@ -52,8 +50,6 @@ class MediaWorkQuerySet(RevisionTrackedQuerySet):
 
 	def visible(self):
 		"""Exclude unapproved works, but keep ones with a pending appeal."""
-		from .moderation import ModerationEvent
-
 		appealed_ids = ModerationEvent.objects.filter(
 			event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
 		).values_list('work_id', flat=True)

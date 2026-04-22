@@ -12,6 +12,8 @@ const tabToCategory: Record<string, ModQueueCategory | undefined> = {
 export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 	userLevelGuard(locals.user, Levels.Editor, url.pathname);
 
+	type Tabs = 'all' | 'pending' | 'flagged' | 'appealed' | 'sources';
+	const tabs = ['all', 'pending', 'flagged', 'appealed', 'sources'];
 	const tab = url.searchParams.get('tab') || 'all';
 	const page = +(url.searchParams.get('page') || '1');
 
@@ -34,5 +36,11 @@ export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 		}
 	});
 
-	return { tab, page, queue, sources: null, batchSize: 30 };
+	return {
+		tab: (tabs.includes(tab) ? tab : 'all') as Tabs,
+		page,
+		queue,
+		sources: null,
+		batchSize: 30
+	};
 };

@@ -4,7 +4,6 @@
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getDisplayText } from '$lib/api';
-	import type { ComponentProps } from 'svelte';
 	import { Status, type components } from './schema';
 
 	interface Props {

@@ -44,6 +44,7 @@ from otodb.models.enums import (
 	Preferences,
 	PreferencesValueTypeMap,
 	Status,
+	FlagStatus,
 )
 import re
 
@@ -151,10 +152,11 @@ class SongRelationSchema(RelationSchema):
 class SlimWorkSchema(ModelSchema):
 	id: int
 	thumbnail: str | None = None  # Exposed as property
+	status: Status
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'status']
+		fields = ['title']
 
 
 class WorkSchema(ModelSchema):
@@ -178,10 +180,11 @@ class ThinWorkSchema(ModelSchema):
 	thumbnail: str | None = None  # Exposed as property
 	pending_flag: 'PendingModerationEventSchema | None' = None
 	pending_appeal: 'PendingModerationEventSchema | None' = None
+	status: Status
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'status']
+		fields = ['title']
 
 
 class SourceCreationResponse(Schema):
@@ -199,7 +202,7 @@ class CreateWorkPayload(Schema):
 	source_id: int
 	title: str | None = None
 	description: str | None = None
-	rating: int = 0
+	rating: Rating = Rating.GENERAL
 	tags: list[TagWorkInstanceInSchema] = []
 
 
@@ -216,10 +219,11 @@ class PendingModerationEventSchema(ModelSchema):
 
 	id: int
 	by: ProfileSchema | None = None
+	status: FlagStatus
 
 	class Meta:
 		model = ModerationEvent
-		fields = ['reason', 'status', 'date']
+		fields = ['reason', 'date']
 
 
 class ListItemSchema(ModelSchema):

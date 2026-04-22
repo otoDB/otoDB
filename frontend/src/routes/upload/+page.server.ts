@@ -13,9 +13,9 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 		fetch,
 		params: {
 			query: {
-				...(unbound === 'true' ? { unbound: true } : {}),
-				...(pending === 'true' ? { is_pending: true } : {}),
-				...(platform ? { platform: +platform } : {}),
+				unbound: unbound === 'true' || undefined,
+				is_pending: pending === 'true' || undefined,
+				platform: platform ? +platform : undefined,
 				limit: batchSize,
 				offset: (page - 1) * batchSize
 			}

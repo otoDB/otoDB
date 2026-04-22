@@ -2,6 +2,7 @@ import type { PageServerLoad } from './$types';
 import client from '$lib/api.server';
 import { Levels } from '$lib/schema';
 import { userLevelGuard } from '$lib/route_guard';
+import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ fetch, params, locals, url }) => {
 	userLevelGuard(locals.user, Levels.Member, url.pathname);
@@ -27,7 +28,10 @@ export const load: PageServerLoad = async ({ fetch, params, locals, url }) => {
 		source,
 		events,
 		head: {
-			title: `Moderation: Source #${sourceId}`
+			title: m.mild_loud_shad_enchant({
+				type: m.minor_inner_lynx_adapt(),
+				name: `${m.extra_brave_tapir_skip()} #${sourceId}`
+			})
 		}
 	};
 };

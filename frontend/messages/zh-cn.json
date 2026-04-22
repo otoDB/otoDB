@@ -285,5 +285,12 @@
 	"key_pink_pigeon_treasure": "哎呀！",
 	"ideal_soft_falcon_urge": "出了点问题。请查看浏览器控制台了解更多信息。",
 	"free_tiny_badger_breathe": "{#username/} 于 {#time/} 编辑",
-	"light_sunny_kitten_slide": "于 {#time/} 编辑"
+	"light_sunny_kitten_slide": "于 {#time/} 编辑",
+	"noisy_proud_robin_gaze": "在otoDB上查看",
+	"calm_silver_bison_wait": "加载中…",
+	"tiny_lost_marmot_roam": "该作品不在数据库中。",
+	"merry_brisk_owl_submit": "将此作品添加到otoDB…",
+	"quiet_dusty_fox_search": "未找到此页面的连接。",
+	"weary_broken_eagle_sigh": "无法连接到数据库。",
+	"grim_plain_crane_crash": "获取数据时发生错误。"
 }

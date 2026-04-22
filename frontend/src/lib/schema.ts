@@ -1834,6 +1834,11 @@ export interface components {
              */
             offset: number;
         };
+        /**
+         * FlagStatus
+         * @enum {integer}
+         */
+        FlagStatus: FlagStatus;
         /** PagedThinWorkSchema */
         PagedThinWorkSchema: {
             /** Items */
@@ -1849,19 +1854,23 @@ export interface components {
             /** Id */
             id: number;
             by?: components["schemas"]["ProfileSchema"] | null;
+            status: components["schemas"]["FlagStatus"];
             /**
              * Reason
              * @default
              */
             reason: string | null;
-            /** Status */
-            status?: number | null;
             /**
              * Date
              * Format: date-time
              */
             date: string;
         };
+        /**
+         * Status
+         * @enum {integer}
+         */
+        Status: Status;
         /** TagWorkInstanceThinSchema */
         TagWorkInstanceThinSchema: {
             /** Id */
@@ -1891,13 +1900,9 @@ export interface components {
             thumbnail?: string | null;
             pending_flag?: components["schemas"]["PendingModerationEventSchema"] | null;
             pending_appeal?: components["schemas"]["PendingModerationEventSchema"] | null;
+            status: components["schemas"]["Status"];
             /** Title */
             title?: string | null;
-            /**
-             * Status
-             * @default 1
-             */
-            status: number;
         };
         /**
          * Rating
@@ -1910,19 +1915,10 @@ export interface components {
             id: number;
             /** Thumbnail */
             thumbnail?: string | null;
+            status: components["schemas"]["Status"];
             /** Title */
             title?: string | null;
-            /**
-             * Status
-             * @default 1
-             */
-            status: number;
         };
-        /**
-         * Status
-         * @enum {integer}
-         */
-        Status: Status;
         /** WorkRelationSchema */
         WorkRelationSchema: {
             /** A Id */
@@ -2044,11 +2040,8 @@ export interface components {
             title?: string | null;
             /** Description */
             description?: string | null;
-            /**
-             * Rating
-             * @default 0
-             */
-            rating: number;
+            /** @default 0 */
+            rating: components["schemas"]["Rating"];
             /**
              * Tags
              * @default []
@@ -2872,8 +2865,7 @@ export interface components {
         };
         /** ModerationEventSchema */
         ModerationEventSchema: {
-            /** Event Type */
-            event_type: number;
+            event_type: components["schemas"]["ModerationEventType"];
             /** Event Id */
             event_id: number;
             /** Work Id */
@@ -2883,14 +2875,18 @@ export interface components {
             by: components["schemas"]["ModerationEventBySchema"] | null;
             /** Reason */
             reason: string;
-            /** Status */
-            status: number | null;
+            status: components["schemas"]["FlagStatus"] | null;
             /**
              * Event At
              * Format: date-time
              */
             event_at: string;
         };
+        /**
+         * ModerationEventType
+         * @enum {integer}
+         */
+        ModerationEventType: ModerationEventType;
     };
     responses: never;
     parameters: never;
@@ -5667,15 +5663,20 @@ export enum WorkTagCategory {
     Meta = 5,
     Media = 6
 }
-export enum Rating {
-    General = 0,
-    Sensitive = 1,
-    Explicit = 2
+export enum FlagStatus {
+    Value0 = 0,
+    Value1 = 1,
+    Value2 = 2
 }
 export enum Status {
     Pending = 0,
     Approved = 1,
     Unapproved = 2
+}
+export enum Rating {
+    General = 0,
+    Sensitive = 1,
+    Explicit = 2
 }
 export enum WorkRelationTypes {
     Sequel = 0,
@@ -5830,4 +5831,11 @@ export enum HistoricalEntities {
     tagsong = "tagsong",
     mediasong = "mediasong",
     worksource = "worksource"
+}
+export enum ModerationEventType {
+    Value0 = 0,
+    Value1 = 1,
+    Value2 = 2,
+    Value3 = 3,
+    Value4 = 4
 }

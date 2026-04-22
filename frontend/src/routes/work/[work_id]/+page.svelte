@@ -11,6 +11,7 @@
 		WorkStatusNames
 	} from '$lib/enums';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
+	import { merge_paths } from '$lib/merge_paths';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import {
@@ -25,8 +26,6 @@
 	import { callSavingToast } from '$lib/toast';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
-	import type { ComponentProps } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
@@ -69,35 +68,6 @@
 			}).entries()
 		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
-
-	const merge_paths = (
-		paths: (typeof groupedTags)[number][1]
-	): ComponentProps<typeof WorkTagTree>['tree'][] => {
-		const graph: SvelteMap<string, Set<string>> = new SvelteMap();
-		paths
-			.filter((p) => p.primary_path.length)
-			.forEach((path) =>
-				path.primary_path.forEach((p, i, a) => {
-					const next_node = (i + 1 === a.length ? path : a[i + 1]).slug;
-					if (graph.has(p.slug)) graph.get(p.slug)?.add(next_node);
-					else graph.set(p.slug, new Set([next_node]));
-				})
-			);
-		const traverse = (node: string): ComponentProps<typeof WorkTagTree>['tree'] => ({
-			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node)!,
-			real: paths.some((n) => n.slug === node),
-			children: Array.from(graph.get(node) ?? []).map((n) => traverse(n))
-		});
-		return [
-			...graph
-				.keys()
-				.filter((n) => !graph.values().some((s) => s.has(n)))
-				.map(traverse),
-			...paths
-				.filter((p) => p.primary_path.length === 0 && !graph.has(p.slug))
-				.map((n) => ({ node: n, real: true }))
-		];
-	};
 
 	const relTree = $derived(
 		data.relations[0].length > 0

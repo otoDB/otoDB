@@ -1,7 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-const AdmZip = require('adm-zip');
+import { spawn, spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import AdmZip from 'adm-zip';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const VERSION = '1.2.3';
 
@@ -18,7 +21,6 @@ if (!COMMAND) {
 const SRC = path.join(__dirname, 'src');
 const DIST = path.join(__dirname, 'dist');
 
-// Base manifest shared by all platforms
 const manifest = {
     "manifest_version": 3,
     "name": "otoDB",
@@ -28,7 +30,7 @@ const manifest = {
         "scripts": ["background.js"]
     },
     "action": {
-        "default_popup": "popup.html",
+        "default_popup": "index.html",
         "default_title": "otoDB"
     },
     "content_scripts": [
@@ -47,6 +49,11 @@ const manifest = {
             "js": ["injector.js"],
             "run_at": "document_start",
             "all_frames": true
+        },
+        {
+            "matches": ["https://otodb.net/*"],
+            "js": ["otodb-prefs.js"],
+            "run_at": "document_start"
         }
     ],
     "web_accessible_resources": [
@@ -58,7 +65,8 @@ const manifest = {
     "permissions": [
         "declarativeNetRequestWithHostAccess",
         "cookies",
-        "activeTab"
+        "activeTab",
+        "storage"
     ],
     "host_permissions": [
         "https://otodb.net/*",
@@ -82,41 +90,36 @@ const manifest = {
     }
 };
 
-// Platform-specific overrides
 const configs = {
-    chrome: {
-        background: { "service_worker": "background.js" },
-    },
+    chrome: { background: { "service_worker": "background.js" } },
     firefox: {}
 };
 
-// Files to copy verbatim from src/ to dist/
+// Non-Svelte files copied verbatim from src/ - content scripts and network
+// rules that MV3 loads outside of the popup bundle.
 const COPY_FILES = [
-    'popup.html',
-    'database.js',
     'background.js',
     'injector.js',
     'injected.js',
     'niconico.js',
     'niconico-embed.js',
     'niconico-embed-injected.js',
-    'rules.json',
+    'otodb-prefs.js',
+    'rules.json'
 ];
 
 function clean() {
-    if (fs.existsSync(DIST)) {
-        fs.rmSync(DIST, { recursive: true });
-    }
+    if (fs.existsSync(DIST)) fs.rmSync(DIST, { recursive: true });
     fs.mkdirSync(DIST, { recursive: true });
 }
 
-function generateManifest(platform) {
-    const finalManifest = { ...manifest, ...configs[platform] };
-    fs.writeFileSync(
-        path.join(DIST, 'manifest.json'),
-        JSON.stringify(finalManifest, null, 2)
-    );
-    console.log(`  manifest.json (${platform})`);
+function runVite() {
+    const result = spawnSync('bunx', ['--bun', 'vite', 'build'], {
+        cwd: __dirname,
+        stdio: 'inherit',
+        shell: true
+    });
+    if (result.status !== 0) throw new Error('vite build failed');
 }
 
 function copyFiles() {
@@ -131,27 +134,21 @@ function copyFiles() {
     }
 }
 
-function copyVendor() {
-    const purifyPath = path.join(__dirname, 'node_modules', 'dompurify', 'dist', 'purify.min.js');
-    fs.copyFileSync(purifyPath, path.join(DIST, 'purify.min.js'));
-    console.log('  purify.min.js (DOMPurify)');
-}
-
-function compileCss() {
-    execSync('bunx @tailwindcss/cli -i src/style.css -o dist/style.css --minify', {
-        cwd: __dirname,
-        stdio: 'inherit'
-    });
-    console.log('  style.css (Tailwind compiled)');
+function generateManifest(platform) {
+    const finalManifest = { ...manifest, ...configs[platform] };
+    fs.writeFileSync(
+        path.join(DIST, 'manifest.json'),
+        JSON.stringify(finalManifest, null, 2)
+    );
+    console.log(`  manifest.json (${platform})`);
 }
 
 function build(platform) {
     console.log(`Building for ${platform}...`);
     clean();
-    generateManifest(platform);
+    runVite();
     copyFiles();
-    copyVendor();
-    compileCss();
+    generateManifest(platform);
     console.log(`\nDone -> dist/`);
 }
 
@@ -172,23 +169,25 @@ function pack() {
 
 if (COMMAND === 'pack') {
     pack();
+} else if (WATCH) {
+    build(COMMAND);
+    console.log('\nWatching src/ for changes...');
+    const vite = spawn('bunx', ['--bun', 'vite', 'build', '--watch'], {
+        cwd: __dirname,
+        stdio: 'inherit',
+        shell: true
+    });
+    let debounce = null;
+    fs.watch(SRC, { recursive: true }, (_event, filename) => {
+        if (!filename || COPY_FILES.every(f => !filename.endsWith(f))) return;
+        if (debounce) clearTimeout(debounce);
+        debounce = setTimeout(() => {
+            console.log(`\nChanged: ${filename}`);
+            copyFiles();
+            generateManifest(COMMAND);
+        }, 100);
+    });
+    vite.on('exit', code => process.exit(code ?? 0));
 } else {
     build(COMMAND);
-
-    if (WATCH) {
-        console.log('\nWatching src/ for changes...');
-        let debounce = null;
-        fs.watch(SRC, { recursive: true }, (event, filename) => {
-            if (debounce) clearTimeout(debounce);
-            debounce = setTimeout(() => {
-                console.log(`\nChanged: ${filename}`);
-                if (filename && filename.endsWith('.css')) {
-                    compileCss();
-                } else {
-                    copyFiles();
-                    generateManifest(COMMAND);
-                }
-            }, 100);
-        });
-    }
 }

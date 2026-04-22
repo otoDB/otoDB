@@ -73,7 +73,14 @@ class Migration(migrations.Migration):
 					),
 				),
 				('reason', models.CharField(blank=True, default='', max_length=1000)),
-				('status', models.IntegerField(blank=True, null=True)),
+				(
+					'status',
+					models.IntegerField(
+						blank=True,
+						choices=[(0, 'Pending'), (1, 'Succeeded'), (2, 'Rejected')],
+						null=True,
+					),
+				),
 				('date', models.DateTimeField(auto_now_add=True, db_index=True)),
 				(
 					'by',

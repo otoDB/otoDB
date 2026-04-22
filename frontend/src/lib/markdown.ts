@@ -10,7 +10,8 @@ import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
-import { unified } from 'unified';
+import { unified, type Plugin } from 'unified';
+import { visit } from 'unist-util-visit';
 
 const ENTITIES = [
 	{ shortPrefix: 'w', longLabel: 'work', urlPath: 'work' },
@@ -144,9 +145,23 @@ const sanitizeSchema = {
 	attributes: { ...defaultSchema.attributes, 'otodb-worktag': ['slug'] }
 };
 
+const remarkDecodeSimpleLinks: Plugin<[], Root> = () => (tree: Root) => {
+	visit(tree, 'link', (node) => {
+		if (node.children.length === 1 && node.children[0].type === 'text') {
+			const textNode = node.children[0];
+			try {
+				textNode.value = decodeURIComponent(textNode.value);
+			} catch {
+				// Ignore
+			}
+		}
+	});
+};
+
 const processor = unified()
 	.use(remarkParse)
 	.use(remarkGfm)
+	.use(remarkDecodeSimpleLinks)
 	.use(remarkBreaks)
 	.use(remarkOtodb)
 	.use(remarkStripImages)

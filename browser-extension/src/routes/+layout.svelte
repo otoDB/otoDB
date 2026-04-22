@@ -41,13 +41,32 @@
 			if (v.id === id) return k as keyof typeof languages;
 	}
 
+	type Prefs = { LANGUAGE?: number | null; THEME?: ThemePref | null };
+
+	async function fetchAuthPrefs(): Promise<Prefs | undefined> {
+		try {
+			const res = await window.fetch(
+				"https://otodb.net/api/auth/status",
+				{ credentials: "include" },
+			);
+			if (!res.ok) return undefined;
+			const body = (await res.json()) as { prefs?: Prefs };
+			return body.prefs;
+		} catch {
+			return undefined;
+		}
+	}
+
 	onMount(async () => {
-		const [fallbackLocale, { prefs }] = await Promise.all([
-			pickDefaultLocale(),
-			chrome.storage.local.get("prefs") as Promise<{
-				prefs?: { LANGUAGE?: number; THEME?: ThemePref };
-			}>,
-		]);
+		const [fallbackLocale, { prefs: anonPrefs }, serverPrefs] =
+			await Promise.all([
+				pickDefaultLocale(),
+				chrome.storage.local.get("prefs") as Promise<{
+					prefs?: Prefs;
+				}>,
+				fetchAuthPrefs(),
+			]);
+		const prefs = serverPrefs ?? anonPrefs;
 
 		resolvedLang = langKeyById(prefs?.LANGUAGE) ?? fallbackLocale;
 		if (resolvedLang) setLocale(resolvedLang, { reload: false });

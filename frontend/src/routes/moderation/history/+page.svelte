@@ -6,7 +6,7 @@
 	let { data } = $props();
 </script>
 
-<ModerationEventsTable events={data.events} isEditor={data.isEditor} />
+<ModerationEventsTable events={data.events} />
 
 {#if data.events?.count}
 	<Pager

@@ -4,14 +4,12 @@
 
 	let {
 		events,
-		isEditor = false,
 		showTarget = true
 	}: {
 		events: {
 			items: components['schemas']['ModerationEventSchema'][];
 			count: number;
 		} | null;
-		isEditor?: boolean;
 		showTarget?: boolean;
 	} = $props();
 
@@ -51,7 +49,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each events.items as event (event.event_id + event.event_type)}
+			{#each events.items as event (event.event_id)}
 				<tr>
 					<td>{getEventLabel(event)}</td>
 					{#if showTarget}

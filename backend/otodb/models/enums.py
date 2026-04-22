@@ -230,6 +230,12 @@ class ModerationEventType(models.IntegerChoices):
 	MOD_ACTION = 4, 'Mod Action'
 
 
+class ModQueueCategory(OtodbIntegerEnum):
+	PENDING = 0, 'Pending'
+	FLAGGED = 1, 'Flagged'
+	APPEALED = 2, 'Appealed'
+
+
 class FlagStatus(models.IntegerChoices):
 	PENDING = 0, 'Pending'
 	SUCCEEDED = 1, 'Succeeded'

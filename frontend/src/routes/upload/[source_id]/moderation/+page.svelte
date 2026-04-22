@@ -10,5 +10,5 @@
 	type="Moderation"
 	menuLinks={data.links}
 >
-	<ModerationEventsTable events={data.events} isEditor={data.isEditor} showTarget={false} />
+	<ModerationEventsTable events={data.events} showTarget={false} />
 </Section>

@@ -1643,10 +1643,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Moderation Events
-         * @description Query the unified moderation events view.
-         */
+        /** Moderation Events */
         get: operations["otodb_api_moderation_moderation_events"];
         put?: never;
         post?: never;
@@ -1844,6 +1841,27 @@ export interface components {
             /** Count */
             count: number;
         };
+        /**
+         * PendingModerationEventSchema
+         * @description Thin view of a pending flag or appeal exposed on a work.
+         */
+        PendingModerationEventSchema: {
+            /** Id */
+            id: number;
+            by?: components["schemas"]["ProfileSchema"] | null;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string | null;
+            /** Status */
+            status?: number | null;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+        };
         /** TagWorkInstanceThinSchema */
         TagWorkInstanceThinSchema: {
             /** Id */
@@ -1871,8 +1889,8 @@ export interface components {
             tags: components["schemas"]["TagWorkInstanceThinSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
-            pending_flag?: components["schemas"]["WorkFlagSchema"] | null;
-            pending_appeal?: components["schemas"]["WorkAppealSchema"] | null;
+            pending_flag?: components["schemas"]["PendingModerationEventSchema"] | null;
+            pending_appeal?: components["schemas"]["PendingModerationEventSchema"] | null;
             /** Title */
             title?: string | null;
             /**
@@ -1880,42 +1898,6 @@ export interface components {
              * @default 1
              */
             status: number;
-        };
-        /** WorkAppealSchema */
-        WorkAppealSchema: {
-            /** Id */
-            id: number;
-            by?: components["schemas"]["ProfileSchema"] | null;
-            /** Reason */
-            reason: string;
-            /**
-             * Status
-             * @default 0
-             */
-            status: number;
-            /**
-             * Date
-             * Format: date-time
-             */
-            date: string;
-        };
-        /** WorkFlagSchema */
-        WorkFlagSchema: {
-            /** Id */
-            id: number;
-            by?: components["schemas"]["ProfileSchema"] | null;
-            /** Reason */
-            reason: string;
-            /**
-             * Status
-             * @default 0
-             */
-            status: number;
-            /**
-             * Date
-             * Format: date-time
-             */
-            date: string;
         };
         /**
          * Rating
@@ -1962,8 +1944,8 @@ export interface components {
             tags: components["schemas"]["TagWorkInstanceSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
-            pending_flag?: components["schemas"]["WorkFlagSchema"] | null;
-            pending_appeal?: components["schemas"]["WorkAppealSchema"] | null;
+            pending_flag?: components["schemas"]["PendingModerationEventSchema"] | null;
+            pending_appeal?: components["schemas"]["PendingModerationEventSchema"] | null;
             /** Relations */
             relations: [
                 components["schemas"]["WorkRelationSchema"][],
@@ -2073,6 +2055,11 @@ export interface components {
              */
             tags: components["schemas"]["TagWorkInstanceInSchema"][];
         };
+        /**
+         * ModQueueCategory
+         * @enum {integer}
+         */
+        ModQueueCategory: ModQueueCategory;
         /**
          * WorkSourceMetadataSchema
          * @description Manual WorkSource metadata input
@@ -3581,6 +3568,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Too Many Requests */
             429: {
                 headers: {
@@ -3611,6 +3607,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Too Many Requests */
             429: {
                 headers: {
@@ -3626,7 +3631,7 @@ export interface operations {
         parameters: {
             query?: {
                 mode?: string;
-                category?: PathsApiWorkQueueGetParametersQueryCategoryAnyOf0 | null;
+                category?: components["schemas"]["ModQueueCategory"] | null;
                 limit?: number;
                 offset?: number;
             };
@@ -5610,11 +5615,6 @@ export enum PathsApiWorkSearchGetParametersQueryQueueAnyOf0 {
     unseen = "unseen",
     all = "all"
 }
-export enum PathsApiWorkQueueGetParametersQueryCategoryAnyOf0 {
-    pending = "pending",
-    flagged = "flagged",
-    appealed = "appealed"
-}
 export enum PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 {
     id = "id",
     ValueMinusid = "-id",
@@ -5698,6 +5698,11 @@ export enum WorkOrigin {
 export enum WorkStatus {
     Available = 0,
     Down = 1
+}
+export enum ModQueueCategory {
+    Pending = 0,
+    Flagged = 1,
+    Appealed = 2
 }
 export enum ProfileConnectionTypes {
     Website = 0,

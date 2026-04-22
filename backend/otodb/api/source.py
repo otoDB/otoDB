@@ -14,8 +14,8 @@ from ninja.pagination import paginate
 from otodb.common import process_video_info, slugify_tag
 from otodb.models import (
 	MediaWork,
+	ModerationEvent,
 	WorkSource,
-	ModAction,
 	TagWork,
 	TagWorkCreatorConnection,
 )
@@ -29,6 +29,7 @@ from otodb.models.enums import (
 	Status,
 	FlagStatus,
 	ModerationAction,
+	ModerationEventType,
 )
 from otodb.account.models import Account
 from otodb.tasks import enqueue_deferred, resolve_expired_source_task
@@ -176,7 +177,9 @@ def new_source_from_url(
 				'code': ErrorCode.SOURCE_UNAPPROVED,
 				'data': {'message': 'Cannot add sources to unapproved works'},
 			}
-		if work.flags.filter(status=FlagStatus.PENDING).exists():
+		if work.moderation_events.filter(
+			event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
+		).exists():
 			return 400, {
 				'code': ErrorCode.SOURCE_FLAGGED,
 				'data': {'message': 'Cannot add sources to flagged works'},
@@ -289,23 +292,29 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 	}
 
 
+def reject_pending_source(src: WorkSource, by, reason: str):
+	"""Unbind a pending source from its work and record a MOD_ACTION event."""
+	work = src.media  # Capture before unbinding
+	src.media = None
+	src.is_pending = False
+	src.save(update_fields=['media', 'is_pending'])
+	ModerationEvent.objects.create(
+		work=work,
+		source=src,
+		event_type=ModerationEventType.MOD_ACTION,
+		status=ModerationAction.SOURCE_REJECTED,
+		by=by,
+		reason=reason,
+	)
+
+
 @source_router.post('reject', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REJECT)
 def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
 	"""Reject a pending source on an existing work. Unbinds the source."""
 	src = get_object_or_404(WorkSource.objects.filter(is_pending=True), id=source_id)
-	work = src.media  # Capture before unbinding
-	src.media = None
-	src.is_pending = False
-	src.save(update_fields=['media', 'is_pending'])
-	ModAction.objects.create(
-		work=work,
-		source=src,
-		category=ModerationAction.SOURCE_REJECTED,
-		by=request.user,
-		description=reason,
-	)
+	reject_pending_source(src, by=request.user, reason=reason)
 
 
 @source_router.post('approve', auth=django_auth)
@@ -315,10 +324,11 @@ def approve_source(request: AuthedHttpRequest, source_id: int):
 	src = get_object_or_404(WorkSource.objects.filter(is_pending=True), id=source_id)
 	src.is_pending = False
 	src.save(update_fields=['is_pending'])
-	ModAction.objects.create(
+	ModerationEvent.objects.create(
 		work=src.media,
 		source=src,
-		category=ModerationAction.SOURCE_APPROVED,
+		event_type=ModerationEventType.MOD_ACTION,
+		status=ModerationAction.SOURCE_APPROVED,
 		by=request.user,
 	)
 

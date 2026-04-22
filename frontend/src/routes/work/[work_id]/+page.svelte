@@ -323,7 +323,11 @@
 													const reason = prompt(
 														m.royal_big_chipmunk_absorb()
 													);
-													if (!reason) return;
+													if (!reason?.trim()) {
+														// Show message
+														alert('Flag reason must be provided.');
+														return;
+													}
 													const { error } = await client.POST(
 														'/api/work/flag',
 														{
@@ -350,7 +354,11 @@
 													const reason = prompt(
 														m.zippy_dark_mayfly_cut()
 													);
-													if (!reason) return;
+													if (!reason?.trim()) {
+														// Show message
+														alert('Appeal reason must be provided.');
+														return;
+													}
 													const { error } = await client.POST(
 														'/api/work/appeal',
 														{

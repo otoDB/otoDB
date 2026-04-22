@@ -6,9 +6,16 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from tagulous.models import TagField, TaggedManager
 
-from .enums import Rating, WorkTagCategory, Role, FlagStatus, Status
+from .enums import (
+	Rating,
+	WorkTagCategory,
+	Role,
+	FlagStatus,
+	ModerationEventType,
+	Status,
+)
 from .tag import TagWork, TagSong, tagwork_ordering_case
-from .revision import RevisionTrackedModel
+from .revision import RevisionTrackedModel, RevisionTrackedQuerySet
 from otodb.common import clean_description
 
 if TYPE_CHECKING:
@@ -16,28 +23,63 @@ if TYPE_CHECKING:
 	from .work_source import WorkSource
 	from .pool import PoolItem
 	from .relations import WorkRelation
-	from .moderation import WorkFlag, WorkAppeal, WorkDisapproval
+	from .moderation import ModerationEvent
 
 
-class ActiveManager(models.Manager):
-	def get_queryset(self):
-		from .moderation import WorkFlag, WorkAppeal
+class MediaWorkQuerySet(RevisionTrackedQuerySet):
+	def with_pending_moderation(self):
+		"""Prefetch the pending flag and appeal so `pending_flag`/`pending_appeal` read from cache."""
+		from .moderation import ModerationEvent
 
-		qs = super().get_queryset().filter(moved_to__isnull=True)
-
-		return qs.select_related('thumbnail_source').prefetch_related(
+		return self.select_related('thumbnail_source').prefetch_related(
 			Prefetch('tagworkinstance_set', queryset=TagWorkInstance.active_queryset()),
 			Prefetch(
-				'flags',
-				queryset=WorkFlag.objects.filter(status=FlagStatus.PENDING)[:1],
+				'moderation_events',
+				queryset=ModerationEvent.objects.filter(
+					event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
+				)[:1],
 				to_attr='_pending_flag',
 			),
 			Prefetch(
-				'appeals',
-				queryset=WorkAppeal.objects.filter(status=FlagStatus.PENDING)[:1],
+				'moderation_events',
+				queryset=ModerationEvent.objects.filter(
+					event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+				)[:1],
 				to_attr='_pending_appeal',
 			),
 			'worksource_set',
+		)
+
+	def visible(self):
+		"""Exclude unapproved works, but keep ones with a pending appeal."""
+		from .moderation import ModerationEvent
+
+		appealed_ids = ModerationEvent.objects.filter(
+			event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+		).values_list('work_id', flat=True)
+		return self.exclude(
+			models.Q(status=Status.UNAPPROVED) & ~models.Q(id__in=appealed_ids)
+		)
+
+
+class MediaWorkManager(models.Manager['MediaWork']):
+	def get_queryset(self) -> 'MediaWorkQuerySet':
+		return MediaWorkQuerySet(self.model, using=self._db)
+
+	def with_pending_moderation(self) -> 'MediaWorkQuerySet':
+		return self.get_queryset().with_pending_moderation()
+
+	def visible(self) -> 'MediaWorkQuerySet':
+		return self.get_queryset().visible()
+
+
+class ActiveManager(MediaWorkManager):
+	def get_queryset(self) -> 'MediaWorkQuerySet':
+		return (
+			super()
+			.get_queryset()
+			.filter(moved_to__isnull=True)
+			.with_pending_moderation()
 		)
 
 
@@ -111,17 +153,16 @@ class TagSongInstance(RevisionTrackedModel):
 
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
-		active_objects: models.Manager['MediaWork']
+		objects: 'MediaWorkManager'  # type: ignore
+		active_objects: 'ActiveManager'
 		worksource_set: QuerySet['WorkSource']
 		poolitem_set: QuerySet['PoolItem']
 		relation_A: QuerySet['WorkRelation']
 		relation_B: QuerySet['WorkRelation']
 		tagworkinstance_set: QuerySet['TagWorkInstance']
-		flags: QuerySet['WorkFlag']
-		appeals: QuerySet['WorkAppeal']
-		disapprovals: QuerySet['WorkDisapproval']
-		_pending_flag: list['WorkFlag']
-		_pending_appeal: list['WorkAppeal']
+		moderation_events: QuerySet['ModerationEvent']
+		_pending_flag: list['ModerationEvent']
+		_pending_appeal: list['ModerationEvent']
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
@@ -156,15 +197,16 @@ class MediaWork(RevisionTrackedModel):
 		help_text='Deprecated: Use thumbnail_source instead',
 	)
 
+	objects = TaggedManager.cast_class(MediaWorkManager())
 	active_objects = TaggedManager.cast_class(ActiveManager())
 
 	@property
-	def pending_flag(self) -> 'WorkFlag | None':
+	def pending_flag(self) -> 'ModerationEvent | None':
 		flags = getattr(self, '_pending_flag', [])
 		return flags[0] if flags else None
 
 	@property
-	def pending_appeal(self) -> 'WorkAppeal | None':
+	def pending_appeal(self) -> 'ModerationEvent | None':
 		appeals = getattr(self, '_pending_appeal', [])
 		return appeals[0] if appeals else None
 

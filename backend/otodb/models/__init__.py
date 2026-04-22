@@ -13,14 +13,7 @@ from .tag import (
 	TagSongLangPreference,
 )
 from .work_source import WorkSource
-from .moderation import (
-	WorkFlag,
-	WorkAppeal,
-	WorkDisapproval,
-	WorkApproval,
-	ModAction,
-	ModerationEvent,
-)
+from .moderation import ModerationEvent
 from .relations import WorkRelation, SongRelation
 from .posts import (
 	Post,
@@ -55,9 +48,7 @@ __all__ = [
 	'TagWorkLangPreference',
 	'TagWorkParenthood',
 	'WorkSource',
-	'WorkFlag',
-	'WorkAppeal',
-	'WorkDisapproval',
+	'ModerationEvent',
 	'WorkRelation',
 	'SongRelation',
 	'Post',
@@ -65,6 +56,7 @@ __all__ = [
 	'Notification',
 	'Subscription',
 	'EntityLink',
+	'CommentMeta',
 	'ProfileConnection',
 	'MediaSongConnection',
 	'TagWorkConnection',
@@ -76,8 +68,4 @@ __all__ = [
 	'Revision',
 	'RevisionChange',
 	'RevisionChangeEntity',
-	'CommentMeta',
-	'WorkApproval',
-	'ModAction',
-	'ModerationEvent',
 ]

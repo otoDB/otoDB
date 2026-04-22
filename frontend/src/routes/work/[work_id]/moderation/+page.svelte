@@ -7,5 +7,5 @@
 </script>
 
 <Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
-	<ModerationEventsTable events={data.events} isEditor={data.isEditor} showTarget={false} />
+	<ModerationEventsTable events={data.events} showTarget={false} />
 </Section>

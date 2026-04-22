@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
 import client from '$lib/api.server';
-import { hasUserLevel } from '$lib/enums/userLevel';
 import { Levels } from '$lib/schema';
 import { userLevelGuard } from '$lib/route_guard';
 
@@ -27,7 +26,6 @@ export const load: PageServerLoad = async ({ fetch, params, locals, url }) => {
 	return {
 		source,
 		events,
-		isEditor: hasUserLevel(locals.user?.level, Levels.Editor),
 		head: {
 			title: `Moderation: Source #${sourceId}`
 		}

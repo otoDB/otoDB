@@ -113,11 +113,13 @@ def submissions(
 ):
 	match standing:
 		case Status.PENDING:
-			q = Q(is_pending=True)
+			q = Q(is_pending=True) | Q(media__status=Status.PENDING)
 		case Status.APPROVED:
-			q = Q(media__isnull=False, is_pending=False)
+			q = Q(media__status=Status.APPROVED, is_pending=False)
 		case Status.UNAPPROVED:
-			q = Q(media__isnull=True, is_pending=False)
+			q = Q(media__isnull=True, is_pending=False) | Q(
+				media__status=Status.UNAPPROVED
+			)
 
 	user = get_object_or_404(Account, username__iexact=username)
 	submissions = user.worksource_set.filter(q).select_related('media')

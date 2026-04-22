@@ -25,7 +25,10 @@
 
 	const rejectSource = async (sourceId: number) => {
 		const reason = prompt('Rejection reason:');
-		if (reason === null) return;
+		if (!reason?.trim()) {
+			alert('Rejection reason is required.');
+			return;
+		}
 		await client.POST('/api/upload/reject', {
 			params: { query: { source_id: sourceId, reason } }
 		});

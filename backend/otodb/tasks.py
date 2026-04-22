@@ -7,8 +7,6 @@ from django.utils import timezone
 
 from django.core.mail import send_mail
 
-from otodb.models.work_source import WorkSource
-
 logger = logging.getLogger(__name__)
 
 
@@ -17,6 +15,12 @@ def enqueue_deferred(task_obj, *args, delay: timedelta):
 	if not default_task_backend.supports_defer:
 		return
 	task_obj.using(run_after=timezone.now() + delay).enqueue(*args)
+
+
+def _system_user():
+	from otodb.account.models import Account
+
+	return Account.objects.filter(level=Account.Levels.OWNER).first()
 
 
 @task
@@ -34,34 +38,16 @@ def send_email(
 		logger.exception('Failed to send email to %s', to)
 
 
-def _reject_expired_source(src: 'WorkSource'):
-	"""Reject an expired pending source by unbinding it from its work."""
-	from otodb.models.moderation import ModAction
-	from otodb.models.enums import ModerationAction
-	from otodb.account.models import Account
-
-	src.media = None
-	src.is_pending = False
-	src.save(update_fields=['media', 'is_pending'])
-
-	system_user = Account.objects.filter(level=Account.Levels.OWNER).first()
-	if system_user:
-		ModAction.objects.create(
-			source=src,
-			category=ModerationAction.SOURCE_REJECTED,
-			by=system_user,
-			description='Auto-expired',
-		)
-
-
 @task
 def resolve_expired_work(work_id: int):
 	"""Resolve a single pending work if it's still pending and past the moderation period."""
-	from django.utils import timezone
-	from otodb.models import MediaWork, ModAction
-	from otodb.models.enums import Status, ModerationAction
+	from otodb.models import MediaWork, ModerationEvent
+	from otodb.models.enums import (
+		Status,
+		ModerationAction,
+		ModerationEventType,
+	)
 	from otodb.api.work import resolve_work
-	from otodb.account.models import Account
 
 	try:
 		work = MediaWork.objects.get(id=work_id)
@@ -71,57 +57,60 @@ def resolve_expired_work(work_id: int):
 	cutoff = timezone.now() - settings.OTODB_MODERATION_PERIOD
 	if work.status == Status.PENDING and work.created_at < cutoff:
 		resolve_work(work)
-		system_user = Account.objects.filter(level=Account.Levels.OWNER).first()
+		system_user = _system_user()
 		if system_user:
-			ModAction.objects.create(
+			ModerationEvent.objects.create(
 				work=work,
-				category=ModerationAction.WORK_DELISTED,
+				event_type=ModerationEventType.MOD_ACTION,
+				status=ModerationAction.WORK_DELISTED,
 				by=system_user,
-				description='Auto-expired',
+				reason='Auto-expired',
 			)
 
 
 @task
-def resolve_expired_flag(flag_id: int):
+def resolve_expired_flag(event_id: int):
 	"""Resolve a work with an expired pending flag."""
-	from django.utils import timezone
-	from otodb.models.moderation import WorkFlag
-	from otodb.models.enums import FlagStatus
+	from otodb.models import ModerationEvent
+	from otodb.models.enums import FlagStatus, ModerationEventType
 	from otodb.api.work import resolve_work
 
 	try:
-		flag = WorkFlag.objects.select_related('work').get(id=flag_id)
-	except WorkFlag.DoesNotExist:
+		event = ModerationEvent.objects.select_related('work').get(
+			id=event_id, event_type=ModerationEventType.FLAG
+		)
+	except ModerationEvent.DoesNotExist:
 		return
 
 	cutoff = timezone.now() - settings.OTODB_MODERATION_PERIOD
-	if flag.status == FlagStatus.PENDING and flag.date < cutoff:
-		resolve_work(flag.work)
+	if event.status == FlagStatus.PENDING and event.date < cutoff and event.work:
+		resolve_work(event.work)
 
 
 @task
-def resolve_expired_appeal(appeal_id: int):
+def resolve_expired_appeal(event_id: int):
 	"""Resolve a work with an expired pending appeal."""
-	from django.utils import timezone
-	from otodb.models.moderation import WorkAppeal
-	from otodb.models.enums import FlagStatus
+	from otodb.models import ModerationEvent
+	from otodb.models.enums import FlagStatus, ModerationEventType
 	from otodb.api.work import resolve_work
 
 	try:
-		appeal = WorkAppeal.objects.select_related('work').get(id=appeal_id)
-	except WorkAppeal.DoesNotExist:
+		event = ModerationEvent.objects.select_related('work').get(
+			id=event_id, event_type=ModerationEventType.APPEAL
+		)
+	except ModerationEvent.DoesNotExist:
 		return
 
 	cutoff = timezone.now() - settings.OTODB_MODERATION_PERIOD
-	if appeal.status == FlagStatus.PENDING and appeal.date < cutoff:
-		resolve_work(appeal.work)
+	if event.status == FlagStatus.PENDING and event.date < cutoff and event.work:
+		resolve_work(event.work)
 
 
 @task
 def resolve_expired_source_task(source_id: int):
 	"""Auto-reject an expired pending source."""
-	from django.utils import timezone
 	from otodb.models.work_source import WorkSource
+	from otodb.api.source import reject_pending_source
 
 	try:
 		src = WorkSource.objects.get(id=source_id)
@@ -133,4 +122,6 @@ def resolve_expired_source_task(source_id: int):
 
 	cutoff = timezone.now() - settings.OTODB_MODERATION_PERIOD
 	if src.created_at < cutoff:
-		_reject_expired_source(src)
+		system_user = _system_user()
+		if system_user:
+			reject_pending_source(src, by=system_user, reason='Auto-expired')

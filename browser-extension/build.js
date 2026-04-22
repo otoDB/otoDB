@@ -6,7 +6,7 @@ import AdmZip from 'adm-zip';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const VERSION = '1.2.3';
+const VERSION = '1.3.0';
 
 const COMMANDS = ['chrome', 'firefox', 'pack'];
 const COMMAND = process.argv.find(a => COMMANDS.includes(a));

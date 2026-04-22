@@ -29,7 +29,9 @@ class Migration(migrations.Migration):
 			model_name='mediawork',
 			name='status',
 			field=models.IntegerField(
-				choices=[(0, 'Pending'), (1, 'Approved'), (2, 'Unapproved')], default=1
+				blank=True,
+				choices=[(0, 'Pending'), (1, 'Succeeded'), (2, 'Rejected')],
+				null=True,
 			),
 		),
 		migrations.AddField(

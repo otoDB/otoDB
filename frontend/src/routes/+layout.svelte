@@ -258,6 +258,8 @@
 						{@render link('/', m.fine_late_chicken_quiz())}
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
 						{@render link('/work', m.grand_merry_fly_succeed())}
+						{@render link('/upload/add', `> ${m.fluffy_crisp_horse_imagine()}`)}
+						{@render link('/work/random', `> ${m.fuzzy_chunky_niklas_peek()}`)}
 						{#if hasUserLevel(data.user?.level, Levels.Member)}
 							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 						{/if}
@@ -269,34 +271,40 @@
 						{@render link('/comments', m.same_broad_haddock_pinch())}
 						{@render link('/profile', m.bright_nimble_eagle_glide())}
 						{@render link('/post/3', 'FAQ')}
-						{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 					</ul>
 				</div>
 				<div
 					class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 				>
-					<div class="border-otodb-content-faint mb-2 border-b text-xs">
-						{m.maroon_least_pony_evoke()}
+					<div
+						class="border-otodb-content-faint mb-2 flex items-center justify-between border-b text-xs"
+					>
+						<span>{m.maroon_least_pony_evoke()}</span>
+						{#if data.user}
+							<a
+								href={`/profile/${data.user.username}/notifications`}
+								title={m.free_keen_wren_exhale()}
+								class="relative -top-0.5 no-underline"
+								onclick={closeMobileNav}
+							>
+								{#if data.user.notifs_count > 0}({data.user.notifs_count}){/if}
+								<span
+									class={[
+										'text-transparent',
+										data.user.notifs_count > 0
+											? '[text-shadow:0_0_var(--otodb-color-content-fainter)]'
+											: 'opacity-25 [text-shadow:0_0_var(--otodb-color-content-primary)]'
+									]}>🔔</span
+								>
+							</a>
+						{/if}
 					</div>
 					<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 						{#if !data.user}
-							{@render link(`/settings`, m.orange_born_seal_ascend())}
 							{@render link('/login', m.inner_stale_anteater_walk())}
 							{@render link('/register', m.blue_whole_camel_type())}
-						{:else}
-							{@render link(
-								`/profile/${data.user.username}/notifications`,
-								m.free_keen_wren_exhale() +
-									(data.user.notifs_count > 0
-										? m.great_clean_beaver_amuse() +
-											m.awful_house_liger_expand({
-												content: data.user.notifs_count
-											})
-										: '')
-							)}
 							{@render link(`/settings`, m.orange_born_seal_ascend())}
-							{@render link('/post/new?category=2', m.bald_ideal_gadfly_jest())}
-							{@render link('/upload/add', m.fluffy_crisp_horse_imagine())}
+						{:else}
 							{@render link(
 								`/profile/${data.user.username}`,
 								m.petty_basic_sheep_win()
@@ -305,11 +313,12 @@
 								`/profile/${data.user.username}/lists`,
 								m.jumpy_honest_mole_exhale()
 							)}
-							{@render link(`/request/new`, m.muddy_tough_swan_view())}
 							{@render link(
 								`/profile/${data.user.username}/submissions`,
 								m.flaky_gross_marlin_evoke()
 							)}
+							{@render link(`/request/new`, m.muddy_tough_swan_view())}
+							{@render link(`/settings`, m.orange_born_seal_ascend())}
 							<li class="mt-4">
 								<form method="POST" action="/logout">
 									<button
@@ -332,10 +341,10 @@
 							{m.these_bold_gorilla_flip()}
 						</div>
 						<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
-							{@render link('/post/4', m.arable_direct_cougar_win())}
 							{@render link('/moderation', m.minor_inner_lynx_adapt())}
 							{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 							{@render link('/work/merge', m.heroic_same_wasp_conquer())}
+							{@render link('/post/4', m.arable_direct_cougar_win())}
 						</ul>
 					</div>
 				{/if}

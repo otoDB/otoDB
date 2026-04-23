@@ -8,7 +8,7 @@
 	import { SVGViewer } from 'svelte-svg-viewer';
 	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
 
-	type Work = components['schemas']['SlimWorkSchema'];
+	type Work = Omit<components['schemas']['SlimWorkSchema'], 'status'>;
 	type Song = components['schemas']['SongSchema'];
 	type RelationType = T extends 'work' ? WorkRelationTypes : SongRelationTypes;
 	type Node = (T extends 'work' ? Work : Song) & { distance?: number };

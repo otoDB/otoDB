@@ -21,6 +21,7 @@ from .post import post_router
 from .comment import comment_router
 from .history import history_router
 from .requests import request_router
+from .moderation import moderation_router
 
 
 def flatten_properties(
@@ -33,8 +34,6 @@ def flatten_properties(
 	extracts all nested model's properties into flat properties
 	(used f.e. in GET params with multiple arguments and models)
 	"""
-
-	# 1. Handle allOf (often used by Ninja to wrap refs with defaults)
 	if 'allOf' in prop_details:
 		for item in prop_details['allOf']:
 			if '$ref' in item:
@@ -108,6 +107,7 @@ api.add_router('/post/', post_router)
 api.add_router('/comment/', comment_router)
 api.add_router('/history/', history_router)
 api.add_router('/request/', request_router)
+api.add_router('/moderation/', moderation_router)
 
 
 @api.get('stats', response=tuple[int, int, int, int])

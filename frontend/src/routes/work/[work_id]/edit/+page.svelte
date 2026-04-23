@@ -222,7 +222,7 @@
 			</tbody>
 		</table>
 	</div>
-	{#if hasUserLevel(data.user?.level, Levels.Editor)}
+	{#if hasUserLevel(data.user?.level, Levels.Admin)}
 		<button onclick={del}>{m.suave_less_deer_grip()}</button>
 	{/if}
 </Section>

@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { parseMentions, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';

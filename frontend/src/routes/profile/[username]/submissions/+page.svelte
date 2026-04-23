@@ -140,9 +140,6 @@
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.civil_trick_oryx_clap()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if data.user}
-							<th>{m.mushy_proof_hornet_dig()}</th>
-						{/if}
 					</tr></thead
 				>
 				<tbody>
@@ -183,16 +180,12 @@
 						<th>{m.super_agent_pigeon_aim()}</th>
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if data.user}
-							<th>{m.mushy_proof_hornet_dig()}</th>
-						{/if}
 					</tr></thead
 				>
 				<tbody>
 					{#each data.submissions.items as src, i (i)}
 						<tr>
 							<td class="whitespace-nowrap">{src.title || src.url}</td>
-							<!-- <td class="whitespace-nowrap">{src.rejection.reason}</td> `src.rejection` might be no longer exists. -->
 							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
 							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
 							<td class="whitespace-nowrap"

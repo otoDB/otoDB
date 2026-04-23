@@ -1,20 +1,19 @@
-from typing import Annotated
-from datetime import datetime, timedelta
-import string
 import logging
-from pydantic import StringConstraints
+import string
+from datetime import datetime, timedelta
+from typing import Annotated
 
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpRequest
-from django.utils.crypto import get_random_string
-from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import authenticate, login, logout
-
-from ninja import Schema, Router, Field, ModelSchema
+from django.db import IntegrityError
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from ninja import Field, ModelSchema, Router, Schema
 from ninja.security import django_auth
 from ninja.throttling import AnonRateThrottle, AuthRateThrottle
+from pydantic import StringConstraints
 
 from otodb.account.models import Account, Invitation
 from otodb.models.enums import (
@@ -24,7 +23,7 @@ from otodb.models.enums import (
 )
 from otodb.tasks import send_email
 
-from .common import Error, ProfileSchema, user_is_editor, UserPreferenceSchema
+from .common import Error, ProfileSchema, UserPreferenceSchema, user_is_editor
 
 logger = logging.getLogger(__name__)
 

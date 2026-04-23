@@ -1,72 +1,71 @@
-from typing import List, Literal
 from functools import reduce
+from typing import List, Literal
 
 from django.conf import settings
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from django.db.models import (
-	Q,
-	Count,
-	Value,
 	Case,
-	When,
+	Count,
 	IntegerField,
-	Subquery,
 	OuterRef,
+	Q,
+	Subquery,
+	Value,
+	When,
 )
-
-from ninja import Schema, ModelSchema
-from ninja.security import django_auth
+from django.shortcuts import get_object_or_404
+from ninja import ModelSchema, Schema
 from ninja.pagination import paginate
+from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
 
+from otodb.account.models import Account
 from otodb.common import (
 	slugify_tag,
 )
 from otodb.models import (
 	MediaWork,
 	ModerationEvent,
+	TagWork,
+	TagWorkInstance,
 	WorkRelation,
 	WorkSource,
-	TagWorkInstance,
-	TagWork,
 )
 from otodb.models.enums import (
 	ErrorCode,
-	Platform,
-	Rating,
-	WorkTagCategory,
 	FlagStatus,
+	ModerationAction,
 	ModerationEventType,
 	ModQueueCategory,
-	Status,
+	Platform,
+	Rating,
 	Route,
-	ModerationAction,
+	Status,
+	WorkTagCategory,
 )
-from otodb.account.models import Account
 from otodb.tasks import (
 	enqueue_deferred,
-	resolve_expired_work,
-	resolve_expired_flag,
 	resolve_expired_appeal,
+	resolve_expired_flag,
+	resolve_expired_work,
 )
 
 from .common import (
 	AuthedHttpRequest,
-	WorkSchema,
-	ThinWorkSchema,
-	WorkSourceSchema,
 	CreateWorkPayload,
-	TagWorkInstanceInSchema,
 	Error,
+	RouterWithRevision,
+	SlimWorkSchema,
+	TagWorkInstanceInSchema,
 	TagWorkInstanceSchema,
-	user_is_trusted,
+	ThinWorkSchema,
+	WorkRelationSchema,
+	WorkSchema,
+	WorkSourceSchema,
+	post_relations,
 	user_is_editor,
 	user_is_staff,
-	WorkRelationSchema,
-	post_relations,
-	SlimWorkSchema,
-	RouterWithRevision,
+	user_is_trusted,
 	with_revision_route,
 )
 

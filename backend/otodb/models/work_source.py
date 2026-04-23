@@ -1,18 +1,18 @@
-from typing import TYPE_CHECKING
-from datetime import date, datetime
-import logging
-from django.db import models
-import requests
-
-from .enums import Platform, WorkOrigin, WorkStatus, MimeType
-from .media import MediaWork
 import hashlib
+import logging
+from datetime import date, datetime
+from typing import TYPE_CHECKING
 
+import requests
 from django.conf import settings
-from otodb.common import video_info, process_video_info, fetch_thumbnail_mime_type
+from django.db import models
+
+from otodb.common import fetch_thumbnail_mime_type, process_video_info, video_info
 from otodb.storage_manager import storage_manager
 
-from .revision import RevisionTrackedModel, RevisionTrackedManager
+from .enums import MimeType, Platform, WorkOrigin, WorkStatus
+from .media import MediaWork
+from .revision import RevisionTrackedManager, RevisionTrackedModel
 
 logger = logging.getLogger(__name__)
 

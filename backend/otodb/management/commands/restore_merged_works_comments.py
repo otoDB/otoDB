@@ -6,8 +6,8 @@ but comments remain attached to from_work.pk. This command
 follows the moved_to chain and updates comments accordingly.
 """
 
-from django.core.management.base import BaseCommand
 from django.contrib.contenttypes.models import ContentType
+from django.core.management.base import BaseCommand
 from django_comments_xtd.models import XtdComment
 
 from otodb.models.media import MediaWork

@@ -1,13 +1,12 @@
-from django.db import models
+from dirtyfields import DirtyFieldsMixin
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.db.models.deletion import Collector
-
 from django_request_cache import get_request_cache
-from dirtyfields import DirtyFieldsMixin
 
-from django.conf import settings
-from otodb.models.enums import Route, RevisionChain
+from otodb.models.enums import RevisionChain, Route
 
 
 class Revision(models.Model):

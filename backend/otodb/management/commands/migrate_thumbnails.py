@@ -12,8 +12,8 @@ import requests
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from otodb.models.media import MediaWork
 from otodb.models.enums import MimeType
+from otodb.models.media import MediaWork
 from otodb.storage_manager import storage_manager
 
 

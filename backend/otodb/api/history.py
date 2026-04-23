@@ -1,46 +1,41 @@
-from typing import Any
-from enum import Enum
-from datetime import datetime
-from itertools import groupby
 import logging
+from datetime import datetime
+from enum import Enum
+from itertools import groupby
+from typing import Any
 
 import diff_match_patch as dmp_mod
-
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction, connection, models
-
-from django.db.models import Window, F, Subquery, OuterRef, Exists, Case, When, Q
-from django.db.models.functions import RowNumber
+from django.db import connection, models, transaction
+from django.db.models import Case, Exists, F, OuterRef, Q, Subquery, When, Window
 from django.db.models.fields.related import RelatedField
-
+from django.db.models.functions import RowNumber
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-
 from django_cte import CTE, with_cte
 from django_request_cache import get_request_cache
-
-from ninja import Router, ModelSchema, Field, Query, Schema
+from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
+from otodb.account.models import Account
 from otodb.models import (
-	TagWork,
-	TagSong,
+	MediaWork,
 	Revision,
 	RevisionChange,
 	RevisionChangeEntity,
-	MediaWork,
+	TagSong,
+	TagWork,
 )
 from otodb.models.enums import RevisionChain, Route
 from otodb.models.tag import OtodbTagModel
-from otodb.account.models import Account
 
 from .common import (
-	user_is_staff,
-	track_revision,
-	with_revision_route,
 	add_revision_message,
+	track_revision,
+	user_is_staff,
+	with_revision_route,
 )
 
 history_router = Router()

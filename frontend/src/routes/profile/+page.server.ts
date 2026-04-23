@@ -11,9 +11,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const level =
 		levelParam !== null && levelParam !== '' ? asEnum(Levels, Number(levelParam)) : null;
 	const orderParam = url.searchParams.get('order') ?? OrderEnum.ValueMinusdate_created;
-	const order = Object.values(OrderEnum).includes(orderParam as OrderEnum)
-		? (orderParam as OrderEnum)
-		: OrderEnum.ValueMinusdate_created;
+	const order = asEnum(OrderEnum, +orderParam) ?? OrderEnum.ValueMinusdate_created;
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 
 	const { data } = await client.GET('/api/profile/search', {

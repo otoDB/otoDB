@@ -21,7 +21,7 @@
 	{#if data.user?.username === data.profile.username}
 		<a href="/upload/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}
-	<form method="get">
+	<form target="_self" method="get">
 		<table>
 			<caption>{m.livid_same_wren_create()}</caption>
 			<tbody>
@@ -79,7 +79,7 @@
 						>
 						<select name="dir" value={data.dir ?? '-'}
 							><option value="-">{m.kind_quick_bullock_push()}</option><option
-								value="+">{m.novel_orange_mantis_feast()}</option
+								value="">{m.novel_orange_mantis_feast()}</option
 							></select
 						>
 					</td>

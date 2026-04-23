@@ -293,5 +293,6 @@
 	"quiet_dusty_fox_search": "未找到此页面的连接。",
 	"weary_broken_eagle_sigh": "无法连接到数据库。",
 	"grim_plain_crane_crash": "获取数据时发生错误。",
-	"careful_close_shad_achieve": "未分类"
+	"careful_close_shad_achieve": "未分类",
+	"watery_kind_quail_climb": "此作品缺少以下类别的标签：{missing}"
 }

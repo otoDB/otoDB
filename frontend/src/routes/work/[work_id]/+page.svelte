@@ -295,7 +295,11 @@
 													);
 													if (!reason?.trim()) {
 														// Show message
-														alert('Flag reason must be provided.');
+														alert(
+															m.fun_bland_llama_twirl({
+																thing: m.royal_big_chipmunk_absorb()
+															})
+														);
 														return;
 													}
 													const { error } = await client.POST(
@@ -326,7 +330,11 @@
 													);
 													if (!reason?.trim()) {
 														// Show message
-														alert('Appeal reason must be provided.');
+														alert(
+															m.fun_bland_llama_twirl({
+																thing: m.zippy_dark_mayfly_cut()
+															})
+														);
 														return;
 													}
 													const { error } = await client.POST(

@@ -24,9 +24,9 @@
 	};
 
 	const rejectSource = async (sourceId: number) => {
-		const reason = prompt('Rejection reason:');
+		const reason = prompt(m;.honest_tangy_butterfly_dream());
 		if (!reason?.trim()) {
-			alert('Rejection reason is required.');
+			alert(m.fun_bland_llama_twirl({thing: m.honest_tangy_butterfly_dream()}));
 			return;
 		}
 		await client.POST('/api/upload/reject', {

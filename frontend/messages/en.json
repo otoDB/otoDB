@@ -367,5 +367,6 @@
 	"merry_brisk_owl_submit": "Add this work to otoDB…",
 	"quiet_dusty_fox_search": "No connections found for this page.",
 	"weary_broken_eagle_sigh": "Cannot reach the database.",
-	"grim_plain_crane_crash": "An error occurred while fetching data."
+	"grim_plain_crane_crash": "An error occurred while fetching data.",
+	"fun_bland_llama_twirl": "{thing} must be provided."
 }

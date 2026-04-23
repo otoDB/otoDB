@@ -114,7 +114,7 @@ def make_bulk(request: HttpRequest, s: str):
 	if not lines:
 		raise Exception
 	reqs = []
-	for n, line in enumerate(lines):
+	for _, line in enumerate(lines):
 		c = line.split()
 		cmd, A_validator, Bs_validator = COMMANDS[c[0]]
 		A = A_validator(c[1])

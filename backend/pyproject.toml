@@ -42,6 +42,19 @@ quote-style = "single"
 indent-style = "tab"
 docstring-code-format = true
 
+[tool.ruff.lint]
+extend-select = [
+    # "I",    # imports
+    "W",    # whitespace
+    "B007", # loop variable
+]
+ignore = [
+    "W191", # tabs
+]
+unfixable = [
+    "B007",
+]
+
 [dependency-groups]
 dev = [
     "django-silk>=5.5.0",

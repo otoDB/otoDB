@@ -37,10 +37,10 @@ const preview: Preview = {
 		},
 		withThemeByClassName({
 			themes: {
-				light: 'light',
-				dark: 'dark'
+				aniki: 'theme-aniki',
+				sorimix: 'theme-sorimix'
 			},
-			defaultTheme: 'dark'
+			defaultTheme: 'aniki'
 		})
 	]
 };

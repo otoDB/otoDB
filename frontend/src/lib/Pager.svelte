@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-
 	let {
 		page,
 		page_size,
@@ -16,11 +14,16 @@
 	} = $props();
 
 	const n_pages = $derived(Math.ceil(n_count / page_size));
-	const page_min = $derived(Math.max(1, page - window_size));
-	const page_max = $derived(Math.min(n_pages, page + window_size));
-	const page_range = $derived(
-		Array.from({ length: page_max - page_min + 1 }, (_, i) => i + page_min)
-	);
+
+	const middle = $derived.by(() => {
+		const min = Math.max(1, page - window_size);
+		const max = Math.min(n_pages, page + window_size);
+
+		return Array.from({ length: max - min + 1 }, (_, i) => i + min);
+	});
+
+	let hasPrevious = $derived(page > 1);
+	let hasNext = $derived(page < n_pages);
 
 	const buildUrl = (page: number) => {
 		if (!base_url) return `?page=${page}`;
@@ -28,43 +31,55 @@
 		u.searchParams.set('page', page.toString());
 		return u.href;
 	};
-
-	let pp = $derived(page);
 </script>
 
-{#snippet btn(p: number)}
-	<a class="bg-otodb-bg-fainter border-otodb-content-faint border p-2" href={buildUrl(p)}>{p}</a>
+{#snippet btn(p: number, current: boolean)}
+	<a
+		aria-current={current ? 'page' : undefined}
+		href={buildUrl(p)}
+		class="bg-otodb-bg-primary border-otodb-content-faint aria-[current=page]:border-otodb-content-primary aria-[current=page]:bg-otodb-content-primary hover:bg-otodb-bg-fainter aria-[current=page]:text-otodb-bg-primary text-otodb-content-primary border px-4
+		py-2 no-underline"
+	>
+		{p}
+	</a>
 {/snippet}
 
-{#if page_range.length > 1}
-	<div class="mt-3 flex justify-center gap-2">
-		{#if page_range[0] !== 1}
-			{@render btn(1)}
-			{#if page_range[0] !== 2}
-				...
+{#if middle.length > 1}
+	<div class="mt-3 flex flex-nowrap items-center justify-center gap-x-2">
+		<a
+			aria-disabled={!hasPrevious}
+			aria-hidden={!hasPrevious}
+			href={hasPrevious ? buildUrl(page - 1) : null}
+			class="bg-otodb-bg-primary border-otodb-content-faint hover:bg-otodb-bg-fainter text-otodb-content-primary aria-disabled:border-otodb-content-fainter aria-disabled:bg-otodb-bg-fainter aria-disabled:text-otodb-content-fainter border px-4 py-2 no-underline"
+		>
+			&lt;
+		</a>
+
+		{#if middle[0] !== 1}
+			{@render btn(1, false)}
+			{#if middle[0] !== 2}
+				<span class="text-otodb-content-fainter">&hellip;</span>
 			{/if}
 		{/if}
-		{#each page_range as index, i (i)}
-			{#if index === page}
-				<input
-					autocomplete="off"
-					class="p-2"
-					type="number"
-					min="1"
-					max={n_pages}
-					bind:value={pp}
-					onchange={() => goto(buildUrl(pp))}
-				/>
-			{:else}
-				{@render btn(index)}
-			{/if}
+
+		{#each middle as index (index)}
+			{@render btn(index, index === page)}
 		{/each}
 
-		{#if page_range.at(-1) !== n_pages}
-			{#if page_range.at(-1) !== n_pages - 1}
-				...
+		{#if middle.at(-1) !== n_pages}
+			{#if middle.at(-1) !== n_pages - 1}
+				<span class="text-otodb-content-fainter">&hellip;</span>
 			{/if}
-			{@render btn(n_pages)}
+			{@render btn(n_pages, false)}
 		{/if}
+
+		<a
+			aria-disabled={!hasNext}
+			aria-hidden={!hasNext}
+			href={hasNext ? buildUrl(page + 1) : null}
+			class="bg-otodb-bg-primary border-otodb-content-faint hover:bg-otodb-bg-fainter text-otodb-content-primary aria-disabled:border-otodb-content-fainter aria-disabled:bg-otodb-bg-fainter aria-disabled:text-otodb-content-fainter border px-4 py-2 no-underline"
+		>
+			&gt;
+		</a>
 	</div>
 {/if}

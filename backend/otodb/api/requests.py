@@ -68,6 +68,16 @@ COMMANDS = {
 		TAGWORK_SLUG_VALIDATOR,
 		repeat(TAGWORK_SLUG_VALIDATOR),
 	),
+	# 'source:attach-tag': (
+	# 	RequestActions.WORKSOURCE_ATTACHTAG,
+	# 	SOURCEWORK_ID_VALIDATOR,
+	# 	repeat(TAGWORK_SLUG_VALIDATOR),
+	# ),
+	# 'work:attach-tag': (
+	# 	RequestActions.MEDIAWORK_ATTACHTAG,
+	# 	MEDIAWORK_ID_VALIDATOR,
+	# 	repeat(TAGWORK_SLUG_VALIDATOR),
+	# ),
 }
 
 ACTIONS = {
@@ -87,6 +97,10 @@ ACTIONS = {
 	RequestActions.TAGWORK_UNPARENT: lambda A, B: TagWorkParenthood.objects.get(
 		tag=A, parent=B
 	).delete(),
+	# RequestActions.WORKSOURCE_ATTACHTAG: lambda A, B: (
+	# 	A.media.tags.add(B) if A.media else ...
+	# ),
+	# RequestActions.MEDIAWORK_ATTACHTAG: lambda A, B: A.tags.add(B),
 }
 
 request_router = Router()
@@ -117,12 +131,18 @@ def make_bulk(request: HttpRequest, s: str):
 @track_revision
 def confirm(request: HttpRequest, request_id: int, status: Status):
 	bulk = get_object_or_404(BulkRequest, id=request_id, status=Status.PENDING)
-	for r in bulk.requests.all():
-		ACTIONS[r.command](r.A, r.B)
+	match status:
+		case Status.APPROVED:
+			add_revision_message(f'Via request {bulk.id} from {bulk.user.username}')
+			for r in bulk.requests.all():
+				ACTIONS[r.command](r.A, r.B)
+		case Status.UNAPPROVED:
+			pass
+		case Status.PENDING:
+			pass
 	bulk.status = status
 	bulk.processed_by = request.user
 	bulk.save()
-	add_revision_message(f'Via request {bulk.id} from {bulk.user.username}')
 
 
 class RequestSchema(ModelSchema):

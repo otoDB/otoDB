@@ -1,6 +1,6 @@
 import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
-import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
+import { ModelsWithComments } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, parent, params }) => {
 	const data = await parent();
@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ fetch, parent, params }) => {
 			fetch,
 			params: {
 				query: {
-					model: PathsApiCommentCommentsGetParametersQueryModel.account,
+					model: ModelsWithComments.account,
 					pk: data.profile.id
 				}
 			}

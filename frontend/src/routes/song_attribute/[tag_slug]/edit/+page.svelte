@@ -10,11 +10,7 @@
 	import { languages } from '$lib/enums/language.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { locales } from '$lib/paraglide/runtime';
-	import {
-		PathsApiTagTag_aliasesPostParametersQueryType,
-		PathsApiTagTagDeleteParametersQueryType,
-		SongTagCategory
-	} from '$lib/schema.js';
+	import { SongTagCategory, TagTypes } from '$lib/schema.js';
 	import { callErrorCodeToast, callErrorToast } from '$lib/toast';
 
 	let { data, form } = $props();
@@ -63,7 +59,7 @@
 			},
 			params: {
 				query: {
-					type: PathsApiTagTag_aliasesPostParametersQueryType.song,
+					type: TagTypes.song,
 					tag_slug: data.tag.slug
 				}
 			}
@@ -84,7 +80,7 @@
 			params: {
 				query: {
 					tag_slug: data.tag.slug,
-					type: PathsApiTagTagDeleteParametersQueryType.song
+					type: TagTypes.song
 				}
 			}
 		});

@@ -28,7 +28,13 @@
 			<tbody
 				><tr
 					><th>{m.large_factual_octopus_exhale()}</th><td
-						><input type="text" name="title" required autocomplete="off" /></td
+						><input
+							type="text"
+							name="title"
+							required
+							autocomplete="off"
+							value={data.title}
+						/></td
 					></tr
 				><tr
 					><th>{m.hour_loud_squirrel_ascend()}</th><td

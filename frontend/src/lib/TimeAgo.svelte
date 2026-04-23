@@ -32,7 +32,7 @@
 			elapsed > WEEK   * 2  ? [WEEK,   'week']   :
 			elapsed > DAY    * 1  ? [DAY,    'day']    :
 			elapsed > HOUR   * 1  ? [HOUR,   'hour']   :
-			elapsed > MINUTE * 10 ? [MINUTE, 'minute'] :
+			elapsed > MINUTE * 2 ? [MINUTE, 'minute'] :
 								    [1,      'second']
 
 		return rtf.format(Math.trunc(diff / divisor), unit);

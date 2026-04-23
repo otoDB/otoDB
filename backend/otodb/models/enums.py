@@ -16,13 +16,14 @@ class OtodbIntegerEnum(models.IntegerChoices):
 
 
 class WorkTagCategory(OtodbIntegerEnum):
-	GENERAL = 0, 'General'
+	UNCATEGORIZED = 0, 'Uncategorized'
 	EVENT = 1, 'Event'
 	SONG = 2, 'Song'
 	SOURCE = 3, 'Source'
 	CREATOR = 4, 'Creator'
 	META = 5, 'Meta'
 	MEDIA = 6, 'Media'
+	GENERAL = 7, 'General'
 
 
 class SongTagCategory(OtodbIntegerEnum):
@@ -208,12 +209,56 @@ class MimeType(OtodbIntegerEnum):
 		return None
 
 
+class NotificationReason(OtodbIntegerEnum):
+	REPLY = 0, 'Reply'
+	MENTION = 1, 'Mention'
+	THREAD_LINKED = 2, 'Thread Linked'
+
+
 class PostCategory(OtodbIntegerEnum):
 	ANNOUNCEMENT = 0, 'Announcement'
 	FEATURE_REQUEST = 1, 'Feature Request'
 	BUG_REPORT = 2, 'Bug Report'
 	GARDENING = 3, 'Gardening'
 	GENERAL = 4, 'General'
+
+
+class ModerationEventType(models.IntegerChoices):
+	FLAG = 0, 'Flag'
+	APPEAL = 1, 'Appeal'
+	DISAPPROVAL = 2, 'Disapproval'
+	APPROVAL = 3, 'Approval'
+	MOD_ACTION = 4, 'Mod Action'
+
+
+class ModQueueCategory(OtodbIntegerEnum):
+	PENDING = 0, 'Pending'
+	FLAGGED = 1, 'Flagged'
+	APPEALED = 2, 'Appealed'
+
+
+class FlagStatus(models.IntegerChoices):
+	PENDING = 0, 'Pending'
+	SUCCEEDED = 1, 'Succeeded'
+	REJECTED = 2, 'Rejected'
+
+
+class ModerationAction(models.IntegerChoices):
+	# Work unapproved via auto-expiry or staff action
+	WORK_DELISTED = (
+		1,
+		'Work Delisted',
+	)
+	# Pending source on existing work approved (immediate)
+	SOURCE_APPROVED = (
+		10,
+		'Source Approved',
+	)
+	# Pending source on existing work rejected (immediate, unbinds)
+	SOURCE_REJECTED = (
+		11,
+		'Source Rejected',
+	)
 
 
 class RevisionChain(OtodbIntegerEnum):
@@ -276,6 +321,9 @@ class ErrorCode(OtodbIntegerEnum):
 	SOURCE_HAS_WORK = 10006
 	NO_MATCHING_ENTITIES = 10007
 	NAME_SLUG_MISMATCH = 10008
+	SOURCE_UNAPPROVED = 10009
+	SOURCE_FLAGGED = 10010
+	NO_MORE_UPLOAD_SLOTS = 10011
 
 
 class Preferences(OtodbIntegerEnum):

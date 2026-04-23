@@ -5,8 +5,8 @@ import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { Levels } from '$lib/schema';
 
-export const load: PageServerLoad = async ({ locals }) => {
-	userLevelGuard(locals.user, Levels.Member);
+export const load: PageServerLoad = async ({ locals, url }) => {
+	userLevelGuard(locals.user, Levels.Editor, url.pathname);
 	return { head: { title: m.proof_heroic_rat_cuddle() } };
 };
 

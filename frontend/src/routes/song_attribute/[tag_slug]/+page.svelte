@@ -4,7 +4,7 @@
 	import { SongTagCategoryNames } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import { getTagDisplayName } from '$lib/api.js';
-	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
+	import { ModelsWithComments } from '$lib/schema.js';
 
 	let { data } = $props();
 
@@ -80,7 +80,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model={PathsApiCommentCommentDeleteParametersQueryModel.tagsong}
+		model={ModelsWithComments.tagsong}
 		pk={data.tag.id}
 	/>
 </Section>

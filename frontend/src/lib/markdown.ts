@@ -1,4 +1,4 @@
-import { EntitySchemaEntity } from '$lib/schema';
+import { PostEntities } from '$lib/schema';
 import type { Parent, PhrasingContent, Root } from 'mdast';
 import { findAndReplace } from 'mdast-util-find-and-replace';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
@@ -10,7 +10,8 @@ import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
-import { unified } from 'unified';
+import { unified, type Plugin } from 'unified';
+import { visit } from 'unist-util-visit';
 
 const ENTITIES = [
 	{ shortPrefix: 'w', longLabel: 'work', urlPath: 'work' },
@@ -26,10 +27,11 @@ const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N
 const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
 const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 
-const LinkableEntities: [EntitySchemaEntity, RegExp][] = [
-	[EntitySchemaEntity.mediawork, short_prefix_re_gen(ENTITIES[0].shortPrefix)],
-	[EntitySchemaEntity.mediawork, long_label_re_gen(ENTITIES[0].longLabel)],
-	[EntitySchemaEntity.tagwork, TAGWORK_NO_DISPLAY_RE]
+const LinkableEntities: [PostEntities, RegExp][] = [
+	[PostEntities.mediawork, short_prefix_re_gen(ENTITIES[0].shortPrefix)],
+	[PostEntities.mediawork, long_label_re_gen(ENTITIES[0].longLabel)],
+	[PostEntities.account, MENTION_RE],
+	[PostEntities.tagwork, TAGWORK_NO_DISPLAY_RE]
 ];
 
 function link(href: string, text: string): PhrasingContent {
@@ -59,45 +61,62 @@ function remarkStripImages() {
 	};
 }
 
+const OtodbReplacements: [RegExp, (...args: string[]) => PhrasingContent | false][] = [
+	...ENTITIES.flatMap(({ shortPrefix, longLabel, urlPath }) => [
+		// Short form: w123, l42, r99
+		[
+			short_prefix_re_gen(shortPrefix),
+			(_, num) => link(`/${urlPath}/${num}`, `${shortPrefix}${num}`)
+		] as [RegExp, (...args: string[]) => PhrasingContent | false],
+		// Long form: work #123, list #42, revision #99
+		[
+			long_label_re_gen(longLabel),
+			(_, num) => link(`/${urlPath}/${num}`, `${longLabel} #${num}`)
+		] as [RegExp, (...args: string[]) => PhrasingContent | false]
+	]),
+	// Tag wiki links: [[slug]] or [[slug|Display Text]]
+	[
+		TAGWORK_RE,
+		(_, slug, display) =>
+			link(`/tag/${encodeURIComponent(slug.trim())}`, display?.trim() || slug.trim())
+	],
+	// Simple user mention: @username
+	[MENTION_RE, (_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)]
+];
+
 function remarkOtodb() {
 	return (tree: Root) => {
-		const replacements: [RegExp, (...args: string[]) => PhrasingContent | false][] = [];
-
-		for (const { shortPrefix, longLabel, urlPath } of ENTITIES) {
-			// Short form: w123, l42, r99
-			replacements.push([
-				short_prefix_re_gen(shortPrefix),
-				(_, num) => link(`/${urlPath}/${num}`, `${shortPrefix}${num}`)
-			]);
-			// Long form: work #123, list #42, revision #99
-			replacements.push([
-				long_label_re_gen(longLabel),
-				(_, num) => link(`/${urlPath}/${num}`, `${longLabel} #${num}`)
-			]);
-		}
-
-		// Tag wiki links: [[slug]] or [[slug|Display Text]]
-		replacements.push([
-			TAGWORK_RE,
-			(_, slug, display) =>
-				link(`/tag/${encodeURIComponent(slug.trim())}`, display?.trim() || slug.trim())
-		]);
-
-		// Simple user mention: @username
-		replacements.push([
-			MENTION_RE,
-			(_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)
-		]);
-
-		findAndReplace(tree, replacements);
+		findAndReplace(tree, OtodbReplacements);
 	};
 }
+
+export const string_link_entities = (s: string) => {
+	let parts: (string | { url: string; text: string })[] = [s];
+	for (const [regex, tf] of OtodbReplacements) {
+		parts = parts.flatMap((v) => {
+			if (typeof v === 'string') {
+				const result = [];
+				let lastIndex = 0;
+				let match;
+				while ((match = regex.exec(v)) !== null) {
+					if (match.index > lastIndex) result.push(v.slice(lastIndex, match.index));
+					const l = tf(...match) as { url: string; children: { value: string }[] };
+					result.push({ url: l.url, text: l.children[0].value });
+					lastIndex = regex.lastIndex;
+				}
+				if (lastIndex < v.length) result.push(v.slice(lastIndex));
+				return result;
+			} else return [v];
+		});
+	}
+	return parts;
+};
 
 export const get_entity = (
 	s: string
 ): null | {
 	id: string | number;
-	entity: EntitySchemaEntity;
+	entity: PostEntities;
 } => {
 	for (const [p, re] of LinkableEntities) {
 		const m = s.matchAll(re).next();
@@ -112,7 +131,9 @@ export const get_entity = (
 
 const entityShorthands: Record<string, (id: string | number) => string> = {
 	mediawork: (id) => `${ENTITIES[0].shortPrefix}${id}`,
-	tagwork: (id) => `[[${id}]]`
+	revision: (id) => `${ENTITIES[2].shortPrefix}${id}`,
+	tagwork: (id) => `[[${id}]]`,
+	account: (id) => `@${id}`
 };
 
 export const entity_to_shorthand = (entity: string, id: string | number): string =>
@@ -124,9 +145,23 @@ const sanitizeSchema = {
 	attributes: { ...defaultSchema.attributes, 'otodb-worktag': ['slug'] }
 };
 
+const remarkDecodeSimpleLinks: Plugin<[], Root> = () => (tree: Root) => {
+	visit(tree, 'link', (node) => {
+		if (node.children.length === 1 && node.children[0].type === 'text') {
+			const textNode = node.children[0];
+			try {
+				textNode.value = decodeURIComponent(textNode.value);
+			} catch {
+				// Ignore
+			}
+		}
+	});
+};
+
 const processor = unified()
 	.use(remarkParse)
 	.use(remarkGfm)
+	.use(remarkDecodeSimpleLinks)
 	.use(remarkBreaks)
 	.use(remarkOtodb)
 	.use(remarkStripImages)

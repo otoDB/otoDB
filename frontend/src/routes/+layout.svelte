@@ -267,6 +267,7 @@
 						{@render link('/list', m.stale_loose_squid_cut())}
 						{@render link('/post/overview', m.just_salty_anaconda_nourish())}
 						{@render link('/comments', m.same_broad_haddock_pinch())}
+						{@render link('/profile', m.bright_nimble_eagle_glide())}
 						{@render link('/post/3', 'FAQ')}
 						{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 					</ul>
@@ -332,6 +333,7 @@
 						</div>
 						<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 							{@render link('/post/4', m.arable_direct_cougar_win())}
+							{@render link('/moderation', m.minor_inner_lynx_adapt())}
 							{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 							{@render link('/work/merge', m.heroic_same_wasp_conquer())}
 						</ul>

@@ -8,7 +8,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { PathsApiCommentCommentDeleteParametersQueryModel, WorkOrigin } from '$lib/schema.js';
+	import { ModelsWithComments, WorkOrigin } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
@@ -115,6 +115,9 @@
 							<a href="/upload/{src.id}">{src.title || src.url}</a>
 						</h3>
 						<h4>{PlatformNames[src.platform]} {src.published_date}</h4>
+						{#if src.is_pending}
+							<p class="text-sky-600">{m.such_actual_okapi_dare()}</p>
+						{/if}
 					</span>
 					<span>
 						<a href={src.url} target="_blank" rel="noopener noreferrer"
@@ -150,7 +153,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model={PathsApiCommentCommentDeleteParametersQueryModel.pool}
+		model={ModelsWithComments.pool}
 		pk={data.list.id}
 	/>
 </Section>

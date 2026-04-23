@@ -2,9 +2,12 @@ from typing import List, Literal
 
 from pydantic import field_validator
 
-from django.http import HttpRequest
-from django.db.models import Q
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Count, F, IntegerField, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
+
+from django_comments_xtd.models import XtdComment
 
 from ninja import Router, FilterSchema, Query, Field, ModelSchema
 from ninja.security import django_auth
@@ -12,19 +15,28 @@ from ninja.pagination import paginate
 from ninja.errors import HttpError
 
 from otodb.account.models import Account
-from otodb.models import ProfileConnection, UserPreference, Notification
+from otodb.models import (
+	Post,
+	ProfileConnection,
+	Revision,
+	UserPreference,
+	Notification,
+	WorkSource,
+)
 from otodb.models.enums import (
 	Status,
 	Platform,
 	WorkOrigin,
 	WorkStatus,
 	ProfileConnectionTypes,
+	NotificationReason,
 	Preferences,
 )
 
 from .comment import ModelsWithComments
 
 from .common import (
+	AuthedHttpRequest,
 	ListSchema,
 	ProfileSchema,
 	WorkSourceSchema,
@@ -38,13 +50,114 @@ profile_router = Router()
 
 
 @profile_router.get('profile', response=ProfileSchema)
-def profile(request: HttpRequest, username: str):
+def profile(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user
 
 
+class ProfileIndexSchema(ModelSchema):
+	id: int
+	level: Account.Levels
+	works_count: int
+	revisions_count: int
+	posts_count: int
+	comments_count: int
+
+	class Meta:
+		model = Account
+		fields = ['username', 'date_created']
+
+
+class ProfileSearchFilterSchema(FilterSchema):
+	username: str | None = Field(None, json_schema_extra={'q': 'username__icontains'})
+	level: Account.Levels | None = None
+
+
+@profile_router.get('search', response=List[ProfileIndexSchema])
+@paginate
+def search(
+	request: AuthedHttpRequest,
+	filters: ProfileSearchFilterSchema = Query(...),
+	order: Literal[
+		'username',
+		'-username',
+		'date_created',
+		'-date_created',
+		'level',
+		'-level',
+		'works_count',
+		'-works_count',
+		'revisions_count',
+		'-revisions_count',
+		'posts_count',
+		'-posts_count',
+		'comments_count',
+		'-comments_count',
+	] = '-date_created',
+):
+	post_ct = ContentType.objects.get_for_model(Post)
+
+	works_count = (
+		WorkSource.objects.filter(added_by=OuterRef('pk'))
+		.values('added_by')
+		.annotate(c=Count('media', distinct=True))
+		.values('c')
+	)
+	revisions_count = (
+		Revision.objects.filter(user=OuterRef('pk'))
+		.values('user')
+		.annotate(c=Count('id'))
+		.values('c')
+	)
+	op_posts_count = (
+		Post.objects.filter(added_by=OuterRef('pk'))
+		.values('added_by')
+		.annotate(c=Count('id'))
+		.values('c')
+	)
+	post_comments_count = (
+		XtdComment.objects.filter(
+			user=OuterRef('pk'), content_type=post_ct, is_removed=False
+		)
+		.order_by()
+		.values('user')
+		.annotate(c=Count('id'))
+		.values('c')
+	)
+	other_comments_count = (
+		XtdComment.objects.filter(user=OuterRef('pk'), is_removed=False)
+		.exclude(content_type=post_ct)
+		.order_by()
+		.values('user')
+		.annotate(c=Count('id'))
+		.values('c')
+	)
+
+	qs = (
+		Account.objects.filter(is_active=True)
+		.annotate(
+			works_count=Coalesce(Subquery(works_count, output_field=IntegerField()), 0),
+			revisions_count=Coalesce(
+				Subquery(revisions_count, output_field=IntegerField()), 0
+			),
+			_op_posts=Coalesce(
+				Subquery(op_posts_count, output_field=IntegerField()), 0
+			),
+			_post_comments=Coalesce(
+				Subquery(post_comments_count, output_field=IntegerField()), 0
+			),
+			comments_count=Coalesce(
+				Subquery(other_comments_count, output_field=IntegerField()), 0
+			),
+		)
+		.annotate(posts_count=F('_op_posts') + F('_post_comments'))
+	)
+	qs = filters.filter(qs)
+	return qs.order_by(order, 'id')
+
+
 @profile_router.get('lists', response=List[ListSchema])
-def lists(request: HttpRequest, username: str):
+def lists(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.pool_set
 
@@ -54,7 +167,7 @@ class UserConnectionSchema(ConnectionSchema):
 
 
 @profile_router.get('connection', response=List[UserConnectionSchema])
-def connection(request: HttpRequest, username: str):
+def connection(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.profileconnection_set
 
@@ -63,7 +176,7 @@ creator_tag_connection_parser = make_alt_value_parser(*profile_connection_parser
 
 
 @profile_router.put('connection', auth=django_auth)
-def edit_connections(request: HttpRequest, urls: str):
+def edit_connections(request: AuthedHttpRequest, urls: str):
 	user = request.user
 	ProfileConnection.objects.filter(profile=user).delete()
 	urls = [
@@ -80,7 +193,7 @@ def edit_connections(request: HttpRequest, urls: str):
 @profile_router.get(
 	'work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth
 )
-def work_in_lists(request: HttpRequest, work_id: int):
+def work_in_lists(request: AuthedHttpRequest, work_id: int):
 	return [
 		(lst, lst.work_in_pool(work_id).exists()) for lst in request.user.pool_set.all()
 	]
@@ -104,7 +217,7 @@ class SubmissionsFilterSchema(FilterSchema):
 @profile_router.get('submissions', response=List[SourceSubmissionSchema])
 @paginate
 def submissions(
-	request: HttpRequest,
+	request: AuthedHttpRequest,
 	username: str,
 	filters: SubmissionsFilterSchema = Query(...),
 	order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id',
@@ -112,20 +225,22 @@ def submissions(
 ):
 	match standing:
 		case Status.PENDING:
-			q = Q(media__isnull=True, rejection__isnull=True)
+			q = Q(is_pending=True) | Q(media__status=Status.PENDING)
 		case Status.APPROVED:
-			q = Q(media__isnull=False)
+			q = Q(media__status=Status.APPROVED, is_pending=False)
 		case Status.UNAPPROVED:
-			q = Q(rejection__isnull=False)
+			q = Q(media__isnull=True, is_pending=False) | Q(
+				media__status=Status.UNAPPROVED
+			)
 
 	user = get_object_or_404(Account, username__iexact=username)
-	submissions = user.worksource_set.filter(q).select_related('rejection', 'media')
+	submissions = user.worksource_set.filter(q).select_related('media')
 	filters.filter(submissions)
 	return submissions.order_by(order)
 
 
 @profile_router.post('prefs', auth=django_auth)
-def set_prefs(request: HttpRequest, payload: UserPreferenceSchema):
+def set_prefs(request: AuthedHttpRequest, payload: UserPreferenceSchema):
 	UserPreference.objects.bulk_create(
 		[
 			UserPreference(
@@ -146,6 +261,7 @@ class NotificationSchema(ModelSchema):
 	id: int
 	comment: tuple[ModelsWithComments, int | str] | None
 	post: int | None = Field(None, alias='post_id')
+	reason: NotificationReason
 
 	class Meta:
 		model = Notification
@@ -173,21 +289,21 @@ class NotificationSchema(ModelSchema):
 	'notifications', auth=django_auth, response=list[NotificationSchema]
 )
 @paginate
-def notifications(request: HttpRequest):
+def notifications(request: AuthedHttpRequest):
 	return request.user.notifs.order_by('dismissed')
 
 
 @profile_router.put('notification', auth=django_auth)
-def read_notif(request: HttpRequest, notif_id: int):
+def read_notif(request: AuthedHttpRequest, notif_id: int):
 	if request.user.notifs.filter(id=notif_id).update(dismissed=True) > 0:
 		return 200
 	else:
-		raise HttpError(403, 'Forbidden')
+		raise HttpError(400, 'Bad Request')
 
 
 @profile_router.delete('notification', auth=django_auth)
-def del_notif(request: HttpRequest, notif_id: int):
+def del_notif(request: AuthedHttpRequest, notif_id: int):
 	if request.user.notifs.filter(id=notif_id).delete()[0] > 0:
 		return 200
 	else:
-		raise HttpError(403, 'Forbidden')
+		raise HttpError(400, 'Bad Request')

@@ -1,6 +1,7 @@
 from typing import List, Literal
 from functools import reduce
 
+from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import (
@@ -17,12 +18,14 @@ from django.db.models import (
 from ninja import Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
+from ninja.throttling import AuthRateThrottle
 
 from otodb.common import (
 	slugify_tag,
 )
 from otodb.models import (
 	MediaWork,
+	ModerationEvent,
 	WorkRelation,
 	WorkSource,
 	TagWorkInstance,
@@ -33,7 +36,19 @@ from otodb.models.enums import (
 	Platform,
 	Rating,
 	WorkTagCategory,
+	FlagStatus,
+	ModerationEventType,
+	ModQueueCategory,
+	Status,
 	Route,
+	ModerationAction,
+)
+from otodb.account.models import Account
+from otodb.tasks import (
+	enqueue_deferred,
+	resolve_expired_work,
+	resolve_expired_flag,
+	resolve_expired_appeal,
 )
 
 from .common import (
@@ -119,7 +134,14 @@ def search(
 	query: str,
 	tags: str | None = None,
 	order: Literal['id', '-id', 'pub', '-pub'] | None = '-id',
+	queue: Literal['unseen', 'all'] | None = None,
 ):
+	# Silently ignore queue param for non-editors
+	if queue is not None and (
+		not request.user.is_authenticated or not request.user.is_editor
+	):
+		queue = None
+
 	search_id = int(query) if query.isdigit() else -1
 	if query:
 		q = (
@@ -166,7 +188,23 @@ def search(
 		if search_id > 0:
 			q = q | Q(id=search_id)
 
-	qs = MediaWork.active_objects.filter(q).annotate(
+	if queue is not None:
+		pending = MediaWork.active_objects.filter(status=Status.PENDING)
+		pending_flag_or_appeal_ids = ModerationEvent.objects.filter(
+			event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
+			status=FlagStatus.PENDING,
+		).values_list('work_id', flat=True)
+		queue_q = Q(id__in=pending) | Q(id__in=pending_flag_or_appeal_ids)
+		if queue == 'unseen':
+			queue_q = queue_q & ~Q(
+				moderation_events__event_type=ModerationEventType.DISAPPROVAL,
+				moderation_events__by=request.user,
+			)
+		qs = MediaWork.active_objects.filter(queue_q).filter(q)
+	else:
+		qs = MediaWork.active_objects.filter(q).visible()
+
+	qs = qs.annotate(
 		pub=Subquery(
 			WorkSource.objects.filter(media_id=OuterRef('id'))
 			.order_by('published_date')
@@ -197,9 +235,8 @@ def search(
 @paginate
 def tags_needed(request: AuthedHttpRequest):
 	return (
-		MediaWork.active_objects.annotate(
-			ntags=Count('tags', filter=Q(tags__deprecated=False))
-		)
+		MediaWork.active_objects.visible()
+		.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False)))
 		.filter(ntags__lte=4)
 		.order_by('ntags')
 		.distinct()
@@ -208,7 +245,19 @@ def tags_needed(request: AuthedHttpRequest):
 
 @work_router.get('work', response=WorkSchema)
 def work(request: AuthedHttpRequest, work_id: int):
-	return get_object_or_404(MediaWork.objects, id=work_id)
+	work = get_object_or_404(MediaWork.objects.with_pending_moderation(), id=work_id)
+
+	is_editor = (
+		request.user.is_authenticated and request.user.level >= Account.Levels.EDITOR
+	)
+	if work.pending_flag:
+		is_own = (
+			request.user.is_authenticated and work.pending_flag.by_id == request.user.pk
+		)
+		if not is_editor and not is_own:
+			work.pending_flag.by_id = None
+
+	return work
 
 
 @work_router.delete('work', auth=django_auth)
@@ -234,14 +283,16 @@ def set_tags(
 
 @work_router.get('random', response=list[ThinWorkSchema], exclude_none=True)
 def random(request: AuthedHttpRequest, n: int = 1):
-	return MediaWork.active_objects.filter(rating=Rating.GENERAL).order_by('?')[
-		: min(n, 20)
-	]
+	return (
+		MediaWork.active_objects.visible()
+		.filter(rating=Rating.GENERAL)
+		.order_by('?')[: min(n, 20)]
+	)
 
 
 @work_router.get('recent', response=list[ThinWorkSchema], exclude_none=True)
 def recent(request: AuthedHttpRequest, n: int = 1):
-	return MediaWork.active_objects.order_by('-id')[: min(n, 20)]
+	return MediaWork.active_objects.visible().order_by('-id')[: min(n, 20)]
 
 
 @work_router.get(
@@ -327,14 +378,49 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 			'data': {'message': 'Source already has a work'},
 		}
 
+	is_editor = request.user.level >= Account.Levels.EDITOR
+
+	# Upload limit check (members only)
+	if not is_editor:
+		pending_uploads = (
+			MediaWork.active_objects.filter(
+				worksource__added_by=request.user,
+				status=Status.PENDING,
+			)
+			.exclude(
+				moderation_events__event_type=ModerationEventType.APPEAL,
+				moderation_events__status=FlagStatus.PENDING,
+			)
+			.distinct()
+			.count()
+		)
+		pending_appeals = ModerationEvent.objects.filter(
+			event_type=ModerationEventType.APPEAL,
+			by=request.user,
+			status=FlagStatus.PENDING,
+		).count()
+		total_slots_used = pending_uploads + (pending_appeals * 3)
+		if total_slots_used >= settings.OTODB_MAX_PENDING_WORKS:
+			return 429, {
+				'code': ErrorCode.NO_MORE_UPLOAD_SLOTS,
+				'data': {'message': 'Not enough upload slots'},
+			}
+
 	work = MediaWork.objects.create(
 		title=payload.title or src.title,
 		description=payload.description or src.description,
 		thumbnail_source=src,
 		rating=payload.rating,
+		status=Status.PENDING if not is_editor else Status.APPROVED,
 	)
-
 	_resolve_and_apply_tags(work, payload.tags)
+
+	if work.status == Status.PENDING:
+		transaction.on_commit(
+			lambda: enqueue_deferred(
+				resolve_expired_work, work.pk, delay=settings.OTODB_MODERATION_PERIOD
+			)
+		)
 
 	src.media = work
 	src.save()
@@ -347,12 +433,227 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	return work.pk
 
 
+def resolve_work(work: MediaWork):
+	"""Resolve a work's pending state and dismiss any pending flags/appeals."""
+	work.moderation_events.filter(
+		event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
+		status=FlagStatus.PENDING,
+	).update(status=FlagStatus.REJECTED)
+	work.status = Status.UNAPPROVED
+	work.save(update_fields=['status'])
+
+
+@work_router.post('approve', auth=django_auth)
+@user_is_editor
+def approve_work(request: AuthedHttpRequest, work_id: int):
+	"""Approve a pending or flagged work, making it active."""
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+
+	work.status = Status.APPROVED
+	work.save(update_fields=['status'])
+
+	work.moderation_events.filter(
+		event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
+	).update(status=FlagStatus.REJECTED)
+	work.moderation_events.filter(
+		event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+	).update(status=FlagStatus.SUCCEEDED)
+	work.moderation_events.filter(event_type=ModerationEventType.DISAPPROVAL).delete()
+
+	ModerationEvent.objects.create(
+		work=work, event_type=ModerationEventType.APPROVAL, by=request.user
+	)
+
+
+@work_router.post('disapprove', auth=django_auth)
+@user_is_editor
+def disapprove_work(request: AuthedHttpRequest, work_id: int, reason: str):
+	"""Record that a user reviewed a work and chose not to approve it."""
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	ModerationEvent.objects.update_or_create(
+		work=work,
+		by=request.user,
+		event_type=ModerationEventType.DISAPPROVAL,
+		defaults={'reason': reason},
+	)
+
+
+@work_router.post('resolve', auth=django_auth)
+@user_is_staff
+def resolve_work_admin(request: AuthedHttpRequest, work_id: int):
+	"""Immediate resolution by staff - same as expiry, skips the waiting period."""
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	resolve_work(work)
+	ModerationEvent.objects.create(
+		work=work,
+		event_type=ModerationEventType.MOD_ACTION,
+		status=ModerationAction.WORK_DELISTED,
+		by=request.user,
+	)
+
+
+@work_router.post(
+	'flag',
+	auth=django_auth,
+	throttle=[AuthRateThrottle(f'{settings.OTODB_MAX_FLAGGED_WORKS}/h')],
+	response={200: None, 400: Error, 429: Error},
+)
+@user_is_trusted
+def flag_work(request: AuthedHttpRequest, work_id: int, reason: str):
+	"""Flag an active work for re-review."""
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+
+	def validation_error(status, message):
+		return status, {
+			'code': ErrorCode.VALIDATION_ERROR,
+			'data': {'message': message},
+		}
+
+	if work.status != Status.APPROVED:
+		return validation_error(400, 'Cannot flag a non-approved work')
+	if work.moderation_events.filter(
+		event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
+	).exists():
+		return validation_error(400, 'Work already has a pending flag')
+	if work.moderation_events.filter(
+		event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+	).exists():
+		return validation_error(400, 'Cannot flag a work with a pending appeal')
+
+	is_editor = request.user.level >= Account.Levels.EDITOR
+	if not is_editor:
+		active_flags = ModerationEvent.objects.filter(
+			event_type=ModerationEventType.FLAG,
+			by=request.user,
+			status=FlagStatus.PENDING,
+		).count()
+		if active_flags >= settings.OTODB_MAX_FLAGGED_WORKS:
+			return validation_error(429, 'Active flag limit reached')
+
+	flag = ModerationEvent.objects.create(
+		work=work,
+		event_type=ModerationEventType.FLAG,
+		by=request.user,
+		reason=reason,
+		status=FlagStatus.PENDING,
+	)
+
+	transaction.on_commit(
+		lambda: enqueue_deferred(
+			resolve_expired_flag, flag.pk, delay=settings.OTODB_MODERATION_PERIOD
+		)
+	)
+
+
+@work_router.post(
+	'appeal',
+	auth=django_auth,
+	throttle=[AuthRateThrottle(f'{settings.OTODB_MAX_PENDING_WORKS}/h')],
+	response={200: None, 400: Error, 429: Error},
+)
+@user_is_trusted
+def appeal_work(request: AuthedHttpRequest, work_id: int, reason: str):
+	"""Appeal an unapproved work to send it back to the mod queue."""
+	work = get_object_or_404(
+		MediaWork.objects.filter(status=Status.UNAPPROVED), id=work_id
+	)
+	if work.moderation_events.filter(
+		event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+	).exists():
+		return 400, {
+			'code': ErrorCode.VALIDATION_ERROR,
+			'data': {'message': 'Work already has a pending appeal'},
+		}
+
+	is_editor = request.user.level >= Account.Levels.EDITOR
+	if not is_editor:
+		pending_uploads = (
+			MediaWork.active_objects.filter(
+				worksource__added_by=request.user,
+				status=Status.PENDING,
+			)
+			.exclude(
+				moderation_events__event_type=ModerationEventType.APPEAL,
+				moderation_events__status=FlagStatus.PENDING,
+			)
+			.distinct()
+			.count()
+		)
+		pending_appeals = ModerationEvent.objects.filter(
+			event_type=ModerationEventType.APPEAL,
+			by=request.user,
+			status=FlagStatus.PENDING,
+		).count()
+		total_slots_used = pending_uploads + (pending_appeals * 3)
+		if total_slots_used + 3 > settings.OTODB_MAX_PENDING_WORKS:
+			return 429, {
+				'code': ErrorCode.NO_MORE_UPLOAD_SLOTS,
+				'data': {'message': 'Not enough upload slots for appeal'},
+			}
+
+	appeal = ModerationEvent.objects.create(
+		work=work,
+		event_type=ModerationEventType.APPEAL,
+		by=request.user,
+		reason=reason,
+		status=FlagStatus.PENDING,
+	)
+
+	transaction.on_commit(
+		lambda: enqueue_deferred(
+			resolve_expired_appeal, appeal.pk, delay=settings.OTODB_MODERATION_PERIOD
+		)
+	)
+
+
+@work_router.get('queue', auth=django_auth, response=List[ThinWorkSchema])
+@user_is_editor
+@paginate
+def mod_queue(
+	request: AuthedHttpRequest,
+	mode: str = 'unseen',
+	category: ModQueueCategory | None = None,
+):
+	"""List works pending moderation: pending, flagged, or appealed."""
+	base = MediaWork.active_objects.all()
+
+	def pending_event_work_ids(event_type):
+		return ModerationEvent.objects.filter(
+			event_type=event_type, status=FlagStatus.PENDING
+		).values_list('work_id', flat=True)
+
+	if category == ModQueueCategory.PENDING:
+		qs = base.filter(status=Status.PENDING)
+	elif category == ModQueueCategory.FLAGGED:
+		qs = base.filter(id__in=pending_event_work_ids(ModerationEventType.FLAG))
+	elif category == ModQueueCategory.APPEALED:
+		qs = base.filter(id__in=pending_event_work_ids(ModerationEventType.APPEAL))
+	else:
+		pending = base.filter(status=Status.PENDING)
+		pending_flag_or_appeal_ids = ModerationEvent.objects.filter(
+			event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
+			status=FlagStatus.PENDING,
+		).values_list('work_id', flat=True)
+		qs = base.filter(
+			Q(id__in=pending) | Q(id__in=pending_flag_or_appeal_ids)
+		).distinct()
+
+	if mode == 'unseen':
+		qs = qs.exclude(
+			moderation_events__event_type=ModerationEventType.DISAPPROVAL,
+			moderation_events__by=request.user,
+		)
+
+	return qs.order_by('-id')
+
+
 @work_router.get('similar', response=List[ThinWorkSchema])
 def similar(request: AuthedHttpRequest, work_id: int):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	wt = work.tags.filter(deprecated=False).values_list('id', flat=True)
 	return (
-		MediaWork.active_objects.exclude(id=work_id)
+		MediaWork.active_objects.visible()
+		.exclude(id=work_id)
 		.filter(tags__in=Subquery(wt))
 		.annotate(shared_tags_count=Count('tags', filter=Q(tags__in=Subquery(wt))))
 		.order_by('-shared_tags_count')

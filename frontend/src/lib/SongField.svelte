@@ -10,7 +10,7 @@
 	interface Props {
 		value: components['schemas']['SongSchema'] | null | undefined;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-		oninput: Function | undefined;
+		oninput?: Function;
 	}
 	let { value = $bindable(undefined), oninput = undefined, ...props }: Props = $props();
 

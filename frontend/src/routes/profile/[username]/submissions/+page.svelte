@@ -11,7 +11,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
-	import { Levels, Platform, Status, WorkStatus } from '$lib/schema.js';
+	import { Levels, Platform, Status, WorkOrigin, WorkStatus } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
@@ -21,7 +21,7 @@
 	{#if data.user?.username === data.profile.username}
 		<a href="/upload/add">{m.fluffy_crisp_horse_imagine()}</a>
 	{/if}
-	<form method="get">
+	<form target="_self" method="get">
 		<table>
 			<caption>{m.livid_same_wren_create()}</caption>
 			<tbody>
@@ -50,9 +50,10 @@
 					<td>{m.large_polite_otter_thrive()}</td>
 					<td
 						><select name="origin" value={data.origin ?? null}
-							><option value={null}>---</option><option value={0}
+							><option value={null}>---</option><option value={WorkOrigin.Author}
 								>{WorkOriginNames[0]()}</option
-							><option value={1}>{WorkOriginNames[1]()}</option></select
+							><option value={WorkOrigin.Reupload}>{WorkOriginNames[1]()}</option
+							></select
 						></td
 					>
 				</tr>
@@ -78,7 +79,7 @@
 						>
 						<select name="dir" value={data.dir ?? '-'}
 							><option value="-">{m.kind_quick_bullock_push()}</option><option
-								value="+">{m.novel_orange_mantis_feast()}</option
+								value="">{m.novel_orange_mantis_feast()}</option
 							></select
 						>
 					</td>
@@ -139,9 +140,6 @@
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.civil_trick_oryx_clap()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if data.user}
-							<th>{m.mushy_proof_hornet_dig()}</th>
-						{/if}
 					</tr></thead
 				>
 				<tbody>
@@ -182,16 +180,12 @@
 						<th>{m.super_agent_pigeon_aim()}</th>
 						<th>{m.large_polite_otter_thrive()}</th>
 						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if data.user}
-							<th>{m.mushy_proof_hornet_dig()}</th>
-						{/if}
 					</tr></thead
 				>
 				<tbody>
 					{#each data.submissions.items as src, i (i)}
 						<tr>
 							<td class="whitespace-nowrap">{src.title || src.url}</td>
-							<!-- <td class="whitespace-nowrap">{src.rejection.reason}</td> `src.rejection` might be no longer exists. -->
 							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
 							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
 							<td class="whitespace-nowrap"

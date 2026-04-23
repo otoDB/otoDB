@@ -1,0 +1,19 @@
+@import '../../frontend/src/app.css';
+@source "./**/*.{html,svelte,ts}";
+@source "../../frontend/src/lib/WorkTag.svelte";
+@source "../../frontend/src/lib/WorkTagTree.svelte";
+
+:root {
+    color-scheme: light dark;
+}
+
+body {
+    width: 640px;
+    height: 400px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--otodb-color-bg-primary);
+    color: var(--otodb-color-content-primary);
+    font-family: system-ui, -apple-system, sans-serif;
+}

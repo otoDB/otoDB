@@ -1,10 +1,6 @@
 import client from '$lib/api.server';
 import { asEnum } from '$lib/enums';
-import {
-	PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0,
-	PathsApiProfileSubmissionsGetParametersQueryStanding,
-	Status
-} from '$lib/schema';
+import { PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0, Status } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -18,15 +14,16 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	const standing = asEnum(Status, paramStanding);
 
 	const paramDir = url.searchParams.get('dir') === '-' ? '-' : '';
-	const paramOrder = `${paramDir}${url.searchParams.get('order')}`;
+	const paramOrder = url.searchParams.get('order');
+	const paramDirOrder = `${paramDir}${paramOrder}`;
 
 	type Order = PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0;
 	const order: Order | null =
-		paramOrder &&
+		paramDirOrder &&
 		Object.values(PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0).includes(
-			paramOrder as Order
+			paramDirOrder as Order
 		)
-			? (paramOrder as Order)
+			? (paramDirOrder as Order)
 			: null;
 
 	const { data: submissions } = await client.GET('/api/profile/submissions', {
@@ -40,10 +37,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 				origin,
 				platform,
 				status,
-				standing:
-					// Duplicated enum
-					(standing as PathsApiProfileSubmissionsGetParametersQueryStanding | null) ??
-					undefined
+				standing: standing ?? undefined
 			}
 		}
 	});
@@ -51,7 +45,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		submissions,
 		page,
 		batch_size,
-		order,
+		order: paramOrder,
 		origin,
 		platform,
 		status,

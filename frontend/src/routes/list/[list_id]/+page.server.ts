@@ -1,6 +1,6 @@
 import client from '$lib/api.server';
+import { ModelsWithComments } from '$lib/schema';
 import type { PageServerLoad } from './$types';
-import { PathsApiCommentCommentsGetParametersQueryModel } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	const batch_size = 20;
@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			params: {
 				query: {
 					pk: +params.list_id,
-					model: PathsApiCommentCommentsGetParametersQueryModel.pool
+					model: ModelsWithComments.pool
 				}
 			},
 			fetch

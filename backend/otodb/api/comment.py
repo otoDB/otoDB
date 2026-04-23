@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from typing import Literal
+from enum import Enum
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -25,15 +25,15 @@ from otodb.discord import discord_comment
 
 comment_router = Router()
 
-ModelsWithComments = Literal[
-	'mediawork',
-	'account',
-	'pool',
-	'tagwork',
-	'tagsong',
-	'post',
-	'bulkrequest',
-]
+
+class ModelsWithComments(str, Enum):
+	WORK = 'mediawork'
+	PROFILE = 'account'
+	LIST = 'pool'
+	TAG = 'tagwork'
+	SONG_ATTRIBUTE = 'tagsong'
+	POST = 'post'
+	REQUEST = 'bulkrequest'
 
 
 class BaseCommentSchema(Schema):

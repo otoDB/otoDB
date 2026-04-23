@@ -58,6 +58,10 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			{
 				pathname: `work/${params.work_id}/history`,
 				title: m.giant_away_scallop_hike()
+			},
+			{
+				pathname: `work/${params.work_id}/moderation`,
+				title: m.minor_inner_lynx_adapt()
 			}
 		],
 		...data,

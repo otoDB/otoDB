@@ -22,7 +22,7 @@
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import {
 		MediaConnectionTypes,
-		PathsApiCommentCommentDeleteParametersQueryModel,
+		ModelsWithComments,
 		ProfileConnectionTypes,
 		WorkTagCategory,
 		type components
@@ -293,7 +293,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model={PathsApiCommentCommentDeleteParametersQueryModel.tagwork}
+		model={ModelsWithComments.tagwork}
 		pk={data.tag.id}
 	/>
 </Section>

@@ -258,6 +258,8 @@
 	"free_keen_wren_exhale": "通知",
 	"wacky_weird_swallow_trust": "現在通知はありません。",
 	"curly_these_mule_ascend": "新しい返信があります。",
+	"vexed_polite_haddock_trim": "スレッドでメンションされました。",
+	"aqua_safe_beetle_list": "あなたのリビジョンがスレッドで参照されました。",
 	"lost_game_mink_loop": "[無題]",
 	"misty_great_gazelle_comfort": "子曲属性",
 	"red_petty_jurgen_sway": "「{name}」の付いた曲",
@@ -282,5 +284,14 @@
 	"key_pink_pigeon_treasure": "おっと！",
 	"ideal_soft_falcon_urge": "問題が発生しました。詳細はブラウザのコンソールをご確認ください。",
 	"free_tiny_badger_breathe": "{#username/}が{#time/}に編集",
-	"light_sunny_kitten_slide": "{#time/}に編集"
+	"light_sunny_kitten_slide": "{#time/}に編集",
+	"noisy_proud_robin_gaze": "otoDBで見る",
+	"calm_silver_bison_wait": "読み込み中…",
+	"tiny_lost_marmot_roam": "この作品はデータベースにありません。",
+	"merry_brisk_owl_submit": "この作品をotoDBに登録する…",
+	"quiet_dusty_fox_search": "このページに接続が見つかりませんでした。",
+	"weary_broken_eagle_sigh": "データベースに接続できません。",
+	"grim_plain_crane_crash": "データの取得中にエラーが発生しました。",
+	"bright_nimble_eagle_glide": "ユーザー",
+	"careful_close_shad_achieve": "未分類"
 }

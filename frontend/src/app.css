@@ -23,6 +23,14 @@
 		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
 	}
 
+	tbody > tr:not(form *):hover {
+		background-color: color-mix(
+			in hsl,
+			var(--otodb-color-bg-fainter) 80%,
+			var(--otodb-color-content-primary)
+		);
+	}
+
 	ul {
 		@apply list-inside list-disc;
 	}

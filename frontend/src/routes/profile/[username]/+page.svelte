@@ -5,9 +5,9 @@
 	import CommentTree from '$lib/CommentTree.svelte';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { getVersionKey, versions } from '$lib/enums/version';
-	import { PathsApiCommentCommentDeleteParametersQueryModel } from '$lib/schema.js';
 	import { userLevelNames } from '$lib/enums/userLevel.js';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { ModelsWithComments } from '$lib/schema.js';
 
 	let { data } = $props();
 
@@ -69,7 +69,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model={PathsApiCommentCommentDeleteParametersQueryModel.account}
+		model={ModelsWithComments.account}
 		pk={data.profile.id}
 	/>
 </Section>

@@ -1,7 +1,7 @@
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import client from '$lib/api.server';
-import { getDisplayText } from '$lib/api';
+import clientRaw, { getDisplayText } from '$lib/api';
 
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
@@ -100,46 +100,42 @@ export const actions = {
 		}
 
 		if (editing_unavailable_source && metadata) {
-			let work_id: number | null = null;
-			try {
-				({ data: work_id } = await client.PUT('/api/upload/source', {
-					fetch,
-					params: { query: { source_id: +source } },
-					body: metadata
-				}));
-			} catch {
+			const { data: work_id, error: putError } = await clientRaw.PUT('/api/upload/source', {
+				fetch,
+				params: { query: { source_id: +source } },
+				body: metadata
+			});
+			if (putError)
 				return fail(400, {
 					url: link,
 					origin: is_official,
 					failed: true,
-					message: m.careful_lost_jaguar_dart()
+					code: putError.code,
+					errorData: putError.data ?? {}
 				});
-			}
 
 			redirect(303, `/work/${work_id}`);
 		}
 
-		let result: components['schemas']['SourceCreationResponse'] | null = null;
-		try {
-			({ data: result } = await client.POST('/api/upload/source', {
-				fetch,
-				params: {
-					query: {
-						url: link,
-						is_reupload: !is_official,
-						work_id: work ? +work : undefined
-					}
-				},
-				body: metadata
-			}));
-		} catch {
+		const { data: result, error: postError } = await clientRaw.POST('/api/upload/source', {
+			fetch,
+			params: {
+				query: {
+					url: link,
+					is_reupload: !is_official,
+					work_id: work ? +work : undefined
+				}
+			},
+			body: metadata
+		});
+		if (postError)
 			return fail(400, {
 				url: link,
 				origin: is_official,
 				failed: true,
-				message: m.careful_lost_jaguar_dart()
+				code: postError.code,
+				errorData: postError.data ?? {}
 			});
-		}
 
 		// Source already has a work -> redirect to work page
 		if (result.work_id) redirect(303, `/work/${result.work_id}`);

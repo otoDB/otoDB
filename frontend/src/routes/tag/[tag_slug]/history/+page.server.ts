@@ -1,6 +1,6 @@
 import client from '$lib/api.server';
+import { HistoricalEntities } from '$lib/schema';
 import type { PageServerLoad } from './$types';
-import { PathsApiHistoryHistoryGetParametersQueryEntity } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 	const { tag: tag } = await parent();
@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		fetch,
 		params: {
 			query: {
-				entity: PathsApiHistoryHistoryGetParametersQueryEntity.tagwork,
+				entity: HistoricalEntities.tagwork,
 				id: params.tag_slug
 			}
 		}
@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 			fetch,
 			params: {
 				query: {
-					entity: PathsApiHistoryHistoryGetParametersQueryEntity.mediasong,
+					entity: HistoricalEntities.mediasong,
 					id: tag.song.id
 				}
 			}

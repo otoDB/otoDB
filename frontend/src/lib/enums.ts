@@ -1,6 +1,9 @@
 import { m } from '$lib/paraglide/messages.js';
 import {
+	HistoricalEntities,
+	ModelsWithComments,
 	Platform,
+	PostEntities,
 	Rating,
 	SongRelationTypes,
 	SongTagCategory,
@@ -105,7 +108,11 @@ export type EntityModelType =
 	| 'pool'
 	| 'tagwork'
 	| 'tagsong'
-	| 'bulkrequest';
+	| 'bulkrequest'
+	// This is obvious but we make it explicit
+	| PostEntities
+	| ModelsWithComments
+	| HistoricalEntities;
 
 export const EntityModelRoutes: Record<EntityModelType, string> = {
 	mediawork: 'work',
@@ -135,10 +142,12 @@ export const RequestActions = {
 } as const;
 
 export type Enum<E> = Record<keyof E, number | string> & { [k: number]: string };
-export const enumValues = <E extends Enum<E>>(Enum: E): E[keyof E][] =>
-	Object.values(Enum).filter(
-		(value) => !(typeof value === 'string' && Enum[value as keyof E] !== undefined)
-	) as E[keyof E][];
+export const enumValues = <E extends Enum<E>>(Enum: E): E[keyof E][] => {
+	const Vs = Object.values(Enum);
+	return Vs.some((v) => typeof v === 'number')
+		? Vs.filter((v) => typeof v === 'number')
+		: (Vs as E[keyof E][]);
+};
 export const isEnum = <E extends Enum<E>>(Enum: E, v: string | number): boolean =>
 	enumValues(Enum).includes(v as E[keyof E]);
 export const asEnum = <E extends Enum<E>>(Enum: E, v: string | number): E[keyof E] | null =>

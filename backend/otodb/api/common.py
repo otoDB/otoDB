@@ -1,4 +1,4 @@
-from typing import Optional, Annotated, Literal, Self
+from typing import Optional, Annotated, Self
 from functools import wraps, lru_cache
 
 from pydantic import field_validator, create_model, model_validator
@@ -17,6 +17,7 @@ from otodb.models import (
 	MediaWork,
 	WorkSource,
 	MediaSong,
+	ModerationEvent,
 	Pool,
 	PoolItem,
 	WorkRelation,
@@ -42,6 +43,8 @@ from otodb.models.enums import (
 	Platform,
 	Preferences,
 	PreferencesValueTypeMap,
+	Status,
+	FlagStatus,
 )
 import re
 
@@ -113,6 +116,7 @@ class WorkSourceSchema(ModelSchema):
 			'description',
 			'source_id',
 			'uploader_id',
+			'is_pending',
 			'media',
 		]
 
@@ -148,6 +152,7 @@ class SongRelationSchema(RelationSchema):
 class SlimWorkSchema(ModelSchema):
 	id: int
 	thumbnail: str | None = None  # Exposed as property
+	status: Status
 
 	class Meta:
 		model = MediaWork
@@ -158,8 +163,11 @@ class WorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
+	pending_flag: 'PendingModerationEventSchema | None' = None
+	pending_appeal: 'PendingModerationEventSchema | None' = None
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 	rating: Rating
+	status: Status
 
 	class Meta:
 		model = MediaWork
@@ -170,6 +178,9 @@ class ThinWorkSchema(ModelSchema):
 	id: int
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
+	pending_flag: 'PendingModerationEventSchema | None' = None
+	pending_appeal: 'PendingModerationEventSchema | None' = None
+	status: Status
 
 	class Meta:
 		model = MediaWork
@@ -201,6 +212,18 @@ class SourceSuggestionsResponse(Schema):
 	source_tags: list[TagWorkSchema] = []
 	new_tags: list[TagWorkSchema] = []
 	creator_tags: list[TagWorkSchema] = []
+
+
+class PendingModerationEventSchema(ModelSchema):
+	"""Thin view of a pending flag or appeal exposed on a work."""
+
+	id: int
+	by: ProfileSchema | None = None
+	status: FlagStatus
+
+	class Meta:
+		model = ModerationEvent
+		fields = ['reason', 'date']
 
 
 class ListItemSchema(ModelSchema):
@@ -558,8 +581,3 @@ def restrict_internal(f):
 	contribute_operation_args(wrapper, 'otodb-internal-secret', str, Header(...))
 
 	return wrapper
-
-
-class EntitySchema(Schema):
-	id: int | str
-	entity: Literal['mediawork', 'tagwork', 'tagsong', 'mediasong', 'worksource']

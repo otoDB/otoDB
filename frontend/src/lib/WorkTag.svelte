@@ -28,6 +28,7 @@
 </script>
 
 <a
+	data-sveltekit-preload-data={onclick ? 'off' : undefined}
 	href="/tag/{tag.slug}"
 	class={[
 		'rounded-xl px-2',
@@ -37,24 +38,24 @@
 	]}
 	style="border-color: {WorkTagCategoryMap[sampleOverride ? WorkTagCategory.Source : category]
 		.color};"
-	data-sveltekit-preload-data={onclick ? 'off' : undefined}
 	onclick={(e) => {
 		if (onclick) {
 			e.preventDefault();
 			onclick(tag);
 		}
 	}}
-	>{getTagDisplayName(tag)}
+>
+	<span>{getTagDisplayName(tag)} </span>
+	{#if category === WorkTagCategory.Creator && tag.creator_roles?.length}
+		<span class="text-otodb-content-fainter ml-0.5 inline text-xs">
+			{#each tag.creator_roles as role, i (i)}{creatorRole[
+					resolveCreatorRoleKeyById(role)
+				].nameFn()}
+				{#if i < tag.creator_roles.length - 1},&nbsp{/if}
+			{/each}
+		</span>
+	{/if}
 </a>
-{#if category === WorkTagCategory.Creator && tag.creator_roles?.length}
-	<address class="text-otodb-content-fainter inline px-1 text-xs">
-		{#each tag.creator_roles as role, i (i)}{creatorRole[
-				resolveCreatorRoleKeyById(role)
-			].nameFn()}
-			{#if i < tag.creator_roles.length - 1},&nbsp{/if}
-		{/each}
-	</address>
-{/if}
 
 <style>
 	a {

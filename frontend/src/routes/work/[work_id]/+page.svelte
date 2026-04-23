@@ -11,10 +11,12 @@
 		WorkStatusNames
 	} from '$lib/enums';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
+	import { merge_paths } from '$lib/merge_paths';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import {
-		PathsApiCommentCommentDeleteParametersQueryModel,
+		ModelsWithComments,
+		Status,
 		WorkOrigin,
 		WorkRelationTypes,
 		WorkTagCategory,
@@ -25,8 +27,6 @@
 	import { callSavingToast } from '$lib/toast';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
-	import type { ComponentProps } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
@@ -70,35 +70,6 @@
 		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
 
-	const merge_paths = (
-		paths: (typeof groupedTags)[number][1]
-	): ComponentProps<typeof WorkTagTree>['tree'][] => {
-		const graph: SvelteMap<string, Set<string>> = new SvelteMap();
-		paths
-			.filter((p) => p.primary_path.length)
-			.forEach((path) =>
-				path.primary_path.forEach((p, i, a) => {
-					const next_node = (i + 1 === a.length ? path : a[i + 1]).slug;
-					if (graph.has(p.slug)) graph.get(p.slug)?.add(next_node);
-					else graph.set(p.slug, new Set([next_node]));
-				})
-			);
-		const traverse = (node: string): ComponentProps<typeof WorkTagTree>['tree'] => ({
-			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node)!,
-			real: paths.some((n) => n.slug === node),
-			children: Array.from(graph.get(node) ?? []).map((n) => traverse(n))
-		});
-		return [
-			...graph
-				.keys()
-				.filter((n) => !graph.values().some((s) => s.has(n)))
-				.map(traverse),
-			...paths
-				.filter((p) => p.primary_path.length === 0 && !graph.has(p.slug))
-				.map((n) => ({ node: n, real: true }))
-		];
-	};
-
 	const relTree = $derived(
 		data.relations[0].length > 0
 			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
@@ -109,6 +80,102 @@
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
+	{#if data.status === Status.Pending}
+		<div class="mb-3 border border-sky-600 bg-sky-600/10 px-4 py-2 font-bold text-sky-600">
+			{m.broad_inner_boar_devour()}
+		</div>
+	{:else if data.status === Status.Unapproved && data?.pending_appeal}
+		<div class="mb-3 border border-orange-600 bg-orange-600/10 px-4 py-2 text-orange-600">
+			<div class="font-bold">{m.quiet_tasty_earthworm_trip()}</div>
+			{#if data.pending_appeal.reason}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.weary_spicy_fly_attend(),
+						name: data.pending_appeal.reason
+					})}
+				</div>
+			{/if}
+			{#if data.pending_appeal.by}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.any_light_lamb_gaze(),
+						name: data.pending_appeal.by.username
+					})}
+				</div>
+			{/if}
+		</div>
+	{:else if data.status === Status.Unapproved}
+		<div class="mb-3 border border-red-600 bg-red-600/10 px-4 py-2 font-bold text-red-600">
+			{m.livid_main_bat_lift()}
+		</div>
+	{/if}
+	{#if data?.pending_flag}
+		<div class="mb-3 border border-yellow-600 bg-yellow-600/10 px-4 py-2 text-yellow-600">
+			<div class="font-bold">{m.small_red_finch_lock()}</div>
+			{#if data.pending_flag.reason}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.weary_spicy_fly_attend(),
+						name: data.pending_flag.reason
+					})}
+				</div>
+			{/if}
+			{#if data.pending_flag.by}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.arable_keen_rook_nail(),
+						name: data.pending_flag.by.username
+					})}
+				</div>
+			{/if}
+		</div>
+	{/if}
+	{#if data.user && (data.status === Status.Pending || data?.pending_flag || data?.pending_appeal)}
+		<div class="mb-3 flex flex-wrap gap-2">
+			{#if data.user.level >= 40}
+				<button
+					class="border border-green-600 px-3 py-1 text-green-600"
+					onclick={async () => {
+						const { error } = await client.POST('/api/work/approve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (!error) location.reload();
+					}}
+				>
+					Approve
+				</button>
+				<button
+					class="border px-3 py-1"
+					onclick={async () => {
+						const reason = prompt(m.honest_tangy_butterfly_dream());
+						if (!reason) return;
+						await client.POST('/api/work/disapprove', {
+							fetch,
+							params: { query: { work_id: data.id, reason: reason } }
+						});
+					}}
+				>
+					{m.alive_blue_marlin_push()}
+				</button>
+			{/if}
+			{#if data.user.level >= 50}
+				<button
+					class="border border-red-600 px-3 py-1 text-red-600"
+					onclick={async () => {
+						if (!confirm(m.cool_house_barbel_cheer())) return;
+						const { error } = await client.POST('/api/work/resolve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (!error) location.reload();
+					}}
+				>
+					{m.proof_deft_reindeer_smile()}
+				</button>
+			{/if}
+		</div>
+	{/if}
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
@@ -217,6 +284,76 @@
 										{/if}
 									</td>
 								</tr>
+								{#if data.status === Status.Approved && !data?.pending_flag}
+									<tr>
+										<th class="w-24">{m.nimble_gaudy_scallop_fold()}</th>
+										<td>
+											<button
+												onclick={async () => {
+													const reason = prompt(
+														m.royal_big_chipmunk_absorb()
+													);
+													if (!reason?.trim()) {
+														// Show message
+														alert(
+															m.fun_bland_llama_twirl({
+																thing: m.royal_big_chipmunk_absorb()
+															})
+														);
+														return;
+													}
+													const { error } = await client.POST(
+														'/api/work/flag',
+														{
+															fetch,
+															params: {
+																query: { work_id: data.id, reason }
+															}
+														}
+													);
+													if (!error) location.reload();
+												}}
+											>
+												{m.nimble_gaudy_scallop_fold()}
+											</button>
+										</td>
+									</tr>
+								{/if}
+								{#if data.status === Status.Unapproved && !data?.pending_appeal}
+									<tr>
+										<th class="w-24">{m.key_last_racoon_clasp()}</th>
+										<td>
+											<button
+												onclick={async () => {
+													const reason = prompt(
+														m.zippy_dark_mayfly_cut()
+													);
+													if (!reason?.trim()) {
+														// Show message
+														alert(
+															m.fun_bland_llama_twirl({
+																thing: m.zippy_dark_mayfly_cut()
+															})
+														);
+														return;
+													}
+													const { error } = await client.POST(
+														'/api/work/appeal',
+														{
+															fetch,
+															params: {
+																query: { work_id: data.id, reason }
+															}
+														}
+													);
+													if (!error) location.reload();
+												}}
+											>
+												{m.key_last_racoon_clasp()}
+											</button>
+										</td>
+									</tr>
+								{/if}
 							</tbody>
 						</table>
 					</div>
@@ -366,7 +503,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model={PathsApiCommentCommentDeleteParametersQueryModel.mediawork}
+		model={ModelsWithComments.mediawork}
 		pk={data.id}
 	/>
 </Section>

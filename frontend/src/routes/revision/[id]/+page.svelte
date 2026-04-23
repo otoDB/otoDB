@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
 	import {
 		buildEntityRoutes,
@@ -26,7 +26,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { Levels } from '$lib/schema.js';
+	import { Levels, PostCategory } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
@@ -162,6 +162,15 @@
 				invalidateAll();
 			}}>Revert changes made in this revision</button
 		>{/if}
+	{#if data.user && data.user.username !== data.revision.user}
+		<button
+			onclick={() =>
+				goto(
+					`/post/new?category=${PostCategory.Gardening}&entity=@${data.revision.user}&title=${m.silly_quiet_fireant_quell({ id: data.revision.id })}`
+				)}>{m.frail_loose_gecko_play({ user: data.revision.user })}</button
+		>
+	{/if}
+
 	<ul class="my-5">
 		{#each data.routes as { route, entities }, i (i)}
 			<li>{routeNames[route]()}</li>

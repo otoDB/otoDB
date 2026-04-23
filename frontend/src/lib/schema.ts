@@ -367,6 +367,126 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve Work
+         * @description Approve a pending or flagged work, making it active.
+         */
+        post: operations["otodb_api_work_approve_work"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/disapprove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disapprove Work
+         * @description Record that a user reviewed a work and chose not to approve it.
+         */
+        post: operations["otodb_api_work_disapprove_work"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve Work Admin
+         * @description Immediate resolution by staff - same as expiry, skips the waiting period.
+         */
+        post: operations["otodb_api_work_resolve_work_admin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/flag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Flag Work
+         * @description Flag an active work for re-review.
+         */
+        post: operations["otodb_api_work_flag_work"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/appeal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Appeal Work
+         * @description Appeal an unapproved work to send it back to the mod queue.
+         */
+        post: operations["otodb_api_work_appeal_work"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/work/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mod Queue
+         * @description List works pending moderation: pending, flagged, or appealed.
+         */
+        get: operations["otodb_api_work_mod_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/similar": {
         parameters: {
             query?: never;
@@ -481,6 +601,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/upload/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject Source
+         * @description Reject a pending source on an existing work. Unbinds the source.
+         */
+        post: operations["otodb_api_source_reject_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/upload/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve Source
+         * @description Approve a pending source on an existing work.
+         */
+        post: operations["otodb_api_source_approve_source"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/upload/list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Sources
+         * @description List sources with pagination, filterable by user, binding, and pending status.
+         */
+        get: operations["otodb_api_source_list_sources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile/profile": {
         parameters: {
             query?: never;
@@ -490,6 +670,23 @@ export interface paths {
         };
         /** Profile */
         get: operations["otodb_api_profile_profile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/profile/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search */
+        get: operations["otodb_api_profile_search"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1456,6 +1653,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/moderation/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Moderation Events */
+        get: operations["otodb_api_moderation_moderation_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1637,6 +1851,11 @@ export interface components {
              */
             offset: number;
         };
+        /**
+         * FlagStatus
+         * @enum {integer}
+         */
+        FlagStatus: FlagStatus;
         /** PagedThinWorkSchema */
         PagedThinWorkSchema: {
             /** Items */
@@ -1644,6 +1863,31 @@ export interface components {
             /** Count */
             count: number;
         };
+        /**
+         * PendingModerationEventSchema
+         * @description Thin view of a pending flag or appeal exposed on a work.
+         */
+        PendingModerationEventSchema: {
+            /** Id */
+            id: number;
+            by?: components["schemas"]["ProfileSchema"] | null;
+            status: components["schemas"]["FlagStatus"];
+            /**
+             * Reason
+             * @default
+             */
+            reason: string | null;
+            /**
+             * Date
+             * Format: date-time
+             */
+            date: string;
+        };
+        /**
+         * Status
+         * @enum {integer}
+         */
+        Status: Status;
         /** TagWorkInstanceThinSchema */
         TagWorkInstanceThinSchema: {
             /** Id */
@@ -1671,6 +1915,9 @@ export interface components {
             tags: components["schemas"]["TagWorkInstanceThinSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
+            pending_flag?: components["schemas"]["PendingModerationEventSchema"] | null;
+            pending_appeal?: components["schemas"]["PendingModerationEventSchema"] | null;
+            status: components["schemas"]["Status"];
             /** Title */
             title?: string | null;
         };
@@ -1685,6 +1932,7 @@ export interface components {
             id: number;
             /** Thumbnail */
             thumbnail?: string | null;
+            status: components["schemas"]["Status"];
             /** Title */
             title?: string | null;
         };
@@ -1709,12 +1957,15 @@ export interface components {
             tags: components["schemas"]["TagWorkInstanceSchema"][];
             /** Thumbnail */
             thumbnail?: string | null;
+            pending_flag?: components["schemas"]["PendingModerationEventSchema"] | null;
+            pending_appeal?: components["schemas"]["PendingModerationEventSchema"] | null;
             /** Relations */
             relations: [
                 components["schemas"]["WorkRelationSchema"][],
                 components["schemas"]["SlimWorkSchema"][]
             ];
             rating: components["schemas"]["Rating"];
+            status: components["schemas"]["Status"];
             /** Title */
             title?: string | null;
             /** Description */
@@ -1785,6 +2036,11 @@ export interface components {
             source_id?: string | null;
             /** Uploader Id */
             uploader_id?: string | null;
+            /**
+             * Is Pending
+             * @default false
+             */
+            is_pending: boolean;
             /** Media */
             media?: number | null;
         };
@@ -1809,6 +2065,11 @@ export interface components {
              */
             tags: components["schemas"]["TagWorkInstanceInSchema"][];
         };
+        /**
+         * ModQueueCategory
+         * @enum {integer}
+         */
+        ModQueueCategory: ModQueueCategory;
         /**
          * WorkSourceMetadataSchema
          * @description Manual WorkSource metadata input
@@ -1860,6 +2121,47 @@ export interface components {
              */
             creator_tags: components["schemas"]["TagWorkSchema"][];
         };
+        /** PagedWorkSourceSchema */
+        PagedWorkSourceSchema: {
+            /** Items */
+            items: components["schemas"]["WorkSourceSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** ProfileSearchFilterSchema */
+        ProfileSearchFilterSchema: {
+            /** Username */
+            username?: string | null;
+            level?: components["schemas"]["Levels"] | null;
+        };
+        /** PagedProfileIndexSchema */
+        PagedProfileIndexSchema: {
+            /** Items */
+            items: components["schemas"]["ProfileIndexSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** ProfileIndexSchema */
+        ProfileIndexSchema: {
+            /** Id */
+            id: number;
+            level: components["schemas"]["Levels"];
+            /** Works Count */
+            works_count: number;
+            /** Revisions Count */
+            revisions_count: number;
+            /** Posts Count */
+            posts_count: number;
+            /** Comments Count */
+            comments_count: number;
+            /** Username */
+            username: string;
+            /**
+             * Date Created
+             * Format: date-time
+             */
+            date_created?: string;
+        };
         /** ListSchema */
         ListSchema: {
             /** Id */
@@ -1885,11 +2187,6 @@ export interface components {
             /** Dead */
             dead?: boolean | null;
         };
-        /**
-         * Status
-         * @enum {integer}
-         */
-        Status: Status;
         /** SubmissionsFilterSchema */
         SubmissionsFilterSchema: {
             platform?: components["schemas"]["Platform"] | null;
@@ -1933,20 +2230,36 @@ export interface components {
             source_id?: string | null;
             /** Uploader Id */
             uploader_id?: string | null;
+            /**
+             * Is Pending
+             * @default false
+             */
+            is_pending: boolean;
             /** Media */
             media: number | null;
         };
+        /**
+         * ModelsWithComments
+         * @enum {string}
+         */
+        ModelsWithComments: ModelsWithComments;
+        /**
+         * NotificationReason
+         * @enum {integer}
+         */
+        NotificationReason: NotificationReason;
         /** NotificationSchema */
         NotificationSchema: {
             /** Id */
             id: number;
             /** Comment */
             comment: [
-                NotificationSchemaCommentAnyOf0,
+                components["schemas"]["ModelsWithComments"],
                 number | string
             ] | null;
             /** Post */
             post?: number | null;
+            reason: components["schemas"]["NotificationReason"];
             /**
              * Dismissed
              * @default false
@@ -1986,13 +2299,6 @@ export interface components {
         PagedListItemSchema: {
             /** Items */
             items: components["schemas"]["ListItemSchema"][];
-            /** Count */
-            count: number;
-        };
-        /** PagedWorkSourceSchema */
-        PagedWorkSourceSchema: {
-            /** Items */
-            items: components["schemas"]["WorkSourceSchema"][];
             /** Count */
             count: number;
         };
@@ -2114,6 +2420,11 @@ export interface components {
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
         };
+        /**
+         * TagTypes
+         * @enum {string}
+         */
+        TagTypes: TagTypes;
         /** SongInSchema */
         SongInSchema: {
             /** Title */
@@ -2323,16 +2634,6 @@ export interface components {
             /** Has Connection */
             has_connection: boolean;
         };
-        /** EntitySchema */
-        EntitySchema: {
-            /** Id */
-            id: number | string;
-            /**
-             * Entity
-             * @enum {string}
-             */
-            entity: EntitySchemaEntity;
-        };
         /**
          * PostCategory
          * @enum {integer}
@@ -2350,6 +2651,17 @@ export interface components {
              */
             modified: string;
         };
+        /**
+         * PostEntities
+         * @enum {string}
+         */
+        PostEntities: PostEntities;
+        /** PostEntitySchema */
+        PostEntitySchema: {
+            /** Id */
+            id: number | string;
+            entity: components["schemas"]["PostEntities"];
+        };
         /** PostSchema */
         PostSchema: {
             added_by: components["schemas"]["ProfileSchema"];
@@ -2359,7 +2671,7 @@ export interface components {
              * Entities
              * @default []
              */
-            entities: components["schemas"]["EntitySchema"][];
+            entities: components["schemas"]["PostEntitySchema"][];
             edited_by?: components["schemas"]["ProfileSchema"] | null;
             category: components["schemas"]["PostCategory"];
             /** Title */
@@ -2380,7 +2692,7 @@ export interface components {
             /** Target Users */
             target_users: string[];
             /** Entities */
-            entities: components["schemas"]["EntitySchema"][];
+            entities: components["schemas"]["PostEntitySchema"][];
         };
         /** PostEditSchema */
         PostEditSchema: {
@@ -2392,7 +2704,7 @@ export interface components {
             post: string;
             lang: components["schemas"]["LanguageTypes"];
             /** Entities */
-            entities: components["schemas"]["EntitySchema"][];
+            entities: components["schemas"]["PostEntitySchema"][];
         };
         /** PostOverviewSchema */
         PostOverviewSchema: {
@@ -2412,7 +2724,7 @@ export interface components {
              * Entities
              * @default []
              */
-            entities: components["schemas"]["EntitySchema"][];
+            entities: components["schemas"]["PostEntitySchema"][];
             category: components["schemas"]["PostCategory"];
             /** Title */
             title: string;
@@ -2450,11 +2762,7 @@ export interface components {
         };
         /** CommentInSchema */
         CommentInSchema: {
-            /**
-             * Model
-             * @enum {string}
-             */
-            model: CommentInSchemaModel;
+            model: components["schemas"]["ModelsWithComments"];
             /** Pk */
             pk: number;
             /** Comment Text */
@@ -2558,6 +2866,17 @@ export interface components {
             /** Target Value */
             target_value?: string | null;
         };
+        /**
+         * HistoricalEntities
+         * @enum {string}
+         */
+        HistoricalEntities: HistoricalEntities;
+        /** HistoricalEntitySchema */
+        HistoricalEntitySchema: {
+            /** Id */
+            id: number | string;
+            entity: components["schemas"]["HistoricalEntities"];
+        };
         /** BulkRequestSchema */
         BulkRequestSchema: {
             /** Requests */
@@ -2581,6 +2900,44 @@ export interface components {
             /** Command */
             command: number;
         };
+        /** ModerationEventBySchema */
+        ModerationEventBySchema: {
+            /** Id */
+            id: number;
+            /** Username */
+            username: string;
+        };
+        /** ModerationEventResponse */
+        ModerationEventResponse: {
+            /** Items */
+            items: components["schemas"]["ModerationEventSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** ModerationEventSchema */
+        ModerationEventSchema: {
+            event_type: components["schemas"]["ModerationEventType"];
+            /** Event Id */
+            event_id: number;
+            /** Work Id */
+            work_id: number | null;
+            /** Source Id */
+            source_id: number | null;
+            by: components["schemas"]["ModerationEventBySchema"] | null;
+            /** Reason */
+            reason: string;
+            status: components["schemas"]["FlagStatus"] | null;
+            /**
+             * Event At
+             * Format: date-time
+             */
+            event_at: string;
+        };
+        /**
+         * ModerationEventType
+         * @enum {integer}
+         */
+        ModerationEventType: ModerationEventType;
     };
     responses: never;
     parameters: never;
@@ -2870,6 +3227,7 @@ export interface operations {
                 query: string;
                 tags?: string | null;
                 order?: PathsApiWorkSearchGetParametersQueryOrderAnyOf0 | null;
+                queue?: PathsApiWorkSearchGetParametersQueryQueueAnyOf0 | null;
                 limit?: number;
                 offset?: number;
             };
@@ -3177,6 +3535,170 @@ export interface operations {
             };
         };
     };
+    otodb_api_work_approve_work: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_disapprove_work: {
+        parameters: {
+            query: {
+                work_id: number;
+                reason: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_resolve_work_admin: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_work_flag_work: {
+        parameters: {
+            query: {
+                work_id: number;
+                reason: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    otodb_api_work_appeal_work: {
+        parameters: {
+            query: {
+                work_id: number;
+                reason: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    otodb_api_work_mod_queue: {
+        parameters: {
+            query?: {
+                mode?: string;
+                category?: components["schemas"]["ModQueueCategory"] | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedThinWorkSchema"];
+                };
+            };
+        };
+    };
     otodb_api_work_similar: {
         parameters: {
             query: {
@@ -3223,7 +3745,7 @@ export interface operations {
         parameters: {
             query: {
                 source_id: number;
-                status: PathsApiUploadOriginPutParametersQueryStatus;
+                status: components["schemas"]["WorkOrigin"];
             };
             header?: never;
             path?: never;
@@ -3376,6 +3898,74 @@ export interface operations {
             };
         };
     };
+    otodb_api_source_reject_source: {
+        parameters: {
+            query: {
+                source_id: number;
+                reason: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_source_approve_source: {
+        parameters: {
+            query: {
+                source_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    otodb_api_source_list_sources: {
+        parameters: {
+            query?: {
+                user_id?: number | null;
+                unbound?: boolean | null;
+                is_pending?: boolean | null;
+                platform?: number | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedWorkSourceSchema"];
+                };
+            };
+        };
+    };
     otodb_api_profile_profile: {
         parameters: {
             query: {
@@ -3394,6 +3984,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileSchema"];
+                };
+            };
+        };
+    };
+    otodb_api_profile_search: {
+        parameters: {
+            query?: {
+                username?: string | null;
+                level?: components["schemas"]["Levels"] | null;
+                order?: PathsApiProfileSearchGetParametersQueryOrder;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedProfileIndexSchema"];
                 };
             };
         };
@@ -3495,7 +4111,7 @@ export interface operations {
                 origin?: components["schemas"]["WorkOrigin"] | null;
                 status?: components["schemas"]["WorkStatus"] | null;
                 order?: PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 | null;
-                standing?: PathsApiProfileSubmissionsGetParametersQueryStanding;
+                standing?: components["schemas"]["Status"];
                 limit?: number;
                 offset?: number;
             };
@@ -3961,7 +4577,7 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                type?: PathsApiTagTagDeleteParametersQueryType;
+                type?: components["schemas"]["TagTypes"];
             };
             header?: never;
             path?: never;
@@ -4036,7 +4652,7 @@ export interface operations {
             query: {
                 into_tag: string;
                 delete: boolean;
-                type?: PathsApiTagAliasPostParametersQueryType;
+                type?: components["schemas"]["TagTypes"];
             };
             header?: never;
             path?: never;
@@ -4063,7 +4679,7 @@ export interface operations {
         parameters: {
             query: {
                 tag_slug: string;
-                type?: PathsApiTagTag_aliasesPostParametersQueryType;
+                type?: components["schemas"]["TagTypes"];
             };
             header?: never;
             path?: never;
@@ -4600,7 +5216,7 @@ export interface operations {
     otodb_api_post_category: {
         parameters: {
             query: {
-                category: PathsApiPostCategoryGetParametersQueryCategory;
+                category: components["schemas"]["PostCategory"];
                 limit?: number;
                 offset?: number;
             };
@@ -4645,7 +5261,7 @@ export interface operations {
         parameters: {
             query: {
                 id: number | string;
-                entity: PathsApiPostThreadsGetParametersQueryEntity;
+                entity: components["schemas"]["PostEntities"];
                 limit?: number;
                 offset?: number;
             };
@@ -4717,7 +5333,7 @@ export interface operations {
     otodb_api_comment_get: {
         parameters: {
             query: {
-                model: PathsApiCommentCommentsGetParametersQueryModel;
+                model: components["schemas"]["ModelsWithComments"];
                 pk: number;
             };
             header?: never;
@@ -4788,7 +5404,7 @@ export interface operations {
     otodb_api_comment_delete: {
         parameters: {
             query: {
-                model: PathsApiCommentCommentDeleteParametersQueryModel;
+                model: components["schemas"]["ModelsWithComments"];
                 pk: number;
                 comment_id: number;
             };
@@ -4911,7 +5527,7 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["EntitySchema"] | null;
+                "application/json": components["schemas"]["HistoricalEntitySchema"] | null;
             };
         };
         responses: {
@@ -4949,7 +5565,7 @@ export interface operations {
         parameters: {
             query: {
                 id: number | string;
-                entity: PathsApiHistoryHistoryGetParametersQueryEntity;
+                entity: components["schemas"]["HistoricalEntities"];
                 limit?: number;
                 offset?: number;
             };
@@ -4996,7 +5612,7 @@ export interface operations {
         parameters: {
             query: {
                 request_id: number;
-                status: PathsApiRequestConfirmPostParametersQueryStatus;
+                status: components["schemas"]["Status"];
             };
             header?: never;
             path?: never;
@@ -5035,6 +5651,32 @@ export interface operations {
             };
         };
     };
+    otodb_api_moderation_moderation_events: {
+        parameters: {
+            query?: {
+                work_id?: number | null;
+                source_id?: number | null;
+                user_id?: number | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModerationEventResponse"];
+                };
+            };
+        };
+    };
 }
 export enum PathsApiWorkSearchGetParametersQueryOrderAnyOf0 {
     id = "id",
@@ -5042,76 +5684,31 @@ export enum PathsApiWorkSearchGetParametersQueryOrderAnyOf0 {
     pub = "pub",
     ValueMinuspub = "-pub"
 }
-export enum PathsApiUploadOriginPutParametersQueryStatus {
-    Author = 0,
-    Reupload = 1
+export enum PathsApiWorkSearchGetParametersQueryQueueAnyOf0 {
+    unseen = "unseen",
+    all = "all"
+}
+export enum PathsApiProfileSearchGetParametersQueryOrder {
+    username = "username",
+    ValueMinususername = "-username",
+    date_created = "date_created",
+    ValueMinusdate_created = "-date_created",
+    level = "level",
+    ValueMinuslevel = "-level",
+    works_count = "works_count",
+    ValueMinusworks_count = "-works_count",
+    revisions_count = "revisions_count",
+    ValueMinusrevisions_count = "-revisions_count",
+    posts_count = "posts_count",
+    ValueMinusposts_count = "-posts_count",
+    comments_count = "comments_count",
+    ValueMinuscomments_count = "-comments_count"
 }
 export enum PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 {
     id = "id",
     ValueMinusid = "-id",
     published_date = "published_date",
     ValueMinuspublished_date = "-published_date"
-}
-export enum PathsApiProfileSubmissionsGetParametersQueryStanding {
-    Pending = 0,
-    Approved = 1,
-    Unapproved = 2
-}
-export enum PathsApiTagTagDeleteParametersQueryType {
-    work = "work",
-    song = "song"
-}
-export enum PathsApiTagAliasPostParametersQueryType {
-    work = "work",
-    song = "song"
-}
-export enum PathsApiTagTag_aliasesPostParametersQueryType {
-    work = "work",
-    song = "song"
-}
-export enum PathsApiPostCategoryGetParametersQueryCategory {
-    Announcement = 0,
-    Feature_Request = 1,
-    Bug_Report = 2,
-    Gardening = 3,
-    General = 4
-}
-export enum PathsApiPostThreadsGetParametersQueryEntity {
-    mediawork = "mediawork",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    mediasong = "mediasong",
-    worksource = "worksource"
-}
-export enum PathsApiCommentCommentsGetParametersQueryModel {
-    mediawork = "mediawork",
-    account = "account",
-    pool = "pool",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    post = "post",
-    bulkrequest = "bulkrequest"
-}
-export enum PathsApiCommentCommentDeleteParametersQueryModel {
-    mediawork = "mediawork",
-    account = "account",
-    pool = "pool",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    post = "post",
-    bulkrequest = "bulkrequest"
-}
-export enum PathsApiHistoryHistoryGetParametersQueryEntity {
-    mediawork = "mediawork",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    mediasong = "mediasong",
-    worksource = "worksource"
-}
-export enum PathsApiRequestConfirmPostParametersQueryStatus {
-    Pending = 0,
-    Approved = 1,
-    Unapproved = 2
 }
 export enum ErrorCode {
     Login_Failed = 10000,
@@ -5122,7 +5719,10 @@ export enum ErrorCode {
     Bad_Url = 10005,
     Source_Has_Work = 10006,
     No_Matching_Entities = 10007,
-    Name_Slug_Mismatch = 10008
+    Name_Slug_Mismatch = 10008,
+    Source_Unapproved = 10009,
+    Source_Flagged = 10010,
+    No_More_Upload_Slots = 10011
 }
 export enum LanguageTypes {
     N_A = 0,
@@ -5148,13 +5748,24 @@ export enum ThemePref {
     Re_Sample = 5
 }
 export enum WorkTagCategory {
-    General = 0,
+    Uncategorized = 0,
     Event = 1,
     Song = 2,
     Source = 3,
     Creator = 4,
     Meta = 5,
-    Media = 6
+    Media = 6,
+    General = 7
+}
+export enum FlagStatus {
+    Value0 = 0,
+    Value1 = 1,
+    Value2 = 2
+}
+export enum Status {
+    Pending = 0,
+    Approved = 1,
+    Unapproved = 2
 }
 export enum Rating {
     General = 0,
@@ -5183,6 +5794,11 @@ export enum WorkStatus {
     Available = 0,
     Down = 1
 }
+export enum ModQueueCategory {
+    Pending = 0,
+    Flagged = 1,
+    Appealed = 2
+}
 export enum ProfileConnectionTypes {
     Website = 0,
     Niconico = 1,
@@ -5192,12 +5808,7 @@ export enum ProfileConnectionTypes {
     Bluesky = 5,
     Soundcloud = 6
 }
-export enum Status {
-    Pending = 0,
-    Approved = 1,
-    Unapproved = 2
-}
-export enum NotificationSchemaCommentAnyOf0 {
+export enum ModelsWithComments {
     mediawork = "mediawork",
     account = "account",
     pool = "pool",
@@ -5206,11 +5817,20 @@ export enum NotificationSchemaCommentAnyOf0 {
     post = "post",
     bulkrequest = "bulkrequest"
 }
+export enum NotificationReason {
+    Reply = 0,
+    Mention = 1,
+    Thread_Linked = 2
+}
 export enum SongTagCategory {
     General = 0,
     Genre = 1,
     Author = 2,
     Meta = 3
+}
+export enum TagTypes {
+    work = "work",
+    song = "song"
 }
 export enum MediaConnectionTypes {
     AniKore = 1,
@@ -5255,13 +5875,6 @@ export enum SongConnectionTypes {
     NND_Medley_Wiki = 30,
     The_Mod_Archive = 40
 }
-export enum EntitySchemaEntity {
-    mediawork = "mediawork",
-    tagwork = "tagwork",
-    tagsong = "tagsong",
-    mediasong = "mediasong",
-    worksource = "worksource"
-}
 export enum PostCategory {
     Announcement = 0,
     Feature_Request = 1,
@@ -5269,14 +5882,13 @@ export enum PostCategory {
     Gardening = 3,
     General = 4
 }
-export enum CommentInSchemaModel {
+export enum PostEntities {
     mediawork = "mediawork",
-    account = "account",
-    pool = "pool",
     tagwork = "tagwork",
     tagsong = "tagsong",
-    post = "post",
-    bulkrequest = "bulkrequest"
+    mediasong = "mediasong",
+    worksource = "worksource",
+    account = "account"
 }
 export enum Route {
     Unknown = 0,
@@ -5306,4 +5918,18 @@ export enum Route {
     Work_Source_Reject = 65,
     Work_Source_Update = 66,
     Rollback = 100
+}
+export enum HistoricalEntities {
+    mediawork = "mediawork",
+    tagwork = "tagwork",
+    tagsong = "tagsong",
+    mediasong = "mediasong",
+    worksource = "worksource"
+}
+export enum ModerationEventType {
+    Value0 = 0,
+    Value1 = 1,
+    Value2 = 2,
+    Value3 = 3,
+    Value4 = 4
 }

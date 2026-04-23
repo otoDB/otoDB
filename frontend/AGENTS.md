@@ -30,6 +30,7 @@ All three commands must succeed without errors before committing. Do not skip or
 ## Coding
 
 - When importing components or libraries in `lib`, use `$lib` for import path.
+- Write story by Typescript. e.g. `*.stories.ts`
 
 ## Boundaries
 

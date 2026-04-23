@@ -7,7 +7,8 @@
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { ThemePref } from '$lib/schema.js';
 	import { themes } from '$lib/themes/themes.js';
-	import { getLocalPref, set_lang, updateLocalPref } from '$lib/ui.js';
+	import { getLocalPref, updateLocalPref } from '$lib/ui.js';
+	import { set_lang } from '$lib/set_lang.js';
 
 	let { data } = $props();
 

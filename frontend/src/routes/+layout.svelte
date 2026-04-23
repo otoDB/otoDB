@@ -13,8 +13,9 @@
 	import { Levels, ThemePref } from '$lib/schema';
 	import { themes } from '$lib/themes/themes';
 	import { callErrorToast } from '$lib/toast';
-	import { clickOutside, getLocalPref, getLocalPrefs, set_lang, updateLocalPref } from '$lib/ui';
+	import { clickOutside, getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
+	import { set_lang } from '$lib/set_lang';
 	import '../app.css';
 
 	let { data, children } = $props();

@@ -10,7 +10,8 @@ const preview: Preview = {
 				color: /(background|color)$/i,
 				date: /Date$/i
 			}
-		}
+		},
+		backgrounds: { disable: true }
 	},
 	globalTypes: {
 		lang: {
@@ -34,6 +35,11 @@ const preview: Preview = {
 		(story, ctx) => {
 			if (ctx.globals?.lang) setLocale(ctx.globals.lang);
 			return story();
+		},
+		(story) => {
+			const s = story();
+			document.body.style.backgroundColor = 'var(--otodb-color-bg-primary)';
+			return s;
 		},
 		withThemeByDataAttribute({
 			themes: {

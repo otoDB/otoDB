@@ -2,8 +2,10 @@
 Prints the OpenAPI Schema to stdout.
 """
 
-from django.core.management.base import BaseCommand
 import json
+
+from django.core.management.base import BaseCommand
+
 from otodb.api import api
 
 

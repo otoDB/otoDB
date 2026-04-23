@@ -1,28 +1,27 @@
 from typing import Generator
-import orjson
 
+import ninja
+import orjson
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.cache import cache_page
-
-import ninja
 from ninja import NinjaAPI
 from ninja.decorators import decorate_view
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
-from ninja.throttling import AuthRateThrottle, AnonRateThrottle
+from ninja.throttling import AnonRateThrottle, AuthRateThrottle
 
 from .auth import auth_router
-from .work import work_router
-from .source import source_router
-from .profile import profile_router
-from .list import list_router
-from .tag import tag_router
-from .post import post_router
 from .comment import comment_router
 from .history import history_router
-from .requests import request_router
+from .list import list_router
 from .moderation import moderation_router
+from .post import post_router
+from .profile import profile_router
+from .requests import request_router
+from .source import source_router
+from .tag import tag_router
+from .work import work_router
 
 
 def flatten_properties(
@@ -131,7 +130,7 @@ api.add_router('/moderation/', moderation_router)
 @api.get('stats', response=tuple[int, int, int, int])
 @decorate_view(cache_page(60))
 def statistics(request):
-	from otodb.models import MediaWork, TagWork, MediaSong, Pool
+	from otodb.models import MediaSong, MediaWork, Pool, TagWork
 
 	return [
 		MediaWork.objects.filter(moved_to__isnull=True).count(),

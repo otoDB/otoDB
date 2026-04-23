@@ -4,9 +4,8 @@ import pytest
 
 from otodb.account.models import Account
 from otodb.api.post import post_router
+from otodb.models.enums import LanguageTypes, PostCategory
 from otodb.models.posts import Post, PostContent
-from otodb.models.enums import PostCategory, LanguageTypes
-
 from tests.conftest import AuthenticatedTestClient
 
 

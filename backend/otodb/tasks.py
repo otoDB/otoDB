@@ -1,11 +1,10 @@
 import logging
 from datetime import timedelta
 
-from django.tasks import task, default_task_backend
 from django.conf import settings
-from django.utils import timezone
-
 from django.core.mail import send_mail
+from django.tasks import default_task_backend, task
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +40,13 @@ def send_email(
 @task
 def resolve_expired_work(work_id: int):
 	"""Resolve a single pending work if it's still pending and past the moderation period."""
+	from otodb.api.work import resolve_work
 	from otodb.models import MediaWork, ModerationEvent
 	from otodb.models.enums import (
-		Status,
 		ModerationAction,
 		ModerationEventType,
+		Status,
 	)
-	from otodb.api.work import resolve_work
 
 	try:
 		work = MediaWork.objects.get(id=work_id)
@@ -71,9 +70,9 @@ def resolve_expired_work(work_id: int):
 @task
 def resolve_expired_flag(event_id: int):
 	"""Resolve a work with an expired pending flag."""
+	from otodb.api.work import resolve_work
 	from otodb.models import ModerationEvent
 	from otodb.models.enums import FlagStatus, ModerationEventType
-	from otodb.api.work import resolve_work
 
 	try:
 		event = ModerationEvent.objects.select_related('work').get(
@@ -90,9 +89,9 @@ def resolve_expired_flag(event_id: int):
 @task
 def resolve_expired_appeal(event_id: int):
 	"""Resolve a work with an expired pending appeal."""
+	from otodb.api.work import resolve_work
 	from otodb.models import ModerationEvent
 	from otodb.models.enums import FlagStatus, ModerationEventType
-	from otodb.api.work import resolve_work
 
 	try:
 		event = ModerationEvent.objects.select_related('work').get(
@@ -109,8 +108,8 @@ def resolve_expired_appeal(event_id: int):
 @task
 def resolve_expired_source_task(source_id: int):
 	"""Auto-reject an expired pending source."""
-	from otodb.models.work_source import WorkSource
 	from otodb.api.source import reject_pending_source
+	from otodb.models.work_source import WorkSource
 
 	try:
 		src = WorkSource.objects.get(id=source_id)

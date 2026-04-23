@@ -1,11 +1,9 @@
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
-
 from ordered_model.models import OrderedModel
-
-from django.conf import settings
 
 from .media import MediaWork
 

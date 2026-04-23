@@ -1,68 +1,67 @@
-from typing import Annotated, Dict, Optional
-from enum import Enum
-from itertools import groupby
-from functools import reduce, wraps
 import re
-from urllib.parse import urlparse, parse_qs, unquote
+from enum import Enum
+from functools import reduce, wraps
+from itertools import groupby
+from typing import Annotated, Dict, Optional
+from urllib.parse import parse_qs, unquote, urlparse
 
 from django.core.exceptions import ValidationError
-from django.db import transaction, models
-from django.db.models import Value, F, Q, Case, When, Count, OuterRef, Exists, Subquery
+from django.db import models, transaction
+from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, Value, When
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-
-from pydantic import AfterValidator, field_validator
-from ninja import ModelSchema, Schema, Query, Field
-from ninja.security import django_auth
+from ninja import Field, ModelSchema, Query, Schema
 from ninja.pagination import paginate
+from ninja.security import django_auth
 from ninja.utils import contribute_operation_args
+from pydantic import AfterValidator, field_validator
 
-from otodb.common import slugify_tag, canonicalize_tag, NFKC
+from otodb.common import NFKC, canonicalize_tag, slugify_tag
 from otodb.models import (
-	TagWork,
-	MediaWork,
 	MediaSong,
-	WikiPage,
+	MediaSongConnection,
+	MediaWork,
 	SongRelation,
 	TagSong,
 	TagSongLangPreference,
+	TagWork,
 	TagWorkConnection,
-	MediaSongConnection,
-	TagWorkLangPreference,
-	TagWorkMediaConnection,
 	TagWorkCreatorConnection,
 	TagWorkInstance,
+	TagWorkLangPreference,
+	TagWorkMediaConnection,
 	TagWorkParenthood,
+	WikiPage,
 )
 from otodb.models.enums import (
 	ErrorCode,
-	WorkTagCategory,
-	SongTagCategory,
 	LanguageTypes,
-	SongConnectionTypes,
-	TagWorkConnectionTypes,
 	MediaConnectionTypes,
-	Route,
 	MediaType,
 	ProfileConnectionTypes,
+	Route,
+	SongConnectionTypes,
+	SongTagCategory,
+	TagWorkConnectionTypes,
+	WorkTagCategory,
 )
 
 from .common import (
+	ConnectionLookupResponse,
+	ConnectionSchema,
+	Error,
+	RouterWithRevision,
+	SongRelationSchema,
+	TagLangPreferenceSchema,
 	TagWorkSchema,
 	ThinWorkSchema,
-	user_is_trusted,
-	user_is_editor,
-	SongRelationSchema,
-	post_relations,
-	ConnectionSchema,
-	ConnectionLookupResponse,
-	profile_connection_parsers,
 	make_alt_value_parser,
+	post_relations,
+	profile_connection_parsers,
 	re_to_parser,
-	RouterWithRevision,
+	user_is_editor,
+	user_is_trusted,
 	with_revision_route,
-	TagLangPreferenceSchema,
-	Error,
 )
 
 tag_router = RouterWithRevision()

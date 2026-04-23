@@ -6,14 +6,14 @@ from .models import (
 	MediaSong,
 	MediaWork,
 	Pool,
-	TagWork,
-	TagSong,
-	WorkSource,
-	WorkRelation,
-	SongRelation,
-	TagWorkInstance,
 	Post,
 	PostContent,
+	SongRelation,
+	TagSong,
+	TagWork,
+	TagWorkInstance,
+	WorkRelation,
+	WorkSource,
 )
 
 

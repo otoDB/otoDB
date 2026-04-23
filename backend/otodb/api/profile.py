@@ -1,49 +1,45 @@
 from typing import List, Literal
 
-from pydantic import field_validator
-
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, F, IntegerField, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
-
 from django_comments_xtd.models import XtdComment
-
-from ninja import Router, FilterSchema, Query, Field, ModelSchema
-from ninja.security import django_auth
-from ninja.pagination import paginate
+from ninja import Field, FilterSchema, ModelSchema, Query, Router
 from ninja.errors import HttpError
+from ninja.pagination import paginate
+from ninja.security import django_auth
+from pydantic import field_validator
 
 from otodb.account.models import Account
 from otodb.models import (
+	Notification,
 	Post,
 	ProfileConnection,
 	Revision,
 	UserPreference,
-	Notification,
 	WorkSource,
 )
 from otodb.models.enums import (
-	Status,
+	NotificationReason,
 	Platform,
+	Preferences,
+	ProfileConnectionTypes,
+	Status,
 	WorkOrigin,
 	WorkStatus,
-	ProfileConnectionTypes,
-	NotificationReason,
-	Preferences,
 )
 
 from .comment import ModelsWithComments
-
 from .common import (
 	AuthedHttpRequest,
+	ConnectionSchema,
 	ListSchema,
 	ProfileSchema,
-	WorkSourceSchema,
-	ConnectionSchema,
-	profile_connection_parsers,
-	make_alt_value_parser,
 	UserPreferenceSchema,
+	WorkSourceSchema,
+	make_alt_value_parser,
+	profile_connection_parsers,
 )
 
 profile_router = Router()

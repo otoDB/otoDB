@@ -1,36 +1,33 @@
 from datetime import datetime, timezone
 from enum import Enum
 
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.contrib.contenttypes.models import ContentType
-
-from ninja import Router, ModelSchema, Schema, Query
-
+from ninja import ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
+from otodb.account.models import Account
 from otodb.common import slugify_tag
+from otodb.discord import discord_post
 from otodb.models import (
+	EntityLink,
 	Notification,
 	Post,
 	PostContent,
 	Subscription,
-	EntityLink,
 )
-from otodb.account.models import Account
-from otodb.models.enums import NotificationReason, PostCategory, LanguageTypes
+from otodb.models.enums import LanguageTypes, NotificationReason, PostCategory
 
 from .common import (
 	AuthedHttpRequest,
 	ProfileSchema,
-	user_is_trusted,
 	restrict_internal,
+	user_is_trusted,
 )
-
-from otodb.discord import discord_post
 
 post_router = Router()
 

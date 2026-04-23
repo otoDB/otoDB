@@ -1,20 +1,19 @@
-from typing import List
 import multiprocessing
 import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from typing import List
 
-from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import Q
-
-from ninja import Router, Schema, ModelSchema
-from ninja.security import django_auth
-from ninja.pagination import paginate
-from ninja.throttling import AuthRateThrottle
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404
+from ninja import ModelSchema, Router, Schema
 from ninja.errors import HttpError
+from ninja.pagination import paginate
+from ninja.security import django_auth
+from ninja.throttling import AuthRateThrottle
 
-from otodb.common import video_info, playlist_info
+from otodb.common import playlist_info, video_info
 from otodb.models import (
 	Pool,
 	PoolItem,
@@ -23,8 +22,8 @@ from otodb.models import (
 )
 
 from .common import (
-	ListSchema,
 	ListItemSchema,
+	ListSchema,
 	WorkSourceSchema,
 	track_revision,
 	user_is_editor,

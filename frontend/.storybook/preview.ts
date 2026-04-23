@@ -19,10 +19,10 @@ const preview: Preview = {
 				icon: 'globe',
 				dynamicTitle: true,
 				items: [
-					{ value: 'en', title: 'en' },
-					{ value: 'ja', title: 'ja' },
-					{ value: 'ko', title: 'ko' },
-					{ value: 'zh-cn', title: 'zh-cn' }
+					{ value: 'en', title: 'English' },
+					{ value: 'ja', title: 'Japanese' },
+					{ value: 'ko', title: 'Korean' },
+					{ value: 'zh-cn', title: 'Chinese (Simplified)' }
 				]
 			}
 		}
@@ -31,12 +31,10 @@ const preview: Preview = {
 		lang: 'en'
 	},
 	decorators: [
-		/*
 		(story, ctx) => {
-			setLocale(ctx.globals?.lang || ctx.globals?.lang);
+			if (ctx.globals?.lang) setLocale(ctx.globals.lang);
 			return story();
-		}
-		*/
+		},
 		withThemeByDataAttribute({
 			themes: {
 				'default': 'default',

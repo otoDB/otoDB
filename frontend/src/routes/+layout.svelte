@@ -263,6 +263,7 @@
 						{@render link('/list', m.stale_loose_squid_cut())}
 						{@render link('/post/overview', m.just_salty_anaconda_nourish())}
 						{@render link('/comments', m.same_broad_haddock_pinch())}
+						{@render link('/profile', m.bright_nimble_eagle_glide())}
 						{@render link('/post/3', 'FAQ')}
 						{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 					</ul>

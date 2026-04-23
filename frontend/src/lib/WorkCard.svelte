@@ -4,15 +4,10 @@
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getDisplayText } from '$lib/api';
-	import type { ComponentProps } from 'svelte';
+	import { Status, type components } from './schema';
 
 	interface Props {
-		work: {
-			id: number;
-			title?: string | null | undefined;
-			thumbnail?: string | null | undefined;
-			tags: ComponentProps<typeof WorkTag>['tag'][];
-		};
+		work: components['schemas']['ThinWorkSchema'];
 		class?: string;
 	}
 	const { work, ...props }: Props = $props();
@@ -21,7 +16,13 @@
 <div
 	class={[
 		props.class,
-		'group bg-otodb-bg-primary relative row-span-2 grid size-full grid-rows-subgrid gap-0'
+		'group bg-otodb-bg-primary relative row-span-2 grid size-full grid-rows-subgrid gap-0',
+		{
+			'outline-2 outline-sky-600': work.status === Status.Pending,
+			'outline-2 outline-yellow-600': work?.pending_flag,
+			'outline-2 outline-orange-600': work?.pending_appeal,
+			'outline-2 outline-red-600': work.status === Status.Unapproved && !work?.pending_appeal
+		}
 	]}
 >
 	<a href="/work/{work.id}" tabindex="-1" class="flex h-full items-center">

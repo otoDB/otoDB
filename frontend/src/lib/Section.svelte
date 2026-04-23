@@ -12,10 +12,10 @@
 </script>
 
 {#snippet render_title()}
-	{#if typeof title === 'string'}
-		<DisplayText value={title} />
-	{:else}
+	{#if typeof title === 'function'}
 		{@render title()}
+	{:else}
+		<DisplayText value={title} />
 	{/if}
 {/snippet}
 

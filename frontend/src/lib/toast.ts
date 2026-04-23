@@ -24,30 +24,24 @@ export const callSavingToast = (p: Promise<any>) =>
 		error: m.green_due_javelina_pop()
 	});
 
+const errorCodeMessages: Partial<
+	Record<ErrorCode, (payload: Record<string, unknown>) => string | null>
+> = {
+	[ErrorCode.Source_Flagged]: () => m.antsy_main_puffin_dust(),
+	[ErrorCode.Source_Unapproved]: () => m.clean_civil_jellyfish_promise(),
+	[ErrorCode.Name_Slug_Mismatch]: (payload) =>
+		typeof payload.name === 'string' &&
+		typeof payload.slug === 'string' &&
+		typeof payload.result === 'string'
+			? m.caring_each_leopard_hint({
+					name: payload.name,
+					slug: payload.slug,
+					result: payload.result
+				})
+			: null
+};
+
 export const callErrorCodeToast = (code: number, payload: Record<string, unknown>) => {
-	switch (code) {
-		case ErrorCode.Name_Slug_Mismatch:
-			if (
-				'name' in payload &&
-				typeof payload.name === 'string' &&
-				'slug' in payload &&
-				typeof payload.slug === 'string' &&
-				'result' in payload &&
-				typeof payload.result === 'string'
-			)
-				toast.error(
-					m.caring_each_leopard_hint({
-						name: payload.name,
-						slug: payload.slug,
-						result: payload.result
-					})
-				);
-			else {
-				toast.error(m.green_due_javelina_pop());
-			}
-			break;
-		default:
-			toast.error(m.green_due_javelina_pop());
-			break;
-	}
+	const message = errorCodeMessages[code as ErrorCode]?.(payload);
+	toast.error(message ?? m.green_due_javelina_pop());
 };

@@ -42,7 +42,7 @@ export const WorkTagCategoryMap: Record<
 	},
 	[WorkTagCategory.General]: {
 		nameFn: m.fresh_lower_rook_trip,
-		color: 'rgb(159,163,169)',
+		color: 'rgb(30,144,255)',
 		canSetAsSource: false,
 		order: 5
 	},
@@ -51,5 +51,11 @@ export const WorkTagCategoryMap: Record<
 		color: 'rgb(251,191,36)',
 		canSetAsSource: false,
 		order: 6
+	},
+	[WorkTagCategory.Uncategorized]: {
+		nameFn: m.careful_close_shad_achieve,
+		color: 'rgb(159,163,169)',
+		canSetAsSource: false,
+		order: 7
 	}
 };

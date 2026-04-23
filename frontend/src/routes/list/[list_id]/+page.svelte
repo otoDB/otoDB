@@ -115,6 +115,9 @@
 							<a href="/upload/{src.id}">{src.title || src.url}</a>
 						</h3>
 						<h4>{PlatformNames[src.platform]} {src.published_date}</h4>
+						{#if src.is_pending}
+							<p class="text-sky-600">{m.such_actual_okapi_dare()}</p>
+						{/if}
 					</span>
 					<span>
 						<a href={src.url} target="_blank" rel="noopener noreferrer"

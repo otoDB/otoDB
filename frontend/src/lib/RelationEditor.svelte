@@ -22,7 +22,7 @@
 				: components['schemas']['SongRelationSchema'][],
 			{ id: number }[]
 		];
-		form_control?: {
+		form_control: {
 			barrier: Partial<Barrier>;
 			priority: number;
 		};
@@ -30,22 +30,22 @@
 
 	let { this_id, init_relations, obj_type, form_control }: Props = $props();
 
-	type WorkTag = ComponentProps<typeof WorkCard>['work'];
-	type SongTag = { work_tag: string; title: string; id: number };
+	type Work = components['schemas']['ThinWorkSchema'];
+	type Song = components['schemas']['SongSchema'];
 
-	let relations: { swapped: boolean; item: WorkTag | SongTag; relation: number }[] = $state(
+	let relations: { swapped: boolean; item: Work | Song; relation: number }[] = $state(
 		init_relations[0]
 			.filter(({ A_id, B_id }) => A_id === this_id || B_id === this_id)
 			.map(({ A_id, B_id, relation }) => ({
 				swapped: A_id === this_id,
 				item: init_relations[1].find((e) => e.id === (A_id === this_id ? B_id : A_id))! as
-					| WorkTag
-					| SongTag,
+					| Work
+					| Song,
 				relation
 			}))
 	);
 
-	let new_item: null | WorkTag | SongTag = $state(null);
+	let new_item: null | Work | Song = $state(null);
 
 	const endpoint = obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation';
 	const post_gate = { p: Promise.withResolvers<void>() };
@@ -80,9 +80,9 @@
 )}
 	{#if swapped}
 		{#if obj_type === 'work'}
-			<WorkCard work={relation.item as WorkTag} />
+			<WorkCard work={relation.item as Work} />
 		{:else if obj_type === 'song'}
-			<a href="/tag/{(relation.item as SongTag).work_tag}">{relation.item.title}</a>
+			<a href="/tag/{(relation.item as Song).work_tag}">{relation.item.title}</a>
 		{/if}
 	{:else}
 		{m.stout_frail_warbler_support()}{m.great_clean_beaver_amuse()}{#if obj_type === 'work'}{m.grand_merry_fly_succeed()}{:else if obj_type === 'song'}{m.grand_nice_pony_belong()}{/if}
@@ -92,21 +92,14 @@
 <form
 	method="POST"
 	onsubmit={post_relations}
-	// @ts-expect-error I gave up on typing this
 	use:dirtyEnhance={{ ...form_control, manual_post: post_gate }}
 >
 	<input type="submit" class="float-right" />
 	<div class="grid w-fit grid-cols-2 gap-3">
 		{#if obj_type === 'work'}
-			<WorkField
-				// @ts-expect-error I gave up on typing this
-				bind:value={new_item}
-			/>
+			<WorkField bind:value={new_item as Work} />
 		{:else if obj_type === 'song'}
-			<SongField
-				// @ts-expect-error I gave up on typing this
-				bind:value={new_item}
-			/>
+			<SongField bind:value={new_item as Song} />
 		{/if}
 		<button
 			onclick={(e) => {

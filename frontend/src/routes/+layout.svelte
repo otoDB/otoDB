@@ -287,7 +287,7 @@
 								class="relative -top-0.5 no-underline"
 								onclick={closeMobileNav}
 							>
-								{#if data.user.notifs_count > 0}({data.user.notifs_count}){/if}
+								{#if data.user.notifs_nonsub_count > 0}({data.user.notifs_nonsub_count}){/if}
 								<span
 									class={[
 										'text-transparent',

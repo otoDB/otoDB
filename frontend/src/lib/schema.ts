@@ -1731,6 +1731,8 @@ export interface components {
             prefs: components["schemas"]["UserPreferenceSchema"];
             /** Notifs Count */
             notifs_count: number;
+            /** Notifs Nonsub Count */
+            notifs_nonsub_count: number;
         };
         /** RegisterRequestSchema */
         RegisterRequestSchema: {

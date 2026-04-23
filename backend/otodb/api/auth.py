@@ -66,13 +66,16 @@ class UserStatusSchema(UserLoginSchema):
 	username: str
 	prefs: UserPreferenceSchema
 	notifs_count: int
+	notifs_nonsub_count: int
 
 
 @auth_router.get('/status', response={200: UserStatusSchema, 401: Error})
 def status(request: HttpRequest):
 	if request.user.is_authenticated:
 		u = request.user
-		u.notifs_count = u.notifs.filter(dismissed=False).count()
+		unread_notifs = u.notifs.filter(dismissed=False)
+		u.notifs_count = unread_notifs.count()
+		u.notifs_nonsub_count = unread_notifs.filter(revision__isnull=True).count()
 		u.prefs = {
 			Preferences(setting).name: value
 			for setting, value in u.preferences.values_list('setting', 'value')

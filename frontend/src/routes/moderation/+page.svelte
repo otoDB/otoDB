@@ -24,9 +24,9 @@
 	};
 
 	const rejectSource = async (sourceId: number) => {
-		const reason = prompt(m;.honest_tangy_butterfly_dream());
+		const reason = prompt(m.honest_tangy_butterfly_dream());
 		if (!reason?.trim()) {
-			alert(m.fun_bland_llama_twirl({thing: m.honest_tangy_butterfly_dream()}));
+			alert(m.fun_bland_llama_twirl({ thing: m.honest_tangy_butterfly_dream() }));
 			return;
 		}
 		await client.POST('/api/upload/reject', {

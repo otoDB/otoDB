@@ -1,4 +1,5 @@
 import client from '$lib/api.server';
+import { asEnum, enumValues } from '$lib/enums';
 import { m } from '$lib/paraglide/messages';
 import { PathsApiWorkSearchGetParametersQueryOrderAnyOf0 } from '$lib/schema';
 import type { PageServerLoad } from './$types';
@@ -12,11 +13,9 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const paramOrder = `${paramDir}${url.searchParams.get('order')}`;
 
 	type Order = PathsApiWorkSearchGetParametersQueryOrderAnyOf0;
-	const order: Order | null =
-		paramOrder &&
-		Object.values(PathsApiWorkSearchGetParametersQueryOrderAnyOf0).includes(paramOrder as Order)
-			? (paramOrder as Order)
-			: null;
+	const order: Order | null = paramOrder
+		? asEnum(PathsApiWorkSearchGetParametersQueryOrderAnyOf0, paramOrder)
+		: null;
 
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/work/search', {

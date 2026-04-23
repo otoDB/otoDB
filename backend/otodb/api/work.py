@@ -18,6 +18,7 @@ from django.db.models import (
 from ninja import Schema, ModelSchema
 from ninja.security import django_auth
 from ninja.pagination import paginate
+from ninja.throttling import AuthRateThrottle
 
 from otodb.common import (
 	slugify_tag,
@@ -492,7 +493,10 @@ def resolve_work_admin(request: AuthedHttpRequest, work_id: int):
 
 
 @work_router.post(
-	'flag', auth=django_auth, response={200: None, 400: Error, 429: Error}
+	'flag',
+	auth=django_auth,
+	throttle=[AuthRateThrottle(f'{settings.OTODB_MAX_FLAGGED_WORKS}/h')],
+	response={200: None, 400: Error, 429: Error},
 )
 @user_is_trusted
 def flag_work(request: AuthedHttpRequest, work_id: int, reason: str):
@@ -542,7 +546,10 @@ def flag_work(request: AuthedHttpRequest, work_id: int, reason: str):
 
 
 @work_router.post(
-	'appeal', auth=django_auth, response={200: None, 400: Error, 429: Error}
+	'appeal',
+	auth=django_auth,
+	throttle=[AuthRateThrottle(f'{settings.OTODB_MAX_PENDING_WORKS}/h')],
+	response={200: None, 400: Error, 429: Error},
 )
 @user_is_trusted
 def appeal_work(request: AuthedHttpRequest, work_id: int, reason: str):

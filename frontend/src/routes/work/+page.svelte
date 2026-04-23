@@ -43,7 +43,7 @@
 			></select
 		>
 		<select name="dir" value={data.dir ?? '-'}
-			><option value="-">{m.kind_quick_bullock_push()}</option><option value="+"
+			><option value="-">{m.kind_quick_bullock_push()}</option><option value=""
 				>{m.novel_orange_mantis_feast()}</option
 			></select
 		>

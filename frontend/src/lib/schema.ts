@@ -678,6 +678,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/profile/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search */
+        get: operations["otodb_api_profile_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile/lists": {
         parameters: {
             query?: never;
@@ -2110,6 +2127,40 @@ export interface components {
             items: components["schemas"]["WorkSourceSchema"][];
             /** Count */
             count: number;
+        };
+        /** ProfileSearchFilterSchema */
+        ProfileSearchFilterSchema: {
+            /** Username */
+            username?: string | null;
+            level?: components["schemas"]["Levels"] | null;
+        };
+        /** PagedProfileIndexSchema */
+        PagedProfileIndexSchema: {
+            /** Items */
+            items: components["schemas"]["ProfileIndexSchema"][];
+            /** Count */
+            count: number;
+        };
+        /** ProfileIndexSchema */
+        ProfileIndexSchema: {
+            /** Id */
+            id: number;
+            level: components["schemas"]["Levels"];
+            /** Works Count */
+            works_count: number;
+            /** Revisions Count */
+            revisions_count: number;
+            /** Posts Count */
+            posts_count: number;
+            /** Comments Count */
+            comments_count: number;
+            /** Username */
+            username: string;
+            /**
+             * Date Created
+             * Format: date-time
+             */
+            date_created?: string;
         };
         /** ListSchema */
         ListSchema: {
@@ -3937,6 +3988,32 @@ export interface operations {
             };
         };
     };
+    otodb_api_profile_search: {
+        parameters: {
+            query?: {
+                username?: string | null;
+                level?: components["schemas"]["Levels"] | null;
+                order?: PathsApiProfileSearchGetParametersQueryOrder;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedProfileIndexSchema"];
+                };
+            };
+        };
+    };
     otodb_api_profile_lists: {
         parameters: {
             query: {
@@ -5610,6 +5687,22 @@ export enum PathsApiWorkSearchGetParametersQueryOrderAnyOf0 {
 export enum PathsApiWorkSearchGetParametersQueryQueueAnyOf0 {
     unseen = "unseen",
     all = "all"
+}
+export enum PathsApiProfileSearchGetParametersQueryOrder {
+    username = "username",
+    ValueMinususername = "-username",
+    date_created = "date_created",
+    ValueMinusdate_created = "-date_created",
+    level = "level",
+    ValueMinuslevel = "-level",
+    works_count = "works_count",
+    ValueMinusworks_count = "-works_count",
+    revisions_count = "revisions_count",
+    ValueMinusrevisions_count = "-revisions_count",
+    posts_count = "posts_count",
+    ValueMinusposts_count = "-posts_count",
+    comments_count = "comments_count",
+    ValueMinuscomments_count = "-comments_count"
 }
 export enum PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 {
     id = "id",

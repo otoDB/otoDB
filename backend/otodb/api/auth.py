@@ -14,6 +14,7 @@ from django.contrib.auth import authenticate, login, logout
 
 from ninja import Schema, Router, Field, ModelSchema
 from ninja.security import django_auth
+from ninja.throttling import AnonRateThrottle, AuthRateThrottle
 
 from otodb.account.models import Account, Invitation
 from otodb.models.enums import (
@@ -47,7 +48,11 @@ def csrf(request: HttpRequest):
 	return HttpResponse()
 
 
-@auth_router.post('/login', response={200: UserLoginSchema, 401: Error})
+@auth_router.post(
+	'/login',
+	throttle=[AnonRateThrottle('5/m')],
+	response={200: UserLoginSchema, 401: Error},
+)
 def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 	user = authenticate(request, username=body.username, password=body.password)
 	if user is not None:
@@ -90,7 +95,11 @@ class RegisterRequestSchema(Schema):
 	invite: Annotated[str, StringConstraints(strip_whitespace=True)]
 
 
-@auth_router.post('/register', response={200: UserLoginSchema, 401: Error, 409: Error})
+@auth_router.post(
+	'/register',
+	throttle=[AnonRateThrottle('3/h')],
+	response={200: UserLoginSchema, 401: Error, 409: Error},
+)
 def register(request: HttpRequest, body: RegisterRequestSchema):
 	invite_res = get_object_or_404(Invitation, secret=body.invite, used_by__isnull=True)
 	assert body.password
@@ -121,7 +130,7 @@ class ResetPasswordRequestSchema(Schema):
 	token: str | None = None
 
 
-@auth_router.post('/reset_password')
+@auth_router.post('/reset_password', throttle=[AnonRateThrottle('3/h')])
 def reset_password(request: HttpRequest, body: ResetPasswordRequestSchema):
 	assert body.password
 	user = request.user
@@ -229,7 +238,7 @@ class SendResetTokenRequestSchema(Schema):
 	email: str
 
 
-@auth_router.put('/reset_password')
+@auth_router.put('/reset_password', throttle=[AnonRateThrottle('3/h')])
 def send_reset_password_token(request: HttpRequest, body: SendResetTokenRequestSchema):
 	try:
 		user = Account.objects.get(email=body.email)
@@ -275,7 +284,11 @@ def user_invites(request: HttpRequest):
 	)
 
 
-@auth_router.post('/invite', auth=django_auth)
+@auth_router.post(
+	'/invite',
+	auth=django_auth,
+	throttle=[AuthRateThrottle('5/d')],
+)
 @user_is_editor
 def new_invite(request: HttpRequest):
 	assert (

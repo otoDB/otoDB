@@ -12,9 +12,13 @@
 	const CACHE = "otodb.theme";
 
 	let resolvedLang: keyof typeof languages | undefined = $state(undefined);
-	let themeClass = $state(
-		localStorage.getItem(CACHE) ?? themes[ThemePref.Default].cssKey,
+	let themeKey = $state(
+		localStorage.getItem(CACHE) ?? themes[ThemePref.Default].key,
 	);
+
+	$effect(() => {
+		document.documentElement.setAttribute("data-theme", themeKey);
+	});
 
 	defineCustomClientStrategy("custom-userPreference", {
 		getLocale: () => resolvedLang,
@@ -71,8 +75,8 @@
 		resolvedLang = langKeyById(prefs?.LANGUAGE) ?? fallbackLocale;
 		if (resolvedLang) setLocale(resolvedLang, { reload: false });
 
-		themeClass = themes[prefs?.THEME ?? ThemePref.Default].cssKey;
-		localStorage.setItem(CACHE, themeClass);
+		themeKey = themes[prefs?.THEME ?? ThemePref.Default].key;
+		localStorage.setItem(CACHE, themeKey);
 
 		// Frontend components link with relative paths like `/tag/foo` which
 		// would otherwise resolve to chrome-extension://.../tag/foo.
@@ -99,7 +103,7 @@
 	});
 </script>
 
-<div class="text-otodb-content-primary h-full {themeClass}">
-	<div class="bg-marker bg-otodb-bg-primary fixed inset-0 -z-10"></div>
+<div class="text-otodb-content-primary h-full">
+	<div id="bg-marker" class="bg-otodb-bg-primary fixed inset-0 -z-10"></div>
 	{@render children()}
 </div>

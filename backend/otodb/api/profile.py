@@ -2,8 +2,12 @@ from typing import List, Literal
 
 from pydantic import field_validator
 
-from django.db.models import Q
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Count, F, IntegerField, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
+
+from django_comments_xtd.models import XtdComment
 
 from ninja import Router, FilterSchema, Query, Field, ModelSchema
 from ninja.security import django_auth
@@ -11,7 +15,14 @@ from ninja.pagination import paginate
 from ninja.errors import HttpError
 
 from otodb.account.models import Account
-from otodb.models import ProfileConnection, UserPreference, Notification
+from otodb.models import (
+	Post,
+	ProfileConnection,
+	Revision,
+	UserPreference,
+	Notification,
+	WorkSource,
+)
 from otodb.models.enums import (
 	Status,
 	Platform,
@@ -42,6 +53,107 @@ profile_router = Router()
 def profile(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user
+
+
+class ProfileIndexSchema(ModelSchema):
+	id: int
+	level: Account.Levels
+	works_count: int
+	revisions_count: int
+	posts_count: int
+	comments_count: int
+
+	class Meta:
+		model = Account
+		fields = ['username', 'date_created']
+
+
+class ProfileSearchFilterSchema(FilterSchema):
+	username: str | None = Field(None, json_schema_extra={'q': 'username__icontains'})
+	level: Account.Levels | None = None
+
+
+@profile_router.get('search', response=List[ProfileIndexSchema])
+@paginate
+def search(
+	request: AuthedHttpRequest,
+	filters: ProfileSearchFilterSchema = Query(...),
+	order: Literal[
+		'username',
+		'-username',
+		'date_created',
+		'-date_created',
+		'level',
+		'-level',
+		'works_count',
+		'-works_count',
+		'revisions_count',
+		'-revisions_count',
+		'posts_count',
+		'-posts_count',
+		'comments_count',
+		'-comments_count',
+	] = '-date_created',
+):
+	post_ct = ContentType.objects.get_for_model(Post)
+
+	works_count = (
+		WorkSource.objects.filter(added_by=OuterRef('pk'))
+		.values('added_by')
+		.annotate(c=Count('media', distinct=True))
+		.values('c')
+	)
+	revisions_count = (
+		Revision.objects.filter(user=OuterRef('pk'))
+		.values('user')
+		.annotate(c=Count('id'))
+		.values('c')
+	)
+	op_posts_count = (
+		Post.objects.filter(added_by=OuterRef('pk'))
+		.values('added_by')
+		.annotate(c=Count('id'))
+		.values('c')
+	)
+	post_comments_count = (
+		XtdComment.objects.filter(
+			user=OuterRef('pk'), content_type=post_ct, is_removed=False
+		)
+		.order_by()
+		.values('user')
+		.annotate(c=Count('id'))
+		.values('c')
+	)
+	other_comments_count = (
+		XtdComment.objects.filter(user=OuterRef('pk'), is_removed=False)
+		.exclude(content_type=post_ct)
+		.order_by()
+		.values('user')
+		.annotate(c=Count('id'))
+		.values('c')
+	)
+
+	qs = (
+		Account.objects.filter(is_active=True)
+		.annotate(
+			works_count=Coalesce(Subquery(works_count, output_field=IntegerField()), 0),
+			revisions_count=Coalesce(
+				Subquery(revisions_count, output_field=IntegerField()), 0
+			),
+			_op_posts=Coalesce(
+				Subquery(op_posts_count, output_field=IntegerField()), 0
+			),
+			_post_comments=Coalesce(
+				Subquery(post_comments_count, output_field=IntegerField()), 0
+			),
+			comments_count=Coalesce(
+				Subquery(other_comments_count, output_field=IntegerField()), 0
+			),
+		)
+		.annotate(posts_count=F('_op_posts') + F('_post_comments'))
+	)
+	qs = filters.filter(qs)
+	return qs.order_by(order, 'id')
 
 
 @profile_router.get('lists', response=List[ListSchema])

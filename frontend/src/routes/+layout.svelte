@@ -4,18 +4,18 @@
 	import { env } from '$env/dynamic/public';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Section from '$lib/Section.svelte';
+	import { isFormDirty } from '$lib/dirty';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import { hasUserLevel } from '$lib/enums/userLevel';
-	import { themes } from '$lib/themes/themes';
+	import { currentVersion, versions } from '$lib/enums/version';
 	import { m } from '$lib/paraglide/messages.js';
 	import { defineCustomClientStrategy, getLocale, locales } from '$lib/paraglide/runtime';
+	import { Levels, ThemePref } from '$lib/schema';
+	import { themes } from '$lib/themes/themes';
 	import { callErrorToast } from '$lib/toast';
 	import { clickOutside, getLocalPref, getLocalPrefs, set_lang, updateLocalPref } from '$lib/ui';
-	import { currentVersion, versions } from '$lib/enums/version';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
-	import { isFormDirty } from '$lib/dirty';
-	import { Levels, ThemePref } from '$lib/schema';
 
 	let { data, children } = $props();
 
@@ -74,10 +74,6 @@
 
 	let search_type = $state('work');
 
-	const theme: string = $derived(
-		themes[(data.user?.prefs?.THEME as ThemePref) ?? getLocalPref('THEME')].cssKey
-	);
-
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
 
 	const organizationLd = ldTag(
@@ -116,6 +112,14 @@
 				)
 			: null
 	);
+
+	// theme switcher
+	$effect(() => {
+		document.documentElement.setAttribute(
+			'data-theme',
+			themes[data.user?.prefs?.THEME ?? getLocalPref('THEME') ?? ThemePref.Default].key
+		);
+	});
 </script>
 
 <svelte:window onerror={handleError} onunhandledrejection={handleRejection} />
@@ -172,8 +176,8 @@
 	</li>
 {/snippet}
 
-<div class="text-otodb-content-primary overflow-auto {theme}">
-	<div class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full"></div>
+<div class="text-otodb-content-primary overflow-auto">
+	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
 		<button
@@ -263,6 +267,7 @@
 						{@render link('/list', m.stale_loose_squid_cut())}
 						{@render link('/post/overview', m.just_salty_anaconda_nourish())}
 						{@render link('/comments', m.same_broad_haddock_pinch())}
+						{@render link('/profile', m.bright_nimble_eagle_glide())}
 						{@render link('/post/3', 'FAQ')}
 						{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 					</ul>

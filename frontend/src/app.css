@@ -12,51 +12,7 @@
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
-@custom-variant dark (@media not (prefers-color-scheme: light), &:where(.dark, .dark *), &:has(div.bg-marker.dark));
-
-:root {
-	--otodb-color-bg-primary: black;
-	--otodb-color-content-primary: white;
-	--otodb-color-bg-faint: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 90%,
-		var(--otodb-color-content-primary)
-	);
-	--otodb-color-bg-fainter: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 80%,
-		var(--otodb-color-content-primary)
-	);
-
-	@media (prefers-color-scheme: light) {
-		--otodb-color-bg-fainter: white;
-		--otodb-color-content-primary: black;
-		--otodb-color-bg-faint: color-mix(
-			in hsl,
-			var(--otodb-color-bg-fainter) 95%,
-			var(--otodb-color-content-primary)
-		);
-		--otodb-color-bg-primary: color-mix(
-			in hsl,
-			var(--otodb-color-bg-fainter) 90%,
-			var(--otodb-color-content-primary)
-		);
-	}
-
-	--otodb-color-content-faint: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 12.5%,
-		var(--otodb-color-content-primary)
-	);
-	--otodb-color-content-fainter: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 30%,
-		var(--otodb-color-content-primary)
-	);
-
-	--otodb-color-ins: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, green);
-	--otodb-color-del: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, red);
-}
+@custom-variant dark (@media not (prefers-color-scheme: light), &:where(.dark, .dark *), &:has(#bg-marker.dark));
 
 @layer base {
 	thead {
@@ -65,6 +21,14 @@
 
 	tbody > tr:nth-of-type(odd) {
 		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
+	}
+
+	tbody > tr:not(form *):hover {
+		background-color: color-mix(
+			in hsl,
+			var(--otodb-color-bg-fainter) 80%,
+			var(--otodb-color-content-primary)
+		);
 	}
 
 	ul {

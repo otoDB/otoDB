@@ -293,5 +293,7 @@
 	"weary_broken_eagle_sigh": "데이터베이스에 연결할 수 없습니다.",
 	"grim_plain_crane_crash": "데이터를 가져오는 중 오류가 발생했습니다.",
 	"careful_close_shad_achieve": "미분류",
-	"watery_kind_quail_climb": "이 작품은 다음 카테고리의 태그가 누락되어 있습니다: {missing}"
+	"watery_kind_quail_climb": "이 작품은 다음 카테고리의 태그가 누락되어 있습니다: {missing}",
+	"bright_nimble_eagle_glide": "사용자 목록",
+	"careful_close_shad_achieve": "미분류"
 }

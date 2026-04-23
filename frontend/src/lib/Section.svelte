@@ -2,12 +2,19 @@
 	import { page } from '$app/state';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import type { Snippet } from 'svelte';
 	let {
 		title = undefined,
 		type = undefined,
 		children,
 		menuLinks = null,
 		href = undefined
+	}: {
+		title?: string | Snippet | null | undefined;
+		type?: string | undefined;
+		children: Snippet;
+		menuLinks?: { pathname: string; title: string }[] | null;
+		href?: string | undefined;
 	} = $props();
 </script>
 

@@ -47,10 +47,11 @@ def tagwork_ordering_case(prefix=''):
 			**{f'{prefix}category': WorkTagCategory.SONG}, then=models.Value(30)
 		),
 		models.When(
-			**{f'{prefix}category': WorkTagCategory.GENERAL}, then=models.Value(40)
+			**{f'{prefix}category': WorkTagCategory.META}, then=models.Value(1000)
 		),
 		models.When(
-			**{f'{prefix}category': WorkTagCategory.META}, then=models.Value(1000)
+			**{f'{prefix}category': WorkTagCategory.UNCATEGORIZED},
+			then=models.Value(9999),
 		),
 		default=models.Value(999),
 		output_field=models.IntegerField(),
@@ -228,7 +229,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 	deprecated = models.BooleanField(default=False, null=False)
 	category = models.IntegerField(
-		choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL
+		choices=WorkTagCategory.choices, default=WorkTagCategory.UNCATEGORIZED
 	)
 	media_type = models.IntegerField(
 		null=True, blank=True, help_text='Media type bitmask'
@@ -289,7 +290,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 				self.wikipage_set.exists()
 				and any([p.page.strip() != '' for p in self.wikipage_set]),
 				self.tagworkconnection_set.exists(),
-				self.category != WorkTagCategory.GENERAL,
+				self.category != WorkTagCategory.UNCATEGORIZED,
 			]
 		)
 
@@ -457,8 +458,8 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			else:
 				tp.delete()
 		if (
-			from_tag.category != WorkTagCategory.GENERAL
-			and to_tag.category == WorkTagCategory.GENERAL
+			from_tag.category != WorkTagCategory.UNCATEGORIZED
+			and to_tag.category == WorkTagCategory.UNCATEGORIZED
 		):
 			to_tag.category = from_tag.category
 			if from_tag.category == WorkTagCategory.MEDIA:
@@ -468,7 +469,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 				s = from_tag.mediasong
 				s.work_tag = to_tag
 				s.save()
-			from_tag.category = WorkTagCategory.GENERAL
+			from_tag.category = WorkTagCategory.UNCATEGORIZED
 			from_tag.save()
 		for p in from_tag.wikipage_set.all():
 			try:

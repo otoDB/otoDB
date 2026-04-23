@@ -10,6 +10,7 @@ from ninja import NinjaAPI
 from ninja.decorators import decorate_view
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
+from ninja.throttling import AuthRateThrottle, AnonRateThrottle
 
 from .auth import auth_router
 from .work import work_router
@@ -91,11 +92,28 @@ class ORJSONRenderer(BaseRenderer):
 		return orjson.dumps(data)
 
 
+class WriteThrottle(AuthRateThrottle):
+	"""Throttle mutating methods. Keyed by user, falls back to IP."""
+
+	scope = 'write'
+	WRITE_METHODS = {'POST', 'PUT', 'PATCH', 'DELETE'}
+
+	def allow_request(self, request):
+		if request.method not in self.WRITE_METHODS:
+			return True
+		return super().allow_request(request)
+
+
 api = NinjaAPI(
 	urls_namespace='otodb:api',
 	docs_decorator=staff_member_required if settings.OTODB_PROTECT_API_DOCS else None,
 	parser=ORJSONParser(),
 	renderer=ORJSONRenderer(),
+	throttle=[
+		WriteThrottle('5/s'),
+		AnonRateThrottle('20/s'),
+		AuthRateThrottle('40/s'),
+	],
 )
 api.add_router('/auth/', auth_router)
 api.add_router('/work/', work_router)

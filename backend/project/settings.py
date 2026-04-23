@@ -287,6 +287,12 @@ if OTODB_REDIS_URL:
 			'QUEUES': ['default'],
 		}
 	}
+	CACHES = {
+		'default': {
+			'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+			'LOCATION': OTODB_REDIS_URL,
+		}
+	}
 else:
 	TASKS = {
 		'default': {

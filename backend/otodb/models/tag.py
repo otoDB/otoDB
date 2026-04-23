@@ -246,7 +246,8 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		]
 		entity_attrs = ['self', 'aliased_to']
 
-		def to_active(self, instance: 'TagWork') -> 'TagWork':
+		@staticmethod
+		def to_active(instance: 'TagWork') -> 'TagWork':
 			return instance.aliased_to or instance
 
 	def __str__(self):
@@ -555,6 +556,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 		tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
 		entity_attrs = ['self']
 
+		@staticmethod
 		def to_active(instance):
 			return instance.aliased_to or instance
 

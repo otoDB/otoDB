@@ -160,7 +160,7 @@ class Command(BaseCommand):
 			if not dry_run:
 				TagWork.objects.create(
 					name=name,
-					category=data.get('category', WorkTagCategory.GENERAL),
+					category=data.get('category', WorkTagCategory.UNCATEGORIZED),
 				)
 
 	def _seed_works(self, dry_run: bool) -> None:

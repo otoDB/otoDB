@@ -5748,13 +5748,14 @@ export enum ThemePref {
     Re_Sample = 5
 }
 export enum WorkTagCategory {
-    General = 0,
+    Uncategorized = 0,
     Event = 1,
     Song = 2,
     Source = 3,
     Creator = 4,
     Meta = 5,
-    Media = 6
+    Media = 6,
+    General = 7
 }
 export enum FlagStatus {
     Value0 = 0,

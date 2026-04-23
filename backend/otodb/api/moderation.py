@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.http import HttpRequest
 from ninja import Schema, Router
+from ninja.errors import HttpError
 
 from otodb.models import ModerationEvent
 from otodb.models.enums import ModerationEventType, FlagStatus
@@ -41,6 +42,12 @@ def moderation_events(
 	limit: int = 30,
 	offset: int = 0,
 ):
+	user = request.user if request.user.is_authenticated else None
+	is_editor = user is not None and user.level >= Account.Levels.EDITOR
+
+	if user_id is not None and not is_editor and (user is None or user_id != user.pk):
+		raise HttpError(403, 'Forbidden')
+
 	qs = ModerationEvent.objects.select_related('by').order_by('-date')
 
 	if work_id is not None:
@@ -49,9 +56,6 @@ def moderation_events(
 		qs = qs.filter(source_id=source_id)
 	if user_id is not None:
 		qs = qs.filter(by_id=user_id)
-
-	user = request.user if request.user.is_authenticated else None
-	is_editor = user is not None and user.level >= Account.Levels.EDITOR
 
 	count = qs.count()
 	events = list(qs[offset : offset + min(limit, 30)])

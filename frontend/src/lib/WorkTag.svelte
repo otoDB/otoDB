@@ -47,13 +47,13 @@
 >
 	<span>{getTagDisplayName(tag)} </span>
 	{#if category === WorkTagCategory.Creator && tag.creator_roles?.length}
-		<address class="text-otodb-content-fainter ml-0.5 inline text-xs">
+		<span class="text-otodb-content-fainter ml-0.5 inline text-xs">
 			{#each tag.creator_roles as role, i (i)}{creatorRole[
 					resolveCreatorRoleKeyById(role)
 				].nameFn()}
 				{#if i < tag.creator_roles.length - 1},&nbsp{/if}
 			{/each}
-		</address>
+		</span>
 	{/if}
 </a>
 

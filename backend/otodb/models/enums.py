@@ -16,13 +16,14 @@ class OtodbIntegerEnum(models.IntegerChoices):
 
 
 class WorkTagCategory(OtodbIntegerEnum):
-	GENERAL = 0, 'General'
+	UNCATEGORIZED = 0, 'Uncategorized'
 	EVENT = 1, 'Event'
 	SONG = 2, 'Song'
 	SOURCE = 3, 'Source'
 	CREATOR = 4, 'Creator'
 	META = 5, 'Meta'
 	MEDIA = 6, 'Media'
+	GENERAL = 7, 'General'
 
 
 class SongTagCategory(OtodbIntegerEnum):

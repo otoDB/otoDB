@@ -30,18 +30,16 @@
 		u.searchParams.delete('page');
 		return u.pathname + u.search;
 	}
-
-	function arrow(col: SortableColumn): string {
-		if (data.order === col) return '↑';
-		if (data.order === `-${col}`) return '↓';
-		return '';
-	}
 </script>
 
 {#snippet sortHeader(col: SortableColumn, label: string)}
-	<a href={sortUrl(col)} class="inline-flex items-center justify-end gap-1 whitespace-nowrap">
+	<a href={sortUrl(col)} class="inline-flex items-center justify-end whitespace-nowrap">
 		<span>{label}</span>
-		<span class="inline-block w-3 text-center">{arrow(col)}</span>
+		{#if data.order === col}
+			<span class="ml-1 inline-block w-3 text-center">↑</span>
+		{:else if data.order === `-${col}`}
+			<span class="ml-1 inline-block w-3 text-center">↓</span>
+		{/if}
 	</a>
 {/snippet}
 

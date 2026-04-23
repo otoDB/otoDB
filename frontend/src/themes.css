@@ -51,7 +51,7 @@
 	--otodb-color-bg-faint: rgb(10, 10, 32);
 	--otodb-color-bg-primary: black;
 
-	#bg-marker {
+	& #bg-marker {
 		background-image: url('/aniki-bg.png'), url('/aniki-right.png');
 		background-position:
 			left top,
@@ -77,7 +77,7 @@
 		@apply prose-neutral;
 	}
 
-	#bg-marker {
+	& #bg-marker {
 		&::before {
 			content: '';
 			position: fixed;
@@ -126,7 +126,7 @@
 		@apply prose-neutral;
 	}
 
-	& div.bg-marker {
+	& #bg-marker {
 		&::after {
 			content: '';
 			position: fixed;
@@ -176,7 +176,7 @@
 		@apply prose-invert;
 	}
 
-	& div.bg-marker {
+	& #bg-marker {
 		&::after {
 			content: '';
 			position: fixed;
@@ -212,7 +212,7 @@
 		@apply prose-neutral;
 	}
 
-	& div.bg-marker {
+	& #bg-marker {
 		&::after {
 			content: '';
 			position: fixed;

@@ -57,5 +57,5 @@ export const WorkTagCategoryMap: Record<
 		color: 'rgb(159,163,169)',
 		canSetAsSource: false,
 		order: 7
-	},
+	}
 };

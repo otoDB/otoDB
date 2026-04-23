@@ -68,7 +68,11 @@
 	}
 
 	tbody > tr:not(form *):hover {
-		background-color: color-mix(in hsl, var(--otodb-color-bg-fainter) 80%, var(--otodb-color-content-primary));
+		background-color: color-mix(
+			in hsl,
+			var(--otodb-color-bg-fainter) 80%,
+			var(--otodb-color-content-primary)
+		);
 	}
 
 	ul {

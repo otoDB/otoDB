@@ -259,7 +259,6 @@
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
 						{@render link('/work', m.grand_merry_fly_succeed())}
 						{@render link('/upload/add', `> ${m.fluffy_crisp_horse_imagine()}`)}
-						{@render link('/work/random', `> ${m.fuzzy_chunky_niklas_peek()}`)}
 						{#if hasUserLevel(data.user?.level, Levels.Member)}
 							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 						{/if}
@@ -271,6 +270,7 @@
 						{@render link('/comments', m.same_broad_haddock_pinch())}
 						{@render link('/profile', m.bright_nimble_eagle_glide())}
 						{@render link('/post/3', 'FAQ')}
+						{@render link('/work/random', `> ${m.fuzzy_chunky_niklas_peek()}`)}
 					</ul>
 				</div>
 				<div

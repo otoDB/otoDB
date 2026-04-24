@@ -47,6 +47,7 @@ from otodb.models.enums import (
 )
 
 from .common import (
+	ApiError,
 	ConnectionLookupResponse,
 	ConnectionSchema,
 	Error,
@@ -407,14 +408,15 @@ def tag_alias_control(
 		try:
 			target.save()
 		except ValidationError:
-			return 400, {
-				'code': ErrorCode.NAME_SLUG_MISMATCH,
-				'data': {
+			raise ApiError(
+				400,
+				ErrorCode.NAME_SLUG_MISMATCH,
+				data={
 					'name': new_name,
 					'slug': target.slug,
 					'result': slugify_tag(new_name),
 				},
-			}
+			)
 
 	# unalias
 	if payload.unalias_slugs:
@@ -1150,10 +1152,7 @@ def query_connection(request: HttpRequest, url: str):
 				results[tag.pk] = (tag, False)
 
 	if not results:
-		return 404, {
-			'code': ErrorCode.NO_MATCHING_ENTITIES,
-			'data': {'message': 'No matching entities found'},
-		}
+		raise ApiError(404, ErrorCode.NO_MATCHING_ENTITIES)
 
 	entities = []
 	for tag, has_connection in results.values():

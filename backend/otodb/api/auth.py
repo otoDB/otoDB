@@ -23,7 +23,7 @@ from otodb.models.enums import (
 )
 from otodb.tasks import send_email
 
-from .common import Error, ProfileSchema, UserPreferenceSchema, user_is_editor
+from .common import ApiError, Error, ProfileSchema, UserPreferenceSchema, user_is_editor
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 	if user is not None:
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
-	return 401, {'code': ErrorCode.LOGIN_FAILED, 'data': {'message': 'Login failed.'}}
+	raise ApiError(401, ErrorCode.LOGIN_FAILED)
 
 
 class UserStatusSchema(UserLoginSchema):
@@ -81,7 +81,7 @@ def status(request: HttpRequest):
 			for setting, value in u.preferences.values_list('setting', 'value')
 		}
 		return u
-	return 401, {'code': ErrorCode.NOT_LOGGED_IN, 'data': {'message': 'Not logged in.'}}
+	raise ApiError(401, ErrorCode.NOT_LOGGED_IN)
 
 
 @auth_router.post('/logout', auth=django_auth)
@@ -116,15 +116,9 @@ def register(request: HttpRequest, body: RegisterRequestSchema):
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
 	except IntegrityError:
-		return 409, {
-			'code': ErrorCode.USERNAME_TAKEN,
-			'data': {'message': 'This username is already taken'},
-		}
+		raise ApiError(409, ErrorCode.USERNAME_TAKEN)
 	except ValueError:
-		return 400, {
-			'code': ErrorCode.VALIDATION_ERROR,
-			'data': {'message': 'A validation error occurred'},
-		}
+		raise ApiError(400, ErrorCode.VALIDATION_ERROR)
 
 
 class ResetPasswordRequestSchema(Schema):

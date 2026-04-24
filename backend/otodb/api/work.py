@@ -51,6 +51,7 @@ from otodb.tasks import (
 )
 
 from .common import (
+	ApiError,
 	AuthedHttpRequest,
 	CreateWorkPayload,
 	Error,
@@ -62,6 +63,7 @@ from .common import (
 	WorkRelationSchema,
 	WorkSchema,
 	WorkSourceSchema,
+	ensure_can_moderate,
 	post_relations,
 	user_is_editor,
 	user_is_staff,
@@ -372,10 +374,7 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	"""Creates a MediaWork from a source with user-chosen metadata and tags."""
 	src = get_object_or_404(WorkSource.active_objects, id=payload.source_id)
 	if src.media is not None:
-		return 409, {
-			'code': ErrorCode.SOURCE_HAS_WORK,
-			'data': {'message': 'Source already has a work'},
-		}
+		raise ApiError(409, ErrorCode.SOURCE_HAS_WORK)
 
 	is_editor = request.user.level >= Account.Levels.EDITOR
 
@@ -400,10 +399,7 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 		).count()
 		total_slots_used = pending_uploads + (pending_appeals * 3)
 		if total_slots_used >= settings.OTODB_MAX_PENDING_WORKS:
-			return 429, {
-				'code': ErrorCode.NO_MORE_UPLOAD_SLOTS,
-				'data': {'message': 'Not enough upload slots'},
-			}
+			raise ApiError(429, ErrorCode.NO_MORE_UPLOAD_SLOTS)
 
 	work = MediaWork.objects.create(
 		title=payload.title or src.title,
@@ -442,11 +438,12 @@ def resolve_work(work: MediaWork):
 	work.save(update_fields=['status'])
 
 
-@work_router.post('approve', auth=django_auth)
+@work_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 def approve_work(request: AuthedHttpRequest, work_id: int):
 	"""Approve a pending or flagged work, making it active."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	ensure_can_moderate(request.user, work)
 
 	work.status = Status.APPROVED
 	work.save(update_fields=['status'])
@@ -464,11 +461,12 @@ def approve_work(request: AuthedHttpRequest, work_id: int):
 	)
 
 
-@work_router.post('disapprove', auth=django_auth)
+@work_router.post('disapprove', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 def disapprove_work(request: AuthedHttpRequest, work_id: int, reason: str):
 	"""Record that a user reviewed a work and chose not to approve it."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	ensure_can_moderate(request.user, work)
 	ModerationEvent.objects.update_or_create(
 		work=work,
 		by=request.user,
@@ -502,22 +500,16 @@ def flag_work(request: AuthedHttpRequest, work_id: int, reason: str):
 	"""Flag an active work for re-review."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 
-	def validation_error(status, message):
-		return status, {
-			'code': ErrorCode.VALIDATION_ERROR,
-			'data': {'message': message},
-		}
-
 	if work.status != Status.APPROVED:
-		return validation_error(400, 'Cannot flag a non-approved work')
+		raise ApiError(400, ErrorCode.FLAG_NOT_APPROVED)
 	if work.moderation_events.filter(
 		event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
 	).exists():
-		return validation_error(400, 'Work already has a pending flag')
+		raise ApiError(400, ErrorCode.FLAG_PENDING_FLAG)
 	if work.moderation_events.filter(
 		event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
 	).exists():
-		return validation_error(400, 'Cannot flag a work with a pending appeal')
+		raise ApiError(400, ErrorCode.FLAG_PENDING_APPEAL)
 
 	is_editor = request.user.level >= Account.Levels.EDITOR
 	if not is_editor:
@@ -527,7 +519,7 @@ def flag_work(request: AuthedHttpRequest, work_id: int, reason: str):
 			status=FlagStatus.PENDING,
 		).count()
 		if active_flags >= settings.OTODB_MAX_FLAGGED_WORKS:
-			return validation_error(429, 'Active flag limit reached')
+			raise ApiError(429, ErrorCode.FLAG_LIMIT_REACHED)
 
 	flag = ModerationEvent.objects.create(
 		work=work,
@@ -559,10 +551,7 @@ def appeal_work(request: AuthedHttpRequest, work_id: int, reason: str):
 	if work.moderation_events.filter(
 		event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
 	).exists():
-		return 400, {
-			'code': ErrorCode.VALIDATION_ERROR,
-			'data': {'message': 'Work already has a pending appeal'},
-		}
+		raise ApiError(400, ErrorCode.APPEAL_PENDING)
 
 	is_editor = request.user.level >= Account.Levels.EDITOR
 	if not is_editor:
@@ -585,10 +574,7 @@ def appeal_work(request: AuthedHttpRequest, work_id: int, reason: str):
 		).count()
 		total_slots_used = pending_uploads + (pending_appeals * 3)
 		if total_slots_used + 3 > settings.OTODB_MAX_PENDING_WORKS:
-			return 429, {
-				'code': ErrorCode.NO_MORE_UPLOAD_SLOTS,
-				'data': {'message': 'Not enough upload slots for appeal'},
-			}
+			raise ApiError(429, ErrorCode.NO_MORE_APPEAL_SLOTS)
 
 	appeal = ModerationEvent.objects.create(
 		work=work,

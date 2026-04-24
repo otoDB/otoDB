@@ -24,7 +24,7 @@
 	} from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
-	import { callSavingToast } from '$lib/toast';
+	import { callErrorCodeToast, callSavingToast } from '$lib/toast';
 	import { getDisplayText } from '$lib/ui.js';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
@@ -141,7 +141,8 @@
 							fetch,
 							params: { query: { work_id: data.id } }
 						});
-						if (!error) location.reload();
+						if (error) callErrorCodeToast(error.code, error.data ?? {});
+						else location.reload();
 					}}
 				>
 					Approve
@@ -151,10 +152,11 @@
 					onclick={async () => {
 						const reason = prompt(m.honest_tangy_butterfly_dream());
 						if (!reason) return;
-						await client.POST('/api/work/disapprove', {
+						const { error } = await client.POST('/api/work/disapprove', {
 							fetch,
 							params: { query: { work_id: data.id, reason: reason } }
 						});
+						if (error) callErrorCodeToast(error.code, error.data ?? {});
 					}}
 				>
 					{m.alive_blue_marlin_push()}
@@ -312,7 +314,12 @@
 															}
 														}
 													);
-													if (!error) location.reload();
+													if (error)
+														callErrorCodeToast(
+															error.code,
+															error.data ?? {}
+														);
+													else location.reload();
 												}}
 											>
 												{m.nimble_gaudy_scallop_fold()}
@@ -347,7 +354,12 @@
 															}
 														}
 													);
-													if (!error) location.reload();
+													if (error)
+														callErrorCodeToast(
+															error.code,
+															error.data ?? {}
+														);
+													else location.reload();
 												}}
 											>
 												{m.key_last_racoon_clasp()}

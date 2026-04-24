@@ -30,6 +30,9 @@ urlpatterns = [
 	re_path(r'^', include('otodb.urls')),
 ]
 
+if settings.OTODB_REDIS_URL:
+	urlpatterns += [path('django-rq/', include('django_rq.urls'))]
+
 if settings.DEBUG:
 	urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 

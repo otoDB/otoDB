@@ -9,11 +9,12 @@ Migrates existing thumbnails from ID-based paths to hash-based paths.
 """
 
 import hashlib
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from otodb.models.work_source import WorkSource
 from otodb.models.enums import MimeType
+from otodb.models.work_source import WorkSource
 from otodb.storage_manager import storage_manager
 
 

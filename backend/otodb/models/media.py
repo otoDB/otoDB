@@ -6,24 +6,26 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from tagulous.models import TagField, TaggedManager
 
+from otodb.common import clean_description
+
 from .enums import (
-	Rating,
-	WorkTagCategory,
-	Role,
 	FlagStatus,
 	ModerationEventType,
+	Rating,
+	Role,
 	Status,
+	WorkTagCategory,
 )
-from .tag import TagWork, TagSong, tagwork_ordering_case
-from .revision import RevisionTrackedModel, RevisionTrackedQuerySet
-from otodb.common import clean_description
 from .moderation import ModerationEvent
+from .revision import RevisionTrackedModel, RevisionTrackedQuerySet
+from .tag import TagSong, TagWork, tagwork_ordering_case
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
-	from .work_source import WorkSource
+
 	from .pool import PoolItem
 	from .relations import WorkRelation
+	from .work_source import WorkSource
 
 
 class MediaWorkQuerySet(RevisionTrackedQuerySet):
@@ -182,7 +184,8 @@ class MediaWork(RevisionTrackedModel):
 		tracked_fields = ['title', 'description', 'rating', 'moved_to']
 		entity_attrs = ['self', 'moved_to']
 
-		def to_active(self, instance: 'MediaWork') -> 'MediaWork':
+		@staticmethod
+		def to_active(instance: 'MediaWork') -> 'MediaWork':
 			return instance.moved_to or instance
 
 	# deprecated!
@@ -229,6 +232,7 @@ class MediaWork(RevisionTrackedModel):
 	):
 		from django.contrib.contenttypes.models import ContentType
 		from django_comments_xtd.models import XtdComment
+
 		from otodb.models.posts import EntityLink
 
 		# Ensure we always merge into the work with the lower ID

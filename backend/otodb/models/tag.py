@@ -1,29 +1,29 @@
-from typing import TYPE_CHECKING, Self
-from itertools import chain
 import re
-
-from django.db import models
-from django.db.models import Value, Q, Prefetch
-from django.core.exceptions import ValidationError
-from tagulous.models import BaseTagModel, TagModelManager
-
-from django_cte import CTE, with_cte
-
-from otodb.common import slugify_tag, clean_tag
-from .enums import WorkTagCategory, SongTagCategory, LanguageTypes, MediaType
-from .revision import RevisionTrackedModel, RevisionTrackedManager
+from itertools import chain
+from typing import TYPE_CHECKING, Self
 
 # Monkeypatch tagulous to use our slugify (underscores as separator, not hyphens)
 import tagulous.models.models as _tagulous_models
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Prefetch, Q, Value
+from django_cte import CTE, with_cte
+from tagulous.models import BaseTagModel, TagModelManager
+
+from otodb.common import clean_tag, slugify_tag
+
+from .enums import LanguageTypes, MediaType, SongTagCategory, WorkTagCategory
+from .revision import RevisionTrackedManager, RevisionTrackedModel
 
 _tagulous_models.slugify = lambda value, **_: slugify_tag(value)
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
+
 	from .connection import (
 		TagWorkConnection,
-		TagWorkMediaConnection,
 		TagWorkCreatorConnection,
+		TagWorkMediaConnection,
 	)
 	from .media import MediaSong
 
@@ -172,6 +172,7 @@ class OtodbTagModel(BaseTagModel):
 	def alias(cls, from_tags: list[Self], into_tag: Self):
 		from django.contrib.contenttypes.models import ContentType
 		from django_comments_xtd.models import XtdComment
+
 		from otodb.models.posts import EntityLink
 
 		self_ct = ContentType.objects.get_for_model(cls)
@@ -246,7 +247,8 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		]
 		entity_attrs = ['self', 'aliased_to']
 
-		def to_active(self, instance: 'TagWork') -> 'TagWork':
+		@staticmethod
+		def to_active(instance: 'TagWork') -> 'TagWork':
 			return instance.aliased_to or instance
 
 	def __str__(self):
@@ -555,6 +557,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 		tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
 		entity_attrs = ['self']
 
+		@staticmethod
 		def to_active(instance):
 			return instance.aliased_to or instance
 

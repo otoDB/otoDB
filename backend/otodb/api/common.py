@@ -1,52 +1,50 @@
-from typing import Optional, Annotated, Self
-from functools import wraps, lru_cache
-
-from pydantic import field_validator, create_model, model_validator
+import re
+from functools import lru_cache, wraps
+from typing import Annotated, Optional, Self
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpRequest
-
 from django_request_cache import get_request_cache
-from ninja import Schema, ModelSchema, Field, Query, Header, Router
-from ninja.utils import contribute_operation_args
+from ninja import Field, Header, ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
+from ninja.utils import contribute_operation_args
+from pydantic import create_model, field_validator, model_validator
 
 from otodb.account.models import Account
 from otodb.models import (
-	MediaWork,
-	WorkSource,
 	MediaSong,
+	MediaWork,
 	ModerationEvent,
+	Notification,
 	Pool,
 	PoolItem,
-	WorkRelation,
-	SongRelation,
 	Revision,
 	RevisionChange,
 	RevisionChangeEntity,
-	Notification,
+	SongRelation,
 	Subscription,
+	WorkRelation,
+	WorkSource,
 )
 from otodb.models.enums import (
-	Role,
-	ProfileConnectionTypes,
-	Route,
-	WorkRelationTypes,
-	SongRelationTypes,
-	WorkTagCategory,
-	Rating,
-	LanguageTypes,
 	ErrorCode,
-	WorkOrigin,
-	WorkStatus,
+	FlagStatus,
+	LanguageTypes,
 	Platform,
 	Preferences,
 	PreferencesValueTypeMap,
+	ProfileConnectionTypes,
+	Rating,
+	Role,
+	Route,
+	SongRelationTypes,
 	Status,
-	FlagStatus,
+	WorkOrigin,
+	WorkRelationTypes,
+	WorkStatus,
+	WorkTagCategory,
 )
-import re
 
 
 class AuthedHttpRequest(HttpRequest):

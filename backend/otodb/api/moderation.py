@@ -1,13 +1,12 @@
 from datetime import datetime
 
 from django.http import HttpRequest
-from ninja import Schema, Router
+from ninja import Router, Schema
 from ninja.errors import HttpError
 
-from otodb.models import ModerationEvent
-from otodb.models.enums import ModerationEventType, FlagStatus
 from otodb.account.models import Account
-
+from otodb.models import ModerationEvent
+from otodb.models.enums import FlagStatus, ModerationEventType
 
 moderation_router = Router()
 

@@ -4,8 +4,9 @@ from django.db import migrations
 
 
 def nicopedia_add_v(apps, schema_editor):
-	from django.db.models import CharField, Value, OuterRef, Exists, TextField
+	from django.db.models import CharField, Exists, OuterRef, TextField, Value
 	from django.db.models.functions import Concat
+
 	from otodb.models.enums import TagWorkConnectionTypes
 
 	ContentType = apps.get_model('contenttypes', 'ContentType')

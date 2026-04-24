@@ -13,7 +13,7 @@ from django_comments_xtd.models import XtdComment
 
 from otodb.common import process_video_info
 from otodb.models import MediaWork, WorkSource
-from otodb.models.enums import Rating, Platform
+from otodb.models.enums import Platform, Rating
 
 
 def random_str(length):

@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { error, type Cookies } from '@sveltejs/kit';
 import type { CookieSerializeOptions } from 'cookie';
@@ -72,16 +71,6 @@ export const rawClient = createClient<paths>({
 	baseUrl: env.INTERNAL_API_ENDPOINT,
 	credentials: 'include'
 });
-
-export const setToken = (token: string) => {
-	if (browser)
-		client.use({
-			async onRequest({ request }) {
-				request.headers.set('X-CSRFToken', token);
-				return request;
-			}
-		});
-};
 
 export const forwardCookies = (cookies: Cookies, response: Response) => {
 	for (const { name, value, expires, maxAge, sameSite } of setCookie.parse(

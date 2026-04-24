@@ -8,3 +8,6 @@ src/lib/schema.ts
 
 # Fink has its own formatting
 messages/
+
+# msw
+static/mockServiceWorker.js

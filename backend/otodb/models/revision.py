@@ -228,6 +228,8 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 
 	class Meta:
 		abstract = True
+		# Keep _base_manager tracked so cascades don't bypass revision tracking
+		base_manager_name = 'objects'
 
 	def __init_subclass__(cls, **kwargs):
 		super().__init_subclass__(**kwargs)
@@ -287,3 +289,17 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 				cache.set('rev_del', rev_del)
 
 			return ret
+
+
+@models.signals.class_prepared.connect
+def _pin_base_manager(sender, **kwargs):
+	# Intermediate abstract parents (e.g. tagulous's TaggedModel) break base_manager_name inheritance, so re-pin it here
+	if not issubclass(sender, RevisionTrackedModel):
+		return
+	meta = sender._meta
+	if meta.abstract or meta.base_manager_name:
+		return
+	if 'objects' not in meta.managers_map:
+		return
+	meta.base_manager_name = 'objects'
+	meta.__dict__.pop('base_manager', None)

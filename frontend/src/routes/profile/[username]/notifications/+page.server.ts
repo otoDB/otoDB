@@ -12,15 +12,37 @@ export const load: PageServerLoad = async ({ fetch, locals, url, params }) => {
 
 	const batch_size = 20;
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
-	const { data } = await client.GET('/api/profile/notifications', {
-		fetch,
-		params: { query: { limit: batch_size, offset: (page - 1) * batch_size } }
-	});
+	const sub_page = parseInt(url.searchParams.get('sub_page') ?? '0', 10) || 1;
+
+	const [nonsub, sub] = await Promise.all([
+		client.GET('/api/profile/notifications', {
+			fetch,
+			params: {
+				query: {
+					subscription: false,
+					limit: batch_size,
+					offset: (page - 1) * batch_size
+				}
+			}
+		}),
+		client.GET('/api/profile/notifications', {
+			fetch,
+			params: {
+				query: {
+					subscription: true,
+					limit: batch_size,
+					offset: (sub_page - 1) * batch_size
+				}
+			}
+		})
+	]);
 
 	return {
-		notifications: data,
+		nonsub_notifications: nonsub.data,
+		sub_notifications: sub.data,
 		batch_size,
 		page,
+		sub_page,
 		head: { title: m.free_keen_wren_exhale() }
 	};
 };

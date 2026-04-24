@@ -6,13 +6,15 @@
 		page_size,
 		n_count,
 		window_size = 2,
-		base_url = null
+		base_url = null,
+		param_name = 'page'
 	}: {
 		page: number;
 		n_count: number;
 		page_size: number;
 		window_size?: number;
 		base_url?: string | null;
+		param_name?: string;
 	} = $props();
 
 	const n_pages = $derived(Math.ceil(n_count / page_size));
@@ -23,9 +25,9 @@
 	);
 
 	const buildUrl = (page: number) => {
-		if (!base_url) return `?page=${page}`;
+		if (!base_url) return `?${param_name}=${page}`;
 		const u = new URL(base_url);
-		u.searchParams.set('page', page.toString());
+		u.searchParams.set(param_name, page.toString());
 		return u.href;
 	};
 

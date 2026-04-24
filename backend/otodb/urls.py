@@ -1,5 +1,4 @@
-from django.conf import settings
-from django.urls import include, path
+from django.urls import path
 
 from . import views
 from .api import api
@@ -11,6 +10,3 @@ urlpatterns = [
 	path('api/', api.urls),
 	path('chores/cookies', views.upload_cookies, name='upload_cookies'),
 ]
-
-if settings.OTODB_REDIS_URL:
-	urlpatterns.append(path('django-rq/', include('django_rq.urls')))

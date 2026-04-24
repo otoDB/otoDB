@@ -1,13 +1,13 @@
-import { INTERNAL_API_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import client from '$lib/api.server';
+import { asEnum } from '$lib/enums';
+import { getLanguageId, languages } from '$lib/enums/language';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
 import { Levels, PostCategory, type components } from '$lib/schema';
-import { asEnum } from '$lib/enums';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getLanguageId, languages } from '$lib/enums/language';
 
 export const load: PageServerLoad = ({ locals, url }) => {
 	userLevelGuard(locals.user, Levels.Member);
@@ -44,7 +44,7 @@ export const actions = {
 		try {
 			({ data: post_id } = await client.POST('/api/post/post', {
 				fetch,
-				params: { header: { 'otodb-internal-secret': INTERNAL_API_SECRET } },
+				params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
 				body: {
 					category: category,
 					post,

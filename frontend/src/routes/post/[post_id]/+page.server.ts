@@ -1,10 +1,10 @@
-import { INTERNAL_API_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import client from '$lib/api.server';
 import { languages } from '$lib/enums/language';
 import { get_entity, renderMarkdown } from '$lib/markdown';
+import { ModelsWithComments } from '$lib/schema';
 import { fail } from '@sveltejs/kit';
 import type { Actions, LayoutServerLoad } from './$types';
-import { ModelsWithComments } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ fetch, params }) => {
 	const { data: comments } = await client.GET('/api/comment/comments', {
@@ -36,7 +36,7 @@ export const actions = {
 
 		await client.PUT('/api/post/post', {
 			fetch,
-			params: { header: { 'otodb-internal-secret': INTERNAL_API_SECRET } },
+			params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
 			body: {
 				post_id: +params.post_id,
 				title,

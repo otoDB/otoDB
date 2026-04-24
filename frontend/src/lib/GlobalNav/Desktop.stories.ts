@@ -32,6 +32,18 @@ export const Member: Story = {
 	}
 };
 
+export const MemberWithNotifications: Story = {
+	args: {
+		user: {
+			username: 'member',
+			level: Levels.Member,
+			notifs_count: 5,
+			notifs_nonsub_count: 2
+		},
+		stats
+	}
+};
+
 export const Editor: Story = {
 	args: {
 		user: {

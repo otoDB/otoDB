@@ -1,3 +1,5 @@
+import logging
+
 from dirtyfields import DirtyFieldsMixin
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -8,6 +10,8 @@ from django.dispatch import receiver
 from django_request_cache import get_request_cache
 
 from otodb.models.enums import RevisionChain, Route
+
+logger = logging.getLogger(__name__)
 
 
 class Revision(models.Model):
@@ -189,8 +193,14 @@ class RevisionTrackedQuerySet(models.QuerySet):
 
 		cache = get_request_cache()
 		if cache is None:
-			print(
-				f'DELETING {len(instances_to_delete)} objects ON {self.model} --- NOT TRACKING CHANGES'
+			logger.warning(
+				'DELETING %d %s ROW(S) WITHOUT REVISION TRACKING. Cascades: %s',
+				len(instances_to_delete),
+				self.model.__name__,
+				[
+					(ContentType.objects.get(pk=ctpk).model, pk)
+					for ctpk, pk, _ in deletions
+				],
 			)
 		else:
 			rev_del = cache.get('rev_del')
@@ -259,11 +269,17 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 		# Needs to commit so we get a PK, but only after dirty fields have been copied
 		super().save(*args, **kwargs)
 		if cache is None:
-			for k, v in dirty.items():
-				if k in type(self)._revision_meta.tracked_fields:
-					print(
-						f'UPDATING {k}: {v} -> {getattr(self, k)} ON {self} ({type(self)}.{self.pk}) --- NOT TRACKING CHANGES'
-					)
+			tracked_dirty = [
+				k for k in dirty if k in type(self)._revision_meta.tracked_fields
+			]
+			if tracked_dirty:
+				logger.warning(
+					'SAVING %s (%s pk=%s) WITHOUT REVISION TRACKING. Untracked field changes: %s',
+					self,
+					type(self).__name__,
+					self.pk,
+					{k: (dirty[k], getattr(self, k)) for k in tracked_dirty},
+				)
 		else:
 			rev = cache.get('rev')
 			ctpk = ContentType.objects.get_for_model(model=type(self)).pk
@@ -282,7 +298,16 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 		if ret := super().delete(*args, **kwargs):
 			cache = get_request_cache()
 			if cache is None:
-				print(f'DELETING {self} ({type(self)}.{pk}) --- NOT TRACKING CHANGES')
+				logger.warning(
+					'DELETING %s (%s pk=%s) WITHOUT REVISION TRACKING. Cascades: %s',
+					self,
+					type(self).__name__,
+					pk,
+					[
+						(ContentType.objects.get(pk=ctpk).model, obj_pk)
+						for ctpk, obj_pk, _ in deletions
+					],
+				)
 			else:
 				rev_del = cache.get('rev_del')
 				for ctpk, obj_pk, ents in deletions:

@@ -314,7 +314,10 @@
 														}
 													);
 													if (error)
-														callErrorCodeToast(error.code, error.data ?? {});
+														callErrorCodeToast(
+															error.code,
+															error.data ?? {}
+														);
 													else location.reload();
 												}}
 											>
@@ -351,7 +354,10 @@
 														}
 													);
 													if (error)
-														callErrorCodeToast(error.code, error.data ?? {});
+														callErrorCodeToast(
+															error.code,
+															error.data ?? {}
+														);
 													else location.reload();
 												}}
 											>

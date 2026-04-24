@@ -260,6 +260,7 @@ def add_rev_restore(ctpk, pk, new_pk):
 	assert pk != new_pk
 	cache = get_request_cache()
 	rev = cache.get('rev_rst')
+	rev_del = cache.get('rev_del')
 
 	while pk is not None:
 		last = pk
@@ -267,7 +268,7 @@ def add_rev_restore(ctpk, pk, new_pk):
 
 	assert RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=last, deleted=True
-	).exists()
+	).exists() or any(ctpk == ctid and last == idd for ctid, idd, _ in rev_del)
 	rev[(ctpk, last)] = new_pk
 	cache.set('rev_rst', rev)
 
@@ -298,9 +299,8 @@ def _get_all_previous_field_values(
 		target_type_id=target_type_id,
 		target_id=target_id,
 		rev__date__lt=date,
+		target_column__in=fields or model_class._revision_meta.tracked_fields,
 	)
-	if fields:
-		query = query.filter(target_column__in=fields)
 	qs = query.order_by('target_column', '-rev__date').distinct('target_column')
 	latest_changes = dict(qs.values_list('target_column', 'target_value'))
 

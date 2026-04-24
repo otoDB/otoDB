@@ -5,6 +5,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { m } from '$lib/paraglide/messages.js';
+	import { callErrorCodeToast } from '$lib/toast';
 
 	let { data } = $props();
 
@@ -17,9 +18,13 @@
 	];
 
 	const approveSource = async (sourceId: number) => {
-		await client.POST('/api/upload/approve', {
+		const { error } = await client.POST('/api/upload/approve', {
 			params: { query: { source_id: sourceId } }
 		});
+		if (error) {
+			callErrorCodeToast(error.code, error.data ?? {});
+			return;
+		}
 		invalidateAll();
 	};
 
@@ -29,9 +34,13 @@
 			alert(m.fun_bland_llama_twirl({ thing: m.honest_tangy_butterfly_dream() }));
 			return;
 		}
-		await client.POST('/api/upload/reject', {
+		const { error } = await client.POST('/api/upload/reject', {
 			params: { query: { source_id: sourceId, reason } }
 		});
+		if (error) {
+			callErrorCodeToast(error.code, error.data ?? {});
+			return;
+		}
 		invalidateAll();
 	};
 </script>

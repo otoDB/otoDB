@@ -35,6 +35,11 @@ const preview: Preview = {
 			if (ctx.globals?.lang) setLocale(ctx.globals.lang);
 			return story();
 		},
+		(story) => {
+			const s = story();
+			document.body.style.backgroundColor = 'var(--otodb-color-bg-primary)';
+			return s;
+		},
 		withThemeByDataAttribute({
 			themes: {
 				'default': 'default',

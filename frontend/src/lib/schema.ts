@@ -3563,6 +3563,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     otodb_api_work_disapprove_work: {
@@ -3583,6 +3592,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
         };
     };
@@ -3927,6 +3945,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     otodb_api_source_approve_source: {
@@ -3946,6 +3973,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
         };
     };
@@ -5734,7 +5770,13 @@ export enum ErrorCode {
     Source_Unapproved = 10009,
     Source_Flagged = 10010,
     No_More_Upload_Slots = 10011,
-    Self_Moderation = 10012
+    Self_Moderation = 10012,
+    Flag_Not_Approved = 10013,
+    Flag_Pending_Flag = 10014,
+    Flag_Pending_Appeal = 10015,
+    Flag_Limit_Reached = 10016,
+    Appeal_Pending = 10017,
+    No_More_Appeal_Slots = 10018
 }
 export enum LanguageTypes {
     N_A = 0,

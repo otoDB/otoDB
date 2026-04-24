@@ -34,6 +34,7 @@ from otodb.models.enums import (
 from otodb.tasks import enqueue_deferred, resolve_expired_source_task
 
 from .common import (
+	ApiError,
 	AuthedHttpRequest,
 	Error,
 	RouterWithRevision,
@@ -147,10 +148,7 @@ def new_source_from_url(
 	is_editor = request.user.level >= Account.Levels.EDITOR
 
 	if metadata is not None and not is_editor:
-		return 403, {
-			'code': ErrorCode.EDITOR_ONLY,
-			'data': {'message': 'Only editors can make changes here.'},
-		}
+		raise ApiError(403, ErrorCode.EDITOR_ONLY)
 
 	metadata_dict = metadata.dict() if metadata else None
 	src, info = WorkSource.from_url(
@@ -158,10 +156,7 @@ def new_source_from_url(
 	)
 
 	if src is None:
-		return 400, {
-			'code': ErrorCode.BAD_URL,
-			'data': {'message': 'Bad request, is the URL correct?'},
-		}
+		raise ApiError(400, ErrorCode.BAD_URL)
 
 	# Source already has a work -> redirect
 	if src.media:
@@ -173,17 +168,11 @@ def new_source_from_url(
 			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
 		)
 		if work.status == Status.UNAPPROVED:
-			return 400, {
-				'code': ErrorCode.SOURCE_UNAPPROVED,
-				'data': {'message': 'Cannot add sources to unapproved works'},
-			}
+			raise ApiError(400, ErrorCode.SOURCE_UNAPPROVED)
 		if work.moderation_events.filter(
 			event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
 		).exists():
-			return 400, {
-				'code': ErrorCode.SOURCE_FLAGGED,
-				'data': {'message': 'Cannot add sources to flagged works'},
-			}
+			raise ApiError(400, ErrorCode.SOURCE_FLAGGED)
 		if not is_editor and work.status == Status.APPROVED:
 			src.is_pending = True
 			transaction.on_commit(
@@ -314,8 +303,7 @@ def reject_pending_source(src: WorkSource, by, reason: str):
 def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
 	"""Reject a pending source on an existing work. Unbinds the source."""
 	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
-	if err := ensure_can_moderate(request.user, src.media):
-		return err
+	ensure_can_moderate(request.user, src.media)
 	reject_pending_source(src, by=request.user, reason=reason)
 
 
@@ -324,8 +312,7 @@ def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
 def approve_source(request: AuthedHttpRequest, source_id: int):
 	"""Approve a pending source on an existing work."""
 	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
-	if err := ensure_can_moderate(request.user, src.media):
-		return err
+	ensure_can_moderate(request.user, src.media)
 	src.is_pending = False
 	src.save(update_fields=['is_pending'])
 	ModerationEvent.objects.create(

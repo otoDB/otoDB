@@ -11,34 +11,48 @@ def _deleted_keys():
 
 @pytest.mark.django_db
 class TestCascadeDeletionTracking:
-	"""Deleting a tracked parent must record every tracked cascade child in rev_del,
-	even when Django routes them through its `fast_deletes` optimization path."""
+	"""When Django routes a tracked cascade child through its `fast_deletes`
+	optimization, `_collect_cascade_deletions` must still record it.
+	"""
 
-	def test_cascade_deletes_tracked_children_via_queryset(self, member):
-		work = MediaWork.objects.create(title='x', description='', rating=0)
-		tag = TagWork.objects.create(name='t1', slug='t1')
-		twi = TagWorkInstance.objects.create(work=work, work_tag=tag)
+	@pytest.fixture
+	def force_fast_delete(self, monkeypatch):
+		from django.db.models.deletion import Collector
 
-		get_request_cache().set('rev_del', [])
-		MediaWork.objects.filter(pk=work.pk).delete()
-
-		mw_ct = ContentType.objects.get_for_model(MediaWork).pk
-		twi_ct = ContentType.objects.get_for_model(TagWorkInstance).pk
-		assert (mw_ct, work.pk) in _deleted_keys()
-		assert (twi_ct, twi.pk) in _deleted_keys(), (
-			'TagWorkInstance cascade was not tracked'
+		monkeypatch.setattr(
+			Collector, '_has_signal_listeners', lambda self, model: False
 		)
 
-	def test_cascade_deletes_tracked_children_via_instance(self, member):
-		work = MediaWork.objects.create(title='x2', description='', rating=0)
-		tag = TagWork.objects.create(name='t2', slug='t2')
-		twi = TagWorkInstance.objects.create(work=work, work_tag=tag)
+	def test_cascade_deletes_tracked_children_via_queryset(
+		self, member, force_fast_delete
+	):
+		parent = TagWork.objects.create(name='p1', slug='p1')
+		child = TagWork.objects.create(name='c1', slug='c1')
+		twp = TagWorkParenthood.objects.create(tag=child, parent=parent, primary=True)
 
 		get_request_cache().set('rev_del', [])
-		work.delete()
+		TagWork.objects.filter(pk=parent.pk).delete()
 
-		twi_ct = ContentType.objects.get_for_model(TagWorkInstance).pk
-		assert (twi_ct, twi.pk) in _deleted_keys()
+		tw_ct = ContentType.objects.get_for_model(TagWork).pk
+		twp_ct = ContentType.objects.get_for_model(TagWorkParenthood).pk
+		assert (tw_ct, parent.pk) in _deleted_keys()
+		assert (twp_ct, twp.pk) in _deleted_keys(), (
+			'TagWorkParenthood cascade was not tracked; Django fast-deleted it '
+			'and _collect_cascade_deletions missed the fast_deletes bucket'
+		)
+
+	def test_cascade_deletes_tracked_children_via_instance(
+		self, member, force_fast_delete
+	):
+		parent = TagWork.objects.create(name='p2', slug='p2')
+		child = TagWork.objects.create(name='c2', slug='c2')
+		twp = TagWorkParenthood.objects.create(tag=child, parent=parent, primary=True)
+
+		get_request_cache().set('rev_del', [])
+		parent.delete()
+
+		twp_ct = ContentType.objects.get_for_model(TagWorkParenthood).pk
+		assert (twp_ct, twp.pk) in _deleted_keys()
 
 
 @pytest.mark.django_db

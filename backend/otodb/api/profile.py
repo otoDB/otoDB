@@ -285,8 +285,13 @@ class NotificationSchema(ModelSchema):
 	'notifications', auth=django_auth, response=list[NotificationSchema]
 )
 @paginate
-def notifications(request: AuthedHttpRequest):
-	return request.user.notifs.order_by('dismissed')
+def notifications(request: AuthedHttpRequest, subscription: bool | None = None):
+	qs = request.user.notifs.order_by('dismissed')
+	if subscription is True:
+		qs = qs.filter(revision__isnull=False)
+	elif subscription is False:
+		qs = qs.filter(revision__isnull=True)
+	return qs
 
 
 @profile_router.put('notification', auth=django_auth)

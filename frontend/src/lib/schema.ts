@@ -4159,6 +4159,7 @@ export interface operations {
     otodb_api_profile_notifications: {
         parameters: {
             query?: {
+                subscription?: boolean | null;
                 limit?: number;
                 offset?: number;
             };

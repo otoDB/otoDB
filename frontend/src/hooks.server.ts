@@ -48,10 +48,7 @@ const handleContentLength: Handle = async ({ event, resolve }) => {
 export const handle: Handle = sequence(handleAuth, handleContentLength, handleParaglide);
 
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
-	if (
-		env.PUBLIC_BACKEND_URL_INTERNAL &&
-		request.url.startsWith(env.PUBLIC_BACKEND_URL_INTERNAL)
-	) {
+	if (env.INTERNAL_API_ENDPOINT && request.url.startsWith(env.INTERNAL_API_ENDPOINT)) {
 		const cookies = event.request.headers.get('cookie');
 		if (cookies) request.headers.set('cookie', cookies);
 

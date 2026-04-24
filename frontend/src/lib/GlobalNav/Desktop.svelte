@@ -111,16 +111,6 @@
 					{@render link('/login', m.inner_stale_anteater_walk())}
 					{@render link('/register', m.blue_whole_camel_type())}
 				{:else}
-					{@render link(
-						`/profile/${user.username}/notifications`,
-						m.free_keen_wren_exhale() +
-							(user.notifs_count > 0
-								? m.great_clean_beaver_amuse() +
-									m.awful_house_liger_expand({
-										content: user.notifs_count
-									})
-								: '')
-					)}
 					{@render link(`/settings`, m.orange_born_seal_ascend())}
 					{@render link('/post/new?category=2', m.bald_ideal_gadfly_jest())}
 					{@render link('/upload/add', m.fluffy_crisp_horse_imagine())}

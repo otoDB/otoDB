@@ -369,5 +369,19 @@
 	"grim_plain_crane_crash": "An error occurred while fetching data.",
 	"fun_bland_llama_twirl": "{thing} must be provided.",
 	"bright_nimble_eagle_glide": "Users",
-	"careful_close_shad_achieve": "Uncategorized"
+	"careful_close_shad_achieve": "Uncategorized",
+	"fluffy_noble_gadfly_adapt": "You cannot moderate a work you contributed to.",
+	"noble_bright_marlin_trip": "Bad request, is the URL correct?",
+	"clear_stout_otter_guide": "Only editors can make changes here.",
+	"vast_calm_raven_seek": "No matching entities found.",
+	"sharp_keen_puffin_wait": "Not enough upload slots.",
+	"plain_brief_owl_pause": "A validation error occurred.",
+	"brave_stark_orca_note": "Login failed.",
+	"grim_loose_crane_lift": "Source already has a work.",
+	"mealy_grim_elk_stop": "Cannot flag a non-approved work.",
+	"bold_sunny_stork_halt": "Work already has a pending flag.",
+	"quiet_still_mole_guard": "Cannot flag a work with a pending appeal.",
+	"stern_few_quail_rest": "Active flag limit reached.",
+	"calm_brisk_swan_queue": "Work already has a pending appeal.",
+	"tiny_snug_otter_linger": "Not enough upload slots for appeal."
 }

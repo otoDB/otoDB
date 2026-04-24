@@ -13,6 +13,7 @@ from ninja.throttling import AnonRateThrottle, AuthRateThrottle
 
 from .auth import auth_router
 from .comment import comment_router
+from .common import ApiError
 from .history import history_router
 from .list import list_router
 from .moderation import moderation_router
@@ -125,6 +126,14 @@ api.add_router('/comment/', comment_router)
 api.add_router('/history/', history_router)
 api.add_router('/request/', request_router)
 api.add_router('/moderation/', moderation_router)
+
+
+@api.exception_handler(ApiError)
+def _handle_api_error(request, exc: ApiError):
+	body: dict = {'code': exc.code}
+	if exc.data is not None:
+		body['data'] = exc.data
+	return api.create_response(request, body, status=exc.status)
 
 
 @api.get('stats', response=tuple[int, int, int, int])

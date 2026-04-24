@@ -1,5 +1,5 @@
 <script lang="ts">
-	import client, { getDisplayText } from '$lib/api';
+	import client from '$lib/api';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {
@@ -25,6 +25,7 @@
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callSavingToast } from '$lib/toast';
+	import { getDisplayText } from '$lib/ui.js';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
 	import type { PageProps } from './$types.js';

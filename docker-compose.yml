@@ -50,7 +50,8 @@ services:
     build:
       context: ./frontend
       args:
-        OTODB_HASH: ${OTODB_HASH:-}
+        INTERNAL_API_ENDPOINT: http://backend:8000/
+        PUBLIC_API_ENDPOINT: https://otodb.net/
     env_file:
       - .env
     restart: always

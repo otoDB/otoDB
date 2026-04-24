@@ -1,9 +1,14 @@
+import { browser } from '$app/environment';
+import { env } from '$env/dynamic/private';
+import { error, type Cookies } from '@sveltejs/kit';
+import type { CookieSerializeOptions } from 'cookie';
 import createClient, {
 	type ClientRequestMethod,
 	type MaybeOptionalInit,
 	type Middleware,
 	type ParseAsResponse
 } from 'openapi-fetch';
+import type { InitParam } from 'openapi-fetch/src/index.js';
 import type {
 	HttpMethod,
 	MediaType,
@@ -11,10 +16,8 @@ import type {
 	ResponseObjectMap,
 	SuccessResponse
 } from 'openapi-typescript-helpers';
-import type { InitParam } from 'openapi-fetch/src/index.js';
-import { error } from '@sveltejs/kit';
+import setCookie from 'set-cookie-parser';
 import type { paths } from './schema';
-import { env } from '$env/dynamic/public';
 
 // The following types are re-specializations lifted from openapi-typescript-helpers with a custom FetchResponse.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,7 +52,7 @@ interface Client<Paths extends {}, Media extends MediaType = MediaType> {
 	eject(...middleware: Middleware[]): void;
 }
 const client = createClient<paths>({
-	baseUrl: env.PUBLIC_BACKEND_URL_INTERNAL,
+	baseUrl: env.INTERNAL_API_ENDPOINT,
 	credentials: 'include'
 });
 client.use({
@@ -64,3 +67,30 @@ client.use({
 	}
 });
 export default client as Client<paths>;
+
+export const rawClient = createClient<paths>({
+	baseUrl: env.INTERNAL_API_ENDPOINT,
+	credentials: 'include'
+});
+
+export const setToken = (token: string) => {
+	if (browser)
+		client.use({
+			async onRequest({ request }) {
+				request.headers.set('X-CSRFToken', token);
+				return request;
+			}
+		});
+};
+
+export const forwardCookies = (cookies: Cookies, response: Response) => {
+	for (const { name, value, expires, maxAge, sameSite } of setCookie.parse(
+		response.headers.getSetCookie()
+	))
+		cookies.set(name, value, {
+			path: '/',
+			expires,
+			maxAge,
+			sameSite: sameSite as CookieSerializeOptions['sameSite']
+		});
+};

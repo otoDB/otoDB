@@ -1,7 +1,7 @@
 import client from '$lib/api.server';
 import { parseMentions, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { INTERNAL_API_SECRET } from '$env/static/private';
 import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
 import { m } from '$lib/paraglide/messages';
@@ -37,7 +37,7 @@ export const actions = {
 			fetch,
 			params: {
 				header: {
-					'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET
+					'otodb-internal-secret': INTERNAL_API_SECRET
 				}
 			},
 			body: {
@@ -57,7 +57,7 @@ export const actions = {
 
 		await client.PUT('/api/comment/comment', {
 			fetch,
-			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
+			params: { header: { 'otodb-internal-secret': INTERNAL_API_SECRET } },
 			body: { comment_id, comment_text }
 		});
 	}

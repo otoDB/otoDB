@@ -1,12 +1,12 @@
 <script lang="ts" generics="T extends 'work' | 'song'">
-	import { m } from '$lib/paraglide/messages.js';
 	import { enumValues, SongRelationNames, WorkRelationNames } from '$lib/enums.js';
-	import { getDisplayText } from '$lib/api';
-	import mermaid from 'mermaid';
+	import { m } from '$lib/paraglide/messages.js';
+	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
+	import { getDisplayText } from '$lib/ui';
 	import elkLayouts from '@mermaid-js/layout-elk';
+	import mermaid from 'mermaid';
 	import { onMount } from 'svelte';
 	import { SVGViewer } from 'svelte-svg-viewer';
-	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
 
 	type Work = Omit<components['schemas']['SlimWorkSchema'], 'status'>;
 	type Song = components['schemas']['SongSchema'];

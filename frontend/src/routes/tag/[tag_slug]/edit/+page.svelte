@@ -4,7 +4,7 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
-	import client, { getTagDisplaySlug } from '$lib/api';
+	import client from '$lib/api';
 	import { languages } from '$lib/enums/language.js';
 	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
 	import { allMediaTypes, mediaTypes } from '$lib/enums/mediaType.js';
@@ -26,6 +26,7 @@
 	} from '$lib/schema.js';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 	import { enumValues } from '$lib/enums';
+	import { getTagDisplaySlug } from '$lib/ui.js';
 
 	let { data, form } = $props();
 

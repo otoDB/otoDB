@@ -1,4 +1,4 @@
-import { setToken } from '$lib/api';
+import { setToken } from '$lib/api.server';
 import type { LayoutLoad } from './$types';
 
 export const load: LayoutLoad = ({ data }) => {

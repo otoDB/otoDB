@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { INTERNAL_API_SECRET } from '$env/static/private';
 import client from '$lib/api.server';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
@@ -44,7 +44,7 @@ export const actions = {
 		try {
 			({ data: post_id } = await client.POST('/api/post/post', {
 				fetch,
-				params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
+				params: { header: { 'otodb-internal-secret': INTERNAL_API_SECRET } },
 				body: {
 					category: category,
 					post,

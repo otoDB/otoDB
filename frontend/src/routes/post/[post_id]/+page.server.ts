@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { INTERNAL_API_SECRET } from '$env/static/private';
 import client from '$lib/api.server';
 import { languages } from '$lib/enums/language';
 import { get_entity, renderMarkdown } from '$lib/markdown';
@@ -36,7 +36,7 @@ export const actions = {
 
 		await client.PUT('/api/post/post', {
 			fetch,
-			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
+			params: { header: { 'otodb-internal-secret': INTERNAL_API_SECRET } },
 			body: {
 				post_id: +params.post_id,
 				title,

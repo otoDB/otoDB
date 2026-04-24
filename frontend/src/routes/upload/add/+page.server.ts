@@ -1,12 +1,11 @@
+import client, { rawClient } from '$lib/api.server';
+import { hasUserLevel } from '$lib/enums/userLevel';
+import { m } from '$lib/paraglide/messages';
+import { userLevelGuard } from '$lib/route_guard';
+import { Levels, WorkStatus, type components } from '$lib/schema';
+import { getDisplayText } from '$lib/ui';
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client from '$lib/api.server';
-import clientRaw, { getDisplayText } from '$lib/api';
-
-import { userLevelGuard } from '$lib/route_guard';
-import { m } from '$lib/paraglide/messages';
-import { hasUserLevel } from '$lib/enums/userLevel';
-import { Levels, WorkStatus, type components } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 	userLevelGuard(locals.user, Levels.Member, url.pathname);
@@ -100,7 +99,7 @@ export const actions = {
 		}
 
 		if (editing_unavailable_source && metadata) {
-			const { data: work_id, error: putError } = await clientRaw.PUT('/api/upload/source', {
+			const { data: work_id, error: putError } = await rawClient.PUT('/api/upload/source', {
 				fetch,
 				params: { query: { source_id: +source } },
 				body: metadata
@@ -117,7 +116,7 @@ export const actions = {
 			redirect(303, `/work/${work_id}`);
 		}
 
-		const { data: result, error: postError } = await clientRaw.POST('/api/upload/source', {
+		const { data: result, error: postError } = await rawClient.POST('/api/upload/source', {
 			fetch,
 			params: {
 				query: {

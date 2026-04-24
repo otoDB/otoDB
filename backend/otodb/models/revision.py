@@ -4,6 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.deletion import Collector
+from django.dispatch import receiver
 from django_request_cache import get_request_cache
 
 from otodb.models.enums import RevisionChain, Route
@@ -291,7 +292,7 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 			return ret
 
 
-@models.signals.class_prepared.connect
+@receiver(models.signals.class_prepared)
 def _pin_base_manager(sender, **kwargs):
 	# Intermediate abstract parents (e.g. tagulous's TaggedModel) break base_manager_name inheritance, so re-pin it here
 	if not issubclass(sender, RevisionTrackedModel):

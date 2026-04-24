@@ -1,9 +1,13 @@
 import type { Preview } from '@storybook/sveltekit';
+import { initialize, mswLoader } from 'msw-storybook-addon';
 import '../src/app.css';
 import { setLocale } from '../src/lib/paraglide/runtime';
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
 
+initialize();
+
 const preview: Preview = {
+	loaders: [mswLoader],
 	parameters: {
 		controls: {
 			matchers: {

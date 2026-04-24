@@ -1,11 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
+import { http, HttpResponse } from 'msw';
 import type { ComponentProps } from 'svelte';
 import Footer from './Footer.svelte';
+
+const handlers = [http.post('*/api/profile/prefs', () => new HttpResponse(null, { status: 200 }))];
 
 const meta = {
 	component: Footer,
 	args: {
 		user: null
+	},
+	parameters: {
+		msw: { handlers }
 	}
 } satisfies Meta<ComponentProps<typeof Footer>>;
 

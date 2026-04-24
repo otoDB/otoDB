@@ -1,9 +1,7 @@
+import client, { forwardCookies, rawClient } from '$lib/api.server';
+import { m } from '$lib/paraglide/messages';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client from '$lib/api.server';
-import clientRaw from '$lib/api';
-import { forwardCookies } from '$lib/api.server';
-import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
 	let token = undefined;
@@ -25,7 +23,7 @@ export const actions = {
 		if (!password || !confirm) return fail(400, { missing: true });
 		else if (password != confirm) return fail(400, { mismatch: true });
 
-		const { error } = await clientRaw.POST('/api/auth/reset_password', {
+		const { error } = await rawClient.POST('/api/auth/reset_password', {
 			body: { password, token },
 			fetch
 		});

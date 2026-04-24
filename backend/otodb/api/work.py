@@ -62,6 +62,7 @@ from .common import (
 	WorkRelationSchema,
 	WorkSchema,
 	WorkSourceSchema,
+	ensure_can_moderate,
 	post_relations,
 	user_is_editor,
 	user_is_staff,
@@ -442,11 +443,13 @@ def resolve_work(work: MediaWork):
 	work.save(update_fields=['status'])
 
 
-@work_router.post('approve', auth=django_auth)
+@work_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 def approve_work(request: AuthedHttpRequest, work_id: int):
 	"""Approve a pending or flagged work, making it active."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	if err := ensure_can_moderate(request.user, work):
+		return err
 
 	work.status = Status.APPROVED
 	work.save(update_fields=['status'])
@@ -464,11 +467,13 @@ def approve_work(request: AuthedHttpRequest, work_id: int):
 	)
 
 
-@work_router.post('disapprove', auth=django_auth)
+@work_router.post('disapprove', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 def disapprove_work(request: AuthedHttpRequest, work_id: int, reason: str):
 	"""Record that a user reviewed a work and chose not to approve it."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+	if err := ensure_can_moderate(request.user, work):
+		return err
 	ModerationEvent.objects.update_or_create(
 		work=work,
 		by=request.user,

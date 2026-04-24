@@ -23,6 +23,8 @@ from .tag import TagSong, TagWork, tagwork_ordering_case
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
 
+	from otodb.account.models import Account
+
 	from .pool import PoolItem
 	from .relations import WorkRelation
 	from .work_source import WorkSource
@@ -208,6 +210,10 @@ class MediaWork(RevisionTrackedModel):
 	def pending_appeal(self) -> 'ModerationEvent | None':
 		appeals = getattr(self, '_pending_appeal', [])
 		return appeals[0] if appeals else None
+
+	def was_contributed_by(self, user: 'Account') -> bool:
+		"""True if user added any source to this work."""
+		return self.worksource_set.filter(added_by=user).exists()
 
 	def __str__(self):
 		return f'{self.pk}: {self.title}'

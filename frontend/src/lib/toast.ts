@@ -29,6 +29,7 @@ const errorCodeMessages: Partial<
 > = {
 	[ErrorCode.Source_Flagged]: () => m.antsy_main_puffin_dust(),
 	[ErrorCode.Source_Unapproved]: () => m.clean_civil_jellyfish_promise(),
+	[ErrorCode.Self_Moderation]: () => m.fluffy_noble_gadfly_adapt(),
 	[ErrorCode.Name_Slug_Mismatch]: (payload) =>
 		typeof payload.name === 'string' &&
 		typeof payload.slug === 'string' &&

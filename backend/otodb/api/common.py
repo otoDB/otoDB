@@ -268,6 +268,15 @@ user_is_editor = perm_decorator_ctor(lambda user: user.is_editor)
 user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
 
 
+def ensure_can_moderate(user: Account, work: MediaWork | None):
+	"""Block non-staff moderators from resolving a work they contributed to."""
+	if user.is_staff:
+		return None
+	if work is not None and work.was_contributed_by(user):
+		return 403, {'code': ErrorCode.SELF_MODERATION}
+	return None
+
+
 def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 	assert cls is MediaWork or cls is MediaSong
 	assert all(rel.A_id == obj_id or rel.B_id == obj_id for rel in payload)

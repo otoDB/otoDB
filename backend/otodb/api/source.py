@@ -41,6 +41,7 @@ from .common import (
 	SourceSuggestionsResponse,
 	TagWorkSchema,
 	WorkSourceSchema,
+	ensure_can_moderate,
 	user_is_editor,
 	user_is_trusted,
 	with_revision_route,
@@ -307,20 +308,24 @@ def reject_pending_source(src: WorkSource, by, reason: str):
 	)
 
 
-@source_router.post('reject', auth=django_auth)
+@source_router.post('reject', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REJECT)
 def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
 	"""Reject a pending source on an existing work. Unbinds the source."""
 	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
+	if err := ensure_can_moderate(request.user, src.media):
+		return err
 	reject_pending_source(src, by=request.user, reason=reason)
 
 
-@source_router.post('approve', auth=django_auth)
+@source_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 def approve_source(request: AuthedHttpRequest, source_id: int):
 	"""Approve a pending source on an existing work."""
 	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
+	if err := ensure_can_moderate(request.user, src.media):
+		return err
 	src.is_pending = False
 	src.save(update_fields=['is_pending'])
 	ModerationEvent.objects.create(

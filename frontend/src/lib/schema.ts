@@ -5733,7 +5733,8 @@ export enum ErrorCode {
     Name_Slug_Mismatch = 10008,
     Source_Unapproved = 10009,
     Source_Flagged = 10010,
-    No_More_Upload_Slots = 10011
+    No_More_Upload_Slots = 10011,
+    Self_Moderation = 10012
 }
 export enum LanguageTypes {
     N_A = 0,

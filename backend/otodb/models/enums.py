@@ -324,6 +324,7 @@ class ErrorCode(OtodbIntegerEnum):
 	SOURCE_UNAPPROVED = 10009
 	SOURCE_FLAGGED = 10010
 	NO_MORE_UPLOAD_SLOTS = 10011
+	SELF_MODERATION = 10012
 
 
 class Preferences(OtodbIntegerEnum):

@@ -1,31 +1,28 @@
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from django.apps import apps
-from django.db import models
-from django.db.models import (
-	CharField,
-	DateTimeField,
-	Prefetch,
-	Subquery,
-	OuterRef,
-	F,
-	Case,
-	When,
-	TextField,
-	Q,
-)
-from django.db.models.functions import Cast, Coalesce, Greatest
-
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-
+from django.db import models
+from django.db.models import (
+	Case,
+	CharField,
+	DateTimeField,
+	F,
+	OuterRef,
+	Prefetch,
+	Q,
+	Subquery,
+	TextField,
+	When,
+)
+from django.db.models.functions import Cast, Coalesce, Greatest
 from django_comments_xtd.models import XtdComment
 
-from django.conf import settings
 from .enums import LanguageTypes, NotificationReason, PostCategory
 from .revision import Revision
-
-from typing import TYPE_CHECKING
 
 
 class PostQuerySet(models.QuerySet):
@@ -66,6 +63,7 @@ class PostManager(models.Manager):
 
 	def get_queryset(self):
 		from otodb.models.tag import OtodbTagModel
+
 		from .revision import RevisionChange
 
 		tag_models = [
@@ -169,6 +167,7 @@ class Notification(models.Model):
 		on_delete=models.CASCADE,
 		related_name='notifs',
 	)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 	dismissed = models.BooleanField(default=False)
 	reason = models.IntegerField(
 		choices=NotificationReason.choices, default=NotificationReason.REPLY

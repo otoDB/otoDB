@@ -6,10 +6,10 @@ from otodb.models import MediaWork, ModerationEvent
 from otodb.models.enums import FlagStatus, ModerationEventType, Status
 from otodb.models.work_source import WorkSource
 from otodb.tasks import (
-	resolve_expired_work,
-	resolve_expired_flag,
 	resolve_expired_appeal,
+	resolve_expired_flag,
 	resolve_expired_source_task,
+	resolve_expired_work,
 )
 
 

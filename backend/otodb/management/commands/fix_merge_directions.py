@@ -6,15 +6,15 @@ being preserved. This command finds cases where a work with a lower ID has been
 marked as moved_to a work with a higher ID, and reverses the merge direction.
 """
 
-from django.core.management.base import BaseCommand
 from django.contrib.contenttypes.models import ContentType
+from django.core.management.base import BaseCommand
 from django.db import transaction
 from django_comments_xtd.models import XtdComment
 
 from otodb.models.media import MediaWork
-from otodb.models.work_source import WorkSource
 from otodb.models.pool import PoolItem
 from otodb.models.relations import WorkRelation
+from otodb.models.work_source import WorkSource
 
 
 class Command(BaseCommand):

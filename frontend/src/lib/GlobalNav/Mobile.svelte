@@ -14,6 +14,7 @@
 			username: string;
 			level: components['schemas']['Levels'];
 			notifs_count: number;
+			notifs_nonsub_count: number;
 		};
 		stats: {
 			works: number;
@@ -90,6 +91,23 @@
 	<div class="mt-8">
 		<div class="border-otodb-content-faint mb-2 border-b text-xs">
 			{m.maroon_least_pony_evoke()}
+			{#if user}
+				<a
+					href={`/profile/${user.username}/notifications`}
+					title={m.free_keen_wren_exhale()}
+					class="relative -top-0.5 no-underline"
+				>
+					{#if user.notifs_nonsub_count > 0}({user.notifs_nonsub_count}){/if}
+					<span
+						class={[
+							'text-transparent',
+							user.notifs_count > 0
+								? '[text-shadow:0_0_var(--otodb-color-content-fainter)]'
+								: 'opacity-25 [text-shadow:0_0_var(--otodb-color-content-primary)]'
+						]}>🔔</span
+					>
+				</a>
+			{/if}
 		</div>
 		<ul class="mt-4 list-none space-y-4">
 			{#if !user}
@@ -137,10 +155,10 @@
 				{m.these_bold_gorilla_flip()}
 			</div>
 			<ul class="mt-4 list-none space-y-4">
-				{@render link('/post/4', m.arable_direct_cougar_win())}
 				{@render link('/moderation', m.minor_inner_lynx_adapt())}
 				{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 				{@render link('/work/merge', m.heroic_same_wasp_conquer())}
+				{@render link('/post/4', m.arable_direct_cougar_win())}
 			</ul>
 		</div>
 	{/if}

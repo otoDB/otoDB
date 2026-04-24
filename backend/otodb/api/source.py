@@ -1,49 +1,48 @@
 from datetime import date
-from django.conf import settings
 from typing import Annotated
+
+from django.conf import settings
+from django.db import transaction
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from ninja import Schema
+from ninja.pagination import paginate
+from ninja.security import django_auth
 from pydantic import StringConstraints
 
-from django.db import transaction
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
-
-from ninja import Schema
-from ninja.security import django_auth
-from ninja.pagination import paginate
-
+from otodb.account.models import Account
 from otodb.common import process_video_info, slugify_tag
 from otodb.models import (
 	MediaWork,
 	ModerationEvent,
-	WorkSource,
 	TagWork,
 	TagWorkCreatorConnection,
+	WorkSource,
 )
 from otodb.models.enums import (
 	ErrorCode,
-	Platform,
-	WorkOrigin,
-	ProfileConnectionTypes,
-	Route,
-	WorkStatus,
-	Status,
 	FlagStatus,
 	ModerationAction,
 	ModerationEventType,
+	Platform,
+	ProfileConnectionTypes,
+	Route,
+	Status,
+	WorkOrigin,
+	WorkStatus,
 )
-from otodb.account.models import Account
 from otodb.tasks import enqueue_deferred, resolve_expired_source_task
 
 from .common import (
 	AuthedHttpRequest,
-	TagWorkSchema,
-	WorkSourceSchema,
+	Error,
+	RouterWithRevision,
 	SourceCreationResponse,
 	SourceSuggestionsResponse,
-	Error,
-	user_is_trusted,
+	TagWorkSchema,
+	WorkSourceSchema,
 	user_is_editor,
-	RouterWithRevision,
+	user_is_trusted,
 	with_revision_route,
 )
 

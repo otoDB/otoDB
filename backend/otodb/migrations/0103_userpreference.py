@@ -8,7 +8,7 @@ from django.db import migrations, models
 def move_prefs(apps, schema_editor):
 	UserPreferences = apps.get_model('otodb', 'UserPreferences')
 	UserPreference = apps.get_model('otodb', 'UserPreference')
-	from otodb.models.enums import Preferences, LanguageTypes
+	from otodb.models.enums import LanguageTypes, Preferences
 
 	for pref in UserPreferences.objects.all():
 		if pref.language != LanguageTypes.NOT_APPLICABLE:

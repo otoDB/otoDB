@@ -1,15 +1,15 @@
+from django.conf import settings
 from django.db import models
 
-from .media import MediaSong
-from .tag import TagWork
-from django.conf import settings
 from .enums import (
+	MediaConnectionTypes,
 	ProfileConnectionTypes,
 	SongConnectionTypes,
 	TagWorkConnectionTypes,
-	MediaConnectionTypes,
 )
+from .media import MediaSong
 from .revision import RevisionTrackedModel
+from .tag import TagWork
 
 
 class ProfileConnection(models.Model):

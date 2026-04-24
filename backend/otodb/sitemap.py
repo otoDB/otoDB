@@ -9,7 +9,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
 from otodb.account.models import Account
-from otodb.models import MediaWork, TagWork, TagSong, Pool, Post
+from otodb.models import MediaWork, Pool, Post, TagSong, TagWork
 from otodb.models.revision import RevisionChange
 
 CHUNK_SIZE = 10_000

@@ -25,7 +25,8 @@ export const Member: Story = {
 		user: {
 			username: 'member',
 			level: Levels.Member,
-			notifs_count: 0
+			notifs_count: 0,
+			notifs_nonsub_count: 0
 		},
 		stats
 	}
@@ -36,7 +37,8 @@ export const Editor: Story = {
 		user: {
 			username: 'editor',
 			level: Levels.Editor,
-			notifs_count: 0
+			notifs_count: 0,
+			notifs_nonsub_count: 0
 		},
 		stats
 	}
@@ -47,7 +49,8 @@ export const Admin: Story = {
 		user: {
 			username: 'admin',
 			level: Levels.Admin,
-			notifs_count: 0
+			notifs_count: 0,
+			notifs_nonsub_count: 0
 		},
 		stats
 	}

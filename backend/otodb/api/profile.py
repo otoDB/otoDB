@@ -1,49 +1,47 @@
 from typing import List, Literal
 
-from pydantic import field_validator
-
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, F, IntegerField, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
-
 from django_comments_xtd.models import XtdComment
-
-from ninja import Router, FilterSchema, Query, Field, ModelSchema
-from ninja.security import django_auth
-from ninja.pagination import paginate
+from ninja import Field, FilterSchema, ModelSchema, Query, Router
 from ninja.errors import HttpError
+from ninja.pagination import paginate
+from ninja.security import django_auth
+from pydantic import field_validator
 
 from otodb.account.models import Account
 from otodb.models import (
+	Notification,
 	Post,
 	ProfileConnection,
 	Revision,
+	RevisionChangeEntity,
 	UserPreference,
-	Notification,
 	WorkSource,
 )
 from otodb.models.enums import (
-	Status,
+	NotificationReason,
 	Platform,
+	Preferences,
+	ProfileConnectionTypes,
+	Route,
+	Status,
 	WorkOrigin,
 	WorkStatus,
-	ProfileConnectionTypes,
-	NotificationReason,
-	Preferences,
 )
 
 from .comment import ModelsWithComments
-
 from .common import (
 	AuthedHttpRequest,
+	ConnectionSchema,
 	ListSchema,
 	ProfileSchema,
-	WorkSourceSchema,
-	ConnectionSchema,
-	profile_connection_parsers,
-	make_alt_value_parser,
 	UserPreferenceSchema,
+	WorkSourceSchema,
+	make_alt_value_parser,
+	profile_connection_parsers,
 )
 
 profile_router = Router()
@@ -262,10 +260,12 @@ class NotificationSchema(ModelSchema):
 	comment: tuple[ModelsWithComments, int | str] | None
 	post: int | None = Field(None, alias='post_id')
 	reason: NotificationReason
+	revision_user: str | None = Field(None, alias='revision.user.username')
+	revision_route: Route | None = None
 
 	class Meta:
 		model = Notification
-		fields = ['dismissed', 'revision']
+		fields = ['dismissed', 'revision', 'created_at']
 
 	@field_validator('comment', mode='before', check_fields=False)
 	@classmethod
@@ -289,8 +289,19 @@ class NotificationSchema(ModelSchema):
 	'notifications', auth=django_auth, response=list[NotificationSchema]
 )
 @paginate
-def notifications(request: AuthedHttpRequest):
-	return request.user.notifs.order_by('dismissed')
+def notifications(request: AuthedHttpRequest, subscription: bool | None = None):
+	qs = request.user.notifs.annotate(
+		revision_route=Subquery(
+			RevisionChangeEntity.objects.filter(
+				change__rev_id=OuterRef('revision_id')
+			).values('route')[:1]
+		)
+	).order_by('dismissed')
+	if subscription is True:
+		qs = qs.filter(revision__isnull=False)
+	elif subscription is False:
+		qs = qs.filter(revision__isnull=True)
+	return qs
 
 
 @profile_router.put('notification', auth=django_auth)

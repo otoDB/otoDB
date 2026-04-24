@@ -116,16 +116,23 @@ def _collect_cascade_deletions(
 	deletions = []
 	collector = Collector(using=using)
 	collector.collect(instances)
-	collector_data = getattr(collector, 'data', {})
-	all_models = set(collector_data.keys())
-	for model in all_models:
-		# Only track RevisionTrackedModels
+
+	for model, instance_set in getattr(collector, 'data', {}).items():
 		if hasattr(model, '_revision_meta'):
 			ctpk = ContentType.objects.get_for_model(model).pk
-			instance_set = collector_data.get(model, set())
 			for instance in instance_set:
 				ents = _get_ents(instance)
 				deletions.append((ctpk, instance.pk, ents))
+
+	# Django's fast_deletes skip `data`, so materialize them before super().delete()
+	for qs in getattr(collector, 'fast_deletes', []):
+		model = qs.model
+		if not hasattr(model, '_revision_meta'):
+			continue
+		ctpk = ContentType.objects.get_for_model(model).pk
+		for instance in qs:
+			ents = _get_ents(instance)
+			deletions.append((ctpk, instance.pk, ents))
 
 	return deletions
 

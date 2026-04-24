@@ -2285,6 +2285,11 @@ export interface components {
             /** Count */
             count: number;
         };
+        /**
+         * Route
+         * @enum {integer}
+         */
+        Route: Route;
         /** PagedListSchema */
         PagedListSchema: {
             /** Items */
@@ -2843,11 +2848,6 @@ export interface components {
              */
             message: string;
         };
-        /**
-         * Route
-         * @enum {integer}
-         */
-        Route: Route;
         /** PagedRevisionChangeSchema */
         PagedRevisionChangeSchema: {
             /** Items */
@@ -5833,6 +5833,35 @@ export enum NotificationReason {
     Mention = 1,
     Thread_Linked = 2
 }
+export enum Route {
+    Unknown = 0,
+    Tag_Work_Alias = 1,
+    Tag_Work_Alias_Control = 2,
+    Tag_Work_Delete = 3,
+    Tag_Work_Update = 4,
+    Tag_Work_Edit_Wiki = 7,
+    Tag_Work_Edit_Connections = 8,
+    Song_Tag_Update = 20,
+    Song_Tag_Set_Tags = 21,
+    Song_Tag_Alias = 22,
+    Song_Tag_Alias_Control = 23,
+    Song_Tag_Delete = 24,
+    Song_Relation_Control = 30,
+    Media_Work_Delete = 40,
+    Media_Work_Set_Tags = 41,
+    Media_Work_Update = 45,
+    Media_Work_Merge = 46,
+    Media_Work_Create = 47,
+    Work_Relation_Control = 50,
+    Work_Source_Create = 60,
+    Work_Source_Unbind = 61,
+    Work_Source_Set_Origin = 62,
+    Work_Source_Refresh = 63,
+    Work_Source_Assign = 64,
+    Work_Source_Reject = 65,
+    Work_Source_Update = 66,
+    Rollback = 100
+}
 export enum SongTagCategory {
     General = 0,
     Genre = 1,
@@ -5900,35 +5929,6 @@ export enum PostEntities {
     mediasong = "mediasong",
     worksource = "worksource",
     account = "account"
-}
-export enum Route {
-    Unknown = 0,
-    Tag_Work_Alias = 1,
-    Tag_Work_Alias_Control = 2,
-    Tag_Work_Delete = 3,
-    Tag_Work_Update = 4,
-    Tag_Work_Edit_Wiki = 7,
-    Tag_Work_Edit_Connections = 8,
-    Song_Tag_Update = 20,
-    Song_Tag_Set_Tags = 21,
-    Song_Tag_Alias = 22,
-    Song_Tag_Alias_Control = 23,
-    Song_Tag_Delete = 24,
-    Song_Relation_Control = 30,
-    Media_Work_Delete = 40,
-    Media_Work_Set_Tags = 41,
-    Media_Work_Update = 45,
-    Media_Work_Merge = 46,
-    Media_Work_Create = 47,
-    Work_Relation_Control = 50,
-    Work_Source_Create = 60,
-    Work_Source_Unbind = 61,
-    Work_Source_Set_Origin = 62,
-    Work_Source_Refresh = 63,
-    Work_Source_Assign = 64,
-    Work_Source_Reject = 65,
-    Work_Source_Update = 66,
-    Rollback = 100
 }
 export enum HistoricalEntities {
     mediawork = "mediawork",

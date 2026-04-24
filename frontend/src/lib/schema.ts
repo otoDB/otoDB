@@ -2262,6 +2262,9 @@ export interface components {
             /** Post */
             post?: number | null;
             reason: components["schemas"]["NotificationReason"];
+            /** Revision User */
+            revision_user?: string | null;
+            revision_route?: components["schemas"]["Route"] | null;
             /**
              * Dismissed
              * @default false
@@ -2269,6 +2272,11 @@ export interface components {
             dismissed: boolean;
             /** Revision */
             revision?: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** PagedNotificationSchema */
         PagedNotificationSchema: {

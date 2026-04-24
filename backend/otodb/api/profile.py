@@ -17,6 +17,7 @@ from otodb.models import (
 	Post,
 	ProfileConnection,
 	Revision,
+	RevisionChangeEntity,
 	UserPreference,
 	WorkSource,
 )
@@ -25,6 +26,7 @@ from otodb.models.enums import (
 	Platform,
 	Preferences,
 	ProfileConnectionTypes,
+	Route,
 	Status,
 	WorkOrigin,
 	WorkStatus,
@@ -258,10 +260,12 @@ class NotificationSchema(ModelSchema):
 	comment: tuple[ModelsWithComments, int | str] | None
 	post: int | None = Field(None, alias='post_id')
 	reason: NotificationReason
+	revision_user: str | None = Field(None, alias='revision.user.username')
+	revision_route: Route | None = None
 
 	class Meta:
 		model = Notification
-		fields = ['dismissed', 'revision']
+		fields = ['dismissed', 'revision', 'created_at']
 
 	@field_validator('comment', mode='before', check_fields=False)
 	@classmethod
@@ -286,7 +290,13 @@ class NotificationSchema(ModelSchema):
 )
 @paginate
 def notifications(request: AuthedHttpRequest, subscription: bool | None = None):
-	qs = request.user.notifs.order_by('dismissed')
+	qs = request.user.notifs.annotate(
+		revision_route=Subquery(
+			RevisionChangeEntity.objects.filter(
+				change__rev_id=OuterRef('revision_id')
+			).values('route')[:1]
+		)
+	).order_by('dismissed')
 	if subscription is True:
 		qs = qs.filter(revision__isnull=False)
 	elif subscription is False:

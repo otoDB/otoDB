@@ -2,9 +2,13 @@
 	import Section from '$lib/Section.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import Pager from '$lib/Pager.svelte';
+	import TimeAgo from '$lib/TimeAgo.svelte';
 	import client from '$lib/api';
 	import { buildEntityRoutes } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/enums/language';
+	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { NotificationReason } from '$lib/schema.js';
 
 	let { data } = $props();
@@ -39,12 +43,10 @@
 							{#if n.comment}
 								{@const route = buildEntityRoutes(n.comment[0], n.comment[1])}
 								<td class={{ 'opacity-40': n.dismissed }}
-									>{m.curly_these_mule_ascend()}
-								</td>
-								<td>
-									<button
-										class={{ 'opacity-40': n.dismissed }}
-										onclick={() => dismiss(n.id, n.dismissed, route)}
+									>{m.curly_these_mule_ascend()}</td
+								>
+								<td class={{ 'opacity-40': n.dismissed }}>
+									<button onclick={() => dismiss(n.id, n.dismissed, route)}
 										>{route}
 									</button>
 								</td>
@@ -56,15 +58,17 @@
 											? m.vexed_polite_haddock_trim()
 											: m.curly_these_mule_ascend()}</td
 								>
-								<td
+								<td class={{ 'opacity-40': n.dismissed }}
 									><button
-										class={{ 'opacity-40': n.dismissed }}
 										onclick={() =>
 											dismiss(n.id, n.dismissed, `/post/${n.post}`)}
 										>/post/{n.post}</button
 									></td
 								>
 							{/if}
+							<td class={{ 'opacity-40': n.dismissed }}
+								><TimeAgo date={n.created_at} /></td
+							>
 							<td
 								>{#if n.dismissed}<button onclick={() => remove(n.id)}
 										>{m.even_alert_grebe_taste()}</button
@@ -90,13 +94,31 @@
 				<tbody>
 					{#each data.sub_notifications.items as n, i (i)}
 						<tr>
-							<td
+							<td class={{ 'opacity-40': n.dismissed }}
 								><button
-									class={{ 'opacity-40': n.dismissed }}
 									onclick={() =>
 										dismiss(n.id, n.dismissed, `/revision/${n.revision}`)}
-									>{m.arable_direct_swan_glow()} #{n.revision}</button
-								></td
+									>#{n.revision}</button
+								>
+							</td>
+							<td class={{ 'opacity-40': n.dismissed }}
+								>{typeof n.revision_route === 'number'
+									? routeNames[n.revision_route]()
+									: ''}</td
+							>
+							<td class={{ 'opacity-40': n.dismissed }}>
+								{#if isSVO(getLocale())}
+									{m.curly_safe_lynx_fond()}
+								{/if}
+								{#if n.revision_user}
+									<a href="/profile/{n.revision_user}">{n.revision_user}</a>
+								{/if}
+								{#if isSOV(getLocale())}
+									{m.curly_safe_lynx_fond()}
+								{/if}
+							</td>
+							<td class={{ 'opacity-40': n.dismissed }}
+								><TimeAgo date={n.created_at} /></td
 							>
 							<td
 								>{#if n.dismissed}<button onclick={() => remove(n.id)}

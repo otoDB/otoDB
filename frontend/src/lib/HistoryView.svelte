@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TimeAgo from '$lib/TimeAgo.svelte';
+	import Time from '$lib/Time.svelte';
 	import { routeNames } from '$lib/enums/route';
 	import { m } from './paraglide/messages';
 	import type { components } from './schema';
@@ -26,7 +26,7 @@
 				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>
 				</td><td>
-					<TimeAgo date={rev.date} />
+					<Time format="relative" date={rev.date} />
 				</td><td>
 					{rev.message}
 				</td>

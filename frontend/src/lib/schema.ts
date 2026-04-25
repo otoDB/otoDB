@@ -2910,6 +2910,11 @@ export interface components {
             /** Command */
             command: number;
         };
+        /**
+         * ModerationAction
+         * @enum {integer}
+         */
+        ModerationAction: ModerationAction;
         /** ModerationEventBySchema */
         ModerationEventBySchema: {
             /** Id */
@@ -2936,7 +2941,8 @@ export interface components {
             by: components["schemas"]["ModerationEventBySchema"] | null;
             /** Reason */
             reason: string;
-            status: components["schemas"]["FlagStatus"] | null;
+            /** Status */
+            status: components["schemas"]["FlagStatus"] | components["schemas"]["ModerationAction"] | null;
             /**
              * Event At
              * Format: date-time
@@ -5979,6 +5985,11 @@ export enum HistoricalEntities {
     tagsong = "tagsong",
     mediasong = "mediasong",
     worksource = "worksource"
+}
+export enum ModerationAction {
+    Value1 = 1,
+    Value10 = 10,
+    Value11 = 11
 }
 export enum ModerationEventType {
     Value0 = 0,

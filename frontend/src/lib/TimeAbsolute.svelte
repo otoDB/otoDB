@@ -9,8 +9,8 @@
 	const { date }: Props = $props();
 
 	const parsedDate = $derived(date instanceof Date ? date : new Date(date));
-	const text = $derived(formatRelative(parsedDate, getLocale()));
-	const tooltip = $derived(formatAbsolute(parsedDate, getLocale()));
+	const text = $derived(formatAbsolute(parsedDate, getLocale()));
+	const tooltip = $derived(formatRelative(parsedDate, getLocale()));
 </script>
 
 <time title={tooltip} class="whitespace-nowrap">{text}</time>

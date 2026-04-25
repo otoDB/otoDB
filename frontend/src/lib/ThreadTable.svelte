@@ -3,7 +3,7 @@
 	import type { PostCategory } from '$lib/schema';
 	import { buildEntityRoutes, type EntityModelType } from './enums';
 	import { m } from './paraglide/messages';
-	import TimeAgo from './TimeAgo.svelte';
+	import TimeAbsolute from './TimeAbsolute.svelte';
 
 	interface Post {
 		id: number | string;
@@ -66,7 +66,7 @@
 				<td class="text-right">
 					<a href="/profile/{lastUser}">{lastUser}</a>
 					@
-					<TimeAgo date={lastTime} />
+					<TimeAbsolute date={lastTime} />
 				</td>
 			</tr>
 		{/each}

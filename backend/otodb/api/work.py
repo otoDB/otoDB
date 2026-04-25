@@ -114,10 +114,10 @@ def query_external(
 	id: str | None = None,
 ):
 	if url:
-		work = get_object_or_404(WorkSource.active_objects, url=url)
+		work = get_object_or_404(WorkSource.objects, url=url)
 	elif platform and id:
 		work = get_object_or_404(
-			WorkSource.active_objects.filter(platform=Platform.from_str(platform)),
+			WorkSource.objects.filter(platform=Platform.from_str(platform)),
 			Q(source_id=id) | Q(url__endswith=id),
 		)
 	else:
@@ -335,7 +335,7 @@ def merge_works(
 		title=payload.title,
 		description=payload.description,
 		thumbnail_source=get_object_or_404(
-			WorkSource.active_objects, id=payload.thumbnail_source
+			WorkSource.objects, id=payload.thumbnail_source
 		),
 		rating=payload.rating,
 	)
@@ -351,7 +351,7 @@ def update_work(
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	for attr, value in payload.dict().items():
 		if attr == 'thumbnail_source' and value is not None:
-			value = get_object_or_404(WorkSource.active_objects, id=value)
+			value = get_object_or_404(WorkSource.objects, id=value)
 		# Special handling for title: if current is NULL and new is blank, keep NULL
 		if attr == 'title' and work.title is None and value == '':
 			continue
@@ -372,7 +372,7 @@ def sources(request: AuthedHttpRequest, work_id: int):
 @with_revision_route(Route.MEDIAWORK_CREATE)
 def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	"""Creates a MediaWork from a source with user-chosen metadata and tags."""
-	src = get_object_or_404(WorkSource.active_objects, id=payload.source_id)
+	src = get_object_or_404(WorkSource.objects, id=payload.source_id)
 	if src.media is not None:
 		raise ApiError(409, ErrorCode.SOURCE_HAS_WORK)
 

@@ -68,7 +68,7 @@ class WorkSourceMetadataSchema(Schema):
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_UNBIND)
 def unbind_source(request: AuthedHttpRequest, source_id: int):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src = get_object_or_404(WorkSource.objects, id=source_id)
 	if src.media.worksource_set.count() == 1:
 		src.media.delete()
 	src.media = None
@@ -79,7 +79,7 @@ def unbind_source(request: AuthedHttpRequest, source_id: int):
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
 def source_origin(request: AuthedHttpRequest, source_id: int, status: WorkOrigin):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src = get_object_or_404(WorkSource.objects, id=source_id)
 	src.work_origin = status
 	src.save()
 
@@ -88,7 +88,7 @@ def source_origin(request: AuthedHttpRequest, source_id: int, status: WorkOrigin
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REFRESH)
 def refresh_source(request: AuthedHttpRequest, source_id: int):
-	src: WorkSource = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src: WorkSource = get_object_or_404(WorkSource.objects, id=source_id)
 	src.refresh()
 	return
 
@@ -105,7 +105,7 @@ def update_source(
 	request: AuthedHttpRequest, source_id: int, metadata: WorkSourceMetadataSchema
 ):
 	src = get_object_or_404(
-		WorkSource.active_objects, id=source_id, work_status=WorkStatus.DOWN
+		WorkSource.objects, id=source_id, work_status=WorkStatus.DOWN
 	)
 	src.title = metadata.title
 	src.description = metadata.description
@@ -242,7 +242,7 @@ def sync_work_source(work: MediaWork, src: WorkSource):
 @user_is_trusted
 def source_suggestions(request: AuthedHttpRequest, source_id: int):
 	"""Returns tag suggestions derived from a source's info_payload."""
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+	src = get_object_or_404(WorkSource.objects, id=source_id)
 	if not hasattr(src, 'info_payload'):
 		return {'title': src.title, 'description': src.description}
 

@@ -12,20 +12,15 @@ from otodb.storage_manager import storage_manager
 
 from .enums import MimeType, Platform, WorkOrigin, WorkStatus
 from .media import MediaWork
-from .revision import RevisionTrackedManager, RevisionTrackedModel
+from .revision import RevisionTrackedModel
 
 logger = logging.getLogger(__name__)
-
-
-class ActiveManager(RevisionTrackedManager):
-	pass
 
 
 class WorkSource(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		from .pool import Pool
 
-		active_objects: models.Manager['WorkSource']
 		pool_set: 'models.QuerySet[Pool]'
 
 	media = models.ForeignKey(
@@ -63,8 +58,6 @@ class WorkSource(RevisionTrackedModel):
 
 	is_pending = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
-
-	active_objects = ActiveManager()
 
 	class RevisionMeta:
 		tracked_fields = [

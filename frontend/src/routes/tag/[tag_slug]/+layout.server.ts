@@ -1,5 +1,5 @@
 import client from '$lib/api.server';
-import { getTagDisplayName } from '$lib/api';
+import { getTagDisplayName } from '$lib/ui';
 import { hasUserLevel } from '$lib/enums/userLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { redirect } from '@sveltejs/kit';

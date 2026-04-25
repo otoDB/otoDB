@@ -1,10 +1,10 @@
 <script lang="ts">
 	import client from '$lib/api';
-	import { getDisplayText } from '$lib/api';
+	import DisplayText from '$lib/DisplayText.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { components } from '$lib/schema';
 	import { clickOutside, debounce } from '$lib/ui';
-	import DisplayText from '$lib/DisplayText.svelte';
+	import { getDisplayText } from '$lib/ui.js';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let self: HTMLElement;

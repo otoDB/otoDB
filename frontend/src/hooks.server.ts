@@ -1,7 +1,7 @@
 import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { env } from '$env/dynamic/public';
-import client from '$lib/api';
+import { env } from '$env/dynamic/private';
+import client from '$lib/api.server';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { defineCustomServerStrategy } from '$lib/paraglide/runtime';
 import { getRequestEvent } from '$app/server';
@@ -48,10 +48,7 @@ const handleContentLength: Handle = async ({ event, resolve }) => {
 export const handle: Handle = sequence(handleAuth, handleContentLength, handleParaglide);
 
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
-	if (
-		env.PUBLIC_BACKEND_URL_INTERNAL &&
-		request.url.startsWith(env.PUBLIC_BACKEND_URL_INTERNAL)
-	) {
+	if (env.INTERNAL_API_ENDPOINT && request.url.startsWith(env.INTERNAL_API_ENDPOINT)) {
 		const cookies = event.request.headers.get('cookie');
 		if (cookies) request.headers.set('cookie', cookies);
 

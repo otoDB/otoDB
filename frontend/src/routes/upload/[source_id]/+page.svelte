@@ -1,16 +1,16 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import TagsField from '$lib/TagsField.svelte';
-	import TagEditTable from '$lib/TagEditTable.svelte';
-	import WorkField from '$lib/WorkField.svelte';
-	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import { enhance } from '$app/forms';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
-	import { getTagDisplaySlug } from '$lib/api';
-	import WorkTag from '$lib/WorkTag.svelte';
-	import { enhance } from '$app/forms';
-	import { Rating, type components } from '$lib/schema.js';
 	import { m } from '$lib/paraglide/messages.js';
+	import { Rating, type components } from '$lib/schema.js';
+	import Section from '$lib/Section.svelte';
+	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import TagEditTable from '$lib/TagEditTable.svelte';
+	import TagsField from '$lib/TagsField.svelte';
+	import { getTagDisplaySlug } from '$lib/ui.js';
+	import WorkField from '$lib/WorkField.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
 	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();

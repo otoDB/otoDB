@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { navigating, page } from '$app/state';
-	import { env } from '$env/dynamic/public';
+	import { PUBLIC_OTODB_HASH } from '$env/static/public';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Section from '$lib/Section.svelte';
 	import { isFormDirty } from '$lib/dirty';
@@ -417,9 +417,8 @@
 							name: m.glad_born_mouse_taste()
 						})}
 						{versions[currentVersion].name}
-						{#if env.PUBLIC_OTODB_HASH}
-							- <a href="https://github.com/otoDB/otoDB">{env.PUBLIC_OTODB_HASH}</a
-							>{/if}
+						{#if PUBLIC_OTODB_HASH}
+							- <a href="https://github.com/otoDB/otoDB">{PUBLIC_OTODB_HASH}</a>{/if}
 					</span>
 					<div class="social-links">
 						<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>

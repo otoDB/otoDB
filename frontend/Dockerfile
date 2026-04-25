@@ -11,6 +11,9 @@ COPY package.json bun.lock /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production
 
 FROM base AS prerelease
+ARG OTODB_HASH
+ENV PUBLIC_OTODB_HASH=${OTODB_HASH}
+
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
@@ -18,10 +21,6 @@ RUN bun run prepare
 RUN bun run build
 
 FROM base AS build
-ARG OTODB_HASH
-ENV PUBLIC_BACKEND_URL_INTERNAL=http://backend:8000/
-ENV PUBLIC_BACKEND_URL_EXTERNAL=https://otodb.net/
-ENV PUBLIC_OTODB_HASH=${OTODB_HASH}
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /app/build .
 

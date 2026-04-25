@@ -1,7 +1,8 @@
 import { browser } from '$app/environment';
 import client from '$lib/api';
 import { languages } from '$lib/enums/language';
-import { setLocale } from '$lib/paraglide/runtime';
+import { getLocale, setLocale } from '$lib/paraglide/runtime';
+import { m } from './paraglide/messages';
 import { LanguageTypes, ThemePref, type components } from './schema';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
@@ -61,3 +62,19 @@ export const updateLocalPref = <T extends keyof Prefs>(key: T, value: Prefs[T]) 
 
 export const GUIDELINE_POST_ID = 4;
 export const FAQ_POST_ID = 3;
+export const getTagDisplayName = (tag: {
+	name: string;
+	lang_prefs: { lang: number; tag: string }[];
+}) => tag.lang_prefs.find(({ lang }) => lang === languages[getLocale()].id)?.tag ?? tag.name;
+
+export const getTagDisplaySlug = (tag: {
+	slug: string;
+	lang_prefs: { lang: number; slug: string }[];
+}) => tag.lang_prefs.find(({ lang }) => lang === languages[getLocale()].id)?.slug ?? tag.slug;
+
+export function getDisplayText(
+	value: string | null | undefined,
+	placeholder: string | undefined = undefined
+): string {
+	return value ?? placeholder ?? m.lost_game_mink_loop();
+}

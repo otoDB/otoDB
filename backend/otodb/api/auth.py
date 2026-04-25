@@ -23,7 +23,7 @@ from otodb.models.enums import (
 )
 from otodb.tasks import send_email
 
-from .common import Error, ProfileSchema, UserPreferenceSchema, user_is_editor
+from .common import ApiError, Error, ProfileSchema, UserPreferenceSchema, user_is_editor
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,7 @@ def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 	if user is not None:
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
-	return 401, {'code': ErrorCode.LOGIN_FAILED, 'data': {'message': 'Login failed.'}}
+	raise ApiError(401, ErrorCode.LOGIN_FAILED)
 
 
 class UserStatusSchema(UserLoginSchema):
@@ -66,19 +66,22 @@ class UserStatusSchema(UserLoginSchema):
 	username: str
 	prefs: UserPreferenceSchema
 	notifs_count: int
+	notifs_nonsub_count: int
 
 
 @auth_router.get('/status', response={200: UserStatusSchema, 401: Error})
 def status(request: HttpRequest):
 	if request.user.is_authenticated:
 		u = request.user
-		u.notifs_count = u.notifs.filter(dismissed=False).count()
+		unread_notifs = u.notifs.filter(dismissed=False)
+		u.notifs_count = unread_notifs.count()
+		u.notifs_nonsub_count = unread_notifs.filter(revision__isnull=True).count()
 		u.prefs = {
 			Preferences(setting).name: value
 			for setting, value in u.preferences.values_list('setting', 'value')
 		}
 		return u
-	return 401, {'code': ErrorCode.NOT_LOGGED_IN, 'data': {'message': 'Not logged in.'}}
+	raise ApiError(401, ErrorCode.NOT_LOGGED_IN)
 
 
 @auth_router.post('/logout', auth=django_auth)
@@ -113,15 +116,9 @@ def register(request: HttpRequest, body: RegisterRequestSchema):
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
 	except IntegrityError:
-		return 409, {
-			'code': ErrorCode.USERNAME_TAKEN,
-			'data': {'message': 'This username is already taken'},
-		}
+		raise ApiError(409, ErrorCode.USERNAME_TAKEN)
 	except ValueError:
-		return 400, {
-			'code': ErrorCode.VALIDATION_ERROR,
-			'data': {'message': 'A validation error occurred'},
-		}
+		raise ApiError(400, ErrorCode.VALIDATION_ERROR)
 
 
 class ResetPasswordRequestSchema(Schema):

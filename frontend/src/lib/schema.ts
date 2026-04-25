@@ -1731,6 +1731,8 @@ export interface components {
             prefs: components["schemas"]["UserPreferenceSchema"];
             /** Notifs Count */
             notifs_count: number;
+            /** Notifs Nonsub Count */
+            notifs_nonsub_count: number;
         };
         /** RegisterRequestSchema */
         RegisterRequestSchema: {
@@ -2260,6 +2262,9 @@ export interface components {
             /** Post */
             post?: number | null;
             reason: components["schemas"]["NotificationReason"];
+            /** Revision User */
+            revision_user?: string | null;
+            revision_route?: components["schemas"]["Route"] | null;
             /**
              * Dismissed
              * @default false
@@ -2267,6 +2272,11 @@ export interface components {
             dismissed: boolean;
             /** Revision */
             revision?: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** PagedNotificationSchema */
         PagedNotificationSchema: {
@@ -2275,6 +2285,11 @@ export interface components {
             /** Count */
             count: number;
         };
+        /**
+         * Route
+         * @enum {integer}
+         */
+        Route: Route;
         /** PagedListSchema */
         PagedListSchema: {
             /** Items */
@@ -2833,11 +2848,6 @@ export interface components {
              */
             message: string;
         };
-        /**
-         * Route
-         * @enum {integer}
-         */
-        Route: Route;
         /** PagedRevisionChangeSchema */
         PagedRevisionChangeSchema: {
             /** Items */
@@ -3553,6 +3563,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     otodb_api_work_disapprove_work: {
@@ -3573,6 +3592,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
         };
     };
@@ -3917,6 +3945,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     otodb_api_source_approve_source: {
@@ -3936,6 +3973,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
             };
         };
     };
@@ -4157,6 +4203,7 @@ export interface operations {
     otodb_api_profile_notifications: {
         parameters: {
             query?: {
+                subscription?: boolean | null;
                 limit?: number;
                 offset?: number;
             };
@@ -5722,7 +5769,14 @@ export enum ErrorCode {
     Name_Slug_Mismatch = 10008,
     Source_Unapproved = 10009,
     Source_Flagged = 10010,
-    No_More_Upload_Slots = 10011
+    No_More_Upload_Slots = 10011,
+    Self_Moderation = 10012,
+    Flag_Not_Approved = 10013,
+    Flag_Pending_Flag = 10014,
+    Flag_Pending_Appeal = 10015,
+    Flag_Limit_Reached = 10016,
+    Appeal_Pending = 10017,
+    No_More_Appeal_Slots = 10018
 }
 export enum LanguageTypes {
     N_A = 0,
@@ -5822,6 +5876,35 @@ export enum NotificationReason {
     Mention = 1,
     Thread_Linked = 2
 }
+export enum Route {
+    Unknown = 0,
+    Tag_Work_Alias = 1,
+    Tag_Work_Alias_Control = 2,
+    Tag_Work_Delete = 3,
+    Tag_Work_Update = 4,
+    Tag_Work_Edit_Wiki = 7,
+    Tag_Work_Edit_Connections = 8,
+    Song_Tag_Update = 20,
+    Song_Tag_Set_Tags = 21,
+    Song_Tag_Alias = 22,
+    Song_Tag_Alias_Control = 23,
+    Song_Tag_Delete = 24,
+    Song_Relation_Control = 30,
+    Media_Work_Delete = 40,
+    Media_Work_Set_Tags = 41,
+    Media_Work_Update = 45,
+    Media_Work_Merge = 46,
+    Media_Work_Create = 47,
+    Work_Relation_Control = 50,
+    Work_Source_Create = 60,
+    Work_Source_Unbind = 61,
+    Work_Source_Set_Origin = 62,
+    Work_Source_Refresh = 63,
+    Work_Source_Assign = 64,
+    Work_Source_Reject = 65,
+    Work_Source_Update = 66,
+    Rollback = 100
+}
 export enum SongTagCategory {
     General = 0,
     Genre = 1,
@@ -5889,35 +5972,6 @@ export enum PostEntities {
     mediasong = "mediasong",
     worksource = "worksource",
     account = "account"
-}
-export enum Route {
-    Unknown = 0,
-    Tag_Work_Alias = 1,
-    Tag_Work_Alias_Control = 2,
-    Tag_Work_Delete = 3,
-    Tag_Work_Update = 4,
-    Tag_Work_Edit_Wiki = 7,
-    Tag_Work_Edit_Connections = 8,
-    Song_Tag_Update = 20,
-    Song_Tag_Set_Tags = 21,
-    Song_Tag_Alias = 22,
-    Song_Tag_Alias_Control = 23,
-    Song_Tag_Delete = 24,
-    Song_Relation_Control = 30,
-    Media_Work_Delete = 40,
-    Media_Work_Set_Tags = 41,
-    Media_Work_Update = 45,
-    Media_Work_Merge = 46,
-    Media_Work_Create = 47,
-    Work_Relation_Control = 50,
-    Work_Source_Create = 60,
-    Work_Source_Unbind = 61,
-    Work_Source_Set_Origin = 62,
-    Work_Source_Refresh = 63,
-    Work_Source_Assign = 64,
-    Work_Source_Reject = 65,
-    Work_Source_Update = 66,
-    Rollback = 100
 }
 export enum HistoricalEntities {
     mediawork = "mediawork",

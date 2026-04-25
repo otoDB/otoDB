@@ -1,8 +1,9 @@
 <script lang="ts">
-	import client, { getTagDisplaySlug } from '$lib/api';
-	import { clickOutside, debounce } from '$lib/ui';
+	import client from '$lib/api';
 	import { m } from '$lib/paraglide/messages';
 	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
+	import { clickOutside, debounce } from '$lib/ui';
+	import { getTagDisplaySlug } from '$lib/ui.js';
 
 	interface Props {
 		value: string[];

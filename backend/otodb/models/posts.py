@@ -167,6 +167,7 @@ class Notification(models.Model):
 		on_delete=models.CASCADE,
 		related_name='notifs',
 	)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 	dismissed = models.BooleanField(default=False)
 	reason = models.IntegerField(
 		choices=NotificationReason.choices, default=NotificationReason.REPLY

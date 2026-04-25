@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getDisplayText } from '$lib/api';
+	import { getDisplayText } from './ui';
 
 	interface Props {
 		value: string | null | undefined;

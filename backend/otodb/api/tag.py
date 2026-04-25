@@ -244,7 +244,10 @@ def search(
 @tag_router.get('tag', response=FatTagWorkSchema)
 def tag(request: HttpRequest, tag_slug: str):
 	cleaned = slugify_tag(tag_slug)
-	return get_object_or_404(TagWork, slug=cleaned)
+	tag = get_object_or_404(TagWork, slug=cleaned)
+	if tag.aliased_to:
+		tag = tag.aliased_to
+	return tag
 
 
 @tag_router.get('details', response=TagWorkDetailsSchema)
@@ -1025,7 +1028,10 @@ def song_tags(
 @tag_router.get('song_tag', response=TagSongSchema)
 def song_tag(request: HttpRequest, tag_slug: str):
 	cleaned = slugify_tag(tag_slug)
-	return get_object_or_404(TagSong, slug=cleaned)
+	tag = get_object_or_404(TagSong, slug=cleaned)
+	if tag.aliased_to:
+		tag = tag.aliased_to
+	return tag
 
 
 @tag_router.get('song_tag_details', response=TagSongDetailsSchema)

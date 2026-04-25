@@ -1,11 +1,13 @@
 from functools import reduce
 from typing import List, Literal
 
+import lark
 from django.conf import settings
 from django.db import transaction
 from django.db.models import (
 	Case,
 	Count,
+	Exists,
 	IntegerField,
 	OuterRef,
 	Q,
@@ -41,6 +43,7 @@ from otodb.models.enums import (
 	Rating,
 	Route,
 	Status,
+	WorkStatus,
 	WorkTagCategory,
 )
 from otodb.tasks import (
@@ -51,6 +54,7 @@ from otodb.tasks import (
 )
 
 from .common import (
+	AbstractTagTransformer,
 	ApiError,
 	AuthedHttpRequest,
 	CreateWorkPayload,
@@ -64,6 +68,7 @@ from .common import (
 	WorkSchema,
 	WorkSourceSchema,
 	ensure_can_moderate,
+	get_search_grammar,
 	post_relations,
 	user_is_editor,
 	user_is_staff,
@@ -128,6 +133,30 @@ def query_external(
 	return {'tags': work.media.tags_annotated, 'work_id': work.media.id}
 
 
+# TODO Do we do this or put these as a widget on frontend?
+work_metatag_grammars = {
+	'rating': (Rating, lambda v: Q(rating=v)),
+	'status': (
+		WorkStatus,
+		lambda v: Exists(
+			WorkSource.objects.filter(media_id=OuterRef('id'), work_status=v)
+		),
+	),
+}
+work_search_grammar = get_search_grammar(work_metatag_grammars)
+
+
+class WorkTagTransformer(AbstractTagTransformer):
+	TagModel = TagWork
+	TagInstanceModel = TagWorkInstance
+	tag_join_name = 'work_tag'
+	tagged_join_name = 'work'
+	metatag_grammars = work_metatag_grammars
+
+
+work_tag_transformer = WorkTagTransformer()
+
+
 @work_router.get('search', response=List[ThinWorkSchema], exclude_none=True)
 @paginate
 def search(
@@ -152,37 +181,19 @@ def search(
 		)
 	else:
 		q = Q()
+
 	if tags:
-		for tag in tags.split():
-			try:
-				match tag[0]:
-					case '-' | '+' | '!':
-						t = TagWork.objects.get(slug=slugify_tag(tag[1:]))
-						if t.aliased_to:
-							t = t.aliased_to
+		try:
+			if tags_parse := work_tag_transformer.transform(
+				work_search_grammar.parse(tags.strip())
+			):
+				q = q & tags_parse
+		except lark.exceptions.UnexpectedInput:
+			return []
+		except TagWork.DoesNotExist:
+			return []
 
-						if tag[0] == '-':
-							q = q & ~Q(tags=t)
-						else:
-							children = t.get_descendants()
-							sub_q = Q(tags=t)
-							for tt in children:
-								sub_q = sub_q | Q(tags=tt)
-
-							match tag[0]:
-								case '+':  # +: Include subtree
-									q = q & sub_q
-								case '!':  # !: Exclude subtree
-									q = q & ~sub_q
-					case _:
-						t = TagWork.objects.get(slug=slugify_tag(tag))
-						if t.aliased_to:
-							t = t.aliased_to
-
-						q = q & Q(tags=t)
-			except TagWork.DoesNotExist:
-				return []
-	elif query:
+	if query:
 		q = q | Q(worksource__source_id=query)
 		if query.startswith('https'):
 			q = q | Q(worksource__url=query)

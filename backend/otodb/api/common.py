@@ -1,9 +1,12 @@
 import re
 from functools import lru_cache, wraps
+from itertools import batched
 from typing import Annotated, Optional, Self
 
+import lark
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Exists, OuterRef
 from django.http import HttpRequest
 from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
@@ -12,6 +15,7 @@ from ninja.utils import contribute_operation_args
 from pydantic import create_model, field_validator, model_validator
 
 from otodb.account.models import Account
+from otodb.common import slugify_tag
 from otodb.models import (
 	MediaSong,
 	MediaWork,
@@ -45,6 +49,7 @@ from otodb.models.enums import (
 	WorkStatus,
 	WorkTagCategory,
 )
+from otodb.models.tag import OtodbTagModel
 
 
 class AuthedHttpRequest(HttpRequest):
@@ -595,3 +600,93 @@ def restrict_internal(f):
 	contribute_operation_args(wrapper, 'otodb-internal-secret', str, Header(...))
 
 	return wrapper
+
+
+def get_search_grammar(metatag_grammars):
+	return lark.Lark(rf"""
+start: expr?
+expr: atom (ops atom)*
+atom: MODIFIERS? (tag_part | metatag_part | _LPAR expr _RPAR)
+ops: _WS? "|" _WS? -> disjoin
+   | WS 		 -> conjoin
+
+tag_part: TAG_MODIFIERS? SLUG
+
+MODIFIERS:     /[-]/
+TAG_MODIFIERS: /[\^]/
+SLUG:          /\w+/u
+_LPAR: "("
+_RPAR: ")"
+_WS: WS
+{'\n'.join([f'{k}_meta: "{k}"i _META_CONN {k.upper()}_VALUE' for k in metatag_grammars])}
+{'\n'.join([f'{k.upper()}_VALUE: /{"|".join(v.names)}/i' for k, (v, _) in metatag_grammars.items()])}
+metatag_part: {'|'.join([k + '_meta' for k in metatag_grammars])}
+_META_CONN: ":"
+
+%import common.WS
+""")
+
+
+def make_literal_handler(x: str):
+	def f(self, _):
+		return x
+
+	return f
+
+
+class AbstractTagTransformer(lark.Transformer):
+	TagModel: OtodbTagModel
+	tag_join_name: str
+	tagged_join_name: str
+	metatag_grammars: dict
+
+	def start(self, v):
+		return v[0] if v else None
+
+	def tag_part(self, v):
+		slug = v[0] if len(v) == 1 else v[1]
+		tag = self.TagModel.objects.get(slug=slugify_tag(slug))
+		if tag.aliased_to:
+			tag = tag.aliased_to
+		twi_q = self.TagInstanceModel.objects.filter(
+			**{self.tagged_join_name: OuterRef('id')}
+		)
+		q = Exists(twi_q.filter(**{self.tag_join_name: tag}))
+
+		if len(v) == 1:
+			for child in tag.get_descendants():
+				q = q | Exists(twi_q.filter(**{self.tag_join_name: child}))
+			return q
+		elif v[0] == '^':
+			return q
+
+	disjoin = make_literal_handler('disjoin')
+	conjoin = make_literal_handler('conjoin')
+
+	def SLUG(self, v):
+		return str(v)
+
+	def atom(self, v):
+		if len(v) == 1:
+			return v[0]
+		elif v[0] == '-':
+			return ~v[1]
+
+	TAG_MODIFIERS = str
+	MODIFIERS = str
+
+	def expr(self, v):
+		this = v[0]
+		for method, nxt in batched(v[1:], n=2):
+			match method:
+				case 'conjoin':
+					this = this & nxt
+				case 'disjoin':
+					this = this | nxt
+		return this
+
+	def metatag_part(self, v):
+		v = v[0]
+		metatag = v.data.value[:-5]
+		E, f = self.metatag_grammars[metatag]
+		return f(E(E.names.index(str(v.children[0]).upper())))

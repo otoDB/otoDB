@@ -1,6 +1,6 @@
 import type { Handle, HandleFetch } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { env } from '$env/dynamic/public';
+import { env } from '$env/dynamic/private';
 import client from '$lib/api.server';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { defineCustomServerStrategy } from '$lib/paraglide/runtime';

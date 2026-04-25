@@ -37,7 +37,7 @@ export const actions = {
 			fetch,
 			params: {
 				header: {
-					'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET
+					'otodb-internal-secret': env.INTERNAL_API_SECRET
 				}
 			},
 			body: {
@@ -57,7 +57,7 @@ export const actions = {
 
 		await client.PUT('/api/comment/comment', {
 			fetch,
-			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
+			params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
 			body: { comment_id, comment_text }
 		});
 	}

@@ -1,10 +1,11 @@
 <script lang="ts">
 	import WorkTag from '$lib/WorkTag.svelte';
-	import client, { getTagDisplaySlug } from '$lib/api';
+	import client from '$lib/api';
 	import { allCreatorRoles, creatorRole } from '$lib/enums/creatorRole';
-	import { m } from '$lib/paraglide/messages.js';
-	import type { ComponentProps } from 'svelte';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getTagDisplaySlug } from '$lib/ui.js';
+	import type { ComponentProps } from 'svelte';
 	import { WorkTagCategory } from './schema';
 
 	type TagCache = Record<string, ComponentProps<typeof WorkTag>['tag']>;

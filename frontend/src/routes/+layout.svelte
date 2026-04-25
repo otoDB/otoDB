@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { navigating, page } from '$app/state';
-	import { env } from '$env/dynamic/public';
+	import { PUBLIC_OTODB_HASH } from '$env/static/public';
 	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import Section from '$lib/Section.svelte';

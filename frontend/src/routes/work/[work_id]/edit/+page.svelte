@@ -5,13 +5,14 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
-	import client, { getDisplayText } from '$lib/api';
+	import client from '$lib/api';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
-	import { callErrorToast, callSavingToast } from '$lib/toast';
-	import { dirtyEnhance } from '$lib/dirty';
 	import { Levels, Rating, WorkOrigin, WorkStatus } from '$lib/schema.js';
+	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { getDisplayText } from '$lib/ui.js';
 
 	let { data, form } = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, ''));

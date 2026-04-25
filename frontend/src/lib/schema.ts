@@ -245,6 +245,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/work/tag_suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tag Suggestions
+         * @description Aggregates tag suggestions from every source bound to a work.
+         */
+        get: operations["otodb_api_work_tag_suggestions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/work/random": {
         parameters: {
             query?: never;
@@ -1998,6 +2018,28 @@ export interface components {
             /** Roles */
             roles?: number[] | null;
         };
+        /** SourceSuggestionsResponse */
+        SourceSuggestionsResponse: {
+            /** Title */
+            title?: string | null;
+            /** Description */
+            description?: string | null;
+            /**
+             * Source Tags
+             * @default []
+             */
+            source_tags: components["schemas"]["TagWorkSchema"][];
+            /**
+             * New Tags
+             * @default []
+             */
+            new_tags: components["schemas"]["TagWorkSchema"][];
+            /**
+             * Creator Tags
+             * @default []
+             */
+            creator_tags: components["schemas"]["TagWorkSchema"][];
+        };
         /**
          * Platform
          * @enum {integer}
@@ -2100,28 +2142,6 @@ export interface components {
             source_id?: number | null;
             /** Work Id */
             work_id?: number | null;
-        };
-        /** SourceSuggestionsResponse */
-        SourceSuggestionsResponse: {
-            /** Title */
-            title?: string | null;
-            /** Description */
-            description?: string | null;
-            /**
-             * Source Tags
-             * @default []
-             */
-            source_tags: components["schemas"]["TagWorkSchema"][];
-            /**
-             * New Tags
-             * @default []
-             */
-            new_tags: components["schemas"]["TagWorkSchema"][];
-            /**
-             * Creator Tags
-             * @default []
-             */
-            creator_tags: components["schemas"]["TagWorkSchema"][];
         };
         /** PagedWorkSourceSchema */
         PagedWorkSourceSchema: {
@@ -3375,6 +3395,28 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    otodb_api_work_tag_suggestions: {
+        parameters: {
+            query: {
+                work_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceSuggestionsResponse"];
+                };
             };
         };
     };

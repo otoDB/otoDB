@@ -57,6 +57,7 @@ from .common import (
 	Error,
 	RouterWithRevision,
 	SlimWorkSchema,
+	SourceSuggestionsResponse,
 	TagWorkInstanceInSchema,
 	TagWorkInstanceSchema,
 	ThinWorkSchema,
@@ -70,6 +71,7 @@ from .common import (
 	user_is_trusted,
 	with_revision_route,
 )
+from .source import extract_source_tag_suggestions
 
 work_router = RouterWithRevision()
 
@@ -280,6 +282,33 @@ def set_tags(
 	tags = _resolve_and_apply_tags(work, payload)
 	work.tags.remove(*work.tags.exclude(id__in=[t.id for t in tags]))
 	return 200
+
+
+@work_router.get(
+	'tag_suggestions', auth=django_auth, response=SourceSuggestionsResponse
+)
+@user_is_trusted
+def tag_suggestions(request: AuthedHttpRequest, work_id: int):
+	"""Aggregates tag suggestions from every source bound to a work."""
+	work = get_object_or_404(MediaWork.active_objects, id=work_id)
+
+	source_tags: dict[str, object] = {}
+	new_tags: dict[str, object] = {}
+	creator_tags: dict[str, object] = {}
+	for src in work.worksource_set.all():
+		s_existing, s_new, s_creator = extract_source_tag_suggestions(src)
+		for t in s_existing:
+			source_tags.setdefault(t.slug, t)
+		for t in s_new:
+			new_tags.setdefault(t.slug, t)
+		for t in s_creator:
+			creator_tags.setdefault(t.slug, t)
+
+	return {
+		'source_tags': list(source_tags.values()),
+		'new_tags': list(new_tags.values()),
+		'creator_tags': list(creator_tags.values()),
+	}
 
 
 @work_router.get('random', response=list[ThinWorkSchema], exclude_none=True)

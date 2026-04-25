@@ -238,13 +238,9 @@ def sync_work_source(work: MediaWork, src: WorkSource):
 		)
 
 
-@source_router.get('suggestions', auth=django_auth, response=SourceSuggestionsResponse)
-@user_is_trusted
-def source_suggestions(request: AuthedHttpRequest, source_id: int):
-	"""Returns tag suggestions derived from a source's info_payload."""
-	src = get_object_or_404(WorkSource.objects, id=source_id)
+def extract_source_tag_suggestions(src: WorkSource):
 	if not hasattr(src, 'info_payload'):
-		return {'title': src.title, 'description': src.description}
+		return [], [], []
 
 	info = process_video_info(src.info_payload.payload, src.url)
 	raw_tags = info.get('tags', [])
@@ -271,11 +267,22 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 		for t in set(raw_tags) - existing_names
 	]
 	creator_tags = resolve_creator_tags(src, info)
+	return existing, new_tags, creator_tags
 
+
+@source_router.get('suggestions', auth=django_auth, response=SourceSuggestionsResponse)
+@user_is_trusted
+def source_suggestions(request: AuthedHttpRequest, source_id: int):
+	"""Returns tag suggestions derived from a source's info_payload."""
+	src = get_object_or_404(WorkSource.objects, id=source_id)
+	if not hasattr(src, 'info_payload'):
+		return {'title': src.title, 'description': src.description}
+
+	source_tags, new_tags, creator_tags = extract_source_tag_suggestions(src)
 	return {
 		'title': src.title,
 		'description': src.description,
-		'source_tags': existing,
+		'source_tags': source_tags,
 		'new_tags': new_tags,
 		'creator_tags': creator_tags,
 	}

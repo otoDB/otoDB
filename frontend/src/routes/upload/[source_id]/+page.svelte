@@ -1,16 +1,16 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import TagsField from '$lib/TagsField.svelte';
-	import TagEditTable from '$lib/TagEditTable.svelte';
-	import WorkField from '$lib/WorkField.svelte';
-	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import { enhance } from '$app/forms';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
-	import { getTagDisplaySlug } from '$lib/api';
-	import WorkTag from '$lib/WorkTag.svelte';
-	import { enhance } from '$app/forms';
-	import { Rating, type components } from '$lib/schema.js';
 	import { m } from '$lib/paraglide/messages.js';
+	import { Rating, type components } from '$lib/schema.js';
+	import Section from '$lib/Section.svelte';
+	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import TagEditTable from '$lib/TagEditTable.svelte';
+	import TagsField from '$lib/TagsField.svelte';
+	import { getTagDisplaySlug } from '$lib/ui.js';
+	import WorkField from '$lib/WorkField.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
 	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();
@@ -22,7 +22,7 @@
 
 	let title = $state(data.suggestions?.title ?? data.source.title ?? '');
 	let description = $state(data.suggestions?.description ?? data.source.description ?? '');
-	let rating: Rating | null = $state(0);
+	let rating: Rating | null = $state(null);
 	let bindWork = $state<components['schemas']['WorkSchema'] | null>(null);
 
 	// Tag cache for rich tag editing (sample toggles, creator roles)
@@ -223,13 +223,13 @@
 							</td>
 						</tr>
 						<tr>
-							<th>{m.good_dark_bumblebee_spur()}</th>
+							<th><label>{m.good_dark_bumblebee_spur()}</label></th>
 							<td>
 								<div class="flex gap-2">
 									{#each enumValues(Rating) as r, i (i)}
 										<label
 											class={[
-												'cursor-pointer border px-3 py-1',
+												'relative cursor-pointer border px-3 py-1',
 												rating === r &&
 													'bg-otodb-content-primary text-otodb-bg-primary'
 											]}
@@ -239,7 +239,7 @@
 												name="rating"
 												value={r}
 												bind:group={rating}
-												class="hidden"
+												class="absolute inset-0 cursor-pointer opacity-0"
 												required
 											/>
 											{RatingNames[r]()}

@@ -6,7 +6,7 @@ from ninja.errors import HttpError
 
 from otodb.account.models import Account
 from otodb.models import ModerationEvent
-from otodb.models.enums import FlagStatus, ModerationEventType
+from otodb.models.enums import FlagStatus, ModerationAction, ModerationEventType
 
 moderation_router = Router()
 
@@ -23,7 +23,7 @@ class ModerationEventSchema(Schema):
 	source_id: int | None
 	by: ModerationEventBySchema | None
 	reason: str
-	status: FlagStatus | None
+	status: FlagStatus | ModerationAction | None
 	event_at: datetime
 
 

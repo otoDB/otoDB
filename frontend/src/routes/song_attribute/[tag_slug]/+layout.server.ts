@@ -1,11 +1,10 @@
-import { m } from '$lib/paraglide/messages.js';
 import client from '$lib/api.server';
-import type { LayoutServerLoad } from './$types';
-
-import { getTagDisplayName } from '$lib/api';
-import { redirect } from '@sveltejs/kit';
 import { hasUserLevel } from '$lib/enums/userLevel';
+import { m } from '$lib/paraglide/messages.js';
 import { Levels } from '$lib/schema';
+import { getTagDisplayName } from '$lib/ui';
+import { redirect } from '@sveltejs/kit';
+import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	const { data } = await client.GET('/api/tag/song_tag', {

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import { SongTagCategoryNames } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { getTagDisplayName } from '$lib/api.js';
+	import Section from '$lib/Section.svelte';
+	import { SongTagCategoryNames } from '$lib/enums';
+	import { m } from '$lib/paraglide/messages.js';
 	import { ModelsWithComments } from '$lib/schema.js';
+	import { getTagDisplayName } from '$lib/ui.js';
 
 	let { data } = $props();
 

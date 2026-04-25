@@ -592,7 +592,7 @@ def restrict_internal(f):
 	@wraps(f)
 	def wrapper(request, *args, **kwargs):
 		secret = kwargs.pop('otodb-internal-secret')
-		if secret == settings.OTODB_INTERNAL_API_SECRET:
+		if secret == settings.INTERNAL_API_SECRET:
 			return f(request, *args, **kwargs)
 		else:
 			raise HttpError(403, 'Forbidden')

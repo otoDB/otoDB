@@ -243,6 +243,8 @@ def extract_source_tag_suggestions(src: WorkSource):
 		return [], [], []
 
 	info = process_video_info(src.info_payload.payload, src.url)
+	if info is None:
+		return [], [], []
 	raw_tags = info.get('tags', [])
 	slug_to_name: dict[str, str] = {slugify_tag(t): t for t in raw_tags}
 	matched = TagWork.objects.filter(slug__in=slug_to_name.keys())

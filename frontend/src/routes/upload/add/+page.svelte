@@ -56,7 +56,7 @@
 					</tr>
 					<tr>
 						<th class="w-min whitespace-nowrap">
-							{m.watery_fuzzy_fireant_thrive()}
+							<label>{m.watery_fuzzy_fireant_thrive()}</label>
 						</th>
 						<td class="flex w-full gap-4">
 							<label>

@@ -223,13 +223,13 @@
 							</td>
 						</tr>
 						<tr>
-							<th>{m.good_dark_bumblebee_spur()}</th>
+							<th><label>{m.good_dark_bumblebee_spur()}</label></th>
 							<td>
 								<div class="flex gap-2">
 									{#each enumValues(Rating) as r, i (i)}
 										<label
 											class={[
-												'cursor-pointer border px-3 py-1',
+												'relative cursor-pointer border px-3 py-1',
 												rating === r &&
 													'bg-otodb-content-primary text-otodb-bg-primary'
 											]}
@@ -239,7 +239,7 @@
 												name="rating"
 												value={r}
 												bind:group={rating}
-												class="hidden"
+												class="absolute inset-0 cursor-pointer opacity-0"
 												required
 											/>
 											{RatingNames[r]()}

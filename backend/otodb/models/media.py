@@ -316,6 +316,18 @@ class MediaWork(RevisionTrackedModel):
 			t.append(tag)
 		return t
 
+	_CAN_SET_AS_SOURCE = frozenset([WorkTagCategory.CREATOR, WorkTagCategory.MEDIA, WorkTagCategory.SONG])
+	_REQUIRED_CATEGORIES = [WorkTagCategory.CREATOR, WorkTagCategory.SONG, WorkTagCategory.SOURCE, WorkTagCategory.GENERAL]
+
+	@property
+	def missing_tags(self) -> list[WorkTagCategory]:
+		present: set[WorkTagCategory] = set()
+		for tag in self.tags_annotated:
+			present.add(tag.category)
+			if tag.category in self._CAN_SET_AS_SOURCE and tag.sample:
+				present.add(WorkTagCategory.SOURCE)
+		return [c for c in self._REQUIRED_CATEGORIES if c not in present]
+
 	@property
 	def thumbnail(self):
 		thumbnail = self.thumbnail_source.thumbnail if self.thumbnail_source else None

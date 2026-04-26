@@ -73,25 +73,6 @@
 		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
 
-	const REQUIRED_CATEGORIES = [
-		WorkTagCategory.Creator,
-		WorkTagCategory.Song,
-		WorkTagCategory.Source,
-		WorkTagCategory.General
-	];
-	const missingCategories = $derived.by(() => {
-		const present = new Set(
-			data.tags.flatMap((t) => {
-				const cats: WorkTagCategory[] = [t.category];
-				if (WorkTagCategoryMap[t.category].canSetAsSource && t.sample) {
-					cats.push(WorkTagCategory.Source);
-				}
-				return cats;
-			})
-		);
-		return REQUIRED_CATEGORIES.filter((c) => !present.has(c));
-	});
-
 	const relTree = $derived(
 		data.relations[0].length > 0
 			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
@@ -102,11 +83,11 @@
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
-	{#if missingCategories.length > 0}
+	{#if data.missing_tags.length > 0}
 		<Banner variant="info">
 			<div class="text-sm">
 				{m.watery_kind_quail_climb({
-					missing: missingCategories.map((c) => WorkTagCategoryMap[c].nameFn()).join(', ')
+					missing: data.missing_tags.map((c) => WorkTagCategoryMap[c].nameFn()).join(', ')
 				})}
 			</div>
 			<div class="mt-1 text-sm">

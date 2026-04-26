@@ -1988,6 +1988,8 @@ export interface components {
             ];
             rating: components["schemas"]["Rating"];
             status: components["schemas"]["Status"];
+            /** Missing Tags */
+            missing_tags: components["schemas"]["WorkTagCategory"][];
             /** Title */
             title?: string | null;
             /** Description */

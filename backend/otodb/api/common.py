@@ -172,6 +172,7 @@ class WorkSchema(ModelSchema):
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 	rating: Rating
 	status: Status
+	missing_tags: list[WorkTagCategory]
 
 	class Meta:
 		model = MediaWork

@@ -1,12 +1,12 @@
 import operator
 import re
 from functools import lru_cache, reduce, wraps
-from typing import Annotated, Optional, Self
+from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
 
 import lark
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import Count, Exists, OuterRef, Q
 from django.http import HttpRequest
 from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
@@ -602,7 +602,22 @@ def restrict_internal(f):
 	return wrapper
 
 
-def get_search_grammar(metatag_grammars):
+class MetatagSpec(NamedTuple):
+	kind: Any
+	to_q: Callable
+
+
+def get_search_grammar(metatag_grammars: dict[str, MetatagSpec]):
+	def metatag_rule(name: str, spec: MetatagSpec):
+		value_rule = 'range_value' if spec.kind is int else f'{name.upper()}_VALUE'
+		return f'{name}_meta: "{name}"i _META_CONN {value_rule}'
+
+	enum_value_terminals = '\n'.join(
+		f'{k.upper()}_VALUE: /{"|".join(spec.kind.names)}/i'
+		for k, spec in metatag_grammars.items()
+		if spec.kind is not int
+	)
+
 	return lark.Lark(rf"""
 start: or_expr?
 or_expr: and_expr (_OR and_expr)*
@@ -611,20 +626,81 @@ atom: MODIFIERS? (tag_part | metatag_part | _LPAR or_expr _RPAR)
 
 tag_part: TAG_MODIFIERS? SLUG
 
+range_value: COMPARATOR INT     -> range_compare
+           | INT ".." INT       -> range_between
+           | INT ".."           -> range_min
+           | ".." INT           -> range_max
+           | INT                -> range_eq
+
 MODIFIERS:     /[-]/
 TAG_MODIFIERS: /[\^]/
 SLUG:          /\w+/u
+COMPARATOR:    ">=" | "<=" | ">" | "<"
+INT:           /\d+/
 _LPAR: "("
 _RPAR: ")"
 _OR: "|"
-{'\n'.join([f'{k}_meta: "{k}"i _META_CONN {k.upper()}_VALUE' for k in metatag_grammars])}
-{'\n'.join([f'{k.upper()}_VALUE: /{"|".join(v.names)}/i' for k, (v, _) in metatag_grammars.items()])}
+{'\n'.join(metatag_rule(k, spec) for k, spec in metatag_grammars.items())}
+{enum_value_terminals}
 metatag_part: {'|'.join([k + '_meta' for k in metatag_grammars])}
 _META_CONN: ":"
 
 %import common.WS
 %ignore WS
 """)
+
+
+def _parse_range_node(node):
+	match node.data, node.children:
+		case 'range_eq', (v,):
+			return 'exact', int(v)
+		case 'range_compare', ('>', v):
+			return 'gt', int(v)
+		case 'range_compare', ('>=', v):
+			return 'gte', int(v)
+		case 'range_compare', ('<', v):
+			return 'lt', int(v)
+		case 'range_compare', ('<=', v):
+			return 'lte', int(v)
+		case 'range_between', (lo, hi):
+			return 'range', (int(lo), int(hi))
+		case 'range_min', (v,):
+			return 'gte', int(v)
+		case 'range_max', (v,):
+			return 'lte', int(v)
+		case _:
+			raise ValueError(
+				f'unrecognized range_value: {node.data!r}/{node.children!r}'
+			)
+
+
+def make_range_metatag(
+	field=None, *, model=None, fk_field=None, count=False, **filters
+):
+	if count:
+
+		def count_q(op, value):
+			base = model.objects.filter(**{fk_field: OuterRef('id')}, **filters)
+			grouped = base.values(fk_field).annotate(c=Count('*'))
+			positive = Exists(grouped.filter(**{f'c__{op}': value}))
+			zero_matches = (
+				op == 'lte'
+				or (op in ('exact', 'gte') and value == 0)
+				or (op == 'lt' and value > 0)
+				or (op == 'range' and value[0] == 0)
+			)
+			return positive | ~Exists(base) if zero_matches else positive
+
+		return count_q
+
+	if model is not None:
+		return lambda op, value: Exists(
+			model.objects.filter(
+				**{fk_field: OuterRef('id'), f'{field}__{op}': value}, **filters
+			)
+		)
+
+	return lambda op, value: Q(**{f'{field}__{op}': value})
 
 
 class AbstractTagTransformer(lark.Transformer):
@@ -675,5 +751,9 @@ class AbstractTagTransformer(lark.Transformer):
 	def metatag_part(self, v):
 		v = v[0]
 		metatag = v.data.value[:-5]
-		E, f = self.metatag_grammars[metatag]
-		return f(E(E.names.index(str(v.children[0]).upper())))
+		spec = self.metatag_grammars[metatag]
+		if spec.kind is int:
+			op, value = _parse_range_node(v.children[0])
+			return spec.to_q(op, value)
+		E = spec.kind
+		return spec.to_q(E(E.names.index(str(v.children[0]).upper())))

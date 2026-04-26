@@ -54,6 +54,7 @@ from .common import (
 	ConnectionLookupResponse,
 	ConnectionSchema,
 	Error,
+	MetatagSpec,
 	RouterWithRevision,
 	SongRelationSchema,
 	TagLangPreferenceSchema,
@@ -61,6 +62,7 @@ from .common import (
 	ThinWorkSchema,
 	get_search_grammar,
 	make_alt_value_parser,
+	make_range_metatag,
 	post_relations,
 	profile_connection_parsers,
 	re_to_parser,
@@ -915,7 +917,31 @@ def song(request: HttpRequest, id: int):
 	return get_object_or_404(MediaSong, id=id).work_tag.slug
 
 
-song_metatag_grammars = {}
+_SONG_TAG_CATEGORY_METATAGS = {
+	'gentags': SongTagCategory.GENERAL,
+	'genretags': SongTagCategory.GENRE,
+	'authortags': SongTagCategory.AUTHOR,
+	'metatags': SongTagCategory.META,
+}
+
+song_metatag_grammars = {
+	'tagcount': MetatagSpec(
+		int,
+		make_range_metatag(model=TagSongInstance, fk_field='song_id', count=True),
+	),
+	**{
+		name: MetatagSpec(
+			int,
+			make_range_metatag(
+				model=TagSongInstance,
+				fk_field='song_id',
+				count=True,
+				song_tag__category=cat,
+			),
+		)
+		for name, cat in _SONG_TAG_CATEGORY_METATAGS.items()
+	},
+}
 song_search_grammar = get_search_grammar(song_metatag_grammars)
 
 

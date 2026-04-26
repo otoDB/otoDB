@@ -59,6 +59,7 @@ from .common import (
 	AuthedHttpRequest,
 	CreateWorkPayload,
 	Error,
+	MetatagSpec,
 	RouterWithRevision,
 	SlimWorkSchema,
 	TagWorkInstanceInSchema,
@@ -69,6 +70,7 @@ from .common import (
 	WorkSourceSchema,
 	ensure_can_moderate,
 	get_search_grammar,
+	make_range_metatag,
 	post_relations,
 	user_is_editor,
 	user_is_staff,
@@ -133,15 +135,55 @@ def query_external(
 	return {'tags': work.media.tags_annotated, 'work_id': work.media.id}
 
 
+_WORK_TAG_CATEGORY_METATAGS = {
+	'eventtags': WorkTagCategory.EVENT,
+	'creatortags': WorkTagCategory.CREATOR,
+	'mediatags': WorkTagCategory.MEDIA,
+	'sourcetags': WorkTagCategory.SOURCE,
+	'songtags': WorkTagCategory.SONG,
+	'gentags': WorkTagCategory.GENERAL,
+	'metatags': WorkTagCategory.META,
+	'uncattags': WorkTagCategory.UNCATEGORIZED,
+}
+
 # TODO Do we do this or put these as a widget on frontend?
 work_metatag_grammars = {
-	'rating': (Rating, lambda v: Q(rating=v)),
-	'status': (
+	'rating': MetatagSpec(Rating, lambda v: Q(rating=v)),
+	'status': MetatagSpec(
 		WorkStatus,
 		lambda v: Exists(
 			WorkSource.objects.filter(media_id=OuterRef('id'), work_status=v)
 		),
 	),
+	'id': MetatagSpec(int, make_range_metatag('id')),
+	'width': MetatagSpec(
+		int,
+		make_range_metatag('work_width', model=WorkSource, fk_field='media_id'),
+	),
+	'height': MetatagSpec(
+		int,
+		make_range_metatag('work_height', model=WorkSource, fk_field='media_id'),
+	),
+	'duration': MetatagSpec(
+		int,
+		make_range_metatag('work_duration', model=WorkSource, fk_field='media_id'),
+	),
+	'tagcount': MetatagSpec(
+		int,
+		make_range_metatag(model=TagWorkInstance, fk_field='work_id', count=True),
+	),
+	**{
+		name: MetatagSpec(
+			int,
+			make_range_metatag(
+				model=TagWorkInstance,
+				fk_field='work_id',
+				count=True,
+				work_tag__category=cat,
+			),
+		)
+		for name, cat in _WORK_TAG_CATEGORY_METATAGS.items()
+	},
 }
 work_search_grammar = get_search_grammar(work_metatag_grammars)
 

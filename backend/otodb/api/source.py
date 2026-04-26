@@ -160,7 +160,7 @@ def new_source_from_url(
 
 	# Source already has a work -> redirect
 	if src.media:
-		return {'work_id': src.media.pk}
+		return {'work_id': str(src.media.pk)}
 
 	# work_id provided -> bind source to existing work
 	if work_id:
@@ -183,7 +183,7 @@ def new_source_from_url(
 				)
 			)
 		sync_work_source(work, src)
-		return {'work_id': work.pk}
+		return {'work_id': str(work.pk)}
 
 	# New source, no existing work -> return source_id for review
 	return {'source_id': src.pk}

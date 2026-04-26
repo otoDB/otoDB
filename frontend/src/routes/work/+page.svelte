@@ -6,8 +6,18 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-
+	import { SEARCH_DOCS_POST_ID } from '$lib/ui';
 	let { data } = $props();
+
+	const examples = [
+		{ tags: 'rating:general duration:>=300', desc: m.bold_quiet_robin_chase },
+		{ tags: 'mediatype:anime order:published', desc: m.clever_swift_owl_seek },
+		{
+			tags: '(super_mario_series | kirby_series) bpm:140..160',
+			desc: m.bright_calm_finch_match
+		},
+		{ tags: 'touhou -touhou[category:song]', desc: m.crisp_neat_wren_match }
+	];
 </script>
 
 <Section
@@ -36,17 +46,24 @@
 		<h4>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: '' })}</h4>
 		<TagsField type="work" name="tags" value={data.query_tags.split(' ')} class="w-full" />
 
-		<h4>{m.good_heavy_mayfly_spin()}</h4>
-		<select name="order" value={data.order ?? 'id'}
-			><option value="id">{m.kind_vivid_niklas_savor()}</option><option value="pub"
-				>{m.swift_each_zebra_assure()}</option
-			></select
-		>
-		<select name="dir" value={data.dir ?? '-'}
-			><option value="-">{m.kind_quick_bullock_push()}</option><option value=""
-				>{m.novel_orange_mantis_feast()}</option
-			></select
-		>
+		<details>
+			<summary>{m.keen_brisk_lark_track()}</summary>
+			<ul class="grid list-none grid-cols-[max-content_auto] gap-x-4 gap-y-1">
+				{#each examples as { tags, desc } (tags)}
+					<li class="contents">
+						<a class="otodb-search-link" href="/work?tags={encodeURIComponent(tags)}">
+							<code>{tags}</code>
+						</a>
+						<span>{desc()}</span>
+					</li>
+				{/each}
+			</ul>
+			<div class="mt-2">
+				<a href="/post/{SEARCH_DOCS_POST_ID}">
+					{m.swift_keen_otter_guide()}
+				</a>
+			</div>
+		</details>
 	</form>
 	<hr />
 	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">

@@ -1,9 +1,13 @@
+import operator
 import re
-from functools import lru_cache, wraps
-from typing import Annotated, Optional, Self
+from abc import abstractmethod
+from functools import lru_cache, reduce, wraps
+from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
 
+import lark
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Count, Exists, F, OuterRef, Q, Value
 from django.http import HttpRequest
 from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
@@ -12,6 +16,7 @@ from ninja.utils import contribute_operation_args
 from pydantic import create_model, field_validator, model_validator
 
 from otodb.account.models import Account
+from otodb.common import slugify_tag
 from otodb.models import (
 	MediaSong,
 	MediaWork,
@@ -45,6 +50,7 @@ from otodb.models.enums import (
 	WorkStatus,
 	WorkTagCategory,
 )
+from otodb.models.tag import OtodbTagModel
 
 
 class AuthedHttpRequest(HttpRequest):
@@ -595,3 +601,368 @@ def restrict_internal(f):
 	contribute_operation_args(wrapper, 'otodb-internal-secret', str, Header(...))
 
 	return wrapper
+
+
+class MetatagSpec(NamedTuple):
+	kind: Any
+	to_q: Callable
+
+
+class OrderEnum:
+	def __init__(self, enum):
+		self.enum = enum
+
+	@property
+	def names(self):
+		return self.enum.names
+
+	def __getitem__(self, name):
+		return self.enum[name]
+
+
+def get_search_grammar(metatag_grammars: dict[str, MetatagSpec]):
+	def metatag_rule(name: str, spec: MetatagSpec):
+		if spec.kind is int:
+			value_rule = 'range_value'
+		elif spec.kind is str:
+			value_rule = 'SLUG'
+		else:
+			value_rule = f'{name.upper()}_VALUE'
+		return f'{name}_meta: "{name}"i _META_CONN {value_rule}'
+
+	enum_value_terminals = '\n'.join(
+		f'{k.upper()}_VALUE: /{"|".join(sorted(spec.kind.names, key=len, reverse=True))}/i'
+		for k, spec in metatag_grammars.items()
+		if spec.kind not in (int, str)
+	)
+
+	return lark.Lark(rf"""
+start: _WS? or_expr? _WS?
+or_expr: and_expr (_WS? _OR _WS? and_expr)*
+and_expr: atom (_WS atom)*
+atom: MODIFIERS? (tag_part | metatag_part | _LPAR _WS? or_expr _WS? _RPAR)
+
+tag_part: TAG_MODIFIERS? SLUG attr_block*
+attr_block: _LBRACK attr_assertion _RBRACK
+attr_assertion: SLUG                            -> attr_bool_pos
+              | "-" SLUG                        -> attr_bool_neg
+              | SLUG _META_CONN attr_values     -> attr_kv
+attr_values: attr_value ("," attr_value)*
+attr_value: SLUG                                -> attr_value_pos
+          | "-" SLUG                            -> attr_value_neg
+
+range_value: COMPARATOR INT     -> range_compare
+           | INT ".." INT       -> range_between
+           | INT ".."           -> range_min
+           | ".." INT           -> range_max
+           | INT                -> range_eq
+
+MODIFIERS:     /[-]/
+TAG_MODIFIERS: /[\^]/
+SLUG:          /\w[\w-]*/u
+COMPARATOR:    ">=" | "<=" | ">" | "<"
+INT:           /\d+/
+_LPAR:   "("
+_RPAR:   ")"
+_LBRACK: "["
+_RBRACK: "]"
+_OR: "|"
+_WS: WS
+{'\n'.join(metatag_rule(k, spec) for k, spec in metatag_grammars.items())}
+{enum_value_terminals}
+metatag_part: {'|'.join([k + '_meta' for k in metatag_grammars])}
+_META_CONN: ":"
+
+%import common.WS
+""")
+
+
+def _parse_range_node(node):
+	match node.data, node.children:
+		case 'range_eq', (v,):
+			return 'exact', int(v)
+		case 'range_compare', ('>', v):
+			return 'gt', int(v)
+		case 'range_compare', ('>=', v):
+			return 'gte', int(v)
+		case 'range_compare', ('<', v):
+			return 'lt', int(v)
+		case 'range_compare', ('<=', v):
+			return 'lte', int(v)
+		case 'range_between', (lo, hi):
+			return 'range', (int(lo), int(hi))
+		case 'range_min', (v,):
+			return 'gte', int(v)
+		case 'range_max', (v,):
+			return 'lte', int(v)
+		case _:
+			raise ValueError(
+				f'unrecognized range_value: {node.data!r}/{node.children!r}'
+			)
+
+
+class _AttrError(Exception):
+	pass
+
+
+class BoolAttr:
+	"""
+	Per-instance boolean attribute. Bracket form:
+	`[name]` (true)
+	`[-name]` (false)
+	"""
+
+	def __init__(self, field):
+		self.field = field
+
+	def apply(self, qs, values, negated):
+		if values is not None:
+			raise _AttrError(f'attribute {self.field!r} does not take values')
+		return qs.filter(**{self.field: not negated})
+
+
+class _KVEnumAttr:
+	"""Base for KV bracket attributes whose values are enum members."""
+
+	def __init__(self, field, enum):
+		self.field = field
+		self.enum = enum
+
+	def _resolve(self, name):
+		try:
+			return int(self.enum[name.upper()])
+		except KeyError:
+			raise _AttrError(f'unknown {self.enum.__name__} value: {name!r}')
+
+	def _split(self, values):
+		positives, negatives = [], []
+		for is_neg, name in values:
+			(negatives if is_neg else positives).append(self._resolve(name))
+		return positives, negatives
+
+	def apply(self, qs, values, negated):
+		if negated:
+			raise _AttrError(
+				f'attribute {self.field!r} cannot be negated as a whole; '
+				f'use per-value `-` or negate the tag itself'
+			)
+		if values is None:
+			raise _AttrError(f'attribute {self.field!r} requires values')
+		return self._apply(qs, values)
+
+	@abstractmethod
+	def _apply(self, qs, values): ...
+
+
+class EnumAttr(_KVEnumAttr):
+	"""
+	Integer-enum attribute. Bracket form:
+	`[name:value]`
+	`[name:v1,v2]` (matches if any of these values)
+	`[name:-v]` (excludes this value)
+	"""
+
+	def _apply(self, qs, values):
+		positives, negatives = self._split(values)
+		if positives:
+			qs = qs.filter(**{f'{self.field}__in': positives})
+		if negatives:
+			qs = qs.exclude(**{f'{self.field}__in': negatives})
+		return qs
+
+
+class BitmaskAttr(_KVEnumAttr):
+	"""
+	Per-instance integer-bitmask attribute. Bracket form:
+	`[name:value]`
+	`[name:v1,v2,-v3]`,
+	`[name:any]`
+	`[name:none]`
+	"""
+
+	def _apply(self, qs, values):
+		if any(name in ('any', 'none') for _, name in values):
+			if len(values) != 1 or values[0][0]:
+				raise _AttrError(
+					f'{self.field!r}: `any`/`none` must appear alone and unsigned'
+				)
+			(_, sentinel) = values[0]
+			if sentinel == 'any':
+				return qs.filter(**{f'{self.field}__gt': 0})
+			return qs.filter(
+				Q(**{f'{self.field}__isnull': True}) | Q(**{self.field: 0})
+			)
+
+		positives_list, negatives_list = self._split(values)
+		positives = reduce(operator.or_, positives_list, 0)
+		negatives = reduce(operator.or_, negatives_list, 0)
+		considered = positives | negatives
+		ann = f'_attr_{self.field}_{id(values)}'
+		return qs.annotate(**{ann: F(self.field).bitand(considered)}).filter(
+			**{ann: positives}
+		)
+
+
+def count_predicate_q(base, op, value):
+	grouped = base.annotate(_g=Value(1)).values('_g').annotate(c=Count('*'))
+	positive = Exists(grouped.filter(**{f'c__{op}': value}))
+	zero_matches = (
+		op == 'lte'
+		or (op in ('exact', 'gte') and value == 0)
+		or (op == 'lt' and value > 0)
+		or (op == 'range' and value[0] == 0)
+	)
+	return positive | ~Exists(base) if zero_matches else positive
+
+
+def make_range_metatag(
+	field=None, *, model=None, fk_field=None, count=False, **filters
+):
+	if count:
+		return lambda op, value: count_predicate_q(
+			model.objects.filter(**{fk_field: OuterRef('id')}, **filters), op, value
+		)
+
+	if model is not None:
+		return lambda op, value: Exists(
+			model.objects.filter(
+				**{fk_field: OuterRef('id'), f'{field}__{op}': value}, **filters
+			)
+		)
+
+	return lambda op, value: Q(**{f'{field}__{op}': value})
+
+
+_NOOP = object()
+
+
+class AbstractTagTransformer(lark.Transformer):
+	TagModel: OtodbTagModel
+	tag_join_name: str
+	tagged_join_name: str
+	metatag_grammars: dict
+	attribute_handlers: dict = {}
+
+	def __init__(self):
+		super().__init__()
+		self.orderings: list = []
+
+	def transform(self, tree):
+		self.orderings = []
+		return super().transform(tree)
+
+	def start(self, v):
+		if not v or v[0] is _NOOP:
+			return None
+		return v[0]
+
+	def or_expr(self, v):
+		real = [c for c in v if c is not _NOOP]
+		if not real:
+			return _NOOP
+		return real[0] if len(real) == 1 else reduce(operator.or_, real)
+
+	def and_expr(self, v):
+		real = [c for c in v if c is not _NOOP]
+		if not real:
+			return _NOOP
+		return real[0] if len(real) == 1 else reduce(operator.and_, real)
+
+	def atom(self, v):
+		if len(v) == 1:
+			return v[0]
+		elif v[0] == '-':
+			return _NOOP if v[1] is _NOOP else ~v[1]
+
+	MODIFIERS = str
+	TAG_MODIFIERS = str
+
+	def SLUG(self, v):
+		return str(v)
+
+	def attr_value_pos(self, v):
+		return (False, str(v[0]))
+
+	def attr_value_neg(self, v):
+		return (True, str(v[0]))
+
+	def attr_values(self, v):
+		return list(v)
+
+	def attr_bool_pos(self, v):
+		return (str(v[0]), None, False)
+
+	def attr_bool_neg(self, v):
+		return (str(v[0]), None, True)
+
+	def attr_kv(self, v):
+		return (str(v[0]), v[1], False)
+
+	def attr_block(self, v):
+		return v[0]
+
+	def tag_part(self, v):
+		# v: [TAG_MODIFIERS?, SLUG, *attr_block_results]
+		has_mod = str(v[0]) == '^'
+		slug = v[1] if has_mod else v[0]
+		attr_blocks = v[2:] if has_mod else v[1:]
+
+		try:
+			tag = self.TagModel.objects.get(slug=slugify_tag(slug))
+		except self.TagModel.DoesNotExist:
+			return Q(pk__in=[])
+		if tag.aliased_to:
+			tag = tag.aliased_to
+
+		twi_q = self.TagInstanceModel.objects.filter(
+			**{self.tagged_join_name: OuterRef('id')}
+		)
+		if has_mod:
+			twi_q = twi_q.filter(**{self.tag_join_name: tag})
+		else:
+			ids = [tag.id, *tag.get_descendants().values_list('id', flat=True)]
+			twi_q = twi_q.filter(**{f'{self.tag_join_name}__in': ids})
+
+		try:
+			twi_q = self._apply_attr_blocks(twi_q, attr_blocks)
+		except _AttrError:
+			return Q(pk__in=[])
+		return Exists(twi_q)
+
+	def _apply_attr_blocks(self, qs, blocks):
+		"""Collapse `[attr:a][attr:b]` into `[attr:a,b]`, and so on"""
+		grouped: dict[str, tuple[bool, list | None]] = {}
+		for key, values, negated in blocks:
+			if key not in grouped:
+				grouped[key] = (negated, values)
+				continue
+			prev_neg, prev_vals = grouped[key]
+			if prev_neg != negated or (values is None) != (prev_vals is None):
+				raise _AttrError(f'conflicting brackets for {key!r}')
+			grouped[key] = (
+				negated,
+				prev_vals if values is None else prev_vals + values,
+			)
+
+		for key, (negated, values) in grouped.items():
+			handler = self.attribute_handlers.get(key)
+			if handler is None:
+				raise _AttrError(f'unknown tag attribute: {key!r}')
+			qs = handler.apply(qs, values, negated)
+		return qs
+
+	def metatag_part(self, v):
+		v = v[0]
+		metatag = v.data.value[:-5]
+		spec = self.metatag_grammars[metatag]
+		if spec.kind is int:
+			op, value = _parse_range_node(v.children[0])
+			return spec.to_q(op, value)
+		if spec.kind is str:
+			return spec.to_q(str(v.children[0]))
+		E = spec.kind
+		enum_val = E[str(v.children[0]).upper()]
+		if isinstance(spec.kind, OrderEnum):
+			self.orderings.append(spec.to_q(enum_val))
+			return _NOOP
+		return spec.to_q(enum_val)

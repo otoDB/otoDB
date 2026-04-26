@@ -169,6 +169,18 @@
 	@apply external-link-icon;
 }
 
+/* Inline work-search link rendered from `{{...}}` markdown */
+.otodb-search-link::after {
+	content: '';
+	display: inline-block;
+	width: 0.9em;
+	height: 0.9em;
+	margin-left: 0.25em;
+	vertical-align: middle;
+	mask: url(/search.svg) no-repeat center / contain;
+	background-color: currentcolor;
+}
+
 /* Autolink headings */
 :is(h1, h2, h3, h4, h5, h6) {
 	& a[href^='#'] {

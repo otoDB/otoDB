@@ -5,6 +5,7 @@ from itertools import groupby
 from typing import Annotated, Dict, Optional
 from urllib.parse import parse_qs, unquote, urlparse
 
+import lark
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, Value, When
@@ -23,6 +24,7 @@ from otodb.models import (
 	MediaWork,
 	SongRelation,
 	TagSong,
+	TagSongInstance,
 	TagSongLangPreference,
 	TagWork,
 	TagWorkConnection,
@@ -47,16 +49,20 @@ from otodb.models.enums import (
 )
 
 from .common import (
+	AbstractTagTransformer,
 	ApiError,
 	ConnectionLookupResponse,
 	ConnectionSchema,
 	Error,
+	MetatagSpec,
 	RouterWithRevision,
 	SongRelationSchema,
 	TagLangPreferenceSchema,
 	TagWorkSchema,
 	ThinWorkSchema,
+	get_search_grammar,
 	make_alt_value_parser,
+	make_range_metatag,
 	post_relations,
 	profile_connection_parsers,
 	re_to_parser,
@@ -910,6 +916,42 @@ def song(request: HttpRequest, id: int):
 	return get_object_or_404(MediaSong, id=id).work_tag.slug
 
 
+_SONG_TAG_CATEGORY_METATAGS = {
+	'gentags': SongTagCategory.GENERAL,
+	'genretags': SongTagCategory.GENRE,
+	'authortags': SongTagCategory.AUTHOR,
+	'metatags': SongTagCategory.META,
+}
+
+song_metatag_grammars = {
+	'tagcount': MetatagSpec(
+		int,
+		make_range_metatag(model=TagSongInstance, fk_field='song_id', count=True),
+	),
+	**{
+		name: MetatagSpec(
+			int,
+			make_range_metatag(
+				model=TagSongInstance,
+				fk_field='song_id',
+				count=True,
+				song_tag__category=cat,
+			),
+		)
+		for name, cat in _SONG_TAG_CATEGORY_METATAGS.items()
+	},
+}
+song_search_grammar = get_search_grammar(song_metatag_grammars)
+
+
+class SongTagTransformer(AbstractTagTransformer):
+	TagModel = TagSong
+	TagInstanceModel = TagSongInstance
+	tag_join_name = 'song_tag'
+	tagged_join_name = 'song'
+	metatag_grammars = song_metatag_grammars
+
+
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate
 def song_search(
@@ -928,9 +970,13 @@ def song_search(
 		work_tag__aliased_to__isnull=True,
 	).distinct()
 	if tags:
-		for tag in tags.split():
-			tag_slug = slugify_tag(tag)
-			qs = qs.filter(Q(tags__slug=tag_slug) | Q(tags__aliases__slug=tag_slug))
+		try:
+			if tags_parse := SongTagTransformer().transform(
+				song_search_grammar.parse(tags.strip())
+			):
+				qs = qs.filter(tags_parse)
+		except lark.exceptions.UnexpectedInput:
+			return []
 	elif query.isdigit():
 		qs = qs.annotate(priority=Value(100))
 		qs = (

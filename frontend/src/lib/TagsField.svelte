@@ -20,10 +20,11 @@
 	let lastQuery = $state('');
 
 	const getWordAtPos = (str: string, pos: number) => {
-		let start = [...str.slice(0, pos)].reverse().join('').search(/\s/g);
-		let end = str.slice(pos).search(/\s/g);
-		start = start === -1 ? 0 : pos - start;
-		end = end === -1 ? str.length : pos + end;
+		let start = pos;
+		while (start > 0 && /[\w-]/.test(str[start - 1])) start--;
+		let end = pos;
+		while (end < str.length && /[\w-]/.test(str[end])) end++;
+		while (start < end && str[start] === '-') start++;
 		return { word: str.slice(start, end), start, end };
 	};
 
@@ -33,16 +34,17 @@
 	};
 
 	const search = debounce(async () => {
-		const query = getWordAtPos(textarea.value, textarea.selectionStart).word;
-		if (query === '') {
+		const { word, start } = getWordAtPos(textarea.value, textarea.selectionStart);
+		const before = textarea.value[start - 1];
+		if (!word || before === ':' || before === '[' || before === ',') {
 			suggestions = [];
 			lastQuery = '';
 			return;
 		}
-		if (query === lastQuery) return;
-		lastQuery = query;
+		if (word === lastQuery) return;
+		lastQuery = word;
 		const { data } = await client.GET(endpoint, {
-			params: { query: { query, limit: 10, resolve_aliases: false } }
+			params: { query: { query: word, limit: 10, resolve_aliases: false } }
 		});
 		if (!data) return;
 		suggestions = data.items;

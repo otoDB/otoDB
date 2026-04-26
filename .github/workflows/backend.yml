@@ -162,5 +162,4 @@ jobs:
       - name: Verify no changes (Fail if stale)
         working-directory: frontend
         run: |
-          rm redocly.yaml
-          bun run sync-schema openapi.json --check -o src/lib/schema.ts
+          bun run sync-schema openapi.json --check

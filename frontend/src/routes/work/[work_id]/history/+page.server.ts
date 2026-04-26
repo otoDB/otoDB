@@ -1,5 +1,5 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
+import { HistoricalEntities } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
@@ -7,14 +7,11 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		fetch,
 		params: {
 			query: {
-				entity: 'mediawork',
+				entity: HistoricalEntities.mediawork,
 				id: +params.work_id
 			}
 		}
 	});
-
-	// TOOD: Error forwarding
-	if (!history) error(500, { message: 'Failed to load history' });
 
 	return {
 		history

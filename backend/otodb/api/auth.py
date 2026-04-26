@@ -1,25 +1,29 @@
-from typing import Annotated
-from datetime import datetime, timedelta
-import string
 import logging
+import string
+from datetime import datetime, timedelta
+from typing import Annotated
+
+from django.contrib.auth import authenticate, login, logout
+from django.db import IntegrityError
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from ninja import Field, ModelSchema, Router, Schema
+from ninja.security import django_auth
+from ninja.throttling import AnonRateThrottle, AuthRateThrottle
 from pydantic import StringConstraints
 
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, HttpRequest
-from django.utils.crypto import get_random_string
-from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.contrib.auth import authenticate, login, logout
-
-from ninja import Schema, Router, Field, ModelSchema
-from ninja.security import django_auth
-
 from otodb.account.models import Account, Invitation
-from otodb.models.enums import ErrorCode, LanguageTypes
+from otodb.models.enums import (
+	ErrorCode,
+	LanguageTypes,
+	Preferences,
+)
 from otodb.tasks import send_email
 
-from .common import Error, UserPreferencesSchema, ProfileSchema, user_is_editor
+from .common import ApiError, Error, ProfileSchema, UserPreferenceSchema, user_is_editor
 
 logger = logging.getLogger(__name__)
 
@@ -43,30 +47,41 @@ def csrf(request: HttpRequest):
 	return HttpResponse()
 
 
-@auth_router.post('/login', response={200: UserLoginSchema, 401: Error})
+@auth_router.post(
+	'/login',
+	throttle=[AnonRateThrottle('5/m')],
+	response={200: UserLoginSchema, 401: Error},
+)
 def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 	user = authenticate(request, username=body.username, password=body.password)
 	if user is not None:
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
-	return 401, {'code': ErrorCode.LOGIN_FAILED, 'data': {'message': 'Login failed.'}}
+	raise ApiError(401, ErrorCode.LOGIN_FAILED)
 
 
 class UserStatusSchema(UserLoginSchema):
-	level: int
+	level: Account.Levels
 	user_id: int = Field(..., alias='id')
 	username: str
-	prefs: UserPreferencesSchema | None = None
+	prefs: UserPreferenceSchema
 	notifs_count: int
+	notifs_nonsub_count: int
 
 
 @auth_router.get('/status', response={200: UserStatusSchema, 401: Error})
 def status(request: HttpRequest):
 	if request.user.is_authenticated:
 		u = request.user
-		u.notifs_count = u.notifs.filter(dismissed=False).count()
+		unread_notifs = u.notifs.filter(dismissed=False)
+		u.notifs_count = unread_notifs.count()
+		u.notifs_nonsub_count = unread_notifs.filter(revision__isnull=True).count()
+		u.prefs = {
+			Preferences(setting).name: value
+			for setting, value in u.preferences.values_list('setting', 'value')
+		}
 		return u
-	return 401, {'code': ErrorCode.NOT_LOGGED_IN, 'data': {'message': 'Not logged in.'}}
+	raise ApiError(401, ErrorCode.NOT_LOGGED_IN)
 
 
 @auth_router.post('/logout', auth=django_auth)
@@ -82,7 +97,11 @@ class RegisterRequestSchema(Schema):
 	invite: Annotated[str, StringConstraints(strip_whitespace=True)]
 
 
-@auth_router.post('/register', response={200: UserLoginSchema, 401: Error, 409: Error})
+@auth_router.post(
+	'/register',
+	throttle=[AnonRateThrottle('3/h')],
+	response={200: UserLoginSchema, 401: Error, 409: Error},
+)
 def register(request: HttpRequest, body: RegisterRequestSchema):
 	invite_res = get_object_or_404(Invitation, secret=body.invite, used_by__isnull=True)
 	assert body.password
@@ -97,15 +116,9 @@ def register(request: HttpRequest, body: RegisterRequestSchema):
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
 	except IntegrityError:
-		return 409, {
-			'code': ErrorCode.USERNAME_TAKEN,
-			'data': {'message': 'This username is already taken'},
-		}
+		raise ApiError(409, ErrorCode.USERNAME_TAKEN)
 	except ValueError:
-		return 400, {
-			'code': ErrorCode.VALIDATION_ERROR,
-			'data': {'message': 'A validation error occurred'},
-		}
+		raise ApiError(400, ErrorCode.VALIDATION_ERROR)
 
 
 class ResetPasswordRequestSchema(Schema):
@@ -113,7 +126,7 @@ class ResetPasswordRequestSchema(Schema):
 	token: str | None = None
 
 
-@auth_router.post('/reset_password')
+@auth_router.post('/reset_password', throttle=[AnonRateThrottle('3/h')])
 def reset_password(request: HttpRequest, body: ResetPasswordRequestSchema):
 	assert body.password
 	user = request.user
@@ -200,8 +213,8 @@ https://otodb.net/
 
 
 def get_user_language(user, request):
-	if user and hasattr(user, 'prefs'):
-		if lang := user.prefs.language:
+	if user and hasattr(user, 'preferences'):
+		if lang := user.preferences.filter(setting=Preferences.LANGUAGE).first():
 			return lang
 	if request:
 		if locale := request.COOKIES.get('PARAGLIDE_LOCALE'):
@@ -221,7 +234,7 @@ class SendResetTokenRequestSchema(Schema):
 	email: str
 
 
-@auth_router.put('/reset_password')
+@auth_router.put('/reset_password', throttle=[AnonRateThrottle('3/h')])
 def send_reset_password_token(request: HttpRequest, body: SendResetTokenRequestSchema):
 	try:
 		user = Account.objects.get(email=body.email)
@@ -242,10 +255,11 @@ class InvitationSchema(ModelSchema):
 	used_by: ProfileSchema | None
 	used_at: datetime | None
 	created_at: datetime
+	level: Account.Levels
 
 	class Meta:
 		model = Invitation
-		fields = ['secret', 'level']
+		fields = ['secret']
 
 
 @auth_router.get(
@@ -266,7 +280,11 @@ def user_invites(request: HttpRequest):
 	)
 
 
-@auth_router.post('/invite', auth=django_auth)
+@auth_router.post(
+	'/invite',
+	auth=django_auth,
+	throttle=[AuthRateThrottle('5/d')],
+)
 @user_is_editor
 def new_invite(request: HttpRequest):
 	assert (

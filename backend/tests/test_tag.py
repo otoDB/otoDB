@@ -5,10 +5,10 @@ from otodb.models import (
 	MediaWork,
 	TagWork,
 	TagWorkInstance,
-	TagWorkParenthood,
 	TagWorkLangPreference,
+	TagWorkParenthood,
 )
-from otodb.models.enums import WorkTagCategory, LanguageTypes
+from otodb.models.enums import LanguageTypes, WorkTagCategory
 
 
 # Tests

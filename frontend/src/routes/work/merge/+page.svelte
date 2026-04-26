@@ -2,12 +2,13 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkField from '$lib/WorkField.svelte';
-	import type { components } from '$lib/schema';
-	import { Platform, Rating, WorkOrigin } from '$lib/enums';
-	import client, { getDisplayText } from '$lib/api';
+	import { Rating, WorkOrigin, type components } from '$lib/schema';
+	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
+	import client from '$lib/api';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';
+	import { getDisplayText } from '$lib/ui';
 
 	let work: Record<
 		'a' | 'b',
@@ -16,7 +17,7 @@
 			title: string;
 			description: string;
 			thumbnail_source_id: number | null;
-			rating: number;
+			rating: Rating;
 			sources: null | components['schemas']['WorkSourceSchema'][];
 		}
 	> = $state({
@@ -168,10 +169,10 @@
 							>
 								{#each work['a'].sources as source (source.id)}
 									<option value={source.id}
-										>{Platform[source.platform]}
-										{source.work_origin === 0
+										>{PlatformNames[source.platform]}
+										{source.work_origin === WorkOrigin.Author
 											? ''
-											: ' ' + WorkOrigin[source.work_origin]()}
+											: ' ' + WorkOriginNames[source.work_origin]()}
 										-
 										{source.title}</option
 									>
@@ -232,7 +233,9 @@
 							disabled={!work['a'].work || selectingRating !== 'a'}
 							bind:value={work['a'].rating}
 						>
-							{#each Rating as r, i (i)}<option value={i}>{r()}</option>{/each}
+							{#each enumValues(Rating) as r, i (i)}<option value={r}
+									>{RatingNames[r]()}</option
+								>{/each}
 						</select></td
 					>
 					<td
@@ -256,7 +259,9 @@
 							disabled={!work['b'].work || selectingRating !== 'b'}
 							bind:value={work['b'].rating}
 						>
-							{#each Rating as r, i (i)}<option value={i}>{r()}</option>{/each}
+							{#each enumValues(Rating) as r, i (i)}<option value={r}
+									>{RatingNames[r]()}</option
+								>{/each}
 						</select></td
 					>
 					<th>{m.good_dark_bumblebee_spur()}</th></tr

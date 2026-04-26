@@ -1,8 +1,8 @@
 <script lang="ts">
-	import client from './api';
-	import { m } from './paraglide/messages';
-	import type { components } from './schema';
-	import { clickOutside, debounce } from './ui';
+	import client from '$lib/api';
+	import { m } from '$lib/paraglide/messages';
+	import type { components } from '$lib/schema';
+	import { clickOutside, debounce } from '$lib/ui';
 
 	let self: HTMLElement;
 
@@ -10,7 +10,7 @@
 	interface Props {
 		value: components['schemas']['SongSchema'] | null | undefined;
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-		oninput: Function | undefined;
+		oninput?: Function;
 	}
 	let { value = $bindable(undefined), oninput = undefined, ...props }: Props = $props();
 
@@ -88,10 +88,3 @@
 		</table>
 	{/if}
 </span>
-
-<style>
-	ul {
-		background-color: var(--otodb-color-bg-primary);
-		z-index: 10;
-	}
-</style>

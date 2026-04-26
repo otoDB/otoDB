@@ -13,13 +13,13 @@ export default defineConfig(({ mode }) => {
 			paraglideVitePlugin({
 				project: './project.inlang',
 				outdir: './src/lib/paraglide',
-				strategy: ['cookie', 'preferredLanguage', 'baseLocale']
+				strategy: ['custom-userPreference', 'preferredLanguage', 'baseLocale']
 			})
 		],
 		server: {
 			host: '127.0.0.1',
 			proxy: {
-				'/media': env.PUBLIC_BACKEND_URL_EXTERNAL || 'http://127.0.0.1:8000'
+				'/media': env.PUBLIC_API_ENDPOINT || 'http://127.0.0.1:8000'
 			}
 		}
 	};

@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import os
 import logging
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -25,18 +25,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = os.environ.get('OTODB_DEBUG', 'False').lower() == 'true'
 
-if OTODB_SENTRY_DSN := os.environ.get('OTODB_SENTRY_DSN'):
+if OTODB_BACKEND_SENTRY_DSN := os.environ.get('OTODB_BACKEND_SENTRY_DSN'):
 	import sentry_sdk
 
 	sentry_sdk.init(
-		dsn=OTODB_SENTRY_DSN,
+		dsn=OTODB_BACKEND_SENTRY_DSN,
 		send_default_pii=False,  # May need to enable later
 		enable_logs=True,
 		traces_sample_rate=float(
-			os.environ.get('OTODB_SENTRY_TRACES_SAMPLE_RATE', '0.1')
+			os.environ.get('OTODB_BACKEND_SENTRY_TRACES_SAMPLE_RATE', '0.1')
 		),
 		profiles_sample_rate=float(
-			os.environ.get('OTODB_SENTRY_PROFILES_SAMPLE_RATE', '0.1')
+			os.environ.get('OTODB_BACKEND_SENTRY_PROFILES_SAMPLE_RATE', '0.1')
 		),
 		release=os.environ.get('OTODB_HASH', 'unknown'),
 	)
@@ -249,7 +249,7 @@ if OTODB_FRONTEND_DOMAIN:
 
 OTODB_PROTECT_API_DOCS = os.environ.get('OTODB_PROTECT_API_DOCS', '').lower() == 'true'
 
-OTODB_INTERNAL_API_SECRET = os.environ.get('OTODB_INTERNAL_API_SECRET')
+INTERNAL_API_SECRET = os.environ.get('INTERNAL_API_SECRET')
 
 # CDN Configuration
 OTODB_CDN_BUCKET_NAME = os.environ.get('OTODB_CDN_BUCKET_NAME')
@@ -287,6 +287,12 @@ if OTODB_REDIS_URL:
 			'QUEUES': ['default'],
 		}
 	}
+	CACHES = {
+		'default': {
+			'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+			'LOCATION': OTODB_REDIS_URL,
+		}
+	}
 else:
 	TASKS = {
 		'default': {
@@ -319,4 +325,9 @@ LOGGING = {
 
 # Application specific
 
+# TODO: Consider making these dynamic per user rather than a fixed number
+OTODB_MAX_PENDING_WORKS = 10
+OTODB_MAX_FLAGGED_WORKS = 5
+
 OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)
+OTODB_MODERATION_PERIOD = timedelta(weeks=1)

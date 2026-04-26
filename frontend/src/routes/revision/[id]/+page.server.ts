@@ -1,13 +1,13 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { isValidEntityModelType, type EntityModelType } from '$lib/enums';
-import type { components } from '$lib/schema';
+import type { components, Route } from '$lib/schema';
 
 type RC = components['schemas']['RevisionChangeSchema'];
 const group_RCs = (
 	items: RC[]
-): { route: number; entities: { rcs: RC[]; ent_type: EntityModelType; ent_id: string }[] }[] =>
+): { route: Route; entities: { rcs: RC[]; ent_type: EntityModelType; ent_id: string }[] }[] =>
 	(Object.values(Object.groupBy(items, (c) => c.route)) as RC[][])
 		.map((rent) => ({
 			route: rent![0].route,
@@ -28,7 +28,11 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const batch_size = 30;
 
-	const [{ data: changes }, { data: revision }] = await Promise.all([
+	const [{ data: revision }, { data: changes }] = await Promise.all([
+		client.GET('/api/history/revision', {
+			fetch,
+			params: { query: { revision_id } }
+		}),
 		client.GET('/api/history/revision_changes', {
 			fetch,
 			params: {
@@ -38,14 +42,8 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 					offset: batch_size * (page - 1)
 				}
 			}
-		}),
-		client.GET('/api/history/revision', { fetch, params: { query: { revision_id } } })
+		})
 	]);
-
-	if (!revision) error(404, { message: 'Not found' });
-
-	if (!changes) error(500, { message: 'Internal server error' });
-	if (!revision) error(500, { message: 'Internal server error' });
 
 	return {
 		revision,

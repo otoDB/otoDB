@@ -1,14 +1,12 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
-import type { PageServerLoad } from './$types';
-import { postCategory } from '$lib/enums/PostCategory';
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import type { PageServerLoad } from './$types';
+import { asEnum } from '$lib/enums';
+import { PostCategory } from '$lib/schema';
 
 const batch_size = 20;
-
-type CategoryId = (typeof postCategory)[keyof typeof postCategory]['id'];
-const validCategoryIds = Object.values(postCategory).map((c) => c.id) as CategoryId[];
 
 const SearchParamsSchema = v.object({
 	page: v.fallback(
@@ -25,8 +23,8 @@ const SearchParamsSchema = v.object({
 		v.optional(
 			v.pipe(
 				v.string(),
-				v.transform((s) => parseInt(s, 10) as CategoryId),
-				v.check((n) => validCategoryIds.includes(n), 'Invalid category ID')
+				v.transform((s) => parseInt(s, 10)),
+				v.transform((s) => asEnum(PostCategory, s))
 			)
 		),
 		undefined
@@ -51,8 +49,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 			}
 		}
 	});
-
-	if (!data) error(500, 'Failed to fetch search results.');
 
 	return {
 		query,

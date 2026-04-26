@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { resolveRouteKeyById, Route } from '$lib/enums/Route';
+	import Time from '$lib/Time.svelte';
+	import { routeNames } from '$lib/enums/route';
 	import { m } from './paraglide/messages';
 	import type { components } from './schema';
-	import { timeAgo } from './ui';
 	interface Props {
 		revisions: components['schemas']['RevisionSchema'][];
-		user: components['schemas']['UserStatusSchema'] | null;
+		user: App.Locals['user'] | null;
 	}
 	let { revisions }: Props = $props();
 </script>
@@ -21,12 +21,12 @@
 			<tr
 				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
 					>{rev.route !== null && rev.route !== undefined
-						? Route[resolveRouteKeyById(rev.route)].title()
+						? routeNames[rev.route]()
 						: ''}</td
 				><td>
 					<a href="/profile/{rev.user}">{rev.user}</a>
 				</td><td>
-					<time title={new Date(rev.date).toLocaleString()}>{timeAgo(rev.date)}</time>
+					<Time format="relative" date={rev.date} />
 				</td><td>
 					{rev.message}
 				</td>

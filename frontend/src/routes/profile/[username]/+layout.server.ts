@@ -1,10 +1,9 @@
 import type { LayoutServerLoad } from './$types';
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages.js';
-import { error } from '@sveltejs/kit';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
-	const { data, error: e } = await client.GET('/api/profile/profile', {
+	const { data } = await client.GET('/api/profile/profile', {
 		fetch,
 		params: {
 			query: {
@@ -12,7 +11,6 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 			}
 		}
 	});
-	if (e) error(404, { message: 'Not found' });
 
 	return {
 		links: [
@@ -21,6 +19,10 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 				title: m.frail_maroon_tadpole_inspire() + ' ' + data.username
 			},
 			{ pathname: `profile/${params.username}/lists`, title: m.stale_loose_squid_cut() },
+			{
+				pathname: `profile/${params.username}/threads`,
+				title: m.big_tiny_kitten_devour()
+			},
 			{
 				pathname: `profile/${params.username}/submissions`,
 				title: m.active_front_anteater_cry()

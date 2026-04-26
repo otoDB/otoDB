@@ -1,0 +1,14 @@
+{
+    "$schema": "https://inlang.com/schema/project-settings",
+    "plugin.inlang.messageFormat": {
+        "pathPattern": "../frontend/messages/{languageTag}.json"
+    },
+    "baseLocale": "en",
+    "locales": ["en", "ja", "ko", "zh-cn"],
+    "sourceLanguageTag": "en",
+    "languageTags": ["en", "ja", "ko", "zh-cn"],
+    "modules": [
+        "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@latest/dist/index.js",
+        "https://cdn.jsdelivr.net/npm/@inlang/plugin-m-function-matcher@latest/dist/index.js"
+    ]
+}

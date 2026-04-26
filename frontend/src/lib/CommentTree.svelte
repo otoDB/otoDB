@@ -3,24 +3,16 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
+	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
-	import { timeAgo } from '$lib/ui';
-
-	export type CommentModels =
-		| 'mediawork'
-		| 'account'
-		| 'pool'
-		| 'tagwork'
-		| 'tagsong'
-		| 'post'
-		| 'bulkrequest';
+	import { Levels, ModelsWithComments } from '$lib/schema';
+	import Time from '$lib/Time.svelte';
+	import EditedBy from './EditedBy.svelte';
 
 	interface Props {
-		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
-		model: CommentModels;
+		model: ModelsWithComments;
 		pk: number;
 		comments: Parameters<typeof makeCommentTree>[0];
 	}
@@ -76,8 +68,8 @@
 		editPreviewMode = false;
 	};
 
-	const can_comment = $derived(hasUserLevelOld(user?.level, 'MEMBER'));
-	const is_admin = $derived(!!user && hasUserLevelOld(user?.level, 'ADMIN'));
+	const can_comment = $derived(hasUserLevel(user?.level, Levels.Member));
+	const is_admin = $derived(!!user && hasUserLevel(user?.level, Levels.Admin));
 
 	const canEdit = (data: ReturnType<typeof makeCommentTree>[number]) => {
 		if (!user) return false;
@@ -153,19 +145,14 @@
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
 			<a href="/profile/{data.user.username}">{data.user.username}</a>
-			<a href="#c{data.id}"
-				><time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time></a
-			>
+			<a href="#c{data.id}"><Time format="relative" date={data.time} /></a>
 			{#if data.edited_at}
-				<span title={new Date(data.edited_at).toLocaleString()}>
-					{#if data.edited_by && data.edited_by.username !== data.user.username}
-						({m.free_tiny_badger_breathe({ time: timeAgo(data.edited_at) })}<a
-							href="/profile/{data.edited_by.username}">{data.edited_by.username}</a
-						>{m.agent_honest_marten_renew()})
-					{:else}
-						{m.same_only_emu_startle({ time: timeAgo(data.edited_at) })}
-					{/if}
-				</span>
+				<EditedBy
+					date={data.edited_at}
+					user={data.edited_by && data.edited_by.username !== data.user.username
+						? data.edited_by
+						: null}
+				/>
 			{/if}
 		</div>
 		<div>
@@ -240,7 +227,7 @@
 							{m.minor_crisp_cobra_list()}
 						</button>
 					{/if}
-					{#if user && (hasUserLevelOld(user?.level, 'ADMIN') || data.user.username === user.username)}
+					{#if user && (hasUserLevel(user?.level, Levels.Admin) || data.user.username === user.username)}
 						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 							>{m.even_alert_grebe_taste()}</button
 						>

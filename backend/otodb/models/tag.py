@@ -1,29 +1,29 @@
-from typing import TYPE_CHECKING, Self
-from itertools import chain
 import re
-
-from django.db import models
-from django.db.models import Value, Q, Prefetch
-from django.core.exceptions import ValidationError
-from tagulous.models import BaseTagModel, TagModelManager
-
-from django_cte import CTE, with_cte
-
-from otodb.common import slugify_tag, clean_tag
-from .enums import WorkTagCategory, SongTagCategory, LanguageTypes, MediaType
-from .revision import RevisionTrackedModel, RevisionTrackedManager
+from itertools import chain
+from typing import TYPE_CHECKING, Self
 
 # Monkeypatch tagulous to use our slugify (underscores as separator, not hyphens)
 import tagulous.models.models as _tagulous_models
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Prefetch, Q, Value
+from django_cte import CTE, with_cte
+from tagulous.models import BaseTagModel, TagModelManager
+
+from otodb.common import clean_tag, slugify_tag
+
+from .enums import LanguageTypes, MediaType, SongTagCategory, WorkTagCategory
+from .revision import RevisionTrackedManager, RevisionTrackedModel
 
 _tagulous_models.slugify = lambda value, **_: slugify_tag(value)
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
+
 	from .connection import (
 		TagWorkConnection,
-		TagWorkMediaConnection,
 		TagWorkCreatorConnection,
+		TagWorkMediaConnection,
 	)
 	from .media import MediaSong
 
@@ -47,10 +47,11 @@ def tagwork_ordering_case(prefix=''):
 			**{f'{prefix}category': WorkTagCategory.SONG}, then=models.Value(30)
 		),
 		models.When(
-			**{f'{prefix}category': WorkTagCategory.GENERAL}, then=models.Value(40)
+			**{f'{prefix}category': WorkTagCategory.META}, then=models.Value(1000)
 		),
 		models.When(
-			**{f'{prefix}category': WorkTagCategory.META}, then=models.Value(1000)
+			**{f'{prefix}category': WorkTagCategory.UNCATEGORIZED},
+			then=models.Value(9999),
 		),
 		default=models.Value(999),
 		output_field=models.IntegerField(),
@@ -171,6 +172,7 @@ class OtodbTagModel(BaseTagModel):
 	def alias(cls, from_tags: list[Self], into_tag: Self):
 		from django.contrib.contenttypes.models import ContentType
 		from django_comments_xtd.models import XtdComment
+
 		from otodb.models.posts import EntityLink
 
 		self_ct = ContentType.objects.get_for_model(cls)
@@ -228,7 +230,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 	deprecated = models.BooleanField(default=False, null=False)
 	category = models.IntegerField(
-		choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL
+		choices=WorkTagCategory.choices, default=WorkTagCategory.UNCATEGORIZED
 	)
 	media_type = models.IntegerField(
 		null=True, blank=True, help_text='Media type bitmask'
@@ -245,7 +247,8 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		]
 		entity_attrs = ['self', 'aliased_to']
 
-		def to_active(self, instance: 'TagWork') -> 'TagWork':
+		@staticmethod
+		def to_active(instance: 'TagWork') -> 'TagWork':
 			return instance.aliased_to or instance
 
 	def __str__(self):
@@ -289,7 +292,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 				self.wikipage_set.exists()
 				and any([p.page.strip() != '' for p in self.wikipage_set]),
 				self.tagworkconnection_set.exists(),
-				self.category != WorkTagCategory.GENERAL,
+				self.category != WorkTagCategory.UNCATEGORIZED,
 			]
 		)
 
@@ -457,8 +460,8 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			else:
 				tp.delete()
 		if (
-			from_tag.category != WorkTagCategory.GENERAL
-			and to_tag.category == WorkTagCategory.GENERAL
+			from_tag.category != WorkTagCategory.UNCATEGORIZED
+			and to_tag.category == WorkTagCategory.UNCATEGORIZED
 		):
 			to_tag.category = from_tag.category
 			if from_tag.category == WorkTagCategory.MEDIA:
@@ -468,7 +471,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 				s = from_tag.mediasong
 				s.work_tag = to_tag
 				s.save()
-			from_tag.category = WorkTagCategory.GENERAL
+			from_tag.category = WorkTagCategory.UNCATEGORIZED
 			from_tag.save()
 		for p in from_tag.wikipage_set.all():
 			try:
@@ -554,6 +557,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 		tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
 		entity_attrs = ['self']
 
+		@staticmethod
 		def to_active(instance):
 			return instance.aliased_to or instance
 

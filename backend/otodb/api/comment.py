@@ -1,39 +1,36 @@
 from datetime import datetime, timezone
-
-from typing import Literal
+from enum import Enum
 
 from django.conf import settings
-from django.http import HttpRequest
 from django.contrib.contenttypes.models import ContentType
-
 from django.db import models, transaction
-from django.db.models import Window, Case, When, Subquery, OuterRef, F
+from django.db.models import Case, F, OuterRef, Subquery, When, Window
 from django.db.models.functions import Rank
-
+from django.http import HttpRequest
 from django_comments_xtd.models import XtdComment
-
 from ninja import Router, Schema
+from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
-from ninja.errors import HttpError
 
 from otodb.account.models import Account
-from otodb.models import Notification, Subscription, RevisionChange, CommentMeta
-from .common import AuthedHttpRequest, user_is_trusted, ProfileSchema, restrict_internal
 from otodb.discord import discord_comment
+from otodb.models import CommentMeta, Notification, RevisionChange, Subscription
+
+from .common import AuthedHttpRequest, ProfileSchema, restrict_internal, user_is_trusted
 
 comment_router = Router()
 
-ModelsWithComments = Literal[
-	'mediawork',
-	'account',
-	'pool',
-	'tagwork',
-	'tagsong',
-	'post',
-	'bulkrequest',
-]
+
+class ModelsWithComments(str, Enum):
+	WORK = 'mediawork'
+	PROFILE = 'account'
+	LIST = 'pool'
+	TAG = 'tagwork'
+	SONG_ATTRIBUTE = 'tagsong'
+	POST = 'post'
+	REQUEST = 'bulkrequest'
 
 
 class BaseCommentSchema(Schema):

@@ -2,11 +2,12 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { RequestActions, Status } from '$lib/enums.js';
-	import { isSOV, isSVO } from '$lib/enums/Languages';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
+	import { RequestActions, StatusNames } from '$lib/enums.js';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { Levels, ModelsWithComments, Status } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
@@ -46,7 +47,7 @@
 		{/if}
 	</h3>
 	<h4>
-		{Status[data.request.status]()}{#if data.request?.processed_by}(<a
+		{StatusNames[data.request.status]()}{#if data.request?.processed_by}(<a
 				href="/profile/{data.request.processed_by.username}"
 				>{data.request.processed_by.username}</a
 			>){/if}
@@ -61,7 +62,7 @@
 			</li>
 		{/each}
 	</ul>
-	{#if hasUserLevelOld(data.user?.level, 'EDITOR') && data.request.status === 0}
+	{#if hasUserLevel(data.user?.level, Levels.Editor) && data.request.status === Status.Pending}
 		<button onclick={() => set(1)}>{m.lucky_bold_hornet_push()}</button>
 		<button onclick={() => set(2)}>{m.alive_blue_marlin_push()}</button>
 	{/if}
@@ -71,7 +72,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="bulkrequest"
+		model={ModelsWithComments.bulkrequest}
 		pk={data.id}
 	/>
 </Section>

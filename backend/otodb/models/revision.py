@@ -1,13 +1,17 @@
-from django.db import models
+import logging
+
+from dirtyfields import DirtyFieldsMixin
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.db.models.deletion import Collector
-
+from django.dispatch import receiver
 from django_request_cache import get_request_cache
-from dirtyfields import DirtyFieldsMixin
 
-from django.conf import settings
-from otodb.models.enums import Route, RevisionChain
+from otodb.models.enums import RevisionChain, Route
+
+logger = logging.getLogger(__name__)
 
 
 class Revision(models.Model):
@@ -117,16 +121,23 @@ def _collect_cascade_deletions(
 	deletions = []
 	collector = Collector(using=using)
 	collector.collect(instances)
-	collector_data = getattr(collector, 'data', {})
-	all_models = set(collector_data.keys())
-	for model in all_models:
-		# Only track RevisionTrackedModels
+
+	for model, instance_set in getattr(collector, 'data', {}).items():
 		if hasattr(model, '_revision_meta'):
 			ctpk = ContentType.objects.get_for_model(model).pk
-			instance_set = collector_data.get(model, set())
 			for instance in instance_set:
 				ents = _get_ents(instance)
 				deletions.append((ctpk, instance.pk, ents))
+
+	# Django's fast_deletes skip `data`, so materialize them before super().delete()
+	for qs in getattr(collector, 'fast_deletes', []):
+		model = qs.model
+		if not hasattr(model, '_revision_meta'):
+			continue
+		ctpk = ContentType.objects.get_for_model(model).pk
+		for instance in qs:
+			ents = _get_ents(instance)
+			deletions.append((ctpk, instance.pk, ents))
 
 	return deletions
 
@@ -182,8 +193,14 @@ class RevisionTrackedQuerySet(models.QuerySet):
 
 		cache = get_request_cache()
 		if cache is None:
-			print(
-				f'DELETING {len(instances_to_delete)} objects ON {self.model} --- NOT TRACKING CHANGES'
+			logger.warning(
+				'DELETING %d %s ROW(S) WITHOUT REVISION TRACKING. Cascades: %s',
+				len(instances_to_delete),
+				self.model.__name__,
+				[
+					(ContentType.objects.get(pk=ctpk).model, pk)
+					for ctpk, pk, _ in deletions
+				],
 			)
 		else:
 			rev_del = cache.get('rev_del')
@@ -222,6 +239,8 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 
 	class Meta:
 		abstract = True
+		# Keep _base_manager tracked so cascades don't bypass revision tracking
+		base_manager_name = 'objects'
 
 	def __init_subclass__(cls, **kwargs):
 		super().__init_subclass__(**kwargs)
@@ -250,11 +269,17 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 		# Needs to commit so we get a PK, but only after dirty fields have been copied
 		super().save(*args, **kwargs)
 		if cache is None:
-			for k, v in dirty.items():
-				if k in type(self)._revision_meta.tracked_fields:
-					print(
-						f'UPDATING {k}: {v} -> {getattr(self, k)} ON {self} ({type(self)}.{self.pk}) --- NOT TRACKING CHANGES'
-					)
+			tracked_dirty = [
+				k for k in dirty if k in type(self)._revision_meta.tracked_fields
+			]
+			if tracked_dirty:
+				logger.warning(
+					'SAVING %s (%s pk=%s) WITHOUT REVISION TRACKING. Untracked field changes: %s',
+					self,
+					type(self).__name__,
+					self.pk,
+					{k: (dirty[k], getattr(self, k)) for k in tracked_dirty},
+				)
 		else:
 			rev = cache.get('rev')
 			ctpk = ContentType.objects.get_for_model(model=type(self)).pk
@@ -273,7 +298,16 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 		if ret := super().delete(*args, **kwargs):
 			cache = get_request_cache()
 			if cache is None:
-				print(f'DELETING {self} ({type(self)}.{pk}) --- NOT TRACKING CHANGES')
+				logger.warning(
+					'DELETING %s (%s pk=%s) WITHOUT REVISION TRACKING. Cascades: %s',
+					self,
+					type(self).__name__,
+					pk,
+					[
+						(ContentType.objects.get(pk=ctpk).model, obj_pk)
+						for ctpk, obj_pk, _ in deletions
+					],
+				)
 			else:
 				rev_del = cache.get('rev_del')
 				for ctpk, obj_pk, ents in deletions:
@@ -281,3 +315,17 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 				cache.set('rev_del', rev_del)
 
 			return ret
+
+
+@receiver(models.signals.class_prepared)
+def _pin_base_manager(sender, **kwargs):
+	# Intermediate abstract parents (e.g. tagulous's TaggedModel) break base_manager_name inheritance, so re-pin it here
+	if not issubclass(sender, RevisionTrackedModel):
+		return
+	meta = sender._meta
+	if meta.abstract or meta.base_manager_name:
+		return
+	if 'objects' not in meta.managers_map:
+		return
+	meta.base_manager_name = 'objects'
+	meta.__dict__.pop('base_manager', None)

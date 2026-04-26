@@ -1,10 +1,12 @@
 <script lang="ts">
 	import WorkTag from '$lib/WorkTag.svelte';
-	import client, { getTagDisplaySlug } from '$lib/api';
-	import { WorkTagCategoriesSettableAsSource } from '$lib/enums';
-	import { allCreatorRoles, creatorRole } from '$lib/enums/CreatorRole';
+	import client from '$lib/api';
+	import { allCreatorRoles, creatorRole } from '$lib/enums/creatorRole';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 	import { m } from '$lib/paraglide/messages.js';
+	import { getTagDisplaySlug } from '$lib/ui.js';
 	import type { ComponentProps } from 'svelte';
+	import { WorkTagCategory } from './schema';
 
 	type TagCache = Record<string, ComponentProps<typeof WorkTag>['tag']>;
 
@@ -20,16 +22,12 @@
 		void tags;
 		const timeout = setTimeout(() => {
 			tags.filter((t) => !Object.hasOwn(cache, t)).forEach(async (t) => {
-				let {
-					data,
-					error: redirectSlug,
-					response
-				} = await client.GET('/api/tag/tag', {
+				let { data } = await client.GET('/api/tag/tag', {
 					params: { query: { tag_slug: t } }
 				});
-				if (response.status === 300 && typeof redirectSlug === 'string') {
+				if (data?.aliased_to) {
 					({ data } = await client.GET('/api/tag/tag', {
-						params: { query: { tag_slug: redirectSlug } }
+						params: { query: { tag_slug: data.aliased_to.slug } }
 					}));
 				}
 				cache[t] = data ?? {
@@ -76,7 +74,7 @@
 				<tr>
 					<td><WorkTag {tag} /></td>
 					<td>
-						{#if WorkTagCategoriesSettableAsSource.includes(tag.category)}
+						{#if WorkTagCategoryMap[tag.category].canSetAsSource}
 							<input
 								type="checkbox"
 								onclick={() => toggle_sample(getTagDisplaySlug(tag))}
@@ -85,7 +83,7 @@
 						{:else}{m.simple_less_marlin_enchant()}{/if}
 					</td>
 					<td>
-						{#if tag.category === 4}
+						{#if tag.category === WorkTagCategory.Creator}
 							{#each allCreatorRoles as k (k)}
 								<label class="role-label">
 									<input

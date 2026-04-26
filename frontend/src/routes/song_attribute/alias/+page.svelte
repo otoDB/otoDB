@@ -4,9 +4,10 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import client from '$lib/api';
 	import { goto } from '$app/navigation';
-	import { isSOV, isSVO } from '$lib/enums/Languages';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
+	import { TagTypes } from '$lib/schema.js';
 
 	let { data } = $props();
 
@@ -18,7 +19,13 @@
 		e.preventDefault();
 		const { error, data } = await client.POST('/api/tag/alias', {
 			fetch,
-			params: { query: { into_tag: selected, delete: del, type: 'song' } },
+			params: {
+				query: {
+					into_tag: selected,
+					delete: del,
+					type: TagTypes.song
+				}
+			},
 			body: tags
 		});
 		if (!error) goto(`/song_attribute/${data.merged_slug}`, { invalidateAll: true });

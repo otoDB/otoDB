@@ -1,9 +1,13 @@
 import type { Preview } from '@storybook/sveltekit';
+import { initialize, mswLoader } from 'msw-storybook-addon';
 import '../src/app.css';
 import { setLocale } from '../src/lib/paraglide/runtime';
-import { withThemeByClassName } from '@storybook/addon-themes';
+import { withThemeByDataAttribute } from '@storybook/addon-themes';
+
+initialize();
 
 const preview: Preview = {
+	loaders: [mswLoader],
 	parameters: {
 		controls: {
 			matchers: {
@@ -19,10 +23,10 @@ const preview: Preview = {
 				icon: 'globe',
 				dynamicTitle: true,
 				items: [
-					{ value: 'en', title: 'en' },
-					{ value: 'ja', title: 'ja' },
-					{ value: 'ko', title: 'ko' },
-					{ value: 'zh-cn', title: 'zh-cn' }
+					{ value: 'en', title: 'English' },
+					{ value: 'ja', title: 'Japanese' },
+					{ value: 'ko', title: 'Korean' },
+					{ value: 'zh-cn', title: 'Chinese (Simplified)' }
 				]
 			}
 		}
@@ -32,15 +36,25 @@ const preview: Preview = {
 	},
 	decorators: [
 		(story, ctx) => {
-			setLocale(ctx.globals?.lang || ctx.globals?.lang);
+			if (ctx.globals?.lang) setLocale(ctx.globals.lang);
 			return story();
 		},
-		withThemeByClassName({
+		(story) => {
+			const s = story();
+			document.body.style.backgroundColor = 'var(--otodb-color-bg-primary)';
+			return s;
+		},
+		withThemeByDataAttribute({
 			themes: {
-				light: 'light',
-				dark: 'dark'
+				'default': 'default',
+				'aniki': 'aniki',
+				'otogroove': 'otogroove',
+				'retro-voyage': 'retro-voyage',
+				'sorimix': 'sorimix',
+				'resample': 'resample'
 			},
-			defaultTheme: 'dark'
+			defaultTheme: 'default',
+			attributeName: 'data-theme'
 		})
 	]
 };

@@ -1,17 +1,13 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import TagsField from '$lib/TagsField.svelte';
-	import TagEditTable from '$lib/TagEditTable.svelte';
-	import WorkField from '$lib/WorkField.svelte';
-	import SourcesViewer from '$lib/SourcesViewer.svelte';
-	import DisplayText from '$lib/DisplayText.svelte';
-	import { Rating, WorkOrigin, WorkStatus } from '$lib/enums';
-	import { getTagDisplaySlug } from '$lib/api';
-	import WorkTag from '$lib/WorkTag.svelte';
 	import { enhance } from '$app/forms';
-	import type { components } from '$lib/schema';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
-	import type { ComponentProps } from 'svelte';
+	import { Rating, type components } from '$lib/schema.js';
+	import Section from '$lib/Section.svelte';
+	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import TagsEditor from '$lib/TagsEditor.svelte';
+	import WorkField from '$lib/WorkField.svelte';
 
 	let { data } = $props();
 
@@ -22,39 +18,11 @@
 
 	let title = $state(data.suggestions?.title ?? data.source.title ?? '');
 	let description = $state(data.suggestions?.description ?? data.source.description ?? '');
-	let rating = $state(0 as number | null);
+	let rating: Rating | null = $state(null);
 	let bindWork = $state<components['schemas']['WorkSchema'] | null>(null);
 
-	// Tag cache for rich tag editing (sample toggles, creator roles)
 	let cache: Record<string, components['schemas']['TagWorkInstanceThinSchema']> = $state({});
 
-	// Pre-populate cache from suggestion tags
-	$effect(() => {
-		if (data.suggestions) {
-			const allSuggestions = [
-				...(data.suggestions.source_tags ?? []),
-				...(data.suggestions.creator_tags ?? []),
-				...(data.suggestions.new_tags ?? [])
-			];
-			for (const t of allSuggestions) {
-				const slug = getTagDisplaySlug(t);
-				if (!cache[slug]) {
-					cache[slug] = { ...t, sample: false, creator_roles: null };
-				}
-			}
-		}
-	});
-
-	const toggleTag: ComponentProps<typeof WorkTag>['onclick'] = (tag) => {
-		const slug = getTagDisplaySlug(tag);
-		if (tags.includes(slug)) {
-			tags = tags.filter((t) => t !== slug);
-		} else {
-			tags = [...tags, slug];
-		}
-	};
-
-	// Serialize rich tag data for form submission
 	let tagsJson = $derived(
 		JSON.stringify(
 			tags
@@ -68,7 +36,11 @@
 	);
 </script>
 
-<Section title={data.source.title} type={m.extra_brave_tapir_skip()} menuLinks={data.links}>
+<Section
+	title={data.source.title || `#${data.source.id}`}
+	type={m.extra_brave_tapir_skip()}
+	menuLinks={data.links}
+>
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
@@ -106,11 +78,11 @@
 						</tr>
 						<tr>
 							<th class="w-24">{m.large_polite_otter_thrive()}</th>
-							<td>{WorkOrigin[data.source.work_origin]()}</td>
+							<td>{WorkOriginNames[data.source.work_origin]()}</td>
 						</tr>
 						<tr>
 							<th class="w-24">{m.civil_trick_oryx_clap()}</th>
-							<td>{WorkStatus[data.source.work_status]()}</td>
+							<td>{WorkStatusNames[data.source.work_status]()}</td>
 						</tr>
 						<tr>
 							<th class="w-24">{m.big_dry_seahorse_succeed()}</th>
@@ -154,6 +126,15 @@
 								>
 							</tr>
 						{/if}
+						{#if data.source.is_pending}
+							<tr>
+								<th class="w-24">Status</th>
+								<td
+									><span class="text-sky-600">{m.lost_weird_squid_commend()}</span
+									></td
+								>
+							</tr>
+						{/if}
 					</tbody>
 				</table>
 			</div>
@@ -161,7 +142,6 @@
 	</div>
 
 	{#if !data.isBound}
-		<!-- Mode toggle -->
 		<div class="mt-4 mb-4 flex gap-2">
 			<label
 				class={[
@@ -211,27 +191,26 @@
 							</td>
 						</tr>
 						<tr>
-							<th>{m.good_dark_bumblebee_spur()}</th>
+							<th><label>{m.good_dark_bumblebee_spur()}</label></th>
 							<td>
 								<div class="flex gap-2">
-									{#each Rating as r, i (i)}
+									{#each enumValues(Rating) as r, i (i)}
 										<label
 											class={[
-												'cursor-pointer border px-3 py-1',
-												rating === i
-													? 'bg-otodb-content-primary text-otodb-bg-primary'
-													: ''
+												'relative cursor-pointer border px-3 py-1',
+												rating === r &&
+													'bg-otodb-content-primary text-otodb-bg-primary'
 											]}
 										>
 											<input
 												type="radio"
 												name="rating"
-												value={i}
+												value={r}
 												bind:group={rating}
-												class="hidden"
+												class="absolute inset-0 cursor-pointer opacity-0"
 												required
 											/>
-											{r()}
+											{RatingNames[r]()}
 										</label>
 									{/each}
 								</div>
@@ -240,19 +219,7 @@
 						<tr>
 							<th><label>{m.empty_legal_chicken_taste()}</label></th>
 							<td>
-								{#if data.suggestions?.source_tags?.length || data.suggestions?.creator_tags?.length || data.suggestions?.new_tags?.length}
-									<div class="my-2 flex flex-wrap gap-1.5">
-										{#each [...(data.suggestions.source_tags ?? []), ...(data.suggestions.creator_tags ?? []), ...(data.suggestions.new_tags ?? [])] as t (t.slug)}
-											<WorkTag
-												tag={t}
-												selected={tags.includes(getTagDisplaySlug(t))}
-												onclick={toggleTag}
-											/>
-										{/each}
-									</div>
-								{/if}
-								<TagsField type="work" class="w-full" bind:value={tags} />
-								<TagEditTable {tags} bind:cache />
+								<TagsEditor bind:tags bind:cache suggestions={data.suggestions} />
 								<input type="hidden" name="tags_json" value={tagsJson} />
 							</td>
 						</tr>

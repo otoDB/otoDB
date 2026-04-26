@@ -1,30 +1,28 @@
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
-from django.db import models
-from django.db.models import (
-	CharField,
-	DateTimeField,
-	Prefetch,
-	Subquery,
-	OuterRef,
-	F,
-	Case,
-	When,
-	TextField,
-	Q,
-)
-from django.db.models.functions import Cast, Coalesce, Greatest
-
+from django.apps import apps
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-
+from django.db import models
+from django.db.models import (
+	Case,
+	CharField,
+	DateTimeField,
+	F,
+	OuterRef,
+	Prefetch,
+	Q,
+	Subquery,
+	TextField,
+	When,
+)
+from django.db.models.functions import Cast, Coalesce, Greatest
 from django_comments_xtd.models import XtdComment
 
-from django.conf import settings
-from .enums import LanguageTypes, PostCategory
+from .enums import LanguageTypes, NotificationReason, PostCategory
 from .revision import Revision
-
-from typing import TYPE_CHECKING
 
 
 class PostQuerySet(models.QuerySet):
@@ -65,6 +63,7 @@ class PostManager(models.Manager):
 
 	def get_queryset(self):
 		from otodb.models.tag import OtodbTagModel
+
 		from .revision import RevisionChange
 
 		tag_models = [
@@ -73,6 +72,8 @@ class PostManager(models.Manager):
 				*OtodbTagModel.__subclasses__()
 			).values()
 		]
+		user_model_class = apps.get_model(settings.AUTH_USER_MODEL)
+		user_model = ContentType.objects.get_for_model(user_model_class).id
 		return PostQuerySet(self.model, using=self._db).prefetch_related(
 			Prefetch(
 				'entitylink_set',
@@ -86,6 +87,17 @@ class PostManager(models.Manager):
 									target_id=OuterRef('entity_id'),
 									target_column='slug',
 								).values('target_value')[:1]
+							),
+						),
+						When(
+							Q(entity_type__id=user_model),
+							then=Cast(
+								Subquery(
+									user_model_class.objects.filter(
+										id=OuterRef('entity_id'),
+									).values('username')[:1],
+								),
+								output_field=TextField(),
 							),
 						),
 						default=Cast(F('entity_id'), output_field=TextField()),
@@ -105,6 +117,7 @@ class Post(models.Model):
 	category = models.IntegerField(
 		choices=PostCategory.choices, null=False, blank=False
 	)
+	closed_at = models.DateTimeField(null=True, blank=True)
 	edited_at = models.DateTimeField(null=True, blank=True)
 	edited_by = models.ForeignKey(
 		settings.AUTH_USER_MODEL,
@@ -154,7 +167,11 @@ class Notification(models.Model):
 		on_delete=models.CASCADE,
 		related_name='notifs',
 	)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 	dismissed = models.BooleanField(default=False)
+	reason = models.IntegerField(
+		choices=NotificationReason.choices, default=NotificationReason.REPLY
+	)
 
 	revision = models.ForeignKey(
 		Revision,
@@ -176,6 +193,7 @@ class Notification(models.Model):
 	)
 
 	class Meta:
+		ordering = ['dismissed', '-id']
 		constraints = [
 			models.CheckConstraint(
 				condition=(

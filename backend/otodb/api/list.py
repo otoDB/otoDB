@@ -1,20 +1,19 @@
-from typing import List
 import multiprocessing
 import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from typing import List
 
-from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import Q
-
-from ninja import Router, Schema, ModelSchema
-from ninja.security import django_auth
-from ninja.pagination import paginate
-from ninja.throttling import AuthRateThrottle
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404
+from ninja import ModelSchema, Router, Schema
 from ninja.errors import HttpError
+from ninja.pagination import paginate
+from ninja.security import django_auth
+from ninja.throttling import AuthRateThrottle
 
-from otodb.common import video_info, playlist_info
+from otodb.common import playlist_info, video_info
 from otodb.models import (
 	Pool,
 	PoolItem,
@@ -22,7 +21,13 @@ from otodb.models import (
 	WorkSource,
 )
 
-from .common import ListSchema, ListItemSchema, WorkSourceSchema, track_revision
+from .common import (
+	ListItemSchema,
+	ListSchema,
+	WorkSourceSchema,
+	track_revision,
+	user_is_editor,
+)
 
 list_router = Router()
 
@@ -168,8 +173,6 @@ def import_ext_into_pool(info, list_: Pool, user):
 			info=vid_info,
 			full_info=full_info,
 		)
-		if getattr(src, 'rejection', None):
-			continue
 
 		if src.media is not None:
 			# Source already has a work, add to pool if not already there
@@ -187,6 +190,7 @@ def import_ext_into_pool(info, list_: Pool, user):
 @list_router.post(
 	'import', auth=django_auth, response=int, throttle=[AuthRateThrottle('3/30m')]
 )
+@user_is_editor
 @transaction.atomic
 @track_revision
 def import_ext(request: HttpRequest, url: str):

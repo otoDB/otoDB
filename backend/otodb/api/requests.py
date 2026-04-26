@@ -1,36 +1,33 @@
-from typing import Union
 from itertools import repeat
+from typing import Union
 
+from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404
+from ninja import ModelSchema, Router, Schema
+from ninja.security import django_auth
 from pydantic import field_validator
 
-from django.http import HttpRequest
-from django.contrib.contenttypes.models import ContentType
-
-from ninja import Router, ModelSchema
-from ninja.security import django_auth
-
-from django.db import transaction
-from django.shortcuts import get_object_or_404
-
 from otodb.models import (
-	TagWork,
-	WorkSource,
-	MediaWork,
-	UserRequest,
 	BulkRequest,
-	TagWorkParenthood,
+	MediaWork,
 	Subscription,
+	TagWork,
+	TagWorkParenthood,
+	UserRequest,
+	WorkSource,
 )
 from otodb.models.enums import RequestActions, Status
 
 from .common import (
-	user_is_editor,
 	ProfileSchema,
 	TagWorkSchema,
 	WorkSchema,
 	WorkSourceSchema,
-	track_revision,
 	add_revision_message,
+	track_revision,
+	user_is_editor,
 )
 
 ENTITY_SCHEMAS = [TagWorkSchema, WorkSchema, WorkSourceSchema]
@@ -68,6 +65,16 @@ COMMANDS = {
 		TAGWORK_SLUG_VALIDATOR,
 		repeat(TAGWORK_SLUG_VALIDATOR),
 	),
+	# 'source:attach-tag': (
+	# 	RequestActions.WORKSOURCE_ATTACHTAG,
+	# 	SOURCEWORK_ID_VALIDATOR,
+	# 	repeat(TAGWORK_SLUG_VALIDATOR),
+	# ),
+	# 'work:attach-tag': (
+	# 	RequestActions.MEDIAWORK_ATTACHTAG,
+	# 	MEDIAWORK_ID_VALIDATOR,
+	# 	repeat(TAGWORK_SLUG_VALIDATOR),
+	# ),
 }
 
 ACTIONS = {
@@ -87,12 +94,16 @@ ACTIONS = {
 	RequestActions.TAGWORK_UNPARENT: lambda A, B: TagWorkParenthood.objects.get(
 		tag=A, parent=B
 	).delete(),
+	# RequestActions.WORKSOURCE_ATTACHTAG: lambda A, B: (
+	# 	A.media.tags.add(B) if A.media else ...
+	# ),
+	# RequestActions.MEDIAWORK_ATTACHTAG: lambda A, B: A.tags.add(B),
 }
 
 request_router = Router()
 
 
-@request_router.post('new', auth=django_auth)
+@request_router.post('new', auth=django_auth, response=int)
 @transaction.atomic
 def make_bulk(request: HttpRequest, s: str):
 	lines = [line for line in s.splitlines() if line.strip()]
@@ -100,7 +111,7 @@ def make_bulk(request: HttpRequest, s: str):
 	if not lines:
 		raise Exception
 	reqs = []
-	for n, line in enumerate(lines):
+	for _, line in enumerate(lines):
 		c = line.split()
 		cmd, A_validator, Bs_validator = COMMANDS[c[0]]
 		A = A_validator(c[1])
@@ -117,12 +128,18 @@ def make_bulk(request: HttpRequest, s: str):
 @track_revision
 def confirm(request: HttpRequest, request_id: int, status: Status):
 	bulk = get_object_or_404(BulkRequest, id=request_id, status=Status.PENDING)
-	for r in bulk.requests.all():
-		ACTIONS[r.command](r.A, r.B)
-	bulk.status = Status(status).value
+	match status:
+		case Status.APPROVED:
+			add_revision_message(f'Via request {bulk.id} from {bulk.user.username}')
+			for r in bulk.requests.all():
+				ACTIONS[r.command](r.A, r.B)
+		case Status.UNAPPROVED:
+			pass
+		case Status.PENDING:
+			pass
+	bulk.status = status
 	bulk.processed_by = request.user
 	bulk.save()
-	add_revision_message(f'Via request {bulk.id} from {bulk.user.username}')
 
 
 class RequestSchema(ModelSchema):
@@ -144,14 +161,11 @@ class RequestSchema(ModelSchema):
 		return ContentType.objects.get_for_model(value).model, value
 
 
-class BulkRequestSchema(ModelSchema):
+class BulkRequestSchema(Schema):
 	requests: list[RequestSchema]
 	user: ProfileSchema
 	processed_by: ProfileSchema | None
-
-	class Meta:
-		model = BulkRequest
-		fields = ['status']
+	status: Status
 
 
 @request_router.get('request', response=BulkRequestSchema)

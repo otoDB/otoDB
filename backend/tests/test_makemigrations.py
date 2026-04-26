@@ -1,18 +1,19 @@
 """Tests for custom makemigrations command with revision tracking."""
 
-import pytest
 from io import StringIO
 from unittest.mock import Mock, patch
-from django.db import migrations
+
+import pytest
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import OutputWrapper
+from django.db import migrations
 
 from otodb.management.commands.makemigrations import (
 	Command,
 	RevisionTrackingOperation,
-	update_revision_renames,
-	reverse_revision_renames,
 	remove_revision_fields,
+	reverse_revision_renames,
+	update_revision_renames,
 )
 from otodb.models import MediaWork, RevisionChange
 

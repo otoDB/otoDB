@@ -1,7 +1,8 @@
-import client from '$lib/api';
-import { hasUserLevelOld } from '$lib/enums/UserLevel';
-import { error, redirect, type Actions } from '@sveltejs/kit';
+import client from '$lib/api.server';
+import { hasUserLevel } from '$lib/enums/userLevel';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	if (!locals.user || params.username !== locals.user?.username)
@@ -16,17 +17,12 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 				}
 			}
 		}),
-		hasUserLevelOld(locals.user?.level, 'EDITOR')
+		hasUserLevel(locals.user?.level, Levels.Editor)
 			? client.GET('/api/auth/invites', {
 					fetch
 				})
 			: Promise.resolve(null)
 	]);
-
-	if (payloadConnections.error) error(500, 'Failed to load profile connections');
-	if (!payloadConnections.data) error(500, 'Failed to load profile connections');
-
-	if (payloadInvites?.error) error(500, 'Failed to load invites');
 
 	return {
 		user: locals.user,

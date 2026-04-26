@@ -1,41 +1,46 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
 	import {
 		buildEntityRoutes,
 		MimeType,
-		Platform,
-		Rating,
-		SongRelationTypes,
-		SongTagCategory,
-		WorkOrigin,
-		WorkRelationTypes,
-		WorkStatus,
-		WorkTagCategory
+		PlatformNames,
+		RatingNames,
+		SongRelationNames,
+		SongTagCategoryNames,
+		WorkOriginNames,
+		WorkRelationNames,
+		WorkStatusNames,
+		type Enum
 	} from '$lib/enums.js';
-	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/CreatorRole';
-	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/Languages';
-	import { MediaConnection, resolveMediaConnectionNameById } from '$lib/enums/MediaConnection';
-	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/MediaType.js';
-	import {
-		ProfileConnection,
-		resolveProfileConnectionNameById
-	} from '$lib/enums/ProfileConnection';
-	import { resolveRouteKeyById, Route } from '$lib/enums/Route.js';
-	import { resolveSongConnectionNameById, SongConnection } from '$lib/enums/SongConnection';
-	import {
-		resolveTagWorkConnectionNameById,
-		TagWorkConnection
-	} from '$lib/enums/TagWorkConnection';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel.js';
+	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/creatorRole.js';
+	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/language.js';
+	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
+	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/mediaType.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { routeNames } from '$lib/enums/route.js';
+	import { songConnectionMap } from '$lib/enums/songConnection.js';
+	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { Levels, PostCategory } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
 
 	type DisplayFunction = () => string;
+	const EnumMap_to_DisplayFunction =
+		<E extends Enum<E>>(fs: Record<E[keyof E], { name: string }>) =>
+		(v: number): DisplayFunction =>
+		() =>
+			fs[v as E[keyof E]].name;
+	const EnumValues_to_DisplayFunction =
+		<E extends Enum<E>>(fs: Record<E[keyof E], { nameFn: DisplayFunction }>) =>
+		(v: number): DisplayFunction =>
+			fs[v as E[keyof E]].nameFn;
 	const Values_to_DisplayFunction =
 		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
 		(v: number): DisplayFunction =>
@@ -45,17 +50,20 @@
 		(v: number): DisplayFunction =>
 		() =>
 			fs[r(v)].name;
+	const EnumStraightRecord_to_DisplayFunction =
+		<E extends Enum<E>>(fs: Record<E[keyof E], string>) =>
+		(v: number): DisplayFunction =>
+		() =>
+			fs[v as E[keyof E]];
 	const StraightRecord_to_DisplayFunction =
 		<T extends number>(r: Record<T, string>) =>
 		(v: number): DisplayFunction =>
 		() =>
 			r[v as T];
-	const Array_to_DisplayFunction = (r: DisplayFunction[]) => (v: number) => r[v];
-	const StraightArray_to_DisplayFunction =
-		(r: string[]) =>
+	const EnumRecord_to_DisplayFunction =
+		<E extends Enum<E>>(fs: Record<E[keyof E], DisplayFunction>) =>
 		(v: number): DisplayFunction =>
-		() =>
-			r[v];
+			fs[v as E[keyof E]];
 	const expand_bit_field =
 		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
 		(v: number): DisplayFunction =>
@@ -64,13 +72,7 @@
 				.reduce(
 					(a, e, i, aa) =>
 						e === '1'
-							? [
-									...a,
-									Values_to_DisplayFunction(
-										r,
-										fs
-									)(Math.pow(2, aa.length - 1 - i))()
-								]
+							? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()]
 							: a,
 					[] as string[]
 				)
@@ -80,32 +82,26 @@
 
 	const ValueDisplayMap: Record<string, Record<string, (v: number) => DisplayFunction>> = {
 		mediawork: {
-			rating: Array_to_DisplayFunction(Rating)
+			rating: EnumRecord_to_DisplayFunction(RatingNames)
 		},
 		tagwork: {
-			category: Array_to_DisplayFunction(WorkTagCategory),
+			category: EnumValues_to_DisplayFunction(WorkTagCategoryMap),
 			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
 		},
 		tagsong: {
-			category: Array_to_DisplayFunction(SongTagCategory)
+			category: EnumMap_to_DisplayFunction(SongTagCategoryNames)
 		},
 		tagworkconnection: {
-			site: StraightValues_to_DisplayFunction(
-				resolveTagWorkConnectionNameById,
-				TagWorkConnection
-			)
+			site: EnumMap_to_DisplayFunction(TagWorkConnectionMap)
 		},
 		mediasongconnection: {
-			site: StraightValues_to_DisplayFunction(resolveSongConnectionNameById, SongConnection)
+			site: EnumMap_to_DisplayFunction(songConnectionMap)
 		},
 		tagworkmediaconnection: {
-			site: StraightValues_to_DisplayFunction(resolveMediaConnectionNameById, MediaConnection)
+			site: EnumMap_to_DisplayFunction(mediaConnectionMap)
 		},
 		tagworkcreatorconnection: {
-			site: StraightValues_to_DisplayFunction(
-				resolveProfileConnectionNameById,
-				ProfileConnection
-			)
+			site: EnumMap_to_DisplayFunction(profileConnectionMap)
 		},
 		tagworklangpreference: {
 			lang: Languages
@@ -114,10 +110,10 @@
 			lang: Languages
 		},
 		workrelation: {
-			relation: Array_to_DisplayFunction(WorkRelationTypes)
+			relation: EnumRecord_to_DisplayFunction(WorkRelationNames)
 		},
 		songrelation: {
-			relation: Array_to_DisplayFunction(SongRelationTypes)
+			relation: EnumRecord_to_DisplayFunction(SongRelationNames)
 		},
 		tagworkinstance: {
 			creator_roles: expand_bit_field(resolveCreatorRoleKeyById, creatorRole)
@@ -126,10 +122,10 @@
 			lang: Languages
 		},
 		worksource: {
-			platform: StraightArray_to_DisplayFunction(Platform),
+			platform: EnumStraightRecord_to_DisplayFunction(PlatformNames),
 			thumbnail_mime: StraightRecord_to_DisplayFunction(MimeType),
-			work_origin: Array_to_DisplayFunction(WorkOrigin),
-			work_status: Array_to_DisplayFunction(WorkStatus)
+			work_origin: EnumRecord_to_DisplayFunction(WorkOriginNames),
+			work_status: EnumRecord_to_DisplayFunction(WorkStatusNames)
 		}
 	};
 
@@ -139,6 +135,7 @@
 		val: string | null | undefined
 	) => {
 		const handler = ValueDisplayMap[type]?.[col];
+		console.log(handler, type, col);
 		return decodeURIComponent((val ? (handler ? handler(+val)() : val) : null) ?? 'None');
 	};
 </script>
@@ -154,7 +151,7 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
-	{#if hasUserLevelOld(data.user?.level, 'ADMIN') && data.revision.id > 1}<button
+	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id > 1}<button
 			class="my-5"
 			onclick={async () => {
 				if (!confirm('Are you sure?')) return;
@@ -165,9 +162,18 @@
 				invalidateAll();
 			}}>Revert changes made in this revision</button
 		>{/if}
+	{#if data.user && data.user.username !== data.revision.user}
+		<button
+			onclick={() =>
+				goto(
+					`/post/new?category=${PostCategory.Gardening}&entity=@${data.revision.user}&title=${m.silly_quiet_fireant_quell({ id: data.revision.id })}`
+				)}>{m.frail_loose_gecko_play({ user: data.revision.user })}</button
+		>
+	{/if}
+
 	<ul class="my-5">
 		{#each data.routes as { route, entities }, i (i)}
-			<li>{Route[resolveRouteKeyById(route)].title()}</li>
+			<li>{routeNames[route]()}</li>
 			<li class="ml-2 list-none">
 				<ul>
 					{#each entities as { ent_type, ent_id, rcs }, j (j)}

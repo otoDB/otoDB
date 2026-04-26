@@ -1,6 +1,6 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
+import { ModelsWithComments } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
@@ -19,16 +19,12 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 			fetch,
 			params: {
 				query: {
-					model: 'bulkrequest',
+					model: ModelsWithComments.bulkrequest,
 					pk: +params.id
 				}
 			}
 		})
 	]);
-
-	// TODO: Error forwarding
-	if (!data) error(500, 'Failed to fetch data.');
-	if (!comments) error(500, 'Failed to fetch data.');
 
 	return {
 		request: data,

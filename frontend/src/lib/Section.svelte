@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import DisplayText from './DisplayText.svelte';
-	import { m } from './paraglide/messages';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import { m } from '$lib/paraglide/messages';
 	let {
 		title = undefined,
 		type = undefined,
@@ -10,6 +10,14 @@
 		href = undefined
 	} = $props();
 </script>
+
+{#snippet render_title()}
+	{#if typeof title === 'function'}
+		{@render title()}
+	{:else}
+		<DisplayText value={title} />
+	{/if}
+{/snippet}
 
 <section
 	class="bg-otodb-bg-faint/75 border-otodb-content-faint relative mb-4 border px-5 pt-3 pb-6"
@@ -35,14 +43,13 @@
 	<h1 class="mb-2 text-2xl font-bold">
 		{#if href}
 			<a {href}>
-				{#if type}{m.mild_loud_shad_enchant({ type, name: '' })}{/if}<DisplayText
-					value={title}
-				/>
+				{#if type}{m.mild_loud_shad_enchant({
+						type,
+						name: ''
+					})}{/if}{@render render_title()}
 			</a>
 		{:else}
-			{#if type}{m.mild_loud_shad_enchant({ type, name: '' })}{/if}<DisplayText
-				value={title}
-			/>
+			{#if type}{m.mild_loud_shad_enchant({ type, name: '' })}{/if}{@render render_title()}
 		{/if}
 	</h1>
 

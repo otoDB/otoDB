@@ -1,19 +1,11 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
 	const batch_size = 20;
 	const query = url.searchParams.get('query') ?? '';
 	const tags = url.searchParams.get('tags') ?? '';
-
-	const paramOrder = url.searchParams.get('order');
-	const paramDir = url.searchParams.get('dir');
-
-	type Order = 'id' | 'pub';
-	const order: Order | null =
-		paramOrder && ['id', 'pub'].includes(paramOrder) ? (paramOrder as Order) : null;
 
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/work/search', {
@@ -23,22 +15,16 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				query,
 				tags,
 				limit: batch_size,
-				offset: batch_size * (page - 1),
-				order: order ? `${paramDir === '-' ? '-' : ''}${order}` : null
+				offset: batch_size * (page - 1)
 			}
 		}
 	});
-
-	// TODO: Error forwarding
-	if (!data) error(500, 'Failed to fetch search results.');
 
 	return {
 		query: query,
 		query_tags: tags,
 		results: data,
 		batch_size,
-		order: order,
-		dir: paramDir,
 		page,
 		head: {
 			title: m.mild_loud_shad_enchant({

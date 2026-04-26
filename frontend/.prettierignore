@@ -4,7 +4,10 @@ pnpm-lock.yaml
 yarn.lock
 
 # Generated code
-src/lib/schema.d.ts
+src/lib/schema.ts
 
 # Fink has its own formatting
 messages/
+
+# msw
+static/mockServiceWorker.js

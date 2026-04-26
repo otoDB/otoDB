@@ -1,16 +1,24 @@
 """Shared pytest fixtures for all tests."""
 
 import pytest
-from ninja.testing import TestClient
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.test import RequestFactory
+from ninja.testing import TestClient
 
 from otodb.account.models import Account
 from otodb.api.auth import auth_router
+from otodb.api.source import source_router
 from otodb.api.tag import tag_router
 from otodb.api.work import work_router
-from otodb.api.source import source_router
 from otodb.models import MediaWork, Revision, RevisionChange
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+	cache.clear()
+	yield
+	cache.clear()
 
 
 class AuthenticatedTestClient(TestClient):
@@ -32,8 +40,8 @@ class AuthenticatedTestClient(TestClient):
 @pytest.fixture(autouse=True)
 def enable_request_cache(db, member):
 	"""Enable request cache for all tests to support revision tracking."""
-	from django_userforeignkey import request as ufk_request
 	from django_request_cache.middleware import RequestCache
+	from django_userforeignkey import request as ufk_request
 
 	# Create a fake request with cache attribute using the actual RequestCache
 	factory = RequestFactory()

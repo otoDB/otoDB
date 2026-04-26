@@ -1,38 +1,49 @@
 from datetime import datetime, timezone
+from enum import Enum
 
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.contrib.contenttypes.models import ContentType
-
-from ninja import Router, ModelSchema, Schema, Query
-
+from ninja import ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
+from otodb.account.models import Account
 from otodb.common import slugify_tag
+from otodb.discord import discord_post
 from otodb.models import (
+	EntityLink,
 	Notification,
 	Post,
 	PostContent,
 	Subscription,
-	EntityLink,
 )
-from otodb.account.models import Account
-from otodb.models.enums import PostCategory, LanguageTypes
+from otodb.models.enums import LanguageTypes, NotificationReason, PostCategory
 
 from .common import (
 	AuthedHttpRequest,
 	ProfileSchema,
-	user_is_trusted,
 	restrict_internal,
-	EntitySchema,
+	user_is_trusted,
 )
 
-from otodb.discord import discord_post
-
 post_router = Router()
+
+
+class PostEntities(str, Enum):
+	WORK = 'mediawork'
+	TAG = 'tagwork'
+	SONG_ATTRIBUTE = 'tagsong'
+	SONG = 'mediasong'
+	UPLOAD = 'worksource'
+	PROFILE = 'account'
+
+
+class PostEntitySchema(Schema):
+	id: int | str
+	entity: PostEntities
 
 
 class PostOverviewSchema(ModelSchema):
@@ -41,11 +52,12 @@ class PostOverviewSchema(ModelSchema):
 	modified: datetime
 	last_post_by: str | None = None
 	last_post_at: datetime | None = None
-	entities: list[EntitySchema] = []
+	entities: list[PostEntitySchema] = []
+	category: PostCategory
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category']
+		fields = ['title', 'closed_at']
 
 
 class PostContentSchema(ModelSchema):
@@ -57,12 +69,13 @@ class PostContentSchema(ModelSchema):
 class PostSchema(ModelSchema):
 	added_by: ProfileSchema
 	pages: list[PostContentSchema]
-	entities: list[EntitySchema] = []
+	entities: list[PostEntitySchema] = []
 	edited_by: ProfileSchema | None = None
+	category: PostCategory
 
 	class Meta:
 		model = Post
-		fields = ['title', 'category', 'edited_at']
+		fields = ['title', 'edited_at', 'closed_at']
 
 
 @post_router.get('post', response=PostSchema)
@@ -70,12 +83,12 @@ def post(request: HttpRequest, post_id: int):
 	return get_object_or_404(Post, id=post_id)
 
 
-@post_router.get('categories', response=list[list[PostOverviewSchema]])
+@post_router.get('categories', response=dict[str, list[PostOverviewSchema]])
 def categories(request: HttpRequest):
-	return [
-		Post.objects.filter(category=i).with_activity()[:5]
+	return {
+		str(i): Post.objects.filter(category=i).with_activity()[:5]
 		for i, _ in PostCategory.choices
-	]
+	}
 
 
 @post_router.get('category', response=list[PostOverviewSchema])
@@ -90,15 +103,21 @@ class PostInSchema(Schema):
 	category: PostCategory
 	lang: LanguageTypes
 	target_users: list[str]
-	entities: list[EntitySchema]
+	entities: list[PostEntitySchema]
 
 
-def get_entity_link_ent(e: EntitySchema):
+def get_entity_link_ent(e: PostEntitySchema):
 	obj = (
 		ContentType.objects.get(model=e.entity)
 		.model_class()
 		.objects.get(
-			**({'slug': slugify_tag(e.id)} if 'tag' in e.entity else {'id': e.id})
+			**(
+				{'slug': slugify_tag(e.id)}
+				if 'tag' in e.entity
+				else {'username__iexact': e.id}
+				if e.entity == PostEntities.PROFILE
+				else {'id': e.id}
+			)
 		)
 	)
 	if hasattr(obj, 'aliased_to') and obj.aliased_to:
@@ -133,12 +152,25 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 			]
 		)
 
-	Notification.objects.bulk_create(
-		[
-			Notification(target=u, post=p)
-			for u in Account.objects.filter(username__in=payload.target_users)
-		]
-	)
+	notify_reasons = {}  # user_id -> NotificationReason
+	if payload.target_users:
+		for uid in Account.objects.filter(
+			username__in=payload.target_users
+		).values_list('id', flat=True):
+			notify_reasons[uid] = NotificationReason.MENTION
+	if payload.entities:
+		usernames = [e.id for e in payload.entities if e.entity == PostEntities.PROFILE]
+		for name in usernames:
+			if account := Account.objects.filter(username__iexact=name).first():
+				notify_reasons[account.id] = NotificationReason.THREAD_LINKED
+	notify_reasons.pop(request.user.id, None)
+	if notify_reasons:
+		Notification.objects.bulk_create(
+			[
+				Notification(target_id=uid, post=p, reason=reason)
+				for uid, reason in notify_reasons.items()
+			]
+		)
 
 	Subscription.objects.create(subscriber=request.user, entity=p)
 
@@ -152,7 +184,7 @@ class PostEditSchema(Schema):
 	title: str
 	post: str
 	lang: LanguageTypes
-	entities: list[EntitySchema]
+	entities: list[PostEntitySchema]
 
 
 @post_router.put('post', auth=django_auth)
@@ -191,9 +223,28 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 			)
 
 
+@post_router.put('close', auth=django_auth)
+@transaction.atomic
+def toggle_close(request: AuthedHttpRequest, post_id: int):
+	post = get_object_or_404(Post, id=post_id)
+	is_admin = request.user.level >= Account.Levels.ADMIN
+	is_author = post.added_by == request.user
+	if not post.closed_at:
+		if is_admin:
+			post.closed_at = datetime.now(tz=timezone.utc)
+		else:
+			raise HttpError(403, 'Forbidden')
+	else:
+		if is_admin or is_author:
+			post.closed_at = None
+		else:
+			raise HttpError(403, 'Forbidden')
+	post.save(update_fields=['closed_at'])
+
+
 @post_router.get('threads', response=list[PostOverviewSchema])
 @paginate
-def threads(request: HttpRequest, entity: EntitySchema = Query(...)):
+def threads(request: HttpRequest, entity: PostEntitySchema = Query(...)):
 	return Post.objects.filter(
 		id__in=EntityLink.objects.filter(
 			entity_type__model=entity.entity,

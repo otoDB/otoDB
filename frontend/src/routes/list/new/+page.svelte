@@ -1,11 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
+	import { hasUserLevel } from '$lib/enums/userLevel';
+	import { Levels } from '$lib/schema';
 
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { callErrorToast } from '$lib/toast';
 
-	let { form } = $props();
+	let { data, form } = $props();
 
 	$effect(() => {
 		if (form?.failed) {
@@ -18,7 +20,9 @@
 	title={m.plane_inner_chipmunk_race()}
 	menuLinks={[
 		{ pathname: 'list/new', title: m.swift_dry_gecko_boost() },
-		{ pathname: 'list/import', title: m.kind_tiny_lemur_praise() }
+		...(hasUserLevel(data.user?.level, Levels.Editor)
+			? [{ pathname: 'list/import', title: m.kind_tiny_lemur_praise() }]
+			: [])
 	]}
 >
 	<form use:enhance method="POST">

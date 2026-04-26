@@ -316,8 +316,15 @@ class MediaWork(RevisionTrackedModel):
 			t.append(tag)
 		return t
 
-	_CAN_SET_AS_SOURCE = frozenset([WorkTagCategory.CREATOR, WorkTagCategory.MEDIA, WorkTagCategory.SONG])
-	_REQUIRED_CATEGORIES = [WorkTagCategory.CREATOR, WorkTagCategory.SONG, WorkTagCategory.SOURCE, WorkTagCategory.GENERAL]
+	_CAN_SET_AS_SOURCE = frozenset(
+		[WorkTagCategory.CREATOR, WorkTagCategory.MEDIA, WorkTagCategory.SONG]
+	)
+	_REQUIRED_CATEGORIES = [
+		WorkTagCategory.CREATOR,
+		WorkTagCategory.SONG,
+		WorkTagCategory.SOURCE,
+		WorkTagCategory.GENERAL,
+	]
 
 	@property
 	def missing_tags(self) -> list[WorkTagCategory]:

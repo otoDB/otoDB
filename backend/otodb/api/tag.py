@@ -955,8 +955,6 @@ def song_search(
 				qs = qs.filter(tags_parse)
 		except lark.exceptions.UnexpectedInput:
 			return []
-		except TagSong.DoesNotExist:
-			return []
 	elif query.isdigit():
 		qs = qs.annotate(priority=Value(100))
 		qs = (

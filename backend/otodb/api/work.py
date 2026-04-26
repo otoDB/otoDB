@@ -190,10 +190,7 @@ def search(
 				q = q & tags_parse
 		except lark.exceptions.UnexpectedInput:
 			return []
-		except TagWork.DoesNotExist:
-			return []
-
-	if query:
+	elif query:
 		q = q | Q(worksource__source_id=query)
 		if query.startswith('https'):
 			q = q | Q(worksource__url=query)

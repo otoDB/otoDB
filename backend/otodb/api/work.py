@@ -71,6 +71,7 @@ from .common import (
 	BitmaskAttr,
 	BoolAttr,
 	CreateWorkPayload,
+	EnumAttr,
 	Error,
 	MetatagSpec,
 	OrderEnum,
@@ -474,8 +475,9 @@ class WorkTagTransformer(AbstractTagTransformer):
 	tagged_join_name = 'work'
 	metatag_grammars = work_metatag_grammars
 	attribute_handlers = {
-		'source': BoolAttr('used_as_source'),
+		'sample': BoolAttr('used_as_source'),
 		'role': BitmaskAttr('creator_roles', Role),
+		'category': EnumAttr('work_tag__category', WorkTagCategory),
 	}
 
 

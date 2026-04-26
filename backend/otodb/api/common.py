@@ -1,5 +1,6 @@
 import operator
 import re
+from abc import abstractmethod
 from functools import lru_cache, reduce, wraps
 from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
 
@@ -720,7 +721,57 @@ class BoolAttr:
 		return qs.filter(**{self.field: not negated})
 
 
-class BitmaskAttr:
+class _KVEnumAttr:
+	"""Base for KV bracket attributes whose values are enum members."""
+
+	def __init__(self, field, enum):
+		self.field = field
+		self.enum = enum
+
+	def _resolve(self, name):
+		try:
+			return int(self.enum[name.upper()])
+		except KeyError:
+			raise _AttrError(f'unknown {self.enum.__name__} value: {name!r}')
+
+	def _split(self, values):
+		positives, negatives = [], []
+		for is_neg, name in values:
+			(negatives if is_neg else positives).append(self._resolve(name))
+		return positives, negatives
+
+	def apply(self, qs, values, negated):
+		if negated:
+			raise _AttrError(
+				f'attribute {self.field!r} cannot be negated as a whole; '
+				f'use per-value `-` or negate the tag itself'
+			)
+		if values is None:
+			raise _AttrError(f'attribute {self.field!r} requires values')
+		return self._apply(qs, values)
+
+	@abstractmethod
+	def _apply(self, qs, values): ...
+
+
+class EnumAttr(_KVEnumAttr):
+	"""
+	Integer-enum attribute. Bracket form:
+	`[name:value]`
+	`[name:v1,v2]` (matches if any of these values)
+	`[name:-v]` (excludes this value)
+	"""
+
+	def _apply(self, qs, values):
+		positives, negatives = self._split(values)
+		if positives:
+			qs = qs.filter(**{f'{self.field}__in': positives})
+		if negatives:
+			qs = qs.exclude(**{f'{self.field}__in': negatives})
+		return qs
+
+
+class BitmaskAttr(_KVEnumAttr):
 	"""
 	Per-instance integer-bitmask attribute. Bracket form:
 	`[name:value]`
@@ -729,19 +780,7 @@ class BitmaskAttr:
 	`[name:none]`
 	"""
 
-	def __init__(self, field, enum):
-		self.field = field
-		self.enum = enum
-
-	def apply(self, qs, values, negated):
-		if negated:
-			raise _AttrError(
-				f'attribute {self.field!r} cannot be negated as a whole; '
-				f'use per-value `-` (e.g. role:-audio) or negate the tag itself'
-			)
-		if values is None:
-			raise _AttrError(f'attribute {self.field!r} requires values')
-
+	def _apply(self, qs, values):
 		if any(name in ('any', 'none') for _, name in values):
 			if len(values) != 1 or values[0][0]:
 				raise _AttrError(
@@ -754,18 +793,9 @@ class BitmaskAttr:
 				Q(**{f'{self.field}__isnull': True}) | Q(**{self.field: 0})
 			)
 
-		positives = 0
-		negatives = 0
-		for is_neg, name in values:
-			try:
-				bit = int(self.enum[name.upper()])
-			except KeyError:
-				raise _AttrError(f'unknown {self.enum.__name__} value: {name!r}')
-			if is_neg:
-				negatives |= bit
-			else:
-				positives |= bit
-
+		positives_list, negatives_list = self._split(values)
+		positives = reduce(operator.or_, positives_list, 0)
+		negatives = reduce(operator.or_, negatives_list, 0)
 		considered = positives | negatives
 		ann = f'_attr_{self.field}_{id(values)}'
 		return qs.annotate(**{ann: F(self.field).bitand(considered)}).filter(

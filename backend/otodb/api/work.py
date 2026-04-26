@@ -160,6 +160,7 @@ _WORK_TAG_CATEGORY_METATAGS = {
 
 
 class WorkOrder(OtodbIntegerEnum):
+	RANDOM = -1, 'random'
 	ID = 0, 'id'
 	ID_DESC = 1, 'id_desc'
 	SUBMITTED = 2, 'submitted'
@@ -170,7 +171,8 @@ class WorkOrder(OtodbIntegerEnum):
 	COMMENT_ASC = 7, 'comment_asc'
 	RESOLUTION = 8, 'resolution'
 	RESOLUTION_ASC = 9, 'resolution_asc'
-	RANDOM = 10, 'random'
+	DURATION = 10, 'duration'
+	DURATION_ASC = 11, 'duration_asc'
 
 
 def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
@@ -203,6 +205,16 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 		}
 		field = '-_mpixels' if v is WorkOrder.RESOLUTION else '_mpixels'
 		return ann, Q(_mpixels__isnull=False), (field,)
+	if v is WorkOrder.DURATION or v is WorkOrder.DURATION_ASC:
+		ann = {
+			'_duration': Subquery(
+				WorkSource.objects.filter(media_id=OuterRef('id'))
+				.order_by(F('work_duration').desc(nulls_last=True))
+				.values('work_duration')[:1]
+			)
+		}
+		field = '-_duration' if v is WorkOrder.DURATION else '_duration'
+		return ann, Q(_duration__isnull=False), (field,)
 	if v is WorkOrder.COMMENT or v is WorkOrder.COMMENT_ASC:
 		ann = {
 			'_last_comment': Subquery(

@@ -1,21 +1,11 @@
 import client from '$lib/api.server';
-import { asEnum, enumValues } from '$lib/enums';
 import { m } from '$lib/paraglide/messages';
-import { PathsApiWorkSearchGetParametersQueryOrderAnyOf0 } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
 	const batch_size = 20;
 	const query = url.searchParams.get('query') ?? '';
 	const tags = url.searchParams.get('tags') ?? '';
-
-	const paramDir = url.searchParams.get('dir') === '-' ? '-' : '';
-	const paramOrder = `${paramDir}${url.searchParams.get('order')}`;
-
-	type Order = PathsApiWorkSearchGetParametersQueryOrderAnyOf0;
-	const order: Order | null = paramOrder
-		? asEnum(PathsApiWorkSearchGetParametersQueryOrderAnyOf0, paramOrder)
-		: null;
 
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/work/search', {
@@ -25,8 +15,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				query,
 				tags,
 				limit: batch_size,
-				offset: batch_size * (page - 1),
-				order: order
+				offset: batch_size * (page - 1)
 			}
 		}
 	});
@@ -36,8 +25,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		query_tags: tags,
 		results: data,
 		batch_size,
-		order: order,
-		dir: paramDir,
 		page,
 		head: {
 			title: m.mild_loud_shad_enchant({

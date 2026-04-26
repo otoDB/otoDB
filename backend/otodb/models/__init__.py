@@ -8,6 +8,7 @@ from .connection import (
 from .media import (
 	MediaSong,
 	MediaWork,
+	TagSongInstance,
 	TagWorkInstance,
 )
 from .moderation import ModerationEvent
@@ -37,6 +38,7 @@ from .work_source import WorkSource
 __all__ = [
 	'MediaWork',
 	'TagWorkInstance',
+	'TagSongInstance',
 	'MediaSong',
 	'Pool',
 	'PoolItem',

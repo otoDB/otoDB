@@ -1,11 +1,16 @@
 from functools import reduce
-from typing import List, Literal
+from typing import List
 
+import lark
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import (
 	Case,
+	CharField,
 	Count,
+	Exists,
+	F,
 	IntegerField,
 	OuterRef,
 	Q,
@@ -13,7 +18,9 @@ from django.db.models import (
 	Value,
 	When,
 )
+from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
+from django_comments_xtd.models import XtdComment
 from ninja import ModelSchema, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
@@ -26,6 +33,7 @@ from otodb.common import (
 from otodb.models import (
 	MediaWork,
 	ModerationEvent,
+	RevisionChange,
 	TagWork,
 	TagWorkInstance,
 	WorkRelation,
@@ -34,13 +42,19 @@ from otodb.models import (
 from otodb.models.enums import (
 	ErrorCode,
 	FlagStatus,
+	MediaType,
 	ModerationAction,
 	ModerationEventType,
 	ModQueueCategory,
+	OtodbIntegerEnum,
 	Platform,
 	Rating,
+	Role,
 	Route,
 	Status,
+	WorkOrigin,
+	WorkRelationTypes,
+	WorkStatus,
 	WorkTagCategory,
 )
 from otodb.tasks import (
@@ -51,10 +65,16 @@ from otodb.tasks import (
 )
 
 from .common import (
+	AbstractTagTransformer,
 	ApiError,
 	AuthedHttpRequest,
+	BitmaskAttr,
+	BoolAttr,
 	CreateWorkPayload,
+	EnumAttr,
 	Error,
+	MetatagSpec,
+	OrderEnum,
 	RouterWithRevision,
 	SlimWorkSchema,
 	SourceSuggestionsResponse,
@@ -64,7 +84,10 @@ from .common import (
 	WorkRelationSchema,
 	WorkSchema,
 	WorkSourceSchema,
+	count_predicate_q,
 	ensure_can_moderate,
+	get_search_grammar,
+	make_range_metatag,
 	post_relations,
 	user_is_editor,
 	user_is_staff,
@@ -130,21 +153,351 @@ def query_external(
 	return {'tags': work.media.tags_annotated, 'work_id': work.media.id}
 
 
+_WORK_TAG_CATEGORY_METATAGS = {
+	'eventtags': WorkTagCategory.EVENT,
+	'creatortags': WorkTagCategory.CREATOR,
+	'mediatags': WorkTagCategory.MEDIA,
+	'sourcetags': WorkTagCategory.SOURCE,
+	'songtags': WorkTagCategory.SONG,
+	'gentags': WorkTagCategory.GENERAL,
+	'metatags': WorkTagCategory.META,
+	'uncattags': WorkTagCategory.UNCATEGORIZED,
+}
+
+
+class WorkOrder(OtodbIntegerEnum):
+	RANDOM = -1, 'random'
+	ID = 0, 'id'
+	ID_DESC = 1, 'id_desc'
+	SUBMITTED = 2, 'submitted'
+	SUBMITTED_ASC = 3, 'submitted_asc'
+	PUBLISHED = 4, 'published'
+	PUBLISHED_ASC = 5, 'published_asc'
+	COMMENT = 6, 'comment'
+	COMMENT_ASC = 7, 'comment_asc'
+	RESOLUTION = 8, 'resolution'
+	RESOLUTION_ASC = 9, 'resolution_asc'
+	DURATION = 10, 'duration'
+	DURATION_ASC = 11, 'duration_asc'
+
+
+def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
+	match v:
+		case WorkOrder.ID:
+			return {}, Q(), ('id',)
+		case WorkOrder.ID_DESC:
+			return {}, Q(), ('-id',)
+		case WorkOrder.SUBMITTED:
+			return {}, Q(), ('-created_at',)
+		case WorkOrder.SUBMITTED_ASC:
+			return {}, Q(), ('created_at',)
+		case WorkOrder.PUBLISHED | WorkOrder.PUBLISHED_ASC:
+			ann = {
+				'_pub': Subquery(
+					WorkSource.objects.filter(media_id=OuterRef('id'))
+					.order_by('published_date')
+					.values('published_date')[:1]
+				)
+			}
+			field = '-_pub' if v is WorkOrder.PUBLISHED else '_pub'
+			return ann, Q(), (field,)
+		case WorkOrder.RESOLUTION | WorkOrder.RESOLUTION_ASC:
+			ann = {
+				'_mpixels': Subquery(
+					WorkSource.objects.filter(media_id=OuterRef('id'))
+					.annotate(_mp=F('work_width') * F('work_height'))
+					.order_by(F('_mp').desc(nulls_last=True))
+					.values('_mp')[:1]
+				)
+			}
+			field = '-_mpixels' if v is WorkOrder.RESOLUTION else '_mpixels'
+			return ann, Q(_mpixels__isnull=False), (field,)
+		case WorkOrder.DURATION | WorkOrder.DURATION_ASC:
+			ann = {
+				'_duration': Subquery(
+					WorkSource.objects.filter(media_id=OuterRef('id'))
+					.order_by(F('work_duration').desc(nulls_last=True))
+					.values('work_duration')[:1]
+				)
+			}
+			field = '-_duration' if v is WorkOrder.DURATION else '_duration'
+			return ann, Q(_duration__isnull=False), (field,)
+		case WorkOrder.COMMENT | WorkOrder.COMMENT_ASC:
+			ann = {
+				'_last_comment': Subquery(
+					XtdComment.objects.filter(
+						content_type=ContentType.objects.get_for_model(MediaWork),
+						object_pk=Cast(OuterRef('id'), CharField()),
+						is_removed=False,
+					)
+					.order_by('-submit_date')
+					.values('submit_date')[:1]
+				)
+			}
+			field = '-_last_comment' if v is WorkOrder.COMMENT else '_last_comment'
+			return ann, Q(_last_comment__isnull=False), (field,)
+		case WorkOrder.RANDOM:
+			return {}, Q(), ('?',)
+		case _:
+			raise ValueError(f'unrecognized WorkOrder: {v!r}')
+
+
+def _user_to_q(username):
+	"""Match works whose 'first user' is `username`.
+
+	The first user is the author of the earliest non-admin revision targeting
+	the work; for works with no non-admin revisions (e.g. those created before
+	the revision model existed) it falls back to a `WorkSource.added_by` match.
+	"""
+	mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+	non_admin_rev = RevisionChange.objects.filter(
+		target_type=mediawork_ct,
+		rev__user__level__lt=Account.Levels.ADMIN,
+	)
+	first_rev_pks = (
+		non_admin_rev.order_by('target_id', 'rev__date')
+		.distinct('target_id')
+		.values('pk')
+	)
+	rev_match_ids = RevisionChange.objects.filter(
+		pk__in=first_rev_pks, rev__user__username__iexact=username
+	).values('target_id')
+	src_match_ids = (
+		WorkSource.objects.filter(
+			added_by__username__iexact=username, media_id__isnull=False
+		)
+		.exclude(media_id__in=non_admin_rev.values('target_id'))
+		.values('media_id')
+	)
+	return Q(id__in=rev_match_ids) | Q(id__in=src_match_ids)
+
+
+work_metatag_grammars = {
+	'rating': MetatagSpec(Rating, lambda v: Q(rating=v)),
+	'status': MetatagSpec(Status, lambda v: Q(status=v)),
+	'availability': MetatagSpec(
+		WorkStatus,
+		lambda v: Exists(
+			WorkSource.objects.filter(media_id=OuterRef('id'), work_status=v)
+		),
+	),
+	'platform': MetatagSpec(
+		Platform,
+		lambda v: Exists(
+			WorkSource.objects.filter(media_id=OuterRef('id'), platform=v)
+		),
+	),
+	'origin': MetatagSpec(
+		WorkOrigin,
+		lambda v: Exists(
+			WorkSource.objects.filter(media_id=OuterRef('id'), work_origin=v)
+		),
+	),
+	'user': MetatagSpec(str, _user_to_q),
+	'id': MetatagSpec(int, make_range_metatag('id')),
+	'width': MetatagSpec(
+		int,
+		make_range_metatag('work_width', model=WorkSource, fk_field='media_id'),
+	),
+	'height': MetatagSpec(
+		int,
+		make_range_metatag('work_height', model=WorkSource, fk_field='media_id'),
+	),
+	'duration': MetatagSpec(
+		int,
+		make_range_metatag('work_duration', model=WorkSource, fk_field='media_id'),
+	),
+	'bpm': MetatagSpec(
+		int,
+		make_range_metatag(
+			'work_tag__mediasong__bpm',
+			model=TagWorkInstance,
+			fk_field='work_id',
+		),
+	),
+	'sources': MetatagSpec(
+		int,
+		make_range_metatag(model=WorkSource, fk_field='media_id', count=True),
+	),
+	'origins': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_origin=WorkOrigin.AUTHOR,
+		),
+	),
+	'reuploads': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_origin=WorkOrigin.REUPLOAD,
+		),
+	),
+	'available_sources': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_status=WorkStatus.AVAILABLE,
+		),
+	),
+	'available_origins': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_origin=WorkOrigin.AUTHOR,
+			work_status=WorkStatus.AVAILABLE,
+		),
+	),
+	'available_reuploads': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_origin=WorkOrigin.REUPLOAD,
+			work_status=WorkStatus.AVAILABLE,
+		),
+	),
+	'comments': MetatagSpec(
+		int,
+		lambda op, value: count_predicate_q(
+			XtdComment.objects.filter(
+				content_type=ContentType.objects.get_for_model(MediaWork),
+				object_pk=Cast(OuterRef('id'), CharField()),
+				is_removed=False,
+			),
+			op,
+			value,
+		),
+	),
+	'mediatype': MetatagSpec(
+		MediaType,
+		lambda v: Exists(
+			TagWorkInstance.objects.filter(
+				work_id=OuterRef('id'),
+				work_tag__category=WorkTagCategory.MEDIA,
+			)
+			.annotate(_mt=F('work_tag__media_type').bitand(int(v)))
+			.filter(_mt__gt=0)
+		),
+	),
+	'role': MetatagSpec(
+		Role,
+		lambda v: Exists(
+			TagWorkInstance.objects.filter(
+				work_id=OuterRef('id'),
+				work_tag__category=WorkTagCategory.CREATOR,
+			)
+			.annotate(_r=F('creator_roles').bitand(int(v)))
+			.filter(_r__gt=0)
+		),
+	),
+	'tagcount': MetatagSpec(
+		int,
+		make_range_metatag(model=TagWorkInstance, fk_field='work_id', count=True),
+	),
+	**{
+		name: MetatagSpec(
+			int,
+			make_range_metatag(
+				model=TagWorkInstance,
+				fk_field='work_id',
+				count=True,
+				work_tag__category=cat,
+			),
+		)
+		for name, cat in _WORK_TAG_CATEGORY_METATAGS.items()
+	},
+	'relations': MetatagSpec(
+		int,
+		lambda op, value: count_predicate_q(
+			WorkRelation.objects.filter(
+				Q(A_id=OuterRef('id')) | Q(B_id=OuterRef('id'))
+			),
+			op,
+			value,
+		),
+	),
+	'relation': MetatagSpec(
+		WorkRelationTypes,
+		lambda v: Exists(
+			WorkRelation.objects.filter(
+				Q(A_id=OuterRef('id')) | Q(B_id=OuterRef('id')), relation=v
+			)
+		),
+	),
+	**{
+		name: MetatagSpec(
+			int,
+			lambda op, value, r=rel_type: Exists(
+				WorkRelation.objects.filter(
+					Q(A_id=OuterRef('id')) & Q(**{f'B__id__{op}': value})
+					| Q(B_id=OuterRef('id')) & Q(**{f'A__id__{op}': value}),
+					relation=r,
+				)
+			),
+		)
+		for name, rel_type in {
+			'sequel': WorkRelationTypes.SEQUEL,
+			'sample': WorkRelationTypes.SAMPLE,
+			'respect': WorkRelationTypes.RESPECT,
+			'collab': WorkRelationTypes.COLLAB_PART,
+		}.items()
+	},
+	**{
+		name: MetatagSpec(
+			int,
+			make_range_metatag(
+				model=WorkRelation,
+				fk_field=fk_field,
+				count=True,
+				relation=rel_type,
+			),
+		)
+		for name, (fk_field, rel_type) in {
+			'sequels': ('A_id', WorkRelationTypes.SEQUEL),
+			'prequels': ('B_id', WorkRelationTypes.SEQUEL),
+			'samples': ('A_id', WorkRelationTypes.SAMPLE),
+			'sampled_by': ('B_id', WorkRelationTypes.SAMPLE),
+			'respects': ('A_id', WorkRelationTypes.RESPECT),
+			'respected_by': ('B_id', WorkRelationTypes.RESPECT),
+			'collabs': ('A_id', WorkRelationTypes.COLLAB_PART),
+			'collab_parts': ('B_id', WorkRelationTypes.COLLAB_PART),
+		}.items()
+	},
+	'order': MetatagSpec(OrderEnum(WorkOrder), _resolve_work_order),
+}
+work_search_grammar = get_search_grammar(work_metatag_grammars)
+
+
+class WorkTagTransformer(AbstractTagTransformer):
+	TagModel = TagWork
+	TagInstanceModel = TagWorkInstance
+	tag_join_name = 'work_tag'
+	tagged_join_name = 'work'
+	metatag_grammars = work_metatag_grammars
+	attribute_handlers = {
+		'sample': BoolAttr('used_as_source'),
+		'role': BitmaskAttr('creator_roles', Role),
+		'category': EnumAttr('work_tag__category', WorkTagCategory),
+	}
+
+
 @work_router.get('search', response=List[ThinWorkSchema], exclude_none=True)
 @paginate
 def search(
 	request: AuthedHttpRequest,
 	query: str,
 	tags: str | None = None,
-	order: Literal['id', '-id', 'pub', '-pub'] | None = '-id',
-	queue: Literal['unseen', 'all'] | None = None,
 ):
-	# Silently ignore queue param for non-editors
-	if queue is not None and (
-		not request.user.is_authenticated or not request.user.is_editor
-	):
-		queue = None
-
 	search_id = int(query) if query.isdigit() else -1
 	if query:
 		q = (
@@ -154,36 +507,19 @@ def search(
 		)
 	else:
 		q = Q()
+
+	uses_status_metatag = False
+	tag_orderings: list = []
 	if tags:
-		for tag in tags.split():
-			try:
-				match tag[0]:
-					case '-' | '+' | '!':
-						t = TagWork.objects.get(slug=slugify_tag(tag[1:]))
-						if t.aliased_to:
-							t = t.aliased_to
-
-						if tag[0] == '-':
-							q = q & ~Q(tags=t)
-						else:
-							children = t.get_descendants()
-							sub_q = Q(tags=t)
-							for tt in children:
-								sub_q = sub_q | Q(tags=tt)
-
-							match tag[0]:
-								case '+':  # +: Include subtree
-									q = q & sub_q
-								case '!':  # !: Exclude subtree
-									q = q & ~sub_q
-					case _:
-						t = TagWork.objects.get(slug=slugify_tag(tag))
-						if t.aliased_to:
-							t = t.aliased_to
-
-						q = q & Q(tags=t)
-			except TagWork.DoesNotExist:
-				return []
+		try:
+			parsed = work_search_grammar.parse(tags.strip())
+		except lark.exceptions.UnexpectedInput:
+			return []
+		uses_status_metatag = any(parsed.find_data('status_meta'))
+		tx = WorkTagTransformer()
+		if tags_parse := tx.transform(parsed):
+			q = q & tags_parse
+		tag_orderings = tx.orderings
 	elif query:
 		q = q | Q(worksource__source_id=query)
 		if query.startswith('https'):
@@ -191,31 +527,17 @@ def search(
 		if search_id > 0:
 			q = q | Q(id=search_id)
 
-	if queue is not None:
-		pending = MediaWork.active_objects.filter(status=Status.PENDING)
-		pending_flag_or_appeal_ids = ModerationEvent.objects.filter(
-			event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
-			status=FlagStatus.PENDING,
-		).values_list('work_id', flat=True)
-		queue_q = Q(id__in=pending) | Q(id__in=pending_flag_or_appeal_ids)
-		if queue == 'unseen':
-			queue_q = queue_q & ~Q(
-				moderation_events__event_type=ModerationEventType.DISAPPROVAL,
-				moderation_events__by=request.user,
-			)
-		qs = MediaWork.active_objects.filter(queue_q).filter(q)
+	if uses_status_metatag:
+		qs = MediaWork.active_objects.filter(q)
 	else:
 		qs = MediaWork.active_objects.filter(q).visible()
 
-	qs = qs.annotate(
-		pub=Subquery(
-			WorkSource.objects.filter(media_id=OuterRef('id'))
-			.order_by('published_date')
-			.values('published_date')[:1]
-		),
-	)
-
-	if query:
+	if tag_orderings:
+		ann, filter_q, order_fields = tag_orderings[-1]
+		if ann:
+			qs = qs.annotate(**ann)
+		qs = qs.filter(filter_q).order_by(*order_fields)
+	elif query:
 		qs = qs.annotate(
 			priority=Case(
 				When(id=search_id, then=Value(0)),
@@ -227,9 +549,9 @@ def search(
 				default=Value(1000),
 				output_field=IntegerField(),
 			),
-		).order_by('priority', order)
+		).order_by('priority', '-id')
 	else:
-		qs = qs.order_by(order)
+		qs = qs.order_by('-id')
 
 	return qs.distinct()
 
@@ -237,18 +559,63 @@ def search(
 @work_router.get('tags_needed', response=List[ThinWorkSchema], exclude_none=True)
 @paginate
 def tags_needed(request: AuthedHttpRequest):
+	def has_category(category):
+		return Exists(
+			TagWorkInstance.objects.filter(
+				work=OuterRef('pk'),
+				work_tag__deprecated=False,
+				work_tag__category=category,
+			)
+		)
+
+	has_source = Exists(
+		TagWorkInstance.objects.filter(
+			work=OuterRef('pk'),
+			work_tag__deprecated=False,
+		).filter(
+			Q(work_tag__category=WorkTagCategory.SOURCE)
+			| Q(
+				work_tag__category__in=[
+					WorkTagCategory.CREATOR,
+					WorkTagCategory.MEDIA,
+					WorkTagCategory.SONG,
+				],
+				used_as_source=True,
+			)
+		)
+	)
+
+	def missing(flag):
+		return Case(
+			When(**{flag: False}, then=Value(1)),
+			default=Value(0),
+			output_field=IntegerField(),
+		)
+
 	return (
 		MediaWork.active_objects.visible()
-		.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False)))
-		.filter(ntags__lte=4)
-		.order_by('ntags')
-		.distinct()
+		.annotate(
+			has_creator=has_category(WorkTagCategory.CREATOR),
+			has_song=has_category(WorkTagCategory.SONG),
+			has_general=has_category(WorkTagCategory.GENERAL),
+			has_source=has_source,
+			ntags=Count('tags', filter=Q(tags__deprecated=False)),
+		)
+		.annotate(
+			missing_count=missing('has_creator')
+			+ missing('has_song')
+			+ missing('has_general')
+			+ missing('has_source'),
+		)
+		.order_by('-missing_count', 'ntags', 'id')
 	)
 
 
 @work_router.get('work', response=WorkSchema)
 def work(request: AuthedHttpRequest, work_id: int):
 	work = get_object_or_404(MediaWork.objects.with_pending_moderation(), id=work_id)
+	if work.moved_to:
+		work = work.moved_to
 
 	is_editor = (
 		request.user.is_authenticated and request.user.level >= Account.Levels.EDITOR

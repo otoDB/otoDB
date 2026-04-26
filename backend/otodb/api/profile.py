@@ -296,7 +296,7 @@ def notifications(request: AuthedHttpRequest, subscription: bool | None = None):
 				change__rev_id=OuterRef('revision_id')
 			).values('route')[:1]
 		)
-	).order_by('dismissed')
+	).order_by('dismissed', '-id')
 	if subscription is True:
 		qs = qs.filter(revision__isnull=False)
 	elif subscription is False:

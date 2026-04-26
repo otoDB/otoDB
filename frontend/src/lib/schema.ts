@@ -3262,8 +3262,6 @@ export interface operations {
             query: {
                 query: string;
                 tags?: string | null;
-                order?: PathsApiWorkSearchGetParametersQueryOrderAnyOf0 | null;
-                queue?: PathsApiWorkSearchGetParametersQueryQueueAnyOf0 | null;
                 limit?: number;
                 offset?: number;
             };
@@ -5772,16 +5770,6 @@ export interface operations {
             };
         };
     };
-}
-export enum PathsApiWorkSearchGetParametersQueryOrderAnyOf0 {
-    id = "id",
-    ValueMinusid = "-id",
-    pub = "pub",
-    ValueMinuspub = "-pub"
-}
-export enum PathsApiWorkSearchGetParametersQueryQueueAnyOf0 {
-    unseen = "unseen",
-    all = "all"
 }
 export enum PathsApiProfileSearchGetParametersQueryOrder {
     username = "username",

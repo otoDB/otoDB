@@ -1,9 +1,13 @@
 import type { Preview } from '@storybook/sveltekit';
+import { initialize, mswLoader } from 'msw-storybook-addon';
 import '../src/app.css';
 import { setLocale } from '../src/lib/paraglide/runtime';
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
 
+initialize();
+
 const preview: Preview = {
+	loaders: [mswLoader],
 	parameters: {
 		controls: {
 			matchers: {
@@ -34,6 +38,11 @@ const preview: Preview = {
 		(story, ctx) => {
 			if (ctx.globals?.lang) setLocale(ctx.globals.lang);
 			return story();
+		},
+		(story) => {
+			const s = story();
+			document.body.style.backgroundColor = 'var(--otodb-color-bg-primary)';
+			return s;
 		},
 		withThemeByDataAttribute({
 			themes: {

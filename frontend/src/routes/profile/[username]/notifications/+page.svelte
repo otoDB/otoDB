@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import Pager from '$lib/Pager.svelte';
-	import TimeAgo from '$lib/TimeAgo.svelte';
+	import Time from '$lib/Time.svelte';
 	import client from '$lib/api';
 	import { buildEntityRoutes } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/enums/language';
@@ -67,7 +67,7 @@
 								>
 							{/if}
 							<td class={{ 'opacity-40': n.dismissed }}
-								><TimeAgo date={n.created_at} /></td
+								><Time format="relative" date={n.created_at} /></td
 							>
 							<td
 								>{#if n.dismissed}<button onclick={() => remove(n.id)}
@@ -118,7 +118,7 @@
 								{/if}
 							</td>
 							<td class={{ 'opacity-40': n.dismissed }}
-								><TimeAgo date={n.created_at} /></td
+								><Time format="relative" date={n.created_at} /></td
 							>
 							<td
 								>{#if n.dismissed}<button onclick={() => remove(n.id)}

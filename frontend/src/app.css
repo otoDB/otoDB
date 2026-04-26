@@ -171,9 +171,14 @@
 
 /* Inline work-search link rendered from `{{...}}` markdown */
 .otodb-search-link::after {
-	content: ' 🔍';
-	color: transparent;
-	text-shadow: 0 0 var(--otodb-color-content-primary);
+	content: '';
+	display: inline-block;
+	width: 0.9em;
+	height: 0.9em;
+	margin-left: 0.25em;
+	vertical-align: middle;
+	mask: url(/search.svg) no-repeat center / contain;
+	background-color: currentcolor;
 }
 
 /* Autolink headings */

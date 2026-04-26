@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { hasUserLevel } from '$lib/enums/userLevel';
 import type { Levels } from '$lib/schema';
 
@@ -8,7 +8,7 @@ export const userLevelGuard = (
 	from: string | null = null,
 	to = '/login'
 ): user is Exclude<App.Locals['user'], null> => {
-	if (!hasUserLevel(user?.level, userLevel))
-		redirect(303, to === '/login' && from ? `${to}?from=${from}` : to);
-	return true;
+	if (hasUserLevel(user?.level, userLevel)) return true;
+	if (user) error(403, { message: 'Forbidden' });
+	redirect(303, to === '/login' && from ? `${to}?from=${from}` : to);
 };

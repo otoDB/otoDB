@@ -368,7 +368,6 @@
 	"weary_broken_eagle_sigh": "Cannot reach the database.",
 	"grim_plain_crane_crash": "An error occurred while fetching data.",
 	"fun_bland_llama_twirl": "{thing} must be provided.",
-	"careful_close_shad_achieve": "Uncategorized",
 	"watery_kind_quail_climb": "This work is missing tags in the following expected categories: {missing}",
 	"bright_nimble_eagle_glide": "Users",
 	"careful_close_shad_achieve": "Uncategorized",
@@ -385,5 +384,11 @@
 	"quiet_still_mole_guard": "Cannot flag a work with a pending appeal.",
 	"stern_few_quail_rest": "Active flag limit reached.",
 	"calm_brisk_swan_queue": "Work already has a pending appeal.",
-	"tiny_snug_otter_linger": "Not enough upload slots for appeal."
+	"tiny_snug_otter_linger": "Not enough upload slots for appeal.",
+	"keen_brisk_lark_track": "Search examples",
+	"bold_quiet_robin_chase": "General rating works at least 5 minutes (300 seconds) long",
+	"clever_swift_owl_seek": "Works using anime media tags, sorted by publish date",
+	"bright_calm_finch_match": "Super Mario or Kirby works with mid-tempo songs",
+	"crisp_neat_wren_match": "Works tagged with Touhou or any child descendants, excluding any song tags under Touhou",
+	"swift_keen_otter_guide": "View docs"
 }

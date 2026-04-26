@@ -6,7 +6,7 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-
+	import { SEARCH_DOCS_POST_ID } from '$lib/ui';
 	let { data } = $props();
 </script>
 
@@ -35,6 +35,33 @@
 
 		<h4>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: '' })}</h4>
 		<TagsField type="work" name="tags" value={data.query_tags.split(' ')} class="w-full" />
+
+		<details>
+			<summary>{m.keen_brisk_lark_track()}</summary>
+			<ul class="grid list-none grid-cols-[max-content_auto] gap-x-4 gap-y-1">
+				<li class="contents">
+					<code>rating:general duration:>=300</code>
+					<span>{m.bold_quiet_robin_chase()}</span>
+				</li>
+				<li class="contents">
+					<code>mediatype:anime order:published</code>
+					<span>{m.clever_swift_owl_seek()}</span>
+				</li>
+				<li class="contents">
+					<code>(super_mario_series | kirby_series) bpm:140..160</code>
+					<span>{m.bright_calm_finch_match()}</span>
+				</li>
+				<li class="contents">
+					<code>touhou -touhou[category:song]</code>
+					<span>{m.crisp_neat_wren_match()}</span>
+				</li>
+			</ul>
+			<div class="mt-2">
+				<a href="/post/{SEARCH_DOCS_POST_ID}">
+					{m.swift_keen_otter_guide()}
+				</a>
+			</div>
+		</details>
 	</form>
 	<hr />
 	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">

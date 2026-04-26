@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, List
 
 import ninja
 import orjson
@@ -155,8 +155,8 @@ def statistics(request):
 
 # Able to change these to use envvars instead if necessary
 class AppConfigSchema(BaseModel):
-	WORKTAG_REQUIRED_CATEGORIES: list[WorkTagCategory] = TagWork.REQUIRED_CATEGORIES
-	WORKTAG_SOURCE_SETTABLE_CATEGORIES: list[WorkTagCategory] = (
+	WORKTAG_REQUIRED_CATEGORIES: List[WorkTagCategory] = TagWork.REQUIRED_CATEGORIES
+	WORKTAG_SOURCE_SETTABLE_CATEGORIES: List[WorkTagCategory] = (
 		TagWork.SOURCE_SETTABLE_CATEGORIES
 	)
 

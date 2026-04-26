@@ -26,6 +26,7 @@ const long_label_re_gen = (long_label: string) =>
 const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N}\p{M}_])/gu;
 const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
 const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+const SEARCH_RE = /\{\{([^}]+?)\}\}/g;
 
 const LinkableEntities: [PostEntities, RegExp][] = [
 	[PostEntities.mediawork, short_prefix_re_gen(ENTITIES[0].shortPrefix)],
@@ -81,7 +82,17 @@ const OtodbReplacements: [RegExp, (...args: string[]) => PhrasingContent | false
 			link(`/tag/${encodeURIComponent(slug.trim())}`, display?.trim() || slug.trim())
 	],
 	// Simple user mention: @username
-	[MENTION_RE, (_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)]
+	[MENTION_RE, (_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)],
+	// Work search: {{tags...}}
+	[
+		SEARCH_RE,
+		(_, query) => ({
+			type: 'link',
+			url: `/work?tags=${encodeURIComponent(query.trim())}`,
+			data: { hProperties: { className: 'otodb-search-link' } },
+			children: [{ type: 'text', value: query.trim() }]
+		})
+	]
 ];
 
 function remarkOtodb() {

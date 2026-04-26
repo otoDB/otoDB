@@ -8,6 +8,16 @@
 	import { page } from '$app/state';
 	import { SEARCH_DOCS_POST_ID } from '$lib/ui';
 	let { data } = $props();
+
+	const examples = [
+		{ tags: 'rating:general duration:>=300', desc: m.bold_quiet_robin_chase },
+		{ tags: 'mediatype:anime order:published', desc: m.clever_swift_owl_seek },
+		{
+			tags: '(super_mario_series | kirby_series) bpm:140..160',
+			desc: m.bright_calm_finch_match
+		},
+		{ tags: 'touhou -touhou[category:song]', desc: m.crisp_neat_wren_match }
+	];
 </script>
 
 <Section
@@ -39,22 +49,14 @@
 		<details>
 			<summary>{m.keen_brisk_lark_track()}</summary>
 			<ul class="grid list-none grid-cols-[max-content_auto] gap-x-4 gap-y-1">
-				<li class="contents">
-					<code>rating:general duration:>=300</code>
-					<span>{m.bold_quiet_robin_chase()}</span>
-				</li>
-				<li class="contents">
-					<code>mediatype:anime order:published</code>
-					<span>{m.clever_swift_owl_seek()}</span>
-				</li>
-				<li class="contents">
-					<code>(super_mario_series | kirby_series) bpm:140..160</code>
-					<span>{m.bright_calm_finch_match()}</span>
-				</li>
-				<li class="contents">
-					<code>touhou -touhou[category:song]</code>
-					<span>{m.crisp_neat_wren_match()}</span>
-				</li>
+				{#each examples as { tags, desc } (tags)}
+					<li class="contents">
+						<a class="otodb-search-link" href="/work?tags={encodeURIComponent(tags)}">
+							<code>{tags}</code>
+						</a>
+						<span>{desc()}</span>
+					</li>
+				{/each}
 			</ul>
 			<div class="mt-2">
 				<a href="/post/{SEARCH_DOCS_POST_ID}">

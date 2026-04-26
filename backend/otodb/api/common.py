@@ -609,13 +609,18 @@ class MetatagSpec(NamedTuple):
 
 def get_search_grammar(metatag_grammars: dict[str, MetatagSpec]):
 	def metatag_rule(name: str, spec: MetatagSpec):
-		value_rule = 'range_value' if spec.kind is int else f'{name.upper()}_VALUE'
+		if spec.kind is int:
+			value_rule = 'range_value'
+		elif spec.kind is str:
+			value_rule = 'SLUG'
+		else:
+			value_rule = f'{name.upper()}_VALUE'
 		return f'{name}_meta: "{name}"i _META_CONN {value_rule}'
 
 	enum_value_terminals = '\n'.join(
 		f'{k.upper()}_VALUE: /{"|".join(spec.kind.names)}/i'
 		for k, spec in metatag_grammars.items()
-		if spec.kind is not int
+		if spec.kind not in (int, str)
 	)
 
 	return lark.Lark(rf"""
@@ -755,5 +760,7 @@ class AbstractTagTransformer(lark.Transformer):
 		if spec.kind is int:
 			op, value = _parse_range_node(v.children[0])
 			return spec.to_q(op, value)
+		if spec.kind is str:
+			return spec.to_q(str(v.children[0]))
 		E = spec.kind
-		return spec.to_q(E(E.names.index(str(v.children[0]).upper())))
+		return spec.to_q(E[str(v.children[0]).upper()])

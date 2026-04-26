@@ -3,6 +3,7 @@ from typing import List, Literal
 
 import lark
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import (
 	Case,
@@ -28,6 +29,7 @@ from otodb.common import (
 from otodb.models import (
 	MediaWork,
 	ModerationEvent,
+	RevisionChange,
 	TagWork,
 	TagWorkInstance,
 	WorkRelation,
@@ -43,6 +45,7 @@ from otodb.models.enums import (
 	Rating,
 	Route,
 	Status,
+	WorkOrigin,
 	WorkStatus,
 	WorkTagCategory,
 )
@@ -146,15 +149,56 @@ _WORK_TAG_CATEGORY_METATAGS = {
 	'uncattags': WorkTagCategory.UNCATEGORIZED,
 }
 
+
+def _user_to_q(username):
+	"""Match works whose 'first user' is `username`.
+
+	The first user is the author of the earliest non-admin revision targeting
+	the work; for works with no non-admin revisions (e.g. those created before
+	the revision model existed) it falls back to a `WorkSource.added_by` match.
+	"""
+	mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+	non_admin_rev = RevisionChange.objects.filter(
+		target_type=mediawork_ct,
+		rev__user__level__lt=Account.Levels.ADMIN,
+	)
+	rev_match_ids = (
+		non_admin_rev.order_by('target_id', 'rev__date')
+		.distinct('target_id')
+		.filter(rev__user__username=username)
+		.values('target_id')
+	)
+	src_match_ids = (
+		WorkSource.objects.filter(added_by__username=username)
+		.exclude(media_id__in=non_admin_rev.values('target_id'))
+		.values('media_id')
+	)
+	return Q(id__in=rev_match_ids) | Q(id__in=src_match_ids)
+
+
 # TODO Do we do this or put these as a widget on frontend?
 work_metatag_grammars = {
 	'rating': MetatagSpec(Rating, lambda v: Q(rating=v)),
-	'status': MetatagSpec(
+	'status': MetatagSpec(Status, lambda v: Q(status=v)),
+	'availability': MetatagSpec(
 		WorkStatus,
 		lambda v: Exists(
 			WorkSource.objects.filter(media_id=OuterRef('id'), work_status=v)
 		),
 	),
+	'platform': MetatagSpec(
+		Platform,
+		lambda v: Exists(
+			WorkSource.objects.filter(media_id=OuterRef('id'), platform=v)
+		),
+	),
+	'origin': MetatagSpec(
+		WorkOrigin,
+		lambda v: Exists(
+			WorkSource.objects.filter(media_id=OuterRef('id'), work_origin=v)
+		),
+	),
+	'user': MetatagSpec(str, _user_to_q),
 	'id': MetatagSpec(int, make_range_metatag('id')),
 	'width': MetatagSpec(
 		int,

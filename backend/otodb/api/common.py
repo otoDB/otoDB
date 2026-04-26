@@ -6,7 +6,7 @@ from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
 import lark
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count, Exists, F, OuterRef, Q
+from django.db.models import Count, Exists, F, OuterRef, Q, Value
 from django.http import HttpRequest
 from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
@@ -773,24 +773,25 @@ class BitmaskAttr:
 		)
 
 
+def count_predicate_q(base, op, value):
+	grouped = base.annotate(_g=Value(1)).values('_g').annotate(c=Count('*'))
+	positive = Exists(grouped.filter(**{f'c__{op}': value}))
+	zero_matches = (
+		op == 'lte'
+		or (op in ('exact', 'gte') and value == 0)
+		or (op == 'lt' and value > 0)
+		or (op == 'range' and value[0] == 0)
+	)
+	return positive | ~Exists(base) if zero_matches else positive
+
+
 def make_range_metatag(
 	field=None, *, model=None, fk_field=None, count=False, **filters
 ):
 	if count:
-
-		def count_q(op, value):
-			base = model.objects.filter(**{fk_field: OuterRef('id')}, **filters)
-			grouped = base.values(fk_field).annotate(c=Count('*'))
-			positive = Exists(grouped.filter(**{f'c__{op}': value}))
-			zero_matches = (
-				op == 'lte'
-				or (op in ('exact', 'gte') and value == 0)
-				or (op == 'lt' and value > 0)
-				or (op == 'range' and value[0] == 0)
-			)
-			return positive | ~Exists(base) if zero_matches else positive
-
-		return count_q
+		return lambda op, value: count_predicate_q(
+			model.objects.filter(**{fk_field: OuterRef('id')}, **filters), op, value
+		)
 
 	if model is not None:
 		return lambda op, value: Exists(

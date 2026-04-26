@@ -52,6 +52,7 @@ from otodb.models.enums import (
 	Route,
 	Status,
 	WorkOrigin,
+	WorkRelationTypes,
 	WorkStatus,
 	WorkTagCategory,
 )
@@ -80,6 +81,7 @@ from .common import (
 	WorkRelationSchema,
 	WorkSchema,
 	WorkSourceSchema,
+	count_predicate_q,
 	ensure_can_moderate,
 	get_search_grammar,
 	make_range_metatag,
@@ -313,6 +315,63 @@ work_metatag_grammars = {
 			),
 		)
 		for name, cat in _WORK_TAG_CATEGORY_METATAGS.items()
+	},
+	'relations': MetatagSpec(
+		int,
+		lambda op, value: count_predicate_q(
+			WorkRelation.objects.filter(
+				Q(A_id=OuterRef('id')) | Q(B_id=OuterRef('id'))
+			),
+			op,
+			value,
+		),
+	),
+	'relation': MetatagSpec(
+		WorkRelationTypes,
+		lambda v: Exists(
+			WorkRelation.objects.filter(
+				Q(A_id=OuterRef('id')) | Q(B_id=OuterRef('id')), relation=v
+			)
+		),
+	),
+	**{
+		name: MetatagSpec(
+			int,
+			lambda op, value, r=rel_type: Exists(
+				WorkRelation.objects.filter(
+					Q(A_id=OuterRef('id')) & Q(**{f'B__id__{op}': value})
+					| Q(B_id=OuterRef('id')) & Q(**{f'A__id__{op}': value}),
+					relation=r,
+				)
+			),
+		)
+		for name, rel_type in {
+			'sequel': WorkRelationTypes.SEQUEL,
+			'sample': WorkRelationTypes.SAMPLE,
+			'respect': WorkRelationTypes.RESPECT,
+			'collab': WorkRelationTypes.COLLAB_PART,
+		}.items()
+	},
+	**{
+		name: MetatagSpec(
+			int,
+			make_range_metatag(
+				model=WorkRelation,
+				fk_field=fk_field,
+				count=True,
+				relation=rel_type,
+			),
+		)
+		for name, (fk_field, rel_type) in {
+			'sequels': ('A_id', WorkRelationTypes.SEQUEL),
+			'prequels': ('B_id', WorkRelationTypes.SEQUEL),
+			'samples': ('A_id', WorkRelationTypes.SAMPLE),
+			'sampled_by': ('B_id', WorkRelationTypes.SAMPLE),
+			'respects': ('A_id', WorkRelationTypes.RESPECT),
+			'respected_by': ('B_id', WorkRelationTypes.RESPECT),
+			'collabs': ('A_id', WorkRelationTypes.COLLAB_PART),
+			'collab_parts': ('B_id', WorkRelationTypes.COLLAB_PART),
+		}.items()
 	},
 	'order': MetatagSpec(OrderEnum(WorkOrder), _resolve_work_order),
 }

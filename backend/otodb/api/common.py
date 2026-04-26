@@ -16,7 +16,7 @@ from ninja.utils import contribute_operation_args
 from pydantic import create_model, field_validator, model_validator
 
 from otodb.account.models import Account
-from otodb.common import slugify_tag
+from otodb.common import NFKC, slugify_tag
 from otodb.models import (
 	MediaSong,
 	MediaWork,
@@ -878,7 +878,7 @@ class AbstractTagTransformer(lark.Transformer):
 	TAG_MODIFIERS = str
 
 	def SLUG(self, v):
-		return str(v)
+		return NFKC(str(v))
 
 	def attr_value_pos(self, v):
 		return (False, str(v[0]))

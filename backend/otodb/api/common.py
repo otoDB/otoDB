@@ -658,7 +658,7 @@ range_value: COMPARATOR INT     -> range_compare
 
 MODIFIERS:     /[-]/
 TAG_MODIFIERS: /[\^]/
-SLUG:          /\w+/u
+SLUG:          /\w[\w-]*/u
 COMPARATOR:    ">=" | "<=" | ">" | "<"
 INT:           /\d+/
 _LPAR:   "("

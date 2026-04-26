@@ -235,7 +235,12 @@ def process_video_info(full_info, link=None):
 			if resolutions:
 				info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
 
-		info['extractor'] = Platform.from_str(info['extractor'])
+		# Tolerate legacy payloads with int extractor -- see PR #467
+		info['extractor'] = (
+			Platform(info['extractor'])
+			if isinstance(info['extractor'], int)
+			else Platform.from_str(info['extractor'])
+		)
 		if info['extractor'] in make_video_url:
 			info['webpage_url'] = make_video_url[info['extractor']](
 				info['display_id']

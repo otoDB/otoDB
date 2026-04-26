@@ -6,12 +6,8 @@
 	import { Rating, type components } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
-	import TagEditTable from '$lib/TagEditTable.svelte';
-	import TagsField from '$lib/TagsField.svelte';
-	import { getTagDisplaySlug } from '$lib/ui.js';
+	import TagsEditor from '$lib/TagsEditor.svelte';
 	import WorkField from '$lib/WorkField.svelte';
-	import WorkTag from '$lib/WorkTag.svelte';
-	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();
 
@@ -25,36 +21,8 @@
 	let rating: Rating | null = $state(null);
 	let bindWork = $state<components['schemas']['WorkSchema'] | null>(null);
 
-	// Tag cache for rich tag editing (sample toggles, creator roles)
 	let cache: Record<string, components['schemas']['TagWorkInstanceThinSchema']> = $state({});
 
-	// Pre-populate cache from suggestion tags
-	$effect(() => {
-		if (data.suggestions) {
-			const allSuggestions = [
-				...(data.suggestions.source_tags ?? []),
-				...(data.suggestions.creator_tags ?? []),
-				...(data.suggestions.new_tags ?? [])
-			];
-			for (const t of allSuggestions) {
-				const slug = getTagDisplaySlug(t);
-				if (!cache[slug]) {
-					cache[slug] = { ...t, sample: false, creator_roles: null };
-				}
-			}
-		}
-	});
-
-	const toggleTag: ComponentProps<typeof WorkTag>['onclick'] = (tag) => {
-		const slug = getTagDisplaySlug(tag);
-		if (tags.includes(slug)) {
-			tags = tags.filter((t) => t !== slug);
-		} else {
-			tags = [...tags, slug];
-		}
-	};
-
-	// Serialize rich tag data for form submission
 	let tagsJson = $derived(
 		JSON.stringify(
 			tags
@@ -251,19 +219,7 @@
 						<tr>
 							<th><label>{m.empty_legal_chicken_taste()}</label></th>
 							<td>
-								{#if data.suggestions?.source_tags?.length || data.suggestions?.creator_tags?.length || data.suggestions?.new_tags?.length}
-									<div class="my-2 flex flex-wrap gap-1.5">
-										{#each [...(data.suggestions.source_tags ?? []), ...(data.suggestions.creator_tags ?? []), ...(data.suggestions.new_tags ?? [])] as t (t.slug)}
-											<WorkTag
-												tag={t}
-												selected={tags.includes(getTagDisplaySlug(t))}
-												onclick={toggleTag}
-											/>
-										{/each}
-									</div>
-								{/if}
-								<TagsField type="work" class="w-full" bind:value={tags} />
-								<TagEditTable {tags} bind:cache />
+								<TagsEditor bind:tags bind:cache suggestions={data.suggestions} />
 								<input type="hidden" name="tags_json" value={tagsJson} />
 							</td>
 						</tr>

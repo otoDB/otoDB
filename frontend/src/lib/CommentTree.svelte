@@ -7,7 +7,7 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, ModelsWithComments } from '$lib/schema';
-	import TimeAgo from '$lib/TimeAgo.svelte';
+	import Time from '$lib/Time.svelte';
 	import EditedBy from './EditedBy.svelte';
 
 	interface Props {
@@ -145,7 +145,7 @@
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
 			<a href="/profile/{data.user.username}">{data.user.username}</a>
-			<a href="#c{data.id}"><TimeAgo date={data.time} /></a>
+			<a href="#c{data.id}"><Time format="relative" date={data.time} /></a>
 			{#if data.edited_at}
 				<EditedBy
 					date={data.edited_at}

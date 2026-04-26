@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import TimeAgo from '$lib/TimeAgo.svelte';
+	import Time from '$lib/Time.svelte';
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	interface Props {
@@ -18,13 +18,13 @@
 				<a href="/profile/{user.username}">{user.username}</a>
 			{/snippet}
 			{#snippet time()}
-				<TimeAgo {date} />
+				<Time format="relative" {date} />
 			{/snippet}
 		</ParaglideMessage>
 	{:else}
 		<ParaglideMessage message={m.light_sunny_kitten_slide} inputs={{}}>
 			{#snippet time()}
-				<TimeAgo {date} />
+				<Time format="relative" {date} />
 			{/snippet}
 		</ParaglideMessage>
 	{/if}

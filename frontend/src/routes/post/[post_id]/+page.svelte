@@ -4,7 +4,7 @@
 	import EditedBy from '$lib/EditedBy.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import Section from '$lib/Section.svelte';
-	import TimeAgo from '$lib/TimeAgo.svelte';
+	import Time from '$lib/Time.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
 	import { EntityModelRoutes } from '$lib/enums.js';
@@ -182,7 +182,9 @@
 				>
 				{#if data.post.category === PostCategory.Announcement}
 					&middot;
-					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
+					<a href="#p{data.post_id}"
+						><Time format="relative" date={page_object.modified} /></a
+					>
 				{/if}
 			</p>
 			{#if data.post.entities?.length}
@@ -209,7 +211,9 @@
 					<a href="/profile/{data.post?.added_by.username}"
 						>{data.post?.added_by.username}</a
 					>
-					<a href="#p{data.post_id}"><TimeAgo date={page_object.modified} /></a>
+					<a href="#p{data.post_id}"
+						><Time format="relative" date={page_object.modified} /></a
+					>
 					{#if data.post.edited_at && data.post.edited_by}
 						<EditedBy
 							date={data.post.edited_at}

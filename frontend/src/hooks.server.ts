@@ -8,12 +8,12 @@ import { defineCustomServerStrategy } from '$lib/paraglide/runtime';
 import { getRequestEvent } from '$app/server';
 import { resolveLanguageKeyById } from '$lib/enums/language';
 
-if (env.OTODB_SENTRY_DSN) {
+if (env.OTODB_FRONTEND_SENTRY_DSN) {
 	Sentry.init({
-		dsn: env.OTODB_SENTRY_DSN,
+		dsn: env.OTODB_FRONTEND_SENTRY_DSN,
 		sendDefaultPii: false,
 		enableLogs: true,
-		tracesSampleRate: parseFloat(env.OTODB_SENTRY_TRACES_SAMPLE_RATE ?? '0.1'),
+		tracesSampleRate: parseFloat(env.OTODB_FRONTEND_SENTRY_TRACES_SAMPLE_RATE ?? '0.1'),
 		release: process.env.PUBLIC_OTODB_HASH || undefined
 	});
 }

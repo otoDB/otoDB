@@ -25,18 +25,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = os.environ.get('OTODB_DEBUG', 'False').lower() == 'true'
 
-if OTODB_SENTRY_DSN := os.environ.get('OTODB_SENTRY_DSN'):
+if OTODB_BACKEND_SENTRY_DSN := os.environ.get('OTODB_BACKEND_SENTRY_DSN'):
 	import sentry_sdk
 
 	sentry_sdk.init(
-		dsn=OTODB_SENTRY_DSN,
+		dsn=OTODB_BACKEND_SENTRY_DSN,
 		send_default_pii=False,  # May need to enable later
 		enable_logs=True,
 		traces_sample_rate=float(
-			os.environ.get('OTODB_SENTRY_TRACES_SAMPLE_RATE', '0.1')
+			os.environ.get('OTODB_BACKEND_SENTRY_TRACES_SAMPLE_RATE', '0.1')
 		),
 		profiles_sample_rate=float(
-			os.environ.get('OTODB_SENTRY_PROFILES_SAMPLE_RATE', '0.1')
+			os.environ.get('OTODB_BACKEND_SENTRY_PROFILES_SAMPLE_RATE', '0.1')
 		),
 		release=os.environ.get('OTODB_HASH', 'unknown'),
 	)

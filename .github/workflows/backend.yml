@@ -152,6 +152,7 @@ jobs:
       - name: Generate JSON
         working-directory: backend
         run: |
+          uv run manage.py app_config > ../frontend/appconfig.json
           uv run manage.py openapi_schema > ../frontend/openapi.json
         
       - name: Install dependencies
@@ -162,4 +163,4 @@ jobs:
       - name: Verify no changes (Fail if stale)
         working-directory: frontend
         run: |
-          bun run sync-schema openapi.json --check
+          bun run sync-schema --check openapi.json appconfig.json

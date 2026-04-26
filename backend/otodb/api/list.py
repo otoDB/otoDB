@@ -61,7 +61,7 @@ def pending(request: HttpRequest, list_id: int):
 
 
 class ListItemInSchema(ModelSchema):
-	work_id: int
+	work_id: str
 
 	class Meta:
 		model = PoolItem
@@ -93,7 +93,7 @@ def update(request: HttpRequest, list_id: int, payload: ListInSchema):
 
 class ListUpdateSchema(Schema):
 	# Diffs applied in this exact order: WorkIDs -> Descriptions -> Moves -> Delete
-	update_work: List[tuple[int, int]] = []
+	update_work: List[tuple[int, str]] = []
 	update_description: List[tuple[int, str]] = []
 	move: List[tuple[int, int]] = []  # [(from, to)]
 	delete: List[int] = []  # delete at index
@@ -120,22 +120,22 @@ def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
 
 
 @list_router.get('work_in_pool', response=bool)
-def work_in_pool(request: HttpRequest, list_id: int, work_id: int):
+def work_in_pool(request: HttpRequest, list_id: int, work_id: str):
 	lst = get_object_or_404(Pool, pk=list_id)
-	return lst.work_in_pool(work_id)
+	return lst.work_in_pool(int(work_id))
 
 
 @list_router.put('toggle_work', auth=django_auth)
-def toggle(request: HttpRequest, list_id: int, work_id: int):
+def toggle(request: HttpRequest, list_id: int, work_id: str):
 	lst = get_object_or_404(Pool, pk=list_id)
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
 
-	if entries := lst.work_in_pool(work_id):
+	if entries := lst.work_in_pool(int(work_id)):
 		entries.delete()
 		return False
 	else:
-		lst.add_work(work_id)
+		lst.add_work(int(work_id))
 		return True
 
 

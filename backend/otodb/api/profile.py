@@ -191,9 +191,9 @@ def edit_connections(request: AuthedHttpRequest, urls: str):
 @profile_router.get(
 	'work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth
 )
-def work_in_lists(request: AuthedHttpRequest, work_id: int):
+def work_in_lists(request: AuthedHttpRequest, work_id: str):
 	return [
-		(lst, lst.work_in_pool(work_id).exists()) for lst in request.user.pool_set.all()
+		(lst, lst.work_in_pool(int(work_id)).exists()) for lst in request.user.pool_set.all()
 	]
 
 

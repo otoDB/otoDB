@@ -136,7 +136,7 @@ def new_source_from_url(
 	request: AuthedHttpRequest,
 	url: Annotated[str, StringConstraints(strip_whitespace=True)],
 	is_reupload: bool,
-	work_id: int | None = None,
+	work_id: str | None = None,
 	metadata: WorkSourceMetadataSchema | None = None,
 ):
 	"""Creates or retrieves a source from a URL.

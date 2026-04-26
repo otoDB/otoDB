@@ -19,7 +19,7 @@ class ModerationEventBySchema(Schema):
 class ModerationEventSchema(Schema):
 	event_type: ModerationEventType
 	event_id: int
-	work_id: int | None
+	work_id: str | None
 	source_id: int | None
 	by: ModerationEventBySchema | None
 	reason: str
@@ -35,7 +35,7 @@ class ModerationEventResponse(Schema):
 @moderation_router.get('events', response=ModerationEventResponse)
 def moderation_events(
 	request: HttpRequest,
-	work_id: int | None = None,
+	work_id: str | None = None,
 	source_id: int | None = None,
 	user_id: int | None = None,
 	limit: int = 30,

@@ -146,6 +146,8 @@ class RelationSchema(Schema):
 
 
 class WorkRelationSchema(RelationSchema):
+	A_id: str
+	B_id: str
 	relation: WorkRelationTypes
 
 
@@ -154,7 +156,7 @@ class SongRelationSchema(RelationSchema):
 
 
 class SlimWorkSchema(ModelSchema):
-	id: int
+	id: str
 	thumbnail: str | None = None  # Exposed as property
 	status: Status
 
@@ -164,7 +166,7 @@ class SlimWorkSchema(ModelSchema):
 
 
 class WorkSchema(ModelSchema):
-	id: int
+	id: str
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
 	pending_flag: 'PendingModerationEventSchema | None' = None
@@ -179,7 +181,7 @@ class WorkSchema(ModelSchema):
 
 
 class ThinWorkSchema(ModelSchema):
-	id: int
+	id: str
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
 	pending_flag: 'PendingModerationEventSchema | None' = None
@@ -193,7 +195,7 @@ class ThinWorkSchema(ModelSchema):
 
 class SourceCreationResponse(Schema):
 	source_id: int | None = None
-	work_id: int | None = None
+	work_id: str | None = None
 
 
 class TagWorkInstanceInSchema(Schema):
@@ -292,7 +294,7 @@ def ensure_can_moderate(user: Account, work: MediaWork | None) -> None:
 
 def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 	assert cls is MediaWork or cls is MediaSong
-	assert all(rel.A_id == obj_id or rel.B_id == obj_id for rel in payload)
+	assert all(int(rel.A_id) == obj_id or int(rel.B_id) == obj_id for rel in payload)
 
 	rel_cls, _rt_cls = (
 		(WorkRelation, WorkRelationTypes)
@@ -304,8 +306,8 @@ def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 		rel_cls.objects.filter(B_id=obj_id),
 	)
 	new_As_B, new_Bs_A = (
-		[rel.B_id for rel in payload if rel.A_id == obj_id],
-		[rel.A_id for rel in payload if rel.B_id == obj_id],
+		[int(rel.B_id) for rel in payload if int(rel.A_id) == obj_id],
+		[int(rel.A_id) for rel in payload if int(rel.B_id) == obj_id],
 	)
 
 	old_As.exclude(B_id__in=new_As_B).delete()

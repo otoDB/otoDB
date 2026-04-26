@@ -16,6 +16,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import {
+		AppConfig,
 		ModelsWithComments,
 		Status,
 		WorkOrigin,
@@ -67,29 +68,22 @@
 		[
 			...Map.groupBy(data.tags, (t) => {
 				const c = t.category;
-				if (WorkTagCategoryMap[c].canSetAsSource && t.sample) return WorkTagCategory.Source;
+				if (AppConfig.WORKTAG_SOURCE_SETTABLE_CATEGORIES.includes(c) && t.sample)
+					return WorkTagCategory.Source;
 				else return c;
 			}).entries()
 		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
 
-	const REQUIRED_CATEGORIES = [
-		WorkTagCategory.Creator,
-		WorkTagCategory.Song,
-		WorkTagCategory.Source,
-		WorkTagCategory.General
-	];
 	const missingCategories = $derived.by(() => {
 		const present = new Set(
-			data.tags.flatMap((t) => {
-				const cats: WorkTagCategory[] = [t.category];
-				if (WorkTagCategoryMap[t.category].canSetAsSource && t.sample) {
-					cats.push(WorkTagCategory.Source);
-				}
-				return cats;
-			})
+			data.tags.flatMap((t) =>
+				AppConfig.WORKTAG_SOURCE_SETTABLE_CATEGORIES.includes(t.category) && t.sample
+					? [WorkTagCategory.Source, t.category]
+					: [t.category]
+			)
 		);
-		return REQUIRED_CATEGORIES.filter((c) => !present.has(c));
+		return AppConfig.WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
 	});
 
 	const relTree = $derived(

@@ -204,6 +204,17 @@ class OtodbTagModel(BaseTagModel):
 
 
 class TagWork(RevisionTrackedModel, OtodbTagModel):
+	REQUIRED_CATEGORIES = [
+		WorkTagCategory.GENERAL,
+		WorkTagCategory.SOURCE,
+		WorkTagCategory.CREATOR,
+		WorkTagCategory.SONG,
+	]
+	SOURCE_SETTABLE_CATEGORIES = [
+		WorkTagCategory.MEDIA,
+		WorkTagCategory.CREATOR,
+		WorkTagCategory.SONG,
+	]
 	objects = TagWorkManager()
 
 	if TYPE_CHECKING:

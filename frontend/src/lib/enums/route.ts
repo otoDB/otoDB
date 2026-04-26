@@ -5,7 +5,7 @@ const c = (type: () => string, action: () => string) => () =>
 	m.mild_loud_shad_enchant({ type: type(), name: action() });
 
 export const routeNames: Record<Route, () => string> = {
-	[Route.Unknown]: () => 'Unknown',
+	[Route.Unknown]: m.few_mean_guppy_expand,
 
 	[Route.Tag_Work_Alias]: c(m.empty_legal_chicken_taste, m.civil_civil_ray_forgive),
 	[Route.Tag_Work_Alias_Control]: c(m.empty_legal_chicken_taste, m.good_vivid_weasel_launch),

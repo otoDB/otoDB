@@ -115,11 +115,7 @@ def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
 
 	for tag, p in zip(tags, payload):
 		changes = {}
-		if p.sample is not None and tag.category in [
-			WorkTagCategory.CREATOR,
-			WorkTagCategory.MEDIA,
-			WorkTagCategory.SONG,
-		]:
+		if p.sample is not None and tag.category in TagWork.SOURCE_SETTABLE_CATEGORIES:
 			changes['used_as_source'] = p.sample
 		if p.roles and tag.category == WorkTagCategory.CREATOR:
 			changes['creator_roles'] = reduce(int.__or__, p.roles)

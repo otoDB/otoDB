@@ -10,6 +10,10 @@ from ninja.decorators import decorate_view
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
 from ninja.throttling import AnonRateThrottle, AuthRateThrottle
+from pydantic import BaseModel
+
+from otodb.models import TagWork
+from otodb.models.enums import WorkTagCategory
 
 from .auth import auth_router
 from .comment import comment_router
@@ -147,3 +151,19 @@ def statistics(request):
 		MediaSong.objects.count(),
 		Pool.objects.count(),
 	]
+
+
+# Able to change these to use envvars instead if necessary
+class AppConfigSchema(BaseModel):
+	WORKTAG_REQUIRED_CATEGORIES: list[WorkTagCategory] = TagWork.REQUIRED_CATEGORIES
+	WORKTAG_SOURCE_SETTABLE_CATEGORIES: list[WorkTagCategory] = (
+		TagWork.SOURCE_SETTABLE_CATEGORIES
+	)
+
+
+SHARED_CONFIG = AppConfigSchema()
+
+
+@api.get('config', response=AppConfigSchema)
+def config(request):
+	return SHARED_CONFIG

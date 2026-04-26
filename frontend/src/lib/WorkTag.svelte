@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/creatorRole';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
-	import { WorkTagCategory } from '$lib/schema';
+	import { AppConfig, WorkTagCategory } from '$lib/schema';
 	import { getTagDisplayName } from '$lib/ui.js';
 
 	interface Props {
@@ -23,7 +23,9 @@
 	const { tag, onclick, selected = false, fade = false, forTree = false }: Props = $props();
 
 	const category = $derived(tag.category);
-	const sampleOverride = $derived(WorkTagCategoryMap[category].canSetAsSource && tag.sample);
+	const sampleOverride = $derived(
+		AppConfig.WORKTAG_SOURCE_SETTABLE_CATEGORIES.includes(category) && tag.sample
+	);
 	const isTemporary = $derived(tag.id === 0);
 </script>
 

@@ -2,11 +2,10 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api';
 	import { allCreatorRoles, creatorRole } from '$lib/enums/creatorRole';
-	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getTagDisplaySlug } from '$lib/ui.js';
 	import type { ComponentProps } from 'svelte';
-	import { WorkTagCategory } from './schema';
+	import { AppConfig, WorkTagCategory } from './schema';
 
 	type TagCache = Record<string, ComponentProps<typeof WorkTag>['tag']>;
 
@@ -74,7 +73,7 @@
 				<tr>
 					<td><WorkTag {tag} /></td>
 					<td>
-						{#if WorkTagCategoryMap[tag.category].canSetAsSource}
+						{#if AppConfig.WORKTAG_SOURCE_SETTABLE_CATEGORIES.includes(tag.category)}
 							<input
 								type="checkbox"
 								onclick={() => toggle_sample(getTagDisplaySlug(tag))}

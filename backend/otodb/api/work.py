@@ -303,6 +303,57 @@ work_metatag_grammars = {
 		int,
 		make_range_metatag('work_duration', model=WorkSource, fk_field='media_id'),
 	),
+	'sources': MetatagSpec(
+		int,
+		make_range_metatag(model=WorkSource, fk_field='media_id', count=True),
+	),
+	'origins': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_origin=WorkOrigin.AUTHOR,
+		),
+	),
+	'reuploads': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_origin=WorkOrigin.REUPLOAD,
+		),
+	),
+	'available_sources': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_status=WorkStatus.AVAILABLE,
+		),
+	),
+	'available_origins': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_origin=WorkOrigin.AUTHOR,
+			work_status=WorkStatus.AVAILABLE,
+		),
+	),
+	'available_reuploads': MetatagSpec(
+		int,
+		make_range_metatag(
+			model=WorkSource,
+			fk_field='media_id',
+			count=True,
+			work_origin=WorkOrigin.REUPLOAD,
+			work_status=WorkStatus.AVAILABLE,
+		),
+	),
 	'comments': MetatagSpec(
 		int,
 		lambda op, value: count_predicate_q(

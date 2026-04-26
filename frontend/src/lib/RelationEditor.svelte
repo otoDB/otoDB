@@ -47,7 +47,9 @@
 
 	let new_item: null | Work | Song = $state(null);
 
-	const endpoint = obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation';
+	const endpoint = $derived(
+		obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation'
+	);
 	const post_gate = { p: Promise.withResolvers<void>() };
 	const post_relations = async () => {
 		await post_gate.p.promise;
@@ -66,10 +68,10 @@
 		} else goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
 	};
 
-	const [RelationType, Predicates] =
-		obj_type === 'work'
-			? [WorkRelationTypes, WorkRelationEditorPredicate]
-			: [SongRelationTypes, SongRelationPredicate];
+	const RelationType = $derived(obj_type === 'work' ? WorkRelationTypes : SongRelationTypes);
+	const Predicates = $derived(
+		obj_type === 'work' ? WorkRelationEditorPredicate : SongRelationPredicate
+	);
 </script>
 
 {#snippet work(

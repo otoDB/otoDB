@@ -11,20 +11,21 @@
 
 	let { data } = $props();
 
-	const profileLd =
+	const profileLd = $derived(
 		'<script type="application/ld+json">' +
-		JSON.stringify({
-			'@context': 'https://schema.org',
-			'@type': 'ProfilePage',
-			'dateCreated': data.profile.date_created,
-			'mainEntity': {
-				'@type': 'Person',
-				'name': data.profile.username,
-				'url': `https://otodb.net/profile/${data.profile.username}`
-			}
-		}) +
-		'</' +
-		'script>';
+			JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'ProfilePage',
+				'dateCreated': data.profile.date_created,
+				'mainEntity': {
+					'@type': 'Person',
+					'name': data.profile.username,
+					'url': `https://otodb.net/profile/${data.profile.username}`
+				}
+			}) +
+			'</' +
+			'script>'
+	);
 </script>
 
 <svelte:head>

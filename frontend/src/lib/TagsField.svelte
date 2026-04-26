@@ -13,7 +13,7 @@
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
 
-	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
+	const endpoint = $derived(type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search');
 
 	let textarea: HTMLTextAreaElement;
 	let suggestions = $state<any[]>([]);

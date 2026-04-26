@@ -60,7 +60,6 @@ from .common import (
 	post_relations,
 	profile_connection_parsers,
 	re_to_parser,
-	user_is_editor,
 	user_is_trusted,
 	with_revision_route,
 )
@@ -322,7 +321,7 @@ class AliasResponse(Schema):
 
 
 @tag_router.post('alias', auth=django_auth, response=AliasResponse)
-@user_is_editor
+@user_is_trusted
 @tag_route_switch(Route.TAGWORK_ALIAS, Route.SONGTAG_ALIAS)
 def alias_tags(
 	request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool, **kwargs

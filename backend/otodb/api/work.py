@@ -42,6 +42,7 @@ from otodb.models import (
 from otodb.models.enums import (
 	ErrorCode,
 	FlagStatus,
+	MediaType,
 	ModerationAction,
 	ModerationEventType,
 	ModQueueCategory,
@@ -301,6 +302,40 @@ work_metatag_grammars = {
 	'duration': MetatagSpec(
 		int,
 		make_range_metatag('work_duration', model=WorkSource, fk_field='media_id'),
+	),
+	'comments': MetatagSpec(
+		int,
+		lambda op, value: count_predicate_q(
+			XtdComment.objects.filter(
+				content_type=ContentType.objects.get_for_model(MediaWork),
+				object_pk=Cast(OuterRef('id'), CharField()),
+				is_removed=False,
+			),
+			op,
+			value,
+		),
+	),
+	'mediatype': MetatagSpec(
+		MediaType,
+		lambda v: Exists(
+			TagWorkInstance.objects.filter(
+				work_id=OuterRef('id'),
+				work_tag__category=WorkTagCategory.MEDIA,
+			)
+			.annotate(_mt=F('work_tag__media_type').bitand(int(v)))
+			.filter(_mt__gt=0)
+		),
+	),
+	'role': MetatagSpec(
+		Role,
+		lambda v: Exists(
+			TagWorkInstance.objects.filter(
+				work_id=OuterRef('id'),
+				work_tag__category=WorkTagCategory.CREATOR,
+			)
+			.annotate(_r=F('creator_roles').bitand(int(v)))
+			.filter(_r__gt=0)
+		),
 	),
 	'tagcount': MetatagSpec(
 		int,

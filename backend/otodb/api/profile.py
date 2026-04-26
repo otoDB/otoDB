@@ -193,7 +193,8 @@ def edit_connections(request: AuthedHttpRequest, urls: str):
 )
 def work_in_lists(request: AuthedHttpRequest, work_id: str):
 	return [
-		(lst, lst.work_in_pool(int(work_id)).exists()) for lst in request.user.pool_set.all()
+		(lst, lst.work_in_pool(int(work_id)).exists())
+		for lst in request.user.pool_set.all()
 	]
 
 

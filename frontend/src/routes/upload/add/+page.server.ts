@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 
 	let title = null;
 	let unavailable_source = null;
-	if (work && !isNaN(+work)) {
+	if (work) {
 		const { data } = await client.GET('/api/work/work', {
 			params: {
 				query: {

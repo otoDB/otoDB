@@ -65,7 +65,7 @@ export const actions = {
 		const data = await request.formData();
 		const workId = data.get('work_id') as string;
 		const sourceUrl = data.get('source_url') as string;
-		if (!workId || isNaN(+workId)) return { failed: true, message: m.green_due_javelina_pop() };
+		if (!workId) return { failed: true, message: m.green_due_javelina_pop() };
 
 		try {
 			await client.POST('/api/upload/source', {

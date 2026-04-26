@@ -305,6 +305,14 @@ work_metatag_grammars = {
 		int,
 		make_range_metatag('work_duration', model=WorkSource, fk_field='media_id'),
 	),
+	'bpm': MetatagSpec(
+		int,
+		make_range_metatag(
+			'work_tag__mediasong__bpm',
+			model=TagWorkInstance,
+			fk_field='work_id',
+		),
+	),
 	'sources': MetatagSpec(
 		int,
 		make_range_metatag(model=WorkSource, fk_field='media_id', count=True),

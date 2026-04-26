@@ -179,62 +179,64 @@ class WorkOrder(OtodbIntegerEnum):
 
 
 def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
-	if v is WorkOrder.ID:
-		return {}, Q(), ('id',)
-	if v is WorkOrder.ID_DESC:
-		return {}, Q(), ('-id',)
-	if v is WorkOrder.SUBMITTED:
-		return {}, Q(), ('-created_at',)
-	if v is WorkOrder.SUBMITTED_ASC:
-		return {}, Q(), ('created_at',)
-	if v is WorkOrder.PUBLISHED or v is WorkOrder.PUBLISHED_ASC:
-		ann = {
-			'_pub': Subquery(
-				WorkSource.objects.filter(media_id=OuterRef('id'))
-				.order_by('published_date')
-				.values('published_date')[:1]
-			)
-		}
-		field = '-_pub' if v is WorkOrder.PUBLISHED else '_pub'
-		return ann, Q(), (field,)
-	if v is WorkOrder.RESOLUTION or v is WorkOrder.RESOLUTION_ASC:
-		ann = {
-			'_mpixels': Subquery(
-				WorkSource.objects.filter(media_id=OuterRef('id'))
-				.annotate(_mp=F('work_width') * F('work_height'))
-				.order_by(F('_mp').desc(nulls_last=True))
-				.values('_mp')[:1]
-			)
-		}
-		field = '-_mpixels' if v is WorkOrder.RESOLUTION else '_mpixels'
-		return ann, Q(_mpixels__isnull=False), (field,)
-	if v is WorkOrder.DURATION or v is WorkOrder.DURATION_ASC:
-		ann = {
-			'_duration': Subquery(
-				WorkSource.objects.filter(media_id=OuterRef('id'))
-				.order_by(F('work_duration').desc(nulls_last=True))
-				.values('work_duration')[:1]
-			)
-		}
-		field = '-_duration' if v is WorkOrder.DURATION else '_duration'
-		return ann, Q(_duration__isnull=False), (field,)
-	if v is WorkOrder.COMMENT or v is WorkOrder.COMMENT_ASC:
-		ann = {
-			'_last_comment': Subquery(
-				XtdComment.objects.filter(
-					content_type=ContentType.objects.get_for_model(MediaWork),
-					object_pk=Cast(OuterRef('id'), CharField()),
-					is_removed=False,
+	match v:
+		case WorkOrder.ID:
+			return {}, Q(), ('id',)
+		case WorkOrder.ID_DESC:
+			return {}, Q(), ('-id',)
+		case WorkOrder.SUBMITTED:
+			return {}, Q(), ('-created_at',)
+		case WorkOrder.SUBMITTED_ASC:
+			return {}, Q(), ('created_at',)
+		case WorkOrder.PUBLISHED | WorkOrder.PUBLISHED_ASC:
+			ann = {
+				'_pub': Subquery(
+					WorkSource.objects.filter(media_id=OuterRef('id'))
+					.order_by('published_date')
+					.values('published_date')[:1]
 				)
-				.order_by('-submit_date')
-				.values('submit_date')[:1]
-			)
-		}
-		field = '-_last_comment' if v is WorkOrder.COMMENT else '_last_comment'
-		return ann, Q(_last_comment__isnull=False), (field,)
-	if v is WorkOrder.RANDOM:
-		return {}, Q(), ('?',)
-	raise ValueError(f'unrecognized WorkOrder: {v!r}')
+			}
+			field = '-_pub' if v is WorkOrder.PUBLISHED else '_pub'
+			return ann, Q(), (field,)
+		case WorkOrder.RESOLUTION | WorkOrder.RESOLUTION_ASC:
+			ann = {
+				'_mpixels': Subquery(
+					WorkSource.objects.filter(media_id=OuterRef('id'))
+					.annotate(_mp=F('work_width') * F('work_height'))
+					.order_by(F('_mp').desc(nulls_last=True))
+					.values('_mp')[:1]
+				)
+			}
+			field = '-_mpixels' if v is WorkOrder.RESOLUTION else '_mpixels'
+			return ann, Q(_mpixels__isnull=False), (field,)
+		case WorkOrder.DURATION | WorkOrder.DURATION_ASC:
+			ann = {
+				'_duration': Subquery(
+					WorkSource.objects.filter(media_id=OuterRef('id'))
+					.order_by(F('work_duration').desc(nulls_last=True))
+					.values('work_duration')[:1]
+				)
+			}
+			field = '-_duration' if v is WorkOrder.DURATION else '_duration'
+			return ann, Q(_duration__isnull=False), (field,)
+		case WorkOrder.COMMENT | WorkOrder.COMMENT_ASC:
+			ann = {
+				'_last_comment': Subquery(
+					XtdComment.objects.filter(
+						content_type=ContentType.objects.get_for_model(MediaWork),
+						object_pk=Cast(OuterRef('id'), CharField()),
+						is_removed=False,
+					)
+					.order_by('-submit_date')
+					.values('submit_date')[:1]
+				)
+			}
+			field = '-_last_comment' if v is WorkOrder.COMMENT else '_last_comment'
+			return ann, Q(_last_comment__isnull=False), (field,)
+		case WorkOrder.RANDOM:
+			return {}, Q(), ('?',)
+		case _:
+			raise ValueError(f'unrecognized WorkOrder: {v!r}')
 
 
 def _user_to_q(username):
@@ -267,7 +269,6 @@ def _user_to_q(username):
 	return Q(id__in=rev_match_ids) | Q(id__in=src_match_ids)
 
 
-# TODO Do we do this or put these as a widget on frontend?
 work_metatag_grammars = {
 	'rating': MetatagSpec(Rating, lambda v: Q(rating=v)),
 	'status': MetatagSpec(Status, lambda v: Q(status=v)),

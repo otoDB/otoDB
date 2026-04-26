@@ -17,6 +17,27 @@
 
 ## Workflow
 
+### Updating schema.ts
+
+`src/lib/schema.ts` is auto-generated from the backend OpenAPI schema. To update it:
+
+1. Start the backend server in the background (run from `backend/`):
+    ```
+    uv run manage.py runserver &
+    ```
+2. Wait for the server to be ready by polling until it responds:
+    ```
+    until curl -s http://localhost:8000/ -o /dev/null; do sleep 1; done
+    ```
+3. In the frontend directory, run:
+    ```
+    bun run sync-schema
+    ```
+4. Stop the backend server:
+    ```
+    kill %1
+    ```
+
 ### Before committing or pushing
 
 When making any changes to frontend code, you MUST run the following commands in order and ensure each succeeds before creating a git commit or pushing:

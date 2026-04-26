@@ -636,10 +636,10 @@ def get_search_grammar(metatag_grammars: dict[str, MetatagSpec]):
 	)
 
 	return lark.Lark(rf"""
-start: or_expr?
-or_expr: and_expr (_OR and_expr)*
-and_expr: atom+
-atom: MODIFIERS? (tag_part | metatag_part | _LPAR or_expr _RPAR)
+start: _WS? or_expr? _WS?
+or_expr: and_expr (_WS? _OR _WS? and_expr)*
+and_expr: atom (_WS atom)*
+atom: MODIFIERS? (tag_part | metatag_part | _LPAR _WS? or_expr _WS? _RPAR)
 
 tag_part: TAG_MODIFIERS? SLUG
 
@@ -657,13 +657,13 @@ INT:           /\d+/
 _LPAR: "("
 _RPAR: ")"
 _OR: "|"
+_WS: WS
 {'\n'.join(metatag_rule(k, spec) for k, spec in metatag_grammars.items())}
 {enum_value_terminals}
 metatag_part: {'|'.join([k + '_meta' for k in metatag_grammars])}
 _META_CONN: ":"
 
 %import common.WS
-%ignore WS
 """)
 
 

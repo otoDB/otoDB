@@ -3,6 +3,7 @@ from datetime import datetime
 from django.http import HttpRequest
 from ninja import Router, Schema
 from ninja.errors import HttpError
+from pydantic import field_validator
 
 from otodb.account.models import Account
 from otodb.models import ModerationEvent
@@ -12,19 +13,29 @@ moderation_router = Router()
 
 
 class ModerationEventBySchema(Schema):
-	id: int
+	id: str
 	username: str
+
+	@field_validator('id', mode='before')
+	@classmethod
+	def _coerce_id(cls, v):
+		return str(v)
 
 
 class ModerationEventSchema(Schema):
 	event_type: ModerationEventType
-	event_id: int
+	event_id: str
 	work_id: str | None
-	source_id: int | None
+	source_id: str | None
 	by: ModerationEventBySchema | None
 	reason: str
 	status: FlagStatus | ModerationAction | None
 	event_at: datetime
+
+	@field_validator('event_id', 'source_id', mode='before')
+	@classmethod
+	def _coerce_ids(cls, v):
+		return str(v) if v is not None else None
 
 
 class ModerationEventResponse(Schema):
@@ -36,7 +47,7 @@ class ModerationEventResponse(Schema):
 def moderation_events(
 	request: HttpRequest,
 	work_id: str | None = None,
-	source_id: int | None = None,
+	source_id: str | None = None,
 	user_id: int | None = None,
 	limit: int = 30,
 	offset: int = 0,
@@ -52,7 +63,7 @@ def moderation_events(
 	if work_id is not None:
 		qs = qs.filter(work_id=work_id)
 	if source_id is not None:
-		qs = qs.filter(source_id=source_id)
+		qs = qs.filter(source_id=int(source_id))
 	if user_id is not None:
 		qs = qs.filter(by_id=user_id)
 

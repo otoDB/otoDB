@@ -41,22 +41,22 @@ def search(request: HttpRequest, query: str):
 
 
 @list_router.get('list', response=ListSchema)
-def lst(request: HttpRequest, list_id: int):
-	list_ = get_object_or_404(Pool, pk=list_id)
+def lst(request: HttpRequest, list_id: str):
+	list_ = get_object_or_404(Pool, pk=int(list_id))
 	return list_
 
 
 @list_router.get('entries', response=List[ListItemSchema])
 @paginate
-def entries(request: HttpRequest, list_id: int):
-	list_ = get_object_or_404(Pool, pk=list_id)
+def entries(request: HttpRequest, list_id: str):
+	list_ = get_object_or_404(Pool, pk=int(list_id))
 	return list_.poolitem_set.order_by('order')
 
 
 @list_router.get('pending', response=List[WorkSourceSchema])
 @paginate
-def pending(request: HttpRequest, list_id: int):
-	list_ = get_object_or_404(Pool, pk=list_id)
+def pending(request: HttpRequest, list_id: str):
+	list_ = get_object_or_404(Pool, pk=int(list_id))
 	return list_.pending_items.all()
 
 
@@ -74,15 +74,15 @@ class ListInSchema(ModelSchema):
 		fields = ['name', 'description']
 
 
-@list_router.post('list', auth=django_auth, response=int)
+@list_router.post('list', auth=django_auth, response=str)
 def new(request: HttpRequest, payload: ListInSchema):
 	lst = Pool.objects.create(author=request.user, **payload.dict())
-	return lst.id
+	return str(lst.id)
 
 
 @list_router.put('list', auth=django_auth)
-def update(request: HttpRequest, list_id: int, payload: ListInSchema):
-	lst = get_object_or_404(Pool, id=list_id)
+def update(request: HttpRequest, list_id: str, payload: ListInSchema):
+	lst = get_object_or_404(Pool, id=int(list_id))
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
 
@@ -100,8 +100,8 @@ class ListUpdateSchema(Schema):
 
 
 @list_router.put('items', auth=django_auth)
-def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
-	lst = get_object_or_404(Pool, id=list_id)
+def update_items(request: HttpRequest, list_id: str, payload: ListUpdateSchema):
+	lst = get_object_or_404(Pool, id=int(list_id))
 
 	items = lst.poolitem_set
 
@@ -120,14 +120,14 @@ def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
 
 
 @list_router.get('work_in_pool', response=bool)
-def work_in_pool(request: HttpRequest, list_id: int, work_id: str):
-	lst = get_object_or_404(Pool, pk=list_id)
+def work_in_pool(request: HttpRequest, list_id: str, work_id: str):
+	lst = get_object_or_404(Pool, pk=int(list_id))
 	return lst.work_in_pool(int(work_id))
 
 
 @list_router.put('toggle_work', auth=django_auth)
-def toggle(request: HttpRequest, list_id: int, work_id: str):
-	lst = get_object_or_404(Pool, pk=list_id)
+def toggle(request: HttpRequest, list_id: str, work_id: str):
+	lst = get_object_or_404(Pool, pk=int(list_id))
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
 
@@ -140,8 +140,8 @@ def toggle(request: HttpRequest, list_id: int, work_id: str):
 
 
 @list_router.delete('list', auth=django_auth)
-def delete(request: HttpRequest, list_id: int):
-	lst = get_object_or_404(Pool, id=list_id)
+def delete(request: HttpRequest, list_id: str):
+	lst = get_object_or_404(Pool, id=int(list_id))
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
 	lst.delete()
@@ -188,7 +188,7 @@ def import_ext_into_pool(info, list_: Pool, user):
 
 
 @list_router.post(
-	'import', auth=django_auth, response=int, throttle=[AuthRateThrottle('3/30m')]
+	'import', auth=django_auth, response=str, throttle=[AuthRateThrottle('3/30m')]
 )
 @user_is_editor
 @transaction.atomic
@@ -202,12 +202,12 @@ def import_ext(request: HttpRequest, url: str):
 
 	import_ext_into_pool(info, list_, request.user)
 
-	return list_.id
+	return str(list_.id)
 
 
 @list_router.post('pull_upstream', auth=django_auth)
-def pull_upstream(request: HttpRequest, list_id: int):
-	lst = get_object_or_404(Pool, id=list_id)
+def pull_upstream(request: HttpRequest, list_id: str):
+	lst = get_object_or_404(Pool, id=int(list_id))
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
 

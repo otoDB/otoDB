@@ -9,6 +9,7 @@ from ninja import ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
+from pydantic import field_validator
 
 from otodb.account.models import Account
 from otodb.common import slugify_tag
@@ -42,12 +43,17 @@ class PostEntities(str, Enum):
 
 
 class PostEntitySchema(Schema):
-	id: int | str
+	id: str
 	entity: PostEntities
+
+	@field_validator('id', mode='before')
+	@classmethod
+	def _coerce_id(cls, v):
+		return str(v)
 
 
 class PostOverviewSchema(ModelSchema):
-	id: int
+	id: str
 	added_by: ProfileSchema
 	modified: datetime
 	last_post_by: str | None = None
@@ -79,8 +85,8 @@ class PostSchema(ModelSchema):
 
 
 @post_router.get('post', response=PostSchema)
-def post(request: HttpRequest, post_id: int):
-	return get_object_or_404(Post, id=post_id)
+def post(request: HttpRequest, post_id: str):
+	return get_object_or_404(Post, id=int(post_id))
 
 
 @post_router.get('categories', response=dict[str, list[PostOverviewSchema]])
@@ -125,7 +131,7 @@ def get_entity_link_ent(e: PostEntitySchema):
 	return obj
 
 
-@post_router.post('post', response=int, auth=django_auth)
+@post_router.post('post', response=str, auth=django_auth)
 @user_is_trusted
 @restrict_internal
 @transaction.atomic
@@ -176,11 +182,11 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 
 	transaction.on_commit(lambda: discord_post.enqueue(p.pk, request.user.username))
 
-	return p.pk
+	return str(p.pk)
 
 
 class PostEditSchema(Schema):
-	post_id: int
+	post_id: str
 	title: str
 	post: str
 	lang: LanguageTypes
@@ -225,8 +231,8 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 
 @post_router.put('close', auth=django_auth)
 @transaction.atomic
-def toggle_close(request: AuthedHttpRequest, post_id: int):
-	post = get_object_or_404(Post, id=post_id)
+def toggle_close(request: AuthedHttpRequest, post_id: str):
+	post = get_object_or_404(Post, id=int(post_id))
 	is_admin = request.user.level >= Account.Levels.ADMIN
 	is_author = post.added_by == request.user
 	if not post.closed_at:

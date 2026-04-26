@@ -13,6 +13,7 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
+from pydantic import field_validator
 
 from otodb.account.models import Account
 from otodb.discord import discord_comment
@@ -34,25 +35,35 @@ class ModelsWithComments(str, Enum):
 
 
 class BaseCommentSchema(Schema):
-	id: int
+	id: str
 	user: ProfileSchema
 	comment: str
 	submit_date: datetime
 
+	@field_validator('id', mode='before')
+	@classmethod
+	def _coerce_id(cls, v):
+		return str(v)
+
 
 class CommentSchema(BaseCommentSchema):
-	parent_id: int
+	parent_id: str
 	level: int
 	index: int
 	edited_at: datetime | None = None
 	edited_by: ProfileSchema | None = None
+
+	@field_validator('parent_id', mode='before')
+	@classmethod
+	def _coerce_parent_id(cls, v):
+		return str(v)
 
 
 class CommentInSchema(Schema):
 	model: ModelsWithComments
 	pk: int
 	comment_text: str
-	parent_id: int = 0
+	parent_id: str | None = None
 	mentioned_users: list[str]
 
 
@@ -93,7 +104,7 @@ def post(
 	parent_id = payload.parent_id
 	comment_text = payload.comment_text
 	pk = payload.pk
-	parent = None if parent_id == 0 else XtdComment.objects.get(id=parent_id)
+	parent = None if parent_id is None else XtdComment.objects.get(id=int(parent_id))
 	if parent is not None and parent.is_removed:
 		raise HttpError(400, 'Bad Request')
 
@@ -103,7 +114,7 @@ def post(
 		site_id=1,
 		user=request.user,
 		comment=comment_text,
-		parent_id=parent_id,
+		parent_id=int(parent_id) if parent_id is not None else None,
 	)
 	target_names: set[str] = set()
 	if parent is None:
@@ -143,11 +154,11 @@ def delete(
 	request: HttpRequest,
 	model: ModelsWithComments,
 	pk: int,
-	comment_id: int,
+	comment_id: str,
 ):
 	T = ContentType.objects.get(model=model)
 	comment = XtdComment.objects.get(
-		content_type=T, object_pk=pk, site_id=1, id=comment_id
+		content_type=T, object_pk=pk, site_id=1, id=int(comment_id)
 	)
 	if request.user.level >= Account.Levels.ADMIN or comment.user == request.user:
 		comment.is_removed = True
@@ -158,7 +169,7 @@ def delete(
 
 
 class CommentEditSchema(Schema):
-	comment_id: int
+	comment_id: str
 	comment_text: str
 
 
@@ -166,7 +177,7 @@ class CommentEditSchema(Schema):
 @user_is_trusted
 @restrict_internal
 def edit(request: HttpRequest, payload: CommentEditSchema):
-	comment = XtdComment.objects.select_related('meta').get(id=payload.comment_id)
+	comment = XtdComment.objects.select_related('meta').get(id=int(payload.comment_id))
 	is_admin = request.user.level >= Account.Levels.ADMIN
 	if not is_admin:
 		if comment.user != request.user:

@@ -63,7 +63,7 @@ class Error(Schema):
 
 
 class ProfileSchema(ModelSchema):
-	id: int
+	id: str
 	level: Account.Levels
 
 	class Meta:
@@ -78,13 +78,18 @@ class TagLangPreferenceSchema(Schema):
 
 
 class TagWorkSchema(Schema):
-	id: int
+	id: str
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional['TagWorkSchema']
 	name: str
 	slug: str
 	category: WorkTagCategory
 	deprecated: bool
+
+	@field_validator('id', mode='before')
+	@classmethod
+	def _coerce_id(cls, v):
+		return str(v)
 
 
 class ConnectionTagResult(TagWorkSchema):
@@ -96,7 +101,7 @@ class ConnectionLookupResponse(Schema):
 
 
 class WorkSourceSchema(ModelSchema):
-	id: int
+	id: str
 	added_by: ProfileSchema
 	thumbnail: str | None = None  # Exposed as property
 	media_title: str | None = None
@@ -140,14 +145,17 @@ class TagWorkInstanceSchema(TagWorkInstanceThinSchema):
 
 
 class RelationSchema(Schema):
-	A_id: int
-	B_id: int
+	A_id: str
+	B_id: str
 	relation: int
+
+	@field_validator('A_id', 'B_id', mode='before')
+	@classmethod
+	def _coerce_ids(cls, v):
+		return str(v)
 
 
 class WorkRelationSchema(RelationSchema):
-	A_id: str
-	B_id: str
 	relation: WorkRelationTypes
 
 
@@ -194,7 +202,7 @@ class ThinWorkSchema(ModelSchema):
 
 
 class SourceCreationResponse(Schema):
-	source_id: int | None = None
+	source_id: str | None = None
 	work_id: str | None = None
 
 
@@ -223,7 +231,7 @@ class SourceSuggestionsResponse(Schema):
 class PendingModerationEventSchema(ModelSchema):
 	"""Thin view of a pending flag or appeal exposed on a work."""
 
-	id: int
+	id: str
 	by: ProfileSchema | None = None
 	status: FlagStatus
 
@@ -241,7 +249,7 @@ class ListItemSchema(ModelSchema):
 
 
 class ListSchema(ModelSchema):
-	id: int
+	id: str
 	author: ProfileSchema
 	upstream: str | None = Field(None, alias='poolupstream')
 

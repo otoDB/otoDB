@@ -67,8 +67,8 @@ class WorkSourceMetadataSchema(Schema):
 @source_router.post('unbind', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_UNBIND)
-def unbind_source(request: AuthedHttpRequest, source_id: int):
-	src = get_object_or_404(WorkSource.objects, id=source_id)
+def unbind_source(request: AuthedHttpRequest, source_id: str):
+	src = get_object_or_404(WorkSource.objects, id=int(source_id))
 	if src.media.worksource_set.count() == 1:
 		src.media.delete()
 	src.media = None
@@ -78,8 +78,8 @@ def unbind_source(request: AuthedHttpRequest, source_id: int):
 @source_router.put('origin', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
-def source_origin(request: AuthedHttpRequest, source_id: int, status: WorkOrigin):
-	src = get_object_or_404(WorkSource.objects, id=source_id)
+def source_origin(request: AuthedHttpRequest, source_id: str, status: WorkOrigin):
+	src = get_object_or_404(WorkSource.objects, id=int(source_id))
 	src.work_origin = status
 	src.save()
 
@@ -87,25 +87,25 @@ def source_origin(request: AuthedHttpRequest, source_id: int, status: WorkOrigin
 @source_router.post('refresh', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REFRESH)
-def refresh_source(request: AuthedHttpRequest, source_id: int):
-	src: WorkSource = get_object_or_404(WorkSource.objects, id=source_id)
+def refresh_source(request: AuthedHttpRequest, source_id: str):
+	src: WorkSource = get_object_or_404(WorkSource.objects, id=int(source_id))
 	src.refresh()
 	return
 
 
 @source_router.get('source', response=WorkSourceSchema)
-def get_source(request, source_id: int):
-	return get_object_or_404(WorkSource, id=source_id)
+def get_source(request, source_id: str):
+	return get_object_or_404(WorkSource, id=int(source_id))
 
 
-@source_router.put('source', auth=django_auth, response={200: int, 400: Error})
+@source_router.put('source', auth=django_auth, response={200: str, 400: Error})
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_UPDATE)
 def update_source(
-	request: AuthedHttpRequest, source_id: int, metadata: WorkSourceMetadataSchema
+	request: AuthedHttpRequest, source_id: str, metadata: WorkSourceMetadataSchema
 ):
 	src = get_object_or_404(
-		WorkSource.objects, id=source_id, work_status=WorkStatus.DOWN
+		WorkSource.objects, id=int(source_id), work_status=WorkStatus.DOWN
 	)
 	src.title = metadata.title
 	src.description = metadata.description
@@ -121,7 +121,7 @@ def update_source(
 	src.save_thumbnail()
 	src.save()
 
-	return src.media.pk
+	return str(src.media.pk)
 
 
 @source_router.post(
@@ -186,7 +186,7 @@ def new_source_from_url(
 		return {'work_id': str(work.pk)}
 
 	# New source, no existing work -> return source_id for review
-	return {'source_id': src.pk}
+	return {'source_id': str(src.pk)}
 
 
 def resolve_creator_tags(src: WorkSource, info: dict) -> list:
@@ -274,9 +274,9 @@ def extract_source_tag_suggestions(src: WorkSource):
 
 @source_router.get('suggestions', auth=django_auth, response=SourceSuggestionsResponse)
 @user_is_trusted
-def source_suggestions(request: AuthedHttpRequest, source_id: int):
+def source_suggestions(request: AuthedHttpRequest, source_id: str):
 	"""Returns tag suggestions derived from a source's info_payload."""
-	src = get_object_or_404(WorkSource.objects, id=source_id)
+	src = get_object_or_404(WorkSource.objects, id=int(source_id))
 	if not hasattr(src, 'info_payload'):
 		return {'title': src.title, 'description': src.description}
 
@@ -309,18 +309,18 @@ def reject_pending_source(src: WorkSource, by, reason: str):
 @source_router.post('reject', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REJECT)
-def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
+def reject_source(request: AuthedHttpRequest, source_id: str, reason: str):
 	"""Reject a pending source on an existing work. Unbinds the source."""
-	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
+	src = get_object_or_404(WorkSource.objects, id=int(source_id), is_pending=True)
 	ensure_can_moderate(request.user, src.media)
 	reject_pending_source(src, by=request.user, reason=reason)
 
 
 @source_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
-def approve_source(request: AuthedHttpRequest, source_id: int):
+def approve_source(request: AuthedHttpRequest, source_id: str):
 	"""Approve a pending source on an existing work."""
-	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
+	src = get_object_or_404(WorkSource.objects, id=int(source_id), is_pending=True)
 	ensure_can_moderate(request.user, src.media)
 	src.is_pending = False
 	src.save(update_fields=['is_pending'])

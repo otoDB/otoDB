@@ -74,7 +74,7 @@ tag_router = RouterWithRevision()
 
 
 class FatTagWorkSchema(ModelSchema):
-	id: int
+	id: str
 	children: list[TagWorkSchema]
 	song: Optional['SongSchema'] = Field(None, alias='get_song')
 	media_type: list[int] | None = None
@@ -106,12 +106,17 @@ class TagWorkDetailsSchema(Schema):
 
 
 class TagSongSchema(Schema):
-	id: int
+	id: str
 	children: list['TagSongSchema']
 	name: str
 	slug: str
 	category: SongTagCategory
 	lang_prefs: list[TagLangPreferenceSchema]
+
+	@field_validator('id', mode='before')
+	@classmethod
+	def _coerce_id(cls, v):
+		return str(v)
 
 
 class TagSongDetailsSchema(Schema):
@@ -120,7 +125,7 @@ class TagSongDetailsSchema(Schema):
 
 
 class SongSchema(ModelSchema):
-	id: int
+	id: str
 	work_tag: str = Field(..., alias='work_tag.slug')
 	tags: list[TagSongSchema]
 
@@ -912,8 +917,8 @@ def edit_connections(request: HttpRequest, tag_slug: str, urls: str):
 
 
 @tag_router.get('song', response=str)
-def song(request: HttpRequest, id: int):
-	return get_object_or_404(MediaSong, id=id).work_tag.slug
+def song(request: HttpRequest, id: str):
+	return get_object_or_404(MediaSong, id=int(id)).work_tag.slug
 
 
 _SONG_TAG_CATEGORY_METATAGS = {
@@ -993,8 +998,8 @@ def song_search(
 @tag_router.get(
 	'song_relations', response=tuple[list[SongRelationSchema], list[SongSchema]]
 )
-def song_relations(request: HttpRequest, song_id: int):
-	song = get_object_or_404(MediaSong.objects, id=song_id)
+def song_relations(request: HttpRequest, song_id: str):
+	song = get_object_or_404(MediaSong.objects, id=int(song_id))
 	relations = SongRelation.get_component(song.id)
 	return 200, (relations, {s.id: s for r in relations for s in (r.A, r.B)}.values())
 
@@ -1003,9 +1008,9 @@ def song_relations(request: HttpRequest, song_id: int):
 @with_revision_route(Route.SONGRELATION_CREATE)
 @user_is_trusted
 def song_relation(
-	request: HttpRequest, this_id: int, payload: list[SongRelationSchema]
+	request: HttpRequest, this_id: str, payload: list[SongRelationSchema]
 ):
-	post_relations(MediaSong, this_id, payload)
+	post_relations(MediaSong, int(this_id), payload)
 
 
 class TagSongSearchResultSchema(TagSongSchema):
@@ -1062,10 +1067,10 @@ def song_tag_search(
 @with_revision_route(Route.MEDIASONG_SET_TAGS)
 def song_tags(
 	request: HttpRequest,
-	song_id: int,
+	song_id: str,
 	tags: list[Annotated[str, AfterValidator(canonicalize_tag)]],
 ):
-	song = get_object_or_404(MediaSong.objects, id=song_id)
+	song = get_object_or_404(MediaSong.objects, id=int(song_id))
 	song.tags.set(tags)
 	return
 
@@ -1118,8 +1123,8 @@ class SongConnectionSchema(ConnectionSchema):
 
 
 @tag_router.get('song_connection', response=list[SongConnectionSchema])
-def song_connection(request: HttpRequest, song_id: int):
-	song = get_object_or_404(MediaSong.objects, id=song_id)
+def song_connection(request: HttpRequest, song_id: str):
+	song = get_object_or_404(MediaSong.objects, id=int(song_id))
 	return song.mediasongconnection_set
 
 

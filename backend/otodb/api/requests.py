@@ -103,7 +103,7 @@ ACTIONS = {
 request_router = Router()
 
 
-@request_router.post('new', auth=django_auth, response=int)
+@request_router.post('new', auth=django_auth, response=str)
 @transaction.atomic
 def make_bulk(request: HttpRequest, s: str):
 	lines = [line for line in s.splitlines() if line.strip()]
@@ -120,7 +120,7 @@ def make_bulk(request: HttpRequest, s: str):
 			reqs.append(UserRequest(bulk=bulk, command=cmd, A=A, B=v(arg)))
 	UserRequest.objects.bulk_create(reqs)
 	Subscription.objects.create(entity=bulk, subscriber=request.user)
-	return bulk.id
+	return str(bulk.id)
 
 
 @request_router.post('confirm', auth=django_auth)

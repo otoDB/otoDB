@@ -150,7 +150,7 @@ def query_external(
 			"Either 'url' or both 'platform' and 'id' parameters must be provided"
 		)
 
-	return {'tags': work.media.tags_annotated, 'work_id': work.media.id}
+	return {'tags': work.media.tags_annotated, 'work_id': str(work.media.id)}
 
 
 _WORK_TAG_CATEGORY_METATAGS = {

@@ -32,17 +32,28 @@
 		return str.slice(0, start) + replacement + str.slice(end);
 	};
 
+	const splitToken = (word: string): { prefix: string; query: string } | null => {
+		let i = 0;
+		while (i < word.length && '-^('.includes(word[i])) i++;
+		const prefix = word.slice(0, i);
+		const query = word.slice(i);
+		if (!query) return null;
+		if (/[:[\]|)]/.test(query)) return null;
+		return { prefix, query };
+	};
+
 	const search = debounce(async () => {
-		const query = getWordAtPos(textarea.value, textarea.selectionStart).word;
-		if (query === '') {
+		const word = getWordAtPos(textarea.value, textarea.selectionStart).word;
+		const parsed = splitToken(word);
+		if (!parsed) {
 			suggestions = [];
 			lastQuery = '';
 			return;
 		}
-		if (query === lastQuery) return;
-		lastQuery = query;
+		if (parsed.query === lastQuery) return;
+		lastQuery = parsed.query;
 		const { data } = await client.GET(endpoint, {
-			params: { query: { query, limit: 10, resolve_aliases: false } }
+			params: { query: { query: parsed.query, limit: 10, resolve_aliases: false } }
 		});
 		if (!data) return;
 		suggestions = data.items;
@@ -60,10 +71,13 @@
 	};
 
 	const selectTag = (tag: any) => {
+		const word = getWordAtPos(textarea.value, textarea.selectionStart).word;
+		const parsed = splitToken(word);
+		const prefix = parsed?.prefix ?? '';
 		textarea.value = replaceWordAtPos(
 			textarea.value,
 			textarea.selectionStart,
-			getTagDisplaySlug(tag.aliased_to || tag) + ' '
+			prefix + getTagDisplaySlug(tag.aliased_to || tag) + ' '
 		);
 		suggestions = [];
 		updateValue();

@@ -258,6 +258,8 @@ def tags_needed(request: AuthedHttpRequest):
 @work_router.get('work', response=WorkSchema)
 def work(request: AuthedHttpRequest, work_id: int):
 	work = get_object_or_404(MediaWork.objects.with_pending_moderation(), id=work_id)
+	if work.moved_to:
+		work = work.moved_to
 
 	is_editor = (
 		request.user.is_authenticated and request.user.level >= Account.Levels.EDITOR

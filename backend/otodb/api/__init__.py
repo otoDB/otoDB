@@ -143,7 +143,7 @@ def statistics(request):
 
 	return [
 		MediaWork.objects.filter(moved_to__isnull=True).count(),
-		TagWork.objects.count(),
+		TagWork.objects.filter(aliased_to__isnull=True).count(),
 		MediaSong.objects.count(),
 		Pool.objects.count(),
 	]

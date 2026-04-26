@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import List, Literal
+from typing import List
 
 import lark
 from django.conf import settings
@@ -433,14 +433,7 @@ def search(
 	request: AuthedHttpRequest,
 	query: str,
 	tags: str | None = None,
-	queue: Literal['unseen', 'all'] | None = None,
 ):
-	# Silently ignore queue param for non-editors
-	if queue is not None and (
-		not request.user.is_authenticated or not request.user.is_editor
-	):
-		queue = None
-
 	search_id = int(query) if query.isdigit() else -1
 	if query:
 		q = (
@@ -470,20 +463,7 @@ def search(
 		if search_id > 0:
 			q = q | Q(id=search_id)
 
-	if queue is not None:
-		pending = MediaWork.active_objects.filter(status=Status.PENDING)
-		pending_flag_or_appeal_ids = ModerationEvent.objects.filter(
-			event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
-			status=FlagStatus.PENDING,
-		).values_list('work_id', flat=True)
-		queue_q = Q(id__in=pending) | Q(id__in=pending_flag_or_appeal_ids)
-		if queue == 'unseen':
-			queue_q = queue_q & ~Q(
-				moderation_events__event_type=ModerationEventType.DISAPPROVAL,
-				moderation_events__by=request.user,
-			)
-		qs = MediaWork.active_objects.filter(queue_q).filter(q)
-	elif uses_status_metatag:
+	if uses_status_metatag:
 		qs = MediaWork.active_objects.filter(q)
 	else:
 		qs = MediaWork.active_objects.filter(q).visible()

@@ -3242,7 +3242,6 @@ export interface operations {
             query: {
                 query: string;
                 tags?: string | null;
-                queue?: PathsApiWorkSearchGetParametersQueryQueueAnyOf0 | null;
                 limit?: number;
                 offset?: number;
             };
@@ -5729,10 +5728,6 @@ export interface operations {
             };
         };
     };
-}
-export enum PathsApiWorkSearchGetParametersQueryQueueAnyOf0 {
-    unseen = "unseen",
-    all = "all"
 }
 export enum PathsApiProfileSearchGetParametersQueryOrder {
     username = "username",

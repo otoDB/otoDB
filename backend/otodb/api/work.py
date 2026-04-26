@@ -401,12 +401,55 @@ def search(
 @work_router.get('tags_needed', response=List[ThinWorkSchema], exclude_none=True)
 @paginate
 def tags_needed(request: AuthedHttpRequest):
+	def has_category(category):
+		return Exists(
+			TagWorkInstance.objects.filter(
+				work=OuterRef('pk'),
+				work_tag__deprecated=False,
+				work_tag__category=category,
+			)
+		)
+
+	has_source = Exists(
+		TagWorkInstance.objects.filter(
+			work=OuterRef('pk'),
+			work_tag__deprecated=False,
+		).filter(
+			Q(work_tag__category=WorkTagCategory.SOURCE)
+			| Q(
+				work_tag__category__in=[
+					WorkTagCategory.CREATOR,
+					WorkTagCategory.MEDIA,
+					WorkTagCategory.SONG,
+				],
+				used_as_source=True,
+			)
+		)
+	)
+
+	def missing(flag):
+		return Case(
+			When(**{flag: False}, then=Value(1)),
+			default=Value(0),
+			output_field=IntegerField(),
+		)
+
 	return (
 		MediaWork.active_objects.visible()
-		.annotate(ntags=Count('tags', filter=Q(tags__deprecated=False)))
-		.filter(ntags__lte=4)
-		.order_by('ntags')
-		.distinct()
+		.annotate(
+			has_creator=has_category(WorkTagCategory.CREATOR),
+			has_song=has_category(WorkTagCategory.SONG),
+			has_general=has_category(WorkTagCategory.GENERAL),
+			has_source=has_source,
+			ntags=Count('tags', filter=Q(tags__deprecated=False)),
+		)
+		.annotate(
+			missing_count=missing('has_creator')
+			+ missing('has_song')
+			+ missing('has_general')
+			+ missing('has_source'),
+		)
+		.order_by('-missing_count', 'ntags', 'id')
 	)
 
 

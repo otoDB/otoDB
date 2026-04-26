@@ -1,5 +1,6 @@
 <script lang="ts">
 	import client from '$lib/api';
+	import Banner from '$lib/Banner.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {
@@ -26,6 +27,7 @@
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callErrorCodeToast, callSavingToast } from '$lib/toast';
 	import { getDisplayText } from '$lib/ui.js';
+	import { GUIDELINE_POST_ID } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
 	import type { PageProps } from './$types.js';
@@ -71,6 +73,25 @@
 		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
 
+	const REQUIRED_CATEGORIES = [
+		WorkTagCategory.Creator,
+		WorkTagCategory.Song,
+		WorkTagCategory.Source,
+		WorkTagCategory.General
+	];
+	const missingCategories = $derived.by(() => {
+		const present = new Set(
+			data.tags.flatMap((t) => {
+				const cats: WorkTagCategory[] = [t.category];
+				if (WorkTagCategoryMap[t.category].canSetAsSource && t.sample) {
+					cats.push(WorkTagCategory.Source);
+				}
+				return cats;
+			})
+		);
+		return REQUIRED_CATEGORIES.filter((c) => !present.has(c));
+	});
+
 	const relTree = $derived(
 		data.relations[0].length > 0
 			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
@@ -81,13 +102,24 @@
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
+	{#if missingCategories.length > 0}
+		<Banner variant="info">
+			<div class="text-sm">
+				{m.watery_kind_quail_climb({
+					missing: missingCategories.map((c) => WorkTagCategoryMap[c].nameFn()).join(', ')
+				})}
+			</div>
+			<div class="mt-1 text-sm">
+				<a href="/post/{GUIDELINE_POST_ID}" class="underline">
+					{m.arable_direct_cougar_win()}
+				</a>
+			</div>
+		</Banner>
+	{/if}
 	{#if data.status === Status.Pending}
-		<div class="mb-3 border border-sky-600 bg-sky-600/10 px-4 py-2 font-bold text-sky-600">
-			{m.broad_inner_boar_devour()}
-		</div>
+		<Banner variant="info" title={m.broad_inner_boar_devour()} />
 	{:else if data.status === Status.Unapproved && data?.pending_appeal}
-		<div class="mb-3 border border-orange-600 bg-orange-600/10 px-4 py-2 text-orange-600">
-			<div class="font-bold">{m.quiet_tasty_earthworm_trip()}</div>
+		<Banner variant="caution" title={m.quiet_tasty_earthworm_trip()}>
 			{#if data.pending_appeal.reason}
 				<div class="mt-1 text-sm">
 					{m.mild_loud_shad_enchant({
@@ -104,15 +136,12 @@
 					})}
 				</div>
 			{/if}
-		</div>
+		</Banner>
 	{:else if data.status === Status.Unapproved}
-		<div class="mb-3 border border-red-600 bg-red-600/10 px-4 py-2 font-bold text-red-600">
-			{m.livid_main_bat_lift()}
-		</div>
+		<Banner variant="danger" title={m.livid_main_bat_lift()} />
 	{/if}
 	{#if data?.pending_flag}
-		<div class="mb-3 border border-yellow-600 bg-yellow-600/10 px-4 py-2 text-yellow-600">
-			<div class="font-bold">{m.small_red_finch_lock()}</div>
+		<Banner variant="warning" title={m.small_red_finch_lock()}>
 			{#if data.pending_flag.reason}
 				<div class="mt-1 text-sm">
 					{m.mild_loud_shad_enchant({
@@ -129,7 +158,7 @@
 					})}
 				</div>
 			{/if}
-		</div>
+		</Banner>
 	{/if}
 	{#if data.user && (data.status === Status.Pending || data?.pending_flag || data?.pending_appeal)}
 		<div class="mb-3 flex flex-wrap gap-2">

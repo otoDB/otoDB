@@ -248,12 +248,14 @@ def _user_to_q(username):
 		target_type=mediawork_ct,
 		rev__user__level__lt=Account.Levels.ADMIN,
 	)
-	rev_match_ids = (
+	first_rev_pks = (
 		non_admin_rev.order_by('target_id', 'rev__date')
 		.distinct('target_id')
-		.filter(rev__user__username__iexact=username)
-		.values('target_id')
+		.values('pk')
 	)
+	rev_match_ids = RevisionChange.objects.filter(
+		pk__in=first_rev_pks, rev__user__username__iexact=username
+	).values('target_id')
 	src_match_ids = (
 		WorkSource.objects.filter(
 			added_by__username__iexact=username, media_id__isnull=False

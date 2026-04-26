@@ -268,14 +268,15 @@ def search(
 	else:
 		q = Q()
 
+	uses_status_metatag = False
 	if tags:
 		try:
-			if tags_parse := work_tag_transformer.transform(
-				work_search_grammar.parse(tags.strip())
-			):
-				q = q & tags_parse
+			parsed = work_search_grammar.parse(tags.strip())
 		except lark.exceptions.UnexpectedInput:
 			return []
+		uses_status_metatag = any(parsed.find_data('status_meta'))
+		if tags_parse := work_tag_transformer.transform(parsed):
+			q = q & tags_parse
 	elif query:
 		q = q | Q(worksource__source_id=query)
 		if query.startswith('https'):
@@ -296,6 +297,8 @@ def search(
 				moderation_events__by=request.user,
 			)
 		qs = MediaWork.active_objects.filter(queue_q).filter(q)
+	elif uses_status_metatag:
+		qs = MediaWork.active_objects.filter(q)
 	else:
 		qs = MediaWork.active_objects.filter(q).visible()
 

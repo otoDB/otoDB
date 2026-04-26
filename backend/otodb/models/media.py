@@ -327,7 +327,7 @@ class MediaWork(RevisionTrackedModel):
 	]
 
 	@property
-	def missing_tags(self) -> list[WorkTagCategory]:
+	def missing_tag_categories(self) -> list[WorkTagCategory]:
 		present: set[WorkTagCategory] = set()
 		for tag in self.tags_annotated:
 			present.add(tag.category)

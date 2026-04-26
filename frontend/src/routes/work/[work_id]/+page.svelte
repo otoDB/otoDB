@@ -83,11 +83,11 @@
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
-	{#if data.missing_tags.length > 0}
+	{#if data.missing_tag_categories.length > 0}
 		<Banner variant="info">
 			<div class="text-sm">
 				{m.watery_kind_quail_climb({
-					missing: data.missing_tags.map((c) => WorkTagCategoryMap[c].nameFn()).join(', ')
+					missing: data.missing_tag_categories.map((c) => WorkTagCategoryMap[c].nameFn()).join(', ')
 				})}
 			</div>
 			<div class="mt-1 text-sm">

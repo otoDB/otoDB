@@ -8,6 +8,10 @@ export default defineMain({
 		{
 			from: './static',
 			to: '/storybook-static'
+		},
+		{
+			from: '../static',
+			to: '/'
 		}
 	]
 });

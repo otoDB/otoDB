@@ -433,7 +433,6 @@ def search(
 	request: AuthedHttpRequest,
 	query: str,
 	tags: str | None = None,
-	order: Literal['id', '-id'] | None = '-id',
 	queue: Literal['unseen', 'all'] | None = None,
 ):
 	# Silently ignore queue param for non-editors
@@ -506,9 +505,9 @@ def search(
 				default=Value(1000),
 				output_field=IntegerField(),
 			),
-		).order_by('priority', order)
+		).order_by('priority', '-id')
 	else:
-		qs = qs.order_by(order)
+		qs = qs.order_by('-id')
 
 	return qs.distinct()
 

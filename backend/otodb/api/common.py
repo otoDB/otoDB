@@ -803,6 +803,9 @@ def make_range_metatag(
 	return lambda op, value: Q(**{f'{field}__{op}': value})
 
 
+_NOOP = object()
+
+
 class AbstractTagTransformer(lark.Transformer):
 	TagModel: OtodbTagModel
 	tag_join_name: str
@@ -819,19 +822,27 @@ class AbstractTagTransformer(lark.Transformer):
 		return super().transform(tree)
 
 	def start(self, v):
-		return v[0] if v else None
+		if not v or v[0] is _NOOP:
+			return None
+		return v[0]
 
 	def or_expr(self, v):
-		return v[0] if len(v) == 1 else reduce(operator.or_, v)
+		real = [c for c in v if c is not _NOOP]
+		if not real:
+			return _NOOP
+		return real[0] if len(real) == 1 else reduce(operator.or_, real)
 
 	def and_expr(self, v):
-		return v[0] if len(v) == 1 else reduce(operator.and_, v)
+		real = [c for c in v if c is not _NOOP]
+		if not real:
+			return _NOOP
+		return real[0] if len(real) == 1 else reduce(operator.and_, real)
 
 	def atom(self, v):
 		if len(v) == 1:
 			return v[0]
 		elif v[0] == '-':
-			return ~v[1]
+			return _NOOP if v[1] is _NOOP else ~v[1]
 
 	MODIFIERS = str
 	TAG_MODIFIERS = str
@@ -923,5 +934,5 @@ class AbstractTagTransformer(lark.Transformer):
 		enum_val = E[str(v.children[0]).upper()]
 		if isinstance(spec.kind, OrderEnum):
 			self.orderings.append(spec.to_q(enum_val))
-			return Q()
+			return _NOOP
 		return spec.to_q(enum_val)

@@ -1,4 +1,5 @@
-import type { Handle, HandleFetch } from '@sveltejs/kit';
+import * as Sentry from '@sentry/sveltekit';
+import type { Handle, HandleFetch, HandleServerError } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
 import client from '$lib/api.server';
@@ -6,6 +7,16 @@ import { paraglideMiddleware } from '$lib/paraglide/server';
 import { defineCustomServerStrategy } from '$lib/paraglide/runtime';
 import { getRequestEvent } from '$app/server';
 import { resolveLanguageKeyById } from '$lib/enums/language';
+
+if (env.OTODB_FRONTEND_SENTRY_DSN) {
+	Sentry.init({
+		dsn: env.OTODB_FRONTEND_SENTRY_DSN,
+		sendDefaultPii: false,
+		enableLogs: true,
+		tracesSampleRate: parseFloat(env.OTODB_FRONTEND_SENTRY_TRACES_SAMPLE_RATE ?? '0.1'),
+		release: process.env.PUBLIC_OTODB_HASH || undefined
+	});
+}
 
 defineCustomServerStrategy('custom-userPreference', {
 	getLocale: () => {
@@ -45,7 +56,16 @@ const handleContentLength: Handle = async ({ event, resolve }) => {
 	});
 };
 
-export const handle: Handle = sequence(handleAuth, handleContentLength, handleParaglide);
+export const handle: Handle = sequence(
+	Sentry.sentryHandle(),
+	handleAuth,
+	handleContentLength,
+	handleParaglide
+);
+
+export const handleError: HandleServerError = Sentry.handleErrorWithSentry(({ error, event }) => {
+	console.error('Server error:', error, event.url.pathname);
+});
 
 export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 	if (env.INTERNAL_API_ENDPOINT && request.url.startsWith(env.INTERNAL_API_ENDPOINT)) {

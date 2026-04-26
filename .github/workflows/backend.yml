@@ -131,6 +131,8 @@ jobs:
           platforms: linux/amd64
           cache-from: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache
           cache-to: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache,mode=max
+          build-args: |
+            OTODB_HASH=${{ github.sha }}
 
   openapi-typespec:
     name: Verify schema is fresh

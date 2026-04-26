@@ -58,6 +58,7 @@
 		"@inlang/paraglide-js": "^2.15.1",
 		"@inlang/paraglide-js-svelte": "^1.0.1",
 		"@mermaid-js/layout-elk": "^0.2.1",
+		"@sentry/sveltekit": "^10.50.0",
 		"@thisux/sveltednd": "^0.0.20",
 		"mdast-util-find-and-replace": "^3.0.2",
 		"mermaid": "^11.13.0",

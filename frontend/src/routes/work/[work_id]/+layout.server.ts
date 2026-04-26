@@ -12,13 +12,13 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 	const { data } = await client.GET('/api/work/work', {
 		params: {
 			query: {
-				work_id: +params.work_id
+				work_id: params.work_id
 			}
 		},
 		fetch
 	});
 
-	if (data.id !== +params.work_id)
+	if (data.id !== params.work_id)
 		redirect(
 			303,
 			url.pathname.replace(encodeURIComponent(params.work_id), encodeURIComponent(data.id))

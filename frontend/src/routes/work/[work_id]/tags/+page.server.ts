@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ fetch, params, locals, url }) => {
 
 	const { data: suggestions } = await client.GET('/api/work/tag_suggestions', {
 		fetch,
-		params: { query: { work_id: +params.work_id } }
+		params: { query: { work_id: params.work_id } }
 	});
 
 	if (suggestions) {

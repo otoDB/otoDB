@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 		const { data } = await client.GET('/api/work/work', {
 			params: {
 				query: {
-					work_id: +work
+					work_id: work
 				}
 			},
 			fetch
@@ -122,7 +122,7 @@ export const actions = {
 				query: {
 					url: link,
 					is_reupload: !is_official,
-					work_id: work ? +work : undefined
+					work_id: work ?? undefined
 				}
 			},
 			body: metadata

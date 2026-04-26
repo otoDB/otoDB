@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url }) => {
 	const { data } = await client.GET('/api/work/sources', {
 		params: {
 			query: {
-				work_id: +params.work_id
+				work_id: params.work_id
 			}
 		},
 		fetch
@@ -36,7 +36,7 @@ export const actions = {
 				fetch,
 				params: {
 					query: {
-						work_id: +params.work_id!,
+						work_id: params.work_id!,
 						reason
 					}
 				},

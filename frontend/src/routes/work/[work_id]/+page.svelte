@@ -96,7 +96,7 @@
 		data.relations[0].length > 0
 			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
 					(d) => [+d[0], [...Map.groupBy(d[1]!, (r) => r.relation).entries()]]
-				) as [0 | 1, [WorkRelationTypes, { A_id: number; B_id: number }[]][]][])
+				) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
 			: null
 	);
 </script>
@@ -546,7 +546,7 @@
 		comments={data.comments}
 		user={data.user ?? null}
 		model={ModelsWithComments.mediawork}
-		pk={data.id}
+		pk={+data.id}
 	/>
 </Section>
 

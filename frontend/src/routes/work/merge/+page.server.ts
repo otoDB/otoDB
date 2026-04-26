@@ -32,8 +32,8 @@ export const actions = {
 				fetch,
 				params: {
 					query: {
-						from_work_id: +A,
-						to_work_id: +B
+						from_work_id: A,
+						to_work_id: B
 					}
 				},
 				body: {
@@ -46,6 +46,6 @@ export const actions = {
 		} catch {
 			return fail(400);
 		}
-		redirect(303, `/work/${+B!}`);
+		redirect(303, `/work/${B}`);
 	}
 } satisfies Actions;

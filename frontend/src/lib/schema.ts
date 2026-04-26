@@ -1807,7 +1807,7 @@ export interface components {
         /** ExternalQuery */
         ExternalQuery: {
             /** Work Id */
-            work_id: string;
+            work_id: number;
             /** Tags */
             tags: components["schemas"]["TagWorkInstanceSchema"][];
         };
@@ -1932,7 +1932,7 @@ export interface components {
         /** ThinWorkSchema */
         ThinWorkSchema: {
             /** Id */
-            id: string;
+            id: number;
             /** Tags */
             tags: components["schemas"]["TagWorkInstanceThinSchema"][];
             /** Thumbnail */
@@ -1951,7 +1951,7 @@ export interface components {
         /** SlimWorkSchema */
         SlimWorkSchema: {
             /** Id */
-            id: string;
+            id: number;
             /** Thumbnail */
             thumbnail?: string | null;
             status: components["schemas"]["Status"];
@@ -1961,9 +1961,9 @@ export interface components {
         /** WorkRelationSchema */
         WorkRelationSchema: {
             /** A Id */
-            A_id: string;
+            A_id: number;
             /** B Id */
-            B_id: string;
+            B_id: number;
             relation: components["schemas"]["WorkRelationTypes"];
         };
         /**
@@ -1974,7 +1974,7 @@ export interface components {
         /** WorkSchema */
         WorkSchema: {
             /** Id */
-            id: string;
+            id: number;
             /** Tags */
             tags: components["schemas"]["TagWorkInstanceSchema"][];
             /** Thumbnail */
@@ -2141,7 +2141,7 @@ export interface components {
             /** Source Id */
             source_id?: number | null;
             /** Work Id */
-            work_id?: string | null;
+            work_id?: number | null;
         };
         /** PagedWorkSourceSchema */
         PagedWorkSourceSchema: {
@@ -2345,7 +2345,7 @@ export interface components {
              */
             update_work: [
                 number,
-                string
+                number
             ][];
             /**
              * Update Description
@@ -2955,7 +2955,7 @@ export interface components {
             /** Event Id */
             event_id: number;
             /** Work Id */
-            work_id: string | null;
+            work_id: number | null;
             /** Source Id */
             source_id: number | null;
             by: components["schemas"]["ModerationEventBySchema"] | null;
@@ -3308,7 +3308,7 @@ export interface operations {
     otodb_api_work_work: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -3330,7 +3330,7 @@ export interface operations {
     otodb_api_work_update_work: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
                 reason: string;
             };
             header?: never;
@@ -3355,7 +3355,7 @@ export interface operations {
     otodb_api_work_delete_work: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -3375,7 +3375,7 @@ export interface operations {
     otodb_api_work_set_tags: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -3399,7 +3399,7 @@ export interface operations {
     otodb_api_work_tag_suggestions: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -3465,7 +3465,7 @@ export interface operations {
     otodb_api_work_relations: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -3490,7 +3490,7 @@ export interface operations {
     otodb_api_work_relation: {
         parameters: {
             query: {
-                this_id: string;
+                this_id: number;
             };
             header?: never;
             path?: never;
@@ -3514,8 +3514,8 @@ export interface operations {
     otodb_api_work_merge_works: {
         parameters: {
             query: {
-                from_work_id: string;
-                to_work_id: string;
+                from_work_id: number;
+                to_work_id: number;
             };
             header?: never;
             path?: never;
@@ -3539,7 +3539,7 @@ export interface operations {
     otodb_api_work_sources: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -3577,7 +3577,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": number;
                 };
             };
             /** @description Conflict */
@@ -3594,7 +3594,7 @@ export interface operations {
     otodb_api_work_approve_work: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -3623,7 +3623,7 @@ export interface operations {
     otodb_api_work_disapprove_work: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
                 reason: string;
             };
             header?: never;
@@ -3653,7 +3653,7 @@ export interface operations {
     otodb_api_work_resolve_work_admin: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -3673,7 +3673,7 @@ export interface operations {
     otodb_api_work_flag_work: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
                 reason: string;
             };
             header?: never;
@@ -3712,7 +3712,7 @@ export interface operations {
     otodb_api_work_appeal_work: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
                 reason: string;
             };
             header?: never;
@@ -3776,7 +3776,7 @@ export interface operations {
     otodb_api_work_similar: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -3918,7 +3918,7 @@ export interface operations {
             query: {
                 url: string;
                 is_reupload: boolean;
-                work_id?: string | null;
+                work_id?: number | null;
             };
             header?: never;
             path?: never;
@@ -4173,7 +4173,7 @@ export interface operations {
     otodb_api_profile_work_in_lists: {
         parameters: {
             query: {
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -4500,7 +4500,7 @@ export interface operations {
         parameters: {
             query: {
                 list_id: number;
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -4523,7 +4523,7 @@ export interface operations {
         parameters: {
             query: {
                 list_id: number;
-                work_id: string;
+                work_id: number;
             };
             header?: never;
             path?: never;
@@ -5747,7 +5747,7 @@ export interface operations {
     otodb_api_moderation_moderation_events: {
         parameters: {
             query?: {
-                work_id?: string | null;
+                work_id?: number | null;
                 source_id?: number | null;
                 user_id?: number | null;
                 limit?: number;

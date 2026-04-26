@@ -7,8 +7,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import (
 	Case,
+	CharField,
 	Count,
 	Exists,
+	F,
 	IntegerField,
 	OuterRef,
 	Q,
@@ -16,7 +18,9 @@ from django.db.models import (
 	Value,
 	When,
 )
+from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
+from django_comments_xtd.models import XtdComment
 from ninja import ModelSchema, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
@@ -41,6 +45,7 @@ from otodb.models.enums import (
 	ModerationAction,
 	ModerationEventType,
 	ModQueueCategory,
+	OtodbIntegerEnum,
 	Platform,
 	Rating,
 	Route,
@@ -63,6 +68,7 @@ from .common import (
 	CreateWorkPayload,
 	Error,
 	MetatagSpec,
+	OrderEnum,
 	RouterWithRevision,
 	SlimWorkSchema,
 	TagWorkInstanceInSchema,
@@ -150,6 +156,69 @@ _WORK_TAG_CATEGORY_METATAGS = {
 }
 
 
+class WorkOrder(OtodbIntegerEnum):
+	ID = 0, 'id'
+	ID_DESC = 1, 'id_desc'
+	SUBMITTED = 2, 'submitted'
+	SUBMITTED_ASC = 3, 'submitted_asc'
+	PUBLISHED = 4, 'published'
+	PUBLISHED_ASC = 5, 'published_asc'
+	COMMENT = 6, 'comment'
+	COMMENT_ASC = 7, 'comment_asc'
+	RESOLUTION = 8, 'resolution'
+	RESOLUTION_ASC = 9, 'resolution_asc'
+	RANDOM = 10, 'random'
+
+
+def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
+	if v is WorkOrder.ID:
+		return {}, Q(), ('id',)
+	if v is WorkOrder.ID_DESC:
+		return {}, Q(), ('-id',)
+	if v is WorkOrder.SUBMITTED:
+		return {}, Q(), ('-created_at',)
+	if v is WorkOrder.SUBMITTED_ASC:
+		return {}, Q(), ('created_at',)
+	if v is WorkOrder.PUBLISHED or v is WorkOrder.PUBLISHED_ASC:
+		ann = {
+			'_pub': Subquery(
+				WorkSource.objects.filter(media_id=OuterRef('id'))
+				.order_by('published_date')
+				.values('published_date')[:1]
+			)
+		}
+		field = '-_pub' if v is WorkOrder.PUBLISHED else '_pub'
+		return ann, Q(), (field,)
+	if v is WorkOrder.RESOLUTION or v is WorkOrder.RESOLUTION_ASC:
+		ann = {
+			'_mpixels': Subquery(
+				WorkSource.objects.filter(media_id=OuterRef('id'))
+				.annotate(_mp=F('work_width') * F('work_height'))
+				.order_by(F('_mp').desc(nulls_last=True))
+				.values('_mp')[:1]
+			)
+		}
+		field = '-_mpixels' if v is WorkOrder.RESOLUTION else '_mpixels'
+		return ann, Q(_mpixels__isnull=False), (field,)
+	if v is WorkOrder.COMMENT or v is WorkOrder.COMMENT_ASC:
+		ann = {
+			'_last_comment': Subquery(
+				XtdComment.objects.filter(
+					content_type=ContentType.objects.get_for_model(MediaWork),
+					object_pk=Cast(OuterRef('id'), CharField()),
+					is_removed=False,
+				)
+				.order_by('-submit_date')
+				.values('submit_date')[:1]
+			)
+		}
+		field = '-_last_comment' if v is WorkOrder.COMMENT else '_last_comment'
+		return ann, Q(_last_comment__isnull=False), (field,)
+	if v is WorkOrder.RANDOM:
+		return {}, Q(), ('?',)
+	raise ValueError(f'unrecognized WorkOrder: {v!r}')
+
+
 def _user_to_q(username):
 	"""Match works whose 'first user' is `username`.
 
@@ -169,7 +238,9 @@ def _user_to_q(username):
 		.values('target_id')
 	)
 	src_match_ids = (
-		WorkSource.objects.filter(added_by__username__iexact=username)
+		WorkSource.objects.filter(
+			added_by__username__iexact=username, media_id__isnull=False
+		)
 		.exclude(media_id__in=non_admin_rev.values('target_id'))
 		.values('media_id')
 	)
@@ -228,6 +299,7 @@ work_metatag_grammars = {
 		)
 		for name, cat in _WORK_TAG_CATEGORY_METATAGS.items()
 	},
+	'order': MetatagSpec(OrderEnum(WorkOrder), _resolve_work_order),
 }
 work_search_grammar = get_search_grammar(work_metatag_grammars)
 
@@ -240,16 +312,13 @@ class WorkTagTransformer(AbstractTagTransformer):
 	metatag_grammars = work_metatag_grammars
 
 
-work_tag_transformer = WorkTagTransformer()
-
-
 @work_router.get('search', response=List[ThinWorkSchema], exclude_none=True)
 @paginate
 def search(
 	request: AuthedHttpRequest,
 	query: str,
 	tags: str | None = None,
-	order: Literal['id', '-id', 'pub', '-pub'] | None = '-id',
+	order: Literal['id', '-id'] | None = '-id',
 	queue: Literal['unseen', 'all'] | None = None,
 ):
 	# Silently ignore queue param for non-editors
@@ -269,14 +338,17 @@ def search(
 		q = Q()
 
 	uses_status_metatag = False
+	tag_orderings: list = []
 	if tags:
 		try:
 			parsed = work_search_grammar.parse(tags.strip())
 		except lark.exceptions.UnexpectedInput:
 			return []
 		uses_status_metatag = any(parsed.find_data('status_meta'))
-		if tags_parse := work_tag_transformer.transform(parsed):
+		tx = WorkTagTransformer()
+		if tags_parse := tx.transform(parsed):
 			q = q & tags_parse
+		tag_orderings = tx.orderings
 	elif query:
 		q = q | Q(worksource__source_id=query)
 		if query.startswith('https'):
@@ -302,15 +374,12 @@ def search(
 	else:
 		qs = MediaWork.active_objects.filter(q).visible()
 
-	qs = qs.annotate(
-		pub=Subquery(
-			WorkSource.objects.filter(media_id=OuterRef('id'))
-			.order_by('published_date')
-			.values('published_date')[:1]
-		),
-	)
-
-	if query:
+	if tag_orderings:
+		ann, filter_q, order_fields = tag_orderings[-1]
+		if ann:
+			qs = qs.annotate(**ann)
+		qs = qs.filter(filter_q).order_by(*order_fields)
+	elif query:
 		qs = qs.annotate(
 			priority=Case(
 				When(id=search_id, then=Value(0)),

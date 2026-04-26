@@ -953,9 +953,6 @@ class SongTagTransformer(AbstractTagTransformer):
 	metatag_grammars = song_metatag_grammars
 
 
-song_tag_transformer = SongTagTransformer()
-
-
 @tag_router.get('song_search', response=list[SongSchema])
 @paginate
 def song_search(
@@ -975,7 +972,7 @@ def song_search(
 	).distinct()
 	if tags:
 		try:
-			if tags_parse := song_tag_transformer.transform(
+			if tags_parse := SongTagTransformer().transform(
 				song_search_grammar.parse(tags.strip())
 			):
 				qs = qs.filter(tags_parse)

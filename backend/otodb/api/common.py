@@ -607,6 +607,18 @@ class MetatagSpec(NamedTuple):
 	to_q: Callable
 
 
+class OrderEnum:
+	def __init__(self, enum):
+		self.enum = enum
+
+	@property
+	def names(self):
+		return self.enum.names
+
+	def __getitem__(self, name):
+		return self.enum[name]
+
+
 def get_search_grammar(metatag_grammars: dict[str, MetatagSpec]):
 	def metatag_rule(name: str, spec: MetatagSpec):
 		if spec.kind is int:
@@ -618,7 +630,7 @@ def get_search_grammar(metatag_grammars: dict[str, MetatagSpec]):
 		return f'{name}_meta: "{name}"i _META_CONN {value_rule}'
 
 	enum_value_terminals = '\n'.join(
-		f'{k.upper()}_VALUE: /{"|".join(spec.kind.names)}/i'
+		f'{k.upper()}_VALUE: /{"|".join(sorted(spec.kind.names, key=len, reverse=True))}/i'
 		for k, spec in metatag_grammars.items()
 		if spec.kind not in (int, str)
 	)
@@ -714,6 +726,14 @@ class AbstractTagTransformer(lark.Transformer):
 	tagged_join_name: str
 	metatag_grammars: dict
 
+	def __init__(self):
+		super().__init__()
+		self.orderings: list = []
+
+	def transform(self, tree):
+		self.orderings = []
+		return super().transform(tree)
+
 	def start(self, v):
 		return v[0] if v else None
 
@@ -763,4 +783,8 @@ class AbstractTagTransformer(lark.Transformer):
 		if spec.kind is str:
 			return spec.to_q(str(v.children[0]))
 		E = spec.kind
-		return spec.to_q(E[str(v.children[0]).upper()])
+		enum_val = E[str(v.children[0]).upper()]
+		if isinstance(spec.kind, OrderEnum):
+			self.orderings.append(spec.to_q(enum_val))
+			return Q()
+		return spec.to_q(enum_val)

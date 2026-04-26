@@ -5733,9 +5733,7 @@ export interface operations {
 }
 export enum PathsApiWorkSearchGetParametersQueryOrderAnyOf0 {
     id = "id",
-    ValueMinusid = "-id",
-    pub = "pub",
-    ValueMinuspub = "-pub"
+    ValueMinusid = "-id"
 }
 export enum PathsApiWorkSearchGetParametersQueryQueueAnyOf0 {
     unseen = "unseen",

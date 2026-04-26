@@ -6,7 +6,7 @@ from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
 import lark
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import Count, Exists, F, OuterRef, Q
 from django.http import HttpRequest
 from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
@@ -641,7 +641,14 @@ or_expr: and_expr (_WS? _OR _WS? and_expr)*
 and_expr: atom (_WS atom)*
 atom: MODIFIERS? (tag_part | metatag_part | _LPAR _WS? or_expr _WS? _RPAR)
 
-tag_part: TAG_MODIFIERS? SLUG
+tag_part: TAG_MODIFIERS? SLUG attr_block*
+attr_block: _LBRACK attr_assertion _RBRACK
+attr_assertion: SLUG                            -> attr_bool_pos
+              | "-" SLUG                        -> attr_bool_neg
+              | SLUG _META_CONN attr_values     -> attr_kv
+attr_values: attr_value ("," attr_value)*
+attr_value: SLUG                                -> attr_value_pos
+          | "-" SLUG                            -> attr_value_neg
 
 range_value: COMPARATOR INT     -> range_compare
            | INT ".." INT       -> range_between
@@ -654,8 +661,10 @@ TAG_MODIFIERS: /[\^]/
 SLUG:          /\w+/u
 COMPARATOR:    ">=" | "<=" | ">" | "<"
 INT:           /\d+/
-_LPAR: "("
-_RPAR: ")"
+_LPAR:   "("
+_RPAR:   ")"
+_LBRACK: "["
+_RBRACK: "]"
 _OR: "|"
 _WS: WS
 {'\n'.join(metatag_rule(k, spec) for k, spec in metatag_grammars.items())}
@@ -689,6 +698,79 @@ def _parse_range_node(node):
 			raise ValueError(
 				f'unrecognized range_value: {node.data!r}/{node.children!r}'
 			)
+
+
+class _AttrError(Exception):
+	pass
+
+
+class BoolAttr:
+	"""
+	Per-instance boolean attribute. Bracket form:
+	`[name]` (true)
+	`[-name]` (false)
+	"""
+
+	def __init__(self, field):
+		self.field = field
+
+	def apply(self, qs, values, negated):
+		if values is not None:
+			raise _AttrError(f'attribute {self.field!r} does not take values')
+		return qs.filter(**{self.field: not negated})
+
+
+class BitmaskAttr:
+	"""
+	Per-instance integer-bitmask attribute. Bracket form:
+	`[name:value]`
+	`[name:v1,v2,-v3]`,
+	`[name:any]`
+	`[name:none]`
+	"""
+
+	def __init__(self, field, enum):
+		self.field = field
+		self.enum = enum
+
+	def apply(self, qs, values, negated):
+		if negated:
+			raise _AttrError(
+				f'attribute {self.field!r} cannot be negated as a whole; '
+				f'use per-value `-` (e.g. role:-audio) or negate the tag itself'
+			)
+		if values is None:
+			raise _AttrError(f'attribute {self.field!r} requires values')
+
+		if any(name in ('any', 'none') for _, name in values):
+			if len(values) != 1 or values[0][0]:
+				raise _AttrError(
+					f'{self.field!r}: `any`/`none` must appear alone and unsigned'
+				)
+			(_, sentinel) = values[0]
+			if sentinel == 'any':
+				return qs.filter(**{f'{self.field}__gt': 0})
+			return qs.filter(
+				Q(**{f'{self.field}__isnull': True}) | Q(**{self.field: 0})
+			)
+
+		positives = 0
+		negatives = 0
+		for is_neg, name in values:
+			try:
+				bit = int(self.enum[name.upper()])
+			except KeyError:
+				raise _AttrError(f'unknown {self.enum.__name__} value: {name!r}')
+			if is_neg:
+				negatives |= bit
+			else:
+				positives |= bit
+
+		considered = positives | negatives
+		ann = f'_attr_{self.field}_{id(values)}'
+		return qs.annotate(**{ann: F(self.field).bitand(considered)}).filter(
+			**{ann: positives}
+		)
 
 
 def make_range_metatag(
@@ -725,6 +807,7 @@ class AbstractTagTransformer(lark.Transformer):
 	tag_join_name: str
 	tagged_join_name: str
 	metatag_grammars: dict
+	attribute_handlers: dict = {}
 
 	def __init__(self):
 		super().__init__()
@@ -755,23 +838,76 @@ class AbstractTagTransformer(lark.Transformer):
 	def SLUG(self, v):
 		return str(v)
 
+	def attr_value_pos(self, v):
+		return (False, str(v[0]))
+
+	def attr_value_neg(self, v):
+		return (True, str(v[0]))
+
+	def attr_values(self, v):
+		return list(v)
+
+	def attr_bool_pos(self, v):
+		return (str(v[0]), None, False)
+
+	def attr_bool_neg(self, v):
+		return (str(v[0]), None, True)
+
+	def attr_kv(self, v):
+		return (str(v[0]), v[1], False)
+
+	def attr_block(self, v):
+		return v[0]
+
 	def tag_part(self, v):
-		slug = v[0] if len(v) == 1 else v[1]
+		# v: [TAG_MODIFIERS?, SLUG, *attr_block_results]
+		has_mod = str(v[0]) == '^'
+		slug = v[1] if has_mod else v[0]
+		attr_blocks = v[2:] if has_mod else v[1:]
+
 		try:
 			tag = self.TagModel.objects.get(slug=slugify_tag(slug))
 		except self.TagModel.DoesNotExist:
 			return Q(pk__in=[])
 		if tag.aliased_to:
 			tag = tag.aliased_to
+
 		twi_q = self.TagInstanceModel.objects.filter(
 			**{self.tagged_join_name: OuterRef('id')}
 		)
-
-		if len(v) == 1:
+		if has_mod:
+			twi_q = twi_q.filter(**{self.tag_join_name: tag})
+		else:
 			ids = [tag.id, *tag.get_descendants().values_list('id', flat=True)]
-			return Exists(twi_q.filter(**{f'{self.tag_join_name}__in': ids}))
-		elif v[0] == '^':
-			return Exists(twi_q.filter(**{self.tag_join_name: tag}))
+			twi_q = twi_q.filter(**{f'{self.tag_join_name}__in': ids})
+
+		try:
+			twi_q = self._apply_attr_blocks(twi_q, attr_blocks)
+		except _AttrError:
+			return Q(pk__in=[])
+		return Exists(twi_q)
+
+	def _apply_attr_blocks(self, qs, blocks):
+		"""Collapse `[attr:a][attr:b]` into `[attr:a,b]`, and so on"""
+		grouped: dict[str, tuple[bool, list | None]] = {}
+		for key, values, negated in blocks:
+			if key not in grouped:
+				grouped[key] = (negated, values)
+				continue
+			prev_neg, prev_vals = grouped[key]
+			if prev_neg != negated or (values is None) != (prev_vals is None):
+				raise _AttrError(f'conflicting brackets for {key!r}')
+			grouped[key] = (
+				negated,
+				prev_vals if values is None else prev_vals + values,
+			)
+
+		for key, (negated, values) in grouped.items():
+			handler = self.attribute_handlers.get(key)
+			if handler is None:
+				raise _AttrError(f'unknown tag attribute: {key!r}')
+			qs = handler.apply(qs, values, negated)
+		return qs
 
 	def metatag_part(self, v):
 		v = v[0]

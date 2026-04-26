@@ -48,6 +48,7 @@ from otodb.models.enums import (
 	OtodbIntegerEnum,
 	Platform,
 	Rating,
+	Role,
 	Route,
 	Status,
 	WorkOrigin,
@@ -65,6 +66,8 @@ from .common import (
 	AbstractTagTransformer,
 	ApiError,
 	AuthedHttpRequest,
+	BitmaskAttr,
+	BoolAttr,
 	CreateWorkPayload,
 	Error,
 	MetatagSpec,
@@ -310,6 +313,10 @@ class WorkTagTransformer(AbstractTagTransformer):
 	tag_join_name = 'work_tag'
 	tagged_join_name = 'work'
 	metatag_grammars = work_metatag_grammars
+	attribute_handlers = {
+		'source': BoolAttr('used_as_source'),
+		'role': BitmaskAttr('creator_roles', Role),
+	}
 
 
 @work_router.get('search', response=List[ThinWorkSchema], exclude_none=True)

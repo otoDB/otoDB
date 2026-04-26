@@ -1,12 +1,12 @@
+import operator
 import re
-from functools import lru_cache, wraps
-from itertools import batched
+from functools import lru_cache, reduce, wraps
 from typing import Annotated, Optional, Self
 
 import lark
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from django.http import HttpRequest
 from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
@@ -604,11 +604,10 @@ def restrict_internal(f):
 
 def get_search_grammar(metatag_grammars):
 	return lark.Lark(rf"""
-start: expr?
-expr: atom (ops atom)*
-atom: MODIFIERS? (tag_part | metatag_part | _LPAR expr _RPAR)
-ops: _WS? "|" _WS? -> disjoin
-   | WS 		 -> conjoin
+start: or_expr?
+or_expr: and_expr (_OR and_expr)*
+and_expr: atom+
+atom: MODIFIERS? (tag_part | metatag_part | _LPAR or_expr _RPAR)
 
 tag_part: TAG_MODIFIERS? SLUG
 
@@ -617,21 +616,15 @@ TAG_MODIFIERS: /[\^]/
 SLUG:          /\w+/u
 _LPAR: "("
 _RPAR: ")"
-_WS: WS
+_OR: "|"
 {'\n'.join([f'{k}_meta: "{k}"i _META_CONN {k.upper()}_VALUE' for k in metatag_grammars])}
 {'\n'.join([f'{k.upper()}_VALUE: /{"|".join(v.names)}/i' for k, (v, _) in metatag_grammars.items()])}
 metatag_part: {'|'.join([k + '_meta' for k in metatag_grammars])}
 _META_CONN: ":"
 
 %import common.WS
+%ignore WS
 """)
-
-
-def make_literal_handler(x: str):
-	def f(self, _):
-		return x
-
-	return f
 
 
 class AbstractTagTransformer(lark.Transformer):
@@ -643,28 +636,11 @@ class AbstractTagTransformer(lark.Transformer):
 	def start(self, v):
 		return v[0] if v else None
 
-	def tag_part(self, v):
-		slug = v[0] if len(v) == 1 else v[1]
-		tag = self.TagModel.objects.get(slug=slugify_tag(slug))
-		if tag.aliased_to:
-			tag = tag.aliased_to
-		twi_q = self.TagInstanceModel.objects.filter(
-			**{self.tagged_join_name: OuterRef('id')}
-		)
-		q = Exists(twi_q.filter(**{self.tag_join_name: tag}))
+	def or_expr(self, v):
+		return v[0] if len(v) == 1 else reduce(operator.or_, v)
 
-		if len(v) == 1:
-			for child in tag.get_descendants():
-				q = q | Exists(twi_q.filter(**{self.tag_join_name: child}))
-			return q
-		elif v[0] == '^':
-			return q
-
-	disjoin = make_literal_handler('disjoin')
-	conjoin = make_literal_handler('conjoin')
-
-	def SLUG(self, v):
-		return str(v)
+	def and_expr(self, v):
+		return v[0] if len(v) == 1 else reduce(operator.and_, v)
 
 	def atom(self, v):
 		if len(v) == 1:
@@ -672,18 +648,29 @@ class AbstractTagTransformer(lark.Transformer):
 		elif v[0] == '-':
 			return ~v[1]
 
-	TAG_MODIFIERS = str
 	MODIFIERS = str
+	TAG_MODIFIERS = str
 
-	def expr(self, v):
-		this = v[0]
-		for method, nxt in batched(v[1:], n=2):
-			match method:
-				case 'conjoin':
-					this = this & nxt
-				case 'disjoin':
-					this = this | nxt
-		return this
+	def SLUG(self, v):
+		return str(v)
+
+	def tag_part(self, v):
+		slug = v[0] if len(v) == 1 else v[1]
+		try:
+			tag = self.TagModel.objects.get(slug=slugify_tag(slug))
+		except self.TagModel.DoesNotExist:
+			return Q(pk__in=[])
+		if tag.aliased_to:
+			tag = tag.aliased_to
+		twi_q = self.TagInstanceModel.objects.filter(
+			**{self.tagged_join_name: OuterRef('id')}
+		)
+
+		if len(v) == 1:
+			ids = [tag.id, *tag.get_descendants().values_list('id', flat=True)]
+			return Exists(twi_q.filter(**{f'{self.tag_join_name}__in': ids}))
+		elif v[0] == '^':
+			return Exists(twi_q.filter(**{self.tag_join_name: tag}))
 
 	def metatag_part(self, v):
 		v = v[0]

@@ -28,7 +28,7 @@
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callErrorCodeToast, callSavingToast } from '$lib/toast';
 	import { getDisplayText } from '$lib/ui.js';
-	import { GUIDELINE_POST_ID } from '$lib/ui';
+	import { GUIDELINE_POST_ID, getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
 	import type { PageProps } from './$types.js';
@@ -75,16 +75,7 @@
 		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
 
-	const missingCategories = $derived.by(() => {
-		const present = new Set(
-			data.tags.flatMap((t) =>
-				AppConfig.WORKTAG_SOURCE_SETTABLE_CATEGORIES.includes(t.category) && t.sample
-					? [WorkTagCategory.Source, t.category]
-					: [t.category]
-			)
-		);
-		return AppConfig.WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
-	});
+	const missingCategories = $derived.by(() => getMissingCategories(data.tags));
 
 	const relTree = $derived(
 		data.relations[0].length > 0

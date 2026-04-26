@@ -3,7 +3,7 @@ import client from '$lib/api';
 import { languages } from '$lib/enums/language';
 import { getLocale, setLocale } from '$lib/paraglide/runtime';
 import { m } from './paraglide/messages';
-import { LanguageTypes, ThemePref, type components } from './schema';
+import { AppConfig, WorkTagCategory, LanguageTypes, ThemePref, type components } from './schema';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -79,3 +79,16 @@ export function getDisplayText(
 ): string {
 	return value ?? placeholder ?? m.lost_game_mink_loop();
 }
+
+export const getMissingCategories = (
+	tags: components['schemas']['TagWorkInstanceThinSchema'][]
+) => {
+	const present = new Set(
+		tags.flatMap((t) =>
+			AppConfig.WORKTAG_SOURCE_SETTABLE_CATEGORIES.includes(t.category) && t.sample
+				? [WorkTagCategory.Source, t.category]
+				: [t.category]
+		)
+	);
+	return AppConfig.WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
+};

@@ -116,7 +116,11 @@ def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
 
 	for tag, p in zip(tags, payload):
 		changes = {}
-		if p.sample is not None and tag.category in TagWork.SOURCE_SETTABLE_CATEGORIES:
+		if p.sample is not None and tag.category in [
+			WorkTagCategory.CREATOR,
+			WorkTagCategory.MEDIA,
+			WorkTagCategory.SONG,
+		]:
 			changes['used_as_source'] = p.sample
 		if p.roles and tag.category == WorkTagCategory.CREATOR:
 			changes['creator_roles'] = reduce(int.__or__, p.roles)
@@ -565,22 +569,22 @@ def tags_needed(request: AuthedHttpRequest):
 			)
 		)
 
-	def has_required_category(category: WorkTagCategory) -> Exists:
-		base = TagWorkInstance.objects.filter(
-			work=OuterRef('pk'), work_tag__deprecated=False
-		)
-		if category == WorkTagCategory.SOURCE:
-			return Exists(
-				base.filter(
-					Q(work_tag__category=WorkTagCategory.SOURCE)
-					| Q(
-						work_tag__category__in=TagWork.SOURCE_SETTABLE_CATEGORIES,
-						used_as_source=True,
-					)
-				)
+	has_source = Exists(
+		TagWorkInstance.objects.filter(
+			work=OuterRef('pk'),
+			work_tag__deprecated=False,
+		).filter(
+			Q(work_tag__category=WorkTagCategory.SOURCE)
+			| Q(
+				work_tag__category__in=[
+					WorkTagCategory.CREATOR,
+					WorkTagCategory.MEDIA,
+					WorkTagCategory.SONG,
+				],
+				used_as_source=True,
 			)
-		else:
-			return Exists(base.filter(work_tag__category=category))
+		)
+	)
 
 	def missing(flag):
 		return Case(
@@ -589,24 +593,20 @@ def tags_needed(request: AuthedHttpRequest):
 			output_field=IntegerField(),
 		)
 
-	ann = {
-		f'has_{cat.name.lower()}': has_required_category(cat)
-		for cat in TagWork.REQUIRED_CATEGORIES
-	}
-
 	return (
 		MediaWork.active_objects.visible()
 		.annotate(
-			**ann,
+			has_creator=has_category(WorkTagCategory.CREATOR),
+			has_song=has_category(WorkTagCategory.SONG),
+			has_general=has_category(WorkTagCategory.GENERAL),
+			has_source=has_source,
 			ntags=Count('tags', filter=Q(tags__deprecated=False)),
 		)
 		.annotate(
-			missing_count=sum(
-				[
-					missing(f'has_{cat.name.lower()}')
-					for cat in TagWork.REQUIRED_CATEGORIES
-				]
-			)
+			missing_count=missing('has_creator')
+			+ missing('has_song')
+			+ missing('has_general')
+			+ missing('has_source'),
 		)
 		.order_by('-missing_count', 'ntags', 'id')
 	)

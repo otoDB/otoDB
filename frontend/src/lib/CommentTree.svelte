@@ -83,7 +83,7 @@
 	const delete_comment = async (comment_id: string) => {
 		await client.DELETE('/api/comment/comment', {
 			fetch,
-			params: { query: { comment_id, model, pk: +pk } }
+			params: { query: { comment_id, model, pk } }
 		});
 		invalidateAll();
 	};
@@ -254,7 +254,7 @@
 	{/if}
 	{#if can_comment}
 		<h4 class="mb-2">{m.mild_loud_shad_enchant({ type: m.weak_safe_cat_mix(), name: '' })}</h4>
-		{@render reply("0")}
+		{@render reply('0')}
 	{/if}
 </div>
 

@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 			params: {
 				query: {
 					model: ModelsWithComments.mediawork,
-					pk: +params.work_id
+					pk: params.work_id
 				}
 			}
 		}),

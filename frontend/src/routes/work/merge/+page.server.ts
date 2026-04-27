@@ -39,7 +39,7 @@ export const actions = {
 				body: {
 					title,
 					description,
-					thumbnail_source_id: +thumbnail_source_id,
+					thumbnail_source_id,
 					rating: +rating
 				}
 			});

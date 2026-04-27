@@ -44,7 +44,7 @@ export const actions = {
 					title,
 					description,
 					rating: +rating,
-					thumbnail_source_id: thumbnail_source_id ? +thumbnail_source_id : null
+					thumbnail_source_id: thumbnail_source_id || null
 				}
 			});
 		} catch {

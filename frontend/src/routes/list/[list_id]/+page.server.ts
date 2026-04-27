@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		client.GET('/api/comment/comments', {
 			params: {
 				query: {
-					pk: +params.list_id,
+					pk: params.list_id,
 					model: ModelsWithComments.pool
 				}
 			},

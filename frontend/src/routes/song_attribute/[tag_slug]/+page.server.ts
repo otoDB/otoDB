@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 			params: {
 				query: {
 					model: ModelsWithComments.tagsong,
-					pk: +data.tag.id
+					pk: data.tag.id
 				}
 			}
 		})

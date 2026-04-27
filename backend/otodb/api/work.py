@@ -21,7 +21,7 @@ from django.db.models import (
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django_comments_xtd.models import XtdComment
-from ninja import ModelSchema, Schema
+from ninja import Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
@@ -710,10 +710,11 @@ def relation(
 	post_relations(MediaWork, int(this_id), payload)
 
 
-class WorkEditSchema(ModelSchema):
-	class Meta:
-		model = MediaWork
-		fields = ['title', 'description', 'thumbnail_source', 'rating']
+class WorkEditSchema(Schema):
+	title: str | None = None
+	description: str | None = None
+	thumbnail_source_id: str | None = None
+	rating: Rating = Rating.GENERAL
 
 
 @work_router.post('merge', auth=django_auth)
@@ -731,7 +732,7 @@ def merge_works(
 		title=payload.title,
 		description=payload.description,
 		thumbnail_source=get_object_or_404(
-			WorkSource.objects, id=payload.thumbnail_source
+			WorkSource.objects, id=payload.thumbnail_source_id
 		),
 		rating=payload.rating,
 	)
@@ -746,8 +747,9 @@ def update_work(
 ):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	for attr, value in payload.dict().items():
-		if attr == 'thumbnail_source' and value is not None:
-			value = get_object_or_404(WorkSource.objects, id=value)
+		if attr == 'thumbnail_source_id':
+			work.thumbnail_source = get_object_or_404(WorkSource.objects, id=value) if value is not None else None
+			continue
 		# Special handling for title: if current is NULL and new is blank, keep NULL
 		if attr == 'title' and work.title is None and value == '':
 			continue

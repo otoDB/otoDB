@@ -6119,7 +6119,6 @@
           "title": {
             "anyOf": [
               {
-                "maxLength": 1000,
                 "type": "string"
               },
               {
@@ -6142,18 +6141,21 @@
           "thumbnail_source_id": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Thumbnail Source"
+            "title": "Thumbnail Source Id"
           },
           "rating": {
-            "default": 0,
-            "title": "Rating",
-            "type": "integer"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Rating"
+              }
+            ],
+            "default": 0
           }
         },
         "title": "WorkEditSchema",

@@ -216,6 +216,7 @@ class WorkSchema(ModelSchema):
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 	rating: Rating
 	status: Status
+
 	class Meta:
 		model = MediaWork
 		fields = ['title', 'description']

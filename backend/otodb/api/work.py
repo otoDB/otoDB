@@ -574,7 +574,7 @@ def tags_needed(request: AuthedHttpRequest):
 				base.filter(
 					Q(work_tag__category=WorkTagCategory.SOURCE)
 					| Q(
-						work_tag__category__in=MediaWork._CAN_SET_AS_SOURCE,
+						work_tag__category__in=TagWork.SOURCE_SETTABLE_CATEGORIES,
 						used_as_source=True,
 					)
 				)

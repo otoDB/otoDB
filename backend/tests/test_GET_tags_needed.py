@@ -34,7 +34,7 @@ class TestGetTagsNeeded:
 		work = MediaWork.objects.create(title='No Tags Work')
 		res = work_client.get('/tags_needed')
 		assert res.status_code == 200
-		ids = [w['id'] for w in res.json()['items']]
+		ids = [int(w['id']) for w in res.json()['items']]
 		assert work.id in ids
 
 	def test_ordered_by_most_missing_tags_first(
@@ -51,7 +51,7 @@ class TestGetTagsNeeded:
 
 		res = work_client.get('/tags_needed')
 		assert res.status_code == 200
-		ids = [w['id'] for w in res.json()['items']]
+		ids = [int(w['id']) for w in res.json()['items']]
 		assert ids.index(work_a.id) < ids.index(work_b.id)
 
 	def test_used_as_source_creator_satisfies_source_requirement(
@@ -74,7 +74,7 @@ class TestGetTagsNeeded:
 
 		res = work_client.get('/tags_needed')
 		assert res.status_code == 200
-		ids = [w['id'] for w in res.json()['items']]
+		ids = [int(w['id']) for w in res.json()['items']]
 		assert work_a.id in ids
 		assert work_b.id not in ids
 
@@ -101,6 +101,6 @@ class TestGetTagsNeeded:
 
 		res = work_client.get('/tags_needed')
 		assert res.status_code == 200
-		ids = [w['id'] for w in res.json()['items']]
+		ids = [int(w['id']) for w in res.json()['items']]
 		assert work_a.id in ids
 		assert work_b.id not in ids

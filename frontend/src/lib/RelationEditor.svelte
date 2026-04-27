@@ -38,9 +38,9 @@
 			.filter(({ A_id, B_id }) => A_id === this_id || B_id === this_id)
 			.map(({ A_id, B_id, relation }) => ({
 				swapped: A_id === this_id,
-				item: init_relations[1].find(
-					(e) => (e.id as unknown) === (A_id === this_id ? B_id : A_id)
-				) as unknown as Work | Song,
+				item: init_relations[1].find((e) => e.id === (A_id === this_id ? B_id : A_id)) as
+					| Work
+					| Song,
 				relation
 			}))
 	);
@@ -55,12 +55,12 @@
 		await post_gate.p.promise;
 		const { error } = await client.POST(endpoint, {
 			fetch,
-			params: { query: { this_id } as never },
+			params: { query: { this_id } },
 			body: relations.map((r) => ({
 				A_id: !r.swapped ? r.item.id : this_id!,
 				B_id: r.swapped ? r.item.id : this_id!,
 				relation: r.relation
-			})) as never
+			}))
 		});
 		if (error) {
 			post_gate.p = Promise.withResolvers<void>();

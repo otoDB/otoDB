@@ -65,7 +65,7 @@ export const actions = {
 		const data = await request.formData();
 		const workId = data.get('work_id') as string;
 		const sourceUrl = data.get('source_url') as string;
-		if (!workId) return { failed: true, message: m.green_due_javelina_pop() };
+		if (!workId) return fail(400, { failed: true, message: m.green_due_javelina_pop() });
 
 		try {
 			await client.POST('/api/upload/source', {
@@ -79,7 +79,7 @@ export const actions = {
 				}
 			});
 		} catch {
-			return { failed: true, message: m.green_due_javelina_pop() };
+			return fail(400, { failed: true, message: m.green_due_javelina_pop() });
 		}
 		redirect(303, `/work/${workId}`);
 	}

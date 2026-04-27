@@ -83,7 +83,7 @@
 		disabled={locked_in}
 		bind:value={input}
 	/>
-	<input type="text" hidden value={value?.id ?? ''} {name} />
+	<input type="text" hidden value={value?.id ?? '-1'} {name} />
 	{#if locked_in}
 		<button
 			type="button"

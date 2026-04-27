@@ -37,6 +37,7 @@ from .common import (
 	ApiError,
 	AuthedHttpRequest,
 	Error,
+	OtodbID,
 	RouterWithRevision,
 	SourceCreationResponse,
 	SourceSuggestionsResponse,
@@ -67,8 +68,8 @@ class WorkSourceMetadataSchema(Schema):
 @source_router.post('unbind', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_UNBIND)
-def unbind_source(request: AuthedHttpRequest, source_id: str):
-	src = get_object_or_404(WorkSource.objects, id=int(source_id))
+def unbind_source(request: AuthedHttpRequest, source_id: OtodbID):
+	src = get_object_or_404(WorkSource.objects, id=source_id)
 	if src.media.worksource_set.count() == 1:
 		src.media.delete()
 	src.media = None
@@ -78,8 +79,8 @@ def unbind_source(request: AuthedHttpRequest, source_id: str):
 @source_router.put('origin', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
-def source_origin(request: AuthedHttpRequest, source_id: str, status: WorkOrigin):
-	src = get_object_or_404(WorkSource.objects, id=int(source_id))
+def source_origin(request: AuthedHttpRequest, source_id: OtodbID, status: WorkOrigin):
+	src = get_object_or_404(WorkSource.objects, id=source_id)
 	src.work_origin = status
 	src.save()
 
@@ -87,25 +88,25 @@ def source_origin(request: AuthedHttpRequest, source_id: str, status: WorkOrigin
 @source_router.post('refresh', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REFRESH)
-def refresh_source(request: AuthedHttpRequest, source_id: str):
-	src: WorkSource = get_object_or_404(WorkSource.objects, id=int(source_id))
+def refresh_source(request: AuthedHttpRequest, source_id: OtodbID):
+	src: WorkSource = get_object_or_404(WorkSource.objects, id=source_id)
 	src.refresh()
 	return
 
 
 @source_router.get('source', response=WorkSourceSchema)
-def get_source(request, source_id: str):
-	return get_object_or_404(WorkSource, id=int(source_id))
+def get_source(request, source_id: OtodbID):
+	return get_object_or_404(WorkSource, id=source_id)
 
 
-@source_router.put('source', auth=django_auth, response={200: str, 400: Error})
+@source_router.put('source', auth=django_auth, response={200: OtodbID, 400: Error})
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_UPDATE)
 def update_source(
-	request: AuthedHttpRequest, source_id: str, metadata: WorkSourceMetadataSchema
+	request: AuthedHttpRequest, source_id: OtodbID, metadata: WorkSourceMetadataSchema
 ):
 	src = get_object_or_404(
-		WorkSource.objects, id=int(source_id), work_status=WorkStatus.DOWN
+		WorkSource.objects, id=source_id, work_status=WorkStatus.DOWN
 	)
 	src.title = metadata.title
 	src.description = metadata.description
@@ -121,7 +122,7 @@ def update_source(
 	src.save_thumbnail()
 	src.save()
 
-	return str(src.media.pk)
+	return src.media.pk
 
 
 @source_router.post(
@@ -136,7 +137,7 @@ def new_source_from_url(
 	request: AuthedHttpRequest,
 	url: Annotated[str, StringConstraints(strip_whitespace=True)],
 	is_reupload: bool,
-	work_id: str | None = None,
+	work_id: OtodbID | None = None,
 	metadata: WorkSourceMetadataSchema | None = None,
 ):
 	"""Creates or retrieves a source from a URL.
@@ -160,7 +161,7 @@ def new_source_from_url(
 
 	# Source already has a work -> redirect
 	if src.media:
-		return {'work_id': str(src.media.pk)}
+		return {'work_id': src.media.pk}
 
 	# work_id provided -> bind source to existing work
 	if work_id:
@@ -183,10 +184,10 @@ def new_source_from_url(
 				)
 			)
 		sync_work_source(work, src)
-		return {'work_id': str(work.pk)}
+		return {'work_id': work.pk}
 
 	# New source, no existing work -> return source_id for review
-	return {'source_id': str(src.pk)}
+	return {'source_id': src.pk}
 
 
 def resolve_creator_tags(src: WorkSource, info: dict) -> list:
@@ -274,9 +275,9 @@ def extract_source_tag_suggestions(src: WorkSource):
 
 @source_router.get('suggestions', auth=django_auth, response=SourceSuggestionsResponse)
 @user_is_trusted
-def source_suggestions(request: AuthedHttpRequest, source_id: str):
+def source_suggestions(request: AuthedHttpRequest, source_id: OtodbID):
 	"""Returns tag suggestions derived from a source's info_payload."""
-	src = get_object_or_404(WorkSource.objects, id=int(source_id))
+	src = get_object_or_404(WorkSource.objects, id=source_id)
 	if not hasattr(src, 'info_payload'):
 		return {'title': src.title, 'description': src.description}
 
@@ -309,18 +310,18 @@ def reject_pending_source(src: WorkSource, by, reason: str):
 @source_router.post('reject', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REJECT)
-def reject_source(request: AuthedHttpRequest, source_id: str, reason: str):
+def reject_source(request: AuthedHttpRequest, source_id: OtodbID, reason: str):
 	"""Reject a pending source on an existing work. Unbinds the source."""
-	src = get_object_or_404(WorkSource.objects, id=int(source_id), is_pending=True)
+	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
 	ensure_can_moderate(request.user, src.media)
 	reject_pending_source(src, by=request.user, reason=reason)
 
 
 @source_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
-def approve_source(request: AuthedHttpRequest, source_id: str):
+def approve_source(request: AuthedHttpRequest, source_id: OtodbID):
 	"""Approve a pending source on an existing work."""
-	src = get_object_or_404(WorkSource.objects, id=int(source_id), is_pending=True)
+	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
 	ensure_can_moderate(request.user, src.media)
 	src.is_pending = False
 	src.save(update_fields=['is_pending'])
@@ -337,7 +338,7 @@ def approve_source(request: AuthedHttpRequest, source_id: str):
 @paginate
 def list_sources(
 	request,
-	user_id: str | None = None,
+	user_id: OtodbID | None = None,
 	unbound: bool | None = None,
 	is_pending: bool | None = None,
 	platform: int | None = None,

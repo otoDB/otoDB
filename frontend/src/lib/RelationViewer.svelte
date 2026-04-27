@@ -12,9 +12,9 @@
 	type Song = components['schemas']['SongSchema'];
 	type RelationType = T extends 'work' ? WorkRelationTypes : SongRelationTypes;
 	type Node = (T extends 'work' ? Work : Song) & { distance?: number };
-	type Edge = { A_id: number | string; B_id: number | string; relation: RelationType };
+	type Edge = { A_id: string; B_id: string; relation: RelationType };
 	interface Props {
-		id: number | string;
+		id: string;
 		type: 'work' | 'song';
 		min_height?: number;
 		defaultDir: 'TB' | 'LR';
@@ -30,7 +30,7 @@
 	let direction = $state(defaultDir);
 	let allowed_types: RelationType[] = $state(enumValues(RelationTypes) as RelationType[]);
 
-	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: (number | string)[]) =>
+	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: string[]) =>
 		mermaid.render(
 			'Relations',
 			`---
@@ -64,7 +64,7 @@ flowchart ${direction}
 		.map(
 			(a) => `${a}MORE["${m.fresh_deft_warbler_edit()}"]
 	class ${a}MORE moreNodes;
-	${+a > 0 ? `${a}MORE -.- ${a}` : `${-a} -.- ${a}MORE`}`
+	${a[0] !== '-' ? `${a}MORE -.- ${a}` : `${-a} -.- ${a}MORE`}`
 		)
 		.join('\n')}`
 					: `
@@ -82,14 +82,14 @@ flowchart ${direction}
 	const mermaid_BFS = (
 		ns: Node[],
 		ls: Edge[],
-		start: number | string,
+		start: string,
 		max_distance: number = Number.POSITIVE_INFINITY
-	): [(Node & { distance: number })[], Edge[], (number | string)[]] => {
+	): [(Node & { distance: number })[], Edge[], string[]] => {
 		const nodes = structuredClone(ns),
 			links = structuredClone(ls);
-		let queue: [number | string, number][] = [[start, 0]];
+		let queue: [string, number][] = [[start, 0]];
 		while (queue.length) {
-			const next_queue: [number | string, number][] = [];
+			const next_queue: [string, number][] = [];
 			for (const [n, curr_distance] of queue) {
 				const ng = nodes.find((nn) => nn.id === n)!;
 				if (curr_distance > max_distance || ng.distance !== undefined) continue;
@@ -105,7 +105,7 @@ flowchart ${direction}
 								)
 								.flatMap((v) => [v.A_id, v.B_id])
 						)
-					].map((nn) => [nn, curr_distance + 1] as [number | string, number])
+					].map((nn) => [nn, curr_distance + 1] as [string, number])
 				);
 			}
 			queue = next_queue;
@@ -126,7 +126,7 @@ flowchart ${direction}
 						.filter(
 							([a, b]) => (a.distance === undefined) !== (b.distance === undefined)
 						)
-						.map(([a, b]) => (a.distance !== undefined ? a.id : -+b.id))
+						.map(([a, b]) => (a.distance !== undefined ? a.id : '-' + b.id))
 				)
 			]
 		];

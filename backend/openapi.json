@@ -5464,7 +5464,7 @@
         "properties": {
           "work_id": {
             "title": "Work Id",
-            "type": "string"
+            "type": "integer"
           },
           "tags": {
             "items": {
@@ -6106,6 +6106,7 @@
         },
         "required": [
           "id",
+          "thumbnail_source",
           "tags",
           "relations",
           "rating",
@@ -6116,9 +6117,21 @@
       },
       "WorkEditSchema": {
         "properties": {
+          "thumbnail_source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Source Id"
+          },
           "title": {
             "anyOf": [
               {
+                "maxLength": 1000,
                 "type": "string"
               },
               {
@@ -6138,26 +6151,15 @@
             ],
             "title": "Description"
           },
-          "thumbnail_source_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Thumbnail Source Id"
-          },
           "rating": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Rating"
-              }
-            ],
-            "default": 0
+            "default": 0,
+            "title": "Rating",
+            "type": "integer"
           }
         },
+        "required": [
+          "thumbnail_source_id"
+        ],
         "title": "WorkEditSchema",
         "type": "object"
       },
@@ -8817,15 +8819,9 @@
             "type": "string"
           },
           "parent_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Parent Id"
+            "default": 0,
+            "title": "Parent Id",
+            "type": "string"
           },
           "mentioned_users": {
             "items": {

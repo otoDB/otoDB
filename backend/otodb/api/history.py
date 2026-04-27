@@ -18,7 +18,6 @@ from django_request_cache import get_request_cache
 from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
-from pydantic import field_validator
 
 from otodb.account.models import Account
 from otodb.models import (
@@ -33,6 +32,7 @@ from otodb.models.enums import RevisionChain, Route
 from otodb.models.tag import OtodbTagModel
 
 from .common import (
+	OtodbID,
 	add_revision_message,
 	track_revision,
 	user_is_staff,
@@ -106,17 +106,12 @@ class HistoricalEntities(str, Enum):
 
 
 class HistoricalEntitySchema(Schema):
-	id: str
+	id: OtodbID
 	entity: HistoricalEntities
-
-	@field_validator('id', mode='before')
-	@classmethod
-	def _coerce_id(cls, v):
-		return str(v)
 
 
 class RevisionSchema(ModelSchema):
-	id: str
+	id: OtodbID
 	date: datetime
 	user: str = Field(..., alias='user.username')
 	index: None | int = None
@@ -172,14 +167,14 @@ def recent(request: HttpRequest, username: str | None = None):
 
 
 @history_router.get('revision', response=RevisionSchema)
-def revision(request: HttpRequest, revision_id: str):
-	return get_object_or_404(Revision, id=int(revision_id))
+def revision(request: HttpRequest, revision_id: OtodbID):
+	return get_object_or_404(Revision, id=revision_id)
 
 
 @history_router.get('revision_changes', response=list[RevisionChangeSchema])
 @paginate
-def revision_changes(request: HttpRequest, revision_id: str):
-	rev = get_object_or_404(Revision, id=int(revision_id))
+def revision_changes(request: HttpRequest, revision_id: OtodbID):
+	rev = get_object_or_404(Revision, id=revision_id)
 	tag_models = [
 		ct.id
 		for ct in ContentType.objects.get_for_models(
@@ -623,7 +618,9 @@ def rollback_entity(
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic
 def rollback(
-	request: HttpRequest, revision_id: str, entity: HistoricalEntitySchema | None = None
+	request: HttpRequest,
+	revision_id: OtodbID,
+	entity: HistoricalEntitySchema | None = None,
 ):
 	"""
 	Rollback changes of a specific revision.
@@ -633,7 +630,7 @@ def rollback(
 	"""
 	add_revision_message(f'Rolled back changes in revision #{revision_id}')
 
-	rev = get_object_or_404(Revision, id=int(revision_id))
+	rev = get_object_or_404(Revision, id=revision_id)
 
 	if entity is None:
 		# Rollback all entities affected by this revision

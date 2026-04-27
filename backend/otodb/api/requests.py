@@ -21,6 +21,7 @@ from otodb.models import (
 from otodb.models.enums import RequestActions, Status
 
 from .common import (
+	OtodbID,
 	ProfileSchema,
 	TagWorkSchema,
 	WorkSchema,
@@ -103,7 +104,7 @@ ACTIONS = {
 request_router = Router()
 
 
-@request_router.post('new', auth=django_auth, response=str)
+@request_router.post('new', auth=django_auth, response=OtodbID)
 @transaction.atomic
 def make_bulk(request: HttpRequest, s: str):
 	lines = [line for line in s.splitlines() if line.strip()]
@@ -120,13 +121,13 @@ def make_bulk(request: HttpRequest, s: str):
 			reqs.append(UserRequest(bulk=bulk, command=cmd, A=A, B=v(arg)))
 	UserRequest.objects.bulk_create(reqs)
 	Subscription.objects.create(entity=bulk, subscriber=request.user)
-	return str(bulk.id)
+	return bulk.id
 
 
 @request_router.post('confirm', auth=django_auth)
 @user_is_editor
 @track_revision
-def confirm(request: HttpRequest, request_id: str, status: Status):
+def confirm(request: HttpRequest, request_id: OtodbID, status: Status):
 	bulk = get_object_or_404(BulkRequest, id=request_id, status=Status.PENDING)
 	match status:
 		case Status.APPROVED:
@@ -169,6 +170,6 @@ class BulkRequestSchema(Schema):
 
 
 @request_router.get('request', response=BulkRequestSchema)
-def user_request(request: HttpRequest, request_id: str):
+def user_request(request: HttpRequest, request_id: OtodbID):
 	bulk = get_object_or_404(BulkRequest, id=request_id)
 	return bulk

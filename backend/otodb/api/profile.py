@@ -37,6 +37,7 @@ from .common import (
 	AuthedHttpRequest,
 	ConnectionSchema,
 	ListSchema,
+	OtodbID,
 	ProfileSchema,
 	UserPreferenceSchema,
 	WorkSourceSchema,
@@ -54,7 +55,7 @@ def profile(request: AuthedHttpRequest, username: str):
 
 
 class ProfileIndexSchema(ModelSchema):
-	id: str
+	id: OtodbID
 	level: Account.Levels
 	works_count: int
 	revisions_count: int
@@ -191,20 +192,19 @@ def edit_connections(request: AuthedHttpRequest, urls: str):
 @profile_router.get(
 	'work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth
 )
-def work_in_lists(request: AuthedHttpRequest, work_id: str):
+def work_in_lists(request: AuthedHttpRequest, work_id: OtodbID):
 	return [
-		(lst, lst.work_in_pool(int(work_id)).exists())
-		for lst in request.user.pool_set.all()
+		(lst, lst.work_in_pool(work_id).exists()) for lst in request.user.pool_set.all()
 	]
 
 
 class SourceSubmissionSchema(WorkSourceSchema):
-	media: str | None
+	media: OtodbID | None
 
 	@field_validator('media', mode='before', check_fields=False)
 	@classmethod
-	def work_id(cls, value) -> str | None:
-		return str(value.id) if value is not None else None
+	def work_id(cls, value) -> int | None:
+		return value.id if value is not None else None
 
 
 class SubmissionsFilterSchema(FilterSchema):
@@ -257,9 +257,9 @@ def set_prefs(request: AuthedHttpRequest, payload: UserPreferenceSchema):
 
 
 class NotificationSchema(ModelSchema):
-	id: str
+	id: OtodbID
 	comment: tuple[ModelsWithComments, str] | None
-	post: str | None = Field(None, alias='post_id')
+	post: OtodbID | None = Field(None, alias='post_id')
 	reason: NotificationReason
 	revision_user: str | None = Field(None, alias='revision.user.username')
 	revision_route: Route | None = None
@@ -306,16 +306,16 @@ def notifications(request: AuthedHttpRequest, subscription: bool | None = None):
 
 
 @profile_router.put('notification', auth=django_auth)
-def read_notif(request: AuthedHttpRequest, notif_id: str):
-	if request.user.notifs.filter(id=int(notif_id)).update(dismissed=True) > 0:
+def read_notif(request: AuthedHttpRequest, notif_id: OtodbID):
+	if request.user.notifs.filter(id=notif_id).update(dismissed=True) > 0:
 		return 200
 	else:
 		raise HttpError(400, 'Bad Request')
 
 
 @profile_router.delete('notification', auth=django_auth)
-def del_notif(request: AuthedHttpRequest, notif_id: str):
-	if request.user.notifs.filter(id=int(notif_id)).delete()[0] > 0:
+def del_notif(request: AuthedHttpRequest, notif_id: OtodbID):
+	if request.user.notifs.filter(id=notif_id).delete()[0] > 0:
 		return 200
 	else:
 		raise HttpError(400, 'Bad Request')

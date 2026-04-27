@@ -23,7 +23,14 @@ from otodb.models.enums import (
 )
 from otodb.tasks import send_email
 
-from .common import ApiError, Error, ProfileSchema, UserPreferenceSchema, user_is_editor
+from .common import (
+	ApiError,
+	Error,
+	OtodbID,
+	ProfileSchema,
+	UserPreferenceSchema,
+	user_is_editor,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +38,7 @@ auth_router = Router()
 
 
 class UserLoginSchema(Schema):
-	user_id: str
+	user_id: OtodbID
 	username: str
 
 
@@ -62,7 +69,7 @@ def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 
 class UserStatusSchema(UserLoginSchema):
 	level: Account.Levels
-	user_id: str = Field(..., alias='id')
+	user_id: OtodbID = Field(..., alias='id')
 	username: str
 	prefs: UserPreferenceSchema
 	notifs_count: int

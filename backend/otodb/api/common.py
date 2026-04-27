@@ -13,7 +13,14 @@ from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
 from ninja.utils import contribute_operation_args
-from pydantic import create_model, field_validator, model_validator
+from pydantic import (
+	GetCoreSchemaHandler,
+	GetJsonSchemaHandler,
+	create_model,
+	field_validator,
+	model_validator,
+)
+from pydantic_core import core_schema
 
 from otodb.account.models import Account
 from otodb.common import NFKC, slugify_tag
@@ -62,8 +69,44 @@ class Error(Schema):
 	data: dict | None = None
 
 
+class OtodbID(int):
+	@classmethod
+	def __get_pydantic_core_schema__(cls, source, handler: GetCoreSchemaHandler):
+		return core_schema.no_info_after_validator_function(
+			cls.validate,
+			core_schema.union_schema(
+				[
+					core_schema.int_schema(),
+					core_schema.str_schema(),
+				]
+			),
+			serialization=core_schema.plain_serializer_function_ser_schema(
+				cls.serialize
+			),
+		)
+
+	@classmethod
+	def validate(cls, v):
+		if isinstance(v, int):
+			return v
+		if isinstance(v, str):
+			return int(v)
+		raise TypeError('Invalid type')
+
+	@classmethod
+	def serialize(cls, v):
+		return str(v)
+
+	@classmethod
+	def __get_pydantic_json_schema__(cls, core_schema, handler: GetJsonSchemaHandler):
+		schema = handler(core_schema)
+		schema.update(type='string')
+		schema.pop('anyOf')
+		return schema
+
+
 class ProfileSchema(ModelSchema):
-	id: str
+	id: OtodbID
 	level: Account.Levels
 
 	class Meta:
@@ -78,18 +121,13 @@ class TagLangPreferenceSchema(Schema):
 
 
 class TagWorkSchema(Schema):
-	id: str
+	id: OtodbID
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional['TagWorkSchema']
 	name: str
 	slug: str
 	category: WorkTagCategory
 	deprecated: bool
-
-	@field_validator('id', mode='before')
-	@classmethod
-	def _coerce_id(cls, v):
-		return str(v)
 
 
 class ConnectionTagResult(TagWorkSchema):
@@ -101,7 +139,7 @@ class ConnectionLookupResponse(Schema):
 
 
 class WorkSourceSchema(ModelSchema):
-	id: str
+	id: OtodbID
 	added_by: ProfileSchema
 	thumbnail: str | None = None  # Exposed as property
 	media_title: str | None = None
@@ -145,14 +183,9 @@ class TagWorkInstanceSchema(TagWorkInstanceThinSchema):
 
 
 class RelationSchema(Schema):
-	A_id: str
-	B_id: str
+	A_id: OtodbID
+	B_id: OtodbID
 	relation: int
-
-	@field_validator('A_id', 'B_id', mode='before')
-	@classmethod
-	def _coerce_ids(cls, v):
-		return str(v)
 
 
 class WorkRelationSchema(RelationSchema):
@@ -164,7 +197,7 @@ class SongRelationSchema(RelationSchema):
 
 
 class SlimWorkSchema(ModelSchema):
-	id: str
+	id: OtodbID
 	thumbnail: str | None = None  # Exposed as property
 	status: Status
 
@@ -174,8 +207,8 @@ class SlimWorkSchema(ModelSchema):
 
 
 class WorkSchema(ModelSchema):
-	id: str
-	thumbnail_source: str | None = None
+	id: OtodbID
+	thumbnail_source: OtodbID | None
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
 	pending_flag: 'PendingModerationEventSchema | None' = None
@@ -183,14 +216,13 @@ class WorkSchema(ModelSchema):
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 	rating: Rating
 	status: Status
-
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'description', 'thumbnail_source']
+		fields = ['title', 'description']
 
 
 class ThinWorkSchema(ModelSchema):
-	id: str
+	id: OtodbID
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
 	pending_flag: 'PendingModerationEventSchema | None' = None
@@ -203,8 +235,8 @@ class ThinWorkSchema(ModelSchema):
 
 
 class SourceCreationResponse(Schema):
-	source_id: str | None = None
-	work_id: str | None = None
+	source_id: OtodbID | None = None
+	work_id: OtodbID | None = None
 
 
 class TagWorkInstanceInSchema(Schema):
@@ -214,7 +246,7 @@ class TagWorkInstanceInSchema(Schema):
 
 
 class CreateWorkPayload(Schema):
-	source_id: str
+	source_id: OtodbID
 	title: str | None = None
 	description: str | None = None
 	rating: Rating = Rating.GENERAL
@@ -232,7 +264,7 @@ class SourceSuggestionsResponse(Schema):
 class PendingModerationEventSchema(ModelSchema):
 	"""Thin view of a pending flag or appeal exposed on a work."""
 
-	id: str
+	id: OtodbID
 	by: ProfileSchema | None = None
 	status: FlagStatus
 
@@ -250,7 +282,7 @@ class ListItemSchema(ModelSchema):
 
 
 class ListSchema(ModelSchema):
-	id: str
+	id: OtodbID
 	author: ProfileSchema
 	upstream: str | None = Field(None, alias='poolupstream')
 
@@ -303,7 +335,7 @@ def ensure_can_moderate(user: Account, work: MediaWork | None) -> None:
 
 def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 	assert cls is MediaWork or cls is MediaSong
-	assert all(int(rel.A_id) == obj_id or int(rel.B_id) == obj_id for rel in payload)
+	assert all(rel.A_id == obj_id or rel.B_id == obj_id for rel in payload)
 
 	rel_cls, _rt_cls = (
 		(WorkRelation, WorkRelationTypes)
@@ -315,8 +347,8 @@ def post_relations(cls, obj_id: int, payload: list[RelationSchema]):
 		rel_cls.objects.filter(B_id=obj_id),
 	)
 	new_As_B, new_Bs_A = (
-		[int(rel.B_id) for rel in payload if int(rel.A_id) == obj_id],
-		[int(rel.A_id) for rel in payload if int(rel.B_id) == obj_id],
+		[rel.B_id for rel in payload if rel.A_id == obj_id],
+		[rel.A_id for rel in payload if rel.B_id == obj_id],
 	)
 
 	old_As.exclude(B_id__in=new_As_B).delete()

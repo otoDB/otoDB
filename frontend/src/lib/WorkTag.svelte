@@ -6,7 +6,7 @@
 
 	interface Props {
 		tag: {
-			id: string | null;
+			id: string;
 			slug: string;
 			category: WorkTagCategory;
 			sample?: boolean;
@@ -24,7 +24,7 @@
 
 	const category = $derived(tag.category);
 	const sampleOverride = $derived(WorkTagCategoryMap[category].canSetAsSource && tag.sample);
-	const isTemporary = $derived(tag.id === null);
+	const isTemporary = $derived(tag.id === '0');
 </script>
 
 <a

@@ -13,13 +13,18 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
-from pydantic import field_validator
 
 from otodb.account.models import Account
 from otodb.discord import discord_comment
 from otodb.models import CommentMeta, Notification, RevisionChange, Subscription
 
-from .common import AuthedHttpRequest, ProfileSchema, restrict_internal, user_is_trusted
+from .common import (
+	AuthedHttpRequest,
+	OtodbID,
+	ProfileSchema,
+	restrict_internal,
+	user_is_trusted,
+)
 
 comment_router = Router()
 
@@ -35,40 +40,30 @@ class ModelsWithComments(str, Enum):
 
 
 class BaseCommentSchema(Schema):
-	id: str
+	id: OtodbID
 	user: ProfileSchema
 	comment: str
 	submit_date: datetime
 
-	@field_validator('id', mode='before')
-	@classmethod
-	def _coerce_id(cls, v):
-		return str(v)
-
 
 class CommentSchema(BaseCommentSchema):
-	parent_id: str
+	parent_id: OtodbID
 	level: int
 	index: int
 	edited_at: datetime | None = None
 	edited_by: ProfileSchema | None = None
-
-	@field_validator('parent_id', mode='before')
-	@classmethod
-	def _coerce_parent_id(cls, v):
-		return str(v)
 
 
 class CommentInSchema(Schema):
 	model: ModelsWithComments
 	pk: str
 	comment_text: str
-	parent_id: str | None = None
+	parent_id: OtodbID = 0
 	mentioned_users: list[str]
 
 
 @comment_router.get('comments', response=list[CommentSchema])
-def get(request: HttpRequest, model: ModelsWithComments, pk: str):
+def get(request: HttpRequest, model: ModelsWithComments, pk: OtodbID):
 	T = ContentType.objects.get(model=model)
 	index = Window(
 		expression=Rank(),
@@ -104,7 +99,7 @@ def post(
 	parent_id = payload.parent_id
 	comment_text = payload.comment_text
 	pk = payload.pk
-	parent = None if parent_id is None else XtdComment.objects.get(id=int(parent_id))
+	parent = None if parent_id == 0 else XtdComment.objects.get(id=parent_id)
 	if parent is not None and parent.is_removed:
 		raise HttpError(400, 'Bad Request')
 
@@ -114,7 +109,7 @@ def post(
 		site_id=1,
 		user=request.user,
 		comment=comment_text,
-		parent_id=int(parent_id) if parent_id is not None else None,
+		parent_id=parent_id,
 	)
 	target_names: set[str] = set()
 	if parent is None:
@@ -153,12 +148,12 @@ def post(
 def delete(
 	request: HttpRequest,
 	model: ModelsWithComments,
-	pk: str,
-	comment_id: str,
+	pk: OtodbID,
+	comment_id: OtodbID,
 ):
 	T = ContentType.objects.get(model=model)
 	comment = XtdComment.objects.get(
-		content_type=T, object_pk=pk, site_id=1, id=int(comment_id)
+		content_type=T, object_pk=pk, site_id=1, id=comment_id
 	)
 	if request.user.level >= Account.Levels.ADMIN or comment.user == request.user:
 		comment.is_removed = True
@@ -169,7 +164,7 @@ def delete(
 
 
 class CommentEditSchema(Schema):
-	comment_id: str
+	comment_id: OtodbID
 	comment_text: str
 
 
@@ -177,7 +172,7 @@ class CommentEditSchema(Schema):
 @user_is_trusted
 @restrict_internal
 def edit(request: HttpRequest, payload: CommentEditSchema):
-	comment = XtdComment.objects.select_related('meta').get(id=int(payload.comment_id))
+	comment = XtdComment.objects.select_related('meta').get(id=payload.comment_id)
 	is_admin = request.user.level >= Account.Levels.ADMIN
 	if not is_admin:
 		if comment.user != request.user:

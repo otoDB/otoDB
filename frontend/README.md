@@ -13,7 +13,7 @@ bun install
 bun run dev
 ```
 
-On the default dev backend, the schema is served on `http://127.0.0.1:8000/api/openapi.json`, which is specified in `redocly.yaml` for API type regeneration:
+On the default dev backend, the schema is served on `http://127.0.0.1:8000/api/openapi.json`. An updated copy should be committed at /backend/openapi.json, to which /frontend/openapi.json is symlinked to. Based on this committed JSON schema, generate the TypeScript schema with:
 
 ```sh
 bun run sync-schema

@@ -6005,7 +6005,7 @@
             "title": "Id",
             "type": "string"
           },
-          "thumbnail_source": {
+          "thumbnail_source_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -6014,7 +6014,7 @@
                 "type": "null"
               }
             ],
-            "title": "Thumbnail Source"
+            "title": "Thumbnail Source Id"
           },
           "tags": {
             "items": {
@@ -6106,7 +6106,7 @@
         },
         "required": [
           "id",
-          "thumbnail_source",
+          "thumbnail_source_id",
           "tags",
           "relations",
           "rating",

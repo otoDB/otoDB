@@ -19,7 +19,7 @@
 	let description: string | null = $state(form?.description ?? data.description ?? '');
 	let rating: Rating = $state(form?.rating ? parseInt(form.rating, 10) : data.rating);
 	let thumbnail_source_id = $state<string | null>(
-		form?.thumbnail_source_id ?? data.thumbnail_source ?? data.sources?.[0]?.id ?? null
+		form?.thumbnail_source_id ?? data.thumbnail_source_id ?? data.sources?.[0]?.id ?? null
 	);
 	const del = async () => {
 		if (confirm(m.mad_brief_falcon_pop())) {

@@ -60,7 +60,7 @@
 
 				work[i].sources = sourcesResponse.data;
 				work[i].thumbnail_source_id =
-					workResponse.data?.thumbnail_source ?? sourcesResponse.data?.[0]?.id ?? null;
+					workResponse.data?.thumbnail_source_id ?? sourcesResponse.data?.[0]?.id ?? null;
 			}
 		} else {
 			work[i].work = null;

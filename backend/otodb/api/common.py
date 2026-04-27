@@ -208,7 +208,7 @@ class SlimWorkSchema(ModelSchema):
 
 class WorkSchema(ModelSchema):
 	id: OtodbID
-	thumbnail_source: OtodbID | None
+	thumbnail_source_id: OtodbID | None
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
 	pending_flag: 'PendingModerationEventSchema | None' = None

@@ -607,6 +607,7 @@ def tags_needed(request: AuthedHttpRequest):
 			+ missing('has_general')
 			+ missing('has_source'),
 		)
+		.filter(missing_count__gt=0)
 		.order_by('-missing_count', 'ntags', 'id')
 	)
 

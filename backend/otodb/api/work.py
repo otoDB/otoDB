@@ -748,7 +748,11 @@ def update_work(
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	for attr, value in payload.dict().items():
 		if attr == 'thumbnail_source_id':
-			work.thumbnail_source = get_object_or_404(WorkSource.objects, id=value) if value is not None else None
+			work.thumbnail_source = (
+				get_object_or_404(WorkSource.objects, id=value)
+				if value is not None
+				else None
+			)
 			continue
 		# Special handling for title: if current is NULL and new is blank, keep NULL
 		if attr == 'title' and work.title is None and value == '':

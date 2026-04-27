@@ -48,14 +48,14 @@ def moderation_events(
 	request: HttpRequest,
 	work_id: str | None = None,
 	source_id: str | None = None,
-	user_id: int | None = None,
+	user_id: str | None = None,
 	limit: int = 30,
 	offset: int = 0,
 ):
 	user = request.user if request.user.is_authenticated else None
 	is_editor = user is not None and user.level >= Account.Levels.EDITOR
 
-	if user_id is not None and not is_editor and (user is None or user_id != user.pk):
+	if user_id is not None and not is_editor and (user is None or user_id != str(user.pk)):
 		raise HttpError(403, 'Forbidden')
 
 	qs = ModerationEvent.objects.select_related('by').order_by('-date')

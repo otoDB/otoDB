@@ -213,7 +213,7 @@ class TagWorkInstanceInSchema(Schema):
 
 
 class CreateWorkPayload(Schema):
-	source_id: int
+	source_id: str
 	title: str | None = None
 	description: str | None = None
 	rating: Rating = Rating.GENERAL

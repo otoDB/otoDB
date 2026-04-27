@@ -337,7 +337,7 @@ def approve_source(request: AuthedHttpRequest, source_id: str):
 @paginate
 def list_sources(
 	request,
-	user_id: int | None = None,
+	user_id: str | None = None,
 	unbound: bool | None = None,
 	is_pending: bool | None = None,
 	platform: int | None = None,

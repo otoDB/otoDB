@@ -31,7 +31,7 @@ auth_router = Router()
 
 
 class UserLoginSchema(Schema):
-	user_id: int
+	user_id: str
 	username: str
 
 
@@ -62,7 +62,7 @@ def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
 
 class UserStatusSchema(UserLoginSchema):
 	level: Account.Levels
-	user_id: int = Field(..., alias='id')
+	user_id: str = Field(..., alias='id')
 	username: str
 	prefs: UserPreferenceSchema
 	notifs_count: int

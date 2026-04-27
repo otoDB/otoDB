@@ -481,7 +481,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -508,7 +508,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -533,7 +533,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -579,7 +579,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -620,7 +620,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -723,7 +723,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -769,7 +769,7 @@
             "name": "this_id",
             "schema": {
               "title": "This Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -810,7 +810,7 @@
             "name": "from_work_id",
             "schema": {
               "title": "From Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -819,7 +819,7 @@
             "name": "to_work_id",
             "schema": {
               "title": "To Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -856,7 +856,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -891,7 +891,7 @@
               "application/json": {
                 "schema": {
                   "title": "Response",
-                  "type": "integer"
+                  "type": "string"
                 }
               }
             }
@@ -935,7 +935,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -973,7 +973,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -1020,7 +1020,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -1048,7 +1048,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -1105,7 +1105,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -1236,7 +1236,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -1269,7 +1269,7 @@
             "name": "source_id",
             "schema": {
               "title": "Source Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -1296,7 +1296,7 @@
             "name": "source_id",
             "schema": {
               "title": "Source Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -1331,7 +1331,7 @@
             "name": "source_id",
             "schema": {
               "title": "Source Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -1358,7 +1358,7 @@
             "name": "source_id",
             "schema": {
               "title": "Source Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -1385,7 +1385,7 @@
             "name": "source_id",
             "schema": {
               "title": "Source Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -1397,7 +1397,7 @@
               "application/json": {
                 "schema": {
                   "title": "Response",
-                  "type": "integer"
+                  "type": "string"
                 }
               }
             }
@@ -1457,7 +1457,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "integer"
+                  "type": "string"
                 },
                 {
                   "type": "null"
@@ -1525,7 +1525,7 @@
             "name": "source_id",
             "schema": {
               "title": "Source Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -1560,7 +1560,7 @@
             "name": "source_id",
             "schema": {
               "title": "Source Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -1607,7 +1607,7 @@
             "name": "source_id",
             "schema": {
               "title": "Source Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -1646,7 +1646,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "integer"
+                  "type": "string"
                 },
                 {
                   "type": "null"
@@ -1974,7 +1974,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -2248,7 +2248,7 @@
             "name": "notif_id",
             "schema": {
               "title": "Notif Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -2273,7 +2273,7 @@
             "name": "notif_id",
             "schema": {
               "title": "Notif Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -2352,7 +2352,7 @@
             "name": "list_id",
             "schema": {
               "title": "List Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -2381,7 +2381,7 @@
               "application/json": {
                 "schema": {
                   "title": "Response",
-                  "type": "integer"
+                  "type": "string"
                 }
               }
             }
@@ -2412,7 +2412,7 @@
             "name": "list_id",
             "schema": {
               "title": "List Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -2447,7 +2447,7 @@
             "name": "list_id",
             "schema": {
               "title": "List Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -2474,7 +2474,7 @@
             "name": "list_id",
             "schema": {
               "title": "List Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -2526,7 +2526,7 @@
             "name": "list_id",
             "schema": {
               "title": "List Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -2578,7 +2578,7 @@
             "name": "list_id",
             "schema": {
               "title": "List Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -2615,7 +2615,7 @@
             "name": "list_id",
             "schema": {
               "title": "List Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -2624,7 +2624,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -2654,7 +2654,7 @@
             "name": "list_id",
             "schema": {
               "title": "List Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -2663,7 +2663,7 @@
             "name": "work_id",
             "schema": {
               "title": "Work Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -2702,7 +2702,7 @@
               "application/json": {
                 "schema": {
                   "title": "Response",
-                  "type": "integer"
+                  "type": "string"
                 }
               }
             }
@@ -2725,7 +2725,7 @@
             "name": "list_id",
             "schema": {
               "title": "List Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -3469,7 +3469,7 @@
             "name": "id",
             "schema": {
               "title": "Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -3602,7 +3602,7 @@
             "name": "song_id",
             "schema": {
               "title": "Song Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -3648,7 +3648,7 @@
             "name": "this_id",
             "schema": {
               "title": "This Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -3766,7 +3766,7 @@
             "name": "song_id",
             "schema": {
               "title": "Song Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -3952,7 +3952,7 @@
             "name": "song_id",
             "schema": {
               "title": "Song Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -4057,7 +4057,7 @@
             "name": "post_id",
             "schema": {
               "title": "Post Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -4096,7 +4096,7 @@
               "application/json": {
                 "schema": {
                   "title": "Response",
-                  "type": "integer"
+                  "type": "string"
                 }
               }
             }
@@ -4241,7 +4241,7 @@
             "name": "post_id",
             "schema": {
               "title": "Post Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -4267,15 +4267,8 @@
             "in": "query",
             "name": "id",
             "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ],
-              "title": "Id"
+              "title": "Id",
+              "type": "string"
             },
             "required": true
           },
@@ -4538,7 +4531,7 @@
             "name": "comment_id",
             "schema": {
               "title": "Comment Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -4702,7 +4695,7 @@
             "name": "revision_id",
             "schema": {
               "title": "Revision Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -4731,7 +4724,7 @@
             "name": "revision_id",
             "schema": {
               "title": "Revision Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -4783,7 +4776,7 @@
             "name": "revision_id",
             "schema": {
               "title": "Revision Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -4865,15 +4858,8 @@
             "in": "query",
             "name": "id",
             "schema": {
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ],
-              "title": "Id"
+              "title": "Id",
+              "type": "string"
             },
             "required": true
           },
@@ -4945,7 +4931,7 @@
               "application/json": {
                 "schema": {
                   "title": "Response",
-                  "type": "integer"
+                  "type": "string"
                 }
               }
             }
@@ -5033,7 +5019,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "integer"
+                  "type": "string"
                 },
                 {
                   "type": "null"
@@ -5049,7 +5035,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "integer"
+                  "type": "string"
                 },
                 {
                   "type": "null"
@@ -5065,7 +5051,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "integer"
+                  "type": "string"
                 },
                 {
                   "type": "null"
@@ -5117,7 +5103,7 @@
         "properties": {
           "user_id": {
             "title": "User Id",
-            "type": "integer"
+            "type": "string"
           },
           "username": {
             "title": "Username",
@@ -5301,7 +5287,7 @@
         "properties": {
           "user_id": {
             "title": "User Id",
-            "type": "integer"
+            "type": "string"
           },
           "username": {
             "title": "Username",
@@ -5450,7 +5436,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "level": {
             "$ref": "#/components/schemas/Levels"
@@ -5478,7 +5464,7 @@
         "properties": {
           "work_id": {
             "title": "Work Id",
-            "type": "integer"
+            "type": "string"
           },
           "tags": {
             "items": {
@@ -5522,7 +5508,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "lang_prefs": {
             "items": {
@@ -5601,7 +5587,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "lang_prefs": {
             "items": {
@@ -5726,7 +5712,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "by": {
             "anyOf": [
@@ -5786,7 +5772,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "lang_prefs": {
             "items": {
@@ -5857,7 +5843,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "tags": {
             "items": {
@@ -5939,7 +5925,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "thumbnail": {
             "anyOf": [
@@ -5979,11 +5965,11 @@
         "properties": {
           "A_id": {
             "title": "A Id",
-            "type": "integer"
+            "type": "string"
           },
           "B_id": {
             "title": "B Id",
-            "type": "integer"
+            "type": "string"
           },
           "relation": {
             "$ref": "#/components/schemas/WorkRelationTypes"
@@ -6017,7 +6003,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "tags": {
             "items": {
@@ -6301,7 +6287,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "added_by": {
             "$ref": "#/components/schemas/ProfileSchema"
@@ -6477,7 +6463,7 @@
         "properties": {
           "source_id": {
             "title": "Source Id",
-            "type": "integer"
+            "type": "string"
           },
           "title": {
             "anyOf": [
@@ -6639,7 +6625,7 @@
           "source_id": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -6650,7 +6636,7 @@
           "work_id": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -6736,7 +6722,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "level": {
             "$ref": "#/components/schemas/Levels"
@@ -6784,7 +6770,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "author": {
             "$ref": "#/components/schemas/ProfileSchema"
@@ -6939,7 +6925,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "added_by": {
             "$ref": "#/components/schemas/ProfileSchema"
@@ -7079,7 +7065,7 @@
           "media": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -7131,7 +7117,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "comment": {
             "anyOf": [
@@ -7143,14 +7129,7 @@
                     "$ref": "#/components/schemas/ModelsWithComments"
                   },
                   {
-                    "anyOf": [
-                      {
-                        "type": "integer"
-                      },
-                      {
-                        "type": "string"
-                      }
-                    ]
+                    "type": "string"
                   }
                 ],
                 "type": "array"
@@ -7164,7 +7143,7 @@
           "post": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -7412,7 +7391,7 @@
                   "type": "integer"
                 },
                 {
-                  "type": "integer"
+                  "type": "string"
                 }
               ],
               "type": "array"
@@ -7493,7 +7472,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "lang_prefs": {
             "items": {
@@ -7549,7 +7528,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "children": {
             "items": {
@@ -7634,7 +7613,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "work_tag": {
             "title": "Work Tag",
@@ -7704,7 +7683,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "children": {
             "items": {
@@ -8156,11 +8135,11 @@
         "properties": {
           "A_id": {
             "title": "A Id",
-            "type": "integer"
+            "type": "string"
           },
           "B_id": {
             "title": "B Id",
-            "type": "integer"
+            "type": "string"
           },
           "relation": {
             "$ref": "#/components/schemas/SongRelationTypes"
@@ -8215,7 +8194,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "children": {
             "items": {
@@ -8388,7 +8367,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "lang_prefs": {
             "items": {
@@ -8497,15 +8476,8 @@
       "PostEntitySchema": {
         "properties": {
           "id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Id"
+            "title": "Id",
+            "type": "string"
           },
           "entity": {
             "$ref": "#/components/schemas/PostEntities"
@@ -8636,7 +8608,7 @@
         "properties": {
           "post_id": {
             "title": "Post Id",
-            "type": "integer"
+            "type": "string"
           },
           "title": {
             "title": "Title",
@@ -8671,7 +8643,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "added_by": {
             "$ref": "#/components/schemas/ProfileSchema"
@@ -8768,7 +8740,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "user": {
             "$ref": "#/components/schemas/ProfileSchema"
@@ -8784,7 +8756,7 @@
           },
           "parent_id": {
             "title": "Parent Id",
-            "type": "integer"
+            "type": "string"
           },
           "level": {
             "title": "Level",
@@ -8843,9 +8815,15 @@
             "type": "string"
           },
           "parent_id": {
-            "default": 0,
-            "title": "Parent Id",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
           },
           "mentioned_users": {
             "items": {
@@ -8868,7 +8846,7 @@
         "properties": {
           "comment_id": {
             "title": "Comment Id",
-            "type": "integer"
+            "type": "string"
           },
           "comment_text": {
             "title": "Comment Text",
@@ -8886,7 +8864,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "user": {
             "$ref": "#/components/schemas/ProfileSchema"
@@ -8966,7 +8944,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "date": {
             "format": "date-time",
@@ -9107,15 +9085,8 @@
       "HistoricalEntitySchema": {
         "properties": {
           "id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Id"
+            "title": "Id",
+            "type": "string"
           },
           "entity": {
             "$ref": "#/components/schemas/HistoricalEntities"
@@ -9239,7 +9210,7 @@
         "properties": {
           "id": {
             "title": "Id",
-            "type": "integer"
+            "type": "string"
           },
           "username": {
             "title": "Username",
@@ -9281,12 +9252,12 @@
           },
           "event_id": {
             "title": "Event Id",
-            "type": "integer"
+            "type": "string"
           },
           "work_id": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -9297,7 +9268,7 @@
           "source_id": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "string"
               },
               {
                 "type": "null"

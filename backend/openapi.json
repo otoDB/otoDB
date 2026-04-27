@@ -6005,6 +6005,17 @@
             "title": "Id",
             "type": "string"
           },
+          "thumbnail_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Source"
+          },
           "tags": {
             "items": {
               "$ref": "#/components/schemas/TagWorkInstanceSchema"
@@ -6091,17 +6102,6 @@
               }
             ],
             "title": "Description"
-          },
-          "thumbnail_source": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Thumbnail Source"
           }
         },
         "required": [

@@ -175,6 +175,7 @@ class SlimWorkSchema(ModelSchema):
 
 class WorkSchema(ModelSchema):
 	id: str
+	thumbnail_source: str | None = None
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
 	pending_flag: 'PendingModerationEventSchema | None' = None

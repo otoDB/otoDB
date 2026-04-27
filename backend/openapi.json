@@ -4446,7 +4446,7 @@
             "name": "pk",
             "schema": {
               "title": "Pk",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -4522,7 +4522,7 @@
             "name": "pk",
             "schema": {
               "title": "Pk",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -4954,7 +4954,7 @@
             "name": "request_id",
             "schema": {
               "title": "Request Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           },
@@ -4989,7 +4989,7 @@
             "name": "request_id",
             "schema": {
               "title": "Request Id",
-              "type": "integer"
+              "type": "string"
             },
             "required": true
           }
@@ -8808,7 +8808,7 @@
           },
           "pk": {
             "title": "Pk",
-            "type": "integer"
+            "type": "string"
           },
           "comment_text": {
             "title": "Comment Text",

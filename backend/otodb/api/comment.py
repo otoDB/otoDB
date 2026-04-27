@@ -61,14 +61,14 @@ class CommentSchema(BaseCommentSchema):
 
 class CommentInSchema(Schema):
 	model: ModelsWithComments
-	pk: int
+	pk: str
 	comment_text: str
 	parent_id: str | None = None
 	mentioned_users: list[str]
 
 
 @comment_router.get('comments', response=list[CommentSchema])
-def get(request: HttpRequest, model: ModelsWithComments, pk: int):
+def get(request: HttpRequest, model: ModelsWithComments, pk: str):
 	T = ContentType.objects.get(model=model)
 	index = Window(
 		expression=Rank(),
@@ -153,7 +153,7 @@ def post(
 def delete(
 	request: HttpRequest,
 	model: ModelsWithComments,
-	pk: int,
+	pk: str,
 	comment_id: str,
 ):
 	T = ContentType.objects.get(model=model)

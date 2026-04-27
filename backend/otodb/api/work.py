@@ -565,22 +565,22 @@ def tags_needed(request: AuthedHttpRequest):
 			)
 		)
 
-	has_source = Exists(
-		TagWorkInstance.objects.filter(
-			work=OuterRef('pk'),
-			work_tag__deprecated=False,
-		).filter(
-			Q(work_tag__category=WorkTagCategory.SOURCE)
-			| Q(
-				work_tag__category__in=[
-					WorkTagCategory.CREATOR,
-					WorkTagCategory.MEDIA,
-					WorkTagCategory.SONG,
-				],
-				used_as_source=True,
-			)
+	def has_required_category(category: WorkTagCategory) -> Exists:
+		base = TagWorkInstance.objects.filter(
+			work=OuterRef('pk'), work_tag__deprecated=False
 		)
-	)
+		if category == WorkTagCategory.SOURCE:
+			return Exists(
+				base.filter(
+					Q(work_tag__category=WorkTagCategory.SOURCE)
+					| Q(
+						work_tag__category__in=MediaWork._CAN_SET_AS_SOURCE,
+						used_as_source=True,
+					)
+				)
+			)
+		else:
+			return Exists(base.filter(work_tag__category=category))
 
 	def missing(flag):
 		return Case(
@@ -589,20 +589,24 @@ def tags_needed(request: AuthedHttpRequest):
 			output_field=IntegerField(),
 		)
 
+	ann = {
+		f'has_{cat.name.lower()}': has_required_category(cat)
+		for cat in TagWork.REQUIRED_CATEGORIES
+	}
+
 	return (
 		MediaWork.active_objects.visible()
 		.annotate(
-			has_creator=has_category(WorkTagCategory.CREATOR),
-			has_song=has_category(WorkTagCategory.SONG),
-			has_general=has_category(WorkTagCategory.GENERAL),
-			has_source=has_source,
+			**ann,
 			ntags=Count('tags', filter=Q(tags__deprecated=False)),
 		)
 		.annotate(
-			missing_count=missing('has_creator')
-			+ missing('has_song')
-			+ missing('has_general')
-			+ missing('has_source'),
+			missing_count=sum(
+				[
+					missing(f'has_{cat.name.lower()}')
+					for cat in TagWork.REQUIRED_CATEGORIES
+				]
+			)
 		)
 		.order_by('-missing_count', 'ntags', 'id')
 	)

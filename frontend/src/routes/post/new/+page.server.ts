@@ -40,7 +40,7 @@ export const actions = {
 
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
-		let post_id: number | null = null;
+		let post_id: string | null = null;
 		try {
 			({ data: post_id } = await client.POST('/api/post/post', {
 				fetch,

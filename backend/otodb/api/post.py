@@ -24,6 +24,7 @@ from otodb.models.enums import LanguageTypes, NotificationReason, PostCategory
 
 from .common import (
 	AuthedHttpRequest,
+	OtodbID,
 	ProfileSchema,
 	restrict_internal,
 	user_is_trusted,
@@ -42,12 +43,12 @@ class PostEntities(str, Enum):
 
 
 class PostEntitySchema(Schema):
-	id: int | str
+	id: str
 	entity: PostEntities
 
 
 class PostOverviewSchema(ModelSchema):
-	id: int
+	id: OtodbID
 	added_by: ProfileSchema
 	modified: datetime
 	last_post_by: str | None = None
@@ -79,7 +80,7 @@ class PostSchema(ModelSchema):
 
 
 @post_router.get('post', response=PostSchema)
-def post(request: HttpRequest, post_id: int):
+def post(request: HttpRequest, post_id: OtodbID):
 	return get_object_or_404(Post, id=post_id)
 
 
@@ -125,7 +126,7 @@ def get_entity_link_ent(e: PostEntitySchema):
 	return obj
 
 
-@post_router.post('post', response=int, auth=django_auth)
+@post_router.post('post', response=OtodbID, auth=django_auth)
 @user_is_trusted
 @restrict_internal
 @transaction.atomic
@@ -180,7 +181,7 @@ def new(request: AuthedHttpRequest, payload: PostInSchema):
 
 
 class PostEditSchema(Schema):
-	post_id: int
+	post_id: OtodbID
 	title: str
 	post: str
 	lang: LanguageTypes
@@ -225,7 +226,7 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 
 @post_router.put('close', auth=django_auth)
 @transaction.atomic
-def toggle_close(request: AuthedHttpRequest, post_id: int):
+def toggle_close(request: AuthedHttpRequest, post_id: OtodbID):
 	post = get_object_or_404(Post, id=post_id)
 	is_admin = request.user.level >= Account.Levels.ADMIN
 	is_author = post.added_by == request.user

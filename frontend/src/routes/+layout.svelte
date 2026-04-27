@@ -1,20 +1,17 @@
 <script lang="ts">
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
-	import { navigating, page } from '$app/state';
-	import { PUBLIC_OTODB_HASH } from '$env/static/public';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import { page } from '$app/state';
 	import Footer from '$lib/Footer.svelte';
 	import Section from '$lib/Section.svelte';
 	import { isFormDirty } from '$lib/dirty';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import { hasUserLevel } from '$lib/enums/userLevel';
-	import { currentVersion, versions } from '$lib/enums/version';
 	import { m } from '$lib/paraglide/messages.js';
-	import { defineCustomClientStrategy, getLocale, locales } from '$lib/paraglide/runtime';
+	import { defineCustomClientStrategy } from '$lib/paraglide/runtime';
 	import { Levels, ThemePref } from '$lib/schema';
 	import { themes } from '$lib/themes/themes';
 	import { callErrorToast } from '$lib/toast';
-	import { clickOutside, getLocalPref, getLocalPrefs, set_lang, updateLocalPref } from '$lib/ui';
+	import { clickOutside, getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
 

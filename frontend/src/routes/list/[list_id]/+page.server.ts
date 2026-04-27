@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			fetch,
 			params: {
 				query: {
-					list_id: +params.list_id,
+					list_id: params.list_id,
 					limit: batch_size,
 					offset: (page - 1) * batch_size
 				}
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		client.GET('/api/comment/comments', {
 			params: {
 				query: {
-					pk: +params.list_id,
+					pk: params.list_id,
 					model: ModelsWithComments.pool
 				}
 			},
@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		}),
 		client.GET('/api/list/pending', {
 			fetch,
-			params: { query: { list_id: +params.list_id, limit: batch_size, offset: 0 } }
+			params: { query: { list_id: params.list_id, limit: batch_size, offset: 0 } }
 		})
 	]);
 

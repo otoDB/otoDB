@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 	userLevelGuard(locals.user, Levels.Member, url.pathname);
 
 	const page = +(url.searchParams.get('page') || '1');
-	const userId = url.searchParams.get('user_id') ? +url.searchParams.get('user_id')! : undefined;
+	const userId = url.searchParams.get('user_id') ?? undefined;
 
 	const { data: events } = await client.GET('/api/moderation/events', {
 		fetch,

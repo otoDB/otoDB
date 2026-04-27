@@ -14,13 +14,13 @@
 	import WorkField from '$lib/WorkField.svelte';
 
 	interface Props {
-		this_id: number;
+		this_id: string;
 		obj_type: T;
 		init_relations: [
 			T extends 'work'
 				? components['schemas']['WorkRelationSchema'][]
 				: components['schemas']['SongRelationSchema'][],
-			{ id: number }[]
+			{ id: string }[]
 		];
 		form_control: {
 			barrier: Partial<Barrier>;
@@ -38,7 +38,7 @@
 			.filter(({ A_id, B_id }) => A_id === this_id || B_id === this_id)
 			.map(({ A_id, B_id, relation }) => ({
 				swapped: A_id === this_id,
-				item: init_relations[1].find((e) => e.id === (A_id === this_id ? B_id : A_id))! as
+				item: init_relations[1].find((e) => e.id === (A_id === this_id ? B_id : A_id)) as
 					| Work
 					| Song,
 				relation

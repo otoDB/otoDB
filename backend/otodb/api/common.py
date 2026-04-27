@@ -13,7 +13,14 @@ from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
 from ninja.utils import contribute_operation_args
-from pydantic import create_model, field_validator, model_validator
+from pydantic import (
+	GetCoreSchemaHandler,
+	GetJsonSchemaHandler,
+	create_model,
+	field_validator,
+	model_validator,
+)
+from pydantic_core import core_schema
 
 from otodb.account.models import Account
 from otodb.common import NFKC, slugify_tag
@@ -62,8 +69,44 @@ class Error(Schema):
 	data: dict | None = None
 
 
+class OtodbID(int):
+	@classmethod
+	def __get_pydantic_core_schema__(cls, source, handler: GetCoreSchemaHandler):
+		return core_schema.no_info_after_validator_function(
+			cls.validate,
+			core_schema.union_schema(
+				[
+					core_schema.int_schema(),
+					core_schema.str_schema(),
+				]
+			),
+			serialization=core_schema.plain_serializer_function_ser_schema(
+				cls.serialize
+			),
+		)
+
+	@classmethod
+	def validate(cls, v):
+		if isinstance(v, int):
+			return v
+		if isinstance(v, str):
+			return int(v)
+		raise TypeError('Invalid type')
+
+	@classmethod
+	def serialize(cls, v):
+		return str(v)
+
+	@classmethod
+	def __get_pydantic_json_schema__(cls, core_schema, handler: GetJsonSchemaHandler):
+		schema = handler(core_schema)
+		schema.update(type='string')
+		schema.pop('anyOf')
+		return schema
+
+
 class ProfileSchema(ModelSchema):
-	id: int
+	id: OtodbID
 	level: Account.Levels
 
 	class Meta:
@@ -78,7 +121,7 @@ class TagLangPreferenceSchema(Schema):
 
 
 class TagWorkSchema(Schema):
-	id: int
+	id: OtodbID
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional['TagWorkSchema']
 	name: str
@@ -96,7 +139,7 @@ class ConnectionLookupResponse(Schema):
 
 
 class WorkSourceSchema(ModelSchema):
-	id: int
+	id: OtodbID
 	added_by: ProfileSchema
 	thumbnail: str | None = None  # Exposed as property
 	media_title: str | None = None
@@ -140,8 +183,8 @@ class TagWorkInstanceSchema(TagWorkInstanceThinSchema):
 
 
 class RelationSchema(Schema):
-	A_id: int
-	B_id: int
+	A_id: OtodbID
+	B_id: OtodbID
 	relation: int
 
 
@@ -154,7 +197,7 @@ class SongRelationSchema(RelationSchema):
 
 
 class SlimWorkSchema(ModelSchema):
-	id: int
+	id: OtodbID
 	thumbnail: str | None = None  # Exposed as property
 	status: Status
 
@@ -164,7 +207,8 @@ class SlimWorkSchema(ModelSchema):
 
 
 class WorkSchema(ModelSchema):
-	id: int
+	id: OtodbID
+	thumbnail_source_id: OtodbID | None
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
 	pending_flag: 'PendingModerationEventSchema | None' = None
@@ -175,11 +219,11 @@ class WorkSchema(ModelSchema):
 
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'description', 'thumbnail_source']
+		fields = ['title', 'description']
 
 
 class ThinWorkSchema(ModelSchema):
-	id: int
+	id: OtodbID
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
 	pending_flag: 'PendingModerationEventSchema | None' = None
@@ -192,8 +236,8 @@ class ThinWorkSchema(ModelSchema):
 
 
 class SourceCreationResponse(Schema):
-	source_id: int | None = None
-	work_id: int | None = None
+	source_id: OtodbID | None = None
+	work_id: OtodbID | None = None
 
 
 class TagWorkInstanceInSchema(Schema):
@@ -203,7 +247,7 @@ class TagWorkInstanceInSchema(Schema):
 
 
 class CreateWorkPayload(Schema):
-	source_id: int
+	source_id: OtodbID
 	title: str | None = None
 	description: str | None = None
 	rating: Rating = Rating.GENERAL
@@ -221,7 +265,7 @@ class SourceSuggestionsResponse(Schema):
 class PendingModerationEventSchema(ModelSchema):
 	"""Thin view of a pending flag or appeal exposed on a work."""
 
-	id: int
+	id: OtodbID
 	by: ProfileSchema | None = None
 	status: FlagStatus
 
@@ -239,7 +283,7 @@ class ListItemSchema(ModelSchema):
 
 
 class ListSchema(ModelSchema):
-	id: int
+	id: OtodbID
 	author: ProfileSchema
 	upstream: str | None = Field(None, alias='poolupstream')
 

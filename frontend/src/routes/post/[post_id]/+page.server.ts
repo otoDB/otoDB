@@ -12,7 +12,7 @@ export const load: LayoutServerLoad = async ({ fetch, params }) => {
 		params: {
 			query: {
 				model: ModelsWithComments.post,
-				pk: +params.post_id
+				pk: params.post_id
 			}
 		}
 	});
@@ -38,7 +38,7 @@ export const actions = {
 			fetch,
 			params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
 			body: {
-				post_id: +params.post_id,
+				post_id: params.post_id,
 				title,
 				post,
 				lang: languages[lang].id,

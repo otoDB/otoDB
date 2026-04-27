@@ -16,7 +16,7 @@
 			work: null | ComponentProps<typeof WorkField>['value'];
 			title: string;
 			description: string;
-			thumbnail_source_id: number | null;
+			thumbnail_source_id: string | null;
 			rating: Rating;
 			sources: null | components['schemas']['WorkSourceSchema'][];
 		}
@@ -60,7 +60,7 @@
 
 				work[i].sources = sourcesResponse.data;
 				work[i].thumbnail_source_id =
-					workResponse.data?.thumbnail_source ?? sourcesResponse.data?.[0]?.id ?? null;
+					workResponse.data?.thumbnail_source_id ?? sourcesResponse.data?.[0]?.id ?? null;
 			}
 		} else {
 			work[i].work = null;
@@ -268,8 +268,8 @@
 				>
 			</tbody>
 		</table>
-		<input hidden type="number" name="A" value={work['a'].work?.id} />
-		<input hidden type="number" name="B" value={work['b'].work?.id} />
+		<input hidden type="text" name="A" value={work['a'].work?.id} />
+		<input hidden type="text" name="B" value={work['b'].work?.id} />
 		<input
 			hidden
 			type="text"
@@ -281,7 +281,7 @@
 		></textarea>
 		<input
 			hidden
-			type="number"
+			type="text"
 			value={work[selectingThumbnailSource].thumbnail_source_id}
 			name="thumbnail_source_id"
 		/>

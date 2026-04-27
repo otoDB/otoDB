@@ -32,6 +32,7 @@ from otodb.models.enums import RevisionChain, Route
 from otodb.models.tag import OtodbTagModel
 
 from .common import (
+	OtodbID,
 	add_revision_message,
 	track_revision,
 	user_is_staff,
@@ -105,12 +106,12 @@ class HistoricalEntities(str, Enum):
 
 
 class HistoricalEntitySchema(Schema):
-	id: int | str
+	id: OtodbID
 	entity: HistoricalEntities
 
 
 class RevisionSchema(ModelSchema):
-	id: int
+	id: OtodbID
 	date: datetime
 	user: str = Field(..., alias='user.username')
 	index: None | int = None
@@ -166,13 +167,13 @@ def recent(request: HttpRequest, username: str | None = None):
 
 
 @history_router.get('revision', response=RevisionSchema)
-def revision(request: HttpRequest, revision_id: int):
+def revision(request: HttpRequest, revision_id: OtodbID):
 	return get_object_or_404(Revision, id=revision_id)
 
 
 @history_router.get('revision_changes', response=list[RevisionChangeSchema])
 @paginate
-def revision_changes(request: HttpRequest, revision_id: int):
+def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	rev = get_object_or_404(Revision, id=revision_id)
 	tag_models = [
 		ct.id
@@ -617,7 +618,9 @@ def rollback_entity(
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic
 def rollback(
-	request: HttpRequest, revision_id: int, entity: HistoricalEntitySchema | None = None
+	request: HttpRequest,
+	revision_id: OtodbID,
+	entity: HistoricalEntitySchema | None = None,
 ):
 	"""
 	Rollback changes of a specific revision.

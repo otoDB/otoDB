@@ -559,31 +559,21 @@ def search(
 @work_router.get('tags_needed', response=List[ThinWorkSchema], exclude_none=True)
 @paginate
 def tags_needed(request: AuthedHttpRequest):
-	def has_category(category):
-		return Exists(
-			TagWorkInstance.objects.filter(
-				work=OuterRef('pk'),
-				work_tag__deprecated=False,
-				work_tag__category=category,
-			)
+	def has_required_category(category: WorkTagCategory) -> Exists:
+		base = TagWorkInstance.objects.filter(
+			work=OuterRef('pk'), work_tag__deprecated=False
 		)
-
-	has_source = Exists(
-		TagWorkInstance.objects.filter(
-			work=OuterRef('pk'),
-			work_tag__deprecated=False,
-		).filter(
-			Q(work_tag__category=WorkTagCategory.SOURCE)
-			| Q(
-				work_tag__category__in=[
-					WorkTagCategory.CREATOR,
-					WorkTagCategory.MEDIA,
-					WorkTagCategory.SONG,
-				],
-				used_as_source=True,
+		if category == WorkTagCategory.SOURCE:
+			return Exists(
+				base.filter(
+					Q(work_tag__category=WorkTagCategory.SOURCE)
+					| Q(
+						work_tag__category__in=MediaWork._CAN_SET_AS_SOURCE,
+						used_as_source=True,
+					)
+				)
 			)
-		)
-	)
+		return Exists(base.filter(work_tag__category=category))
 
 	def missing(flag):
 		return Case(
@@ -592,20 +582,22 @@ def tags_needed(request: AuthedHttpRequest):
 			output_field=IntegerField(),
 		)
 
+	ann = {
+		f'_has_{cat.name.lower()}': has_required_category(cat)
+		for cat in MediaWork._REQUIRED_CATEGORIES
+	}
+
 	return (
 		MediaWork.active_objects.visible()
+		.annotate(**ann, ntags=Count('tags', filter=Q(tags__deprecated=False)))
 		.annotate(
-			has_creator=has_category(WorkTagCategory.CREATOR),
-			has_song=has_category(WorkTagCategory.SONG),
-			has_general=has_category(WorkTagCategory.GENERAL),
-			has_source=has_source,
-			ntags=Count('tags', filter=Q(tags__deprecated=False)),
-		)
-		.annotate(
-			missing_count=missing('has_creator')
-			+ missing('has_song')
-			+ missing('has_general')
-			+ missing('has_source'),
+			missing_count=reduce(
+				lambda a, b: a + b,
+				(
+					missing(f'_has_{cat.name.lower()}')
+					for cat in MediaWork._REQUIRED_CATEGORIES
+				),
+			)
 		)
 		.order_by('-missing_count', 'ntags', 'id')
 	)

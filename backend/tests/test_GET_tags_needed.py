@@ -57,15 +57,18 @@ class TestGetTagsNeeded:
 	def test_used_as_source_creator_satisfies_source_requirement(
 		self, work_client, creator_tag, song_tag, general_tag, source_tag
 	):
+		another_creator = make_tag('another_creator', WorkTagCategory.CREATOR)
+
 		# work_a: SOURCE not satisfied — appears in list
 		work_a = MediaWork.objects.create(title='Missing Source')
 		work_a.tags.add(creator_tag)
 		work_a.tags.add(song_tag)
 		work_a.tags.add(general_tag)
 
-		# work_b: SOURCE satisfied via creator used_as_source — all requirements met, not in list
+		# work_b: SOURCE satisfied via creator used_as_source, CREATOR met by another creator tag
 		work_b = MediaWork.objects.create(title='Source via Creator')
 		work_b.tags.add(creator_tag)
+		work_b.tags.add(another_creator)
 		work_b.tags.add(song_tag)
 		work_b.tags.add(general_tag)
 		twi = TagWorkInstance.objects.get(work=work_b, work_tag=creator_tag)
@@ -77,6 +80,23 @@ class TestGetTagsNeeded:
 		ids = [int(w['id']) for w in res.json()['items']]
 		assert work_a.id in ids
 		assert work_b.id not in ids
+
+	def test_used_as_source_song_does_not_satisfy_song_requirement(
+		self, work_client, creator_tag, song_tag, source_tag, general_tag
+	):
+		# SONG tag marked used_as_source counts as SOURCE, not SONG — SONG requirement still missing
+		work = MediaWork.objects.create(title='Song Used as Source')
+		work.tags.add(creator_tag)
+		work.tags.add(song_tag)
+		work.tags.add(general_tag)
+		twi = TagWorkInstance.objects.get(work=work, work_tag=song_tag)
+		twi.used_as_source = True
+		twi.save()
+
+		res = work_client.get('/tags_needed')
+		assert res.status_code == 200
+		ids = [int(w['id']) for w in res.json()['items']]
+		assert work.id in ids
 
 	def test_deprecated_tag_does_not_fulfill_requirement(
 		self, work_client, creator_tag, song_tag, source_tag, general_tag

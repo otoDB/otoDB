@@ -566,6 +566,7 @@ def tags_needed(request: AuthedHttpRequest):
 				work=OuterRef('pk'),
 				work_tag__deprecated=False,
 				work_tag__category=category,
+				used_as_source=False,
 			)
 		)
 

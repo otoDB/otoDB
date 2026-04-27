@@ -6,7 +6,6 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { SEARCH_DOCS_POST_ID } from '$lib/ui';
 	let { data } = $props();
 
 	const examples = [
@@ -59,7 +58,7 @@
 				{/each}
 			</ul>
 			<div class="mt-2">
-				<a href="/post/{SEARCH_DOCS_POST_ID}">
+				<a href="/docs/search_syntax_document">
 					{m.swift_keen_otter_guide()}
 				</a>
 			</div>

@@ -254,7 +254,7 @@
 					</div>
 					<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 						{@render link('/', m.fine_late_chicken_quiz())}
-						{@render link('/post/2', m.noble_fine_iguana_pull())}
+						{@render link('/docs/welcome', m.noble_fine_iguana_pull())}
 						{@render link('/work', m.grand_merry_fly_succeed())}
 						{@render link('/upload/add', `> ${m.fluffy_crisp_horse_imagine()}`)}
 						{#if hasUserLevel(data.user?.level, Levels.Member)}
@@ -267,7 +267,7 @@
 						{@render link('/post/overview', m.just_salty_anaconda_nourish())}
 						{@render link('/comments', m.same_broad_haddock_pinch())}
 						{@render link('/profile', m.bright_nimble_eagle_glide())}
-						{@render link('/post/3', 'FAQ')}
+						{@render link('/docs/faq', 'FAQ')}
 						{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 					</ul>
 				</div>

@@ -75,6 +75,7 @@ jobs:
       - name: Run tests with pytest
         run: uv run pytest -v --tb=short
       - name: Check server can start
+        timeout-minutes: 1
         run: timeout 10 uv run python manage.py runserver || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
   migrations:
@@ -135,7 +136,7 @@ jobs:
             OTODB_HASH=${{ github.sha }}
 
   openapi-typespec:
-    name: Verify schema is fresh
+    name: Verify openapi.json is fresh
     runs-on: ubuntu-latest
     env:
       OTODB_SECRET_KEY: dummy
@@ -148,19 +149,10 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - uses: oven-sh/setup-bun@v1
-      - name: Generate JSON
+      - name: Install dependencies
+        run: uv sync
+      - name: Regenerate openapi.json and check for diff
         working-directory: backend
         run: |
-          uv run manage.py openapi_schema > ../frontend/openapi.json
-        
-      - name: Install dependencies
-        working-directory: frontend
-        run: |
-          bun install
-
-      - name: Verify no changes (Fail if stale)
-        working-directory: frontend
-        run: |
-          rm redocly.yaml
-          bun run sync-schema openapi.json --check -o src/lib/schema.ts
+          uv run manage.py openapi_schema > openapi.json
+          git diff --exit-code openapi.json

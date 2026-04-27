@@ -90,11 +90,13 @@
 	);
 
 	const is_admin = $derived(hasUserLevel(data.user?.level, Levels.Admin));
-	const editedByOther =
-		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username;
-	const canEdit =
+	const editedByOther = $derived(
+		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username
+	);
+	const canEdit = $derived(
 		data.user &&
-		(is_admin || (data.post.added_by.username === data.user.username && !editedByOther));
+			(is_admin || (data.post.added_by.username === data.user.username && !editedByOther))
+	);
 
 	const startEdit = () => {
 		editTitle = data.post.title;

@@ -23,10 +23,8 @@
 	}
 	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 }: Props = $props();
 
-	const [RelationTypes, RelationNames] =
-		type === 'work'
-			? [WorkRelationTypes, WorkRelationNames]
-			: [SongRelationTypes, SongRelationNames];
+	const RelationTypes = $derived(type === 'work' ? WorkRelationTypes : SongRelationTypes);
+	const RelationNames = $derived(type === 'work' ? WorkRelationNames : SongRelationNames);
 
 	let deg = $state(1);
 	let direction = $state(defaultDir);
@@ -188,7 +186,7 @@ flowchart ${direction}
 	}
 
 	let svg_height = $state(min_height),
-		old_svg_height = svg_height;
+		old_svg_height = 0;
 	let svg_resizing_begin = -1;
 </script>
 

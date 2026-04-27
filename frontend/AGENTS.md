@@ -17,6 +17,22 @@
 
 ## Workflow
 
+### Updating schema.ts
+
+`src/lib/schema.ts` is auto-generated from `backend/openapi.json` and is **not** tracked in git.
+
+To regenerate it locally, run from the frontend directory:
+
+```
+bun run sync-schema
+```
+
+If the backend API has changed, first regenerate `backend/openapi.json` (run from `backend/`):
+
+```
+uv run manage.py openapi_schema > openapi.json
+```
+
 ### Before committing or pushing
 
 When making any changes to frontend code, you MUST run the following commands in order and ensure each succeeds before creating a git commit or pushing:

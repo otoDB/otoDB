@@ -157,5 +157,6 @@ jobs:
       - name: Verify no changes (Fail if stale)
         working-directory: frontend
         run: |
+          bun install openapi-typescript
           bun run sync-schema
           git diff --exit-code src/lib/schema.ts

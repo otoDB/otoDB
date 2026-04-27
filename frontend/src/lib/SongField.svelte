@@ -41,7 +41,7 @@
 </script>
 
 <span role="none" bind:this={self}>
-	<input type="number" hidden value={value?.id ?? -1} {...props} />
+	<input type="text" hidden value={value?.id ?? '-1'} {...props} />
 	{#if locked_in}
 		<button
 			type="button"

@@ -1,5 +1,4 @@
 import client from '$lib/api.server';
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { isValidEntityModelType, type EntityModelType } from '$lib/enums';
 import type { components, Route } from '$lib/schema';
@@ -23,8 +22,7 @@ const group_RCs = (
 		.filter(({ entities }) => entities.length);
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
-	const revision_id = +params.id;
-	if (isNaN(revision_id)) error(400, { message: 'Bad request' });
+	const revision_id = params.id;
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const batch_size = 30;
 

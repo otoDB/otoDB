@@ -15,7 +15,7 @@ export const actions = {
 		const data = await request.formData();
 		const link = data.get('url') as string;
 
-		let list_id: number | null = null;
+		let list_id: string | null = null;
 		try {
 			({ data: list_id } = await client.POST('/api/list/import', {
 				fetch,

@@ -17,7 +17,7 @@
 		{ key: 'sources', label: m.suave_gray_stork_type() }
 	];
 
-	const approveSource = async (sourceId: number) => {
+	const approveSource = async (sourceId: string) => {
 		const { error } = await client.POST('/api/upload/approve', {
 			params: { query: { source_id: sourceId } }
 		});
@@ -28,7 +28,7 @@
 		invalidateAll();
 	};
 
-	const rejectSource = async (sourceId: number) => {
+	const rejectSource = async (sourceId: string) => {
 		const reason = prompt(m.honest_tangy_butterfly_dream());
 		if (!reason?.trim()) {
 			alert(m.fun_bland_llama_twirl({ thing: m.honest_tangy_butterfly_dream() }));

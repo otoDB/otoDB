@@ -17,7 +17,7 @@ export const actions = {
 		const name = data.get('name') as string,
 			description = data.get('description') as string;
 
-		let list_id: number | null = null;
+		let list_id: string | null = null;
 		try {
 			({ data: list_id } = await client.POST('/api/list/list', {
 				fetch,

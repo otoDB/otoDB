@@ -151,7 +151,7 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
-	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id > 1}<button
+	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id !== '1'}<button
 			class="my-5"
 			onclick={async () => {
 				if (!confirm('Are you sure?')) return;

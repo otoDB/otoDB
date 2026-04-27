@@ -129,7 +129,7 @@ export const EntityModelRoutes: Record<EntityModelType, string> = {
 export const isValidEntityModelType = (type: string): type is EntityModelType =>
 	Object.keys(EntityModelRoutes).includes(type);
 
-export const buildEntityRoutes = (type: EntityModelType, id: string | number) =>
+export const buildEntityRoutes = (type: EntityModelType, id: string) =>
 	`/${EntityModelRoutes[type]}/${id}`;
 
 export const RequestActions = {

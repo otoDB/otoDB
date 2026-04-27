@@ -75,6 +75,7 @@ from .common import (
 	Error,
 	MetatagSpec,
 	OrderEnum,
+	OtodbID,
 	RouterWithRevision,
 	SlimWorkSchema,
 	SourceSuggestionsResponse,
@@ -608,7 +609,7 @@ def tags_needed(request: AuthedHttpRequest):
 
 
 @work_router.get('work', response=WorkSchema)
-def work(request: AuthedHttpRequest, work_id: int):
+def work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.objects.with_pending_moderation(), id=work_id)
 	if work.moved_to:
 		work = work.moved_to
@@ -629,7 +630,7 @@ def work(request: AuthedHttpRequest, work_id: int):
 @work_router.delete('work', auth=django_auth)
 @user_is_staff
 @with_revision_route(Route.MEDIAWORK_DELETE)
-def delete_work(request: AuthedHttpRequest, work_id: int):
+def delete_work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	work.worksource_set.update(media=None)
 	work.delete()
@@ -639,7 +640,7 @@ def delete_work(request: AuthedHttpRequest, work_id: int):
 @user_is_trusted
 @with_revision_route(Route.MEDIAWORK_SET_TAGS)
 def set_tags(
-	request: AuthedHttpRequest, work_id: int, payload: list[TagWorkInstanceInSchema]
+	request: AuthedHttpRequest, work_id: OtodbID, payload: list[TagWorkInstanceInSchema]
 ):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	tags = _resolve_and_apply_tags(work, payload)
@@ -651,7 +652,7 @@ def set_tags(
 	'tag_suggestions', auth=django_auth, response=SourceSuggestionsResponse
 )
 @user_is_trusted
-def tag_suggestions(request: AuthedHttpRequest, work_id: int):
+def tag_suggestions(request: AuthedHttpRequest, work_id: OtodbID):
 	"""Aggregates tag suggestions from every source bound to a work."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 
@@ -691,7 +692,7 @@ def recent(request: AuthedHttpRequest, n: int = 1):
 @work_router.get(
 	'relations', response=tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 )
-def relations(request: AuthedHttpRequest, work_id: int):
+def relations(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	relations = WorkRelation.get_component(work.id)
 	return 200, (relations, {w.id: w for r in relations for w in (r.A, r.B)}.values())
@@ -701,15 +702,17 @@ def relations(request: AuthedHttpRequest, work_id: int):
 @user_is_trusted
 @with_revision_route(Route.WORKRELATION_CREATE)
 def relation(
-	request: AuthedHttpRequest, this_id: int, payload: list[WorkRelationSchema]
+	request: AuthedHttpRequest, this_id: OtodbID, payload: list[WorkRelationSchema]
 ):
 	post_relations(MediaWork, this_id, payload)
 
 
 class WorkEditSchema(ModelSchema):
+	thumbnail_source_id: OtodbID | None
+
 	class Meta:
 		model = MediaWork
-		fields = ['title', 'description', 'thumbnail_source', 'rating']
+		fields = ['title', 'description', 'rating']
 
 
 @work_router.post('merge', auth=django_auth)
@@ -717,8 +720,8 @@ class WorkEditSchema(ModelSchema):
 @with_revision_route(Route.MEDIAWORK_MERGE)
 def merge_works(
 	request: AuthedHttpRequest,
-	from_work_id: int,
-	to_work_id: int,
+	from_work_id: str,
+	to_work_id: str,
 	payload: WorkEditSchema,
 ):
 	MediaWork.merge(
@@ -738,27 +741,28 @@ def merge_works(
 @user_is_trusted
 @with_revision_route(Route.MEDIAWORK_UPDATE)
 def update_work(
-	request: AuthedHttpRequest, work_id: int, payload: WorkEditSchema, reason: str
+	request: AuthedHttpRequest, work_id: OtodbID, payload: WorkEditSchema, reason: str
 ):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	for attr, value in payload.dict().items():
-		if attr == 'thumbnail_source' and value is not None:
-			value = get_object_or_404(WorkSource.objects, id=value)
+		if attr == 'thumbnail_source_id' and value is not None:
+			work.thumbnail_source = get_object_or_404(WorkSource.objects, id=value)
 		# Special handling for title: if current is NULL and new is blank, keep NULL
-		if attr == 'title' and work.title is None and value == '':
+		elif attr == 'title' and work.title is None and value == '':
 			continue
-		setattr(work, attr, value)
+		else:
+			setattr(work, attr, value)
 	work.save()
 	return
 
 
 @work_router.get('sources', response=List[WorkSourceSchema])
-def sources(request: AuthedHttpRequest, work_id: int):
+def sources(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	return work.worksource_set
 
 
-@work_router.post('create', auth=django_auth, response={200: int, 409: Error})
+@work_router.post('create', auth=django_auth, response={200: OtodbID, 409: Error})
 @user_is_trusted
 @transaction.atomic
 @with_revision_route(Route.MEDIAWORK_CREATE)
@@ -832,7 +836,7 @@ def resolve_work(work: MediaWork):
 
 @work_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
-def approve_work(request: AuthedHttpRequest, work_id: int):
+def approve_work(request: AuthedHttpRequest, work_id: OtodbID):
 	"""Approve a pending or flagged work, making it active."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	ensure_can_moderate(request.user, work)
@@ -855,7 +859,7 @@ def approve_work(request: AuthedHttpRequest, work_id: int):
 
 @work_router.post('disapprove', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
-def disapprove_work(request: AuthedHttpRequest, work_id: int, reason: str):
+def disapprove_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 	"""Record that a user reviewed a work and chose not to approve it."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	ensure_can_moderate(request.user, work)
@@ -869,7 +873,7 @@ def disapprove_work(request: AuthedHttpRequest, work_id: int, reason: str):
 
 @work_router.post('resolve', auth=django_auth)
 @user_is_staff
-def resolve_work_admin(request: AuthedHttpRequest, work_id: int):
+def resolve_work_admin(request: AuthedHttpRequest, work_id: OtodbID):
 	"""Immediate resolution by staff - same as expiry, skips the waiting period."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	resolve_work(work)
@@ -888,7 +892,7 @@ def resolve_work_admin(request: AuthedHttpRequest, work_id: int):
 	response={200: None, 400: Error, 429: Error},
 )
 @user_is_trusted
-def flag_work(request: AuthedHttpRequest, work_id: int, reason: str):
+def flag_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 	"""Flag an active work for re-review."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 
@@ -935,7 +939,7 @@ def flag_work(request: AuthedHttpRequest, work_id: int, reason: str):
 	response={200: None, 400: Error, 429: Error},
 )
 @user_is_trusted
-def appeal_work(request: AuthedHttpRequest, work_id: int, reason: str):
+def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 	"""Appeal an unapproved work to send it back to the mod queue."""
 	work = get_object_or_404(
 		MediaWork.objects.filter(status=Status.UNAPPROVED), id=work_id
@@ -1025,7 +1029,7 @@ def mod_queue(
 
 
 @work_router.get('similar', response=List[ThinWorkSchema])
-def similar(request: AuthedHttpRequest, work_id: int):
+def similar(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	wt = work.tags.filter(deprecated=False).values_list('id', flat=True)
 	return (

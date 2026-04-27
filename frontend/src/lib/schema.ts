@@ -1741,7 +1741,7 @@ export interface components {
         /** UserLoginSchema */
         UserLoginSchema: {
             /** User Id */
-            user_id: number;
+            user_id: string;
             /** Username */
             username: string;
         };
@@ -1788,7 +1788,7 @@ export interface components {
         /** UserStatusSchema */
         UserStatusSchema: {
             /** User Id */
-            user_id: number;
+            user_id: string;
             /** Username */
             username: string;
             level: components["schemas"]["Levels"];
@@ -1838,7 +1838,7 @@ export interface components {
         /** ProfileSchema */
         ProfileSchema: {
             /** Id */
-            id: number;
+            id: string;
             level: components["schemas"]["Levels"];
             /** Username */
             username: string;
@@ -1866,7 +1866,7 @@ export interface components {
         /** TagWorkInstanceSchema */
         TagWorkInstanceSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
@@ -1887,7 +1887,7 @@ export interface components {
         /** TagWorkSchema */
         TagWorkSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
@@ -1930,7 +1930,7 @@ export interface components {
          */
         PendingModerationEventSchema: {
             /** Id */
-            id: number;
+            id: string;
             by?: components["schemas"]["ProfileSchema"] | null;
             status: components["schemas"]["FlagStatus"];
             /**
@@ -1952,7 +1952,7 @@ export interface components {
         /** TagWorkInstanceThinSchema */
         TagWorkInstanceThinSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
@@ -1971,7 +1971,7 @@ export interface components {
         /** ThinWorkSchema */
         ThinWorkSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Tags */
             tags: components["schemas"]["TagWorkInstanceThinSchema"][];
             /** Thumbnail */
@@ -1990,7 +1990,7 @@ export interface components {
         /** SlimWorkSchema */
         SlimWorkSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Thumbnail */
             thumbnail?: string | null;
             status: components["schemas"]["Status"];
@@ -2000,9 +2000,9 @@ export interface components {
         /** WorkRelationSchema */
         WorkRelationSchema: {
             /** A Id */
-            A_id: number;
+            A_id: string;
             /** B Id */
-            B_id: number;
+            B_id: string;
             relation: components["schemas"]["WorkRelationTypes"];
         };
         /**
@@ -2013,7 +2013,9 @@ export interface components {
         /** WorkSchema */
         WorkSchema: {
             /** Id */
-            id: number;
+            id: string;
+            /** Thumbnail Source Id */
+            thumbnail_source_id: string | null;
             /** Tags */
             tags: components["schemas"]["TagWorkInstanceSchema"][];
             /** Thumbnail */
@@ -2031,17 +2033,15 @@ export interface components {
             title?: string | null;
             /** Description */
             description?: string | null;
-            /** Thumbnail Source */
-            thumbnail_source?: number | null;
         };
         /** WorkEditSchema */
         WorkEditSchema: {
+            /** Thumbnail Source Id */
+            thumbnail_source_id: string | null;
             /** Title */
             title?: string | null;
             /** Description */
             description?: string | null;
-            /** Thumbnail Source */
-            thumbnail_source_id?: number | null;
             /**
              * Rating
              * @default 0
@@ -2092,7 +2092,7 @@ export interface components {
         /** WorkSourceSchema */
         WorkSourceSchema: {
             /** Id */
-            id: number;
+            id: string;
             added_by: components["schemas"]["ProfileSchema"];
             /** Thumbnail */
             thumbnail?: string | null;
@@ -2135,7 +2135,7 @@ export interface components {
         /** CreateWorkPayload */
         CreateWorkPayload: {
             /** Source Id */
-            source_id: number;
+            source_id: string;
             /** Title */
             title?: string | null;
             /** Description */
@@ -2178,9 +2178,9 @@ export interface components {
         /** SourceCreationResponse */
         SourceCreationResponse: {
             /** Source Id */
-            source_id?: number | null;
+            source_id?: string | null;
             /** Work Id */
-            work_id?: number | null;
+            work_id?: string | null;
         };
         /** PagedWorkSourceSchema */
         PagedWorkSourceSchema: {
@@ -2205,7 +2205,7 @@ export interface components {
         /** ProfileIndexSchema */
         ProfileIndexSchema: {
             /** Id */
-            id: number;
+            id: string;
             level: components["schemas"]["Levels"];
             /** Works Count */
             works_count: number;
@@ -2226,7 +2226,7 @@ export interface components {
         /** ListSchema */
         ListSchema: {
             /** Id */
-            id: number;
+            id: string;
             author: components["schemas"]["ProfileSchema"];
             /** Upstream */
             upstream?: string | null;
@@ -2264,7 +2264,7 @@ export interface components {
         /** SourceSubmissionSchema */
         SourceSubmissionSchema: {
             /** Id */
-            id: number;
+            id: string;
             added_by: components["schemas"]["ProfileSchema"];
             /** Thumbnail */
             thumbnail?: string | null;
@@ -2297,7 +2297,7 @@ export interface components {
              */
             is_pending: boolean;
             /** Media */
-            media: number | null;
+            media: string | null;
         };
         /**
          * ModelsWithComments
@@ -2312,14 +2312,14 @@ export interface components {
         /** NotificationSchema */
         NotificationSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Comment */
             comment: [
                 components["schemas"]["ModelsWithComments"],
-                number | string
+                string
             ] | null;
             /** Post */
-            post?: number | null;
+            post?: string | null;
             reason: components["schemas"]["NotificationReason"];
             /** Revision User */
             revision_user?: string | null;
@@ -2384,7 +2384,7 @@ export interface components {
              */
             update_work: [
                 number,
-                number
+                string
             ][];
             /**
              * Update Description
@@ -2418,7 +2418,7 @@ export interface components {
         /** TagWorkSearchResultSchema */
         TagWorkSearchResultSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
@@ -2435,7 +2435,7 @@ export interface components {
         /** FatTagWorkSchema */
         FatTagWorkSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Children */
             children: components["schemas"]["TagWorkSchema"][];
             song?: components["schemas"]["SongSchema"] | null;
@@ -2458,7 +2458,7 @@ export interface components {
         /** SongSchema */
         SongSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Work Tag */
             work_tag: string;
             /** Tags */
@@ -2483,7 +2483,7 @@ export interface components {
         /** TagSongSchema */
         TagSongSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Children */
             children: components["schemas"]["TagSongSchema"][];
             /** Name */
@@ -2627,9 +2627,9 @@ export interface components {
         /** SongRelationSchema */
         SongRelationSchema: {
             /** A Id */
-            A_id: number;
+            A_id: string;
             /** B Id */
-            B_id: number;
+            B_id: string;
             relation: components["schemas"]["SongRelationTypes"];
         };
         /**
@@ -2647,7 +2647,7 @@ export interface components {
         /** TagSongSearchResultSchema */
         TagSongSearchResultSchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Children */
             children: components["schemas"]["TagSongSchema"][];
             /** Name */
@@ -2694,7 +2694,7 @@ export interface components {
         /** ConnectionTagResult */
         ConnectionTagResult: {
             /** Id */
-            id: number;
+            id: string;
             /** Lang Prefs */
             lang_prefs: components["schemas"]["TagLangPreferenceSchema"][];
             aliased_to: components["schemas"]["TagWorkSchema"] | null;
@@ -2733,7 +2733,7 @@ export interface components {
         /** PostEntitySchema */
         PostEntitySchema: {
             /** Id */
-            id: number | string;
+            id: string;
             entity: components["schemas"]["PostEntities"];
         };
         /** PostSchema */
@@ -2771,7 +2771,7 @@ export interface components {
         /** PostEditSchema */
         PostEditSchema: {
             /** Post Id */
-            post_id: number;
+            post_id: string;
             /** Title */
             title: string;
             /** Post */
@@ -2783,7 +2783,7 @@ export interface components {
         /** PostOverviewSchema */
         PostOverviewSchema: {
             /** Id */
-            id: number;
+            id: string;
             added_by: components["schemas"]["ProfileSchema"];
             /**
              * Modified
@@ -2815,7 +2815,7 @@ export interface components {
         /** CommentSchema */
         CommentSchema: {
             /** Id */
-            id: number;
+            id: string;
             user: components["schemas"]["ProfileSchema"];
             /** Comment */
             comment: string;
@@ -2825,7 +2825,7 @@ export interface components {
              */
             submit_date: string;
             /** Parent Id */
-            parent_id: number;
+            parent_id: string;
             /** Level */
             level: number;
             /** Index */
@@ -2838,28 +2838,28 @@ export interface components {
         CommentInSchema: {
             model: components["schemas"]["ModelsWithComments"];
             /** Pk */
-            pk: number;
+            pk: string;
             /** Comment Text */
             comment_text: string;
             /**
              * Parent Id
              * @default 0
              */
-            parent_id: number;
+            parent_id: string;
             /** Mentioned Users */
             mentioned_users: string[];
         };
         /** CommentEditSchema */
         CommentEditSchema: {
             /** Comment Id */
-            comment_id: number;
+            comment_id: string;
             /** Comment Text */
             comment_text: string;
         };
         /** ExtCommentSchema */
         ExtCommentSchema: {
             /** Id */
-            id: number;
+            id: string;
             user: components["schemas"]["ProfileSchema"];
             /** Comment */
             comment: string;
@@ -2890,7 +2890,7 @@ export interface components {
         /** RevisionSchema */
         RevisionSchema: {
             /** Id */
-            id: number;
+            id: string;
             /**
              * Date
              * Format: date-time
@@ -2943,7 +2943,7 @@ export interface components {
         /** HistoricalEntitySchema */
         HistoricalEntitySchema: {
             /** Id */
-            id: number | string;
+            id: string;
             entity: components["schemas"]["HistoricalEntities"];
         };
         /** BulkRequestSchema */
@@ -2977,7 +2977,7 @@ export interface components {
         /** ModerationEventBySchema */
         ModerationEventBySchema: {
             /** Id */
-            id: number;
+            id: string;
             /** Username */
             username: string;
         };
@@ -2992,11 +2992,11 @@ export interface components {
         ModerationEventSchema: {
             event_type: components["schemas"]["ModerationEventType"];
             /** Event Id */
-            event_id: number;
+            event_id: string;
             /** Work Id */
-            work_id: number | null;
+            work_id: string | null;
             /** Source Id */
-            source_id: number | null;
+            source_id: string | null;
             by: components["schemas"]["ModerationEventBySchema"] | null;
             /** Reason */
             reason: string;
@@ -3367,7 +3367,7 @@ export interface operations {
     otodb_api_work_work: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -3389,7 +3389,7 @@ export interface operations {
     otodb_api_work_update_work: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
                 reason: string;
             };
             header?: never;
@@ -3414,7 +3414,7 @@ export interface operations {
     otodb_api_work_delete_work: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -3434,7 +3434,7 @@ export interface operations {
     otodb_api_work_set_tags: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -3458,7 +3458,7 @@ export interface operations {
     otodb_api_work_tag_suggestions: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -3524,7 +3524,7 @@ export interface operations {
     otodb_api_work_relations: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -3549,7 +3549,7 @@ export interface operations {
     otodb_api_work_relation: {
         parameters: {
             query: {
-                this_id: number;
+                this_id: string;
             };
             header?: never;
             path?: never;
@@ -3573,8 +3573,8 @@ export interface operations {
     otodb_api_work_merge_works: {
         parameters: {
             query: {
-                from_work_id: number;
-                to_work_id: number;
+                from_work_id: string;
+                to_work_id: string;
             };
             header?: never;
             path?: never;
@@ -3598,7 +3598,7 @@ export interface operations {
     otodb_api_work_sources: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -3636,7 +3636,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": string;
                 };
             };
             /** @description Conflict */
@@ -3653,7 +3653,7 @@ export interface operations {
     otodb_api_work_approve_work: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -3682,7 +3682,7 @@ export interface operations {
     otodb_api_work_disapprove_work: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
                 reason: string;
             };
             header?: never;
@@ -3712,7 +3712,7 @@ export interface operations {
     otodb_api_work_resolve_work_admin: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -3732,7 +3732,7 @@ export interface operations {
     otodb_api_work_flag_work: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
                 reason: string;
             };
             header?: never;
@@ -3771,7 +3771,7 @@ export interface operations {
     otodb_api_work_appeal_work: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
                 reason: string;
             };
             header?: never;
@@ -3835,7 +3835,7 @@ export interface operations {
     otodb_api_work_similar: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -3857,7 +3857,7 @@ export interface operations {
     otodb_api_source_unbind_source: {
         parameters: {
             query: {
-                source_id: number;
+                source_id: string;
             };
             header?: never;
             path?: never;
@@ -3877,7 +3877,7 @@ export interface operations {
     otodb_api_source_source_origin: {
         parameters: {
             query: {
-                source_id: number;
+                source_id: string;
                 status: components["schemas"]["WorkOrigin"];
             };
             header?: never;
@@ -3898,7 +3898,7 @@ export interface operations {
     otodb_api_source_refresh_source: {
         parameters: {
             query: {
-                source_id: number;
+                source_id: string;
             };
             header?: never;
             path?: never;
@@ -3918,7 +3918,7 @@ export interface operations {
     otodb_api_source_get_source: {
         parameters: {
             query: {
-                source_id: number;
+                source_id: string;
             };
             header?: never;
             path?: never;
@@ -3940,7 +3940,7 @@ export interface operations {
     otodb_api_source_update_source: {
         parameters: {
             query: {
-                source_id: number;
+                source_id: string;
             };
             header?: never;
             path?: never;
@@ -3958,7 +3958,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": string;
                 };
             };
             /** @description Bad Request */
@@ -3977,7 +3977,7 @@ export interface operations {
             query: {
                 url: string;
                 is_reupload: boolean;
-                work_id?: number | null;
+                work_id?: string | null;
             };
             header?: never;
             path?: never;
@@ -4012,7 +4012,7 @@ export interface operations {
     otodb_api_source_source_suggestions: {
         parameters: {
             query: {
-                source_id: number;
+                source_id: string;
             };
             header?: never;
             path?: never;
@@ -4034,7 +4034,7 @@ export interface operations {
     otodb_api_source_reject_source: {
         parameters: {
             query: {
-                source_id: number;
+                source_id: string;
                 reason: string;
             };
             header?: never;
@@ -4064,7 +4064,7 @@ export interface operations {
     otodb_api_source_approve_source: {
         parameters: {
             query: {
-                source_id: number;
+                source_id: string;
             };
             header?: never;
             path?: never;
@@ -4093,7 +4093,7 @@ export interface operations {
     otodb_api_source_list_sources: {
         parameters: {
             query?: {
-                user_id?: number | null;
+                user_id?: string | null;
                 unbound?: boolean | null;
                 is_pending?: boolean | null;
                 platform?: number | null;
@@ -4232,7 +4232,7 @@ export interface operations {
     otodb_api_profile_work_in_lists: {
         parameters: {
             query: {
-                work_id: number;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -4332,7 +4332,7 @@ export interface operations {
     otodb_api_profile_read_notif: {
         parameters: {
             query: {
-                notif_id: number;
+                notif_id: string;
             };
             header?: never;
             path?: never;
@@ -4352,7 +4352,7 @@ export interface operations {
     otodb_api_profile_del_notif: {
         parameters: {
             query: {
-                notif_id: number;
+                notif_id: string;
             };
             header?: never;
             path?: never;
@@ -4396,7 +4396,7 @@ export interface operations {
     otodb_api_list_lst: {
         parameters: {
             query: {
-                list_id: number;
+                list_id: string;
             };
             header?: never;
             path?: never;
@@ -4418,7 +4418,7 @@ export interface operations {
     otodb_api_list_update: {
         parameters: {
             query: {
-                list_id: number;
+                list_id: string;
             };
             header?: never;
             path?: never;
@@ -4458,7 +4458,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": string;
                 };
             };
         };
@@ -4466,7 +4466,7 @@ export interface operations {
     otodb_api_list_delete: {
         parameters: {
             query: {
-                list_id: number;
+                list_id: string;
             };
             header?: never;
             path?: never;
@@ -4486,7 +4486,7 @@ export interface operations {
     otodb_api_list_entries: {
         parameters: {
             query: {
-                list_id: number;
+                list_id: string;
                 limit?: number;
                 offset?: number;
             };
@@ -4510,7 +4510,7 @@ export interface operations {
     otodb_api_list_pending: {
         parameters: {
             query: {
-                list_id: number;
+                list_id: string;
                 limit?: number;
                 offset?: number;
             };
@@ -4534,7 +4534,7 @@ export interface operations {
     otodb_api_list_update_items: {
         parameters: {
             query: {
-                list_id: number;
+                list_id: string;
             };
             header?: never;
             path?: never;
@@ -4558,8 +4558,8 @@ export interface operations {
     otodb_api_list_work_in_pool: {
         parameters: {
             query: {
-                list_id: number;
-                work_id: number;
+                list_id: string;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -4581,8 +4581,8 @@ export interface operations {
     otodb_api_list_toggle: {
         parameters: {
             query: {
-                list_id: number;
-                work_id: number;
+                list_id: string;
+                work_id: string;
             };
             header?: never;
             path?: never;
@@ -4616,7 +4616,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": string;
                 };
             };
         };
@@ -4624,7 +4624,7 @@ export interface operations {
     otodb_api_list_pull_upstream: {
         parameters: {
             query: {
-                list_id: number;
+                list_id: string;
             };
             header?: never;
             path?: never;
@@ -4956,7 +4956,7 @@ export interface operations {
     otodb_api_tag_song: {
         parameters: {
             query: {
-                id: number;
+                id: string;
             };
             header?: never;
             path?: never;
@@ -5008,7 +5008,7 @@ export interface operations {
     otodb_api_tag_song_relations: {
         parameters: {
             query: {
-                song_id: number;
+                song_id: string;
             };
             header?: never;
             path?: never;
@@ -5033,7 +5033,7 @@ export interface operations {
     otodb_api_tag_song_relation: {
         parameters: {
             query: {
-                this_id: number;
+                this_id: string;
             };
             header?: never;
             path?: never;
@@ -5083,7 +5083,7 @@ export interface operations {
     otodb_api_tag_song_tags: {
         parameters: {
             query: {
-                song_id: number;
+                song_id: string;
             };
             header?: never;
             path?: never;
@@ -5199,7 +5199,7 @@ export interface operations {
     otodb_api_tag_song_connection: {
         parameters: {
             query: {
-                song_id: number;
+                song_id: string;
             };
             header?: never;
             path?: never;
@@ -5274,7 +5274,7 @@ export interface operations {
     otodb_api_post_post: {
         parameters: {
             query: {
-                post_id: number;
+                post_id: string;
             };
             header?: never;
             path?: never;
@@ -5338,7 +5338,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": string;
                 };
             };
         };
@@ -5392,7 +5392,7 @@ export interface operations {
     otodb_api_post_toggle_close: {
         parameters: {
             query: {
-                post_id: number;
+                post_id: string;
             };
             header?: never;
             path?: never;
@@ -5412,7 +5412,7 @@ export interface operations {
     otodb_api_post_threads: {
         parameters: {
             query: {
-                id: number | string;
+                id: string;
                 entity: components["schemas"]["PostEntities"];
                 limit?: number;
                 offset?: number;
@@ -5486,7 +5486,7 @@ export interface operations {
         parameters: {
             query: {
                 model: components["schemas"]["ModelsWithComments"];
-                pk: number;
+                pk: string;
             };
             header?: never;
             path?: never;
@@ -5557,8 +5557,8 @@ export interface operations {
         parameters: {
             query: {
                 model: components["schemas"]["ModelsWithComments"];
-                pk: number;
-                comment_id: number;
+                pk: string;
+                comment_id: string;
             };
             header?: never;
             path?: never;
@@ -5625,7 +5625,7 @@ export interface operations {
     otodb_api_history_revision: {
         parameters: {
             query: {
-                revision_id: number;
+                revision_id: string;
             };
             header?: never;
             path?: never;
@@ -5647,7 +5647,7 @@ export interface operations {
     otodb_api_history_revision_changes: {
         parameters: {
             query: {
-                revision_id: number;
+                revision_id: string;
                 limit?: number;
                 offset?: number;
             };
@@ -5671,7 +5671,7 @@ export interface operations {
     otodb_api_history_rollback: {
         parameters: {
             query: {
-                revision_id: number;
+                revision_id: string;
             };
             header?: never;
             path?: never;
@@ -5716,7 +5716,7 @@ export interface operations {
     otodb_api_history_history: {
         parameters: {
             query: {
-                id: number | string;
+                id: string;
                 entity: components["schemas"]["HistoricalEntities"];
                 limit?: number;
                 offset?: number;
@@ -5755,7 +5755,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": string;
                 };
             };
         };
@@ -5763,7 +5763,7 @@ export interface operations {
     otodb_api_requests_confirm: {
         parameters: {
             query: {
-                request_id: number;
+                request_id: string;
                 status: components["schemas"]["Status"];
             };
             header?: never;
@@ -5784,7 +5784,7 @@ export interface operations {
     otodb_api_requests_user_request: {
         parameters: {
             query: {
-                request_id: number;
+                request_id: string;
             };
             header?: never;
             path?: never;
@@ -5806,9 +5806,9 @@ export interface operations {
     otodb_api_moderation_moderation_events: {
         parameters: {
             query?: {
-                work_id?: number | null;
-                source_id?: number | null;
-                user_id?: number | null;
+                work_id?: string | null;
+                source_id?: string | null;
+                user_id?: string | null;
                 limit?: number;
                 offset?: number;
             };

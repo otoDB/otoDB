@@ -259,7 +259,7 @@
 		comments={data.comments}
 		user={data.user ?? null}
 		model={ModelsWithComments.post}
-		pk={+data.post_id}
+		pk={data.post_id}
 	/>
 </Section>
 

@@ -21,7 +21,7 @@ export const actions = {
 			thumbnail_source_id = data.get('thumbnail_source_id') as string,
 			rating = data.get('rating') as string;
 
-		if (!A || isNaN(+A) || !B || isNaN(+B) || !rating || isNaN(+rating)) return fail(400);
+		if (!A || !B || !rating || isNaN(+rating)) return fail(400);
 
 		if (!thumbnail_source_id || isNaN(+thumbnail_source_id)) {
 			return fail(400, { error: 'A thumbnail source must be selected' });
@@ -32,20 +32,20 @@ export const actions = {
 				fetch,
 				params: {
 					query: {
-						from_work_id: +A,
-						to_work_id: +B
+						from_work_id: A,
+						to_work_id: B
 					}
 				},
 				body: {
 					title,
 					description,
-					thumbnail_source_id: +thumbnail_source_id,
+					thumbnail_source_id,
 					rating: +rating
 				}
 			});
 		} catch {
 			return fail(400);
 		}
-		redirect(303, `/work/${+B!}`);
+		redirect(303, `/work/${B}`);
 	}
 } satisfies Actions;

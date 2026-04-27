@@ -126,7 +126,7 @@ export const string_link_entities = (s: string) => {
 export const get_entity = (
 	s: string
 ): null | {
-	id: string | number;
+	id: string;
 	entity: PostEntities;
 } => {
 	for (const [p, re] of LinkableEntities) {
@@ -140,14 +140,14 @@ export const get_entity = (
 	return null;
 };
 
-const entityShorthands: Record<string, (id: string | number) => string> = {
+const entityShorthands: Record<string, (id: string) => string> = {
 	mediawork: (id) => `${ENTITIES[0].shortPrefix}${id}`,
 	revision: (id) => `${ENTITIES[2].shortPrefix}${id}`,
 	tagwork: (id) => `[[${id}]]`,
 	account: (id) => `@${id}`
 };
 
-export const entity_to_shorthand = (entity: string, id: string | number): string =>
+export const entity_to_shorthand = (entity: string, id: string): string =>
 	entityShorthands[entity]?.(id) ?? `${entity}/${id}`;
 
 const sanitizeSchema = {

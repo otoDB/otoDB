@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		fetch,
 		params: {
 			query: {
-				list_id: +params.list_id,
+				list_id: params.list_id,
 				limit: batch_size,
 				offset: 0
 			}
@@ -30,7 +30,7 @@ export const actions = {
 		try {
 			await client.PUT('/api/list/list', {
 				fetch,
-				params: { query: { list_id: +params.list_id! } },
+				params: { query: { list_id: params.list_id! } },
 				body: {
 					name,
 					description

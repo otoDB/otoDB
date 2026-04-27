@@ -37,6 +37,7 @@ from .common import (
 	ApiError,
 	AuthedHttpRequest,
 	Error,
+	OtodbID,
 	RouterWithRevision,
 	SourceCreationResponse,
 	SourceSuggestionsResponse,
@@ -67,7 +68,7 @@ class WorkSourceMetadataSchema(Schema):
 @source_router.post('unbind', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_UNBIND)
-def unbind_source(request: AuthedHttpRequest, source_id: int):
+def unbind_source(request: AuthedHttpRequest, source_id: OtodbID):
 	src = get_object_or_404(WorkSource.objects, id=source_id)
 	if src.media.worksource_set.count() == 1:
 		src.media.delete()
@@ -78,7 +79,7 @@ def unbind_source(request: AuthedHttpRequest, source_id: int):
 @source_router.put('origin', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
-def source_origin(request: AuthedHttpRequest, source_id: int, status: WorkOrigin):
+def source_origin(request: AuthedHttpRequest, source_id: OtodbID, status: WorkOrigin):
 	src = get_object_or_404(WorkSource.objects, id=source_id)
 	src.work_origin = status
 	src.save()
@@ -87,22 +88,22 @@ def source_origin(request: AuthedHttpRequest, source_id: int, status: WorkOrigin
 @source_router.post('refresh', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REFRESH)
-def refresh_source(request: AuthedHttpRequest, source_id: int):
+def refresh_source(request: AuthedHttpRequest, source_id: OtodbID):
 	src: WorkSource = get_object_or_404(WorkSource.objects, id=source_id)
 	src.refresh()
 	return
 
 
 @source_router.get('source', response=WorkSourceSchema)
-def get_source(request, source_id: int):
+def get_source(request, source_id: OtodbID):
 	return get_object_or_404(WorkSource, id=source_id)
 
 
-@source_router.put('source', auth=django_auth, response={200: int, 400: Error})
+@source_router.put('source', auth=django_auth, response={200: OtodbID, 400: Error})
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_UPDATE)
 def update_source(
-	request: AuthedHttpRequest, source_id: int, metadata: WorkSourceMetadataSchema
+	request: AuthedHttpRequest, source_id: OtodbID, metadata: WorkSourceMetadataSchema
 ):
 	src = get_object_or_404(
 		WorkSource.objects, id=source_id, work_status=WorkStatus.DOWN
@@ -136,7 +137,7 @@ def new_source_from_url(
 	request: AuthedHttpRequest,
 	url: Annotated[str, StringConstraints(strip_whitespace=True)],
 	is_reupload: bool,
-	work_id: int | None = None,
+	work_id: OtodbID | None = None,
 	metadata: WorkSourceMetadataSchema | None = None,
 ):
 	"""Creates or retrieves a source from a URL.
@@ -274,7 +275,7 @@ def extract_source_tag_suggestions(src: WorkSource):
 
 @source_router.get('suggestions', auth=django_auth, response=SourceSuggestionsResponse)
 @user_is_trusted
-def source_suggestions(request: AuthedHttpRequest, source_id: int):
+def source_suggestions(request: AuthedHttpRequest, source_id: OtodbID):
 	"""Returns tag suggestions derived from a source's info_payload."""
 	src = get_object_or_404(WorkSource.objects, id=source_id)
 	if not hasattr(src, 'info_payload'):
@@ -309,7 +310,7 @@ def reject_pending_source(src: WorkSource, by, reason: str):
 @source_router.post('reject', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REJECT)
-def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
+def reject_source(request: AuthedHttpRequest, source_id: OtodbID, reason: str):
 	"""Reject a pending source on an existing work. Unbinds the source."""
 	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
 	ensure_can_moderate(request.user, src.media)
@@ -318,7 +319,7 @@ def reject_source(request: AuthedHttpRequest, source_id: int, reason: str):
 
 @source_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
-def approve_source(request: AuthedHttpRequest, source_id: int):
+def approve_source(request: AuthedHttpRequest, source_id: OtodbID):
 	"""Approve a pending source on an existing work."""
 	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
 	ensure_can_moderate(request.user, src.media)
@@ -337,7 +338,7 @@ def approve_source(request: AuthedHttpRequest, source_id: int):
 @paginate
 def list_sources(
 	request,
-	user_id: int | None = None,
+	user_id: OtodbID | None = None,
 	unbound: bool | None = None,
 	is_pending: bool | None = None,
 	platform: int | None = None,

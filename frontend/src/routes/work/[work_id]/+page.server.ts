@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		client.GET('/api/work/sources', {
 			params: {
 				query: {
-					work_id: +params.work_id
+					work_id: params.work_id
 				}
 			},
 			fetch
@@ -17,13 +17,13 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 			params: {
 				query: {
 					model: ModelsWithComments.mediawork,
-					pk: +params.work_id
+					pk: params.work_id
 				}
 			}
 		}),
 		client.GET('/api/work/similar', {
 			fetch,
-			params: { query: { work_id: +params.work_id } }
+			params: { query: { work_id: params.work_id } }
 		})
 	]);
 

@@ -6,7 +6,7 @@
 
 	interface Props {
 		tag: {
-			id: number;
+			id: string;
 			slug: string;
 			category: WorkTagCategory;
 			sample?: boolean;
@@ -26,7 +26,7 @@
 	const sampleOverride = $derived(
 		AppConfig.WORKTAG_SOURCE_SETTABLE_CATEGORIES.includes(category) && tag.sample
 	);
-	const isTemporary = $derived(tag.id === 0);
+	const isTemporary = $derived(tag.id === '0');
 </script>
 
 <a

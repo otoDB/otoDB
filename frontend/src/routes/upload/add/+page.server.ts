@@ -16,21 +16,21 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 
 	let title = null;
 	let unavailable_source = null;
-	if (work && !isNaN(+work)) {
+	if (work) {
 		const { data } = await client.GET('/api/work/work', {
 			params: {
 				query: {
-					work_id: +work
+					work_id: work
 				}
 			},
 			fetch
 		});
 		title = data.title;
-	} else if (source && !isNaN(+source)) {
+	} else if (source) {
 		const { data } = await client.GET('/api/upload/source', {
 			params: {
 				query: {
-					source_id: +source
+					source_id: source
 				}
 			},
 			fetch
@@ -63,7 +63,7 @@ export const actions = {
 			is_official = data.get('origin') === 'true';
 		const work = url.searchParams.get('for_work');
 		const source = url.searchParams.get('for_source');
-		const editing_unavailable_source = source && !isNaN(+source);
+		const editing_unavailable_source = !!source;
 
 		// Build metadata object only if user is editor AND manual fields provided
 		let metadata: components['schemas']['WorkSourceMetadataSchema'] | undefined = undefined;
@@ -101,7 +101,7 @@ export const actions = {
 		if (editing_unavailable_source && metadata) {
 			const { data: work_id, error: putError } = await rawClient.PUT('/api/upload/source', {
 				fetch,
-				params: { query: { source_id: +source } },
+				params: { query: { source_id: source! } },
 				body: metadata
 			});
 			if (putError)
@@ -122,7 +122,7 @@ export const actions = {
 				query: {
 					url: link,
 					is_reupload: !is_official,
-					work_id: work ? +work : undefined
+					work_id: work ?? undefined
 				}
 			},
 			body: metadata

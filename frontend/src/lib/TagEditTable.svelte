@@ -32,7 +32,7 @@
 				cache[t] = data ?? {
 					category: 0,
 					creator_roles: null,
-					id: -1,
+					id: '-1',
 					lang_prefs: [],
 					name: t,
 					sample: false,

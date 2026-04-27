@@ -7,11 +7,7 @@ import { m } from '$lib/paraglide/messages';
 export const load: PageServerLoad = async ({ fetch, params, locals, url }) => {
 	userLevelGuard(locals.user, Levels.Member, url.pathname);
 
-	const sourceId = +params.source_id;
-	if (isNaN(sourceId)) {
-		const { error } = await import('@sveltejs/kit');
-		error(400, { message: 'Bad request' });
-	}
+	const sourceId = params.source_id;
 
 	const [{ data: source }, { data: events }] = await Promise.all([
 		client.GET('/api/upload/source', {

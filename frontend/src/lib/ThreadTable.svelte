@@ -6,9 +6,9 @@
 	import Time from '$lib/Time.svelte';
 
 	interface Post {
-		id: number | string;
+		id: string;
 		title: string;
-		entities?: { id: string | number; entity: EntityModelType }[];
+		entities?: { id: string; entity: EntityModelType }[];
 		category: PostCategory;
 		added_by: { username: string };
 		modified: string;
@@ -20,7 +20,7 @@
 		posts: Post[];
 		showCategory?: boolean;
 		showAuthor?: boolean;
-		entityFilter?: (entity: { id: string | number; entity: EntityModelType }) => boolean;
+		entityFilter?: (entity: { id: string; entity: EntityModelType }) => boolean;
 	}
 
 	let { posts, showCategory = false, showAuthor = true, entityFilter }: Props = $props();

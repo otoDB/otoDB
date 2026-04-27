@@ -18,7 +18,13 @@ from otodb.account.models import Account
 from otodb.discord import discord_comment
 from otodb.models import CommentMeta, Notification, RevisionChange, Subscription
 
-from .common import AuthedHttpRequest, ProfileSchema, restrict_internal, user_is_trusted
+from .common import (
+	AuthedHttpRequest,
+	OtodbID,
+	ProfileSchema,
+	restrict_internal,
+	user_is_trusted,
+)
 
 comment_router = Router()
 
@@ -34,14 +40,14 @@ class ModelsWithComments(str, Enum):
 
 
 class BaseCommentSchema(Schema):
-	id: int
+	id: OtodbID
 	user: ProfileSchema
 	comment: str
 	submit_date: datetime
 
 
 class CommentSchema(BaseCommentSchema):
-	parent_id: int
+	parent_id: OtodbID
 	level: int
 	index: int
 	edited_at: datetime | None = None
@@ -50,14 +56,14 @@ class CommentSchema(BaseCommentSchema):
 
 class CommentInSchema(Schema):
 	model: ModelsWithComments
-	pk: int
+	pk: str
 	comment_text: str
-	parent_id: int = 0
+	parent_id: OtodbID = 0
 	mentioned_users: list[str]
 
 
 @comment_router.get('comments', response=list[CommentSchema])
-def get(request: HttpRequest, model: ModelsWithComments, pk: int):
+def get(request: HttpRequest, model: ModelsWithComments, pk: OtodbID):
 	T = ContentType.objects.get(model=model)
 	index = Window(
 		expression=Rank(),
@@ -142,8 +148,8 @@ def post(
 def delete(
 	request: HttpRequest,
 	model: ModelsWithComments,
-	pk: int,
-	comment_id: int,
+	pk: OtodbID,
+	comment_id: OtodbID,
 ):
 	T = ContentType.objects.get(model=model)
 	comment = XtdComment.objects.get(
@@ -158,7 +164,7 @@ def delete(
 
 
 class CommentEditSchema(Schema):
-	comment_id: int
+	comment_id: OtodbID
 	comment_text: str
 
 

@@ -3,12 +3,12 @@
 	import type { WorkTagCategory } from '$lib/schema';
 
 	type SuggestionTag = {
-		id: number;
+		id: string;
 		name: string;
 		slug: string;
 		category: number;
 		aliased_to?: null | {
-			id: number;
+			id: string;
 			name: string;
 			slug: string;
 			category: number;

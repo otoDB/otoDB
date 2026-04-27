@@ -13,7 +13,7 @@
 
 	let { data } = $props();
 
-	const dismiss = async (id: number, dismissed: boolean, target: string) => {
+	const dismiss = async (id: string, dismissed: boolean, target: string) => {
 		if (!dismissed)
 			await client.PUT('/api/profile/notification', {
 				fetch,
@@ -22,7 +22,7 @@
 		goto(target, { invalidateAll: true });
 	};
 
-	const remove = async (id: number) => {
+	const remove = async (id: string) => {
 		await client.DELETE('/api/profile/notification', {
 			fetch,
 			params: { query: { notif_id: id } }

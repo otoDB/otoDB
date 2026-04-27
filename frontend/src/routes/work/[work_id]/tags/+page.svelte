@@ -23,7 +23,7 @@
 		e.preventDefault();
 		await client.PUT('/api/work/set_tags', {
 			fetch,
-			params: { query: { work_id: +data.id } },
+			params: { query: { work_id: data.id } },
 			body: tags
 				.filter((t) => cache[t])
 				.map((t) => ({

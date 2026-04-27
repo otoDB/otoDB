@@ -4,14 +4,12 @@ import { ModelsWithComments } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
-	const paramId = parseInt(params.id, 10);
-
 	const [{ data }, { data: comments }] = await Promise.all([
 		client.GET('/api/request/request', {
 			fetch,
 			params: {
 				query: {
-					request_id: paramId
+					request_id: params.id
 				}
 			}
 		}),
@@ -20,7 +18,7 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 			params: {
 				query: {
 					model: ModelsWithComments.bulkrequest,
-					pk: +params.id
+					pk: params.id
 				}
 			}
 		})
@@ -28,12 +26,12 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 
 	return {
 		request: data,
-		id: paramId,
+		id: params.id,
 		comments,
 		head: {
 			title: m.mild_loud_shad_enchant({
 				type: m.last_jumpy_barbel_mop(),
-				name: `#${paramId}`
+				name: `#${params.id}`
 			})
 		}
 	};

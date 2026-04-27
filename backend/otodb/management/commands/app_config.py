@@ -12,4 +12,4 @@ class Command(BaseCommand):
 	help = 'Exports otoDB API AppConfig to JSON'
 
 	def handle(self, *args, **options):
-		print(orjson.dumps(SHARED_CONFIG.dict()).decode("utf-8"), end='')
+		print(orjson.dumps(SHARED_CONFIG.dict()).decode('utf-8'), end='')

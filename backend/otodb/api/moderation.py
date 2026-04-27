@@ -8,19 +8,21 @@ from otodb.account.models import Account
 from otodb.models import ModerationEvent
 from otodb.models.enums import FlagStatus, ModerationAction, ModerationEventType
 
+from .common import OtodbID
+
 moderation_router = Router()
 
 
 class ModerationEventBySchema(Schema):
-	id: int
+	id: OtodbID
 	username: str
 
 
 class ModerationEventSchema(Schema):
 	event_type: ModerationEventType
-	event_id: int
-	work_id: int | None
-	source_id: int | None
+	event_id: OtodbID
+	work_id: OtodbID | None
+	source_id: OtodbID | None
 	by: ModerationEventBySchema | None
 	reason: str
 	status: FlagStatus | ModerationAction | None
@@ -35,9 +37,9 @@ class ModerationEventResponse(Schema):
 @moderation_router.get('events', response=ModerationEventResponse)
 def moderation_events(
 	request: HttpRequest,
-	work_id: int | None = None,
-	source_id: int | None = None,
-	user_id: int | None = None,
+	work_id: OtodbID | None = None,
+	source_id: OtodbID | None = None,
+	user_id: OtodbID | None = None,
 	limit: int = 30,
 	offset: int = 0,
 ):

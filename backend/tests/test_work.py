@@ -66,7 +66,7 @@ def add_source(source_client):
 
 	def _add(
 		is_reupload=False,
-		work_id: int | None = None,
+		work_id: str | None = None,
 		user=None,
 	):
 		query_params = {

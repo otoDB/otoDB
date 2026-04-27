@@ -51,7 +51,7 @@
 			userListsShown = !userListsShown;
 		}
 	};
-	const toggleWork = async (list_id: number) => {
+	const toggleWork = async (list_id: string) => {
 		const p = client.PUT('/api/list/toggle_work', {
 			fetch,
 			params: { query: { list_id, work_id: data.id } }
@@ -81,7 +81,7 @@
 		data.relations[0].length > 0
 			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
 					(d) => [+d[0], [...Map.groupBy(d[1]!, (r) => r.relation).entries()]]
-				) as [0 | 1, [WorkRelationTypes, { A_id: number; B_id: number }[]][]][])
+				) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
 			: null
 	);
 </script>

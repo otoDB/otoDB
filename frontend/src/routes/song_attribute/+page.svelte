@@ -3,13 +3,14 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import client from '$lib/api';
-	import { SongTagCategory } from '$lib/enums';
+	import { enumValues, SongTagCategoryNames } from '$lib/enums';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import SongTag from '$lib/SongTag.svelte';
+	import { SongTagCategory } from '$lib/schema.js';
 
 	let { data } = $props();
 	let results = $derived(data.results!.items);
-	let category = $state(data.category);
+	let category = $derived(data.category);
 
 	const fetchNextBatch = () =>
 		client.GET('/api/tag/song_tag_search', {
@@ -19,7 +20,7 @@
 					query: data.query,
 					limit: data.batch_size,
 					offset: results.length,
-					category: data.category
+					category: data.category === -1 ? null : data.category
 				}
 			}
 		});
@@ -45,8 +46,8 @@
 		/>
 		<select name="category" bind:value={category}>
 			<option value={-1}>{m.keen_soft_crow_relish()}</option>
-			{#each SongTagCategory as cat, i (i)}
-				<option value={i}>{cat()}</option>
+			{#each enumValues(SongTagCategory) as cat, i (i)}
+				<option value={cat}>{SongTagCategoryNames[cat]()}</option>
 			{/each}
 		</select>
 		<input type="submit" value={m.mean_top_antelope_love()} />

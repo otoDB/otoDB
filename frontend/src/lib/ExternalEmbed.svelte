@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { components } from './schema';
+	import { Platform, type components } from '$lib/schema';
 
 	interface Props {
 		src: components['schemas']['WorkSourceSchema'];
@@ -10,7 +10,7 @@
 	let { src, width = 560, height = 315 }: Props = $props();
 </script>
 
-{#if src.platform === 1}
+{#if src.platform === Platform.YouTube}
 	<iframe
 		{width}
 		{height}
@@ -21,7 +21,7 @@
 		referrerpolicy="strict-origin-when-cross-origin"
 		allowfullscreen
 	></iframe>
-{:else if src.platform === 2}
+{:else if src.platform === Platform.Niconico}
 	<iframe
 		{width}
 		{height}
@@ -31,7 +31,7 @@
 		allow="encrypted-media;"
 		title="Niconico Player"
 	></iframe>
-{:else if src.platform === 3}
+{:else if src.platform === Platform.Bilibili}
 	<iframe
 		{width}
 		{height}
@@ -41,7 +41,7 @@
 		allowfullscreen
 		title="Bilibili Player"
 	></iframe>
-{:else if src.platform === 4}
+{:else if src.platform === Platform.SoundCloud}
 	<iframe
 		title="SoundCloud Player"
 		{width}
@@ -51,7 +51,7 @@
 		allow="autoplay"
 		src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{src.source_id}&visual=true"
 	></iframe>
-{:else if src.platform === 5}
+{:else if src.platform === Platform.Twitter}
 	<iframe
 		title="Twitter Embed"
 		loading="lazy"
@@ -63,7 +63,7 @@
 		frameborder="0"
 		scrolling="no"
 	></iframe>
-{:else if src.platform === 6}
+{:else if src.platform === Platform.AcFun}
 	<iframe
 		title="AcFun Player"
 		{width}

@@ -1,14 +1,14 @@
+import client, { rawClient } from '$lib/api.server';
+import { hasUserLevel } from '$lib/enums/userLevel';
+import { m } from '$lib/paraglide/messages';
+import { userLevelGuard } from '$lib/route_guard';
+import { Levels, WorkStatus, type components } from '$lib/schema';
+import { getDisplayText } from '$lib/ui';
 import { error, fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client, { getDisplayText } from '$lib/api';
-
-import { userLevelGuard } from '$lib/route_guard';
-import { m } from '$lib/paraglide/messages';
-import { hasUserLevelOld } from '$lib/enums/UserLevel';
-import type { components } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
-	userLevelGuard(locals.user, 'MEMBER', url.pathname);
+	userLevelGuard(locals.user, Levels.Member, url.pathname);
 
 	const link = url.searchParams.get('url');
 	const work = url.searchParams.get('for_work');
@@ -16,28 +16,26 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 
 	let title = null;
 	let unavailable_source = null;
-	if (work && !isNaN(+work)) {
-		const { data, error: e } = await client.GET('/api/work/work', {
+	if (work) {
+		const { data } = await client.GET('/api/work/work', {
 			params: {
 				query: {
-					work_id: +work
+					work_id: work
 				}
 			},
 			fetch
 		});
-		if (e) error(404, { message: 'Not found' });
 		title = data.title;
-	} else if (source && !isNaN(+source)) {
-		const { data, error: e } = await client.GET('/api/upload/source', {
+	} else if (source) {
+		const { data } = await client.GET('/api/upload/source', {
 			params: {
 				query: {
-					source_id: +source
+					source_id: source
 				}
 			},
 			fetch
 		});
-		if (e) error(404, { message: 'Not found' });
-		if (data.work_status === 0) error(400, { message: 'Bad Request' });
+		if (data.work_status === WorkStatus.Available) error(400, { message: 'Bad Request' });
 		unavailable_source = data;
 		title = unavailable_source.title;
 	}
@@ -65,11 +63,11 @@ export const actions = {
 			is_official = data.get('origin') === 'true';
 		const work = url.searchParams.get('for_work');
 		const source = url.searchParams.get('for_source');
-		const editing_unavailable_source = source && !isNaN(+source);
+		const editing_unavailable_source = !!source;
 
 		// Build metadata object only if user is editor AND manual fields provided
 		let metadata: components['schemas']['WorkSourceMetadataSchema'] | undefined = undefined;
-		if (hasUserLevelOld(locals.user?.level, 'EDITOR')) {
+		if (hasUserLevel(locals.user?.level, Levels.Editor)) {
 			const hasManualData =
 				data.get('manual_title') ||
 				data.get('manual_description') ||
@@ -101,49 +99,51 @@ export const actions = {
 		}
 
 		if (editing_unavailable_source && metadata) {
-			const { data: work_id, error } = await client.PUT('/api/upload/source', {
+			const { data: work_id, error: putError } = await rawClient.PUT('/api/upload/source', {
 				fetch,
-				params: { query: { source_id: +source } },
+				params: { query: { source_id: source! } },
 				body: metadata
 			});
-			if (error)
+			if (putError)
 				return fail(400, {
 					url: link,
 					origin: is_official,
 					failed: true,
-					message: m.careful_lost_jaguar_dart()
+					code: putError.code,
+					errorData: putError.data ?? {}
 				});
-			if (work_id) redirect(303, `/work/${work_id}`);
+
+			redirect(303, `/work/${work_id}`);
 		}
 
-		const { data: result, error: sourceError } = await client.POST('/api/upload/source', {
+		const { data: result, error: postError } = await rawClient.POST('/api/upload/source', {
 			fetch,
 			params: {
 				query: {
 					url: link,
 					is_reupload: !is_official,
-					work_id: work ? +work : undefined
+					work_id: work ?? undefined
 				}
 			},
 			body: metadata
 		});
-
-		if (sourceError)
+		if (postError)
 			return fail(400, {
 				url: link,
 				origin: is_official,
 				failed: true,
-				message: m.careful_lost_jaguar_dart()
+				code: postError.code,
+				errorData: postError.data ?? {}
 			});
 
 		// Source already has a work -> redirect to work page
-		if (result?.work_id) redirect(303, `/work/${result.work_id}`);
+		if (result.work_id) redirect(303, `/work/${result.work_id}`);
 
 		// New source -> redirect to source page (for review/work creation)
-		if (result?.source_id) redirect(303, `/upload/${result.source_id}`);
+		if (result.source_id) redirect(303, `/upload/${result.source_id}`);
 
 		// Fallback
 		if (locals.user) redirect(303, `/profile/${locals.user.username}/submissions`);
-		else redirect(303, '/'); // TODO: more better redirect.
+		else redirect(303, '/login');
 	}
 } satisfies Actions;

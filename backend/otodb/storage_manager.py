@@ -1,9 +1,10 @@
-import re
 import logging
+import re
+from io import BytesIO
+from pathlib import Path
+
 import boto3
 from django.conf import settings
-from pathlib import Path
-from io import BytesIO
 
 logger = logging.getLogger(__name__)
 

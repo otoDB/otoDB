@@ -1,5 +1,5 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
+import { ModelsWithComments } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -10,24 +10,26 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 			fetch,
 			params: {
 				query: {
-					list_id: +params.list_id,
+					list_id: params.list_id,
 					limit: batch_size,
 					offset: (page - 1) * batch_size
 				}
 			}
 		}),
 		client.GET('/api/comment/comments', {
-			params: { query: { pk: +params.list_id, model: 'pool' } },
+			params: {
+				query: {
+					pk: params.list_id,
+					model: ModelsWithComments.pool
+				}
+			},
 			fetch
 		}),
 		client.GET('/api/list/pending', {
 			fetch,
-			params: { query: { list_id: +params.list_id, limit: batch_size, offset: 0 } }
+			params: { query: { list_id: params.list_id, limit: batch_size, offset: 0 } }
 		})
 	]);
-	// TODO: properly handle fetch errors
-	if (!entries) error(500, 'Failed to fetch data.');
-	if (!comments) error(500, 'Failed to fetch comments.');
 
 	return { entries, comments, pending_items, batch_size, page };
 };

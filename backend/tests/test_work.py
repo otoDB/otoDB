@@ -13,7 +13,7 @@ from django_comments_xtd.models import XtdComment
 
 from otodb.common import process_video_info
 from otodb.models import MediaWork, WorkSource
-from otodb.models.enums import Rating, Platform
+from otodb.models.enums import Platform, Rating
 
 
 def random_str(length):
@@ -66,7 +66,7 @@ def add_source(source_client):
 
 	def _add(
 		is_reupload=False,
-		work_id: int | None = None,
+		work_id: str | None = None,
 		user=None,
 	):
 		query_params = {
@@ -135,6 +135,34 @@ class TestWork:
 		assert res.status_code == 200
 		assert MediaWork.objects.count() == 1
 		assert WorkSource.objects.filter(media__isnull=False).count() == 1
+
+	def test_member_work_is_pending(
+		self, member, video_info_mock, add_source, create_work
+	):
+		"""Member-created work has PENDING status."""
+		from otodb.models.enums import Status
+
+		res = add_source(user=member)
+		source_id = res.json()['source_id']
+
+		res = create_work(source_id=source_id, user=member)
+		assert res.status_code == 200
+		work = MediaWork.objects.get(pk=res.json())
+		assert work.status == Status.PENDING
+
+	def test_editor_work_is_approved(
+		self, editor, video_info_mock, add_source, create_work
+	):
+		"""Editor-created work has APPROVED status."""
+		from otodb.models.enums import Status
+
+		res = add_source(user=editor)
+		source_id = res.json()['source_id']
+
+		res = create_work(source_id=source_id, user=editor)
+		assert res.status_code == 200
+		work = MediaWork.objects.get(pk=res.json())
+		assert work.status == Status.APPROVED
 
 	def test_bind_source_to_existing_work(
 		self, member, editor, video_info_mock, add_source, create_work, base_video_info

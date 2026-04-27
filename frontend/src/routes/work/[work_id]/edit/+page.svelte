@@ -5,19 +5,21 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
-	import client, { getDisplayText } from '$lib/api';
-	import { Platform, Rating, WorkOrigin } from '$lib/enums';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
-	import { m } from '$lib/paraglide/messages.js';
-	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import client from '$lib/api';
 	import { dirtyEnhance } from '$lib/dirty';
+	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
+	import { m } from '$lib/paraglide/messages.js';
+	import { Levels, Rating, WorkOrigin, WorkStatus } from '$lib/schema.js';
+	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { getDisplayText } from '$lib/ui.js';
 
 	let { data, form } = $props();
 	let title: string = $state(form?.title ?? getDisplayText(data.title, ''));
 	let description: string | null = $state(form?.description ?? data.description ?? '');
-	let rating: number = $state(form?.rating ? parseInt(form.rating, 10) : data.rating);
-	let thumbnail_source_id = $state(
-		form?.thumbnail_source_id ?? data.thumbnail_source ?? data.sources?.[0]?.id ?? null
+	let rating: Rating = $state(form?.rating ? parseInt(form.rating, 10) : data.rating);
+	let thumbnail_source_id = $state<string | null>(
+		form?.thumbnail_source_id ?? data.thumbnail_source_id ?? data.sources?.[0]?.id ?? null
 	);
 	const del = async () => {
 		if (confirm(m.mad_brief_falcon_pop())) {
@@ -28,7 +30,7 @@
 			goto('/upload', { invalidateAll: true });
 		}
 	};
-	const unbind = async (source_id: number) => {
+	const unbind = async (source_id: string) => {
 		if (data.sources?.length === 1) {
 			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
@@ -36,7 +38,7 @@
 		if (data.sources?.length === 1) goto('/upload');
 		else invalidateAll();
 	};
-	const updateStatus = async (source_id: number, origin: number) => {
+	const updateStatus = async (source_id: string, origin: number) => {
 		const p = client.PUT('/api/upload/origin', {
 			fetch,
 			params: { query: { source_id, status: origin } }
@@ -82,11 +84,11 @@
 					<tr
 						><th>{m.good_dark_bumblebee_spur()}</th><td
 							><div class="flex gap-2">
-								{#each Rating as r, i (i)}
+								{#each enumValues(Rating) as r, i (i)}
 									<label
 										class={[
 											'cursor-pointer border px-3 py-1',
-											rating === i
+											rating === r
 												? 'bg-otodb-content-primary text-otodb-bg-primary'
 												: ''
 										]}
@@ -94,11 +96,11 @@
 										<input
 											type="radio"
 											name="rating"
-											value={i}
+											value={r}
 											bind:group={rating}
 											class="hidden"
 										/>
-										{r()}
+										{RatingNames[r]()}
 									</label>
 								{/each}
 							</div></td
@@ -112,10 +114,10 @@
 							><select name="thumbnail_source" bind:value={thumbnail_source_id}>
 								{#each data.sources! as src (src.id)}
 									<option value={src.id}
-										>{Platform[src.platform]}
-										{src.work_origin === 0
+										>{PlatformNames[src.platform]}
+										{src.work_origin === WorkOrigin.Author
 											? ''
-											: ' ' + WorkOrigin[src.work_origin]()}
+											: ' ' + WorkOriginNames[src.work_origin]()}
 										-
 										{src.title || src.url}</option
 									>
@@ -178,13 +180,13 @@
 								>
 							</details></td
 						>
-						<td>{Platform[src.platform]}</td>
+						<td>{PlatformNames[src.platform]}</td>
 						<td class="whitespace-nowrap"
 							><select
 								bind:value={src.work_origin}
 								onchange={() => updateStatus(src.id, src.work_origin)}
-								>{#each WorkOrigin as w, i (i)}
-									<option value={i}>{w()}</option>
+								>{#each enumValues(WorkOrigin) as w, i (i)}
+									<option value={w}>{WorkOriginNames[w]()}</option>
 								{/each}</select
 							></td
 						>
@@ -204,10 +206,10 @@
 								>{m.sour_lime_shad_edit()}</button
 							></td
 						><td>
-							{#if src.work_status === 0}
+							{#if src.work_status === WorkStatus.Available}
 								<RefreshButton source={src} />
-							{:else if src.work_status === 1}
-								{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+							{:else if src.work_status === WorkStatus.Down}
+								{#if hasUserLevel(data.user?.level, Levels.Editor)}
 									<a href="/upload/add?for_source={src.id}"
 										>{m.minor_crisp_cobra_list()}</a
 									>
@@ -221,7 +223,7 @@
 			</tbody>
 		</table>
 	</div>
-	{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+	{#if hasUserLevel(data.user?.level, Levels.Admin)}
 		<button onclick={del}>{m.suave_less_deer_grip()}</button>
 	{/if}
 </Section>

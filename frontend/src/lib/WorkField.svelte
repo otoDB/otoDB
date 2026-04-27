@@ -1,11 +1,11 @@
 <script lang="ts">
-	import client from './api';
-	import { getDisplayText } from './api';
-	import { m } from './paraglide/messages';
-	import type { components } from './schema';
-	import { clickOutside, debounce } from './ui';
-	import DisplayText from './DisplayText.svelte';
-	import WorkThumbnail from './WorkThumbnail.svelte';
+	import client from '$lib/api';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import { m } from '$lib/paraglide/messages';
+	import type { components } from '$lib/schema';
+	import { clickOutside, debounce } from '$lib/ui';
+	import { getDisplayText } from '$lib/ui.js';
+	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let self: HTMLElement;
 
@@ -83,7 +83,7 @@
 		disabled={locked_in}
 		bind:value={input}
 	/>
-	<input type="number" hidden value={value?.id ?? -1} {name} />
+	<input type="text" hidden value={value?.id ?? '-1'} {name} />
 	{#if locked_in}
 		<button
 			type="button"
@@ -105,7 +105,7 @@
 		<table
 			class="absolute z-1 px-1"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>
@@ -142,10 +142,3 @@
 		</table>
 	{/if}
 </span>
-
-<style>
-	ul {
-		background-color: var(--otodb-color-bg-primary);
-		z-index: 10;
-	}
-</style>

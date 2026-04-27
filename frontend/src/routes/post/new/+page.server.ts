@@ -1,18 +1,21 @@
 import { env } from '$env/dynamic/private';
-import client from '$lib/api';
+import client from '$lib/api.server';
+import { asEnum } from '$lib/enums';
+import { getLanguageId, languages } from '$lib/enums/language';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
-import type { components } from '$lib/schema';
+import { Levels, PostCategory, type components } from '$lib/schema';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getLanguageId, languages } from '$lib/enums/Languages';
 
 export const load: PageServerLoad = ({ locals, url }) => {
-	userLevelGuard(locals.user, 'MEMBER');
-	const category = url.searchParams.get('category');
+	userLevelGuard(locals.user, Levels.Member);
+	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
+	const category = asEnum(PostCategory, paramCategory);
 	const entity = url.searchParams.get('entity');
-	return { category, entity, head: { title: m.antsy_aloof_horse_grace() } };
+	const title = url.searchParams.get('title');
+	return { category, entity, title, head: { title: m.antsy_aloof_horse_grace() } };
 };
 
 export const actions = {
@@ -26,8 +29,9 @@ export const actions = {
 			.map(get_entity)
 			.filter((x) => !!x);
 
-		const paramCategory = data.get('category') as string;
-		const category = parseInt(paramCategory, 10) as components['schemas']['PostCategory']; // TODO: more better validate
+		const paramCategory = parseInt(data.get('category') as string, 10);
+		type Category = components['schemas']['PostCategory'];
+		const category = paramCategory as Category;
 
 		const paramLang = data.get('lang') as string;
 		const language = getLanguageId(
@@ -36,19 +40,23 @@ export const actions = {
 
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
-		const { data: r, error } = await client.POST('/api/post/post', {
-			fetch,
-			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
-			body: {
-				category: category,
-				post,
-				lang: language,
-				title,
-				target_users: parseMentions(post),
-				entities
-			}
-		});
-		if (error) return fail(400);
-		else redirect(303, `/post/${r}`);
+		let post_id: string | null = null;
+		try {
+			({ data: post_id } = await client.POST('/api/post/post', {
+				fetch,
+				params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
+				body: {
+					category: category,
+					post,
+					lang: language,
+					title,
+					target_users: parseMentions(post),
+					entities
+				}
+			}));
+		} catch {
+			return fail(400);
+		}
+		redirect(303, `/post/${post_id}`);
 	}
 } satisfies Actions;

@@ -1,50 +1,53 @@
 from datetime import datetime, timezone
-
-from typing import Literal
+from enum import Enum
 
 from django.conf import settings
-from django.http import HttpRequest
 from django.contrib.contenttypes.models import ContentType
-
 from django.db import models, transaction
-from django.db.models import Window, Case, When, Subquery, OuterRef, F
+from django.db.models import Case, F, OuterRef, Subquery, When, Window
 from django.db.models.functions import Rank
-
+from django.http import HttpRequest
 from django_comments_xtd.models import XtdComment
-
 from ninja import Router, Schema
+from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
-from ninja.errors import HttpError
 
 from otodb.account.models import Account
-from otodb.models import Notification, Subscription, RevisionChange, CommentMeta
-from .common import AuthedHttpRequest, user_is_trusted, ProfileSchema, restrict_internal
 from otodb.discord import discord_comment
+from otodb.models import CommentMeta, Notification, RevisionChange, Subscription
+
+from .common import (
+	AuthedHttpRequest,
+	OtodbID,
+	ProfileSchema,
+	restrict_internal,
+	user_is_trusted,
+)
 
 comment_router = Router()
 
-ModelsWithComments = Literal[
-	'mediawork',
-	'account',
-	'pool',
-	'tagwork',
-	'tagsong',
-	'post',
-	'bulkrequest',
-]
+
+class ModelsWithComments(str, Enum):
+	WORK = 'mediawork'
+	PROFILE = 'account'
+	LIST = 'pool'
+	TAG = 'tagwork'
+	SONG_ATTRIBUTE = 'tagsong'
+	POST = 'post'
+	REQUEST = 'bulkrequest'
 
 
 class BaseCommentSchema(Schema):
-	id: int
+	id: OtodbID
 	user: ProfileSchema
 	comment: str
 	submit_date: datetime
 
 
 class CommentSchema(BaseCommentSchema):
-	parent_id: int
+	parent_id: OtodbID
 	level: int
 	index: int
 	edited_at: datetime | None = None
@@ -53,14 +56,14 @@ class CommentSchema(BaseCommentSchema):
 
 class CommentInSchema(Schema):
 	model: ModelsWithComments
-	pk: int
+	pk: str
 	comment_text: str
-	parent_id: int = 0
+	parent_id: OtodbID = 0
 	mentioned_users: list[str]
 
 
 @comment_router.get('comments', response=list[CommentSchema])
-def get(request: HttpRequest, model: ModelsWithComments, pk: int):
+def get(request: HttpRequest, model: ModelsWithComments, pk: OtodbID):
 	T = ContentType.objects.get(model=model)
 	index = Window(
 		expression=Rank(),
@@ -145,8 +148,8 @@ def post(
 def delete(
 	request: HttpRequest,
 	model: ModelsWithComments,
-	pk: int,
-	comment_id: int,
+	pk: OtodbID,
+	comment_id: OtodbID,
 ):
 	T = ContentType.objects.get(model=model)
 	comment = XtdComment.objects.get(
@@ -161,7 +164,7 @@ def delete(
 
 
 class CommentEditSchema(Schema):
-	comment_id: int
+	comment_id: OtodbID
 	comment_text: str
 
 

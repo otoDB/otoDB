@@ -1,8 +1,10 @@
 import { browser } from '$app/environment';
-import client from './api';
-import { languages } from './enums/Languages';
-import { getLocale, setLocale } from './paraglide/runtime';
+import client from '$lib/api';
+import { languages } from '$lib/enums/language';
+import { getLocale, setLocale } from '$lib/paraglide/runtime';
+import { WorkTagCategoryMap } from './enums/workTagCategory';
 import { m } from './paraglide/messages';
+import { WorkTagCategory, LanguageTypes, ThemePref, type components } from './schema';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -32,58 +34,68 @@ export const set_lang = async (lang: keyof typeof languages, logged_in: boolean)
 		await client.POST('/api/profile/prefs', {
 			fetch,
 			body: {
-				theme: null,
-				language: languages[lang].id
+				LANGUAGE: languages[lang].id
 			}
 		});
 	}
 	setLocale(lang);
 };
 
-interface Prefs {
-	theme?: number; // theme id
-}
+type Prefs = components['schemas']['UserPreferenceSchema'];
 
-export const get_prefs = (): Prefs | undefined => {
+const defaultPrefs: Prefs = {
+	LANGUAGE: LanguageTypes.en, // reflects baseLocale
+	THEME: ThemePref.Default
+};
+
+export const getLocalPrefs = (): Partial<Prefs> | undefined => {
 	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
-export const getLocalTheme = () => get_prefs()?.theme;
 
-export const updateLocalPref = (key: keyof Prefs, value: Prefs[typeof key]) => {
+export const getLocalPref = <T extends keyof Prefs>(setting: T): Prefs[T] =>
+	getLocalPrefs()?.[setting] ?? defaultPrefs[setting];
+
+export const updateLocalPref = <T extends keyof Prefs>(key: T, value: Prefs[T]) => {
 	if (!browser) return;
 
-	localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), [key]: value }));
+	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), [key]: value }));
 };
-export const updateLocalTheme = (themeId: number) => updateLocalPref('theme', themeId);
 
-export const GUIDELINE_POST_ID = 4;
-export const FAQ_POST_ID = 3;
+export const GUIDELINE_POST_ID = '4';
+export const FAQ_POST_ID = '3';
+export const SEARCH_DOCS_POST_ID = '38';
+export const getTagDisplayName = (tag: {
+	name: string;
+	lang_prefs: { lang: number; tag: string }[];
+}) => tag.lang_prefs.find(({ lang }) => lang === languages[getLocale()].id)?.tag ?? tag.name;
 
-const MINUTE = 60;
-const HOUR = MINUTE * 60;
-const DAY = HOUR * 24;
-const WEEK = DAY * 7;
-const MONTH = DAY * 30;
-const YEAR = DAY * 365;
+export const getTagDisplaySlug = (tag: {
+	slug: string;
+	lang_prefs: { lang: number; slug: string }[];
+}) => tag.lang_prefs.find(({ lang }) => lang === languages[getLocale()].id)?.slug ?? tag.slug;
 
-// prettier-ignore
-export function timeAgo(date: string | Date): string {
-	const d = date instanceof Date ? date : new Date(date);
-	const diff = (d.getTime() - Date.now()) / 1000;
-	const elapsed = Math.abs(diff);
-
-	if (elapsed <= 1) return m.busy_hour_bee_gasp();
-
-	const rtf = new Intl.RelativeTimeFormat(getLocale(), { numeric: 'always' });
-
-	const [divisor, unit]: [number, Intl.RelativeTimeFormatUnit] =
-		elapsed > YEAR   * 2 ? [YEAR,   'year']   :
-		elapsed > MONTH  * 2 ? [MONTH,  'month']  :
-		elapsed > WEEK   * 2 ? [WEEK,   'week']   :
-		elapsed > DAY    * 2 ? [DAY,    'day']    :
-		elapsed > HOUR   * 2 ? [HOUR,   'hour']   :
-		elapsed > MINUTE * 2 ? [MINUTE, 'minute'] :
-		                       [1,      'second'] ;
-
-	return rtf.format(Math.trunc(diff / divisor), unit);
+export function getDisplayText(
+	value: string | null | undefined,
+	placeholder: string | undefined = undefined
+): string {
+	return value ?? placeholder ?? m.lost_game_mink_loop();
 }
+
+const WORKTAG_REQUIRED_CATEGORIES = [
+	WorkTagCategory.Creator,
+	WorkTagCategory.Song,
+	WorkTagCategory.Source,
+	WorkTagCategory.General
+];
+export const getMissingCategories = (
+	tags: components['schemas']['TagWorkInstanceThinSchema'][]
+) => {
+	const present = new Set(
+		tags.flatMap((t) =>
+			WorkTagCategoryMap[t.category].canSetAsSource && t.sample
+				? [WorkTagCategory.Source, t.category]
+				: [t.category]
+		)
+	);
+	return WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
+};

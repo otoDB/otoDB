@@ -1,4 +1,6 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
+import { asEnum } from '$lib/enums';
+import { PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0, Status } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -7,21 +9,22 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	const platform = parseInt(url.searchParams.get('platform') ?? '', 10) || null,
 		origin = parseInt(url.searchParams.get('origin') ?? '', 10) || null,
 		status = parseInt(url.searchParams.get('status') ?? '', 10) || null,
-		standing = parseInt(url.searchParams.get('standing') ?? '1', 10) || 0;
+		paramStanding = parseInt(url.searchParams.get('standing') ?? '1', 10) || 0;
 
-	const paramDir = url.searchParams.get('dir');
-	const dir: '' | '-' = paramDir === '-' ? '-' : '';
+	const standing = asEnum(Status, paramStanding);
 
+	const paramDir = url.searchParams.get('dir') === '-' ? '-' : '';
 	const paramOrder = url.searchParams.get('order');
-	const order: 'id' | 'published_date' | null = (() => {
-		switch (paramOrder) {
-			case 'id':
-			case 'published_date':
-				return paramOrder;
-			default:
-				return null;
-		}
-	})();
+	const paramDirOrder = `${paramDir}${paramOrder}`;
+
+	type Order = PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0;
+	const order: Order | null =
+		paramDirOrder &&
+		Object.values(PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0).includes(
+			paramDirOrder as Order
+		)
+			? (paramDirOrder as Order)
+			: null;
 
 	const { data: submissions } = await client.GET('/api/profile/submissions', {
 		fetch,
@@ -30,11 +33,11 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 				username: params.username,
 				limit: batch_size,
 				offset: (page - 1) * batch_size,
-				order: order ? `${dir}${order}` : null,
+				order: order,
 				origin,
 				platform,
 				status,
-				standing
+				standing: standing ?? undefined
 			}
 		}
 	});
@@ -42,11 +45,11 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		submissions,
 		page,
 		batch_size,
-		order,
+		order: paramOrder,
 		origin,
 		platform,
 		status,
-		dir,
+		dir: paramDir,
 		standing
 	};
 };

@@ -1,22 +1,32 @@
 <script lang="ts">
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
-	import { navigating, page } from '$app/state';
-	import { env } from '$env/dynamic/public';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import { page } from '$app/state';
+	import Footer from '$lib/Footer.svelte';
 	import Section from '$lib/Section.svelte';
-	import { languages } from '$lib/enums/Languages';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
-	import { getThemeNameById } from '$lib/enums/themes';
+	import { isFormDirty } from '$lib/dirty';
+	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
+	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { defineCustomClientStrategy } from '$lib/paraglide/runtime';
+	import { Levels, ThemePref } from '$lib/schema';
+	import { themes } from '$lib/themes/themes';
 	import { callErrorToast } from '$lib/toast';
-	import { clickOutside, get_prefs, set_lang } from '$lib/ui';
-	import { currentVersion, Version } from '$lib/enums/version';
+	import { clickOutside, getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
-	import { isFormDirty } from '$lib/dirty';
 
 	let { data, children } = $props();
+
+	defineCustomClientStrategy('custom-userPreference', {
+		getLocale: () => {
+			const lang = data.user?.prefs.LANGUAGE ?? getLocalPrefs()?.LANGUAGE; // Don't want our default behaviour here
+			return lang ? resolveLanguageKeyById(lang) : undefined;
+		},
+		setLocale: (locale) => {
+			if (!data.user)
+				updateLocalPref('LANGUAGE', languages[locale as keyof typeof languages].id);
+		}
+	});
 
 	function handleError(e: Event) {
 		const err = e as ErrorEvent;
@@ -62,19 +72,15 @@
 
 	let search_type = $state('work');
 
-	const theme: string = $derived(
-		getThemeNameById(data.user?.prefs?.theme ?? +(get_prefs()?.theme ?? 0))
-	);
-
 	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
 
 	const organizationLd = ldTag(
 		JSON.stringify({
 			'@context': 'https://schema.org',
 			'@type': 'Organization',
-			name: 'otoDB',
-			url: 'https://otodb.net',
-			sameAs: ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
+			'name': 'otoDB',
+			'url': 'https://otodb.net',
+			'sameAs': ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
 		})
 	);
 
@@ -84,7 +90,7 @@
 					JSON.stringify({
 						'@context': 'https://schema.org',
 						'@type': 'BreadcrumbList',
-						itemListElement: (
+						'itemListElement': (
 							page.data.head.breadcrumbs as { name: string; url: string }[]
 						).map(
 							(
@@ -93,8 +99,8 @@
 								arr: { name: string; url: string }[]
 							) => ({
 								'@type': 'ListItem',
-								position: i + 1,
-								name: crumb.name,
+								'position': i + 1,
+								'name': crumb.name,
 								...(i < arr.length - 1
 									? { item: `https://otodb.net${crumb.url}` }
 									: {})
@@ -104,6 +110,14 @@
 				)
 			: null
 	);
+
+	// theme switcher
+	$effect(() => {
+		document.documentElement.setAttribute(
+			'data-theme',
+			themes[data.user?.prefs?.THEME ?? getLocalPref('THEME') ?? ThemePref.Default].key
+		);
+	});
 </script>
 
 <svelte:window onerror={handleError} onunhandledrejection={handleRejection} />
@@ -160,8 +174,8 @@
 	</li>
 {/snippet}
 
-<div class="text-otodb-content-primary overflow-auto {`theme-${theme}`}">
-	<div class="bg-marker bg-otodb-bg-primary fixed h-lvh w-full"></div>
+<div class="text-otodb-content-primary overflow-auto">
+	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
 		<button
@@ -207,7 +221,7 @@
 					}
 				]}
 				use:clickOutside
-				onOutclick={() => (isMobileNavOpen = false)}
+				onoutclick={() => (isMobileNavOpen = false)}
 			>
 				<form target="_self" method="get" action="/{search_type}" class="flex w-full">
 					<select bind:value={search_type} class="bg-otodb-bg-faint/75 pl-1">
@@ -242,7 +256,8 @@
 						{@render link('/', m.fine_late_chicken_quiz())}
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
 						{@render link('/work', m.grand_merry_fly_succeed())}
-						{#if hasUserLevelOld(data.user?.level, 'MEMBER')}
+						{@render link('/upload/add', `> ${m.fluffy_crisp_horse_imagine()}`)}
+						{#if hasUserLevel(data.user?.level, Levels.Member)}
 							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
 						{/if}
 						{@render link('/tag', m.empty_legal_chicken_taste())}
@@ -251,6 +266,7 @@
 						{@render link('/list', m.stale_loose_squid_cut())}
 						{@render link('/post/overview', m.just_salty_anaconda_nourish())}
 						{@render link('/comments', m.same_broad_haddock_pinch())}
+						{@render link('/profile', m.bright_nimble_eagle_glide())}
 						{@render link('/post/3', 'FAQ')}
 						{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 					</ul>
@@ -258,28 +274,36 @@
 				<div
 					class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 				>
-					<div class="border-otodb-content-faint mb-2 border-b text-xs">
-						{m.maroon_least_pony_evoke()}
+					<div
+						class="border-otodb-content-faint mb-2 flex items-center justify-between border-b text-xs"
+					>
+						<span>{m.maroon_least_pony_evoke()}</span>
+						{#if data.user}
+							<a
+								href={`/profile/${data.user.username}/notifications`}
+								title={m.free_keen_wren_exhale()}
+								class="relative -top-0.5 no-underline"
+								onclick={closeMobileNav}
+							>
+								{#if data.user.notifs_nonsub_count > 0}({data.user
+										.notifs_nonsub_count}){/if}
+								<span
+									class={[
+										'text-transparent',
+										data.user.notifs_count > 0
+											? '[text-shadow:0_0_var(--otodb-color-content-fainter)]'
+											: 'opacity-25 [text-shadow:0_0_var(--otodb-color-content-primary)]'
+									]}>🔔</span
+								>
+							</a>
+						{/if}
 					</div>
 					<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 						{#if !data.user}
-							{@render link(`/settings`, m.orange_born_seal_ascend())}
 							{@render link('/login', m.inner_stale_anteater_walk())}
 							{@render link('/register', m.blue_whole_camel_type())}
-						{:else}
-							{@render link(
-								`/profile/${data.user.username}/notifications`,
-								m.free_keen_wren_exhale() +
-									(data.user.notifs_count > 0
-										? m.great_clean_beaver_amuse() +
-											m.awful_house_liger_expand({
-												content: data.user.notifs_count
-											})
-										: '')
-							)}
 							{@render link(`/settings`, m.orange_born_seal_ascend())}
-							{@render link('/post/new?category=2', m.bald_ideal_gadfly_jest())}
-							{@render link('/upload/add', m.fluffy_crisp_horse_imagine())}
+						{:else}
 							{@render link(
 								`/profile/${data.user.username}`,
 								m.petty_basic_sheep_win()
@@ -288,11 +312,12 @@
 								`/profile/${data.user.username}/lists`,
 								m.jumpy_honest_mole_exhale()
 							)}
-							{@render link(`/request/new`, m.muddy_tough_swan_view())}
 							{@render link(
 								`/profile/${data.user.username}/submissions`,
 								m.flaky_gross_marlin_evoke()
 							)}
+							{@render link(`/request/new`, m.muddy_tough_swan_view())}
+							{@render link(`/settings`, m.orange_born_seal_ascend())}
 							<li class="mt-4">
 								<form method="POST" action="/logout">
 									<button
@@ -307,7 +332,7 @@
 						{/if}
 					</ul>
 				</div>
-				{#if hasUserLevelOld(data.user?.level, 'EDITOR')}
+				{#if hasUserLevel(data.user?.level, Levels.Editor)}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -315,13 +340,14 @@
 							{m.these_bold_gorilla_flip()}
 						</div>
 						<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
-							{@render link('/post/4', m.arable_direct_cougar_win())}
+							{@render link('/moderation', m.minor_inner_lynx_adapt())}
 							{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 							{@render link('/work/merge', m.heroic_same_wasp_conquer())}
+							{@render link('/post/4', m.arable_direct_cougar_win())}
 						</ul>
 					</div>
 				{/if}
-				{#if hasUserLevelOld(data.user?.level, 'ADMIN')}
+				{#if hasUserLevel(data.user?.level, Levels.Admin)}
 					<div
 						class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 					>
@@ -376,107 +402,7 @@
 					{/snippet}
 				</svelte:boundary>
 			</main>
-			<footer>
-				<div class="footer-left">
-					{#if navigating.to}
-						<span id="loading-indicator"></span>
-					{/if}
-				</div>
-				<div class="footer-center">
-					<span>
-						{m.mild_loud_shad_enchant({
-							type: 'otoDB',
-							name: m.glad_born_mouse_taste()
-						})}
-						{Version[currentVersion].name}
-						{#if env.PUBLIC_OTODB_HASH}
-							- <a href="https://github.com/otoDB/otoDB">{env.PUBLIC_OTODB_HASH}</a
-							>{/if}
-					</span>
-					<div class="social-links">
-						<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>
-						/
-						<a href="https://twitter.com/otoDBnet">Twitter</a>
-						/
-						<a href="irc://irc.rizon.net/otodb">#otodb @ Rizon</a>
-						/
-						<a href="mailto:contact@otodb.net">contact@otodb.net</a>
-					</div>
-				</div>
-				<div class="footer-right">
-					<ConnectionFavicon type="Website" class="size-4" />
-					<select
-						onchange={(e) => {
-							set_lang(
-								e.currentTarget.value as (typeof locales)[number],
-								!!data.user
-							);
-						}}
-						value={getLocale()}
-					>
-						{#each locales as l (l)}
-							<option value={l}>{languages[l].name}</option>
-						{/each}
-					</select>
-				</div>
-			</footer>
+			<Footer user={data.user}></Footer>
 		</div>
 	</div>
 </div>
-
-<style>
-	footer {
-		display: flex;
-		width: 100%;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 2rem;
-	}
-
-	.footer-left,
-	.footer-right {
-		flex: 1;
-	}
-
-	.footer-center {
-		flex: 3;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.footer-right {
-		display: flex;
-		justify-content: flex-end;
-	}
-
-	.social-links a {
-		border-bottom: 1px dotted var(--otodb-color-content-primary);
-		text-decoration: none;
-		color: inherit;
-	}
-
-	.social-links a:hover {
-		opacity: 0.7;
-	}
-
-	@keyframes loading-dot {
-		0% {
-			content: '.';
-		}
-		33% {
-			content: '..';
-		}
-		66% {
-			content: '...';
-		}
-		100% {
-			content: '.';
-		}
-	}
-	#loading-indicator::after {
-		content: '.';
-		animation: loading-dot 0.4s infinite;
-	}
-</style>

@@ -1,26 +1,35 @@
 <script lang="ts">
-	import client, { getDisplayText } from '$lib/api';
+	import client from '$lib/api';
+	import Banner from '$lib/Banner.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {
-		Platform,
-		Rating,
-		WorkOrigin,
+		PlatformNames,
+		RatingNames,
+		WorkOriginNames,
 		WorkRelationDisplayBackward,
 		WorkRelationDisplayForward,
-		WorkStatus
+		WorkStatusNames
 	} from '$lib/enums';
-	import { resolveWorkTagCategoryKeyById, WorkTagCategory } from '$lib/enums/WorkTagCategory';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
+	import { merge_paths } from '$lib/merge_paths';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
-	import type { components } from '$lib/schema';
+	import {
+		ModelsWithComments,
+		Status,
+		WorkOrigin,
+		WorkRelationTypes,
+		WorkTagCategory,
+		type components
+	} from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
-	import { callSavingToast } from '$lib/toast';
+	import { callErrorCodeToast, callSavingToast } from '$lib/toast';
+	import { getDisplayText } from '$lib/ui.js';
+	import { GUIDELINE_POST_ID, getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
-	import type { ComponentProps } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
@@ -41,7 +50,7 @@
 			userListsShown = !userListsShown;
 		}
 	};
-	const toggleWork = async (list_id: number) => {
+	const toggleWork = async (list_id: string) => {
 		const p = client.PUT('/api/list/toggle_work', {
 			fetch,
 			params: { query: { list_id, work_id: data.id } }
@@ -54,58 +63,134 @@
 		}
 	};
 
-	const groupedTags: [keyof typeof WorkTagCategory, PageProps['data']['tags']][] = $derived(
-		(
-			Object.entries(
-				Object.groupBy(data.tags, (t) => {
-					const c = resolveWorkTagCategoryKeyById(t.category);
-					if (WorkTagCategory[c].canSetAsSource && t.sample) return 'SOURCE';
-					else return c;
-				})
-			) as [keyof typeof WorkTagCategory, PageProps['data']['tags']][]
-		).toSorted(([a], [b]) => WorkTagCategory[a].order - WorkTagCategory[b].order)
+	const groupedTags: [WorkTagCategory, PageProps['data']['tags']][] = $derived(
+		[
+			...Map.groupBy(data.tags, (t) => {
+				const c = t.category;
+				if (WorkTagCategoryMap[c].canSetAsSource && t.sample) return WorkTagCategory.Source;
+				else return c;
+			}).entries()
+		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
 
-	const merge_paths = (
-		paths: (typeof groupedTags)[number][1]
-	): ComponentProps<typeof WorkTagTree>['tree'][] => {
-		const graph: SvelteMap<string, Set<string>> = new SvelteMap();
-		paths
-			.filter((p) => p.primary_path.length)
-			.forEach((path) =>
-				path.primary_path.forEach((p, i, a) => {
-					const next_node = (i + 1 === a.length ? path : a[i + 1]).slug;
-					if (graph.has(p.slug)) graph.get(p.slug)?.add(next_node);
-					else graph.set(p.slug, new Set([next_node]));
-				})
-			);
-		const traverse = (node: string): ComponentProps<typeof WorkTagTree>['tree'] => ({
-			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node)!,
-			real: paths.some((n) => n.slug === node),
-			children: Array.from(graph.get(node) ?? []).map((n) => traverse(n))
-		});
-		return [
-			...graph
-				.keys()
-				.filter((n) => !graph.values().some((s) => s.has(n)))
-				.map(traverse),
-			...paths
-				.filter((p) => p.primary_path.length === 0 && !graph.has(p.slug))
-				.map((n) => ({ node: n, real: true }))
-		];
-	};
+	const missingCategories = $derived.by(() => getMissingCategories(data.tags));
 
-	// TODO: typing is messy
 	const relTree = $derived(
 		data.relations[0].length > 0
-			? (Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map(
-					(d) => [d[0], Object.entries(Object.groupBy(d[1]!, (r) => r.relation))]
-				) as [string, [string, { A_id: number; B_id: number }[]][]][])
+			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
+					(d) => [+d[0], [...Map.groupBy(d[1]!, (r) => r.relation).entries()]]
+				) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
 			: null
 	);
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
+	{#if missingCategories.length > 0}
+		<Banner variant="info">
+			<div class="text-sm">
+				{m.watery_kind_quail_climb({
+					missing: missingCategories.map((c) => WorkTagCategoryMap[c].nameFn()).join(', ')
+				})}
+			</div>
+			<div class="mt-1 text-sm">
+				<a href="/post/{GUIDELINE_POST_ID}" class="underline">
+					{m.arable_direct_cougar_win()}
+				</a>
+			</div>
+		</Banner>
+	{/if}
+	{#if data.status === Status.Pending}
+		<Banner variant="info" title={m.broad_inner_boar_devour()} />
+	{:else if data.status === Status.Unapproved && data?.pending_appeal}
+		<Banner variant="caution" title={m.quiet_tasty_earthworm_trip()}>
+			{#if data.pending_appeal.reason}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.weary_spicy_fly_attend(),
+						name: data.pending_appeal.reason
+					})}
+				</div>
+			{/if}
+			{#if data.pending_appeal.by}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.any_light_lamb_gaze(),
+						name: data.pending_appeal.by.username
+					})}
+				</div>
+			{/if}
+		</Banner>
+	{:else if data.status === Status.Unapproved}
+		<Banner variant="danger" title={m.livid_main_bat_lift()} />
+	{/if}
+	{#if data?.pending_flag}
+		<Banner variant="warning" title={m.small_red_finch_lock()}>
+			{#if data.pending_flag.reason}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.weary_spicy_fly_attend(),
+						name: data.pending_flag.reason
+					})}
+				</div>
+			{/if}
+			{#if data.pending_flag.by}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.arable_keen_rook_nail(),
+						name: data.pending_flag.by.username
+					})}
+				</div>
+			{/if}
+		</Banner>
+	{/if}
+	{#if data.user && (data.status === Status.Pending || data?.pending_flag || data?.pending_appeal)}
+		<div class="mb-3 flex flex-wrap gap-2">
+			{#if data.user.level >= 40}
+				<button
+					class="border border-green-600 px-3 py-1 text-green-600"
+					onclick={async () => {
+						const { error } = await client.POST('/api/work/approve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (error) callErrorCodeToast(error.code, error.data ?? {});
+						else location.reload();
+					}}
+				>
+					Approve
+				</button>
+				<button
+					class="border px-3 py-1"
+					onclick={async () => {
+						const reason = prompt(m.honest_tangy_butterfly_dream());
+						if (!reason) return;
+						const { error } = await client.POST('/api/work/disapprove', {
+							fetch,
+							params: { query: { work_id: data.id, reason: reason } }
+						});
+						if (error) callErrorCodeToast(error.code, error.data ?? {});
+					}}
+				>
+					{m.alive_blue_marlin_push()}
+				</button>
+			{/if}
+			{#if data.user.level >= 50}
+				<button
+					class="border border-red-600 px-3 py-1 text-red-600"
+					onclick={async () => {
+						if (!confirm(m.cool_house_barbel_cheer())) return;
+						const { error } = await client.POST('/api/work/resolve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (!error) location.reload();
+					}}
+				>
+					{m.proof_deft_reindeer_smile()}
+				</button>
+			{/if}
+		</div>
+	{/if}
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
@@ -144,7 +229,7 @@
 															type: [
 																WorkRelationDisplayBackward,
 																WorkRelationDisplayForward
-															][+dir][parseInt(tp, 10)](),
+															][dir][tp](),
 															name: ''
 														})}
 														<ul class="ml-2">
@@ -172,7 +257,7 @@
 							{/if}
 							<tr>
 								<th class="w-24">{m.good_dark_bumblebee_spur()}</th>
-								<td>{Rating[data.rating]()}</td>
+								<td>{RatingNames[data.rating]()}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -214,6 +299,86 @@
 										{/if}
 									</td>
 								</tr>
+								{#if data.status === Status.Approved && !data?.pending_flag}
+									<tr>
+										<th class="w-24">{m.nimble_gaudy_scallop_fold()}</th>
+										<td>
+											<button
+												onclick={async () => {
+													const reason = prompt(
+														m.royal_big_chipmunk_absorb()
+													);
+													if (!reason?.trim()) {
+														// Show message
+														alert(
+															m.fun_bland_llama_twirl({
+																thing: m.royal_big_chipmunk_absorb()
+															})
+														);
+														return;
+													}
+													const { error } = await client.POST(
+														'/api/work/flag',
+														{
+															fetch,
+															params: {
+																query: { work_id: data.id, reason }
+															}
+														}
+													);
+													if (error)
+														callErrorCodeToast(
+															error.code,
+															error.data ?? {}
+														);
+													else location.reload();
+												}}
+											>
+												{m.nimble_gaudy_scallop_fold()}
+											</button>
+										</td>
+									</tr>
+								{/if}
+								{#if data.status === Status.Unapproved && !data?.pending_appeal}
+									<tr>
+										<th class="w-24">{m.key_last_racoon_clasp()}</th>
+										<td>
+											<button
+												onclick={async () => {
+													const reason = prompt(
+														m.zippy_dark_mayfly_cut()
+													);
+													if (!reason?.trim()) {
+														// Show message
+														alert(
+															m.fun_bland_llama_twirl({
+																thing: m.zippy_dark_mayfly_cut()
+															})
+														);
+														return;
+													}
+													const { error } = await client.POST(
+														'/api/work/appeal',
+														{
+															fetch,
+															params: {
+																query: { work_id: data.id, reason }
+															}
+														}
+													);
+													if (error)
+														callErrorCodeToast(
+															error.code,
+															error.data ?? {}
+														);
+													else location.reload();
+												}}
+											>
+												{m.key_last_racoon_clasp()}
+											</button>
+										</td>
+									</tr>
+								{/if}
 							</tbody>
 						</table>
 					</div>
@@ -226,12 +391,12 @@
 			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
-					style="border-color: {WorkTagCategory[cat]
-						.color};background-color: color-mix(in hsl, {WorkTagCategory[cat]
+					style="border-color: {WorkTagCategoryMap[cat]
+						.color};background-color: color-mix(in hsl, {WorkTagCategoryMap[cat]
 						.color}, transparent 85%);"
 				>
 					<h5 class="my-2 font-bold">
-						{WorkTagCategory[cat].nameFn()}
+						{WorkTagCategoryMap[cat].nameFn()}
 					</h5>
 					<ul class="flex list-none flex-wrap gap-2">
 						{#each merge_paths(tags) as tree, j (j)}
@@ -273,8 +438,10 @@
 							rel="noopener noreferrer"
 							class={[src.work_status !== 0 ? 'text-otodb-content-fainter' : '']}
 						>
-							{Platform[src.platform]}
-							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
+							{PlatformNames[src.platform]}
+							{src.work_origin === WorkOrigin.Author
+								? ''
+								: ' ' + WorkOriginNames[src.work_origin]()}
 							-
 							{src.title || src.url}
 						</a>
@@ -298,12 +465,12 @@
 					<div>
 						{m.large_polite_otter_thrive()}:
 						<strong>
-							{WorkOrigin[src.work_origin]()}
+							{WorkOriginNames[src.work_origin]()}
 						</strong>
 					</div>
 					<div>
 						{m.civil_trick_oryx_clap()}:
-						<strong>{WorkStatus[src.work_status]()}</strong>
+						<strong>{WorkStatusNames[src.work_status]()}</strong>
 					</div>
 					<div>
 						{m.big_dry_seahorse_succeed()}:
@@ -358,7 +525,12 @@
 {/await}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree comments={data.comments} user={data.user ?? null} model="mediawork" pk={data.id} />
+	<CommentTree
+		comments={data.comments}
+		user={data.user ?? null}
+		model={ModelsWithComments.mediawork}
+		pk={data.id}
+	/>
 </Section>
 
 <style>

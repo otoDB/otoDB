@@ -49,10 +49,10 @@ services:
     image: ghcr.io/otodb/otodb-frontend:latest
     build:
       context: ./frontend
-      args:
-        OTODB_HASH: ${OTODB_HASH:-}
     env_file:
       - .env
+    environment:
+      INTERNAL_API_ENDPOINT: http://backend:8000/
     restart: always
 
   caddy:

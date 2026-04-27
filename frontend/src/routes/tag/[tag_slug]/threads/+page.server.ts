@@ -1,5 +1,5 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
+import { PostEntities } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
@@ -9,15 +9,13 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		fetch,
 		params: {
 			query: {
-				entity: 'tagwork',
+				entity: PostEntities.tagwork,
 				id: params.tag_slug,
 				limit: batch_size,
 				offset: (page - 1) * batch_size
 			}
 		}
 	});
-	// TODO: properly handle fetch errors
-	if (!data) error(500, 'Failed to fetch data.');
 
 	return {
 		threads: data,

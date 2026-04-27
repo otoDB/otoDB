@@ -1,23 +1,36 @@
-<script lang="ts">
-	// @ts-nocheck TODO: I gave up typing for this code
-
+<script lang="ts" generics="T extends 'work' | 'song'">
+	import { enumValues, SongRelationNames, WorkRelationNames } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
-	import { SongRelationTypes, WorkRelationTypes } from '$lib/enums.js';
-	import { getDisplayText } from '$lib/api';
-	import mermaid from 'mermaid';
+	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
+	import { getDisplayText } from '$lib/ui';
 	import elkLayouts from '@mermaid-js/layout-elk';
+	import mermaid from 'mermaid';
 	import { onMount } from 'svelte';
 	import { SVGViewer } from 'svelte-svg-viewer';
 
-	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 } = $props();
+	type Work = Omit<components['schemas']['SlimWorkSchema'], 'status'>;
+	type Song = components['schemas']['SongSchema'];
+	type RelationType = T extends 'work' ? WorkRelationTypes : SongRelationTypes;
+	type Node = (T extends 'work' ? Work : Song) & { distance?: number };
+	type Edge = { A_id: string; B_id: string; relation: RelationType };
+	interface Props {
+		id: string;
+		type: 'work' | 'song';
+		min_height?: number;
+		defaultDir: 'TB' | 'LR';
+		objects: Node[];
+		relations: Edge[];
+	}
+	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 }: Props = $props();
 
-	const RelationTypes = { work: WorkRelationTypes, song: SongRelationTypes }[type];
+	const RelationTypes = $derived(type === 'work' ? WorkRelationTypes : SongRelationTypes);
+	const RelationNames = $derived(type === 'work' ? WorkRelationNames : SongRelationNames);
 
 	let deg = $state(1);
 	let direction = $state(defaultDir);
-	let allowed_types = $state(new Array(RelationTypes.length).fill(true));
+	let allowed_types: RelationType[] = $state(enumValues(RelationTypes) as RelationType[]);
 
-	const get_svg_mermaid = (nodes, links, ext) =>
+	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: string[]) =>
 		mermaid.render(
 			'Relations',
 			`---
@@ -32,7 +45,7 @@ flowchart ${direction}
 	classDef untitled font-style:italic;` +
 				(type === 'work'
 					? `
-    ${nodes
+    ${(nodes as Work[])
 		.map(
 			(w) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
     ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
@@ -42,16 +55,16 @@ flowchart ${direction}
     ${links
 		.map((r) =>
 			//  Reverse relation for 'sequel'
-			r.relation === 0
-				? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationTypes[r.relation]()}| ${r.A_id}`
-				: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationTypes[r.relation]()}| ${r.B_id}`
+			r.relation === WorkRelationTypes.Sequel
+				? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationNames[r.relation]()}| ${r.A_id}`
+				: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationNames[r.relation]()}| ${r.B_id}`
 		)
 		.join('\n')}
 	${ext
 		.map(
 			(a) => `${a}MORE["${m.fresh_deft_warbler_edit()}"]
 	class ${a}MORE moreNodes;
-	${a > 0 ? `${a}MORE -.- ${a}` : `${-a} -.- ${a}MORE`}`
+	${a[0] !== '-' ? `${a}MORE -.- ${a}` : `${-a} -.- ${a}MORE`}`
 		)
 		.join('\n')}`
 					: `
@@ -60,24 +73,23 @@ flowchart ${direction}
 			(
 				w
 			) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
-    click ${w.id} "${`/tag/${w.work_tag}`}"`
+    click ${w.id} "${`/tag/${(w as Song).work_tag}`}"`
 		)
 		.join('\n')}
-    ${links.map((r) => `${r.A_id} -->|${RelationTypes[r.relation]()}| ${r.B_id}`).join('\n')}`)
+    ${links.map((r) => `${r.A_id} -->|${RelationNames[r.relation]()}| ${r.B_id}`).join('\n')}`)
 		);
 
-	export const mermaid_BFS = (
-		ns,
-		ls,
-		start: number,
-		max_distance: number = Number.POSITIVE_INFINITY,
-		allowed_types: boolean[] = new Array(WorkRelationTypes.length).fill(true)
-	) => {
+	const mermaid_BFS = (
+		ns: Node[],
+		ls: Edge[],
+		start: string,
+		max_distance: number = Number.POSITIVE_INFINITY
+	): [(Node & { distance: number })[], Edge[], string[]] => {
 		const nodes = structuredClone(ns),
 			links = structuredClone(ls);
-		let queue = [[start, 0]];
+		let queue: [string, number][] = [[start, 0]];
 		while (queue.length) {
-			const next_queue = [];
+			const next_queue: [string, number][] = [];
 			for (const [n, curr_distance] of queue) {
 				const ng = nodes.find((nn) => nn.id === n)!;
 				if (curr_distance > max_distance || ng.distance !== undefined) continue;
@@ -88,44 +100,45 @@ flowchart ${direction}
 							links
 								.filter(
 									(v) =>
-										allowed_types[v.relation] && (v.A_id === n || v.B_id === n)
+										allowed_types.includes(v.relation) &&
+										(v.A_id === n || v.B_id === n)
 								)
 								.flatMap((v) => [v.A_id, v.B_id])
 						)
-					].map((nn) => [nn, curr_distance + 1])
+					].map((nn) => [nn, curr_distance + 1] as [string, number])
 				);
 			}
 			queue = next_queue;
 		}
 		return [
-			nodes.filter((v) => v.distance !== undefined),
+			nodes.filter((v) => v.distance !== undefined) as (Node & { distance: number })[],
 			links.filter(
 				(v) =>
-					allowed_types[v.relation] &&
-					nodes.find((w) => w.id === v.A_id).distance !== undefined &&
-					nodes.find((w) => w.id === v.B_id).distance !== undefined
+					allowed_types.includes(v.relation) &&
+					nodes.find((w) => w.id === v.A_id)?.distance !== undefined &&
+					nodes.find((w) => w.id === v.B_id)?.distance !== undefined
 			),
 			[
 				...new Set(
 					links
-						.filter((v) => allowed_types[v.relation])
-						.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)))
+						.filter((v) => allowed_types.includes(v.relation))
+						.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)!))
 						.filter(
 							([a, b]) => (a.distance === undefined) !== (b.distance === undefined)
 						)
-						.map(([a, b]) => (a.distance !== undefined ? a.id : -b.id))
+						.map(([a, b]) => (a.distance !== undefined ? a.id : '-' + b.id))
 				)
 			]
 		];
 	};
 
-	const max_distance = Math.max(...mermaid_BFS(objects, relations, id)[0].map((n) => n.distance));
+	const max_distance = $derived(
+		Math.max(...mermaid_BFS(objects, relations, id)[0].map((n) => n.distance))
+	);
 
 	let distance = $derived(Math.max(Math.min(deg, max_distance), 1));
 
-	let [nodes, links, ext] = $derived(
-		mermaid_BFS(objects, relations, id, distance, allowed_types)
-	);
+	let [nodes, links, ext] = $derived(mermaid_BFS(objects, relations, id, distance));
 	let svg = $derived(get_svg_mermaid(nodes, links, ext));
 
 	onMount(() => {
@@ -138,7 +151,7 @@ flowchart ${direction}
 	function svgMouseOver(event: MouseEvent) {
 		const target = event.target as HTMLElement;
 		const node = target.closest('[id^="flowchart-"]');
-		const label = target.closest('.label:has(.edgeLabel)');
+		const label: HTMLElement | null = target.closest('.label:has(.edgeLabel)');
 
 		if (svgContainer) {
 			if (node) {
@@ -156,7 +169,7 @@ flowchart ${direction}
 				}
 			}
 			if (label) {
-				const edge = svgContainer.querySelector(`[data-id="${label.dataset.id}"`);
+				const edge = svgContainer.querySelector(`[data-id="${label.dataset.id}"`)!;
 				edge.classList.add('highlighted');
 				label.classList.add('highlighted');
 			}
@@ -173,7 +186,7 @@ flowchart ${direction}
 	}
 
 	let svg_height = $state(min_height),
-		old_svg_height = svg_height;
+		old_svg_height = 0;
 	let svg_resizing_begin = -1;
 </script>
 
@@ -190,11 +203,11 @@ flowchart ${direction}
 	>
 </label>
 {m.mild_loud_shad_enchant({ type: m.mellow_upper_finch_drip(), name: '' })}
-{#each RelationTypes as t, i (i)}
-	<label class="type-label"
-		><input type="checkbox" class="hidden" bind:checked={allowed_types[i]} />{t()}</label
-	>
-{/each}
+<select multiple bind:value={allowed_types}>
+	{#each enumValues(RelationTypes) as t, i (i)}
+		<option value={t} class="type-label">{RelationNames[t]()}</option>
+	{/each}
+</select>
 {#await svg}
 	{m.sunny_light_duck_surge()}
 {:then s}
@@ -234,11 +247,8 @@ flowchart ${direction}
 
 <style>
 	@reference "../app.css";
-	label.type-label {
-		padding: 0 0.3rem;
-		margin: 0.1rem;
-		border: 1px solid var(--otodb-color-content-primary);
-		&:has(input:checked) {
+	option.type-label {
+		&:checked {
 			@apply text-otodb-bg-primary;
 			@apply bg-otodb-content-primary;
 		}

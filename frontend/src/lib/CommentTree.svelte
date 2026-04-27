@@ -3,43 +3,34 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
-	import { hasUserLevelOld } from '$lib/enums/UserLevel';
+	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
-	import { timeAgo } from '$lib/ui';
-	import type { Snippet } from 'svelte';
-
-	export type CommentModels =
-		| 'mediawork'
-		| 'account'
-		| 'pool'
-		| 'tagwork'
-		| 'tagsong'
-		| 'post'
-		| 'bulkrequest';
+	import { Levels, ModelsWithComments } from '$lib/schema';
+	import Time from '$lib/Time.svelte';
+	import EditedBy from './EditedBy.svelte';
 
 	interface Props {
-		// eslint-disable-next-line no-undef
 		user: App.Locals['user'] | null;
-		model: CommentModels;
-		pk: number;
+		model: ModelsWithComments;
+		pk: string;
 		comments: Parameters<typeof makeCommentTree>[0];
 	}
 
 	const { comments, user = null, model, pk }: Props = $props();
 
 	const tree = $derived(makeCommentTree(comments) ?? []);
-	let drafts = $state<Record<number, string>>({});
-	let previews = $state<Record<number, string>>({});
-	let previewMode = $state<Record<number, boolean>>({});
-	let editingId = $state<number | null>(null);
+	let drafts = $state<Record<string, string>>({});
+	let previews = $state<Record<string, string>>({});
+	let previewMode = $state<Record<string, boolean>>({});
+	let editingId = $state<string | null>(null);
 	let editingText = $state('');
 	let editPreview = $state('');
 	let editPreviewMode = $state(false);
 
 	const EDIT_WINDOW_MS = 180 * 24 * 60 * 60 * 1000;
 
-	const togglePreview = (reply_to: number) => {
+	const togglePreview = (reply_to: string) => {
 		if (previewMode[reply_to]) {
 			previewMode[reply_to] = false;
 			return;
@@ -65,7 +56,7 @@
 		editPreviewMode = true;
 	};
 
-	const startEdit = (id: number, currentText: string) => {
+	const startEdit = (id: string, currentText: string) => {
 		editingId = id;
 		editingText = currentText;
 		editPreviewMode = false;
@@ -77,8 +68,8 @@
 		editPreviewMode = false;
 	};
 
-	const can_comment = $derived(hasUserLevelOld(user?.level, 'MEMBER'));
-	const is_admin = $derived(!!user && hasUserLevelOld(user?.level, 'ADMIN'));
+	const can_comment = $derived(hasUserLevel(user?.level, Levels.Member));
+	const is_admin = $derived(!!user && hasUserLevel(user?.level, Levels.Admin));
 
 	const canEdit = (data: ReturnType<typeof makeCommentTree>[number]) => {
 		if (!user) return false;
@@ -89,7 +80,7 @@
 		return Date.now() - data.time.getTime() < EDIT_WINDOW_MS;
 	};
 
-	const delete_comment = async (comment_id: number) => {
+	const delete_comment = async (comment_id: string) => {
 		await client.DELETE('/api/comment/comment', {
 			fetch,
 			params: { query: { comment_id, model, pk } }
@@ -98,7 +89,7 @@
 	};
 </script>
 
-{#snippet reply(reply_to: number)}
+{#snippet reply(reply_to: string)}
 	<form
 		class="reply-form gap-2"
 		method="POST"
@@ -121,8 +112,8 @@
 		}}
 	>
 		<input type="text" name="model" hidden value={model} />
-		<input type="number" name="pk" hidden value={pk} />
-		<input type="number" name="reply_to" hidden value={reply_to} />
+		<input type="text" name="pk" hidden value={pk} />
+		<input type="text" name="reply_to" hidden value={reply_to} />
 		<div class="reply-main">
 			{#if previewMode[reply_to]}
 				<div class="editor-panel reply-editor">
@@ -148,35 +139,20 @@
 	</form>
 {/snippet}
 
-{#snippet comment(
-	data: ReturnType<typeof makeCommentTree>[number],
-	this_component: Snippet<
-		[
-			ReturnType<typeof makeCommentTree>[number],
-			any, // TODO: 再帰的なのでとりあえず`any`で対応
-			number
-		]
-	>,
-	depth: number
-)}
+{#snippet comment(data: ReturnType<typeof makeCommentTree>[number], depth: number)}
 	<div class="comment grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="c{data.id}">
 		<div
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
 			<a href="/profile/{data.user.username}">{data.user.username}</a>
-			<a href="#c{data.id}"
-				><time title={data.time.toLocaleString()}>{timeAgo(data.time)}</time></a
-			>
+			<a href="#c{data.id}"><Time format="relative" date={data.time} /></a>
 			{#if data.edited_at}
-				<span title={new Date(data.edited_at).toLocaleString()}>
-					{#if data.edited_by && data.edited_by.username !== data.user.username}
-						({m.free_tiny_badger_breathe({ time: timeAgo(data.edited_at) })}<a
-							href="/profile/{data.edited_by.username}">{data.edited_by.username}</a
-						>{m.agent_honest_marten_renew()})
-					{:else}
-						{m.same_only_emu_startle({ time: timeAgo(data.edited_at) })}
-					{/if}
-				</span>
+				<EditedBy
+					date={data.edited_at}
+					user={data.edited_by && data.edited_by.username !== data.user.username
+						? data.edited_by
+						: null}
+				/>
 			{/if}
 		</div>
 		<div>
@@ -251,7 +227,7 @@
 							{m.minor_crisp_cobra_list()}
 						</button>
 					{/if}
-					{#if user && (hasUserLevelOld(user?.level, 'ADMIN') || data.user.username === user.username)}
+					{#if user && (hasUserLevel(user?.level, Levels.Admin) || data.user.username === user.username)}
 						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 							>{m.even_alert_grebe_taste()}</button
 						>
@@ -263,7 +239,7 @@
 	<div class="border-otodb-content-fainter ml-2 border-l-2 pl-3">
 		{@render reply(data.id)}
 		{#each data.children as child, i (i)}
-			{@render this_component(child, this_component, depth + 1)}
+			{@render comment(child, depth + 1)}
 		{/each}
 	</div>
 {/snippet}
@@ -271,14 +247,14 @@
 <div>
 	{#if tree.length}
 		{#each tree as c, i (i)}
-			{@render comment(c, comment, 0)}
+			{@render comment(c, 0)}
 		{/each}
 	{:else}
 		{m.new_basic_dove_love()}
 	{/if}
 	{#if can_comment}
 		<h4 class="mb-2">{m.mild_loud_shad_enchant({ type: m.weak_safe_cat_mix(), name: '' })}</h4>
-		{@render reply(0)}
+		{@render reply('0')}
 	{/if}
 </div>
 

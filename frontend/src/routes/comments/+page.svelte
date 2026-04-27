@@ -3,8 +3,8 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import Pager from '$lib/Pager.svelte';
-	import { buildCommentRoutes } from '$lib/enums';
-	import { timeAgo } from '$lib/ui';
+	import { buildEntityRoutes, type EntityModelType } from '$lib/enums';
+	import Time from '$lib/Time.svelte';
 
 	let { data } = $props();
 </script>
@@ -13,10 +13,11 @@
 	<table>
 		<tbody>
 			{#each data.comments?.items as c, i (i)}
+				{@const link = buildEntityRoutes(c.entity_type as EntityModelType, c.entity_id)}
 				<tr>
 					<td>
-						<a href={buildCommentRoutes(c.entity_type, c.entity_id)}>
-							{buildCommentRoutes(c.entity_type, c.entity_id)}
+						<a href={link}>
+							{link}
 						</a>
 					</td>
 					<td>
@@ -25,8 +26,10 @@
 					<td>
 						{c.comment}
 					</td>
-					<td>{timeAgo(c.submit_date)}</td></tr
-				>
+					<td>
+						<Time format="relative" date={c.submit_date} />
+					</td>
+				</tr>
 			{/each}
 		</tbody>
 	</table>

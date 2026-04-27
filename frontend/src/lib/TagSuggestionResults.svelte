@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { WorkTagPresentationColours } from './enums';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
+	import type { WorkTagCategory } from '$lib/schema';
 
 	type SuggestionTag = {
-		id: number;
+		id: string;
 		name: string;
 		slug: string;
 		category: number;
 		aliased_to?: null | {
-			id: number;
+			id: string;
 			name: string;
 			slug: string;
 			category: number;
@@ -62,9 +63,9 @@
 		return result;
 	};
 
-	const getTagStyle = (category: number) => {
+	const getTagStyle = (category: WorkTagCategory) => {
 		return type === 'work' && category !== 0
-			? `color: ${WorkTagPresentationColours[category]}`
+			? `color: ${WorkTagCategoryMap[category].color}`
 			: '';
 	};
 </script>

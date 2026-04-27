@@ -1,13 +1,11 @@
 <script lang="ts">
+	import { isSOV, isSVO } from '$lib/enums/language';
+	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
-
 	import Section from '$lib/Section.svelte';
-	import { timeAgo } from '$lib/ui.js';
-	import { isSOV, isSVO } from '$lib/enums/Languages';
+	import Time from '$lib/Time.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import { Route } from '$lib/enums/Route.js';
-	import { resolveRouteKeyById } from '$lib/enums/Route.js';
 
 	let { data } = $props();
 </script>
@@ -48,9 +46,7 @@
 				{#each data.changes.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-							>{typeof r.route === 'number'
-								? Route[resolveRouteKeyById(r.route)].title()
-								: ''}</td
+							>{typeof r.route === 'number' ? routeNames[r.route]() : ''}</td
 						><td>
 							{#if isSVO(getLocale())}
 								{m.curly_safe_lynx_fond()}
@@ -59,10 +55,7 @@
 							{#if isSOV(getLocale())}
 								{m.curly_safe_lynx_fond()}
 							{/if}</td
-						><td
-							><time title={new Date(r.date).toLocaleString()}>{timeAgo(r.date)}</time
-							></td
-						></tr
+						><td><Time format="relative" date={r.date} /></td></tr
 					>
 				{/each}
 			</tbody>
@@ -76,11 +69,7 @@
 				{#each data.posts.items as p, i (i)}
 					<tr>
 						<td><a href="/post/{p.id}">{p.title}</a></td>
-						<td
-							><time title={new Date(p.modified).toLocaleString()}
-								>{timeAgo(p.modified)}</time
-							></td
-						>
+						<td><Time format="relative" date={p.modified} /></td>
 					</tr>
 				{/each}
 			</tbody>

@@ -1,7 +1,7 @@
+import client, { forwardCookies, rawClient } from '$lib/api.server';
+import { m } from '$lib/paraglide/messages.js';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client, { forwardCookies } from '$lib/api';
-import { m } from '$lib/paraglide/messages.js';
 
 export const load: PageServerLoad = async ({ cookies, fetch, locals }) => {
 	if (locals.user) redirect(303, '/');
@@ -24,7 +24,7 @@ export const actions = {
 			return fail(400, { username, email, missing: true });
 		else if (password != confirm) return fail(400, { username, email, mismatch: true });
 
-		const { response, error } = await client.POST('/api/auth/register', {
+		const { response, error } = await rawClient.POST('/api/auth/register', {
 			body: { username, password, email, invite },
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') },
 			fetch
@@ -41,7 +41,7 @@ export const actions = {
 			return fail(400, {
 				username,
 				failed: true,
-				message: 'An unknown error occurred' // TODO: i don't know what error message supposed to be.
+				message: 'An unknown error occurred'
 			});
 
 		forwardCookies(cookies, response);

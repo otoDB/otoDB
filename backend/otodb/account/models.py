@@ -1,9 +1,11 @@
 from typing import TYPE_CHECKING
 
-from django.urls import reverse
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 from django.db import IntegrityError, models
+from django.urls import reverse
 from django.utils import timezone
+
+from otodb.models.enums import OtodbIntegerEnum
 
 
 class AccountManager(BaseUserManager):
@@ -34,7 +36,7 @@ class AccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser):
-	class Levels(models.IntegerChoices):
+	class Levels(OtodbIntegerEnum):
 		ANONYMOUS = 0
 		RESTRICTED = 10
 		MEMBER = 20
@@ -44,10 +46,11 @@ class Account(AbstractBaseUser):
 
 	if TYPE_CHECKING:
 		from django.db.models import QuerySet
-		from ..models.work_source import WorkSource
-		from ..models.posts import Notification
-		from ..models.pool import Pool
+
 		from ..models.connection import ProfileConnection
+		from ..models.pool import Pool
+		from ..models.posts import Notification
+		from ..models.work_source import WorkSource
 
 		worksource_set: QuerySet['WorkSource']
 		notifs: QuerySet['Notification']

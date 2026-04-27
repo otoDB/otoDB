@@ -37,7 +37,9 @@ WORKDIR /app
 COPY --from=build /usr/local/bin/deno /usr/local/bin/deno
 COPY --from=build /app /app
 
-ENV PATH="/app/.venv/bin:$PATH" \
+ARG OTODB_HASH
+ENV OTODB_HASH=${OTODB_HASH} \
+    PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     GRANIAN_INTERFACE=wsgi \

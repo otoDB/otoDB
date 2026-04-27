@@ -1,32 +1,26 @@
-from typing import TYPE_CHECKING
-from datetime import date, datetime
-import logging
-from django.db import models
-import requests
-
-from .enums import Platform, WorkOrigin, WorkStatus, MimeType
-from .media import MediaWork
 import hashlib
+import logging
+from datetime import date, datetime
+from typing import TYPE_CHECKING
 
+import requests
 from django.conf import settings
-from otodb.common import video_info, process_video_info, fetch_thumbnail_mime_type
+from django.db import models
+
+from otodb.common import fetch_thumbnail_mime_type, process_video_info, video_info
 from otodb.storage_manager import storage_manager
 
-from .revision import RevisionTrackedModel, RevisionTrackedManager
+from .enums import MimeType, Platform, WorkOrigin, WorkStatus
+from .media import MediaWork
+from .revision import RevisionTrackedModel
 
 logger = logging.getLogger(__name__)
-
-
-class ActiveManager(RevisionTrackedManager):
-	def get_queryset(self):
-		return super().get_queryset().filter(rejection__isnull=True)
 
 
 class WorkSource(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		from .pool import Pool
 
-		active_objects: models.Manager['WorkSource']
 		pool_set: 'models.QuerySet[Pool]'
 
 	media = models.ForeignKey(
@@ -62,7 +56,8 @@ class WorkSource(RevisionTrackedModel):
 		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.CASCADE
 	)
 
-	active_objects = ActiveManager()
+	is_pending = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
 
 	class RevisionMeta:
 		tracked_fields = [
@@ -312,17 +307,6 @@ class WorkSource(RevisionTrackedModel):
 		if self.thumbnail_path:
 			return storage_manager.url(self.thumbnail_path)
 		return self.thumbnail_url  # type: ignore -- Fallback to 3rd-party remote thumbnail URL
-
-
-class WorkSourceRejection(models.Model):
-	source = models.OneToOneField(
-		WorkSource, null=False, on_delete=models.CASCADE, related_name='rejection'
-	)
-	reason = models.CharField(max_length=1000, null=False, blank=False)
-	by = models.ForeignKey(
-		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.RESTRICT
-	)
-	date = models.DateTimeField(auto_now_add=True, null=False)
 
 
 class WorkSourceInfoPayload(models.Model):

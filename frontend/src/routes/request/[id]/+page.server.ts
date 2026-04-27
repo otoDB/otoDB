@@ -1,17 +1,15 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
+import { ModelsWithComments } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params }) => {
-	const paramId = parseInt(params.id, 10);
-
 	const [{ data }, { data: comments }] = await Promise.all([
 		client.GET('/api/request/request', {
 			fetch,
 			params: {
 				query: {
-					request_id: paramId
+					request_id: params.id
 				}
 			}
 		}),
@@ -19,25 +17,21 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
 			fetch,
 			params: {
 				query: {
-					model: 'bulkrequest',
-					pk: +params.id
+					model: ModelsWithComments.bulkrequest,
+					pk: params.id
 				}
 			}
 		})
 	]);
 
-	// TODO: properly handle fetch errors (e.g. 404 for not found)
-	if (!data) error(500, 'Failed to fetch data.');
-	if (!comments) error(500, 'Failed to fetch data.');
-
 	return {
 		request: data,
-		id: paramId,
+		id: params.id,
 		comments,
 		head: {
 			title: m.mild_loud_shad_enchant({
 				type: m.last_jumpy_barbel_mop(),
-				name: `#${paramId}`
+				name: `#${params.id}`
 			})
 		}
 	};

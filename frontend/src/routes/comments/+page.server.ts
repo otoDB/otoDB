@@ -1,4 +1,4 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import { parseMentions, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
@@ -26,17 +26,18 @@ export const actions = {
 	create: async ({ request, fetch }) => {
 		const data = await request.formData();
 
-		const model = data.get('model') as components['schemas']['CommentInSchema']['model']; // TODO: need validate data.
-		const pk = parseInt(data.get('pk') as string, 10);
+		type Model = components['schemas']['CommentInSchema']['model'];
+		const model: Model = data.get('model') as Model;
+		const pk = data.get('pk') as string;
 		const comment_text = data.get('comment') as string;
-		const reply_to = parseInt(data.get('reply_to') as string, 10);
+		const reply_to = data.get('reply_to') as string;
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 
 		await client.POST('/api/comment/comment', {
 			fetch,
 			params: {
 				header: {
-					'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET
+					'otodb-internal-secret': env.INTERNAL_API_SECRET
 				}
 			},
 			body: {
@@ -50,13 +51,13 @@ export const actions = {
 	},
 	edit: async ({ request, fetch }) => {
 		const data = await request.formData();
-		const comment_id = parseInt(data.get('comment_id') as string, 10),
+		const comment_id = data.get('comment_id') as string,
 			comment_text = data.get('comment') as string;
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 
 		await client.PUT('/api/comment/comment', {
 			fetch,
-			params: { header: { 'otodb-internal-secret': env.OTODB_INTERNAL_API_SECRET } },
+			params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
 			body: { comment_id, comment_text }
 		});
 	}

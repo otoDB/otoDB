@@ -1,20 +1,19 @@
-from typing import List
 import multiprocessing
 import sys
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from typing import List
 
-from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import Q
-
-from ninja import Router, Schema, ModelSchema
-from ninja.security import django_auth
-from ninja.pagination import paginate
-from ninja.throttling import AuthRateThrottle
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404
+from ninja import ModelSchema, Router, Schema
 from ninja.errors import HttpError
+from ninja.pagination import paginate
+from ninja.security import django_auth
+from ninja.throttling import AuthRateThrottle
 
-from otodb.common import video_info, playlist_info
+from otodb.common import playlist_info, video_info
 from otodb.models import (
 	Pool,
 	PoolItem,
@@ -22,7 +21,14 @@ from otodb.models import (
 	WorkSource,
 )
 
-from .common import ListSchema, ListItemSchema, WorkSourceSchema, track_revision
+from .common import (
+	ListItemSchema,
+	ListSchema,
+	OtodbID,
+	WorkSourceSchema,
+	track_revision,
+	user_is_editor,
+)
 
 list_router = Router()
 
@@ -36,27 +42,27 @@ def search(request: HttpRequest, query: str):
 
 
 @list_router.get('list', response=ListSchema)
-def lst(request: HttpRequest, list_id: int):
+def lst(request: HttpRequest, list_id: OtodbID):
 	list_ = get_object_or_404(Pool, pk=list_id)
 	return list_
 
 
 @list_router.get('entries', response=List[ListItemSchema])
 @paginate
-def entries(request: HttpRequest, list_id: int):
+def entries(request: HttpRequest, list_id: OtodbID):
 	list_ = get_object_or_404(Pool, pk=list_id)
 	return list_.poolitem_set.order_by('order')
 
 
 @list_router.get('pending', response=List[WorkSourceSchema])
 @paginate
-def pending(request: HttpRequest, list_id: int):
+def pending(request: HttpRequest, list_id: OtodbID):
 	list_ = get_object_or_404(Pool, pk=list_id)
 	return list_.pending_items.all()
 
 
 class ListItemInSchema(ModelSchema):
-	work_id: int
+	work_id: OtodbID
 
 	class Meta:
 		model = PoolItem
@@ -69,14 +75,14 @@ class ListInSchema(ModelSchema):
 		fields = ['name', 'description']
 
 
-@list_router.post('list', auth=django_auth, response=int)
+@list_router.post('list', auth=django_auth, response=OtodbID)
 def new(request: HttpRequest, payload: ListInSchema):
 	lst = Pool.objects.create(author=request.user, **payload.dict())
 	return lst.id
 
 
 @list_router.put('list', auth=django_auth)
-def update(request: HttpRequest, list_id: int, payload: ListInSchema):
+def update(request: HttpRequest, list_id: OtodbID, payload: ListInSchema):
 	lst = get_object_or_404(Pool, id=list_id)
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
@@ -88,14 +94,14 @@ def update(request: HttpRequest, list_id: int, payload: ListInSchema):
 
 class ListUpdateSchema(Schema):
 	# Diffs applied in this exact order: WorkIDs -> Descriptions -> Moves -> Delete
-	update_work: List[tuple[int, int]] = []
+	update_work: List[tuple[int, OtodbID]] = []
 	update_description: List[tuple[int, str]] = []
 	move: List[tuple[int, int]] = []  # [(from, to)]
 	delete: List[int] = []  # delete at index
 
 
 @list_router.put('items', auth=django_auth)
-def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
+def update_items(request: HttpRequest, list_id: OtodbID, payload: ListUpdateSchema):
 	lst = get_object_or_404(Pool, id=list_id)
 
 	items = lst.poolitem_set
@@ -115,13 +121,13 @@ def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
 
 
 @list_router.get('work_in_pool', response=bool)
-def work_in_pool(request: HttpRequest, list_id: int, work_id: int):
+def work_in_pool(request: HttpRequest, list_id: OtodbID, work_id: OtodbID):
 	lst = get_object_or_404(Pool, pk=list_id)
 	return lst.work_in_pool(work_id)
 
 
 @list_router.put('toggle_work', auth=django_auth)
-def toggle(request: HttpRequest, list_id: int, work_id: int):
+def toggle(request: HttpRequest, list_id: OtodbID, work_id: OtodbID):
 	lst = get_object_or_404(Pool, pk=list_id)
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
@@ -135,7 +141,7 @@ def toggle(request: HttpRequest, list_id: int, work_id: int):
 
 
 @list_router.delete('list', auth=django_auth)
-def delete(request: HttpRequest, list_id: int):
+def delete(request: HttpRequest, list_id: OtodbID):
 	lst = get_object_or_404(Pool, id=list_id)
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
@@ -168,8 +174,6 @@ def import_ext_into_pool(info, list_: Pool, user):
 			info=vid_info,
 			full_info=full_info,
 		)
-		if getattr(src, 'rejection', None):
-			continue
 
 		if src.media is not None:
 			# Source already has a work, add to pool if not already there
@@ -185,8 +189,9 @@ def import_ext_into_pool(info, list_: Pool, user):
 
 
 @list_router.post(
-	'import', auth=django_auth, response=int, throttle=[AuthRateThrottle('3/30m')]
+	'import', auth=django_auth, response=OtodbID, throttle=[AuthRateThrottle('3/30m')]
 )
+@user_is_editor
 @transaction.atomic
 @track_revision
 def import_ext(request: HttpRequest, url: str):
@@ -202,7 +207,7 @@ def import_ext(request: HttpRequest, url: str):
 
 
 @list_router.post('pull_upstream', auth=django_auth)
-def pull_upstream(request: HttpRequest, list_id: int):
+def pull_upstream(request: HttpRequest, list_id: OtodbID):
 	lst = get_object_or_404(Pool, id=list_id)
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')

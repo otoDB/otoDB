@@ -7,6 +7,9 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
 
 defaults:
   run:
@@ -72,6 +75,7 @@ jobs:
       - name: Run tests with pytest
         run: uv run pytest -v --tb=short
       - name: Check server can start
+        timeout-minutes: 1
         run: timeout 10 uv run python manage.py runserver || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
   migrations:
@@ -128,3 +132,27 @@ jobs:
           platforms: linux/amd64
           cache-from: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache
           cache-to: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache,mode=max
+          build-args: |
+            OTODB_HASH=${{ github.sha }}
+
+  openapi-typespec:
+    name: Verify openapi.json is fresh
+    runs-on: ubuntu-latest
+    env:
+      OTODB_SECRET_KEY: dummy
+      OTODB_SKIP_DB: 1
+    needs:
+      - lint
+      - test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync
+      - name: Regenerate openapi.json and check for diff
+        working-directory: backend
+        run: |
+          uv run manage.py openapi_schema > openapi.json
+          git diff --exit-code openapi.json

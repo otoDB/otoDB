@@ -1,14 +1,15 @@
 <script lang="ts">
+	import { postCategoryNames } from '$lib/enums/postCategory';
+	import type { PostCategory } from '$lib/schema';
 	import { buildEntityRoutes, type EntityModelType } from './enums';
-	import { postCategory, resolvePostCategoryKeyById } from '$lib/enums/PostCategory';
 	import { m } from './paraglide/messages';
-	import { timeAgo } from './ui';
+	import Time from '$lib/Time.svelte';
 
 	interface Post {
-		id: number | string;
+		id: string;
 		title: string;
-		entities?: { id: string | number; entity: EntityModelType }[];
-		category: number;
+		entities?: { id: string; entity: EntityModelType }[];
+		category: PostCategory;
 		added_by: { username: string };
 		modified: string;
 		last_post_by?: string | null;
@@ -19,7 +20,7 @@
 		posts: Post[];
 		showCategory?: boolean;
 		showAuthor?: boolean;
-		entityFilter?: (entity: { id: string | number; entity: EntityModelType }) => boolean;
+		entityFilter?: (entity: { id: string; entity: EntityModelType }) => boolean;
 	}
 
 	let { posts, showCategory = false, showAuthor = true, entityFilter }: Props = $props();
@@ -56,16 +57,16 @@
 					{/if}
 				</td>
 				{#if showCategory}
-					<td>{postCategory[resolvePostCategoryKeyById(post.category)].nameFn()}</td>
+					<td>{postCategoryNames[post.category]()}</td>
 				{/if}
 				{#if showAuthor}
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td
 					>
 				{/if}
 				<td class="text-right">
-					<time title={new Date(lastTime).toLocaleString()}
-						><a href="/profile/{lastUser}">{lastUser}</a> @ {timeAgo(lastTime)}</time
-					>
+					<a href="/profile/{lastUser}">{lastUser}</a>
+					@
+					<Time format="absolute" date={lastTime} />
 				</td>
 			</tr>
 		{/each}

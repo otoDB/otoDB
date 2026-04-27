@@ -6,15 +6,14 @@ from .models import (
 	MediaSong,
 	MediaWork,
 	Pool,
-	TagWork,
-	TagSong,
-	WorkSource,
-	WorkSourceRejection,
-	WorkRelation,
-	SongRelation,
-	TagWorkInstance,
 	Post,
 	PostContent,
+	SongRelation,
+	TagSong,
+	TagWork,
+	TagWorkInstance,
+	WorkRelation,
+	WorkSource,
 )
 
 
@@ -158,16 +157,11 @@ class MediaSongAdmin(MediaAdmin):
 	inlines = [SongRelationAInline, SongRelationBInline]
 
 
-class WorkSourceRejectionInline(admin.TabularInline):
-	model = WorkSourceRejection
-
-
 class WorkSourceAdmin(admin.ModelAdmin):
 	list_display = ['__str__', 'title', 'platform', 'work_status', 'published_date']
 	list_filter = ['work_status', 'platform', 'work_origin']
 	search_fields = ['title', 'url', 'uploader_id']
 	readonly_fields = ['info_payload']
-	inlines = [WorkSourceRejectionInline]
 
 
 class PostContentInline(admin.TabularInline):

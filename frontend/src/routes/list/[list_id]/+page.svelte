@@ -1,13 +1,14 @@
 <script lang="ts">
 	import client from '$lib/api';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { Platform, WorkOrigin } from '$lib/enums';
-	import { isSOV, isSVO } from '$lib/enums/Languages';
+	import { PlatformNames, WorkOriginNames } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime';
+	import { ModelsWithComments, WorkOrigin } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
@@ -64,9 +65,9 @@
 						name="cover_select"
 						value={i}
 						bind:group={select}
-					/>{Platform[s.platform]}{s.work_origin === 0
+					/>{PlatformNames[s.platform]}{s.work_origin === WorkOrigin.Author
 						? ''
-						: ' ' + WorkOrigin[s.work_origin]()}</label
+						: ' ' + WorkOriginNames[s.work_origin]()}</label
 				>
 			{/each}
 		</div>
@@ -113,7 +114,10 @@
 						<h3>
 							<a href="/upload/{src.id}">{src.title || src.url}</a>
 						</h3>
-						<h4>{Platform[src.platform]} {src.published_date}</h4>
+						<h4>{PlatformNames[src.platform]} {src.published_date}</h4>
+						{#if src.is_pending}
+							<p class="text-sky-600">{m.such_actual_okapi_dare()}</p>
+						{/if}
 					</span>
 					<span>
 						<a href={src.url} target="_blank" rel="noopener noreferrer"
@@ -146,7 +150,12 @@
 {/if}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree comments={data.comments} user={data.user ?? null} model="pool" pk={data.list.id} />
+	<CommentTree
+		comments={data.comments}
+		user={data.user ?? null}
+		model={ModelsWithComments.pool}
+		pk={data.list.id}
+	/>
 </Section>
 
 <style>

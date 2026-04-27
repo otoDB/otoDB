@@ -1,11 +1,12 @@
-import client from '$lib/api';
-import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import client from '$lib/api.server';
+import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 import { userLevelGuard } from '$lib/route_guard';
+import { Levels, WorkTagCategory } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {
-	userLevelGuard(locals.user, 'MEMBER', url.pathname);
+	userLevelGuard(locals.user, Levels.Member, url.pathname);
 
 	const [{ data: wiki_page }, { data: details }, { data: connections }] = await Promise.all([
 		client.GET('/api/tag/wiki_page', {
@@ -34,10 +35,6 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 		})
 	]);
 
-	// TODO: properly handle fetch errors
-	if (!details) error(500, 'Failed to fetch data.');
-	if (!connections) error(500, 'Failed to fetch data.');
-
 	const p = await parent();
 	// FIXME This is kind of waterfall but whatever...
 	const song_connections = p.tag.song
@@ -51,8 +48,8 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 
 	return {
 		wiki_page,
-		parents: details?.paths[1][params.tag_slug]?.map((s) =>
-			details?.paths[0].find((t) => t.slug === s)
+		parents: (details.paths[1][params.tag_slug] ?? []).map(
+			(s) => details.paths[0].find((t) => t.slug === s)!
 		),
 		details,
 		connections,
@@ -85,34 +82,34 @@ export const actions = {
 					}
 				: null;
 
-		const { error } = await client.PUT('/api/tag/tag', {
-			fetch,
-			params: {
-				query: {
-					tag_slug: params.tag_slug!
-				}
-			},
-			body: {
-				payload: {
-					parent_slugs,
-					category: +category,
-					deprecated,
-					media_type,
-					primary: +primary === -1 ? null : +primary
+		try {
+			await client.PUT('/api/tag/tag', {
+				fetch,
+				params: {
+					query: {
+						tag_slug: params.tag_slug!
+					}
 				},
-				song_payload: song
-			}
-		});
-
-		if (error)
+				body: {
+					payload: {
+						parent_slugs,
+						category: +category,
+						deprecated,
+						media_type,
+						primary: +primary === -1 ? null : +primary
+					},
+					song_payload: song
+				}
+			});
+		} catch {
 			return fail(400, {
-				category,
+				category: +category as WorkTagCategory,
 				parent_slugs,
 				deprecated,
 				failed: true,
 				primary: +primary
 			});
-
+		}
 		redirect(303, `/tag/${params.tag_slug}`);
 	},
 	wiki_page: async ({ request, fetch, params }) => {

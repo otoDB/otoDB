@@ -6,25 +6,80 @@ from django.urls import reverse
 from django.utils.functional import cached_property
 from tagulous.models import TagField, TaggedManager
 
-from .enums import Rating, WorkTagCategory, Role
-from .tag import TagWork, TagSong, tagwork_ordering_case
-from .revision import RevisionTrackedModel
 from otodb.common import clean_description
+
+from .enums import (
+	FlagStatus,
+	ModerationEventType,
+	Rating,
+	Role,
+	Status,
+	WorkTagCategory,
+)
+from .moderation import ModerationEvent
+from .revision import RevisionTrackedModel, RevisionTrackedQuerySet
+from .tag import TagSong, TagWork, tagwork_ordering_case
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
-	from .work_source import WorkSource
+
+	from otodb.account.models import Account
+
 	from .pool import PoolItem
 	from .relations import WorkRelation
+	from .work_source import WorkSource
 
 
-class ActiveManager(models.Manager):
-	def get_queryset(self):
-		qs = super().get_queryset().filter(moved_to__isnull=True)
-
-		return qs.select_related('thumbnail_source').prefetch_related(
+class MediaWorkQuerySet(RevisionTrackedQuerySet):
+	def with_pending_moderation(self):
+		"""Prefetch the pending flag and appeal so `pending_flag`/`pending_appeal` read from cache."""
+		return self.select_related('thumbnail_source').prefetch_related(
 			Prefetch('tagworkinstance_set', queryset=TagWorkInstance.active_queryset()),
+			Prefetch(
+				'moderation_events',
+				queryset=ModerationEvent.objects.filter(
+					event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
+				)[:1],
+				to_attr='_pending_flag',
+			),
+			Prefetch(
+				'moderation_events',
+				queryset=ModerationEvent.objects.filter(
+					event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+				)[:1],
+				to_attr='_pending_appeal',
+			),
 			'worksource_set',
+		)
+
+	def visible(self):
+		"""Exclude unapproved works, but keep ones with a pending appeal."""
+		appealed_ids = ModerationEvent.objects.filter(
+			event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+		).values_list('work_id', flat=True)
+		return self.exclude(
+			models.Q(status=Status.UNAPPROVED) & ~models.Q(id__in=appealed_ids)
+		)
+
+
+class MediaWorkManager(models.Manager['MediaWork']):
+	def get_queryset(self) -> 'MediaWorkQuerySet':
+		return MediaWorkQuerySet(self.model, using=self._db)
+
+	def with_pending_moderation(self) -> 'MediaWorkQuerySet':
+		return self.get_queryset().with_pending_moderation()
+
+	def visible(self) -> 'MediaWorkQuerySet':
+		return self.get_queryset().visible()
+
+
+class ActiveManager(MediaWorkManager):
+	def get_queryset(self) -> 'MediaWorkQuerySet':
+		return (
+			super()
+			.get_queryset()
+			.filter(moved_to__isnull=True)
+			.with_pending_moderation()
 		)
 
 
@@ -98,12 +153,16 @@ class TagSongInstance(RevisionTrackedModel):
 
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
-		active_objects: models.Manager['MediaWork']
+		objects: 'MediaWorkManager'  # type: ignore
+		active_objects: 'ActiveManager'
 		worksource_set: QuerySet['WorkSource']
 		poolitem_set: QuerySet['PoolItem']
 		relation_A: QuerySet['WorkRelation']
 		relation_B: QuerySet['WorkRelation']
 		tagworkinstance_set: QuerySet['TagWorkInstance']
+		moderation_events: QuerySet['ModerationEvent']
+		_pending_flag: list['ModerationEvent']
+		_pending_appeal: list['ModerationEvent']
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
@@ -120,11 +179,15 @@ class MediaWork(RevisionTrackedModel):
 		'self', null=True, blank=True, on_delete=models.CASCADE
 	)
 
+	status = models.IntegerField(choices=Status.choices, default=Status.APPROVED)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
 	class RevisionMeta:
 		tracked_fields = ['title', 'description', 'rating', 'moved_to']
 		entity_attrs = ['self', 'moved_to']
 
-		def to_active(self, instance: 'MediaWork') -> 'MediaWork':
+		@staticmethod
+		def to_active(instance: 'MediaWork') -> 'MediaWork':
 			return instance.moved_to or instance
 
 	# deprecated!
@@ -135,7 +198,22 @@ class MediaWork(RevisionTrackedModel):
 		help_text='Deprecated: Use thumbnail_source instead',
 	)
 
+	objects = TaggedManager.cast_class(MediaWorkManager())
 	active_objects = TaggedManager.cast_class(ActiveManager())
+
+	@property
+	def pending_flag(self) -> 'ModerationEvent | None':
+		flags = getattr(self, '_pending_flag', [])
+		return flags[0] if flags else None
+
+	@property
+	def pending_appeal(self) -> 'ModerationEvent | None':
+		appeals = getattr(self, '_pending_appeal', [])
+		return appeals[0] if appeals else None
+
+	def was_contributed_by(self, user: 'Account') -> bool:
+		"""True if user added any source to this work."""
+		return self.worksource_set.filter(added_by=user).exists()
 
 	def __str__(self):
 		return f'{self.pk}: {self.title}'
@@ -160,6 +238,7 @@ class MediaWork(RevisionTrackedModel):
 	):
 		from django.contrib.contenttypes.models import ContentType
 		from django_comments_xtd.models import XtdComment
+
 		from otodb.models.posts import EntityLink
 
 		# Ensure we always merge into the work with the lower ID

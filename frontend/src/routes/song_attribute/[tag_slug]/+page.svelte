@@ -1,9 +1,10 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
-	import { SongTagCategory } from '$lib/enums';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import { getTagDisplayName } from '$lib/api.js';
+	import Section from '$lib/Section.svelte';
+	import { SongTagCategoryNames } from '$lib/enums';
+	import { m } from '$lib/paraglide/messages.js';
+	import { ModelsWithComments } from '$lib/schema.js';
+	import { getTagDisplayName } from '$lib/ui.js';
 
 	let { data } = $props();
 
@@ -26,7 +27,7 @@
 	<h2>
 		{m.mild_loud_shad_enchant({
 			type: m.plane_awful_bobcat_spark(),
-			name: SongTagCategory[data.tag.category]()
+			name: SongTagCategoryNames[data.tag.category]()
 		})}
 	</h2>
 
@@ -79,7 +80,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="tagsong"
+		model={ModelsWithComments.tagsong}
 		pk={data.tag.id}
 	/>
 </Section>

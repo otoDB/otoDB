@@ -1,41 +1,51 @@
-from typing import Annotated
 from datetime import date
+from typing import Annotated
+
+from django.conf import settings
+from django.db import transaction
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from ninja import Schema
+from ninja.pagination import paginate
+from ninja.security import django_auth
 from pydantic import StringConstraints
 
-from django.db import transaction
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
-
-from ninja import Schema
-from ninja.security import django_auth
-
+from otodb.account.models import Account
 from otodb.common import process_video_info, slugify_tag
 from otodb.models import (
 	MediaWork,
-	WorkSource,
+	ModerationEvent,
 	TagWork,
 	TagWorkCreatorConnection,
+	WorkSource,
 )
 from otodb.models.enums import (
 	ErrorCode,
+	FlagStatus,
+	ModerationAction,
+	ModerationEventType,
 	Platform,
-	WorkOrigin,
 	ProfileConnectionTypes,
 	Route,
+	Status,
+	WorkOrigin,
 	WorkStatus,
 )
-from otodb.account.models import Account
+from otodb.tasks import enqueue_deferred, resolve_expired_source_task
 
 from .common import (
+	ApiError,
 	AuthedHttpRequest,
-	TagWorkSchema,
-	WorkSourceSchema,
+	Error,
+	OtodbID,
+	RouterWithRevision,
 	SourceCreationResponse,
 	SourceSuggestionsResponse,
-	Error,
-	user_is_trusted,
+	TagWorkSchema,
+	WorkSourceSchema,
+	ensure_can_moderate,
 	user_is_editor,
-	RouterWithRevision,
+	user_is_trusted,
 	with_revision_route,
 )
 
@@ -58,8 +68,8 @@ class WorkSourceMetadataSchema(Schema):
 @source_router.post('unbind', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_UNBIND)
-def unbind_source(request: AuthedHttpRequest, source_id: int):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+def unbind_source(request: AuthedHttpRequest, source_id: OtodbID):
+	src = get_object_or_404(WorkSource.objects, id=source_id)
 	if src.media.worksource_set.count() == 1:
 		src.media.delete()
 	src.media = None
@@ -69,34 +79,34 @@ def unbind_source(request: AuthedHttpRequest, source_id: int):
 @source_router.put('origin', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
-def source_origin(request: AuthedHttpRequest, source_id: int, status: int):
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
-	src.work_origin = WorkOrigin(status).value
+def source_origin(request: AuthedHttpRequest, source_id: OtodbID, status: WorkOrigin):
+	src = get_object_or_404(WorkSource.objects, id=source_id)
+	src.work_origin = status
 	src.save()
 
 
 @source_router.post('refresh', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REFRESH)
-def refresh_source(request: AuthedHttpRequest, source_id: int):
-	src: WorkSource = get_object_or_404(WorkSource.active_objects, id=source_id)
+def refresh_source(request: AuthedHttpRequest, source_id: OtodbID):
+	src: WorkSource = get_object_or_404(WorkSource.objects, id=source_id)
 	src.refresh()
 	return
 
 
 @source_router.get('source', response=WorkSourceSchema)
-def get_source(request, source_id: int):
+def get_source(request, source_id: OtodbID):
 	return get_object_or_404(WorkSource, id=source_id)
 
 
-@source_router.put('source', auth=django_auth, response={200: int, 400: Error})
+@source_router.put('source', auth=django_auth, response={200: OtodbID, 400: Error})
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_UPDATE)
 def update_source(
-	request: AuthedHttpRequest, source_id: int, metadata: WorkSourceMetadataSchema
+	request: AuthedHttpRequest, source_id: OtodbID, metadata: WorkSourceMetadataSchema
 ):
 	src = get_object_or_404(
-		WorkSource.active_objects, id=source_id, work_status=WorkStatus.DOWN
+		WorkSource.objects, id=source_id, work_status=WorkStatus.DOWN
 	)
 	src.title = metadata.title
 	src.description = metadata.description
@@ -127,7 +137,7 @@ def new_source_from_url(
 	request: AuthedHttpRequest,
 	url: Annotated[str, StringConstraints(strip_whitespace=True)],
 	is_reupload: bool,
-	work_id: int | None = None,
+	work_id: OtodbID | None = None,
 	metadata: WorkSourceMetadataSchema | None = None,
 ):
 	"""Creates or retrieves a source from a URL.
@@ -139,10 +149,7 @@ def new_source_from_url(
 	is_editor = request.user.level >= Account.Levels.EDITOR
 
 	if metadata is not None and not is_editor:
-		return 403, {
-			'code': ErrorCode.EDITOR_ONLY,
-			'data': {'message': 'Only editors can make changes here.'},
-		}
+		raise ApiError(403, ErrorCode.EDITOR_ONLY)
 
 	metadata_dict = metadata.dict() if metadata else None
 	src, info = WorkSource.from_url(
@@ -150,10 +157,7 @@ def new_source_from_url(
 	)
 
 	if src is None:
-		return 400, {
-			'code': ErrorCode.BAD_URL,
-			'data': {'message': 'Bad request, is the URL correct?'},
-		}
+		raise ApiError(400, ErrorCode.BAD_URL)
 
 	# Source already has a work -> redirect
 	if src.media:
@@ -164,6 +168,21 @@ def new_source_from_url(
 		work = get_object_or_404(
 			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
 		)
+		if work.status == Status.UNAPPROVED:
+			raise ApiError(400, ErrorCode.SOURCE_UNAPPROVED)
+		if work.moderation_events.filter(
+			event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
+		).exists():
+			raise ApiError(400, ErrorCode.SOURCE_FLAGGED)
+		if not is_editor and work.status == Status.APPROVED:
+			src.is_pending = True
+			transaction.on_commit(
+				lambda: enqueue_deferred(
+					resolve_expired_source_task,
+					src.pk,
+					delay=settings.OTODB_MODERATION_PERIOD,
+				)
+			)
 		sync_work_source(work, src)
 		return {'work_id': work.pk}
 
@@ -220,15 +239,13 @@ def sync_work_source(work: MediaWork, src: WorkSource):
 		)
 
 
-@source_router.get('suggestions', auth=django_auth, response=SourceSuggestionsResponse)
-@user_is_trusted
-def source_suggestions(request: AuthedHttpRequest, source_id: int):
-	"""Returns tag suggestions derived from a source's info_payload."""
-	src = get_object_or_404(WorkSource.active_objects, id=source_id)
+def extract_source_tag_suggestions(src: WorkSource):
 	if not hasattr(src, 'info_payload'):
-		return {'title': src.title, 'description': src.description}
+		return [], [], []
 
 	info = process_video_info(src.info_payload.payload, src.url)
+	if info is None:
+		return [], [], []
 	raw_tags = info.get('tags', [])
 	slug_to_name: dict[str, str] = {slugify_tag(t): t for t in raw_tags}
 	matched = TagWork.objects.filter(slug__in=slug_to_name.keys())
@@ -253,11 +270,87 @@ def source_suggestions(request: AuthedHttpRequest, source_id: int):
 		for t in set(raw_tags) - existing_names
 	]
 	creator_tags = resolve_creator_tags(src, info)
+	return existing, new_tags, creator_tags
 
+
+@source_router.get('suggestions', auth=django_auth, response=SourceSuggestionsResponse)
+@user_is_trusted
+def source_suggestions(request: AuthedHttpRequest, source_id: OtodbID):
+	"""Returns tag suggestions derived from a source's info_payload."""
+	src = get_object_or_404(WorkSource.objects, id=source_id)
+	if not hasattr(src, 'info_payload'):
+		return {'title': src.title, 'description': src.description}
+
+	source_tags, new_tags, creator_tags = extract_source_tag_suggestions(src)
 	return {
 		'title': src.title,
 		'description': src.description,
-		'source_tags': existing,
+		'source_tags': source_tags,
 		'new_tags': new_tags,
 		'creator_tags': creator_tags,
 	}
+
+
+def reject_pending_source(src: WorkSource, by, reason: str):
+	"""Unbind a pending source from its work and record a MOD_ACTION event."""
+	work = src.media  # Capture before unbinding
+	src.media = None
+	src.is_pending = False
+	src.save(update_fields=['media', 'is_pending'])
+	ModerationEvent.objects.create(
+		work=work,
+		source=src,
+		event_type=ModerationEventType.MOD_ACTION,
+		status=ModerationAction.SOURCE_REJECTED,
+		by=by,
+		reason=reason,
+	)
+
+
+@source_router.post('reject', auth=django_auth, response={200: None, 403: Error})
+@user_is_editor
+@with_revision_route(Route.WORKSOURCE_REJECT)
+def reject_source(request: AuthedHttpRequest, source_id: OtodbID, reason: str):
+	"""Reject a pending source on an existing work. Unbinds the source."""
+	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
+	ensure_can_moderate(request.user, src.media)
+	reject_pending_source(src, by=request.user, reason=reason)
+
+
+@source_router.post('approve', auth=django_auth, response={200: None, 403: Error})
+@user_is_editor
+def approve_source(request: AuthedHttpRequest, source_id: OtodbID):
+	"""Approve a pending source on an existing work."""
+	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
+	ensure_can_moderate(request.user, src.media)
+	src.is_pending = False
+	src.save(update_fields=['is_pending'])
+	ModerationEvent.objects.create(
+		work=src.media,
+		source=src,
+		event_type=ModerationEventType.MOD_ACTION,
+		status=ModerationAction.SOURCE_APPROVED,
+		by=request.user,
+	)
+
+
+@source_router.get('list', response=list[WorkSourceSchema])
+@paginate
+def list_sources(
+	request,
+	user_id: OtodbID | None = None,
+	unbound: bool | None = None,
+	is_pending: bool | None = None,
+	platform: int | None = None,
+):
+	"""List sources with pagination, filterable by user, binding, and pending status."""
+	qs = WorkSource.objects.select_related('media', 'added_by').order_by('-created_at')
+	if user_id:
+		qs = qs.filter(added_by_id=user_id)
+	if unbound is not None:
+		qs = qs.filter(media__isnull=unbound)
+	if is_pending is not None:
+		qs = qs.filter(is_pending=is_pending)
+	if platform is not None:
+		qs = qs.filter(platform=platform)
+	return qs

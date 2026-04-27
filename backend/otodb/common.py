@@ -1,30 +1,28 @@
-import requests
-import json
 import html
-import re
+import json
 import logging
-from time import mktime
-from datetime import datetime
+import re
 import unicodedata
+from datetime import datetime
 from http.cookiejar import MozillaCookieJar
-from django.utils.text import slugify
+from time import mktime
 
-from furl import furl
 import nh3
-
+import requests
+from django.conf import settings
+from django.utils.text import slugify
+from furl import furl
 from yt_dlp import YoutubeDL
-from yt_dlp.utils import DownloadError
+from yt_dlp.extractor.acfun import AcFunVideoIE
+from yt_dlp.extractor.bilibili import BilibiliFavoritesListIE, BiliBiliIE
 from yt_dlp.extractor.common import InfoExtractor
-from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
 from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
-from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 from yt_dlp.extractor.twitter import TwitterIE
-from yt_dlp.extractor.acfun import AcFunVideoIE
+from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
+from yt_dlp.utils import DownloadError
 
-from django.conf import settings
-
-from .models.enums import Platform, MimeType
+from .models.enums import MimeType, Platform
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +62,8 @@ def slugify_tag(s: str):
 
 
 class NiconicoIECustom(NiconicoIE):
-	# Support nico.ms short URLs
-	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/watch|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
+	# Support nico.ms short URLs and /shorts/ URLs
+	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/(?:watch|shorts)|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
 
 
 ydl_playlist = YoutubeDL(
@@ -237,7 +235,12 @@ def process_video_info(full_info, link=None):
 			if resolutions:
 				info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
 
-		info['extractor'] = Platform.from_str(info['extractor'])
+		# Tolerate legacy payloads with int extractor -- see PR #467
+		info['extractor'] = (
+			Platform(info['extractor'])
+			if isinstance(info['extractor'], int)
+			else Platform.from_str(info['extractor'])
+		)
 		if info['extractor'] in make_video_url:
 			info['webpage_url'] = make_video_url[info['extractor']](
 				info['display_id']

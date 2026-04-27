@@ -1,46 +1,42 @@
-from typing import Any
-from datetime import datetime
-from itertools import groupby
 import logging
+from datetime import datetime
+from enum import Enum
+from itertools import groupby
+from typing import Any
 
 import diff_match_patch as dmp_mod
-
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction, connection, models
-
-from django.db.models import Window, F, Subquery, OuterRef, Exists, Case, When, Q
-from django.db.models.functions import RowNumber
+from django.db import connection, models, transaction
+from django.db.models import Case, Exists, F, OuterRef, Q, Subquery, When, Window
 from django.db.models.fields.related import RelatedField
-
+from django.db.models.functions import RowNumber
 from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-
 from django_cte import CTE, with_cte
 from django_request_cache import get_request_cache
-
-from ninja import Router, ModelSchema, Field, Query
+from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
-from .common import EntitySchema
+from otodb.account.models import Account
 from otodb.models import (
-	TagWork,
-	TagSong,
+	MediaWork,
 	Revision,
 	RevisionChange,
 	RevisionChangeEntity,
-	MediaWork,
+	TagSong,
+	TagWork,
 )
 from otodb.models.enums import RevisionChain, Route
 from otodb.models.tag import OtodbTagModel
-from otodb.account.models import Account
 
 from .common import (
-	user_is_staff,
-	track_revision,
-	with_revision_route,
+	OtodbID,
 	add_revision_message,
+	track_revision,
+	user_is_staff,
+	with_revision_route,
 )
 
 history_router = Router()
@@ -101,12 +97,25 @@ def get_diff(delta):
 	return diffs_html
 
 
+class HistoricalEntities(str, Enum):
+	WORK = 'mediawork'
+	TAG = 'tagwork'
+	SONG_ATTRIBUTE = 'tagsong'
+	SONG = 'mediasong'
+	UPLOAD = 'worksource'
+
+
+class HistoricalEntitySchema(Schema):
+	id: OtodbID
+	entity: HistoricalEntities
+
+
 class RevisionSchema(ModelSchema):
-	id: int
+	id: OtodbID
 	date: datetime
 	user: str = Field(..., alias='user.username')
 	index: None | int = None
-	route: None | int = None
+	route: None | Route = None
 
 	class Meta:
 		model = Revision
@@ -117,7 +126,7 @@ class RevisionChangeSchema(ModelSchema):
 	target_type: str = Field(..., alias='target_type.model')
 	ent_type: str
 	ent_id: str
-	route: int
+	route: Route
 	tg_id: str
 
 	class Meta:
@@ -158,13 +167,13 @@ def recent(request: HttpRequest, username: str | None = None):
 
 
 @history_router.get('revision', response=RevisionSchema)
-def revision(request: HttpRequest, revision_id: int):
+def revision(request: HttpRequest, revision_id: OtodbID):
 	return get_object_or_404(Revision, id=revision_id)
 
 
 @history_router.get('revision_changes', response=list[RevisionChangeSchema])
 @paginate
-def revision_changes(request: HttpRequest, revision_id: int):
+def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	rev = get_object_or_404(Revision, id=revision_id)
 	tag_models = [
 		ct.id
@@ -252,6 +261,7 @@ def add_rev_restore(ctpk, pk, new_pk):
 	assert pk != new_pk
 	cache = get_request_cache()
 	rev = cache.get('rev_rst')
+	rev_del = cache.get('rev_del')
 
 	while pk is not None:
 		last = pk
@@ -259,7 +269,7 @@ def add_rev_restore(ctpk, pk, new_pk):
 
 	assert RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=last, deleted=True
-	).exists()
+	).exists() or any(ctpk == ctid and last == idd for ctid, idd, _ in rev_del)
 	rev[(ctpk, last)] = new_pk
 	cache.set('rev_rst', rev)
 
@@ -290,9 +300,8 @@ def _get_all_previous_field_values(
 		target_type_id=target_type_id,
 		target_id=target_id,
 		rev__date__lt=date,
+		target_column__in=fields or model_class._revision_meta.tracked_fields,
 	)
-	if fields:
-		query = query.filter(target_column__in=fields)
 	qs = query.order_by('target_column', '-rev__date').distinct('target_column')
 	latest_changes = dict(qs.values_list('target_column', 'target_value'))
 
@@ -609,7 +618,9 @@ def rollback_entity(
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic
 def rollback(
-	request: HttpRequest, revision_id: int, entity: EntitySchema | None = None
+	request: HttpRequest,
+	revision_id: OtodbID,
+	entity: HistoricalEntitySchema | None = None,
 ):
 	"""
 	Rollback changes of a specific revision.
@@ -665,7 +676,7 @@ def user_rollback(request: HttpRequest, date: datetime, username: str):
 
 @history_router.get('history', response=list[RevisionSchema])
 @paginate
-def history(request: HttpRequest, entity: Query[EntitySchema]):
+def history(request: HttpRequest, entity: Query[HistoricalEntitySchema]):
 	query_ids = []
 	match entity.entity:
 		case 'mediawork':

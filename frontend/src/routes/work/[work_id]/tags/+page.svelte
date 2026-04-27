@@ -6,7 +6,9 @@
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import TagsEditor from '$lib/TagsEditor.svelte';
 	import type { components } from '$lib/schema.js';
-	import { getTagDisplaySlug } from '$lib/ui.js';
+	import { getTagDisplaySlug, getMissingCategories } from '$lib/ui.js';
+	import Banner from '$lib/Banner.svelte';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 
 	let { data } = $props();
 
@@ -14,6 +16,8 @@
 	let cache: Record<string, components['schemas']['TagWorkInstanceThinSchema']> = $state(
 		Object.fromEntries(data.tags.map((t) => [getTagDisplaySlug(t), t]))
 	);
+
+	let missingCategories = $derived.by(() => getMissingCategories(Object.values(cache)));
 
 	const submit_tags = async (e: SubmitEvent) => {
 		e.preventDefault();
@@ -33,6 +37,15 @@
 </script>
 
 <Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
+	{#if missingCategories.length > 0}
+		<Banner variant="info">
+			<div class="text-sm">
+				{m.watery_kind_quail_climb({
+					missing: missingCategories.map((c) => WorkTagCategoryMap[c].nameFn()).join(', ')
+				})}
+			</div>
+		</Banner>
+	{/if}
 	<GuidelineWarning />
 	<form onsubmit={submit_tags}>
 		<TagsEditor bind:tags bind:cache suggestions={data.suggestions} />

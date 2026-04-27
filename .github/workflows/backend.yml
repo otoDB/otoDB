@@ -154,10 +154,6 @@ jobs:
         working-directory: backend
         run: |
           uv run manage.py openapi_schema > openapi.json
-      - name: Install dependencies
-        working-directory: frontend
-        run: |
-          bun install
       - name: Verify no changes (Fail if stale)
         working-directory: frontend
         run: |

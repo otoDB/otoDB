@@ -149,21 +149,17 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-
       - uses: oven-sh/setup-bun@v1
       - name: Regenerate backend specs
         working-directory: backend
         run: |
-          uv run manage.py app_config > appconfig.json
           uv run manage.py openapi_schema > openapi.json
-        
       - name: Install dependencies
         working-directory: frontend
         run: |
           bun install
-
       - name: Verify no changes (Fail if stale)
         working-directory: frontend
         run: |
           bun run sync-schema
-          git diff --exit-code openapi.json
+          git diff --exit-code src/lib/schema.ts

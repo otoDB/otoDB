@@ -2,8 +2,9 @@ import { browser } from '$app/environment';
 import client from '$lib/api';
 import { languages } from '$lib/enums/language';
 import { getLocale, setLocale } from '$lib/paraglide/runtime';
+import { WorkTagCategoryMap } from './enums/workTagCategory';
 import { m } from './paraglide/messages';
-import { AppConfig, WorkTagCategory, LanguageTypes, ThemePref, type components } from './schema';
+import { WorkTagCategory, LanguageTypes, ThemePref, type components } from './schema';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -80,15 +81,21 @@ export function getDisplayText(
 	return value ?? placeholder ?? m.lost_game_mink_loop();
 }
 
+const WORKTAG_REQUIRED_CATEGORIES = [
+	WorkTagCategory.Creator,
+	WorkTagCategory.Song,
+	WorkTagCategory.Source,
+	WorkTagCategory.General
+];
 export const getMissingCategories = (
 	tags: components['schemas']['TagWorkInstanceThinSchema'][]
 ) => {
 	const present = new Set(
 		tags.flatMap((t) =>
-			AppConfig.WORKTAG_SOURCE_SETTABLE_CATEGORIES.includes(t.category) && t.sample
+			WorkTagCategoryMap[t.category].canSetAsSource && t.sample
 				? [WorkTagCategory.Source, t.category]
 				: [t.category]
 		)
 	);
-	return AppConfig.WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
+	return WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
 };

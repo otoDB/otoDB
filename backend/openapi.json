@@ -42,25 +42,6 @@
         }
       }
     },
-    "/api/config": {
-      "get": {
-        "operationId": "otodb_api_config",
-        "summary": "Config",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AppConfigSchema"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/auth/csrf": {
       "get": {
         "operationId": "otodb_api_auth_csrf",
@@ -5118,61 +5099,6 @@
   },
   "components": {
     "schemas": {
-      "AppConfigSchema": {
-        "properties": {
-          "WORKTAG_REQUIRED_CATEGORIES": {
-            "default": [
-              7,
-              3,
-              4,
-              2
-            ],
-            "items": {
-              "$ref": "#/components/schemas/WorkTagCategory"
-            },
-            "title": "Worktag Required Categories",
-            "type": "array"
-          },
-          "WORKTAG_SOURCE_SETTABLE_CATEGORIES": {
-            "default": [
-              6,
-              4,
-              2
-            ],
-            "items": {
-              "$ref": "#/components/schemas/WorkTagCategory"
-            },
-            "title": "Worktag Source Settable Categories",
-            "type": "array"
-          }
-        },
-        "title": "AppConfigSchema",
-        "type": "object"
-      },
-      "WorkTagCategory": {
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7
-        ],
-        "title": "WorkTagCategory",
-        "type": "integer",
-        "x-enum-varnames": [
-          "Uncategorized",
-          "Event",
-          "Song",
-          "Source",
-          "Creator",
-          "Meta",
-          "Media",
-          "General"
-        ]
-      },
       "UserLoginSchema": {
         "properties": {
           "user_id": {
@@ -5707,6 +5633,30 @@
         ],
         "title": "TagWorkSchema",
         "type": "object"
+      },
+      "WorkTagCategory": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "title": "WorkTagCategory",
+        "type": "integer",
+        "x-enum-varnames": [
+          "Uncategorized",
+          "Event",
+          "Song",
+          "Source",
+          "Creator",
+          "Meta",
+          "Media",
+          "General"
+        ]
       },
       "Input": {
         "properties": {

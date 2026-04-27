@@ -16,7 +16,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import {
-		AppConfig,
 		ModelsWithComments,
 		Status,
 		WorkOrigin,
@@ -68,8 +67,7 @@
 		[
 			...Map.groupBy(data.tags, (t) => {
 				const c = t.category;
-				if (AppConfig.WORKTAG_SOURCE_SETTABLE_CATEGORIES.includes(c) && t.sample)
-					return WorkTagCategory.Source;
+				if (WorkTagCategoryMap[c].canSetAsSource && t.sample) return WorkTagCategory.Source;
 				else return c;
 			}).entries()
 		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)

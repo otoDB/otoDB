@@ -21,23 +21,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/config": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Config */
-        get: operations["otodb_api_config"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/auth/csrf": {
         parameters: {
             query?: never;
@@ -1711,33 +1694,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AppConfigSchema */
-        AppConfigSchema: {
-            /**
-             * Worktag Required Categories
-             * @default [
-             *       7,
-             *       3,
-             *       4,
-             *       2
-             *     ]
-             */
-            WORKTAG_REQUIRED_CATEGORIES: components["schemas"]["WorkTagCategory"][];
-            /**
-             * Worktag Source Settable Categories
-             * @default [
-             *       6,
-             *       4,
-             *       2
-             *     ]
-             */
-            WORKTAG_SOURCE_SETTABLE_CATEGORIES: components["schemas"]["WorkTagCategory"][];
-        };
-        /**
-         * WorkTagCategory
-         * @enum {integer}
-         */
-        WorkTagCategory: WorkTagCategory;
         /** UserLoginSchema */
         UserLoginSchema: {
             /** User Id */
@@ -1899,6 +1855,11 @@ export interface components {
             /** Deprecated */
             deprecated: boolean;
         };
+        /**
+         * WorkTagCategory
+         * @enum {integer}
+         */
+        WorkTagCategory: WorkTagCategory;
         /** Input */
         Input: {
             /**
@@ -3043,26 +3004,6 @@ export interface operations {
                         number,
                         number
                     ];
-                };
-            };
-        };
-    };
-    otodb_api_config: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AppConfigSchema"];
                 };
             };
         };
@@ -5852,16 +5793,6 @@ export enum PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0 {
     published_date = "published_date",
     ValueMinuspublished_date = "-published_date"
 }
-export enum WorkTagCategory {
-    Uncategorized = 0,
-    Event = 1,
-    Song = 2,
-    Source = 3,
-    Creator = 4,
-    Meta = 5,
-    Media = 6,
-    General = 7
-}
 export enum ErrorCode {
     Login_Failed = 10000,
     Not_Logged_In = 10001,
@@ -5905,6 +5836,16 @@ export enum ThemePref {
     Retro_Voyage = 3,
     SORIMIX = 4,
     Re_Sample = 5
+}
+export enum WorkTagCategory {
+    Uncategorized = 0,
+    Event = 1,
+    Song = 2,
+    Source = 3,
+    Creator = 4,
+    Meta = 5,
+    Media = 6,
+    General = 7
 }
 export enum FlagStatus {
     Value0 = 0,
@@ -6087,4 +6028,3 @@ export enum ModerationEventType {
     Value3 = 3,
     Value4 = 4
 }
-export const AppConfig: components["schemas"]["AppConfigSchema"] = {"WORKTAG_REQUIRED_CATEGORIES":[7,3,4,2],"WORKTAG_SOURCE_SETTABLE_CATEGORIES":[6,4,2]};

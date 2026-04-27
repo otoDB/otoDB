@@ -75,7 +75,6 @@ jobs:
       - name: Run tests with pytest
         run: uv run pytest -v --tb=short
       - name: Check server can start
-        timeout-minutes: 1
         run: timeout 10 uv run python manage.py runserver || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
   migrations:
@@ -132,8 +131,6 @@ jobs:
           platforms: linux/amd64
           cache-from: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache
           cache-to: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache,mode=max
-          build-args: |
-            OTODB_HASH=${{ github.sha }}
 
   openapi-typespec:
     name: Verify schema is fresh
@@ -150,13 +147,18 @@ jobs:
         with:
           enable-cache: true
       - uses: oven-sh/setup-bun@v1
-      - name: Regenerate backend specs
+      - name: Generate JSON
         working-directory: backend
         run: |
-          uv run manage.py openapi_schema > openapi.json
+          uv run manage.py openapi_schema > ../frontend/openapi.json
+        
+      - name: Install dependencies
+        working-directory: frontend
+        run: |
+          bun install
+
       - name: Verify no changes (Fail if stale)
         working-directory: frontend
         run: |
-          bun install openapi-typescript
-          bun run sync-schema
-          git diff --exit-code src/lib/schema.ts
+          rm redocly.yaml
+          bun run sync-schema openapi.json --check -o src/lib/schema.ts

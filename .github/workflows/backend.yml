@@ -75,6 +75,7 @@ jobs:
       - name: Run tests with pytest
         run: uv run pytest -v --tb=short
       - name: Check server can start
+        timeout-minutes: 1
         run: timeout 10 uv run python manage.py runserver || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
 
   migrations:

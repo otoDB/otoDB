@@ -13,16 +13,14 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkField from '$lib/WorkField.svelte';
 
-	type IdType = string;
-
 	interface Props {
-		this_id: IdType;
+		this_id: string;
 		obj_type: T;
 		init_relations: [
 			T extends 'work'
 				? components['schemas']['WorkRelationSchema'][]
 				: components['schemas']['SongRelationSchema'][],
-			{ id: IdType }[]
+			{ id: string }[]
 		];
 		form_control: {
 			barrier: Partial<Barrier>;

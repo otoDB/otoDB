@@ -1,0 +1,5 @@
+apis:
+  otodb:
+    root: ./openapi.json
+    x-openapi-ts:
+      output: src/lib/schema.ts

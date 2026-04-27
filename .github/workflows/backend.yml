@@ -136,7 +136,7 @@ jobs:
             OTODB_HASH=${{ github.sha }}
 
   openapi-typespec:
-    name: Verify schema is fresh
+    name: Verify openapi.json is fresh
     runs-on: ubuntu-latest
     env:
       OTODB_SECRET_KEY: dummy
@@ -149,14 +149,10 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - uses: oven-sh/setup-bun@v1
-      - name: Regenerate backend specs
+      - name: Install dependencies
+        run: uv sync
+      - name: Regenerate openapi.json and check for diff
         working-directory: backend
         run: |
           uv run manage.py openapi_schema > openapi.json
-      - name: Verify no changes (Fail if stale)
-        working-directory: frontend
-        run: |
-          bun install openapi-typescript
-          bun run sync-schema
-          git diff --exit-code src/lib/schema.ts
+          git diff --exit-code openapi.json

@@ -16,7 +16,7 @@
 		"lint": "prettier --check . && eslint .",
 		"storybook": "storybook dev -p 6006 --no-open",
 		"build-storybook": "storybook build",
-		"sync-schema": "scripts/sync-schema.sh"
+		"sync-schema": "openapi-typescript openapi.json --enum -o src/lib/schema.ts"
 	},
 	"devDependencies": {
 		"@chromatic-com/storybook": "^4.1.3",

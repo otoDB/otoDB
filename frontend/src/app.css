@@ -12,8 +12,6 @@
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
-@custom-variant dark (@media not (prefers-color-scheme: light), &:where(.dark, .dark *), &:has(#bg-marker.dark));
-
 @layer base {
 	thead {
 		background-color: var(--otodb-color-bg-primary);

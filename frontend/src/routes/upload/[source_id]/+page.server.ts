@@ -8,7 +8,7 @@ import { fail } from '@sveltejs/kit';
 import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, params, locals, url, parent }) => {
-	const sourceId = +params.source_id;
+	const sourceId = params.source_id;
 	const { source } = await parent();
 
 	// Only fetch suggestions for unbound sources (needed for work creation)
@@ -49,7 +49,7 @@ export const actions = {
 			({ data: workId } = await client.POST('/api/work/create', {
 				fetch,
 				body: {
-					source_id: +params.source_id,
+					source_id: params.source_id,
 					title: title || null,
 					description: description || null,
 					rating,

@@ -5,7 +5,7 @@ import { m } from '$lib/paraglide/messages.js';
 export const load: LayoutServerLoad = async ({ fetch, params }) => {
 	const { data } = await client.GET('/api/post/post', {
 		fetch,
-		params: { query: { post_id: +params.post_id } }
+		params: { query: { post_id: params.post_id } }
 	});
 	return {
 		post: data,

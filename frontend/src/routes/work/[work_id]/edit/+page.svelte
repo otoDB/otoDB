@@ -18,7 +18,7 @@
 	let title: string = $state(form?.title ?? getDisplayText(data.title, ''));
 	let description: string | null = $state(form?.description ?? data.description ?? '');
 	let rating: Rating = $state(form?.rating ? parseInt(form.rating, 10) : data.rating);
-	let thumbnail_source_id = $state(
+	let thumbnail_source_id = $state<string | null>(
 		form?.thumbnail_source_id ?? data.thumbnail_source ?? data.sources?.[0]?.id ?? null
 	);
 	const del = async () => {
@@ -30,7 +30,7 @@
 			goto('/upload', { invalidateAll: true });
 		}
 	};
-	const unbind = async (source_id: number) => {
+	const unbind = async (source_id: string) => {
 		if (data.sources?.length === 1) {
 			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
@@ -38,7 +38,7 @@
 		if (data.sources?.length === 1) goto('/upload');
 		else invalidateAll();
 	};
-	const updateStatus = async (source_id: number, origin: number) => {
+	const updateStatus = async (source_id: string, origin: number) => {
 		const p = client.PUT('/api/upload/origin', {
 			fetch,
 			params: { query: { source_id, status: origin } }

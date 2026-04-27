@@ -60,9 +60,9 @@ export const updateLocalPref = <T extends keyof Prefs>(key: T, value: Prefs[T]) 
 	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), [key]: value }));
 };
 
-export const GUIDELINE_POST_ID = 4;
-export const FAQ_POST_ID = 3;
-export const SEARCH_DOCS_POST_ID = 38;
+export const GUIDELINE_POST_ID = '4';
+export const FAQ_POST_ID = '3';
+export const SEARCH_DOCS_POST_ID = '38';
 export const getTagDisplayName = (tag: {
 	name: string;
 	lang_prefs: { lang: number; tag: string }[];

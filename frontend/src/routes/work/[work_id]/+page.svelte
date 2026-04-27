@@ -50,7 +50,7 @@
 			userListsShown = !userListsShown;
 		}
 	};
-	const toggleWork = async (list_id: number) => {
+	const toggleWork = async (list_id: string) => {
 		const p = client.PUT('/api/list/toggle_work', {
 			fetch,
 			params: { query: { list_id, work_id: data.id } }
@@ -546,7 +546,7 @@
 		comments={data.comments}
 		user={data.user ?? null}
 		model={ModelsWithComments.mediawork}
-		pk={+data.id}
+		pk={data.id}
 	/>
 </Section>
 

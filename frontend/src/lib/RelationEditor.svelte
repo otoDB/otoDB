@@ -13,7 +13,7 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkField from '$lib/WorkField.svelte';
 
-	type IdType = T extends 'work' ? string : number;
+	type IdType = string;
 
 	interface Props {
 		this_id: IdType;

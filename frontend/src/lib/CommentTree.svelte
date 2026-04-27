@@ -13,24 +13,24 @@
 	interface Props {
 		user: App.Locals['user'] | null;
 		model: ModelsWithComments;
-		pk: number;
+		pk: string;
 		comments: Parameters<typeof makeCommentTree>[0];
 	}
 
 	const { comments, user = null, model, pk }: Props = $props();
 
 	const tree = $derived(makeCommentTree(comments) ?? []);
-	let drafts = $state<Record<number, string>>({});
-	let previews = $state<Record<number, string>>({});
-	let previewMode = $state<Record<number, boolean>>({});
-	let editingId = $state<number | null>(null);
+	let drafts = $state<Record<string, string>>({});
+	let previews = $state<Record<string, string>>({});
+	let previewMode = $state<Record<string, boolean>>({});
+	let editingId = $state<string | null>(null);
 	let editingText = $state('');
 	let editPreview = $state('');
 	let editPreviewMode = $state(false);
 
 	const EDIT_WINDOW_MS = 180 * 24 * 60 * 60 * 1000;
 
-	const togglePreview = (reply_to: number) => {
+	const togglePreview = (reply_to: string) => {
 		if (previewMode[reply_to]) {
 			previewMode[reply_to] = false;
 			return;
@@ -56,7 +56,7 @@
 		editPreviewMode = true;
 	};
 
-	const startEdit = (id: number, currentText: string) => {
+	const startEdit = (id: string, currentText: string) => {
 		editingId = id;
 		editingText = currentText;
 		editPreviewMode = false;
@@ -80,16 +80,16 @@
 		return Date.now() - data.time.getTime() < EDIT_WINDOW_MS;
 	};
 
-	const delete_comment = async (comment_id: number) => {
+	const delete_comment = async (comment_id: string) => {
 		await client.DELETE('/api/comment/comment', {
 			fetch,
-			params: { query: { comment_id, model, pk } }
+			params: { query: { comment_id, model, pk: +pk } }
 		});
 		invalidateAll();
 	};
 </script>
 
-{#snippet reply(reply_to: number)}
+{#snippet reply(reply_to: string)}
 	<form
 		class="reply-form gap-2"
 		method="POST"
@@ -112,8 +112,8 @@
 		}}
 	>
 		<input type="text" name="model" hidden value={model} />
-		<input type="number" name="pk" hidden value={pk} />
-		<input type="number" name="reply_to" hidden value={reply_to} />
+		<input type="text" name="pk" hidden value={pk} />
+		<input type="text" name="reply_to" hidden value={reply_to} />
 		<div class="reply-main">
 			{#if previewMode[reply_to]}
 				<div class="editor-panel reply-editor">
@@ -254,7 +254,7 @@
 	{/if}
 	{#if can_comment}
 		<h4 class="mb-2">{m.mild_loud_shad_enchant({ type: m.weak_safe_cat_mix(), name: '' })}</h4>
-		{@render reply(0)}
+		{@render reply("0")}
 	{/if}
 </div>
 

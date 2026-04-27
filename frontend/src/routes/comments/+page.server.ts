@@ -28,9 +28,9 @@ export const actions = {
 
 		type Model = components['schemas']['CommentInSchema']['model'];
 		const model: Model = data.get('model') as Model;
-		const pk = parseInt(data.get('pk') as string, 10);
+		const pk = data.get('pk') as string;
 		const comment_text = data.get('comment') as string;
-		const reply_to = parseInt(data.get('reply_to') as string, 10);
+		const reply_to = data.get('reply_to') as string;
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 
 		await client.POST('/api/comment/comment', {
@@ -42,7 +42,7 @@ export const actions = {
 			},
 			body: {
 				model,
-				pk,
+				pk: +pk,
 				comment_text,
 				parent_id: reply_to,
 				mentioned_users: parseMentions(comment_text)
@@ -51,7 +51,7 @@ export const actions = {
 	},
 	edit: async ({ request, fetch }) => {
 		const data = await request.formData();
-		const comment_id = parseInt(data.get('comment_id') as string, 10),
+		const comment_id = data.get('comment_id') as string,
 			comment_text = data.get('comment') as string;
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 

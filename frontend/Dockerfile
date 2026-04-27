@@ -17,7 +17,6 @@ ENV PUBLIC_OTODB_HASH=${OTODB_HASH}
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-RUN bun run sync-schema
 RUN bun run prepare
 RUN bun run build
 

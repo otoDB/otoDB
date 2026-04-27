@@ -1,9 +1,6 @@
 node_modules
 package-lock.json
 
-# Generated
-src/lib/schema.ts
-
 # Output
 .output
 .vercel

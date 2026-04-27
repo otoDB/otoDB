@@ -43,7 +43,7 @@ def search(request: HttpRequest, query: str):
 
 @list_router.get('list', response=ListSchema)
 def lst(request: HttpRequest, list_id: OtodbID):
-	list_ = get_object_or_404(Pool, pk=int(list_id))
+	list_ = get_object_or_404(Pool, pk=list_id)
 	return list_
 
 
@@ -57,7 +57,7 @@ def entries(request: HttpRequest, list_id: OtodbID):
 @list_router.get('pending', response=List[WorkSourceSchema])
 @paginate
 def pending(request: HttpRequest, list_id: OtodbID):
-	list_ = get_object_or_404(Pool, pk=int(list_id))
+	list_ = get_object_or_404(Pool, pk=list_id)
 	return list_.pending_items.all()
 
 

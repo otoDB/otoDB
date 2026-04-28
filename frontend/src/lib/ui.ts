@@ -85,7 +85,6 @@ const WORKTAG_REQUIRED_CATEGORIES = [
 	WorkTagCategory.Creator,
 	WorkTagCategory.Song,
 	WorkTagCategory.Source,
-	WorkTagCategory.General
 ];
 export const getMissingCategories = (
 	tags: components['schemas']['TagWorkInstanceThinSchema'][]

@@ -84,8 +84,7 @@ export function getDisplayText(
 const WORKTAG_REQUIRED_CATEGORIES = [
 	WorkTagCategory.Creator,
 	WorkTagCategory.Song,
-	WorkTagCategory.Source,
-	WorkTagCategory.General
+	WorkTagCategory.Source
 ];
 export const getMissingCategories = (
 	tags: components['schemas']['TagWorkInstanceThinSchema'][]

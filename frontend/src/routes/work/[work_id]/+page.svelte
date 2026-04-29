@@ -27,7 +27,7 @@
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callErrorCodeToast, callSavingToast } from '$lib/toast';
 	import { getDisplayText } from '$lib/ui.js';
-	import { GUIDELINE_POST_ID, getMissingCategories } from '$lib/ui';
+	import { getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
 	import type { PageProps } from './$types.js';
@@ -93,7 +93,7 @@
 				})}
 			</div>
 			<div class="mt-1 text-sm">
-				<a href="/post/{GUIDELINE_POST_ID}" class="underline">
+				<a href="/docs/editing_guidelines" class="underline">
 					{m.arable_direct_cougar_win()}
 				</a>
 			</div>

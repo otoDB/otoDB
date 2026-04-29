@@ -8,6 +8,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, ProfileConnectionTypes } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
+	import DateMessage from '$lib/DateMessage.svelte';
 	import Time from '$lib/Time.svelte';
 
 	let { data } = $props();
@@ -125,9 +126,10 @@
 				</p>
 			{:else if deniedInviteCreationReason?.reason === 'next invite not yet available'}
 				<p>
-					{m.next_royal_carp_pride({
-						date: new Date(deniedInviteCreationReason.next).toLocaleString()
-					})}
+					<DateMessage
+						message={m.next_royal_carp_pride}
+						date={new Date(deniedInviteCreationReason.next)}
+					/>
 				</p>
 			{/if}
 

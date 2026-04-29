@@ -8,6 +8,7 @@
 	import { userLevelNames } from '$lib/enums/userLevel.js';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { ModelsWithComments } from '$lib/schema.js';
+	import DateMessage from '$lib/DateMessage.svelte';
 
 	let { data } = $props();
 
@@ -37,9 +38,10 @@
 	<p>{userLevelNames[data.profile.level]()}</p>
 	{#if data.profile.date_created}
 		<p>
-			{m.sharp_witty_jackdaw_treat({
-				date: new Date(data.profile.date_created).toLocaleDateString()
-			})}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
+			<DateMessage
+				message={m.sharp_witty_jackdaw_treat}
+				date={data.profile.date_created}
+			/>{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
 				content: versions[getVersionKey(new Date(data.profile.date_created))].name
 			})}
 		</p>

@@ -413,7 +413,7 @@
 				}}
 				bind:value={mds[wikiView]}
 			></textarea>
-			<div class="prose prose-neutral prose-sm dark:prose-invert">
+			<div class="prose prose-neutral prose-sm prose-invert">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html previewHtml}
 			</div>

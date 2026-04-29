@@ -12,21 +12,6 @@
 		var(--otodb-color-content-primary)
 	);
 
-	@media (prefers-color-scheme: light) {
-		--otodb-color-bg-fainter: white;
-		--otodb-color-content-primary: black;
-		--otodb-color-bg-faint: color-mix(
-			in hsl,
-			var(--otodb-color-bg-fainter) 95%,
-			var(--otodb-color-content-primary)
-		);
-		--otodb-color-bg-primary: color-mix(
-			in hsl,
-			var(--otodb-color-bg-fainter) 90%,
-			var(--otodb-color-content-primary)
-		);
-	}
-
 	--otodb-color-content-faint: color-mix(
 		in hsl,
 		var(--otodb-color-bg-primary) 12.5%,
@@ -43,7 +28,6 @@
 }
 
 :root[data-theme='aniki'] {
-	color-scheme: dark;
 	--otodb-color-content-primary: white;
 	--otodb-color-content-fainter: rgb(184, 180, 212);
 	--otodb-color-content-faint: rgb(121, 122, 151);
@@ -65,7 +49,6 @@
 }
 
 :root[data-theme='otogroove'] {
-	color-scheme: light;
 	--otodb-color-content-primary: rgb(2, 27, 14);
 	--otodb-color-content-faint: rgb(230, 30, 30);
 	--otodb-color-content-fainter: rgb(189, 73, 102);
@@ -114,7 +97,6 @@
 }
 
 :root[data-theme='retro-voyage'] {
-	color-scheme: light;
 	--otodb-color-content-primary: rgb(36, 51, 80);
 	--otodb-color-content-faint: rgb(6, 25, 131);
 	--otodb-color-content-fainter: rgb(100, 128, 160);
@@ -164,7 +146,6 @@
 }
 
 :root[data-theme='sorimix'] {
-	color-scheme: dark;
 	--otodb-color-content-primary: rgb(197, 255, 195);
 	--otodb-color-content-fainter: rgb(45, 228, 75);
 	--otodb-color-content-faint: rgb(0, 255, 163);
@@ -200,7 +181,6 @@
 }
 
 :root[data-theme='resample'] {
-	color-scheme: light;
 	--otodb-color-content-primary: rgb(2, 20, 27);
 	--otodb-color-content-faint: rgb(30, 110, 230);
 	--otodb-color-content-fainter: rgb(73, 152, 189);

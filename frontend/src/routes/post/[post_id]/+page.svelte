@@ -166,7 +166,7 @@
 			<div class="grid grid-cols-2 gap-3">
 				<textarea rows="10" bind:value={editContent} class="w-full" name="post" required
 				></textarea>
-				<div class="prose prose-neutral prose-sm dark:prose-invert">
+				<div class="prose prose-neutral prose-sm prose-invert">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html editPreviewHtml}
 				</div>
@@ -225,7 +225,7 @@
 				</div>
 				<div class="px-4 py-2">
 					<div
-						class="post-content prose prose-neutral prose-sm dark:prose-invert mt-4 max-w-none"
+						class="post-content prose prose-neutral prose-sm prose-invert mt-4 max-w-none"
 					>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html page}
@@ -239,7 +239,7 @@
 			</div>
 		{:else}
 			<div
-				class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto mt-4 max-w-4xl"
+				class="post-content prose prose-neutral prose-sm prose-invert mx-auto mt-4 max-w-4xl"
 				id="p{data.post_id}"
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->

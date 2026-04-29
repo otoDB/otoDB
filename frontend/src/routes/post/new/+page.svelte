@@ -71,7 +71,7 @@
 		{/if}
 		<div class="grid grid-cols-2 gap-3">
 			<textarea rows="10" bind:value={md} class="w-full" name="post" required></textarea>
-			<div class="prose prose-neutral prose-sm dark:prose-invert">
+			<div class="prose prose-neutral prose-sm prose-invert">
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html previewHtml}
 			</div>

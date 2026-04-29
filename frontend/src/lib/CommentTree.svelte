@@ -117,7 +117,7 @@
 		<div class="reply-main">
 			{#if previewMode[reply_to]}
 				<div class="editor-panel reply-editor">
-					<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
+					<div class="prose prose-neutral prose-sm prose-invert max-w-none">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html previews[reply_to]}
 					</div>
@@ -177,9 +177,7 @@
 					<div class="reply-main">
 						{#if editPreviewMode}
 							<div class="editor-panel reply-editor">
-								<div
-									class="prose prose-neutral prose-sm dark:prose-invert max-w-none"
-								>
+								<div class="prose prose-neutral prose-sm prose-invert max-w-none">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 									{@html editPreview}
 								</div>
@@ -209,7 +207,7 @@
 					</div>
 				</form>
 			{:else}
-				<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
+				<div class="prose prose-neutral prose-sm prose-invert max-w-none">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html renderMarkdown(data.comment)}
 				</div>

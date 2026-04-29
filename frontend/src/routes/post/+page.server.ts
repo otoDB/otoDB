@@ -1,17 +1,43 @@
 import client from '$lib/api.server';
-import { asEnum } from '$lib/enums';
 import { m } from '$lib/paraglide/messages';
-import { PostCategory } from '$lib/schema';
+import { redirect } from '@sveltejs/kit';
+import * as v from 'valibot';
 import type { PageServerLoad } from './$types';
+import { asEnum } from '$lib/enums';
+import { PostCategory } from '$lib/schema';
+
+const batch_size = 20;
+
+const SearchParamsSchema = v.object({
+	page: v.fallback(
+		v.pipe(
+			v.string(),
+			v.transform((s) => parseInt(s, 10)),
+			v.integer(),
+			v.minValue(1)
+		),
+		1
+	),
+	query: v.optional(v.string(), ''),
+	category: v.fallback(
+		v.optional(
+			v.pipe(
+				v.string(),
+				v.transform((s) => parseInt(s, 10)),
+				v.transform((s) => asEnum(PostCategory, s))
+			)
+		),
+		undefined
+	)
+});
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
-	const batch_size = 20;
-	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
-	const query = url.searchParams.get('query') ?? '';
+	const parsedParams = v.safeParse(SearchParamsSchema, Object.fromEntries(url.searchParams));
+	if (!parsedParams.success) {
+		redirect(302, '/post');
+	}
 
-	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
-	const category = asEnum(PostCategory, paramCategory);
-
+	const { page, query, category } = parsedParams.output;
 	const { data } = await client.GET('/api/post/search', {
 		fetch,
 		params: {

@@ -8,6 +8,8 @@
 	import { userLevelNames } from '$lib/enums/userLevel.js';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { ModelsWithComments } from '$lib/schema.js';
+	import Time from '$lib/Time.svelte';
+	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	let { data } = $props();
 
@@ -37,9 +39,11 @@
 	<p>{userLevelNames[data.profile.level]()}</p>
 	{#if data.profile.date_created}
 		<p>
-			{m.sharp_witty_jackdaw_treat({
-				date: new Date(data.profile.date_created).toLocaleDateString()
-			})}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
+			<ParaglideMessage message={m.sharp_witty_jackdaw_treat} inputs={{}}>
+				{#snippet date()}
+					<Time format="absolute" date={data.profile.date_created} />
+				{/snippet}
+			</ParaglideMessage>{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
 				content: versions[getVersionKey(new Date(data.profile.date_created))].name
 			})}
 		</p>

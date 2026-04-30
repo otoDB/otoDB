@@ -305,6 +305,6 @@ def new_invite(request: HttpRequest):
 	).exists()
 	Invitation.objects.create(
 		created_by=request.user,
-		level=Account.Levels.EDITOR,
+		level=Account.Levels.MEMBER,
 		secret=get_random_string(16, string.ascii_letters + string.digits),
 	)

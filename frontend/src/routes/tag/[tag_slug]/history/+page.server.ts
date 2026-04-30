@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		params: {
 			query: {
 				entity: HistoricalEntities.tagwork,
-				id: params.tag_slug
+				id: tag.id
 			}
 		}
 	});

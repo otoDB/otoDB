@@ -707,13 +707,13 @@ def history(request: HttpRequest, entity: Query[HistoricalEntitySchema]):
 			query_ids = query_ids + [*merged.values_list('id', flat=True)]
 
 		case 'tagwork':
-			tag = TagWork.objects.get(slug=entity.id)
+			tag = TagWork.objects.get(id=entity.id)
 			if tag.aliased_to:
 				tag = tag.aliased_to
 			entity.id = tag.pk
 			query_ids = query_ids + [*tag.aliases.values_list('id', flat=True)]
 		case 'tagsong':
-			tag = TagSong.objects.get(slug=entity.id)
+			tag = TagSong.objects.get(id=entity.id)
 			if tag.aliased_to:
 				tag = tag.aliased_to
 			entity.id = tag.pk

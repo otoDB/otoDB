@@ -148,7 +148,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{decodeURI(TagWorkConnectionMap[s.site].linkFn(s.content_id))}
+						{TagWorkConnectionMap[s.site].linkFn(s.content_id)}
 					</a>
 				</li>
 			{/each}
@@ -227,7 +227,7 @@
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							{decodeURI(songConnectionMap[s.site].linkFn(s.content_id))}
+							{songConnectionMap[s.site].linkFn(s.content_id)}
 						</a>
 					</li>
 				{/each}

@@ -134,9 +134,9 @@
 		col: string,
 		val: string | null | undefined
 	) => {
+		if (val === null || val === undefined) return 'None';
 		const handler = ValueDisplayMap[type]?.[col];
-		console.log(handler, type, col);
-		return decodeURIComponent((val ? (handler ? handler(+val)() : val) : null) ?? 'None');
+		return handler ? handler(+val)() : val;
 	};
 </script>
 

@@ -1,4 +1,5 @@
 import client, { forwardCookies, rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
 import { m } from '$lib/paraglide/messages.js';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -24,25 +25,13 @@ export const actions = {
 			return fail(400, { username, email, missing: true });
 		else if (password != confirm) return fail(400, { username, email, mismatch: true });
 
-		const { response, error } = await rawClient.POST('/api/auth/register', {
+		const { response, error: apiError } = await rawClient.POST('/api/auth/register', {
 			body: { username, password, email, invite },
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') },
 			fetch
 		});
 
-		if (response.status === 409) {
-			return fail(409, {
-				username,
-				failed: true,
-				message: m.red_raw_duck_evoke()
-			});
-		}
-		if (error)
-			return fail(400, {
-				username,
-				failed: true,
-				message: 'An unknown error occurred'
-			});
+		if (apiError) return apiFail(apiError, { username, email });
 
 		forwardCookies(cookies, response);
 	}

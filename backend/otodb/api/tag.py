@@ -360,7 +360,7 @@ def alias_tags(
 	return AliasResponse(merged_slug=into.slug)
 
 
-@tag_router.delete('tag', auth=django_auth, response={200: None, 400: None})
+@tag_router.delete('tag', auth=django_auth, response={200: None, 400: Error})
 @user_is_trusted
 @tag_route_switch(Route.TAGWORK_DELETE, Route.SONGTAG_DELETE)
 def delete(request: HttpRequest, tag_slug: str, **kwargs):
@@ -370,7 +370,7 @@ def delete(request: HttpRequest, tag_slug: str, **kwargs):
 	if tag.can_be_deleted:
 		tag.delete()
 	else:
-		return 400, None
+		raise ApiError(400, ErrorCode.TAG_HAS_INFORMATION)
 
 
 class TagAliasControlSchema(Schema):

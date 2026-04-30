@@ -3020,7 +3020,14 @@
             "description": "OK"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5161,7 +5168,8 @@
           10015,
           10016,
           10017,
-          10018
+          10018,
+          10019
         ],
         "title": "ErrorCode",
         "type": "integer",
@@ -5184,7 +5192,8 @@
           "Flag Pending Appeal",
           "Flag Limit Reached",
           "Appeal Pending",
-          "No More Appeal Slots"
+          "No More Appeal Slots",
+          "Tag Has Information"
         ]
       },
       "LoginRequestSchema": {

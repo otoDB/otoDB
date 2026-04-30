@@ -10,7 +10,8 @@
 	import { defineCustomClientStrategy } from '$lib/paraglide/runtime';
 	import { Levels, ThemePref } from '$lib/schema';
 	import { themes } from '$lib/themes/themes';
-	import { callErrorToast } from '$lib/toast';
+	import { callErrorCodeToast, callErrorToast } from '$lib/toast';
+	import type { ErrorPayload } from '$lib/errors';
 	import { clickOutside, getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
@@ -25,6 +26,20 @@
 		setLocale: (locale) => {
 			if (!data.user)
 				updateLocalPref('LANGUAGE', languages[locale as keyof typeof languages].id);
+		}
+	});
+
+	$effect(() => {
+		const f = page.form;
+		if (
+			f &&
+			typeof f === 'object' &&
+			'failed' in f &&
+			f.failed === true &&
+			'code' in f &&
+			typeof f.code === 'number'
+		) {
+			callErrorCodeToast(f.code, 'errorData' in f ? (f.errorData as ErrorPayload) : null);
 		}
 	});
 

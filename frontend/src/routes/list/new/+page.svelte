@@ -5,15 +5,8 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
-	import { callErrorToast } from '$lib/toast';
 
 	let { data, form } = $props();
-
-	$effect(() => {
-		if (form?.failed) {
-			callErrorToast(m.green_due_javelina_pop());
-		}
-	});
 </script>
 
 <Section

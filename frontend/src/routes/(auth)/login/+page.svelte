@@ -10,9 +10,6 @@
 		if (form?.missing) {
 			callErrorToast(m.tiny_round_shark_express());
 		}
-		if (form?.failed) {
-			callErrorToast(m.careful_lost_jaguar_dart());
-		}
 	});
 </script>
 

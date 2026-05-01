@@ -58,7 +58,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{decodeURI(profileConnectionMap[s.site].linkFn(s.content_id))}
+						{profileConnectionMap[s.site].linkFn(s.content_id)}
 					</a>
 				</li>
 			{/each}

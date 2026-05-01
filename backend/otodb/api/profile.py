@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Literal
 
 from django.contrib.contenttypes.models import ContentType
@@ -61,6 +62,7 @@ class ProfileIndexSchema(ModelSchema):
 	revisions_count: int
 	posts_count: int
 	comments_count: int
+	date_created: datetime
 
 	class Meta:
 		model = Account

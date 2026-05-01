@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
+	import Banner from '$lib/Banner.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import Section from '$lib/Section.svelte';
 	import { isFormDirty } from '$lib/dirty';
@@ -405,14 +406,9 @@
 					{@render children()}
 					{#snippet failed()}
 						<Section title={m.careful_gross_husky_grasp()}>
-							<div
-								class="mx-[10%] my-1 border border-red-700 bg-red-950/50 p-4 text-left"
-							>
-								<h2 class="mb-1 text-lg font-bold">
-									{m.key_pink_pigeon_treasure()}
-								</h2>
+							<Banner variant="danger" title={m.key_pink_pigeon_treasure()}>
 								<p>{m.ideal_soft_falcon_urge()}</p>
-							</div>
+							</Banner>
 						</Section>
 					{/snippet}
 				</svelte:boundary>

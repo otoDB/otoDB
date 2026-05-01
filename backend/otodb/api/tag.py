@@ -1067,7 +1067,17 @@ def song_tags(
 	tags: list[Annotated[str, AfterValidator(canonicalize_tag)]],
 ):
 	song = get_object_or_404(MediaSong.objects, id=song_id)
-	song.tags.set(tags)
+	ids = []
+	for t in tags:
+		try:
+			tag = TagSong.objects.get(slug=slugify_tag(t))
+			if tag.aliased_to:
+				tag = tag.aliased_to
+		except TagSong.DoesNotExist:
+			tag = TagSong.objects.create(name=t)
+		ids.append(tag.id)
+		TagSongInstance.objects.update_or_create(song=song, song_tag=tag)
+	song.tags.remove(*song.tags.exclude(id__in=ids))
 	return
 
 

@@ -11,6 +11,7 @@ from otodb.common import fetch_thumbnail_mime_type, process_video_info, video_in
 from otodb.storage_manager import storage_manager
 
 from .enums import MimeType, Platform, WorkOrigin, WorkStatus
+from .fields import IRIURLField
 from .media import MediaWork
 from .revision import RevisionTrackedModel
 
@@ -29,7 +30,7 @@ class WorkSource(RevisionTrackedModel):
 	platform = models.IntegerField(choices=Platform.choices)
 	source_id = models.CharField(max_length=1000, null=True, blank=False)
 
-	url = models.URLField(null=False, blank=False)
+	url = IRIURLField(null=False, blank=False)
 	published_date = models.DateField(
 		auto_now=False, auto_now_add=False, null=True, blank=True
 	)
@@ -45,7 +46,7 @@ class WorkSource(RevisionTrackedModel):
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
-	thumbnail_url = models.URLField(null=True, blank=False)
+	thumbnail_url = IRIURLField(null=True, blank=False)
 	thumbnail_mime = models.IntegerField(
 		choices=MimeType.choices, null=True, blank=True
 	)

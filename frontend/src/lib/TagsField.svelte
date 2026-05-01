@@ -19,11 +19,13 @@
 	let suggestions = $state<any[]>([]);
 	let lastQuery = $state('');
 
+	const slug_re = /[\p{L}\p{N}_\-]/v;
+
 	const getWordAtPos = (str: string, pos: number) => {
 		let start = pos;
-		while (start > 0 && /[\w-]/.test(str[start - 1])) start--;
+		while (start > 0 && slug_re.test(str[start - 1])) start--;
 		let end = pos;
-		while (end < str.length && /[\w-]/.test(str[end])) end++;
+		while (end < str.length && slug_re.test(str[end])) end++;
 		while (start < end && str[start] === '-') start++;
 		return { word: str.slice(start, end), start, end };
 	};

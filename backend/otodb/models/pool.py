@@ -5,6 +5,7 @@ from django.db import models
 from django.urls import reverse
 from ordered_model.models import OrderedModel
 
+from .fields import IRIURLField
 from .media import MediaWork
 
 
@@ -59,4 +60,4 @@ class PoolItem(OrderedModel):
 
 class PoolUpstream(models.Model):
 	pool = models.OneToOneField(Pool, null=False, on_delete=models.CASCADE)
-	upstream = models.URLField(null=False, blank=False)
+	upstream = IRIURLField(null=False, blank=False)

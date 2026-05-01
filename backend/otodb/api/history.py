@@ -106,7 +106,7 @@ class HistoricalEntities(str, Enum):
 
 
 class HistoricalEntitySchema(Schema):
-	id: OtodbID
+	id: str
 	entity: HistoricalEntities
 
 

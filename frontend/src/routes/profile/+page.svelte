@@ -6,6 +6,7 @@
 	import { enumValues } from '$lib/enums';
 	import { userLevelNames } from '$lib/enums/userLevel.js';
 	import { Levels, PathsApiProfileSearchGetParametersQueryOrder as OrderEnum } from '$lib/schema';
+	import Time from '$lib/Time.svelte';
 
 	let { data } = $props();
 
@@ -118,7 +119,9 @@
 					<td class="text-right">{user.comments_count}</td>
 					<td class="text-right">{userLevelNames[user.level]()}</td>
 					<td class="text-right">
-						{user.date_created ? new Date(user.date_created).toLocaleDateString() : ''}
+						{#if user.date_created}
+							<Time format="absolute" date={user.date_created} />
+						{/if}
 					</td>
 				</tr>
 			{/each}

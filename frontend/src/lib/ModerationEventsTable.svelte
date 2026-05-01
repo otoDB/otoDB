@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from './paraglide/messages';
+	import Time from '$lib/Time.svelte';
 	import type { components } from './schema';
 
 	let {
@@ -75,7 +76,7 @@
 							-
 						{/if}
 					</td>
-					<td>{new Date(event.event_at).toLocaleDateString()}</td>
+					<td><Time format="absolute" date={event.event_at} /></td>
 				</tr>
 			{/each}
 		</tbody>

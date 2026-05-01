@@ -16,7 +16,7 @@ import type {
 	SuccessResponse
 } from 'openapi-typescript-helpers';
 import setCookie from 'set-cookie-parser';
-import { formatErrorCode, parseApiErrorResponse } from './errors';
+import { formatApiErrorMessage, parseApiErrorResponse } from './errors';
 import type { paths } from './schema';
 
 // The following types are re-specializations lifted from openapi-typescript-helpers with a custom FetchResponse.
@@ -60,7 +60,7 @@ client.use({
 		if (!response.ok) {
 			const apiError = await parseApiErrorResponse(response);
 			error(response.status, {
-				message: formatErrorCode(apiError.code, apiError.data)
+				message: formatApiErrorMessage(apiError)
 			});
 		}
 		return response;

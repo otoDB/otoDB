@@ -7,12 +7,12 @@
 	import { isFormDirty } from '$lib/dirty';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import { hasUserLevel } from '$lib/enums/userLevel';
+	import type { ErrorPayload } from '$lib/errors';
 	import { m } from '$lib/paraglide/messages.js';
 	import { defineCustomClientStrategy } from '$lib/paraglide/runtime';
 	import { Levels, ThemePref } from '$lib/schema';
 	import { themes } from '$lib/themes/themes';
-	import { callErrorCodeToast, callErrorToast } from '$lib/toast';
-	import type { ErrorPayload } from '$lib/errors';
+	import { callApiErrorToast, callErrorToast } from '$lib/toast';
 	import { clickOutside, getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
@@ -40,7 +40,10 @@
 			'code' in f &&
 			typeof f.code === 'number'
 		) {
-			callErrorCodeToast(f.code, 'errorData' in f ? (f.errorData as ErrorPayload) : null);
+			callApiErrorToast({
+				code: f.code,
+				data: 'errorData' in f ? (f.errorData as ErrorPayload) : null
+			});
 		}
 	});
 

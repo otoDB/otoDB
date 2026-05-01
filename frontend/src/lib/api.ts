@@ -2,7 +2,7 @@ import { env } from '$env/dynamic/public';
 import createClient from 'openapi-fetch';
 import { parseApiErrorResponse } from '$lib/errors';
 import type { paths } from '$lib/schema';
-import { callErrorCodeToast } from '$lib/toast';
+import { callApiErrorToast } from '$lib/toast';
 
 export const client = createClient<paths>({
 	baseUrl: env.PUBLIC_API_ENDPOINT,
@@ -11,8 +11,8 @@ export const client = createClient<paths>({
 client.use({
 	onResponse: async ({ response }) => {
 		if (!response.ok) {
-			const { code, data } = await parseApiErrorResponse(response);
-			callErrorCodeToast(code, data);
+			const err = await parseApiErrorResponse(response);
+			callApiErrorToast(err);
 		}
 		return response;
 	}

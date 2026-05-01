@@ -1,6 +1,6 @@
-import { toast } from 'svelte-sonner';
+import { formatApiErrorMessage, type ApiError } from '$lib/errors';
 import { m } from '$lib/paraglide/messages';
-import { formatErrorCode, type ErrorPayload } from '$lib/errors';
+import { toast } from 'svelte-sonner';
 
 export const callErrorToast = (message: string) => toast.error(message, {});
 
@@ -24,5 +24,4 @@ export const callSavingToast = (p: Promise<any>) =>
 		error: m.green_due_javelina_pop()
 	});
 
-export const callErrorCodeToast = (code: number, payload?: ErrorPayload | null) =>
-	toast.error(formatErrorCode(code, payload));
+export const callApiErrorToast = (err: ApiError) => toast.error(formatApiErrorMessage(err));

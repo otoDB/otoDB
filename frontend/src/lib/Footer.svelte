@@ -33,16 +33,15 @@
 			})}
 			{versions[currentVersion].name}
 			{#if PUBLIC_OTODB_HASH}
-				- <a href="https://github.com/otoDB/otoDB/commit/{PUBLIC_OTODB_HASH}"
-					>{PUBLIC_OTODB_HASH}</a
-				>{/if}
+				- <span>{PUBLIC_OTODB_HASH}</span>
+			{/if}
 		</span>
 		<div class="social-links">
 			<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>
 			/
 			<a href="https://twitter.com/otoDBnet">Twitter</a>
 			/
-			<a href="https://github.com/otoDB/otoDB">GitHub</a>
+			<a href="https://github.com/otoDB/otoDB">Source Code</a>
 			/
 			<a href="irc://irc.rizon.net/otodb">#otodb @ Rizon</a>
 			/

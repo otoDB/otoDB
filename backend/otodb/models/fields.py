@@ -19,7 +19,6 @@ class IRICharField(models.CharField):
 			return value
 
 
-
 class IRIURLField(models.URLField):
 	"""
 	URLField that converts URIs to IRIs on save.

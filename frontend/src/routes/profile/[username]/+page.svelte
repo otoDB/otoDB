@@ -37,17 +37,15 @@
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	<p>{userLevelNames[data.profile.level]()}</p>
-	{#if data.profile.date_created}
-		<p>
-			<ParaglideMessage message={m.sharp_witty_jackdaw_treat} inputs={{}}>
-				{#snippet date()}
-					<Time format="absolute" date={data.profile.date_created!} />
-				{/snippet}
-			</ParaglideMessage>{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
-				content: versions[getVersionKey(new Date(data.profile.date_created))].name
-			})}
-		</p>
-	{/if}
+	<p>
+		<ParaglideMessage message={m.sharp_witty_jackdaw_treat} inputs={{}}>
+			{#snippet date()}
+				<Time format="absolute" date={data.profile.date_created} />
+			{/snippet}
+		</ParaglideMessage>{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
+			content: versions[getVersionKey(new Date(data.profile.date_created))].name
+		})}
+	</p>
 
 	{#if data.connections}
 		<ul class="list-none">

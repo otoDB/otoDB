@@ -14,9 +14,9 @@ class IRICharField(models.CharField):
 	def get_prep_value(self, value):
 		value = super().get_prep_value(value)
 		try:
-    		return unquote(value, errors='strict')
+			return unquote(value, errors='strict')
 		except UnicodeDecodeError:
-    		return value
+			return value
 
 
 

@@ -13,7 +13,11 @@ class IRICharField(models.CharField):
 
 	def get_prep_value(self, value):
 		value = super().get_prep_value(value)
-		return None if value is None else unquote(value)
+		try:
+    		return unquote(value, errors='strict')
+		except UnicodeDecodeError:
+    		return value
+
 
 
 class IRIURLField(models.URLField):

@@ -11,7 +11,7 @@
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Levels, Rating, WorkOrigin, WorkStatus } from '$lib/schema.js';
-	import { callErrorToast, callSavingToast } from '$lib/toast';
+	import { callSavingToast } from '$lib/toast';
 	import { getDisplayText } from '$lib/ui.js';
 
 	let { data, form } = $props();
@@ -46,12 +46,6 @@
 		callSavingToast(p);
 		await p;
 	};
-
-	$effect(() => {
-		if (form?.failed) {
-			callErrorToast(m.green_due_javelina_pop());
-		}
-	});
 
 	const form_barrier = {};
 </script>

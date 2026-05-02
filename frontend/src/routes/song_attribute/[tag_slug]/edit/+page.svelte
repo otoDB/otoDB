@@ -11,18 +11,12 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { locales } from '$lib/paraglide/runtime';
 	import { SongTagCategory, TagTypes } from '$lib/schema.js';
-	import { callErrorCodeToast, callErrorToast } from '$lib/toast';
 
 	let { data, form } = $props();
 
 	let category: SongTagCategory = $state(
 		(form?.category ? +form.category : null) ?? data.tag?.category
 	);
-	$effect(() => {
-		if (form?.failed) {
-			callErrorToast(m.green_due_javelina_pop());
-		}
-	});
 
 	let tagLangPrefs = $state(
 		Object.fromEntries(
@@ -66,11 +60,6 @@
 		});
 		if (error) {
 			aliases_post_gate.p = Promise.withResolvers<void>();
-			if (error && typeof error === 'object' && 'code' in error) {
-				callErrorCodeToast(error.code, error.data ?? {});
-			} else {
-				callErrorToast(m.green_due_javelina_pop());
-			}
 		} else goto(`/song_attribute/${base}/`, { invalidateAll: true });
 	};
 
@@ -84,11 +73,7 @@
 				}
 			}
 		});
-		if (response.ok) {
-			goto('/', { invalidateAll: true });
-		} else if (response.status === 400) {
-			callErrorToast(m.flat_fuzzy_pug_sway());
-		}
+		if (response.ok) goto('/', { invalidateAll: true });
 	};
 
 	const form_barrier = {};

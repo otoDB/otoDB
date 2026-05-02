@@ -3,7 +3,6 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
 	import { enumValues, PlatformNames } from '$lib/enums';
-	import { callErrorCodeToast } from '$lib/toast';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { Levels, Platform } from '$lib/schema.js';
 
@@ -15,7 +14,6 @@
 	$effect(() => {
 		if (form?.failed) {
 			submitting = false;
-			callErrorCodeToast(form.code, form.errorData);
 		}
 	});
 </script>

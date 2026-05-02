@@ -1,5 +1,6 @@
-import client from '$lib/api.server';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 import { userLevelGuard } from '$lib/route_guard';
@@ -17,18 +18,14 @@ export const actions = {
 		const name = data.get('name') as string,
 			description = data.get('description') as string;
 
-		let list_id: string | null = null;
-		try {
-			({ data: list_id } = await client.POST('/api/list/list', {
-				fetch,
-				body: {
-					name,
-					description
-				}
-			}));
-		} catch {
-			return fail(400, { name, description, failed: true });
-		}
+		const { data: list_id, error: apiError } = await rawClient.POST('/api/list/list', {
+			fetch,
+			body: {
+				name,
+				description
+			}
+		});
+		if (apiError) return apiFail(apiError, { name, description });
 		redirect(303, `/list/${list_id}`);
 	}
 } satisfies Actions;

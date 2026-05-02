@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
-import client from '$lib/api.server';
+import { rawClient } from '$lib/api.server';
 import { asEnum } from '$lib/enums';
 import { getLanguageId, languages } from '$lib/enums/language';
+import { apiFail } from '$lib/errors';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
@@ -40,23 +41,19 @@ export const actions = {
 
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
-		let post_id: string | null = null;
-		try {
-			({ data: post_id } = await client.POST('/api/post/post', {
-				fetch,
-				params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
-				body: {
-					category: category,
-					post,
-					lang: language,
-					title,
-					target_users: parseMentions(post),
-					entities
-				}
-			}));
-		} catch {
-			return fail(400);
-		}
+		const { data: post_id, error: apiError } = await rawClient.POST('/api/post/post', {
+			fetch,
+			params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
+			body: {
+				category: category,
+				post,
+				lang: language,
+				title,
+				target_users: parseMentions(post),
+				entities
+			}
+		});
+		if (apiError) return apiFail(apiError);
 		redirect(303, `/post/${post_id}`);
 	}
 } satisfies Actions;

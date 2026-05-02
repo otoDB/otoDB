@@ -14,7 +14,6 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { callErrorToast, callErrorCodeToast } from '$lib/toast';
 	import { dirtyEnhance } from '$lib/dirty';
 	import {
 		MediaConnectionTypes,
@@ -103,11 +102,6 @@
 		});
 		if (error) {
 			aliases_post_gate.p = Promise.withResolvers<void>();
-			if (error && typeof error === 'object' && 'code' in error) {
-				callErrorCodeToast(error.code, error.data ?? {});
-			} else {
-				callErrorToast(m.green_due_javelina_pop());
-			}
 		} else goto(`/tag/${base}/`, { invalidateAll: true });
 	};
 
@@ -129,22 +123,12 @@
 		].join('\n') ?? ''
 	);
 
-	$effect(() => {
-		if (form?.failed) {
-			callErrorToast(m.green_due_javelina_pop());
-		}
-	});
-
 	const del = async () => {
 		const { response } = await client.DELETE('/api/tag/tag', {
 			fetch,
 			params: { query: { tag_slug: data.tag.slug } }
 		});
-		if (response.ok) {
-			goto('/', { invalidateAll: true });
-		} else if (response.status === 400) {
-			callErrorToast(m.that_new_mayfly_spur());
-		}
+		if (response.ok) goto('/', { invalidateAll: true });
 	};
 
 	let previewHtml = $derived(renderMarkdown(mds[wikiView] ?? ''));

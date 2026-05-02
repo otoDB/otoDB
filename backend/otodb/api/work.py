@@ -728,6 +728,8 @@ def merge_works(
 	to_work_id: str,
 	payload: WorkEditSchema,
 ):
+	if payload.thumbnail_source_id is None:
+		raise ApiError(400, ErrorCode.THUMBNAIL_SOURCE_REQUIRED)
 	MediaWork.merge(
 		to_work=get_object_or_404(MediaWork.active_objects, id=to_work_id),
 		from_work=get_object_or_404(MediaWork.active_objects, id=from_work_id),

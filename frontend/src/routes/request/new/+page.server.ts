@@ -1,5 +1,6 @@
-import client from '$lib/api.server';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { userLevelGuard } from '$lib/route_guard';
 import { m } from '$lib/paraglide/messages';
@@ -15,15 +16,11 @@ export const actions = {
 	default: async ({ request, fetch }) => {
 		const data = await request.formData();
 		const actions = data.get('actions') as string;
-		let request_id: null | string = null;
-		try {
-			({ data: request_id } = await client.POST('/api/request/new', {
-				fetch,
-				params: { query: { s: actions } }
-			}));
-		} catch {
-			return fail(400);
-		}
+		const { data: request_id, error: apiError } = await rawClient.POST('/api/request/new', {
+			fetch,
+			params: { query: { s: actions } }
+		});
+		if (apiError) return apiFail(apiError);
 		redirect(303, `/request/${request_id}`);
 	}
 } satisfies Actions;

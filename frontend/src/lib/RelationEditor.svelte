@@ -9,7 +9,6 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
 	import SongField from '$lib/SongField.svelte';
-	import { callErrorToast } from '$lib/toast';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkField from '$lib/WorkField.svelte';
 
@@ -64,7 +63,6 @@
 		});
 		if (error) {
 			post_gate.p = Promise.withResolvers<void>();
-			callErrorToast(m.green_due_javelina_pop());
 		} else goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
 	};
 

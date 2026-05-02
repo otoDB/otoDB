@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
+	import Banner from '$lib/Banner.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import Section from '$lib/Section.svelte';
 	import { isFormDirty } from '$lib/dirty';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import { hasUserLevel } from '$lib/enums/userLevel';
+	import type { ErrorPayload } from '$lib/errors';
 	import { m } from '$lib/paraglide/messages.js';
 	import { defineCustomClientStrategy } from '$lib/paraglide/runtime';
 	import { Levels, ThemePref } from '$lib/schema';
 	import { themes } from '$lib/themes/themes';
-	import { callErrorToast } from '$lib/toast';
+	import { callApiErrorToast, callErrorToast } from '$lib/toast';
 	import { clickOutside, getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
@@ -25,6 +27,23 @@
 		setLocale: (locale) => {
 			if (!data.user)
 				updateLocalPref('LANGUAGE', languages[locale as keyof typeof languages].id);
+		}
+	});
+
+	$effect(() => {
+		const f = page.form;
+		if (
+			f &&
+			typeof f === 'object' &&
+			'failed' in f &&
+			f.failed === true &&
+			'code' in f &&
+			typeof f.code === 'number'
+		) {
+			callApiErrorToast({
+				code: f.code,
+				data: 'errorData' in f ? (f.errorData as ErrorPayload) : null
+			});
 		}
 	});
 
@@ -390,14 +409,9 @@
 					{@render children()}
 					{#snippet failed()}
 						<Section title={m.careful_gross_husky_grasp()}>
-							<div
-								class="mx-[10%] my-1 border border-red-700 bg-red-950/50 p-4 text-left"
-							>
-								<h2 class="mb-1 text-lg font-bold">
-									{m.key_pink_pigeon_treasure()}
-								</h2>
+							<Banner variant="danger" title={m.key_pink_pigeon_treasure()}>
 								<p>{m.ideal_soft_falcon_urge()}</p>
-							</div>
+							</Banner>
 						</Section>
 					{/snippet}
 				</svelte:boundary>

@@ -10,9 +10,6 @@
 		if (form?.missing) {
 			callErrorToast(m.tiny_round_shark_express());
 		}
-		if (form?.failed) {
-			callErrorToast(form.message);
-		}
 		if (form?.mismatch) {
 			callErrorToast(m.front_clean_termite_treat());
 		}

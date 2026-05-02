@@ -1,5 +1,6 @@
-import client from '$lib/api.server';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 import { userLevelGuard } from '$lib/route_guard';
@@ -15,22 +16,19 @@ export const actions = {
 		const category = data.get('category') as string,
 			parent_slug = data.get('parent') as string;
 
-		try {
-			await client.PUT('/api/tag/song_tag', {
-				fetch,
-				params: {
-					query: {
-						tag_slug: params.tag_slug!
-					}
-				},
-				body: {
-					category: +category,
-					parent_slug
+		const { error: apiError } = await rawClient.PUT('/api/tag/song_tag', {
+			fetch,
+			params: {
+				query: {
+					tag_slug: params.tag_slug!
 				}
-			});
-		} catch {
-			return fail(400, { category, parent_slug, failed: true });
-		}
+			},
+			body: {
+				category: +category,
+				parent_slug
+			}
+		});
+		if (apiError) return apiFail(apiError, { category, parent_slug });
 
 		redirect(303, `/song_attribute/${params.tag_slug}`);
 	}

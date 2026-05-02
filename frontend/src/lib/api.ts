@@ -17,4 +17,8 @@ client.use({
 		return response;
 	}
 });
+export const rawClient = createClient<paths>({
+	baseUrl: env.PUBLIC_API_ENDPOINT,
+	credentials: 'include'
+});
 export default client;

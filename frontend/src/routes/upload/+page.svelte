@@ -57,7 +57,7 @@
 				{#each data.sources.items as source (source.id)}
 					<tr>
 						<td>
-							<a href="/source/{source.id}">
+							<a href="/upload/{source.id}">
 								{source.title || source.url}
 							</a>
 						</td>

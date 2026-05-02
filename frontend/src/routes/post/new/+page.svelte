@@ -10,6 +10,7 @@
 	import { PostCategory } from '$lib/schema.js';
 
 	let { data } = $props();
+
 	let md = $state('');
 	let previewHtml = $derived(renderMarkdown(md));
 	let category: PostCategory = $derived(data.category ?? PostCategory.Bug_Report);

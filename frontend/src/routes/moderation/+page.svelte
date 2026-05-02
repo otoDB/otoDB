@@ -5,7 +5,6 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { m } from '$lib/paraglide/messages.js';
-	import { callErrorCodeToast } from '$lib/toast';
 
 	let { data } = $props();
 
@@ -21,10 +20,7 @@
 		const { error } = await client.POST('/api/upload/approve', {
 			params: { query: { source_id: sourceId } }
 		});
-		if (error) {
-			callErrorCodeToast(error.code, error.data ?? {});
-			return;
-		}
+		if (error) return;
 		invalidateAll();
 	};
 
@@ -37,10 +33,7 @@
 		const { error } = await client.POST('/api/upload/reject', {
 			params: { query: { source_id: sourceId, reason } }
 		});
-		if (error) {
-			callErrorCodeToast(error.code, error.data ?? {});
-			return;
-		}
+		if (error) return;
 		invalidateAll();
 	};
 </script>

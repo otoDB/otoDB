@@ -1,10 +1,11 @@
 import client, { rawClient } from '$lib/api.server';
 import { hasUserLevel } from '$lib/enums/userLevel';
+import { apiFail } from '$lib/errors';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
 import { Levels, WorkStatus, type components } from '$lib/schema';
 import { getDisplayText } from '$lib/ui';
-import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
@@ -104,14 +105,7 @@ export const actions = {
 				params: { query: { source_id: source! } },
 				body: metadata
 			});
-			if (putError)
-				return fail(400, {
-					url: link,
-					origin: is_official,
-					failed: true,
-					code: putError.code,
-					errorData: putError.data ?? {}
-				});
+			if (putError) return apiFail(putError, { url: link, origin: is_official });
 
 			redirect(303, `/work/${work_id}`);
 		}
@@ -127,14 +121,7 @@ export const actions = {
 			},
 			body: metadata
 		});
-		if (postError)
-			return fail(400, {
-				url: link,
-				origin: is_official,
-				failed: true,
-				code: postError.code,
-				errorData: postError.data ?? {}
-			});
+		if (postError) return apiFail(postError, { url: link, origin: is_official });
 
 		// Source already has a work -> redirect to work page
 		if (result.work_id) redirect(303, `/work/${result.work_id}`);

@@ -1,7 +1,8 @@
-import client from '$lib/api.server';
+import { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { Levels } from '$lib/schema';
 
@@ -21,31 +22,24 @@ export const actions = {
 			thumbnail_source_id = data.get('thumbnail_source_id') as string,
 			rating = data.get('rating') as string;
 
-		if (!A || !B || !rating || isNaN(+rating)) return fail(400);
+		if (!A || !B || !rating || isNaN(+rating)) return apiFail({ code: -1 });
 
-		if (!thumbnail_source_id || isNaN(+thumbnail_source_id)) {
-			return fail(400, { error: 'A thumbnail source must be selected' });
-		}
-
-		try {
-			await client.POST('/api/work/merge', {
-				fetch,
-				params: {
-					query: {
-						from_work_id: A,
-						to_work_id: B
-					}
-				},
-				body: {
-					title,
-					description,
-					thumbnail_source_id,
-					rating: +rating
+		const { error: apiError } = await rawClient.POST('/api/work/merge', {
+			fetch,
+			params: {
+				query: {
+					from_work_id: A,
+					to_work_id: B
 				}
-			});
-		} catch {
-			return fail(400);
-		}
+			},
+			body: {
+				title,
+				description,
+				thumbnail_source_id: thumbnail_source_id || null,
+				rating: +rating
+			}
+		});
+		if (apiError) return apiFail(apiError);
 		redirect(303, `/work/${B}`);
 	}
 } satisfies Actions;

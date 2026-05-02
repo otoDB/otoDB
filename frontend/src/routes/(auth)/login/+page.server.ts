@@ -1,7 +1,7 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client from '$lib/api.server';
-import { forwardCookies } from '$lib/api.server';
+import client, { forwardCookies, rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
 import { m } from '$lib/paraglide/messages';
 
 export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
@@ -21,15 +21,12 @@ export const actions = {
 
 		if (!username || !password) return fail(400, { username, missing: true });
 
-		try {
-			const { response } = await client.POST('/api/auth/login', {
-				fetch,
-				body: { username, password },
-				headers: { 'X-CSRFToken': cookies.get('csrftoken') }
-			});
-			forwardCookies(cookies, response);
-		} catch {
-			return fail(400, { username, failed: true });
-		}
+		const { response, error: apiError } = await rawClient.POST('/api/auth/login', {
+			fetch,
+			body: { username, password },
+			headers: { 'X-CSRFToken': cookies.get('csrftoken') }
+		});
+		if (apiError) return apiFail(apiError, { username });
+		forwardCookies(cookies, response);
 	}
 } satisfies Actions;

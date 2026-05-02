@@ -10,7 +10,6 @@ from django.db import connection, models, transaction
 from django.db.models import Case, Exists, F, OuterRef, Q, Subquery, When, Window
 from django.db.models.fields.related import RelatedField
 from django.db.models.functions import RowNumber
-from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
@@ -132,23 +131,6 @@ class RevisionChangeSchema(ModelSchema):
 	class Meta:
 		model = RevisionChange
 		fields = ['deleted', 'target_column', 'target_value']
-
-
-def get_history_dict(historical):
-	d = model_to_dict(
-		historical,
-		fields=[
-			'history_id',
-			'history_date',
-			'history_user',
-			'history_change_reason',
-		],
-	) | {'delta': [], 'model': historical.model}
-	if d['history_user']:
-		d['history_user'] = Account.objects.get(id=d['history_user']).username
-	else:
-		d['history_user'] = Account.objects.get(id=1).username
-	return d
 
 
 @history_router.get('recent', response=list[RevisionSchema])

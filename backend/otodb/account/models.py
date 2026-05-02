@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 from django.db import IntegrityError, models
 from django.urls import reverse
@@ -103,6 +104,10 @@ class Account(AbstractBaseUser):
 	@property
 	def is_owner(self):
 		return self.level >= self.Levels.OWNER
+
+	@classmethod
+	def get_system(cls) -> 'Account':
+		return cls.objects.get(username=settings.OTODB_SYSTEM_BOT_USERNAME)
 
 	def has_perm(self, perm, obj=None):
 		return True

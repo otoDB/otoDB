@@ -309,6 +309,7 @@ class Route(OtodbIntegerEnum):
 	WORKSOURCE_UPDATE = 66, 'Work Source Update'
 
 	ROLLBACK = 100, 'Rollback'
+	SYSTEM = 10000, 'System'
 
 
 class ErrorCode(OtodbIntegerEnum):

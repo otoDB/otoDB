@@ -133,7 +133,7 @@ def search(
 	)
 
 	qs = (
-		Account.objects.filter(is_active=True)
+		Account.objects.all()
 		.annotate(
 			works_count=Coalesce(Subquery(works_count, output_field=IntegerField()), 0),
 			revisions_count=Coalesce(

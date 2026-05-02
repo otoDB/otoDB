@@ -1027,8 +1027,10 @@ def mod_queue(
 
 	if mode == 'unseen':
 		qs = qs.exclude(
-			moderation_events__event_type=ModerationEventType.DISAPPROVAL,
-			moderation_events__by=request.user,
+			id__in=ModerationEvent.objects.filter(
+				event_type=ModerationEventType.DISAPPROVAL,
+				by=request.user,
+			).values_list('work_id', flat=True)
 		)
 
 	return qs.order_by('-id')

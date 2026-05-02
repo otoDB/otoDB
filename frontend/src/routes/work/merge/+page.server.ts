@@ -24,8 +24,6 @@ export const actions = {
 
 		if (!A || !B || !rating || isNaN(+rating)) return apiFail({ code: -1 });
 
-		if (!thumbnail_source_id || isNaN(+thumbnail_source_id)) return apiFail({ code: -1 });
-
 		const { error: apiError } = await rawClient.POST('/api/work/merge', {
 			fetch,
 			params: {
@@ -37,7 +35,7 @@ export const actions = {
 			body: {
 				title,
 				description,
-				thumbnail_source_id,
+				thumbnail_source_id: thumbnail_source_id || null,
 				rating: +rating
 			}
 		});

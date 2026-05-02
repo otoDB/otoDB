@@ -5169,7 +5169,8 @@
           10016,
           10017,
           10018,
-          10019
+          10019,
+          10020
         ],
         "title": "ErrorCode",
         "type": "integer",
@@ -5193,7 +5194,8 @@
           "Flag Limit Reached",
           "Appeal Pending",
           "No More Appeal Slots",
-          "Tag Has Information"
+          "Tag Has Information",
+          "Thumbnail Source Required"
         ]
       },
       "LoginRequestSchema": {

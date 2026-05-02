@@ -332,6 +332,7 @@ class ErrorCode(OtodbIntegerEnum):
 	APPEAL_PENDING = 10017
 	NO_MORE_APPEAL_SLOTS = 10018
 	TAG_HAS_INFORMATION = 10019
+	THUMBNAIL_SOURCE_REQUIRED = 10020
 
 
 class Preferences(OtodbIntegerEnum):

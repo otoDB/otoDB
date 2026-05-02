@@ -28,6 +28,7 @@ const errorCodeMessages: Partial<Record<ErrorCode, (payload: ErrorPayload) => st
 	[ErrorCode.Flag_Limit_Reached]: () => m.stern_few_quail_rest(),
 	[ErrorCode.Appeal_Pending]: () => m.calm_brisk_swan_queue(),
 	[ErrorCode.Tag_Has_Information]: () => m.that_new_mayfly_spur(),
+	[ErrorCode.Thumbnail_Source_Required]: () => m.sleek_brave_heron_choose(),
 	[ErrorCode.Name_Slug_Mismatch]: (payload) =>
 		typeof payload.name === 'string' &&
 		typeof payload.slug === 'string' &&

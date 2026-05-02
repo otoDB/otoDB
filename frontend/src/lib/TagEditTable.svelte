@@ -1,6 +1,6 @@
 <script lang="ts">
 	import WorkTag from '$lib/WorkTag.svelte';
-	import client from '$lib/api';
+	import { rawClient } from '$lib/api';
 	import { allCreatorRoles, creatorRole } from '$lib/enums/creatorRole';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 	import { m } from '$lib/paraglide/messages.js';
@@ -22,11 +22,11 @@
 		void tags;
 		const timeout = setTimeout(() => {
 			tags.filter((t) => !Object.hasOwn(cache, t)).forEach(async (t) => {
-				let { data } = await client.GET('/api/tag/tag', {
+				let { data } = await rawClient.GET('/api/tag/tag', {
 					params: { query: { tag_slug: t } }
 				});
 				if (data?.aliased_to) {
-					({ data } = await client.GET('/api/tag/tag', {
+					({ data } = await rawClient.GET('/api/tag/tag', {
 						params: { query: { tag_slug: data.aliased_to.slug } }
 					}));
 				}

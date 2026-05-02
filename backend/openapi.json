@@ -5170,7 +5170,8 @@
           10017,
           10018,
           10019,
-          10020
+          10020,
+          10021
         ],
         "title": "ErrorCode",
         "type": "integer",
@@ -5195,7 +5196,8 @@
           "Appeal Pending",
           "No More Appeal Slots",
           "Tag Has Information",
-          "Thumbnail Source Required"
+          "Thumbnail Source Required",
+          "Tag With Instances Merge Requires Editor"
         ]
       },
       "LoginRequestSchema": {

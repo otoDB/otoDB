@@ -29,6 +29,7 @@ const errorCodeMessages: Partial<Record<ErrorCode, (payload: ErrorPayload) => st
 	[ErrorCode.Appeal_Pending]: () => m.calm_brisk_swan_queue(),
 	[ErrorCode.Tag_Has_Information]: () => m.that_new_mayfly_spur(),
 	[ErrorCode.Thumbnail_Source_Required]: () => m.sleek_brave_heron_choose(),
+	[ErrorCode.Captcha_Failed]: () => m.quiet_proud_lion_block(),
 	[ErrorCode.Name_Slug_Mismatch]: (payload) =>
 		typeof payload.name === 'string' &&
 		typeof payload.slug === 'string' &&

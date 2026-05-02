@@ -5170,7 +5170,8 @@
           10017,
           10018,
           10019,
-          10020
+          10020,
+          10022
         ],
         "title": "ErrorCode",
         "type": "integer",
@@ -5195,7 +5196,8 @@
           "Appeal Pending",
           "No More Appeal Slots",
           "Tag Has Information",
-          "Thumbnail Source Required"
+          "Thumbnail Source Required",
+          "Captcha Failed"
         ]
       },
       "LoginRequestSchema": {
@@ -5207,6 +5209,17 @@
           "password": {
             "title": "Password",
             "type": "string"
+          },
+          "turnstile_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnstile Token"
           }
         },
         "required": [
@@ -5345,15 +5358,32 @@
             "type": "string"
           },
           "invite": {
-            "title": "Invite",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invite"
+          },
+          "turnstile_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnstile Token"
           }
         },
         "required": [
           "username",
           "password",
-          "email",
-          "invite"
+          "email"
         ],
         "title": "RegisterRequestSchema",
         "type": "object"
@@ -5374,6 +5404,17 @@
               }
             ],
             "title": "Token"
+          },
+          "turnstile_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnstile Token"
           }
         },
         "required": [
@@ -5387,6 +5428,17 @@
           "email": {
             "title": "Email",
             "type": "string"
+          },
+          "turnstile_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnstile Token"
           }
         },
         "required": [

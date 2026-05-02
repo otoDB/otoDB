@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Section from '$lib/Section.svelte';
+	import Turnstile from '$lib/Turnstile.svelte';
 
 	let { data, form } = $props();
 	import { m } from '$lib/paraglide/messages.js';
@@ -34,6 +35,7 @@
 				</tbody>
 			</table>
 			<input hidden type="text" name="token" value={data.token} />
+			<Turnstile action="reset_password" />
 			<input type="submit" />
 		</form>
 	{:else if form?.success}
@@ -48,6 +50,7 @@
 					</tr>
 				</tbody>
 			</table>
+			<Turnstile action="reset_request" />
 			<input type="submit" />
 		</form>
 	{/if}

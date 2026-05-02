@@ -3,6 +3,8 @@ import string
 from datetime import datetime, timedelta
 from typing import Annotated
 
+import requests
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
@@ -36,6 +38,43 @@ logger = logging.getLogger(__name__)
 
 auth_router = Router()
 
+TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+
+
+def _client_ip(request: HttpRequest) -> str | None:
+	fwd = request.META.get('HTTP_X_FORWARDED_FOR')
+	if fwd:
+		return fwd.split(',')[0].strip()
+	return request.META.get('REMOTE_ADDR')
+
+
+def verify_turnstile(request: HttpRequest, token: str | None, action: str) -> None:
+	"""Verify a Cloudflare Turnstile token"""
+	secret = settings.OTODB_TURNSTILE_SECRET_KEY
+	if not secret:
+		return
+	if not token:
+		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
+	data = {'secret': secret, 'response': token}
+	remoteip = _client_ip(request)
+	if remoteip:
+		data['remoteip'] = remoteip
+	try:
+		resp = requests.post(TURNSTILE_VERIFY_URL, data=data, timeout=5)
+		resp.raise_for_status()
+		payload = resp.json()
+	except Exception:
+		logger.exception('Turnstile verification request failed')
+		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
+	if not payload.get('success'):
+		logger.warning('Turnstile rejected: %s', payload.get('error-codes'))
+		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
+	if payload.get('action') and payload.get('action') != action:
+		logger.warning(
+			'Turnstile action mismatch: %s != %s', payload.get('action'), action
+		)
+		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
+
 
 class UserLoginSchema(Schema):
 	user_id: OtodbID
@@ -45,6 +84,7 @@ class UserLoginSchema(Schema):
 class LoginRequestSchema(Schema):
 	username: Annotated[str, StringConstraints(strip_whitespace=True)]
 	password: str
+	turnstile_token: str | None = None
 
 
 @auth_router.get('/csrf')
@@ -60,6 +100,7 @@ def csrf(request: HttpRequest):
 	response={200: UserLoginSchema, 401: Error},
 )
 def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
+	verify_turnstile(request, body.turnstile_token, 'login')
 	user = authenticate(request, username=body.username, password=body.password)
 	if user is not None:
 		login(request, user)
@@ -101,7 +142,8 @@ class RegisterRequestSchema(Schema):
 	username: Annotated[str, StringConstraints(strip_whitespace=True)]
 	password: str
 	email: Annotated[str, StringConstraints(strip_whitespace=True)]
-	invite: Annotated[str, StringConstraints(strip_whitespace=True)]
+	invite: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None
+	turnstile_token: str | None = None
 
 
 @auth_router.post(
@@ -110,15 +152,28 @@ class RegisterRequestSchema(Schema):
 	response={200: UserLoginSchema, 401: Error, 409: Error},
 )
 def register(request: HttpRequest, body: RegisterRequestSchema):
-	invite_res = get_object_or_404(Invitation, secret=body.invite, used_by__isnull=True)
+	verify_turnstile(request, body.turnstile_token, 'register')
+
+	if settings.OTODB_INVITE_REQUIRED:
+		if not body.invite:
+			raise ApiError(400, ErrorCode.VALIDATION_ERROR)
+		invite_res = get_object_or_404(
+			Invitation, secret=body.invite, used_by__isnull=True
+		)
+		level = invite_res.level
+	else:
+		invite_res = None
+		level = Account.Levels.MEMBER
+
 	assert body.password
 	try:
 		user = Account.objects.create_user(
-			body.username, body.email, password=body.password, level=invite_res.level
+			body.username, body.email, password=body.password, level=level
 		)
-		invite_res.used_by = user
-		invite_res.used_at = timezone.now()
-		invite_res.save()
+		if invite_res is not None:
+			invite_res.used_by = user
+			invite_res.used_at = timezone.now()
+			invite_res.save()
 
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
@@ -131,10 +186,12 @@ def register(request: HttpRequest, body: RegisterRequestSchema):
 class ResetPasswordRequestSchema(Schema):
 	password: str
 	token: str | None = None
+	turnstile_token: str | None = None
 
 
 @auth_router.post('/reset_password', throttle=[AnonRateThrottle('3/h')])
 def reset_password(request: HttpRequest, body: ResetPasswordRequestSchema):
+	verify_turnstile(request, body.turnstile_token, 'reset_password')
 	assert body.password
 	user = request.user
 	if user.is_authenticated:
@@ -239,10 +296,12 @@ def get_user_language(user, request):
 
 class SendResetTokenRequestSchema(Schema):
 	email: str
+	turnstile_token: str | None = None
 
 
 @auth_router.put('/reset_password', throttle=[AnonRateThrottle('3/h')])
 def send_reset_password_token(request: HttpRequest, body: SendResetTokenRequestSchema):
+	verify_turnstile(request, body.turnstile_token, 'reset_request')
 	try:
 		user = Account.objects.get(email=body.email)
 		user.reset_token = get_random_string(120, string.ascii_letters + string.digits)

@@ -333,6 +333,7 @@ class ErrorCode(OtodbIntegerEnum):
 	NO_MORE_APPEAL_SLOTS = 10018
 	TAG_HAS_INFORMATION = 10019
 	THUMBNAIL_SOURCE_REQUIRED = 10020
+	CAPTCHA_FAILED = 10022
 
 
 class Preferences(OtodbIntegerEnum):

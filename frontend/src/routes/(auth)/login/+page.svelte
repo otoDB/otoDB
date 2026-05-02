@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Section from '$lib/Section.svelte';
+	import Turnstile from '$lib/Turnstile.svelte';
 
 	let { form } = $props();
 	import { m } from '$lib/paraglide/messages.js';
@@ -37,6 +38,7 @@
 		<address>
 			<a href="/reset_password">{m.zippy_tense_raven_favor()}</a>
 		</address>
+		<Turnstile action="login" />
 		<input type="submit" value={m.inner_stale_anteater_walk()} />
 	</form>
 </Section>

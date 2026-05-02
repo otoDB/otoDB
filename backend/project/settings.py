@@ -249,6 +249,13 @@ if OTODB_FRONTEND_DOMAIN:
 
 OTODB_PROTECT_API_DOCS = os.environ.get('OTODB_PROTECT_API_DOCS', '').lower() == 'true'
 
+OTODB_INVITE_REQUIRED = (
+	os.environ.get('OTODB_INVITE_REQUIRED', 'False').lower() == 'true'
+)
+
+# Captcha
+OTODB_TURNSTILE_SECRET_KEY = os.environ.get('OTODB_TURNSTILE_SECRET_KEY')
+
 INTERNAL_API_SECRET = os.environ.get('INTERNAL_API_SECRET')
 
 # CDN Configuration

@@ -698,8 +698,14 @@ def recent(request: AuthedHttpRequest, n: int = 1):
 )
 def relations(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	relations = WorkRelation.get_component(work.id)
-	return 200, (relations, {w.id: w for r in relations for w in (r.A, r.B)}.values())
+	relations = list(WorkRelation.get_component(work.id))
+	work_ids = {x_id for r in relations for x_id in (r.A_id, r.B_id)}
+	works = (
+		MediaWork.objects.filter(id__in=work_ids, moved_to__isnull=True)
+		.select_related('thumbnail_source')
+		.prefetch_related('worksource_set')
+	)
+	return 200, (relations, works)
 
 
 @work_router.post('relation', auth=django_auth)

@@ -51,6 +51,7 @@ from otodb.models.enums import (
 from .common import (
 	AbstractTagTransformer,
 	ApiError,
+	AuthedHttpRequest,
 	ConnectionLookupResponse,
 	ConnectionSchema,
 	Error,
@@ -331,7 +332,11 @@ class AliasResponse(Schema):
 @user_is_trusted
 @tag_route_switch(Route.TAGWORK_ALIAS, Route.SONGTAG_ALIAS)
 def alias_tags(
-	request: HttpRequest, from_tags: list[str], into_tag: str, delete: bool, **kwargs
+	request: AuthedHttpRequest,
+	from_tags: list[str],
+	into_tag: str,
+	delete: bool,
+	**kwargs,
 ):
 	model, _ = kwargs['model']
 
@@ -348,6 +353,11 @@ def alias_tags(
 	if into.aliased_to:
 		into = into.aliased_to
 	assert into.aliased_to is None
+
+	# Prevent users below editor from merging if any `from_tag` has instances
+	effective_from_tags = [t for t in tags if (t.aliased_to_id or t.pk) != into.pk]
+	if not request.user.is_editor and model.any_have_instances(effective_from_tags):
+		raise ApiError(403, ErrorCode.TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR)
 
 	model.alias(tags, into)
 	if delete:

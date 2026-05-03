@@ -3631,7 +3631,7 @@
                     },
                     {
                       "items": {
-                        "$ref": "#/components/schemas/SongSchema"
+                        "$ref": "#/components/schemas/SlimSongSchema"
                       },
                       "type": "array"
                     }
@@ -8148,6 +8148,52 @@
           "count"
         ],
         "title": "PagedSongSchema",
+        "type": "object"
+      },
+      "SlimSongSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "work_tag": {
+            "title": "Work Tag",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 1000,
+            "title": "Title",
+            "type": "string"
+          },
+          "bpm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bpm"
+          },
+          "variable_bpm": {
+            "default": false,
+            "title": "Variable Bpm",
+            "type": "boolean"
+          },
+          "author": {
+            "maxLength": 1000,
+            "title": "Author",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "work_tag",
+          "title",
+          "author"
+        ],
+        "title": "SlimSongSchema",
         "type": "object"
       },
       "SongRelationSchema": {

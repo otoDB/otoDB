@@ -131,6 +131,15 @@ class SongSchema(ModelSchema):
 		fields = ['title', 'bpm', 'variable_bpm', 'author']
 
 
+class SlimSongSchema(ModelSchema):
+	id: OtodbID
+	work_tag: str = Field(..., alias='work_tag.slug')
+
+	class Meta:
+		model = MediaSong
+		fields = ['title', 'bpm', 'variable_bpm', 'author']
+
+
 def filter_tags_by_media_type(qs, media_type: list[int]):
 	return qs.annotate(
 		mt=F('media_type').bitand(reduce(lambda a, b: a | b, media_type))
@@ -1002,12 +1011,15 @@ def song_search(
 
 
 @tag_router.get(
-	'song_relations', response=tuple[list[SongRelationSchema], list[SongSchema]]
+	'song_relations',
+	response=tuple[list[SongRelationSchema], list[SlimSongSchema]],
 )
 def song_relations(request: HttpRequest, song_id: OtodbID):
 	song = get_object_or_404(MediaSong.objects, id=song_id)
-	relations = SongRelation.get_component(song.id)
-	return 200, (relations, {s.id: s for r in relations for s in (r.A, r.B)}.values())
+	relations = list(SongRelation.get_component(song.id))
+	song_ids = {x_id for r in relations for x_id in (r.A_id, r.B_id)}
+	songs = MediaSong.objects.filter(id__in=song_ids).select_related('work_tag')
+	return 200, (relations, songs)
 
 
 @tag_router.post('song_relation', auth=django_auth)

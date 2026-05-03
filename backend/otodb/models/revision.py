@@ -1,5 +1,4 @@
 import logging
-from contextvars import ContextVar
 
 from dirtyfields import DirtyFieldsMixin
 from django.conf import settings
@@ -9,22 +8,13 @@ from django.db import models
 from django.db.models.deletion import Collector
 from django.dispatch import receiver
 from django_request_cache import get_request_cache
+from django_userforeignkey.request import get_current_request
 
 from otodb.models.enums import RevisionChain, Route
 
 logger = logging.getLogger(__name__)
 
-_skip_dirty_tracking: ContextVar[bool] = ContextVar(
-	'skip_dirty_tracking', default=False
-)
-
-
-def skip_dirty_tracking_enabled() -> bool:
-	return _skip_dirty_tracking.get()
-
-
-def set_skip_dirty_tracking(enabled: bool) -> None:
-	_skip_dirty_tracking.set(enabled)
+_READ_ONLY_HTTP_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS'})
 
 
 class Revision(models.Model):
@@ -256,7 +246,8 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 		base_manager_name = 'objects'
 
 	def __init__(self, *args, **kwargs):
-		if skip_dirty_tracking_enabled():
+		request = get_current_request()
+		if request is not None and request.method in _READ_ONLY_HTTP_METHODS:
 			models.Model.__init__(self, *args, **kwargs)
 			self._original_state = {}
 		else:

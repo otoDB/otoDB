@@ -98,7 +98,6 @@ MIDDLEWARE = [
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'django_userforeignkey.middleware.UserForeignKeyMiddleware',
 	'django_request_cache.middleware.RequestCacheMiddleware',
-	'otodb.middleware.SkipDirtyFieldsOnReadMiddleware',
 ]
 
 if DEBUG:

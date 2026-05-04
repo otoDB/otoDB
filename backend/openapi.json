@@ -428,49 +428,6 @@
         }
       }
     },
-    "/api/work/tags_needed": {
-      "get": {
-        "operationId": "otodb_api_work_tags_needed",
-        "summary": "Tags Needed",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "default": 30,
-              "maximum": 30,
-              "minimum": 1,
-              "title": "Limit",
-              "type": "integer"
-            },
-            "required": false
-          },
-          {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "default": 0,
-              "minimum": 0,
-              "title": "Offset",
-              "type": "integer"
-            },
-            "required": false
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PagedThinWorkSchema"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/work/work": {
       "get": {
         "operationId": "otodb_api_work_work",

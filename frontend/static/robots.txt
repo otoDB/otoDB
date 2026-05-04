@@ -54,7 +54,6 @@ Allow: /sitemap.xml
 Disallow: /api
 Disallow: /work/merge
 Disallow: /work/unbound
-Disallow: /work/tags_needed
 
 ## Only allow main revision history page for discovery
 Disallow: /revision

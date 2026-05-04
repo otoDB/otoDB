@@ -16,7 +16,8 @@
 			tags: '(super_mario_series | kirby_series) bpm:140..160',
 			desc: m.bright_calm_finch_match
 		},
-		{ tags: 'touhou -touhou[category:song]', desc: m.crisp_neat_wren_match }
+		{ tags: 'touhou -touhou[category:song]', desc: m.crisp_neat_wren_match },
+		{ tags: 'order:tagcount_asc', desc: m.spry_late_kudu_assure }
 	];
 </script>
 

@@ -28,7 +28,7 @@
 		type components
 	} from '$lib/schema.js';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
-	import { getTagDisplayName } from '$lib/ui.js';
+	import { getTagDisplayName, getTagDisplaySlug } from '$lib/ui.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -277,7 +277,10 @@
 	{/if}
 {/await}
 
-<Section title="{m.quiet_super_kangaroo_kiss({ tag: data.display_name })} ({data.works?.count})">
+<Section
+	title="{m.quiet_super_kangaroo_kiss({ tag: data.display_name })} ({data.works?.count})"
+	href="/work?tags={encodeURIComponent('^' + getTagDisplaySlug(data.tag))}"
+>
 	{#if results.length}
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each results as work, i (i)}

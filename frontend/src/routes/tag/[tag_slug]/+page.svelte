@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import Connections from '$lib/Connections.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import RelationViewer from '$lib/RelationViewer.svelte';
@@ -137,39 +137,26 @@
 
 	{#if data.connections}
 		<ul class="list-none">
-			{#each data.connections[0] as s, i (i)}
-				<li>
-					<ConnectionFavicon
-						type={TagWorkConnectionMap[s.site].name}
-						class="inline size-4"
+			<Connections items={data.connections[0]} map={TagWorkConnectionMap} />
+			{#if data.connections[1]?.length}
+				{#if data.tag.category === WorkTagCategory.Media}
+					<Connections
+						items={data.connections[1] as {
+							site: MediaConnectionTypes;
+							content_id: string;
+						}[]}
+						map={mediaConnectionMap}
 					/>
-					<a
-						href={TagWorkConnectionMap[s.site].linkFn(s.content_id)}
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{TagWorkConnectionMap[s.site].linkFn(s.content_id)}
-					</a>
-				</li>
-			{/each}
-			{#if data.connections[1]}
-				{#each data.connections[1] as s, i (i)}
-					{@const conn =
-						data.tag.category === WorkTagCategory.Media
-							? mediaConnectionMap[s.site as MediaConnectionTypes]
-							: profileConnectionMap[s.site as ProfileConnectionTypes]}
-					<li class={{ 'opacity-60': s.dead }}>
-						<ConnectionFavicon type={conn.name} class="inline size-4" />
-						<a
-							href={conn.linkFn(s.content_id)}
-							target="_blank"
-							rel="noopener noreferrer"
-							class={{ 'line-through': s.dead }}
-						>
-							{conn.linkFn(s.content_id)}
-						</a>
-					</li>
-				{/each}
+				{:else if data.tag.category === WorkTagCategory.Creator}
+					<Connections
+						items={data.connections[1] as {
+							site: ProfileConnectionTypes;
+							content_id: string;
+							dead?: boolean | null;
+						}[]}
+						map={profileConnectionMap}
+					/>
+				{/if}
 			{/if}
 		</ul>
 	{/if}
@@ -216,21 +203,7 @@
 		</table>
 		{#if data.song_connections}
 			<ul class="list-none">
-				{#each data.song_connections as s, i (i)}
-					<li>
-						<ConnectionFavicon
-							type={songConnectionMap[s.site].name}
-							class="inline size-4"
-						/>
-						<a
-							href={songConnectionMap[s.site].linkFn(s.content_id)}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							{songConnectionMap[s.site].linkFn(s.content_id)}
-						</a>
-					</li>
-				{/each}
+				<Connections items={data.song_connections} map={songConnectionMap} />
 			</ul>
 		{/if}
 		{#if data.tag?.song.tags.length}

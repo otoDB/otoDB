@@ -5150,6 +5150,7 @@
       },
       "ErrorCode": {
         "enum": [
+          -1,
           10000,
           10001,
           10002,
@@ -5176,6 +5177,7 @@
         "title": "ErrorCode",
         "type": "integer",
         "x-enum-varnames": [
+          "Internal Error",
           "Login Failed",
           "Not Logged In",
           "Username Taken",

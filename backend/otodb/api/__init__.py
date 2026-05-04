@@ -1,3 +1,4 @@
+import logging
 from typing import Generator
 
 import ninja
@@ -10,6 +11,8 @@ from ninja.decorators import decorate_view
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
 from ninja.throttling import AnonRateThrottle, AuthRateThrottle
+
+from otodb.models.enums import ErrorCode
 
 from .auth import auth_router
 from .comment import comment_router
@@ -126,6 +129,15 @@ api.add_router('/comment/', comment_router)
 api.add_router('/history/', history_router)
 api.add_router('/request/', request_router)
 api.add_router('/moderation/', moderation_router)
+
+
+logger = logging.getLogger(__name__)
+
+
+@api.exception_handler(Exception)
+def _handle_unexpected_error(request, exc: Exception):
+	logger.exception('Unhandled exception in API handler', exc_info=exc)
+	return api.create_response(request, {'code': ErrorCode.INTERNAL_ERROR}, status=500)
 
 
 @api.exception_handler(ApiError)

@@ -52,7 +52,7 @@
 			<ul class="grid list-none grid-cols-[max-content_auto] gap-x-4 gap-y-1">
 				{#each examples as { tags, desc } (tags)}
 					<li class="contents">
-						<a class="otodb-search-link" href="/work?tags={encodeURIComponent(tags)}">
+						<a href="/work?tags={encodeURIComponent(tags)}">
 							<code>{tags}</code>
 						</a>
 						<span>{desc()}</span>

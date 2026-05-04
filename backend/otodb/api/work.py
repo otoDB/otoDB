@@ -742,7 +742,7 @@ def merge_works(
 		title=payload.title,
 		description=payload.description,
 		thumbnail_source=get_object_or_404(
-			WorkSource.objects, id=payload.thumbnail_source
+			WorkSource.objects, id=payload.thumbnail_source_id
 		),
 		rating=payload.rating,
 	)

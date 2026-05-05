@@ -6,7 +6,7 @@
 	import { currentVersion, versions } from '$lib/enums/version';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { set_lang } from '$lib/ui';
+	import { set_lang } from '$lib/languages';
 	import type { ClassValue } from 'svelte/elements';
 
 	let {

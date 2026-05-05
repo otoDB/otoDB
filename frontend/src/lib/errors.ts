@@ -30,7 +30,7 @@ const errorCodeMessages: Partial<Record<ErrorCode, (payload: ErrorPayload) => st
 	[ErrorCode.Appeal_Pending]: () => m.calm_brisk_swan_queue(),
 	[ErrorCode.Tag_Has_Information]: () => m.that_new_mayfly_spur(),
 	[ErrorCode.Thumbnail_Source_Required]: () => m.sleek_brave_heron_choose(),
-	[ErrorCode.Tag_With_Instances_Merge_Requires_Editor]: (payload) => 
+	[ErrorCode.Tag_With_Instances_Merge_Requires_Editor]: (payload) =>
 		typeof payload.into_tag === 'string'
 			? m.witty_brisk_hawk_merge({ into_tag: payload.into_tag })
 			: null,

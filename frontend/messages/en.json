@@ -394,5 +394,5 @@
 	"bright_calm_finch_match": "Super Mario or Kirby works with mid-tempo songs",
 	"crisp_neat_wren_match": "Works tagged with Touhou or any child descendants, excluding any song tags under Touhou",
 	"swift_keen_otter_guide": "View docs",
-	"witty_brisk_hawk_merge": "At least one of these tags is associated to a work or song. Only editors can merge these tags."
+	"witty_brisk_hawk_merge": "At least one of the tags being merged into \"{into_tag}\" is associated to a work or song. Only editors can merge such tags."
 }

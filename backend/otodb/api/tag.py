@@ -366,7 +366,11 @@ def alias_tags(
 	# Prevent users below editor from merging if any `from_tag` has instances
 	effective_from_tags = [t for t in tags if (t.aliased_to_id or t.pk) != into.pk]
 	if not request.user.is_editor and model.any_have_instances(effective_from_tags):
-		raise ApiError(403, ErrorCode.TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR)
+		raise ApiError(
+			403,
+			ErrorCode.TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR,
+			data={'into_tag': into.slug},
+		)
 
 	model.alias(tags, into)
 	if delete:

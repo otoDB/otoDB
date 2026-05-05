@@ -276,9 +276,6 @@
 						{@render link('/post/2', m.noble_fine_iguana_pull())}
 						{@render link('/work', m.grand_merry_fly_succeed())}
 						{@render link('/upload/add', `> ${m.fluffy_crisp_horse_imagine()}`)}
-						{#if hasUserLevel(data.user?.level, Levels.Member)}
-							{@render link('/work/tags_needed', `> ${m.spry_late_kudu_assure()}`)}
-						{/if}
 						{@render link('/tag', m.empty_legal_chicken_taste())}
 						{@render link('/song', m.grand_nice_pony_belong())}
 						{@render link('/song_attribute', `> ${m.dull_plain_angelfish_cuddle()}`)}

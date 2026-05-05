@@ -249,7 +249,7 @@ def extract_source_tag_suggestions(src: WorkSource):
 	raw_tags = info.get('tags', [])
 	slug_to_name: dict[str, str] = {slugify_tag(t): t for t in raw_tags}
 	matched = TagWork.objects.filter(slug__in=slug_to_name.keys())
-	existing_names = {slug_to_name[t.slug] for t in matched}
+	existing_slugs = {t.slug for t in matched}
 	resolved = {(t.aliased_to or t).pk: (t.aliased_to or t) for t in matched}
 	existing = list(
 		TagWork.objects.filter(pk__in=resolved.keys(), deprecated=False)
@@ -259,15 +259,16 @@ def extract_source_tag_suggestions(src: WorkSource):
 	new_tags = [
 		TagWorkSchema(
 			id=0,
-			name=t,
-			slug=t,
+			name=name,
+			slug=name,
 			category=0,
 			lang_prefs=[],
 			aliased_to=None,
 			deprecated=False,
 		)
-		# Deduplicate -- see PR #467
-		for t in set(raw_tags) - existing_names
+		# Deduplicate by slug -- see PR #467
+		for slug, name in slug_to_name.items()
+		if slug not in existing_slugs
 	]
 	creator_tags = resolve_creator_tags(src, info)
 	return existing, new_tags, creator_tags

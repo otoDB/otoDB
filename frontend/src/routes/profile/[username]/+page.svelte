@@ -48,9 +48,7 @@
 	</p>
 
 	{#if data.connections}
-		<ul class="list-none">
-			<Connections items={data.connections} map={profileConnectionMap} />
-		</ul>
+		<Connections items={data.connections} map={profileConnectionMap} />
 	{/if}
 </Section>
 

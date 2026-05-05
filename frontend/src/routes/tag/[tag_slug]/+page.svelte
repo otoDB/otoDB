@@ -136,29 +136,27 @@
 	{/if}
 
 	{#if data.connections}
-		<ul class="list-none">
-			<Connections items={data.connections[0]} map={TagWorkConnectionMap} />
-			{#if data.connections[1]?.length}
-				{#if data.tag.category === WorkTagCategory.Media}
-					<Connections
-						items={data.connections[1] as {
-							site: MediaConnectionTypes;
-							content_id: string;
-						}[]}
-						map={mediaConnectionMap}
-					/>
-				{:else if data.tag.category === WorkTagCategory.Creator}
-					<Connections
-						items={data.connections[1] as {
-							site: ProfileConnectionTypes;
-							content_id: string;
-							dead?: boolean | null;
-						}[]}
-						map={profileConnectionMap}
-					/>
-				{/if}
+		<Connections items={data.connections[0]} map={TagWorkConnectionMap} />
+		{#if data.connections[1]?.length}
+			{#if data.tag.category === WorkTagCategory.Media}
+				<Connections
+					items={data.connections[1] as {
+						site: MediaConnectionTypes;
+						content_id: string;
+					}[]}
+					map={mediaConnectionMap}
+				/>
+			{:else if data.tag.category === WorkTagCategory.Creator}
+				<Connections
+					items={data.connections[1] as {
+						site: ProfileConnectionTypes;
+						content_id: string;
+						dead?: boolean | null;
+					}[]}
+					map={profileConnectionMap}
+				/>
 			{/if}
-		</ul>
+		{/if}
 	{/if}
 
 	<hr class="my-2" />
@@ -202,9 +200,7 @@
 			</tbody>
 		</table>
 		{#if data.song_connections}
-			<ul class="list-none">
-				<Connections items={data.song_connections} map={songConnectionMap} />
-			</ul>
+			<Connections items={data.song_connections} map={songConnectionMap} />
 		{/if}
 		{#if data.tag?.song.tags.length}
 			<ul id="song-tags">

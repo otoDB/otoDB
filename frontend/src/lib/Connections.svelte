@@ -26,16 +26,18 @@
 	);
 </script>
 
-{#each sorted as s (`${s.site}:${s.content_id}`)}
-	<li class={{ 'opacity-60': s.dead }}>
-		<ConnectionFavicon type={map[s.site].name} class="inline size-4" />
-		<a
-			href={map[s.site].linkFn(s.content_id)}
-			target="_blank"
-			rel="noopener noreferrer"
-			class={{ 'line-through': s.dead }}
-		>
-			{map[s.site].linkFn(s.content_id)}
-		</a>
-	</li>
-{/each}
+<ul class="list-none">
+	{#each sorted as s (`${s.site}:${s.content_id}`)}
+		<li class={{ 'opacity-60': s.dead }}>
+			<ConnectionFavicon type={map[s.site].name} class="inline size-4" />
+			<a
+				href={map[s.site].linkFn(s.content_id)}
+				target="_blank"
+				rel="noopener noreferrer"
+				class={{ 'line-through': s.dead }}
+			>
+				{map[s.site].linkFn(s.content_id)}
+			</a>
+		</li>
+	{/each}
+</ul>

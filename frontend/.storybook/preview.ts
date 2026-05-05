@@ -1,8 +1,9 @@
+import { withThemeByDataAttribute } from '@storybook/addon-themes';
 import type { Preview } from '@storybook/sveltekit';
 import { initialize, mswLoader } from 'msw-storybook-addon';
-import '../src/app.css';
+import { useEffect } from 'storybook/preview-api';
 import { setLocale } from '../src/lib/paraglide/runtime';
-import { withThemeByDataAttribute } from '@storybook/addon-themes';
+import '../src/app.css';
 
 initialize();
 
@@ -17,7 +18,7 @@ const preview: Preview = {
 		}
 	},
 	globalTypes: {
-		lang: {
+		locale: {
 			description: 'Language',
 			toolbar: {
 				icon: 'globe',
@@ -28,16 +29,19 @@ const preview: Preview = {
 					{ value: 'ko', title: 'Korean' },
 					{ value: 'zh-cn', title: 'Chinese (Simplified)' }
 				]
-			}
+			},
+			defaultValue: 'en'
 		}
 	},
-	initialGlobals: {
-		lang: 'en'
-	},
 	decorators: [
-		(story, ctx) => {
-			if (ctx.globals?.lang) setLocale(ctx.globals.lang);
-			return story();
+		(storyFn, context) => {
+			const locale = context.globals?.locale;
+
+			useEffect(() => {
+				// if (locale) setLocale(locale);
+			}, [locale]);
+
+			return storyFn();
 		},
 		(story) => {
 			const s = story();

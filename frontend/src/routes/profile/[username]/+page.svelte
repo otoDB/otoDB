@@ -3,7 +3,7 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import Connections from '$lib/Connections.svelte';
 	import { getVersionKey, versions } from '$lib/enums/version';
 	import { userLevelNames } from '$lib/enums/userLevel.js';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
@@ -48,23 +48,7 @@
 	</p>
 
 	{#if data.connections}
-		<ul class="list-none">
-			{#each data.connections as s, i (i)}
-				<li>
-					<ConnectionFavicon
-						type={profileConnectionMap[s.site].name}
-						class="inline size-4"
-					/>
-					<a
-						href={profileConnectionMap[s.site].linkFn(s.content_id)}
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{profileConnectionMap[s.site].linkFn(s.content_id)}
-					</a>
-				</li>
-			{/each}
-		</ul>
+		<Connections items={data.connections} map={profileConnectionMap} />
 	{/if}
 </Section>
 

@@ -17,6 +17,7 @@ from otodb.models import (
 	ModerationEvent,
 	TagWork,
 	TagWorkCreatorConnection,
+	TagWorkParenthood,
 	WorkSource,
 )
 from otodb.models.enums import (
@@ -251,11 +252,19 @@ def extract_source_tag_suggestions(src: WorkSource):
 	matched = TagWork.objects.filter(slug__in=slug_to_name.keys())
 	existing_slugs = {t.slug for t in matched}
 	resolved = {(t.aliased_to or t).pk: (t.aliased_to or t) for t in matched}
-	existing = list(
-		TagWork.objects.filter(pk__in=resolved.keys(), deprecated=False)
-		if resolved
-		else []
-	)
+
+	# Include direct parents of tags resolved from source
+	parent_ids = {
+		parent_id
+		for parent_id in TagWorkParenthood.objects.filter(
+			tag_id__in=resolved.keys(),
+			parent__deprecated=False,
+			parent__aliased_to__isnull=True,
+		).values_list('parent_id', flat=True)
+	}
+	active_resolved_tag_ids = {pk for pk, t in resolved.items() if not t.deprecated}
+	existing = list(TagWork.objects.filter(pk__in=active_resolved_tag_ids | parent_ids))
+
 	new_tags = [
 		TagWorkSchema(
 			id=0,

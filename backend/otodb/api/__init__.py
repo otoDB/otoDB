@@ -5,7 +5,9 @@ import ninja
 import orjson
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.cache import cache_page
 from ninja import NinjaAPI
+from ninja.decorators import decorate_view
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
 from ninja.throttling import AnonRateThrottle, AuthRateThrottle
@@ -147,6 +149,7 @@ def _handle_api_error(request, exc: ApiError):
 
 
 @api.get('stats', response=tuple[int, int, int, int])
+@decorate_view(cache_page(60))
 def statistics(request):
 	from otodb.models import MediaSong, MediaWork, Pool, TagWork
 

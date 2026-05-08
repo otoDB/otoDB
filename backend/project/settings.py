@@ -280,7 +280,7 @@ if OTODB_VALKEY_URL:
 	INSTALLED_APPS.append('django_vtasks')
 	CACHES = {
 		'default': {
-			'BACKEND': 'django_vcache.backend.ValkeyCache',
+			'BACKEND': 'otodb.caching.HttpAwareValkeyCache',
 			'LOCATION': OTODB_VALKEY_URL,
 		}
 	}

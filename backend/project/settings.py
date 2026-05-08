@@ -88,6 +88,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
+	'project.middleware.AnonymousReadOnlyCacheMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'corsheaders.middleware.CorsMiddleware',
 	'django.middleware.locale.LocaleMiddleware',
@@ -280,7 +281,7 @@ if OTODB_VALKEY_URL:
 	INSTALLED_APPS.append('django_vtasks')
 	CACHES = {
 		'default': {
-			'BACKEND': 'otodb.caching.HttpAwareValkeyCache',
+			'BACKEND': 'django_vcache.backend.ValkeyCache',
 			'LOCATION': OTODB_VALKEY_URL,
 		}
 	}

@@ -37,12 +37,11 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 
 const handleThemeAttribute: Handle = async ({ event, resolve }) =>
 	resolve(event, {
-		transformPageChunk: ({ html }) => {
-			return html.replace(
+		transformPageChunk: ({ html }) =>
+			html.replace(
 				'%otodb.theme%',
 				themes[event.locals.user?.prefs?.THEME ?? ThemePref.Default].key
-			);
-		}
+			)
 	});
 
 const handleAuth: Handle = async ({ event, resolve }) => {

@@ -4,6 +4,7 @@
 	import Banner from '$lib/Banner.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import GlobalSideNav from '$lib/GlobalSideNav/GlobalSideNav.svelte';
+	import GlobalTopNav from '$lib/GlobalTopNav/GlobalTopNav.svelte';
 	import Section from '$lib/Section.svelte';
 	import { isFormDirty } from '$lib/dirty';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
@@ -180,6 +181,8 @@
 	{m.round_extra_impala_fry()}
 </a>
 
+<GlobalTopNav class="sticky top-0 z-[9999]" user={data.user} />
+
 <div class="text-otodb-content-primary overflow-auto">
 	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<div class="contents md:hidden">
@@ -204,6 +207,7 @@
 			}
 		}}
 	/>
+
 	<header class="relative col-span-2 px-6 py-16 md:px-48">
 		<address class="font-mono text-2xl italic">
 			<a href="/" class="no-underline!">

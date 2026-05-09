@@ -1,4 +1,5 @@
 import { defineMain } from '@storybook/sveltekit/node';
+import { mergeConfig } from 'vite';
 
 export default defineMain({
 	framework: '@storybook/sveltekit',
@@ -13,5 +14,14 @@ export default defineMain({
 			from: '../static',
 			to: '/'
 		}
-	]
+	],
+	async viteFinal(config) {
+		return mergeConfig(config, {
+			resolve: {
+				alias: {
+					'$env/dynamic/public': import.meta.resolve('./env.public.ts')
+				}
+			}
+		});
+	}
 });

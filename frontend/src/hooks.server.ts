@@ -7,6 +7,8 @@ import { paraglideMiddleware } from '$lib/paraglide/server';
 import { defineCustomServerStrategy } from '$lib/paraglide/runtime';
 import { getRequestEvent } from '$app/server';
 import { resolveLanguageKeyById } from '$lib/enums/language';
+import { ThemePref } from '$lib/schema';
+import { themes } from '$lib/themes/themes';
 
 if (env.OTODB_FRONTEND_SENTRY_DSN) {
 	Sentry.init({
@@ -33,6 +35,16 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 		});
 	});
 
+const handleThemeAttribute: Handle = async ({ event, resolve }) =>
+	resolve(event, {
+		transformPageChunk: ({ html }) => {
+			return html.replace(
+				'%otodb.theme%',
+				themes[event.locals.user?.prefs?.THEME ?? ThemePref.Default].key
+			);
+		}
+	});
+
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const session = event.cookies.get('sessionid');
 	const csrf = event.cookies.get('csrftoken');
@@ -47,20 +59,20 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-const handleContentLength: Handle = async ({ event, resolve }) => {
-	return resolve(event, {
+const handleContentLength: Handle = async ({ event, resolve }) =>
+	resolve(event, {
 		filterSerializedResponseHeaders(name) {
 			// SvelteKit doesn't serialize any headers on server-side fetches by default but openapi-fetch uses this header for empty responses.
 			return name === 'content-length';
 		}
 	});
-};
 
 export const handle: Handle = sequence(
 	Sentry.sentryHandle(),
 	handleAuth,
 	handleContentLength,
-	handleParaglide
+	handleParaglide,
+	handleThemeAttribute
 );
 
 export const handleError: HandleServerError = Sentry.handleErrorWithSentry(({ error, event }) => {

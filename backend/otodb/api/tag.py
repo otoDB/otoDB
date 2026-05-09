@@ -8,8 +8,19 @@ from urllib.parse import parse_qs, unquote, urlparse
 import lark
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, Value, When
-from django.db.models.functions import Coalesce
+from django.db.models import (
+	Case,
+	Count,
+	Exists,
+	F,
+	OuterRef,
+	Q,
+	Subquery,
+	Value,
+	When,
+	Window,
+)
+from django.db.models.functions import Coalesce, RowNumber
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Field, ModelSchema, Query, Schema
@@ -156,7 +167,6 @@ class TagWorkSearchResultSchema(TagWorkSchema):
 def search(
 	request: HttpRequest,
 	query: str,
-	resolve_aliases: bool = True,
 	category: WorkTagCategory | None = None,
 	media_type: list[int] | None = Query(None),
 	order: str = 'newest',
@@ -167,6 +177,7 @@ def search(
 	lang_pref: list[int] | None = Query(None),
 	lang_pref_missing: list[int] | None = Query(None),
 	has_connections: bool | None = None,
+	autocomplete: bool = False,
 	min_parents: int | None = None,
 	max_parents: int | None = None,
 ):
@@ -176,7 +187,9 @@ def search(
 		Q(slug__contains=cleaned_slug_query) | Q(name__icontains=cleaned_name_query)
 	)
 
-	if resolve_aliases:
+	if autocomplete:
+		pass
+	else:
 		qs = qs.filter(aliased_to__isnull=True) | TagWork.objects.filter(
 			id__in=qs.values('aliased_to__id')
 		)
@@ -209,6 +222,10 @@ def search(
 			Subquery(parent_count_sub, output_field=models.IntegerField()), 0
 		),
 	)
+
+	if autocomplete:
+		# Surface only categorized orphans
+		qs = qs.exclude(n_instance=0, category=WorkTagCategory.UNCATEGORIZED)
 
 	if hide_orphans:
 		qs = qs.filter(n_instance__gt=0)
@@ -273,6 +290,29 @@ def search(
 		).order_by('exact_match', order_field)
 	else:
 		qs = qs.order_by(order_field)
+
+	if autocomplete:
+		# Collapse alias matches into single suggestion
+		rank_order = []
+		if cleaned_slug:
+			rank_order.append(F('exact_match').asc())
+		rank_order += [
+			F('aliased_to_id').asc(nulls_first=True),
+			F('n_instance').desc(),
+			F('id').asc(),
+		]
+		preferred_ids = (
+			qs.annotate(
+				_rank=Window(
+					expression=RowNumber(),
+					partition_by=[Coalesce('aliased_to_id', 'id')],
+					order_by=rank_order,
+				),
+			)
+			.filter(_rank=1)
+			.values('id')
+		)
+		qs = qs.filter(id__in=Subquery(preferred_ids))
 
 	return qs
 
@@ -1064,8 +1104,8 @@ class TagSongSearchResultSchema(TagSongSchema):
 def song_tag_search(
 	request: HttpRequest,
 	query: str,
-	resolve_aliases: bool = True,
 	category: SongTagCategory | None = None,
+	autocomplete: bool = False,
 ):
 	cleaned_slug_query = canonicalize_tag(query)
 	cleaned_name_query = NFKC(query)
@@ -1074,7 +1114,7 @@ def song_tag_search(
 		Q(slug__contains=cleaned_slug_query) | Q(name__icontains=cleaned_name_query)
 	)
 
-	if resolve_aliases:
+	if autocomplete:
 		qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
 			id__in=qs.values('aliased_to__id')
 		)

@@ -2,6 +2,11 @@
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 	import type { WorkTagCategory } from '$lib/schema';
 
+	const showBaseTag = (
+		alias: { slug: string },
+		canonical: { lang_prefs: { slug: string }[] }
+	): boolean => !canonical.lang_prefs.some((p) => p.slug === alias.slug);
+
 	type SuggestionTag = {
 		id: string;
 		name: string;
@@ -12,6 +17,7 @@
 			name: string;
 			slug: string;
 			category: number;
+			lang_prefs: { slug: string }[];
 		};
 		lang_prefs: { tag: string }[];
 		n_instance: number;
@@ -80,6 +86,8 @@
 		<a
 			href="/tag/{t.aliased_to?.slug || t.slug}"
 			class="flex w-full cursor-pointer justify-between gap-10 px-2 py-1 no-underline"
+			data-sveltekit-preload-data="off"
+			data-sveltekit-preload-code="off"
 			onmouseenter={() => (selectedIndex = i)}
 			onclick={(e) => {
 				if (e.button === 0) {
@@ -91,27 +99,22 @@
 			<span class="max-w-60">
 				{#if t.aliased_to}
 					{@const parts = highlightMatch(t.name, query)}
-					{@const aliasedParts = highlightMatch(t.aliased_to.name, query)}
 					<span style={getTagStyle(t.aliased_to.category)}>
 						{parts.before}<strong>{parts.match}</strong>{parts.after}
 					</span>
-					<span>→</span>
-					<span style={getTagStyle(t.aliased_to.category)}>
-						{aliasedParts.before}<strong>{aliasedParts.match}</strong
-						>{aliasedParts.after}
-					</span>
+					{#if showBaseTag(t, t.aliased_to)}
+						{@const aliasedParts = highlightMatch(t.aliased_to.name, query)}
+						<span>→</span>
+						<span style={getTagStyle(t.aliased_to.category)}>
+							{aliasedParts.before}<strong>{aliasedParts.match}</strong
+							>{aliasedParts.after}
+						</span>
+					{/if}
 				{:else}
 					{@const parts = highlightMatch(t.name, query)}
 					<span style={getTagStyle(t.category)}>
 						{parts.before}<strong>{parts.match}</strong>{parts.after}
 					</span>
-				{/if}
-				{#if t.slug !== t.name}
-					{@const slugParts = highlightMatch(t.slug, query)}
-					<address class="inline">
-						({slugParts.before}<strong>{slugParts.match}</strong
-						>{slugParts.after}{t.lang_prefs.map((p) => p.tag).join(', ')})
-					</address>
 				{/if}
 			</span>
 			<span>{t.n_instance}</span>

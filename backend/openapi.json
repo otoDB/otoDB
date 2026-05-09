@@ -2715,16 +2715,6 @@
           },
           {
             "in": "query",
-            "name": "resolve_aliases",
-            "schema": {
-              "default": true,
-              "title": "Resolve Aliases",
-              "type": "boolean"
-            },
-            "required": false
-          },
-          {
-            "in": "query",
             "name": "category",
             "schema": {
               "anyOf": [
@@ -2876,6 +2866,16 @@
                 }
               ],
               "title": "Has Connections"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "autocomplete",
+            "schema": {
+              "default": false,
+              "title": "Autocomplete",
+              "type": "boolean"
             },
             "required": false
           },
@@ -3691,16 +3691,6 @@
           },
           {
             "in": "query",
-            "name": "resolve_aliases",
-            "schema": {
-              "default": true,
-              "title": "Resolve Aliases",
-              "type": "boolean"
-            },
-            "required": false
-          },
-          {
-            "in": "query",
             "name": "category",
             "schema": {
               "anyOf": [
@@ -3711,6 +3701,16 @@
                   "type": "null"
                 }
               ]
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "autocomplete",
+            "schema": {
+              "default": false,
+              "title": "Autocomplete",
+              "type": "boolean"
             },
             "required": false
           },

@@ -226,7 +226,8 @@ def search(
 	if autocomplete:
 		# Surface only categorized orphans
 		qs = qs.exclude(n_instance=0, category=WorkTagCategory.UNCATEGORIZED)
-	elif hide_orphans:
+
+	if hide_orphans:
 		qs = qs.filter(n_instance__gt=0)
 
 	wiki_sub = WikiPage.objects.filter(tag=OuterRef('pk'))

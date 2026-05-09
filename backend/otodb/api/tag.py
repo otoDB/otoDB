@@ -178,6 +178,8 @@ def search(
 	lang_pref_missing: list[int] | None = Query(None),
 	has_connections: bool | None = None,
 	autocomplete: bool = False,
+	min_parents: int | None = None,
+	max_parents: int | None = None,
 ):
 	cleaned_slug_query = canonicalize_tag(query)
 	cleaned_name_query = NFKC(query)
@@ -198,6 +200,15 @@ def search(
 			qs = filter_tags_by_media_type(qs, media_type)
 
 	qs = qs.filter(deprecated=deprecated_only)
+	parent_count_sub = (
+		TagWorkParenthood.objects.filter(
+			tag_id=Coalesce(OuterRef('aliased_to_id'), OuterRef('pk'))
+		)
+		.order_by()
+		.values('tag_id')
+		.annotate(c=Count('*'))
+		.values('c')
+	)
 	qs = qs.annotate(
 		n_instance=Case(
 			When(aliased_to__isnull=False, then=Count('aliased_to__tagworkinstance')),
@@ -207,6 +218,9 @@ def search(
 		_has_connections=Exists(TagWorkConnection.objects.filter(tag=OuterRef('pk')))
 		| Exists(TagWorkMediaConnection.objects.filter(tag=OuterRef('pk')))
 		| Exists(TagWorkCreatorConnection.objects.filter(tag=OuterRef('pk'))),
+		n_parents=Coalesce(
+			Subquery(parent_count_sub, output_field=models.IntegerField()), 0
+		),
 	)
 
 	if autocomplete:
@@ -244,6 +258,11 @@ def search(
 
 	if has_connections is not None:
 		qs = qs.filter(_has_connections=has_connections)
+
+	if min_parents is not None:
+		qs = qs.filter(n_parents__gte=min_parents)
+	if max_parents is not None:
+		qs = qs.filter(n_parents__lte=max_parents)
 
 	order_field = {
 		'newest': '-id',

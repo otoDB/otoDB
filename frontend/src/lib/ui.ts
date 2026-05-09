@@ -1,7 +1,6 @@
 import { browser } from '$app/environment';
-import client from '$lib/api';
 import { languages } from '$lib/enums/language';
-import { getLocale, setLocale } from '$lib/paraglide/runtime';
+import { getLocale } from '$lib/paraglide/runtime';
 import { WorkTagCategoryMap } from './enums/workTagCategory';
 import { m } from './paraglide/messages';
 import { WorkTagCategory, LanguageTypes, ThemePref, type components } from './schema';
@@ -29,18 +28,6 @@ export const clickOutside = (node: HTMLElement) => {
 		}
 	};
 };
-export const set_lang = async (lang: keyof typeof languages, logged_in: boolean) => {
-	if (logged_in) {
-		await client.POST('/api/profile/prefs', {
-			fetch,
-			body: {
-				LANGUAGE: languages[lang].id
-			}
-		});
-	}
-	setLocale(lang);
-};
-
 type Prefs = components['schemas']['UserPreferenceSchema'];
 
 const defaultPrefs: Prefs = {

@@ -2881,6 +2881,38 @@
           },
           {
             "in": "query",
+            "name": "min_parents",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Parents"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "max_parents",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Parents"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
             "name": "limit",
             "schema": {
               "default": 30,

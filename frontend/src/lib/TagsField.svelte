@@ -51,13 +51,12 @@
 								query: word,
 								limit: 10,
 								order: 'count',
-								autocomplete: true,
-								resolve_aliases: false
+								autocomplete: true
 							}
 						}
 					})
 				: await client.GET('/api/tag/song_tag_search', {
-						params: { query: { query: word, limit: 10, resolve_aliases: false } }
+						params: { query: { query: word, limit: 10 } }
 					});
 		if (!data) return;
 		suggestions = data.items;

@@ -167,7 +167,6 @@ class TagWorkSearchResultSchema(TagWorkSchema):
 def search(
 	request: HttpRequest,
 	query: str,
-	resolve_aliases: bool = True,
 	category: WorkTagCategory | None = None,
 	media_type: list[int] | None = Query(None),
 	order: str = 'newest',
@@ -188,7 +187,7 @@ def search(
 
 	if autocomplete:
 		pass
-	elif resolve_aliases:
+	else:
 		qs = qs.filter(aliased_to__isnull=True) | TagWork.objects.filter(
 			id__in=qs.values('aliased_to__id')
 		)
@@ -1085,7 +1084,6 @@ class TagSongSearchResultSchema(TagSongSchema):
 def song_tag_search(
 	request: HttpRequest,
 	query: str,
-	resolve_aliases: bool = True,
 	category: SongTagCategory | None = None,
 ):
 	cleaned_slug_query = canonicalize_tag(query)
@@ -1095,10 +1093,9 @@ def song_tag_search(
 		Q(slug__contains=cleaned_slug_query) | Q(name__icontains=cleaned_name_query)
 	)
 
-	if resolve_aliases:
-		qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
-			id__in=qs.values('aliased_to__id')
-		)
+	qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
+		id__in=qs.values('aliased_to__id')
+	)
 
 	if category is not None and category != -1:
 		qs = qs.filter(category=category)

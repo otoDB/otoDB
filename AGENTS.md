@@ -4,6 +4,10 @@
 
 - This project does **not** follow Conventional Commits.
 - Write commit messages in plain, descriptive English that clearly explains what changed and why.
+- When an agent creates a git commit, it **must** include itself as a co-author in the commit message using a `Co-Authored-By:` trailer. For example:
+  ```
+  Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+  ```
 
 ## Pull request conventions
 
@@ -12,4 +16,3 @@
 ## Tooling preferences
 
 - Use `jq` (not `python3 -c`) when querying or inspecting JSON files.
-- 

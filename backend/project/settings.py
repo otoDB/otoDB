@@ -88,7 +88,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
-	'project.middleware.AnonymousReadOnlyCacheMiddleware',
+	'otodb.middleware.AnonymousReadOnlyCacheMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'corsheaders.middleware.CorsMiddleware',
 	'django.middleware.locale.LocaleMiddleware',

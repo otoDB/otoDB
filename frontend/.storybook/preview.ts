@@ -1,11 +1,28 @@
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
 import type { Preview } from '@storybook/sveltekit';
-import { initialize, mswLoader } from 'msw-storybook-addon';
-import { useEffect } from 'storybook/preview-api';
-import { setLocale } from '../src/lib/paraglide/runtime';
+import { initialize as mswInitialize, mswLoader } from 'msw-storybook-addon';
+import {
+	type Locale,
+	overwriteGetLocale,
+	overwriteSetLocale,
+	setLocale
+} from '../src/lib/paraglide/runtime';
+
 import '../src/app.css';
 
-initialize();
+mswInitialize({
+	onUnhandledRequest(req, p) {
+		if (/src/g.test(req.url) || /@id/g.test(req.url)) return;
+		p.warning();
+	}
+});
+
+let localeState: Locale | undefined = undefined;
+overwriteGetLocale(() => localeState || 'en');
+overwriteSetLocale((nw) => {
+	if (localeState !== undefined) window.location.reload();
+	localeState = nw;
+});
 
 const preview: Preview = {
 	loaders: [mswLoader],
@@ -20,6 +37,7 @@ const preview: Preview = {
 	globalTypes: {
 		locale: {
 			description: 'Language',
+			defaultValue: 'en' satisfies Locale,
 			toolbar: {
 				icon: 'globe',
 				dynamicTitle: true,
@@ -28,21 +46,11 @@ const preview: Preview = {
 					{ value: 'ja', title: 'Japanese' },
 					{ value: 'ko', title: 'Korean' },
 					{ value: 'zh-cn', title: 'Chinese (Simplified)' }
-				]
-			},
-			defaultValue: 'en'
+				] satisfies { value: Locale; title: string }[]
+			}
 		}
 	},
 	decorators: [
-		(storyFn, context) => {
-			const locale = context.globals?.locale;
-
-			useEffect(() => {
-				// if (locale) setLocale(locale);
-			}, [locale]);
-
-			return storyFn();
-		},
 		(story) => {
 			const s = story();
 			document.body.style.backgroundColor = 'var(--otodb-color-bg-primary)';
@@ -59,7 +67,12 @@ const preview: Preview = {
 			},
 			defaultTheme: 'default',
 			attributeName: 'data-theme'
-		})
+		}),
+		(storyFn, context) => {
+			const currentLocale = context.globals?.locale as Locale | undefined;
+			if (currentLocale) setLocale(currentLocale);
+			return storyFn();
+		}
 	]
 };
 

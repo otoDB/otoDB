@@ -5,6 +5,8 @@
 	import { Levels } from '$lib/schema';
 	import { clickOutside } from '$lib/ui';
 	import type { ClassValue } from 'svelte/elements';
+	import Search from '@lucide/svelte/icons/search';
+	import Bell from '@lucide/svelte/icons/bell';
 
 	let {
 		class: className,
@@ -76,9 +78,7 @@
 			aria-label="Search"
 			class="bg-otodb-bg-faint/75 hover:bg-otodb-bg-fainter/75 px-2"
 		>
-			<svg class="h-[16px] w-[16px]">
-				<use href="/search.svg#img"></use>
-			</svg>
+			<Search size={16}></Search>
 		</button>
 	</form>
 
@@ -115,18 +115,19 @@
 				<a
 					href={`/profile/${user.username}/notifications`}
 					title={m.free_keen_wren_exhale()}
-					class="relative -top-0.5 no-underline"
+					class="relative -top-0.5 inline-flex no-underline"
 					onclick={closeMobileNav}
 				>
 					{#if user.notifs_nonsub_count > 0}({user.notifs_nonsub_count}){/if}
-					<span
+					<Bell
+						size={16}
 						class={[
-							'text-transparent',
+							'ml-1',
 							user.notifs_count > 0
-								? '[text-shadow:0_0_var(--otodb-color-content-fainter)]'
-								: 'opacity-25 [text-shadow:0_0_var(--otodb-color-content-primary)]'
-						]}>🔔</span
-					>
+								? 'text-otodb-content-fainter'
+								: 'text-otodb-content-primary opacity-25'
+						]}
+					/>
 				</a>
 			{/if}
 		</div>

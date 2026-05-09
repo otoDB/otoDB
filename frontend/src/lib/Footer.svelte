@@ -8,6 +8,7 @@
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { set_lang } from '$lib/languages';
 	import type { ClassValue } from 'svelte/elements';
+	import Languages from '@lucide/svelte/icons/languages';
 
 	let {
 		user,
@@ -49,8 +50,8 @@
 		</div>
 	</div>
 
-	<div class="footer-right">
-		<ConnectionFavicon type="Website" class="size-4" />
+	<div class="footer-right flex items-center">
+		<Languages class="mr-1" size={24} />
 		<select
 			onchange={(e) => {
 				set_lang(e.currentTarget.value as (typeof locales)[number], !!user);

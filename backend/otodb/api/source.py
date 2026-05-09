@@ -251,11 +251,20 @@ def extract_source_tag_suggestions(src: WorkSource):
 	matched = TagWork.objects.filter(slug__in=slug_to_name.keys())
 	existing_slugs = {t.slug for t in matched}
 	resolved = {(t.aliased_to or t).pk: (t.aliased_to or t) for t in matched}
+
+	# Active resolved tags, plus direct parents
+	# (non-deprecated, non-aliased) of any resolved tag
 	existing = list(
-		TagWork.objects.filter(pk__in=resolved.keys(), deprecated=False)
-		if resolved
-		else []
+		TagWork.objects.filter(
+			Q(pk__in=[pk for pk, t in resolved.items() if not t.deprecated])
+			| Q(
+				deprecated=False,
+				aliased_to__isnull=True,
+				parenthood__tag_id__in=resolved.keys(),
+			)
+		).distinct()
 	)
+
 	new_tags = [
 		TagWorkSchema(
 			id=0,

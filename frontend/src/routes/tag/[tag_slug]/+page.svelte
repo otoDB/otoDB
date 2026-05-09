@@ -75,6 +75,10 @@
 			}
 		});
 
+	const sortedChildTags = $derived(
+		[...data.tag.children].sort((a, b) => Number(a.deprecated) - Number(b.deprecated))
+	);
+
 	const paths = $derived.by(() => {
 		const get_paths = (node: string): components['schemas']['TagWorkSchema'][][] =>
 			Object.hasOwn(data.paths[1], node)
@@ -222,11 +226,11 @@
 	</Section>
 {/if}
 
-{#if data.tag.children.length}
+{#if sortedChildTags.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<div class="flex flex-wrap gap-3">
-			{#each data.tag.children as tag, i (i)}
-				<WorkTag {tag} />
+			{#each sortedChildTags as tag, i (i)}
+				<WorkTag {tag} fade={tag.deprecated} />
 			{/each}
 		</div>
 	</Section>

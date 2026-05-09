@@ -20,19 +20,23 @@
 			suggestions = [];
 			return;
 		}
-		const { data } = await client.GET(
-			type === 'work' ? ('/api/tag/search' as const) : ('/api/tag/song_tag_search' as const),
-
-			{
-				params: {
-					query: {
-						query: value,
-						limit: 10,
-						resolve_aliases: props.resolve_aliases ?? true
-					}
-				}
-			}
-		);
+		const resolve_aliases = props.resolve_aliases ?? true;
+		const { data } =
+			type === 'work'
+				? await client.GET('/api/tag/search', {
+						params: {
+							query: {
+								query: value,
+								limit: 10,
+								order: 'count',
+								autocomplete: true,
+								resolve_aliases
+							}
+						}
+					})
+				: await client.GET('/api/tag/song_tag_search', {
+						params: { query: { query: value, limit: 10, resolve_aliases } }
+					});
 		if (!data) return;
 		suggestions = data.items;
 	};

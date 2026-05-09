@@ -32,7 +32,7 @@
 						}
 					})
 				: await client.GET('/api/tag/song_tag_search', {
-						params: { query: { query: value, limit: 10 } }
+						params: { query: { query: value, limit: 10, autocomplete: true } }
 					});
 		if (!data) return;
 		suggestions = data.items;

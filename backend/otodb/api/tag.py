@@ -1104,6 +1104,7 @@ def song_tag_search(
 	request: HttpRequest,
 	query: str,
 	category: SongTagCategory | None = None,
+	autocomplete: bool = False,
 ):
 	cleaned_slug_query = canonicalize_tag(query)
 	cleaned_name_query = NFKC(query)
@@ -1112,9 +1113,10 @@ def song_tag_search(
 		Q(slug__contains=cleaned_slug_query) | Q(name__icontains=cleaned_name_query)
 	)
 
-	qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
-		id__in=qs.values('aliased_to__id')
-	)
+	if autocomplete:
+		qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
+			id__in=qs.values('aliased_to__id')
+		)
 
 	if category is not None and category != -1:
 		qs = qs.filter(category=category)

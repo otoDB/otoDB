@@ -16,12 +16,6 @@ def enqueue_deferred(task_obj, *args, delay: timedelta):
 	task_obj.using(run_after=timezone.now() + delay).enqueue(*args)
 
 
-def _system_user():
-	from otodb.account.models import Account
-
-	return Account.objects.filter(level=Account.Levels.OWNER).first()
-
-
 @task
 def send_email(
 	subject: str,
@@ -55,16 +49,16 @@ def resolve_expired_work(work_id: int):
 
 	cutoff = timezone.now() - settings.OTODB_MODERATION_PERIOD
 	if work.status == Status.PENDING and work.created_at < cutoff:
+		from otodb.account.models import Account
+
 		resolve_work(work)
-		system_user = _system_user()
-		if system_user:
-			ModerationEvent.objects.create(
-				work=work,
-				event_type=ModerationEventType.MOD_ACTION,
-				status=ModerationAction.WORK_DELISTED,
-				by=system_user,
-				reason='Auto-expired',
-			)
+		ModerationEvent.objects.create(
+			work=work,
+			event_type=ModerationEventType.MOD_ACTION,
+			status=ModerationAction.WORK_DELISTED,
+			by=Account.get_system(),
+			reason='Auto-expired',
+		)
 
 
 @task
@@ -121,6 +115,6 @@ def resolve_expired_source_task(source_id: int):
 
 	cutoff = timezone.now() - settings.OTODB_MODERATION_PERIOD
 	if src.created_at < cutoff:
-		system_user = _system_user()
-		if system_user:
-			reject_pending_source(src, by=system_user, reason='Auto-expired')
+		from otodb.account.models import Account
+
+		reject_pending_source(src, by=Account.get_system(), reason='Auto-expired')

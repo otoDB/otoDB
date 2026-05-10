@@ -1,15 +1,16 @@
+import logging
 from typing import Generator
 
 import ninja
 import orjson
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.cache import cache_page
 from ninja import NinjaAPI
-from ninja.decorators import decorate_view
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
 from ninja.throttling import AnonRateThrottle, AuthRateThrottle
+
+from otodb.models.enums import ErrorCode
 
 from .auth import auth_router
 from .comment import comment_router
@@ -128,6 +129,15 @@ api.add_router('/request/', request_router)
 api.add_router('/moderation/', moderation_router)
 
 
+logger = logging.getLogger(__name__)
+
+
+@api.exception_handler(Exception)
+def _handle_unexpected_error(request, exc: Exception):
+	logger.exception('Unhandled exception in API handler', exc_info=exc)
+	return api.create_response(request, {'code': ErrorCode.INTERNAL_ERROR}, status=500)
+
+
 @api.exception_handler(ApiError)
 def _handle_api_error(request, exc: ApiError):
 	body: dict = {'code': exc.code}
@@ -137,7 +147,6 @@ def _handle_api_error(request, exc: ApiError):
 
 
 @api.get('stats', response=tuple[int, int, int, int])
-@decorate_view(cache_page(60))
 def statistics(request):
 	from otodb.models import MediaSong, MediaWork, Pool, TagWork
 

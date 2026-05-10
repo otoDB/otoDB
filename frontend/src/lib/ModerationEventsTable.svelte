@@ -56,12 +56,11 @@
 					{#if showTarget}
 						<td>
 							{#if event.work_id}
-								<a href="/work/{event.work_id}">Work #{event.work_id}</a>
+								<a href="/work/{event.work_id}">Work #{event.work_id}</a
+								>{#if event.source_id},{/if}
 							{/if}
 							{#if event.source_id}
-								{#if event.work_id},
-								{/if}
-								<a href="/source/{event.source_id}">Source #{event.source_id}</a>
+								<a href="/upload/{event.source_id}">Source #{event.source_id}</a>
 							{/if}
 							{#if !event.work_id && !event.source_id}
 								-

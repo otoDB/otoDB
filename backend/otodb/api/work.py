@@ -18,7 +18,7 @@ from django.db.models import (
 	Value,
 	When,
 )
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Coalesce
 from django.shortcuts import get_object_or_404
 from django_comments_xtd.models import XtdComment
 from ninja import ModelSchema, Schema
@@ -154,18 +154,6 @@ def query_external(
 	return {'tags': work.media.tags_annotated, 'work_id': work.media.id}
 
 
-_WORK_TAG_CATEGORY_METATAGS = {
-	'eventtags': WorkTagCategory.EVENT,
-	'creatortags': WorkTagCategory.CREATOR,
-	'mediatags': WorkTagCategory.MEDIA,
-	'sourcetags': WorkTagCategory.SOURCE,
-	'songtags': WorkTagCategory.SONG,
-	'gentags': WorkTagCategory.GENERAL,
-	'metatags': WorkTagCategory.META,
-	'uncattags': WorkTagCategory.UNCATEGORIZED,
-}
-
-
 class WorkOrder(OtodbIntegerEnum):
 	RANDOM = -1, 'random'
 	ID = 0, 'id'
@@ -180,6 +168,47 @@ class WorkOrder(OtodbIntegerEnum):
 	RESOLUTION_ASC = 9, 'resolution_asc'
 	DURATION = 10, 'duration'
 	DURATION_ASC = 11, 'duration_asc'
+	TAGCOUNT = 12, 'tagcount'
+	TAGCOUNT_ASC = 13, 'tagcount_asc'
+	EVENTTAGS = 14, 'eventtags'
+	EVENTTAGS_ASC = 15, 'eventtags_asc'
+	CREATORTAGS = 16, 'creatortags'
+	CREATORTAGS_ASC = 17, 'creatortags_asc'
+	MEDIATAGS = 18, 'mediatags'
+	MEDIATAGS_ASC = 19, 'mediatags_asc'
+	SOURCETAGS = 20, 'sourcetags'
+	SOURCETAGS_ASC = 21, 'sourcetags_asc'
+	SONGTAGS = 22, 'songtags'
+	SONGTAGS_ASC = 23, 'songtags_asc'
+	GENTAGS = 24, 'gentags'
+	GENTAGS_ASC = 25, 'gentags_asc'
+	METATAGS = 26, 'metatags'
+	METATAGS_ASC = 27, 'metatags_asc'
+	UNCATTAGS = 28, 'uncattags'
+	UNCATTAGS_ASC = 29, 'uncattags_asc'
+
+
+_WORK_TAG_CATEGORY_METATAGS = {
+	'eventtags': WorkTagCategory.EVENT,
+	'creatortags': WorkTagCategory.CREATOR,
+	'mediatags': WorkTagCategory.MEDIA,
+	'sourcetags': WorkTagCategory.SOURCE,
+	'songtags': WorkTagCategory.SONG,
+	'gentags': WorkTagCategory.GENERAL,
+	'metatags': WorkTagCategory.META,
+	'uncattags': WorkTagCategory.UNCATEGORIZED,
+}
+
+
+_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', tuple[bool, dict]] = {
+	WorkOrder.TAGCOUNT: (False, {}),
+	WorkOrder.TAGCOUNT_ASC: (True, {}),
+	**{
+		WorkOrder[name.upper() + suffix]: (asc, {'work_tag__category': cat})
+		for name, cat in _WORK_TAG_CATEGORY_METATAGS.items()
+		for suffix, asc in (('', False), ('_ASC', True))
+	},
+}
 
 
 def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
@@ -239,6 +268,16 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 			return ann, Q(_last_comment__isnull=False), (field,)
 		case WorkOrder.RANDOM:
 			return {}, Q(), ('?',)
+		case v if v in _WORK_TAG_COUNT_ORDERS:
+			asc, filters = _WORK_TAG_COUNT_ORDERS[v]
+			sub = TagWorkInstance.objects.filter(work_id=OuterRef('id'), **filters)
+			ann = {
+				'_tagcount': Coalesce(
+					Subquery(sub.values('work_id').annotate(c=Count('*')).values('c')),
+					0,
+				)
+			}
+			return ann, Q(), ('_tagcount' if asc else '-_tagcount',)
 		case _:
 			raise ValueError(f'unrecognized WorkOrder: {v!r}')
 
@@ -557,61 +596,6 @@ def search(
 	return qs.distinct()
 
 
-@work_router.get('tags_needed', response=List[ThinWorkSchema], exclude_none=True)
-@paginate
-def tags_needed(request: AuthedHttpRequest):
-	def has_category(category):
-		return Exists(
-			TagWorkInstance.objects.filter(
-				work=OuterRef('pk'),
-				work_tag__deprecated=False,
-				work_tag__category=category,
-			)
-		)
-
-	has_source = Exists(
-		TagWorkInstance.objects.filter(
-			work=OuterRef('pk'),
-			work_tag__deprecated=False,
-		).filter(
-			Q(work_tag__category=WorkTagCategory.SOURCE)
-			| Q(
-				work_tag__category__in=[
-					WorkTagCategory.CREATOR,
-					WorkTagCategory.MEDIA,
-					WorkTagCategory.SONG,
-				],
-				used_as_source=True,
-			)
-		)
-	)
-
-	def missing(flag):
-		return Case(
-			When(**{flag: False}, then=Value(1)),
-			default=Value(0),
-			output_field=IntegerField(),
-		)
-
-	return (
-		MediaWork.active_objects.visible()
-		.annotate(
-			has_creator=has_category(WorkTagCategory.CREATOR),
-			has_song=has_category(WorkTagCategory.SONG),
-			has_general=has_category(WorkTagCategory.GENERAL),
-			has_source=has_source,
-			ntags=Count('tags', filter=Q(tags__deprecated=False)),
-		)
-		.annotate(
-			missing_count=missing('has_creator')
-			+ missing('has_song')
-			+ missing('has_general')
-			+ missing('has_source'),
-		)
-		.order_by('-missing_count', 'ntags', 'id')
-	)
-
-
 @work_router.get('work', response=WorkSchema)
 def work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.objects.with_pending_moderation(), id=work_id)
@@ -698,8 +682,14 @@ def recent(request: AuthedHttpRequest, n: int = 1):
 )
 def relations(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	relations = WorkRelation.get_component(work.id)
-	return 200, (relations, {w.id: w for r in relations for w in (r.A, r.B)}.values())
+	relations = list(WorkRelation.get_component(work.id))
+	work_ids = {x_id for r in relations for x_id in (r.A_id, r.B_id)}
+	works = (
+		MediaWork.objects.filter(id__in=work_ids, moved_to__isnull=True)
+		.select_related('thumbnail_source')
+		.prefetch_related('worksource_set')
+	)
+	return 200, (relations, works)
 
 
 @work_router.post('relation', auth=django_auth)
@@ -736,7 +726,7 @@ def merge_works(
 		title=payload.title,
 		description=payload.description,
 		thumbnail_source=get_object_or_404(
-			WorkSource.objects, id=payload.thumbnail_source
+			WorkSource.objects, id=payload.thumbnail_source_id
 		),
 		rating=payload.rating,
 	)

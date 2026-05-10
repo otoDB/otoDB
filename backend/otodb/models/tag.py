@@ -308,6 +308,13 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			]
 		)
 
+	@classmethod
+	def any_have_instances(cls, tags: list[Self]) -> bool:
+		"""Check if any of the given tags have associated works"""
+		return cls.objects.filter(
+			pk__in=[t.pk for t in tags], works__isnull=False
+		).exists()
+
 	@property
 	def children(self):
 		return TagWork.objects.filter(childhood__parent=self, aliased_to__isnull=True)
@@ -613,6 +620,13 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 				self.aliases.exists(),
 			]
 		)
+
+	@classmethod
+	def any_have_instances(cls, tags: list[Self]) -> bool:
+		"""Check if any of the given tags have associated songs"""
+		return cls.objects.filter(
+			pk__in=[t.pk for t in tags], songs__isnull=False
+		).exists()
 
 	def get_tree(self):
 		cte = CTE.recursive(

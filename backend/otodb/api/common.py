@@ -2,6 +2,7 @@ import operator
 import re
 from abc import abstractmethod
 from contextlib import contextmanager
+from datetime import datetime
 from functools import lru_cache, reduce, wraps
 from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
 
@@ -109,6 +110,7 @@ class OtodbID(int):
 class ProfileSchema(ModelSchema):
 	id: OtodbID
 	level: Account.Levels
+	date_created: datetime
 
 	class Meta:
 		model = Account

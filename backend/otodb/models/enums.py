@@ -313,6 +313,7 @@ class Route(OtodbIntegerEnum):
 
 
 class ErrorCode(OtodbIntegerEnum):
+	INTERNAL_ERROR = -1
 	LOGIN_FAILED = 10000
 	NOT_LOGGED_IN = 10001
 	USERNAME_TAKEN = 10002
@@ -334,6 +335,7 @@ class ErrorCode(OtodbIntegerEnum):
 	NO_MORE_APPEAL_SLOTS = 10018
 	TAG_HAS_INFORMATION = 10019
 	THUMBNAIL_SOURCE_REQUIRED = 10020
+	TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR = 10021
 
 
 class Preferences(OtodbIntegerEnum):

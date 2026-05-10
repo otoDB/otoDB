@@ -298,6 +298,8 @@
 	"strong_lower_firefox_exhale": "Missing display language",
 	"mellow_alert_jan_leap": "Unassigned",
 	"stout_same_insect_conquer": "Has connections",
+	"green_icy_earthworm_love": "Minimum parents",
+	"tangy_spry_bumblebee_transform": "Maximum parents",
 	"fine_zany_octopus_trim": "Linked entities",
 	"big_tiny_kitten_devour": "Threads",
 	"last_late_penguin_bubble": "Save",
@@ -394,5 +396,6 @@
 	"bright_calm_finch_match": "Super Mario or Kirby works with mid-tempo songs",
 	"crisp_neat_wren_match": "Works tagged with Touhou or any child descendants, excluding any song tags under Touhou",
 	"swift_keen_otter_guide": "View docs",
+	"witty_brisk_hawk_merge": "At least one of the tags being merged into \"{into_tag}\" is associated to a work or song. Only editors can merge such tags.",
 	"this_late_gadfly_sail": "System"
 }

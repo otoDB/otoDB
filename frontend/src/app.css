@@ -169,8 +169,8 @@
 	@apply external-link-icon;
 }
 
-/* Inline work-search link rendered from `{{...}}` markdown */
-.otodb-search-link::after {
+/* Search icon for work search links (from `{{...}}` markdown and elsewhere) */
+a[href^='/work?tags=']::after {
 	content: '';
 	display: inline-block;
 	width: 0.9em;

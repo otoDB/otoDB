@@ -84,15 +84,7 @@ const OtodbReplacements: [RegExp, (...args: string[]) => PhrasingContent | false
 	// Simple user mention: @username
 	[MENTION_RE, (_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)],
 	// Work search: {{tags...}}
-	[
-		SEARCH_RE,
-		(_, query) => ({
-			type: 'link',
-			url: `/work?tags=${encodeURIComponent(query.trim())}`,
-			data: { hProperties: { className: 'otodb-search-link' } },
-			children: [{ type: 'text', value: query.trim() }]
-		})
-	]
+	[SEARCH_RE, (_, query) => link(`/work?tags=${encodeURIComponent(query.trim())}`, query.trim())]
 ];
 
 function remarkOtodb() {

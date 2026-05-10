@@ -3,7 +3,7 @@
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
-	import TagsField from '$lib/TagsField.svelte';
+	import TagField from '$lib/TagField.svelte';
 	import client from '$lib/api';
 	import { languages } from '$lib/enums/language.js';
 	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
@@ -159,7 +159,7 @@
 				<tr>
 					<th><label for="parent">{m.away_crisp_blackbird_twist()}</label></th>
 					<td>
-						<TagsField type="work" bind:value={parents} name="parents" />
+						<TagField type="work" bind:value={parents} name="parents" />
 					</td>
 				</tr>
 				<tr>

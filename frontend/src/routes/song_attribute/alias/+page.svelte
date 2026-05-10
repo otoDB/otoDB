@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import TagsField from '$lib/TagsField.svelte';
+	import TagField from '$lib/TagField.svelte';
 	import client from '$lib/api';
 	import { goto } from '$app/navigation';
 	import { isSOV, isSVO } from '$lib/enums/language.js';
@@ -34,7 +34,7 @@
 
 <Section title={m.fine_maroon_seal_flip()}>
 	<GuidelineWarning />
-	<TagsField type="song" class="w-full" bind:value={tags} />
+	<TagField type="song" class="w-full" bind:value={tags} />
 	{#if tags.length}
 		<form onsubmit={submit}>
 			{#if isSVO(getLocale())}

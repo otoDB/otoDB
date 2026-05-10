@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TagsField from '$lib/TagsField.svelte';
+	import TagField from '$lib/TagField.svelte';
 	import TagEditTable from '$lib/TagEditTable.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
@@ -55,5 +55,5 @@
 		{/each}
 	</div>
 {/if}
-<TagsField type="work" class="w-full" bind:value={tags} />
+<TagField type="work" class="w-full" bind:value={tags} />
 <TagEditTable {tags} bind:cache />

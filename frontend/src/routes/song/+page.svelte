@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 
 	import { m } from '$lib/paraglide/messages.js';
-	import TagsField from '$lib/TagsField.svelte';
+	import TagField from '$lib/TagField.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 
@@ -38,7 +38,7 @@
 		/>
 		<input type="submit" value={m.mean_top_antelope_love()} />
 		<h4>{m.mild_loud_shad_enchant({ type: m.dull_plain_angelfish_cuddle(), name: '' })}</h4>
-		<TagsField type="song" name="tags" value={data.query_tags.split(' ')} class="w-full" />
+		<TagField type="song" name="tags" value={data.query_tags.split(' ')} class="w-full" />
 		<h4>BPM</h4>
 		<input type="number" step="any" min="0" name="bpm_min" value={data.bpm_range?.[0]} />
 		-

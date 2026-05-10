@@ -3,7 +3,7 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import TagsField from '$lib/TagsField.svelte';
+	import TagField from '$lib/TagField.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 	import { SEARCH_DOCS_POST_ID } from '$lib/ui';
@@ -45,7 +45,7 @@
 		<input type="submit" value={m.mean_top_antelope_love()} />
 
 		<h4>{m.mild_loud_shad_enchant({ type: m.empty_legal_chicken_taste(), name: '' })}</h4>
-		<TagsField type="work" name="tags" value={data.query_tags.split(' ')} class="w-full" />
+		<TagField type="work" name="tags" value={data.query_tags.split(' ')} class="w-full" />
 
 		<details>
 			<summary>{m.keen_brisk_lark_track()}</summary>

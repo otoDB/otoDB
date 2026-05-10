@@ -188,24 +188,24 @@ class WorkOrder(OtodbIntegerEnum):
 	UNCATTAGS_ASC = 29, 'uncattags_asc'
 
 
-_WORK_TAG_CATEGORY_METATAGS = {
-	'eventtags': WorkTagCategory.EVENT,
-	'creatortags': WorkTagCategory.CREATOR,
-	'mediatags': WorkTagCategory.MEDIA,
-	'sourcetags': WorkTagCategory.SOURCE,
-	'songtags': WorkTagCategory.SONG,
-	'gentags': WorkTagCategory.GENERAL,
-	'metatags': WorkTagCategory.META,
-	'uncattags': WorkTagCategory.UNCATEGORIZED,
+_WORK_TAG_CATEGORY_FILTERS = {
+	'eventtags': Q(work_tag__category=WorkTagCategory.EVENT),
+	'creatortags': Q(work_tag__category=WorkTagCategory.CREATOR, used_as_source=False),
+	'mediatags': Q(work_tag__category=WorkTagCategory.MEDIA, used_as_source=False),
+	'sourcetags': Q(work_tag__category=WorkTagCategory.SOURCE) | Q(used_as_source=True),
+	'songtags': Q(work_tag__category=WorkTagCategory.SONG, used_as_source=False),
+	'gentags': Q(work_tag__category=WorkTagCategory.GENERAL),
+	'metatags': Q(work_tag__category=WorkTagCategory.META),
+	'uncattags': Q(work_tag__category=WorkTagCategory.UNCATEGORIZED),
 }
 
 
-_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', tuple[bool, dict]] = {
-	WorkOrder.TAGCOUNT: (False, {}),
-	WorkOrder.TAGCOUNT_ASC: (True, {}),
+_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', tuple[bool, Q]] = {
+	WorkOrder.TAGCOUNT: (False, Q()),
+	WorkOrder.TAGCOUNT_ASC: (True, Q()),
 	**{
-		WorkOrder[name.upper() + suffix]: (asc, {'work_tag__category': cat})
-		for name, cat in _WORK_TAG_CATEGORY_METATAGS.items()
+		WorkOrder[name.upper() + suffix]: (asc, q)
+		for name, q in _WORK_TAG_CATEGORY_FILTERS.items()
 		for suffix, asc in (('', False), ('_ASC', True))
 	},
 }
@@ -269,8 +269,8 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 		case WorkOrder.RANDOM:
 			return {}, Q(), ('?',)
 		case v if v in _WORK_TAG_COUNT_ORDERS:
-			asc, filters = _WORK_TAG_COUNT_ORDERS[v]
-			sub = TagWorkInstance.objects.filter(work_id=OuterRef('id'), **filters)
+			asc, q = _WORK_TAG_COUNT_ORDERS[v]
+			sub = TagWorkInstance.objects.filter(q, work_id=OuterRef('id'))
 			ann = {
 				'_tagcount': Coalesce(
 					Subquery(sub.values('work_id').annotate(c=Count('*')).values('c')),
@@ -447,14 +447,13 @@ work_metatag_grammars = {
 	**{
 		name: MetatagSpec(
 			int,
-			make_range_metatag(
-				model=TagWorkInstance,
-				fk_field='work_id',
-				count=True,
-				work_tag__category=cat,
+			lambda op, value, q=q: count_predicate_q(
+				TagWorkInstance.objects.filter(q, work_id=OuterRef('id')),
+				op,
+				value,
 			),
 		)
-		for name, cat in _WORK_TAG_CATEGORY_METATAGS.items()
+		for name, q in _WORK_TAG_CATEGORY_FILTERS.items()
 	},
 	'relations': MetatagSpec(
 		int,

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { navigating } from '$app/state';
 	import { PUBLIC_OTODB_HASH } from '$env/static/public';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
 	import { languages } from '$lib/enums/language';
 	import { currentVersion, versions } from '$lib/enums/version';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { set_lang } from '$lib/languages';
 	import type { ClassValue } from 'svelte/elements';
+	import Languages from '@lucide/svelte/icons/languages';
 
 	let {
 		user,
@@ -49,8 +49,8 @@
 		</div>
 	</div>
 
-	<div class="footer-right">
-		<ConnectionFavicon type="Website" class="size-4" />
+	<div class="footer-right flex items-center">
+		<Languages class="mr-1" size={24} />
 		<select
 			onchange={(e) => {
 				set_lang(e.currentTarget.value as (typeof locales)[number], !!user);

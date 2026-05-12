@@ -5,6 +5,8 @@
 	import { Levels } from '$lib/schema';
 	import { clickOutside } from '$lib/ui';
 	import type { ClassValue } from 'svelte/elements';
+	import Search from '@lucide/svelte/icons/search';
+	import Bell from '@lucide/svelte/icons/bell';
 
 	let {
 		class: className,
@@ -52,12 +54,10 @@
 	class={[
 		className,
 		'bg-otodb-bg-faint/90 fixed top-0 left-0 z-2 m-0 flex h-full max-w-[85vw] flex-col gap-y-2 overflow-y-auto p-8 md:visible md:relative md:w-min md:min-w-64 md:bg-transparent md:p-0 md:after:content-none',
-		{
-			invisible: !isMobileNavOpen
-		}
+		!isMobileNavOpen && 'invisible'
 	]}
 	use:clickOutside
-	onoutclick={() => (isMobileNavOpen = false)}
+	onoutclick={closeMobileNav}
 >
 	<form target="_self" method="get" action="/{search_type}" class="flex w-full">
 		<select bind:value={search_type} class="bg-otodb-bg-faint/75 pl-1">
@@ -76,9 +76,7 @@
 			aria-label="Search"
 			class="bg-otodb-bg-faint/75 hover:bg-otodb-bg-fainter/75 px-2"
 		>
-			<svg class="h-[16px] w-[16px]">
-				<use href="/search.svg#img"></use>
-			</svg>
+			<Search size={16}></Search>
 		</button>
 	</form>
 
@@ -115,18 +113,17 @@
 				<a
 					href={`/profile/${user.username}/notifications`}
 					title={m.free_keen_wren_exhale()}
-					class="relative -top-0.5 no-underline"
+					class="relative -top-0.5 inline-flex no-underline"
 					onclick={closeMobileNav}
 				>
 					{#if user.notifs_nonsub_count > 0}({user.notifs_nonsub_count}){/if}
-					<span
+					<Bell
+						size={16}
 						class={[
-							'text-transparent',
-							user.notifs_count > 0
-								? '[text-shadow:0_0_var(--otodb-color-content-fainter)]'
-								: 'opacity-25 [text-shadow:0_0_var(--otodb-color-content-primary)]'
-						]}>🔔</span
-					>
+							'text-otodb-content-fainter ml-1',
+							user.notifs_count > 0 && 'fill-current'
+						]}
+					/>
 				</a>
 			{/if}
 		</div>

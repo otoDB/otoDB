@@ -135,8 +135,7 @@
 						{#each locales as locale, i (i)}
 							<th>{languages[locale].name} {m.mellow_upper_finch_drip()}</th>
 						{/each}
-						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th
-						></tr
+						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th></tr
 					>
 				</thead>
 				<tbody>
@@ -170,13 +169,7 @@
 						<tr
 							><td><input type="text" bind:value={tagNames[a.slug]} /></td>
 							{#each locales as locale, i (i)}
-								<td
-									><input
-										type="radio"
-										bind:group={tagLangPrefs[locale]}
-										value={a.slug}
-									/></td
-								>
+								<td><input type="radio" bind:group={tagLangPrefs[locale]} value={a.slug} /></td>
 							{/each}
 							<td
 								><input

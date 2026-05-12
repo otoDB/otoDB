@@ -26,7 +26,7 @@
 
 		const rtf = new Intl.RelativeTimeFormat(getLocale(), { numeric: 'always' });
 
-		// prettier-ignore
+		// oxfmt-ignore
 		const [divisor, unit]: [number, Intl.RelativeTimeFormatUnit] =
 			elapsed > YEAR   * 2 ? [YEAR,   'year']   :
 			elapsed > MONTH  * 2 ? [MONTH,  'month']  :

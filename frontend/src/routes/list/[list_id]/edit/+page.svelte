@@ -95,9 +95,7 @@
 				>
 				<tr
 					><th><label for="description">{m.clear_lucky_peacock_pick()}</label></th><td
-						><textarea
-							name="description"
-							value={form?.description ?? data.list?.description}
+						><textarea name="description" value={form?.description ?? data.list?.description}
 						></textarea></td
 					></tr
 				>
@@ -152,11 +150,7 @@
 								class="min-h-30 w-full"
 								value={entry.description}
 								oninput={debounce(
-									(el) =>
-										update_description(
-											i,
-											(el.target as HTMLTextAreaElement).value
-										),
+									(el) => update_description(i, (el.target as HTMLTextAreaElement).value),
 									1000
 								)}
 							></textarea>

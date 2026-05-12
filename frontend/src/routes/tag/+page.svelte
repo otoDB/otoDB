@@ -140,9 +140,7 @@
 				<tr class="border-otodb-bg-fainter border-b">
 					<td class="py-1.5">
 						<WorkTag {tag} />
-						<span class="text-otodb-content-faint ml-1 tabular-nums"
-							>{tag.n_instance ?? 0}</span
-						>
+						<span class="text-otodb-content-faint ml-1 tabular-nums">{tag.n_instance ?? 0}</span>
 					</td>
 				</tr>
 			{/each}

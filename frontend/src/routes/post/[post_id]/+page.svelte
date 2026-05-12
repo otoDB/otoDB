@@ -164,8 +164,7 @@
 				</ul>
 			{/if}
 			<div class="grid grid-cols-2 gap-3">
-				<textarea rows="10" bind:value={editContent} class="w-full" name="post" required
-				></textarea>
+				<textarea rows="10" bind:value={editContent} class="w-full" name="post" required></textarea>
 				<div class="prose prose-neutral prose-sm dark:prose-invert">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html editPreviewHtml}
@@ -179,14 +178,10 @@
 	{:else}
 		<div class="text-otodb-content-fainter mb-6 text-xs">
 			<p>
-				<a href="/post?category={data.post.category}"
-					>{postCategoryNames[data.post.category]()}</a
-				>
+				<a href="/post?category={data.post.category}">{postCategoryNames[data.post.category]()}</a>
 				{#if data.post.category === PostCategory.Announcement}
 					&middot;
-					<a href="#p{data.post_id}"
-						><Time format="relative" date={page_object.modified} /></a
-					>
+					<a href="#p{data.post_id}"><Time format="relative" date={page_object.modified} /></a>
 				{/if}
 			</p>
 			{#if data.post.entities?.length}
@@ -210,12 +205,8 @@
 				<div
 					class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 				>
-					<a href="/profile/{data.post?.added_by.username}"
-						>{data.post?.added_by.username}</a
-					>
-					<a href="#p{data.post_id}"
-						><Time format="relative" date={page_object.modified} /></a
-					>
+					<a href="/profile/{data.post?.added_by.username}">{data.post?.added_by.username}</a>
+					<a href="#p{data.post_id}"><Time format="relative" date={page_object.modified} /></a>
 					{#if data.post.edited_at && data.post.edited_by}
 						<EditedBy
 							date={data.post.edited_at}
@@ -224,9 +215,7 @@
 					{/if}
 				</div>
 				<div class="px-4 py-2">
-					<div
-						class="post-content prose prose-neutral prose-sm dark:prose-invert mt-4 max-w-none"
-					>
+					<div class="post-content prose prose-neutral prose-sm dark:prose-invert mt-4 max-w-none">
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html page}
 					</div>

@@ -48,8 +48,7 @@
 	</h3>
 	<h4>
 		{StatusNames[data.request.status]()}{#if data.request?.processed_by}(<a
-				href="/profile/{data.request.processed_by.username}"
-				>{data.request.processed_by.username}</a
+				href="/profile/{data.request.processed_by.username}">{data.request.processed_by.username}</a
 			>){/if}
 	</h4>
 

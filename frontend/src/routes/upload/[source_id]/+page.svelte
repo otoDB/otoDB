@@ -109,10 +109,7 @@
 						</tr>
 						<tr>
 							<th class="w-24">URL</th>
-							<td
-								><a href={data.source.url} target="_blank" rel="noopener"
-									>{data.source.url}</a
-								></td
+							<td><a href={data.source.url} target="_blank" rel="noopener">{data.source.url}</a></td
 							>
 						</tr>
 						{#if data.isBound}
@@ -120,8 +117,7 @@
 								<th class="w-24">{m.grand_merry_fly_succeed()}</th>
 								<td
 									><a href="/work/{data.source.media}"
-										>{data.source.media_title ||
-											`Work #${data.source.media}`}</a
+										>{data.source.media_title || `Work #${data.source.media}`}</a
 									></td
 								>
 							</tr>
@@ -129,10 +125,7 @@
 						{#if data.source.is_pending}
 							<tr>
 								<th class="w-24">Status</th>
-								<td
-									><span class="text-sky-600">{m.lost_weird_squid_commend()}</span
-									></td
-								>
+								<td><span class="text-sky-600">{m.lost_weird_squid_commend()}</span></td>
 							</tr>
 						{/if}
 					</tbody>
@@ -170,13 +163,7 @@
 						<tr>
 							<th><label for="title">{m.large_factual_octopus_exhale()}</label></th>
 							<td>
-								<input
-									id="title"
-									name="title"
-									type="text"
-									class="w-full"
-									bind:value={title}
-								/>
+								<input id="title" name="title" type="text" class="w-full" bind:value={title} />
 							</td>
 						</tr>
 						<tr>
@@ -198,8 +185,7 @@
 										<label
 											class={[
 												'relative cursor-pointer border px-3 py-1',
-												rating === r &&
-													'bg-otodb-content-primary text-otodb-bg-primary'
+												rating === r && 'bg-otodb-content-primary text-otodb-bg-primary'
 											]}
 										>
 											<input

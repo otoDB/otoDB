@@ -15,10 +15,7 @@
 		<ThreadTable
 			posts={data.threads.items}
 			entityFilter={(e) =>
-				!(
-					e.entity === PostEntities.account &&
-					String(e.id) === String(data.profile.username)
-				)}
+				!(e.entity === PostEntities.account && String(e.id) === String(data.profile.username))}
 		/>
 		<Pager n_count={data.threads.count} page={data.page} page_size={data.batch_size} />
 	{/if}

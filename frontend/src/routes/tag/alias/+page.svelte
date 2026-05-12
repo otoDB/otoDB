@@ -47,8 +47,8 @@
 					type: m.still_happy_cheetah_savor(),
 					name: ''
 				})}<select name="behaviour" bind:value={del}
-					><option value={false}>{m.dirty_lazy_mammoth_empower()}</option><option
-						value={true}>{m.real_born_goat_snap()}</option
+					><option value={false}>{m.dirty_lazy_mammoth_empower()}</option><option value={true}
+						>{m.real_born_goat_snap()}</option
 					></select
 				></label
 			>

@@ -60,8 +60,7 @@
 					<td>{postCategoryNames[post.category]()}</td>
 				{/if}
 				{#if showAuthor}
-					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td
-					>
+					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td>
 				{/if}
 				<td class="text-right">
 					<a href="/profile/{lastUser}">{lastUser}</a>

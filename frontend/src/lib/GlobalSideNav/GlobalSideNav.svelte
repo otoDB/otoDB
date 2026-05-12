@@ -105,9 +105,7 @@
 	<div
 		class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 	>
-		<div
-			class="border-otodb-content-faint mb-2 flex items-center justify-between border-b text-xs"
-		>
+		<div class="border-otodb-content-faint mb-2 flex items-center justify-between border-b text-xs">
 			<span>{m.maroon_least_pony_evoke()}</span>
 			{#if user}
 				<a
@@ -119,10 +117,7 @@
 					{#if user.notifs_nonsub_count > 0}({user.notifs_nonsub_count}){/if}
 					<Bell
 						size={16}
-						class={[
-							'text-otodb-content-fainter ml-1',
-							user.notifs_count > 0 && 'fill-current'
-						]}
+						class={['text-otodb-content-fainter ml-1', user.notifs_count > 0 && 'fill-current']}
 					/>
 				</a>
 			{/if}
@@ -135,10 +130,7 @@
 			{:else}
 				{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
 				{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
-				{@render link(
-					`/profile/${user.username}/submissions`,
-					m.flaky_gross_marlin_evoke()
-				)}
+				{@render link(`/profile/${user.username}/submissions`, m.flaky_gross_marlin_evoke())}
 				{@render link(`/request/new`, m.muddy_tough_swan_view())}
 				{@render link(`/settings`, m.orange_born_seal_ascend())}
 				<li class="mt-4">
@@ -179,8 +171,7 @@
 			</div>
 			<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 				<li>
-					<a href="/admin" data-sveltekit-reload class="no-underline"
-						>{m.simple_few_sheep_lend()}</a
+					<a href="/admin" data-sveltekit-reload class="no-underline">{m.simple_few_sheep_lend()}</a
 					>
 				</li>
 			</ul>

@@ -33,9 +33,7 @@
 				username: data.invites.restrictedInvitee.username
 			};
 		if (
-			data.invites.invites.some(
-				(inv) => Date.now() - Date.parse(inv.created_at) < invite_interval
-			)
+			data.invites.invites.some((inv) => Date.now() - Date.parse(inv.created_at) < invite_interval)
 		)
 			return {
 				reason: 'next invite not yet available',
@@ -65,11 +63,7 @@
 		</table>
 	</details>
 	<form action="?/connections" method="POST" use:enhance>
-		<textarea
-			bind:value={urls}
-			name="urls"
-			class="w-full"
-			placeholder={m.close_any_racoon_cut()}
+		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
 		></textarea>
 		<input type="submit" />
 	</form>
@@ -84,11 +78,9 @@
 			<table>
 				<tbody>
 					<tr
-						><th>{m.stale_early_squirrel_prosper()}</th><th
-							>{m.tiny_great_robin_commend()}</th
-						><th>{m.basic_upper_racoon_type()}</th><th
-							>{m.suave_royal_jurgen_shine()}</th
-						></tr
+						><th>{m.stale_early_squirrel_prosper()}</th><th>{m.tiny_great_robin_commend()}</th><th
+							>{m.basic_upper_racoon_type()}</th
+						><th>{m.suave_royal_jurgen_shine()}</th></tr
 					>
 					{#each data.invites.invites as inv, i (i)}
 						<tr>
@@ -128,10 +120,7 @@
 				<p>
 					<ParaglideMessage message={m.next_royal_carp_pride} inputs={{}}>
 						{#snippet date()}
-							<Time
-								format="absolute"
-								date={new Date(deniedInviteCreationReason.next)}
-							/>
+							<Time format="absolute" date={new Date(deniedInviteCreationReason.next)} />
 						{/snippet}
 					</ParaglideMessage>
 				</p>

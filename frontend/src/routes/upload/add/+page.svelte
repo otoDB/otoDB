@@ -97,8 +97,7 @@
 				{/if}
 				{#if isUnavailable}
 					<tr>
-						<th><label for="manual_title">{m.large_factual_octopus_exhale()}</label></th
-						>
+						<th><label for="manual_title">{m.large_factual_octopus_exhale()}</label></th>
 						<td>
 							<input
 								type="text"
@@ -109,10 +108,7 @@
 						</td>
 					</tr>
 					<tr>
-						<th
-							><label for="manual_description">{m.clear_lucky_peacock_pick()}</label
-							></th
-						>
+						<th><label for="manual_description">{m.clear_lucky_peacock_pick()}</label></th>
 						<td
 							><textarea
 								name="manual_description"
@@ -123,11 +119,7 @@
 						>
 					</tr>
 					<tr>
-						<th
-							><label for="manual_uploader_id"
-								>{m.vivid_still_bumblebee_explore()}</label
-							></th
-						>
+						<th><label for="manual_uploader_id">{m.vivid_still_bumblebee_explore()}</label></th>
 						<td
 							><input
 								type="text"
@@ -138,11 +130,7 @@
 						>
 					</tr>
 					<tr>
-						<th
-							><label for="manual_thumbnail_url"
-								>{m.heroic_ideal_orangutan_aid()}</label
-							></th
-						>
+						<th><label for="manual_thumbnail_url">{m.heroic_ideal_orangutan_aid()}</label></th>
 						<td
 							><input
 								type="url"

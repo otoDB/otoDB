@@ -28,8 +28,7 @@
 				>
 				<tr
 					><th><label for="description">{m.clear_lucky_peacock_pick()}</label></th><td
-						><textarea name="description" value={form?.description ?? ''}
-						></textarea></td
+						><textarea name="description" value={form?.description ?? ''}></textarea></td
 					></tr
 				>
 			</tbody>

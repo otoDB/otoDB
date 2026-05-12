@@ -26,8 +26,7 @@
 			return lang ? resolveLanguageKeyById(lang) : undefined;
 		},
 		setLocale: (locale) => {
-			if (!data.user)
-				updateLocalPref('LANGUAGE', languages[locale as keyof typeof languages].id);
+			if (!data.user) updateLocalPref('LANGUAGE', languages[locale as keyof typeof languages].id);
 		}
 	});
 
@@ -108,9 +107,7 @@
 					JSON.stringify({
 						'@context': 'https://schema.org',
 						'@type': 'BreadcrumbList',
-						'itemListElement': (
-							page.data.head.breadcrumbs as { name: string; url: string }[]
-						).map(
+						'itemListElement': (page.data.head.breadcrumbs as { name: string; url: string }[]).map(
 							(
 								crumb: { name: string; url: string },
 								i: number,
@@ -119,9 +116,7 @@
 								'@type': 'ListItem',
 								'position': i + 1,
 								'name': crumb.name,
-								...(i < arr.length - 1
-									? { item: `https://otodb.net${crumb.url}` }
-									: {})
+								...(i < arr.length - 1 ? { item: `https://otodb.net${crumb.url}` } : {})
 							})
 						)
 					})
@@ -201,7 +196,8 @@
 		toastOptions={{
 			unstyled: true,
 			classes: {
-				toast: 'bg-otodb-bg-faint text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
+				toast:
+					'bg-otodb-bg-faint text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
 			}
 		}}
 	/>

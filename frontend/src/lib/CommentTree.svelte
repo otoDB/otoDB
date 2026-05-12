@@ -156,9 +156,7 @@
 			{/if}
 		</div>
 		<div>
-			<span class="text-otodb-content-fainter float-right text-xs leading-none"
-				>#{data.index}</span
-			>
+			<span class="text-otodb-content-fainter float-right text-xs leading-none">#{data.index}</span>
 			{#if editingId === data.id}
 				<form
 					class="edit-form"
@@ -177,9 +175,7 @@
 					<div class="reply-main">
 						{#if editPreviewMode}
 							<div class="editor-panel reply-editor">
-								<div
-									class="prose prose-neutral prose-sm dark:prose-invert max-w-none"
-								>
+								<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 									{@html editPreview}
 								</div>
@@ -193,15 +189,9 @@
 						{/if}
 						<div class="reply-actions">
 							<button type="button" class="h-15 p-3" onclick={toggleEditPreview}>
-								{editPreviewMode
-									? m.minor_crisp_cobra_list()
-									: m.many_each_wolf_arrive()}
+								{editPreviewMode ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}
 							</button>
-							<input
-								type="submit"
-								class="h-15 p-3"
-								value={m.last_late_penguin_bubble()}
-							/>
+							<input type="submit" class="h-15 p-3" value={m.last_late_penguin_bubble()} />
 							<button type="button" class="h-15 p-3" onclick={cancelEdit}>
 								{m.lower_whole_gopher_fulfill()}
 							</button>

@@ -46,9 +46,7 @@
 
 	let new_item: null | Work | Song = $state(null);
 
-	const endpoint = $derived(
-		obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation'
-	);
+	const endpoint = $derived(obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation');
 	const post_gate = { p: Promise.withResolvers<void>() };
 	const post_relations = async () => {
 		await post_gate.p.promise;
@@ -146,9 +144,7 @@
 						><button
 							type="button"
 							onclick={(e) => {
-								e.currentTarget.dispatchEvent(
-									new Event('change', { bubbles: true })
-								);
+								e.currentTarget.dispatchEvent(new Event('change', { bubbles: true }));
 								relations[i].swapped = !relations[i].swapped;
 							}}>{m.less_green_angelfish_hunt()}</button
 						></td
@@ -157,9 +153,7 @@
 						><button
 							type="button"
 							onclick={(e) => {
-								e.currentTarget.dispatchEvent(
-									new Event('change', { bubbles: true })
-								);
+								e.currentTarget.dispatchEvent(new Event('change', { bubbles: true }));
 								relations.splice(i, 1);
 							}}>{m.even_alert_grebe_taste()}</button
 						></td

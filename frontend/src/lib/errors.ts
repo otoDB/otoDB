@@ -52,8 +52,7 @@ export const formatApiErrorMessage = (err: ApiError): string =>
 export const parseApiErrorResponse = async (response: Response): Promise<ApiError> => {
 	try {
 		const body = await response.clone().json();
-		if (body && typeof body.code === 'number')
-			return { code: body.code, data: body.data ?? {} };
+		if (body && typeof body.code === 'number') return { code: body.code, data: body.data ?? {} };
 	} catch {
 		// fall through to default error
 	}

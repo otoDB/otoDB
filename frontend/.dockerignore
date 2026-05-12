@@ -6,7 +6,7 @@ docker-compose*
 .gitignore
 .gitattributes
 .npmrc
-.prettierrc
+.oxfmtrc.json
 README.md
 LICENSE
 .svelte-kit

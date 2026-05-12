@@ -234,8 +234,7 @@
 							disabled={!work['a'].work || selectingRating !== 'a'}
 							bind:value={work['a'].rating}
 						>
-							{#each enumValues(Rating) as r, i (i)}<option value={r}
-									>{RatingNames[r]()}</option
+							{#each enumValues(Rating) as r, i (i)}<option value={r}>{RatingNames[r]()}</option
 								>{/each}
 						</select></td
 					>
@@ -260,8 +259,7 @@
 							disabled={!work['b'].work || selectingRating !== 'b'}
 							bind:value={work['b'].rating}
 						>
-							{#each enumValues(Rating) as r, i (i)}<option value={r}
-									>{RatingNames[r]()}</option
+							{#each enumValues(Rating) as r, i (i)}<option value={r}>{RatingNames[r]()}</option
 								>{/each}
 						</select></td
 					>
@@ -271,15 +269,8 @@
 		</table>
 		<input hidden type="text" name="A" value={work['a'].work?.id} />
 		<input hidden type="text" name="B" value={work['b'].work?.id} />
-		<input
-			hidden
-			type="text"
-			name="title"
-			value={work[selectingTitle].title}
-			autocomplete="off"
-		/>
-		<textarea hidden value={work[selectingDescription].description} name="description"
-		></textarea>
+		<input hidden type="text" name="title" value={work[selectingTitle].title} autocomplete="off" />
+		<textarea hidden value={work[selectingDescription].description} name="description"></textarea>
 		<input
 			hidden
 			type="text"

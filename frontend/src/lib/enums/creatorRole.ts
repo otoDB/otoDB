@@ -35,7 +35,5 @@ export const allCreatorRoles = Object.keys(creatorRole) as (keyof typeof creator
 export const resolveCreatorRoleKeyById = (
 	id: number // (typeof creatorRole)[keyof typeof creatorRole]['id']
 ): keyof typeof creatorRole => {
-	return Object.entries(creatorRole).find(
-		([_, v]) => v.id === id
-	)?.[0] as keyof typeof creatorRole;
+	return Object.entries(creatorRole).find(([_, v]) => v.id === id)?.[0] as keyof typeof creatorRole;
 };

@@ -42,13 +42,9 @@
 						<tr>
 							{#if n.comment}
 								{@const route = buildEntityRoutes(n.comment[0], n.comment[1])}
-								<td class={{ 'opacity-40': n.dismissed }}
-									>{m.curly_these_mule_ascend()}</td
-								>
+								<td class={{ 'opacity-40': n.dismissed }}>{m.curly_these_mule_ascend()}</td>
 								<td class={{ 'opacity-40': n.dismissed }}>
-									<button onclick={() => dismiss(n.id, n.dismissed, route)}
-										>{route}
-									</button>
+									<button onclick={() => dismiss(n.id, n.dismissed, route)}>{route} </button>
 								</td>
 							{:else if n.post}
 								<td class={{ 'opacity-40': n.dismissed }}
@@ -59,9 +55,7 @@
 											: m.curly_these_mule_ascend()}</td
 								>
 								<td class={{ 'opacity-40': n.dismissed }}
-									><button
-										onclick={() =>
-											dismiss(n.id, n.dismissed, `/post/${n.post}`)}
+									><button onclick={() => dismiss(n.id, n.dismissed, `/post/${n.post}`)}
 										>/post/{n.post}</button
 									></td
 								>
@@ -95,16 +89,12 @@
 					{#each data.sub_notifications.items as n, i (i)}
 						<tr>
 							<td class={{ 'opacity-40': n.dismissed }}
-								><button
-									onclick={() =>
-										dismiss(n.id, n.dismissed, `/revision/${n.revision}`)}
+								><button onclick={() => dismiss(n.id, n.dismissed, `/revision/${n.revision}`)}
 									>#{n.revision}</button
 								>
 							</td>
 							<td class={{ 'opacity-40': n.dismissed }}
-								>{typeof n.revision_route === 'number'
-									? routeNames[n.revision_route]()
-									: ''}</td
+								>{typeof n.revision_route === 'number' ? routeNames[n.revision_route]() : ''}</td
 							>
 							<td class={{ 'opacity-40': n.dismissed }}>
 								{#if isSVO(getLocale())}

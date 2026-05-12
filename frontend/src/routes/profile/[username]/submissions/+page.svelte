@@ -29,8 +29,7 @@
 					<td>{m.just_noisy_moth_beam()}</td>
 					<td
 						><select name="standing" value={data.standing ?? 1}
-							>{#each enumValues(Status) as p, i (i)}<option value={p}
-									>{StatusNames[p]()}</option
+							>{#each enumValues(Status) as p, i (i)}<option value={p}>{StatusNames[p]()}</option
 								>{/each}</select
 						></td
 					>
@@ -39,9 +38,8 @@
 					<td>{m.sour_swift_sparrow_spin()}</td>
 					<td
 						><select name="platform" value={data.platform ?? null}
-							><option value={null}>---</option
-							>{#each enumValues(Platform) as p, i (i)}<option value={p}
-									>{PlatformNames[p]}</option
+							><option value={null}>---</option>{#each enumValues(Platform) as p, i (i)}<option
+									value={p}>{PlatformNames[p]}</option
 								>{/each}</select
 						></td
 					>
@@ -52,8 +50,7 @@
 						><select name="origin" value={data.origin ?? null}
 							><option value={null}>---</option><option value={WorkOrigin.Author}
 								>{WorkOriginNames[0]()}</option
-							><option value={WorkOrigin.Reupload}>{WorkOriginNames[1]()}</option
-							></select
+							><option value={WorkOrigin.Reupload}>{WorkOriginNames[1]()}</option></select
 						></td
 					>
 				</tr>
@@ -63,9 +60,7 @@
 						><select name="status" value={data.status ?? null}
 							><option value={null}>---</option><option value={WorkStatus.Available}
 								>{WorkStatusNames[WorkStatus.Available]()}</option
-							><option value={WorkStatus.Down}
-								>{WorkStatusNames[WorkStatus.Down]()}</option
-							></select
+							><option value={WorkStatus.Down}>{WorkStatusNames[WorkStatus.Down]()}</option></select
 						></td
 					>
 				</tr>
@@ -78,8 +73,8 @@
 							></select
 						>
 						<select name="dir" value={data.dir ?? '-'}
-							><option value="-">{m.kind_quick_bullock_push()}</option><option
-								value="">{m.novel_orange_mantis_feast()}</option
+							><option value="-">{m.kind_quick_bullock_push()}</option><option value=""
+								>{m.novel_orange_mantis_feast()}</option
 							></select
 						>
 					</td>
@@ -146,13 +141,12 @@
 					{#each data.submissions.items as src, i (i)}
 						<tr>
 							<td class="whitespace-nowrap"
-								><a href="/work/{src.media}"
-									>#{src.media} - {src.title || src.url}</a
-								></td
+								><a href="/work/{src.media}">#{src.media} - {src.title || src.url}</a></td
 							>
 							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td
-							><td class="whitespace-nowrap">{WorkStatusNames[src.work_status]()}</td>
+							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td><td
+								class="whitespace-nowrap">{WorkStatusNames[src.work_status]()}</td
+							>
 							<td class="whitespace-nowrap"
 								><a href={src.url} target="_blank" rel="noopener noreferrer"
 									>{m.noisy_moving_newt_belong()}</a

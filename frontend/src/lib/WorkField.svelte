@@ -112,10 +112,7 @@
 			<tbody>
 				{#each suggestions as v, i (i)}
 					<tr
-						class={[
-							'p-1',
-							selectedIndex === i ? 'bg-otodb-bg-faint' : 'bg-otodb-bg-fainter'
-						]}
+						class={['p-1', selectedIndex === i ? 'bg-otodb-bg-faint' : 'bg-otodb-bg-fainter']}
 						onmouseenter={() => (selectedIndex = i)}
 					>
 						<td

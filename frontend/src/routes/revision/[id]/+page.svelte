@@ -71,9 +71,7 @@
 			[...v.toString(2)]
 				.reduce(
 					(a, e, i, aa) =>
-						e === '1'
-							? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()]
-							: a,
+						e === '1' ? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()] : a,
 					[] as string[]
 				)
 				.join(', ') || 'N/A';

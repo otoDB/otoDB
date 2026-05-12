@@ -77,9 +77,10 @@
 
 	const relTree = $derived(
 		data.relations[0].length > 0
-			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
-					(d) => [+d[0], [...Map.groupBy(d[1]!, (r) => r.relation).entries()]]
-				) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
+			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map((d) => [
+					+d[0],
+					[...Map.groupBy(d[1]!, (r) => r.relation).entries()]
+				]) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
 			: null
 	);
 </script>
@@ -224,25 +225,18 @@
 												{#each rels as [tp, relations], j (j)}
 													<li>
 														{m.mild_loud_shad_enchant({
-															type: [
-																WorkRelationDisplayBackward,
-																WorkRelationDisplayForward
-															][dir][tp](),
+															type: [WorkRelationDisplayBackward, WorkRelationDisplayForward][dir][
+																tp
+															](),
 															name: ''
 														})}
 														<ul class="ml-2">
 															{#each relations as r, j (j)}
 																{@const w = data.relations[1].find(
-																	(w) =>
-																		w.id ===
-																		(r.A_id === data.id
-																			? r.B_id
-																			: r.A_id)
+																	(w) => w.id === (r.A_id === data.id ? r.B_id : r.A_id)
 																)!}
 																<li>
-																	<a href="/work/{w.id}"
-																		>#{w.id} - {w.title}</a
-																	>
+																	<a href="/work/{w.id}">#{w.id} - {w.title}</a>
 																</li>
 															{/each}
 														</ul>
@@ -276,11 +270,7 @@
 												<tbody>
 													{#each userLists as list, i (i)}
 														<tr>
-															<td
-																><a href="/list/{list[0].id}"
-																	>{list[0].name}</a
-																></td
-															>
+															<td><a href="/list/{list[0].id}">{list[0].name}</a></td>
 															<td>
 																<input
 																	type="checkbox"
@@ -303,9 +293,7 @@
 										<td>
 											<button
 												onclick={async () => {
-													const reason = prompt(
-														m.royal_big_chipmunk_absorb()
-													);
+													const reason = prompt(m.royal_big_chipmunk_absorb());
 													if (!reason?.trim()) {
 														// Show message
 														alert(
@@ -315,15 +303,12 @@
 														);
 														return;
 													}
-													const { error } = await client.POST(
-														'/api/work/flag',
-														{
-															fetch,
-															params: {
-																query: { work_id: data.id, reason }
-															}
+													const { error } = await client.POST('/api/work/flag', {
+														fetch,
+														params: {
+															query: { work_id: data.id, reason }
 														}
-													);
+													});
 													if (!error) location.reload();
 												}}
 											>
@@ -338,9 +323,7 @@
 										<td>
 											<button
 												onclick={async () => {
-													const reason = prompt(
-														m.zippy_dark_mayfly_cut()
-													);
+													const reason = prompt(m.zippy_dark_mayfly_cut());
 													if (!reason?.trim()) {
 														// Show message
 														alert(
@@ -350,15 +333,12 @@
 														);
 														return;
 													}
-													const { error } = await client.POST(
-														'/api/work/appeal',
-														{
-															fetch,
-															params: {
-																query: { work_id: data.id, reason }
-															}
+													const { error } = await client.POST('/api/work/appeal', {
+														fetch,
+														params: {
+															query: { work_id: data.id, reason }
 														}
-													);
+													});
 													if (!error) location.reload();
 												}}
 											>
@@ -373,9 +353,7 @@
 				{/if}
 			</div>
 		</div>
-		<div
-			class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}
-		>
+		<div class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}>
 			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
@@ -474,10 +452,7 @@
 						{m.nice_tense_mule_grasp()}:
 						<strong>
 							{#if src.work_duration}
-								{Math.floor(src.work_duration / 60)}:{(
-									'0' +
-									(src.work_duration % 60)
-								).slice(-2)}
+								{Math.floor(src.work_duration / 60)}:{('0' + (src.work_duration % 60)).slice(-2)}
 							{:else}
 								{m.simple_less_marlin_enchant()}
 							{/if}

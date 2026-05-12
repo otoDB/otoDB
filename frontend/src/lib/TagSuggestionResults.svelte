@@ -70,19 +70,14 @@
 	};
 
 	const getTagStyle = (category: WorkTagCategory) => {
-		return type === 'work' && category !== 0
-			? `color: ${WorkTagCategoryMap[category].color}`
-			: '';
+		return type === 'work' && category !== 0 ? `color: ${WorkTagCategoryMap[category].color}` : '';
 	};
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
 
 {#each suggestions as t, i (i)}
-	<li
-		class:bg-otodb-bg-fainter={selectedIndex === i}
-		class:bg-otodb-bg-faint={selectedIndex !== i}
-	>
+	<li class:bg-otodb-bg-fainter={selectedIndex === i} class:bg-otodb-bg-faint={selectedIndex !== i}>
 		<a
 			href="/tag/{t.aliased_to?.slug || t.slug}"
 			class="flex w-full cursor-pointer justify-between gap-10 px-2 py-1 no-underline"
@@ -106,8 +101,7 @@
 						{@const aliasedParts = highlightMatch(t.aliased_to.name, query)}
 						<span>→</span>
 						<span style={getTagStyle(t.aliased_to.category)}>
-							{aliasedParts.before}<strong>{aliasedParts.match}</strong
-							>{aliasedParts.after}
+							{aliasedParts.before}<strong>{aliasedParts.match}</strong>{aliasedParts.after}
 						</span>
 					{/if}
 				{:else}

@@ -13,13 +13,7 @@
 		height?: number;
 	}
 
-	let {
-		sources,
-		thumbnail = null,
-		thumbnailAlt = '',
-		width = 480,
-		height = 270
-	}: Props = $props();
+	let { sources, thumbnail = null, thumbnailAlt = '', width = 480, height = 270 }: Props = $props();
 
 	let selected = $state(-1);
 

@@ -16,6 +16,7 @@
 	import { getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
+	import { Menu } from '@lucide/svelte';
 
 	let { data, children } = $props();
 
@@ -186,12 +187,12 @@
 		<!-- Hamburger button -->
 		<button
 			class={[
-				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-[3] h-12 w-12',
-				{ invisible: isMobileNavOpen }
+				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-3 h-12 w-12',
+				isMobileNavOpen && 'invisible'
 			]}
 			onclick={toggleMobileNav}
 		>
-			<div class="white place-self-center text-2xl">☰</div>
+			<Menu size={32} class="m-auto" />
 		</button>
 	</div>
 	<Toaster

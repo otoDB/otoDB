@@ -16,7 +16,7 @@ export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wa
 export const clickOutside = (node: HTMLElement) => {
 	const handleClick = (event: MouseEvent) => {
 		if (!node.contains(event.target as Node)) {
-			node.dispatchEvent(new CustomEvent('Outclick'));
+			node.dispatchEvent(new CustomEvent('outclick'));
 		}
 	};
 

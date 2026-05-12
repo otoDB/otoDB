@@ -54,12 +54,10 @@
 	class={[
 		className,
 		'bg-otodb-bg-faint/90 fixed top-0 left-0 z-2 m-0 flex h-full max-w-[85vw] flex-col gap-y-2 overflow-y-auto p-8 md:visible md:relative md:w-min md:min-w-64 md:bg-transparent md:p-0 md:after:content-none',
-		{
-			invisible: !isMobileNavOpen
-		}
+		!isMobileNavOpen && 'invisible'
 	]}
 	use:clickOutside
-	onoutclick={() => (isMobileNavOpen = false)}
+	onoutclick={closeMobileNav}
 >
 	<form target="_self" method="get" action="/{search_type}" class="flex w-full">
 		<select bind:value={search_type} class="bg-otodb-bg-faint/75 pl-1">
@@ -122,10 +120,8 @@
 					<Bell
 						size={16}
 						class={[
-							'ml-1',
-							user.notifs_count > 0
-								? 'text-otodb-content-fainter'
-								: 'text-otodb-content-primary opacity-25'
+							'text-otodb-content-fainter ml-1',
+							user.notifs_count > 0 && 'fill-current'
 						]}
 					/>
 				</a>

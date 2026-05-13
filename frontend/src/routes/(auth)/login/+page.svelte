@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Section from '$lib/Section.svelte';
+	import { submission_state } from '$lib/submission_state.svelte';
 
 	let { form } = $props();
 	import { m } from '$lib/paraglide/messages.js';
 	import { callErrorToast } from '$lib/toast';
+
+	const submission = submission_state();
 
 	$effect(() => {
 		if (form?.missing) {
@@ -14,7 +17,7 @@
 </script>
 
 <Section title={m.inner_stale_anteater_walk()}>
-	<form method="POST" use:enhance>
+	<form method="POST" use:enhance={submission.enhance}>
 		<table>
 			<tbody>
 				<tr>
@@ -30,6 +33,10 @@
 		<address>
 			<a href="/reset_password">{m.zippy_tense_raven_favor()}</a>
 		</address>
-		<input type="submit" value={m.inner_stale_anteater_walk()} />
+		<input
+			type="submit"
+			value={m.inner_stale_anteater_walk()}
+			disabled={submission.is_submitting}
+		/>
 	</form>
 </Section>

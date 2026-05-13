@@ -6,10 +6,13 @@
 	import { Rating, type components } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import { submission_state } from '$lib/submission_state.svelte';
 	import TagsEditor from '$lib/TagsEditor.svelte';
 	import WorkField from '$lib/WorkField.svelte';
 
 	let { data } = $props();
+
+	const submission = submission_state();
 
 	let mode: 'create' | 'bind' = $state('create');
 	let sourceArray = $derived([data.source]);
@@ -157,7 +160,7 @@
 		</div>
 
 		{#if mode === 'create'}
-			<form method="POST" action="?/create" use:enhance>
+			<form method="POST" action="?/create" use:enhance={submission.enhance}>
 				<table>
 					<tbody>
 						<tr>
@@ -211,10 +214,10 @@
 						</tr>
 					</tbody>
 				</table>
-				<input type="submit" />
+				<input type="submit" disabled={submission.is_submitting} />
 			</form>
 		{:else}
-			<form method="POST" action="?/bind" use:enhance>
+			<form method="POST" action="?/bind" use:enhance={submission.enhance}>
 				<input type="hidden" name="source_url" value={data.source.url} />
 				<table>
 					<tbody>
@@ -224,7 +227,7 @@
 						</tr>
 					</tbody>
 				</table>
-				<input type="submit" />
+				<input type="submit" disabled={submission.is_submitting} />
 			</form>
 		{/if}
 	{/if}

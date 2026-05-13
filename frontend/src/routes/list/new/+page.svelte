@@ -5,8 +5,11 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import { enhance } from '$app/forms';
+	import { submission_state } from '$lib/submission_state.svelte';
 
 	let { data, form } = $props();
+
+	const submission = submission_state();
 </script>
 
 <Section
@@ -18,7 +21,7 @@
 			: [])
 	]}
 >
-	<form use:enhance method="POST">
+	<form use:enhance={submission.enhance} method="POST">
 		<table>
 			<tbody>
 				<tr
@@ -33,6 +36,6 @@
 				>
 			</tbody>
 		</table>
-		<input type="submit" />
+		<input type="submit" disabled={submission.is_submitting} />
 	</form>
 </Section>

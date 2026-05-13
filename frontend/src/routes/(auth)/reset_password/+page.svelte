@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Section from '$lib/Section.svelte';
+	import { submission_state } from '$lib/submission_state.svelte';
 
 	let { data, form } = $props();
 	import { m } from '$lib/paraglide/messages.js';
 	import { callErrorToast } from '$lib/toast';
+
+	const submission = submission_state();
 
 	$effect(() => {
 		if (form?.missing) {
@@ -20,7 +23,7 @@
 	{#if form?.reset_success}
 		<p>{m.stock_jolly_crocodile_cheer()}</p>
 	{:else if data.token || data.user}
-		<form method="POST" use:enhance action="?/reset">
+		<form method="POST" use:enhance={submission.enhance} action="?/reset">
 			<table>
 				<tbody>
 					<tr>
@@ -34,12 +37,12 @@
 				</tbody>
 			</table>
 			<input hidden type="text" name="token" value={data.token} />
-			<input type="submit" />
+			<input type="submit" disabled={submission.is_submitting} />
 		</form>
 	{:else if form?.success}
 		<p>{m.grand_lucky_halibut_chop()}</p>
 	{:else}
-		<form method="POST" use:enhance action="?/request">
+		<form method="POST" use:enhance={submission.enhance} action="?/request">
 			<table>
 				<tbody>
 					<tr>
@@ -48,7 +51,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<input type="submit" />
+			<input type="submit" disabled={submission.is_submitting} />
 		</form>
 	{/if}
 </Section>

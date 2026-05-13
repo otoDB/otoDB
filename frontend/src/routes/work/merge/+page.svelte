@@ -10,6 +10,9 @@
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';
 	import { getDisplayText } from '$lib/ui';
+	import { submission_state } from '$lib/submission_state.svelte';
+
+	const submission = submission_state();
 
 	let work: Record<
 		'a' | 'b',
@@ -80,7 +83,7 @@
 
 <Section title={m.heroic_same_wasp_conquer()}>
 	<GuidelineWarning />
-	<form method="POST" use:enhance>
+	<form method="POST" use:enhance={submission.enhance}>
 		<table>
 			<tbody>
 				<tr
@@ -278,6 +281,9 @@
 			name="thumbnail_source_id"
 		/>
 		<input hidden type="number" name="rating" value={work[selectingRating].rating} />
-		<input type="submit" disabled={!work['a'].work || !work['b'].work} />
+		<input
+			type="submit"
+			disabled={submission.is_submitting || !work['a'].work || !work['b'].work}
+		/>
 	</form>
 </Section>

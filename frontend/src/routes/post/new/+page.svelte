@@ -8,8 +8,11 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { PostCategory } from '$lib/schema.js';
+	import { submission_state } from '$lib/submission_state.svelte';
 
 	let { data } = $props();
+
+	const submission = submission_state();
 
 	let md = $state('');
 	let previewHtml = $derived(renderMarkdown(md));
@@ -24,7 +27,7 @@
 </script>
 
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
-	<form method="POST" use:enhance>
+	<form method="POST" use:enhance={submission.enhance}>
 		<table>
 			<tbody
 				><tr
@@ -71,6 +74,6 @@
 				{@html previewHtml}
 			</div>
 		</div>
-		<input type="submit" />
+		<input type="submit" disabled={submission.is_submitting} />
 	</form>
 </Section>

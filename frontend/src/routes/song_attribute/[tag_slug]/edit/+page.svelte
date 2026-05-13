@@ -11,8 +11,11 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { locales } from '$lib/paraglide/runtime';
 	import { SongTagCategory, TagTypes } from '$lib/schema.js';
+	import { submission_state } from '$lib/submission_state.svelte';
 
 	let { data, form } = $props();
+
+	const submission = submission_state();
 
 	let category: SongTagCategory = $state(
 		(form?.category ? +form.category : null) ?? data.tag?.category
@@ -83,7 +86,7 @@
 	<GuidelineWarning />
 	<form
 		method="POST"
-		use:enhance
+		use:enhance={submission.enhance}
 		action="?/edit"
 		use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }}
 	>
@@ -111,7 +114,7 @@
 				</tr>
 			</tbody>
 		</table>
-		<input type="submit" />
+		<input type="submit" disabled={submission.is_submitting} />
 	</form>
 	<button onclick={del}>{m.proof_merry_chicken_bump()}</button>
 </Section>

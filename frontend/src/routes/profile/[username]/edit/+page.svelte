@@ -8,10 +8,13 @@
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, ProfileConnectionTypes } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
+	import { submission_state } from '$lib/submission_state.svelte';
 	import Time from '$lib/Time.svelte';
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	let { data } = $props();
+
+	const submission = submission_state();
 
 	let urls = $state(
 		data.connections
@@ -62,10 +65,10 @@
 			</tbody>
 		</table>
 	</details>
-	<form action="?/connections" method="POST" use:enhance>
+	<form action="?/connections" method="POST" use:enhance={submission.enhance}>
 		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
 		></textarea>
-		<input type="submit" />
+		<input type="submit" disabled={submission.is_submitting} />
 	</form>
 </Section>
 

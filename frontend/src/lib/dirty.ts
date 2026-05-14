@@ -150,7 +150,8 @@ export const dirtyEnhance = (
 					handler = await props.custom_submit({
 						...input,
 						cancel: () => {
-							cancelled = false;
+							cancelled = true;
+							cancel();
 						}
 					});
 					delete node.dataset.dirty;
@@ -161,6 +162,7 @@ export const dirtyEnhance = (
 			if (cancelled) {
 				cancel();
 				node.inert = false;
+				return;
 			}
 
 			return async (output) => {

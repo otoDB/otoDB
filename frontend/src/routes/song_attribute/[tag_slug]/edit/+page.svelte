@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import Section from '$lib/Section.svelte';
@@ -11,11 +10,8 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { locales } from '$lib/paraglide/runtime';
 	import { SongTagCategory, TagTypes } from '$lib/schema.js';
-	import { submission_state } from '$lib/submission_state.svelte';
 
 	let { data, form } = $props();
-
-	const submission = submission_state();
 
 	let category: SongTagCategory = $state(
 		(form?.category ? +form.category : null) ?? data.tag?.category
@@ -84,12 +80,7 @@
 
 <Section title={data.tag.name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form
-		method="POST"
-		use:enhance={submission.enhance}
-		action="?/edit"
-		use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }}
-	>
+	<form method="POST" action="?/edit" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }}>
 		<table>
 			<tbody>
 				<tr>
@@ -114,7 +105,7 @@
 				</tr>
 			</tbody>
 		</table>
-		<input type="submit" disabled={submission.is_submitting} />
+		<input type="submit" />
 	</form>
 	<button onclick={del}>{m.proof_merry_chicken_bump()}</button>
 </Section>

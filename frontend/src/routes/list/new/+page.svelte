@@ -4,12 +4,9 @@
 	import { Levels } from '$lib/schema';
 
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
-	import { submission_state } from '$lib/submission_state.svelte';
+	import { dirtyEnhance } from '$lib/dirty';
 
 	let { data, form } = $props();
-
-	const submission = submission_state();
 </script>
 
 <Section
@@ -21,7 +18,7 @@
 			: [])
 	]}
 >
-	<form use:enhance={submission.enhance} method="POST">
+	<form use:dirtyEnhance method="POST">
 		<table>
 			<tbody>
 				<tr
@@ -36,6 +33,6 @@
 				>
 			</tbody>
 		</table>
-		<input type="submit" disabled={submission.is_submitting} />
+		<input type="submit" />
 	</form>
 </Section>

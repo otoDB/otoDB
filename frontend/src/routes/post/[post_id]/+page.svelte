@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import { dirtyEnhance } from '$lib/dirty';
 	import EditedBy from '$lib/EditedBy.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import Section from '$lib/Section.svelte';
-	import { submission_state } from '$lib/submission_state.svelte';
 	import Time from '$lib/Time.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
@@ -111,8 +110,6 @@
 	const cancelEdit = () => {
 		isEditing = false;
 	};
-
-	const submission = submission_state();
 </script>
 
 <svelte:head>
@@ -138,17 +135,12 @@
 		<form
 			method="POST"
 			action="?/edit"
-			use:enhance={async (input) => {
-				const handler = await submission.enhance(input);
-				if (!handler) return;
-				return async (output) => {
-					if (output.result.type === 'success') {
+			use:dirtyEnhance={() => {
+				return async ({ update, result }) => {
+					if (result.type === 'success') {
 						isEditing = false;
 					}
-					await handler({
-						...output,
-						update: (opts) => output.update({ reset: false, ...opts })
-					});
+					await update({ reset: false });
 				};
 			}}
 		>
@@ -179,11 +171,7 @@
 				</div>
 			</div>
 			<div class="mt-2 flex gap-2">
-				<input
-					type="submit"
-					value={m.last_late_penguin_bubble()}
-					disabled={submission.is_submitting}
-				/>
+				<input type="submit" value={m.last_late_penguin_bubble()} />
 				<button type="button" onclick={cancelEdit}>{m.lower_whole_gopher_fulfill()}</button>
 			</div>
 		</form>

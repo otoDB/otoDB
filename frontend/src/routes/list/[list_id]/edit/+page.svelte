@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { debounce, getDisplayText } from '$lib/ui';
 	import client from '$lib/api';
 	import { goto } from '$app/navigation';
@@ -9,12 +9,9 @@
 	import { callSavingToast } from '$lib/toast';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
-	import { submission_state } from '$lib/submission_state.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 
 	let { data, form } = $props();
-
-	const submission = submission_state();
 
 	let entries = $derived.by(() => {
 		// https://github.com/sveltejs/svelte/issues/16189
@@ -88,7 +85,7 @@
 </script>
 
 <Section title={data.list.name} type={m.stale_loose_squid_cut()} menuLinks={data.links}>
-	<form use:enhance={submission.enhance} method="POST">
+	<form use:dirtyEnhance method="POST">
 		<table>
 			<tbody>
 				<tr
@@ -104,7 +101,7 @@
 				>
 			</tbody>
 		</table>
-		<input type="submit" disabled={submission.is_submitting} />
+		<input type="submit" />
 	</form>
 	<form action="/list/{data.list.id}/delete">
 		<button data-sveltekit-preload-data="tap">{m.key_sea_chicken_boost()}</button>

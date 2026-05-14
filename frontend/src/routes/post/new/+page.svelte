@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import Section from '$lib/Section.svelte';
 	import { buildEntityRoutes, enumValues } from '$lib/enums';
 	import { languages } from '$lib/enums/language.js';
@@ -8,11 +8,8 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { PostCategory } from '$lib/schema.js';
-	import { submission_state } from '$lib/submission_state.svelte';
 
 	let { data } = $props();
-
-	const submission = submission_state();
 
 	let md = $state('');
 	let previewHtml = $derived(renderMarkdown(md));
@@ -27,7 +24,7 @@
 </script>
 
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
-	<form method="POST" use:enhance={submission.enhance}>
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody
 				><tr
@@ -74,6 +71,6 @@
 				{@html previewHtml}
 			</div>
 		</div>
-		<input type="submit" disabled={submission.is_submitting} />
+		<input type="submit" />
 	</form>
 </Section>

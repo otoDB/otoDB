@@ -1,20 +1,17 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { enumValues } from '$lib/enums.js';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { hasUserLevel, userLevelNames } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, ProfileConnectionTypes } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
-	import { submission_state } from '$lib/submission_state.svelte';
 	import Time from '$lib/Time.svelte';
 	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	let { data } = $props();
-
-	const submission = submission_state();
 
 	let urls = $state(
 		data.connections
@@ -65,10 +62,10 @@
 			</tbody>
 		</table>
 	</details>
-	<form action="?/connections" method="POST" use:enhance={submission.enhance}>
+	<form action="?/connections" method="POST" use:dirtyEnhance>
 		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
 		></textarea>
-		<input type="submit" disabled={submission.is_submitting} />
+		<input type="submit" />
 	</form>
 </Section>
 

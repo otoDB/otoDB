@@ -80,7 +80,9 @@
 		outline: none;
 		background-color: var(--otodb-color-bg-faint);
 		cursor: pointer;
-		&:disabled {
+
+		&:disabled,
+		[inert] & {
 			background-color: var(--otodb-color-bg-primary) !important;
 			color: var(--otodb-color-content-fainter);
 		}

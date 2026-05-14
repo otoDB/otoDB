@@ -1,13 +1,10 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { m } from '$lib/paraglide/messages.js';
 	import Section from '$lib/Section.svelte';
-	import { submission_state } from '$lib/submission_state.svelte';
 	import { callErrorToast } from '$lib/toast';
 
 	let { form } = $props();
-
-	const submission = submission_state();
 
 	$effect(() => {
 		if (form?.missing) {
@@ -20,7 +17,7 @@
 </script>
 
 <Section title={m.blue_whole_camel_type()}>
-	<form method="POST" use:enhance={submission.enhance}>
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody>
 				<tr>
@@ -48,6 +45,6 @@
 				</tr>
 			</tbody>
 		</table>
-		<input type="submit" value={m.blue_whole_camel_type()} disabled={submission.is_submitting} />
+		<input type="submit" value={m.blue_whole_camel_type()} />
 	</form>
 </Section>

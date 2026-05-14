@@ -5,14 +5,11 @@
 	import { Rating, WorkOrigin, type components } from '$lib/schema';
 	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import client from '$lib/api';
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';
 	import { getDisplayText } from '$lib/ui';
-	import { submission_state } from '$lib/submission_state.svelte';
-
-	const submission = submission_state();
 
 	let work: Record<
 		'a' | 'b',
@@ -83,7 +80,7 @@
 
 <Section title={m.heroic_same_wasp_conquer()}>
 	<GuidelineWarning />
-	<form method="POST" use:enhance={submission.enhance}>
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody>
 				<tr
@@ -281,9 +278,6 @@
 			name="thumbnail_source_id"
 		/>
 		<input hidden type="number" name="rating" value={work[selectingRating].rating} />
-		<input
-			type="submit"
-			disabled={submission.is_submitting || !work['a'].work || !work['b'].work}
-		/>
+		<input type="submit" disabled={!work['a'].work || !work['b'].work} />
 	</form>
 </Section>

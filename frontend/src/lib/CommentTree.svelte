@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, ModelsWithComments } from '$lib/schema';
-	import { submission_state } from '$lib/submission_state.svelte';
 	import Time from '$lib/Time.svelte';
 	import EditedBy from './EditedBy.svelte';
 
@@ -88,8 +87,6 @@
 		});
 		invalidateAll();
 	};
-
-	const submission = submission_state();
 </script>
 
 {#snippet reply(reply_to: string)}
@@ -97,11 +94,9 @@
 		class="reply-form gap-2"
 		method="POST"
 		action="/comments?/create"
-		use:enhance={async (input) => {
-			const handler = await submission.enhance(input);
-			if (!handler) return;
-			return async (output) => {
-				if (output.result.type === 'success') {
+		use:dirtyEnhance={() => {
+			return async ({ update, result }) => {
+				if (result.type === 'success') {
 					const comment_text = drafts[reply_to]?.trim();
 					if (comment_text) {
 						document
@@ -112,10 +107,7 @@
 						previewMode[reply_to] = false;
 					}
 				}
-				await handler({
-					...output,
-					update: (opts) => output.update({ reset: false, ...opts })
-				});
+				await update({ reset: false });
 			};
 		}}
 	>
@@ -141,12 +133,7 @@
 				<button type="button" class="h-15 p-3" onclick={() => togglePreview(reply_to)}>
 					{previewMode[reply_to] ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}
 				</button>
-				<input
-					type="submit"
-					class="h-15 p-3"
-					value={m.inner_solid_toad_zap()}
-					disabled={submission.is_submitting}
-				/>
+				<input type="submit" class="h-15 p-3" value={m.inner_solid_toad_zap()} />
 			</div>
 		</div>
 	</form>
@@ -175,17 +162,12 @@
 					class="edit-form"
 					method="POST"
 					action="/comments?/edit"
-					use:enhance={async (input) => {
-						const handler = await submission.enhance(input);
-						if (!handler) return;
-						return async (output) => {
-							if (output.result.type === 'success') {
+					use:dirtyEnhance={() => {
+						return async ({ update, result }) => {
+							if (result.type === 'success') {
 								cancelEdit();
 							}
-							await handler({
-								...output,
-								update: (opts) => output.update({ reset: false, ...opts })
-							});
+							await update({ reset: false });
 						};
 					}}
 				>
@@ -209,12 +191,7 @@
 							<button type="button" class="h-15 p-3" onclick={toggleEditPreview}>
 								{editPreviewMode ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}
 							</button>
-							<input
-								type="submit"
-								class="h-15 p-3"
-								value={m.last_late_penguin_bubble()}
-								disabled={submission.is_submitting}
-							/>
+							<input type="submit" class="h-15 p-3" value={m.last_late_penguin_bubble()} />
 							<button type="button" class="h-15 p-3" onclick={cancelEdit}>
 								{m.lower_whole_gopher_fulfill()}
 							</button>

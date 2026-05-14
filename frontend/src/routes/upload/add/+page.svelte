@@ -1,16 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { enumValues, PlatformNames } from '$lib/enums';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { Levels, Platform } from '$lib/schema.js';
-	import { submission_state } from '$lib/submission_state.svelte';
 
 	let { data, form } = $props();
 	let isUnavailable = $derived(!!data.unavailable_source);
-
-	const submission = submission_state();
 </script>
 
 <Section title={data.head.title}>
@@ -22,7 +19,7 @@
 			{/each}
 		</ul>
 	{/if}
-	<form method="POST" use:enhance={submission.enhance} class="mt-4">
+	<form method="POST" use:dirtyEnhance class="mt-4">
 		<table>
 			<tbody>
 				{#if !data.unavailable_source}
@@ -174,6 +171,6 @@
 				{/if}
 			</tbody>
 		</table>
-		<input disabled={submission.is_submitting} class="mt-4" type="submit" />
+		<input class="mt-4" type="submit" />
 	</form>
 </Section>

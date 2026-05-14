@@ -2,13 +2,10 @@
 	import Section from '$lib/Section.svelte';
 
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
-	import { submission_state } from '$lib/submission_state.svelte';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { callErrorToast } from '$lib/toast';
 
 	let { form } = $props();
-
-	const submission = submission_state();
 
 	$effect(() => {
 		if (form?.failed) {
@@ -31,7 +28,7 @@
 		<li>Bilibili Playlists</li>
 		<li>SoundCloud Playlists</li>
 	</ul>
-	<form use:enhance={submission.enhance} method="POST">
+	<form use:dirtyEnhance method="POST">
 		<table>
 			<tbody>
 				<tr
@@ -41,6 +38,6 @@
 				>
 			</tbody>
 		</table>
-		<input type="submit" disabled={submission.is_submitting} />
+		<input type="submit" />
 	</form>
 </Section>

@@ -15,28 +15,32 @@
 	let tags = $state(data.from),
 		selected = $state(''),
 		del = $state(false);
-
-	const submit = async () => {
-		const { error, data } = await client.POST('/api/tag/alias', {
-			fetch,
-			params: {
-				query: {
-					into_tag: selected,
-					delete: del,
-					type: TagTypes.song
-				}
-			},
-			body: tags
-		});
-		if (!error) await goto(`/song_attribute/${data.merged_slug}`, { invalidateAll: true });
-	};
 </script>
 
 <Section title={m.fine_maroon_seal_flip()}>
 	<GuidelineWarning />
 	<TagsField type="song" class="w-full" bind:value={tags} />
 	{#if tags.length}
-		<form method="POST" use:dirtyEnhance={{ submit }}>
+		<form
+			method="POST"
+			use:dirtyEnhance={{
+				custom_submit: async ({ cancel }) => {
+					cancel();
+					const { error, data } = await client.POST('/api/tag/alias', {
+						fetch,
+						params: {
+							query: {
+								into_tag: selected,
+								delete: del,
+								type: TagTypes.song
+							}
+						},
+						body: tags
+					});
+					if (!error) await goto(`/song_attribute/${data.merged_slug}`, { invalidateAll: true });
+				}
+			}}
+		>
 			{#if isSVO(getLocale())}
 				{m.male_gross_angelfish_reap()}
 			{/if}

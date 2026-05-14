@@ -107,7 +107,8 @@
 			method="POST"
 			inert={!!deniedInviteCreationReason}
 			use:dirtyEnhance={{
-				submit: async () => {
+				custom_submit: async ({ cancel }) => {
+					cancel();
 					await client.POST('/api/auth/invite', { fetch });
 					await invalidateAll();
 				}

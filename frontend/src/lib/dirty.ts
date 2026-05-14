@@ -22,35 +22,25 @@ export const dirtyClick =
 
 export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
 
-export type Barrier = {
+type Barrier = {
 	forms: HTMLFormElement[];
 	reached: ReturnType<typeof Promise.withResolvers<void>>[];
 };
 
-const dirty_failure = (dirty_forms: HTMLFormElement[], barrier: Partial<Barrier>) => {
-	dirty_forms.forEach((f) => {
-		f.inert = false;
-	});
-	barrier.forms = undefined;
-	barrier.reached = undefined;
+export type Control = {
+	barrier: { [K in keyof Barrier]?: never };
+	priority: number;
 };
 
 export const dirtyEnhance = (
 	node: HTMLFormElement,
-	props:
-		| {
-				barrier?: Partial<Barrier>;
-				priority?: number;
-				form?: any;
-				submit?: () => Promise<void>;
-		  }
-		| SubmitFunction
-		| undefined = undefined
+	props?: {
+		control?: Control;
+		form?: any;
+		custom_submit?: SubmitFunction;
+	}
 ) => {
-	const submit = typeof props === 'function' ? props : undefined;
-	if (typeof props === 'function') props = undefined;
-
-	node.dataset.priority = props?.priority?.toString();
+	node.dataset.priority = props?.control?.priority.toString();
 	node.addEventListener('change', () => {
 		node.dataset.dirty = 'true';
 	});
@@ -58,101 +48,94 @@ export const dirtyEnhance = (
 	return enhance(node, async (input) => {
 		const { cancel } = input;
 		const dirty_forms = Array.from(document.querySelectorAll('form')).filter(isFormDirty);
-		const me_dirty = node.dataset.dirty;
 
-		if (props?.barrier) {
-			const barrier = props.barrier;
-			// If we are the first form to reach the barrier (i.e. where the submit
-			// event came from):
-			const first = !barrier.reached?.length;
+		if (props?.control) {
+			const first = !Object.hasOwn(props.control.barrier, 'reached');
 			if (first) {
 				// Check HTML form validation (i.e. min/max, type, etc) before proceeding
 				if (!dirty_forms.every((f) => f.reportValidity())) {
 					cancel();
 					return;
 				}
-
+				dirty_forms.sort((a, b) => +(a.dataset.priority ?? 0) - +(b.dataset.priority ?? 0));
 				// Lock all forms and make locks for each form (resolvers)
 				dirty_forms.forEach((f) => {
 					f.inert = true;
 				});
-				barrier.forms = dirty_forms.toSorted(
-					(a, b) => +(a.dataset.priority ?? 0) - +(b.dataset.priority ?? 0)
-				);
-				barrier.reached = Array(barrier.forms.length)
-					.fill(null)
-					.map(() => Promise.withResolvers<void>());
+				(props.control.barrier as unknown as Barrier) = {
+					forms: dirty_forms,
+					reached: Array(dirty_forms.length)
+						.fill(null)
+						.map(() => Promise.withResolvers<void>())
+				};
 			}
 
-			// Submit forms in [start, end) sequentially, awaiting each lock.
-			// Note that other forms' submission logic is handled in the same function:
-			// they enter with first=false and just attach their own response handler.
-			const orchestrate = async (start: number, end: number) => {
-				for (let i = start; i < end; i++) {
-					barrier.forms![i].requestSubmit();
-					try {
-						await barrier.reached![i].promise;
-					} catch {
-						dirty_failure(dirty_forms, barrier);
-						return false;
-					}
-				}
-				return true;
-			};
+			const barrier = props.control.barrier as unknown as Barrier;
 
-			// Start orchestration of form submissions from the handler where the
-			// submit event came from (i.e. first form to reach the barrier)
-			if (me_dirty) {
-				// If we are dirty, then we need to include ourselves in the orchestration.
+			let orchestrator: AsyncGenerator | null = null;
+			if (first) {
+				// Submit forms in [start, end) sequentially, awaiting each lock.
+				// Note that other forms' submission logic is handled in the same function:
+				// they enter with first=false and just attach their own response handler.
 				const my_id = barrier.forms!.indexOf(node);
-				// Try submitting all forms with higher priority.
-				if (first && !(await orchestrate(0, my_id))) {
-					cancel();
-					return;
+				async function* make_orchestrator() {
+					for (let i = 0; i < barrier.forms.length; i++) {
+						barrier.forms![i].requestSubmit();
+						try {
+							if (i == my_id) yield;
+							await barrier.reached![i].promise;
+						} catch {
+							barrier.forms.forEach((f) => {
+								f.inert = false;
+							});
+							(barrier as Partial<Barrier>).forms = undefined;
+							(barrier as Partial<Barrier>).reached = undefined;
+							return false;
+						}
+					}
+					return true;
 				}
-				const { resolve, reject } = barrier.reached![my_id];
+				orchestrator = make_orchestrator();
+			}
 
-				// Try to submit self. On success, resolve our own lock and proceed
-				// to try submitting forms with lower priority.
-				if (props?.submit) {
-					// Caller drives its own POST; skip the action submission.
-					cancel();
+			const result = await orchestrator?.next();
+			if (!result || !result.done) {
+				// We must be dirty. Try to submit self and continue if applicable.
+				const my_id = barrier.forms!.indexOf(node);
+				const { resolve, reject } = barrier.reached![my_id];
+				let handler: null | Awaited<ReturnType<SubmitFunction>> = null;
+				if (props?.custom_submit) {
 					try {
-						await props.submit();
+						handler = await props.custom_submit(input);
+						resolve();
+						delete node.dataset.dirty;
 					} catch {
 						reject();
+						cancel();
 						return;
 					}
-					resolve();
-					delete node.dataset.dirty;
-					if (first) await orchestrate(my_id + 1, barrier.forms!.length);
-				} else
-					return async ({ update, result }) => {
-						if (result.type === 'success' || result.type === 'redirect') {
+				}
+				return async (output) => {
+					let updated = false;
+					const update: typeof output.update = async (options) => {
+						updated = true;
+						if (output.result.type === 'success' || output.result.type === 'redirect') {
 							resolve();
 							delete node.dataset.dirty;
-							if (first) {
-								await orchestrate(my_id + 1, barrier.forms!.length);
-								await update();
-							}
+							// Only do update if we are orchestrating
+							void ((await orchestrator?.next()) || (await output.update(options)));
 						} else {
 							reject();
-							if (props.form !== undefined && result) props.form = result;
+							await output.update(options);
 						}
 					};
-			} else {
-				// If we are not dirty: just proceed to try submitting forms in order
-				await orchestrate(0, barrier.forms!.length);
+					if (handler) await handler({ ...output, update });
+					if (!updated) await update();
+				};
 			}
 		} else {
 			// No barrier, just a simple double-submit guard and dirty check.
-			// Double-submit guard: form is already in flight
-			if (node.inert) {
-				cancel();
-				return;
-			}
-
-			// If there are any dirty forms (including self) and the user doesn't confirm, cancel the submit
+			// Cancel the submit if dirty and not confirmed
 			if (dirty_forms.some((f) => f !== node) && !confirm(m.active_lime_panther_buzz())) {
 				cancel();
 				return;
@@ -160,49 +143,37 @@ export const dirtyEnhance = (
 
 			node.inert = true;
 
-			// Caller drives its own POST; skip the action submission.
-			if (props?.submit) {
-				cancel();
+			let handler: null | Awaited<ReturnType<SubmitFunction>> = null;
+			let cancelled = false;
+			if (props?.custom_submit) {
 				try {
-					await props.submit();
+					handler = await props.custom_submit({
+						...input,
+						cancel: () => {
+							cancelled = false;
+						}
+					});
+					delete node.dataset.dirty;
 				} catch {
 					// caller handles its own errors
-				} finally {
-					node.inert = false;
 				}
-				return;
 			}
-
-			// Wrap `cancel` so we can detect if the caller's submit handler cancels
-			// and roll back the lock
-			let cancelled = false;
-			const original_cancel = input.cancel;
-			input.cancel = () => {
-				cancelled = true;
-				original_cancel();
-			};
-
-			let handler: Awaited<ReturnType<SubmitFunction>>;
-			try {
-				handler = await submit?.(input);
-			} catch (e) {
-				node.inert = false;
-				throw e;
-			}
-
 			if (cancelled) {
+				cancel();
 				node.inert = false;
-				return;
 			}
 
-			// Release the lock once the request finishes
 			return async (output) => {
-				try {
-					if (handler) await handler(output);
-					else await output.update();
-				} finally {
+				let updated = false;
+				const update: typeof output.update = async (options) => {
+					updated = true;
 					node.inert = false;
-				}
+					if (output.result.type === 'success' || output.result.type === 'redirect')
+						delete node.dataset.dirty;
+					await output.update(options);
+				};
+				if (handler) await handler({ ...output, update });
+				if (!updated) await update();
 			};
 		}
 	});

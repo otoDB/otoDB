@@ -135,13 +135,15 @@
 		<form
 			method="POST"
 			action="?/edit"
-			use:dirtyEnhance={() => {
-				return async ({ update, result }) => {
-					if (result.type === 'success') {
-						isEditing = false;
-					}
-					await update({ reset: false });
-				};
+			use:dirtyEnhance={{
+				custom_submit: () => {
+					return async ({ update, result }) => {
+						if (result.type === 'success') {
+							isEditing = false;
+						}
+						await update({ reset: false });
+					};
+				}
 			}}
 		>
 			<input type="hidden" name="lang" value={lang_view} />

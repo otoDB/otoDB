@@ -1,6 +1,6 @@
 <script lang="ts" generics="T extends 'work' | 'song'">
 	import { goto } from '$app/navigation';
-	import { dirtyEnhance, type Barrier } from '$lib/dirty';
+	import { dirtyEnhance, type Control } from '$lib/dirty';
 	import { isSOV } from '$lib/enums/language';
 	import type { ComponentProps } from 'svelte';
 	import client from '$lib/api';
@@ -21,10 +21,7 @@
 				: components['schemas']['SongRelationSchema'][],
 			{ id: string }[]
 		];
-		form_control: {
-			barrier: Partial<Barrier>;
-			priority: number;
-		};
+		form_control: Control;
 	}
 
 	let { this_id, init_relations, obj_type, form_control }: Props = $props();
@@ -47,19 +44,6 @@
 	let new_item: null | Work | Song = $state(null);
 
 	const endpoint = $derived(obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation');
-	const post_relations = async () => {
-		const { error } = await client.POST(endpoint, {
-			fetch,
-			params: { query: { this_id } },
-			body: relations.map((r) => ({
-				A_id: !r.swapped ? r.item.id : this_id!,
-				B_id: r.swapped ? r.item.id : this_id!,
-				relation: r.relation
-			}))
-		});
-		if (error) throw error;
-		await goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
-	};
 
 	const RelationType = $derived(obj_type === 'work' ? WorkRelationTypes : SongRelationTypes);
 	const Predicates = $derived(
@@ -84,7 +68,26 @@
 	{/if}
 {/snippet}
 
-<form method="POST" use:dirtyEnhance={{ ...form_control, submit: post_relations }}>
+<form
+	method="POST"
+	use:dirtyEnhance={{
+		...form_control,
+		custom_submit: async ({ cancel }) => {
+			cancel();
+			const { error } = await client.POST(endpoint, {
+				fetch,
+				params: { query: { this_id } },
+				body: relations.map((r) => ({
+					A_id: !r.swapped ? r.item.id : this_id!,
+					B_id: r.swapped ? r.item.id : this_id!,
+					relation: r.relation
+				}))
+			});
+			if (error) throw error;
+			await goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
+		}
+	}}
+>
 	<input type="submit" class="float-right" />
 	<div class="grid w-fit grid-cols-2 gap-3">
 		{#if obj_type === 'work'}

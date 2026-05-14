@@ -19,21 +19,6 @@
 	);
 
 	let missingCategories = $derived.by(() => getMissingCategories(Object.values(cache)));
-
-	const submit_tags = async () => {
-		await client.PUT('/api/work/set_tags', {
-			fetch,
-			params: { query: { work_id: data.id } },
-			body: tags
-				.filter((t) => cache[t])
-				.map((t) => ({
-					nameslug: cache[t].slug,
-					roles: cache[t].creator_roles,
-					sample: cache[t].sample
-				}))
-		});
-		await goto(`/work/${data.id}`, { invalidateAll: true });
-	};
 </script>
 
 <Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
@@ -47,7 +32,26 @@
 		</Banner>
 	{/if}
 	<GuidelineWarning />
-	<form method="POST" use:dirtyEnhance={{ submit: submit_tags }}>
+	<form
+		method="POST"
+		use:dirtyEnhance={{
+			custom_submit: async ({ cancel }) => {
+				cancel();
+				await client.PUT('/api/work/set_tags', {
+					fetch,
+					params: { query: { work_id: data.id } },
+					body: tags
+						.filter((t) => cache[t])
+						.map((t) => ({
+							nameslug: cache[t].slug,
+							roles: cache[t].creator_roles,
+							sample: cache[t].sample
+						}))
+				});
+				await goto(`/work/${data.id}`, { invalidateAll: true });
+			}
+		}}
+	>
 		<TagsEditor bind:tags bind:cache suggestions={data.suggestions} />
 		<input type="submit" />
 	</form>

@@ -34,31 +34,6 @@
 	let to_delete: string[] = $state([]);
 	let base = $state(data.tag.slug);
 
-	const submit_aliases = async () => {
-		const { error } = await client.POST('/api/tag/tag_aliases', {
-			fetch,
-			body: {
-				base_slug: base,
-				unalias_slugs: to_delete,
-				lang_prefs: Object.fromEntries(
-					Object.entries(tagLangPrefs).map(([k, v]) => [
-						languages[k as keyof typeof languages].id,
-						v
-					])
-				),
-				names: tagNames
-			},
-			params: {
-				query: {
-					type: TagTypes.song,
-					tag_slug: data.tag.slug
-				}
-			}
-		});
-		if (error) throw error;
-		await goto(`/song_attribute/${base}/`, { invalidateAll: true });
-	};
-
 	const del = async () => {
 		const { response } = await client.DELETE('/api/tag/tag', {
 			fetch,
@@ -77,7 +52,11 @@
 
 <Section title={data.tag.name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form method="POST" action="?/edit" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }}>
+	<form
+		method="POST"
+		action="?/edit"
+		use:dirtyEnhance={{ control: { barrier: form_barrier, priority: 0 } }}
+	>
 		<table>
 			<tbody>
 				<tr>
@@ -112,9 +91,32 @@
 	<form
 		method="POST"
 		use:dirtyEnhance={{
-			barrier: form_barrier,
-			priority: 1,
-			submit: submit_aliases
+			control: { barrier: form_barrier, priority: 1 },
+			custom_submit: async ({ cancel }) => {
+				cancel();
+				const { error } = await client.POST('/api/tag/tag_aliases', {
+					fetch,
+					body: {
+						base_slug: base,
+						unalias_slugs: to_delete,
+						lang_prefs: Object.fromEntries(
+							Object.entries(tagLangPrefs).map(([k, v]) => [
+								languages[k as keyof typeof languages].id,
+								v
+							])
+						),
+						names: tagNames
+					},
+					params: {
+						query: {
+							type: TagTypes.song,
+							tag_slug: data.tag.slug
+						}
+					}
+				});
+				if (error) throw error;
+				await goto(`/song_attribute/${base}/`, { invalidateAll: true });
+			}
 		}}
 	>
 		{#if data.aliases.length}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
+	import { dirtyClick } from '$lib/dirty';
 	import {
 		buildEntityRoutes,
 		MimeType,
@@ -151,14 +152,14 @@
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
 	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id !== '1'}<button
 			class="my-5"
-			onclick={async () => {
+			{@attach dirtyClick(async () => {
 				if (!confirm('Are you sure?')) return;
 				await client.POST('/api/history/rollback', {
 					fetch,
 					params: { query: { revision_id: data.revision.id } }
 				});
 				await invalidateAll();
-			}}>Revert changes made in this revision</button
+			})}>Revert changes made in this revision</button
 		>{/if}
 	{#if data.user && data.user.username !== data.revision.user}
 		<button

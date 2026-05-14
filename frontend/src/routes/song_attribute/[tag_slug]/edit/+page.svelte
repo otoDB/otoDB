@@ -4,7 +4,7 @@
 	import Section from '$lib/Section.svelte';
 	import TagField from '$lib/TagField.svelte';
 	import client from '$lib/api';
-	import { dirtyEnhance } from '$lib/dirty';
+	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import { enumValues, SongTagCategoryNames } from '$lib/enums';
 	import { languages } from '$lib/enums/language.js';
 	import { m } from '$lib/paraglide/messages.js';
@@ -104,7 +104,7 @@
 		</table>
 		<input type="submit" />
 	</form>
-	<button onclick={del}>{m.proof_merry_chicken_bump()}</button>
+	<button {@attach dirtyClick(del)}>{m.proof_merry_chicken_bump()}</button>
 </Section>
 
 <Section title={m.alive_lofty_opossum_laugh()}>

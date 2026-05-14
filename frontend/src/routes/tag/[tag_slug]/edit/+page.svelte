@@ -14,7 +14,7 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { dirtyEnhance } from '$lib/dirty';
+	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import {
 		MediaConnectionTypes,
 		ProfileConnectionTypes,
@@ -237,7 +237,7 @@
 		<input type="submit" />
 	</form>
 	<hr class="my-2" />
-	<button onclick={del}>{m.chunky_giant_quail_breathe()}</button>
+	<button {@attach dirtyClick(del)}>{m.chunky_giant_quail_breathe()}</button>
 </Section>
 
 {#if category === WorkTagCategory.Song && data.tag.category === WorkTagCategory.Song}

@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
+	import { dirtyClick } from '$lib/dirty';
 	import { m } from '$lib/paraglide/messages.js';
 
 	let { data } = $props();
@@ -84,10 +85,16 @@
 						<td><a href="/profile/{source.added_by.username}">{source.added_by.username}</a></td>
 						<td>{source.published_date ?? '-'}</td>
 						<td class="flex gap-2">
-							<button class="border px-2 py-0.5" onclick={() => approveSource(source.id)}>
+							<button
+								class="border px-2 py-0.5"
+								{@attach dirtyClick(() => approveSource(source.id))}
+							>
 								{m.lucky_bold_hornet_push()}
 							</button>
-							<button class="border px-2 py-0.5" onclick={() => rejectSource(source.id)}>
+							<button
+								class="border px-2 py-0.5"
+								{@attach dirtyClick(() => rejectSource(source.id))}
+							>
 								{m.alive_blue_marlin_push()}
 							</button>
 						</td>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { enumValues } from '$lib/enums.js';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { hasUserLevel, userLevelNames } from '$lib/enums/userLevel.js';
@@ -62,7 +62,7 @@
 			</tbody>
 		</table>
 	</details>
-	<form action="?/connections" method="POST" use:enhance>
+	<form action="?/connections" method="POST" use:dirtyEnhance>
 		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
 		></textarea>
 		<input type="submit" />
@@ -104,10 +104,14 @@
 			</table>
 		{/if}
 		<form
+			method="POST"
 			inert={!!deniedInviteCreationReason}
-			onsubmit={async () => {
-				await client.POST('/api/auth/invite', { fetch });
-				invalidateAll();
+			use:dirtyEnhance={{
+				custom_submit: async ({ cancel }) => {
+					cancel();
+					await client.POST('/api/auth/invite', { fetch });
+					await invalidateAll();
+				}
 			}}
 		>
 			{#if deniedInviteCreationReason?.reason === 'restricted invitee exists'}

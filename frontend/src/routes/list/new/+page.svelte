@@ -4,7 +4,7 @@
 	import { Levels } from '$lib/schema';
 
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 
 	let { data, form } = $props();
 </script>
@@ -18,7 +18,7 @@
 			: [])
 	]}
 >
-	<form use:enhance method="POST">
+	<form use:dirtyEnhance method="POST">
 		<table>
 			<tbody>
 				<tr

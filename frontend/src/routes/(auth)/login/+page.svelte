@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import Section from '$lib/Section.svelte';
 
 	let { form } = $props();
@@ -14,7 +14,7 @@
 </script>
 
 <Section title={m.inner_stale_anteater_walk()}>
-	<form method="POST" use:enhance>
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody>
 				<tr>

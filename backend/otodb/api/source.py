@@ -67,9 +67,12 @@ class WorkSourceMetadataSchema(Schema):
 
 @source_router.post('unbind', auth=django_auth)
 @user_is_editor
+@transaction.atomic
 @with_revision_route(Route.WORKSOURCE_UNBIND)
 def unbind_source(request: AuthedHttpRequest, source_id: OtodbID):
-	src = get_object_or_404(WorkSource.objects, id=source_id)
+	src = get_object_or_404(
+		WorkSource.objects.select_for_update(of=('self',)), id=source_id
+	)
 	if src.media.worksource_set.count() == 1:
 		src.media.delete()
 	src.media = None
@@ -158,6 +161,8 @@ def new_source_from_url(
 
 	if src is None:
 		raise ApiError(400, ErrorCode.BAD_URL)
+
+	src = WorkSource.objects.select_for_update(of=('self',)).get(pk=src.pk)
 
 	# Source already has a work -> redirect
 	if src.media:
@@ -319,19 +324,29 @@ def reject_pending_source(src: WorkSource, by, reason: str):
 
 @source_router.post('reject', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
+@transaction.atomic
 @with_revision_route(Route.WORKSOURCE_REJECT)
 def reject_source(request: AuthedHttpRequest, source_id: OtodbID, reason: str):
 	"""Reject a pending source on an existing work. Unbinds the source."""
-	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
+	src = get_object_or_404(
+		WorkSource.objects.select_for_update(of=('self',)),
+		id=source_id,
+		is_pending=True,
+	)
 	ensure_can_moderate(request.user, src.media)
 	reject_pending_source(src, by=request.user, reason=reason)
 
 
 @source_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
+@transaction.atomic
 def approve_source(request: AuthedHttpRequest, source_id: OtodbID):
 	"""Approve a pending source on an existing work."""
-	src = get_object_or_404(WorkSource.objects, id=source_id, is_pending=True)
+	src = get_object_or_404(
+		WorkSource.objects.select_for_update(of=('self',)),
+		id=source_id,
+		is_pending=True,
+	)
 	ensure_can_moderate(request.user, src.media)
 	src.is_pending = False
 	src.save(update_fields=['is_pending'])

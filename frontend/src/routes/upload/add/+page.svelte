@@ -1,21 +1,13 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { enumValues, PlatformNames } from '$lib/enums';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { Levels, Platform } from '$lib/schema.js';
 
 	let { data, form } = $props();
 	let isUnavailable = $derived(!!data.unavailable_source);
-
-	let submitting = $state(false);
-
-	$effect(() => {
-		if (form?.failed) {
-			submitting = false;
-		}
-	});
 </script>
 
 <Section title={data.head.title}>
@@ -27,14 +19,7 @@
 			{/each}
 		</ul>
 	{/if}
-	<form
-		method="POST"
-		use:enhance={({ cancel }) => {
-			if (submitting) return cancel();
-			submitting = true;
-		}}
-		class="mt-4"
-	>
+	<form method="POST" use:dirtyEnhance class="mt-4">
 		<table>
 			<tbody>
 				{#if !data.unavailable_source}
@@ -186,6 +171,6 @@
 				{/if}
 			</tbody>
 		</table>
-		<input disabled={submitting} class="mt-4" type="submit" />
+		<input class="mt-4" type="submit" />
 	</form>
 </Section>

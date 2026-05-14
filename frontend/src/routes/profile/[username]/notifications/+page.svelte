@@ -4,6 +4,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import Time from '$lib/Time.svelte';
 	import client from '$lib/api';
+	import { dirtyClick } from '$lib/dirty';
 	import { buildEntityRoutes } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/enums/language';
 	import { routeNames } from '$lib/enums/route.js';
@@ -19,7 +20,7 @@
 				fetch,
 				params: { query: { notif_id: id } }
 			});
-		goto(target, { invalidateAll: true });
+		await goto(target, { invalidateAll: true });
 	};
 
 	const remove = async (id: string) => {
@@ -27,7 +28,7 @@
 			fetch,
 			params: { query: { notif_id: id } }
 		});
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 
@@ -44,7 +45,9 @@
 								{@const route = buildEntityRoutes(n.comment[0], n.comment[1])}
 								<td class={{ 'opacity-40': n.dismissed }}>{m.curly_these_mule_ascend()}</td>
 								<td class={{ 'opacity-40': n.dismissed }}>
-									<button onclick={() => dismiss(n.id, n.dismissed, route)}>{route} </button>
+									<button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, route))}
+										>{route}
+									</button>
 								</td>
 							{:else if n.post}
 								<td class={{ 'opacity-40': n.dismissed }}
@@ -55,7 +58,7 @@
 											: m.curly_these_mule_ascend()}</td
 								>
 								<td class={{ 'opacity-40': n.dismissed }}
-									><button onclick={() => dismiss(n.id, n.dismissed, `/post/${n.post}`)}
+									><button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, `/post/${n.post}`))}
 										>/post/{n.post}</button
 									></td
 								>
@@ -64,7 +67,7 @@
 								><Time format="relative" date={n.created_at} /></td
 							>
 							<td
-								>{#if n.dismissed}<button onclick={() => remove(n.id)}
+								>{#if n.dismissed}<button {@attach dirtyClick(() => remove(n.id))}
 										>{m.even_alert_grebe_taste()}</button
 									>{/if}</td
 							>
@@ -89,7 +92,8 @@
 					{#each data.sub_notifications.items as n, i (i)}
 						<tr>
 							<td class={{ 'opacity-40': n.dismissed }}
-								><button onclick={() => dismiss(n.id, n.dismissed, `/revision/${n.revision}`)}
+								><button
+									{@attach dirtyClick(() => dismiss(n.id, n.dismissed, `/revision/${n.revision}`))}
 									>#{n.revision}</button
 								>
 							</td>
@@ -111,7 +115,7 @@
 								><Time format="relative" date={n.created_at} /></td
 							>
 							<td
-								>{#if n.dismissed}<button onclick={() => remove(n.id)}
+								>{#if n.dismissed}<button {@attach dirtyClick(() => remove(n.id))}
 										>{m.even_alert_grebe_taste()}</button
 									>{/if}</td
 							>

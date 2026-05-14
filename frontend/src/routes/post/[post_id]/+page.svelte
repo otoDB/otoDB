@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import { dirtyEnhance } from '$lib/dirty';
 	import EditedBy from '$lib/EditedBy.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import Section from '$lib/Section.svelte';
@@ -135,13 +135,15 @@
 		<form
 			method="POST"
 			action="?/edit"
-			use:enhance={() => {
-				return async ({ update, result }) => {
-					if (result.type === 'success') {
-						isEditing = false;
-					}
-					await update({ reset: false });
-				};
+			use:dirtyEnhance={{
+				custom_submit: () => {
+					return async ({ update, result }) => {
+						if (result.type === 'success') {
+							isEditing = false;
+						}
+						await update({ reset: false });
+					};
+				}
 			}}
 		>
 			<input type="hidden" name="lang" value={lang_view} />

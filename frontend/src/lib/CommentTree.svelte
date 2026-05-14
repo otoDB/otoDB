@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
@@ -85,7 +85,7 @@
 			fetch,
 			params: { query: { comment_id, model, pk } }
 		});
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 
@@ -94,21 +94,23 @@
 		class="reply-form gap-2"
 		method="POST"
 		action="/comments?/create"
-		use:enhance={() => {
-			return async ({ update, result }) => {
-				if (result.type === 'success') {
-					const comment_text = drafts[reply_to]?.trim();
-					if (comment_text) {
-						document
-							.querySelectorAll('.reply-toggle')
-							.forEach((e) => ((e as HTMLInputElement).checked = false));
-						drafts[reply_to] = '';
-						previews[reply_to] = '';
-						previewMode[reply_to] = false;
+		use:dirtyEnhance={{
+			custom_submit: () => {
+				return async ({ update, result }) => {
+					if (result.type === 'success') {
+						const comment_text = drafts[reply_to]?.trim();
+						if (comment_text) {
+							document
+								.querySelectorAll('.reply-toggle')
+								.forEach((e) => ((e as HTMLInputElement).checked = false));
+							drafts[reply_to] = '';
+							previews[reply_to] = '';
+							previewMode[reply_to] = false;
+						}
 					}
-				}
-				await update({ reset: false });
-			};
+					await update({ reset: false });
+				};
+			}
 		}}
 	>
 		<input type="text" name="model" hidden value={model} />
@@ -162,13 +164,15 @@
 					class="edit-form"
 					method="POST"
 					action="/comments?/edit"
-					use:enhance={() => {
-						return async ({ update, result }) => {
-							if (result.type === 'success') {
-								cancelEdit();
-							}
-							await update({ reset: false });
-						};
+					use:dirtyEnhance={{
+						custom_submit: () => {
+							return async ({ update, result }) => {
+								if (result.type === 'success') {
+									cancelEdit();
+								}
+								await update({ reset: false });
+							};
+						}
 					}}
 				>
 					<input type="hidden" name="comment_id" value={data.id} />

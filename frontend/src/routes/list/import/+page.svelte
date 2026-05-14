@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { callErrorToast } from '$lib/toast';
 
 	let { form } = $props();
@@ -28,7 +28,7 @@
 		<li>Bilibili Playlists</li>
 		<li>SoundCloud Playlists</li>
 	</ul>
-	<form use:enhance method="POST">
+	<form use:dirtyEnhance method="POST">
 		<table>
 			<tbody>
 				<tr

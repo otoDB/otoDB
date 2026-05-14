@@ -14,7 +14,7 @@
 			params: { query: { song_id: data.tag.song!.id } },
 			body: tags
 		});
-		goto(`/tag/${data.tag.slug}`, { invalidateAll: true });
+		await goto(`/tag/${data.tag.slug}`, { invalidateAll: true });
 	};
 </script>
 

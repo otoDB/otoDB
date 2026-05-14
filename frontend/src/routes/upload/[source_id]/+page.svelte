@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
@@ -157,7 +157,7 @@
 		</div>
 
 		{#if mode === 'create'}
-			<form method="POST" action="?/create" use:enhance>
+			<form method="POST" action="?/create" use:dirtyEnhance>
 				<table>
 					<tbody>
 						<tr>
@@ -214,7 +214,7 @@
 				<input type="submit" />
 			</form>
 		{:else}
-			<form method="POST" action="?/bind" use:enhance>
+			<form method="POST" action="?/bind" use:dirtyEnhance>
 				<input type="hidden" name="source_url" value={data.source.url} />
 				<table>
 					<tbody>

@@ -2,6 +2,7 @@
 	import client from '$lib/api';
 	import Banner from '$lib/Banner.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import { dirtyClick } from '$lib/dirty';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {
 		PlatformNames,
@@ -149,26 +150,26 @@
 			{#if data.user.level >= 40}
 				<button
 					class="border border-green-600 px-3 py-1 text-green-600"
-					onclick={async () => {
+					{@attach dirtyClick(async () => {
 						const { error } = await client.POST('/api/work/approve', {
 							fetch,
 							params: { query: { work_id: data.id } }
 						});
 						if (!error) location.reload();
-					}}
+					})}
 				>
 					Approve
 				</button>
 				<button
 					class="border px-3 py-1"
-					onclick={async () => {
+					{@attach dirtyClick(async () => {
 						const reason = prompt(m.honest_tangy_butterfly_dream());
 						if (!reason) return;
 						await client.POST('/api/work/disapprove', {
 							fetch,
 							params: { query: { work_id: data.id, reason: reason } }
 						});
-					}}
+					})}
 				>
 					{m.alive_blue_marlin_push()}
 				</button>
@@ -176,14 +177,14 @@
 			{#if data.user.level >= 50}
 				<button
 					class="border border-red-600 px-3 py-1 text-red-600"
-					onclick={async () => {
+					{@attach dirtyClick(async () => {
 						if (!confirm(m.cool_house_barbel_cheer())) return;
 						const { error } = await client.POST('/api/work/resolve', {
 							fetch,
 							params: { query: { work_id: data.id } }
 						});
 						if (!error) location.reload();
-					}}
+					})}
 				>
 					{m.proof_deft_reindeer_smile()}
 				</button>
@@ -292,7 +293,7 @@
 										<th class="w-24">{m.nimble_gaudy_scallop_fold()}</th>
 										<td>
 											<button
-												onclick={async () => {
+												{@attach dirtyClick(async () => {
 													const reason = prompt(m.royal_big_chipmunk_absorb());
 													if (!reason?.trim()) {
 														// Show message
@@ -310,7 +311,7 @@
 														}
 													});
 													if (!error) location.reload();
-												}}
+												})}
 											>
 												{m.nimble_gaudy_scallop_fold()}
 											</button>
@@ -322,7 +323,7 @@
 										<th class="w-24">{m.key_last_racoon_clasp()}</th>
 										<td>
 											<button
-												onclick={async () => {
+												{@attach dirtyClick(async () => {
 													const reason = prompt(m.zippy_dark_mayfly_cut());
 													if (!reason?.trim()) {
 														// Show message
@@ -340,7 +341,7 @@
 														}
 													});
 													if (!error) location.reload();
-												}}
+												})}
 											>
 												{m.key_last_racoon_clasp()}
 											</button>

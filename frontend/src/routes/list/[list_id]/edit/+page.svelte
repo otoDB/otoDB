@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
+	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import { debounce, getDisplayText } from '$lib/ui';
 	import client from '$lib/api';
 	import { goto } from '$app/navigation';
@@ -85,7 +85,7 @@
 </script>
 
 <Section title={data.list.name} type={m.stale_loose_squid_cut()} menuLinks={data.links}>
-	<form use:enhance method="POST">
+	<form use:dirtyEnhance method="POST">
 		<table>
 			<tbody>
 				<tr
@@ -107,7 +107,7 @@
 		<button data-sveltekit-preload-data="tap">{m.key_sea_chicken_boost()}</button>
 	</form>
 	{#if data.list.upstream}
-		<button onclick={pull}>{m.honest_tiny_sparrow_gaze()}</button>
+		<button {@attach dirtyClick(pull)}>{m.honest_tiny_sparrow_gaze()}</button>
 	{/if}
 </Section>
 <Section title={m.bald_clear_marlin_grasp()}>
@@ -156,7 +156,7 @@
 							></textarea>
 						</td>
 						<td>
-							<button type="button" onclick={() => delete_item(i)}>
+							<button type="button" {@attach dirtyClick(() => delete_item(i))}>
 								{m.even_alert_grebe_taste()}
 							</button>
 						</td>

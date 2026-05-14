@@ -6,7 +6,7 @@
 	import Section from '$lib/Section.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import client from '$lib/api';
-	import { dirtyEnhance } from '$lib/dirty';
+	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
@@ -27,7 +27,7 @@
 				fetch,
 				params: { query: { work_id: data.id } }
 			});
-			goto('/upload', { invalidateAll: true });
+			await goto('/upload', { invalidateAll: true });
 		}
 	};
 	const unbind = async (source_id: string) => {
@@ -35,8 +35,8 @@
 			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
 		await client.POST('/api/upload/unbind', { fetch, params: { query: { source_id } } });
-		if (data.sources?.length === 1) goto('/upload');
-		else invalidateAll();
+		if (data.sources?.length === 1) await goto('/upload');
+		else await invalidateAll();
 	};
 	const updateStatus = async (source_id: string, origin: number) => {
 		const p = client.PUT('/api/upload/origin', {
@@ -178,7 +178,7 @@
 							{src.thumbnail ? m.full_best_canary_view() : m.simple_less_marlin_enchant()}
 						</td>
 						<td
-							><button type="button" onclick={() => unbind(src.id)}
+							><button type="button" {@attach dirtyClick(() => unbind(src.id))}
 								>{m.sour_lime_shad_edit()}</button
 							></td
 						><td>
@@ -198,7 +198,7 @@
 		</table>
 	</div>
 	{#if hasUserLevel(data.user?.level, Levels.Admin)}
-		<button onclick={del}>{m.suave_less_deer_grip()}</button>
+		<button {@attach dirtyClick(del)}>{m.suave_less_deer_grip()}</button>
 	{/if}
 </Section>
 

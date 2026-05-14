@@ -763,7 +763,9 @@ def sources(request: AuthedHttpRequest, work_id: OtodbID):
 @with_revision_route(Route.MEDIAWORK_CREATE)
 def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	"""Creates a MediaWork from a source with user-chosen metadata and tags."""
-	src = get_object_or_404(WorkSource.objects, id=payload.source_id)
+	src = get_object_or_404(
+		WorkSource.objects.select_for_update(of=('self',)), id=payload.source_id
+	)
 	if src.media is not None:
 		raise ApiError(409, ErrorCode.SOURCE_HAS_WORK)
 

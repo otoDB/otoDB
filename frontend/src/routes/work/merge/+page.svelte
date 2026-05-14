@@ -5,7 +5,7 @@
 	import { Rating, WorkOrigin, type components } from '$lib/schema';
 	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import client from '$lib/api';
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';
@@ -80,7 +80,7 @@
 
 <Section title={m.heroic_same_wasp_conquer()}>
 	<GuidelineWarning />
-	<form method="POST" use:enhance>
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody>
 				<tr

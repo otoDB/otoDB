@@ -14,7 +14,7 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { dirtyEnhance } from '$lib/dirty';
+	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import {
 		MediaConnectionTypes,
 		ProfileConnectionTypes,
@@ -74,34 +74,6 @@
 	);
 	let to_delete: string[] = $state([]);
 	let base = $state(data.tag.slug);
-	const aliases_post_gate = { p: Promise.withResolvers<void>() };
-
-	const submit_aliases = async () => {
-		await aliases_post_gate.p.promise;
-		const { error } = await client.POST('/api/tag/tag_aliases', {
-			fetch,
-			body: {
-				base_slug: base,
-				unalias_slugs: to_delete,
-				lang_prefs: Object.fromEntries(
-					Object.entries(tagLangPrefs).map(([k, v]) => [
-						languages[k as keyof typeof languages].id,
-						v
-					])
-				),
-				names: tagNames
-			},
-			params: {
-				query: {
-					type: TagTypes.work,
-					tag_slug: data.tag.slug
-				}
-			}
-		});
-		if (error) {
-			aliases_post_gate.p = Promise.withResolvers<void>();
-		} else goto(`/tag/${base}/`, { invalidateAll: true });
-	};
 
 	let urls = $state(
 		[
@@ -126,7 +98,7 @@
 			fetch,
 			params: { query: { tag_slug: data.tag.slug } }
 		});
-		if (response.ok) goto('/', { invalidateAll: true });
+		if (response.ok) await goto('/', { invalidateAll: true });
 	};
 
 	let previewHtml = $derived(renderMarkdown(mds[wikiView] ?? ''));
@@ -240,7 +212,7 @@
 		<input type="submit" />
 	</form>
 	<hr class="my-2" />
-	<button onclick={del}>{m.chunky_giant_quail_breathe()}</button>
+	<button {@attach dirtyClick(del)}>{m.chunky_giant_quail_breathe()}</button>
 </Section>
 
 {#if category === WorkTagCategory.Song && data.tag.category === WorkTagCategory.Song}
@@ -266,9 +238,32 @@
 		use:dirtyEnhance={{
 			barrier: form_barrier,
 			priority: 2,
-			manual_post: aliases_post_gate
+			custom_submit: async ({ cancel }) => {
+				cancel();
+				const { error } = await client.POST('/api/tag/tag_aliases', {
+					fetch,
+					body: {
+						base_slug: base,
+						unalias_slugs: to_delete,
+						lang_prefs: Object.fromEntries(
+							Object.entries(tagLangPrefs).map(([k, v]) => [
+								languages[k as keyof typeof languages].id,
+								v
+							])
+						),
+						names: tagNames
+					},
+					params: {
+						query: {
+							type: TagTypes.work,
+							tag_slug: data.tag.slug
+						}
+					}
+				});
+				if (error) throw error;
+				await goto(`/tag/${base}/`, { invalidateAll: true });
+			}
 		}}
-		onsubmit={submit_aliases}
 	>
 		{#if data.details.aliases.length}
 			<table>

@@ -22,7 +22,7 @@ export const dirtyClick =
 
 export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
 
-type Orchestrator = AsyncGenerator<void, boolean, boolean>;
+type Orchestrator = AsyncGenerator<void, void, null | (() => Promise<void> | void)>;
 type Barrier = {
 	orchestrator: Orchestrator;
 };
@@ -74,68 +74,75 @@ export const dirtyEnhance = (
 						Promise.withResolvers<void>());
 				const my_id = dirty_forms.indexOf(node);
 				async function* make_orchestrator(): Orchestrator {
-					for (let i = 0; i < dirty_forms.length; i++) {
-						if (i !== my_id) dirty_forms![i].requestSubmit();
-						else void (resolve_orchestrator && resolve_orchestrator());
-						if (!(yield)) {
-							dirty_forms.forEach((f) => {
-								f.inert = false;
-							});
-							(props?.control?.barrier as Partial<Barrier>).orchestrator = undefined;
-							return false;
+					if (dirty_forms.length === 0) {
+						const handler = yield;
+						if (handler) await handler();
+					} else
+						for (let i = 0; i < dirty_forms.length; i++) {
+							if (i !== my_id) dirty_forms![i].requestSubmit();
+							else void (resolve_orchestrator && resolve_orchestrator());
+							const handler = yield;
+							if (handler) {
+								await handler();
+								return;
+							}
 						}
-					}
-					return true;
+					return;
 				}
 				const orchestrator = make_orchestrator();
 				(props.control.barrier as unknown as Barrier) = { orchestrator };
-				orchestrator.next(true); // kickoff
+				orchestrator.next(); // kickoff
 			}
 
-			const orchestrator = (props.control.barrier as unknown as Barrier).orchestrator;
+			const barrier = props.control.barrier as unknown as Barrier;
+			const fail = () => {
+				dirty_forms.forEach((f) => {
+					f.inert = false;
+				});
+				(barrier as Partial<Barrier>).orchestrator = undefined;
+			};
+			const orchestrator = barrier.orchestrator;
 
 			if (orchestrating_lock) await orchestrating_lock;
 
-			if (node.dataset.dirty) {
-				let handler: null | Awaited<ReturnType<SubmitFunction>> = null;
-				if (props?.custom_submit) {
-					try {
-						let cancelled = false;
-						handler = await props.custom_submit({
-							...input,
-							cancel: () => {
-								cancelled = true;
-							}
-						});
-						if (cancelled) {
-							delete node.dataset.dirty;
-							cancel();
-							orchestrator.next(true);
+			let handler: null | Awaited<ReturnType<SubmitFunction>> = null;
+			if (props?.custom_submit) {
+				try {
+					let cancelled = false;
+					handler = await props.custom_submit({
+						...input,
+						cancel: () => {
+							cancelled = true;
 						}
-					} catch {
+					});
+					if (cancelled) {
+						delete node.dataset.dirty;
 						cancel();
-						orchestrator.next(false);
-						return;
+						orchestrator.next();
 					}
+				} catch {
+					cancel();
+					orchestrator.next(fail);
+					return;
 				}
-				return async (output) => {
-					let updated = false;
-					const update: typeof output.update = async (options) => {
-						updated = true;
-						if (output.result.type === 'success' || output.result.type === 'redirect') {
-							delete node.dataset.dirty;
-							orchestrator.next(true);
-							// Only do update if we are orchestrating
-							void (orchestrating_lock && (await output.update(options)));
-						} else {
-							orchestrator.next(false);
-							await output.update(options);
-						}
-					};
-					if (handler) await handler({ ...output, update });
-					if (!updated) await update();
-				};
 			}
+			return async (output) => {
+				let updated = false;
+				const update: typeof output.update = async (options) => {
+					updated = true;
+					if (output.result.type === 'success' || output.result.type === 'redirect') {
+						delete node.dataset.dirty;
+						// Only do update if we are first
+						orchestrator.next(first ? () => output.update(options) : null);
+					} else
+						orchestrator.next(async () => {
+							fail();
+							await output.update(options);
+						});
+				};
+				if (handler) await handler({ ...output, update });
+				if (!updated) await update();
+			};
 		} else {
 			// No barrier, just a simple double-submit guard and dirty check.
 			// Cancel the submit if dirty and not confirmed

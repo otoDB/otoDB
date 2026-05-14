@@ -87,7 +87,6 @@ export const dirtyEnhance = (
 								return;
 							}
 						}
-					return;
 				}
 				const orchestrator = make_orchestrator();
 				(props.control.barrier as unknown as Barrier) = { orchestrator };

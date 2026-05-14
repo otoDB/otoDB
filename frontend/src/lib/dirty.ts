@@ -25,6 +25,7 @@ export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.
 type Orchestrator = AsyncGenerator<void, void, null | (() => Promise<void> | void)>;
 type Barrier = {
 	orchestrator: Orchestrator;
+	forms: HTMLFormElement[];
 };
 
 export type Control = {
@@ -44,6 +45,12 @@ export const dirtyEnhance = (
 		node.dataset.dirty = 'true';
 	});
 
+	if (props?.barrier) {
+		const barrier = props.barrier as unknown as Barrier;
+		if (!barrier.forms) (barrier as Partial<Barrier>).forms = [];
+		barrier.forms.push(node);
+	}
+
 	return enhance(node, async (input) => {
 		const { cancel } = input;
 		const dirty_forms = Array.from(document.querySelectorAll('form')).filter(isFormDirty);
@@ -58,11 +65,10 @@ export const dirtyEnhance = (
 					return;
 				}
 				dirty_forms.sort((a, b) => +(a.dataset.priority ?? 0) - +(b.dataset.priority ?? 0));
-				// Lock all forms and make locks for each form (resolvers)
-				dirty_forms.forEach((f) => {
+				// Lock all related forms (not just dirty ones)
+				(props.barrier as unknown as Barrier).forms.forEach((f) => {
 					f.inert = true;
 				});
-				node.inert = true;
 
 				// Submit forms in [start, end) sequentially, awaiting each lock.
 				// Note that other forms' submission logic is handled in the same function:
@@ -95,10 +101,9 @@ export const dirtyEnhance = (
 
 			const barrier = props.barrier as unknown as Barrier;
 			const fail = () => {
-				dirty_forms.forEach((f) => {
+				barrier.forms.forEach((f) => {
 					f.inert = false;
 				});
-				node.inert = false;
 				(barrier as Partial<Barrier>).orchestrator = undefined;
 			};
 			const orchestrator = barrier.orchestrator;

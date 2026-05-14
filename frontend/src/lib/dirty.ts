@@ -20,10 +20,12 @@ const dirty_failure = (dirty_forms: HTMLFormElement[], barrier: Partial<Barrier>
 export const dirtyEnhance = (
 	node: HTMLFormElement,
 	props:
-		| ({
-				barrier: Partial<Barrier>;
-				priority: number;
-		  } & { form?: any; submit?: () => Promise<void> })
+		| {
+				barrier?: Partial<Barrier>;
+				priority?: number;
+				form?: any;
+				submit?: () => Promise<void>;
+		  }
 		| SubmitFunction
 		| undefined = undefined
 ) => {
@@ -138,6 +140,19 @@ export const dirtyEnhance = (
 			}
 
 			node.inert = true;
+
+			// Caller drives its own POST; skip the action submission.
+			if (props?.submit) {
+				cancel();
+				try {
+					await props.submit();
+				} catch {
+					// caller handles its own errors
+				} finally {
+					node.inert = false;
+				}
+				return;
+			}
 
 			// Wrap `cancel` so we can detect if the caller's submit handler cancels
 			// and roll back the lock

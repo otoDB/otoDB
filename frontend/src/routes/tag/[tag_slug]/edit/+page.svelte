@@ -97,7 +97,7 @@
 			}
 		});
 		if (error) throw error;
-		goto(`/tag/${base}/`, { invalidateAll: true });
+		await goto(`/tag/${base}/`, { invalidateAll: true });
 	};
 
 	let urls = $state(

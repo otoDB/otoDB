@@ -58,7 +58,7 @@
 			}))
 		});
 		if (error) throw error;
-		goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
+		await goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
 	};
 
 	const RelationType = $derived(obj_type === 'work' ? WorkRelationTypes : SongRelationTypes);

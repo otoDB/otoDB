@@ -104,10 +104,13 @@
 			</table>
 		{/if}
 		<form
+			method="POST"
 			inert={!!deniedInviteCreationReason}
-			onsubmit={async () => {
-				await client.POST('/api/auth/invite', { fetch });
-				invalidateAll();
+			use:dirtyEnhance={{
+				submit: async () => {
+					await client.POST('/api/auth/invite', { fetch });
+					await invalidateAll();
+				}
 			}}
 		>
 			{#if deniedInviteCreationReason?.reason === 'restricted invitee exists'}

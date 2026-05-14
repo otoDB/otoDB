@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import client from '$lib/api.js';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
@@ -19,8 +20,7 @@
 
 	let missingCategories = $derived.by(() => getMissingCategories(Object.values(cache)));
 
-	const submit_tags = async (e: SubmitEvent) => {
-		e.preventDefault();
+	const submit_tags = async () => {
 		await client.PUT('/api/work/set_tags', {
 			fetch,
 			params: { query: { work_id: data.id } },
@@ -32,7 +32,7 @@
 					sample: cache[t].sample
 				}))
 		});
-		goto(`/work/${data.id}`, { invalidateAll: true });
+		await goto(`/work/${data.id}`, { invalidateAll: true });
 	};
 </script>
 
@@ -47,7 +47,7 @@
 		</Banner>
 	{/if}
 	<GuidelineWarning />
-	<form onsubmit={submit_tags}>
+	<form method="POST" use:dirtyEnhance={{ submit: submit_tags }}>
 		<TagsEditor bind:tags bind:cache suggestions={data.suggestions} />
 		<input type="submit" />
 	</form>

@@ -56,7 +56,7 @@
 			}
 		});
 		if (error) throw error;
-		goto(`/song_attribute/${base}/`, { invalidateAll: true });
+		await goto(`/song_attribute/${base}/`, { invalidateAll: true });
 	};
 
 	const del = async () => {

@@ -4,6 +4,7 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import client from '$lib/api';
 	import { goto } from '$app/navigation';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
@@ -14,14 +15,13 @@
 		selected = $state(''),
 		del = $state(false);
 
-	const submit = async (e: SubmitEvent) => {
-		e.preventDefault();
+	const submit = async () => {
 		const { error, data } = await client.POST('/api/tag/alias', {
 			fetch,
 			params: { query: { into_tag: selected, delete: del } },
 			body: tags
 		});
-		if (!error) goto(`/tag/${data.merged_slug}/edit`, { invalidateAll: true });
+		if (!error) await goto(`/tag/${data.merged_slug}/edit`, { invalidateAll: true });
 	};
 </script>
 
@@ -29,7 +29,7 @@
 	<GuidelineWarning />
 	<TagsField type="work" class="w-full" bind:value={tags} />
 	{#if tags.length}
-		<form onsubmit={submit}>
+		<form method="POST" use:dirtyEnhance={{ submit }}>
 			{#if isSVO(getLocale())}
 				{m.male_gross_angelfish_reap()}
 			{/if}

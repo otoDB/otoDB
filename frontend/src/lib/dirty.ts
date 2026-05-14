@@ -70,9 +70,6 @@ export const dirtyEnhance = (
 					f.inert = true;
 				});
 
-				// Submit forms in [start, end) sequentially, awaiting each lock.
-				// Note that other forms' submission logic is handled in the same function:
-				// they enter with first=false and just attach their own response handler.
 				let resolve_orchestrator: null | ReturnType<typeof Promise.withResolvers<void>>['resolve'] =
 					null;
 				if (node.dataset.dirty)

@@ -35,12 +35,11 @@ export type Control = {
 export const dirtyEnhance = (
 	node: HTMLFormElement,
 	props?: {
-		control?: Control;
 		form?: any;
 		custom_submit?: SubmitFunction;
-	}
+	} & (Control | { [K in keyof Control]?: never })
 ) => {
-	node.dataset.priority = props?.control?.priority.toString();
+	if (props?.priority) node.dataset.priority = props.priority.toString();
 	node.addEventListener('change', () => {
 		node.dataset.dirty = 'true';
 	});
@@ -49,8 +48,8 @@ export const dirtyEnhance = (
 		const { cancel } = input;
 		const dirty_forms = Array.from(document.querySelectorAll('form')).filter(isFormDirty);
 
-		if (props?.control) {
-			const first = !Object.hasOwn(props.control.barrier, 'orchestrator');
+		if (props?.barrier) {
+			const first = !Object.hasOwn(props.barrier, 'orchestrator');
 			let orchestrating_lock: Promise<void> | null = null;
 			if (first) {
 				// Check HTML form validation before proceeding
@@ -77,23 +76,23 @@ export const dirtyEnhance = (
 					if (dirty_forms.length === 0) {
 						const handler = yield;
 						if (handler) await handler();
-					} else
+					} else {
+						const handlers = [];
 						for (let i = 0; i < dirty_forms.length; i++) {
 							if (i !== my_id) dirty_forms![i].requestSubmit();
 							else void (resolve_orchestrator && resolve_orchestrator());
 							const handler = yield;
-							if (handler) {
-								await handler();
-								return;
-							}
+							if (handler) handlers.push(handler);
 						}
+						for (const handler of handlers) await handler();
+					}
 				}
 				const orchestrator = make_orchestrator();
-				(props.control.barrier as unknown as Barrier) = { orchestrator };
+				(props.barrier as unknown as Barrier).orchestrator = orchestrator;
 				orchestrator.next(); // kickoff
 			}
 
-			const barrier = props.control.barrier as unknown as Barrier;
+			const barrier = props.barrier as unknown as Barrier;
 			const fail = () => {
 				dirty_forms.forEach((f) => {
 					f.inert = false;
@@ -121,7 +120,7 @@ export const dirtyEnhance = (
 					}
 				} catch {
 					cancel();
-					orchestrator.next(fail);
+					fail();
 					return;
 				}
 			}
@@ -133,11 +132,10 @@ export const dirtyEnhance = (
 						delete node.dataset.dirty;
 						// Only do update if we are first
 						orchestrator.next(first ? () => output.update(options) : null);
-					} else
-						orchestrator.next(async () => {
-							fail();
-							await output.update(options);
-						});
+					} else {
+						fail();
+						await output.update(options);
+					}
 				};
 				if (handler) await handler({ ...output, update });
 				if (!updated) await update();

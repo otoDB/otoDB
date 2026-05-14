@@ -108,11 +108,7 @@
 
 <Section title={data.tag.name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form
-		method="POST"
-		use:dirtyEnhance={{ control: { barrier: form_barrier, priority: 0 } }}
-		action="?/edit"
-	>
+	<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }} action="?/edit">
 		{#if data.tag.category === WorkTagCategory.Song && category !== WorkTagCategory.Song}
 			<p class="text-red-500">
 				{m.front_game_porpoise_pout()}
@@ -240,7 +236,8 @@
 	<form
 		method="POST"
 		use:dirtyEnhance={{
-			control: { barrier: form_barrier, priority: 2 },
+			barrier: form_barrier,
+			priority: 2,
 			custom_submit: async ({ cancel }) => {
 				cancel();
 				const { error } = await client.POST('/api/tag/tag_aliases', {
@@ -361,7 +358,7 @@
 	<form
 		action="?/wiki_page"
 		method="POST"
-		use:dirtyEnhance={{ control: { barrier: form_barrier, priority: 1 } }}
+		use:dirtyEnhance={{ barrier: form_barrier, priority: 1 }}
 	>
 		<input
 			type="text"
@@ -436,7 +433,7 @@
 	<form
 		action="?/connections"
 		method="POST"
-		use:dirtyEnhance={{ control: { barrier: form_barrier, priority: 3 } }}
+		use:dirtyEnhance={{ barrier: form_barrier, priority: 3 }}
 	>
 		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
 		></textarea>

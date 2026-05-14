@@ -53,11 +53,7 @@
 <Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
 	<GuidelineWarning />
 	<div class="flex text-xs">
-		<form
-			method="POST"
-			use:dirtyEnhance={{ control: { barrier: form_barrier, priority: 0 } }}
-			action="?/edit"
-		>
+		<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }} action="?/edit">
 			<table>
 				<tbody>
 					<tr

@@ -52,11 +52,7 @@
 
 <Section title={data.tag.name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form
-		method="POST"
-		action="?/edit"
-		use:dirtyEnhance={{ control: { barrier: form_barrier, priority: 0 } }}
-	>
+	<form method="POST" action="?/edit" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }}>
 		<table>
 			<tbody>
 				<tr>
@@ -91,7 +87,8 @@
 	<form
 		method="POST"
 		use:dirtyEnhance={{
-			control: { barrier: form_barrier, priority: 1 },
+			barrier: form_barrier,
+			priority: 1,
 			custom_submit: async ({ cancel }) => {
 				cancel();
 				const { error } = await client.POST('/api/tag/tag_aliases', {

@@ -50,7 +50,7 @@ export const dirtyEnhance = (
 		const dirty_forms = Array.from(document.querySelectorAll('form')).filter(isFormDirty);
 
 		if (props?.control) {
-			const first = !Object.hasOwn(props.control.barrier, 'reached');
+			const first = !Object.hasOwn(props.control.barrier, 'orchestrator');
 			let orchestrating_lock: Promise<void> | null = null;
 			if (first) {
 				// Check HTML form validation before proceeding

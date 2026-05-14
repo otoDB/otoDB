@@ -62,6 +62,7 @@ export const dirtyEnhance = (
 				dirty_forms.forEach((f) => {
 					f.inert = true;
 				});
+				node.inert = true;
 
 				// Submit forms in [start, end) sequentially, awaiting each lock.
 				// Note that other forms' submission logic is handled in the same function:
@@ -97,6 +98,7 @@ export const dirtyEnhance = (
 				dirty_forms.forEach((f) => {
 					f.inert = false;
 				});
+				node.inert = false;
 				(barrier as Partial<Barrier>).orchestrator = undefined;
 			};
 			const orchestrator = barrier.orchestrator;

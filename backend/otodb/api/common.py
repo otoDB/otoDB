@@ -711,7 +711,7 @@ MODIFIERS:     /[-]/
 TAG_MODIFIERS: /[\^]/
 SLUG:          /\w[\w-]*/u
 COMPARATOR:    ">=" | "<=" | ">" | "<"
-INT:           /\d+/
+INT:           /\d+(_\d+)*/
 _RANGE_EXC: "..."
 _RANGE_INC: ".."
 _LPAR:   "("

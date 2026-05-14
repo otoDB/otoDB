@@ -21,7 +21,7 @@
 			params: { query: { source_id: sourceId } }
 		});
 		if (error) return;
-		invalidateAll();
+		await invalidateAll();
 	};
 
 	const rejectSource = async (sourceId: string) => {
@@ -34,7 +34,7 @@
 			params: { query: { source_id: sourceId, reason } }
 		});
 		if (error) return;
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 

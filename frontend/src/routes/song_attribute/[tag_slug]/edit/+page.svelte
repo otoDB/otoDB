@@ -69,7 +69,7 @@
 				}
 			}
 		});
-		if (response.ok) goto('/', { invalidateAll: true });
+		if (response.ok) await goto('/', { invalidateAll: true });
 	};
 
 	const form_barrier = {};

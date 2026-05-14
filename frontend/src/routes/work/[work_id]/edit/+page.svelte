@@ -27,7 +27,7 @@
 				fetch,
 				params: { query: { work_id: data.id } }
 			});
-			goto('/upload', { invalidateAll: true });
+			await goto('/upload', { invalidateAll: true });
 		}
 	};
 	const unbind = async (source_id: string) => {
@@ -35,8 +35,8 @@
 			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
 		await client.POST('/api/upload/unbind', { fetch, params: { query: { source_id } } });
-		if (data.sources?.length === 1) goto('/upload');
-		else invalidateAll();
+		if (data.sources?.length === 1) await goto('/upload');
+		else await invalidateAll();
 	};
 	const updateStatus = async (source_id: string, origin: number) => {
 		const p = client.PUT('/api/upload/origin', {

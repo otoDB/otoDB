@@ -157,7 +157,7 @@
 					fetch,
 					params: { query: { revision_id: data.revision.id } }
 				});
-				invalidateAll();
+				await invalidateAll();
 			}}>Revert changes made in this revision</button
 		>{/if}
 	{#if data.user && data.user.username !== data.revision.user}

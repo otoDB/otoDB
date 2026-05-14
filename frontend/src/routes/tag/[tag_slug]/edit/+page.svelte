@@ -123,7 +123,7 @@
 			fetch,
 			params: { query: { tag_slug: data.tag.slug } }
 		});
-		if (response.ok) goto('/', { invalidateAll: true });
+		if (response.ok) await goto('/', { invalidateAll: true });
 	};
 
 	let previewHtml = $derived(renderMarkdown(mds[wikiView] ?? ''));

@@ -20,7 +20,7 @@
 			fetch,
 			params: { query: { request_id: data.id, status } }
 		});
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 

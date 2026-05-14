@@ -85,7 +85,7 @@
 			fetch,
 			params: { query: { comment_id, model, pk } }
 		});
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 

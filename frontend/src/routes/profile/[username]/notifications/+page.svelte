@@ -19,7 +19,7 @@
 				fetch,
 				params: { query: { notif_id: id } }
 			});
-		goto(target, { invalidateAll: true });
+		await goto(target, { invalidateAll: true });
 	};
 
 	const remove = async (id: string) => {
@@ -27,7 +27,7 @@
 			fetch,
 			params: { query: { notif_id: id } }
 		});
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 

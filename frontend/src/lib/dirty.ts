@@ -43,9 +43,10 @@ export const dirtyEnhance = (
 		const me_dirty = node.dataset.dirty;
 
 		if (props?.barrier) {
+			const barrier = props.barrier;
 			// If we are the first form to reach the barrier (i.e. where the submit
 			// event came from):
-			const first = !props?.barrier.reached?.length;
+			const first = !barrier.reached?.length;
 			if (first) {
 				// Check HTML form validation (i.e. min/max, type, etc) before proceeding
 				if (!dirty_forms.every((f) => f.reportValidity())) {
@@ -57,10 +58,10 @@ export const dirtyEnhance = (
 				dirty_forms.forEach((f) => {
 					f.inert = true;
 				});
-				props.barrier.forms = dirty_forms.toSorted(
+				barrier.forms = dirty_forms.toSorted(
 					(a, b) => +(a.dataset.priority ?? 0) - +(b.dataset.priority ?? 0)
 				);
-				props.barrier.reached = Array(props.barrier.forms.length)
+				barrier.reached = Array(barrier.forms.length)
 					.fill(null)
 					.map(() => Promise.withResolvers<void>());
 			}
@@ -70,11 +71,11 @@ export const dirtyEnhance = (
 			// they enter with first=false and just attach their own response handler.
 			const orchestrate = async (start: number, end: number) => {
 				for (let i = start; i < end; i++) {
-					props.barrier.forms![i].requestSubmit();
+					barrier.forms![i].requestSubmit();
 					try {
-						await props.barrier.reached![i].promise;
+						await barrier.reached![i].promise;
 					} catch {
-						dirty_failure(dirty_forms, props.barrier);
+						dirty_failure(dirty_forms, barrier);
 						return false;
 					}
 				}
@@ -85,13 +86,13 @@ export const dirtyEnhance = (
 			// submit event came from (i.e. first form to reach the barrier)
 			if (me_dirty) {
 				// If we are dirty, then we need to include ourselves in the orchestration.
-				const my_id = props.barrier.forms!.indexOf(node);
+				const my_id = barrier.forms!.indexOf(node);
 				// Try submitting all forms with higher priority.
 				if (first && !(await orchestrate(0, my_id))) {
 					cancel();
 					return;
 				}
-				const { resolve, reject } = props.barrier.reached![my_id];
+				const { resolve, reject } = barrier.reached![my_id];
 
 				// Try to submit self. On success, resolve our own lock and proceed
 				// to try submitting forms with lower priority.
@@ -106,14 +107,14 @@ export const dirtyEnhance = (
 					}
 					resolve();
 					delete node.dataset.dirty;
-					if (first) await orchestrate(my_id + 1, props.barrier.forms!.length);
+					if (first) await orchestrate(my_id + 1, barrier.forms!.length);
 				} else
 					return async ({ update, result }) => {
 						if (result.type === 'success' || result.type === 'redirect') {
 							resolve();
 							delete node.dataset.dirty;
 							if (first) {
-								await orchestrate(my_id + 1, props.barrier.forms!.length);
+								await orchestrate(my_id + 1, barrier.forms!.length);
 								await update();
 							}
 						} else {
@@ -123,7 +124,7 @@ export const dirtyEnhance = (
 					};
 			} else {
 				// If we are not dirty: just proceed to try submitting forms in order
-				await orchestrate(0, props.barrier.forms!.length);
+				await orchestrate(0, barrier.forms!.length);
 			}
 		} else {
 			// No barrier, just a simple double-submit guard and dirty check.

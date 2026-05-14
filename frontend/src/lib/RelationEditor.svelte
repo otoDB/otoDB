@@ -52,6 +52,9 @@
 
 	let new_item: null | Work | Song = $state(null);
 
+	let drag_active = $state(false);
+	let last_clicked_index: number | null = $state(null);
+
 	const any_selected = $derived(relations.some((r) => r.selected));
 	const all_selected = $derived(relations.length > 0 && relations.every((r) => r.selected));
 	const uniform_relation = $derived.by(() => {
@@ -102,6 +105,8 @@
 		{m.stout_frail_warbler_support()}{m.great_clean_beaver_amuse()}{#if obj_type === 'work'}{m.grand_merry_fly_succeed()}{:else if obj_type === 'song'}{m.grand_nice_pony_belong()}{/if}
 	{/if}
 {/snippet}
+
+<svelte:window onmouseup={() => (drag_active = false)} />
 
 <form
 	method="POST"
@@ -214,8 +219,31 @@
 					<td
 						><input
 							type="checkbox"
-							bind:checked={relation.selected}
-							onchange={(e) => e.stopPropagation()}
+							checked={relation.selected}
+							onclick={(e) => e.preventDefault()}
+							onmousedown={(e) => {
+								if (e.button !== 0) return;
+								if (e.shiftKey && last_clicked_index !== null) {
+									const new_state = !relation.selected;
+									const lo = Math.min(last_clicked_index, i);
+									const hi = Math.max(last_clicked_index, i);
+									for (let k = lo; k <= hi; k++) relations[k].selected = new_state;
+								} else {
+									relation.selected = !relation.selected;
+								}
+								last_clicked_index = i;
+								drag_active = true;
+							}}
+							onmouseenter={(e) => {
+								if (e.buttons !== 1 || !drag_active) return;
+								relation.selected = !relation.selected;
+							}}
+							onkeydown={(e) => {
+								if (e.key === ' ') {
+									e.preventDefault();
+									relation.selected = !relation.selected;
+								}
+							}}
 						/></td
 					>
 					<td class="w-64">{@render work(relation, !relation.swapped)}</td>

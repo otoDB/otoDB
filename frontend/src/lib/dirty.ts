@@ -22,9 +22,9 @@ export const dirtyClick =
 
 export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
 
+type Orchestrator = AsyncGenerator<void, boolean, boolean>;
 type Barrier = {
-	forms: HTMLFormElement[];
-	reached: ReturnType<typeof Promise.withResolvers<void>>[];
+	orchestrator: Orchestrator;
 };
 
 export type Control = {
@@ -51,8 +51,9 @@ export const dirtyEnhance = (
 
 		if (props?.control) {
 			const first = !Object.hasOwn(props.control.barrier, 'reached');
+			let orchestrating_lock: Promise<void> | null = null;
 			if (first) {
-				// Check HTML form validation (i.e. min/max, type, etc) before proceeding
+				// Check HTML form validation before proceeding
 				if (!dirty_forms.every((f) => f.reportValidity())) {
 					cancel();
 					return;
@@ -62,56 +63,58 @@ export const dirtyEnhance = (
 				dirty_forms.forEach((f) => {
 					f.inert = true;
 				});
-				(props.control.barrier as unknown as Barrier) = {
-					forms: dirty_forms,
-					reached: Array(dirty_forms.length)
-						.fill(null)
-						.map(() => Promise.withResolvers<void>())
-				};
-			}
 
-			const barrier = props.control.barrier as unknown as Barrier;
-
-			let orchestrator: AsyncGenerator | null = null;
-			if (first) {
 				// Submit forms in [start, end) sequentially, awaiting each lock.
 				// Note that other forms' submission logic is handled in the same function:
 				// they enter with first=false and just attach their own response handler.
-				const my_id = barrier.forms!.indexOf(node);
-				async function* make_orchestrator() {
-					for (let i = 0; i < barrier.forms.length; i++) {
-						barrier.forms![i].requestSubmit();
-						try {
-							if (i == my_id) yield;
-							await barrier.reached![i].promise;
-						} catch {
-							barrier.forms.forEach((f) => {
+				let resolve_orchestrator: null | ReturnType<typeof Promise.withResolvers<void>>['resolve'] =
+					null;
+				if (node.dataset.dirty)
+					({ promise: orchestrating_lock, resolve: resolve_orchestrator } =
+						Promise.withResolvers<void>());
+				const my_id = dirty_forms.indexOf(node);
+				async function* make_orchestrator(): Orchestrator {
+					for (let i = 0; i < dirty_forms.length; i++) {
+						if (i !== my_id) dirty_forms![i].requestSubmit();
+						else void (resolve_orchestrator && resolve_orchestrator());
+						if (!(yield)) {
+							dirty_forms.forEach((f) => {
 								f.inert = false;
 							});
-							(barrier as Partial<Barrier>).forms = undefined;
-							(barrier as Partial<Barrier>).reached = undefined;
+							(props?.control?.barrier as Partial<Barrier>).orchestrator = undefined;
 							return false;
 						}
 					}
 					return true;
 				}
-				orchestrator = make_orchestrator();
+				const orchestrator = make_orchestrator();
+				(props.control.barrier as unknown as Barrier) = { orchestrator };
+				orchestrator.next(true); // kickoff
 			}
 
-			const result = await orchestrator?.next();
-			if (!result || !result.done) {
-				// We must be dirty. Try to submit self and continue if applicable.
-				const my_id = barrier.forms!.indexOf(node);
-				const { resolve, reject } = barrier.reached![my_id];
+			const orchestrator = (props.control.barrier as unknown as Barrier).orchestrator;
+
+			if (orchestrating_lock) await orchestrating_lock;
+
+			if (node.dataset.dirty) {
 				let handler: null | Awaited<ReturnType<SubmitFunction>> = null;
 				if (props?.custom_submit) {
 					try {
-						handler = await props.custom_submit(input);
-						resolve();
-						delete node.dataset.dirty;
+						let cancelled = false;
+						handler = await props.custom_submit({
+							...input,
+							cancel: () => {
+								cancelled = true;
+							}
+						});
+						if (cancelled) {
+							delete node.dataset.dirty;
+							cancel();
+							orchestrator.next(true);
+						}
 					} catch {
-						reject();
 						cancel();
+						orchestrator.next(false);
 						return;
 					}
 				}
@@ -120,12 +123,12 @@ export const dirtyEnhance = (
 					const update: typeof output.update = async (options) => {
 						updated = true;
 						if (output.result.type === 'success' || output.result.type === 'redirect') {
-							resolve();
 							delete node.dataset.dirty;
+							orchestrator.next(true);
 							// Only do update if we are orchestrating
-							void ((await orchestrator?.next()) || (await output.update(options)));
+							void (orchestrating_lock && (await output.update(options)));
 						} else {
-							reject();
+							orchestrator.next(false);
 							await output.update(options);
 						}
 					};
@@ -151,7 +154,6 @@ export const dirtyEnhance = (
 						...input,
 						cancel: () => {
 							cancelled = true;
-							cancel();
 						}
 					});
 					delete node.dataset.dirty;

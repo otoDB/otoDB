@@ -697,17 +697,23 @@ attr_values: attr_value ("," attr_value)*
 attr_value: SLUG                                -> attr_value_pos
           | "-" SLUG                            -> attr_value_neg
 
-range_value: COMPARATOR INT     -> range_compare
-           | INT ".." INT       -> range_between
-           | INT ".."           -> range_min
-           | ".." INT           -> range_max
-           | INT                -> range_eq
+range_value: range_atom ("," range_atom)*
+range_atom: COMPARATOR INT      -> range_compare
+          | INT _RANGE_EXC INT  -> range_between_exc
+          | INT _RANGE_INC INT  -> range_between
+          | INT _RANGE_EXC      -> range_min
+          | INT _RANGE_INC      -> range_min
+          | _RANGE_EXC INT      -> range_max_exc
+          | _RANGE_INC INT      -> range_max
+          | INT                 -> range_eq
 
 MODIFIERS:     /[-]/
 TAG_MODIFIERS: /[\^]/
 SLUG:          /\w[\w-]*/u
 COMPARATOR:    ">=" | "<=" | ">" | "<"
 INT:           /\d+/
+_RANGE_EXC: "..."
+_RANGE_INC: ".."
 _LPAR:   "("
 _RPAR:   ")"
 _LBRACK: "["
@@ -723,27 +729,31 @@ _META_CONN: ":"
 """)
 
 
-def _parse_range_node(node):
+def _parse_range_atom(node):
 	match node.data, node.children:
 		case 'range_eq', (v,):
-			return 'exact', int(v)
+			return [('exact', int(v))]
 		case 'range_compare', ('>', v):
-			return 'gt', int(v)
+			return [('gt', int(v))]
 		case 'range_compare', ('>=', v):
-			return 'gte', int(v)
+			return [('gte', int(v))]
 		case 'range_compare', ('<', v):
-			return 'lt', int(v)
+			return [('lt', int(v))]
 		case 'range_compare', ('<=', v):
-			return 'lte', int(v)
+			return [('lte', int(v))]
 		case 'range_between', (lo, hi):
-			return 'range', (int(lo), int(hi))
+			return [('range', (int(lo), int(hi)))]
+		case 'range_between_exc', (lo, hi):
+			return [('gte', int(lo)), ('lt', int(hi))]
 		case 'range_min', (v,):
-			return 'gte', int(v)
+			return [('gte', int(v))]
 		case 'range_max', (v,):
-			return 'lte', int(v)
+			return [('lte', int(v))]
+		case 'range_max_exc', (v,):
+			return [('lt', int(v))]
 		case _:
 			raise ValueError(
-				f'unrecognized range_value: {node.data!r}/{node.children!r}'
+				f'unrecognized range_atom: {node.data!r}/{node.children!r}'
 			)
 
 
@@ -1002,8 +1012,11 @@ class AbstractTagTransformer(lark.Transformer):
 		metatag = v.data.value[:-5]
 		spec = self.metatag_grammars[metatag]
 		if spec.kind is int:
-			op, value = _parse_range_node(v.children[0])
-			return spec.to_q(op, value)
+			or_qs = [
+				reduce(operator.and_, (spec.to_q(op, val) for op, val in group))
+				for group in (_parse_range_atom(a) for a in v.children[0].children)
+			]
+			return reduce(operator.or_, or_qs)
 		if spec.kind is str:
 			return spec.to_q(str(v.children[0]))
 		E = spec.kind

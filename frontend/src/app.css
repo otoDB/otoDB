@@ -85,6 +85,7 @@
 		[inert] & {
 			background-color: var(--otodb-color-bg-primary) !important;
 			color: var(--otodb-color-content-fainter);
+			cursor: default;
 		}
 		&:hover {
 			background-color: var(--otodb-color-bg-fainter);

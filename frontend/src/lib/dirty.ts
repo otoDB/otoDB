@@ -1,6 +1,24 @@
 import { enhance } from '$app/forms';
 import { m } from '$lib/paraglide/messages';
 import type { SubmitFunction } from '@sveltejs/kit';
+import type { Attachment } from 'svelte/attachments';
+
+// Locks a button while its handler is in flight to prevent double-clicks.
+export const dirtyClick =
+	(handler: () => Promise<void>): Attachment<HTMLButtonElement> =>
+	(node) => {
+		const onclick = async () => {
+			if (node.disabled) return;
+			node.disabled = true;
+			try {
+				await handler();
+			} finally {
+				node.disabled = false;
+			}
+		};
+		node.addEventListener('click', onclick);
+		return () => node.removeEventListener('click', onclick);
+	};
 
 export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
 

@@ -74,10 +74,8 @@
 	);
 	let to_delete: string[] = $state([]);
 	let base = $state(data.tag.slug);
-	const aliases_post_gate = { p: Promise.withResolvers<void>() };
 
 	const submit_aliases = async () => {
-		await aliases_post_gate.p.promise;
 		const { error } = await client.POST('/api/tag/tag_aliases', {
 			fetch,
 			body: {
@@ -98,9 +96,8 @@
 				}
 			}
 		});
-		if (error) {
-			aliases_post_gate.p = Promise.withResolvers<void>();
-		} else goto(`/tag/${base}/`, { invalidateAll: true });
+		if (error) throw error;
+		goto(`/tag/${base}/`, { invalidateAll: true });
 	};
 
 	let urls = $state(
@@ -266,9 +263,8 @@
 		use:dirtyEnhance={{
 			barrier: form_barrier,
 			priority: 2,
-			manual_post: aliases_post_gate
+			submit: submit_aliases
 		}}
-		onsubmit={submit_aliases}
 	>
 		{#if data.details.aliases.length}
 			<table>

@@ -33,10 +33,8 @@
 	);
 	let to_delete: string[] = $state([]);
 	let base = $state(data.tag.slug);
-	const aliases_post_gate = { p: Promise.withResolvers<void>() };
 
 	const submit_aliases = async () => {
-		await aliases_post_gate.p.promise;
 		const { error } = await client.POST('/api/tag/tag_aliases', {
 			fetch,
 			body: {
@@ -57,9 +55,8 @@
 				}
 			}
 		});
-		if (error) {
-			aliases_post_gate.p = Promise.withResolvers<void>();
-		} else goto(`/song_attribute/${base}/`, { invalidateAll: true });
+		if (error) throw error;
+		goto(`/song_attribute/${base}/`, { invalidateAll: true });
 	};
 
 	const del = async () => {
@@ -117,9 +114,8 @@
 		use:dirtyEnhance={{
 			barrier: form_barrier,
 			priority: 1,
-			manual_post: aliases_post_gate
+			submit: submit_aliases
 		}}
-		onsubmit={submit_aliases}
 	>
 		{#if data.aliases.length}
 			<table>

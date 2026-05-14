@@ -23,7 +23,7 @@ export const dirtyEnhance = (
 		| ({
 				barrier: Partial<Barrier>;
 				priority: number;
-		  } & { form?: any; manual_post?: { p: ReturnType<typeof Promise.withResolvers<void>> } })
+		  } & { form?: any; submit?: () => Promise<void> })
 		| SubmitFunction
 		| undefined = undefined
 ) => {
@@ -39,8 +39,6 @@ export const dirtyEnhance = (
 		const { cancel } = input;
 		const dirty_forms = Array.from(document.querySelectorAll('form')).filter(isFormDirty);
 		const me_dirty = node.dataset.dirty;
-
-		if (props?.manual_post) cancel();
 
 		if (props?.barrier) {
 			// If we are the first form to reach the barrier (i.e. where the submit
@@ -64,55 +62,58 @@ export const dirtyEnhance = (
 					.fill(null)
 					.map(() => Promise.withResolvers<void>());
 			}
+
+			// Submit forms in [start, end) sequentially, awaiting each lock.
+			// Note that other forms' submission logic is handled in the same function:
+			// they enter with first=false and just attach their own response handler.
+			const orchestrate = async (start: number, end: number) => {
+				for (let i = start; i < end; i++) {
+					props.barrier.forms![i].requestSubmit();
+					try {
+						await props.barrier.reached![i].promise;
+					} catch {
+						dirty_failure(dirty_forms, props.barrier);
+						return false;
+					}
+				}
+				return true;
+			};
+
 			// Start orchestration of form submissions from the handler where the
 			// submit event came from (i.e. first form to reach the barrier)
 			if (me_dirty) {
 				// If we are dirty, then we need to include ourselves in the orchestration.
 				const my_id = props.barrier.forms!.indexOf(node);
-				if (first)
-					// Try submitting all forms with higher priority. Note that other
-					// forms' submission logic is handled in the same function! Those
-					// forms being orchestrated by the first form to reach the barrier
-					// will not try to submit other forms.
-					for (let i = 0; i < my_id; i++) {
-						props.barrier.forms![i].requestSubmit();
-						try {
-							await props.barrier.reached![i].promise;
-						} catch {
-							dirty_failure(dirty_forms, props.barrier);
-							props?.manual_post?.p.reject();
-							cancel();
-							return;
-						}
-					}
+				// Try submitting all forms with higher priority.
+				if (first && !(await orchestrate(0, my_id))) {
+					cancel();
+					return;
+				}
 				const { resolve, reject } = props.barrier.reached![my_id];
 
-				// Try to submit self. If successful (in on_success), resolve our own
-				// lock and proceed to try submitting forms with lower priority
-				const on_success = async () => {
+				// Try to submit self. On success, resolve our own lock and proceed
+				// to try submitting forms with lower priority.
+				if (props?.submit) {
+					// Caller drives its own POST; skip the action submission.
+					cancel();
+					try {
+						await props.submit();
+					} catch {
+						reject();
+						return;
+					}
 					resolve();
 					delete node.dataset.dirty;
-					if (first) {
-						for (let i = my_id + 1; i < props.barrier.reached!.length; i++) {
-							props.barrier.forms![i].requestSubmit();
-							try {
-								await props.barrier.reached![i].promise;
-							} catch {
-								dirty_failure(dirty_forms, props.barrier);
-								return;
-							}
-						}
-					}
-				};
-
-				if (props?.manual_post) {
-					props?.manual_post?.p.resolve();
-					on_success();
+					if (first) await orchestrate(my_id + 1, props.barrier.forms!.length);
 				} else
 					return async ({ update, result }) => {
 						if (result.type === 'success' || result.type === 'redirect') {
-							on_success();
-							if (first) await update();
+							resolve();
+							delete node.dataset.dirty;
+							if (first) {
+								await orchestrate(my_id + 1, props.barrier.forms!.length);
+								await update();
+							}
 						} else {
 							reject();
 							if (props.form !== undefined && result) props.form = result;
@@ -120,16 +121,7 @@ export const dirtyEnhance = (
 					};
 			} else {
 				// If we are not dirty: just proceed to try submitting forms in order
-				props.manual_post?.p.resolve();
-				for (let i = 0; i < props.barrier.forms!.length; i++) {
-					props.barrier.forms![i].requestSubmit();
-					try {
-						await props.barrier.reached![i].promise;
-					} catch {
-						dirty_failure(dirty_forms, props.barrier);
-						return;
-					}
-				}
+				await orchestrate(0, props.barrier.forms!.length);
 			}
 		} else {
 			// No barrier, just a simple double-submit guard and dirty check.
@@ -142,7 +134,6 @@ export const dirtyEnhance = (
 			// If there are any dirty forms (including self) and the user doesn't confirm, cancel the submit
 			if (dirty_forms.some((f) => f !== node) && !confirm(m.active_lime_panther_buzz())) {
 				cancel();
-				props?.manual_post?.p.reject();
 				return;
 			}
 
@@ -180,6 +171,5 @@ export const dirtyEnhance = (
 				}
 			};
 		}
-		props?.manual_post?.p.resolve();
 	});
 };

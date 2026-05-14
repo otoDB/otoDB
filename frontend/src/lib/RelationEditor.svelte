@@ -47,9 +47,7 @@
 	let new_item: null | Work | Song = $state(null);
 
 	const endpoint = $derived(obj_type === 'work' ? '/api/work/relation' : '/api/tag/song_relation');
-	const post_gate = { p: Promise.withResolvers<void>() };
 	const post_relations = async () => {
-		await post_gate.p.promise;
 		const { error } = await client.POST(endpoint, {
 			fetch,
 			params: { query: { this_id } },
@@ -59,9 +57,8 @@
 				relation: r.relation
 			}))
 		});
-		if (error) {
-			post_gate.p = Promise.withResolvers<void>();
-		} else goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
+		if (error) throw error;
+		goto(`/${obj_type}/${this_id}`, { invalidateAll: true });
 	};
 
 	const RelationType = $derived(obj_type === 'work' ? WorkRelationTypes : SongRelationTypes);
@@ -87,11 +84,7 @@
 	{/if}
 {/snippet}
 
-<form
-	method="POST"
-	onsubmit={post_relations}
-	use:dirtyEnhance={{ ...form_control, manual_post: post_gate }}
->
+<form method="POST" use:dirtyEnhance={{ ...form_control, submit: post_relations }}>
 	<input type="submit" class="float-right" />
 	<div class="grid w-fit grid-cols-2 gap-3">
 		{#if obj_type === 'work'}

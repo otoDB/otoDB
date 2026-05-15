@@ -18,4 +18,4 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
 EXPOSE 8000
-CMD ["sh", "-c", "python _setup.py && exec python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && exec python manage.py runserver 0.0.0.0:8000"]

@@ -7,7 +7,7 @@ ARG OTODB_HASH
 ENV PUBLIC_OTODB_HASH=${OTODB_HASH}
 
 COPY package.json deno.lock ./
-RUN deno install
+RUN deno install --frozen
 
 COPY . .
 RUN deno task sync-schema \
@@ -21,8 +21,8 @@ ENV NODE_ENV=production \
     PROTOCOL_HEADER=x-forwarded-proto \
     HOST_HEADER=x-forwarded-host
 
-COPY --from=build /deno-dir         /deno-dir
-COPY --from=build /app/node_modules ./node_modules
+# COPY --from=build /deno-dir         /deno-dir
+# COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/.deno-deploy ./
 
 USER deno

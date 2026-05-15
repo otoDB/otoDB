@@ -22,7 +22,8 @@ ENV NODE_ENV=production \
     PROTOCOL_HEADER=x-forwarded-proto \
     HOST_HEADER=x-forwarded-host
 
-COPY --from=build /app/.deno-deploy ./
+COPY --from=build /app/.deno-deploy /app/package.json ./
+RUN deno install --entrypoint ./server.ts
 
 USER deno
 EXPOSE 5173

@@ -285,17 +285,16 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 def _user_to_q(username):
 	"""Match works whose 'first user' is `username`.
 
-	The first user is the author of the earliest non-admin revision targeting
-	the work; for works with no non-admin revisions (e.g. those created before
+	The first user is the author of the earliest non-system revision targeting
+	the work; for works with no non-system revisions (e.g. those created before
 	the revision model existed) it falls back to a `WorkSource.added_by` match.
 	"""
 	mediawork_ct = ContentType.objects.get_for_model(MediaWork)
-	non_admin_rev = RevisionChange.objects.filter(
-		target_type=mediawork_ct,
-		rev__user__level__lt=Account.Levels.ADMIN,
+	non_system_rev = RevisionChange.objects.filter(target_type=mediawork_ct).exclude(
+		rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME
 	)
 	first_rev_pks = (
-		non_admin_rev.order_by('target_id', 'rev__date')
+		non_system_rev.order_by('target_id', 'rev__date')
 		.distinct('target_id')
 		.values('pk')
 	)
@@ -306,7 +305,7 @@ def _user_to_q(username):
 		WorkSource.objects.filter(
 			added_by__username__iexact=username, media_id__isnull=False
 		)
-		.exclude(media_id__in=non_admin_rev.values('target_id'))
+		.exclude(media_id__in=non_system_rev.values('target_id'))
 		.values('media_id')
 	)
 	return Q(id__in=rev_match_ids) | Q(id__in=src_match_ids)

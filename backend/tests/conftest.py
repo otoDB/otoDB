@@ -63,10 +63,22 @@ def enable_request_cache(db, member):
 	ufk_request.set_current_request(None)
 
 
+# REVIEW: Required because some tests use reset_sequences=True, but this should not be necessary
+def _advance_account_sequence():
+	from django.db import connection
+
+	with connection.cursor() as cursor:
+		cursor.execute(
+			"SELECT setval(pg_get_serial_sequence('account_account', 'id'),"
+			' coalesce((SELECT MAX(id) FROM account_account), 1));'
+		)
+
+
 # User fixtures
 @pytest.fixture
 def member(db):
 	"""Create a member user for testing."""
+	_advance_account_sequence()
 	return Account.objects.create_user(
 		'user', 'user@test.com', password='user_pass', level=Account.Levels.MEMBER
 	)
@@ -75,6 +87,7 @@ def member(db):
 @pytest.fixture
 def editor(db):
 	"""Create an editor user for testing."""
+	_advance_account_sequence()
 	return Account.objects.create_user(
 		'editor', 'editor@test.com', password='editor_pass', level=Account.Levels.EDITOR
 	)

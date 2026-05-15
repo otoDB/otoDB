@@ -40,5 +40,6 @@ export const routeNames: Record<Route, () => string> = {
 	[Route.Work_Source_Reject]: c(m.extra_brave_tapir_skip, m.alive_blue_marlin_push),
 	[Route.Work_Source_Update]: c(m.extra_brave_tapir_skip, m.dry_raw_finch_devour),
 
-	[Route.Rollback]: m.legal_mean_slug_link
+	[Route.Rollback]: m.legal_mean_slug_link,
+	[Route.System]: m.this_late_gadfly_sail
 };

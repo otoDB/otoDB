@@ -18,13 +18,14 @@ RUN deno task sync-schema \
 FROM base AS runtime
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
-    PORT=5173 \
     PROTOCOL_HEADER=x-forwarded-proto \
-    HOST_HEADER=x-forwarded-host
+    HOST_HEADER=x-forwarded-host \
+	DENO_UNSTABLE_BARE_NODE_BUILTINS=1
 
-COPY --from=build /app/.deno-deploy /app/package.json ./
-RUN deno install --entrypoint ./server.ts
+COPY --from=build /app/.deno-deploy ./.deno-deploy
+COPY --from=build /app/package.json ./package.json
+RUN deno install --entrypoint ./.deno-deploy/server.ts
 
 USER deno
-EXPOSE 5173
-ENTRYPOINT ["deno", "run", "--allow-env", "--allow-read", "--allow-net", "./server.ts"]
+EXPOSE 8000
+ENTRYPOINT ["deno", "run", "--allow-env", "--allow-read", "--allow-net", "./.deno-deploy/server.ts"]

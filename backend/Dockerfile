@@ -48,4 +48,4 @@ ENV OTODB_HASH=${OTODB_HASH} \
     GRANIAN_WORKERS=4
 
 EXPOSE 8000
-CMD ["sh", "-c", "cp -r static/. /srv/static/ && python _setup.py && exec granian project.wsgi:application"]
+CMD ["sh", "-c", "cp -r static/. /srv/static/ && python manage.py migrate && exec granian project.wsgi:application"]

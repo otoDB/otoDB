@@ -1,4 +1,4 @@
-FROM denoland/deno:alpine AS base
+FROM denoland/deno:debian AS base
 WORKDIR /app
 ENV DENO_DIR=/deno-dir
 

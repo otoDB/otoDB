@@ -18,6 +18,7 @@ RUN deno task sync-schema \
 FROM base AS runtime
 ENV NODE_ENV=production \
     HOST=0.0.0.0 \
+	PORT=5173 \
     PROTOCOL_HEADER=x-forwarded-proto \
     HOST_HEADER=x-forwarded-host \
 	DENO_UNSTABLE_BARE_NODE_BUILTINS=1

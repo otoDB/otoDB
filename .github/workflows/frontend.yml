@@ -23,10 +23,9 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install --frozen-lockfile
-      - run: bunx oxfmt --check .
-      - run: bunx eslint .
+      - uses: denoland/setup-deno@v2
+      - run: deno install --frozen
+      - run: deno task lint
 
   test:
     name: Test
@@ -35,16 +34,16 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install --frozen-lockfile
+      - uses: denoland/setup-deno@v2
+      - run: deno install --frozen
       - name: Generate schema.ts
-        run: bun run sync-schema
+        run: deno task sync-schema
       - name: Compile Paraglide project
-        run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+        run: deno x @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
       - name: Copy dotenv file to generate type-safe environment variables
         run: cp .env.example .env
-      - run: bun run check
-      - run: bun run test
+      - run: deno task check
+      - run: deno task test
 
   build_docker:
     name: Build Docker image

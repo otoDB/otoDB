@@ -5,15 +5,15 @@
 - Written in **TypeScript**.
 - Meta-framework is **SvelteKit** (Svelte 5).
 - Styled with **TailwindCSS v4**.
-- JavaScript engine is **Bun**.
+- JavaScript engine is **Deno**.
 
 ## Tooling
 
-- Install: `bun install`
-- Format: `bun run format`
-- Lint: `bun run lint`
-- Type check: `bun run check`
-- Update i18n files: `bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide`
+- Install: `deno install`
+- Format: `deno task format`
+- Lint: `deno task lint`
+- Type check: `deno task check`
+- Update i18n files: `dx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide`
 
 ## Workflow
 
@@ -24,7 +24,7 @@
 To regenerate it locally, run from the frontend directory:
 
 ```
-bun run sync-schema
+deno task sync-schema
 ```
 
 If the backend API has changed, first regenerate `backend/openapi.json` (run from `backend/`):
@@ -37,9 +37,9 @@ uv run manage.py openapi_schema > openapi.json
 
 When making any changes to frontend code, you MUST run the following commands in order and ensure each succeeds before creating a git commit or pushing:
 
-1. format: `bun run format`
-2. lint: `bun run lint`
-3. check: `bun run check`
+1. format: `deno task format`
+2. lint: `deno task lint`
+3. check: `deno task check`
 
 All three commands must succeed without errors before committing. Do not skip or bypass these checks.
 

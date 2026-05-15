@@ -1,30 +1,31 @@
-FROM oven/bun AS base
+FROM denoland/deno:debian AS base
 WORKDIR /app
+ENV DENO_DIR=/deno-dir
 
-FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lock /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
-
-RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
-
-FROM base AS prerelease
+FROM base AS build
 ARG OTODB_HASH
 ENV PUBLIC_OTODB_HASH=${OTODB_HASH}
 
-COPY --from=install /temp/dev/node_modules node_modules
+COPY package.json deno.lock ./
+RUN deno install --frozen
+
 COPY . .
+COPY --from=backend openapi.json /app/openapi.json
+RUN deno task sync-schema \
+ && deno task prepare \
+ && deno task build
 
-RUN bun run sync-schema
-RUN bun run prepare
-RUN bun run build
+FROM base AS runtime
+ENV NODE_ENV=production \
+    HOST=0.0.0.0 \
+	PORT=5173 \
+    PROTOCOL_HEADER=x-forwarded-proto \
+    HOST_HEADER=x-forwarded-host \
+	DENO_UNSTABLE_BARE_NODE_BUILTINS=1
 
-FROM base AS build
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /app/build .
+COPY --from=build /app/build /app/package.json ./
+RUN deno install --entrypoint ./index.js
 
-EXPOSE 5173/tcp
-
-ENTRYPOINT [ "sh", "-c", "exec env PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 bun ./" ]
+USER deno
+EXPOSE 5173
+ENTRYPOINT ["deno", "run", "--allow-env", "--allow-read", "--allow-net", "./index.js"]

@@ -6,11 +6,9 @@ src/lib/schema.ts
 
 # Output
 .output
-.vercel
-.netlify
-.wrangler
 /.svelte-kit
 /build
+.deno-deploy
 
 # OS
 .DS_Store

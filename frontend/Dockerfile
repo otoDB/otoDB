@@ -10,6 +10,7 @@ COPY package.json deno.lock ./
 RUN deno install --frozen
 
 COPY . .
+COPY --from=backend openapi.json /app/openapi.json
 RUN deno task sync-schema \
  && deno task prepare \
  && deno task build

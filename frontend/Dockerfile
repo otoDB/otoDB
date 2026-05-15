@@ -22,10 +22,9 @@ ENV NODE_ENV=production \
     HOST_HEADER=x-forwarded-host \
 	DENO_UNSTABLE_BARE_NODE_BUILTINS=1
 
-COPY --from=build /app/.deno-deploy ./.deno-deploy
-COPY --from=build /app/package.json ./package.json
-RUN deno install --entrypoint ./.deno-deploy/server.ts
+COPY --from=build /app/build /app/package.json ./
+RUN deno install --entrypoint ./index.js
 
 USER deno
-EXPOSE 8000
-ENTRYPOINT ["deno", "run", "--allow-env", "--allow-read", "--allow-net", "./.deno-deploy/server.ts"]
+EXPOSE 5173
+ENTRYPOINT ["deno", "run", "--allow-env", "--allow-read", "--allow-net", "./index.js"]

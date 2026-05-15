@@ -23,8 +23,8 @@ ENV NODE_ENV=production \
 
 COPY --from=build /deno-dir         /deno-dir
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/build        ./
+COPY --from=build /app/.deno-deploy ./
 
 USER deno
 EXPOSE 5173
-ENTRYPOINT ["deno", "run", "--allow-env", "--allow-read", "--allow-net", "./index.js"]
+ENTRYPOINT ["deno", "run", "--allow-env", "--allow-read", "--allow-net", "./server.ts"]

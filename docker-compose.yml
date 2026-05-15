@@ -49,6 +49,8 @@ services:
     image: ghcr.io/otodb/otodb-frontend:latest
     build:
       context: ./frontend
+      additional_contexts:
+        backend: ./backend
     env_file:
       - .env
     environment:

@@ -2,21 +2,21 @@
 
 ## Setup
 
-We recommend using `bun`.
+We recommend using `deno`.
 
 ```sh
 # Setup for default backend addresses in dev mode
 cp .env.example .env
 
-bun install
+deno install
 
-bun run dev
+deno task dev
 ```
 
 On the default dev backend, the schema is served on `http://127.0.0.1:8000/api/openapi.json`, which is specified in `redocly.yaml` for API type regeneration:
 
 ```sh
-bun run sync-schema
+deno task sync-schema
 ```
 
 Whenever you make a request on the server-side of the metaframework through the API client, you have to inject SvelteKit's `fetch` as follows (otherwise cookies will not be passed along):
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 ### Test
 
 ```
-bun run test
+deno task test
 ```
 
 ### Storybook
@@ -40,5 +40,5 @@ bun run test
 Component catalog.
 
 ```
-bun run storybook
+deno task storybook
 ```

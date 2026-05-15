@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, it } from '@std/testing/bdd';
+import { expect } from '@std/expect';
 import { makeCommentTree } from './makeCommentTree';
 
 type Comment = Parameters<typeof makeCommentTree>[0][number];

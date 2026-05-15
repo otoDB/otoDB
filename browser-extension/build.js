@@ -114,7 +114,7 @@ function clean() {
 }
 
 function runVite() {
-    const result = spawnSync('bunx', ['--bun', 'vite', 'build'], {
+    const result = spawnSync('dx', ['vite', 'build'], {
         cwd: __dirname,
         stdio: 'inherit',
         shell: true
@@ -172,7 +172,7 @@ if (COMMAND === 'pack') {
 } else if (WATCH) {
     build(COMMAND);
     console.log('\nWatching src/ for changes...');
-    const vite = spawn('bunx', ['--bun', 'vite', 'build', '--watch'], {
+    const vite = spawn('dx', ['vite', 'build', '--watch'], {
         cwd: __dirname,
         stdio: 'inherit',
         shell: true

@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { error, type Cookies } from '@sveltejs/kit';
-import type { CookieSerializeOptions } from 'cookie';
+import type { SerializeOptions } from 'cookie';
 import createClient, {
 	type ClientRequestMethod,
 	type MaybeOptionalInit,
@@ -81,6 +81,6 @@ export const forwardCookies = (cookies: Cookies, response: Response) => {
 			path: '/',
 			expires,
 			maxAge,
-			sameSite: sameSite as CookieSerializeOptions['sameSite']
+			sameSite: sameSite as SerializeOptions['sameSite']
 		});
 };

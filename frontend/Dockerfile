@@ -21,8 +21,6 @@ ENV NODE_ENV=production \
     PROTOCOL_HEADER=x-forwarded-proto \
     HOST_HEADER=x-forwarded-host
 
-# COPY --from=build /deno-dir         /deno-dir
-# COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/.deno-deploy ./
 
 USER deno

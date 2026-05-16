@@ -194,10 +194,10 @@ class PostEditSchema(Schema):
 @transaction.atomic
 def edit(request: AuthedHttpRequest, payload: PostEditSchema):
 	p = get_object_or_404(Post, id=payload.post_id)
-	if not request.user.level >= Account.Levels.MOD:
+	if not request.user.is_mod:
 		if p.added_by_id != request.user.pk:
 			raise HttpError(403, 'Forbidden')
-		# Lock: if an admin has edited this post, original author can no longer edit
+		# Lock: if a mod has edited this post, original author can no longer edit
 		if p.edited_by_id and p.edited_by_id != p.added_by_id:
 			raise HttpError(403, 'Forbidden')
 

@@ -176,7 +176,7 @@ def edit(request: HttpRequest, payload: CommentEditSchema):
 	if not request.user.is_mod:
 		if comment.user != request.user:
 			raise HttpError(403, 'Forbidden')
-		# Lock: if an admin has edited this comment, original author can no longer edit
+		# Lock: if a mod has edited this comment, original author can no longer edit
 		try:
 			meta = comment.meta
 			if meta.edited_by_id and meta.edited_by_id != comment.user_id:

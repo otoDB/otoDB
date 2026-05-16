@@ -5243,8 +5243,8 @@
           "Restricted",
           "Member",
           "Editor",
-          "Admin",
-          "Owner"
+          "Mod",
+          "Admin"
         ]
       },
       "ThemePref": {

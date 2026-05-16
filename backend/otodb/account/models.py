@@ -31,7 +31,7 @@ class AccountManager(BaseUserManager):
 			raise ValueError('This username is already taken')
 		user: Account = self.create_user(username, email, password, **extra_fields)
 		user.email_activated = True
-		user.level = Account.Levels.OWNER
+		user.level = Account.Levels.ADMIN
 		user.save(using=self._db)
 		return user
 
@@ -42,8 +42,8 @@ class Account(AbstractBaseUser):
 		RESTRICTED = 10
 		MEMBER = 20
 		EDITOR = 40
-		ADMIN = 50
-		OWNER = 100
+		MOD = 50
+		ADMIN = 100
 
 	if TYPE_CHECKING:
 		from django.db.models import QuerySet
@@ -94,16 +94,21 @@ class Account(AbstractBaseUser):
 		return self.level >= self.Levels.EDITOR
 
 	@property
-	def is_staff(self):
+	def is_mod(self):
+		return self.level >= self.Levels.MOD
+
+	@property
+	def is_admin(self):
 		return self.level >= self.Levels.ADMIN
+
+	# Used by Django admin
+	@property
+	def is_staff(self):
+		return self.is_admin
 
 	@property
 	def is_superuser(self):
 		return self.is_staff
-
-	@property
-	def is_owner(self):
-		return self.level >= self.Levels.OWNER
 
 	@classmethod
 	def get_system(cls) -> 'Account':

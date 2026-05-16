@@ -98,6 +98,16 @@ def logout_endpoint(request: HttpRequest):
 	return {'message': 'Logged out'}
 
 
+@auth_router.get('/sqlbin', auth=django_auth)
+def sqlbin_forward_auth(request: AuthedHttpRequest):
+	user = request.user
+	response = HttpResponse(status=204)
+	response['X-User-ID'] = str(user.id)
+	response['X-User-Name'] = user.username
+	response['X-User-Role'] = 'admin' if user.is_mod else 'editor'
+	return response
+
+
 class RegisterRequestSchema(Schema):
 	username: Annotated[str, StringConstraints(strip_whitespace=True)]
 	password: str

@@ -25,7 +25,7 @@
 		| { reason: 'restricted invitee exists'; username: string }
 		| { reason: 'next invite not yet available'; next: number }
 		| null = $derived.by(() => {
-		if (hasUserLevel(data.user?.level, Levels.Admin)) return null;
+		if (hasUserLevel(data.user?.level, Levels.Mod)) return null;
 		if (!data.invites) return { reason: 'no invites data' };
 		if (data.invites.restrictedInvitee)
 			return {

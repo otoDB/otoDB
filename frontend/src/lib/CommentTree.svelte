@@ -69,11 +69,11 @@
 	};
 
 	const can_comment = $derived(hasUserLevel(user?.level, Levels.Member));
-	const is_admin = $derived(!!user && hasUserLevel(user?.level, Levels.Admin));
+	const is_mod = $derived(!!user && hasUserLevel(user?.level, Levels.Mod));
 
 	const canEdit = (data: ReturnType<typeof makeCommentTree>[number]) => {
 		if (!user) return false;
-		if (is_admin) return true;
+		if (is_mod) return true;
 		if (data.user.username !== user.username) return false;
 		// Lock: if edited by a different user (admin), original author can no longer edit
 		if (data.edited_by && data.edited_by.username !== data.user.username) return false;
@@ -221,7 +221,7 @@
 							{m.minor_crisp_cobra_list()}
 						</button>
 					{/if}
-					{#if user && (hasUserLevel(user?.level, Levels.Admin) || data.user.username === user.username)}
+					{#if user && (hasUserLevel(user?.level, Levels.Mod) || data.user.username === user.username)}
 						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 							>{m.even_alert_grebe_taste()}</button
 						>

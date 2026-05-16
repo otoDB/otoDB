@@ -331,8 +331,8 @@ class ApiError(Exception):
 
 
 def ensure_can_moderate(user: Account, work: MediaWork | None) -> None:
-	"""Block anybody below admin from resolving a work they contributed to."""
-	if user.is_admin:
+	"""Block anybody below mod from resolving a work they contributed to."""
+	if user.is_mod:
 		return
 	if work is not None and work.was_contributed_by(user):
 		raise ApiError(403, ErrorCode.SELF_MODERATION)

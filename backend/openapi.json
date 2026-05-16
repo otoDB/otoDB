@@ -969,8 +969,8 @@
     },
     "/api/work/resolve": {
       "post": {
-        "operationId": "otodb_api_work_resolve_work_admin",
-        "summary": "Resolve Work Admin",
+        "operationId": "otodb_api_work_resolve_work_mod",
+        "summary": "Resolve Work Mod",
         "parameters": [
           {
             "in": "query",
@@ -987,7 +987,7 @@
             "description": "OK"
           }
         },
-        "description": "Immediate resolution by staff - same as expiry, skips the waiting period.",
+        "description": "Immediate resolution by mods - same as expiry, skips the waiting period.",
         "security": [
           {
             "SessionAuth": []

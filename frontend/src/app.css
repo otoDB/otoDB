@@ -14,6 +14,13 @@
 
 @custom-variant dark (@media not (prefers-color-scheme: light), &:where(.dark, .dark *), &:has(#bg-marker.dark));
 
+@theme {
+	--font-sans:
+		sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+	--font-serif: Georgia, Cambria, 'Times New Roman', Times, serif;
+	--font-mono: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
 @layer base {
 	thead {
 		background-color: var(--otodb-color-bg-primary);

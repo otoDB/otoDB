@@ -25,6 +25,7 @@ from otodb.tasks import send_email
 
 from .common import (
 	ApiError,
+	AuthedHttpRequest,
 	Error,
 	OtodbID,
 	ProfileSchema,
@@ -293,9 +294,9 @@ def user_invites(request: HttpRequest):
 	throttle=[AuthRateThrottle('5/d')],
 )
 @user_is_editor
-def new_invite(request: HttpRequest):
+def new_invite(request: AuthedHttpRequest):
 	assert (
-		request.user.level >= Account.Levels.ADMIN
+		request.user.level >= Account.Levels.MOD
 		or not Invitation.objects.filter(
 			created_by=request.user, created_at__gte=datetime.now() - timedelta(days=7)
 		).exists()

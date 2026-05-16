@@ -34,7 +34,7 @@ from .common import (
 	OtodbID,
 	add_revision_message,
 	track_revision,
-	user_is_admin,
+	user_is_mod,
 	with_revision_route,
 )
 
@@ -595,7 +595,7 @@ def rollback_entity(
 
 
 @history_router.post('rollback', auth=django_auth)
-@user_is_admin  # TODO: for now
+@user_is_mod  # TODO: for now
 @track_revision
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic
@@ -634,7 +634,7 @@ def rollback(
 
 
 @history_router.post('rollback_user', auth=django_auth)
-@user_is_admin
+@user_is_mod
 @track_revision
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic

@@ -227,15 +227,15 @@ def edit(request: AuthedHttpRequest, payload: PostEditSchema):
 @transaction.atomic
 def toggle_close(request: AuthedHttpRequest, post_id: OtodbID):
 	post = get_object_or_404(Post, id=post_id)
-	is_admin = request.user.level >= Account.Levels.MOD
+	is_mod = request.user.is_mod
 	is_author = post.added_by == request.user
 	if not post.closed_at:
-		if is_admin:
+		if is_mod:
 			post.closed_at = datetime.now(tz=timezone.utc)
 		else:
 			raise HttpError(403, 'Forbidden')
 	else:
-		if is_admin or is_author:
+		if is_mod or is_author:
 			post.closed_at = None
 		else:
 			raise HttpError(403, 'Forbidden')

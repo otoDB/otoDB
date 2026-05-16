@@ -173,8 +173,7 @@ class CommentEditSchema(Schema):
 @restrict_internal
 def edit(request: HttpRequest, payload: CommentEditSchema):
 	comment = XtdComment.objects.select_related('meta').get(id=payload.comment_id)
-	is_admin = request.user.level >= Account.Levels.MOD
-	if not is_admin:
+	if not request.user.is_mod:
 		if comment.user != request.user:
 			raise HttpError(403, 'Forbidden')
 		# Lock: if an admin has edited this comment, original author can no longer edit

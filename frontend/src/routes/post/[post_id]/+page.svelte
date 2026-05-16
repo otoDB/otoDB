@@ -94,8 +94,7 @@
 		data.post.edited_by && data.post.edited_by.username !== data.post.added_by.username
 	);
 	const canEdit = $derived(
-		data.user &&
-			(is_mod || (data.post.added_by.username === data.user.username && !editedByOther))
+		data.user && (is_mod || (data.post.added_by.username === data.user.username && !editedByOther))
 	);
 
 	const startEdit = () => {

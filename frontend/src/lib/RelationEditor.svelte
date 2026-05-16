@@ -215,7 +215,7 @@
 		{/if}
 		<tbody>
 			{#each relations as relation, i (i)}
-				<tr>
+				<tr class:selected={relation.selected}>
 					<td
 						><input
 							type="checkbox"

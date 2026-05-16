@@ -23,12 +23,30 @@
 		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
 	}
 
-	tbody > tr:not(form *):hover {
-		background-color: color-mix(
-			in hsl,
-			var(--otodb-color-bg-fainter) 80%,
-			var(--otodb-color-content-primary)
-		);
+	tbody {
+		& > tr:hover {
+			background-color: color-mix(
+				in hsl,
+				var(--otodb-color-bg-fainter) 80%,
+				var(--otodb-color-content-primary)
+			);
+		}
+
+		& > tr.selected {
+			background-color: color-mix(
+				in hsl,
+				var(--otodb-color-bg-faint) 60%,
+				var(--otodb-color-content-fainter)
+			);
+
+			&:hover {
+				background-color: color-mix(
+					in hsl,
+					var(--otodb-color-bg-faint) 40%,
+					var(--otodb-color-content-fainter)
+				);
+			}
+		}
 	}
 
 	ul {

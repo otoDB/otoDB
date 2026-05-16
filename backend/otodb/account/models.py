@@ -16,6 +16,8 @@ class AccountManager(BaseUserManager):
 	def create_user(self, username, email, password=None, **extra_fields):
 		if not username:
 			raise ValueError('Users must have a username')
+		if any(c.isspace() for c in username):
+			raise ValueError('Usernames may not contain whitespace')
 		if not email:
 			raise ValueError('Users must have an email address')
 		if self.filter(username__iexact=username).exists():

@@ -90,8 +90,8 @@ from .common import (
 	get_search_grammar,
 	make_range_metatag,
 	post_relations,
+	user_is_admin,
 	user_is_editor,
-	user_is_staff,
 	user_is_trusted,
 	with_revision_route,
 )
@@ -614,7 +614,7 @@ def work(request: AuthedHttpRequest, work_id: OtodbID):
 
 
 @work_router.delete('work', auth=django_auth)
-@user_is_staff
+@user_is_admin
 @with_revision_route(Route.MEDIAWORK_DELETE)
 def delete_work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
@@ -868,7 +868,7 @@ def disapprove_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 
 
 @work_router.post('resolve', auth=django_auth)
-@user_is_staff
+@user_is_admin
 def resolve_work_admin(request: AuthedHttpRequest, work_id: OtodbID):
 	"""Immediate resolution by staff - same as expiry, skips the waiting period."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)

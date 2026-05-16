@@ -318,7 +318,8 @@ user_is_trusted = perm_decorator_ctor(
 	lambda user: user.level > Account.Levels.RESTRICTED
 )
 user_is_editor = perm_decorator_ctor(lambda user: user.is_editor)
-user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
+user_is_mod = perm_decorator_ctor(lambda user: user.is_mod)
+user_is_admin = perm_decorator_ctor(lambda user: user.is_admin)
 
 
 class ApiError(Exception):
@@ -330,8 +331,8 @@ class ApiError(Exception):
 
 
 def ensure_can_moderate(user: Account, work: MediaWork | None) -> None:
-	"""Block non-staff moderators from resolving a work they contributed to."""
-	if user.is_staff:
+	"""Block anybody below admin from resolving a work they contributed to."""
+	if user.is_admin:
 		return
 	if work is not None and work.was_contributed_by(user):
 		raise ApiError(403, ErrorCode.SELF_MODERATION)

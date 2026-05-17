@@ -262,6 +262,8 @@
 							type="checkbox"
 							checked={last_clicked_index !== null &&
 							last_entered_index !== null &&
+							last_lo !== null &&
+							last_hi !== null &&
 							last_lo <= i &&
 							i <= last_hi
 								? relations[last_clicked_index].selected

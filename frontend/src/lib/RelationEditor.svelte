@@ -300,4 +300,20 @@
 	th {
 		font-weight: normal;
 	}
+
+	tbody > tr:has(input[type='checkbox']:checked) {
+		background-color: color-mix(
+			in hsl,
+			var(--otodb-color-bg-faint) 60%,
+			var(--otodb-color-content-fainter)
+		);
+
+		&:hover {
+			background-color: color-mix(
+				in hsl,
+				var(--otodb-color-bg-faint) 40%,
+				var(--otodb-color-content-fainter)
+			);
+		}
+	}
 </style>

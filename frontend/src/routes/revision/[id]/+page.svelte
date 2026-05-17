@@ -88,7 +88,7 @@
 			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
 		},
 		tagsong: {
-			category: EnumMap_to_DisplayFunction(SongTagCategoryNames)
+			category: EnumRecord_to_DisplayFunction(SongTagCategoryNames)
 		},
 		tagworkconnection: {
 			site: EnumMap_to_DisplayFunction(TagWorkConnectionMap)

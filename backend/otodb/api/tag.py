@@ -162,6 +162,47 @@ class TagWorkSearchResultSchema(TagWorkSchema):
 	n_instance: int
 
 
+def _tag_exact_match(qs, cleaned_slug: str):
+	return qs.annotate(
+		exact_match=Case(
+			When(slug=cleaned_slug, then=Value(0)),
+			When(
+				Exists(
+					qs.model.objects.filter(
+						id=OuterRef('id'), aliases__slug=cleaned_slug
+					)
+				),
+				then=Value(1),
+			),
+			default=Value(99),
+			output_field=models.IntegerField(),
+		)
+	)
+
+
+def _collapse_aliases_into_single_suggestion(qs, cleaned_slug: str | None):
+	rank_order = []
+	if cleaned_slug:
+		rank_order.append(F('exact_match').asc())
+	rank_order += [
+		F('aliased_to_id').asc(nulls_first=True),
+		F('n_instance').desc(),
+		F('id').asc(),
+	]
+	preferred_ids = (
+		qs.annotate(
+			_rank=Window(
+				expression=RowNumber(),
+				partition_by=[Coalesce('aliased_to_id', 'id')],
+				order_by=rank_order,
+			),
+		)
+		.filter(_rank=1)
+		.values('id')
+	)
+	return qs.filter(id__in=Subquery(preferred_ids))
+
+
 @tag_router.get('search', response=list[TagWorkSearchResultSchema])
 @paginate
 def search(
@@ -228,7 +269,7 @@ def search(
 		qs = qs.exclude(n_instance=0, category=WorkTagCategory.UNCATEGORIZED)
 
 	if hide_orphans:
-		qs = qs.filter(n_instance__gt=0)
+		qs = qs.exclude(n_instance=0)
 
 	wiki_sub = WikiPage.objects.filter(tag=OuterRef('pk'))
 	pref_sub = TagWorkLangPreference.objects.filter(
@@ -273,46 +314,12 @@ def search(
 
 	cleaned_slug = slugify_tag(query)
 	if cleaned_slug:
-		qs = qs.annotate(
-			exact_match=Case(
-				When(slug=cleaned_slug, then=Value(0)),
-				When(
-					Exists(
-						TagWork.objects.filter(
-							id=OuterRef('id'), aliases__slug=cleaned_slug
-						)
-					),
-					then=Value(1),
-				),
-				default=Value(99),
-				output_field=models.IntegerField(),
-			),
-		).order_by('exact_match', order_field)
+		qs = _tag_exact_match(qs, cleaned_slug).order_by('exact_match', order_field)
 	else:
 		qs = qs.order_by(order_field)
 
 	if autocomplete:
-		# Collapse alias matches into single suggestion
-		rank_order = []
-		if cleaned_slug:
-			rank_order.append(F('exact_match').asc())
-		rank_order += [
-			F('aliased_to_id').asc(nulls_first=True),
-			F('n_instance').desc(),
-			F('id').asc(),
-		]
-		preferred_ids = (
-			qs.annotate(
-				_rank=Window(
-					expression=RowNumber(),
-					partition_by=[Coalesce('aliased_to_id', 'id')],
-					order_by=rank_order,
-				),
-			)
-			.filter(_rank=1)
-			.values('id')
-		)
-		qs = qs.filter(id__in=Subquery(preferred_ids))
+		qs = _collapse_aliases_into_single_suggestion(qs, cleaned_slug)
 
 	return qs
 
@@ -1109,12 +1116,13 @@ def song_tag_search(
 ):
 	cleaned_slug_query = canonicalize_tag(query)
 	cleaned_name_query = NFKC(query)
-	cleaned_slug = slugify_tag(query)
 	qs = TagSong.objects.filter(
 		Q(slug__contains=cleaned_slug_query) | Q(name__icontains=cleaned_name_query)
 	)
 
 	if autocomplete:
+		pass
+	else:
 		qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
 			id__in=qs.values('aliased_to__id')
 		)
@@ -1122,26 +1130,24 @@ def song_tag_search(
 	if category is not None and category != -1:
 		qs = qs.filter(category=category)
 
-	return qs.annotate(
+	qs = qs.annotate(
 		n_instance=Case(
 			When(aliased_to__isnull=False, then=Count('aliased_to__tagsonginstance')),
 			default=Count('tagsonginstance'),
 			output_field=models.IntegerField(),
 		),
-		exact_match=Case(
-			When(slug=cleaned_slug, then=Value(0)),
-			When(
-				Exists(
-					TagSong.objects.filter(
-						id=OuterRef('id'), aliases__slug=cleaned_slug
-					)
-				),
-				then=Value(1),
-			),
-			default=Value(99),
-			output_field=models.IntegerField(),
-		),
-	).order_by('exact_match', '-n_instance')
+	)
+
+	cleaned_slug = slugify_tag(query)
+	if cleaned_slug:
+		qs = _tag_exact_match(qs, cleaned_slug).order_by('exact_match', '-n_instance')
+	else:
+		qs = qs.order_by('-n_instance')
+
+	if autocomplete:
+		qs = _collapse_aliases_into_single_suggestion(qs, cleaned_slug)
+
+	return qs
 
 
 @tag_router.post('song_tags', auth=django_auth)

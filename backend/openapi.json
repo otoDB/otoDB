@@ -139,23 +139,6 @@
         ]
       }
     },
-    "/api/auth/sqlbin": {
-      "get": {
-        "operationId": "otodb_api_auth_sqlbin_forward_auth",
-        "summary": "Sqlbin Forward Auth",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        },
-        "security": [
-          {
-            "SessionAuth": []
-          }
-        ]
-      }
-    },
     "/api/auth/register": {
       "post": {
         "operationId": "otodb_api_auth_register",

@@ -106,7 +106,12 @@
 	{/if}
 {/snippet}
 
-<svelte:window onmouseup={() => (drag_active = false)} />
+<svelte:window
+	onmousedown={(e) => {
+		if (e.button === 0) drag_active = true;
+	}}
+	onmouseup={() => (drag_active = false)}
+/>
 
 <form
 	method="POST"
@@ -232,7 +237,6 @@
 									relation.selected = !relation.selected;
 								}
 								last_clicked_index = i;
-								drag_active = true;
 							}}
 							onmouseenter={(e) => {
 								if (e.buttons !== 1 || !drag_active) return;

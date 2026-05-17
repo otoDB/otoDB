@@ -217,8 +217,8 @@
 			{#each relations as relation, i (i)}
 				<tr
 					onmouseenter={(e) => {
-						if (e.buttons !== 1 || !drag_active) return;
-						relation.selected = !relation.selected;
+						if (e.buttons !== 1 || !drag_active || last_clicked_index === null) return;
+						relation.selected = relations[last_clicked_index].selected;
 					}}
 				>
 					<td
@@ -226,7 +226,7 @@
 							if (e.button !== 0) return;
 							e.preventDefault();
 							if (e.shiftKey && last_clicked_index !== null) {
-								const new_state = !relation.selected;
+								const new_state = relations[last_clicked_index].selected;
 								const lo = Math.min(last_clicked_index, i);
 								const hi = Math.max(last_clicked_index, i);
 								for (let k = lo; k <= hi; k++) relations[k].selected = new_state;

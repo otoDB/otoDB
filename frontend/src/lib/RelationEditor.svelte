@@ -218,7 +218,10 @@
 				<tr
 					onmouseenter={(e) => {
 						if (e.buttons !== 1 || !drag_active || last_clicked_index === null) return;
-						relation.selected = relations[last_clicked_index].selected;
+						const new_state = relations[last_clicked_index].selected;
+						const lo = Math.min(last_clicked_index, i);
+						const hi = Math.max(last_clicked_index, i);
+						for (let k = lo; k <= hi; k++) relations[k].selected = new_state;
 					}}
 				>
 					<td

@@ -106,12 +106,7 @@
 	{/if}
 {/snippet}
 
-<svelte:window
-	onmousedown={(e) => {
-		if (e.button === 0) drag_active = true;
-	}}
-	onmouseup={() => (drag_active = false)}
-/>
+<svelte:window onmouseup={() => (drag_active = false)} />
 
 <form
 	method="POST"
@@ -220,7 +215,12 @@
 		{/if}
 		<tbody>
 			{#each relations as relation, i (i)}
-				<tr>
+				<tr
+					onmouseenter={(e) => {
+						if (e.buttons !== 1 || !drag_active) return;
+						relation.selected = !relation.selected;
+					}}
+				>
 					<td
 						><input
 							type="checkbox"
@@ -237,10 +237,7 @@
 									relation.selected = !relation.selected;
 								}
 								last_clicked_index = i;
-							}}
-							onmouseenter={(e) => {
-								if (e.buttons !== 1 || !drag_active) return;
-								relation.selected = !relation.selected;
+								drag_active = true;
 							}}
 							onkeydown={(e) => {
 								if (e.key === ' ') {

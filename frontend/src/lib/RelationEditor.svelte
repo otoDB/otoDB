@@ -222,23 +222,24 @@
 					}}
 				>
 					<td
+						onmousedown={(e) => {
+							if (e.button !== 0) return;
+							e.preventDefault();
+							if (e.shiftKey && last_clicked_index !== null) {
+								const new_state = !relation.selected;
+								const lo = Math.min(last_clicked_index, i);
+								const hi = Math.max(last_clicked_index, i);
+								for (let k = lo; k <= hi; k++) relations[k].selected = new_state;
+							} else {
+								relation.selected = !relation.selected;
+							}
+							last_clicked_index = i;
+							drag_active = true;
+						}}
 						><input
 							type="checkbox"
 							checked={relation.selected}
 							onclick={(e) => e.preventDefault()}
-							onmousedown={(e) => {
-								if (e.button !== 0) return;
-								if (e.shiftKey && last_clicked_index !== null) {
-									const new_state = !relation.selected;
-									const lo = Math.min(last_clicked_index, i);
-									const hi = Math.max(last_clicked_index, i);
-									for (let k = lo; k <= hi; k++) relations[k].selected = new_state;
-								} else {
-									relation.selected = !relation.selected;
-								}
-								last_clicked_index = i;
-								drag_active = true;
-							}}
 							onkeydown={(e) => {
 								if (e.key === ' ') {
 									e.preventDefault();

@@ -228,7 +228,7 @@ def search(
 		qs = qs.exclude(n_instance=0, category=WorkTagCategory.UNCATEGORIZED)
 
 	if hide_orphans:
-		qs = qs.filter(n_instance__gt=0)
+		qs = qs.exclude(n_instance=0)
 
 	wiki_sub = WikiPage.objects.filter(tag=OuterRef('pk'))
 	pref_sub = TagWorkLangPreference.objects.filter(
@@ -1115,6 +1115,8 @@ def song_tag_search(
 	)
 
 	if autocomplete:
+		pass
+	else:
 		qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
 			id__in=qs.values('aliased_to__id')
 		)

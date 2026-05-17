@@ -32,7 +32,7 @@
 			);
 		}
 
-		& > tr:has(input:checked) {
+		& > tr:has(input[type="checkbox"]:checked) {
 			background-color: color-mix(
 				in hsl,
 				var(--otodb-color-bg-faint) 60%,

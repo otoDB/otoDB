@@ -32,7 +32,7 @@
 			);
 		}
 
-		& > tr.selected {
+		& > tr:has(input:checked) {
 			background-color: color-mix(
 				in hsl,
 				var(--otodb-color-bg-faint) 60%,

@@ -52,8 +52,18 @@
 
 	let new_item: null | Work | Song = $state(null);
 
-	let drag_active = $state(false);
 	let last_clicked_index: number | null = $state(null);
+	let last_entered_index: number | null = $state(null);
+	let last_lo = $derived(
+		last_clicked_index !== null && last_entered_index !== null
+			? Math.min(last_clicked_index, last_entered_index)
+			: null
+	);
+	let last_hi = $derived(
+		last_clicked_index !== null && last_entered_index !== null
+			? Math.max(last_clicked_index, last_entered_index)
+			: null
+	);
 
 	const any_selected = $derived(relations.some((r) => r.selected));
 	const all_selected = $derived(relations.length > 0 && relations.every((r) => r.selected));
@@ -106,7 +116,15 @@
 	{/if}
 {/snippet}
 
-<svelte:window onmouseup={() => (drag_active = false)} />
+<svelte:window
+	onmouseup={() => {
+		if (last_lo !== null && last_hi !== null && last_clicked_index !== null)
+			for (let i = last_lo; i <= last_hi; i++)
+				relations[i].selected = relations[last_clicked_index].selected;
+		last_clicked_index = null;
+		last_entered_index = null;
+	}}
+/>
 
 <form
 	method="POST"
@@ -172,6 +190,7 @@
 						><input
 							type="checkbox"
 							checked={all_selected}
+							indeterminate={!all_selected && any_selected}
 							onchange={(e) => {
 								e.stopPropagation();
 								const v = e.currentTarget.checked;
@@ -217,31 +236,36 @@
 			{#each relations as relation, i (i)}
 				<tr
 					onmouseenter={(e) => {
-						if (e.buttons !== 1 || !drag_active || last_clicked_index === null) return;
-						const new_state = relations[last_clicked_index].selected;
-						const lo = Math.min(last_clicked_index, i);
-						const hi = Math.max(last_clicked_index, i);
-						for (let k = lo; k <= hi; k++) relations[k].selected = new_state;
+						if (e.buttons !== 1 || last_clicked_index === null) return;
+						last_entered_index = i;
 					}}
 				>
 					<td
 						onmousedown={(e) => {
 							if (e.button !== 0) return;
 							e.preventDefault();
-							if (e.shiftKey && last_clicked_index !== null) {
-								const new_state = relations[last_clicked_index].selected;
-								const lo = Math.min(last_clicked_index, i);
-								const hi = Math.max(last_clicked_index, i);
-								for (let k = lo; k <= hi; k++) relations[k].selected = new_state;
+							if (e.shiftKey) {
+								const selected_indices = relations.flatMap((r, idx) => (r.selected ? [idx] : []));
+								if (selected_indices.length) {
+									const lo = Math.min(...selected_indices);
+									const hi = Math.max(...selected_indices);
+									if (i < lo) for (let k = i; k < lo; k++) relations[k].selected = true;
+									else if (i > hi) for (let k = hi + 1; k <= i; k++) relations[k].selected = true;
+									else relation.selected = !relation.selected;
+								}
 							} else {
 								relation.selected = !relation.selected;
 							}
 							last_clicked_index = i;
-							drag_active = true;
 						}}
 						><input
 							type="checkbox"
-							checked={relation.selected}
+							checked={last_clicked_index !== null &&
+							last_entered_index !== null &&
+							last_lo <= i &&
+							i <= last_hi
+								? relations[last_clicked_index].selected
+								: relation.selected}
 							onclick={(e) => e.preventDefault()}
 							onkeydown={(e) => {
 								if (e.key === ' ') {

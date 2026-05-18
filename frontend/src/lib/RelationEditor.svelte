@@ -98,6 +98,14 @@
 {/snippet}
 
 <svelte:window
+	onmousemove={(e) => {
+		if (e.buttons !== 1 || last_clicked_index === null) return;
+		last_entered_index = Array.from(document.querySelectorAll('.relation-row'))
+			.map((el) => el.getBoundingClientRect().top)
+			.findIndex(
+				(top, i, arr) => top <= e.clientY && (i + 1 === arr.length || e.clientY < arr[i + 1])
+			);
+	}}
 	onmouseup={() => {
 		if (last_lo !== null && last_hi !== null && last_clicked_index !== null)
 			for (let i = last_lo; i <= last_hi; i++)
@@ -230,21 +238,15 @@
 		{/if}
 		<tbody>
 			{#each relations as relation, i (i)}
-				<tr
-					onmouseenter={(e) => {
-						if (e.buttons !== 1 || last_clicked_index === null) return;
-						last_entered_index = i;
-					}}
-				>
+				<tr class="relation-row">
 					<td
 						onmousedown={(e) => {
 							if (e.button !== 0) return;
 							e.preventDefault();
 							if (e.shiftKey) {
-								const selected_indices = relations.flatMap((r, idx) => (r.selected ? [idx] : []));
-								if (selected_indices.length) {
-									const lo = Math.min(...selected_indices);
-									const hi = Math.max(...selected_indices);
+								const lo = relations.findIndex((r) => r.selected);
+								const hi = relations.findLastIndex((r) => r.selected);
+								if (lo !== -1 && hi !== -1) {
 									if (i < lo) for (let k = i; k < lo; k++) relations[k].selected = true;
 									else if (i > hi) for (let k = hi + 1; k <= i; k++) relations[k].selected = true;
 									else relation.selected = !relation.selected;

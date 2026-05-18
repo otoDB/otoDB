@@ -173,6 +173,7 @@
 }
 
 /* Search icon for work search links (from `{{...}}` markdown and elsewhere) */
+/* Icon from https://lucide.dev/icons/search */
 a[href^='/work?tags=']::after {
 	content: '';
 	display: inline-block;

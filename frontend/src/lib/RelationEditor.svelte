@@ -108,8 +108,7 @@
 		if (last_clicked_index !== null)
 			for (let i = last_lo!; i <= last_hi!; i++)
 				relations[i].selected = relations[last_clicked_index].selected;
-		last_clicked_index = null;
-		last_entered_index = null;
+		last_entered_index = last_clicked_index = null;
 	}}
 />
 
@@ -253,7 +252,7 @@
 							} else {
 								relation.selected = !relation.selected;
 							}
-							last_clicked_index = i;
+							last_entered_index = last_clicked_index = i;
 						}}
 						><input
 							type="checkbox"

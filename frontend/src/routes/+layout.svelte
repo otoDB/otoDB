@@ -16,7 +16,6 @@
 	import { getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
-	import { Menu } from '@lucide/svelte';
 
 	let { data, children } = $props();
 
@@ -185,9 +184,10 @@
 				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-3 h-12 w-12',
 				isMobileNavOpen && 'invisible'
 			]}
+			aria-label={m.clean_kind_stork_affirm()}
 			onclick={toggleMobileNav}
 		>
-			<Menu size={32} class="m-auto" />
+			<span class="icon-[gravity-ui--bars] m-auto size-6" aria-hidden="true"></span>
 		</button>
 	</div>
 	<Toaster

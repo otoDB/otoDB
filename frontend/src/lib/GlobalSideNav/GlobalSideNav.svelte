@@ -5,8 +5,6 @@
 	import { Levels } from '$lib/schema';
 	import { clickOutside } from '$lib/ui';
 	import type { ClassValue } from 'svelte/elements';
-	import Search from '@lucide/svelte/icons/search';
-	import Bell from '@lucide/svelte/icons/bell';
 
 	let {
 		class: className,
@@ -76,7 +74,7 @@
 			aria-label="Search"
 			class="bg-otodb-bg-faint/75 hover:bg-otodb-bg-fainter/75 px-2"
 		>
-			<Search size={16}></Search>
+			<span class="icon-[gravity-ui--magnifier]" aria-hidden="true"></span>
 		</button>
 	</form>
 
@@ -115,10 +113,13 @@
 					onclick={closeMobileNav}
 				>
 					{#if user.notifs_nonsub_count > 0}({user.notifs_nonsub_count}){/if}
-					<Bell
-						size={16}
-						class={['text-otodb-content-fainter ml-1', user.notifs_count > 0 && 'fill-current']}
-					/>
+					<span
+						aria-hidden="true"
+						class={[
+							'text-otodb-content-fainter ml-1 size-4',
+							user.notifs_count > 0 ? 'icon-[gravity-ui--bell-fill]' : 'icon-[gravity-ui--bell]'
+						]}
+					></span>
 				</a>
 			{/if}
 		</div>

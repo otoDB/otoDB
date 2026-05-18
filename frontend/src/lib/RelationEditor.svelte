@@ -150,6 +150,7 @@
 					e.currentTarget.dispatchEvent(new Event('change', { bubbles: true }));
 					relations.unshift({
 						selected: false,
+						tr: null,
 						swapped: false,
 						item: new_item,
 						relation: 0

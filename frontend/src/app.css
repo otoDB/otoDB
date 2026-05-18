@@ -23,7 +23,7 @@
 		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
 	}
 
-	tbody > tr:not(form *):hover {
+	tbody > tr:hover {
 		background-color: color-mix(
 			in hsl,
 			var(--otodb-color-bg-fainter) 80%,

@@ -175,10 +175,8 @@
 
 /* Search icon for work search links (from `{{...}}` markdown and elsewhere) */
 a[href^='/work?tags=']::after {
-	@apply icon-[lucide--search];
+	@apply icon-[gravity-ui--magnifier];
 	content: '';
-	width: 0.9em;
-	height: 0.9em;
 	margin-left: 0.25em;
 	vertical-align: middle;
 }

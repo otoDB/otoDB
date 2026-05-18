@@ -183,7 +183,6 @@ a[href^='/work?tags=']::after {
 	vertical-align: middle;
 }
 
-
 /* Autolink headings */
 :is(h1, h2, h3, h4, h5, h6) {
 	& a[href^='#'] {

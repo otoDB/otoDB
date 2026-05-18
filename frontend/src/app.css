@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
-@plugin "@iconify/tailwind4";
+@plugin '@iconify/tailwind4';
 @import './themes.css';
 
 @theme inline {

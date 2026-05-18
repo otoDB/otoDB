@@ -31,6 +31,7 @@
 
 	let relations: {
 		selected: boolean;
+		tr: HTMLTableRowElement | null;
 		swapped: boolean;
 		item: Work | Song;
 		relation: number;
@@ -39,6 +40,7 @@
 			.filter(({ A_id, B_id }) => A_id === this_id || B_id === this_id)
 			.map(({ A_id, B_id, relation }) => ({
 				selected: false,
+				tr: null,
 				swapped: A_id === this_id,
 				item: init_relations[1].find((e) => e.id === (A_id === this_id ? B_id : A_id)) as
 					| Work
@@ -52,14 +54,10 @@
 	let last_clicked_index: number | null = $state(null);
 	let last_entered_index: number | null = $state(null);
 	let last_lo = $derived(
-		last_clicked_index !== null && last_entered_index !== null
-			? Math.min(last_clicked_index, last_entered_index)
-			: null
+		last_clicked_index !== null ? Math.min(last_clicked_index, last_entered_index!) : null
 	);
 	let last_hi = $derived(
-		last_clicked_index !== null && last_entered_index !== null
-			? Math.max(last_clicked_index, last_entered_index)
-			: null
+		last_clicked_index !== null ? Math.max(last_clicked_index, last_entered_index!) : null
 	);
 
 	const any_selected = $derived(relations.some((r) => r.selected));
@@ -100,15 +98,15 @@
 <svelte:window
 	onmousemove={(e) => {
 		if (e.buttons !== 1 || last_clicked_index === null) return;
-		last_entered_index = Array.from(document.querySelectorAll('.relation-row'))
-			.map((el) => el.getBoundingClientRect().top)
+		last_entered_index = relations
+			.map((el) => el.tr!.getBoundingClientRect().top)
 			.findIndex(
 				(top, i, arr) => top <= e.clientY && (i + 1 === arr.length || e.clientY < arr[i + 1])
 			);
 	}}
 	onmouseup={() => {
-		if (last_lo !== null && last_hi !== null && last_clicked_index !== null)
-			for (let i = last_lo; i <= last_hi; i++)
+		if (last_clicked_index !== null)
+			for (let i = last_lo!; i <= last_hi!; i++)
 				relations[i].selected = relations[last_clicked_index].selected;
 		last_clicked_index = null;
 		last_entered_index = null;
@@ -238,7 +236,7 @@
 		{/if}
 		<tbody>
 			{#each relations as relation, i (i)}
-				<tr class="relation-row">
+				<tr bind:this={relation.tr}>
 					<td
 						onmousedown={(e) => {
 							if (e.button !== 0) return;
@@ -258,12 +256,7 @@
 						}}
 						><input
 							type="checkbox"
-							checked={last_clicked_index !== null &&
-							last_entered_index !== null &&
-							last_lo !== null &&
-							last_hi !== null &&
-							last_lo <= i &&
-							i <= last_hi
+							checked={last_clicked_index !== null && last_lo! <= i && i <= last_hi!
 								? relations[last_clicked_index].selected
 								: relation.selected}
 							onclick={(e) => e.preventDefault()}

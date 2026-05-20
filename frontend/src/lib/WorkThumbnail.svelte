@@ -22,6 +22,10 @@
 
 <style>
 	.missing-thumbnail {
-		background: repeating-linear-gradient(45deg, var(--color-otodb-bg-primary) 0px 32px, var(--color-otodb-bg-faint) 32px 64px);
+		background: repeating-linear-gradient(
+			45deg,
+			var(--color-otodb-bg-primary) 0px 32px,
+			var(--color-otodb-bg-faint) 32px 64px
+		);
 	}
 </style>

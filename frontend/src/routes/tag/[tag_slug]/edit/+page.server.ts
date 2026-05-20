@@ -10,10 +10,10 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 	userLevelGuard(locals.user, Levels.Member, url.pathname);
 
 	const [{ data: wiki_page }, { data: details }, { data: connections }] = await Promise.all([
-		client.GET('/api/tag/wiki_page', {
+		client.GET('/api/wiki/tag/{tag_slug}', {
 			fetch,
 			params: {
-				query: {
+				path: {
 					tag_slug: params.tag_slug
 				}
 			}
@@ -116,9 +116,9 @@ export const actions = {
 		if (pages.length === 0) {
 			redirect(303, `/tag/${params.tag_slug}`);
 		}
-		await client.POST('/api/tag/wiki_page', {
+		await client.POST('/api/wiki/tag/{tag_slug}', {
 			fetch,
-			params: { query: { tag_slug: params.tag_slug! } },
+			params: { path: { tag_slug: params.tag_slug! } },
 			body: pages
 		});
 		redirect(303, `/tag/${params.tag_slug}`);

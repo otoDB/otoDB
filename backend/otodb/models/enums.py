@@ -296,6 +296,7 @@ class Route(OtodbIntegerEnum):
 	MEDIAWORK_UPDATE = 45, 'Media Work Update'
 	MEDIAWORK_MERGE = 46, 'Media Work Merge'
 	MEDIAWORK_CREATE = 47, 'Media Work Create'
+	MEDIAWORK_EDIT_WIKI = 48, 'Media Work Edit Wiki'
 
 	WORKRELATION_CREATE = 50, 'Work Relation Control'
 	# WORKRELATION_DELETE = 51, 'DEPRECATED - Work Relation Delete'
@@ -307,6 +308,8 @@ class Route(OtodbIntegerEnum):
 	WORKSOURCE_ASSIGN = 64, 'Work Source Assign'
 	WORKSOURCE_REJECT = 65, 'Work Source Reject'
 	WORKSOURCE_UPDATE = 66, 'Work Source Update'
+
+	WIKI_EDIT = 70, 'Wiki Edit'
 
 	ROLLBACK = 100, 'Rollback'
 	SYSTEM = 10000, 'System'

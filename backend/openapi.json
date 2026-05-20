@@ -3291,83 +3291,6 @@
         ]
       }
     },
-    "/api/tag/wiki_page": {
-      "get": {
-        "operationId": "otodb_api_tag_wiki_page",
-        "summary": "Wiki Page",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "tag_slug",
-            "schema": {
-              "title": "Tag Slug",
-              "type": "string"
-            },
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/WikiPageMDSchema"
-                  },
-                  "title": "Response",
-                  "type": "array"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "SessionAuth": []
-          }
-        ]
-      },
-      "post": {
-        "operationId": "otodb_api_tag_edit_wiki_page",
-        "summary": "Edit Wiki Page",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "tag_slug",
-            "schema": {
-              "title": "Tag Slug",
-              "type": "string"
-            },
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "items": {
-                  "$ref": "#/components/schemas/WikiPageEditSchema"
-                },
-                "title": "Payload",
-                "type": "array"
-              }
-            }
-          },
-          "required": true
-        },
-        "security": [
-          {
-            "SessionAuth": []
-          }
-        ]
-      }
-    },
     "/api/tag/connection": {
       "get": {
         "operationId": "otodb_api_tag_connection",
@@ -4041,6 +3964,343 @@
             }
           }
         }
+      }
+    },
+    "/api/wiki/": {
+      "get": {
+        "operationId": "otodb_api_wiki_index",
+        "summary": "Index",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/WikiKind"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lang"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "title": "Offset",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiIndexResponseSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wiki/tag/{tag_slug}": {
+      "get": {
+        "operationId": "otodb_api_wiki_get_tag_wiki",
+        "summary": "Get Tag Wiki",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tag_slug",
+            "schema": {
+              "title": "Tag Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WikiPageMDSchema"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "otodb_api_wiki_edit_tag_wiki",
+        "summary": "Edit Tag Wiki",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tag_slug",
+            "schema": {
+              "title": "Tag Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/WikiPageEditSchema"
+                },
+                "title": "Payload",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/wiki/work/{work_id}": {
+      "get": {
+        "operationId": "otodb_api_wiki_get_work_wiki",
+        "summary": "Get Work Wiki",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_id",
+            "schema": {
+              "title": "Work Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WikiPageMDSchema"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "otodb_api_wiki_edit_work_wiki",
+        "summary": "Edit Work Wiki",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_id",
+            "schema": {
+              "title": "Work Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/WikiPageEditSchema"
+                },
+                "title": "Payload",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/wiki/{page_slug}": {
+      "get": {
+        "operationId": "otodb_api_wiki_get_slug_wiki",
+        "summary": "Get Slug Wiki",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_slug",
+            "schema": {
+              "title": "Page Slug",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WikiPageMDSchema"
+                  },
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "otodb_api_wiki_edit_slug_wiki",
+        "summary": "Edit Slug Wiki",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_slug",
+            "schema": {
+              "title": "Page Slug",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "title",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Title"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/WikiPageEditSchema"
+                },
+                "title": "Payload",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
       }
     },
     "/api/post/post": {
@@ -7257,6 +7517,7 @@
           45,
           46,
           47,
+          48,
           50,
           60,
           61,
@@ -7265,6 +7526,7 @@
           64,
           65,
           66,
+          70,
           100,
           10000
         ],
@@ -7289,6 +7551,7 @@
           "Media Work Update",
           "Media Work Merge",
           "Media Work Create",
+          "Media Work Edit Wiki",
           "Work Relation Control",
           "Work Source Create",
           "Work Source Unbind",
@@ -7297,6 +7560,7 @@
           "Work Source Assign",
           "Work Source Reject",
           "Work Source Update",
+          "Wiki Edit",
           "Rollback",
           "System"
         ]
@@ -7966,42 +8230,6 @@
         "title": "TagAliasControlSchema",
         "type": "object"
       },
-      "WikiPageMDSchema": {
-        "properties": {
-          "page": {
-            "title": "Page",
-            "type": "string"
-          },
-          "lang": {
-            "default": 0,
-            "title": "Lang",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "page"
-        ],
-        "title": "WikiPageMDSchema",
-        "type": "object"
-      },
-      "WikiPageEditSchema": {
-        "properties": {
-          "lang": {
-            "$ref": "#/components/schemas/LanguageTypes",
-            "gt": 0
-          },
-          "md": {
-            "title": "Md",
-            "type": "string"
-          }
-        },
-        "required": [
-          "lang",
-          "md"
-        ],
-        "title": "WikiPageEditSchema",
-        "type": "object"
-      },
       "MediaConnectionTypes": {
         "enum": [
           1,
@@ -8475,6 +8703,136 @@
           "has_connection"
         ],
         "title": "ConnectionTagResult",
+        "type": "object"
+      },
+      "WikiKind": {
+        "enum": [
+          "tag",
+          "work",
+          "docs"
+        ],
+        "title": "WikiKind",
+        "type": "string"
+      },
+      "WikiIndexResponseSchema": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WikiIndexRowSchema"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "WikiIndexResponseSchema",
+        "type": "object"
+      },
+      "WikiIndexRowSchema": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/WikiKind"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "last_edited_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Edited At"
+          },
+          "langs": {
+            "items": {
+              "$ref": "#/components/schemas/LanguageTypes"
+            },
+            "title": "Langs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "key",
+          "title",
+          "langs"
+        ],
+        "title": "WikiIndexRowSchema",
+        "type": "object"
+      },
+      "WikiPageMDSchema": {
+        "properties": {
+          "page": {
+            "title": "Page",
+            "type": "string"
+          },
+          "lang": {
+            "$ref": "#/components/schemas/LanguageTypes"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "modified": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modified"
+          }
+        },
+        "required": [
+          "page",
+          "lang"
+        ],
+        "title": "WikiPageMDSchema",
+        "type": "object"
+      },
+      "WikiPageEditSchema": {
+        "properties": {
+          "lang": {
+            "$ref": "#/components/schemas/LanguageTypes",
+            "gt": 0
+          },
+          "md": {
+            "title": "Md",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lang",
+          "md"
+        ],
+        "title": "WikiPageEditSchema",
         "type": "object"
       },
       "PostCategory": {

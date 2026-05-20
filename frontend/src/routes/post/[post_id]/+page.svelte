@@ -180,10 +180,6 @@
 		<div class="text-otodb-content-fainter mb-6 text-xs">
 			<p>
 				<a href="/post?category={data.post.category}">{postCategoryNames[data.post.category]()}</a>
-				{#if data.post.category === PostCategory.Announcement}
-					&middot;
-					<a href="#p{data.post_id}"><Time format="relative" date={page_object.modified} /></a>
-				{/if}
 			</p>
 			{#if data.post.entities?.length}
 				<p class="mt-1">
@@ -201,46 +197,28 @@
 			availableLanguages={data.post.pages.map((v) => resolveLanguageKeyById(v.lang))}
 			bind:value={lang_view}
 		/>
-		{#if data.post.category > 0}
-			<div class="op-post grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="p{data.post_id}">
-				<div
-					class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
-				>
-					<a href="/profile/{data.post?.added_by.username}">{data.post?.added_by.username}</a>
-					<a href="#p{data.post_id}"><Time format="relative" date={page_object.modified} /></a>
-					{#if data.post.edited_at && data.post.edited_by}
-						<EditedBy
-							date={data.post.edited_at}
-							user={editedByOther ? data.post.edited_by : null}
-						/>
-					{/if}
-				</div>
-				<div class="px-4 py-2">
-					<div class="post-content prose prose-neutral prose-sm dark:prose-invert mt-4 max-w-none">
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html page}
-					</div>
-					{#if canEdit}
-						<div class="post-actions flex justify-end gap-2 pt-2">
-							<button class="px-2 py-1" onclick={startEdit}>Edit</button>
-						</div>
-					{/if}
-				</div>
-			</div>
-		{:else}
+		<div class="op-post grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="p{data.post_id}">
 			<div
-				class="post-content prose prose-neutral prose-sm dark:prose-invert mx-auto mt-4 max-w-4xl"
-				id="p{data.post_id}"
+				class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 			>
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html page}
+				<a href="/profile/{data.post?.added_by.username}">{data.post?.added_by.username}</a>
+				<a href="#p{data.post_id}"><Time format="relative" date={page_object.modified} /></a>
+				{#if data.post.edited_at && data.post.edited_by}
+					<EditedBy date={data.post.edited_at} user={editedByOther ? data.post.edited_by : null} />
+				{/if}
+			</div>
+			<div class="px-4 py-2">
+				<div class="post-content prose prose-neutral prose-sm dark:prose-invert mt-4 max-w-none">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html page}
+				</div>
 				{#if canEdit}
 					<div class="post-actions flex justify-end gap-2 pt-2">
 						<button class="px-2 py-1" onclick={startEdit}>Edit</button>
 					</div>
 				{/if}
 			</div>
-		{/if}
+		</div>
 	{/if}
 </Section>
 

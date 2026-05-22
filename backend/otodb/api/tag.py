@@ -632,7 +632,7 @@ def update(
 	tag.save()
 
 	ps = [
-		get_object_or_404(TagWork, slug=s).aliased_to
+		get_object_or_404(TagWork, slug=s)
 		for s in [slugify_tag(p) for p in payload.parent_slugs]
 	]
 	ps = [p.aliased_to if p.aliased_to else p for p in ps]

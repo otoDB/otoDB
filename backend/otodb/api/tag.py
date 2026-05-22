@@ -1202,9 +1202,9 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchem
 	tag.category = payload.category
 	if payload.parent_slug:
 		parent = get_object_or_404(TagSong, slug=payload.parent_slug)
-		assert all(tag.id != t.id for t in tag.get_tree())
 		if parent.aliased_to:
 			parent = parent.aliased_to
+		assert all(tag.id != t.id for t in parent.get_tree())
 		tag.parent = parent
 	else:
 		tag.parent = None

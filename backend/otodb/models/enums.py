@@ -171,6 +171,12 @@ class ThemePref(OtodbIntegerEnum):
 	RESAMPLE = 5, 'Re:Sample'
 
 
+VideoPlatformPref = OtodbIntegerEnum(
+	'VideoPlatformPref',
+	[('AUTO', (0, 'Auto'))] + [(p.name, (p.value, p.label)) for p in Platform],
+)
+
+
 class MediaType(OtodbIntegerEnum):
 	ANIME = 1, 'Anime'
 	SHOW = 2, 'TV Show'
@@ -341,9 +347,13 @@ class ErrorCode(OtodbIntegerEnum):
 class Preferences(OtodbIntegerEnum):
 	LANGUAGE = 1
 	THEME = 2
+	VIDEO_PLATFORM = 3
+	PREFER_PLATFORM_REUPLOAD = 4
 
 
 PreferencesValueTypeMap = {
 	Preferences.LANGUAGE: LanguageTypes,
 	Preferences.THEME: ThemePref,
+	Preferences.VIDEO_PLATFORM: VideoPlatformPref,
+	Preferences.PREFER_PLATFORM_REUPLOAD: bool,
 }

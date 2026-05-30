@@ -10,7 +10,8 @@ import {
 	Status,
 	WorkOrigin,
 	WorkRelationTypes,
-	WorkStatus
+	WorkStatus,
+	VideoPlatformPref
 } from '$lib/schema';
 
 export const SongTagCategoryNames = {
@@ -37,6 +38,23 @@ export const WorkOriginNames = {
 	[WorkOrigin.Reupload]: m.lucky_still_vulture_work
 } as const satisfies Record<WorkOrigin, () => string>;
 
+export const PlatformNames = {
+	[Platform.YouTube]: 'YouTube',
+	[Platform.Niconico]: 'Niconico',
+	[Platform.Bilibili]: 'Bilibili',
+	[Platform.SoundCloud]: 'SoundCloud',
+	[Platform.Twitter]: 'Twitter',
+	[Platform.AcFun]: 'AcFun'
+} as const satisfies Record<Platform, string>;
+
+// Auto is preference-only; the rest mirror PlatformNames
+export const VideoPlatformPrefNames = {
+	[VideoPlatformPref.Auto]: m.brisk_neat_otter_glide,
+	...(Object.fromEntries(
+		Object.entries(PlatformNames).map(([value, name]) => [value, () => name])
+	) as Record<Platform, () => string>)
+} satisfies Record<VideoPlatformPref, () => string>;
+
 export const WorkStatusNames = {
 	[WorkStatus.Available]: m.this_lime_porpoise_launch,
 	[WorkStatus.Down]: m.dizzy_mellow_pug_spur
@@ -47,15 +65,6 @@ export const MimeType = {
 	2: 'image/png',
 	3: 'image/webp'
 };
-
-export const PlatformNames = {
-	[Platform.YouTube]: 'YouTube',
-	[Platform.Niconico]: 'Niconico',
-	[Platform.Bilibili]: 'Bilibili',
-	[Platform.SoundCloud]: 'SoundCloud',
-	[Platform.Twitter]: 'Twitter',
-	[Platform.AcFun]: 'AcFun'
-} as const satisfies Record<Platform, string>;
 
 export const WorkRelationNames = {
 	[WorkRelationTypes.Sequel]: m.spry_muddy_sloth_radiate,

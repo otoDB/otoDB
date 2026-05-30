@@ -296,5 +296,12 @@
 	"grim_plain_crane_crash": "获取数据时发生错误。",
 	"watery_kind_quail_climb": "此作品缺少以下类别的标签：{missing}",
 	"bright_nimble_eagle_glide": "用户列表",
-	"careful_close_shad_achieve": "未分类"
+	"careful_close_shad_achieve": "未分类",
+	"wise_calm_otter_play": "播放",
+	"merry_bold_finch_soar": "首选视频播放平台",
+	"lush_keen_robin_perch": "优先转载而非作者上传",
+	"brisk_neat_otter_glide": "自动",
+	"calm_wide_swan_rest": "整个网站使用的语言。",
+	"noble_brave_quail_soar": "用于嵌入视频播放的平台。",
+	"tidy_warm_seal_glide": "当首选平台只有转载时，播放该转载而不是其他平台的作者原始上传。"
 }

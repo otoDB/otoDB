@@ -1,9 +1,16 @@
 import { browser } from '$app/environment';
+import { page } from '$app/state';
 import { languages } from '$lib/enums/language';
 import { getLocale } from '$lib/paraglide/runtime';
 import { WorkTagCategoryMap } from './enums/workTagCategory';
 import { m } from './paraglide/messages';
-import { WorkTagCategory, LanguageTypes, ThemePref, type components } from './schema';
+import {
+	WorkTagCategory,
+	LanguageTypes,
+	ThemePref,
+	VideoPlatformPref,
+	type components
+} from './schema';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -30,23 +37,39 @@ export const clickOutside = (node: HTMLElement) => {
 };
 type Prefs = components['schemas']['UserPreferenceSchema'];
 
-const defaultPrefs: Prefs = {
+const defaultPrefs: Required<Prefs> = {
 	LANGUAGE: LanguageTypes.en, // reflects baseLocale
-	THEME: ThemePref.Default
+	THEME: ThemePref.Default,
+	VIDEO_PLATFORM: VideoPlatformPref.Auto,
+	PREFER_PLATFORM_REUPLOAD: false
 };
 
 export const getLocalPrefs = (): Partial<Prefs> | undefined => {
 	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
 };
 
-export const getLocalPref = <T extends keyof Prefs>(setting: T): Prefs[T] =>
-	getLocalPrefs()?.[setting] ?? defaultPrefs[setting];
+export const getLocalPref = <T extends keyof Prefs>(setting: T): Required<Prefs>[T] =>
+	(getLocalPrefs()?.[setting] ?? defaultPrefs[setting]) as Required<Prefs>[T];
 
-export const updateLocalPref = <T extends keyof Prefs>(key: T, value: Prefs[T]) => {
+export const updateLocalPrefs = (values: Partial<Prefs>) => {
 	if (!browser) return;
 
-	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), [key]: value }));
+	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), ...values }));
 };
+
+export const updateLocalPref = <T extends keyof Prefs>(key: T, value: Prefs[T]) =>
+	updateLocalPrefs({ [key]: value } as Partial<Prefs>);
+
+// The server returns unset prefs as null; drop nullish entries so they don't clobber defaults
+const definedPrefs = (prefs: Partial<Prefs> | undefined): Partial<Prefs> =>
+	Object.fromEntries(Object.entries(prefs ?? {}).filter(([, v]) => v != null)) as Partial<Prefs>;
+
+// Fully-resolved preferences; defaults < local storage < logged-in user
+export const getPrefs = (): Required<Prefs> => ({
+	...defaultPrefs,
+	...definedPrefs(getLocalPrefs()),
+	...definedPrefs(page.data?.user?.prefs as Partial<Prefs> | undefined)
+});
 
 export const GUIDELINE_POST_ID = '4';
 export const FAQ_POST_ID = '3';

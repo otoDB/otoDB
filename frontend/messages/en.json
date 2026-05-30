@@ -398,5 +398,12 @@
 	"crisp_neat_wren_match": "Works tagged with Touhou or any child descendants, excluding any song tags under Touhou",
 	"swift_keen_otter_guide": "View docs",
 	"witty_brisk_hawk_merge": "At least one of the tags being merged into \"{into_tag}\" is associated to a work or song. Only editors can merge such tags.",
-	"this_late_gadfly_sail": "System"
+	"this_late_gadfly_sail": "System",
+	"wise_calm_otter_play": "Play",
+	"merry_bold_finch_soar": "Preferred video playback platform",
+	"lush_keen_robin_perch": "Prefer reuploads over author uploads",
+	"brisk_neat_otter_glide": "Auto",
+	"calm_wide_swan_rest": "The language used across the site.",
+	"noble_brave_quail_soar": "Which platform to use for embedded video playback.",
+	"tidy_warm_seal_glide": "When your preferred platform only has a reupload, play it instead of the author's original upload elsewhere."
 }

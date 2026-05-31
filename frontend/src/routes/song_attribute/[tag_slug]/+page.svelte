@@ -15,13 +15,13 @@
 	);
 </script>
 
-<Section title={data.tag.name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
+<Section title={data.display_name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
 	<div>
 		<span>{m.dull_plain_angelfish_cuddle()}</span>
 		{#each data.tree as node, i (i)}
 			> {#if node.slug === data.tag.slug}{data.display_name}{:else}<a href={node.slug}
 					>{getTagDisplayName(node)}</a
-				>{/if}&nbsp;{/each}> <span>{data.tag.name}</span>
+				>{/if}&nbsp;{/each}> <span>{data.display_name}</span>
 	</div>
 
 	<h2>
@@ -45,13 +45,13 @@
 	<Section title={m.misty_great_gazelle_comfort()}>
 		<ul>
 			{#each data.tag.children as tag, i (i)}
-				<li><a href={tag.slug}>{tag.name}</a></li>
+				<li><a href={tag.slug}>{getTagDisplayName(tag)}</a></li>
 			{/each}
 		</ul>
 	</Section>
 {/if}
 
-<Section title={m.red_petty_jurgen_sway({ name: data.tag.name })}>
+<Section title={m.red_petty_jurgen_sway({ name: data.display_name })}>
 	{#if data.songs.items.length}
 		<table>
 			<thead

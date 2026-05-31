@@ -632,10 +632,10 @@ def update(
 	tag.save()
 
 	ps = [
-		get_object_or_404(TagWork, slug=s).aliased_to
-		or get_object_or_404(TagWork, slug=s, aliased_to__isnull=True)
+		get_object_or_404(TagWork, slug=s)
 		for s in [slugify_tag(p) for p in payload.parent_slugs]
 	]
+	ps = [p.aliased_to if p.aliased_to else p for p in ps]
 	assert payload.primary is None or 0 <= payload.primary < len(ps)
 	tag.childhood.exclude(parent__in=ps).delete()
 	desc = tag.get_descendants()
@@ -1160,6 +1160,8 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchem
 	tag.category = payload.category
 	if payload.parent_slug:
 		parent = get_object_or_404(TagSong, slug=payload.parent_slug)
+		if parent.aliased_to:
+			parent = parent.aliased_to
 		assert all(tag.id != t.id for t in parent.get_tree())
 		tag.parent = parent
 	else:

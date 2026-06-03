@@ -127,6 +127,13 @@ class TagSongSchema(Schema):
 	category: SongTagCategory
 	lang_prefs: list[TagLangPreferenceSchema]
 
+	@staticmethod
+	def resolve_children(obj):
+		return TagSong.objects.filter(
+			Q(parent_id=obj.pk) | Q(parent__aliased_to=obj.pk),
+			aliased_to__isnull=True,
+		)
+
 
 class TagSongDetailsSchema(Schema):
 	tree: list[TagSongSchema]
@@ -406,6 +413,7 @@ class AliasResponse(Schema):
 
 @tag_router.post('alias', auth=django_auth, response=AliasResponse)
 @user_is_trusted
+@transaction.atomic
 @tag_route_switch(Route.TAGWORK_ALIAS, Route.SONGTAG_ALIAS)
 def alias_tags(
 	request: AuthedHttpRequest,
@@ -472,6 +480,7 @@ class TagAliasControlSchema(Schema):
 
 @tag_router.post('tag_aliases', auth=django_auth, response={200: None, 400: Error})
 @user_is_trusted
+@transaction.atomic
 @tag_route_switch(Route.TAGWORK_UNALIAS, Route.SONGTAG_UNALIAS)
 def tag_alias_control(
 	request: HttpRequest, tag_slug: str, payload: TagAliasControlSchema, **kwargs

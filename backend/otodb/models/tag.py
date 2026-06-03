@@ -116,7 +116,6 @@ class TagSongManager(TagModelManagerBase):
 		return (
 			super()
 			.get_queryset()
-			.prefetch_related('children')
 			.select_related('aliased_to')
 			.prefetch_related(
 				Prefetch('tagsonglangpreference_set', queryset=lang_prefs_qs),

@@ -159,7 +159,7 @@
 				{@render link('/moderation', m.minor_inner_lynx_adapt())}
 				{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 				{@render link('/work/merge', m.heroic_same_wasp_conquer())}
-				{@render link('/post/4', m.arable_direct_cougar_win())}
+				{@render link('/wiki/editing_guidelines', m.arable_direct_cougar_win())}
 			</ul>
 		</div>
 	{/if}

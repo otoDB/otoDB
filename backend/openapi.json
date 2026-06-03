@@ -5161,7 +5161,8 @@
           10018,
           10019,
           10020,
-          10021
+          10021,
+          10022
         ],
         "title": "ErrorCode",
         "type": "integer",
@@ -5188,7 +5189,8 @@
           "No More Appeal Slots",
           "Tag Has Information",
           "Thumbnail Source Required",
-          "Tag With Instances Merge Requires Editor"
+          "Tag With Instances Merge Requires Editor",
+          "Rate Limited"
         ]
       },
       "LoginRequestSchema": {

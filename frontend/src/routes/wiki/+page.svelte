@@ -25,6 +25,18 @@
 		<label class="flex flex-col text-sm">
 			<input type="text" name="q" value={data.q} placeholder="{m.mean_top_antelope_love()}..." />
 		</label>
+		<select name="kind">
+			<option value="">{m.keen_soft_crow_relish()}</option>
+			<option value={WikiKind.tag} selected={data.kind === WikiKind.tag}>
+				{m.empty_legal_chicken_taste()}
+			</option>
+			<option value={WikiKind.work} selected={data.kind === WikiKind.work}>
+				{m.grand_merry_fly_succeed()}
+			</option>
+			<option value={WikiKind.docs} selected={data.kind === WikiKind.docs}>
+				{m.nice_close_goldfish_taste()}
+			</option>
+		</select>
 		<input type="submit" />
 	</form>
 

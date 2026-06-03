@@ -399,5 +399,6 @@
 	"swift_keen_otter_guide": "View docs",
 	"witty_brisk_hawk_merge": "At least one of the tags being merged into \"{into_tag}\" is associated to a work or song. Only editors can merge such tags.",
 	"this_late_gadfly_sail": "System",
-	"nice_close_goldfish_taste": "Standalone"
+	"nice_close_goldfish_taste": "Standalone",
+	"lucky_brisk_falcon_rest": "Rate limit exceeded."
 }

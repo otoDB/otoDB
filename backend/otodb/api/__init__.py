@@ -6,6 +6,7 @@ import orjson
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from ninja import NinjaAPI
+from ninja.errors import Throttled
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
 from ninja.throttling import AnonRateThrottle, AuthRateThrottle
@@ -146,6 +147,11 @@ def _handle_api_error(request, exc: ApiError):
 	if exc.data is not None:
 		body['data'] = exc.data
 	return api.create_response(request, body, status=exc.status)
+
+
+@api.exception_handler(Throttled)
+def _handle_throttled(request, exc: Throttled):
+	return api.create_response(request, {'code': ErrorCode.RATE_LIMITED}, status=429)
 
 
 @api.get('stats', response=tuple[int, int, int, int])

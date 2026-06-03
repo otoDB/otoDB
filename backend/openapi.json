@@ -5395,6 +5395,7 @@
       "ErrorCode": {
         "enum": [
           -1,
+          429,
           10000,
           10001,
           10002,
@@ -5422,6 +5423,7 @@
         "type": "integer",
         "x-enum-varnames": [
           "Internal Error",
+          "Rate Limited",
           "Login Failed",
           "Not Logged In",
           "Username Taken",

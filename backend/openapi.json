@@ -1101,7 +1101,7 @@
             }
           }
         },
-        "description": "Appeal an unapproved work to send it back to the mod queue.",
+        "description": "Appeal a delisted work to send it back to the mod queue.",
         "security": [
           {
             "SessionAuth": []
@@ -2059,7 +2059,7 @@
             "schema": {
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/Status"
+                  "$ref": "#/components/schemas/SubmissionStanding"
                 }
               ],
               "default": 1
@@ -5770,7 +5770,7 @@
         "x-enum-varnames": [
           "Pending",
           "Approved",
-          "Unapproved"
+          "Delisted"
         ]
       },
       "TagWorkInstanceThinSchema": {
@@ -6872,6 +6872,26 @@
         "title": "UserConnectionSchema",
         "type": "object"
       },
+      "SubmissionStanding": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "title": "SubmissionStanding",
+        "type": "integer",
+        "x-enum-varnames": [
+          "Pending",
+          "Approved",
+          "Delisted",
+          "Unbound",
+          "Flagged",
+          "Appealed"
+        ]
+      },
       "SubmissionsFilterSchema": {
         "properties": {
           "platform": {
@@ -7082,6 +7102,16 @@
               }
             ],
             "title": "Media"
+          },
+          "media_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [

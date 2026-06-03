@@ -76,6 +76,7 @@ def unbind_source(request: AuthedHttpRequest, source_id: OtodbID):
 	if src.media.worksource_set.count() == 1:
 		src.media.delete()
 	src.media = None
+	src.is_pending = False
 	src.save()
 
 
@@ -173,7 +174,7 @@ def new_source_from_url(
 		work = get_object_or_404(
 			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
 		)
-		if work.status == Status.UNAPPROVED:
+		if work.status == Status.DELISTED:
 			raise ApiError(400, ErrorCode.SOURCE_UNAPPROVED)
 		if work.moderation_events.filter(
 			event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING

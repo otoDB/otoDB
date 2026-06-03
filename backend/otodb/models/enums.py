@@ -42,7 +42,7 @@ class Rating(OtodbIntegerEnum):
 class Status(OtodbIntegerEnum):
 	PENDING = 0, 'Pending'
 	APPROVED = 1, 'Approved'
-	UNAPPROVED = 2, 'Unapproved'
+	DELISTED = 2, 'Delisted'
 
 
 class WorkOrigin(OtodbIntegerEnum):
@@ -237,6 +237,16 @@ class ModQueueCategory(OtodbIntegerEnum):
 	APPEALED = 2, 'Appealed'
 
 
+# Used for filters on profile submission page
+class SubmissionStanding(OtodbIntegerEnum):
+	PENDING = 0, 'Pending'
+	APPROVED = 1, 'Approved'
+	DELISTED = 2, 'Delisted'
+	UNBOUND = 3, 'Unbound'
+	FLAGGED = 4, 'Flagged'
+	APPEALED = 5, 'Appealed'
+
+
 class FlagStatus(models.IntegerChoices):
 	PENDING = 0, 'Pending'
 	SUCCEEDED = 1, 'Succeeded'
@@ -244,7 +254,7 @@ class FlagStatus(models.IntegerChoices):
 
 
 class ModerationAction(models.IntegerChoices):
-	# Work unapproved via auto-expiry or staff action
+	# Work delisted via auto-expiry or staff action
 	WORK_DELISTED = (
 		1,
 		'Work Delisted',

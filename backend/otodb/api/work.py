@@ -618,7 +618,7 @@ def work(request: AuthedHttpRequest, work_id: OtodbID):
 @with_revision_route(Route.MEDIAWORK_DELETE)
 def delete_work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	work.worksource_set.update(media=None)
+	work.worksource_set.update(media=None, is_pending=False)
 	work.delete()
 
 
@@ -820,14 +820,21 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	return work.pk
 
 
-def resolve_work(work: MediaWork):
-	"""Resolve a work's pending state and dismiss any pending flags/appeals."""
+def resolve_work(work: MediaWork, by: Account, reason: str = ''):
+	"""Delist a work, dismiss any pending flags/appeals, and record the action."""
 	work.moderation_events.filter(
 		event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
 		status=FlagStatus.PENDING,
 	).update(status=FlagStatus.REJECTED)
-	work.status = Status.UNAPPROVED
+	work.status = Status.DELISTED
 	work.save(update_fields=['status'])
+	ModerationEvent.objects.create(
+		work=work,
+		event_type=ModerationEventType.MOD_ACTION,
+		status=ModerationAction.WORK_DELISTED,
+		by=by,
+		reason=reason,
+	)
 
 
 @work_router.post('approve', auth=django_auth, response={200: None, 403: Error})
@@ -872,13 +879,7 @@ def disapprove_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 def resolve_work_mod(request: AuthedHttpRequest, work_id: OtodbID):
 	"""Immediate resolution by mods - same as expiry, skips the waiting period."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	resolve_work(work)
-	ModerationEvent.objects.create(
-		work=work,
-		event_type=ModerationEventType.MOD_ACTION,
-		status=ModerationAction.WORK_DELISTED,
-		by=request.user,
-	)
+	resolve_work(work, by=request.user)
 
 
 @work_router.post(
@@ -936,9 +937,9 @@ def flag_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 )
 @user_is_trusted
 def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
-	"""Appeal an unapproved work to send it back to the mod queue."""
+	"""Appeal a delisted work to send it back to the mod queue."""
 	work = get_object_or_404(
-		MediaWork.objects.filter(status=Status.UNAPPROVED), id=work_id
+		MediaWork.objects.filter(status=Status.DELISTED), id=work_id
 	)
 	if work.moderation_events.filter(
 		event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING

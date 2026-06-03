@@ -21,6 +21,10 @@
 
 	let wikiView = $state.raw<keyof typeof languages | null>(initialView);
 
+	$effect(() => {
+		wikiView = initialView;
+	});
+
 	const currentPage = $derived.by(() => {
 		const view = wikiView;
 		if (!view) return fallbackPage;

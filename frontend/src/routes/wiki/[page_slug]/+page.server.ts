@@ -1,5 +1,4 @@
 import client from '$lib/api.server';
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, fetch }) => {
@@ -10,6 +9,6 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 
 	return {
 		page_slug: params.page_slug,
-		wiki_page: data
+		wiki_page: data ?? []
 	};
 };

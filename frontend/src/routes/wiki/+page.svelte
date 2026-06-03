@@ -10,7 +10,7 @@
 
 	function hrefFor(row: (typeof data.results.items)[number]): string {
 		if (row.kind === WikiKind.tag) return `/tag/${row.key}`;
-		if (row.kind === WikiKind.work) return `/work/${row.key}/wiki`;
+		if (row.kind === WikiKind.work) return `/work/${row.key}`;
 		return `/wiki/${row.key}`;
 	}
 

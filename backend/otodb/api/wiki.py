@@ -2,11 +2,14 @@ from datetime import datetime
 from enum import Enum
 
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import OuterRef, Q, Subquery
+from django.db.models import F, Max, OuterRef, Q, Subquery
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Field, Query, Schema
+from ninja.errors import HttpError
 from ninja.security import django_auth
 
 from otodb.common import slugify_tag
@@ -70,14 +73,23 @@ class WikiIndexResponseSchema(Schema):
 	count: int
 
 
-def _kind_and_key(wp: WikiPage) -> tuple[WikiKind, str, str]:
-	if wp.tag_id is not None:
-		tag: TagWork = wp.tag
-		return WikiKind.TAG, tag.slug, tag.name
-	if wp.work_id is not None:
-		work: MediaWork = wp.work
-		return WikiKind.WORK, str(work.pk), work.title or f'Work #{work.pk}'
-	return WikiKind.DOCS, wp.slug, wp.title or wp.slug
+def _row_to_index_item(row: dict) -> dict:
+	"""Map a grouped `.values()` row to a WikiIndexRowSchema-shaped dict."""
+	if row['tag_id'] is not None:
+		kind, key, title = WikiKind.TAG, row['tag__slug'], row['tag__name']
+	elif row['work_id'] is not None:
+		kind = WikiKind.WORK
+		key = str(row['work_id'])
+		title = row['work__title'] or f'Work #{row["work_id"]}'
+	else:
+		kind, key, title = WikiKind.DOCS, row['slug'], row['title'] or row['slug']
+	return {
+		'kind': kind,
+		'key': key,
+		'title': title,
+		'last_edited_at': row['last_edited_at'],
+		'langs': sorted(row['langs']),
+	}
 
 
 @wiki_router.get('', response=WikiIndexResponseSchema)
@@ -89,7 +101,7 @@ def index(
 	limit: int = 20,
 	offset: int = 0,
 ):
-	qs = _annotate_modified(WikiPage.objects.select_related('tag', 'work').all())
+	qs = _annotate_modified(WikiPage.objects.all())
 
 	if kind == WikiKind.TAG:
 		qs = qs.filter(tag__isnull=False)
@@ -110,40 +122,23 @@ def index(
 			| Q(slug__icontains=q)
 		)
 
-	# Group by (kind, key) so each entity surfaces once with its langs aggregated
-	grouped: dict[tuple[WikiKind, str], dict] = {}
-	for wp in qs:
-		k, key, title = _kind_and_key(wp)
-		bucket = grouped.setdefault(
-			(k, key),
-			{
-				'kind': k,
-				'key': key,
-				'title': title,
-				'last_edited_at': wp.modified,
-				'langs': [],
-			},
+	# Group by the entity each page is attached to (a row has exactly one of
+	# tag/work/slug, so these columns are 1:1 with the entity), aggregating the
+	# langs and the latest edit so each entity surfaces once. Sort + paginate in
+	# the DB instead of materializing every WikiPage.
+	groups = (
+		qs.values('tag_id', 'tag__slug', 'tag__name', 'work_id', 'work__title', 'slug')
+		.annotate(
+			title=Max('title'),
+			langs=ArrayAgg('lang'),
+			last_edited_at=Max('modified'),
 		)
-		bucket['langs'].append(wp.lang)
-		if wp.modified is not None and (
-			bucket['last_edited_at'] is None or wp.modified > bucket['last_edited_at']
-		):
-			bucket['last_edited_at'] = wp.modified
-
-	for bucket in grouped.values():
-		bucket['langs'].sort()
-
-	edited = sorted(
-		(g for g in grouped.values() if g['last_edited_at'] is not None),
-		key=lambda g: g['last_edited_at'],
-		reverse=True,
+		.order_by(F('last_edited_at').desc(nulls_last=True))
 	)
-	never_edited = [g for g in grouped.values() if g['last_edited_at'] is None]
-	all_groups = edited + never_edited
 
 	return {
-		'items': all_groups[offset : offset + limit],
-		'count': len(all_groups),
+		'items': [_row_to_index_item(row) for row in groups[offset : offset + limit]],
+		'count': groups.count(),
 	}
 
 
@@ -203,7 +198,7 @@ def edit_work_wiki(
 	_apply_wiki_edits({'work': work}, payload)
 
 
-@wiki_router.get('{page_slug}', auth=django_auth, response=list[WikiPageMDSchema])
+@wiki_router.get('{page_slug}', response=list[WikiPageMDSchema])
 def get_slug_wiki(request: HttpRequest, page_slug: str):
 	return _annotate_modified(WikiPage.objects.filter(slug=page_slug)).order_by('lang')
 
@@ -218,12 +213,16 @@ def edit_slug_wiki(
 	payload: list[WikiPageEditSchema],
 	title: str | None = None,
 ):
-	existing = WikiPage.objects.filter(slug=page_slug).first()
-	if existing is None and title is None:
-		from ninja.errors import HttpError
+	try:
+		WikiPage._meta.get_field('slug').run_validators(page_slug)
+	except ValidationError as e:
+		raise HttpError(400, '; '.join(e.messages))
 
-		raise HttpError(400, 'title is required when creating a new wiki page')
-	resolved_title = title if title is not None else existing.title
+	existing = WikiPage.objects.filter(slug=page_slug).first()
+	resolved_title = (title if title is not None else existing and existing.title) or ''
+	if resolved_title.strip() == '':
+		raise HttpError(400, 'Title cannot be empty')
+	resolved_title = resolved_title.strip()
 
 	# Title is shared across langs; keep all rows for this slug in sync.
 	if existing is not None and resolved_title != existing.title:

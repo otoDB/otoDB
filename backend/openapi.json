@@ -4240,12 +4240,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "SessionAuth": []
-          }
-        ]
+        }
       },
       "post": {
         "operationId": "otodb_api_wiki_edit_slug_wiki",

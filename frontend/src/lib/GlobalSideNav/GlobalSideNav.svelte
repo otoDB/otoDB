@@ -92,6 +92,7 @@
 			{@render link('/tag', m.empty_legal_chicken_taste())}
 			{@render link('/song', m.grand_nice_pony_belong())}
 			{@render link('/song_attribute', `> ${m.dull_plain_angelfish_cuddle()}`)}
+			{@render link('/wiki', `${m.curly_zesty_pelican_aim()}`)}
 			{@render link('/list', m.stale_loose_squid_cut())}
 			{@render link('/post/overview', m.just_salty_anaconda_nourish())}
 			{@render link('/comments', m.same_broad_haddock_pinch())}

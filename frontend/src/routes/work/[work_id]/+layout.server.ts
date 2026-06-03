@@ -46,10 +46,6 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 						}
 					]
 				: []),
-			{
-				pathname: `work/${params.work_id}/wiki`,
-				title: m.curly_zesty_pelican_aim()
-			},
 			...(loggedOut
 				? []
 				: [{ pathname: `work/${params.work_id}/edit`, title: m.minor_crisp_cobra_list() }]),

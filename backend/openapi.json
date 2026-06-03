@@ -6226,6 +6226,34 @@
         "title": "SlimWorkSchema",
         "type": "object"
       },
+      "WikiPageContentSchema": {
+        "properties": {
+          "lang": {
+            "$ref": "#/components/schemas/LanguageTypes"
+          },
+          "page": {
+            "title": "Page",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "lang",
+          "page"
+        ],
+        "title": "WikiPageContentSchema",
+        "type": "object"
+      },
       "WorkRelationSchema": {
         "properties": {
           "A_id": {
@@ -6344,6 +6372,14 @@
           },
           "status": {
             "$ref": "#/components/schemas/Status"
+          },
+          "wiki_page": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/WikiPageContentSchema"
+            },
+            "title": "Wiki Page",
+            "type": "array"
           },
           "title": {
             "anyOf": [

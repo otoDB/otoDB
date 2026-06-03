@@ -20,13 +20,12 @@
 	}
 </script>
 
-<Section title="Wiki">
-	<form method="get" class="mb-4 flex flex-wrap items-end gap-3">
+<Section title={m.curly_zesty_pelican_aim()}>
+	<form method="get" class="mb-4 flex flex-wrap items-end gap-1">
 		<label class="flex flex-col text-sm">
-			<span>Search</span>
-			<input type="text" name="q" value={data.q} placeholder="Title or content..." />
+			<input type="text" name="q" value={data.q} placeholder="{m.mean_top_antelope_love()}..." />
 		</label>
-		<input type="submit" value="Filter" />
+		<input type="submit" />
 	</form>
 
 	{#if data.results.items.length === 0}
@@ -35,9 +34,9 @@
 		<table class="w-full">
 			<thead>
 				<tr>
-					<th>Title</th>
-					<th>Languages</th>
-					<th>Last edited</th>
+					<th>{m.large_factual_octopus_exhale()}</th>
+					<th>{m.hour_loud_squirrel_ascend()}</th>
+					<th>{m.lower_full_opossum_bless()}</th>
 				</tr>
 			</thead>
 			<tbody>

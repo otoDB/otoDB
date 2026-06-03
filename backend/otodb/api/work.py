@@ -596,7 +596,10 @@ def search(
 
 @work_router.get('work', response=WorkSchema)
 def work(request: AuthedHttpRequest, work_id: OtodbID):
-	work = get_object_or_404(MediaWork.objects.with_pending_moderation(), id=work_id)
+	work = get_object_or_404(
+		MediaWork.objects.with_pending_moderation().prefetch_related('wikipage_set'),
+		id=work_id,
+	)
 	if work.moved_to:
 		work = work.moved_to
 

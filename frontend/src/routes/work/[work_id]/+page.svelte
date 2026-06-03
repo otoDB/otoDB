@@ -31,6 +31,7 @@
 	import { getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
+	import WikiView from '$lib/WikiView.svelte';
 	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
@@ -375,6 +376,10 @@
 				</span>
 			{/each}
 		</div>
+		{#if data.wiki_page.length > 0}
+			<hr class="my-2" />
+			<WikiView wiki_page={data.wiki_page} />
+		{/if}
 	</div>
 </Section>
 

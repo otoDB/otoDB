@@ -56,5 +56,18 @@ export const actions = {
 				reason
 			});
 		redirect(303, `/work/${params.work_id}`);
+	},
+	wiki_page: async ({ request, fetch, params }) => {
+		const data = await request.formData();
+		const pages: { lang: number; md: string }[] = JSON.parse(data.get('wiki_pages') as string);
+		if (pages.length === 0) {
+			redirect(303, `/work/${params.work_id}`);
+		}
+		await client.POST('/api/wiki/work/{work_id}', {
+			fetch,
+			params: { path: { work_id: params.work_id! } },
+			body: pages
+		});
+		redirect(303, `/work/${params.work_id}`);
 	}
 } satisfies Actions;

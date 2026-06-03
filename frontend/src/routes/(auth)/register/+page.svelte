@@ -28,8 +28,7 @@
 				{#if data.inviteRequired}
 					<tr>
 						<th
-							><label for="invite"
-								>{m.tiny_great_robin_commend()} (<a href="/post/19">?</a>)</label
+							><label for="invite">{m.tiny_great_robin_commend()} (<a href="/post/19">?</a>)</label
 							></th
 						>
 						<td><input required type="text" name="invite" /></td>

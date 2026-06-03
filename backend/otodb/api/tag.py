@@ -121,11 +121,14 @@ class TagWorkDetailsSchema(Schema):
 
 class TagSongSchema(Schema):
 	id: OtodbID
-	children: list['TagSongSchema']
 	name: str
 	slug: str
 	category: SongTagCategory
 	lang_prefs: list[TagLangPreferenceSchema]
+
+
+class FatTagSongSchema(TagSongSchema):
+	children: list[TagSongSchema]
 
 	@staticmethod
 	def resolve_children(obj):
@@ -1182,7 +1185,7 @@ def song_tags(
 	return
 
 
-@tag_router.get('song_tag', response=TagSongSchema)
+@tag_router.get('song_tag', response=FatTagSongSchema)
 def song_tag(request: HttpRequest, tag_slug: str):
 	cleaned = slugify_tag(tag_slug)
 	tag = get_object_or_404(TagSong, slug=cleaned)
@@ -1224,7 +1227,11 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchem
 @tag_router.get('songs', response=list[SongSchema])
 @paginate
 def songs(request: HttpRequest, tag_slug: str):
-	return MediaSong.objects.filter(tags__slug=tag_slug)
+	return (
+		MediaSong.objects.filter(tags__slug=tag_slug)
+		.select_related('work_tag')
+		.prefetch_related('tags')
+	)
 
 
 class SongConnectionSchema(ConnectionSchema):

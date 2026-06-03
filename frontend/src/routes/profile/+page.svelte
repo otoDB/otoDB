@@ -119,9 +119,7 @@
 					<td class="text-right">{user.comments_count}</td>
 					<td class="text-right">{userLevelNames[user.level]()}</td>
 					<td class="text-right">
-						{#if user.date_created}
-							<Time format="absolute" date={user.date_created} />
-						{/if}
+						<Time format="absolute" date={user.date_created} />
 					</td>
 				</tr>
 			{/each}

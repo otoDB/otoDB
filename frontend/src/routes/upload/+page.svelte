@@ -64,18 +64,12 @@
 						<td>{Platform[source.platform] ?? source.platform}</td>
 						<td>
 							{#if source.media}
-								<a href="/work/{source.media}"
-									>{source.media_title || `Work #${source.media}`}</a
-								>
+								<a href="/work/{source.media}">{source.media_title || `Work #${source.media}`}</a>
 							{:else}
 								-
 							{/if}
 						</td>
-						<td
-							><a href="/profile/{source.added_by.username}"
-								>{source.added_by.username}</a
-							></td
-						>
+						<td><a href="/profile/{source.added_by.username}">{source.added_by.username}</a></td>
 						<td>{source.published_date ?? '-'}</td>
 						<td>
 							{#if source.is_pending}

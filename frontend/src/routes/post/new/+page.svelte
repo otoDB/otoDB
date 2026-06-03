@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import Section from '$lib/Section.svelte';
 	import { buildEntityRoutes, enumValues } from '$lib/enums';
 	import { languages } from '$lib/enums/language.js';
@@ -24,18 +24,12 @@
 </script>
 
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
-	<form method="POST" use:enhance>
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody
 				><tr
 					><th>{m.large_factual_octopus_exhale()}</th><td
-						><input
-							type="text"
-							name="title"
-							required
-							autocomplete="off"
-							value={data.title}
-						/></td
+						><input type="text" name="title" required autocomplete="off" value={data.title} /></td
 					></tr
 				><tr
 					><th>{m.hour_loud_squirrel_ascend()}</th><td

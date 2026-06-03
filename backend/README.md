@@ -15,7 +15,8 @@ cp .env.example .env
 docker compose up -d
 
 # Migrate changes and create admin account
-uv run _setup.py
+uv run manage.py migrate
+uv run manage.py createsuperuser
 
 # Add sample data
 uv run manage.py seed_data

@@ -155,7 +155,7 @@ def delete(
 	comment = XtdComment.objects.get(
 		content_type=T, object_pk=pk, site_id=1, id=comment_id
 	)
-	if request.user.level >= Account.Levels.ADMIN or comment.user == request.user:
+	if request.user.level >= Account.Levels.MOD or comment.user == request.user:
 		comment.is_removed = True
 		comment.save()
 		Notification.objects.filter(comment=comment).delete()
@@ -173,11 +173,10 @@ class CommentEditSchema(Schema):
 @restrict_internal
 def edit(request: HttpRequest, payload: CommentEditSchema):
 	comment = XtdComment.objects.select_related('meta').get(id=payload.comment_id)
-	is_admin = request.user.level >= Account.Levels.ADMIN
-	if not is_admin:
+	if not request.user.is_mod:
 		if comment.user != request.user:
 			raise HttpError(403, 'Forbidden')
-		# Lock: if an admin has edited this comment, original author can no longer edit
+		# Lock: if a mod has edited this comment, original author can no longer edit
 		try:
 			meta = comment.meta
 			if meta.edited_by_id and meta.edited_by_id != comment.user_id:

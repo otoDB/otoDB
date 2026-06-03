@@ -50,7 +50,6 @@ export const songConnectionMap: Record<
 	},
 	[SongConnectionTypes.The_Mod_Archive]: {
 		name: 'The Mod Archive',
-		linkFn: (id: string) =>
-			`https://modarchive.org/index.php?request=view_by_moduleid&query=${id}`
+		linkFn: (id: string) => `https://modarchive.org/index.php?request=view_by_moduleid&query=${id}`
 	}
 };

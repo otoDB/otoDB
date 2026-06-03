@@ -14,7 +14,7 @@
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { dirtyEnhance } from '$lib/dirty';
+	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import {
 		MediaConnectionTypes,
 		ProfileConnectionTypes,
@@ -35,9 +35,7 @@
 		form?.primary ??
 			(data.details?.primary_parent
 				? (() => {
-						const parentTag = data.parents.find(
-							(t) => t.slug === data.details.primary_parent
-						);
+						const parentTag = data.parents.find((t) => t.slug === data.details.primary_parent);
 						return parentTag ? parents.indexOf(getTagDisplaySlug(parentTag)) : -1;
 					})()
 				: -1)
@@ -76,34 +74,6 @@
 	);
 	let to_delete: string[] = $state([]);
 	let base = $state(data.tag.slug);
-	const aliases_post_gate = { p: Promise.withResolvers<void>() };
-
-	const submit_aliases = async () => {
-		await aliases_post_gate.p.promise;
-		const { error } = await client.POST('/api/tag/tag_aliases', {
-			fetch,
-			body: {
-				base_slug: base,
-				unalias_slugs: to_delete,
-				lang_prefs: Object.fromEntries(
-					Object.entries(tagLangPrefs).map(([k, v]) => [
-						languages[k as keyof typeof languages].id,
-						v
-					])
-				),
-				names: tagNames
-			},
-			params: {
-				query: {
-					type: TagTypes.work,
-					tag_slug: data.tag.slug
-				}
-			}
-		});
-		if (error) {
-			aliases_post_gate.p = Promise.withResolvers<void>();
-		} else goto(`/tag/${base}/`, { invalidateAll: true });
-	};
 
 	let urls = $state(
 		[
@@ -128,7 +98,7 @@
 			fetch,
 			params: { query: { tag_slug: data.tag.slug } }
 		});
-		if (response.ok) goto('/', { invalidateAll: true });
+		if (response.ok) await goto('/', { invalidateAll: true });
 	};
 
 	let previewHtml = $derived(renderMarkdown(mds[wikiView] ?? ''));
@@ -166,8 +136,8 @@
 					<th><label for="primary">{m.alive_light_eagle_stop()}</label></th>
 					<td
 						><select name="primary" bind:value={primary}
-							><option value={-1}>None</option>{#each parents as p, i (i)}<option
-									value={i}>{p}</option
+							><option value={-1}>None</option>{#each parents as p, i (i)}<option value={i}
+									>{p}</option
 								>{/each}</select
 						></td
 					>
@@ -184,8 +154,7 @@
 				</tr>
 				{#if category === WorkTagCategory.Song}
 					<tr
-						><th><label for="song_title">{m.large_factual_octopus_exhale()}</label></th
-						><td
+						><th><label for="song_title">{m.large_factual_octopus_exhale()}</label></th><td
 							><input
 								type="text"
 								name="song_title"
@@ -216,10 +185,7 @@
 						></tr
 					>
 					<tr
-						><th
-							><label for="song_variable_bpm">{m.tasty_male_tadpole_glow()}</label
-							></th
-						><td
+						><th><label for="song_variable_bpm">{m.tasty_male_tadpole_glow()}</label></th><td
 							><input
 								type="checkbox"
 								name="song_variable_bpm"
@@ -246,7 +212,7 @@
 		<input type="submit" />
 	</form>
 	<hr class="my-2" />
-	<button onclick={del}>{m.chunky_giant_quail_breathe()}</button>
+	<button {@attach dirtyClick(del)}>{m.chunky_giant_quail_breathe()}</button>
 </Section>
 
 {#if category === WorkTagCategory.Song && data.tag.category === WorkTagCategory.Song}
@@ -272,9 +238,32 @@
 		use:dirtyEnhance={{
 			barrier: form_barrier,
 			priority: 2,
-			manual_post: aliases_post_gate
+			custom_submit: async ({ cancel }) => {
+				cancel();
+				const { error } = await client.POST('/api/tag/tag_aliases', {
+					fetch,
+					body: {
+						base_slug: base,
+						unalias_slugs: to_delete,
+						lang_prefs: Object.fromEntries(
+							Object.entries(tagLangPrefs).map(([k, v]) => [
+								languages[k as keyof typeof languages].id,
+								v
+							])
+						),
+						names: tagNames
+					},
+					params: {
+						query: {
+							type: TagTypes.work,
+							tag_slug: data.tag.slug
+						}
+					}
+				});
+				if (error) throw error;
+				await goto(`/tag/${base}/`, { invalidateAll: true });
+			}
 		}}
-		onsubmit={submit_aliases}
 	>
 		{#if data.details.aliases.length}
 			<table>
@@ -284,8 +273,7 @@
 						{#each locales as locale, i (i)}
 							<th>{languages[locale].name} {m.mellow_upper_finch_drip()}</th>
 						{/each}
-						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th
-						></tr
+						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th></tr
 					>
 				</thead>
 				<tbody>
@@ -319,13 +307,7 @@
 						<tr
 							><td><input type="text" bind:value={tagNames[a.slug]} /></td>
 							{#each locales as locale, i (i)}
-								<td
-									><input
-										type="radio"
-										bind:group={tagLangPrefs[locale]}
-										value={a.slug}
-									/></td
-								>
+								<td><input type="radio" bind:group={tagLangPrefs[locale]} value={a.slug} /></td>
 							{/each}
 							<td
 								><input
@@ -366,11 +348,9 @@
 			<label class="wiki-lang-tab">
 				<input type="radio" bind:group={wikiView} value={locale} />
 				{languages[locale]
-					.name}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand(
-						{
-							content: '*'
-						}
-					)}{/if}
+					.name}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
+						content: '*'
+					})}{/if}
 			</label>
 		{/each}
 	</div>
@@ -455,11 +435,7 @@
 		method="POST"
 		use:dirtyEnhance={{ barrier: form_barrier, priority: 3 }}
 	>
-		<textarea
-			bind:value={urls}
-			name="urls"
-			class="w-full"
-			placeholder={m.close_any_racoon_cut()}
+		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
 		></textarea>
 		<input type="submit" />
 	</form>

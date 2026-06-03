@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import Section from '$lib/Section.svelte';
 	import Turnstile from '$lib/Turnstile.svelte';
 
@@ -21,7 +21,7 @@
 	{#if form?.reset_success}
 		<p>{m.stock_jolly_crocodile_cheer()}</p>
 	{:else if data.token || data.user}
-		<form method="POST" use:enhance action="?/reset">
+		<form method="POST" use:dirtyEnhance action="?/reset">
 			<table>
 				<tbody>
 					<tr>
@@ -41,7 +41,7 @@
 	{:else if form?.success}
 		<p>{m.grand_lucky_halibut_chop()}</p>
 	{:else}
-		<form method="POST" use:enhance action="?/request">
+		<form method="POST" use:dirtyEnhance action="?/request">
 			<table>
 				<tbody>
 					<tr>

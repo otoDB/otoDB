@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { m } from '$lib/paraglide/messages.js';
 	import Section from '$lib/Section.svelte';
 	import Turnstile from '$lib/Turnstile.svelte';
@@ -18,19 +18,12 @@
 </script>
 
 <Section title={m.blue_whole_camel_type()}>
-	<form method="POST" use:enhance>
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody>
 				<tr>
 					<th><label for="username">{m.careful_cozy_elk_dare()}</label></th>
-					<td
-						><input
-							required
-							type="text"
-							name="username"
-							value={form?.username ?? ''}
-						/></td
-					>
+					<td><input required type="text" name="username" value={form?.username ?? ''} /></td>
 				</tr>
 				{#if data.inviteRequired}
 					<tr>

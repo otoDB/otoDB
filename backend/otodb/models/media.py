@@ -329,13 +329,18 @@ class MediaWork(RevisionTrackedModel):
 
 	@property
 	def relations(self):
-		rs = self.relation_A.all() | self.relation_B.all()
-		return rs, MediaWork.active_objects.filter(
-			id__in=[
-				*rs.values_list('A_id', flat=True),
-				*rs.values_list('B_id', flat=True),
-			]
-		).exclude(id=self.pk)
+		from .relations import WorkRelation
+
+		rs = list(
+			WorkRelation.objects.filter(models.Q(A_id=self.pk) | models.Q(B_id=self.pk))
+		)
+		work_ids = {x_id for r in rs for x_id in (r.A_id, r.B_id)} - {self.pk}
+		works = (
+			MediaWork.objects.filter(id__in=work_ids, moved_to__isnull=True)
+			.select_related('thumbnail_source')
+			.prefetch_related('worksource_set')
+		)
+		return rs, works
 
 
 class MediaSong(RevisionTrackedModel):

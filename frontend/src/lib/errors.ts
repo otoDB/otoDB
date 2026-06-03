@@ -9,6 +9,7 @@ export type ApiError = {
 };
 
 const errorCodeMessages: Partial<Record<ErrorCode, (payload: ErrorPayload) => string | null>> = {
+	[ErrorCode.Internal_Error]: () => m.green_due_javelina_pop(),
 	[ErrorCode.Source_Flagged]: () => m.antsy_main_puffin_dust(),
 	[ErrorCode.Source_Unapproved]: () => m.clean_civil_jellyfish_promise(),
 	[ErrorCode.Self_Moderation]: () => m.fluffy_noble_gadfly_adapt(),
@@ -30,6 +31,10 @@ const errorCodeMessages: Partial<Record<ErrorCode, (payload: ErrorPayload) => st
 	[ErrorCode.Tag_Has_Information]: () => m.that_new_mayfly_spur(),
 	[ErrorCode.Thumbnail_Source_Required]: () => m.sleek_brave_heron_choose(),
 	[ErrorCode.Captcha_Failed]: () => m.quiet_proud_lion_block(),
+	[ErrorCode.Tag_With_Instances_Merge_Requires_Editor]: (payload) =>
+		typeof payload.into_tag === 'string'
+			? m.witty_brisk_hawk_merge({ into_tag: payload.into_tag })
+			: null,
 	[ErrorCode.Name_Slug_Mismatch]: (payload) =>
 		typeof payload.name === 'string' &&
 		typeof payload.slug === 'string' &&
@@ -48,8 +53,7 @@ export const formatApiErrorMessage = (err: ApiError): string =>
 export const parseApiErrorResponse = async (response: Response): Promise<ApiError> => {
 	try {
 		const body = await response.clone().json();
-		if (body && typeof body.code === 'number')
-			return { code: body.code, data: body.data ?? {} };
+		if (body && typeof body.code === 'number') return { code: body.code, data: body.data ?? {} };
 	} catch {
 		// fall through to default error
 	}

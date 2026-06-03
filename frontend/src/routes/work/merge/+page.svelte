@@ -5,6 +5,7 @@
 	import { Rating, WorkOrigin, type components } from '$lib/schema';
 	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import client from '$lib/api';
+	import { dirtyEnhance } from '$lib/dirty';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';
@@ -79,7 +80,7 @@
 
 <Section title={m.heroic_same_wasp_conquer()}>
 	<GuidelineWarning />
-	<form method="POST">
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody>
 				<tr
@@ -233,8 +234,7 @@
 							disabled={!work['a'].work || selectingRating !== 'a'}
 							bind:value={work['a'].rating}
 						>
-							{#each enumValues(Rating) as r, i (i)}<option value={r}
-									>{RatingNames[r]()}</option
+							{#each enumValues(Rating) as r, i (i)}<option value={r}>{RatingNames[r]()}</option
 								>{/each}
 						</select></td
 					>
@@ -259,8 +259,7 @@
 							disabled={!work['b'].work || selectingRating !== 'b'}
 							bind:value={work['b'].rating}
 						>
-							{#each enumValues(Rating) as r, i (i)}<option value={r}
-									>{RatingNames[r]()}</option
+							{#each enumValues(Rating) as r, i (i)}<option value={r}>{RatingNames[r]()}</option
 								>{/each}
 						</select></td
 					>
@@ -270,15 +269,8 @@
 		</table>
 		<input hidden type="text" name="A" value={work['a'].work?.id} />
 		<input hidden type="text" name="B" value={work['b'].work?.id} />
-		<input
-			hidden
-			type="text"
-			name="title"
-			value={work[selectingTitle].title}
-			autocomplete="off"
-		/>
-		<textarea hidden value={work[selectingDescription].description} name="description"
-		></textarea>
+		<input hidden type="text" name="title" value={work[selectingTitle].title} autocomplete="off" />
+		<textarea hidden value={work[selectingDescription].description} name="description"></textarea>
 		<input
 			hidden
 			type="text"

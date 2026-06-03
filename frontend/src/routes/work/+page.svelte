@@ -16,7 +16,8 @@
 			tags: '(super_mario_series | kirby_series) bpm:140..160',
 			desc: m.bright_calm_finch_match
 		},
-		{ tags: 'touhou -touhou[category:song]', desc: m.crisp_neat_wren_match }
+		{ tags: 'touhou -touhou[category:song]', desc: m.crisp_neat_wren_match },
+		{ tags: 'order:tagcount_asc', desc: m.spry_late_kudu_assure }
 	];
 </script>
 
@@ -51,7 +52,7 @@
 			<ul class="grid list-none grid-cols-[max-content_auto] gap-x-4 gap-y-1">
 				{#each examples as { tags, desc } (tags)}
 					<li class="contents">
-						<a class="otodb-search-link" href="/work?tags={encodeURIComponent(tags)}">
+						<a href="/work?tags={encodeURIComponent(tags)}">
 							<code>{tags}</code>
 						</a>
 						<span>{desc()}</span>

@@ -88,6 +88,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
+	'otodb.middleware.AnonymousReadOnlyCacheMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'corsheaders.middleware.CorsMiddleware',
 	'django.middleware.locale.LocaleMiddleware',
@@ -279,25 +280,24 @@ OTODB_CDN_ENABLED = (
 )
 OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
 
-# Task queue (Redis + RQ in production, synchronous fallback for dev)
-OTODB_REDIS_URL = os.environ.get('OTODB_REDIS_URL')
-if OTODB_REDIS_URL:
-	INSTALLED_APPS.append('django_rq')
-	RQ_QUEUES = {
+# Task queue + cache (Valkey in production, synchronous fallback for dev)
+OTODB_VALKEY_URL = os.environ.get('OTODB_VALKEY_URL') or os.environ.get(
+	'OTODB_REDIS_URL'
+)
+if OTODB_VALKEY_URL:
+	INSTALLED_APPS.append('django_vtasks')
+	CACHES = {
 		'default': {
-			'URL': OTODB_REDIS_URL,
+			'BACKEND': 'django_vcache.backend.ValkeyCache',
+			'LOCATION': OTODB_VALKEY_URL,
 		}
 	}
 	TASKS = {
 		'default': {
-			'BACKEND': 'django_tasks_rq.RQBackend',
-			'QUEUES': ['default'],
-		}
-	}
-	CACHES = {
-		'default': {
-			'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-			'LOCATION': OTODB_REDIS_URL,
+			'BACKEND': 'django_vtasks.backends.valkey.ValkeyTaskBackend',
+			'OPTIONS': {
+				'BROKER_URL': OTODB_VALKEY_URL,
+			},
 		}
 	}
 else:
@@ -338,3 +338,5 @@ OTODB_MAX_FLAGGED_WORKS = 5
 
 OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)
 OTODB_MODERATION_PERIOD = timedelta(weeks=1)
+
+OTODB_SYSTEM_BOT_USERNAME = os.environ.get('OTODB_SYSTEM_BOT_USERNAME', 'otoDB')

@@ -94,7 +94,7 @@
 	"drab_alive_midge_edit": "Member",
 	"tasty_spry_firefox_fall": "Editor",
 	"silly_blue_felix_amuse": "Administrator",
-	"tangy_formal_lionfish_tap": "Owner",
+	"tangy_formal_lionfish_tap": "Moderator",
 	"quiet_stout_haddock_persist": "This user has no lists!",
 	"plane_inner_chipmunk_race": "Make a new list...",
 	"proof_heroic_rat_cuddle": "Import list...",
@@ -122,6 +122,7 @@
 	"bald_clear_marlin_grasp": "Entries",
 	"front_smart_hound_fold": "Pending entries",
 	"less_green_angelfish_hunt": "Swap",
+	"mild_bold_finch_mix": "(multiple)",
 	"grand_vexed_snail_ripple": "is a",
 	"clean_best_kangaroo_achieve": "of",
 	"stout_frail_warbler_support": "This",
@@ -298,6 +299,8 @@
 	"strong_lower_firefox_exhale": "Missing display language",
 	"mellow_alert_jan_leap": "Unassigned",
 	"stout_same_insect_conquer": "Has connections",
+	"green_icy_earthworm_love": "Minimum parents",
+	"tangy_spry_bumblebee_transform": "Maximum parents",
 	"fine_zany_octopus_trim": "Linked entities",
 	"big_tiny_kitten_devour": "Threads",
 	"last_late_penguin_bubble": "Save",
@@ -394,5 +397,7 @@
 	"bright_calm_finch_match": "Super Mario or Kirby works with mid-tempo songs",
 	"crisp_neat_wren_match": "Works tagged with Touhou or any child descendants, excluding any song tags under Touhou",
 	"swift_keen_otter_guide": "View docs",
-	"quiet_proud_lion_block": "Captcha verification failed. Please try again."
+	"quiet_proud_lion_block": "Captcha verification failed. Please try again.",
+	"witty_brisk_hawk_merge": "At least one of the tags being merged into \"{into_tag}\" is associated to a work or song. Only editors can merge such tags.",
+	"this_late_gadfly_sail": "System"
 }

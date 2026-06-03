@@ -428,49 +428,6 @@
         }
       }
     },
-    "/api/work/tags_needed": {
-      "get": {
-        "operationId": "otodb_api_work_tags_needed",
-        "summary": "Tags Needed",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "default": 30,
-              "maximum": 30,
-              "minimum": 1,
-              "title": "Limit",
-              "type": "integer"
-            },
-            "required": false
-          },
-          {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "default": 0,
-              "minimum": 0,
-              "title": "Offset",
-              "type": "integer"
-            },
-            "required": false
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PagedThinWorkSchema"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/work/work": {
       "get": {
         "operationId": "otodb_api_work_work",
@@ -1012,8 +969,8 @@
     },
     "/api/work/resolve": {
       "post": {
-        "operationId": "otodb_api_work_resolve_work_admin",
-        "summary": "Resolve Work Admin",
+        "operationId": "otodb_api_work_resolve_work_mod",
+        "summary": "Resolve Work Mod",
         "parameters": [
           {
             "in": "query",
@@ -1030,7 +987,7 @@
             "description": "OK"
           }
         },
-        "description": "Immediate resolution by staff - same as expiry, skips the waiting period.",
+        "description": "Immediate resolution by mods - same as expiry, skips the waiting period.",
         "security": [
           {
             "SessionAuth": []
@@ -2758,16 +2715,6 @@
           },
           {
             "in": "query",
-            "name": "resolve_aliases",
-            "schema": {
-              "default": true,
-              "title": "Resolve Aliases",
-              "type": "boolean"
-            },
-            "required": false
-          },
-          {
-            "in": "query",
             "name": "category",
             "schema": {
               "anyOf": [
@@ -2919,6 +2866,48 @@
                 }
               ],
               "title": "Has Connections"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "autocomplete",
+            "schema": {
+              "default": false,
+              "title": "Autocomplete",
+              "type": "boolean"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "min_parents",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Parents"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "max_parents",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Parents"
             },
             "required": false
           },
@@ -3631,7 +3620,7 @@
                     },
                     {
                       "items": {
-                        "$ref": "#/components/schemas/SongSchema"
+                        "$ref": "#/components/schemas/SlimSongSchema"
                       },
                       "type": "array"
                     }
@@ -3702,16 +3691,6 @@
           },
           {
             "in": "query",
-            "name": "resolve_aliases",
-            "schema": {
-              "default": true,
-              "title": "Resolve Aliases",
-              "type": "boolean"
-            },
-            "required": false
-          },
-          {
-            "in": "query",
             "name": "category",
             "schema": {
               "anyOf": [
@@ -3722,6 +3701,16 @@
                   "type": "null"
                 }
               ]
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "autocomplete",
+            "schema": {
+              "default": false,
+              "title": "Autocomplete",
+              "type": "boolean"
             },
             "required": false
           },
@@ -5150,6 +5139,7 @@
       },
       "ErrorCode": {
         "enum": [
+          -1,
           10000,
           10001,
           10002,
@@ -5171,11 +5161,13 @@
           10018,
           10019,
           10020,
+          10021,
           10022
         ],
         "title": "ErrorCode",
         "type": "integer",
         "x-enum-varnames": [
+          "Internal Error",
           "Login Failed",
           "Not Logged In",
           "Username Taken",
@@ -5197,6 +5189,7 @@
           "No More Appeal Slots",
           "Tag Has Information",
           "Thumbnail Source Required",
+          "Tag With Instances Merge Requires Editor",
           "Captcha Failed"
         ]
       },
@@ -5263,8 +5256,8 @@
           "Restricted",
           "Member",
           "Editor",
-          "Admin",
-          "Owner"
+          "Mod",
+          "Admin"
         ]
       },
       "ThemePref": {
@@ -5504,20 +5497,21 @@
           "level": {
             "$ref": "#/components/schemas/Levels"
           },
-          "username": {
-            "maxLength": 127,
-            "title": "Username",
-            "type": "string"
-          },
           "date_created": {
             "format": "date-time",
             "title": "Date Created",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 127,
+            "title": "Username",
             "type": "string"
           }
         },
         "required": [
           "id",
           "level",
+          "date_created",
           "username"
         ],
         "title": "ProfileSchema",
@@ -6810,14 +6804,14 @@
             "title": "Comments Count",
             "type": "integer"
           },
-          "username": {
-            "maxLength": 127,
-            "title": "Username",
-            "type": "string"
-          },
           "date_created": {
             "format": "date-time",
             "title": "Date Created",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 127,
+            "title": "Username",
             "type": "string"
           }
         },
@@ -6828,6 +6822,7 @@
           "revisions_count",
           "posts_count",
           "comments_count",
+          "date_created",
           "username"
         ],
         "title": "ProfileIndexSchema",
@@ -7322,7 +7317,8 @@
           64,
           65,
           66,
-          100
+          100,
+          10000
         ],
         "title": "Route",
         "type": "integer",
@@ -7353,7 +7349,8 @@
           "Work Source Assign",
           "Work Source Reject",
           "Work Source Update",
-          "Rollback"
+          "Rollback",
+          "System"
         ]
       },
       "PagedListSchema": {
@@ -8196,6 +8193,52 @@
           "count"
         ],
         "title": "PagedSongSchema",
+        "type": "object"
+      },
+      "SlimSongSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "work_tag": {
+            "title": "Work Tag",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 1000,
+            "title": "Title",
+            "type": "string"
+          },
+          "bpm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bpm"
+          },
+          "variable_bpm": {
+            "default": false,
+            "title": "Variable Bpm",
+            "type": "boolean"
+          },
+          "author": {
+            "maxLength": 1000,
+            "title": "Author",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "work_tag",
+          "title",
+          "author"
+        ],
+        "title": "SlimSongSchema",
         "type": "object"
       },
       "SongRelationSchema": {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import Connections from '$lib/Connections.svelte';
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import RelationViewer from '$lib/RelationViewer.svelte';
@@ -28,7 +28,7 @@
 		type components
 	} from '$lib/schema.js';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
-	import { getTagDisplayName } from '$lib/ui.js';
+	import { getTagDisplayName, getTagDisplaySlug } from '$lib/ui.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
@@ -74,6 +74,10 @@
 				}
 			}
 		});
+
+	const sortedChildTags = $derived(
+		[...data.tag.children].sort((a, b) => Number(a.deprecated) - Number(b.deprecated))
+	);
 
 	const paths = $derived.by(() => {
 		const get_paths = (node: string): components['schemas']['TagWorkSchema'][][] =>
@@ -136,42 +140,27 @@
 	{/if}
 
 	{#if data.connections}
-		<ul class="list-none">
-			{#each data.connections[0] as s, i (i)}
-				<li>
-					<ConnectionFavicon
-						type={TagWorkConnectionMap[s.site].name}
-						class="inline size-4"
-					/>
-					<a
-						href={TagWorkConnectionMap[s.site].linkFn(s.content_id)}
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{TagWorkConnectionMap[s.site].linkFn(s.content_id)}
-					</a>
-				</li>
-			{/each}
-			{#if data.connections[1]}
-				{#each data.connections[1] as s, i (i)}
-					{@const conn =
-						data.tag.category === WorkTagCategory.Media
-							? mediaConnectionMap[s.site as MediaConnectionTypes]
-							: profileConnectionMap[s.site as ProfileConnectionTypes]}
-					<li class={{ 'opacity-60': s.dead }}>
-						<ConnectionFavicon type={conn.name} class="inline size-4" />
-						<a
-							href={conn.linkFn(s.content_id)}
-							target="_blank"
-							rel="noopener noreferrer"
-							class={{ 'line-through': s.dead }}
-						>
-							{conn.linkFn(s.content_id)}
-						</a>
-					</li>
-				{/each}
+		<Connections items={data.connections[0]} map={TagWorkConnectionMap} />
+		{#if data.connections[1]?.length}
+			{#if data.tag.category === WorkTagCategory.Media}
+				<Connections
+					items={data.connections[1] as {
+						site: MediaConnectionTypes;
+						content_id: string;
+					}[]}
+					map={mediaConnectionMap}
+				/>
+			{:else if data.tag.category === WorkTagCategory.Creator}
+				<Connections
+					items={data.connections[1] as {
+						site: ProfileConnectionTypes;
+						content_id: string;
+						dead?: boolean | null;
+					}[]}
+					map={profileConnectionMap}
+				/>
 			{/if}
-		</ul>
+		{/if}
 	{/if}
 
 	<hr class="my-2" />
@@ -215,23 +204,7 @@
 			</tbody>
 		</table>
 		{#if data.song_connections}
-			<ul class="list-none">
-				{#each data.song_connections as s, i (i)}
-					<li>
-						<ConnectionFavicon
-							type={songConnectionMap[s.site].name}
-							class="inline size-4"
-						/>
-						<a
-							href={songConnectionMap[s.site].linkFn(s.content_id)}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							{songConnectionMap[s.site].linkFn(s.content_id)}
-						</a>
-					</li>
-				{/each}
-			</ul>
+			<Connections items={data.song_connections} map={songConnectionMap} />
 		{/if}
 		{#if data.tag?.song.tags.length}
 			<ul id="song-tags">
@@ -253,11 +226,11 @@
 	</Section>
 {/if}
 
-{#if data.tag.children.length}
+{#if sortedChildTags.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<div class="flex flex-wrap gap-3">
-			{#each data.tag.children as tag, i (i)}
-				<WorkTag {tag} />
+			{#each sortedChildTags as tag, i (i)}
+				<WorkTag {tag} fade={tag.deprecated} />
 			{/each}
 		</div>
 	</Section>
@@ -277,7 +250,10 @@
 	{/if}
 {/await}
 
-<Section title="{m.quiet_super_kangaroo_kiss({ tag: data.display_name })} ({data.works?.count})">
+<Section
+	title="{m.quiet_super_kangaroo_kiss({ tag: data.display_name })} ({data.works?.count})"
+	href="/work?tags={encodeURIComponent('^' + getTagDisplaySlug(data.tag))}"
+>
 	{#if results.length}
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each results as work, i (i)}

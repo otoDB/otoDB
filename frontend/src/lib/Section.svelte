@@ -30,9 +30,8 @@
 						aria-current={page.url.pathname.endsWith(encodeURI(pathname))}
 						class="bg-otodb-bg-faint/75 border-otodb-content-faint group relative border px-2"
 					>
-						<a
-							href="/{pathname}"
-							class="no-underline group-aria-current:pointer-events-none">{title}</a
+						<a href="/{pathname}" class="no-underline group-aria-current:pointer-events-none"
+							>{title}</a
 						>
 					</li>
 				{/each}

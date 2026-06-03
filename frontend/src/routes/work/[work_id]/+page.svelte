@@ -2,6 +2,7 @@
 	import client from '$lib/api';
 	import Banner from '$lib/Banner.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import { dirtyClick } from '$lib/dirty';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {
 		PlatformNames,
@@ -77,9 +78,10 @@
 
 	const relTree = $derived(
 		data.relations[0].length > 0
-			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
-					(d) => [+d[0], [...Map.groupBy(d[1]!, (r) => r.relation).entries()]]
-				) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
+			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map((d) => [
+					+d[0],
+					[...Map.groupBy(d[1]!, (r) => r.relation).entries()]
+				]) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
 			: null
 	);
 </script>
@@ -148,26 +150,26 @@
 			{#if data.user.level >= 40}
 				<button
 					class="border border-green-600 px-3 py-1 text-green-600"
-					onclick={async () => {
+					{@attach dirtyClick(async () => {
 						const { error } = await client.POST('/api/work/approve', {
 							fetch,
 							params: { query: { work_id: data.id } }
 						});
 						if (!error) location.reload();
-					}}
+					})}
 				>
 					Approve
 				</button>
 				<button
 					class="border px-3 py-1"
-					onclick={async () => {
+					{@attach dirtyClick(async () => {
 						const reason = prompt(m.honest_tangy_butterfly_dream());
 						if (!reason) return;
 						await client.POST('/api/work/disapprove', {
 							fetch,
 							params: { query: { work_id: data.id, reason: reason } }
 						});
-					}}
+					})}
 				>
 					{m.alive_blue_marlin_push()}
 				</button>
@@ -175,14 +177,14 @@
 			{#if data.user.level >= 50}
 				<button
 					class="border border-red-600 px-3 py-1 text-red-600"
-					onclick={async () => {
+					{@attach dirtyClick(async () => {
 						if (!confirm(m.cool_house_barbel_cheer())) return;
 						const { error } = await client.POST('/api/work/resolve', {
 							fetch,
 							params: { query: { work_id: data.id } }
 						});
 						if (!error) location.reload();
-					}}
+					})}
 				>
 					{m.proof_deft_reindeer_smile()}
 				</button>
@@ -224,25 +226,18 @@
 												{#each rels as [tp, relations], j (j)}
 													<li>
 														{m.mild_loud_shad_enchant({
-															type: [
-																WorkRelationDisplayBackward,
-																WorkRelationDisplayForward
-															][dir][tp](),
+															type: [WorkRelationDisplayBackward, WorkRelationDisplayForward][dir][
+																tp
+															](),
 															name: ''
 														})}
 														<ul class="ml-2">
 															{#each relations as r, j (j)}
 																{@const w = data.relations[1].find(
-																	(w) =>
-																		w.id ===
-																		(r.A_id === data.id
-																			? r.B_id
-																			: r.A_id)
+																	(w) => w.id === (r.A_id === data.id ? r.B_id : r.A_id)
 																)!}
 																<li>
-																	<a href="/work/{w.id}"
-																		>#{w.id} - {w.title}</a
-																	>
+																	<a href="/work/{w.id}">#{w.id} - {w.title}</a>
 																</li>
 															{/each}
 														</ul>
@@ -276,11 +271,7 @@
 												<tbody>
 													{#each userLists as list, i (i)}
 														<tr>
-															<td
-																><a href="/list/{list[0].id}"
-																	>{list[0].name}</a
-																></td
-															>
+															<td><a href="/list/{list[0].id}">{list[0].name}</a></td>
 															<td>
 																<input
 																	type="checkbox"
@@ -302,10 +293,8 @@
 										<th class="w-24">{m.nimble_gaudy_scallop_fold()}</th>
 										<td>
 											<button
-												onclick={async () => {
-													const reason = prompt(
-														m.royal_big_chipmunk_absorb()
-													);
+												{@attach dirtyClick(async () => {
+													const reason = prompt(m.royal_big_chipmunk_absorb());
 													if (!reason?.trim()) {
 														// Show message
 														alert(
@@ -315,17 +304,14 @@
 														);
 														return;
 													}
-													const { error } = await client.POST(
-														'/api/work/flag',
-														{
-															fetch,
-															params: {
-																query: { work_id: data.id, reason }
-															}
+													const { error } = await client.POST('/api/work/flag', {
+														fetch,
+														params: {
+															query: { work_id: data.id, reason }
 														}
-													);
+													});
 													if (!error) location.reload();
-												}}
+												})}
 											>
 												{m.nimble_gaudy_scallop_fold()}
 											</button>
@@ -337,10 +323,8 @@
 										<th class="w-24">{m.key_last_racoon_clasp()}</th>
 										<td>
 											<button
-												onclick={async () => {
-													const reason = prompt(
-														m.zippy_dark_mayfly_cut()
-													);
+												{@attach dirtyClick(async () => {
+													const reason = prompt(m.zippy_dark_mayfly_cut());
 													if (!reason?.trim()) {
 														// Show message
 														alert(
@@ -350,17 +334,14 @@
 														);
 														return;
 													}
-													const { error } = await client.POST(
-														'/api/work/appeal',
-														{
-															fetch,
-															params: {
-																query: { work_id: data.id, reason }
-															}
+													const { error } = await client.POST('/api/work/appeal', {
+														fetch,
+														params: {
+															query: { work_id: data.id, reason }
 														}
-													);
+													});
 													if (!error) location.reload();
-												}}
+												})}
 											>
 												{m.key_last_racoon_clasp()}
 											</button>
@@ -373,9 +354,7 @@
 				{/if}
 			</div>
 		</div>
-		<div
-			class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}
-		>
+		<div class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}>
 			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
@@ -474,10 +453,7 @@
 						{m.nice_tense_mule_grasp()}:
 						<strong>
 							{#if src.work_duration}
-								{Math.floor(src.work_duration / 60)}:{(
-									'0' +
-									(src.work_duration % 60)
-								).slice(-2)}
+								{Math.floor(src.work_duration / 60)}:{('0' + (src.work_duration % 60)).slice(-2)}
 							{:else}
 								{m.simple_less_marlin_enchant()}
 							{/if}

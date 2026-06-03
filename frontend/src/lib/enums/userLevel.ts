@@ -6,8 +6,8 @@ export const userLevelNames: Record<Levels, () => string> = {
 	[Levels.Restricted]: m.fancy_formal_falcon_quell,
 	[Levels.Member]: m.drab_alive_midge_edit,
 	[Levels.Editor]: m.tasty_spry_firefox_fall,
-	[Levels.Admin]: m.silly_blue_felix_amuse,
-	[Levels.Owner]: m.tangy_formal_lionfish_tap
+	[Levels.Mod]: m.tangy_formal_lionfish_tap,
+	[Levels.Admin]: m.silly_blue_felix_amuse
 };
 
 /**

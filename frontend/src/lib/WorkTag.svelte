@@ -50,9 +50,7 @@
 		<span class="text-otodb-content-fainter ml-0.5 inline text-xs">
 			{#each tag.creator_roles as role, i (i)}{creatorRole[
 					resolveCreatorRoleKeyById(role)
-				].nameFn()}
-				{#if i < tag.creator_roles.length - 1},&nbsp{/if}
-			{/each}
+				].nameFn()}{#if i < tag.creator_roles.length - 1},&nbsp;{/if}{/each}
 		</span>
 	{/if}
 </a>

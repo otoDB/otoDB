@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import Section from '$lib/Section.svelte';
 	import TagField from '$lib/TagField.svelte';
 	import client from '$lib/api';
-	import { dirtyEnhance } from '$lib/dirty';
+	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import { enumValues, SongTagCategoryNames } from '$lib/enums';
 	import { languages } from '$lib/enums/language.js';
 	import { m } from '$lib/paraglide/messages.js';
@@ -34,34 +33,6 @@
 	);
 	let to_delete: string[] = $state([]);
 	let base = $state(data.tag.slug);
-	const aliases_post_gate = { p: Promise.withResolvers<void>() };
-
-	const submit_aliases = async () => {
-		await aliases_post_gate.p.promise;
-		const { error } = await client.POST('/api/tag/tag_aliases', {
-			fetch,
-			body: {
-				base_slug: base,
-				unalias_slugs: to_delete,
-				lang_prefs: Object.fromEntries(
-					Object.entries(tagLangPrefs).map(([k, v]) => [
-						languages[k as keyof typeof languages].id,
-						v
-					])
-				),
-				names: tagNames
-			},
-			params: {
-				query: {
-					type: TagTypes.song,
-					tag_slug: data.tag.slug
-				}
-			}
-		});
-		if (error) {
-			aliases_post_gate.p = Promise.withResolvers<void>();
-		} else goto(`/song_attribute/${base}/`, { invalidateAll: true });
-	};
 
 	const del = async () => {
 		const { response } = await client.DELETE('/api/tag/tag', {
@@ -73,7 +44,7 @@
 				}
 			}
 		});
-		if (response.ok) goto('/', { invalidateAll: true });
+		if (response.ok) await goto('/', { invalidateAll: true });
 	};
 
 	const form_barrier = {};
@@ -81,12 +52,7 @@
 
 <Section title={data.tag.name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
 	<GuidelineWarning />
-	<form
-		method="POST"
-		use:enhance
-		action="?/edit"
-		use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }}
-	>
+	<form method="POST" action="?/edit" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }}>
 		<table>
 			<tbody>
 				<tr>
@@ -113,7 +79,7 @@
 		</table>
 		<input type="submit" />
 	</form>
-	<button onclick={del}>{m.proof_merry_chicken_bump()}</button>
+	<button {@attach dirtyClick(del)}>{m.proof_merry_chicken_bump()}</button>
 </Section>
 
 <Section title={m.alive_lofty_opossum_laugh()}>
@@ -123,9 +89,32 @@
 		use:dirtyEnhance={{
 			barrier: form_barrier,
 			priority: 1,
-			manual_post: aliases_post_gate
+			custom_submit: async ({ cancel }) => {
+				cancel();
+				const { error } = await client.POST('/api/tag/tag_aliases', {
+					fetch,
+					body: {
+						base_slug: base,
+						unalias_slugs: to_delete,
+						lang_prefs: Object.fromEntries(
+							Object.entries(tagLangPrefs).map(([k, v]) => [
+								languages[k as keyof typeof languages].id,
+								v
+							])
+						),
+						names: tagNames
+					},
+					params: {
+						query: {
+							type: TagTypes.song,
+							tag_slug: data.tag.slug
+						}
+					}
+				});
+				if (error) throw error;
+				await goto(`/song_attribute/${base}/`, { invalidateAll: true });
+			}
 		}}
-		onsubmit={submit_aliases}
 	>
 		{#if data.aliases.length}
 			<table>
@@ -135,8 +124,7 @@
 						{#each locales as locale, i (i)}
 							<th>{languages[locale].name} {m.mellow_upper_finch_drip()}</th>
 						{/each}
-						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th
-						></tr
+						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th></tr
 					>
 				</thead>
 				<tbody>
@@ -170,13 +158,7 @@
 						<tr
 							><td><input type="text" bind:value={tagNames[a.slug]} /></td>
 							{#each locales as locale, i (i)}
-								<td
-									><input
-										type="radio"
-										bind:group={tagLangPrefs[locale]}
-										value={a.slug}
-									/></td
-								>
+								<td><input type="radio" bind:group={tagLangPrefs[locale]} value={a.slug} /></td>
 							{/each}
 							<td
 								><input

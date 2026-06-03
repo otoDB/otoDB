@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
+	import { dirtyClick } from '$lib/dirty';
 	import {
 		buildEntityRoutes,
 		MimeType,
@@ -71,9 +72,7 @@
 			[...v.toString(2)]
 				.reduce(
 					(a, e, i, aa) =>
-						e === '1'
-							? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()]
-							: a,
+						e === '1' ? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()] : a,
 					[] as string[]
 				)
 				.join(', ') || 'N/A';
@@ -89,7 +88,7 @@
 			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
 		},
 		tagsong: {
-			category: EnumMap_to_DisplayFunction(SongTagCategoryNames)
+			category: EnumRecord_to_DisplayFunction(SongTagCategoryNames)
 		},
 		tagworkconnection: {
 			site: EnumMap_to_DisplayFunction(TagWorkConnectionMap)
@@ -153,14 +152,14 @@
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
 	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id !== '1'}<button
 			class="my-5"
-			onclick={async () => {
+			{@attach dirtyClick(async () => {
 				if (!confirm('Are you sure?')) return;
 				await client.POST('/api/history/rollback', {
 					fetch,
 					params: { query: { revision_id: data.revision.id } }
 				});
-				invalidateAll();
-			}}>Revert changes made in this revision</button
+				await invalidateAll();
+			})}>Revert changes made in this revision</button
 		>{/if}
 	{#if data.user && data.user.username !== data.revision.user}
 		<button

@@ -8,10 +8,13 @@ from django.db import models
 from django.db.models.deletion import Collector
 from django.dispatch import receiver
 from django_request_cache import get_request_cache
+from django_userforeignkey.request import get_current_request
 
 from otodb.models.enums import RevisionChain, Route
 
 logger = logging.getLogger(__name__)
+
+_READ_ONLY_HTTP_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS'})
 
 
 class Revision(models.Model):
@@ -241,6 +244,14 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 		abstract = True
 		# Keep _base_manager tracked so cascades don't bypass revision tracking
 		base_manager_name = 'objects'
+
+	def __init__(self, *args, **kwargs):
+		request = get_current_request()
+		if request is not None and request.method in _READ_ONLY_HTTP_METHODS:
+			models.Model.__init__(self, *args, **kwargs)
+			self._original_state = {}
+		else:
+			super().__init__(*args, **kwargs)
 
 	def __init_subclass__(cls, **kwargs):
 		super().__init_subclass__(**kwargs)

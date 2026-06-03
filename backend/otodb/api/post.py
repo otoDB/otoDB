@@ -192,13 +192,12 @@ class PostEditSchema(Schema):
 @user_is_trusted
 @restrict_internal
 @transaction.atomic
-def edit(request: HttpRequest, payload: PostEditSchema):
+def edit(request: AuthedHttpRequest, payload: PostEditSchema):
 	p = get_object_or_404(Post, id=payload.post_id)
-	is_admin = request.user.level >= Account.Levels.ADMIN
-	if not is_admin:
+	if not request.user.is_mod:
 		if p.added_by_id != request.user.pk:
 			raise HttpError(403, 'Forbidden')
-		# Lock: if an admin has edited this post, original author can no longer edit
+		# Lock: if a mod has edited this post, original author can no longer edit
 		if p.edited_by_id and p.edited_by_id != p.added_by_id:
 			raise HttpError(403, 'Forbidden')
 
@@ -228,15 +227,15 @@ def edit(request: HttpRequest, payload: PostEditSchema):
 @transaction.atomic
 def toggle_close(request: AuthedHttpRequest, post_id: OtodbID):
 	post = get_object_or_404(Post, id=post_id)
-	is_admin = request.user.level >= Account.Levels.ADMIN
+	is_mod = request.user.is_mod
 	is_author = post.added_by == request.user
 	if not post.closed_at:
-		if is_admin:
+		if is_mod:
 			post.closed_at = datetime.now(tz=timezone.utc)
 		else:
 			raise HttpError(403, 'Forbidden')
 	else:
-		if is_admin or is_author:
+		if is_mod or is_author:
 			post.closed_at = None
 		else:
 			raise HttpError(403, 'Forbidden')

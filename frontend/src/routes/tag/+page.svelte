@@ -99,6 +99,26 @@
 					<option value="false">{m.great_lucky_goldfish_sail()}</option>
 				</select>
 			</label>
+			<label class="flex flex-col">
+				{m.green_icy_earthworm_love()}
+				<input
+					type="number"
+					name="min_parents"
+					min="0"
+					value={data.min_parents ?? ''}
+					class="w-20"
+				/>
+			</label>
+			<label class="flex flex-col">
+				{m.tangy_spry_bumblebee_transform()}
+				<input
+					type="number"
+					name="max_parents"
+					min="0"
+					value={data.max_parents ?? ''}
+					class="w-20"
+				/>
+			</label>
 			<label>
 				<input type="checkbox" name="deprecated_only" checked={data.deprecated_only} />
 				{m.pink_funny_platypus_aim()}
@@ -120,9 +140,7 @@
 				<tr class="border-otodb-bg-fainter border-b">
 					<td class="py-1.5">
 						<WorkTag {tag} />
-						<span class="text-otodb-content-faint ml-1 tabular-nums"
-							>{tag.n_instance ?? 0}</span
-						>
+						<span class="text-otodb-content-faint ml-1 tabular-nums">{tag.n_instance ?? 0}</span>
 					</td>
 				</tr>
 			{/each}

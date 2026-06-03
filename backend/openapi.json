@@ -5140,6 +5140,7 @@
       "ErrorCode": {
         "enum": [
           -1,
+          429,
           10000,
           10001,
           10002,
@@ -5161,13 +5162,13 @@
           10018,
           10019,
           10020,
-          10021,
-          10022
+          10021
         ],
         "title": "ErrorCode",
         "type": "integer",
         "x-enum-varnames": [
           "Internal Error",
+          "Rate Limited",
           "Login Failed",
           "Not Logged In",
           "Username Taken",
@@ -5189,8 +5190,7 @@
           "No More Appeal Slots",
           "Tag Has Information",
           "Thumbnail Source Required",
-          "Tag With Instances Merge Requires Editor",
-          "Rate Limited"
+          "Tag With Instances Merge Requires Editor"
         ]
       },
       "LoginRequestSchema": {

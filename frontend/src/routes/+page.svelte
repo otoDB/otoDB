@@ -63,17 +63,17 @@
 		<a href="/revision/history" class="float-right">{m.fresh_deft_warbler_edit()}</a>
 	</Section>
 
-	<Section title={m.curly_fuzzy_turkey_launch()} href="/post/overview">
+	<Section title={m.curly_fuzzy_turkey_launch()} href="/thread/overview">
 		<table class="w-full">
 			<tbody>
 				{#each data.posts.items as p, i (i)}
 					<tr>
-						<td><a href="/post/{p.id}">{p.title}</a></td>
+						<td><a href="/thread/{p.id}">{p.title}</a></td>
 						<td><Time format="relative" date={p.modified} /></td>
 					</tr>
 				{/each}
 			</tbody>
 		</table>
-		<a href="/post/overview" class="float-right">{m.fresh_deft_warbler_edit()}</a>
+		<a href="/thread/overview" class="float-right">{m.fresh_deft_warbler_edit()}</a>
 	</Section>
 </div>

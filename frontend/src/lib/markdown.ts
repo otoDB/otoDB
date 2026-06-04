@@ -27,6 +27,17 @@ const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N
 const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
 const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 const SEARCH_RE = /\{\{([^}]+?)\}\}/g;
+const POST_REF_RE = /(?<![/\w])t(\d+)\.(\d+)(?!\w)/g;
+
+export type MarkdownContext = {
+	/** id of the thread currently being rendered (resolves same-thread references) */
+	thread?: string;
+	/** post num -> author username, to render "#num by user" */
+	refAuthors?: Record<string, string>;
+};
+
+// Set for the duration of a single (synchronous) renderMarkdown call.
+let activeContext: MarkdownContext | null = null;
 
 const LinkableEntities: [PostEntities, RegExp][] = [
 	[PostEntities.mediawork, short_prefix_re_gen(ENTITIES[0].shortPrefix)],
@@ -36,7 +47,16 @@ const LinkableEntities: [PostEntities, RegExp][] = [
 ];
 
 function link(href: string, text: string): PhrasingContent {
-	return { type: 'link', url: href, children: [{ type: 'text', value: text }] };
+	return {
+		type: 'link',
+		url: href,
+		children: [{ type: 'text', value: text }]
+	};
+}
+
+function postRef(thread: string, num: string): PhrasingContent {
+	const author = activeContext?.thread === thread ? activeContext?.refAuthors?.[num] : undefined;
+	return link(`/thread/${thread}.${num}`, author ? `#${num} by ${author}` : `#${num}`);
 }
 
 function remarkStripImages() {
@@ -63,6 +83,8 @@ function remarkStripImages() {
 }
 
 const OtodbReplacements: [RegExp, (...args: string[]) => PhrasingContent | false][] = [
+	// Post references (t{thread}.{num}) are resolved first.
+	[POST_REF_RE, (_, thread, num) => postRef(thread, num)],
 	...ENTITIES.flatMap(({ shortPrefix, longLabel, urlPath }) => [
 		// Short form: w123, l42, r99
 		[
@@ -103,7 +125,10 @@ export const string_link_entities = (s: string) => {
 				let match;
 				while ((match = regex.exec(v)) !== null) {
 					if (match.index > lastIndex) result.push(v.slice(lastIndex, match.index));
-					const l = tf(...match) as { url: string; children: { value: string }[] };
+					const l = tf(...match) as {
+						url: string;
+						children: { value: string }[];
+					};
 					result.push({ url: l.url, text: l.children[0].value });
 					lastIndex = regex.lastIndex;
 				}
@@ -177,8 +202,18 @@ const processor = unified()
 
 /**
  * Render markdown text to HTML with otoDB extensions.
+ *
+ * Pass `context` when rendering inside a thread so that t{thread}.{num} post
+ * references can resolve to "#num by <author>".
  */
-export const renderMarkdown = (text: string) => String(processor.processSync(text));
+export const renderMarkdown = (text: string, context?: MarkdownContext) => {
+	activeContext = context ?? null;
+	try {
+		return String(processor.processSync(text));
+	} finally {
+		activeContext = null;
+	}
+};
 
 /**
  * Extract unique @mentions from markdown source text.

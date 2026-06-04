@@ -2,11 +2,10 @@
 	import { dirtyEnhance } from '$lib/dirty';
 	import Section from '$lib/Section.svelte';
 	import { buildEntityRoutes, enumValues } from '$lib/enums';
-	import { languages } from '$lib/enums/language.js';
 	import { postCategoryNames } from '$lib/enums/postCategory.js';
 	import { get_entity, renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { getLocale } from '$lib/paraglide/runtime';
 	import { PostCategory } from '$lib/schema.js';
 
 	let { data } = $props();
@@ -25,19 +24,13 @@
 
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
 	<form method="POST" use:dirtyEnhance>
+		<!-- Thread language is inferred from the user's locale -->
+		<input type="hidden" name="lang" value={getLocale()} />
 		<table>
 			<tbody
 				><tr
 					><th>{m.large_factual_octopus_exhale()}</th><td
 						><input type="text" name="title" required autocomplete="off" value={data.title} /></td
-					></tr
-				><tr
-					><th>{m.hour_loud_squirrel_ascend()}</th><td
-						><select name="lang" value={getLocale()}>
-							{#each locales as l, i (i)}
-								<option value={l}>{languages[l].name}</option>
-							{/each}
-						</select></td
 					></tr
 				><tr
 					><th>{m.plane_awful_bobcat_spark()}</th><td

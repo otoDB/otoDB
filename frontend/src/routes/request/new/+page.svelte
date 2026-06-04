@@ -7,7 +7,7 @@
 </script>
 
 <Section title={m.muddy_tough_swan_view()}>
-	<a href="/post/5">{m.grassy_warm_gadfly_inspire()}</a>
+	<a href="/thread/5">{m.grassy_warm_gadfly_inspire()}</a>
 	<form method="POST" use:dirtyEnhance>
 		<textarea rows="10" class="w-full" name="actions" required>{data.preFilledData ?? ''}</textarea>
 		<input type="submit" />

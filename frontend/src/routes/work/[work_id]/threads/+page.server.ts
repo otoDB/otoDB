@@ -5,7 +5,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	const batch_size = 20;
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
-	const { data } = await client.GET('/api/post/threads', {
+	const { data } = await client.GET('/api/thread/threads', {
 		fetch,
 		params: {
 			query: {

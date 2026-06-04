@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
 	const category = asEnum(PostCategory, paramCategory);
 
-	const { data } = await client.GET('/api/post/search', {
+	const { data } = await client.GET('/api/thread/search', {
 		fetch,
 		params: {
 			query: {

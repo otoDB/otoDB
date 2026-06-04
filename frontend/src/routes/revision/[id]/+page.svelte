@@ -165,7 +165,7 @@
 		<button
 			onclick={() =>
 				goto(
-					`/post/new?category=${PostCategory.Gardening}&entity=@${data.revision.user}&title=${m.silly_quiet_fireant_quell({ id: data.revision.id })}`
+					`/thread/new?category=${PostCategory.Gardening}&entity=@${data.revision.user}&title=${m.silly_quiet_fireant_quell({ id: data.revision.id })}`
 				)}>{m.frail_loose_gecko_play({ user: data.revision.user })}</button
 		>
 	{/if}

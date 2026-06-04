@@ -6,12 +6,12 @@ from .models import (
 	MediaSong,
 	MediaWork,
 	Pool,
-	Post,
-	PostContent,
 	SongRelation,
 	TagSong,
 	TagWork,
 	TagWorkInstance,
+	Thread,
+	ThreadPost,
 	WorkRelation,
 	WorkSource,
 )
@@ -164,12 +164,18 @@ class WorkSourceAdmin(admin.ModelAdmin):
 	readonly_fields = ['info_payload']
 
 
-class PostContentInline(admin.TabularInline):
-	model = PostContent
+class ThreadPostInline(admin.TabularInline):
+	model = ThreadPost
+	extra = 0
+	fields = ['num', 'user', 'body', 'created_at', 'is_removed']
+	readonly_fields = ['num', 'user', 'created_at']
+	ordering = ['num']
 
 
-class PostAdmin(admin.ModelAdmin):
-	inlines = [PostContentInline]
+class ThreadAdmin(admin.ModelAdmin):
+	list_display = ['__str__', 'title', 'category', 'lang', 'added_by', 'created_at']
+	list_filter = ['category', 'lang', 'is_removed']
+	inlines = [ThreadPostInline]
 
 
 admin.site.register(WorkSource, WorkSourceAdmin)
@@ -179,4 +185,4 @@ admin.site.register(TagSong, TagWorkAdmin)
 admin.site.register(MediaWork, MediaWorkAdmin)
 admin.site.register(MediaSong, MediaSongAdmin)
 admin.site.register(TagWorkInstance, TagWorkInstanceAdmin)
-admin.site.register(Post, PostAdmin)
+admin.site.register(Thread, ThreadAdmin)

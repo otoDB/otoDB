@@ -201,10 +201,10 @@ class OtodbTagModel(BaseTagModel):
 				EntityLink.objects.filter(
 					entity_type=self_ct,
 					entity_id=tag.pk,
-					post_id__in=EntityLink.objects.filter(
+					thread_id__in=EntityLink.objects.filter(
 						entity_type=self_ct,
 						entity_id=into_tag.pk,
-					).values('post_id'),
+					).values('thread_id'),
 				).delete()
 				EntityLink.objects.filter(
 					entity_type=self_ct,

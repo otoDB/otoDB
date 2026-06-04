@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Literal
 
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count, F, IntegerField, OuterRef, Q, Subquery
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django_comments_xtd.models import XtdComment
@@ -15,10 +15,11 @@ from pydantic import field_validator
 from otodb.account.models import Account
 from otodb.models import (
 	Notification,
-	Post,
 	ProfileConnection,
 	Revision,
 	RevisionChangeEntity,
+	Thread,
+	ThreadPost,
 	UserPreference,
 	WorkSource,
 )
@@ -96,7 +97,8 @@ def search(
 		'-comments_count',
 	] = '-date_created',
 ):
-	post_ct = ContentType.objects.get_for_model(Post)
+	# Threads moved off XtdComment; their content type holds only inert legacy rows.
+	thread_ct = ContentType.objects.get_for_model(Thread)
 
 	works_count = (
 		WorkSource.objects.filter(added_by=OuterRef('pk'))
@@ -110,16 +112,9 @@ def search(
 		.annotate(c=Count('id'))
 		.values('c')
 	)
-	op_posts_count = (
-		Post.objects.filter(added_by=OuterRef('pk'))
-		.values('added_by')
-		.annotate(c=Count('id'))
-		.values('c')
-	)
-	post_comments_count = (
-		XtdComment.objects.filter(
-			user=OuterRef('pk'), content_type=post_ct, is_removed=False
-		)
+	# Every thread message (opening posts and replies alike) is a ThreadPost.
+	threadposts_count = (
+		ThreadPost.objects.filter(user=OuterRef('pk'), is_removed=False)
 		.order_by()
 		.values('user')
 		.annotate(c=Count('id'))
@@ -127,31 +122,24 @@ def search(
 	)
 	other_comments_count = (
 		XtdComment.objects.filter(user=OuterRef('pk'), is_removed=False)
-		.exclude(content_type=post_ct)
+		.exclude(content_type=thread_ct)
 		.order_by()
 		.values('user')
 		.annotate(c=Count('id'))
 		.values('c')
 	)
 
-	qs = (
-		Account.objects.all()
-		.annotate(
-			works_count=Coalesce(Subquery(works_count, output_field=IntegerField()), 0),
-			revisions_count=Coalesce(
-				Subquery(revisions_count, output_field=IntegerField()), 0
-			),
-			_op_posts=Coalesce(
-				Subquery(op_posts_count, output_field=IntegerField()), 0
-			),
-			_post_comments=Coalesce(
-				Subquery(post_comments_count, output_field=IntegerField()), 0
-			),
-			comments_count=Coalesce(
-				Subquery(other_comments_count, output_field=IntegerField()), 0
-			),
-		)
-		.annotate(posts_count=F('_op_posts') + F('_post_comments'))
+	qs = Account.objects.all().annotate(
+		works_count=Coalesce(Subquery(works_count, output_field=IntegerField()), 0),
+		revisions_count=Coalesce(
+			Subquery(revisions_count, output_field=IntegerField()), 0
+		),
+		posts_count=Coalesce(
+			Subquery(threadposts_count, output_field=IntegerField()), 0
+		),
+		comments_count=Coalesce(
+			Subquery(other_comments_count, output_field=IntegerField()), 0
+		),
 	)
 	qs = filters.filter(qs)
 	return qs.order_by(order, 'id')
@@ -261,7 +249,8 @@ def set_prefs(request: AuthedHttpRequest, payload: UserPreferenceSchema):
 class NotificationSchema(ModelSchema):
 	id: OtodbID
 	comment: tuple[ModelsWithComments, str] | None
-	post: OtodbID | None = Field(None, alias='post_id')
+	# (thread_id, post num); links to /thread/{id}.{num}
+	threadpost: tuple[OtodbID, int] | None = None
 	reason: NotificationReason
 	revision_user: str | None = Field(None, alias='revision.user.username')
 	revision_route: Route | None = None
@@ -287,19 +276,30 @@ class NotificationSchema(ModelSchema):
 				else str(value.object_pk),
 			)
 
+	@field_validator('threadpost', mode='before', check_fields=False)
+	@classmethod
+	def tp(cls, value) -> tuple[int, int] | None:
+		if value is None:
+			return None
+		return (value.thread_id, value.num)
+
 
 @profile_router.get(
 	'notifications', auth=django_auth, response=list[NotificationSchema]
 )
 @paginate
 def notifications(request: AuthedHttpRequest, subscription: bool | None = None):
-	qs = request.user.notifs.annotate(
-		revision_route=Subquery(
-			RevisionChangeEntity.objects.filter(
-				change__rev_id=OuterRef('revision_id')
-			).values('route')[:1]
+	qs = (
+		request.user.notifs.select_related('threadpost')
+		.annotate(
+			revision_route=Subquery(
+				RevisionChangeEntity.objects.filter(
+					change__rev_id=OuterRef('revision_id')
+				).values('route')[:1]
+			)
 		)
-	).order_by('dismissed', '-id')
+		.order_by('dismissed', '-id')
+	)
 	if subscription is True:
 		qs = qs.filter(revision__isnull=False)
 	elif subscription is False:

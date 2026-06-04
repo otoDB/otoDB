@@ -16,7 +16,12 @@ export const load: PageServerLoad = ({ locals, url }) => {
 	const category = asEnum(PostCategory, paramCategory);
 	const entity = url.searchParams.get('entity');
 	const title = url.searchParams.get('title');
-	return { category, entity, title, head: { title: m.antsy_aloof_horse_grace() } };
+	return {
+		category,
+		entity,
+		title,
+		head: { title: m.antsy_aloof_horse_grace() }
+	};
 };
 
 export const actions = {
@@ -41,9 +46,13 @@ export const actions = {
 
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
-		const { data: post_id, error: apiError } = await rawClient.POST('/api/post/post', {
+		const { data: thread_id, error: apiError } = await rawClient.POST('/api/thread/thread', {
 			fetch,
-			params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
+			params: {
+				header: {
+					'otodb-internal-secret': env.INTERNAL_API_SECRET
+				}
+			},
 			body: {
 				category: category,
 				post,
@@ -54,6 +63,6 @@ export const actions = {
 			}
 		});
 		if (apiError) return apiFail(apiError);
-		redirect(303, `/post/${post_id}`);
+		redirect(303, `/thread/${thread_id}`);
 	}
 } satisfies Actions;

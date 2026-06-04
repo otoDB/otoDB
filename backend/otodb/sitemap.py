@@ -8,7 +8,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_GET
 
 from otodb.account.models import Account
-from otodb.models import MediaWork, Pool, Post, TagSong, TagWork
+from otodb.models import MediaWork, Pool, TagSong, TagWork, Thread
 from otodb.models.revision import RevisionChange
 
 CHUNK_SIZE = 10_000
@@ -53,9 +53,9 @@ SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
 		'value_field': 'id',
 	},
 	'posts': {
-		'model': Post,
-		'filters': {},
-		'url_pattern': '/post/{value}',
+		'model': Thread,
+		'filters': {'is_removed': False},
+		'url_pattern': '/thread/{value}',
 		'value_field': 'id',
 		'prepare_queryset': lambda qs: qs.with_activity().annotate(
 			lastmod=F('modified')

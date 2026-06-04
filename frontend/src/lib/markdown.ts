@@ -55,8 +55,10 @@ function link(href: string, text: string): PhrasingContent {
 }
 
 function postRef(thread: string, num: string): PhrasingContent {
-	const author = activeContext?.thread === thread ? activeContext?.refAuthors?.[num] : undefined;
-	return link(`/thread/${thread}.${num}`, author ? `#${num} by ${author}` : `#${num}`);
+	const author = activeContext?.refAuthors?.[`${thread}.${num}`];
+	// Same-thread: "#num". Cross-thread: keep the thread id ("t{thread}.{num}").
+	const base = activeContext?.thread === thread ? `#${num}` : `t${thread}.${num}`;
+	return link(`/thread/${thread}.${num}`, author ? `${base} by ${author}` : base);
 }
 
 function remarkStripImages() {

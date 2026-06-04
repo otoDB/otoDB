@@ -29,7 +29,7 @@
 		thread: threadId,
 		refAuthors: {
 			...refAuthors,
-			...Object.fromEntries(posts.map((p) => [String(p.num), p.user.username]))
+			...Object.fromEntries(posts.map((p) => [`${threadId}.${p.num}`, p.user.username]))
 		}
 	});
 

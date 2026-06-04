@@ -6,7 +6,7 @@ from math import ceil
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import ModelSchema, Query, Router, Schema
@@ -134,20 +134,23 @@ def get_posts(request: HttpRequest, thread_id: OtodbID, page: int = 1):
 		]
 	)
 
-	# Resolve authors for any t{this_thread}.{num} references on this page so the
-	# rendered link can show "#num by <user>" even server-side / across pages.
-	referenced_nums: set[int] = set()
+	# Resolve authors for any t{tid}.{num} references on this page (same- or
+	# cross-thread) so the rendered link can show the author even server-side.
+	# Keyed by "tid.num".
+	referenced: set[tuple[int, int]] = set()
 	for p in posts:
 		for tid, num in POST_REF_RE.findall(p.body):
-			if int(tid) == int(thread_id):
-				referenced_nums.add(int(num))
+			referenced.add((int(tid), int(num)))
 	ref_authors: dict[str, str] = {}
-	if referenced_nums:
+	if referenced:
+		q = Q()
+		for tid, num in referenced:
+			q |= Q(thread_id=tid, num=num)
 		ref_authors = {
-			str(num): username
-			for num, username in ThreadPost.objects.filter(
-				thread_id=thread_id, num__in=referenced_nums, is_removed=False
-			).values_list('num', 'user__username')
+			f'{tid}.{num}': username
+			for tid, num, username in ThreadPost.objects.filter(
+				q, is_removed=False
+			).values_list('thread_id', 'num', 'user__username')
 		}
 
 	return {'count': count, 'posts': posts, 'ref_authors': ref_authors}
@@ -169,6 +172,26 @@ class ThreadInSchema(Schema):
 	lang: LanguageTypes
 	target_users: list[str]
 	entities: list[PostEntitySchema]
+
+
+def _add_reference_targets(
+	body: str, thread_id: int, reasons: dict[int, NotificationReason]
+) -> None:
+	"""Notify the authors of *cross-thread* posts referenced via t{id}.{num}.
+	Same-thread references need no special handling: those authors posted in the
+	thread and are therefore already subscribers."""
+	for tid, num in POST_REF_RE.findall(body):
+		if int(tid) == thread_id:
+			continue
+		author_id = (
+			ThreadPost.objects.filter(
+				thread_id=int(tid), num=int(num), is_removed=False
+			)
+			.values_list('user_id', flat=True)
+			.first()
+		)
+		if author_id:
+			reasons.setdefault(author_id, NotificationReason.MENTION)
 
 
 def _notify(reasons: dict[int, NotificationReason], post: ThreadPost) -> None:
@@ -222,6 +245,7 @@ def new_thread(request: AuthedHttpRequest, payload: ThreadInSchema):
 		for name in usernames:
 			if account := Account.objects.filter(username__iexact=name).first():
 				reasons[account.id] = NotificationReason.THREAD_LINKED
+	_add_reference_targets(payload.post, t.id, reasons)
 	_notify(reasons, op)
 
 	Subscription.objects.create(subscriber=request.user, entity=t)
@@ -296,6 +320,7 @@ def new_post(request: AuthedHttpRequest, payload: PostInSchema):
 			username__in=payload.mentioned_users
 		).values_list('id', flat=True):
 			reasons[uid] = NotificationReason.MENTION
+	_add_reference_targets(payload.body, t.id, reasons)
 	_notify(reasons, post)
 
 	# Subscribe the replier so they're notified of future activity.

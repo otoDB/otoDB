@@ -100,9 +100,9 @@ SOURCES = [
 
 WIKIS = [
 	{'slug': 'about', 'title': 'About'},
-	{'slug': 'editing_guidelines', 'title': 'Editing guidelines'},
+	{'slug': 'editing_guidelines', 'title': 'Editing Guidelines'},
 	{'slug': 'faq', 'title': 'FAQ'},
-	{'slug': 'search_syntax', 'title': 'Search syntax'},
+	{'slug': 'search_syntax', 'title': 'Search Syntax'},
 ]
 
 SEED_STEPS = ('accounts', 'tags', 'works', 'sources', 'wikis')

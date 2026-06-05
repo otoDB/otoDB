@@ -3814,7 +3814,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TagSongSchema"
+                  "$ref": "#/components/schemas/FatTagSongSchema"
                 }
               }
             }
@@ -7699,13 +7699,6 @@
             "title": "Id",
             "type": "string"
           },
-          "children": {
-            "items": {
-              "$ref": "#/components/schemas/TagSongSchema"
-            },
-            "title": "Children",
-            "type": "array"
-          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -7727,7 +7720,6 @@
         },
         "required": [
           "id",
-          "children",
           "name",
           "slug",
           "category",
@@ -8256,13 +8248,6 @@
             "title": "Id",
             "type": "string"
           },
-          "children": {
-            "items": {
-              "$ref": "#/components/schemas/TagSongSchema"
-            },
-            "title": "Children",
-            "type": "array"
-          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -8288,7 +8273,6 @@
         },
         "required": [
           "id",
-          "children",
           "name",
           "slug",
           "category",
@@ -8296,6 +8280,49 @@
           "n_instance"
         ],
         "title": "TagSongSearchResultSchema",
+        "type": "object"
+      },
+      "FatTagSongSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/SongTagCategory"
+          },
+          "lang_prefs": {
+            "items": {
+              "$ref": "#/components/schemas/TagLangPreferenceSchema"
+            },
+            "title": "Lang Prefs",
+            "type": "array"
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/TagSongSchema"
+            },
+            "title": "Children",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "category",
+          "lang_prefs",
+          "children"
+        ],
+        "title": "FatTagSongSchema",
         "type": "object"
       },
       "SongTagInSchema": {

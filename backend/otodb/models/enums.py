@@ -314,6 +314,9 @@ class Route(OtodbIntegerEnum):
 
 class ErrorCode(OtodbIntegerEnum):
 	INTERNAL_ERROR = -1
+
+	RATE_LIMITED = 429
+
 	LOGIN_FAILED = 10000
 	NOT_LOGGED_IN = 10001
 	USERNAME_TAKEN = 10002

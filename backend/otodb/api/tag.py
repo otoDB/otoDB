@@ -121,11 +121,21 @@ class TagWorkDetailsSchema(Schema):
 
 class TagSongSchema(Schema):
 	id: OtodbID
-	children: list['TagSongSchema']
 	name: str
 	slug: str
 	category: SongTagCategory
 	lang_prefs: list[TagLangPreferenceSchema]
+
+
+class FatTagSongSchema(TagSongSchema):
+	children: list[TagSongSchema]
+
+	@staticmethod
+	def resolve_children(obj):
+		return TagSong.objects.filter(
+			Q(parent_id=obj.pk) | Q(parent__aliased_to=obj.pk),
+			aliased_to__isnull=True,
+		)
 
 
 class TagSongDetailsSchema(Schema):
@@ -406,6 +416,7 @@ class AliasResponse(Schema):
 
 @tag_router.post('alias', auth=django_auth, response=AliasResponse)
 @user_is_trusted
+@transaction.atomic
 @tag_route_switch(Route.TAGWORK_ALIAS, Route.SONGTAG_ALIAS)
 def alias_tags(
 	request: AuthedHttpRequest,
@@ -472,6 +483,7 @@ class TagAliasControlSchema(Schema):
 
 @tag_router.post('tag_aliases', auth=django_auth, response={200: None, 400: Error})
 @user_is_trusted
+@transaction.atomic
 @tag_route_switch(Route.TAGWORK_UNALIAS, Route.SONGTAG_UNALIAS)
 def tag_alias_control(
 	request: HttpRequest, tag_slug: str, payload: TagAliasControlSchema, **kwargs
@@ -1173,7 +1185,7 @@ def song_tags(
 	return
 
 
-@tag_router.get('song_tag', response=TagSongSchema)
+@tag_router.get('song_tag', response=FatTagSongSchema)
 def song_tag(request: HttpRequest, tag_slug: str):
 	cleaned = slugify_tag(tag_slug)
 	tag = get_object_or_404(TagSong, slug=cleaned)
@@ -1215,7 +1227,11 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchem
 @tag_router.get('songs', response=list[SongSchema])
 @paginate
 def songs(request: HttpRequest, tag_slug: str):
-	return MediaSong.objects.filter(tags__slug=tag_slug)
+	return (
+		MediaSong.objects.filter(tags__slug=tag_slug)
+		.select_related('work_tag')
+		.prefetch_related('tags')
+	)
 
 
 class SongConnectionSchema(ConnectionSchema):

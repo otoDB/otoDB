@@ -3824,7 +3824,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TagSongSchema"
+                  "$ref": "#/components/schemas/FatTagSongSchema"
                 }
               }
             }
@@ -5150,6 +5150,7 @@
       "ErrorCode": {
         "enum": [
           -1,
+          429,
           10000,
           10001,
           10002,
@@ -5178,6 +5179,7 @@
         "type": "integer",
         "x-enum-varnames": [
           "Internal Error",
+          "Rate Limited",
           "Login Failed",
           "Not Logged In",
           "Username Taken",
@@ -5480,10 +5482,29 @@
       "ExternalQuery": {
         "properties": {
           "work_id": {
-            "title": "Work Id",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Id"
+          },
+          "upload_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Id"
           },
           "tags": {
+            "default": [],
             "items": {
               "$ref": "#/components/schemas/TagWorkInstanceSchema"
             },
@@ -5491,10 +5512,6 @@
             "type": "array"
           }
         },
-        "required": [
-          "work_id",
-          "tags"
-        ],
         "title": "ExternalQuery",
         "type": "object"
       },
@@ -7739,13 +7756,6 @@
             "title": "Id",
             "type": "string"
           },
-          "children": {
-            "items": {
-              "$ref": "#/components/schemas/TagSongSchema"
-            },
-            "title": "Children",
-            "type": "array"
-          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -7767,7 +7777,6 @@
         },
         "required": [
           "id",
-          "children",
           "name",
           "slug",
           "category",
@@ -8296,13 +8305,6 @@
             "title": "Id",
             "type": "string"
           },
-          "children": {
-            "items": {
-              "$ref": "#/components/schemas/TagSongSchema"
-            },
-            "title": "Children",
-            "type": "array"
-          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -8328,7 +8330,6 @@
         },
         "required": [
           "id",
-          "children",
           "name",
           "slug",
           "category",
@@ -8336,6 +8337,49 @@
           "n_instance"
         ],
         "title": "TagSongSearchResultSchema",
+        "type": "object"
+      },
+      "FatTagSongSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/SongTagCategory"
+          },
+          "lang_prefs": {
+            "items": {
+              "$ref": "#/components/schemas/TagLangPreferenceSchema"
+            },
+            "title": "Lang Prefs",
+            "type": "array"
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/TagSongSchema"
+            },
+            "title": "Children",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "category",
+          "lang_prefs",
+          "children"
+        ],
+        "title": "FatTagSongSchema",
         "type": "object"
       },
       "SongTagInSchema": {

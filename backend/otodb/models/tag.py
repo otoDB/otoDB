@@ -116,7 +116,6 @@ class TagSongManager(TagModelManagerBase):
 		return (
 			super()
 			.get_queryset()
-			.prefetch_related('children')
 			.select_related('aliased_to')
 			.prefetch_related(
 				Prefetch('tagsonglangpreference_set', queryset=lang_prefs_qs),
@@ -582,9 +581,14 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 
 	@classmethod
 	def transfer_data(cls, from_tag: Self, to_tag: Self):
-		for song in from_tag.songs.all():
-			song.tags.add(to_tag)
-			song.tags.remove(from_tag)
+		from .media import TagSongInstance
+
+		for tsi in TagSongInstance.objects.filter(song_tag=from_tag):
+			if TagSongInstance.objects.filter(song=tsi.song, song_tag=to_tag).exists():
+				tsi.delete()
+			else:
+				tsi.song_tag = to_tag
+				tsi.save()
 		cls.objects.filter(parent=from_tag).update(parent=to_tag)
 
 		# carry over category and parenthood

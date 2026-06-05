@@ -374,7 +374,7 @@ def details(request: HttpRequest, tag_slug: str):
 @tag_router.get('works', response=list[ThinWorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
-	return MediaWork.active_objects.filter(tags__slug=tag_slug)
+	return MediaWork.active_objects.filter(tags__slug=tag_slug).visible()
 
 
 class TagTypes(str, Enum):
@@ -1247,7 +1247,9 @@ def song_connection(request: HttpRequest, song_id: OtodbID):
 @tag_router.get('similar', response=list[TagWorkSchema])
 def similar(request: HttpRequest, tag_slug: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
-	tw = MediaWork.active_objects.filter(tags=tag).values_list('id', flat=True)
+	tw = (
+		MediaWork.active_objects.filter(tags=tag).visible().values_list('id', flat=True)
+	)
 	return (
 		TagWork.objects.exclude(id=tag.id)
 		.filter(works__in=Subquery(tw), deprecated=False)

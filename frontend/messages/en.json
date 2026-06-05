@@ -358,7 +358,8 @@
 	"funny_muddy_skate_learn": "Target",
 	"last_sleek_butterfly_quiz": "By",
 	"antsy_main_puffin_dust": "Cannot add sources to flagged works.",
-	"clean_civil_jellyfish_promise": "Cannot add sources to unapproved works.",
+	"clean_civil_jellyfish_promise": "Cannot add sources to delisted works.",
+	"stout_brave_otter_reject": "Cannot unbind a pending source. Reject it instead.",
 	"direct_fluffy_finch_believe": "Queue",
 	"awake_aware_quail_bake": "Moderation Event",
 	"cool_house_barbel_cheer": "Immediately resolve this work?",
@@ -400,5 +401,6 @@
 	"swift_keen_otter_guide": "View docs",
 	"witty_brisk_hawk_merge": "At least one of the tags being merged into \"{into_tag}\" is associated to a work or song. Only editors can merge such tags.",
 	"this_late_gadfly_sail": "System",
+	"fresh_lucky_swan_dwell": "Unbound",
 	"lucky_brisk_falcon_rest": "Rate limit exceeded."
 }

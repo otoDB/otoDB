@@ -134,7 +134,7 @@ def confirm(request: HttpRequest, request_id: OtodbID, status: Status):
 			add_revision_message(f'Via request {bulk.id} from {bulk.user.username}')
 			for r in bulk.requests.all():
 				ACTIONS[r.command](r.A, r.B)
-		case Status.UNAPPROVED:
+		case Status.DELISTED:
 			pass
 		case Status.PENDING:
 			pass

@@ -1101,7 +1101,7 @@
             }
           }
         },
-        "description": "Appeal an unapproved work to send it back to the mod queue.",
+        "description": "Appeal a delisted work to send it back to the mod queue.",
         "security": [
           {
             "SessionAuth": []
@@ -1234,6 +1234,16 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2059,7 +2069,7 @@
             "schema": {
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/Status"
+                  "$ref": "#/components/schemas/SubmissionStanding"
                 }
               ],
               "default": 1
@@ -5162,7 +5172,8 @@
           10018,
           10019,
           10020,
-          10021
+          10021,
+          10022
         ],
         "title": "ErrorCode",
         "type": "integer",
@@ -5190,7 +5201,8 @@
           "No More Appeal Slots",
           "Tag Has Information",
           "Thumbnail Source Required",
-          "Tag With Instances Merge Requires Editor"
+          "Tag With Instances Merge Requires Editor",
+          "Source Pending"
         ]
       },
       "LoginRequestSchema": {
@@ -5787,7 +5799,7 @@
         "x-enum-varnames": [
           "Pending",
           "Approved",
-          "Unapproved"
+          "Delisted"
         ]
       },
       "TagWorkInstanceThinSchema": {
@@ -6889,6 +6901,26 @@
         "title": "UserConnectionSchema",
         "type": "object"
       },
+      "SubmissionStanding": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "title": "SubmissionStanding",
+        "type": "integer",
+        "x-enum-varnames": [
+          "Pending",
+          "Approved",
+          "Delisted",
+          "Unbound",
+          "Flagged",
+          "Appealed"
+        ]
+      },
       "SubmissionsFilterSchema": {
         "properties": {
           "platform": {
@@ -7099,6 +7131,16 @@
               }
             ],
             "title": "Media"
+          },
+          "media_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [

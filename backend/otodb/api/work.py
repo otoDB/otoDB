@@ -43,7 +43,6 @@ from otodb.models.enums import (
 	ErrorCode,
 	FlagStatus,
 	MediaType,
-	ModerationAction,
 	ModerationEventType,
 	ModQueueCategory,
 	OtodbIntegerEnum,
@@ -57,6 +56,7 @@ from otodb.models.enums import (
 	WorkStatus,
 	WorkTagCategory,
 )
+from otodb.moderation import resolve_work
 from otodb.tasks import (
 	enqueue_deferred,
 	resolve_expired_appeal,
@@ -623,7 +623,7 @@ def work(request: AuthedHttpRequest, work_id: OtodbID):
 @with_revision_route(Route.MEDIAWORK_DELETE)
 def delete_work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	work.worksource_set.update(media=None)
+	work.worksource_set.update(media=None, is_pending=False)
 	work.delete()
 
 
@@ -825,16 +825,6 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	return work.pk
 
 
-def resolve_work(work: MediaWork):
-	"""Resolve a work's pending state and dismiss any pending flags/appeals."""
-	work.moderation_events.filter(
-		event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
-		status=FlagStatus.PENDING,
-	).update(status=FlagStatus.REJECTED)
-	work.status = Status.UNAPPROVED
-	work.save(update_fields=['status'])
-
-
 @work_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 def approve_work(request: AuthedHttpRequest, work_id: OtodbID):
@@ -877,13 +867,7 @@ def disapprove_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 def resolve_work_mod(request: AuthedHttpRequest, work_id: OtodbID):
 	"""Immediate resolution by mods - same as expiry, skips the waiting period."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	resolve_work(work)
-	ModerationEvent.objects.create(
-		work=work,
-		event_type=ModerationEventType.MOD_ACTION,
-		status=ModerationAction.WORK_DELISTED,
-		by=request.user,
-	)
+	resolve_work(work, by=request.user)
 
 
 @work_router.post(
@@ -941,9 +925,9 @@ def flag_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 )
 @user_is_trusted
 def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
-	"""Appeal an unapproved work to send it back to the mod queue."""
+	"""Appeal a delisted work to send it back to the mod queue."""
 	work = get_object_or_404(
-		MediaWork.objects.filter(status=Status.UNAPPROVED), id=work_id
+		MediaWork.objects.filter(status=Status.DELISTED), id=work_id
 	)
 	if work.moderation_events.filter(
 		event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING

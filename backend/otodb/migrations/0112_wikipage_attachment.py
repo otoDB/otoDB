@@ -9,7 +9,7 @@ import otodb.models.wiki
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0110_system_route_enum'),
+		('otodb', '0111_alter_bulkrequest_status_alter_mediawork_status'),
 	]
 
 	operations = [

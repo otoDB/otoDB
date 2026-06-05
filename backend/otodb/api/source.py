@@ -65,7 +65,7 @@ class WorkSourceMetadataSchema(Schema):
 	published_date: date | None = None
 
 
-@source_router.post('unbind', auth=django_auth)
+@source_router.post('unbind', auth=django_auth, response={200: None, 400: Error})
 @user_is_editor
 @transaction.atomic
 @with_revision_route(Route.WORKSOURCE_UNBIND)
@@ -73,10 +73,11 @@ def unbind_source(request: AuthedHttpRequest, source_id: OtodbID):
 	src = get_object_or_404(
 		WorkSource.objects.select_for_update(of=('self',)), id=source_id
 	)
+	if src.is_pending:
+		raise ApiError(400, ErrorCode.SOURCE_PENDING)
 	if src.media.worksource_set.count() == 1:
 		src.media.delete()
 	src.media = None
-	src.is_pending = False
 	src.save()
 
 

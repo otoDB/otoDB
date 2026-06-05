@@ -44,6 +44,7 @@
         | { kind: 'status'; message: string }
         | { kind: 'work'; workId: number; tags: WorkTagInstance[] }
         | { kind: 'connection'; tags: ConnectionEntity[] }
+        | { kind: 'upload'; uploadId: number }
         | { kind: 'notFound'; currentUrl: string };
 
     let view = $state<State>({ kind: 'loading' });
@@ -68,9 +69,15 @@
                 const response = await window.fetch(url, { credentials: 'include' });
                 if (response.ok) {
                     const data: components['schemas']['ExternalQuery'] = await response.json();
-                    mainLabel = m.noisy_proud_robin_gaze;
-                    mainHref = `${OTODB_WEB}/work/${data.work_id}`;
-                    view = { kind: 'work', workId: data.work_id, tags: data.tags };
+                    if (data.work_id != null) {
+                        mainLabel = m.noisy_proud_robin_gaze;
+                        mainHref = `${OTODB_WEB}/work/${data.work_id}`;
+                        view = { kind: 'work', workId: data.work_id, tags: data.tags };
+                    } else if (data.upload_id != null) {
+                        view = { kind: 'upload', uploadId: data.upload_id };
+                    } else {
+                        view = { kind: 'notFound', currentUrl: tab.url };
+                    }
                 } else if (response.status === 404) {
                     view = { kind: 'notFound', currentUrl: tab.url };
                 } else {
@@ -161,6 +168,20 @@
                 rel="noopener noreferrer"
             >
                 {m.merry_brisk_owl_submit()}
+            </a>
+        {:else if view.kind === 'upload'}
+            <div
+                class="w-full shrink-0 pb-4 text-center text-sm"
+                style="color: var(--otodb-color-content-fainter)"
+            >
+                {m.dizzy_keen_otter_pause()}
+            </div>
+            <a
+                href={`${OTODB_WEB}/upload/${view.uploadId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                {m.noisy_proud_robin_gaze()}
             </a>
         {:else if view.kind === 'work' || view.kind === 'connection'}
             {#each grouped as [category, tags] (category)}

@@ -101,8 +101,9 @@ work_router = RouterWithRevision()
 
 
 class ExternalQuery(Schema):
-	work_id: int
-	tags: List[TagWorkInstanceSchema]
+	work_id: int | None = None
+	upload_id: int | None = None
+	tags: List[TagWorkInstanceSchema] = []
 
 
 def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
@@ -151,7 +152,11 @@ def query_external(
 			"Either 'url' or both 'platform' and 'id' parameters must be provided"
 		)
 
-	return {'tags': work.media.tags_annotated, 'work_id': work.media.id}
+	# Unbound upload
+	if work.media is None:
+		return {'upload_id': work.pk}
+
+	return {'tags': work.media.tags_annotated, 'work_id': work.media.pk}
 
 
 class WorkOrder(OtodbIntegerEnum):

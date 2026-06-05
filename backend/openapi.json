@@ -5470,10 +5470,29 @@
       "ExternalQuery": {
         "properties": {
           "work_id": {
-            "title": "Work Id",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Id"
+          },
+          "upload_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Id"
           },
           "tags": {
+            "default": [],
             "items": {
               "$ref": "#/components/schemas/TagWorkInstanceSchema"
             },
@@ -5481,10 +5500,6 @@
             "type": "array"
           }
         },
-        "required": [
-          "work_id",
-          "tags"
-        ],
         "title": "ExternalQuery",
         "type": "object"
       },

@@ -34,9 +34,9 @@ def send_email(
 def resolve_expired_work(work_id: int):
 	"""Delist a work once its moderation window has elapsed."""
 	from otodb.account.models import Account
-	from otodb.api.work import resolve_work
 	from otodb.models import MediaWork
 	from otodb.models.enums import Status
+	from otodb.moderation import resolve_work
 
 	try:
 		work = MediaWork.objects.get(id=work_id)
@@ -51,9 +51,9 @@ def resolve_expired_work(work_id: int):
 def resolve_expired_flag(event_id: int):
 	"""Delist a flagged work whose pending flag was never actioned in time."""
 	from otodb.account.models import Account
-	from otodb.api.work import resolve_work
 	from otodb.models import ModerationEvent
 	from otodb.models.enums import FlagStatus, ModerationEventType
+	from otodb.moderation import resolve_work
 
 	try:
 		event = ModerationEvent.objects.select_related('work').get(
@@ -74,9 +74,9 @@ def resolve_expired_flag(event_id: int):
 def resolve_expired_appeal(event_id: int):
 	"""Re-delist a work whose pending appeal was never actioned in time."""
 	from otodb.account.models import Account
-	from otodb.api.work import resolve_work
 	from otodb.models import ModerationEvent
 	from otodb.models.enums import FlagStatus, ModerationEventType
+	from otodb.moderation import resolve_work
 
 	try:
 		event = ModerationEvent.objects.select_related('work').get(

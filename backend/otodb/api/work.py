@@ -43,7 +43,6 @@ from otodb.models.enums import (
 	ErrorCode,
 	FlagStatus,
 	MediaType,
-	ModerationAction,
 	ModerationEventType,
 	ModQueueCategory,
 	OtodbIntegerEnum,
@@ -57,6 +56,7 @@ from otodb.models.enums import (
 	WorkStatus,
 	WorkTagCategory,
 )
+from otodb.moderation import resolve_work
 from otodb.tasks import (
 	enqueue_deferred,
 	resolve_expired_appeal,
@@ -818,23 +818,6 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 		pool.pending_items.remove(src)
 
 	return work.pk
-
-
-def resolve_work(work: MediaWork, by: Account, reason: str = ''):
-	"""Delist a work, dismiss any pending flags/appeals, and record the action."""
-	work.moderation_events.filter(
-		event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
-		status=FlagStatus.PENDING,
-	).update(status=FlagStatus.REJECTED)
-	work.status = Status.DELISTED
-	work.save(update_fields=['status'])
-	ModerationEvent.objects.create(
-		work=work,
-		event_type=ModerationEventType.MOD_ACTION,
-		status=ModerationAction.WORK_DELISTED,
-		by=by,
-		reason=reason,
-	)
 
 
 @work_router.post('approve', auth=django_auth, response={200: None, 403: Error})

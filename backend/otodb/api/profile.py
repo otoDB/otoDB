@@ -27,12 +27,12 @@ from otodb.models.enums import (
 	FlagStatus,
 	ModerationEventType,
 	NotificationReason,
+	OtodbIntegerEnum,
 	Platform,
 	Preferences,
 	ProfileConnectionTypes,
 	Route,
 	Status,
-	SubmissionStanding,
 	WorkOrigin,
 	WorkStatus,
 )
@@ -51,6 +51,16 @@ from .common import (
 )
 
 profile_router = Router()
+
+
+# Used for filters on submission page
+class SubmissionStanding(OtodbIntegerEnum):
+	PENDING = 0, 'Pending'
+	APPROVED = 1, 'Approved'
+	DELISTED = 2, 'Delisted'
+	UNBOUND = 3, 'Unbound'
+	FLAGGED = 4, 'Flagged'
+	APPEALED = 5, 'Appealed'
 
 
 @profile_router.get('profile', response=ProfileSchema)

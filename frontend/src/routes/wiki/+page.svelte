@@ -58,7 +58,7 @@
 						<td>{row.langs.map(langDisplay).join(', ')}</td>
 						<td>
 							{#if row.last_edited_at}
-								{new Date(row.last_edited_at).toLocaleDateString()}
+								<Time date={row.last_edited_at} format="relative" />
 							{:else}
 								—
 							{/if}

@@ -24,7 +24,8 @@ from otodb.models.enums import (
 	WorkTagCategory,
 )
 from otodb.models.media import MediaWork, TagWorkInstance
-from otodb.models.tag import TagWork, WikiPage
+from otodb.models.tag import TagWork
+from otodb.models.wiki import WikiPage
 from otodb.models.work_source import WorkSource
 
 ACCOUNTS = [

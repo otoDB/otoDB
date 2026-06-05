@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import Pager from '$lib/Pager.svelte';
 	import Section from '$lib/Section.svelte';
+	import Time from '$lib/Time.svelte';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import { m } from '$lib/paraglide/messages';
 	import { WikiKind } from '$lib/schema';

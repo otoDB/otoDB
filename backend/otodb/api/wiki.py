@@ -20,6 +20,7 @@ from otodb.models.enums import LanguageTypes, Route
 from .common import (
 	OtodbID,
 	RouterWithRevision,
+	TagLangPreferenceSchema,
 	user_is_mod,
 	user_is_trusted,
 	with_revision_route,
@@ -61,29 +62,46 @@ class WikiPageEditSchema(Schema):
 	md: str
 
 
+class WikiTagRefSchema(Schema):
+	slug: str
+	name: str
+	lang_prefs: list[TagLangPreferenceSchema]
+
+
+class WikiWorkRefSchema(Schema):
+	id: int
+	title: str | None = None
+
+
+class WikiDocsRefSchema(Schema):
+	slug: str
+	title: str | None = None
+
+
 class WikiIndexRowSchema(Schema):
-	url: str
-	title: str
+	tag: WikiTagRefSchema | None = None
+	work: WikiWorkRefSchema | None = None
+	docs: WikiDocsRefSchema | None = None
 	last_edited_at: datetime | None = None
 	langs: list[LanguageTypes]
 
 
-def _row_to_index_item(row: dict) -> dict:
+def _row_to_index_item(row: dict, tags: dict[int, TagWork]) -> dict:
 	"""Map a grouped `.values()` row to a WikiIndexRowSchema-shaped dict."""
-	if row['tag_id'] is not None:
-		title, url = row['tag__name'], f'/tag/{row["tag__slug"]}'
-	elif row['work_id'] is not None:
-		title = row['work__title'] or f'Work #{row["work_id"]}'
-		url = f'/work/{row["work_id"]}'
-	else:
-		title = row['title'] or row['slug']
-		url = f'/wiki/{row["slug"]}'
-	return {
-		'url': url,
-		'title': title,
+	item = {
+		'tag': None,
+		'work': None,
+		'docs': None,
 		'last_edited_at': row['last_edited_at'],
 		'langs': sorted(row['langs']),
 	}
+	if row['tag_id'] is not None:
+		item['tag'] = tags.get(row['tag_id'])
+	elif row['work_id'] is not None:
+		item['work'] = {'id': row['work_id'], 'title': row['work__title']}
+	else:
+		item['docs'] = {'slug': row['slug'], 'title': row['title']}
+	return item
 
 
 @wiki_router.get('', response=list[WikiIndexRowSchema])
@@ -118,8 +136,8 @@ def index(
 	# Group by the entity each page is attached to (a row has exactly one of
 	# tag/work/slug, so these columns are 1:1 with the entity), aggregating the
 	# langs and the latest edit so each entity surfaces once.
-	groups = (
-		qs.values('tag_id', 'tag__slug', 'tag__name', 'work_id', 'work__title', 'slug')
+	groups = list(
+		qs.values('tag_id', 'work_id', 'work__title', 'slug')
 		.annotate(
 			title=Max('title'),
 			langs=ArrayAgg('lang'),
@@ -128,7 +146,10 @@ def index(
 		.order_by(F('last_edited_at').desc(nulls_last=True))
 	)
 
-	return [_row_to_index_item(row) for row in groups]
+	tag_ids = {row['tag_id'] for row in groups if row['tag_id'] is not None}
+	tags = TagWork.objects.in_bulk(tag_ids) if tag_ids else {}
+
+	return [_row_to_index_item(row, tags) for row in groups]
 
 
 def _apply_wiki_edits(

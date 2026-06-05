@@ -8855,15 +8855,61 @@
         "title": "PagedWikiIndexRowSchema",
         "type": "object"
       },
-      "WikiIndexRowSchema": {
+      "WikiDocsRefSchema": {
         "properties": {
-          "url": {
-            "title": "Url",
+          "slug": {
+            "title": "Slug",
             "type": "string"
           },
           "title": {
-            "title": "Title",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "title": "WikiDocsRefSchema",
+        "type": "object"
+      },
+      "WikiIndexRowSchema": {
+        "properties": {
+          "tag": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WikiTagRefSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "work": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WikiWorkRefSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "docs": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WikiDocsRefSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "last_edited_at": {
             "anyOf": [
@@ -8886,11 +8932,59 @@
           }
         },
         "required": [
-          "url",
-          "title",
           "langs"
         ],
         "title": "WikiIndexRowSchema",
+        "type": "object"
+      },
+      "WikiTagRefSchema": {
+        "properties": {
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "lang_prefs": {
+            "items": {
+              "$ref": "#/components/schemas/TagLangPreferenceSchema"
+            },
+            "title": "Lang Prefs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "lang_prefs"
+        ],
+        "title": "WikiTagRefSchema",
+        "type": "object"
+      },
+      "WikiWorkRefSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "WikiWorkRefSchema",
         "type": "object"
       },
       "WikiPageMDSchema": {

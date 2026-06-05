@@ -6,8 +6,18 @@
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import { m } from '$lib/paraglide/messages';
 	import { WikiKind } from '$lib/schema';
+	import { getTagDisplayName } from '$lib/ui';
 
 	let { data } = $props();
+
+	type Row = (typeof data.results.items)[number];
+
+	function hrefFor(row: Row): string {
+		if (row.tag) return `/tag/${row.tag.slug}`;
+		if (row.work) return `/work/${row.work.id}`;
+		if (row.docs) return `/wiki/${row.docs.slug}`;
+		return '#';
+	}
 
 	function langDisplay(id: number): string {
 		const key = resolveLanguageKeyById(id);
@@ -49,7 +59,17 @@
 			<tbody>
 				{#each data.results.items as row, i (i)}
 					<tr>
-						<td><a href={row.url}>{row.title}</a></td>
+						<td>
+							<a href={hrefFor(row)}>
+								{#if row.tag}
+									{getTagDisplayName(row.tag)}
+								{:else if row.work}
+									{row.work.title ?? `#${row.work.id}`}
+								{:else if row.docs}
+									{row.docs.title ?? row.docs.slug}
+								{/if}
+							</a>
+						</td>
 						<td>{row.langs.map(langDisplay).join(', ')}</td>
 						<td>
 							{#if row.last_edited_at}

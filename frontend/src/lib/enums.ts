@@ -8,6 +8,7 @@ import {
 	SongRelationTypes,
 	SongTagCategory,
 	Status,
+	SubmissionStanding,
 	WorkOrigin,
 	WorkRelationTypes,
 	WorkStatus
@@ -29,8 +30,17 @@ export const RatingNames = {
 export const StatusNames = {
 	[Status.Pending]: m.such_actual_okapi_dare,
 	[Status.Approved]: m.spare_few_kudu_learn,
-	[Status.Unapproved]: m.stale_vexed_hare_pray
+	[Status.Delisted]: m.quiet_upper_pig_yell
 } as const satisfies Record<Status, () => string>;
+
+export const SubmissionStandingNames = {
+	[SubmissionStanding.Pending]: m.such_actual_okapi_dare,
+	[SubmissionStanding.Approved]: m.spare_few_kudu_learn,
+	[SubmissionStanding.Delisted]: m.quiet_upper_pig_yell,
+	[SubmissionStanding.Unbound]: m.fresh_lucky_swan_dwell,
+	[SubmissionStanding.Flagged]: m.tangy_busy_liger_burn,
+	[SubmissionStanding.Appealed]: m.brief_flat_bullock_dance
+} as const satisfies Record<SubmissionStanding, () => string>;
 
 export const WorkOriginNames = {
 	[WorkOrigin.Author]: m.crisp_red_canary_tickle,

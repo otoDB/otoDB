@@ -247,6 +247,7 @@ if OTODB_FRONTEND_DOMAIN:
 		'http://' + OTODB_FRONTEND_DOMAIN,
 		'https://' + OTODB_FRONTEND_DOMAIN,
 	]
+	SESSION_COOKIE_DOMAIN = '.' + OTODB_FRONTEND_DOMAIN
 
 OTODB_PROTECT_API_DOCS = os.environ.get('OTODB_PROTECT_API_DOCS', '').lower() == 'true'
 
@@ -278,19 +279,24 @@ OTODB_VALKEY_URL = os.environ.get('OTODB_VALKEY_URL') or os.environ.get(
 	'OTODB_REDIS_URL'
 )
 if OTODB_VALKEY_URL:
-	INSTALLED_APPS.append('django_vtasks')
+	INSTALLED_APPS.append('django_rq')
 	CACHES = {
 		'default': {
 			'BACKEND': 'django_vcache.backend.ValkeyCache',
 			'LOCATION': OTODB_VALKEY_URL,
 		}
 	}
+	# RQ talks to the broker via redis-py, which expects a redis:// URL
+	OTODB_RQ_URL = OTODB_VALKEY_URL.replace('valkey://', 'redis://', 1)
+	RQ_QUEUES = {
+		'default': {
+			'URL': OTODB_RQ_URL,
+		}
+	}
 	TASKS = {
 		'default': {
-			'BACKEND': 'django_vtasks.backends.valkey.ValkeyTaskBackend',
-			'OPTIONS': {
-				'BROKER_URL': OTODB_VALKEY_URL,
-			},
+			'BACKEND': 'django_tasks_rq.RQBackend',
+			'QUEUES': ['default'],
 		}
 	}
 else:
@@ -330,6 +336,6 @@ OTODB_MAX_PENDING_WORKS = 10
 OTODB_MAX_FLAGGED_WORKS = 5
 
 OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)
-OTODB_MODERATION_PERIOD = timedelta(weeks=1)
+OTODB_MODERATION_PERIOD = timedelta(days=3)
 
 OTODB_SYSTEM_BOT_USERNAME = os.environ.get('OTODB_SYSTEM_BOT_USERNAME', 'otoDB')

@@ -63,9 +63,9 @@ export const actions = {
 		if (pages.length === 0) {
 			redirect(303, `/work/${params.work_id}`);
 		}
-		await client.POST('/api/wiki/work/{work_id}', {
+		await client.POST('/api/wiki/work', {
 			fetch,
-			params: { path: { work_id: params.work_id! } },
+			params: { query: { work_id: params.work_id! } },
 			body: pages
 		});
 		redirect(303, `/work/${params.work_id}`);

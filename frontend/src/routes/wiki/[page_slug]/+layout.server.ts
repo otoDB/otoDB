@@ -5,9 +5,9 @@ import { Levels } from '$lib/schema';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
-	const { data } = await client.GET('/api/wiki/{page_slug}', {
+	const { data } = await client.GET('/api/wiki/page', {
 		fetch,
-		params: { path: { page_slug: params.page_slug } }
+		params: { query: { page_slug: params.page_slug } }
 	});
 	const wiki_page = data ?? [];
 

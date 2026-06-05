@@ -9,12 +9,6 @@
 
 	let { data } = $props();
 
-	function hrefFor(row: (typeof data.results.items)[number]): string {
-		if (row.kind === WikiKind.tag) return `/tag/${row.key}`;
-		if (row.kind === WikiKind.work) return `/work/${row.key}`;
-		return `/wiki/${row.key}`;
-	}
-
 	function langDisplay(id: number): string {
 		const key = resolveLanguageKeyById(id);
 		return key ? languages[key].name : '—';
@@ -55,7 +49,7 @@
 			<tbody>
 				{#each data.results.items as row, i (i)}
 					<tr>
-						<td><a href={hrefFor(row)}>{row.title}</a></td>
+						<td><a href={row.url}>{row.title}</a></td>
 						<td>{row.langs.map(langDisplay).join(', ')}</td>
 						<td>
 							{#if row.last_edited_at}

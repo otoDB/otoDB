@@ -15,11 +15,10 @@ export const actions = {
 		const title = (data.get('title') as string) || undefined;
 		const pages: { lang: number; md: string }[] = JSON.parse(data.get('wiki_pages') as string);
 
-		const { error: apiError } = await rawClient.POST('/api/wiki/{page_slug}', {
+		const { error: apiError } = await rawClient.POST('/api/wiki/page', {
 			fetch,
 			params: {
-				path: { page_slug: params.page_slug! },
-				query: title ? { title } : {}
+				query: { page_slug: params.page_slug!, ...(title ? { title } : {}) }
 			},
 			body: pages
 		});

@@ -10,6 +10,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Field, Query, Schema
 from ninja.errors import HttpError
+from ninja.pagination import paginate
 from ninja.security import django_auth
 
 from otodb.common import slugify_tag
@@ -61,45 +62,37 @@ class WikiPageEditSchema(Schema):
 
 
 class WikiIndexRowSchema(Schema):
-	kind: WikiKind
-	key: str
+	url: str
 	title: str
 	last_edited_at: datetime | None = None
 	langs: list[LanguageTypes]
 
 
-class WikiIndexResponseSchema(Schema):
-	items: list[WikiIndexRowSchema]
-	count: int
-
-
 def _row_to_index_item(row: dict) -> dict:
 	"""Map a grouped `.values()` row to a WikiIndexRowSchema-shaped dict."""
 	if row['tag_id'] is not None:
-		kind, key, title = WikiKind.TAG, row['tag__slug'], row['tag__name']
+		title, url = row['tag__name'], f'/tag/{row["tag__slug"]}'
 	elif row['work_id'] is not None:
-		kind = WikiKind.WORK
-		key = str(row['work_id'])
 		title = row['work__title'] or f'Work #{row["work_id"]}'
+		url = f'/work/{row["work_id"]}'
 	else:
-		kind, key, title = WikiKind.DOCS, row['slug'], row['title'] or row['slug']
+		title = row['title'] or row['slug']
+		url = f'/wiki/{row["slug"]}'
 	return {
-		'kind': kind,
-		'key': key,
+		'url': url,
 		'title': title,
 		'last_edited_at': row['last_edited_at'],
 		'langs': sorted(row['langs']),
 	}
 
 
-@wiki_router.get('', response=WikiIndexResponseSchema)
+@wiki_router.get('', response=list[WikiIndexRowSchema])
+@paginate
 def index(
 	request: HttpRequest,
 	q: str | None = None,
 	kind: WikiKind | None = None,
 	lang: list[int] | None = Query(None),
-	limit: int = 20,
-	offset: int = 0,
 ):
 	qs = _annotate_modified(WikiPage.objects.all())
 
@@ -124,8 +117,7 @@ def index(
 
 	# Group by the entity each page is attached to (a row has exactly one of
 	# tag/work/slug, so these columns are 1:1 with the entity), aggregating the
-	# langs and the latest edit so each entity surfaces once. Sort + paginate in
-	# the DB instead of materializing every WikiPage.
+	# langs and the latest edit so each entity surfaces once.
 	groups = (
 		qs.values('tag_id', 'tag__slug', 'tag__name', 'work_id', 'work__title', 'slug')
 		.annotate(
@@ -136,10 +128,7 @@ def index(
 		.order_by(F('last_edited_at').desc(nulls_last=True))
 	)
 
-	return {
-		'items': [_row_to_index_item(row) for row in groups[offset : offset + limit]],
-		'count': groups.count(),
-	}
+	return [_row_to_index_item(row) for row in groups]
 
 
 def _apply_wiki_edits(
@@ -162,14 +151,14 @@ def _apply_wiki_edits(
 				WikiPage.objects.create(lang=item.lang, page=item.md, **create_kwargs)
 
 
-@wiki_router.get('tag/{tag_slug}', auth=django_auth, response=list[WikiPageMDSchema])
+@wiki_router.get('tag', auth=django_auth, response=list[WikiPageMDSchema])
 def get_tag_wiki(request: HttpRequest, tag_slug: str):
 	return _annotate_modified(WikiPage.objects.filter(tag__slug=tag_slug)).order_by(
 		'lang'
 	)
 
 
-@wiki_router.post('tag/{tag_slug}', auth=django_auth)
+@wiki_router.post('tag', auth=django_auth)
 @user_is_trusted
 @transaction.atomic
 @with_revision_route(Route.TAGWORK_EDIT_WIKI)
@@ -182,12 +171,12 @@ def edit_tag_wiki(
 	_apply_wiki_edits({'tag': tag}, payload)
 
 
-@wiki_router.get('work/{work_id}', auth=django_auth, response=list[WikiPageMDSchema])
+@wiki_router.get('work', auth=django_auth, response=list[WikiPageMDSchema])
 def get_work_wiki(request: HttpRequest, work_id: OtodbID):
 	return _annotate_modified(WikiPage.objects.filter(work_id=work_id)).order_by('lang')
 
 
-@wiki_router.post('work/{work_id}', auth=django_auth)
+@wiki_router.post('work', auth=django_auth)
 @user_is_trusted
 @transaction.atomic
 @with_revision_route(Route.MEDIAWORK_EDIT_WIKI)
@@ -198,12 +187,12 @@ def edit_work_wiki(
 	_apply_wiki_edits({'work': work}, payload)
 
 
-@wiki_router.get('{page_slug}', response=list[WikiPageMDSchema])
+@wiki_router.get('page', response=list[WikiPageMDSchema])
 def get_slug_wiki(request: HttpRequest, page_slug: str):
 	return _annotate_modified(WikiPage.objects.filter(slug=page_slug)).order_by('lang')
 
 
-@wiki_router.post('{page_slug}', auth=django_auth)
+@wiki_router.post('page', auth=django_auth)
 @user_is_mod
 @transaction.atomic
 @with_revision_route(Route.WIKI_EDIT)

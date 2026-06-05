@@ -4025,7 +4025,9 @@
             "in": "query",
             "name": "limit",
             "schema": {
-              "default": 20,
+              "default": 30,
+              "maximum": 30,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             },
@@ -4036,6 +4038,7 @@
             "name": "offset",
             "schema": {
               "default": 0,
+              "minimum": 0,
               "title": "Offset",
               "type": "integer"
             },
@@ -4048,7 +4051,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WikiIndexResponseSchema"
+                  "$ref": "#/components/schemas/PagedWikiIndexRowSchema"
                 }
               }
             }
@@ -4056,13 +4059,13 @@
         }
       }
     },
-    "/api/wiki/tag/{tag_slug}": {
+    "/api/wiki/tag": {
       "get": {
         "operationId": "otodb_api_wiki_get_tag_wiki",
         "summary": "Get Tag Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "tag_slug",
             "schema": {
               "title": "Tag Slug",
@@ -4098,7 +4101,7 @@
         "summary": "Edit Tag Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "tag_slug",
             "schema": {
               "title": "Tag Slug",
@@ -4133,13 +4136,13 @@
         ]
       }
     },
-    "/api/wiki/work/{work_id}": {
+    "/api/wiki/work": {
       "get": {
         "operationId": "otodb_api_wiki_get_work_wiki",
         "summary": "Get Work Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "work_id",
             "schema": {
               "title": "Work Id",
@@ -4175,7 +4178,7 @@
         "summary": "Edit Work Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "work_id",
             "schema": {
               "title": "Work Id",
@@ -4210,13 +4213,13 @@
         ]
       }
     },
-    "/api/wiki/{page_slug}": {
+    "/api/wiki/page": {
       "get": {
         "operationId": "otodb_api_wiki_get_slug_wiki",
         "summary": "Get Slug Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "page_slug",
             "schema": {
               "title": "Page Slug",
@@ -4247,7 +4250,7 @@
         "summary": "Edit Slug Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "page_slug",
             "schema": {
               "title": "Page Slug",
@@ -8747,7 +8750,7 @@
         "title": "WikiKind",
         "type": "string"
       },
-      "WikiIndexResponseSchema": {
+      "PagedWikiIndexRowSchema": {
         "properties": {
           "items": {
             "items": {
@@ -8765,16 +8768,13 @@
           "items",
           "count"
         ],
-        "title": "WikiIndexResponseSchema",
+        "title": "PagedWikiIndexRowSchema",
         "type": "object"
       },
       "WikiIndexRowSchema": {
         "properties": {
-          "kind": {
-            "$ref": "#/components/schemas/WikiKind"
-          },
-          "key": {
-            "title": "Key",
+          "url": {
+            "title": "Url",
             "type": "string"
           },
           "title": {
@@ -8802,8 +8802,7 @@
           }
         },
         "required": [
-          "kind",
-          "key",
+          "url",
           "title",
           "langs"
         ],

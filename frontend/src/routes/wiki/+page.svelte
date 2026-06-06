@@ -25,7 +25,7 @@
 	}
 </script>
 
-<Section title={m.curly_zesty_pelican_aim()}>
+<Section title={data.head.title}>
 	<form method="get" class="mb-4 flex flex-wrap items-end gap-1">
 		<label class="flex flex-col text-sm">
 			<input type="text" name="q" value={data.q} placeholder="{m.mean_top_antelope_love()}..." />

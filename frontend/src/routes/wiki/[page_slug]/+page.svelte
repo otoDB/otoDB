@@ -5,6 +5,6 @@
 	let { data } = $props();
 </script>
 
-<Section title={data.title} type="Wiki" menuLinks={data.menuLinks}>
+<Section title={data.head.title} type="Wiki" menuLinks={data.menuLinks}>
 	<WikiView wiki_page={data.wiki_page} />
 </Section>

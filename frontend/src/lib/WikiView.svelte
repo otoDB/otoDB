@@ -30,22 +30,14 @@
 		if (!view) return fallbackPage;
 		return localizedPages.find((p) => p.lang === languages[view].id) ?? fallbackPage;
 	});
-
-	const currentLangKey: keyof typeof languages | undefined = $derived(
-		currentPage ? resolveLanguageKeyById(currentPage.lang) : undefined
-	);
 </script>
 
-{#if localizedPages.length > 1 && wikiView}
+{#if localizedPages.length > 0 && wikiView}
 	<div class="float-right clear-left my-2">
 		<LangSwitch
 			availableLanguages={localizedPages.map((p) => resolveLanguageKeyById(p.lang))}
 			bind:value={wikiView as keyof typeof languages}
 		/>
-	</div>
-{:else if currentLangKey}
-	<div class="float-right clear-left my-2">
-		<span class="lang-label">{languages[currentLangKey].name}</span>
 	</div>
 {/if}
 {#if currentPage && currentPage.page}
@@ -58,12 +50,3 @@
 {:else}
 	<p>{m.tame_dirty_goldfish_flow()}</p>
 {/if}
-
-<style>
-	.lang-label {
-		padding: 0.2rem 0.5rem;
-		display: inline-block;
-		border: 1px solid var(--otodb-color-content-primary);
-		background-color: var(--otodb-color-bg-faint);
-	}
-</style>

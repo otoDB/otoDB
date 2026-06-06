@@ -6,7 +6,7 @@
 	let { data } = $props();
 </script>
 
-<Section title={data.title} type="Wiki edit" menuLinks={data.menuLinks}>
+<Section title={data.head.title} type="Wiki edit" menuLinks={data.menuLinks}>
 	<form method="POST" use:dirtyEnhance>
 		<WikiEditor wiki_page={data.wiki_page} withTitle />
 		<input type="submit" value="Save" />

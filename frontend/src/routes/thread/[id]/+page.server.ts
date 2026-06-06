@@ -108,10 +108,4 @@ export const actions = {
 			body: { thread_id: params.id, num: 1, body: post }
 		});
 	},
-	close: async ({ fetch, params }) => {
-		await client.PUT('/api/thread/close', {
-			fetch,
-			params: { query: { thread_id: params.id } }
-		});
-	}
 } satisfies Actions;

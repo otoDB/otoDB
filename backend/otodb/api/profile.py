@@ -300,7 +300,7 @@ class NotificationSchema(ModelSchema):
 
 	@field_validator('comment', mode='before', check_fields=False)
 	@classmethod
-	def cmt(cls, value) -> tuple[ModelsWithComments, str] | None:
+	def validate_comment(cls, value) -> tuple[ModelsWithComments, str] | None:
 		from otodb.models.tag import OtodbTagModel
 
 		if value is None:
@@ -317,7 +317,7 @@ class NotificationSchema(ModelSchema):
 
 	@field_validator('threadpost', mode='before', check_fields=False)
 	@classmethod
-	def tp(cls, value) -> tuple[int, int] | None:
+	def validate_threadpost(cls, value) -> tuple[int, int] | None:
 		if value is None:
 			return None
 		return (value.thread_id, value.num)

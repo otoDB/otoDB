@@ -1,4 +1,5 @@
 import client, { forwardCookies, rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
 import { m } from '$lib/paraglide/messages';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -36,10 +37,11 @@ export const actions = {
 
 		if (!email) return fail(400, { missing: true });
 
-		await client.PUT('/api/auth/reset_password', {
+		const { error } = await rawClient.PUT('/api/auth/reset_password', {
 			body: { email },
 			fetch
 		});
+		if (error) return apiFail(error);
 
 		return { success: true };
 	}

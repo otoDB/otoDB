@@ -1,4 +1,5 @@
-import client from '$lib/api.server';
+import client, { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
 import { hasUserLevel } from '$lib/enums/userLevel';
 import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -40,10 +41,11 @@ export const actions = {
 	connections: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 		const urls = (data.get('urls') as string) ?? '';
-		await client.PUT('/api/profile/connection', {
+		const { error } = await rawClient.PUT('/api/profile/connection', {
 			fetch,
 			params: { query: { urls } }
 		});
+		if (error) return apiFail(error);
 		redirect(303, `/profile/${params.username}`);
 	}
 } satisfies Actions;

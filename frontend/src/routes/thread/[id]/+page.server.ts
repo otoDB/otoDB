@@ -91,11 +91,12 @@ export const actions = {
 		const num = parseInt(data.get('num') as string, 10);
 		const body = data.get('body') as string;
 		if (renderMarkdown(body).trim() === '') return fail(400);
-		await client.PUT('/api/thread/post', {
+		const { error } = await rawClient.PUT('/api/thread/post', {
 			fetch,
 			params: secret(),
 			body: { thread_id: threadIdOf(params.id), num, body }
 		});
+		if (error) return apiFail(error);
 	},
 	editThread: async ({ request, fetch, params }) => {
 		const data = await request.formData();
@@ -110,17 +111,19 @@ export const actions = {
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
 		// The opening-post edit form updates both thread metadata and post #1's body.
-		await Promise.all([
-			client.PUT('/api/thread/thread', {
+		const [{ error: threadError }, { error: postError }] = await Promise.all([
+			rawClient.PUT('/api/thread/thread', {
 				fetch,
 				params: secret(),
 				body: { thread_id: threadIdOf(params.id), title, entities }
 			}),
-			client.PUT('/api/thread/post', {
+			rawClient.PUT('/api/thread/post', {
 				fetch,
 				params: secret(),
 				body: { thread_id: threadIdOf(params.id), num: 1, body: post }
 			})
 		]);
+		if (threadError) return apiFail(threadError);
+		if (postError) return apiFail(postError);
 	}
 } satisfies Actions;

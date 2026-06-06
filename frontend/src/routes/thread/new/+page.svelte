@@ -5,7 +5,6 @@
 	import { postCategoryNames } from '$lib/enums/postCategory.js';
 	import { get_entity, renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime';
 	import { PostCategory } from '$lib/schema.js';
 
 	let { data } = $props();
@@ -24,8 +23,6 @@
 
 <Section title={m.antsy_aloof_horse_grace()} menuLinks={data.links}>
 	<form method="POST" use:dirtyEnhance>
-		<!-- Thread language is inferred from the user's locale -->
-		<input type="hidden" name="lang" value={getLocale()} />
 		<table>
 			<tbody
 				><tr

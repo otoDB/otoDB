@@ -1,7 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { rawClient } from '$lib/api.server';
 import { asEnum } from '$lib/enums';
-import { getLanguageId, languages } from '$lib/enums/language';
 import { apiFail } from '$lib/errors';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
@@ -39,11 +38,6 @@ export const actions = {
 		type Category = components['schemas']['PostCategory'];
 		const category = paramCategory as Category;
 
-		const paramLang = data.get('lang') as string;
-		const language = getLanguageId(
-			paramLang as keyof typeof languages
-		) as components['schemas']['LanguageTypes'];
-
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
 		const { data: thread_id, error: apiError } = await rawClient.POST('/api/thread/thread', {
@@ -56,7 +50,6 @@ export const actions = {
 			body: {
 				category: category,
 				post,
-				lang: language,
 				title,
 				target_users: parseMentions(post),
 				entities

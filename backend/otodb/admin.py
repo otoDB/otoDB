@@ -173,8 +173,8 @@ class ThreadPostInline(admin.TabularInline):
 
 
 class ThreadAdmin(admin.ModelAdmin):
-	list_display = ['__str__', 'title', 'category', 'lang', 'added_by', 'created_at']
-	list_filter = ['category', 'lang', 'is_removed']
+	list_display = ['__str__', 'title', 'category', 'added_by', 'created_at']
+	list_filter = ['category', 'is_removed']
 	inlines = [ThreadPostInline]
 
 

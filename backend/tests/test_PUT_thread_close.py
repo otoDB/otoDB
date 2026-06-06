@@ -4,7 +4,7 @@ import pytest
 
 from otodb.account.models import Account
 from otodb.api.thread import thread_router
-from otodb.models.enums import LanguageTypes, PostCategory
+from otodb.models.enums import PostCategory
 from otodb.models.posts import Thread, ThreadPost
 from tests.conftest import AuthenticatedTestClient
 
@@ -31,7 +31,6 @@ def make_thread(member) -> Thread:
 		title='Test Thread',
 		added_by=member,
 		category=PostCategory.GENERAL,
-		lang=LanguageTypes.JAPANESE,
 	)
 	ThreadPost.objects.create(thread=t, num=1, user=member, body='content')
 	return t

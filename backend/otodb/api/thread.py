@@ -25,7 +25,7 @@ from otodb.models import (
 	Thread,
 	ThreadPost,
 )
-from otodb.models.enums import LanguageTypes, NotificationReason, PostCategory
+from otodb.models.enums import NotificationReason, PostCategory
 
 from .common import (
 	AuthedHttpRequest,
@@ -75,7 +75,6 @@ class ThreadSchema(ModelSchema):
 	added_by: ProfileSchema
 	entities: list[PostEntitySchema] = []
 	category: PostCategory
-	lang: LanguageTypes
 
 	class Meta:
 		model = Thread
@@ -169,7 +168,6 @@ class ThreadInSchema(Schema):
 	title: str
 	post: str
 	category: PostCategory
-	lang: LanguageTypes
 	target_users: list[str]
 	entities: list[PostEntitySchema]
 
@@ -219,7 +217,6 @@ def new_thread(request: AuthedHttpRequest, payload: ThreadInSchema):
 		title=payload.title,
 		added_by=request.user,
 		category=payload.category,
-		lang=payload.lang,
 	)
 	op = ThreadPost.objects.create(
 		thread=t, num=1, user=request.user, body=payload.post

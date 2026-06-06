@@ -21,7 +21,7 @@ from django.db.models.functions import Cast, Coalesce
 from django.utils.timezone import now as tz_now
 from django_comments_xtd.models import XtdComment
 
-from .enums import LanguageTypes, NotificationReason, PostCategory
+from .enums import NotificationReason, PostCategory
 from .revision import Revision
 
 
@@ -116,8 +116,6 @@ class Thread(models.Model):
 	category = models.IntegerField(
 		choices=PostCategory.choices, null=False, blank=False
 	)
-	# Single language, set transparently from the user's locale at creation
-	lang = models.IntegerField(choices=LanguageTypes.choices, null=False, blank=False)
 	created_at = models.DateTimeField(default=tz_now)
 	closed_at = models.DateTimeField(null=True, blank=True)
 	is_removed = models.BooleanField(default=False, db_index=True)

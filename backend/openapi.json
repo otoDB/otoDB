@@ -9306,9 +9306,6 @@
           "category": {
             "$ref": "#/components/schemas/PostCategory"
           },
-          "lang": {
-            "$ref": "#/components/schemas/LanguageTypes"
-          },
           "title": {
             "maxLength": 1000,
             "title": "Title",
@@ -9336,7 +9333,6 @@
           "id",
           "added_by",
           "category",
-          "lang",
           "title"
         ],
         "title": "ThreadSchema",
@@ -9354,9 +9350,6 @@
           },
           "category": {
             "$ref": "#/components/schemas/PostCategory"
-          },
-          "lang": {
-            "$ref": "#/components/schemas/LanguageTypes"
           },
           "target_users": {
             "items": {
@@ -9377,7 +9370,6 @@
           "title",
           "post",
           "category",
-          "lang",
           "target_users",
           "entities"
         ],

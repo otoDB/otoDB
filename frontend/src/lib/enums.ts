@@ -118,6 +118,7 @@ export type EntityModelType =
 	| 'pool'
 	| 'tagwork'
 	| 'tagsong'
+	| 'wikipage'
 	| 'bulkrequest'
 	// This is obvious but we make it explicit
 	| PostEntities
@@ -133,7 +134,8 @@ export const EntityModelRoutes: Record<EntityModelType, string> = {
 	post: 'post',
 	bulkrequest: 'request',
 	mediasong: 'song',
-	worksource: 'upload'
+	worksource: 'upload',
+	wikipage: 'wiki'
 };
 
 export const isValidEntityModelType = (type: string): type is EntityModelType =>

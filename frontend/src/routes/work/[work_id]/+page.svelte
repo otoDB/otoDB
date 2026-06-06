@@ -28,9 +28,10 @@
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callSavingToast } from '$lib/toast';
 	import { getDisplayText } from '$lib/ui.js';
-	import { GUIDELINE_POST_ID, getMissingCategories } from '$lib/ui';
+	import { getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
+	import WikiView from '$lib/WikiView.svelte';
 	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
@@ -95,7 +96,7 @@
 				})}
 			</div>
 			<div class="mt-1 text-sm">
-				<a href="/post/{GUIDELINE_POST_ID}" class="underline">
+				<a href="/wiki/editing_guidelines" class="underline">
 					{m.arable_direct_cougar_win()}
 				</a>
 			</div>
@@ -375,6 +376,10 @@
 				</span>
 			{/each}
 		</div>
+		{#if data.wiki_page.length > 0}
+			<hr class="my-2" />
+			<WikiView wiki_page={data.wiki_page} />
+		{/if}
 	</div>
 </Section>
 

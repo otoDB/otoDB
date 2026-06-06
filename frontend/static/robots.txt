@@ -41,6 +41,7 @@ Allow: /tag
 Allow: /song
 Allow: /song_attribute
 Allow: /list
+Allow: /wiki
 Allow: /profile
 Allow: /comments
 Allow: /register

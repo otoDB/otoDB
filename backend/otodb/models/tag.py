@@ -14,6 +14,7 @@ from otodb.common import clean_tag, slugify_tag
 
 from .enums import LanguageTypes, MediaType, SongTagCategory, WorkTagCategory
 from .revision import RevisionTrackedManager, RevisionTrackedModel
+from .wiki import WikiPage
 
 _tagulous_models.slugify = lambda value, **_: slugify_tag(value)
 
@@ -516,24 +517,6 @@ class TagWorkLangPreference(RevisionTrackedModel):
 
 	class RevisionMeta:
 		tracked_fields = ['lang', 'tag']
-		entity_attrs = ['tag']
-
-	class Meta:
-		unique_together = (('tag', 'lang'),)
-
-
-class WikiPage(RevisionTrackedModel):
-	tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
-	page = models.TextField(null=False)
-	lang = models.IntegerField(
-		choices=LanguageTypes.choices,
-		default=LanguageTypes.NOT_APPLICABLE,
-		null=False,
-		blank=False,
-	)
-
-	class RevisionMeta:
-		tracked_fields = ['lang', 'tag', 'page']
 		entity_attrs = ['tag']
 
 	class Meta:

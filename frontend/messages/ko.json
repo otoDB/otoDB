@@ -77,7 +77,7 @@
 	"patient_male_ox_praise": "태그 추가 또는 제거",
 	"sunny_deft_puffin_scoop": "당신의 점수",
 	"wide_just_gull_glow": "갱신 이유",
-	"tame_dirty_goldfish_flow": "이 태그는 아직 위키가 없습니다.",
+	"tame_dirty_goldfish_flow": "이 항목은 아직 위키가 없습니다.",
 	"quiet_super_kangaroo_kiss": "「{tag}」 태그가 있는 작품",
 	"curly_zesty_pelican_aim": "위키 페이지",
 	"away_crisp_blackbird_twist": "상위 태그",
@@ -296,5 +296,6 @@
 	"grim_plain_crane_crash": "데이터를 가져오는 중 오류가 발생했습니다.",
 	"watery_kind_quail_climb": "이 작품은 다음 카테고리의 태그가 누락되어 있습니다: {missing}",
 	"bright_nimble_eagle_glide": "사용자 목록",
-	"careful_close_shad_achieve": "미분류"
+	"careful_close_shad_achieve": "미분류",
+	"nice_close_goldfish_taste": "독립 페이지"
 }

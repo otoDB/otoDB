@@ -24,6 +24,7 @@ from .profile import profile_router
 from .requests import request_router
 from .source import source_router
 from .tag import tag_router
+from .wiki import wiki_router
 from .work import work_router
 
 
@@ -123,6 +124,7 @@ api.add_router('/upload/', source_router)
 api.add_router('/profile/', profile_router)
 api.add_router('/list/', list_router)
 api.add_router('/tag/', tag_router)
+api.add_router('/wiki/', wiki_router)
 api.add_router('/post/', post_router)
 api.add_router('/comment/', comment_router)
 api.add_router('/history/', history_router)

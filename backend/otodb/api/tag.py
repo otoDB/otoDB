@@ -665,48 +665,6 @@ def update(
 	return
 
 
-class WikiPageMDSchema(ModelSchema):
-	class Meta:
-		model = WikiPage
-		fields = ['page', 'lang']
-
-
-@tag_router.get('wiki_page', auth=django_auth, response=list[WikiPageMDSchema])
-def wiki_page(request: HttpRequest, tag_slug: str):
-	return WikiPage.objects.filter(tag__slug=tag_slug)
-
-
-class WikiPageEditSchema(Schema):
-	lang: LanguageTypes = Field(..., gt=0)
-	md: str
-
-
-@tag_router.post('wiki_page', auth=django_auth)
-@user_is_trusted
-@transaction.atomic
-@with_revision_route(Route.TAGWORK_EDIT_WIKI)
-def edit_wiki_page(
-	request: HttpRequest, tag_slug: str, payload: list[WikiPageEditSchema]
-):
-	tag = get_object_or_404(TagWork, slug=tag_slug)
-	for item in payload:
-		empty = item.md.strip() == ''
-		try:
-			wp = WikiPage.objects.get(tag=tag, lang=item.lang)
-			if empty:
-				wp.delete()
-			else:
-				wp.page = item.md
-				wp.save()
-		except WikiPage.DoesNotExist:
-			if not empty:
-				WikiPage.objects.create(
-					tag=tag,
-					lang=item.lang,
-					page=item.md,
-				)
-
-
 class TagWorkConnectionSchema(ConnectionSchema):
 	site: TagWorkConnectionTypes
 

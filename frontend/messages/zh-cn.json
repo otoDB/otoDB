@@ -77,7 +77,7 @@
 	"patient_male_ox_praise": "添加或删除标签",
 	"sunny_deft_puffin_scoop": "你的评分",
 	"wide_just_gull_glow": "更新理由",
-	"tame_dirty_goldfish_flow": "本标签还没有维基页面。",
+	"tame_dirty_goldfish_flow": "本条目还没有维基页面。",
 	"quiet_super_kangaroo_kiss": "带有“{tag}”的作品",
 	"curly_zesty_pelican_aim": "维基页面",
 	"away_crisp_blackbird_twist": "父标签",
@@ -297,5 +297,6 @@
 	"grim_plain_crane_crash": "获取数据时发生错误。",
 	"watery_kind_quail_climb": "此作品缺少以下类别的标签：{missing}",
 	"bright_nimble_eagle_glide": "用户列表",
-	"careful_close_shad_achieve": "未分类"
+	"careful_close_shad_achieve": "未分类",
+	"nice_close_goldfish_taste": "独立页面"
 }

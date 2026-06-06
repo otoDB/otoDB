@@ -2,14 +2,11 @@
 	import Pager from '$lib/Pager.svelte';
 	import Section from '$lib/Section.svelte';
 	import ThreadView from '$lib/ThreadView.svelte';
-	import WorkTag from '$lib/WorkTag.svelte';
-	import client from '$lib/api.js';
 	import { EntityModelRoutes } from '$lib/enums.js';
 	import { postCategoryNames } from '$lib/enums/postCategory.js';
 	import { entity_to_shorthand, string_link_entities } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { PostCategory } from '$lib/schema.js';
-	import { mount, unmount } from 'svelte';
 
 	let { data } = $props();
 
@@ -41,22 +38,6 @@
 			'</' +
 			'script>'
 		);
-	});
-
-	// Hydrate [[tag]] references (rendered as <otodb-worktag>) in post bodies.
-	$effect(() => {
-		void data.posts;
-		void data.page;
-		const tags = Array.from(document.querySelectorAll('.thread-posts otodb-worktag'))
-			.filter((e) => e.hasAttribute('slug'))
-			.map((el) =>
-				client
-					.GET('/api/tag/tag', { fetch, params: { query: { tag_slug: el.getAttribute('slug')! } } })
-					.then((r) => (r.data ? mount(WorkTag, { target: el, props: { tag: r.data } }) : null))
-			);
-		return () => {
-			tags.forEach((p) => p.then((c) => c && unmount(c)));
-		};
 	});
 </script>
 
@@ -104,11 +85,15 @@
 				threadId={data.thread_id}
 				posts={data.posts}
 				user={data.user ?? null}
-				refAuthors={data.ref_authors}
 				{entitiesText}
 				{isGardening}
 			/>
 		</div>
-		<Pager n_count={data.post_count} page={data.page} page_size={data.batch_size} />
+		<Pager
+			n_count={data.post_count}
+			page={data.page}
+			page_size={data.batch_size}
+			base_url="/thread/{data.thread_id}"
+		/>
 	</Section>
 {/if}

@@ -4434,10 +4434,23 @@
           },
           {
             "in": "query",
-            "name": "page",
+            "name": "limit",
             "schema": {
-              "default": 1,
-              "title": "Page",
+              "default": 30,
+              "maximum": 30,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
               "type": "integer"
             },
             "required": false
@@ -4449,7 +4462,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ThreadPostsSchema"
+                  "$ref": "#/components/schemas/PagedThreadPostSchema"
                 }
               }
             }
@@ -4457,10 +4470,10 @@
         }
       }
     },
-    "/api/thread/locate": {
+    "/api/thread/post": {
       "get": {
-        "operationId": "otodb_api_thread_locate",
-        "summary": "Locate",
+        "operationId": "otodb_api_thread_get_post",
+        "summary": "Get Post",
         "parameters": [
           {
             "in": "query",
@@ -4487,17 +4500,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response",
-                  "type": "integer"
+                  "$ref": "#/components/schemas/PostRefSchema"
                 }
               }
             }
           }
         },
-        "description": "Page (1-based) that the given post number falls on."
-      }
-    },
-    "/api/thread/post": {
+        "description": "A single post's author, for resolving t{thread}.{num} references client-side."
+      },
       "post": {
         "operationId": "otodb_api_thread_new_post",
         "summary": "New Post",
@@ -4601,6 +4611,46 @@
             "SessionAuth": []
           }
         ]
+      }
+    },
+    "/api/thread/position": {
+      "get": {
+        "operationId": "otodb_api_thread_position",
+        "summary": "Position",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "thread_id",
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "num",
+            "schema": {
+              "title": "Num",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "description": "1-based index of the post among non-removed posts (ordered by num)."
       }
     },
     "/api/thread/close": {
@@ -9402,6 +9452,27 @@
         "title": "ThreadEditSchema",
         "type": "object"
       },
+      "PagedThreadPostSchema": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ThreadPostSchema"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedThreadPostSchema",
+        "type": "object"
+      },
       "ThreadPostSchema": {
         "properties": {
           "user": {
@@ -9451,33 +9522,21 @@
         "title": "ThreadPostSchema",
         "type": "object"
       },
-      "ThreadPostsSchema": {
+      "PostRefSchema": {
         "properties": {
-          "count": {
-            "title": "Count",
+          "num": {
+            "title": "Num",
             "type": "integer"
           },
-          "posts": {
-            "items": {
-              "$ref": "#/components/schemas/ThreadPostSchema"
-            },
-            "title": "Posts",
-            "type": "array"
-          },
-          "ref_authors": {
-            "additionalProperties": {
-              "type": "string"
-            },
-            "default": {},
-            "title": "Ref Authors",
-            "type": "object"
+          "user": {
+            "$ref": "#/components/schemas/ProfileSchema"
           }
         },
         "required": [
-          "count",
-          "posts"
+          "num",
+          "user"
         ],
-        "title": "ThreadPostsSchema",
+        "title": "PostRefSchema",
         "type": "object"
       },
       "PostInSchema": {

@@ -1,4 +1,5 @@
 import { PostEntities } from '$lib/schema';
+import type { Root as HastRoot } from 'hast';
 import type { Parent, PhrasingContent, Root } from 'mdast';
 import { findAndReplace } from 'mdast-util-find-and-replace';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
@@ -29,16 +30,6 @@ const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 const SEARCH_RE = /\{\{([^}]+?)\}\}/g;
 const POST_REF_RE = /(?<![/\w])t(\d+)\.(\d+)(?!\w)/g;
 
-export type MarkdownContext = {
-	/** id of the thread currently being rendered (resolves same-thread references) */
-	thread?: string;
-	/** post num -> author username, to render "#num by user" */
-	refAuthors?: Record<string, string>;
-};
-
-// Set for the duration of a single (synchronous) renderMarkdown call.
-let activeContext: MarkdownContext | null = null;
-
 const LinkableEntities: [PostEntities, RegExp][] = [
 	[PostEntities.mediawork, short_prefix_re_gen(ENTITIES[0].shortPrefix)],
 	[PostEntities.mediawork, long_label_re_gen(ENTITIES[0].longLabel)],
@@ -55,10 +46,18 @@ function link(href: string, text: string): PhrasingContent {
 }
 
 function postRef(thread: string, num: string): PhrasingContent {
-	const author = activeContext?.refAuthors?.[`${thread}.${num}`];
-	// Same-thread: "#num". Cross-thread: keep the thread id ("t{thread}.{num}").
-	const base = activeContext?.thread === thread ? `#${num}` : `t${thread}.${num}`;
-	return link(`/thread/${thread}.${num}`, author ? `${base} by ${author}` : base);
+	return {
+		type: 'link',
+		url: `/thread/${thread}.${num}`,
+		data: {
+			hProperties: {
+				dataPostrefThread: thread,
+				dataPostrefNum: num,
+				dataSveltekitNoscroll: ''
+			}
+		},
+		children: [{ type: 'text', value: `t${thread}.${num}` }]
+	};
 }
 
 function remarkStripImages() {
@@ -171,8 +170,32 @@ export const entity_to_shorthand = (entity: string, id: string): string =>
 
 const sanitizeSchema = {
 	...defaultSchema,
-	tagNames: [...(defaultSchema.tagNames ?? []), 'otodb-worktag'],
-	attributes: { ...defaultSchema.attributes, 'otodb-worktag': ['slug'] }
+	attributes: {
+		...defaultSchema.attributes,
+		a: [
+			...(defaultSchema.attributes?.a ?? []),
+			'dataWorktagSlug',
+			'dataPostrefThread',
+			'dataPostrefNum',
+			'dataSveltekitNoscroll'
+		]
+	}
+};
+
+// <otodb-worktag slug="x"> (raw HTML) -> a plain /tag link, which hydrateMarkdown()
+// upgrades to a rich WorkTag on the client
+const rehypeWorktagLinks: Plugin<[], HastRoot> = () => (tree: HastRoot) => {
+	visit(tree, 'element', (node) => {
+		const slug = node.properties?.slug;
+		if (node.tagName === 'otodb-worktag' && typeof slug === 'string') {
+			node.tagName = 'a';
+			node.properties = {
+				href: `/tag/${encodeURIComponent(slug)}`,
+				dataWorktagSlug: slug
+			};
+			node.children = [{ type: 'text', value: slug }];
+		}
+	});
 };
 
 const remarkDecodeSimpleLinks: Plugin<[], Root> = () => (tree: Root) => {
@@ -197,6 +220,7 @@ const processor = unified()
 	.use(remarkStripImages)
 	.use(remarkRehype, { allowDangerousHtml: true })
 	.use(rehypeRaw)
+	.use(rehypeWorktagLinks)
 	.use(rehypeSanitize, sanitizeSchema)
 	.use(rehypeSlug)
 	.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
@@ -204,18 +228,8 @@ const processor = unified()
 
 /**
  * Render markdown text to HTML with otoDB extensions.
- *
- * Pass `context` when rendering inside a thread so that t{thread}.{num} post
- * references can resolve to "#num by <author>".
  */
-export const renderMarkdown = (text: string, context?: MarkdownContext) => {
-	activeContext = context ?? null;
-	try {
-		return String(processor.processSync(text));
-	} finally {
-		activeContext = null;
-	}
-};
+export const renderMarkdown = (text: string) => String(processor.processSync(text));
 
 /**
  * Extract unique @mentions from markdown source text.

@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { invalidateAll, pushState } from '$app/navigation';
+	import { page } from '$app/state';
 	import client from '$lib/api';
 	import { dirtyEnhance } from '$lib/dirty';
 	import { hasUserLevel } from '$lib/enums/userLevel';
-	import { renderMarkdown, type MarkdownContext } from '$lib/markdown';
+	import { hydrate } from '$lib/hydrateMarkdown';
+	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, type components } from '$lib/schema';
 	import Time from '$lib/Time.svelte';
@@ -17,19 +19,20 @@
 		threadId: string;
 		posts: Post[];
 		user: App.Locals['user'] | null;
-		refAuthors: Record<number, string>;
 		entitiesText: string;
 		isGardening: boolean;
 	}
-	let { thread, threadId, posts, user, refAuthors, entitiesText, isGardening }: Props = $props();
+	let { thread, threadId, posts, user, entitiesText, isGardening }: Props = $props();
 
-	// Same-thread references resolve to "#num by <author>" from the loaded posts + backend map.
-	const ctx = $derived<MarkdownContext>({
-		thread: threadId,
-		refAuthors: {
-			...refAuthors,
-			...Object.fromEntries(posts.map((p) => [`${threadId}.${p.num}`, p.user.username]))
-		}
+	// Derive the targeted post num from page state (set by in-thread ref clicks) or URL (for direct/permalink navigation)
+	const permalinkNum = (url: URL) => url.pathname.match(/^\/thread\/[^/.]+\.(\d+)$/)?.[1] ?? null;
+	const targetNum = $derived(page.state.postNum ?? permalinkNum(page.url));
+
+	const hydrateMd = (node: HTMLElement) => hydrate(node, threadId);
+
+	$effect(() => {
+		if (targetNum != null)
+			document.getElementById(`p${targetNum}`)?.scrollIntoView({ block: 'start' });
 	});
 
 	let draft = $state('');
@@ -70,7 +73,7 @@
 			return;
 		}
 		if (!draft.trim()) return;
-		preview = renderMarkdown(draft, ctx);
+		preview = renderMarkdown(draft);
 		previewMode = true;
 	};
 
@@ -92,7 +95,7 @@
 			return;
 		}
 		if (!editBody.trim()) return;
-		editPreview = renderMarkdown(editBody, ctx);
+		editPreview = renderMarkdown(editBody);
 		editPreviewMode = true;
 	};
 
@@ -124,15 +127,12 @@
 				const match = href?.match(/^\/thread\/(\d+)\.(\d+)$/);
 				if (!match) return;
 				const [, tid, num] = match;
-				// Different thread -> let it navigate to the canonical permalink
+				// Post in different thread -> let it navigate
 				if (tid !== threadId) return;
-				const target = document.getElementById(`p${num}`);
-				// Not on this page -> let it navigate (load resolves the right page)
-				if (!target) return;
+				// Post not on this page -> let it navigate
+				if (!document.getElementById(`p${num}`)) return;
 				event.preventDefault();
-				// Real fragment navigation (not pushState) so the :target highlight
-				// updates and the browser scrolls to the post; all without a reload.
-				location.hash = `p${num}`;
+				pushState(`/thread/${tid}.${num}`, { postNum: num });
 			};
 			node.addEventListener('click', onClick);
 			return () => node.removeEventListener('click', onClick);
@@ -152,7 +152,7 @@
 	<div class="reply-main">
 		{#if previewing}
 			<div class="editor-panel reply-editor">
-				<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
+				<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none" {@attach hydrateMd}>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html html}
 				</div>
@@ -181,7 +181,11 @@
 
 <div {@attach postRefNav(threadId)}>
 	{#each posts as p (p.num)}
-		<div class="post grid grid-cols-[8rem_1fr] max-sm:grid-cols-1" id="p{p.num}">
+		<div
+			class="post grid grid-cols-[8rem_1fr] max-sm:grid-cols-1"
+			class:highlighted={`${p.num}` === targetNum}
+			id="p{p.num}"
+		>
 			<div
 				class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 			>
@@ -262,9 +266,15 @@
 						</form>
 					{/if}
 				{:else}
-					<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
+					<div
+						class="prose prose-neutral prose-sm dark:prose-invert max-w-none"
+						{@attach (node) => {
+							void p.body; // re-hydrate when the body changes (e.g. after an edit)
+							return hydrateMd(node);
+						}}
+					>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html renderMarkdown(p.body, ctx)}
+						{@html renderMarkdown(p.body)}
 					</div>
 					<div class="post-actions flex justify-end gap-2 pt-2">
 						{#if can_comment}
@@ -311,7 +321,10 @@
 		<div class="reply-main">
 			{#if previewMode}
 				<div class="editor-panel reply-editor">
-					<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
+					<div
+						class="prose prose-neutral prose-sm dark:prose-invert max-w-none"
+						{@attach hydrateMd}
+					>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html preview}
 					</div>
@@ -345,7 +358,8 @@
 		&:hover .post-actions {
 			opacity: 1;
 		}
-		&:target {
+		&:target,
+		&.highlighted {
 			box-shadow: -4px 0 0 var(--otodb-color-content-faint);
 		}
 	}

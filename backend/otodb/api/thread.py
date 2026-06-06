@@ -1,12 +1,11 @@
 import re
 from datetime import datetime, timezone
 from enum import Enum
-from math import ceil
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.db.models import Max, Q
+from django.db.models import Max
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import ModelSchema, Query, Router, Schema
@@ -37,7 +36,6 @@ from .common import (
 
 thread_router = Router()
 
-PAGE_SIZE = 25
 POST_REF_RE = re.compile(r'(?<![/\w])t(\d+)\.(\d+)(?!\w)')
 
 
@@ -90,11 +88,9 @@ class ThreadPostSchema(ModelSchema):
 		fields = ['num', 'body', 'created_at', 'edited_at']
 
 
-class ThreadPostsSchema(Schema):
-	count: int
-	posts: list[ThreadPostSchema]
-	# num -> author username, for resolving t{this_thread}.{num} references in SSR.
-	ref_authors: dict[str, str] = {}
+class PostRefSchema(Schema):
+	num: int
+	user: ProfileSchema
 
 
 def get_entity_link_ent(e: PostEntitySchema):
@@ -121,47 +117,27 @@ def get_thread(request: HttpRequest, thread_id: OtodbID):
 	return get_object_or_404(Thread, id=thread_id, is_removed=False)
 
 
-@thread_router.get('posts', response=ThreadPostsSchema)
-def get_posts(request: HttpRequest, thread_id: OtodbID, page: int = 1):
-	page = max(page, 1)
-	base = ThreadPost.objects.filter(thread_id=thread_id, is_removed=False)
-	count = base.count()
-	offset = (page - 1) * PAGE_SIZE
-	posts = list(
-		base.select_related('user', 'edited_by').order_by('num')[
-			offset : offset + PAGE_SIZE
-		]
+@thread_router.get('posts', response=list[ThreadPostSchema])
+@paginate
+def get_posts(request: HttpRequest, thread_id: OtodbID):
+	return (
+		ThreadPost.objects.filter(thread_id=thread_id, is_removed=False)
+		.select_related('user', 'edited_by')
+		.order_by('num')
 	)
 
-	# Resolve authors for any t{tid}.{num} references on this page (same- or
-	# cross-thread) so the rendered link can show the author even server-side.
-	# Keyed by "tid.num".
-	referenced: set[tuple[int, int]] = set()
-	for p in posts:
-		for tid, num in POST_REF_RE.findall(p.body):
-			referenced.add((int(tid), int(num)))
-	ref_authors: dict[str, str] = {}
-	if referenced:
-		q = Q()
-		for tid, num in referenced:
-			q |= Q(thread_id=tid, num=num)
-		ref_authors = {
-			f'{tid}.{num}': username
-			for tid, num, username in ThreadPost.objects.filter(
-				q, is_removed=False
-			).values_list('thread_id', 'num', 'user__username')
-		}
 
-	return {'count': count, 'posts': posts, 'ref_authors': ref_authors}
+@thread_router.get('post', response=PostRefSchema)
+def get_post(request: HttpRequest, thread_id: OtodbID, num: int):
+	return get_object_or_404(ThreadPost, thread_id=thread_id, num=num, is_removed=False)
 
 
-@thread_router.get('locate', response=int)
-def locate(request: HttpRequest, thread_id: OtodbID, num: int):
-	"""Page (1-based) that the given post number falls on."""
-	count = ThreadPost.objects.filter(
+@thread_router.get('position', response=int)
+def position(request: HttpRequest, thread_id: OtodbID, num: int):
+	"""1-based index of the post among non-removed posts (ordered by num)."""
+	return ThreadPost.objects.filter(
 		thread_id=thread_id, is_removed=False, num__lte=num
 	).count()
-	return max(1, ceil(count / PAGE_SIZE))
 
 
 class ThreadInSchema(Schema):

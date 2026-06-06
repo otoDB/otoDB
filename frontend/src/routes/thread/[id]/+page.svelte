@@ -85,6 +85,9 @@
 				threadId={data.thread_id}
 				posts={data.posts}
 				user={data.user ?? null}
+				postCount={data.post_count}
+				pageNum={data.page}
+				pageSize={data.batch_size}
 				{entitiesText}
 				{isGardening}
 			/>

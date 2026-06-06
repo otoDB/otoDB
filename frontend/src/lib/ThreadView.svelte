@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidateAll, pushState } from '$app/navigation';
+	import { goto, invalidateAll, pushState } from '$app/navigation';
 	import { page } from '$app/state';
 	import client from '$lib/api';
 	import { dirtyEnhance } from '$lib/dirty';
@@ -19,10 +19,23 @@
 		threadId: string;
 		posts: Post[];
 		user: App.Locals['user'] | null;
+		postCount: number;
+		pageNum: number;
+		pageSize: number;
 		entitiesText: string;
 		isGardening: boolean;
 	}
-	let { thread, threadId, posts, user, entitiesText, isGardening }: Props = $props();
+	let {
+		thread,
+		threadId,
+		posts,
+		user,
+		postCount,
+		pageNum,
+		pageSize,
+		entitiesText,
+		isGardening
+	}: Props = $props();
 
 	// Derive the targeted post num from page state (set by in-thread ref clicks) or URL (for direct/permalink navigation)
 	const permalinkNum = (url: URL) => url.pathname.match(/^\/thread\/[^/.]+\.(\d+)$/)?.[1] ?? null;
@@ -309,12 +322,16 @@
 			custom_submit:
 				() =>
 				async ({ update, result }) => {
+					const targetPage =
+						result.type === 'success' ? Math.ceil((postCount + 1) / pageSize) : null;
+					const navigating = targetPage !== null && targetPage !== pageNum;
 					if (result.type === 'success') {
 						draft = '';
 						preview = '';
 						previewMode = false;
 					}
-					await update({ reset: false });
+					await update({ reset: false, invalidateAll: !navigating });
+					if (navigating) await goto(`/thread/${threadId}?page=${targetPage}`);
 				}
 		}}
 	>

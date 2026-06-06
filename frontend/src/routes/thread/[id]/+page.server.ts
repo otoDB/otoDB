@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
-import client from '$lib/api.server';
+import client, { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 import { fail } from '@sveltejs/kit';
@@ -74,7 +75,7 @@ export const actions = {
 		const data = await request.formData();
 		const body = data.get('body') as string;
 		if (renderMarkdown(body).trim() === '') return fail(400);
-		await client.POST('/api/thread/post', {
+		const { error } = await rawClient.POST('/api/thread/post', {
 			fetch,
 			params: secret(),
 			body: {
@@ -83,6 +84,7 @@ export const actions = {
 				mentioned_users: parseMentions(body)
 			}
 		});
+		if (error) return apiFail(error);
 	},
 	editPost: async ({ request, fetch, params }) => {
 		const data = await request.formData();

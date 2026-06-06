@@ -80,13 +80,11 @@
 	<div class="relative h-[270px] w-[480px] max-w-full">
 		<WorkThumbnail {thumbnail} alt={thumbnailAlt} class="h-[270px] w-[480px] object-cover" />
 		{#if preferredIndex !== -1}
-			<button
-				type="button"
-				class="play_overlay"
-				aria-label={m.wise_calm_otter_play()}
-				onclick={() => (selected = preferredIndex)}
-			>
-				<span class="icon-[gravity-ui--play-fill] size-16" aria-hidden="true"></span>
+			<button type="button" class="play_overlay" onclick={() => (selected = preferredIndex)}>
+				<span class="play">
+					<span class="icon-[gravity-ui--play-fill] size-2.5" aria-hidden="true"></span>
+					{m.wise_calm_otter_play()}
+				</span>
 			</button>
 		{/if}
 	</div>
@@ -128,22 +126,29 @@
 		position: absolute;
 		inset: 0;
 		display: flex;
-		align-items: center;
-		justify-content: center;
+		align-items: flex-end;
+		justify-content: flex-end;
+		padding: 0.5rem;
 		border: none;
 		cursor: pointer;
-		color: #fff;
-		background-color: rgba(0, 0, 0, 0.25);
-		transition: background-color 0.15s ease;
-		& span {
-			filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
-			transition: transform 0.15s ease;
+		background-color: transparent;
+
+		& .play {
+			display: flex;
+			align-items: center;
+			gap: 0.3rem;
+			padding: 0.2rem 0.5rem;
+			background-color: var(--otodb-color-bg-primary);
+			border: 1px solid var(--otodb-color-content-primary);
 		}
-		&:hover {
-			background-color: rgba(0, 0, 0, 0.4);
-			& span {
-				transform: scale(1.1);
-			}
+
+		&:hover .play,
+		&:focus-visible .play {
+			background-color: var(--otodb-color-bg-fainter);
+		}
+
+		&:active .play {
+			background-color: var(--otodb-color-bg-faint);
 		}
 	}
 

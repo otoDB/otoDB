@@ -59,7 +59,7 @@ def verify_turnstile(request: HttpRequest, token: str | None, action: str) -> No
 		resp = requests.post(TURNSTILE_VERIFY_URL, data=data, timeout=5)
 		resp.raise_for_status()
 		payload = resp.json()
-	except Exception:
+	except requests.RequestException, ValueError:
 		logger.exception('Turnstile verification request failed')
 		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
 	if not payload.get('success'):

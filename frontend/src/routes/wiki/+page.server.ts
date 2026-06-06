@@ -1,5 +1,6 @@
 import { WikiKind } from '$lib/schema';
 import client from '$lib/api.server';
+import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
 const isWikiKind = (v: string | null): v is WikiKind =>
@@ -29,6 +30,12 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		kind: kind ?? '',
 		page,
 		batch_size,
-		results: data ?? { items: [], count: 0 }
+		results: data ?? { items: [], count: 0 },
+		head: {
+			title: m.mild_loud_shad_enchant({
+				type: m.mean_top_antelope_love(),
+				name: m.curly_zesty_pelican_aim()
+			})
+		}
 	};
 };

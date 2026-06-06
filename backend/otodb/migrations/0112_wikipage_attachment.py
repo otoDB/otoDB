@@ -4,12 +4,12 @@ import django.core.validators
 import django.db.models.deletion
 from django.db import migrations, models
 
-import otodb.models.tag
+import otodb.models.wiki
 
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0110_system_route_enum'),
+		('otodb', '0111_alter_bulkrequest_status_alter_mediawork_status'),
 	]
 
 	operations = [
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
 				null=True,
 				validators=[
 					django.core.validators.RegexValidator(regex='^[a-z0-9_-]+$'),
-					otodb.models.tag._validate_wiki_slug,
+					otodb.models.wiki._validate_wiki_slug,
 				],
 			),
 		),

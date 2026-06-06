@@ -42,7 +42,7 @@ class Rating(OtodbIntegerEnum):
 class Status(OtodbIntegerEnum):
 	PENDING = 0, 'Pending'
 	APPROVED = 1, 'Approved'
-	UNAPPROVED = 2, 'Unapproved'
+	DELISTED = 2, 'Delisted'
 
 
 class WorkOrigin(OtodbIntegerEnum):
@@ -244,7 +244,7 @@ class FlagStatus(models.IntegerChoices):
 
 
 class ModerationAction(models.IntegerChoices):
-	# Work unapproved via auto-expiry or staff action
+	# Work delisted via auto-expiry or staff action
 	WORK_DELISTED = (
 		1,
 		'Work Delisted',
@@ -342,6 +342,7 @@ class ErrorCode(OtodbIntegerEnum):
 	TAG_HAS_INFORMATION = 10019
 	THUMBNAIL_SOURCE_REQUIRED = 10020
 	TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR = 10021
+	SOURCE_PENDING = 10022
 
 
 class Preferences(OtodbIntegerEnum):

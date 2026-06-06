@@ -24,7 +24,8 @@ from otodb.models.enums import (
 	WorkTagCategory,
 )
 from otodb.models.media import MediaWork, TagWorkInstance
-from otodb.models.tag import TagWork, WikiPage
+from otodb.models.tag import TagWork
+from otodb.models.wiki import WikiPage
 from otodb.models.work_source import WorkSource
 
 ACCOUNTS = [
@@ -99,9 +100,9 @@ SOURCES = [
 
 WIKIS = [
 	{'slug': 'about', 'title': 'About'},
-	{'slug': 'editing_guidelines', 'title': 'Editing guidelines'},
+	{'slug': 'editing_guidelines', 'title': 'Editing Guidelines'},
 	{'slug': 'faq', 'title': 'FAQ'},
-	{'slug': 'search_syntax', 'title': 'Search syntax'},
+	{'slug': 'search_syntax', 'title': 'Search Syntax'},
 ]
 
 SEED_STEPS = ('accounts', 'tags', 'works', 'sources', 'wikis')

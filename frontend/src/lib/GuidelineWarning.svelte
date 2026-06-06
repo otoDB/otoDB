@@ -8,9 +8,9 @@
 	let latestMod: null | Date = $state(null);
 
 	onMount(async () => {
-		const { data } = await client.GET('/api/wiki/{page_slug}', {
+		const { data } = await client.GET('/api/wiki/page', {
 			fetch,
-			params: { path: { page_slug: 'editing_guidelines' } }
+			params: { query: { page_slug: 'editing_guidelines' } }
 		});
 		if (!data || data.length === 0) return;
 

@@ -1101,7 +1101,7 @@
             }
           }
         },
-        "description": "Appeal an unapproved work to send it back to the mod queue.",
+        "description": "Appeal a delisted work to send it back to the mod queue.",
         "security": [
           {
             "SessionAuth": []
@@ -1234,6 +1234,16 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2059,7 +2069,7 @@
             "schema": {
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/Status"
+                  "$ref": "#/components/schemas/SubmissionStanding"
                 }
               ],
               "default": 1
@@ -3737,7 +3747,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TagSongSchema"
+                  "$ref": "#/components/schemas/FatTagSongSchema"
                 }
               }
             }
@@ -4025,7 +4035,9 @@
             "in": "query",
             "name": "limit",
             "schema": {
-              "default": 20,
+              "default": 30,
+              "maximum": 30,
+              "minimum": 1,
               "title": "Limit",
               "type": "integer"
             },
@@ -4036,6 +4048,7 @@
             "name": "offset",
             "schema": {
               "default": 0,
+              "minimum": 0,
               "title": "Offset",
               "type": "integer"
             },
@@ -4048,7 +4061,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WikiIndexResponseSchema"
+                  "$ref": "#/components/schemas/PagedWikiIndexRowSchema"
                 }
               }
             }
@@ -4056,13 +4069,13 @@
         }
       }
     },
-    "/api/wiki/tag/{tag_slug}": {
+    "/api/wiki/tag": {
       "get": {
         "operationId": "otodb_api_wiki_get_tag_wiki",
         "summary": "Get Tag Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "tag_slug",
             "schema": {
               "title": "Tag Slug",
@@ -4098,7 +4111,7 @@
         "summary": "Edit Tag Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "tag_slug",
             "schema": {
               "title": "Tag Slug",
@@ -4133,13 +4146,13 @@
         ]
       }
     },
-    "/api/wiki/work/{work_id}": {
+    "/api/wiki/work": {
       "get": {
         "operationId": "otodb_api_wiki_get_work_wiki",
         "summary": "Get Work Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "work_id",
             "schema": {
               "title": "Work Id",
@@ -4175,7 +4188,7 @@
         "summary": "Edit Work Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "work_id",
             "schema": {
               "title": "Work Id",
@@ -4210,13 +4223,13 @@
         ]
       }
     },
-    "/api/wiki/{page_slug}": {
+    "/api/wiki/page": {
       "get": {
         "operationId": "otodb_api_wiki_get_slug_wiki",
         "summary": "Get Slug Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "page_slug",
             "schema": {
               "title": "Page Slug",
@@ -4247,7 +4260,7 @@
         "summary": "Edit Slug Wiki",
         "parameters": [
           {
-            "in": "path",
+            "in": "query",
             "name": "page_slug",
             "schema": {
               "title": "Page Slug",
@@ -5602,7 +5615,8 @@
           10018,
           10019,
           10020,
-          10021
+          10021,
+          10022
         ],
         "title": "ErrorCode",
         "type": "integer",
@@ -5630,7 +5644,8 @@
           "No More Appeal Slots",
           "Tag Has Information",
           "Thumbnail Source Required",
-          "Tag With Instances Merge Requires Editor"
+          "Tag With Instances Merge Requires Editor",
+          "Source Pending"
         ]
       },
       "LoginRequestSchema": {
@@ -5910,10 +5925,29 @@
       "ExternalQuery": {
         "properties": {
           "work_id": {
-            "title": "Work Id",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Id"
+          },
+          "upload_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Id"
           },
           "tags": {
+            "default": [],
             "items": {
               "$ref": "#/components/schemas/TagWorkInstanceSchema"
             },
@@ -5921,10 +5955,6 @@
             "type": "array"
           }
         },
-        "required": [
-          "work_id",
-          "tags"
-        ],
         "title": "ExternalQuery",
         "type": "object"
       },
@@ -6212,7 +6242,7 @@
         "x-enum-varnames": [
           "Pending",
           "Approved",
-          "Unapproved"
+          "Delisted"
         ]
       },
       "TagWorkInstanceThinSchema": {
@@ -7350,6 +7380,26 @@
         "title": "UserConnectionSchema",
         "type": "object"
       },
+      "SubmissionStanding": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "title": "SubmissionStanding",
+        "type": "integer",
+        "x-enum-varnames": [
+          "Pending",
+          "Approved",
+          "Delisted",
+          "Unbound",
+          "Flagged",
+          "Appealed"
+        ]
+      },
       "SubmissionsFilterSchema": {
         "properties": {
           "platform": {
@@ -7560,6 +7610,16 @@
               }
             ],
             "title": "Media"
+          },
+          "media_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -8188,13 +8248,6 @@
             "title": "Id",
             "type": "string"
           },
-          "children": {
-            "items": {
-              "$ref": "#/components/schemas/TagSongSchema"
-            },
-            "title": "Children",
-            "type": "array"
-          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -8216,7 +8269,6 @@
         },
         "required": [
           "id",
-          "children",
           "name",
           "slug",
           "category",
@@ -8709,13 +8761,6 @@
             "title": "Id",
             "type": "string"
           },
-          "children": {
-            "items": {
-              "$ref": "#/components/schemas/TagSongSchema"
-            },
-            "title": "Children",
-            "type": "array"
-          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -8741,7 +8786,6 @@
         },
         "required": [
           "id",
-          "children",
           "name",
           "slug",
           "category",
@@ -8749,6 +8793,49 @@
           "n_instance"
         ],
         "title": "TagSongSearchResultSchema",
+        "type": "object"
+      },
+      "FatTagSongSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/SongTagCategory"
+          },
+          "lang_prefs": {
+            "items": {
+              "$ref": "#/components/schemas/TagLangPreferenceSchema"
+            },
+            "title": "Lang Prefs",
+            "type": "array"
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/TagSongSchema"
+            },
+            "title": "Children",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "category",
+          "lang_prefs",
+          "children"
+        ],
+        "title": "FatTagSongSchema",
         "type": "object"
       },
       "SongTagInSchema": {
@@ -8941,7 +9028,7 @@
         "title": "WikiKind",
         "type": "string"
       },
-      "WikiIndexResponseSchema": {
+      "PagedWikiIndexRowSchema": {
         "properties": {
           "items": {
             "items": {
@@ -8959,21 +9046,64 @@
           "items",
           "count"
         ],
-        "title": "WikiIndexResponseSchema",
+        "title": "PagedWikiIndexRowSchema",
+        "type": "object"
+      },
+      "WikiDocsRefSchema": {
+        "properties": {
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "title": "WikiDocsRefSchema",
         "type": "object"
       },
       "WikiIndexRowSchema": {
         "properties": {
-          "kind": {
-            "$ref": "#/components/schemas/WikiKind"
+          "tag": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WikiTagRefSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
-          "key": {
-            "title": "Key",
-            "type": "string"
+          "work": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WikiWorkRefSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
-          "title": {
-            "title": "Title",
-            "type": "string"
+          "docs": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WikiDocsRefSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "last_edited_at": {
             "anyOf": [
@@ -8996,12 +9126,59 @@
           }
         },
         "required": [
-          "kind",
-          "key",
-          "title",
           "langs"
         ],
         "title": "WikiIndexRowSchema",
+        "type": "object"
+      },
+      "WikiTagRefSchema": {
+        "properties": {
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "lang_prefs": {
+            "items": {
+              "$ref": "#/components/schemas/TagLangPreferenceSchema"
+            },
+            "title": "Lang Prefs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "lang_prefs"
+        ],
+        "title": "WikiTagRefSchema",
+        "type": "object"
+      },
+      "WikiWorkRefSchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "WikiWorkRefSchema",
         "type": "object"
       },
       "WikiPageMDSchema": {

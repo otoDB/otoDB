@@ -107,7 +107,7 @@ def reverse(apps, schema_editor):
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0112_thread_refactor'),
+		('otodb', '0113_thread_refactor'),
 	]
 
 	operations = [

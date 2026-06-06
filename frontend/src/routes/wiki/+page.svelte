@@ -2,16 +2,21 @@
 	import { page } from '$app/state';
 	import Pager from '$lib/Pager.svelte';
 	import Section from '$lib/Section.svelte';
+	import Time from '$lib/Time.svelte';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import { m } from '$lib/paraglide/messages';
 	import { WikiKind } from '$lib/schema';
+	import { getTagDisplayName } from '$lib/ui';
 
 	let { data } = $props();
 
-	function hrefFor(row: (typeof data.results.items)[number]): string {
-		if (row.kind === WikiKind.tag) return `/tag/${row.key}`;
-		if (row.kind === WikiKind.work) return `/work/${row.key}`;
-		return `/wiki/${row.key}`;
+	type Row = (typeof data.results.items)[number];
+
+	function hrefFor(row: Row): string {
+		if (row.tag) return `/tag/${row.tag.slug}`;
+		if (row.work) return `/work/${row.work.id}`;
+		if (row.docs) return `/wiki/${row.docs.slug}`;
+		return '#';
 	}
 
 	function langDisplay(id: number): string {
@@ -20,7 +25,7 @@
 	}
 </script>
 
-<Section title={m.curly_zesty_pelican_aim()}>
+<Section title={data.head.title}>
 	<form method="get" class="mb-4 flex flex-wrap items-end gap-1">
 		<label class="flex flex-col text-sm">
 			<input type="text" name="q" value={data.q} placeholder="{m.mean_top_antelope_love()}..." />
@@ -54,11 +59,21 @@
 			<tbody>
 				{#each data.results.items as row, i (i)}
 					<tr>
-						<td><a href={hrefFor(row)}>{row.title}</a></td>
+						<td>
+							<a href={hrefFor(row)}>
+								{#if row.tag}
+									{getTagDisplayName(row.tag)}
+								{:else if row.work}
+									{row.work.title ?? `#${row.work.id}`}
+								{:else if row.docs}
+									{row.docs.title ?? row.docs.slug}
+								{/if}
+							</a>
+						</td>
 						<td>{row.langs.map(langDisplay).join(', ')}</td>
 						<td>
 							{#if row.last_edited_at}
-								{new Date(row.last_edited_at).toLocaleDateString()}
+								<Time date={row.last_edited_at} format="relative" />
 							{:else}
 								—
 							{/if}

@@ -11,18 +11,12 @@
 	const localizedPages = $derived(wiki_page.filter((p) => p.lang !== LanguageTypes.N_A));
 	const fallbackPage = $derived(wiki_page.find((p) => p.lang === LanguageTypes.N_A) ?? null);
 
-	const initialView = $derived.by(() => {
+	let wikiView = $derived.by<keyof typeof languages | null>(() => {
 		const userLang = languages[getLocale()].id;
 		const exact = localizedPages.find((p) => p.lang === userLang);
 		if (exact) return resolveLanguageKeyById(exact.lang);
 		if (localizedPages[0]) return resolveLanguageKeyById(localizedPages[0].lang);
 		return null;
-	});
-
-	let wikiView = $state.raw<keyof typeof languages | null>(initialView);
-
-	$effect(() => {
-		wikiView = initialView;
 	});
 
 	const currentPage = $derived.by(() => {

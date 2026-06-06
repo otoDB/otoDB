@@ -53,12 +53,12 @@ class MediaWorkQuerySet(RevisionTrackedQuerySet):
 		)
 
 	def visible(self):
-		"""Exclude unapproved works, but keep ones with a pending appeal."""
+		"""Exclude delisted works, but keep ones with a pending appeal."""
 		appealed_ids = ModerationEvent.objects.filter(
 			event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
 		).values_list('work_id', flat=True)
 		return self.exclude(
-			models.Q(status=Status.UNAPPROVED) & ~models.Q(id__in=appealed_ids)
+			models.Q(status=Status.DELISTED) & ~models.Q(id__in=appealed_ids)
 		)
 
 

@@ -97,15 +97,17 @@ export const actions = {
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
 		// The opening-post edit form updates both thread metadata and post #1's body.
-		await client.PUT('/api/thread/thread', {
-			fetch,
-			params: secret(),
-			body: { thread_id: params.id, title, entities }
-		});
-		await client.PUT('/api/thread/post', {
-			fetch,
-			params: secret(),
-			body: { thread_id: params.id, num: 1, body: post }
-		});
+		await Promise.all([
+			client.PUT('/api/thread/thread', {
+				fetch,
+				params: secret(),
+				body: { thread_id: params.id, title, entities }
+			}),
+			client.PUT('/api/thread/post', {
+				fetch,
+				params: secret(),
+				body: { thread_id: params.id, num: 1, body: post }
+			})
+		]);
 	},
 } satisfies Actions;

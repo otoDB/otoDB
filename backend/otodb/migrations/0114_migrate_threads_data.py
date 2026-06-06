@@ -97,6 +97,9 @@ def forward(apps, schema_editor):
 				comment=None, threadpost_id=tp.id
 			)
 
+	if thread_ct is not None:
+		XtdComment.objects.filter(content_type_id=thread_ct.id).delete()
+
 
 def reverse(apps, schema_editor):
 	ThreadPost = apps.get_model('otodb', 'ThreadPost')

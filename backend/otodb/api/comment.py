@@ -208,8 +208,6 @@ class ExtCommentSchema(BaseCommentSchema):
 def recent(request: HttpRequest):
 	return (
 		XtdComment.objects.filter(is_removed=False)
-		# Threads moved off XtdComment; legacy thread comments are retained but inert.
-		.exclude(content_type__model='thread')
 		.exclude(content_type__model='account')
 		.order_by('-submit_date')
 		.annotate(

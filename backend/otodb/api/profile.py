@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import List, Literal
 
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, IntegerField, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
@@ -19,7 +18,6 @@ from otodb.models import (
 	ProfileConnection,
 	Revision,
 	RevisionChangeEntity,
-	Thread,
 	ThreadPost,
 	UserPreference,
 	WorkSource,
@@ -111,9 +109,6 @@ def search(
 		'-comments_count',
 	] = '-date_created',
 ):
-	# Threads moved off XtdComment; their content type holds only inert legacy rows.
-	thread_ct = ContentType.objects.get_for_model(Thread)
-
 	works_count = (
 		WorkSource.objects.filter(added_by=OuterRef('pk'))
 		.values('added_by')
@@ -136,7 +131,6 @@ def search(
 	)
 	other_comments_count = (
 		XtdComment.objects.filter(user=OuterRef('pk'), is_removed=False)
-		.exclude(content_type=thread_ct)
 		.order_by()
 		.values('user')
 		.annotate(c=Count('id'))

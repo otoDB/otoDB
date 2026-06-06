@@ -4505,8 +4505,7 @@
               }
             }
           }
-        },
-        "description": "A single post's author, for resolving t{thread}.{num} references client-side."
+        }
       },
       "post": {
         "operationId": "otodb_api_thread_new_post",

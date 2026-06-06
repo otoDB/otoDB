@@ -19,11 +19,11 @@
 	let current_theme = $state(prefs.THEME);
 
 	let video_platform = $state(prefs.VIDEO_PLATFORM);
-	let prefer_platform_reupload = $state(prefs.PREFER_PLATFORM_REUPLOAD);
+	let prefer_author_upload = $state(prefs.PREFER_AUTHOR_UPLOAD);
 
-	// "Prefer reuploads" only applies once a specific platform is chosen
+	// "Prefer author uploads" only applies once a specific platform is chosen
 	let platform_selected = $derived(video_platform !== VideoPlatformPref.Auto);
-	let prefer_reupload = $derived(platform_selected && prefer_platform_reupload);
+	let prefer_author = $derived(platform_selected && prefer_author_upload);
 
 	async function changeTheme(theme: ThemePref) {
 		current_theme = theme;
@@ -37,7 +37,7 @@
 		e.preventDefault();
 		const body = {
 			VIDEO_PLATFORM: video_platform,
-			PREFER_PLATFORM_REUPLOAD: prefer_reupload
+			PREFER_AUTHOR_UPLOAD: prefer_author
 		};
 
 		if (data.user) {
@@ -122,14 +122,14 @@
 			</div>
 
 			<div class={[!platform_selected && 'opacity-50']}>
-				<label for="prefer_reupload" class="font-bold">{m.lush_keen_robin_perch()}</label>
+				<label for="prefer_author" class="font-bold">{m.lush_keen_robin_perch()}</label>
 				<div class="mt-1 flex items-center gap-2">
 					<input
-						id="prefer_reupload"
+						id="prefer_author"
 						type="checkbox"
 						disabled={!platform_selected}
-						checked={prefer_reupload}
-						onchange={(e) => (prefer_platform_reupload = e.currentTarget.checked)}
+						checked={prefer_author}
+						onchange={(e) => (prefer_author_upload = e.currentTarget.checked)}
 					/>
 					<span class="text-otodb-content-fainter italic">{m.tidy_warm_seal_glide()}</span>
 				</div>

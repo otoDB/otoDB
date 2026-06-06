@@ -41,7 +41,7 @@ const defaultPrefs: Required<Prefs> = {
 	LANGUAGE: LanguageTypes.en, // reflects baseLocale
 	THEME: ThemePref.Default,
 	VIDEO_PLATFORM: VideoPlatformPref.Auto,
-	PREFER_PLATFORM_REUPLOAD: false
+	PREFER_AUTHOR_UPLOAD: false
 };
 
 export const getLocalPrefs = (): Partial<Prefs> | undefined => {

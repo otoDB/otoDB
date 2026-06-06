@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
 					(1, 'Language'),
 					(2, 'Theme'),
 					(3, 'Video Platform'),
-					(4, 'Prefer Platform Reupload'),
+					(4, 'Prefer Author Upload'),
 				]
 			),
 		),

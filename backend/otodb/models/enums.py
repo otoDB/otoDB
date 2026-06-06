@@ -348,12 +348,12 @@ class Preferences(OtodbIntegerEnum):
 	LANGUAGE = 1
 	THEME = 2
 	VIDEO_PLATFORM = 3
-	PREFER_PLATFORM_REUPLOAD = 4
+	PREFER_AUTHOR_UPLOAD = 4
 
 
 PreferencesValueTypeMap = {
 	Preferences.LANGUAGE: LanguageTypes,
 	Preferences.THEME: ThemePref,
 	Preferences.VIDEO_PLATFORM: VideoPlatformPref,
-	Preferences.PREFER_PLATFORM_REUPLOAD: bool,
+	Preferences.PREFER_AUTHOR_UPLOAD: bool,
 }

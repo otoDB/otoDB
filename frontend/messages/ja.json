@@ -298,9 +298,9 @@
 	"careful_close_shad_achieve": "未分類",
 	"wise_calm_otter_play": "再生",
 	"merry_bold_finch_soar": "優先する再生プラットフォーム",
-	"lush_keen_robin_perch": "転載を作者投稿より優先する",
+	"lush_keen_robin_perch": "作者投稿を優先する",
 	"brisk_neat_otter_glide": "自動",
 	"calm_wide_swan_rest": "サイト全体で使用する言語。",
 	"noble_brave_quail_soar": "埋め込み動画の再生に使用するプラットフォーム。",
-	"tidy_warm_seal_glide": "優先プラットフォームに転載しかない場合、他所の作者投稿よりその転載を再生します。"
+	"tidy_warm_seal_glide": "別のプラットフォームにあっても、優先プラットフォームの転載より作者本人の投稿を優先します。"
 }

@@ -28,12 +28,14 @@
 		return da < db ? -1 : da > db ? 1 : 0;
 	}
 
-	// Index of the source to play: preferred-platform author -> (if enabled) preferred-platform
-	// reupload -> author by oldest date -> reupload by oldest date -> first available (-1 if none)
+	// Index of the source to play. With a specific platform preferred: author upload on that
+	// platform -> (if "prefer author uploads" is on) oldest author upload anywhere -> reupload on
+	// that platform. Otherwise/falling through: author by oldest date -> reupload by oldest date ->
+	// first available (-1 if none).
 	function selectPreferredSource(
 		candidates: Source[],
 		platformPref: VideoPlatformPref,
-		preferReupload: boolean
+		preferAuthor: boolean
 	): number {
 		if (candidates.length === 0) return -1;
 
@@ -47,12 +49,11 @@
 
 		if (platformPref !== VideoPlatformPref.Auto) {
 			const platform = platformPref as unknown as Platform;
-			const authorMatch = authors.find((i) => candidates[i].platform === platform);
-			if (authorMatch !== undefined) return authorMatch;
-			if (preferReupload) {
-				const reuploadMatch = reuploads.find((i) => candidates[i].platform === platform);
-				if (reuploadMatch !== undefined) return reuploadMatch;
-			}
+			const authorOnPlatform = authors.find((i) => candidates[i].platform === platform);
+			if (authorOnPlatform !== undefined) return authorOnPlatform;
+			if (preferAuthor && authors.length > 0) return authors[0];
+			const reuploadOnPlatform = reuploads.find((i) => candidates[i].platform === platform);
+			if (reuploadOnPlatform !== undefined) return reuploadOnPlatform;
 		}
 
 		if (authors.length > 0) return authors[0];
@@ -71,7 +72,7 @@
 
 	let prefs = $derived(getPrefs());
 	let preferredIndex = $derived(
-		selectPreferredSource(visibleSources, prefs.VIDEO_PLATFORM, prefs.PREFER_PLATFORM_REUPLOAD)
+		selectPreferredSource(visibleSources, prefs.VIDEO_PLATFORM, prefs.PREFER_AUTHOR_UPLOAD)
 	);
 </script>
 

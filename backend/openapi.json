@@ -5290,8 +5290,8 @@
               }
             ]
           },
-          "PREFER_PLATFORM_REUPLOAD": {
-            "title": "Prefer Platform Reupload",
+          "PREFER_AUTHOR_UPLOAD": {
+            "title": "Prefer Author Upload",
             "type": "boolean"
           }
         },

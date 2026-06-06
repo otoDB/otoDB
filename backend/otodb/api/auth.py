@@ -42,13 +42,6 @@ auth_router = Router()
 TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
 
-def _client_ip(request: HttpRequest) -> str | None:
-	fwd = request.META.get('HTTP_X_FORWARDED_FOR')
-	if fwd:
-		return fwd.split(',')[0].strip()
-	return request.META.get('REMOTE_ADDR')
-
-
 def verify_turnstile(request: HttpRequest, token: str | None, action: str) -> None:
 	"""Verify a Cloudflare Turnstile token"""
 	secret = settings.OTODB_TURNSTILE_SECRET_KEY
@@ -57,7 +50,9 @@ def verify_turnstile(request: HttpRequest, token: str | None, action: str) -> No
 	if not token:
 		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
 	data = {'secret': secret, 'response': token}
-	remoteip = _client_ip(request)
+	# REMOTE_ADDR is resolved to the real client IP by Granian's proxy-header wrapper
+	# (see project/wsgi.py + OTODB_TRUSTED_PROXY_HOSTS)
+	remoteip = request.META.get('REMOTE_ADDR')
 	if remoteip:
 		data['remoteip'] = remoteip
 	try:

@@ -29,9 +29,9 @@ dependencies = [
     "django-tasks-rq>=0.12.0",
     "django-rq>=4.1",
     "lark>=1.3.1",
+    "regex>=2026.5.9",
     # has corresponding patch in patches/
     "yt-dlp[default]==2026.3.17",
-    "regex>=2026.5.9",
 ]
 
 [tool.ruff.format]

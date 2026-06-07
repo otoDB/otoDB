@@ -3,7 +3,7 @@
 	import {
 		enumValues,
 		PlatformNames,
-		StatusNames,
+		SubmissionStandingNames,
 		WorkOriginNames,
 		WorkStatusNames
 	} from '$lib/enums';
@@ -11,10 +11,21 @@
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import RefreshButton from '$lib/RefreshButton.svelte';
-	import { Levels, Platform, Status, WorkOrigin, WorkStatus } from '$lib/schema.js';
+	import { Levels, Platform, SubmissionStanding, WorkOrigin, WorkStatus } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 
 	let { data } = $props();
+
+	const standing = $derived(data.standing ?? SubmissionStanding.Approved);
+	const isBound = $derived(
+		standing === SubmissionStanding.Approved ||
+			standing === SubmissionStanding.Delisted ||
+			standing === SubmissionStanding.Flagged ||
+			standing === SubmissionStanding.Appealed
+	);
+	const canRefresh = $derived(
+		isBound ? !!data.user : hasUserLevel(data.user?.level, Levels.Editor)
+	);
 </script>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
@@ -28,8 +39,9 @@
 				<tr>
 					<td>{m.just_noisy_moth_beam()}</td>
 					<td
-						><select name="standing" value={data.standing ?? 1}
-							>{#each enumValues(Status) as p, i (i)}<option value={p}>{StatusNames[p]()}</option
+						><select name="standing" value={standing}
+							>{#each enumValues(SubmissionStanding) as p, i (i)}<option value={p}
+									>{SubmissionStandingNames[p]()}</option
 								>{/each}</select
 						></td
 					>
@@ -84,119 +96,53 @@
 		<input type="submit" />
 	</form>
 	<hr class="my-2" />
-	{#if data.standing === 0}
-		<h2>{m.such_actual_okapi_dare()}</h2>
-		{#if data.submissions?.items.length}
-			<table class="w-full">
-				<thead
-					><tr>
-						<th>{m.large_factual_octopus_exhale()}</th>
-						<th>{m.sour_swift_sparrow_spin()}</th>
-						<th>{m.super_agent_pigeon_aim()}</th>
-						<th>{m.large_polite_otter_thrive()}</th>
-						<th>{m.noisy_moving_newt_belong()}</th>
-						{#if hasUserLevel(data.user?.level, Levels.Editor)}
-							<th>{m.mushy_proof_hornet_dig()}</th>
-						{/if}
-					</tr></thead
-				>
-				<tbody>
-					{#each data.submissions.items as src, i (i)}
-						<tr>
-							<td class="whitespace-nowrap"
-								><a href="/upload/{src.id}">{src.title || src.url}</a></td
-							>
-							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
-							<td class="whitespace-nowrap"
-								><a href={src.url} target="_blank" rel="noopener noreferrer"
-									>{m.noisy_moving_newt_belong()}</a
-								></td
-							>
-							{#if hasUserLevel(data.user?.level, Levels.Editor)}
-								<td><RefreshButton source={src} /></td>
-							{/if}
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{:else}
-			<p>{m.moving_such_seal_hug()}</p>
-		{/if}
-	{:else if data.standing === 1}
-		<h2>{m.spare_few_kudu_learn()}</h2>
-		{#if data.submissions?.items.length}
-			<table class="w-full">
-				<thead
-					><tr>
-						<th>{m.large_factual_octopus_exhale()}</th>
-						<th>{m.sour_swift_sparrow_spin()}</th>
-						<th>{m.super_agent_pigeon_aim()}</th>
-						<th>{m.large_polite_otter_thrive()}</th>
+	<h2>{SubmissionStandingNames[standing]()}</h2>
+	{#if data.submissions?.items.length}
+		<table class="w-full">
+			<thead
+				><tr>
+					<th>{m.large_factual_octopus_exhale()}</th>
+					<th>{m.sour_swift_sparrow_spin()}</th>
+					<th>{m.super_agent_pigeon_aim()}</th>
+					<th>{m.large_polite_otter_thrive()}</th>
+					{#if isBound}
 						<th>{m.civil_trick_oryx_clap()}</th>
-						<th>{m.noisy_moving_newt_belong()}</th>
-					</tr></thead
-				>
-				<tbody>
-					{#each data.submissions.items as src, i (i)}
-						<tr>
-							<td class="whitespace-nowrap"
-								><a href="/work/{src.media}">#{src.media} - {src.title || src.url}</a></td
-							>
-							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td><td
-								class="whitespace-nowrap">{WorkStatusNames[src.work_status]()}</td
-							>
-							<td class="whitespace-nowrap"
-								><a href={src.url} target="_blank" rel="noopener noreferrer"
-									>{m.noisy_moving_newt_belong()}</a
-								></td
-							>
-							{#if data.user}
-								<td><RefreshButton source={src} /></td>
+					{/if}
+					<th>{m.noisy_moving_newt_belong()}</th>
+					{#if canRefresh}
+						<th>{m.mushy_proof_hornet_dig()}</th>
+					{/if}
+				</tr></thead
+			>
+			<tbody>
+				{#each data.submissions.items as src, i (i)}
+					<tr>
+						<td class="whitespace-nowrap">
+							{#if isBound}
+								<a href="/work/{src.media}">#{src.media} - {src.title || src.url}</a>
+							{:else}
+								<a href="/upload/{src.id}">{src.title || src.url}</a>
 							{/if}
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{:else}
-			<p>{m.moving_such_seal_hug()}</p>
-		{/if}
-	{:else if data.standing === 2}
-		<h2>{m.stale_vexed_hare_pray()}</h2>
-		{#if data.submissions?.items.length}
-			<table class="w-full">
-				<thead
-					><tr>
-						<th>{m.large_factual_octopus_exhale()}</th>
-						<th>{m.weary_spicy_fly_attend()}</th>
-						<th>{m.sour_swift_sparrow_spin()}</th>
-						<th>{m.super_agent_pigeon_aim()}</th>
-						<th>{m.large_polite_otter_thrive()}</th>
-						<th>{m.noisy_moving_newt_belong()}</th>
-					</tr></thead
-				>
-				<tbody>
-					{#each data.submissions.items as src, i (i)}
-						<tr>
-							<td class="whitespace-nowrap">{src.title || src.url}</td>
-							<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
-							<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
-							<td class="whitespace-nowrap"
-								><a href={src.url} target="_blank" rel="noopener noreferrer"
-									>{m.noisy_moving_newt_belong()}</a
-								></td
-							>
-							{#if data.user}
-								<td><RefreshButton source={src} /></td>
-							{/if}
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{:else}
-			<p>{m.moving_such_seal_hug()}</p>
-		{/if}
+						</td>
+						<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
+						<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
+						{#if isBound}
+							<td class="whitespace-nowrap">{WorkStatusNames[src.work_status]()}</td>
+						{/if}
+						<td class="whitespace-nowrap"
+							><a href={src.url} target="_blank" rel="noopener noreferrer"
+								>{m.noisy_moving_newt_belong()}</a
+							></td
+						>
+						{#if canRefresh}
+							<td><RefreshButton source={src} /></td>
+						{/if}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{:else}
+		<p>{m.moving_such_seal_hug()}</p>
 	{/if}
 	{#if data.submissions?.count}
 		<Pager

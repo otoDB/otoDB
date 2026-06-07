@@ -121,11 +121,21 @@ class TagWorkDetailsSchema(Schema):
 
 class TagSongSchema(Schema):
 	id: OtodbID
-	children: list['TagSongSchema']
 	name: str
 	slug: str
 	category: SongTagCategory
 	lang_prefs: list[TagLangPreferenceSchema]
+
+
+class FatTagSongSchema(TagSongSchema):
+	children: list[TagSongSchema]
+
+	@staticmethod
+	def resolve_children(obj):
+		return TagSong.objects.filter(
+			Q(parent_id=obj.pk) | Q(parent__aliased_to=obj.pk),
+			aliased_to__isnull=True,
+		)
 
 
 class TagSongDetailsSchema(Schema):
@@ -364,7 +374,7 @@ def details(request: HttpRequest, tag_slug: str):
 @tag_router.get('works', response=list[ThinWorkSchema])
 @paginate
 def works(request: HttpRequest, tag_slug: str):
-	return MediaWork.active_objects.filter(tags__slug=tag_slug)
+	return MediaWork.active_objects.filter(tags__slug=tag_slug).visible()
 
 
 class TagTypes(str, Enum):
@@ -406,6 +416,7 @@ class AliasResponse(Schema):
 
 @tag_router.post('alias', auth=django_auth, response=AliasResponse)
 @user_is_trusted
+@transaction.atomic
 @tag_route_switch(Route.TAGWORK_ALIAS, Route.SONGTAG_ALIAS)
 def alias_tags(
 	request: AuthedHttpRequest,
@@ -472,6 +483,7 @@ class TagAliasControlSchema(Schema):
 
 @tag_router.post('tag_aliases', auth=django_auth, response={200: None, 400: Error})
 @user_is_trusted
+@transaction.atomic
 @tag_route_switch(Route.TAGWORK_UNALIAS, Route.SONGTAG_UNALIAS)
 def tag_alias_control(
 	request: HttpRequest, tag_slug: str, payload: TagAliasControlSchema, **kwargs
@@ -651,48 +663,6 @@ def update(
 			tag.childhood.filter(parent=ps[payload.primary]).update(primary=True)
 
 	return
-
-
-class WikiPageMDSchema(ModelSchema):
-	class Meta:
-		model = WikiPage
-		fields = ['page', 'lang']
-
-
-@tag_router.get('wiki_page', auth=django_auth, response=list[WikiPageMDSchema])
-def wiki_page(request: HttpRequest, tag_slug: str):
-	return WikiPage.objects.filter(tag__slug=tag_slug)
-
-
-class WikiPageEditSchema(Schema):
-	lang: LanguageTypes = Field(..., gt=0)
-	md: str
-
-
-@tag_router.post('wiki_page', auth=django_auth)
-@user_is_trusted
-@transaction.atomic
-@with_revision_route(Route.TAGWORK_EDIT_WIKI)
-def edit_wiki_page(
-	request: HttpRequest, tag_slug: str, payload: list[WikiPageEditSchema]
-):
-	tag = get_object_or_404(TagWork, slug=tag_slug)
-	for item in payload:
-		empty = item.md.strip() == ''
-		try:
-			wp = WikiPage.objects.get(tag=tag, lang=item.lang)
-			if empty:
-				wp.delete()
-			else:
-				wp.page = item.md
-				wp.save()
-		except WikiPage.DoesNotExist:
-			if not empty:
-				WikiPage.objects.create(
-					tag=tag,
-					lang=item.lang,
-					page=item.md,
-				)
 
 
 class TagWorkConnectionSchema(ConnectionSchema):
@@ -1173,7 +1143,7 @@ def song_tags(
 	return
 
 
-@tag_router.get('song_tag', response=TagSongSchema)
+@tag_router.get('song_tag', response=FatTagSongSchema)
 def song_tag(request: HttpRequest, tag_slug: str):
 	cleaned = slugify_tag(tag_slug)
 	tag = get_object_or_404(TagSong, slug=cleaned)
@@ -1215,7 +1185,11 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchem
 @tag_router.get('songs', response=list[SongSchema])
 @paginate
 def songs(request: HttpRequest, tag_slug: str):
-	return MediaSong.objects.filter(tags__slug=tag_slug)
+	return (
+		MediaSong.objects.filter(tags__slug=tag_slug)
+		.select_related('work_tag')
+		.prefetch_related('tags')
+	)
 
 
 class SongConnectionSchema(ConnectionSchema):
@@ -1231,7 +1205,9 @@ def song_connection(request: HttpRequest, song_id: OtodbID):
 @tag_router.get('similar', response=list[TagWorkSchema])
 def similar(request: HttpRequest, tag_slug: str):
 	tag = get_object_or_404(TagWork, slug=tag_slug)
-	tw = MediaWork.active_objects.filter(tags=tag).values_list('id', flat=True)
+	tw = (
+		MediaWork.active_objects.filter(tags=tag).visible().values_list('id', flat=True)
+	)
 	return (
 		TagWork.objects.exclude(id=tag.id)
 		.filter(works__in=Subquery(tw), deprecated=False)

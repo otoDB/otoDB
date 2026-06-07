@@ -9,7 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models, transaction
 from django.db.models import Case, Exists, F, OuterRef, Q, Subquery, When, Window
 from django.db.models.fields.related import RelatedField
-from django.db.models.functions import RowNumber
+from django.db.models.functions import Coalesce, RowNumber
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
@@ -26,6 +26,7 @@ from otodb.models import (
 	RevisionChangeEntity,
 	TagSong,
 	TagWork,
+	WikiPage,
 )
 from otodb.models.enums import RevisionChain, Route
 from otodb.models.tag import OtodbTagModel
@@ -163,6 +164,17 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			*OtodbTagModel.__subclasses__()
 		).values()
 	]
+	wikipage_ct = ContentType.objects.get_for_model(WikiPage)
+	ent_wikipage_slug = Subquery(
+		WikiPage.objects.filter(pk=OuterRef('revisionchangeentity__entity_id')).values(
+			'slug'
+		)[:1]
+	)
+	tg_wikipage_slug = Coalesce(
+		Subquery(WikiPage.objects.filter(pk=OuterRef('target_id')).values('slug')[:1]),
+		models.functions.Cast(F('target_id'), output_field=models.TextField()),
+		output_field=models.TextField(),
+	)
 	qq = (
 		RevisionChange.objects.filter(rev=rev)
 		.filter(revisionchangeentity__isnull=False)
@@ -181,10 +193,15 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 							).values('target_value')[:1]
 						),
 					),
+					When(
+						Q(revisionchangeentity__entity_type=wikipage_ct),
+						then=ent_wikipage_slug,
+					),
 					default=models.functions.Cast(
 						F('revisionchangeentity__entity_id'),
 						output_field=models.TextField(),
 					),
+					output_field=models.TextField(),
 				)
 			),
 			tg_id=(
@@ -199,13 +216,22 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 							).values('target_value')[:1]
 						),
 					),
+					When(
+						Q(target_type=wikipage_ct),
+						then=tg_wikipage_slug,
+					),
 					default=models.functions.Cast(
 						F('target_id'), output_field=models.TextField()
 					),
+					output_field=models.TextField(),
 				)
 			),
 			ent_type=F('revisionchangeentity__entity_type__model'),
 			route=F('revisionchangeentity__route'),
+		)
+		.exclude(
+			revisionchangeentity__entity_type=wikipage_ct,
+			ent_id__isnull=True,
 		)
 		.order_by('id')
 	)

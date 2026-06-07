@@ -2,24 +2,21 @@
 	import { page } from '$app/state';
 	import CommentTree from '$lib/CommentTree.svelte';
 	import Connections from '$lib/Connections.svelte';
-	import LangSwitch from '$lib/LangSwitch.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import RelationViewer from '$lib/RelationViewer.svelte';
 	import Section from '$lib/Section.svelte';
 	import SongTag from '$lib/SongTag.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
+	import WikiView from '$lib/WikiView.svelte';
 	import client from '$lib/api.js';
-	import { languages, resolveLanguageKeyById } from '$lib/enums/language.js';
 	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/mediaType.js';
 	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { songConnectionMap } from '$lib/enums/songConnection.js';
 	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
 
-	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
 	import {
 		MediaConnectionTypes,
 		ModelsWithComments,
@@ -52,16 +49,6 @@
 			(e) => e !== data.display_name
 		)
 	);
-
-	let wikiView = $derived.by(() => {
-		const wikiUserLang = data.wiki_page.find(({ lang }) => lang === languages[getLocale()].id);
-		if (wikiUserLang) return resolveLanguageKeyById(wikiUserLang.lang);
-
-		const wikiFallback = data.wiki_page.at(0);
-		if (wikiFallback) return resolveLanguageKeyById(wikiFallback.lang);
-
-		return undefined;
-	});
 
 	const fetchNextBatch = () =>
 		client.GET('/api/tag/works', {
@@ -165,23 +152,7 @@
 
 	<hr class="my-2" />
 
-	{#if wikiView && data.wiki_page.length > 0}
-		{@const wp = data.wiki_page.find(({ lang }) => lang === languages[wikiView!].id)!}
-		<div class="float-right clear-left my-2">
-			<LangSwitch
-				availableLanguages={data.wiki_page.map((v) => resolveLanguageKeyById(v.lang))}
-				bind:value={wikiView}
-			/>
-		</div>
-		<div
-			class="prose prose-neutral prose-sm dark:prose-invert prose-p:max-w-4xl prose-ul:max-w-4xl prose-ol:max-w-4xl prose-blockquote:max-w-4xl prose-headings:max-w-4xl max-w-none"
-		>
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html renderMarkdown(wp.page)}
-		</div>
-	{:else}
-		<p>{m.tame_dirty_goldfish_flow()}</p>
-	{/if}
+	<WikiView wiki_page={data.wiki_page} />
 </Section>
 
 {#if data.tag.song}

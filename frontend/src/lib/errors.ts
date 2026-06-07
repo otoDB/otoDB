@@ -10,8 +10,10 @@ export type ApiError = {
 
 const errorCodeMessages: Partial<Record<ErrorCode, (payload: ErrorPayload) => string | null>> = {
 	[ErrorCode.Internal_Error]: () => m.green_due_javelina_pop(),
+	[ErrorCode.Rate_Limited]: () => m.lucky_brisk_falcon_rest(),
 	[ErrorCode.Source_Flagged]: () => m.antsy_main_puffin_dust(),
 	[ErrorCode.Source_Unapproved]: () => m.clean_civil_jellyfish_promise(),
+	[ErrorCode.Source_Pending]: () => m.stout_brave_otter_reject(),
 	[ErrorCode.Self_Moderation]: () => m.fluffy_noble_gadfly_adapt(),
 	[ErrorCode.Login_Failed]: () => m.brave_stark_orca_note(),
 	[ErrorCode.Not_Logged_In]: () => m.major_keen_oryx_fall(),

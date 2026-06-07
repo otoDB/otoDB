@@ -31,8 +31,8 @@ from .tag import (
 	TagWork,
 	TagWorkLangPreference,
 	TagWorkParenthood,
-	WikiPage,
 )
+from .wiki import WikiPage
 from .work_source import WorkSource
 
 __all__ = [

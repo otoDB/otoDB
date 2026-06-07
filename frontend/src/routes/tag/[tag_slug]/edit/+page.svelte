@@ -4,6 +4,7 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
+	import WikiEditor from '$lib/WikiEditor.svelte';
 	import client from '$lib/api';
 	import { languages } from '$lib/enums/language.js';
 	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
@@ -11,9 +12,8 @@
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { songConnectionMap } from '$lib/enums/songConnection.js';
 	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
-	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { locales } from '$lib/paraglide/runtime';
 	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import {
 		MediaConnectionTypes,
@@ -47,16 +47,6 @@
 	});
 
 	let category = $state(form?.category ?? data.tag?.category);
-	let wikiView = $state(getLocale());
-	let mds = $state(
-		Object.fromEntries(
-			locales.map((lang) => [
-				lang,
-				data.wiki_page.find((p) => p.lang === languages[lang].id)?.page ?? ''
-			])
-		)
-	);
-	let edited_md = $state(Object.fromEntries(locales.map((lang) => [lang, false])));
 
 	let tagLangPrefs = $state(
 		Object.fromEntries(
@@ -100,8 +90,6 @@
 		});
 		if (response.ok) await goto('/', { invalidateAll: true });
 	};
-
-	let previewHtml = $derived(renderMarkdown(mds[wikiView] ?? ''));
 
 	const form_barrier = {};
 </script>
@@ -343,45 +331,12 @@
 </Section>
 
 <Section title={m.curly_zesty_pelican_aim()}>
-	<div class="my-2">
-		{#each locales as locale, i (i)}
-			<label class="wiki-lang-tab">
-				<input type="radio" bind:group={wikiView} value={locale} />
-				{languages[locale]
-					.name}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
-						content: '*'
-					})}{/if}
-			</label>
-		{/each}
-	</div>
-
 	<form
 		action="?/wiki_page"
 		method="POST"
 		use:dirtyEnhance={{ barrier: form_barrier, priority: 1 }}
 	>
-		<input
-			type="text"
-			hidden
-			name="wiki_pages"
-			value={JSON.stringify(
-				locales
-					.filter((lang) => edited_md[lang])
-					.map((lang) => ({ lang: languages[lang].id, md: mds[lang] }))
-			)}
-		/>
-		<div class="grid grid-cols-2 gap-3">
-			<textarea
-				onchange={() => {
-					edited_md[wikiView] = true;
-				}}
-				bind:value={mds[wikiView]}
-			></textarea>
-			<div class="prose prose-neutral prose-sm dark:prose-invert">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html previewHtml}
-			</div>
-		</div>
+		<WikiEditor wiki_page={data.wiki_page} />
 		<input type="submit" />
 	</form>
 </Section>
@@ -440,26 +395,3 @@
 		<input type="submit" />
 	</form>
 </Section>
-
-<style>
-	label.wiki-lang-tab {
-		padding: 0.2rem 0.5rem;
-		display: inline-block;
-		background-color: var(--otodb-color-bg-primary);
-		border: 1px solid var(--otodb-color-content-primary);
-		&:hover {
-			background-color: var(--otodb-color-bg-fainter);
-		}
-		&:active {
-			background-color: var(--otodb-color-bg-faint);
-		}
-		& > input {
-			display: none;
-		}
-		&:has(> input:checked) {
-			background-color: var(--otodb-color-content-primary);
-			border: 1px solid var(--otodb-color-bg-primary);
-			color: var(--otodb-color-bg-primary);
-		}
-	}
-</style>

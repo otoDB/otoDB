@@ -36,7 +36,7 @@
 				{/if}
 				<tr>
 					<th><label for="username">{m.moving_funny_spider_feast()}</label></th>
-					<td><input required type="text" name="email" value={form?.email ?? ''} /></td>
+					<td><input required type="email" name="email" value={form?.email ?? ''} /></td>
 				</tr>
 				<tr>
 					<th><label for="password">{m.vexed_merry_niklas_greet()}</label></th>

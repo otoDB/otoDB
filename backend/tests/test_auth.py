@@ -103,6 +103,25 @@ def test_register_open_registration_succeeds(auth_client, monkeypatch):
 
 
 @pytest.mark.django_db
+@override_settings(OTODB_INVITE_REQUIRED=False, OTODB_TURNSTILE_SECRET_KEY=None)
+@pytest.mark.parametrize('email', ['notanemail', 'a@', '@b.com', 'user @ example.com'])
+def test_register_invalid_email_fails(auth_client, monkeypatch, email):
+	"""Registration rejects malformed email addresses and creates no account."""
+	monkeypatch.setattr('otodb.api.auth.login', lambda *a, **k: None)
+	with pytest.raises(ApiError) as exc_info:
+		auth_client.post(
+			'/register',
+			json={
+				'username': 'bademail',
+				'password': 'a-strong-password-123',
+				'email': email,
+			},
+		)
+	assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
+	assert not Account.objects.filter(username='bademail').exists()
+
+
+@pytest.mark.django_db
 @override_settings(OTODB_INVITE_REQUIRED=True, OTODB_TURNSTILE_SECRET_KEY=None)
 def test_register_invite_required_with_valid_invite(auth_client, editor, monkeypatch):
 	"""Invite-required mode: a valid invite grants its level to the new user."""

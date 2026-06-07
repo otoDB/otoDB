@@ -21,7 +21,7 @@ const config = {
             lib: '../frontend/src/lib'
         }
         // Extension-only code can live under `src/local/` and be imported
-        // via `$ext/…` — uncomment when needed.
+        // via `$ext/...` — uncomment when needed.
         // alias: {
         //     $ext: './src/local',
         //     '$ext/*': './src/local/*'

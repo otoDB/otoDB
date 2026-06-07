@@ -56,9 +56,6 @@ export const updateLocalPrefs = (values: Partial<Prefs>) => {
 	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), ...values }));
 };
 
-export const GUIDELINE_POST_ID = '4';
-export const FAQ_POST_ID = '3';
-export const SEARCH_DOCS_POST_ID = '38';
 export const getTagDisplayName = (tag: {
 	name: string;
 	lang_prefs: { lang: number; tag: string }[];

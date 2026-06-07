@@ -42,7 +42,7 @@ class Rating(OtodbIntegerEnum):
 class Status(OtodbIntegerEnum):
 	PENDING = 0, 'Pending'
 	APPROVED = 1, 'Approved'
-	UNAPPROVED = 2, 'Unapproved'
+	DELISTED = 2, 'Delisted'
 
 
 class WorkOrigin(OtodbIntegerEnum):
@@ -250,7 +250,7 @@ class FlagStatus(models.IntegerChoices):
 
 
 class ModerationAction(models.IntegerChoices):
-	# Work unapproved via auto-expiry or staff action
+	# Work delisted via auto-expiry or staff action
 	WORK_DELISTED = (
 		1,
 		'Work Delisted',
@@ -302,6 +302,7 @@ class Route(OtodbIntegerEnum):
 	MEDIAWORK_UPDATE = 45, 'Media Work Update'
 	MEDIAWORK_MERGE = 46, 'Media Work Merge'
 	MEDIAWORK_CREATE = 47, 'Media Work Create'
+	MEDIAWORK_EDIT_WIKI = 48, 'Media Work Edit Wiki'
 
 	WORKRELATION_CREATE = 50, 'Work Relation Control'
 	# WORKRELATION_DELETE = 51, 'DEPRECATED - Work Relation Delete'
@@ -313,6 +314,8 @@ class Route(OtodbIntegerEnum):
 	WORKSOURCE_ASSIGN = 64, 'Work Source Assign'
 	WORKSOURCE_REJECT = 65, 'Work Source Reject'
 	WORKSOURCE_UPDATE = 66, 'Work Source Update'
+
+	WIKI_EDIT = 70, 'Wiki Edit'
 
 	ROLLBACK = 100, 'Rollback'
 	SYSTEM = 10000, 'System'
@@ -345,6 +348,7 @@ class ErrorCode(OtodbIntegerEnum):
 	TAG_HAS_INFORMATION = 10019
 	THUMBNAIL_SOURCE_REQUIRED = 10020
 	TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR = 10021
+	SOURCE_PENDING = 10022
 
 
 class Preferences(OtodbIntegerEnum):

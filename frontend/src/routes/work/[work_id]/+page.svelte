@@ -28,9 +28,10 @@
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callSavingToast } from '$lib/toast';
 	import { getDisplayText } from '$lib/ui.js';
-	import { GUIDELINE_POST_ID, getMissingCategories } from '$lib/ui';
+	import { getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
+	import WikiView from '$lib/WikiView.svelte';
 	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
@@ -95,7 +96,7 @@
 				})}
 			</div>
 			<div class="mt-1 text-sm">
-				<a href="/post/{GUIDELINE_POST_ID}" class="underline">
+				<a href="/wiki/editing_guidelines" class="underline">
 					{m.arable_direct_cougar_win()}
 				</a>
 			</div>
@@ -103,7 +104,7 @@
 	{/if}
 	{#if data.status === Status.Pending}
 		<Banner variant="info" title={m.broad_inner_boar_devour()} />
-	{:else if data.status === Status.Unapproved && data?.pending_appeal}
+	{:else if data.status === Status.Delisted && data?.pending_appeal}
 		<Banner variant="caution" title={m.quiet_tasty_earthworm_trip()}>
 			{#if data.pending_appeal.reason}
 				<div class="mt-1 text-sm">
@@ -122,7 +123,7 @@
 				</div>
 			{/if}
 		</Banner>
-	{:else if data.status === Status.Unapproved}
+	{:else if data.status === Status.Delisted}
 		<Banner variant="danger" title={m.livid_main_bat_lift()} />
 	{/if}
 	{#if data?.pending_flag}
@@ -319,7 +320,7 @@
 										</td>
 									</tr>
 								{/if}
-								{#if data.status === Status.Unapproved && !data?.pending_appeal}
+								{#if data.status === Status.Delisted && !data?.pending_appeal}
 									<tr>
 										<th class="w-24">{m.key_last_racoon_clasp()}</th>
 										<td>
@@ -376,6 +377,10 @@
 				</span>
 			{/each}
 		</div>
+		{#if data.wiki_page.length > 0}
+			<hr class="my-2" />
+			<WikiView wiki_page={data.wiki_page} />
+		{/if}
 	</div>
 </Section>
 

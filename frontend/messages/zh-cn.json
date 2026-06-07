@@ -77,7 +77,7 @@
 	"patient_male_ox_praise": "添加或删除标签",
 	"sunny_deft_puffin_scoop": "你的评分",
 	"wide_just_gull_glow": "更新理由",
-	"tame_dirty_goldfish_flow": "本标签还没有维基页面。",
+	"tame_dirty_goldfish_flow": "本条目还没有维基页面。",
 	"quiet_super_kangaroo_kiss": "带有“{tag}”的作品",
 	"curly_zesty_pelican_aim": "维基页面",
 	"away_crisp_blackbird_twist": "父标签",
@@ -169,7 +169,7 @@
 	"noble_fine_iguana_pull": "关于",
 	"big_long_squirrel_kiss": "最近登记的作品",
 	"mild_patchy_jaguar_trust": "无标签",
-	"close_any_racoon_cut": "请将网址分行输入……",
+	"close_any_racoon_cut": "请将网址分行输入...",
 	"broad_wide_lemming_hint": "职位",
 	"sunny_light_duck_surge": "渲染中...",
 	"stout_jumpy_ox_feel": "竖",
@@ -288,9 +288,10 @@
 	"free_tiny_badger_breathe": "{#username/} 于 {#time/} 编辑",
 	"light_sunny_kitten_slide": "于 {#time/} 编辑",
 	"noisy_proud_robin_gaze": "在otoDB上查看",
-	"calm_silver_bison_wait": "加载中…",
+	"calm_silver_bison_wait": "加载中...",
 	"tiny_lost_marmot_roam": "该作品不在数据库中。",
-	"merry_brisk_owl_submit": "将此作品添加到otoDB…",
+	"merry_brisk_owl_submit": "将此作品添加到otoDB...",
+	"dizzy_keen_otter_pause": "此作品目前未绑定。",
 	"quiet_dusty_fox_search": "未找到此页面的连接。",
 	"weary_broken_eagle_sigh": "无法连接到数据库。",
 	"grim_plain_crane_crash": "获取数据时发生错误。",
@@ -303,5 +304,6 @@
 	"brisk_neat_otter_glide": "自动",
 	"calm_wide_swan_rest": "整个网站使用的语言。",
 	"noble_brave_quail_soar": "用于嵌入视频播放的平台。",
-	"tidy_warm_seal_glide": "即使在其他平台上，也优先播放作者的原始上传，而不是首选平台上的转载。"
+	"tidy_warm_seal_glide": "即使在其他平台上，也优先播放作者的原始上传，而不是首选平台上的转载。",
+	"nice_close_goldfish_taste": "独立页面"
 }

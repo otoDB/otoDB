@@ -18,13 +18,14 @@ export const actions = {
 		const data = await request.formData();
 		const password = data.get('password') as string,
 			confirm = data.get('confirm') as string,
-			token = data.get('token') as string;
+			token = data.get('token') as string,
+			turnstile_token = (data.get('cf-turnstile-response') as string) || undefined;
 
 		if (!password || !confirm) return fail(400, { missing: true });
 		else if (password != confirm) return fail(400, { mismatch: true });
 
 		const { error } = await rawClient.POST('/api/auth/reset_password', {
-			body: { password, token },
+			body: { password, token, turnstile_token },
 			fetch
 		});
 
@@ -32,12 +33,13 @@ export const actions = {
 	},
 	request: async ({ request, fetch }) => {
 		const data = await request.formData();
-		const email = data.get('email') as string;
+		const email = data.get('email') as string,
+			turnstile_token = (data.get('cf-turnstile-response') as string) || undefined;
 
 		if (!email) return fail(400, { missing: true });
 
 		await client.PUT('/api/auth/reset_password', {
-			body: { email },
+			body: { email, turnstile_token },
 			fetch
 		});
 

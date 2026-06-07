@@ -47,14 +47,23 @@
 		}
 	});
 
+	function isTurnstileError(reason: unknown): boolean {
+		if (!reason || typeof reason !== 'object') return false;
+		const r = reason as { name?: string; message?: string };
+		return r.name === 'TurnstileError' || (r.message?.includes('Turnstile') ?? false);
+	}
+
 	function handleError(e: Event) {
 		const err = e as ErrorEvent;
-		console.error(err.error ?? err.message);
+		const reason = err.error ?? err.message;
+		console.error(reason);
+		if (isTurnstileError(reason) || err.filename?.includes('challenges.cloudflare.com')) return;
 		callErrorToast(m.ideal_soft_falcon_urge());
 	}
 
 	function handleRejection(e: PromiseRejectionEvent) {
 		console.error(e.reason);
+		if (isTurnstileError(e.reason)) return;
 		callErrorToast(m.ideal_soft_falcon_urge());
 	}
 

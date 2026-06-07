@@ -3,7 +3,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0114_migrate_threads_data'),
+		('otodb', '0115_migrate_threads_data'),
 	]
 
 	operations = [

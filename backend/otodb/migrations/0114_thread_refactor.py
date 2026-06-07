@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 	dependencies = [
 		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-		('otodb', '0112_wikipage_attachment'),
+		('otodb', '0113_alter_userpreference_setting'),
 	]
 
 	operations = [

@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0115_thread_cleanup'),
+		('otodb', '0116_thread_cleanup'),
 	]
 
 	operations = [

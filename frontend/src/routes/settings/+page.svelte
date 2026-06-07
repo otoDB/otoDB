@@ -9,15 +9,12 @@
 	import { themes } from '$lib/themes/themes.js';
 	import { getPrefs, updateLocalPrefs } from '$lib/ui.js';
 	import { set_lang } from '$lib/languages.js';
-	import { callSavingToast, callSuccessToast } from '$lib/toast.js';
 
 	let { data } = $props();
 
 	const prefs = getPrefs();
 
-	// Theme applies instantly
 	let current_theme = $state(prefs.THEME);
-
 	let video_platform = $state(prefs.VIDEO_PLATFORM);
 	let prefer_author_upload = $state(prefs.PREFER_AUTHOR_UPLOAD);
 
@@ -33,27 +30,18 @@
 		else updateLocalPrefs({ THEME: theme });
 	}
 
-	async function savePrefs(e: SubmitEvent) {
-		e.preventDefault();
+	async function savePrefs() {
 		const body = {
 			VIDEO_PLATFORM: video_platform,
 			PREFER_AUTHOR_UPLOAD: prefer_author
 		};
-
-		if (data.user) {
-			const p = client.POST('/api/profile/prefs', { fetch, body });
-			callSavingToast(p);
-			await p;
-		} else {
-			updateLocalPrefs(body);
-			callSuccessToast(m.deft_full_quail_coax());
-		}
+		if (data.user) await client.POST('/api/profile/prefs', { fetch, body });
+		else updateLocalPrefs(body);
 	}
 </script>
 
 <Section title={m.orange_born_seal_ascend()}>
 	<div class="flex flex-col gap-8">
-		<!-- Language (applies instantly) -->
 		<div>
 			<label for="language" class="font-bold">{m.hour_loud_squirrel_ascend()}</label>
 			<div class="mt-1 flex items-center gap-2">
@@ -72,7 +60,6 @@
 			</div>
 		</div>
 
-		<!-- Theme (applies instantly) -->
 		<div>
 			<div id="theme-label" class="font-bold">{m.acidic_sound_opossum_bump()}</div>
 			<div
@@ -107,35 +94,33 @@
 			</div>
 		</div>
 
-		<!-- Remaining prefs are saved together on submit -->
-		<form onsubmit={savePrefs} class="flex flex-col gap-8">
-			<div>
-				<label for="video_platform" class="font-bold">{m.merry_bold_finch_soar()}</label>
-				<div class="mt-1 flex items-center gap-2">
-					<select id="video_platform" bind:value={video_platform}>
-						{#each enumValues(VideoPlatformPref) as platform (platform)}
-							<option value={platform}>{VideoPlatformPrefNames[platform]()}</option>
-						{/each}
-					</select>
-					<span class="text-otodb-content-fainter italic">{m.noble_brave_quail_soar()}</span>
-				</div>
+		<div>
+			<label for="video_platform" class="font-bold">{m.merry_bold_finch_soar()}</label>
+			<div class="mt-1 flex items-center gap-2">
+				<select id="video_platform" bind:value={video_platform} onchange={savePrefs}>
+					{#each enumValues(VideoPlatformPref) as platform (platform)}
+						<option value={platform}>{VideoPlatformPrefNames[platform]()}</option>
+					{/each}
+				</select>
+				<span class="text-otodb-content-fainter italic">{m.noble_brave_quail_soar()}</span>
 			</div>
+		</div>
 
-			<div class={[!platform_selected && 'opacity-50']}>
-				<label for="prefer_author" class="font-bold">{m.lush_keen_robin_perch()}</label>
-				<div class="mt-1 flex items-center gap-2">
-					<input
-						id="prefer_author"
-						type="checkbox"
-						disabled={!platform_selected}
-						checked={prefer_author}
-						onchange={(e) => (prefer_author_upload = e.currentTarget.checked)}
-					/>
-					<span class="text-otodb-content-fainter italic">{m.tidy_warm_seal_glide()}</span>
-				</div>
+		<div class={[!platform_selected && 'opacity-50']}>
+			<label for="prefer_author" class="font-bold">{m.lush_keen_robin_perch()}</label>
+			<div class="mt-1 flex items-center gap-2">
+				<input
+					id="prefer_author"
+					type="checkbox"
+					disabled={!platform_selected}
+					checked={prefer_author}
+					onchange={(e) => {
+						prefer_author_upload = e.currentTarget.checked;
+						savePrefs();
+					}}
+				/>
+				<span class="text-otodb-content-fainter italic">{m.tidy_warm_seal_glide()}</span>
 			</div>
-
-			<div><input type="submit" /></div>
-		</form>
+		</div>
 	</div>
 </Section>

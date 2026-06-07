@@ -131,9 +131,12 @@ def get_entity_link_ent(e: PostEntitySchema):
 @restrict_internal
 @transaction.atomic
 def new(request: AuthedHttpRequest, payload: PostInSchema):
-	assert payload.category > 0
+	assert payload.category >= 0
 	assert payload.title
 	assert payload.post
+
+	if payload.category == PostCategory.ANNOUNCEMENT and not request.user.is_admin:
+		raise HttpError(403, 'Forbidden')
 
 	p = Post.objects.create(
 		title=payload.title, added_by=request.user, category=payload.category

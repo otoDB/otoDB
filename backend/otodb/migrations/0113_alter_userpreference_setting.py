@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0110_system_route_enum'),
+		('otodb', '0112_wikipage_attachment'),
 	]
 
 	operations = [

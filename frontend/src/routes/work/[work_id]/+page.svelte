@@ -196,6 +196,7 @@
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
 				<SourcesViewer
+					user={data.user}
 					sources={data.sources ?? []}
 					thumbnail={data.thumbnail}
 					thumbnailAlt={getDisplayText(data.title)}

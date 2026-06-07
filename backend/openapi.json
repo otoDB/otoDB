@@ -5554,6 +5554,17 @@
                 "$ref": "#/components/schemas/ThemePref"
               }
             ]
+          },
+          "VIDEO_PLATFORM": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VideoPlatformPref"
+              }
+            ]
+          },
+          "PREFER_AUTHOR_UPLOAD": {
+            "title": "Prefer Author Upload",
+            "type": "boolean"
           }
         },
         "title": "UserPreferenceSchema",
@@ -5594,6 +5605,28 @@
         ],
         "title": "UserStatusSchema",
         "type": "object"
+      },
+      "VideoPlatformPref": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "title": "VideoPlatformPref",
+        "type": "integer",
+        "x-enum-varnames": [
+          "Auto",
+          "YouTube",
+          "Niconico",
+          "Bilibili",
+          "SoundCloud",
+          "Twitter",
+          "AcFun"
+        ]
       },
       "RegisterRequestSchema": {
         "properties": {

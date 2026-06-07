@@ -6,29 +6,26 @@ import { m } from '$lib/paraglide/messages';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
-const PAGE_SIZE = 25;
-const secret = () => ({
-	header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET }
-});
 // Get thread ID from /thread/{id}.{num} permalinks
 const threadIdOf = (id: string) => id.split('.')[0];
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
+	const batch_size = 25;
 	// /thread/{id}.{num} is a permalink; render in place and highlight #num
 	const dotted = params.id.includes('.');
 	const [thread_id, numStr] = dotted ? params.id.split('.') : [params.id, null];
-	const n = numStr != null ? parseInt(numStr, 10) : NaN;
+	const n = numStr !== null ? parseInt(numStr, 10) : NaN;
 	const highlight_num = Number.isInteger(n) ? n : null;
 
 	let page = Math.max(1, parseInt(url.searchParams.get('page') ?? '1', 10) || 1);
-	if (highlight_num != null) {
+	if (highlight_num !== null) {
 		// Page the post falls on, from its 1-based position (accurate across deleted
 		// posts) divided by the client-owned page size
 		const { data: pos } = await client.GET('/api/thread/position', {
 			fetch,
 			params: { query: { thread_id, num: highlight_num } }
 		});
-		page = Math.max(1, Math.ceil((pos ?? 1) / PAGE_SIZE));
+		page = Math.max(1, Math.ceil((pos ?? 1) / batch_size));
 	}
 
 	const [{ data: thread }, { data: posts }] = await Promise.all([
@@ -41,8 +38,8 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 			params: {
 				query: {
 					thread_id,
-					limit: PAGE_SIZE,
-					offset: (page - 1) * PAGE_SIZE
+					limit: batch_size,
+					offset: (page - 1) * batch_size
 				}
 			}
 		})
@@ -50,9 +47,8 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 
 	return {
 		thread,
-		thread_id,
 		page,
-		batch_size: PAGE_SIZE,
+		batch_size,
 		posts: posts?.items ?? [],
 		post_count: posts?.count ?? 0,
 		head: {
@@ -75,9 +71,11 @@ export const actions = {
 		const data = await request.formData();
 		const body = data.get('body') as string;
 		if (renderMarkdown(body).trim() === '') return fail(400);
-		const { error } = await rawClient.POST('/api/thread/post', {
+		const { error, data: num } = await rawClient.POST('/api/thread/post', {
 			fetch,
-			params: secret(),
+			params: {
+				header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET }
+			},
 			body: {
 				thread_id: threadIdOf(params.id),
 				body,
@@ -85,6 +83,7 @@ export const actions = {
 			}
 		});
 		if (error) return apiFail(error);
+		return num;
 	},
 	editPost: async ({ request, fetch, params }) => {
 		const data = await request.formData();
@@ -93,7 +92,9 @@ export const actions = {
 		if (renderMarkdown(body).trim() === '') return fail(400);
 		const { error } = await rawClient.PUT('/api/thread/post', {
 			fetch,
-			params: secret(),
+			params: {
+				header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET }
+			},
 			body: { thread_id: threadIdOf(params.id), num, body }
 		});
 		if (error) return apiFail(error);
@@ -114,12 +115,16 @@ export const actions = {
 		const [{ error: threadError }, { error: postError }] = await Promise.all([
 			rawClient.PUT('/api/thread/thread', {
 				fetch,
-				params: secret(),
+				params: {
+					header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET }
+				},
 				body: { thread_id: threadIdOf(params.id), title, entities }
 			}),
 			rawClient.PUT('/api/thread/post', {
 				fetch,
-				params: secret(),
+				params: {
+					header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET }
+				},
 				body: { thread_id: threadIdOf(params.id), num: 1, body: post }
 			})
 		]);

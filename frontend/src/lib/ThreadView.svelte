@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { goto, invalidateAll, pushState } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import client from '$lib/api';
 	import { dirtyEnhance } from '$lib/dirty';
 	import { hasUserLevel } from '$lib/enums/userLevel';
-	import { hydrate } from '$lib/hydrateMarkdown';
-	import { renderMarkdown } from '$lib/markdown';
+	import { hydrate, renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, type components } from '$lib/schema';
 	import Time from '$lib/Time.svelte';
@@ -16,35 +15,21 @@
 
 	interface Props {
 		thread: Thread;
-		threadId: string;
 		posts: Post[];
 		user: App.Locals['user'] | null;
-		postCount: number;
-		pageNum: number;
-		pageSize: number;
 		entitiesText: string;
 		isGardening: boolean;
 	}
-	let {
-		thread,
-		threadId,
-		posts,
-		user,
-		postCount,
-		pageNum,
-		pageSize,
-		entitiesText,
-		isGardening
-	}: Props = $props();
+	let { thread, posts, user, entitiesText, isGardening }: Props = $props();
 
-	// Derive the targeted post num from page state (set by in-thread ref clicks) or URL (for direct/permalink navigation)
+	// Derive the targeted post num from URL
 	const permalinkNum = (url: URL) => url.pathname.match(/^\/thread\/[^/.]+\.(\d+)$/)?.[1] ?? null;
-	const targetNum = $derived(page.state.postNum ?? permalinkNum(page.url));
+	const targetNum = $derived(permalinkNum(page.url));
 
-	const hydrateMd = (node: HTMLElement) => hydrate(node, threadId);
+	const hydrateMd = (node: HTMLElement) => hydrate(node, thread.id);
 
 	$effect(() => {
-		if (targetNum != null)
+		if (targetNum !== null)
 			document.getElementById(`p${targetNum}`)?.scrollIntoView({ block: 'start' });
 	});
 
@@ -74,7 +59,7 @@
 	};
 
 	const quote = (num: number) => {
-		const token = `t${threadId}.${num}: `;
+		const token = `t${thread.id}.${num}: `;
 		draft = draft ? `${draft}\n${token}` : token;
 		previewMode = false;
 		document.getElementById('reply-box')?.focus();
@@ -115,7 +100,7 @@
 	const delete_post = async (num: number) => {
 		await client.DELETE('/api/thread/post', {
 			fetch,
-			params: { query: { thread_id: threadId, num } }
+			params: { query: { thread_id: thread.id, num } }
 		});
 		await invalidateAll();
 	};
@@ -123,7 +108,7 @@
 	/**
 	 * Delegated click handler for post references
 	 */
-	function postRefNav(threadId: string) {
+	function postRefNav() {
 		return (node: HTMLElement) => {
 			const onClick = (event: MouseEvent) => {
 				if (
@@ -141,11 +126,11 @@
 				if (!match) return;
 				const [, tid, num] = match;
 				// Post in different thread -> let it navigate
-				if (tid !== threadId) return;
+				if (tid !== thread.id) return;
 				// Post not on this page -> let it navigate
 				if (!document.getElementById(`p${num}`)) return;
 				event.preventDefault();
-				pushState(`/thread/${tid}.${num}`, { postNum: num });
+				goto(`/thread/${tid}.${num}`);
 			};
 			node.addEventListener('click', onClick);
 			return () => node.removeEventListener('click', onClick);
@@ -192,7 +177,7 @@
 	</div>
 {/snippet}
 
-<div {@attach postRefNav(threadId)}>
+<div {@attach postRefNav()}>
 	{#each posts as p (p.num)}
 		<div
 			class="post grid grid-cols-[8rem_1fr] max-sm:grid-cols-1"
@@ -203,7 +188,8 @@
 				class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 			>
 				<a href="/profile/{p.user.username}">{p.user.username}</a>
-				<a href="/thread/{threadId}.{p.num}"><Time format="relative" date={p.created_at ?? ''} /></a
+				<a href="/thread/{thread.id}.{p.num}"
+					><Time format="relative" date={p.created_at ?? ''} /></a
 				>
 				{#if p.edited_at}
 					<EditedBy
@@ -322,16 +308,8 @@
 			custom_submit:
 				() =>
 				async ({ update, result }) => {
-					const targetPage =
-						result.type === 'success' ? Math.ceil((postCount + 1) / pageSize) : null;
-					const navigating = targetPage !== null && targetPage !== pageNum;
-					if (result.type === 'success') {
-						draft = '';
-						preview = '';
-						previewMode = false;
-					}
-					await update({ reset: false, invalidateAll: !navigating });
-					if (navigating) await goto(`/thread/${threadId}?page=${targetPage}`);
+					await update();
+					if (result.type === 'success') await goto(`/thread/${thread.id}.${result.data}`);
 				}
 		}}
 	>

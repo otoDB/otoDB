@@ -10,11 +10,7 @@ declare global {
 			user: ({ csrf: string } & components['schemas']['UserStatusSchema']) | null;
 		}
 		// interface PageData {}
-		interface PageState {
-			// Post targeted by an in-thread t{thread}.{num} reference click (shallow routing)
-			// This is so ThreadView can highlight the post and scroll to it on navigation, including back/forward
-			postNum?: string;
-		}
+		// interface PageState {}
 		// interface Platform {}
 	}
 	namespace svelteHTML {

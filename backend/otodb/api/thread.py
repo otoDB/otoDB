@@ -304,6 +304,7 @@ def new_post(request: AuthedHttpRequest, payload: PostInSchema):
 	transaction.on_commit(
 		lambda: discord_threadpost.enqueue(post.pk, request.user.username)
 	)
+	return num
 
 
 class PostEditSchema(Schema):

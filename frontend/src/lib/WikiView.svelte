@@ -1,8 +1,7 @@
 <script lang="ts">
 	import LangSwitch from '$lib/LangSwitch.svelte';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
-	import { hydrate } from '$lib/hydrateMarkdown';
-	import { renderMarkdown } from '$lib/markdown';
+	import { hydrate, renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { LanguageTypes, type components } from '$lib/schema';

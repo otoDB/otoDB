@@ -27,7 +27,7 @@
 				'@type': 'DiscussionForumPosting',
 				'headline': data.thread.title,
 				'text': opPost.body.slice(0, 500),
-				'url': `https://otodb.net/thread/${data.thread_id}`,
+				'url': `https://otodb.net/thread/${data.thread.id}`,
 				'author': {
 					'@type': 'Person',
 					'name': data.thread.added_by.username,
@@ -82,12 +82,8 @@
 		<div class="thread-posts">
 			<ThreadView
 				thread={data.thread}
-				threadId={data.thread_id}
 				posts={data.posts}
 				user={data.user ?? null}
-				postCount={data.post_count}
-				pageNum={data.page}
-				pageSize={data.batch_size}
 				{entitiesText}
 				{isGardening}
 			/>
@@ -96,7 +92,7 @@
 			n_count={data.post_count}
 			page={data.page}
 			page_size={data.batch_size}
-			base_url="/thread/{data.thread_id}"
+			base_url="/thread/{data.thread.id}"
 		/>
 	</Section>
 {/if}

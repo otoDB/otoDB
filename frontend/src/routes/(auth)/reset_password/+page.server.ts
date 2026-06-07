@@ -22,7 +22,7 @@ export const actions = {
 			token = data.get('token') as string;
 
 		if (!password || !confirm) return fail(400, { missing: true });
-		else if (password != confirm) return fail(400, { mismatch: true });
+		else if (password !== confirm) return fail(400, { mismatch: true });
 
 		const { error } = await rawClient.POST('/api/auth/reset_password', {
 			body: { password, token },

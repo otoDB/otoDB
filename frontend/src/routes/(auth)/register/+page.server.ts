@@ -23,7 +23,7 @@ export const actions = {
 
 		if (!username || !email || !password || !confirm)
 			return fail(400, { username, email, missing: true });
-		else if (password != confirm) return fail(400, { username, email, mismatch: true });
+		else if (password !== confirm) return fail(400, { username, email, mismatch: true });
 
 		const { response, error: apiError } = await rawClient.POST('/api/auth/register', {
 			body: { username, password, email, invite },

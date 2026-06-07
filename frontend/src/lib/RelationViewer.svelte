@@ -50,7 +50,7 @@ flowchart ${direction}
 										(
 											w
 										) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
-    ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
+    ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
     click ${w.id} "${`/work/${w.id}`}"`
 									)
 									.join('\n')}
@@ -74,7 +74,7 @@ flowchart ${direction}
 									.map(
 										(
 											w
-										) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
+										) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
     click ${w.id} "${`/tag/${(w as Song).work_tag}`}"`
 									)
 									.join('\n')}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page as page_state } from '$app/state';
 
 	let {
 		page,
@@ -27,9 +28,9 @@
 	const buildUrl = (page: number) => {
 		if (!base_url) return `?${param_name}=${page}`;
 		// Accept either an absolute URL or a path-only base (e.g. "/thread/13")
-		const u = new URL(base_url, 'http://dummy');
+		const u = new URL(base_url, page_state.url.origin);
 		u.searchParams.set(param_name, page.toString());
-		return base_url.includes('://') ? u.href : u.pathname + u.search;
+		return u.href;
 	};
 
 	let pp = $derived(page);

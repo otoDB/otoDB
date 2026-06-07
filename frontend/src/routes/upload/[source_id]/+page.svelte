@@ -45,6 +45,7 @@
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
 				<SourcesViewer
+					user={data.user}
 					sources={sourceArray}
 					thumbnail={data.source.thumbnail}
 					thumbnailAlt={data.source.title ?? ''}

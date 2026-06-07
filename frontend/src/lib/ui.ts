@@ -1,5 +1,4 @@
 import { browser } from '$app/environment';
-import { page } from '$app/state';
 import { languages } from '$lib/enums/language';
 import { getLocale } from '$lib/paraglide/runtime';
 import { WorkTagCategoryMap } from './enums/workTagCategory';
@@ -44,32 +43,18 @@ const defaultPrefs: Required<Prefs> = {
 	PREFER_AUTHOR_UPLOAD: false
 };
 
-export const getLocalPrefs = (): Partial<Prefs> | undefined => {
-	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
-};
+export const getLocalPrefs = (): Required<Prefs> => ({
+	...defaultPrefs,
+	...JSON.parse(browser ? (localStorage.getItem('prefs') ?? '{}') : '{}')
+});
 
 export const getLocalPref = <T extends keyof Prefs>(setting: T): Required<Prefs>[T] =>
 	(getLocalPrefs()?.[setting] ?? defaultPrefs[setting]) as Required<Prefs>[T];
 
 export const updateLocalPrefs = (values: Partial<Prefs>) => {
 	if (!browser) return;
-
 	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), ...values }));
 };
-
-export const updateLocalPref = <T extends keyof Prefs>(key: T, value: Prefs[T]) =>
-	updateLocalPrefs({ [key]: value } as Partial<Prefs>);
-
-// The server returns unset prefs as null; drop nullish entries so they don't clobber defaults
-const definedPrefs = (prefs: Partial<Prefs> | undefined): Partial<Prefs> =>
-	Object.fromEntries(Object.entries(prefs ?? {}).filter(([, v]) => v != null)) as Partial<Prefs>;
-
-// Fully-resolved preferences; defaults < local storage < logged-in user
-export const getPrefs = (): Required<Prefs> => ({
-	...defaultPrefs,
-	...definedPrefs(getLocalPrefs()),
-	...definedPrefs(page.data?.user?.prefs as Partial<Prefs> | undefined)
-});
 
 export const GUIDELINE_POST_ID = '4';
 export const FAQ_POST_ID = '3';

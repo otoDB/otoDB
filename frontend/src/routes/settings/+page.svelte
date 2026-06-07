@@ -7,16 +7,17 @@
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { ThemePref, VideoPlatformPref } from '$lib/schema.js';
 	import { themes } from '$lib/themes/themes.js';
-	import { getPrefs, updateLocalPrefs } from '$lib/ui.js';
+	import { getLocalPrefs, updateLocalPrefs } from '$lib/ui.js';
 	import { set_lang } from '$lib/languages.js';
 
 	let { data } = $props();
 
-	const prefs = getPrefs();
-
-	let current_theme = $state(prefs.THEME);
-	let video_platform = $state(prefs.VIDEO_PLATFORM);
-	let prefer_author_upload = $state(prefs.PREFER_AUTHOR_UPLOAD);
+	let local_prefs = $state(getLocalPrefs());
+	let current_theme = $state(data.user?.prefs?.THEME ?? local_prefs?.THEME);
+	let video_platform = $state(data.user?.prefs?.VIDEO_PLATFORM ?? local_prefs.VIDEO_PLATFORM);
+	let prefer_author_upload = $state(
+		data.user?.prefs.PREFER_AUTHOR_UPLOAD ?? local_prefs.PREFER_AUTHOR_UPLOAD
+	);
 
 	// "Prefer author uploads" only applies once a specific platform is chosen
 	let platform_selected = $derived(video_platform !== VideoPlatformPref.Auto);

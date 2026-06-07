@@ -3,7 +3,7 @@
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import { PlatformNames, WorkOriginNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getPrefs } from '$lib/ui';
+	import { getLocalPrefs } from '$lib/ui';
 	import { Platform, VideoPlatformPref, WorkOrigin, type components } from '$lib/schema';
 
 	type Source = components['schemas']['WorkSourceSchema'];
@@ -14,9 +14,17 @@
 		thumbnailAlt?: string;
 		width?: number;
 		height?: number;
+		user: App.Locals['user'];
 	}
 
-	let { sources, thumbnail = null, thumbnailAlt = '', width = 480, height = 270 }: Props = $props();
+	let {
+		sources,
+		thumbnail = null,
+		thumbnailAlt = '',
+		width = 480,
+		height = 270,
+		user
+	}: Props = $props();
 
 	// Earliest published_date first; sources without a date sort last
 	function byDateAsc(a: Source, b: Source): number {
@@ -70,9 +78,13 @@
 
 	let visibleSources = $derived(sources.filter((s) => s.work_status !== 1));
 
-	let prefs = $derived(getPrefs());
+	let local_prefs = $derived(getLocalPrefs());
 	let preferredIndex = $derived(
-		selectPreferredSource(visibleSources, prefs.VIDEO_PLATFORM, prefs.PREFER_AUTHOR_UPLOAD)
+		selectPreferredSource(
+			visibleSources,
+			user?.prefs.VIDEO_PLATFORM ?? local_prefs.VIDEO_PLATFORM,
+			user?.prefs.PREFER_AUTHOR_UPLOAD ?? local_prefs.PREFER_AUTHOR_UPLOAD
+		)
 	);
 </script>
 

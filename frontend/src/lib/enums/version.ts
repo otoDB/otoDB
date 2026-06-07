@@ -5,7 +5,7 @@ export const versions = {
 	SUMMER: { name: 'Summer', timestamp: Number.POSITIVE_INFINITY }
 } as const satisfies Record<string, { name: string; timestamp: number }>;
 
-export const currentVersion: keyof typeof versions = 'BETA';
+export const currentVersion: keyof typeof versions = 'SUMMER';
 
 export const getVersionKey = (date: Date): keyof typeof versions => {
 	const timestamp = date.getTime();

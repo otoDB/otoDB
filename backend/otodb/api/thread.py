@@ -185,9 +185,12 @@ def _notify(reasons: dict[int, NotificationReason], post: ThreadPost) -> None:
 @restrict_internal
 @transaction.atomic
 def new_thread(request: AuthedHttpRequest, payload: ThreadInSchema):
-	assert payload.category > 0
+	assert payload.category >= 0
 	assert payload.title
 	assert payload.post
+
+	if payload.category == PostCategory.ANNOUNCEMENT and not request.user.is_admin:
+		raise HttpError(403, 'Forbidden')
 
 	t = Thread.objects.create(
 		title=payload.title,

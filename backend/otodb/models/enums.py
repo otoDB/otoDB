@@ -171,6 +171,12 @@ class ThemePref(OtodbIntegerEnum):
 	RESAMPLE = 5, 'Re:Sample'
 
 
+VideoPlatformPref = OtodbIntegerEnum(
+	'VideoPlatformPref',
+	[('AUTO', (0, 'Auto'))] + [(p.name, (p.value, p.label)) for p in Platform],
+)
+
+
 class MediaType(OtodbIntegerEnum):
 	ANIME = 1, 'Anime'
 	SHOW = 2, 'TV Show'
@@ -343,14 +349,19 @@ class ErrorCode(OtodbIntegerEnum):
 	THUMBNAIL_SOURCE_REQUIRED = 10020
 	TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR = 10021
 	SOURCE_PENDING = 10022
+	CAPTCHA_FAILED = 10023
 
 
 class Preferences(OtodbIntegerEnum):
 	LANGUAGE = 1
 	THEME = 2
+	VIDEO_PLATFORM = 3
+	PREFER_AUTHOR_UPLOAD = 4
 
 
 PreferencesValueTypeMap = {
 	Preferences.LANGUAGE: LanguageTypes,
 	Preferences.THEME: ThemePref,
+	Preferences.VIDEO_PLATFORM: VideoPlatformPref,
+	Preferences.PREFER_AUTHOR_UPLOAD: bool,
 }

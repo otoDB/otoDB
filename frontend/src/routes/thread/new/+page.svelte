@@ -3,9 +3,10 @@
 	import Section from '$lib/Section.svelte';
 	import { buildEntityRoutes, enumValues } from '$lib/enums';
 	import { postCategoryNames } from '$lib/enums/postCategory.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { get_entity, renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
-	import { PostCategory } from '$lib/schema.js';
+	import { Levels, PostCategory } from '$lib/schema.js';
 
 	let { data } = $props();
 
@@ -33,7 +34,7 @@
 					><th>{m.plane_awful_bobcat_spark()}</th><td
 						><select name="category" bind:value={category}>
 							{#each enumValues(PostCategory) as c, i (i)}
-								{#if c !== PostCategory.Announcement}
+								{#if c !== PostCategory.Announcement || hasUserLevel(data.user?.level, Levels.Admin)}
 									<option value={c}>{postCategoryNames[c]()}</option>
 								{/if}
 							{/each}

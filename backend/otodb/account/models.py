@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+import regex
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 from django.core.exceptions import ValidationError
@@ -10,6 +11,9 @@ from django.utils import timezone
 
 from otodb.models.enums import OtodbIntegerEnum
 
+# ASCII alphanumeric + CJK script + _.-
+USERNAME_RE = regex.compile(r'[A-Za-z0-9\p{Han}\p{Hangul}\p{Hiragana}\p{Katakana}_.-]+')
+
 
 class AccountManager(BaseUserManager):
 	def get_by_natural_key(self, username):
@@ -18,8 +22,13 @@ class AccountManager(BaseUserManager):
 	def create_user(self, username, email, password=None, **extra_fields):
 		if not username:
 			raise ValueError('Users must have a username')
-		if any(c.isspace() for c in username):
-			raise ValueError('Usernames may not contain whitespace')
+		username = User.normalize_username(username)
+		if not 1 <= len(username) <= 32:
+			raise ValueError('Username must be between 1 and 32 characters long')
+		if not USERNAME_RE.fullmatch(username):
+			raise ValueError(
+				'Username may only contain letters, numbers, and "_", ".", "-"'
+			)
 		if not email:
 			raise ValueError('Users must have an email address')
 		try:
@@ -28,7 +37,6 @@ class AccountManager(BaseUserManager):
 			raise ValueError('Invalid email address')
 		if self.filter(username__iexact=username).exists():
 			raise IntegrityError('This username is already taken')
-		username = User.normalize_username(username)
 		user: Account = self.model(username=username, email=email, **extra_fields)
 		user.set_password(password)
 		user.save(using=self._db)

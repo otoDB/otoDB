@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh -s -- -y
-RUN uv run p12y apply
+RUN uvx --from patch-package-py p12y apply
 
 RUN OTODB_SECRET_KEY=build OTODB_SKIP_DB=1 uv run manage.py collectstatic --noinput
 

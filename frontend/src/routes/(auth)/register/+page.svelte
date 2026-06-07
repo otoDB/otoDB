@@ -23,7 +23,15 @@
 			<tbody>
 				<tr>
 					<th><label for="username">{m.careful_cozy_elk_dare()}</label></th>
-					<td><input required type="text" name="username" value={form?.username ?? ''} /></td>
+					<td
+						><input
+							required
+							type="text"
+							name="username"
+							maxlength="32"
+							value={form?.username ?? ''}
+						/></td
+					>
 				</tr>
 				{#if data.inviteRequired}
 					<tr>

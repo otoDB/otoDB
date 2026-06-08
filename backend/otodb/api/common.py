@@ -209,6 +209,12 @@ class SlimWorkSchema(ModelSchema):
 		fields = ['title']
 
 
+class WikiPageContentSchema(Schema):
+	lang: LanguageTypes
+	page: str
+	title: str | None = None
+
+
 class WorkSchema(ModelSchema):
 	id: OtodbID
 	thumbnail_source_id: OtodbID | None
@@ -219,6 +225,7 @@ class WorkSchema(ModelSchema):
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 	rating: Rating
 	status: Status
+	wiki_page: list[WikiPageContentSchema] = Field([], alias='wikipage_set')
 
 	class Meta:
 		model = MediaWork

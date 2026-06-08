@@ -14,6 +14,7 @@ from pydantic import field_validator
 
 from otodb.account.models import Account
 from otodb.models import (
+	ModerationEvent,
 	Notification,
 	Post,
 	ProfileConnection,
@@ -23,7 +24,10 @@ from otodb.models import (
 	WorkSource,
 )
 from otodb.models.enums import (
+	FlagStatus,
+	ModerationEventType,
 	NotificationReason,
+	OtodbIntegerEnum,
 	Platform,
 	Preferences,
 	ProfileConnectionTypes,
@@ -47,6 +51,16 @@ from .common import (
 )
 
 profile_router = Router()
+
+
+# Used for filters on submission page
+class SubmissionStanding(OtodbIntegerEnum):
+	PENDING = 0, 'Pending'
+	APPROVED = 1, 'Approved'
+	DELISTED = 2, 'Delisted'
+	UNBOUND = 3, 'Unbound'
+	FLAGGED = 4, 'Flagged'
+	APPEALED = 5, 'Appealed'
 
 
 @profile_router.get('profile', response=ProfileSchema)
@@ -202,11 +216,16 @@ def work_in_lists(request: AuthedHttpRequest, work_id: OtodbID):
 
 class SourceSubmissionSchema(WorkSourceSchema):
 	media: OtodbID | None
+	media_status: Status | None = None
 
 	@field_validator('media', mode='before', check_fields=False)
 	@classmethod
 	def work_id(cls, value) -> int | None:
 		return value.id if value is not None else None
+
+	@staticmethod
+	def resolve_media_status(obj):
+		return obj.media.status if obj.media else None
 
 
 class SubmissionsFilterSchema(FilterSchema):
@@ -222,16 +241,42 @@ def submissions(
 	username: str,
 	filters: SubmissionsFilterSchema = Query(...),
 	order: Literal['id', '-id', 'published_date', '-published_date'] | None = '-id',
-	standing: Status = Status.APPROVED,
+	standing: SubmissionStanding = SubmissionStanding.APPROVED,
 ):
+	flagged_ids = ModerationEvent.objects.filter(
+		event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
+	).values_list('work_id', flat=True)
+	appealed_ids = ModerationEvent.objects.filter(
+		event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+	).values_list('work_id', flat=True)
+
 	match standing:
-		case Status.PENDING:
+		case SubmissionStanding.PENDING:
+			# Submitted and awaiting moderation: a pending work, or a source
+			# binding awaiting editor approval.
 			q = Q(is_pending=True) | Q(media__status=Status.PENDING)
-		case Status.APPROVED:
-			q = Q(media__status=Status.APPROVED, is_pending=False)
-		case Status.UNAPPROVED:
-			q = Q(media__isnull=True, is_pending=False) | Q(
-				media__status=Status.UNAPPROVED
+		case SubmissionStanding.UNBOUND:
+			# Uploaded but never attached to a work.
+			q = Q(media__isnull=True, is_pending=False)
+		case SubmissionStanding.FLAGGED:
+			q = Q(
+				is_pending=False,
+				media__status=Status.APPROVED,
+				media_id__in=flagged_ids,
+			)
+		case SubmissionStanding.APPEALED:
+			q = Q(
+				is_pending=False,
+				media__status=Status.DELISTED,
+				media_id__in=appealed_ids,
+			)
+		case SubmissionStanding.APPROVED:
+			q = Q(is_pending=False, media__status=Status.APPROVED) & ~Q(
+				media_id__in=flagged_ids
+			)
+		case SubmissionStanding.DELISTED:
+			q = Q(is_pending=False, media__status=Status.DELISTED) & ~Q(
+				media_id__in=appealed_ids
 			)
 
 	user = get_object_or_404(Account, username__iexact=username)

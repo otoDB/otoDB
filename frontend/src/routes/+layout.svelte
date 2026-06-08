@@ -13,20 +13,20 @@
 	import { ThemePref } from '$lib/schema';
 	import { themes } from '$lib/themes/themes';
 	import { callApiErrorToast, callErrorToast } from '$lib/toast';
-	import { getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
+	import { getLocalPref, updateLocalPrefs } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
-	import { Menu } from '@lucide/svelte';
 
 	let { data, children } = $props();
 
 	defineCustomClientStrategy('custom-userPreference', {
 		getLocale: () => {
-			const lang = data.user?.prefs.LANGUAGE ?? getLocalPrefs()?.LANGUAGE; // Don't want our default behaviour here
+			const lang = data.user?.prefs.LANGUAGE ?? getLocalPref('LANGUAGE'); // Don't want our default behaviour here
 			return lang ? resolveLanguageKeyById(lang) : undefined;
 		},
 		setLocale: (locale) => {
-			if (!data.user) updateLocalPref('LANGUAGE', languages[locale as keyof typeof languages].id);
+			if (!data.user)
+				updateLocalPrefs({ LANGUAGE: languages[locale as keyof typeof languages].id });
 		}
 	});
 
@@ -47,14 +47,23 @@
 		}
 	});
 
+	function isTurnstileError(reason: unknown): boolean {
+		if (!reason || typeof reason !== 'object') return false;
+		const r = reason as { name?: string; message?: string };
+		return r.name === 'TurnstileError' || (r.message?.includes('Turnstile') ?? false);
+	}
+
 	function handleError(e: Event) {
 		const err = e as ErrorEvent;
-		console.error(err.error ?? err.message);
+		const reason = err.error ?? err.message;
+		console.error(reason);
+		if (isTurnstileError(reason) || err.filename?.includes('challenges.cloudflare.com')) return;
 		callErrorToast(m.ideal_soft_falcon_urge());
 	}
 
 	function handleRejection(e: PromiseRejectionEvent) {
 		console.error(e.reason);
+		if (isTurnstileError(e.reason)) return;
 		callErrorToast(m.ideal_soft_falcon_urge());
 	}
 
@@ -185,9 +194,10 @@
 				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-3 h-12 w-12',
 				isMobileNavOpen && 'invisible'
 			]}
+			aria-label={m.clean_kind_stork_affirm()}
 			onclick={toggleMobileNav}
 		>
-			<Menu size={32} class="m-auto" />
+			<span class="icon-[gravity-ui--bars] m-auto size-6" aria-hidden="true"></span>
 		</button>
 	</div>
 	<Toaster

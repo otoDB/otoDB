@@ -4,6 +4,7 @@
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
+	import WikiEditor from '$lib/WikiEditor.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import client from '$lib/api';
 	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
@@ -200,6 +201,17 @@
 	{#if hasUserLevel(data.user?.level, Levels.Admin)}
 		<button {@attach dirtyClick(del)}>{m.suave_less_deer_grip()}</button>
 	{/if}
+</Section>
+
+<Section title={m.curly_zesty_pelican_aim()}>
+	<form
+		action="?/wiki_page"
+		method="POST"
+		use:dirtyEnhance={{ barrier: form_barrier, priority: 2 }}
+	>
+		<WikiEditor wiki_page={data.wiki_page} />
+		<input type="submit" />
+	</form>
 </Section>
 
 <Section title={m.alive_these_jay_pick()}>

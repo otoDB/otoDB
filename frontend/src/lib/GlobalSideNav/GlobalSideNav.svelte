@@ -5,8 +5,6 @@
 	import { Levels } from '$lib/schema';
 	import { clickOutside } from '$lib/ui';
 	import type { ClassValue } from 'svelte/elements';
-	import Search from '@lucide/svelte/icons/search';
-	import Bell from '@lucide/svelte/icons/bell';
 
 	let {
 		class: className,
@@ -76,7 +74,7 @@
 			aria-label="Search"
 			class="bg-otodb-bg-faint/75 hover:bg-otodb-bg-fainter/75 px-2"
 		>
-			<Search size={16}></Search>
+			<span class="icon-[gravity-ui--magnifier]" aria-hidden="true"></span>
 		</button>
 	</form>
 
@@ -88,17 +86,18 @@
 		</div>
 		<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 			{@render link('/', m.fine_late_chicken_quiz())}
-			{@render link('/post/2', m.noble_fine_iguana_pull())}
+			{@render link('/wiki/about', m.noble_fine_iguana_pull())}
 			{@render link('/work', m.grand_merry_fly_succeed())}
 			{@render link('/upload/add', `> ${m.fluffy_crisp_horse_imagine()}`)}
 			{@render link('/tag', m.empty_legal_chicken_taste())}
 			{@render link('/song', m.grand_nice_pony_belong())}
 			{@render link('/song_attribute', `> ${m.dull_plain_angelfish_cuddle()}`)}
+			{@render link('/wiki', `${m.curly_zesty_pelican_aim()}`)}
 			{@render link('/list', m.stale_loose_squid_cut())}
 			{@render link('/post/overview', m.just_salty_anaconda_nourish())}
 			{@render link('/comments', m.same_broad_haddock_pinch())}
 			{@render link('/profile', m.bright_nimble_eagle_glide())}
-			{@render link('/post/3', 'FAQ')}
+			{@render link('/wiki/faq', 'FAQ')}
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		</ul>
 	</div>
@@ -115,10 +114,13 @@
 					onclick={closeMobileNav}
 				>
 					{#if user.notifs_nonsub_count > 0}({user.notifs_nonsub_count}){/if}
-					<Bell
-						size={16}
-						class={['text-otodb-content-fainter ml-1', user.notifs_count > 0 && 'fill-current']}
-					/>
+					<span
+						aria-hidden="true"
+						class={[
+							'text-otodb-content-fainter ml-1 size-4',
+							user.notifs_count > 0 ? 'icon-[gravity-ui--bell-fill]' : 'icon-[gravity-ui--bell]'
+						]}
+					></span>
 				</a>
 			{/if}
 		</div>
@@ -158,7 +160,7 @@
 				{@render link('/moderation', m.minor_inner_lynx_adapt())}
 				{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 				{@render link('/work/merge', m.heroic_same_wasp_conquer())}
-				{@render link('/post/4', m.arable_direct_cougar_win())}
+				{@render link('/wiki/editing_guidelines', m.arable_direct_cougar_win())}
 			</ul>
 		</div>
 	{/if}

@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db import IntegrityError, models
 from django.urls import reverse
 from django.utils import timezone
@@ -16,8 +18,14 @@ class AccountManager(BaseUserManager):
 	def create_user(self, username, email, password=None, **extra_fields):
 		if not username:
 			raise ValueError('Users must have a username')
+		if any(c.isspace() for c in username):
+			raise ValueError('Usernames may not contain whitespace')
 		if not email:
 			raise ValueError('Users must have an email address')
+		try:
+			validate_email(email)
+		except ValidationError:
+			raise ValueError('Invalid email address')
 		if self.filter(username__iexact=username).exists():
 			raise IntegrityError('This username is already taken')
 		username = User.normalize_username(username)

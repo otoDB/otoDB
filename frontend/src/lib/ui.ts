@@ -3,7 +3,13 @@ import { languages } from '$lib/enums/language';
 import { getLocale } from '$lib/paraglide/runtime';
 import { WorkTagCategoryMap } from './enums/workTagCategory';
 import { m } from './paraglide/messages';
-import { WorkTagCategory, LanguageTypes, ThemePref, type components } from './schema';
+import {
+	WorkTagCategory,
+	LanguageTypes,
+	ThemePref,
+	VideoPlatformPref,
+	type components
+} from './schema';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -30,27 +36,26 @@ export const clickOutside = (node: HTMLElement) => {
 };
 type Prefs = components['schemas']['UserPreferenceSchema'];
 
-const defaultPrefs: Prefs = {
+const defaultPrefs: Required<Prefs> = {
 	LANGUAGE: LanguageTypes.en, // reflects baseLocale
-	THEME: ThemePref.Default
+	THEME: ThemePref.Default,
+	VIDEO_PLATFORM: VideoPlatformPref.Auto,
+	PREFER_AUTHOR_UPLOAD: false
 };
 
-export const getLocalPrefs = (): Partial<Prefs> | undefined => {
-	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
-};
+export const getLocalPrefs = (): Required<Prefs> => ({
+	...defaultPrefs,
+	...JSON.parse(browser ? (localStorage.getItem('prefs') ?? '{}') : '{}')
+});
 
-export const getLocalPref = <T extends keyof Prefs>(setting: T): Prefs[T] =>
-	getLocalPrefs()?.[setting] ?? defaultPrefs[setting];
+export const getLocalPref = <T extends keyof Prefs>(setting: T): Required<Prefs>[T] =>
+	(getLocalPrefs()?.[setting] ?? defaultPrefs[setting]) as Required<Prefs>[T];
 
-export const updateLocalPref = <T extends keyof Prefs>(key: T, value: Prefs[T]) => {
+export const updateLocalPrefs = (values: Partial<Prefs>) => {
 	if (!browser) return;
-
-	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), [key]: value }));
+	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), ...values }));
 };
 
-export const GUIDELINE_POST_ID = '4';
-export const FAQ_POST_ID = '3';
-export const SEARCH_DOCS_POST_ID = '38';
 export const getTagDisplayName = (tag: {
 	name: string;
 	lang_prefs: { lang: number; tag: string }[];

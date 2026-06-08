@@ -15,6 +15,7 @@ from django.db import transaction
 
 from otodb.account.models import Account
 from otodb.models.enums import (
+	LanguageTypes,
 	MimeType,
 	Platform,
 	Rating,
@@ -24,6 +25,7 @@ from otodb.models.enums import (
 )
 from otodb.models.media import MediaWork, TagWorkInstance
 from otodb.models.tag import TagWork
+from otodb.models.wiki import WikiPage
 from otodb.models.work_source import WorkSource
 
 ACCOUNTS = [
@@ -96,6 +98,15 @@ SOURCES = [
 	},
 ]
 
+WIKIS = [
+	{'slug': 'about', 'title': 'About'},
+	{'slug': 'editing_guidelines', 'title': 'Editing Guidelines'},
+	{'slug': 'faq', 'title': 'FAQ'},
+	{'slug': 'search_syntax', 'title': 'Search Syntax'},
+]
+
+SEED_STEPS = ('accounts', 'tags', 'works', 'sources', 'wikis')
+
 
 # ---------------------------------------------------------------------------
 
@@ -109,19 +120,32 @@ class Command(BaseCommand):
 			action='store_true',
 			help='Show what would be created without writing to the database',
 		)
+		parser.add_argument(
+			'--only',
+			nargs='+',
+			choices=SEED_STEPS,
+			help='Seed only the listed steps (default: all)',
+		)
 
 	def handle(self, *args, **options):
 		dry_run = options['dry_run']
+		selected = set(options.get('only') or SEED_STEPS)
 
 		if dry_run:
 			self.stdout.write(self.style.WARNING('DRY RUN — no changes will be made'))
 
 		try:
 			with transaction.atomic():
-				self._seed_accounts(dry_run)
-				self._seed_tags(dry_run)
-				self._seed_works(dry_run)
-				self._seed_sources(dry_run)
+				if 'accounts' in selected:
+					self._seed_accounts(dry_run)
+				if 'tags' in selected:
+					self._seed_tags(dry_run)
+				if 'works' in selected:
+					self._seed_works(dry_run)
+				if 'sources' in selected:
+					self._seed_sources(dry_run)
+				if 'wikis' in selected:
+					self._seed_wikis(dry_run)
 
 				if dry_run:
 					raise _RollbackDryRun
@@ -225,6 +249,21 @@ class Command(BaseCommand):
 					MediaWork.objects.filter(pk=data['work_id']).update(
 						thumbnail_source=source
 					)
+
+	def _seed_wikis(self, dry_run: bool) -> None:
+		for data in WIKIS:
+			slug = data['slug']
+			if WikiPage.objects.filter(slug=slug).exists():
+				self.stdout.write(f'  wiki already exists: {slug}')
+				continue
+			self.stdout.write(f'  create wiki: {slug}')
+			if not dry_run:
+				WikiPage.objects.create(
+					slug=slug,
+					title=data['title'],
+					page='',
+					lang=LanguageTypes.ENGLISH,
+				)
 
 
 class _RollbackDryRun(Exception):

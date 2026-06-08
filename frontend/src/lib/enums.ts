@@ -8,9 +8,11 @@ import {
 	SongRelationTypes,
 	SongTagCategory,
 	Status,
+	SubmissionStanding,
 	WorkOrigin,
 	WorkRelationTypes,
-	WorkStatus
+	WorkStatus,
+	VideoPlatformPref
 } from '$lib/schema';
 
 export const SongTagCategoryNames = {
@@ -29,13 +31,39 @@ export const RatingNames = {
 export const StatusNames = {
 	[Status.Pending]: m.such_actual_okapi_dare,
 	[Status.Approved]: m.spare_few_kudu_learn,
-	[Status.Unapproved]: m.stale_vexed_hare_pray
+	[Status.Delisted]: m.quiet_upper_pig_yell
 } as const satisfies Record<Status, () => string>;
+
+export const SubmissionStandingNames = {
+	[SubmissionStanding.Pending]: m.such_actual_okapi_dare,
+	[SubmissionStanding.Approved]: m.spare_few_kudu_learn,
+	[SubmissionStanding.Delisted]: m.quiet_upper_pig_yell,
+	[SubmissionStanding.Unbound]: m.fresh_lucky_swan_dwell,
+	[SubmissionStanding.Flagged]: m.tangy_busy_liger_burn,
+	[SubmissionStanding.Appealed]: m.brief_flat_bullock_dance
+} as const satisfies Record<SubmissionStanding, () => string>;
 
 export const WorkOriginNames = {
 	[WorkOrigin.Author]: m.crisp_red_canary_tickle,
 	[WorkOrigin.Reupload]: m.lucky_still_vulture_work
 } as const satisfies Record<WorkOrigin, () => string>;
+
+export const PlatformNames = {
+	[Platform.YouTube]: 'YouTube',
+	[Platform.Niconico]: 'Niconico',
+	[Platform.Bilibili]: 'Bilibili',
+	[Platform.SoundCloud]: 'SoundCloud',
+	[Platform.Twitter]: 'Twitter',
+	[Platform.AcFun]: 'AcFun'
+} as const satisfies Record<Platform, string>;
+
+// Auto is preference-only; the rest mirror PlatformNames
+export const VideoPlatformPrefNames = {
+	[VideoPlatformPref.Auto]: m.brisk_neat_otter_glide,
+	...(Object.fromEntries(
+		Object.entries(PlatformNames).map(([value, name]) => [value, () => name])
+	) as Record<Platform, () => string>)
+} satisfies Record<VideoPlatformPref, () => string>;
 
 export const WorkStatusNames = {
 	[WorkStatus.Available]: m.this_lime_porpoise_launch,
@@ -47,15 +75,6 @@ export const MimeType = {
 	2: 'image/png',
 	3: 'image/webp'
 };
-
-export const PlatformNames = {
-	[Platform.YouTube]: 'YouTube',
-	[Platform.Niconico]: 'Niconico',
-	[Platform.Bilibili]: 'Bilibili',
-	[Platform.SoundCloud]: 'SoundCloud',
-	[Platform.Twitter]: 'Twitter',
-	[Platform.AcFun]: 'AcFun'
-} as const satisfies Record<Platform, string>;
 
 export const WorkRelationNames = {
 	[WorkRelationTypes.Sequel]: m.spry_muddy_sloth_radiate,
@@ -108,6 +127,7 @@ export type EntityModelType =
 	| 'pool'
 	| 'tagwork'
 	| 'tagsong'
+	| 'wikipage'
 	| 'bulkrequest'
 	// This is obvious but we make it explicit
 	| PostEntities
@@ -123,7 +143,8 @@ export const EntityModelRoutes: Record<EntityModelType, string> = {
 	post: 'post',
 	bulkrequest: 'request',
 	mediasong: 'song',
-	worksource: 'upload'
+	worksource: 'upload',
+	wikipage: 'wiki'
 };
 
 export const isValidEntityModelType = (type: string): type is EntityModelType =>

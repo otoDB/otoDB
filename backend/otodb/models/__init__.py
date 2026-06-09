@@ -17,9 +17,9 @@ from .posts import (
 	CommentMeta,
 	EntityLink,
 	Notification,
-	Post,
-	PostContent,
 	Subscription,
+	Thread,
+	ThreadPost,
 )
 from .prefs import UserPreference
 from .relations import SongRelation, WorkRelation
@@ -53,8 +53,8 @@ __all__ = [
 	'ModerationEvent',
 	'WorkRelation',
 	'SongRelation',
-	'Post',
-	'PostContent',
+	'Thread',
+	'ThreadPost',
 	'Notification',
 	'Subscription',
 	'EntityLink',

@@ -274,10 +274,10 @@ class MediaWork(RevisionTrackedModel):
 		EntityLink.objects.filter(
 			entity_type=mediawork_ct,
 			entity_id=from_work.pk,
-			post_id__in=EntityLink.objects.filter(
+			thread_id__in=EntityLink.objects.filter(
 				entity_type=mediawork_ct,
 				entity_id=to_work.pk,
-			).values('post_id'),
+			).values('thread_id'),
 		).delete()
 		EntityLink.objects.filter(
 			entity_type=mediawork_ct,

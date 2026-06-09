@@ -10,7 +10,7 @@
 </script>
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
-	<a href="/post/new?category=3&entity=@{data.profile.username}">{m.antsy_aloof_horse_grace()}</a>
+	<a href="/thread/new?category=3&entity=@{data.profile.username}">{m.antsy_aloof_horse_grace()}</a>
 	{#if data.threads.items.length}
 		<ThreadTable
 			posts={data.threads.items}

@@ -4311,16 +4311,16 @@
         ]
       }
     },
-    "/api/post/post": {
+    "/api/thread/thread": {
       "get": {
-        "operationId": "otodb_api_post_post",
-        "summary": "Post",
+        "operationId": "otodb_api_thread_get_thread",
+        "summary": "Get Thread",
         "parameters": [
           {
             "in": "query",
-            "name": "post_id",
+            "name": "thread_id",
             "schema": {
-              "title": "Post Id",
+              "title": "Thread Id",
               "type": "string"
             },
             "required": true
@@ -4332,7 +4332,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostSchema"
+                  "$ref": "#/components/schemas/ThreadSchema"
                 }
               }
             }
@@ -4340,8 +4340,8 @@
         }
       },
       "post": {
-        "operationId": "otodb_api_post_new",
-        "summary": "New",
+        "operationId": "otodb_api_thread_new_thread",
+        "summary": "New Thread",
         "parameters": [
           {
             "in": "header",
@@ -4370,6 +4370,166 @@
           "content": {
             "application/json": {
               "schema": {
+                "$ref": "#/components/schemas/ThreadInSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      },
+      "put": {
+        "operationId": "otodb_api_thread_edit_thread",
+        "summary": "Edit Thread",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "otodb-internal-secret",
+            "schema": {
+              "title": "Otodb-Internal-Secret",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThreadEditSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/thread/posts": {
+      "get": {
+        "operationId": "otodb_api_thread_get_posts",
+        "summary": "Get Posts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "thread_id",
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 30,
+              "maximum": 30,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedThreadPostSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/thread/post": {
+      "get": {
+        "operationId": "otodb_api_thread_get_post",
+        "summary": "Get Post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "thread_id",
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "num",
+            "schema": {
+              "title": "Num",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostRefSchema"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "otodb_api_thread_new_post",
+        "summary": "New Post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "otodb-internal-secret",
+            "schema": {
+              "title": "Otodb-Internal-Secret",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
                 "$ref": "#/components/schemas/PostInSchema"
               }
             }
@@ -4383,8 +4543,8 @@
         ]
       },
       "put": {
-        "operationId": "otodb_api_post_edit",
-        "summary": "Edit",
+        "operationId": "otodb_api_thread_edit_post",
+        "summary": "Edit Post",
         "parameters": [
           {
             "in": "header",
@@ -4416,11 +4576,112 @@
             "SessionAuth": []
           }
         ]
+      },
+      "delete": {
+        "operationId": "otodb_api_thread_delete_post",
+        "summary": "Delete Post",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "thread_id",
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "num",
+            "schema": {
+              "title": "Num",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
       }
     },
-    "/api/post/categories": {
+    "/api/thread/position": {
       "get": {
-        "operationId": "otodb_api_post_categories",
+        "operationId": "otodb_api_thread_position",
+        "summary": "Position",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "thread_id",
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "num",
+            "schema": {
+              "title": "Num",
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "description": "1-based index of the post among non-removed posts (ordered by num)."
+      }
+    },
+    "/api/thread/close": {
+      "put": {
+        "operationId": "otodb_api_thread_toggle_close",
+        "summary": "Toggle Close",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "thread_id",
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/thread/categories": {
+      "get": {
+        "operationId": "otodb_api_thread_categories",
         "summary": "Categories",
         "parameters": [],
         "responses": {
@@ -4431,7 +4692,7 @@
                 "schema": {
                   "additionalProperties": {
                     "items": {
-                      "$ref": "#/components/schemas/PostOverviewSchema"
+                      "$ref": "#/components/schemas/ThreadOverviewSchema"
                     },
                     "type": "array"
                   },
@@ -4444,9 +4705,9 @@
         }
       }
     },
-    "/api/post/category": {
+    "/api/thread/category": {
       "get": {
-        "operationId": "otodb_api_post_category",
+        "operationId": "otodb_api_thread_category",
         "summary": "Category",
         "parameters": [
           {
@@ -4487,7 +4748,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedPostOverviewSchema"
+                  "$ref": "#/components/schemas/PagedThreadOverviewSchema"
                 }
               }
             }
@@ -4495,36 +4756,9 @@
         }
       }
     },
-    "/api/post/close": {
-      "put": {
-        "operationId": "otodb_api_post_toggle_close",
-        "summary": "Toggle Close",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "post_id",
-            "schema": {
-              "title": "Post Id",
-              "type": "string"
-            },
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        },
-        "security": [
-          {
-            "SessionAuth": []
-          }
-        ]
-      }
-    },
-    "/api/post/threads": {
+    "/api/thread/threads": {
       "get": {
-        "operationId": "otodb_api_post_threads",
+        "operationId": "otodb_api_thread_threads",
         "summary": "Threads",
         "parameters": [
           {
@@ -4574,7 +4808,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedPostOverviewSchema"
+                  "$ref": "#/components/schemas/PagedThreadOverviewSchema"
                 }
               }
             }
@@ -4582,9 +4816,9 @@
         }
       }
     },
-    "/api/post/search": {
+    "/api/thread/search": {
       "get": {
-        "operationId": "otodb_api_post_search",
+        "operationId": "otodb_api_thread_search",
         "summary": "Search",
         "parameters": [
           {
@@ -4641,7 +4875,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedPostOverviewSchema"
+                  "$ref": "#/components/schemas/PagedThreadOverviewSchema"
                 }
               }
             }
@@ -4649,10 +4883,10 @@
         }
       }
     },
-    "/api/post/recent": {
+    "/api/thread/recent": {
       "get": {
-        "operationId": "otodb_api_post_recent_posts",
-        "summary": "Recent Posts",
+        "operationId": "otodb_api_thread_recent_threads",
+        "summary": "Recent Threads",
         "parameters": [
           {
             "in": "query",
@@ -4684,7 +4918,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedPostOverviewSchema"
+                  "$ref": "#/components/schemas/PagedThreadOverviewSchema"
                 }
               }
             }
@@ -7541,7 +7775,6 @@
           "pool",
           "tagwork",
           "tagsong",
-          "post",
           "bulkrequest"
         ],
         "title": "ModelsWithComments",
@@ -7588,16 +7821,26 @@
             ],
             "title": "Comment"
           },
-          "post": {
+          "threadpost": {
             "anyOf": [
               {
-                "type": "string"
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Post"
+            "title": "Threadpost"
           },
           "reason": {
             "$ref": "#/components/schemas/NotificationReason"
@@ -9148,30 +9391,6 @@
           "General"
         ]
       },
-      "PostContentSchema": {
-        "properties": {
-          "lang": {
-            "title": "Lang",
-            "type": "integer"
-          },
-          "page": {
-            "title": "Page",
-            "type": "string"
-          },
-          "modified": {
-            "format": "date-time",
-            "title": "Modified",
-            "type": "string"
-          }
-        },
-        "required": [
-          "lang",
-          "page",
-          "modified"
-        ],
-        "title": "PostContentSchema",
-        "type": "object"
-      },
       "PostEntities": {
         "enum": [
           "mediawork",
@@ -9201,17 +9420,14 @@
         "title": "PostEntitySchema",
         "type": "object"
       },
-      "PostSchema": {
+      "ThreadSchema": {
         "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
           "added_by": {
             "$ref": "#/components/schemas/ProfileSchema"
-          },
-          "pages": {
-            "items": {
-              "$ref": "#/components/schemas/PostContentSchema"
-            },
-            "title": "Pages",
-            "type": "array"
           },
           "entities": {
             "default": [],
@@ -9221,16 +9437,6 @@
             "title": "Entities",
             "type": "array"
           },
-          "edited_by": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ProfileSchema"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "category": {
             "$ref": "#/components/schemas/PostCategory"
           },
@@ -9238,18 +9444,6 @@
             "maxLength": 1000,
             "title": "Title",
             "type": "string"
-          },
-          "edited_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Edited At"
           },
           "closed_at": {
             "anyOf": [
@@ -9262,18 +9456,23 @@
               }
             ],
             "title": "Closed At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
           }
         },
         "required": [
+          "id",
           "added_by",
-          "pages",
           "category",
           "title"
         ],
-        "title": "PostSchema",
+        "title": "ThreadSchema",
         "type": "object"
       },
-      "PostInSchema": {
+      "ThreadInSchema": {
         "properties": {
           "title": {
             "title": "Title",
@@ -9285,9 +9484,6 @@
           },
           "category": {
             "$ref": "#/components/schemas/PostCategory"
-          },
-          "lang": {
-            "$ref": "#/components/schemas/LanguageTypes"
           },
           "target_users": {
             "items": {
@@ -9308,29 +9504,21 @@
           "title",
           "post",
           "category",
-          "lang",
           "target_users",
           "entities"
         ],
-        "title": "PostInSchema",
+        "title": "ThreadInSchema",
         "type": "object"
       },
-      "PostEditSchema": {
+      "ThreadEditSchema": {
         "properties": {
-          "post_id": {
-            "title": "Post Id",
+          "thread_id": {
+            "title": "Thread Id",
             "type": "string"
           },
           "title": {
             "title": "Title",
             "type": "string"
-          },
-          "post": {
-            "title": "Post",
-            "type": "string"
-          },
-          "lang": {
-            "$ref": "#/components/schemas/LanguageTypes"
           },
           "entities": {
             "items": {
@@ -9341,16 +9529,150 @@
           }
         },
         "required": [
-          "post_id",
+          "thread_id",
           "title",
-          "post",
-          "lang",
           "entities"
+        ],
+        "title": "ThreadEditSchema",
+        "type": "object"
+      },
+      "PagedThreadPostSchema": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ThreadPostSchema"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedThreadPostSchema",
+        "type": "object"
+      },
+      "ThreadPostSchema": {
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/ProfileSchema"
+          },
+          "edited_by": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProfileSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "num": {
+            "title": "Num",
+            "type": "integer"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "edited_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited At"
+          }
+        },
+        "required": [
+          "user",
+          "num",
+          "body"
+        ],
+        "title": "ThreadPostSchema",
+        "type": "object"
+      },
+      "PostRefSchema": {
+        "properties": {
+          "num": {
+            "title": "Num",
+            "type": "integer"
+          },
+          "user": {
+            "$ref": "#/components/schemas/ProfileSchema"
+          }
+        },
+        "required": [
+          "num",
+          "user"
+        ],
+        "title": "PostRefSchema",
+        "type": "object"
+      },
+      "PostInSchema": {
+        "properties": {
+          "thread_id": {
+            "title": "Thread Id",
+            "type": "string"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "mentioned_users": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Mentioned Users",
+            "type": "array"
+          }
+        },
+        "required": [
+          "thread_id",
+          "body",
+          "mentioned_users"
+        ],
+        "title": "PostInSchema",
+        "type": "object"
+      },
+      "PostEditSchema": {
+        "properties": {
+          "thread_id": {
+            "title": "Thread Id",
+            "type": "string"
+          },
+          "num": {
+            "title": "Num",
+            "type": "integer"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          }
+        },
+        "required": [
+          "thread_id",
+          "num",
+          "body"
         ],
         "title": "PostEditSchema",
         "type": "object"
       },
-      "PostOverviewSchema": {
+      "ThreadOverviewSchema": {
         "properties": {
           "id": {
             "title": "Id",
@@ -9386,6 +9708,11 @@
               }
             ],
             "title": "Last Post At"
+          },
+          "post_count": {
+            "default": 0,
+            "title": "Post Count",
+            "type": "integer"
           },
           "entities": {
             "default": [],
@@ -9423,14 +9750,14 @@
           "category",
           "title"
         ],
-        "title": "PostOverviewSchema",
+        "title": "ThreadOverviewSchema",
         "type": "object"
       },
-      "PagedPostOverviewSchema": {
+      "PagedThreadOverviewSchema": {
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/PostOverviewSchema"
+              "$ref": "#/components/schemas/ThreadOverviewSchema"
             },
             "title": "Items",
             "type": "array"
@@ -9444,7 +9771,7 @@
           "items",
           "count"
         ],
-        "title": "PagedPostOverviewSchema",
+        "title": "PagedThreadOverviewSchema",
         "type": "object"
       },
       "CommentSchema": {

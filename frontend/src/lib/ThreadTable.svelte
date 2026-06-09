@@ -44,7 +44,7 @@
 			{@const lastTime = post.last_post_at ?? post.modified}
 			<tr>
 				<td>
-					<a href="/post/{post.id}">{post.title}</a>
+					<a href="/thread/{post.id}">{post.title}</a>
 					{#if entities.length}
 						<span class="text-otodb-content-fainter ml-3 text-xs">
 							{#each entities as { id, entity }, j (j)}

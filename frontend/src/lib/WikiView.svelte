@@ -3,7 +3,7 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import client from '$lib/api.js';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
-	import { renderMarkdown } from '$lib/markdown';
+	import { hydrate, renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { LanguageTypes, type components } from '$lib/schema';
@@ -65,6 +65,10 @@
 	<div
 		bind:this={contentEl}
 		class="prose prose-neutral prose-sm dark:prose-invert prose-p:max-w-4xl prose-ul:max-w-4xl prose-ol:max-w-4xl prose-blockquote:max-w-4xl prose-headings:max-w-4xl max-w-none"
+		{@attach (node) => {
+			void currentPage;
+			return hydrate(node);
+		}}
 	>
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html renderMarkdown(currentPage.page)}

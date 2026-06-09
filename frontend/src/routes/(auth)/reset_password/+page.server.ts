@@ -1,4 +1,5 @@
 import client, { forwardCookies, rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
 import { m } from '$lib/paraglide/messages';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -22,7 +23,7 @@ export const actions = {
 			turnstile_token = (data.get('cf-turnstile-response') as string) || undefined;
 
 		if (!password || !confirm) return fail(400, { missing: true });
-		else if (password != confirm) return fail(400, { mismatch: true });
+		else if (password !== confirm) return fail(400, { mismatch: true });
 
 		const { error } = await rawClient.POST('/api/auth/reset_password', {
 			body: { password, token, turnstile_token },
@@ -38,10 +39,11 @@ export const actions = {
 
 		if (!email) return fail(400, { missing: true });
 
-		await client.PUT('/api/auth/reset_password', {
+		const { error } = await rawClient.PUT('/api/auth/reset_password', {
 			body: { email, turnstile_token },
 			fetch
 		});
+		if (error) return apiFail(error);
 
 		return { success: true };
 	}

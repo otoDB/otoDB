@@ -1,7 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { rawClient } from '$lib/api.server';
 import { asEnum } from '$lib/enums';
-import { getLanguageId, languages } from '$lib/enums/language';
 import { apiFail } from '$lib/errors';
 import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
@@ -16,7 +15,12 @@ export const load: PageServerLoad = ({ locals, url }) => {
 	const category = asEnum(PostCategory, paramCategory);
 	const entity = url.searchParams.get('entity');
 	const title = url.searchParams.get('title');
-	return { category, entity, title, head: { title: m.antsy_aloof_horse_grace() } };
+	return {
+		category,
+		entity,
+		title,
+		head: { title: m.antsy_aloof_horse_grace() }
+	};
 };
 
 export const actions = {
@@ -34,26 +38,24 @@ export const actions = {
 		type Category = components['schemas']['PostCategory'];
 		const category = paramCategory as Category;
 
-		const paramLang = data.get('lang') as string;
-		const language = getLanguageId(
-			paramLang as keyof typeof languages
-		) as components['schemas']['LanguageTypes'];
-
 		if (renderMarkdown(post).trim() === '') return fail(400);
 
-		const { data: post_id, error: apiError } = await rawClient.POST('/api/post/post', {
+		const { data: thread_id, error: apiError } = await rawClient.POST('/api/thread/thread', {
 			fetch,
-			params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
+			params: {
+				header: {
+					'otodb-internal-secret': env.INTERNAL_API_SECRET
+				}
+			},
 			body: {
 				category: category,
 				post,
-				lang: language,
 				title,
 				target_users: parseMentions(post),
 				entities
 			}
 		});
 		if (apiError) return apiFail(apiError);
-		redirect(303, `/post/${post_id}`);
+		redirect(303, `/thread/${thread_id}`);
 	}
 } satisfies Actions;

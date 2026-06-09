@@ -49,7 +49,8 @@
 										>{route}
 									</button>
 								</td>
-							{:else if n.post}
+							{:else if n.threadpost}
+								{@const route = `/thread/${n.threadpost[0]}.${n.threadpost[1]}`}
 								<td class={{ 'opacity-40': n.dismissed }}
 									>{n.reason === NotificationReason.Thread_Linked
 										? m.aqua_safe_beetle_list()
@@ -58,8 +59,8 @@
 											: m.curly_these_mule_ascend()}</td
 								>
 								<td class={{ 'opacity-40': n.dismissed }}
-									><button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, `/post/${n.post}`))}
-										>/post/{n.post}</button
+									><button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, route))}
+										>{route}</button
 									></td
 								>
 							{/if}

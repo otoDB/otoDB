@@ -6,8 +6,14 @@
 	import { getDisplayText } from '$lib/ui.js';
 	import { Status, type components } from './schema';
 
+	type SlimWork = components['schemas']['SlimWorkSchema'];
+	type ThinWork = components['schemas']['ThinWorkSchema'];
+	// A full thin work, or a slim one (e.g. in revision diffs) where the
+	// extra display data (tags, pending moderation) is simply absent
+	type CardWork = SlimWork & Partial<Omit<ThinWork, keyof SlimWork>>;
+
 	interface Props {
-		work: components['schemas']['ThinWorkSchema'];
+		work: CardWork;
 		class?: string;
 	}
 	const { work, ...props }: Props = $props();

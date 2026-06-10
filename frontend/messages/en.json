@@ -411,5 +411,10 @@
 	"tidy_warm_seal_glide": "Prefer the author's original upload over a reupload on your preferred platform, even if it's on another platform.",
 	"nice_close_goldfish_taste": "Standalone",
 	"fresh_lucky_swan_dwell": "Unbound",
-	"lucky_brisk_falcon_rest": "Rate limit exceeded."
+	"lucky_brisk_falcon_rest": "Rate limit exceeded.",
+	"pale_blunt_moth_lack": "None",
+	"quick_calm_mole_vanish": "Deleted",
+	"warm_civil_heron_return": "Restored (was #{id})",
+	"neat_proud_swan_lead": "Primary",
+	"tame_sharp_finch_hatch": "Child"
 }

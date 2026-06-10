@@ -77,21 +77,21 @@
 
 	ins {
 		text-decoration: none;
-		background-color: color-mix(in oklab, var(--color-green-500) 33%, transparent);
+		background-color: var(--otodb-color-ins);
 	}
 
 	del {
 		text-decoration: none;
-		background-color: color-mix(in oklab, var(--color-red-500) 33%, transparent);
+		background-color: var(--otodb-color-del);
 	}
 
 	tr {
 		&:has(> td > ins) > td:first-child {
-			color: var(--color-green-500);
+			color: var(--otodb-color-ins);
 		}
 
 		&:has(> td > del) > td:first-child {
-			color: var(--color-red-500);
+			color: var(--otodb-color-del);
 		}
 	}
 

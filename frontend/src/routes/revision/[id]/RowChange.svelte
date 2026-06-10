@@ -230,22 +230,22 @@
 	}
 
 	ins {
-		background-color: color-mix(in oklab, var(--color-green-500) 33%, transparent);
+		background-color: var(--otodb-color-ins);
 	}
 
 	del {
-		background-color: color-mix(in oklab, var(--color-red-500) 33%, transparent);
+		background-color: var(--otodb-color-del);
 	}
 
 	div:has(> ins) > span {
-		color: var(--color-green-500);
+		color: var(--otodb-color-ins);
 	}
 
 	div:has(> del) > span {
-		color: var(--color-red-500);
+		color: var(--otodb-color-del);
 	}
 
 	tr:has(> td > del) > td:first-child {
-		color: var(--color-red-500);
+		color: var(--otodb-color-del);
 	}
 </style>

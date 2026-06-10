@@ -1,3 +1,9 @@
+import { languages } from '$lib/enums/language.js';
+import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
+import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+import { songConnectionMap } from '$lib/enums/songConnection.js';
+import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
+import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 import { m } from '$lib/paraglide/messages.js';
 import {
 	HistoricalEntities,
@@ -173,3 +179,62 @@ export const isEnum = <E extends Enum<E>>(Enum: E, v: string | number): boolean 
 	enumValues(Enum).includes(v as E[keyof E]);
 export const asEnum = <E extends Enum<E>>(Enum: E, v: string | number): E[keyof E] | null =>
 	isEnum(Enum, v) ? (v as E[keyof E]) : null;
+
+export type FieldOption = { value: string; label: () => string };
+
+const fromMessages = (r: Record<number, () => string>): FieldOption[] =>
+	Object.entries(r).map(([value, label]) => ({ value, label }));
+const fromNameFns = (r: Record<number, { nameFn: () => string }>): FieldOption[] =>
+	Object.entries(r).map(([value, e]) => ({ value, label: e.nameFn }));
+const fromNames = (r: Record<number, { name: string }>): FieldOption[] =>
+	Object.entries(r).map(([value, e]) => ({ value, label: () => e.name }));
+const fromStrings = (r: Record<number, string>): FieldOption[] =>
+	Object.entries(r).map(([value, s]) => ({ value, label: () => s }));
+
+// Each value must appear only once (duplicate values would break <option>),
+// so colliding options combine their labels instead
+const _mergeOptions = (...lists: FieldOption[][]): FieldOption[] => {
+	const byValue = new Map<string, (() => string)[]>();
+	for (const o of lists.flat()) {
+		const labels = byValue.get(o.value);
+		if (labels) labels.push(o.label);
+		else byValue.set(o.value, [o.label]);
+	}
+	return [...byValue.entries()].map(([value, labels]) => ({
+		value,
+		label: () => [...new Set(labels.map((label) => label()))].join(' / ')
+	}));
+};
+
+// Disambiguates options merged from models whose enums have similar names
+// but different values (e.g. Work vs. Song relations)
+const withType = (type: () => string, opts: FieldOption[]): FieldOption[] =>
+	opts.map((o) => ({
+		...o,
+		label: () => m.mild_loud_shad_enchant({ type: type(), name: o.label() })
+	}));
+
+// Revision-tracked enum columns -> selectable raw values, merged across the
+// models that track a column with that name
+export const fieldEnumOptions: Record<string, FieldOption[]> = {
+	rating: fromMessages(RatingNames),
+	category: _mergeOptions(
+		withType(m.empty_legal_chicken_taste, fromNameFns(WorkTagCategoryMap)),
+		withType(m.dull_plain_angelfish_cuddle, fromMessages(SongTagCategoryNames))
+	),
+	relation: _mergeOptions(
+		withType(m.grand_merry_fly_succeed, fromMessages(WorkRelationNames)),
+		withType(m.grand_nice_pony_belong, fromMessages(SongRelationNames))
+	),
+	site: _mergeOptions(
+		fromNames(TagWorkConnectionMap),
+		fromNames(songConnectionMap),
+		fromNames(mediaConnectionMap),
+		fromNames(profileConnectionMap)
+	),
+	platform: fromStrings(PlatformNames),
+	work_origin: fromMessages(WorkOriginNames),
+	work_status: fromMessages(WorkStatusNames),
+	thumbnail_mime: fromStrings(MimeType),
+	lang: Object.values(languages).map((l) => ({ value: String(l.id), label: () => l.name }))
+};

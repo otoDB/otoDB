@@ -1,12 +1,21 @@
 import logging
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from itertools import groupby
 from typing import Any
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models, transaction
-from django.db.models import Case, Exists, F, OuterRef, Q, Subquery, When, Window
+from django.db.models import (
+	Case,
+	Exists,
+	F,
+	OuterRef,
+	Q,
+	Subquery,
+	When,
+	Window,
+)
 from django.db.models.fields.related import RelatedField
 from django.db.models.functions import Coalesce, RowNumber
 from django.http import HttpRequest
@@ -18,14 +27,18 @@ from ninja.pagination import paginate
 from ninja.security import django_auth
 
 from otodb.account.models import Account
+from otodb.common import slugify_tag
 from otodb.models import (
+	MediaSong,
 	MediaWork,
 	Revision,
 	RevisionChange,
 	RevisionChangeEntity,
 	TagSong,
 	TagWork,
+	TagWorkInstance,
 	WikiPage,
+	WorkSource,
 )
 from otodb.models.enums import RevisionChain, Route
 from otodb.models.tag import OtodbTagModel
@@ -947,4 +960,165 @@ def history(request: HttpRequest, entity: Query[HistoricalEntitySchema]):
 			),
 		)
 		.order_by('-index')
+	)
+
+
+def _value_change_q(model: type[models.Model], column: str, value: str) -> Q:
+	"""Revisions containing a change that set `model.column` to `value`"""
+	return Q(
+		pk__in=RevisionChange.objects.filter(
+			target_type=ContentType.objects.get_for_model(model),
+			target_column=column,
+			target_value=value,
+		).values('rev_id')
+	)
+
+
+def _resolve_work_tag(slug: str) -> TagWork | None:
+	try:
+		tag = TagWork.objects.get(slug=slugify_tag(slug))
+	except TagWork.DoesNotExist:
+		return None
+	return tag.aliased_to or tag
+
+
+def _tag_added_q(slug: str) -> Q:
+	"""Revisions where tag was attached to a work"""
+	tag = _resolve_work_tag(slug)
+	if tag is None:
+		return Q(pk__in=[])
+	return _value_change_q(TagWorkInstance, 'work_tag', str(tag.pk))
+
+
+def _tag_removed_q(slug: str) -> Q:
+	"""Revisions where tag was detached from a work (TagWorkInstance row deleted)"""
+	tag = _resolve_work_tag(slug)
+	if tag is None:
+		return Q(pk__in=[])
+	twi_ct = ContentType.objects.get_for_model(TagWorkInstance)
+	had_tag = RevisionChange.objects.filter(
+		target_type=twi_ct,
+		target_column='work_tag',
+		target_value=str(tag.pk),
+	)
+	return Q(
+		pk__in=RevisionChange.objects.filter(
+			target_type=twi_ct,
+			deleted=True,
+			target_id__in=had_tag.values('target_id'),
+		).values('rev_id')
+	)
+
+
+def _changed_field_q(
+	column: str, value: str | None = None, from_value: str | None = None
+) -> Q:
+	"""Revisions containing a change to a tracked column with this name,
+	optionally only changes that set it to `value` and/or whose previous value
+	was `from_value` (raw serialized form, e.g. the integer behind an enum)."""
+	flt = {'target_value': value} if value is not None else {}
+	changes = RevisionChange.objects.filter(target_column=column, **flt)
+	if from_value is not None:
+		changes = changes.annotate(_old=_old_value_subquery()).filter(_old=from_value)
+	return Q(pk__in=changes.values('rev_id'))
+
+
+def _is_new_q() -> Q:
+	"""Revisions containing the first-ever change for an entity-level model row"""
+	cts = list(
+		ContentType.objects.get_for_models(
+			MediaWork, TagWork, TagSong, MediaSong, WorkSource, WikiPage
+		).values()
+	)
+	first_change = RevisionChange.objects.filter(
+		rev_id=OuterRef('pk'),
+		target_type__in=cts,
+		deleted=False,
+		restored=False,
+	).filter(
+		~Exists(
+			RevisionChange.objects.filter(
+				target_type_id=OuterRef('target_type_id'),
+				target_id=OuterRef('target_id'),
+				rev_id__lt=OuterRef('rev_id'),
+			)
+		)
+	)
+	return Q(Exists(first_change))
+
+
+def _change_flag_q(**flags) -> Q:
+	return Q(Exists(RevisionChange.objects.filter(rev_id=OuterRef('pk'), **flags)))
+
+
+@history_router.get('search', response=list[RevisionSchema])
+@paginate
+def search(
+	request: HttpRequest,
+	username: str | None = None,
+	routes: list[Route] | None = Query(None),
+	entity: HistoricalEntities | None = None,
+	reason: str | None = None,
+	since: date | None = None,
+	until: date | None = None,
+	is_new: bool | None = None,
+	is_deleted: bool | None = None,
+	added_tags: list[str] | None = Query(None),
+	removed_tags: list[str] | None = Query(None),
+	changed_tags: list[str] | None = Query(None),
+	changed_field: str | None = None,
+	changed_value: str | None = None,
+	changed_from: str | None = None,
+):
+	q = Q()
+	if username:
+		q &= Q(user__username__iexact=username)
+	if routes:
+		q &= Q(
+			Exists(
+				RevisionChangeEntity.objects.filter(
+					change__rev_id=OuterRef('pk'), route__in=routes
+				)
+			)
+		)
+	if entity is not None:
+		q &= Q(
+			Exists(
+				RevisionChangeEntity.objects.filter(
+					change__rev_id=OuterRef('pk'),
+					entity_type__model=entity.value,
+				)
+			)
+		)
+	if reason:
+		q &= Q(message__icontains=reason)
+	if since is not None:
+		q &= Q(date__date__gte=since)
+	if until is not None:
+		q &= Q(date__date__lte=until)
+	if is_new is not None:
+		q &= _is_new_q() if is_new else ~_is_new_q()
+	if is_deleted is not None:
+		flag = _change_flag_q(deleted=True)
+		q &= flag if is_deleted else ~flag
+	for slug in added_tags or []:
+		q &= _tag_added_q(slug)
+	for slug in removed_tags or []:
+		q &= _tag_removed_q(slug)
+	for slug in changed_tags or []:
+		q &= _tag_added_q(slug) | _tag_removed_q(slug)
+	if changed_field:
+		q &= _changed_field_q(changed_field, changed_value, changed_from)
+
+	return (
+		Revision.objects.select_related('user')
+		.filter(q)
+		.annotate(
+			route=Subquery(
+				RevisionChangeEntity.objects.filter(
+					change__rev_id=OuterRef('id')
+				).values('route')[:1]
+			)
+		)
+		.order_by('-id')
 	)

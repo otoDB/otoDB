@@ -40,7 +40,7 @@
 		</div>
 	</Section>
 
-	<Section title={m.sea_cute_beaver_file()} href="/revision/history">
+	<Section title={m.sea_cute_beaver_file()} href="/revision">
 		<table class="w-full">
 			<tbody>
 				{#each data.changes.items as r, i (i)}
@@ -60,7 +60,7 @@
 				{/each}
 			</tbody>
 		</table>
-		<a href="/revision/history" class="float-right">{m.fresh_deft_warbler_edit()}</a>
+		<a href="/revision" class="float-right">{m.fresh_deft_warbler_edit()}</a>
 	</Section>
 
 	<Section title={m.curly_fuzzy_turkey_launch()} href="/thread/overview">

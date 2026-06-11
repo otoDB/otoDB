@@ -259,7 +259,7 @@ https://otodb.net/
 
 
 비밀번호 재설정 요청이 접수되었습니다. 비밀번호를 재설정하려면 아래 링크를 방문하세요:
-https://example.com/reset_password?token={token}
+https://otodb.net/reset_password?token={token}
 
 이 링크를 다른 사람과 공유하지 마십시오. 비밀번호 재설정을 요청하지 않으셨다면 이 이메일을 무시하시면 됩니다.
 
@@ -274,15 +274,17 @@ https://otodb.net/
 
 def get_user_language(user, request):
 	if user and hasattr(user, 'preferences'):
-		if lang := user.preferences.filter(setting=Preferences.LANGUAGE).first():
-			return lang
+		if pref := user.preferences.filter(setting=Preferences.LANGUAGE).first():
+			if (
+				pref.value in LanguageTypes.values
+				and pref.value != LanguageTypes.NOT_APPLICABLE
+			):
+				return LanguageTypes(pref.value)
 	if request:
 		if locale := request.COOKIES.get('PARAGLIDE_LOCALE'):
-			try:
-				if lang := LanguageTypes.labels.index(locale):
-					return lang
-			except ValueError:
-				pass
+			for value, label in LanguageTypes.choices[1:]:
+				if label == locale:
+					return value
 		if header := request.headers.get('Accept-Language'):
 			for value, label in LanguageTypes.choices[1:]:
 				if label in header:  # lol

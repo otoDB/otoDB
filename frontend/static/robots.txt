@@ -36,6 +36,7 @@ Allow: /*.woff2$
 
 # Pages
 Allow: /post
+Allow: /thread
 Allow: /work
 Allow: /tag
 Allow: /song

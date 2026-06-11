@@ -5,11 +5,14 @@ from django.core import mail
 from django.test import override_settings
 
 from otodb.account.models import Account, Invitation
+from otodb.api.auth import PASSWORD_RESET_EMAIL
 from otodb.api.common import ApiError
-from otodb.models.enums import ErrorCode
+from otodb.models import UserPreference
+from otodb.models.enums import ErrorCode, LanguageTypes, Preferences
 
 
 @pytest.mark.django_db
+@override_settings(OTODB_TURNSTILE_SECRET_KEY=None)
 def test_password_reset_email_sends_successfully(auth_client, member):
 	"""Test that password reset email is sent with correct format."""
 	# Request password reset using member fixture
@@ -49,6 +52,39 @@ def test_password_reset_email_sends_successfully(auth_client, member):
 
 
 @pytest.mark.django_db
+@override_settings(OTODB_TURNSTILE_SECRET_KEY=None)
+def test_password_reset_email_uses_language_preference(auth_client, member):
+	"""Reset email is localized to the user's saved language preference."""
+	UserPreference.objects.create(
+		user=member, setting=Preferences.LANGUAGE, value=LanguageTypes.JAPANESE
+	)
+
+	response = auth_client.put('/reset_password', json={'email': 'user@test.com'})
+
+	assert response.status_code == 200
+	assert len(mail.outbox) == 1
+	assert mail.outbox[0].subject == PASSWORD_RESET_EMAIL[LanguageTypes.JAPANESE][0]
+	member.refresh_from_db()
+	assert member.reset_token in mail.outbox[0].body
+
+
+@pytest.mark.django_db
+@override_settings(OTODB_TURNSTILE_SECRET_KEY=None)
+def test_password_reset_email_na_language_falls_back_to_english(auth_client, member):
+	"""A NOT_APPLICABLE language preference falls back to English instead of crashing."""
+	UserPreference.objects.create(
+		user=member, setting=Preferences.LANGUAGE, value=LanguageTypes.NOT_APPLICABLE
+	)
+
+	response = auth_client.put('/reset_password', json={'email': 'user@test.com'})
+
+	assert response.status_code == 200
+	assert len(mail.outbox) == 1
+	assert mail.outbox[0].subject == PASSWORD_RESET_EMAIL[LanguageTypes.ENGLISH][0]
+
+
+@pytest.mark.django_db
+@override_settings(OTODB_TURNSTILE_SECRET_KEY=None)
 def test_password_reset_email_nonexistent_user(auth_client):
 	"""Test that password reset doesn't reveal if user exists (security best practice)."""
 	# Request password reset for non-existent email
@@ -64,6 +100,7 @@ def test_password_reset_email_nonexistent_user(auth_client):
 
 
 @pytest.mark.django_db
+@override_settings(OTODB_TURNSTILE_SECRET_KEY=None)
 def test_password_reset_token_uniqueness(auth_client, editor):
 	"""Test that each password reset generates a unique token."""
 	# Request first reset using editor fixture

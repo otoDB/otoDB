@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import { turnstile } from '@battlefieldduck/turnstile-svelte';
 
@@ -12,5 +13,7 @@
 </script>
 
 {#if siteKey}
-	<div {@attach turnstile({ sitekey: siteKey, action })}></div>
+	{#key page.form}
+		<div {@attach turnstile({ sitekey: siteKey, action })}></div>
+	{/key}
 {/if}

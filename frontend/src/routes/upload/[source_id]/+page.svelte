@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Banner from '$lib/Banner.svelte';
 	import { dirtyEnhance } from '$lib/dirty';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
@@ -41,6 +42,9 @@
 	type={m.extra_brave_tapir_skip()}
 	menuLinks={data.links}
 >
+	{#if data.source.is_pending}
+		<Banner variant="info" title={m.brisk_lucky_heron_mend()} />
+	{/if}
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
@@ -121,12 +125,6 @@
 										>{data.source.media_title || `Work #${data.source.media}`}</a
 									></td
 								>
-							</tr>
-						{/if}
-						{#if data.source.is_pending}
-							<tr>
-								<th class="w-24">Status</th>
-								<td><span class="text-sky-600">{m.lost_weird_squid_commend()}</span></td>
 							</tr>
 						{/if}
 					</tbody>

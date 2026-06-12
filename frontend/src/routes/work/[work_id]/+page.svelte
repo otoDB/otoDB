@@ -126,6 +126,9 @@
 	{:else if data.status === Status.Delisted}
 		<Banner variant="danger" title={m.livid_main_bat_lift()} />
 	{/if}
+	{#if data.sources.some((s) => s.is_pending)}
+		<Banner variant="info" title={m.proud_zesty_otter_gleam()} />
+	{/if}
 	{#if data?.pending_flag}
 		<Banner variant="warning" title={m.small_red_finch_lock()}>
 			{#if data.pending_flag.reason}
@@ -395,7 +398,8 @@
 			<div
 				class={[
 					'w-full border px-4 py-2',
-					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : ''
+					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : '',
+					{ 'outline-4 outline-sky-600': src.is_pending }
 				]}
 			>
 				{#if data.user}

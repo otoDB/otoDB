@@ -82,13 +82,16 @@ def test_close_thread_forbidden_for_non_admin_non_author(other_member, member):
 
 @pytest.mark.django_db
 def test_close_already_closed_thread(admin_thread_client, admin):
-	"""Closing an already-closed thread returns 409."""
+	"""Closing an already-closed thread is a no-op."""
 	from datetime import datetime, timezone
 
 	t = make_thread(admin)
 	t.closed_at = datetime.now(tz=timezone.utc)
 	t.save()
+	original_closed_at = t.closed_at
 
 	response = admin_thread_client.put(f'/close?thread_id={t.pk}')
 
-	assert response.status_code == 409
+	assert response.status_code == 200
+	t.refresh_from_db()
+	assert t.closed_at == original_closed_at

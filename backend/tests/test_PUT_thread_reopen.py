@@ -88,7 +88,7 @@ def test_reopen_thread_forbidden_for_non_admin_non_author(other_member, member):
 
 @pytest.mark.django_db
 def test_reopen_already_open_thread(admin_thread_client, admin):
-	"""Reopening a thread that is not closed returns 409."""
+	"""Reopening a thread that is not closed is a no-op."""
 	t = Thread.objects.create(
 		title='Test Thread',
 		added_by=admin,
@@ -98,4 +98,6 @@ def test_reopen_already_open_thread(admin_thread_client, admin):
 
 	response = admin_thread_client.put(f'/reopen?thread_id={t.pk}')
 
-	assert response.status_code == 409
+	assert response.status_code == 200
+	t.refresh_from_db()
+	assert t.closed_at is None

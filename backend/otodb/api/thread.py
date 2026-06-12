@@ -360,10 +360,9 @@ def close_thread(request: AuthedHttpRequest, thread_id: OtodbID):
 	t = get_object_or_404(Thread, id=thread_id, is_removed=False)
 	if not request.user.is_mod:
 		raise HttpError(403, 'Forbidden')
-	if t.closed_at:
-		raise HttpError(409, 'Thread is already closed')
-	t.closed_at = datetime.now(tz=timezone.utc)
-	t.save(update_fields=['closed_at'])
+	if not t.closed_at:
+		t.closed_at = datetime.now(tz=timezone.utc)
+		t.save(update_fields=['closed_at'])
 
 
 @thread_router.put('reopen', auth=django_auth)
@@ -374,10 +373,9 @@ def reopen_thread(request: AuthedHttpRequest, thread_id: OtodbID):
 	is_author = t.added_by_id == request.user.pk
 	if not (is_mod or is_author):
 		raise HttpError(403, 'Forbidden')
-	if not t.closed_at:
-		raise HttpError(409, 'Thread is not closed')
-	t.closed_at = None
-	t.save(update_fields=['closed_at'])
+	if t.closed_at:
+		t.closed_at = None
+		t.save(update_fields=['closed_at'])
 
 
 def _visible_threads():

@@ -12,7 +12,7 @@ from django.utils import timezone
 from otodb.models.enums import OtodbIntegerEnum
 
 # Disallow:
-# - whitespace,
+# - whitespace
 # - control characters
 # - RFC 3986 reserved
 # - % (percent-encoding)

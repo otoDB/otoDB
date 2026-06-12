@@ -11,8 +11,20 @@ from django.utils import timezone
 
 from otodb.models.enums import OtodbIntegerEnum
 
-# ASCII alphanumeric + CJK script + _.-
-USERNAME_RE = regex.compile(r'[A-Za-z0-9\p{Han}\p{Hangul}\p{Hiragana}\p{Katakana}_.-]+')
+# Disallow:
+# - whitespace,
+# - control characters
+# - RFC 3986 reserved
+# - % (percent-encoding)
+# - HTML special characters
+# - Markdown or tag search syntax characters
+#
+# Allow:
+# - RFC 3986 unreserved (alphanumeric, "-", ".", "_", "~")
+# - Unicode characters (including emoji)
+USERNAME_DISALLOWED_RE = regex.compile(
+	r"""[\p{Z}\p{C}:/?#\[\]@!$&'()*+,;=%<>"\\{}|^]"""
+)
 
 
 class AccountManager(BaseUserManager):
@@ -25,9 +37,10 @@ class AccountManager(BaseUserManager):
 		username = User.normalize_username(username)
 		if not 1 <= len(username) <= 32:
 			raise ValueError('Username must be between 1 and 32 characters long')
-		if not USERNAME_RE.fullmatch(username):
+		if USERNAME_DISALLOWED_RE.search(username):
 			raise ValueError(
-				'Username may only contain letters, numbers, and "_", ".", "-"'
+				'Username may not contain whitespace, control characters, or '
+				'symbols such as "@" or "/"'
 			)
 		if not email:
 			raise ValueError('Users must have an email address')

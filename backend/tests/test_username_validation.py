@@ -17,26 +17,46 @@ VALID_USERNAMES = [
 	'_alice',
 	'alice.',
 	'a__b',
-	'a',
-	'ab',
+	'a~b',
+	'a',  # single character
 	'x' * 32,  # maximum length
+	'café',  # accented Latin
+	'Müller',
+	'محمد',  # Arabic
+	'Дмитрий',  # Cyrillic
+	'Ελλάς',  # Greek
 	'さくら',  # Hiragana
 	'ナルト',  # Katakana
 	'東京',  # Han
 	'김철수',  # Hangul
+	'🍕pizza',  # Emoji
 ]
 INVALID_USERNAMES = [
 	'x' * 33,  # too long
-	'a@b',
-	'a/b',
-	'a?b',
-	'a#b',
+	'a@b',  # "@"
+	'a/b',  # forward slash
+	'a\\b',  # backslash
+	'a?b',  # URL query
+	'a#b',  # URL fragment
 	'a&b',
 	'a=b',
-	'a b',  # whitespace
+	'a:b',
+	'a%25b',  # percent-encoding
+	'a<b',  # HTML
+	'a>b',  # HTML
+	'a"b',  # HTML
+	'a{b',  # Markdown / search syntax
+	'a}b',  # Markdown / search syntax
+	'a|b',  # Markdown / search syntax
+	'a^b',  # Markdown / search syntax
+	"a'b",  # apostrophe / markup
+	'a b',  # ASCII whitespace
+	'a　b',  # ideographic space
+	'a\tb',  # tab
+	'a\x00b',  # NUL
+	'a\x1bb',  # ESC
 	'a​b',  # zero-width space
-	'café',  # non-ASCII, non-CJK
-	'аbc',  # homoglyph
+	'a‮b',  # right-to-left override
 ]
 
 
@@ -52,13 +72,15 @@ def test_create_user_accepts_valid_usernames(username):
 def test_create_user_rejects_invalid_usernames(username):
 	with pytest.raises(ValueError):
 		Account.objects.create_user(username, EMAIL, password='pw')
-	assert not Account.objects.filter(username=username).exists()
+	# Query by the (ASCII) email: a rejected username may contain a NUL byte,
+	# which PostgreSQL cannot store or query.
+	assert not Account.objects.filter(email=EMAIL).exists()
 
 
 @pytest.mark.django_db
 def test_create_user_normalizes_fullwidth_characters_before_validating():
 	# Full-width "ａ＠ｂ" NFKC-normalizes to "a@b", so the "@" is still rejected
-	with pytest.raises(ValueError, match='may only contain'):
+	with pytest.raises(ValueError, match='may not contain'):
 		Account.objects.create_user('ａ＠ｂ', EMAIL, password='pw')
 
 

@@ -53,6 +53,24 @@ ACCOUNTS = [
 		'password': 'password',
 		'level': Account.Levels.EDITOR,
 	},
+	{
+		'username': 'mod1',
+		'email': 'mod1@example.com',
+		'password': 'password',
+		'level': Account.Levels.MOD,
+	},
+	{
+		'username': 'mod2',
+		'email': 'mod2@example.com',
+		'password': 'password',
+		'level': Account.Levels.MOD,
+	},
+	{
+		'username': 'admin1',
+		'email': 'admin1@example.com',
+		'password': 'password',
+		'level': Account.Levels.ADMIN,
+	},
 ]
 
 TAGS = [

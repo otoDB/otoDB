@@ -411,5 +411,9 @@
 	"tidy_warm_seal_glide": "Prefer the author's original upload over a reupload on your preferred platform, even if it's on another platform.",
 	"nice_close_goldfish_taste": "Standalone",
 	"fresh_lucky_swan_dwell": "Unbound",
-	"lucky_brisk_falcon_rest": "Rate limit exceeded."
+	"lucky_brisk_falcon_rest": "Rate limit exceeded.",
+	"thread_action_close": "Close thread",
+	"thread_action_reopen": "Reopen thread",
+	"thread_status_open": "Open",
+	"thread_status_closed": "Closed"
 }

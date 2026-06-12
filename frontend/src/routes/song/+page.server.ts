@@ -34,7 +34,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		batch_size,
 		bpm_range,
 		author,
-		page,
 		head: {
 			title: m.mild_loud_shad_enchant({
 				type: m.mean_top_antelope_love(),

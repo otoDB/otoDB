@@ -38,7 +38,6 @@ export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 
 	return {
 		tab: (tabs.includes(tab) ? tab : 'all') as Tabs,
-		page,
 		queue,
 		sources: null,
 		batchSize: 30

@@ -47,7 +47,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 
 	return {
 		thread,
-		page,
 		batch_size,
 		posts: posts?.items ?? [],
 		post_count: posts?.count ?? 0,

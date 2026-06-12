@@ -105,7 +105,6 @@
 		{#if data.sources.count}
 			<Pager
 				n_count={data.sources.count}
-				page={data.page}
 				page_size={data.batchSize}
 				base_url={page.url.toString()}
 			/>
@@ -121,12 +120,7 @@
 			{/each}
 		</div>
 		{#if data.queue.count}
-			<Pager
-				n_count={data.queue.count}
-				page={data.page}
-				page_size={data.batchSize}
-				base_url={page.url.toString()}
-			/>
+			<Pager n_count={data.queue.count} page_size={data.batchSize} base_url={page.url.toString()} />
 		{/if}
 	{/if}
 {/if}

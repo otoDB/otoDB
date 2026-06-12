@@ -41,8 +41,6 @@ export const load: PageServerLoad = async ({ fetch, locals, url, params }) => {
 		nonsub_notifications: nonsub.data,
 		sub_notifications: sub.data,
 		batch_size,
-		page,
-		sub_page,
 		head: { title: m.free_keen_wren_exhale() }
 	};
 };

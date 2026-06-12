@@ -24,7 +24,6 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 
 	return {
 		sources,
-		page,
 		batchSize,
 		filters: { unbound, pending, platform },
 		head: {

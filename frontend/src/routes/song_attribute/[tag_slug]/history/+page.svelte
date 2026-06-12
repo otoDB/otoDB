@@ -7,5 +7,5 @@
 </script>
 
 <Section title={data.tag.name} type={m.giant_away_scallop_hike()} menuLinks={data.links}>
-	<HistoryView revisions={data.history.items} user={data.user} />
+	<HistoryView revisions={data.history} batch_size={data.batch_size} />
 </Section>

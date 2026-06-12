@@ -25,7 +25,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		query_tags: tags,
 		results: data,
 		batch_size,
-		page,
 		head: {
 			title: m.mild_loud_shad_enchant({
 				type: m.mean_top_antelope_love(),

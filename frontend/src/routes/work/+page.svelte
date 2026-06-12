@@ -71,12 +71,7 @@
 			<WorkCard {work} />
 		{/each}
 	</div>
-	<Pager
-		n_count={data.results.count}
-		page={data.page}
-		page_size={data.batch_size}
-		base_url={page.url.toString()}
-	/>
+	<Pager n_count={data.results.count} page_size={data.batch_size} base_url={page.url.toString()} />
 </Section>
 
 <style>

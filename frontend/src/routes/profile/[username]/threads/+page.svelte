@@ -17,6 +17,6 @@
 			entityFilter={(e) =>
 				!(e.entity === PostEntities.account && String(e.id) === String(data.profile.username))}
 		/>
-		<Pager n_count={data.threads.count} page={data.page} page_size={data.batch_size} />
+		<Pager n_count={data.threads.count} page_size={data.batch_size} />
 	{/if}
 </Section>

@@ -12,7 +12,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	return {
 		results: data,
 		batch_size,
-		page,
 		head: { title: m.giant_away_scallop_hike() }
 	};
 };

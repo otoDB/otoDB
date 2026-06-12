@@ -22,7 +22,6 @@ export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 
 	return {
 		events,
-		page,
 		batchSize: 30,
 		userId
 	};

@@ -1,6 +1,6 @@
+import unicodedata
 from typing import TYPE_CHECKING
 
-import regex
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 from django.core.exceptions import ValidationError
@@ -12,19 +12,16 @@ from django.utils import timezone
 from otodb.models.enums import OtodbIntegerEnum
 
 # Disallow:
-# - whitespace
-# - control characters
 # - RFC 3986 reserved
 # - % (percent-encoding)
 # - HTML special characters
 # - Markdown or tag search syntax characters
+# - whitespace and control characters (Unicode categories "Z" and "C" -- see below)
 #
 # Allow:
 # - RFC 3986 unreserved (alphanumeric, "-", ".", "_", "~")
 # - Unicode characters (including emoji)
-USERNAME_DISALLOWED_RE = regex.compile(
-	r"""[\p{Z}\p{C}:/?#\[\]@!$&'()*+,;=%<>"\\{}|^]"""
-)
+USERNAME_DISALLOWED_CHARS = frozenset(':/?#[]@!$&\'()*+,;=%<>"\\{}|^')
 
 
 class AccountManager(BaseUserManager):
@@ -37,7 +34,10 @@ class AccountManager(BaseUserManager):
 		username = User.normalize_username(username)
 		if not 1 <= len(username) <= 32:
 			raise ValueError('Username must be between 1 and 32 characters long')
-		if USERNAME_DISALLOWED_RE.search(username):
+		if any(
+			c in USERNAME_DISALLOWED_CHARS or unicodedata.category(c)[0] in 'CZ'
+			for c in username
+		):
 			raise ValueError(
 				'Username may not contain whitespace, control characters, or '
 				'symbols such as "@" or "/"'

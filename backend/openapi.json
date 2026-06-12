@@ -4654,8 +4654,35 @@
     },
     "/api/thread/close": {
       "put": {
-        "operationId": "otodb_api_thread_toggle_close",
-        "summary": "Toggle Close",
+        "operationId": "otodb_api_thread_close_thread",
+        "summary": "Close Thread",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "thread_id",
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
+    "/api/thread/reopen": {
+      "put": {
+        "operationId": "otodb_api_thread_reopen_thread",
+        "summary": "Reopen Thread",
         "parameters": [
           {
             "in": "query",

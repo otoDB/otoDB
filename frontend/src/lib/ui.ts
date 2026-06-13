@@ -90,3 +90,45 @@ export const getMissingCategories = (
 	);
 	return WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
 };
+
+export const autolinkDescription = (description: string) => {
+	const template = document.createElement('template');
+	template.innerHTML = description;
+
+	const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT, (node) =>
+		node.parentElement?.closest('a') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+	);
+
+	const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+
+	const nodes: Text[] = [];
+	let n;
+	while ((n = walker.nextNode())) nodes.push(n as Text);
+
+	for (const textNode of nodes) {
+		const text = textNode.textContent;
+		const frag = document.createDocumentFragment();
+
+		let last = 0;
+		let match;
+
+		while ((match = urlRegex.exec(text))) {
+			frag.append(text.slice(last, match.index));
+
+			const a = document.createElement('a');
+			a.href = /^https?:\/\//i.test(match[0]) ? match[0] : 'https://' + match[0];
+			a.textContent = match[0];
+			a.target = '_blank';
+			a.rel = 'noopener noreferrer';
+
+			frag.append(a);
+
+			last = match.index + match[0].length;
+		}
+
+		frag.append(text.slice(last));
+		textNode.replaceWith(frag);
+	}
+
+	return template.innerHTML;
+};

@@ -138,6 +138,7 @@ niconico_meta_re = re.compile(
 	r'<meta name=\"server-response\" content=\"([ -~]*?)\" \/>'
 )
 hashtag_re = re.compile(r'#(\w+)')
+twitter_t_co_re = re.compile(r' ?https://t\.co/[0-9a-zA-Z]{10}$')
 
 
 def get_niconico_geoblocked(sm):
@@ -279,6 +280,8 @@ def process_video_info(full_info, link=None):
 			case Platform.TWITTER:
 				info['id'] = info['display_id']
 				info['title'] = None
+				info['tags'].extend(hashtag_re.findall(info['description']))
+				info['description'] = twitter_t_co_re.sub('', info['description'])
 			case Platform.ACFUN:
 				info['id'] = 'ac' + info['id']
 			case _:

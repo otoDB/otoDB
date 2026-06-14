@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from otodb.common import reset_cookies
@@ -25,3 +25,12 @@ def upload_cookies(request: HttpRequest):
 		form = UploadForm()
 
 	return render(request, 'upload_cookies.html', {'form': form})
+
+
+def auth_forward(request: HttpRequest):
+	user = request.user
+	response = HttpResponse(status=204)
+	response['X-User-ID'] = str(user.id)
+	response['X-User-Name'] = user.username
+	response['X-User-Role'] = 'admin' if user.is_mod else 'editor'
+	return response

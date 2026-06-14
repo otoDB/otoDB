@@ -29,6 +29,8 @@ def upload_cookies(request: HttpRequest):
 
 def auth_forward(request: HttpRequest):
 	user = request.user
+	if not user.is_authenticated:
+		return HttpResponse(status=401)
 	response = HttpResponse(status=204)
 	response['X-User-ID'] = str(user.id)
 	response['X-User-Name'] = user.username

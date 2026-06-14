@@ -22,6 +22,8 @@ from yt_dlp.extractor.twitter import TwitterIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.utils import DownloadError
 
+from otodb import ytdlp_twitter  # noqa: F401  (activates TwitterIE monkeypatch)
+
 from .models.enums import MimeType, Platform
 
 logger = logging.getLogger(__name__)

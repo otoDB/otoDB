@@ -150,7 +150,7 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
-	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id !== '1'}<button
+	{#if hasUserLevel(data.user?.level, Levels.Mod) && data.revision.id !== '1'}<button
 			class="my-5"
 			{@attach dirtyClick(async () => {
 				if (!confirm('Are you sure?')) return;
@@ -165,7 +165,7 @@
 		<button
 			onclick={() =>
 				goto(
-					`/post/new?category=${PostCategory.Gardening}&entity=@${data.revision.user}&title=${m.silly_quiet_fireant_quell({ id: data.revision.id })}`
+					`/thread/new?category=${PostCategory.Gardening}&entity=@${data.revision.user}&title=${m.silly_quiet_fireant_quell({ id: data.revision.id })}`
 				)}>{m.frail_loose_gecko_play({ user: data.revision.user })}</button
 		>
 	{/if}
@@ -210,5 +210,5 @@
 			</li>
 		{/each}
 	</ul>
-	<Pager n_count={data.changes.count} page={data.page} page_size={data.batch_size} />
+	<Pager n_count={data.changes.count} page_size={data.batch_size} />
 </Section>

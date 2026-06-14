@@ -8,12 +8,12 @@
 </script>
 
 <Section title={data.tag.name} type={m.big_tiny_kitten_devour()} menuLinks={data.links}>
-	<a href="/post/new?category=3&entity=[[{data.tag.slug}]]">{m.antsy_aloof_horse_grace()}</a>
+	<a href="/thread/new?category=3&entity=[[{data.tag.slug}]]">{m.antsy_aloof_horse_grace()}</a>
 	{#if data.threads.items.length}
 		<ThreadTable
 			posts={data.threads.items}
 			entityFilter={(e) => !(e.entity === 'tagwork' && e.id === data.tag.slug)}
 		/>
-		<Pager n_count={data.threads.count} page={data.page} page_size={data.batch_size} />
+		<Pager n_count={data.threads.count} page_size={data.batch_size} />
 	{/if}
 </Section>

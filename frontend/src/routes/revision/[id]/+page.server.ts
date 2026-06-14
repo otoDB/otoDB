@@ -46,7 +46,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	return {
 		revision,
 		changes,
-		page,
 		batch_size,
 		routes: group_RCs(changes.items)
 	};

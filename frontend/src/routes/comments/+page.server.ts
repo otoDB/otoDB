@@ -1,4 +1,5 @@
-import client from '$lib/api.server';
+import client, { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
 import { parseMentions, renderMarkdown } from '$lib/markdown';
 import { fail } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
@@ -16,7 +17,6 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 	});
 	return {
 		comments,
-		page,
 		batch_size,
 		head: { title: m.same_broad_haddock_pinch() }
 	};
@@ -33,7 +33,7 @@ export const actions = {
 		const reply_to = data.get('reply_to') as string;
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 
-		await client.POST('/api/comment/comment', {
+		const { error } = await rawClient.POST('/api/comment/comment', {
 			fetch,
 			params: {
 				header: {
@@ -48,6 +48,7 @@ export const actions = {
 				mentioned_users: parseMentions(comment_text)
 			}
 		});
+		if (error) return apiFail(error);
 	},
 	edit: async ({ request, fetch }) => {
 		const data = await request.formData();
@@ -55,10 +56,11 @@ export const actions = {
 			comment_text = data.get('comment') as string;
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
 
-		await client.PUT('/api/comment/comment', {
+		const { error } = await rawClient.PUT('/api/comment/comment', {
 			fetch,
 			params: { header: { 'otodb-internal-secret': env.INTERNAL_API_SECRET } },
 			body: { comment_id, comment_text }
 		});
+		if (error) return apiFail(error);
 	}
 } satisfies Actions;

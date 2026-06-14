@@ -23,12 +23,21 @@
 			<tbody>
 				<tr>
 					<th><label for="username">{m.careful_cozy_elk_dare()}</label></th>
-					<td><input required type="text" name="username" value={form?.username ?? ''} /></td>
+					<td
+						><input
+							required
+							type="text"
+							name="username"
+							maxlength="32"
+							value={form?.username ?? ''}
+						/></td
+					>
 				</tr>
 				{#if data.inviteRequired}
 					<tr>
 						<th
-							><label for="invite">{m.tiny_great_robin_commend()} (<a href="/post/19">?</a>)</label
+							><label for="invite"
+								>{m.tiny_great_robin_commend()} (<a href="/thread/19">?</a>)</label
 							></th
 						>
 						<td><input required type="text" name="invite" /></td>

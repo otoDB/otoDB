@@ -13,7 +13,7 @@
 	{#each enumValues(PostCategory) as c, i (i)}
 		{#if data.categories[c].length}
 			<h2 class="mt-4 text-base">
-				<a href="/post?category={i}">{postCategoryNames[c]()}</a>
+				<a href="/thread?category={i}">{postCategoryNames[c]()}</a>
 			</h2>
 			<ThreadTable posts={data.categories[c]} showAuthor={i > 0} />
 		{/if}

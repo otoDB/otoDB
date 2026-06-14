@@ -198,7 +198,7 @@
 			</tbody>
 		</table>
 	</div>
-	{#if hasUserLevel(data.user?.level, Levels.Admin)}
+	{#if hasUserLevel(data.user?.level, Levels.Mod)}
 		<button {@attach dirtyClick(del)}>{m.suave_less_deer_grip()}</button>
 	{/if}
 </Section>

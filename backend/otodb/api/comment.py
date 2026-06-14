@@ -35,7 +35,6 @@ class ModelsWithComments(str, Enum):
 	LIST = 'pool'
 	TAG = 'tagwork'
 	SONG_ATTRIBUTE = 'tagsong'
-	POST = 'post'
 	REQUEST = 'bulkrequest'
 
 
@@ -209,7 +208,6 @@ class ExtCommentSchema(BaseCommentSchema):
 def recent(request: HttpRequest):
 	return (
 		XtdComment.objects.filter(is_removed=False)
-		.exclude(content_type__model='post')
 		.exclude(content_type__model='account')
 		.order_by('-submit_date')
 		.annotate(

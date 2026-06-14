@@ -18,7 +18,10 @@ export const actions = {
 		const { error: apiError } = await rawClient.POST('/api/wiki/page', {
 			fetch,
 			params: {
-				query: { page_slug: params.page_slug!, ...(title ? { title } : {}) }
+				query: {
+					page_slug: params.page_slug!,
+					...(title ? { title } : {})
+				}
 			},
 			body: pages
 		});

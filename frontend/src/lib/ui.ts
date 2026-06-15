@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import { languages } from '$lib/enums/language';
 import { getLocale } from '$lib/paraglide/runtime';
+import { unified } from 'unified';
 import { WorkTagCategoryMap } from './enums/workTagCategory';
 import { m } from './paraglide/messages';
 import {
@@ -10,6 +11,10 @@ import {
 	VideoPlatformPref,
 	type components
 } from './schema';
+import rehypeStringify from 'rehype-stringify';
+import rehypeParse from 'rehype-parse';
+import { visit, SKIP } from 'unist-util-visit';
+import type { Root, Element, Text } from 'hast';
 
 export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -91,44 +96,63 @@ export const getMissingCategories = (
 	return WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
 };
 
-export const autolinkDescription = (description: string) => {
-	const template = document.createElement('template');
-	template.innerHTML = description;
+const URL_RE = /(https?:\/\/|www\.)[a-z0-9-]+(\.[a-z0-9-]+)+([/?#][^\s]*)?/gi;
 
-	const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT, (node) =>
-		node.parentElement?.closest('a') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
-	);
+function rehypeAutolink() {
+	return (tree: Root) => {
+		visit(tree, (node, index, parent) => {
+			if (node.type === 'element' && node.tagName === 'a') return SKIP;
+			if (node.type !== 'text' || !parent || index === undefined) return;
 
-	const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+			const text = node.value;
 
-	const nodes: Text[] = [];
-	let n;
-	while ((n = walker.nextNode())) nodes.push(n as Text);
+			if (!URL_RE.test(text)) return;
+			URL_RE.lastIndex = 0;
 
-	for (const textNode of nodes) {
-		const text = textNode.textContent;
-		const frag = document.createDocumentFragment();
+			const children: (Text | Element)[] = [];
+			let lastIndex = 0;
+			let match;
 
-		let last = 0;
-		let match;
+			while ((match = URL_RE.exec(text))) {
+				if (match.index > lastIndex)
+					children.push({
+						type: 'text',
+						value: text.slice(lastIndex, match.index)
+					});
 
-		while ((match = urlRegex.exec(text))) {
-			frag.append(text.slice(last, match.index));
+				children.push({
+					type: 'element',
+					tagName: 'a',
+					properties: {
+						href: /^https?:\/\//i.test(match[0]) ? match[0] : 'https://' + match[0]
+					},
+					children: [
+						{
+							type: 'text',
+							value: match[0]
+						}
+					]
+				});
 
-			const a = document.createElement('a');
-			a.href = /^https?:\/\//i.test(match[0]) ? match[0] : 'https://' + match[0];
-			a.textContent = match[0];
-			a.target = '_blank';
-			a.rel = 'noopener noreferrer';
+				lastIndex = match.index + match[0].length;
+			}
 
-			frag.append(a);
+			if (lastIndex < text.length)
+				children.push({
+					type: 'text',
+					value: text.slice(lastIndex)
+				});
 
-			last = match.index + match[0].length;
-		}
+			parent.children.splice(index, 1, ...children);
+			return index + children.length;
+		});
+	};
+}
 
-		frag.append(text.slice(last));
-		textNode.replaceWith(frag);
-	}
+const autolinkDescriptionProcessor = unified()
+	.use(rehypeParse, { fragment: true })
+	.use(rehypeAutolink)
+	.use(rehypeStringify);
 
-	return template.innerHTML;
-};
+export const autolinkDescription = (description: string) =>
+	autolinkDescriptionProcessor.processSync(description).toString();

@@ -27,7 +27,7 @@
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callSavingToast } from '$lib/toast';
-	import { getDisplayText } from '$lib/ui.js';
+	import { autolinkDescription, getDisplayText } from '$lib/ui.js';
 	import { getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
@@ -218,7 +218,7 @@
 								<td
 									><div class="description-cell external-link-icon">
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-										{@html data.description}
+										{@html autolinkDescription(data.description ?? '')}
 									</div></td
 								>
 							</tr>
@@ -475,7 +475,7 @@
 						<summary>{m.clear_lucky_peacock_pick()}</summary>
 						<div class="external-link-icon whitespace-pre-wrap">
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html src.description}
+							{@html autolinkDescription(src.description ?? '')}
 						</div>
 					</details>
 				</div>

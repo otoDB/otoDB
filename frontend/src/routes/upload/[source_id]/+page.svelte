@@ -8,6 +8,7 @@
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import TagsEditor from '$lib/TagsEditor.svelte';
+	import { autolinkDescription } from '$lib/ui.js';
 	import WorkField from '$lib/WorkField.svelte';
 
 	let { data } = $props();
@@ -67,7 +68,7 @@
 							<td>
 								<div class="description-cell external-link-icon">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									{@html data.source.description}
+									{@html autolinkDescription(data.source.description ?? '')}
 								</div>
 							</td>
 						</tr>

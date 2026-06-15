@@ -96,7 +96,20 @@ export const getMissingCategories = (
 	return WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
 };
 
-const URL_RE = /(https?:\/\/|www\.)[a-z0-9-]+(\.[a-z0-9-]+)+([/?#][^\s]*)?/gi;
+const URL_RE = /(?<![\w@/.])(https?:\/\/|www\.)[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([/?#][^\s]*)?/gi;
+
+const splitTrailingPunctuation = (url: string): [string, string] => {
+	let end = url.length;
+	while (end > 0) {
+		const c = url[end - 1];
+		if (c === ')') {
+			const s = url.slice(0, end);
+			if ((s.match(/\)/g)?.length ?? 0) <= (s.match(/\(/g)?.length ?? 0)) break;
+		} else if (!/[.,!?;:'"\]}>]/.test(c)) break;
+		end--;
+	}
+	return [url.slice(0, end), url.slice(end)];
+};
 
 function rehypeAutolink() {
 	return (tree: Root) => {
@@ -120,19 +133,25 @@ function rehypeAutolink() {
 						value: text.slice(lastIndex, match.index)
 					});
 
+				const [url, trailing] = splitTrailingPunctuation(match[0]);
+
 				children.push({
 					type: 'element',
 					tagName: 'a',
 					properties: {
-						href: /^https?:\/\//i.test(match[0]) ? match[0] : 'https://' + match[0]
+						href: /^https?:\/\//i.test(url) ? url : 'https://' + url,
+						target: '_blank',
+						rel: ['noopener', 'noreferrer']
 					},
 					children: [
 						{
 							type: 'text',
-							value: match[0]
+							value: url
 						}
 					]
 				});
+
+				if (trailing) children.push({ type: 'text', value: trailing });
 
 				lastIndex = match.index + match[0].length;
 			}

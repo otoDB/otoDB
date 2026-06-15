@@ -96,8 +96,6 @@ export const getMissingCategories = (
 	return WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
 };
 
-const URL_RE = /(?<![\w@/.])(https?:\/\/|www\.)[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([/?#][^\s]*)?/gi;
-
 const splitTrailingPunctuation = (url: string): [string, string] => {
 	let end = url.length;
 	while (end > 0) {
@@ -119,6 +117,8 @@ function rehypeAutolink() {
 
 			const text = node.value;
 
+			const URL_RE =
+				/(?<![\w@/.])(https?:\/\/|www\.)[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([/?#][^\s]*)?/gi;
 			if (!URL_RE.test(text)) return;
 			URL_RE.lastIndex = 0;
 

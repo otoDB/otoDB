@@ -48,17 +48,20 @@ const defaultPrefs: Required<Prefs> = {
 	PREFER_AUTHOR_UPLOAD: false
 };
 
+export const getStoredPrefs = (): Partial<Prefs> =>
+	JSON.parse(browser ? (localStorage.getItem('prefs') ?? '{}') : '{}');
+
 export const getLocalPrefs = (): Required<Prefs> => ({
 	...defaultPrefs,
-	...JSON.parse(browser ? (localStorage.getItem('prefs') ?? '{}') : '{}')
+	...getStoredPrefs()
 });
 
 export const getLocalPref = <T extends keyof Prefs>(setting: T): Required<Prefs>[T] =>
-	(getLocalPrefs()?.[setting] ?? defaultPrefs[setting]) as Required<Prefs>[T];
+	(getStoredPrefs()[setting] ?? defaultPrefs[setting]) as Required<Prefs>[T];
 
 export const updateLocalPrefs = (values: Partial<Prefs>) => {
 	if (!browser) return;
-	localStorage.setItem('prefs', JSON.stringify({ ...getLocalPrefs(), ...values }));
+	localStorage.setItem('prefs', JSON.stringify({ ...getStoredPrefs(), ...values }));
 };
 
 export const getTagDisplayName = (tag: {

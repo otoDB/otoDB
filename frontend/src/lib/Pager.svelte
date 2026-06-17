@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page as page_state } from '$app/state';
-
 	let {
-		page,
 		page_size,
 		n_count,
 		window_size = 2,
 		base_url = null,
 		param_name = 'page'
 	}: {
-		page: number;
 		n_count: number;
 		page_size: number;
 		window_size?: number;
@@ -18,6 +15,7 @@
 		param_name?: string;
 	} = $props();
 
+	const page = $derived(parseInt(page_state.url.searchParams.get(param_name) ?? '0', 10) || 1);
 	const n_pages = $derived(Math.ceil(n_count / page_size));
 	const page_min = $derived(Math.max(1, page - window_size));
 	const page_max = $derived(Math.min(n_pages, page + window_size));

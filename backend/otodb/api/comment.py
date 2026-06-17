@@ -7,7 +7,7 @@ from django.db import models, transaction
 from django.db.models import Case, F, OuterRef, Subquery, When, Window
 from django.db.models.functions import Rank
 from django.http import HttpRequest
-from django_comments_xtd.models import XtdComment
+from django_comments_xtd.models import XtdComment, max_thread_level_for_content_type
 from ninja import Router, Schema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
@@ -17,8 +17,10 @@ from ninja.throttling import AuthRateThrottle
 from otodb.account.models import Account
 from otodb.discord import discord_comment
 from otodb.models import CommentMeta, Notification, RevisionChange, Subscription
+from otodb.models.enums import ErrorCode
 
 from .common import (
+	ApiError,
 	AuthedHttpRequest,
 	OtodbID,
 	ProfileSchema,
@@ -101,6 +103,8 @@ def post(
 	parent = None if parent_id == 0 else XtdComment.objects.get(id=parent_id)
 	if parent is not None and parent.is_removed:
 		raise HttpError(400, 'Bad Request')
+	if parent is not None and parent.level >= max_thread_level_for_content_type(T):
+		raise ApiError(400, ErrorCode.MAX_THREAD_LEVEL)
 
 	comment = XtdComment.objects.create(
 		content_type=T,

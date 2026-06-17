@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Banner from '$lib/Banner.svelte';
 	import { dirtyEnhance } from '$lib/dirty';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
@@ -7,6 +8,7 @@
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import TagsEditor from '$lib/TagsEditor.svelte';
+	import { autolinkDescription } from '$lib/ui.js';
 	import WorkField from '$lib/WorkField.svelte';
 
 	let { data } = $props();
@@ -41,6 +43,9 @@
 	type={m.extra_brave_tapir_skip()}
 	menuLinks={data.links}
 >
+	{#if data.source.is_pending}
+		<Banner variant="info" title={m.brisk_lucky_heron_mend()} />
+	{/if}
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
@@ -63,7 +68,7 @@
 							<td>
 								<div class="description-cell external-link-icon">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									{@html data.source.description}
+									{@html autolinkDescription(data.source.description ?? '')}
 								</div>
 							</td>
 						</tr>
@@ -121,12 +126,6 @@
 										>{data.source.media_title || `Work #${data.source.media}`}</a
 									></td
 								>
-							</tr>
-						{/if}
-						{#if data.source.is_pending}
-							<tr>
-								<th class="w-24">Status</th>
-								<td><span class="text-sky-600">{m.lost_weird_squid_commend()}</span></td>
 							</tr>
 						{/if}
 					</tbody>

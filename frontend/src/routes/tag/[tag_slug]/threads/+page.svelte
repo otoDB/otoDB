@@ -14,6 +14,6 @@
 			posts={data.threads.items}
 			entityFilter={(e) => !(e.entity === 'tagwork' && e.id === data.tag.slug)}
 		/>
-		<Pager n_count={data.threads.count} page={data.page} page_size={data.batch_size} />
+		<Pager n_count={data.threads.count} page_size={data.batch_size} />
 	{/if}
 </Section>

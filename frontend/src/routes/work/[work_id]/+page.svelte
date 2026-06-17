@@ -27,7 +27,7 @@
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callSavingToast } from '$lib/toast';
-	import { getDisplayText } from '$lib/ui.js';
+	import { autolinkDescription, getDisplayText } from '$lib/ui.js';
 	import { getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
@@ -126,6 +126,9 @@
 	{:else if data.status === Status.Delisted}
 		<Banner variant="danger" title={m.livid_main_bat_lift()} />
 	{/if}
+	{#if data.sources.some((s) => s.is_pending)}
+		<Banner variant="info" title={m.proud_zesty_otter_gleam()} />
+	{/if}
 	{#if data?.pending_flag}
 		<Banner variant="warning" title={m.small_red_finch_lock()}>
 			{#if data.pending_flag.reason}
@@ -215,7 +218,7 @@
 								<td
 									><div class="description-cell external-link-icon">
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-										{@html data.description}
+										{@html autolinkDescription(data.description ?? '')}
 									</div></td
 								>
 							</tr>
@@ -395,7 +398,8 @@
 			<div
 				class={[
 					'w-full border px-4 py-2',
-					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : ''
+					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : '',
+					{ 'outline-4 outline-sky-600': src.is_pending }
 				]}
 			>
 				{#if data.user}
@@ -471,7 +475,7 @@
 						<summary>{m.clear_lucky_peacock_pick()}</summary>
 						<div class="external-link-icon whitespace-pre-wrap">
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html src.description}
+							{@html autolinkDescription(src.description ?? '')}
 						</div>
 					</details>
 				</div>

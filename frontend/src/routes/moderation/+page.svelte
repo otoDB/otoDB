@@ -71,7 +71,7 @@
 				{#each data.sources.items as source (source.id)}
 					<tr>
 						<td>
-							<a href={source.url} target="_blank" rel="noopener">
+							<a href="/upload/{source.id}">
 								{source.title || source.url}
 							</a>
 						</td>
@@ -105,7 +105,6 @@
 		{#if data.sources.count}
 			<Pager
 				n_count={data.sources.count}
-				page={data.page}
 				page_size={data.batchSize}
 				base_url={page.url.toString()}
 			/>
@@ -121,12 +120,7 @@
 			{/each}
 		</div>
 		{#if data.queue.count}
-			<Pager
-				n_count={data.queue.count}
-				page={data.page}
-				page_size={data.batchSize}
-				base_url={page.url.toString()}
-			/>
+			<Pager n_count={data.queue.count} page_size={data.batchSize} base_url={page.url.toString()} />
 		{/if}
 	{/if}
 {/if}

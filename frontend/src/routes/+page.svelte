@@ -6,6 +6,7 @@
 	import Section from '$lib/Section.svelte';
 	import Time from '$lib/Time.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
+	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	let { data } = $props();
 </script>
@@ -69,7 +70,13 @@
 				{#each data.posts.items as p, i (i)}
 					<tr>
 						<td><a href="/thread/{p.id}">{p.title}</a></td>
-						<td><Time format="relative" date={p.modified} /></td>
+						<td
+							><Time format="relative" date={p.modified} />
+							<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
+								>{#snippet content()}<a href="/profile/{p.last_post_by}">{p.last_post_by}</a
+									>{/snippet}</ParaglideMessage
+							></td
+						>
 					</tr>
 				{/each}
 			</tbody>

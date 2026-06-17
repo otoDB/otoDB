@@ -98,7 +98,7 @@
 			</ol>
 		</div>
 		{#if data.entries?.count}
-			<Pager n_count={data.entries.count} page={data.page} page_size={data.batch_size} />
+			<Pager n_count={data.entries.count} page_size={data.batch_size} />
 		{/if}
 	{:else}
 		<h3>{m.hour_flat_finch_zoom()}</h3>

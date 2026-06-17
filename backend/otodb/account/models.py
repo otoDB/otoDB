@@ -1,3 +1,4 @@
+import unicodedata
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -10,6 +11,18 @@ from django.utils import timezone
 
 from otodb.models.enums import OtodbIntegerEnum
 
+# Disallow:
+# - RFC 3986 reserved
+# - % (percent-encoding)
+# - HTML special characters
+# - Markdown or tag search syntax characters
+# - whitespace and control characters (Unicode categories "Z" and "C" -- see below)
+#
+# Allow:
+# - RFC 3986 unreserved (alphanumeric, "-", ".", "_", "~")
+# - Unicode characters (including emoji)
+USERNAME_DISALLOWED_CHARS = frozenset(':/?#[]@!$&\'()*+,;=%<>"\\{}|^')
+
 
 class AccountManager(BaseUserManager):
 	def get_by_natural_key(self, username):
@@ -18,8 +31,17 @@ class AccountManager(BaseUserManager):
 	def create_user(self, username, email, password=None, **extra_fields):
 		if not username:
 			raise ValueError('Users must have a username')
-		if any(c.isspace() for c in username):
-			raise ValueError('Usernames may not contain whitespace')
+		username = User.normalize_username(username)
+		if not 1 <= len(username) <= 32:
+			raise ValueError('Username must be between 1 and 32 characters long')
+		if any(
+			c in USERNAME_DISALLOWED_CHARS or unicodedata.category(c)[0] in 'CZ'
+			for c in username
+		):
+			raise ValueError(
+				'Username may not contain whitespace, control characters, or '
+				'symbols such as "@" or "/"'
+			)
 		if not email:
 			raise ValueError('Users must have an email address')
 		try:
@@ -28,7 +50,6 @@ class AccountManager(BaseUserManager):
 			raise ValueError('Invalid email address')
 		if self.filter(username__iexact=username).exists():
 			raise IntegrityError('This username is already taken')
-		username = User.normalize_username(username)
 		user: Account = self.model(username=username, email=email, **extra_fields)
 		user.set_password(password)
 		user.save(using=self._db)

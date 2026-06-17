@@ -76,11 +76,7 @@
 					{/each}
 				</tbody>
 			</table>
-			<Pager
-				n_count={data.nonsub_notifications.count}
-				page={data.page}
-				page_size={data.batch_size}
-			/>
+			<Pager n_count={data.nonsub_notifications.count} page_size={data.batch_size} />
 		{:else}
 			{m.wacky_weird_swallow_trust()}
 		{/if}
@@ -126,7 +122,6 @@
 			</table>
 			<Pager
 				n_count={data.sub_notifications.count}
-				page={data.sub_page}
 				page_size={data.batch_size}
 				param_name="sub_page"
 			/>

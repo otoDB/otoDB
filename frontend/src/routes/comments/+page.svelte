@@ -34,6 +34,6 @@
 		</tbody>
 	</table>
 	{#if data.comments?.count}
-		<Pager n_count={data.comments.count} page={data.page} page_size={data.batch_size} />
+		<Pager n_count={data.comments.count} page_size={data.batch_size} />
 	{/if}
 </Section>

@@ -28,7 +28,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	return {
 		q: q ?? '',
 		kind: kind ?? '',
-		page,
 		batch_size,
 		results: data ?? { items: [], count: 0 },
 		head: {

@@ -14,15 +14,22 @@
 	let { data } = $props();
 
 	const is_mod = $derived(!!data.user && hasUserLevel(data.user.level, Levels.Mod));
+
 	const can_close = $derived(is_mod && !data.thread?.closed_at);
+	const close_thread = async () => {
+		await client.PUT('/api/thread/close', {
+			fetch,
+			params: { query: { thread_id: data.thread.id } }
+		});
+		await invalidateAll();
+	};
+
 	const can_reopen = $derived(
 		(is_mod || (!!data.user && data.user.username === data.thread?.added_by.username)) &&
 			!!data.thread?.closed_at
 	);
-
-	const toggle_close = async () => {
-		if (!data.thread) return;
-		await client.PUT('/api/thread/close', {
+	const reopen_thread = async () => {
+		await client.PUT('/api/thread/reopen', {
 			fetch,
 			params: { query: { thread_id: data.thread.id } }
 		});
@@ -118,12 +125,12 @@
 			</div>
 			<div class="shrink-0">
 				{#if can_close}
-					<button type="button" class="px-3 py-1" onclick={toggle_close}>
+					<button type="button" class="px-3 py-1" onclick={close_thread}>
 						{m.thread_action_close()}
 					</button>
 				{/if}
 				{#if can_reopen}
-					<button type="button" class="px-3 py-1" onclick={toggle_close}>
+					<button type="button" class="px-3 py-1" onclick={reopen_thread}>
 						{m.thread_action_reopen()}
 					</button>
 				{/if}

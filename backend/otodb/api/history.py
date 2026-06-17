@@ -292,12 +292,14 @@ def add_rev_restore(ctpk, pk, new_pk):
 
 
 def get_rev_origin(ctpk, pk, cutoff_date):
-	"""Resolve pk *backward* through restored=True chains to the original entity it
-	was restored from -- the inverse of get_rev_restored, which only walks forward.
-	Stops walking backwards as soon as revision cutoff date is reached
+	"""Resolve pk *backward* through restored=True chains to the generation that was
+	already alive at cutoff_date -- the inverse of get_rev_restored, which only walks
+	forward.
 
 	A row created by a prior rollback has no revision history before its restoration,
-	so its pre-rollback-date state must be looked up under that original id.
+	so if it was born after the cutoff its pre-cutoff state must be looked up under an
+	earlier generation. We stop at the first (newest) generation whose own restore
+	predates the cutoff -- walking further back would read a stale generation's values.
 	"""
 	while True:
 		prior = (
@@ -309,9 +311,12 @@ def get_rev_origin(ctpk, pk, cutoff_date):
 		)
 		if prior is None:
 			return pk
-		pk, last_date = prior
-		if last_date <= cutoff_date:
+		ancestor, pk_created = prior
+		# `pk` was created (restored) at pk_created. If that is at/before the cutoff,
+		# `pk` itself was the live row then, so its history holds the values we want.
+		if pk_created <= cutoff_date:
 			return pk
+		pk = ancestor
 
 
 def _get_all_previous_field_values(

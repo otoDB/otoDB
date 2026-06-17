@@ -29,6 +29,7 @@
 	let editPreviewMode = $state(false);
 
 	const EDIT_WINDOW_MS = 180 * 24 * 60 * 60 * 1000;
+	const MAX_THREAD_LEVEL = 3;
 
 	const togglePreview = (reply_to: string) => {
 		if (previewMode[reply_to]) {
@@ -210,7 +211,7 @@
 			{/if}
 			{#if editingId === null}
 				<div class="comment-actions flex justify-end gap-2 pt-2">
-					{#if can_comment}
+					{#if can_comment && data.level < MAX_THREAD_LEVEL}
 						<label class="cursor-pointer px-2 py-1">
 							{m.kind_brief_earthworm_dash()}
 							<input type="checkbox" class="reply-toggle hidden" value={false} />

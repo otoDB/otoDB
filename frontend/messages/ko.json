@@ -307,5 +307,8 @@
 	"nice_close_goldfish_taste": "독립 페이지",
 	"noble_tidy_boar_lock": "({#content/})",
 	"funny_heroic_whale_gleam": "원글",
-	"small_fresh_hyena_rest": "이 댓글 스레드는 너무 깊게 중첩되어 답글을 달 수 없습니다."
+	"small_fresh_hyena_rest": "이 댓글 스레드는 너무 깊게 중첩되어 답글을 달 수 없습니다.",
+	"glad_front_stork_hop": "\"{query}\"로 작품 검색",
+	"glad_front_stork_tag": "\"{query}\"로 태그 검색",
+	"glad_front_stork_list": "\"{query}\"로 리스트 검색"
 }

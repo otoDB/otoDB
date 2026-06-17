@@ -13,6 +13,9 @@
 
 		user: null | { username: string };
 	} = $props();
+
+	let query = $state('');
+	let showDropdown = $derived(query.trim().length > 0);
 </script>
 
 <nav
@@ -28,16 +31,49 @@
 			</a>
 		</div>
 		<div class="flex flex-grow gap-x-4">
-			<div
-				class="bg-otodb-bg-faint/75 border-otodb-content-faint border-otodb-content-faint bg-otodb-bg-fainter/75 flex h-full w-full items-center border px-2"
-			>
-				<span class="icon-[gravity-ui--magnifier] text-base"></span>
-				<input
-					type="text"
-					name="query"
-					placeholder="{m.mean_top_antelope_love()}..."
-					class="ml-2 w-full border-none bg-transparent px-2 py-1 text-lg outline-none"
-				/>
+			<div class="relative w-full">
+				<div
+					class="bg-otodb-bg-faint/75 border-otodb-content-faint bg-otodb-bg-fainter/75 flex h-full w-full items-center border px-2"
+				>
+					<div class="icon-[gravity-ui--magnifier] text-base"></div>
+					<input
+						type="text"
+						name="query"
+						placeholder="{m.mean_top_antelope_love()}..."
+						class="ml-2 w-full border-none bg-transparent py-1 text-lg outline-none"
+						bind:value={query}
+					/>
+				</div>
+				{#if showDropdown}
+					<ul
+						class="bg-otodb-bg-faint border-otodb-content-faint absolute top-full left-0 z-10 w-full list-none border"
+					>
+						<li>
+							<a
+								href="/work?query={encodeURIComponent(query)}"
+								class="hover:bg-otodb-bg-fainter block px-3 py-2 no-underline"
+							>
+								{m.glad_front_stork_hop({ query })}
+							</a>
+						</li>
+						<li>
+							<a
+								href="/tag?query={encodeURIComponent(query)}"
+								class="hover:bg-otodb-bg-fainter block px-3 py-2 no-underline"
+							>
+								{m.glad_front_stork_tag({ query })}
+							</a>
+						</li>
+						<li>
+							<a
+								href="/list?query={encodeURIComponent(query)}"
+								class="hover:bg-otodb-bg-fainter block px-3 py-2 no-underline"
+							>
+								{m.glad_front_stork_list({ query })}
+							</a>
+						</li>
+					</ul>
+				{/if}
 			</div>
 		</div>
 		<div class="flex flex-shrink-0 items-center">

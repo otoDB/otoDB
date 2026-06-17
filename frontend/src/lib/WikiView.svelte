@@ -64,7 +64,7 @@
 {#if currentPage && currentPage.page}
 	<div
 		bind:this={contentEl}
-		class="prose prose-neutral prose-sm dark:prose-invert prose-p:max-w-4xl prose-ul:max-w-4xl prose-ol:max-w-4xl prose-blockquote:max-w-4xl prose-headings:max-w-4xl max-w-none"
+		class="prose prose-neutral prose-sm prose-p:max-w-4xl prose-ul:max-w-4xl prose-ol:max-w-4xl prose-blockquote:max-w-4xl prose-headings:max-w-4xl max-w-none"
 		{@attach (node) => {
 			void currentPage;
 			return hydrate(node);

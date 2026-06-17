@@ -150,7 +150,7 @@
 	<div class="reply-main">
 		{#if previewing}
 			<div class="editor-panel reply-editor">
-				<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none" {@attach hydrateMd}>
+				<div class="prose prose-neutral prose-sm max-w-none" {@attach hydrateMd}>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html html}
 				</div>
@@ -266,7 +266,7 @@
 					{/if}
 				{:else}
 					<div
-						class="prose prose-neutral prose-sm dark:prose-invert max-w-none"
+						class="prose prose-neutral prose-sm max-w-none"
 						{@attach (node) => {
 							void p.body; // re-hydrate when the body changes (e.g. after an edit)
 							return hydrateMd(node);
@@ -316,10 +316,7 @@
 		<div class="reply-main">
 			{#if previewMode}
 				<div class="editor-panel reply-editor">
-					<div
-						class="prose prose-neutral prose-sm dark:prose-invert max-w-none"
-						{@attach hydrateMd}
-					>
+					<div class="prose prose-neutral prose-sm max-w-none" {@attach hydrateMd}>
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 						{@html preview}
 					</div>

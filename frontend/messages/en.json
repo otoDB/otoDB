@@ -416,5 +416,8 @@
 	"lucky_brisk_falcon_rest": "Rate limit exceeded.",
 	"noble_tidy_boar_lock": "({#content/})",
 	"funny_heroic_whale_gleam": "OP",
-	"small_fresh_hyena_rest": "This comment thread is too deeply nested to reply to."
+	"small_fresh_hyena_rest": "This comment thread is too deeply nested to reply to.",
+	"glad_front_stork_hop": "Search \"{query}\" in Works",
+	"glad_front_stork_tag": "Search \"{query}\" in Tags",
+	"glad_front_stork_list": "Search \"{query}\" in Lists"
 }

@@ -43,6 +43,20 @@ When making any changes to frontend code, you MUST run the following commands in
 
 All three commands must succeed without errors before committing. Do not skip or bypass these checks.
 
+## Icons
+
+Icons use [gravity-ui/icons](https://github.com/gravity-ui/icons) via `@iconify/tailwind4`. To find available icons, list the SVG directory:
+
+```
+curl -s https://api.github.com/repos/gravity-ui/icons/contents/svgs | jq -r '.[].name'
+```
+
+Use icons as CSS classes in the format `icon-[gravity-ui--<name>]` (strip the `.svg` extension and use double dash). Example:
+
+```html
+<span class="icon-[gravity-ui--magnifier]"></span>
+```
+
 ## Coding
 
 - When importing components or libraries in `lib`, use `$lib` for import path.

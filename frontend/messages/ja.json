@@ -307,5 +307,8 @@
 	"nice_close_goldfish_taste": "独立ページ",
 	"noble_tidy_boar_lock": "（{#content/}）",
 	"funny_heroic_whale_gleam": "スレッド主",
-	"small_fresh_hyena_rest": "このコメントスレッドはネストが深すぎるため返信できません。"
+	"small_fresh_hyena_rest": "このコメントスレッドはネストが深すぎるため返信できません。",
+	"glad_front_stork_hop": "「{query}」で作品を検索",
+	"glad_front_stork_tag": "「{query}」でタグを検索",
+	"glad_front_stork_list": "「{query}」でリストを検索"
 }

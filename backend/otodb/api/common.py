@@ -646,7 +646,7 @@ def revision(
 		user = Account.get_system()
 
 	prev_request = ufk_request.get_current_request()
-	req = RequestFactory().get('/')
+	req = RequestFactory().post('/')
 	req.cache = RequestCache()
 	req.user = user
 	ufk_request.set_current_request(req)

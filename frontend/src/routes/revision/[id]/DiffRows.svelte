@@ -1,13 +1,12 @@
 <script lang="ts">
 	import type { components } from '$lib/schema';
-	import { diffWords } from 'diff';
 	import Value from './Value.svelte';
 	import { hasDisplayHandler } from './displayValue';
 
 	interface Props {
 		change: components['schemas']['RevisionChangeSchema'];
 		label: string;
-		works: Map<string, components['schemas']['SlimWorkSchema']>;
+		works: components['schemas']['SlimWorkSchema'][];
 		labels: Record<string, string>;
 	}
 

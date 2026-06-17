@@ -34,10 +34,8 @@ const group_RCs = (
 
 export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	const revision_id = params.id;
-	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
-	const batch_size = 30;
 
-	const [{ data: revision }, { data: changes }, { data: refs }] = await Promise.all([
+	const [{ data: revision }, { data: changes }] = await Promise.all([
 		client.GET('/api/history/revision', {
 			fetch,
 			params: { query: { revision_id } }
@@ -46,23 +44,15 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 			fetch,
 			params: {
 				query: {
-					revision_id,
-					limit: batch_size,
-					offset: batch_size * (page - 1)
+					revision_id
 				}
 			}
-		}),
-		client.GET('/api/history/revision_refs', {
-			fetch,
-			params: { query: { revision_id } }
 		})
 	]);
 
 	return {
 		revision,
 		changes,
-		refs,
-		batch_size,
-		routes: group_RCs(changes.items)
+		routes: group_RCs(changes.changes)
 	};
 };

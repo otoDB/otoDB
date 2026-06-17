@@ -61,7 +61,6 @@
 		"@mermaid-js/layout-elk": "^0.2.1",
 		"@sentry/sveltekit": "^10.50.0",
 		"@thisux/sveltednd": "^0.0.20",
-		"diff": "^9.0.0",
 		"mdast-util-find-and-replace": "^3.0.2",
 		"mermaid": "^11.13.0",
 		"openapi-fetch": "^0.15.2",

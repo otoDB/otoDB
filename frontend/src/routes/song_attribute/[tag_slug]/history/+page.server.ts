@@ -11,7 +11,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 			query: {
 				entity: HistoricalEntities.tagsong,
 				id: params.tag_slug,
-
 				limit: batch_size,
 				offset: (page - 1) * batch_size
 			}

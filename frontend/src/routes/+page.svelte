@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { isSOV, isSVO } from '$lib/enums/language';
+	import { EntityModelRoutes } from '$lib/enums.js';
 	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
 	import Section from '$lib/Section.svelte';
 	import Time from '$lib/Time.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
@@ -48,15 +47,19 @@
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
 							>{typeof r.route === 'number' ? routeNames[r.route]() : ''}</td
-						><td>
-							{#if isSVO(getLocale())}
-								{m.curly_safe_lynx_fond()}
-							{/if}
-							<a href="/profile/{r.user}">{r.user}</a>
-							{#if isSOV(getLocale())}
-								{m.curly_safe_lynx_fond()}
-							{/if}</td
-						><td><Time format="relative" date={r.date} /></td></tr
+						><td
+							>{#if r.n_ent == 1}<a
+									href="{EntityModelRoutes[r.first_entity.entity]}/{r.first_entity.id}"
+									>/{EntityModelRoutes[r.first_entity.entity]}/{r.first_entity.id}</a
+								>{:else}{r.n_ent} Entities{/if}</td
+						><td
+							><Time format="relative" date={r.date} /><ParaglideMessage
+								message={m.noble_tidy_boar_lock}
+								inputs={{}}
+								>{#snippet content()}<a href="/profile/{r.user}">{r.user}</a
+									>{/snippet}</ParaglideMessage
+							></td
+						></tr
 					>
 				{/each}
 			</tbody>

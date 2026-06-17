@@ -5,7 +5,7 @@
 	interface Props {
 		change: components['schemas']['RevisionChangeSchema'];
 		card?: boolean;
-		works: Map<string, components['schemas']['SlimWorkSchema']>;
+		works: components['schemas']['SlimWorkSchema'][];
 		labels: Record<string, string>;
 	}
 

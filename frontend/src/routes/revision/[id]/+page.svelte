@@ -6,7 +6,6 @@
 	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import { routeNames } from '$lib/enums/route.js';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
-	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { Levels, PostCategory } from '$lib/schema.js';
@@ -14,11 +13,6 @@
 	import RowChange from './RowChange.svelte';
 
 	let { data } = $props();
-
-	const works = $derived(new Map((data.refs?.works ?? []).map((w) => [w.id, w])));
-	const labels = $derived(data.refs?.labels ?? {});
-	const deletedRows = $derived(data.refs?.deleted_rows ?? {});
-	const rowContext = $derived(data.refs?.row_context ?? {});
 </script>
 
 <Section title="{m.arable_direct_swan_glow()} #{data.revision.id}">
@@ -69,10 +63,10 @@
 									{...row}
 									{ent_type}
 									{ent_id}
-									{works}
-									{labels}
-									{deletedRows}
-									{rowContext}
+									works={data.changes.works}
+									labels={data.changes.labels}
+									deletedRows={data.changes.deleted_rows}
+									rowContext={data.changes.row_context}
 								/>
 							{/each}
 						</li>
@@ -81,5 +75,4 @@
 			</li>
 		{/each}
 	</ul>
-	<Pager n_count={data.changes.count} page_size={data.batch_size} />
 </Section>

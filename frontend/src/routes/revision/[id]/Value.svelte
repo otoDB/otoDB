@@ -9,7 +9,7 @@
 		value: string | null | undefined;
 		ref?: string | null;
 		card?: boolean;
-		works: Map<string, components['schemas']['SlimWorkSchema']>;
+		works: components['schemas']['SlimWorkSchema'][];
 		labels: Record<string, string>;
 	}
 	const { targetType, column, value, ref, card = false, works, labels }: Props = $props();

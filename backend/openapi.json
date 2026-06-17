@@ -5202,7 +5202,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedRevisionSchema"
+                  "$ref": "#/components/schemas/PagedRevisionEntitySummarySchema"
                 }
               }
             }
@@ -5252,29 +5252,6 @@
               "type": "string"
             },
             "required": true
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "default": 30,
-              "maximum": 30,
-              "minimum": 1,
-              "title": "Limit",
-              "type": "integer"
-            },
-            "required": false
-          },
-          {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "default": 0,
-              "minimum": 0,
-              "title": "Offset",
-              "type": "integer"
-            },
-            "required": false
           }
         ],
         "responses": {
@@ -5283,42 +5260,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedRevisionChangeSchema"
+                  "$ref": "#/components/schemas/RevisionDetailsSchema"
                 }
               }
             }
           }
         }
-      }
-    },
-    "/api/history/revision_refs": {
-      "get": {
-        "operationId": "otodb_api_history_revision_refs",
-        "summary": "Revision Refs",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "revision_id",
-            "schema": {
-              "title": "Revision Id",
-              "type": "string"
-            },
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RevisionRefsResponse"
-                }
-              }
-            }
-          }
-        },
-        "description": "Resolve everything a revision's changes reference, for display purposes:\nworks referenced by FK columns (as card data), labels for other FK refs,\nand the last known values of rows deleted in the revision."
       }
     },
     "/api/history/rollback": {
@@ -10290,11 +10237,40 @@
         "title": "PagedExtCommentSchema",
         "type": "object"
       },
-      "PagedRevisionSchema": {
+      "HistoricalEntities": {
+        "enum": [
+          "mediawork",
+          "tagwork",
+          "tagsong",
+          "mediasong",
+          "worksource",
+          "wikipage"
+        ],
+        "title": "HistoricalEntities",
+        "type": "string"
+      },
+      "HistoricalEntitySchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "entity": {
+            "$ref": "#/components/schemas/HistoricalEntities"
+          }
+        },
+        "required": [
+          "id",
+          "entity"
+        ],
+        "title": "HistoricalEntitySchema",
+        "type": "object"
+      },
+      "PagedRevisionEntitySummarySchema": {
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/RevisionSchema"
+              "$ref": "#/components/schemas/RevisionEntitySummarySchema"
             },
             "title": "Items",
             "type": "array"
@@ -10308,7 +10284,66 @@
           "items",
           "count"
         ],
-        "title": "PagedRevisionSchema",
+        "title": "PagedRevisionEntitySummarySchema",
+        "type": "object"
+      },
+      "RevisionEntitySummarySchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "date": {
+            "format": "date-time",
+            "title": "Date",
+            "type": "string"
+          },
+          "user": {
+            "title": "User",
+            "type": "string"
+          },
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index"
+          },
+          "route": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Route"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "default": "",
+            "title": "Message",
+            "type": "string"
+          },
+          "first_entity": {
+            "$ref": "#/components/schemas/HistoricalEntitySchema"
+          },
+          "n_ent": {
+            "title": "N Ent",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "user",
+          "first_entity",
+          "n_ent"
+        ],
+        "title": "RevisionEntitySummarySchema",
         "type": "object"
       },
       "RevisionSchema": {
@@ -10361,25 +10396,39 @@
         "title": "RevisionSchema",
         "type": "object"
       },
-      "PagedRevisionChangeSchema": {
+      "OldColumnSchema": {
         "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/RevisionChangeSchema"
-            },
-            "title": "Items",
-            "type": "array"
+          "column": {
+            "title": "Column",
+            "type": "string"
           },
-          "count": {
-            "title": "Count",
-            "type": "integer"
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ref"
           }
         },
         "required": [
-          "items",
-          "count"
+          "column"
         ],
-        "title": "PagedRevisionChangeSchema",
+        "title": "OldColumnSchema",
         "type": "object"
       },
       "RevisionChangeSchema": {
@@ -10479,43 +10528,15 @@
         "title": "RevisionChangeSchema",
         "type": "object"
       },
-      "OldColumnSchema": {
+      "RevisionDetailsSchema": {
         "properties": {
-          "column": {
-            "title": "Column",
-            "type": "string"
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/RevisionChangeSchema"
+            },
+            "title": "Changes",
+            "type": "array"
           },
-          "value": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Value"
-          },
-          "ref": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Ref"
-          }
-        },
-        "required": [
-          "column"
-        ],
-        "title": "OldColumnSchema",
-        "type": "object"
-      },
-      "RevisionRefsResponse": {
-        "properties": {
           "works": {
             "items": {
               "$ref": "#/components/schemas/SlimWorkSchema"
@@ -10552,41 +10573,34 @@
           }
         },
         "required": [
+          "changes",
           "works",
           "labels",
           "deleted_rows",
           "row_context"
         ],
-        "title": "RevisionRefsResponse",
+        "title": "RevisionDetailsSchema",
         "type": "object"
       },
-      "HistoricalEntities": {
-        "enum": [
-          "mediawork",
-          "tagwork",
-          "tagsong",
-          "mediasong",
-          "worksource",
-          "wikipage"
-        ],
-        "title": "HistoricalEntities",
-        "type": "string"
-      },
-      "HistoricalEntitySchema": {
+      "PagedRevisionSchema": {
         "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RevisionSchema"
+            },
+            "title": "Items",
+            "type": "array"
           },
-          "entity": {
-            "$ref": "#/components/schemas/HistoricalEntities"
+          "count": {
+            "title": "Count",
+            "type": "integer"
           }
         },
         "required": [
-          "id",
-          "entity"
+          "items",
+          "count"
         ],
-        "title": "HistoricalEntitySchema",
+        "title": "PagedRevisionSchema",
         "type": "object"
       },
       "BulkRequestSchema": {

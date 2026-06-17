@@ -9,12 +9,14 @@
 		id: string | null | undefined;
 		/** Render mediawork refs as a work card instead of a title link */
 		card?: boolean;
-		works: Map<string, components['schemas']['SlimWorkSchema']>;
+		works: components['schemas']['SlimWorkSchema'][];
 		labels: Record<string, string>;
 	}
 	const { ref, id, card = false, works, labels }: Props = $props();
 
-	const work = $derived(ref === 'mediawork' && id != null ? works.get(id) : undefined);
+	const work = $derived(
+		ref === 'mediawork' && id != null ? works.find((w) => w.id === id) : undefined
+	);
 	const label = $derived(
 		id != null ? (labels[`${ref}:${id}`] ?? work?.title ?? undefined) : undefined
 	);

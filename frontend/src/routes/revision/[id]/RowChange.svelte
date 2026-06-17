@@ -15,7 +15,7 @@
 		rcs: RC[];
 		ent_type: string;
 		ent_id: string;
-		works: Map<string, components['schemas']['SlimWorkSchema']>;
+		works: components['schemas']['SlimWorkSchema'][];
 		labels: Record<string, string>;
 		deletedRows: Record<string, components['schemas']['OldColumnSchema'][]>;
 		rowContext: Record<string, components['schemas']['OldColumnSchema'][]>;

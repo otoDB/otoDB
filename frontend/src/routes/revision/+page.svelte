@@ -16,14 +16,14 @@
 	let changedField = $state(data.filters.changed_field ?? '');
 	const valueOptions = $derived(fieldEnumOptions[changedField.trim()] ?? []);
 
-	const entityOptions = [
-		[HistoricalEntities.mediawork, m.grand_merry_fly_succeed],
-		[HistoricalEntities.tagwork, m.empty_legal_chicken_taste],
-		[HistoricalEntities.tagsong, m.dull_plain_angelfish_cuddle],
-		[HistoricalEntities.mediasong, m.grand_nice_pony_belong],
-		[HistoricalEntities.worksource, m.extra_brave_tapir_skip],
-		[HistoricalEntities.wikipage, m.curly_zesty_pelican_aim]
-	] as const;
+	const entityOptions = {
+		[HistoricalEntities.mediawork]: m.grand_merry_fly_succeed,
+		[HistoricalEntities.tagwork]: m.empty_legal_chicken_taste,
+		[HistoricalEntities.tagsong]: m.dull_plain_angelfish_cuddle,
+		[HistoricalEntities.mediasong]: m.grand_nice_pony_belong,
+		[HistoricalEntities.worksource]: m.extra_brave_tapir_skip,
+		[HistoricalEntities.wikipage]: m.curly_zesty_pelican_aim
+	} as Record<HistoricalEntities, () => string>;
 
 	let filtersOpen = $state(Object.values(data.filters).some((v) => v !== undefined));
 </script>
@@ -49,7 +49,7 @@
 					<option value="" selected={data.filters.entity == null}>
 						{m.keen_soft_crow_relish()}
 					</option>
-					{#each entityOptions as [value, name] (value)}
+					{#each Object.entries(entityOptions) as [value, name] (value)}
 						<option {value} selected={data.filters.entity === value}>{name()}</option>
 					{/each}
 				</select>
@@ -201,7 +201,6 @@
 	{#if data.results?.count}
 		<Pager
 			n_count={data.results.count}
-			page={data.page}
 			page_size={data.batch_size}
 			base_url={page.url.toString()}
 		/>

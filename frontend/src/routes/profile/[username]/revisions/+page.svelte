@@ -32,7 +32,6 @@
 	{#if data.revisions?.count}
 		<Pager
 			n_count={data.revisions.count}
-			page={data.page}
 			page_size={data.batch_size}
 			base_url={page.url.toString()}
 		/>

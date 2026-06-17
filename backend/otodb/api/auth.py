@@ -3,6 +3,8 @@ import string
 from datetime import datetime, timedelta
 from typing import Annotated
 
+import requests
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
@@ -25,6 +27,7 @@ from otodb.tasks import send_email
 
 from .common import (
 	ApiError,
+	AuthedHttpRequest,
 	Error,
 	OtodbID,
 	ProfileSchema,
@@ -36,6 +39,38 @@ logger = logging.getLogger(__name__)
 
 auth_router = Router()
 
+TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+
+
+def verify_turnstile(request: HttpRequest, token: str | None, action: str) -> None:
+	"""Verify a Cloudflare Turnstile token"""
+	secret = settings.OTODB_TURNSTILE_SECRET_KEY
+	if not secret:
+		return
+	if not token:
+		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
+	data = {'secret': secret, 'response': token}
+	# REMOTE_ADDR is resolved to the real client IP by Granian's proxy-header wrapper
+	# (see project/wsgi.py + OTODB_TRUSTED_PROXY_HOSTS)
+	remoteip = request.META.get('REMOTE_ADDR')
+	if remoteip:
+		data['remoteip'] = remoteip
+	try:
+		resp = requests.post(TURNSTILE_VERIFY_URL, data=data, timeout=5)
+		resp.raise_for_status()
+		payload = resp.json()
+	except requests.RequestException, ValueError:
+		logger.exception('Turnstile verification request failed')
+		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
+	if not payload.get('success'):
+		logger.warning('Turnstile rejected: %s', payload.get('error-codes'))
+		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
+	if payload.get('action') and payload.get('action') != action:
+		logger.warning(
+			'Turnstile action mismatch: %s != %s', payload.get('action'), action
+		)
+		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
+
 
 class UserLoginSchema(Schema):
 	user_id: OtodbID
@@ -45,6 +80,7 @@ class UserLoginSchema(Schema):
 class LoginRequestSchema(Schema):
 	username: Annotated[str, StringConstraints(strip_whitespace=True)]
 	password: str
+	turnstile_token: str | None = None
 
 
 @auth_router.get('/csrf')
@@ -60,6 +96,7 @@ def csrf(request: HttpRequest):
 	response={200: UserLoginSchema, 401: Error},
 )
 def login_endpoint(request: HttpRequest, body: LoginRequestSchema):
+	verify_turnstile(request, body.turnstile_token, 'login')
 	user = authenticate(request, username=body.username, password=body.password)
 	if user is not None:
 		login(request, user)
@@ -101,7 +138,8 @@ class RegisterRequestSchema(Schema):
 	username: Annotated[str, StringConstraints(strip_whitespace=True)]
 	password: str
 	email: Annotated[str, StringConstraints(strip_whitespace=True)]
-	invite: Annotated[str, StringConstraints(strip_whitespace=True)]
+	invite: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None
+	turnstile_token: str | None = None
 
 
 @auth_router.post(
@@ -110,15 +148,28 @@ class RegisterRequestSchema(Schema):
 	response={200: UserLoginSchema, 401: Error, 409: Error},
 )
 def register(request: HttpRequest, body: RegisterRequestSchema):
-	invite_res = get_object_or_404(Invitation, secret=body.invite, used_by__isnull=True)
+	verify_turnstile(request, body.turnstile_token, 'register')
+
+	if settings.OTODB_INVITE_REQUIRED:
+		if not body.invite:
+			raise ApiError(400, ErrorCode.VALIDATION_ERROR)
+		invite_res = get_object_or_404(
+			Invitation, secret=body.invite, used_by__isnull=True
+		)
+		level = invite_res.level
+	else:
+		invite_res = None
+		level = Account.Levels.MEMBER
+
 	assert body.password
 	try:
 		user = Account.objects.create_user(
-			body.username, body.email, password=body.password, level=invite_res.level
+			body.username, body.email, password=body.password, level=level
 		)
-		invite_res.used_by = user
-		invite_res.used_at = timezone.now()
-		invite_res.save()
+		if invite_res is not None:
+			invite_res.used_by = user
+			invite_res.used_at = timezone.now()
+			invite_res.save()
 
 		login(request, user)
 		return {'user_id': user.id, 'username': user.username}
@@ -131,10 +182,12 @@ def register(request: HttpRequest, body: RegisterRequestSchema):
 class ResetPasswordRequestSchema(Schema):
 	password: str
 	token: str | None = None
+	turnstile_token: str | None = None
 
 
 @auth_router.post('/reset_password', throttle=[AnonRateThrottle('3/h')])
 def reset_password(request: HttpRequest, body: ResetPasswordRequestSchema):
+	verify_turnstile(request, body.turnstile_token, 'reset_password')
 	assert body.password
 	user = request.user
 	if user.is_authenticated:
@@ -206,7 +259,7 @@ https://otodb.net/
 
 
 비밀번호 재설정 요청이 접수되었습니다. 비밀번호를 재설정하려면 아래 링크를 방문하세요:
-https://example.com/reset_password?token={token}
+https://otodb.net/reset_password?token={token}
 
 이 링크를 다른 사람과 공유하지 마십시오. 비밀번호 재설정을 요청하지 않으셨다면 이 이메일을 무시하시면 됩니다.
 
@@ -221,15 +274,17 @@ https://otodb.net/
 
 def get_user_language(user, request):
 	if user and hasattr(user, 'preferences'):
-		if lang := user.preferences.filter(setting=Preferences.LANGUAGE).first():
-			return lang
+		if pref := user.preferences.filter(setting=Preferences.LANGUAGE).first():
+			if (
+				pref.value in LanguageTypes.values
+				and pref.value != LanguageTypes.NOT_APPLICABLE
+			):
+				return LanguageTypes(pref.value)
 	if request:
 		if locale := request.COOKIES.get('PARAGLIDE_LOCALE'):
-			try:
-				if lang := LanguageTypes.labels.index(locale):
-					return lang
-			except ValueError:
-				pass
+			for value, label in LanguageTypes.choices[1:]:
+				if label == locale:
+					return value
 		if header := request.headers.get('Accept-Language'):
 			for value, label in LanguageTypes.choices[1:]:
 				if label in header:  # lol
@@ -239,10 +294,12 @@ def get_user_language(user, request):
 
 class SendResetTokenRequestSchema(Schema):
 	email: str
+	turnstile_token: str | None = None
 
 
 @auth_router.put('/reset_password', throttle=[AnonRateThrottle('3/h')])
 def send_reset_password_token(request: HttpRequest, body: SendResetTokenRequestSchema):
+	verify_turnstile(request, body.turnstile_token, 'reset_request')
 	try:
 		user = Account.objects.get(email=body.email)
 		user.reset_token = get_random_string(120, string.ascii_letters + string.digits)
@@ -293,9 +350,9 @@ def user_invites(request: HttpRequest):
 	throttle=[AuthRateThrottle('5/d')],
 )
 @user_is_editor
-def new_invite(request: HttpRequest):
+def new_invite(request: AuthedHttpRequest):
 	assert (
-		request.user.level >= Account.Levels.ADMIN
+		request.user.level >= Account.Levels.MOD
 		or not Invitation.objects.filter(
 			created_by=request.user, created_at__gte=datetime.now() - timedelta(days=7)
 		).exists()
@@ -305,6 +362,6 @@ def new_invite(request: HttpRequest):
 	).exists()
 	Invitation.objects.create(
 		created_by=request.user,
-		level=Account.Levels.EDITOR,
+		level=Account.Levels.MEMBER,
 		secret=get_random_string(16, string.ascii_letters + string.digits),
 	)

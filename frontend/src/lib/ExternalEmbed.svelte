@@ -5,16 +5,17 @@
 		src: components['schemas']['WorkSourceSchema'];
 		width?: number;
 		height?: number;
+		autoplay?: boolean;
 	}
 
-	let { src, width = 560, height = 315 }: Props = $props();
+	let { src, width = 560, height = 315, autoplay = true }: Props = $props();
 </script>
 
 {#if src.platform === Platform.YouTube}
 	<iframe
 		{width}
 		{height}
-		src="https://www.youtube-nocookie.com/embed/{src.source_id}"
+		src="https://www.youtube-nocookie.com/embed/{src.source_id}{autoplay ? '?autoplay=1' : ''}"
 		title="YouTube video player"
 		frameborder="0"
 		allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -25,7 +26,7 @@
 	<iframe
 		{width}
 		{height}
-		src="https://embed.nicovideo.jp/watch/{src.source_id}"
+		src="https://embed.nicovideo.jp/watch/{src.source_id}{autoplay ? '?autoplay=1' : ''}"
 		allowfullscreen
 		scrolling="no"
 		allow="encrypted-media;"
@@ -35,7 +36,7 @@
 	<iframe
 		{width}
 		{height}
-		src="//player.bilibili.com/player.html?isOutside=true&bvid={src.source_id}&p=1"
+		src="//player.bilibili.com/player.html?isOutside=true&bvid={src.source_id}&p={autoplay ? 1 : 0}"
 		scrolling="no"
 		frameborder="no"
 		allowfullscreen
@@ -49,7 +50,7 @@
 		scrolling="no"
 		frameborder="no"
 		allow="autoplay"
-		src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{src.source_id}&visual=true"
+		src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/{src.source_id}&visual=true&auto_play={autoplay}"
 	></iframe>
 {:else if src.platform === Platform.Twitter}
 	<iframe

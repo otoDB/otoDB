@@ -8,7 +8,6 @@
 	interface Props {
 		value: string;
 		type: 'work' | 'song';
-		resolve_aliases?: boolean;
 		name?: string;
 	}
 	let { value = $bindable(''), type, ...props }: Props = $props();
@@ -20,19 +19,21 @@
 			suggestions = [];
 			return;
 		}
-		const { data } = await client.GET(
-			type === 'work' ? ('/api/tag/search' as const) : ('/api/tag/song_tag_search' as const),
-
-			{
-				params: {
-					query: {
-						query: value,
-						limit: 10,
-						resolve_aliases: props.resolve_aliases ?? true
-					}
-				}
-			}
-		);
+		const { data } =
+			type === 'work'
+				? await client.GET('/api/tag/search', {
+						params: {
+							query: {
+								query: value,
+								limit: 10,
+								order: 'count',
+								autocomplete: true
+							}
+						}
+					})
+				: await client.GET('/api/tag/song_tag_search', {
+						params: { query: { query: value, limit: 10, autocomplete: true } }
+					});
 		if (!data) return;
 		suggestions = data.items;
 	};

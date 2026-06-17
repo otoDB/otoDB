@@ -42,7 +42,7 @@ class Rating(OtodbIntegerEnum):
 class Status(OtodbIntegerEnum):
 	PENDING = 0, 'Pending'
 	APPROVED = 1, 'Approved'
-	UNAPPROVED = 2, 'Unapproved'
+	DELISTED = 2, 'Delisted'
 
 
 class WorkOrigin(OtodbIntegerEnum):
@@ -171,6 +171,12 @@ class ThemePref(OtodbIntegerEnum):
 	RESAMPLE = 5, 'Re:Sample'
 
 
+VideoPlatformPref = OtodbIntegerEnum(
+	'VideoPlatformPref',
+	[('AUTO', (0, 'Auto'))] + [(p.name, (p.value, p.label)) for p in Platform],
+)
+
+
 class MediaType(OtodbIntegerEnum):
 	ANIME = 1, 'Anime'
 	SHOW = 2, 'TV Show'
@@ -244,7 +250,7 @@ class FlagStatus(models.IntegerChoices):
 
 
 class ModerationAction(models.IntegerChoices):
-	# Work unapproved via auto-expiry or staff action
+	# Work delisted via auto-expiry or staff action
 	WORK_DELISTED = (
 		1,
 		'Work Delisted',
@@ -296,6 +302,7 @@ class Route(OtodbIntegerEnum):
 	MEDIAWORK_UPDATE = 45, 'Media Work Update'
 	MEDIAWORK_MERGE = 46, 'Media Work Merge'
 	MEDIAWORK_CREATE = 47, 'Media Work Create'
+	MEDIAWORK_EDIT_WIKI = 48, 'Media Work Edit Wiki'
 
 	WORKRELATION_CREATE = 50, 'Work Relation Control'
 	# WORKRELATION_DELETE = 51, 'DEPRECATED - Work Relation Delete'
@@ -308,10 +315,17 @@ class Route(OtodbIntegerEnum):
 	WORKSOURCE_REJECT = 65, 'Work Source Reject'
 	WORKSOURCE_UPDATE = 66, 'Work Source Update'
 
+	WIKI_EDIT = 70, 'Wiki Edit'
+
 	ROLLBACK = 100, 'Rollback'
+	SYSTEM = 10000, 'System'
 
 
 class ErrorCode(OtodbIntegerEnum):
+	INTERNAL_ERROR = -1
+
+	RATE_LIMITED = 429
+
 	LOGIN_FAILED = 10000
 	NOT_LOGGED_IN = 10001
 	USERNAME_TAKEN = 10002
@@ -331,14 +345,24 @@ class ErrorCode(OtodbIntegerEnum):
 	FLAG_LIMIT_REACHED = 10016
 	APPEAL_PENDING = 10017
 	NO_MORE_APPEAL_SLOTS = 10018
+	TAG_HAS_INFORMATION = 10019
+	THUMBNAIL_SOURCE_REQUIRED = 10020
+	TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR = 10021
+	SOURCE_PENDING = 10022
+	CAPTCHA_FAILED = 10023
+	MAX_THREAD_LEVEL = 10024
 
 
 class Preferences(OtodbIntegerEnum):
 	LANGUAGE = 1
 	THEME = 2
+	VIDEO_PLATFORM = 3
+	PREFER_AUTHOR_UPLOAD = 4
 
 
 PreferencesValueTypeMap = {
 	Preferences.LANGUAGE: LanguageTypes,
 	Preferences.THEME: ThemePref,
+	Preferences.VIDEO_PLATFORM: VideoPlatformPref,
+	Preferences.PREFER_AUTHOR_UPLOAD: bool,
 }

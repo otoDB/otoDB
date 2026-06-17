@@ -36,11 +36,13 @@ Allow: /*.woff2$
 
 # Pages
 Allow: /post
+Allow: /thread
 Allow: /work
 Allow: /tag
 Allow: /song
 Allow: /song_attribute
 Allow: /list
+Allow: /wiki
 Allow: /profile
 Allow: /comments
 Allow: /register
@@ -54,7 +56,6 @@ Allow: /sitemap.xml
 Disallow: /api
 Disallow: /work/merge
 Disallow: /work/unbound
-Disallow: /work/tags_needed
 
 ## Only allow main revision history page for discovery
 Disallow: /revision

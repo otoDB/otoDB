@@ -29,6 +29,7 @@ export const routeNames: Record<Route, () => string> = {
 	[Route.Media_Work_Update]: c(m.grand_merry_fly_succeed, m.dry_raw_finch_devour),
 	[Route.Media_Work_Merge]: c(m.grand_merry_fly_succeed, m.noisy_fluffy_shrike_wish),
 	[Route.Media_Work_Create]: c(m.grand_merry_fly_succeed, m.pretty_heroic_buzzard_splash),
+	[Route.Media_Work_Edit_Wiki]: c(m.grand_merry_fly_succeed, m.male_known_pony_rise),
 
 	[Route.Work_Relation_Control]: c(m.grand_merry_fly_succeed, m.few_misty_jurgen_roam),
 
@@ -40,5 +41,8 @@ export const routeNames: Record<Route, () => string> = {
 	[Route.Work_Source_Reject]: c(m.extra_brave_tapir_skip, m.alive_blue_marlin_push),
 	[Route.Work_Source_Update]: c(m.extra_brave_tapir_skip, m.dry_raw_finch_devour),
 
-	[Route.Rollback]: m.legal_mean_slug_link
+	[Route.Wiki_Edit]: c(m.curly_zesty_pelican_aim, m.dry_raw_finch_devour),
+
+	[Route.Rollback]: m.legal_mean_slug_link,
+	[Route.System]: m.this_late_gadfly_sail
 };

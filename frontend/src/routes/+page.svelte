@@ -6,6 +6,7 @@
 	import Section from '$lib/Section.svelte';
 	import Time from '$lib/Time.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
+	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	let { data } = $props();
 </script>
@@ -13,10 +14,10 @@
 <Section title={m.fine_late_chicken_quiz()}>
 	<p>{m.silly_main_reindeer_chop()}</p>
 	<ul>
-		<li><a href="/post/2">{m.noble_fine_iguana_pull()}</a></li>
-		<li><a href="/post/3">FAQ</a></li>
+		<li><a href="/wiki/about">{m.noble_fine_iguana_pull()}</a></li>
+		<li><a href="/wiki/faq">FAQ</a></li>
 		{#if data.user}
-			<li><a href="/post/4">{m.arable_direct_cougar_win()}</a></li>
+			<li><a href="/wiki/editing_guidelines">{m.arable_direct_cougar_win()}</a></li>
 		{/if}
 	</ul>
 </Section>
@@ -63,17 +64,23 @@
 		<a href="/revision/history" class="float-right">{m.fresh_deft_warbler_edit()}</a>
 	</Section>
 
-	<Section title={m.curly_fuzzy_turkey_launch()} href="/post/overview">
+	<Section title={m.curly_fuzzy_turkey_launch()} href="/thread/overview">
 		<table class="w-full">
 			<tbody>
 				{#each data.posts.items as p, i (i)}
 					<tr>
-						<td><a href="/post/{p.id}">{p.title}</a></td>
-						<td><Time format="relative" date={p.modified} /></td>
+						<td><a href="/thread/{p.id}">{p.title}</a></td>
+						<td
+							><Time format="relative" date={p.modified} />
+							<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
+								>{#snippet content()}<a href="/profile/{p.last_post_by}">{p.last_post_by}</a
+									>{/snippet}</ParaglideMessage
+							></td
+						>
 					</tr>
 				{/each}
 			</tbody>
 		</table>
-		<a href="/post/overview" class="float-right">{m.fresh_deft_warbler_edit()}</a>
+		<a href="/thread/overview" class="float-right">{m.fresh_deft_warbler_edit()}</a>
 	</Section>
 </div>

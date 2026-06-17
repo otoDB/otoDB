@@ -5,11 +5,10 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import F, Max, Model, OuterRef, QuerySet, Subquery
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
-from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET
 
 from otodb.account.models import Account
-from otodb.models import MediaWork, Pool, Post, TagSong, TagWork
+from otodb.models import MediaWork, Pool, TagSong, TagWork, Thread
 from otodb.models.revision import RevisionChange
 
 CHUNK_SIZE = 10_000
@@ -54,9 +53,9 @@ SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
 		'value_field': 'id',
 	},
 	'posts': {
-		'model': Post,
-		'filters': {},
-		'url_pattern': '/post/{value}',
+		'model': Thread,
+		'filters': {'is_removed': False},
+		'url_pattern': '/thread/{value}',
 		'value_field': 'id',
 		'prepare_queryset': lambda qs: qs.with_activity().annotate(
 			lastmod=F('modified')
@@ -163,7 +162,6 @@ def _build_urlset(
 
 
 @require_GET
-@cache_page(3600)
 def sitemap(request: HttpRequest) -> HttpResponse:
 	domain = f'https://{settings.OTODB_FRONTEND_DOMAIN}'
 	sitemap_url = request.path

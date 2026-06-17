@@ -53,12 +53,12 @@ class MediaWorkQuerySet(RevisionTrackedQuerySet):
 		)
 
 	def visible(self):
-		"""Exclude unapproved works, but keep ones with a pending appeal."""
+		"""Exclude delisted works, but keep ones with a pending appeal."""
 		appealed_ids = ModerationEvent.objects.filter(
 			event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
 		).values_list('work_id', flat=True)
 		return self.exclude(
-			models.Q(status=Status.UNAPPROVED) & ~models.Q(id__in=appealed_ids)
+			models.Q(status=Status.DELISTED) & ~models.Q(id__in=appealed_ids)
 		)
 
 
@@ -274,10 +274,10 @@ class MediaWork(RevisionTrackedModel):
 		EntityLink.objects.filter(
 			entity_type=mediawork_ct,
 			entity_id=from_work.pk,
-			post_id__in=EntityLink.objects.filter(
+			thread_id__in=EntityLink.objects.filter(
 				entity_type=mediawork_ct,
 				entity_id=to_work.pk,
-			).values('post_id'),
+			).values('thread_id'),
 		).delete()
 		EntityLink.objects.filter(
 			entity_type=mediawork_ct,
@@ -329,13 +329,18 @@ class MediaWork(RevisionTrackedModel):
 
 	@property
 	def relations(self):
-		rs = self.relation_A.all() | self.relation_B.all()
-		return rs, MediaWork.active_objects.filter(
-			id__in=[
-				*rs.values_list('A_id', flat=True),
-				*rs.values_list('B_id', flat=True),
-			]
-		).exclude(id=self.pk)
+		from .relations import WorkRelation
+
+		rs = list(
+			WorkRelation.objects.filter(models.Q(A_id=self.pk) | models.Q(B_id=self.pk))
+		)
+		work_ids = {x_id for r in rs for x_id in (r.A_id, r.B_id)} - {self.pk}
+		works = (
+			MediaWork.objects.filter(id__in=work_ids, moved_to__isnull=True)
+			.select_related('thumbnail_source')
+			.prefetch_related('worksource_set')
+		)
+		return rs, works
 
 
 class MediaSong(RevisionTrackedModel):

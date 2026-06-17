@@ -4,8 +4,8 @@
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
+	import { dirtyClick } from '$lib/dirty';
 	import { m } from '$lib/paraglide/messages.js';
-	import { callErrorCodeToast } from '$lib/toast';
 
 	let { data } = $props();
 
@@ -21,11 +21,8 @@
 		const { error } = await client.POST('/api/upload/approve', {
 			params: { query: { source_id: sourceId } }
 		});
-		if (error) {
-			callErrorCodeToast(error.code, error.data ?? {});
-			return;
-		}
-		invalidateAll();
+		if (error) return;
+		await invalidateAll();
 	};
 
 	const rejectSource = async (sourceId: string) => {
@@ -37,11 +34,8 @@
 		const { error } = await client.POST('/api/upload/reject', {
 			params: { query: { source_id: sourceId, reason } }
 		});
-		if (error) {
-			callErrorCodeToast(error.code, error.data ?? {});
-			return;
-		}
-		invalidateAll();
+		if (error) return;
+		await invalidateAll();
 	};
 </script>
 
@@ -77,35 +71,29 @@
 				{#each data.sources.items as source (source.id)}
 					<tr>
 						<td>
-							<a href={source.url} target="_blank" rel="noopener">
+							<a href="/upload/{source.id}">
 								{source.title || source.url}
 							</a>
 						</td>
 						<td>
 							{#if source.media}
-								<a href="/work/{source.media}"
-									>{source.media_title || `Work #${source.media}`}</a
-								>
+								<a href="/work/{source.media}">{source.media_title || `Work #${source.media}`}</a>
 							{:else}
 								-
 							{/if}
 						</td>
-						<td
-							><a href="/profile/{source.added_by.username}"
-								>{source.added_by.username}</a
-							></td
-						>
+						<td><a href="/profile/{source.added_by.username}">{source.added_by.username}</a></td>
 						<td>{source.published_date ?? '-'}</td>
 						<td class="flex gap-2">
 							<button
 								class="border px-2 py-0.5"
-								onclick={() => approveSource(source.id)}
+								{@attach dirtyClick(() => approveSource(source.id))}
 							>
 								{m.lucky_bold_hornet_push()}
 							</button>
 							<button
 								class="border px-2 py-0.5"
-								onclick={() => rejectSource(source.id)}
+								{@attach dirtyClick(() => rejectSource(source.id))}
 							>
 								{m.alive_blue_marlin_push()}
 							</button>
@@ -117,7 +105,6 @@
 		{#if data.sources.count}
 			<Pager
 				n_count={data.sources.count}
-				page={data.page}
 				page_size={data.batchSize}
 				base_url={page.url.toString()}
 			/>
@@ -133,12 +120,7 @@
 			{/each}
 		</div>
 		{#if data.queue.count}
-			<Pager
-				n_count={data.queue.count}
-				page={data.page}
-				page_size={data.batchSize}
-				base_url={page.url.toString()}
-			/>
+			<Pager n_count={data.queue.count} page_size={data.batchSize} base_url={page.url.toString()} />
 		{/if}
 	{/if}
 {/if}

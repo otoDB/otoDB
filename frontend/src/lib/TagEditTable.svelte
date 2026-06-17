@@ -1,6 +1,6 @@
 <script lang="ts">
 	import WorkTag from '$lib/WorkTag.svelte';
-	import client from '$lib/api';
+	import { rawClient } from '$lib/api';
 	import { allCreatorRoles, creatorRole } from '$lib/enums/creatorRole';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 	import { m } from '$lib/paraglide/messages.js';
@@ -21,25 +21,27 @@
 	$effect(() => {
 		void tags;
 		const timeout = setTimeout(() => {
-			tags.filter((t) => !Object.hasOwn(cache, t)).forEach(async (t) => {
-				let { data } = await client.GET('/api/tag/tag', {
-					params: { query: { tag_slug: t } }
+			tags
+				.filter((t) => !Object.hasOwn(cache, t))
+				.forEach(async (t) => {
+					let { data } = await rawClient.GET('/api/tag/tag', {
+						params: { query: { tag_slug: t } }
+					});
+					if (data?.aliased_to) {
+						({ data } = await rawClient.GET('/api/tag/tag', {
+							params: { query: { tag_slug: data.aliased_to.slug } }
+						}));
+					}
+					cache[t] = data ?? {
+						category: 0,
+						creator_roles: null,
+						id: '-1',
+						lang_prefs: [],
+						name: t,
+						sample: false,
+						slug: t
+					};
 				});
-				if (data?.aliased_to) {
-					({ data } = await client.GET('/api/tag/tag', {
-						params: { query: { tag_slug: data.aliased_to.slug } }
-					}));
-				}
-				cache[t] = data ?? {
-					category: 0,
-					creator_roles: null,
-					id: '-1',
-					lang_prefs: [],
-					name: t,
-					sample: false,
-					slug: t
-				};
-			});
 		}, 750);
 
 		return () => clearTimeout(timeout);
@@ -89,13 +91,8 @@
 									<input
 										class="hidden"
 										type="checkbox"
-										checked={tag.creator_roles?.includes(creatorRole[k].id) ||
-											false}
-										onchange={() =>
-											toggle_creator_role(
-												getTagDisplaySlug(tag),
-												creatorRole[k].id
-											)}
+										checked={tag.creator_roles?.includes(creatorRole[k].id) || false}
+										onchange={() => toggle_creator_role(getTagDisplaySlug(tag), creatorRole[k].id)}
 									/>{creatorRole[k].nameFn()}
 								</label>
 							{/each}

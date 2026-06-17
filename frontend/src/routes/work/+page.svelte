@@ -6,7 +6,6 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { SEARCH_DOCS_POST_ID } from '$lib/ui';
 	let { data } = $props();
 
 	const examples = [
@@ -16,7 +15,8 @@
 			tags: '(super_mario_series | kirby_series) bpm:140..160',
 			desc: m.bright_calm_finch_match
 		},
-		{ tags: 'touhou -touhou[category:song]', desc: m.crisp_neat_wren_match }
+		{ tags: 'touhou -touhou[category:song]', desc: m.crisp_neat_wren_match },
+		{ tags: 'order:tagcount_asc', desc: m.spry_late_kudu_assure }
 	];
 </script>
 
@@ -51,7 +51,7 @@
 			<ul class="grid list-none grid-cols-[max-content_auto] gap-x-4 gap-y-1">
 				{#each examples as { tags, desc } (tags)}
 					<li class="contents">
-						<a class="otodb-search-link" href="/work?tags={encodeURIComponent(tags)}">
+						<a href="/work?tags={encodeURIComponent(tags)}">
 							<code>{tags}</code>
 						</a>
 						<span>{desc()}</span>
@@ -59,7 +59,7 @@
 				{/each}
 			</ul>
 			<div class="mt-2">
-				<a href="/post/{SEARCH_DOCS_POST_ID}">
+				<a href="/wiki/search_syntax">
 					{m.swift_keen_otter_guide()}
 				</a>
 			</div>
@@ -71,12 +71,7 @@
 			<WorkCard {work} />
 		{/each}
 	</div>
-	<Pager
-		n_count={data.results.count}
-		page={data.page}
-		page_size={data.batch_size}
-		base_url={page.url.toString()}
-	/>
+	<Pager n_count={data.results.count} page_size={data.batch_size} base_url={page.url.toString()} />
 </Section>
 
 <style>

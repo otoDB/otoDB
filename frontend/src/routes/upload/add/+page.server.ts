@@ -1,10 +1,11 @@
 import client, { rawClient } from '$lib/api.server';
 import { hasUserLevel } from '$lib/enums/userLevel';
+import { apiFail } from '$lib/errors';
 import { m } from '$lib/paraglide/messages';
 import { userLevelGuard } from '$lib/route_guard';
 import { Levels, WorkStatus, type components } from '$lib/schema';
 import { getDisplayText } from '$lib/ui';
-import { error, fail, redirect, type Actions } from '@sveltejs/kit';
+import { error, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, url, locals }) => {
@@ -46,9 +47,7 @@ export const load: PageServerLoad = async ({ fetch, url, locals }) => {
 		head: {
 			title: title
 				? m.mild_loud_shad_enchant({
-						type: unavailable_source
-							? m.new_aloof_camel_read()
-							: m.helpful_away_jay_succeed(),
+						type: unavailable_source ? m.new_aloof_camel_read() : m.helpful_away_jay_succeed(),
 						name: getDisplayText(title)
 					})
 				: m.helpful_away_jay_succeed()
@@ -84,12 +83,8 @@ export const actions = {
 					description: (data.get('manual_description') as string) || null,
 					uploader_id: (data.get('manual_uploader_id') as string) || null,
 					thumbnail_url: (data.get('manual_thumbnail_url') as string) || null,
-					work_width: data.get('manual_width')
-						? +(data.get('manual_width') as string)
-						: null,
-					work_height: data.get('manual_height')
-						? +(data.get('manual_height') as string)
-						: null,
+					work_width: data.get('manual_width') ? +(data.get('manual_width') as string) : null,
+					work_height: data.get('manual_height') ? +(data.get('manual_height') as string) : null,
 					work_duration: data.get('manual_duration')
 						? +(data.get('manual_duration') as string)
 						: null,
@@ -104,14 +99,7 @@ export const actions = {
 				params: { query: { source_id: source! } },
 				body: metadata
 			});
-			if (putError)
-				return fail(400, {
-					url: link,
-					origin: is_official,
-					failed: true,
-					code: putError.code,
-					errorData: putError.data ?? {}
-				});
+			if (putError) return apiFail(putError, { url: link, origin: is_official });
 
 			redirect(303, `/work/${work_id}`);
 		}
@@ -127,14 +115,7 @@ export const actions = {
 			},
 			body: metadata
 		});
-		if (postError)
-			return fail(400, {
-				url: link,
-				origin: is_official,
-				failed: true,
-				code: postError.code,
-				errorData: postError.data ?? {}
-			});
+		if (postError) return apiFail(postError, { url: link, origin: is_official });
 
 		// Source already has a work -> redirect to work page
 		if (result.work_id) redirect(303, `/work/${result.work_id}`);

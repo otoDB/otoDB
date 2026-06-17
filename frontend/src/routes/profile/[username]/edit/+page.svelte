@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { enumValues } from '$lib/enums.js';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { hasUserLevel, userLevelNames } from '$lib/enums/userLevel.js';
@@ -9,6 +9,7 @@
 	import { Levels, ProfileConnectionTypes } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import Time from '$lib/Time.svelte';
+	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	let { data } = $props();
 
@@ -24,7 +25,7 @@
 		| { reason: 'restricted invitee exists'; username: string }
 		| { reason: 'next invite not yet available'; next: number }
 		| null = $derived.by(() => {
-		if (hasUserLevel(data.user?.level, Levels.Admin)) return null;
+		if (hasUserLevel(data.user?.level, Levels.Mod)) return null;
 		if (!data.invites) return { reason: 'no invites data' };
 		if (data.invites.restrictedInvitee)
 			return {
@@ -32,9 +33,7 @@
 				username: data.invites.restrictedInvitee.username
 			};
 		if (
-			data.invites.invites.some(
-				(inv) => Date.now() - Date.parse(inv.created_at) < invite_interval
-			)
+			data.invites.invites.some((inv) => Date.now() - Date.parse(inv.created_at) < invite_interval)
 		)
 			return {
 				reason: 'next invite not yet available',
@@ -63,12 +62,8 @@
 			</tbody>
 		</table>
 	</details>
-	<form action="?/connections" method="POST" use:enhance>
-		<textarea
-			bind:value={urls}
-			name="urls"
-			class="w-full"
-			placeholder={m.close_any_racoon_cut()}
+	<form action="?/connections" method="POST" use:dirtyEnhance>
+		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
 		></textarea>
 		<input type="submit" />
 	</form>
@@ -83,11 +78,9 @@
 			<table>
 				<tbody>
 					<tr
-						><th>{m.stale_early_squirrel_prosper()}</th><th
-							>{m.tiny_great_robin_commend()}</th
-						><th>{m.basic_upper_racoon_type()}</th><th
-							>{m.suave_royal_jurgen_shine()}</th
-						></tr
+						><th>{m.stale_early_squirrel_prosper()}</th><th>{m.tiny_great_robin_commend()}</th><th
+							>{m.basic_upper_racoon_type()}</th
+						><th>{m.suave_royal_jurgen_shine()}</th></tr
 					>
 					{#each data.invites.invites as inv, i (i)}
 						<tr>
@@ -111,10 +104,14 @@
 			</table>
 		{/if}
 		<form
+			method="POST"
 			inert={!!deniedInviteCreationReason}
-			onsubmit={async () => {
-				await client.POST('/api/auth/invite', { fetch });
-				invalidateAll();
+			use:dirtyEnhance={{
+				custom_submit: async ({ cancel }) => {
+					cancel();
+					await client.POST('/api/auth/invite', { fetch });
+					await invalidateAll();
+				}
 			}}
 		>
 			{#if deniedInviteCreationReason?.reason === 'restricted invitee exists'}
@@ -125,9 +122,11 @@
 				</p>
 			{:else if deniedInviteCreationReason?.reason === 'next invite not yet available'}
 				<p>
-					{m.next_royal_carp_pride({
-						date: new Date(deniedInviteCreationReason.next).toLocaleString()
-					})}
+					<ParaglideMessage message={m.next_royal_carp_pride} inputs={{}}>
+						{#snippet date()}
+							<Time format="absolute" date={new Date(deniedInviteCreationReason.next)} />
+						{/snippet}
+					</ParaglideMessage>
 				</p>
 			{/if}
 

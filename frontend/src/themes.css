@@ -117,8 +117,8 @@
 			width: 100%;
 			height: 100%;
 			background-image:
-				url('/retro-voyage-rb.png'), url('/retro-voyage-lt.png'),
-				url('/retro-voyage-rt.png'), url('/retro-voyage-lb.png');
+				url('/retro-voyage-rb.png'), url('/retro-voyage-lt.png'), url('/retro-voyage-rt.png'),
+				url('/retro-voyage-lb.png');
 			background-position:
 				bottom right,
 				top left,
@@ -228,8 +228,7 @@
 				auto 120px,
 				10px 100%,
 				140px;
-			background-repeat:
-				repeat-x, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+			background-repeat: repeat-x, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
 			pointer-events: none;
 			z-index: -1;
 		}

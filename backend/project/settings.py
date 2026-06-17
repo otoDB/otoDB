@@ -88,6 +88,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
+	'otodb.middleware.AnonymousReadOnlyCacheMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'corsheaders.middleware.CorsMiddleware',
 	'django.middleware.locale.LocaleMiddleware',
@@ -246,8 +247,16 @@ if OTODB_FRONTEND_DOMAIN:
 		'http://' + OTODB_FRONTEND_DOMAIN,
 		'https://' + OTODB_FRONTEND_DOMAIN,
 	]
+	SESSION_COOKIE_DOMAIN = '.' + OTODB_FRONTEND_DOMAIN
 
 OTODB_PROTECT_API_DOCS = os.environ.get('OTODB_PROTECT_API_DOCS', '').lower() == 'true'
+
+OTODB_INVITE_REQUIRED = (
+	os.environ.get('OTODB_INVITE_REQUIRED', 'False').lower() == 'true'
+)
+
+# Captcha
+OTODB_TURNSTILE_SECRET_KEY = os.environ.get('OTODB_TURNSTILE_SECRET_KEY')
 
 INTERNAL_API_SECRET = os.environ.get('INTERNAL_API_SECRET')
 
@@ -272,25 +281,29 @@ OTODB_CDN_ENABLED = (
 )
 OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
 
-# Task queue (Redis + RQ in production, synchronous fallback for dev)
-OTODB_REDIS_URL = os.environ.get('OTODB_REDIS_URL')
-if OTODB_REDIS_URL:
+# Task queue + cache (Valkey in production, synchronous fallback for dev)
+OTODB_VALKEY_URL = os.environ.get('OTODB_VALKEY_URL') or os.environ.get(
+	'OTODB_REDIS_URL'
+)
+if OTODB_VALKEY_URL:
 	INSTALLED_APPS.append('django_rq')
+	CACHES = {
+		'default': {
+			'BACKEND': 'django_vcache.backend.ValkeyCache',
+			'LOCATION': OTODB_VALKEY_URL,
+		}
+	}
+	# RQ talks to the broker via redis-py, which expects a redis:// URL
+	OTODB_RQ_URL = OTODB_VALKEY_URL.replace('valkey://', 'redis://', 1)
 	RQ_QUEUES = {
 		'default': {
-			'URL': OTODB_REDIS_URL,
+			'URL': OTODB_RQ_URL,
 		}
 	}
 	TASKS = {
 		'default': {
 			'BACKEND': 'django_tasks_rq.RQBackend',
 			'QUEUES': ['default'],
-		}
-	}
-	CACHES = {
-		'default': {
-			'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-			'LOCATION': OTODB_REDIS_URL,
 		}
 	}
 else:
@@ -330,4 +343,6 @@ OTODB_MAX_PENDING_WORKS = 10
 OTODB_MAX_FLAGGED_WORKS = 5
 
 OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)
-OTODB_MODERATION_PERIOD = timedelta(weeks=1)
+OTODB_MODERATION_PERIOD = timedelta(days=3)
+
+OTODB_SYSTEM_BOT_USERNAME = os.environ.get('OTODB_SYSTEM_BOT_USERNAME', 'otoDB')

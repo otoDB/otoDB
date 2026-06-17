@@ -16,6 +16,7 @@ import type {
 	SuccessResponse
 } from 'openapi-typescript-helpers';
 import setCookie from 'set-cookie-parser';
+import { formatApiErrorMessage, parseApiErrorResponse } from './errors';
 import type { paths } from './schema';
 
 // The following types are re-specializations lifted from openapi-typescript-helpers with a custom FetchResponse.
@@ -57,9 +58,9 @@ const client = createClient<paths>({
 client.use({
 	onResponse: async ({ response }) => {
 		if (!response.ok) {
-			const content = await response.json();
+			const apiError = await parseApiErrorResponse(response);
 			error(response.status, {
-				message: content.details ?? content.data?.message ?? 'Bad Request'
+				message: formatApiErrorMessage(apiError)
 			});
 		}
 		return response;
@@ -73,11 +74,12 @@ export const rawClient = createClient<paths>({
 });
 
 export const forwardCookies = (cookies: Cookies, response: Response) => {
-	for (const { name, value, expires, maxAge, sameSite } of setCookie.parse(
+	for (const { name, value, domain, expires, maxAge, sameSite } of setCookie.parse(
 		response.headers.getSetCookie()
 	))
 		cookies.set(name, value, {
 			path: '/',
+			domain,
 			expires,
 			maxAge,
 			sameSite: sameSite as CookieSerializeOptions['sameSite']

@@ -2,6 +2,7 @@
 	import client from '$lib/api';
 	import Banner from '$lib/Banner.svelte';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import { dirtyClick } from '$lib/dirty';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {
 		PlatformNames,
@@ -25,11 +26,12 @@
 	} from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
-	import { callErrorCodeToast, callSavingToast } from '$lib/toast';
-	import { getDisplayText } from '$lib/ui.js';
-	import { GUIDELINE_POST_ID } from '$lib/ui';
+	import { callSavingToast } from '$lib/toast';
+	import { autolinkDescription, getDisplayText } from '$lib/ui.js';
+	import { getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
+	import WikiView from '$lib/WikiView.svelte';
 	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
@@ -73,30 +75,14 @@
 		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
 	);
 
-	const REQUIRED_CATEGORIES = [
-		WorkTagCategory.Creator,
-		WorkTagCategory.Song,
-		WorkTagCategory.Source,
-		WorkTagCategory.General
-	];
-	const missingCategories = $derived.by(() => {
-		const present = new Set(
-			data.tags.flatMap((t) => {
-				const cats: WorkTagCategory[] = [t.category];
-				if (WorkTagCategoryMap[t.category].canSetAsSource && t.sample) {
-					cats.push(WorkTagCategory.Source);
-				}
-				return cats;
-			})
-		);
-		return REQUIRED_CATEGORIES.filter((c) => !present.has(c));
-	});
+	const missingCategories = $derived.by(() => getMissingCategories(data.tags));
 
 	const relTree = $derived(
 		data.relations[0].length > 0
-			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map(
-					(d) => [+d[0], [...Map.groupBy(d[1]!, (r) => r.relation).entries()]]
-				) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
+			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map((d) => [
+					+d[0],
+					[...Map.groupBy(d[1]!, (r) => r.relation).entries()]
+				]) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
 			: null
 	);
 </script>
@@ -110,7 +96,7 @@
 				})}
 			</div>
 			<div class="mt-1 text-sm">
-				<a href="/post/{GUIDELINE_POST_ID}" class="underline">
+				<a href="/wiki/editing_guidelines" class="underline">
 					{m.arable_direct_cougar_win()}
 				</a>
 			</div>
@@ -118,7 +104,7 @@
 	{/if}
 	{#if data.status === Status.Pending}
 		<Banner variant="info" title={m.broad_inner_boar_devour()} />
-	{:else if data.status === Status.Unapproved && data?.pending_appeal}
+	{:else if data.status === Status.Delisted && data?.pending_appeal}
 		<Banner variant="caution" title={m.quiet_tasty_earthworm_trip()}>
 			{#if data.pending_appeal.reason}
 				<div class="mt-1 text-sm">
@@ -137,8 +123,11 @@
 				</div>
 			{/if}
 		</Banner>
-	{:else if data.status === Status.Unapproved}
+	{:else if data.status === Status.Delisted}
 		<Banner variant="danger" title={m.livid_main_bat_lift()} />
+	{/if}
+	{#if data.sources.some((s) => s.is_pending)}
+		<Banner variant="info" title={m.proud_zesty_otter_gleam()} />
 	{/if}
 	{#if data?.pending_flag}
 		<Banner variant="warning" title={m.small_red_finch_lock()}>
@@ -165,28 +154,26 @@
 			{#if data.user.level >= 40}
 				<button
 					class="border border-green-600 px-3 py-1 text-green-600"
-					onclick={async () => {
+					{@attach dirtyClick(async () => {
 						const { error } = await client.POST('/api/work/approve', {
 							fetch,
 							params: { query: { work_id: data.id } }
 						});
-						if (error) callErrorCodeToast(error.code, error.data ?? {});
-						else location.reload();
-					}}
+						if (!error) location.reload();
+					})}
 				>
 					Approve
 				</button>
 				<button
 					class="border px-3 py-1"
-					onclick={async () => {
+					{@attach dirtyClick(async () => {
 						const reason = prompt(m.honest_tangy_butterfly_dream());
 						if (!reason) return;
-						const { error } = await client.POST('/api/work/disapprove', {
+						await client.POST('/api/work/disapprove', {
 							fetch,
 							params: { query: { work_id: data.id, reason: reason } }
 						});
-						if (error) callErrorCodeToast(error.code, error.data ?? {});
-					}}
+					})}
 				>
 					{m.alive_blue_marlin_push()}
 				</button>
@@ -194,14 +181,14 @@
 			{#if data.user.level >= 50}
 				<button
 					class="border border-red-600 px-3 py-1 text-red-600"
-					onclick={async () => {
+					{@attach dirtyClick(async () => {
 						if (!confirm(m.cool_house_barbel_cheer())) return;
 						const { error } = await client.POST('/api/work/resolve', {
 							fetch,
 							params: { query: { work_id: data.id } }
 						});
 						if (!error) location.reload();
-					}}
+					})}
 				>
 					{m.proof_deft_reindeer_smile()}
 				</button>
@@ -212,6 +199,7 @@
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
 				<SourcesViewer
+					user={data.user}
 					sources={data.sources ?? []}
 					thumbnail={data.thumbnail}
 					thumbnailAlt={getDisplayText(data.title)}
@@ -230,7 +218,7 @@
 								<td
 									><div class="description-cell external-link-icon">
 										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-										{@html data.description}
+										{@html autolinkDescription(data.description ?? '')}
 									</div></td
 								>
 							</tr>
@@ -243,25 +231,18 @@
 												{#each rels as [tp, relations], j (j)}
 													<li>
 														{m.mild_loud_shad_enchant({
-															type: [
-																WorkRelationDisplayBackward,
-																WorkRelationDisplayForward
-															][dir][tp](),
+															type: [WorkRelationDisplayBackward, WorkRelationDisplayForward][dir][
+																tp
+															](),
 															name: ''
 														})}
 														<ul class="ml-2">
 															{#each relations as r, j (j)}
 																{@const w = data.relations[1].find(
-																	(w) =>
-																		w.id ===
-																		(r.A_id === data.id
-																			? r.B_id
-																			: r.A_id)
+																	(w) => w.id === (r.A_id === data.id ? r.B_id : r.A_id)
 																)!}
 																<li>
-																	<a href="/work/{w.id}"
-																		>#{w.id} - {w.title}</a
-																	>
+																	<a href="/work/{w.id}">#{w.id} - {w.title}</a>
 																</li>
 															{/each}
 														</ul>
@@ -295,11 +276,7 @@
 												<tbody>
 													{#each userLists as list, i (i)}
 														<tr>
-															<td
-																><a href="/list/{list[0].id}"
-																	>{list[0].name}</a
-																></td
-															>
+															<td><a href="/list/{list[0].id}">{list[0].name}</a></td>
 															<td>
 																<input
 																	type="checkbox"
@@ -321,10 +298,8 @@
 										<th class="w-24">{m.nimble_gaudy_scallop_fold()}</th>
 										<td>
 											<button
-												onclick={async () => {
-													const reason = prompt(
-														m.royal_big_chipmunk_absorb()
-													);
+												{@attach dirtyClick(async () => {
+													const reason = prompt(m.royal_big_chipmunk_absorb());
 													if (!reason?.trim()) {
 														// Show message
 														alert(
@@ -334,37 +309,27 @@
 														);
 														return;
 													}
-													const { error } = await client.POST(
-														'/api/work/flag',
-														{
-															fetch,
-															params: {
-																query: { work_id: data.id, reason }
-															}
+													const { error } = await client.POST('/api/work/flag', {
+														fetch,
+														params: {
+															query: { work_id: data.id, reason }
 														}
-													);
-													if (error)
-														callErrorCodeToast(
-															error.code,
-															error.data ?? {}
-														);
-													else location.reload();
-												}}
+													});
+													if (!error) location.reload();
+												})}
 											>
 												{m.nimble_gaudy_scallop_fold()}
 											</button>
 										</td>
 									</tr>
 								{/if}
-								{#if data.status === Status.Unapproved && !data?.pending_appeal}
+								{#if data.status === Status.Delisted && !data?.pending_appeal}
 									<tr>
 										<th class="w-24">{m.key_last_racoon_clasp()}</th>
 										<td>
 											<button
-												onclick={async () => {
-													const reason = prompt(
-														m.zippy_dark_mayfly_cut()
-													);
+												{@attach dirtyClick(async () => {
+													const reason = prompt(m.zippy_dark_mayfly_cut());
 													if (!reason?.trim()) {
 														// Show message
 														alert(
@@ -374,22 +339,14 @@
 														);
 														return;
 													}
-													const { error } = await client.POST(
-														'/api/work/appeal',
-														{
-															fetch,
-															params: {
-																query: { work_id: data.id, reason }
-															}
+													const { error } = await client.POST('/api/work/appeal', {
+														fetch,
+														params: {
+															query: { work_id: data.id, reason }
 														}
-													);
-													if (error)
-														callErrorCodeToast(
-															error.code,
-															error.data ?? {}
-														);
-													else location.reload();
-												}}
+													});
+													if (!error) location.reload();
+												})}
 											>
 												{m.key_last_racoon_clasp()}
 											</button>
@@ -402,9 +359,7 @@
 				{/if}
 			</div>
 		</div>
-		<div
-			class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}
-		>
+		<div class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}>
 			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
@@ -425,6 +380,10 @@
 				</span>
 			{/each}
 		</div>
+		{#if data.wiki_page.length > 0}
+			<hr class="my-2" />
+			<WikiView wiki_page={data.wiki_page} />
+		{/if}
 	</div>
 </Section>
 
@@ -439,7 +398,8 @@
 			<div
 				class={[
 					'w-full border px-4 py-2',
-					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : ''
+					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : '',
+					{ 'outline-4 outline-sky-600': src.is_pending }
 				]}
 			>
 				{#if data.user}
@@ -503,10 +463,7 @@
 						{m.nice_tense_mule_grasp()}:
 						<strong>
 							{#if src.work_duration}
-								{Math.floor(src.work_duration / 60)}:{(
-									'0' +
-									(src.work_duration % 60)
-								).slice(-2)}
+								{Math.floor(src.work_duration / 60)}:{('0' + (src.work_duration % 60)).slice(-2)}
 							{:else}
 								{m.simple_less_marlin_enchant()}
 							{/if}
@@ -518,7 +475,7 @@
 						<summary>{m.clear_lucky_peacock_pick()}</summary>
 						<div class="external-link-icon whitespace-pre-wrap">
 							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-							{@html src.description}
+							{@html autolinkDescription(src.description ?? '')}
 						</div>
 					</details>
 				</div>

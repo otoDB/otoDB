@@ -1,6 +1,8 @@
 import operator
 import re
 from abc import abstractmethod
+from contextlib import contextmanager
+from datetime import datetime
 from functools import lru_cache, reduce, wraps
 from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
 
@@ -108,6 +110,7 @@ class OtodbID(int):
 class ProfileSchema(ModelSchema):
 	id: OtodbID
 	level: Account.Levels
+	date_created: datetime
 
 	class Meta:
 		model = Account
@@ -206,6 +209,12 @@ class SlimWorkSchema(ModelSchema):
 		fields = ['title']
 
 
+class WikiPageContentSchema(Schema):
+	lang: LanguageTypes
+	page: str
+	title: str | None = None
+
+
 class WorkSchema(ModelSchema):
 	id: OtodbID
 	thumbnail_source_id: OtodbID | None
@@ -216,6 +225,7 @@ class WorkSchema(ModelSchema):
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 	rating: Rating
 	status: Status
+	wiki_page: list[WikiPageContentSchema] = Field([], alias='wikipage_set')
 
 	class Meta:
 		model = MediaWork
@@ -315,7 +325,8 @@ user_is_trusted = perm_decorator_ctor(
 	lambda user: user.level > Account.Levels.RESTRICTED
 )
 user_is_editor = perm_decorator_ctor(lambda user: user.is_editor)
-user_is_staff = perm_decorator_ctor(lambda user: user.is_staff)
+user_is_mod = perm_decorator_ctor(lambda user: user.is_mod)
+user_is_admin = perm_decorator_ctor(lambda user: user.is_admin)
 
 
 class ApiError(Exception):
@@ -327,8 +338,8 @@ class ApiError(Exception):
 
 
 def ensure_can_moderate(user: Account, work: MediaWork | None) -> None:
-	"""Block non-staff moderators from resolving a work they contributed to."""
-	if user.is_staff:
+	"""Block anybody below mod from resolving a work they contributed to."""
+	if user.is_mod:
 		return
 	if work is not None and work.was_contributed_by(user):
 		raise ApiError(403, ErrorCode.SELF_MODERATION)
@@ -479,6 +490,121 @@ def _get_entity_cts(model):
 	]
 
 
+def _commit_pending_revision(cache, request):
+	"""Materialize pending changes from the request cache into a single Revision"""
+	rev = cache.get('rev')
+	rev_del = cache.get('rev_del')
+	rev_msg = cache.get('rev_msg')
+	rev_rst = cache.get('rev_rst')
+	# REVIEW: This should never be unknown but some test cases might not set it; should fix those tests
+	rev_route = cache.get('rev_route', Route.UNKNOWN)
+
+	if not (len(rev) or len(rev_del) or len(rev_rst)):
+		return
+
+	revision = Revision.objects.create(user=request.user, message=rev_msg)
+
+	# Pre-fetch all ContentTypes in bulk
+	content_types = ContentType.objects.in_bulk(
+		set(ctpk for ctpk, *_ in rev_del) | set(ctpk for (ctpk, *_), _ in rev.items())
+	)
+
+	# For batching
+	revision_changes = []
+	pending_entities = []
+	subscribers = []
+
+	# Process deletions
+	seen_deletions = {}
+	for ctpk, pk, entities in rev_del:
+		key = (ctpk, pk)
+		if key not in seen_deletions:
+			seen_deletions[key] = entities
+			change = RevisionChange(
+				rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
+			)
+			revision_changes.append(change)
+			model = content_types[ctpk].model_class()
+			pending_entities.append((change, _get_entity_cts(model), entities))
+
+			subs = Subscription.objects.filter(entity_type_id=ctpk, entity_id=pk)
+			subscribers.extend(subs.values_list('subscriber_id', flat=True))
+			subs.delete()
+
+	# Process updates
+	for (ctpk, pk, field), (entities, val) in rev.items():
+		ct = content_types[ctpk]
+		model = ct.model_class()
+		change = RevisionChange(
+			rev=revision,
+			target_type_id=ctpk,
+			target_id=pk,
+			target_column=field,
+			target_value=val,
+		)
+		revision_changes.append(change)
+		pending_entities.append((change, _get_entity_cts(model), entities))
+		subs = Subscription.objects.filter(entity_type_id=ctpk, entity_id=pk)
+		subscribers.extend(subs.values_list('subscriber_id', flat=True))
+		subs.delete()
+
+	for (ctpk, pk), to_pk in rev_rst.items():
+		revision_changes.append(
+			RevisionChange(
+				rev=revision,
+				target_type_id=ctpk,
+				target_id=pk,
+				target_value=to_pk,
+				restored=True,
+			)
+		)
+
+	# Bulk create changes
+	RevisionChange.objects.bulk_create(revision_changes)
+
+	# Only add subscriptions for active users.
+	# This excludes the system bot account.
+	auto_subscribe = request.user.is_active
+
+	# Bulk create change entities
+	revision_change_entities = []
+	subscriptions = []
+	for change, entity_cts, entities in pending_entities:
+		for entity_type, ent_pk in zip(entity_cts, entities):
+			if ent_pk:
+				# TODO: add if rev_route == ROLLBACK OR better probably should move this to rollback_entity
+				from .history import get_rev_restored
+
+				ent_pk = get_rev_restored(entity_type.id, ent_pk) or ent_pk
+				revision_change_entities.append(
+					RevisionChangeEntity(
+						change=change,
+						entity_type=entity_type,
+						entity_id=ent_pk,
+						route=rev_route,
+					)
+				)
+				if auto_subscribe:
+					subscriptions.append(
+						Subscription(
+							subscriber=request.user,
+							entity_type=entity_type,
+							entity_id=ent_pk,
+						)
+					)
+
+	if revision_change_entities or subscriptions:
+		RevisionChangeEntity.objects.bulk_create(revision_change_entities)
+		Subscription.objects.bulk_create(subscriptions, ignore_conflicts=True)
+	Notification.objects.bulk_create(
+		[
+			Notification(revision=revision, target_id=sub)
+			for sub in set(subscribers)
+			if sub != request.user.id
+		]
+	)
+
+
 def track_revision(f):
 	@wraps(f)
 	def wrapper(request, *args, **kwargs):
@@ -492,114 +618,7 @@ def track_revision(f):
 
 		ret = f(request, *args, **kwargs)
 
-		rev = cache.get('rev')
-		rev_del = cache.get('rev_del')
-		rev_msg = cache.get('rev_msg')
-		rev_rst = cache.get('rev_rst')
-		# REVIEW: This should never be unknown but some test cases might not set it; should fix those tests
-		rev_route = cache.get('rev_route', Route.UNKNOWN)
-
-		if len(rev) or len(rev_del) or len(rev_rst):
-			revision = Revision.objects.create(user=request.user, message=rev_msg)
-
-			# Pre-fetch all ContentTypes in bulk
-			content_types = ContentType.objects.in_bulk(
-				set(ctpk for ctpk, *_ in rev_del)
-				| set(ctpk for (ctpk, *_), _ in rev.items())
-			)
-
-			# For batching
-			revision_changes = []
-			pending_entities = []
-			subscribers = []
-
-			# Process deletions
-			seen_deletions = {}
-			for ctpk, pk, entities in rev_del:
-				key = (ctpk, pk)
-				if key not in seen_deletions:
-					seen_deletions[key] = entities
-					change = RevisionChange(
-						rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
-					)
-					revision_changes.append(change)
-					model = content_types[ctpk].model_class()
-					pending_entities.append((change, _get_entity_cts(model), entities))
-
-					subs = Subscription.objects.filter(
-						entity_type_id=ctpk, entity_id=pk
-					)
-					subscribers.extend(subs.values_list('subscriber_id', flat=True))
-					subs.delete()
-
-			# Process updates
-			for (ctpk, pk, field), (entities, val) in rev.items():
-				ct = content_types[ctpk]
-				model = ct.model_class()
-				change = RevisionChange(
-					rev=revision,
-					target_type_id=ctpk,
-					target_id=pk,
-					target_column=field,
-					target_value=val,
-				)
-				revision_changes.append(change)
-				pending_entities.append((change, _get_entity_cts(model), entities))
-				subs = Subscription.objects.filter(entity_type_id=ctpk, entity_id=pk)
-				subscribers.extend(subs.values_list('subscriber_id', flat=True))
-				subs.delete()
-
-			for (ctpk, pk), to_pk in rev_rst.items():
-				revision_changes.append(
-					RevisionChange(
-						rev=revision,
-						target_type_id=ctpk,
-						target_id=pk,
-						target_value=to_pk,
-						restored=True,
-					)
-				)
-
-			# Bulk create changes
-			RevisionChange.objects.bulk_create(revision_changes)
-
-			# Bulk create change entities
-			revision_change_entities = []
-			subscriptions = []
-			for change, entity_cts, entities in pending_entities:
-				for entity_type, ent_pk in zip(entity_cts, entities):
-					if ent_pk:
-						# TODO: add if rev_route == ROLLBACK OR better probably should move this to rollback_entity
-						from .history import get_rev_restored
-
-						ent_pk = get_rev_restored(entity_type.id, ent_pk) or ent_pk
-						revision_change_entities.append(
-							RevisionChangeEntity(
-								change=change,
-								entity_type=entity_type,
-								entity_id=ent_pk,
-								route=rev_route,
-							)
-						)
-						subscriptions.append(
-							Subscription(
-								subscriber=request.user,
-								entity_type=entity_type,
-								entity_id=ent_pk,
-							)
-						)
-
-			if revision_change_entities or subscriptions:
-				RevisionChangeEntity.objects.bulk_create(revision_change_entities)
-				Subscription.objects.bulk_create(subscriptions, ignore_conflicts=True)
-			Notification.objects.bulk_create(
-				[
-					Notification(revision=revision, target_id=sub)
-					for sub in set(subscribers)
-					if sub != request.user.id
-				]
-			)
-
+		_commit_pending_revision(cache, request)
 		return ret
 
 	return wrapper
@@ -610,6 +629,39 @@ def add_revision_message(message: str):
 	rev_msg = cache.get_or_set('rev_msg', '')
 	rev_msg = rev_msg + ('\n' if rev_msg else '') + message
 	cache.set('rev_msg', rev_msg)
+
+
+@contextmanager
+def revision(
+	user: Account | None = None, *, message: str = '', route: Route = Route.SYSTEM
+):
+	"""Context manager that wraps arbitrary RevisionTrackedModel mutations into
+	a single Revision, intended for shell / programmatic use.
+	"""
+	from django.test import RequestFactory
+	from django_request_cache.middleware import RequestCache
+	from django_userforeignkey import request as ufk_request
+
+	if user is None:
+		user = Account.get_system()
+
+	prev_request = ufk_request.get_current_request()
+	req = RequestFactory().get('/')
+	req.cache = RequestCache()
+	req.user = user
+	ufk_request.set_current_request(req)
+
+	cache = req.cache
+	cache.add('rev', {})
+	cache.add('rev_del', [])
+	cache.add('rev_rst', {})
+	cache.add('rev_msg', message)
+	cache.set('rev_route', route.value)
+	try:
+		yield
+		_commit_pending_revision(cache, req)
+	finally:
+		ufk_request.set_current_request(prev_request)
 
 
 def with_revision_route(route: Route):
@@ -695,17 +747,23 @@ attr_values: attr_value ("," attr_value)*
 attr_value: SLUG                                -> attr_value_pos
           | "-" SLUG                            -> attr_value_neg
 
-range_value: COMPARATOR INT     -> range_compare
-           | INT ".." INT       -> range_between
-           | INT ".."           -> range_min
-           | ".." INT           -> range_max
-           | INT                -> range_eq
+range_value: range_atom ("," range_atom)*
+range_atom: COMPARATOR INT      -> range_compare
+          | INT _RANGE_EXC INT  -> range_between_exc
+          | INT _RANGE_INC INT  -> range_between
+          | INT _RANGE_EXC      -> range_min
+          | INT _RANGE_INC      -> range_min
+          | _RANGE_EXC INT      -> range_max_exc
+          | _RANGE_INC INT      -> range_max
+          | INT                 -> range_eq
 
 MODIFIERS:     /[-]/
 TAG_MODIFIERS: /[\^]/
 SLUG:          /\w[\w-]*/u
 COMPARATOR:    ">=" | "<=" | ">" | "<"
-INT:           /\d+/
+INT:           /\d+(_\d+)*/
+_RANGE_EXC: "..."
+_RANGE_INC: ".."
 _LPAR:   "("
 _RPAR:   ")"
 _LBRACK: "["
@@ -721,27 +779,31 @@ _META_CONN: ":"
 """)
 
 
-def _parse_range_node(node):
+def _parse_range_atom(node):
 	match node.data, node.children:
 		case 'range_eq', (v,):
-			return 'exact', int(v)
+			return [('exact', int(v))]
 		case 'range_compare', ('>', v):
-			return 'gt', int(v)
+			return [('gt', int(v))]
 		case 'range_compare', ('>=', v):
-			return 'gte', int(v)
+			return [('gte', int(v))]
 		case 'range_compare', ('<', v):
-			return 'lt', int(v)
+			return [('lt', int(v))]
 		case 'range_compare', ('<=', v):
-			return 'lte', int(v)
+			return [('lte', int(v))]
 		case 'range_between', (lo, hi):
-			return 'range', (int(lo), int(hi))
+			return [('range', (int(lo), int(hi)))]
+		case 'range_between_exc', (lo, hi):
+			return [('gte', int(lo)), ('lt', int(hi))]
 		case 'range_min', (v,):
-			return 'gte', int(v)
+			return [('gte', int(v))]
 		case 'range_max', (v,):
-			return 'lte', int(v)
+			return [('lte', int(v))]
+		case 'range_max_exc', (v,):
+			return [('lt', int(v))]
 		case _:
 			raise ValueError(
-				f'unrecognized range_value: {node.data!r}/{node.children!r}'
+				f'unrecognized range_atom: {node.data!r}/{node.children!r}'
 			)
 
 
@@ -1000,8 +1062,11 @@ class AbstractTagTransformer(lark.Transformer):
 		metatag = v.data.value[:-5]
 		spec = self.metatag_grammars[metatag]
 		if spec.kind is int:
-			op, value = _parse_range_node(v.children[0])
-			return spec.to_q(op, value)
+			or_qs = [
+				reduce(operator.and_, (spec.to_q(op, val) for op, val in group))
+				for group in (_parse_range_atom(a) for a in v.children[0].children)
+			]
+			return reduce(operator.or_, or_qs)
 		if spec.kind is str:
 			return spec.to_q(str(v.children[0]))
 		E = spec.kind

@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+@plugin '@iconify/tailwind4';
 @import './themes.css';
 
 @theme inline {
@@ -21,7 +22,7 @@
 		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
 	}
 
-	tbody > tr:not(form *):hover {
+	tbody > tr:hover {
 		background-color: color-mix(
 			in hsl,
 			var(--otodb-color-bg-fainter) 80%,
@@ -78,9 +79,12 @@
 		outline: none;
 		background-color: var(--otodb-color-bg-faint);
 		cursor: pointer;
-		&:disabled {
+
+		&:disabled,
+		[inert] & {
 			background-color: var(--otodb-color-bg-primary) !important;
 			color: var(--otodb-color-content-fainter);
+			cursor: default;
 		}
 		&:hover {
 			background-color: var(--otodb-color-bg-fainter);
@@ -167,16 +171,12 @@
 	@apply external-link-icon;
 }
 
-/* Inline work-search link rendered from `{{...}}` markdown */
-.otodb-search-link::after {
+/* Search icon for work search links (from `{{...}}` markdown and elsewhere) */
+a[href^='/work?tags=']::after {
+	@apply icon-[gravity-ui--magnifier];
 	content: '';
-	display: inline-block;
-	width: 0.9em;
-	height: 0.9em;
 	margin-left: 0.25em;
 	vertical-align: middle;
-	mask: url(/search.svg) no-repeat center / contain;
-	background-color: currentcolor;
 }
 
 /* Autolink headings */

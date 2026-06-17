@@ -4,6 +4,7 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import TagsField from '$lib/TagsField.svelte';
+	import WikiEditor from '$lib/WikiEditor.svelte';
 	import client from '$lib/api';
 	import { languages } from '$lib/enums/language.js';
 	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
@@ -11,11 +12,9 @@
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { songConnectionMap } from '$lib/enums/songConnection.js';
 	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
-	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { callErrorToast, callErrorCodeToast } from '$lib/toast';
-	import { dirtyEnhance } from '$lib/dirty';
+	import { locales } from '$lib/paraglide/runtime';
+	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import {
 		MediaConnectionTypes,
 		ProfileConnectionTypes,
@@ -36,9 +35,7 @@
 		form?.primary ??
 			(data.details?.primary_parent
 				? (() => {
-						const parentTag = data.parents.find(
-							(t) => t.slug === data.details.primary_parent
-						);
+						const parentTag = data.parents.find((t) => t.slug === data.details.primary_parent);
 						return parentTag ? parents.indexOf(getTagDisplaySlug(parentTag)) : -1;
 					})()
 				: -1)
@@ -50,16 +47,6 @@
 	});
 
 	let category = $state(form?.category ?? data.tag?.category);
-	let wikiView = $state(getLocale());
-	let mds = $state(
-		Object.fromEntries(
-			locales.map((lang) => [
-				lang,
-				data.wiki_page.find((p) => p.lang === languages[lang].id)?.page ?? ''
-			])
-		)
-	);
-	let edited_md = $state(Object.fromEntries(locales.map((lang) => [lang, false])));
 
 	let tagLangPrefs = $state(
 		Object.fromEntries(
@@ -77,39 +64,6 @@
 	);
 	let to_delete: string[] = $state([]);
 	let base = $state(data.tag.slug);
-	const aliases_post_gate = { p: Promise.withResolvers<void>() };
-
-	const submit_aliases = async () => {
-		await aliases_post_gate.p.promise;
-		const { error } = await client.POST('/api/tag/tag_aliases', {
-			fetch,
-			body: {
-				base_slug: base,
-				unalias_slugs: to_delete,
-				lang_prefs: Object.fromEntries(
-					Object.entries(tagLangPrefs).map(([k, v]) => [
-						languages[k as keyof typeof languages].id,
-						v
-					])
-				),
-				names: tagNames
-			},
-			params: {
-				query: {
-					type: TagTypes.work,
-					tag_slug: data.tag.slug
-				}
-			}
-		});
-		if (error) {
-			aliases_post_gate.p = Promise.withResolvers<void>();
-			if (error && typeof error === 'object' && 'code' in error) {
-				callErrorCodeToast(error.code, error.data ?? {});
-			} else {
-				callErrorToast(m.green_due_javelina_pop());
-			}
-		} else goto(`/tag/${base}/`, { invalidateAll: true });
-	};
 
 	let urls = $state(
 		[
@@ -129,25 +83,13 @@
 		].join('\n') ?? ''
 	);
 
-	$effect(() => {
-		if (form?.failed) {
-			callErrorToast(m.green_due_javelina_pop());
-		}
-	});
-
 	const del = async () => {
 		const { response } = await client.DELETE('/api/tag/tag', {
 			fetch,
 			params: { query: { tag_slug: data.tag.slug } }
 		});
-		if (response.ok) {
-			goto('/', { invalidateAll: true });
-		} else if (response.status === 400) {
-			callErrorToast(m.that_new_mayfly_spur());
-		}
+		if (response.ok) await goto('/', { invalidateAll: true });
 	};
-
-	let previewHtml = $derived(renderMarkdown(mds[wikiView] ?? ''));
 
 	const form_barrier = {};
 </script>
@@ -182,8 +124,8 @@
 					<th><label for="primary">{m.alive_light_eagle_stop()}</label></th>
 					<td
 						><select name="primary" bind:value={primary}
-							><option value={-1}>None</option>{#each parents as p, i (i)}<option
-									value={i}>{p}</option
+							><option value={-1}>None</option>{#each parents as p, i (i)}<option value={i}
+									>{p}</option
 								>{/each}</select
 						></td
 					>
@@ -200,8 +142,7 @@
 				</tr>
 				{#if category === WorkTagCategory.Song}
 					<tr
-						><th><label for="song_title">{m.large_factual_octopus_exhale()}</label></th
-						><td
+						><th><label for="song_title">{m.large_factual_octopus_exhale()}</label></th><td
 							><input
 								type="text"
 								name="song_title"
@@ -232,10 +173,7 @@
 						></tr
 					>
 					<tr
-						><th
-							><label for="song_variable_bpm">{m.tasty_male_tadpole_glow()}</label
-							></th
-						><td
+						><th><label for="song_variable_bpm">{m.tasty_male_tadpole_glow()}</label></th><td
 							><input
 								type="checkbox"
 								name="song_variable_bpm"
@@ -262,7 +200,7 @@
 		<input type="submit" />
 	</form>
 	<hr class="my-2" />
-	<button onclick={del}>{m.chunky_giant_quail_breathe()}</button>
+	<button {@attach dirtyClick(del)}>{m.chunky_giant_quail_breathe()}</button>
 </Section>
 
 {#if category === WorkTagCategory.Song && data.tag.category === WorkTagCategory.Song}
@@ -288,9 +226,32 @@
 		use:dirtyEnhance={{
 			barrier: form_barrier,
 			priority: 2,
-			manual_post: aliases_post_gate
+			custom_submit: async ({ cancel }) => {
+				cancel();
+				const { error } = await client.POST('/api/tag/tag_aliases', {
+					fetch,
+					body: {
+						base_slug: base,
+						unalias_slugs: to_delete,
+						lang_prefs: Object.fromEntries(
+							Object.entries(tagLangPrefs).map(([k, v]) => [
+								languages[k as keyof typeof languages].id,
+								v
+							])
+						),
+						names: tagNames
+					},
+					params: {
+						query: {
+							type: TagTypes.work,
+							tag_slug: data.tag.slug
+						}
+					}
+				});
+				if (error) throw error;
+				await goto(`/tag/${base}/`, { invalidateAll: true });
+			}
 		}}
-		onsubmit={submit_aliases}
 	>
 		{#if data.details.aliases.length}
 			<table>
@@ -300,8 +261,7 @@
 						{#each locales as locale, i (i)}
 							<th>{languages[locale].name} {m.mellow_upper_finch_drip()}</th>
 						{/each}
-						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th
-						></tr
+						<th>{m.that_true_owl_embrace()}</th><th>{m.even_such_wallaby_fond()}</th></tr
 					>
 				</thead>
 				<tbody>
@@ -335,13 +295,7 @@
 						<tr
 							><td><input type="text" bind:value={tagNames[a.slug]} /></td>
 							{#each locales as locale, i (i)}
-								<td
-									><input
-										type="radio"
-										bind:group={tagLangPrefs[locale]}
-										value={a.slug}
-									/></td
-								>
+								<td><input type="radio" bind:group={tagLangPrefs[locale]} value={a.slug} /></td>
 							{/each}
 							<td
 								><input
@@ -377,47 +331,12 @@
 </Section>
 
 <Section title={m.curly_zesty_pelican_aim()}>
-	<div class="my-2">
-		{#each locales as locale, i (i)}
-			<label class="wiki-lang-tab">
-				<input type="radio" bind:group={wikiView} value={locale} />
-				{languages[locale]
-					.name}{#if edited_md[locale]}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand(
-						{
-							content: '*'
-						}
-					)}{/if}
-			</label>
-		{/each}
-	</div>
-
 	<form
 		action="?/wiki_page"
 		method="POST"
 		use:dirtyEnhance={{ barrier: form_barrier, priority: 1 }}
 	>
-		<input
-			type="text"
-			hidden
-			name="wiki_pages"
-			value={JSON.stringify(
-				locales
-					.filter((lang) => edited_md[lang])
-					.map((lang) => ({ lang: languages[lang].id, md: mds[lang] }))
-			)}
-		/>
-		<div class="grid grid-cols-2 gap-3">
-			<textarea
-				onchange={() => {
-					edited_md[wikiView] = true;
-				}}
-				bind:value={mds[wikiView]}
-			></textarea>
-			<div class="prose prose-neutral prose-sm prose-invert">
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html previewHtml}
-			</div>
-		</div>
+		<WikiEditor wiki_page={data.wiki_page} />
 		<input type="submit" />
 	</form>
 </Section>
@@ -471,35 +390,8 @@
 		method="POST"
 		use:dirtyEnhance={{ barrier: form_barrier, priority: 3 }}
 	>
-		<textarea
-			bind:value={urls}
-			name="urls"
-			class="w-full"
-			placeholder={m.close_any_racoon_cut()}
+		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
 		></textarea>
 		<input type="submit" />
 	</form>
 </Section>
-
-<style>
-	label.wiki-lang-tab {
-		padding: 0.2rem 0.5rem;
-		display: inline-block;
-		background-color: var(--otodb-color-bg-primary);
-		border: 1px solid var(--otodb-color-content-primary);
-		&:hover {
-			background-color: var(--otodb-color-bg-fainter);
-		}
-		&:active {
-			background-color: var(--otodb-color-bg-faint);
-		}
-		& > input {
-			display: none;
-		}
-		&:has(> input:checked) {
-			background-color: var(--otodb-color-content-primary);
-			border: 1px solid var(--otodb-color-bg-primary);
-			color: var(--otodb-color-bg-primary);
-		}
-	}
-</style>

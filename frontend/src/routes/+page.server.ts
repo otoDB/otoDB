@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ fetch, setHeaders, locals }) => {
 			fetch,
 			params: { query: { limit: 8, offset: 0 } }
 		}),
-		client.GET('/api/post/recent', {
+		client.GET('/api/thread/recent', {
 			fetch,
 			params: { query: { limit: 8, offset: 0 } }
 		})

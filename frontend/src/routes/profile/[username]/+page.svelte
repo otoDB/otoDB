@@ -3,11 +3,13 @@
 
 	import { m } from '$lib/paraglide/messages.js';
 	import CommentTree from '$lib/CommentTree.svelte';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
+	import Connections from '$lib/Connections.svelte';
 	import { getVersionKey, versions } from '$lib/enums/version';
 	import { userLevelNames } from '$lib/enums/userLevel.js';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { ModelsWithComments } from '$lib/schema.js';
+	import Time from '$lib/Time.svelte';
+	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	let { data } = $props();
 
@@ -35,34 +37,18 @@
 
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	<p>{userLevelNames[data.profile.level]()}</p>
-	{#if data.profile.date_created}
-		<p>
-			{m.sharp_witty_jackdaw_treat({
-				date: new Date(data.profile.date_created).toLocaleDateString()
-			})}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
-				content: versions[getVersionKey(new Date(data.profile.date_created))].name
-			})}
-		</p>
-	{/if}
+	<p>
+		<ParaglideMessage message={m.sharp_witty_jackdaw_treat} inputs={{}}>
+			{#snippet date()}
+				<Time format="absolute" date={data.profile.date_created} />
+			{/snippet}
+		</ParaglideMessage>{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({
+			content: versions[getVersionKey(new Date(data.profile.date_created))].name
+		})}
+	</p>
 
 	{#if data.connections}
-		<ul class="list-none">
-			{#each data.connections as s, i (i)}
-				<li>
-					<ConnectionFavicon
-						type={profileConnectionMap[s.site].name}
-						class="inline size-4"
-					/>
-					<a
-						href={profileConnectionMap[s.site].linkFn(s.content_id)}
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{decodeURI(profileConnectionMap[s.site].linkFn(s.content_id))}
-					</a>
-				</li>
-			{/each}
-		</ul>
+		<Connections items={data.connections} map={profileConnectionMap} />
 	{/if}
 </Section>
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
+	import { dirtyClick } from '$lib/dirty';
 	import {
 		buildEntityRoutes,
 		MimeType,
@@ -71,9 +72,7 @@
 			[...v.toString(2)]
 				.reduce(
 					(a, e, i, aa) =>
-						e === '1'
-							? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()]
-							: a,
+						e === '1' ? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()] : a,
 					[] as string[]
 				)
 				.join(', ') || 'N/A';
@@ -89,7 +88,7 @@
 			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
 		},
 		tagsong: {
-			category: EnumMap_to_DisplayFunction(SongTagCategoryNames)
+			category: EnumRecord_to_DisplayFunction(SongTagCategoryNames)
 		},
 		tagworkconnection: {
 			site: EnumMap_to_DisplayFunction(TagWorkConnectionMap)
@@ -134,9 +133,9 @@
 		col: string,
 		val: string | null | undefined
 	) => {
+		if (val === null || val === undefined) return 'None';
 		const handler = ValueDisplayMap[type]?.[col];
-		console.log(handler, type, col);
-		return decodeURIComponent((val ? (handler ? handler(+val)() : val) : null) ?? 'None');
+		return handler ? handler(+val)() : val;
 	};
 </script>
 
@@ -151,22 +150,22 @@
 		{/if}
 	</h3>
 	{#if data.revision.message}<h4 class="my-5">{data.revision.message}</h4>{/if}
-	{#if hasUserLevel(data.user?.level, Levels.Admin) && data.revision.id !== '1'}<button
+	{#if hasUserLevel(data.user?.level, Levels.Mod) && data.revision.id !== '1'}<button
 			class="my-5"
-			onclick={async () => {
+			{@attach dirtyClick(async () => {
 				if (!confirm('Are you sure?')) return;
 				await client.POST('/api/history/rollback', {
 					fetch,
 					params: { query: { revision_id: data.revision.id } }
 				});
-				invalidateAll();
-			}}>Revert changes made in this revision</button
+				await invalidateAll();
+			})}>Revert changes made in this revision</button
 		>{/if}
 	{#if data.user && data.user.username !== data.revision.user}
 		<button
 			onclick={() =>
 				goto(
-					`/post/new?category=${PostCategory.Gardening}&entity=@${data.revision.user}&title=${m.silly_quiet_fireant_quell({ id: data.revision.id })}`
+					`/thread/new?category=${PostCategory.Gardening}&entity=@${data.revision.user}&title=${m.silly_quiet_fireant_quell({ id: data.revision.id })}`
 				)}>{m.frail_loose_gecko_play({ user: data.revision.user })}</button
 		>
 	{/if}
@@ -211,5 +210,5 @@
 			</li>
 		{/each}
 	</ul>
-	<Pager n_count={data.changes.count} page={data.page} page_size={data.batch_size} />
+	<Pager n_count={data.changes.count} page_size={data.batch_size} />
 </Section>

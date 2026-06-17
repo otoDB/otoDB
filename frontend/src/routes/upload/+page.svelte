@@ -57,25 +57,19 @@
 				{#each data.sources.items as source (source.id)}
 					<tr>
 						<td>
-							<a href="/source/{source.id}">
+							<a href="/upload/{source.id}">
 								{source.title || source.url}
 							</a>
 						</td>
 						<td>{Platform[source.platform] ?? source.platform}</td>
 						<td>
 							{#if source.media}
-								<a href="/work/{source.media}"
-									>{source.media_title || `Work #${source.media}`}</a
-								>
+								<a href="/work/{source.media}">{source.media_title || `Work #${source.media}`}</a>
 							{:else}
 								-
 							{/if}
 						</td>
-						<td
-							><a href="/profile/{source.added_by.username}"
-								>{source.added_by.username}</a
-							></td
-						>
+						<td><a href="/profile/{source.added_by.username}">{source.added_by.username}</a></td>
 						<td>{source.published_date ?? '-'}</td>
 						<td>
 							{#if source.is_pending}
@@ -91,7 +85,6 @@
 		{#if data.sources.count}
 			<Pager
 				n_count={data.sources.count}
-				page={data.page}
 				page_size={data.batchSize}
 				base_url={page.url.toString()}
 			/>

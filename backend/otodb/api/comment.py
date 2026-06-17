@@ -7,7 +7,7 @@ from django.db import models, transaction
 from django.db.models import Case, F, OuterRef, Subquery, When, Window
 from django.db.models.functions import Rank
 from django.http import HttpRequest
-from django_comments_xtd.models import XtdComment
+from django_comments_xtd.models import XtdComment, max_thread_level_for_content_type
 from ninja import Router, Schema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
@@ -17,8 +17,10 @@ from ninja.throttling import AuthRateThrottle
 from otodb.account.models import Account
 from otodb.discord import discord_comment
 from otodb.models import CommentMeta, Notification, RevisionChange, Subscription
+from otodb.models.enums import ErrorCode
 
 from .common import (
+	ApiError,
 	AuthedHttpRequest,
 	OtodbID,
 	ProfileSchema,
@@ -35,7 +37,6 @@ class ModelsWithComments(str, Enum):
 	LIST = 'pool'
 	TAG = 'tagwork'
 	SONG_ATTRIBUTE = 'tagsong'
-	POST = 'post'
 	REQUEST = 'bulkrequest'
 
 
@@ -102,6 +103,8 @@ def post(
 	parent = None if parent_id == 0 else XtdComment.objects.get(id=parent_id)
 	if parent is not None and parent.is_removed:
 		raise HttpError(400, 'Bad Request')
+	if parent is not None and parent.level >= max_thread_level_for_content_type(T):
+		raise ApiError(400, ErrorCode.MAX_THREAD_LEVEL)
 
 	comment = XtdComment.objects.create(
 		content_type=T,
@@ -155,7 +158,7 @@ def delete(
 	comment = XtdComment.objects.get(
 		content_type=T, object_pk=pk, site_id=1, id=comment_id
 	)
-	if request.user.level >= Account.Levels.ADMIN or comment.user == request.user:
+	if request.user.level >= Account.Levels.MOD or comment.user == request.user:
 		comment.is_removed = True
 		comment.save()
 		Notification.objects.filter(comment=comment).delete()
@@ -173,11 +176,10 @@ class CommentEditSchema(Schema):
 @restrict_internal
 def edit(request: HttpRequest, payload: CommentEditSchema):
 	comment = XtdComment.objects.select_related('meta').get(id=payload.comment_id)
-	is_admin = request.user.level >= Account.Levels.ADMIN
-	if not is_admin:
+	if not request.user.is_mod:
 		if comment.user != request.user:
 			raise HttpError(403, 'Forbidden')
-		# Lock: if an admin has edited this comment, original author can no longer edit
+		# Lock: if a mod has edited this comment, original author can no longer edit
 		try:
 			meta = comment.meta
 			if meta.edited_by_id and meta.edited_by_id != comment.user_id:
@@ -210,7 +212,6 @@ class ExtCommentSchema(BaseCommentSchema):
 def recent(request: HttpRequest):
 	return (
 		XtdComment.objects.filter(is_removed=False)
-		.exclude(content_type__model='post')
 		.exclude(content_type__model='account')
 		.order_by('-submit_date')
 		.annotate(

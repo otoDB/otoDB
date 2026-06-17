@@ -1,15 +1,17 @@
+import logging
 from typing import Generator
 
 import ninja
 import orjson
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.views.decorators.cache import cache_page
 from ninja import NinjaAPI
-from ninja.decorators import decorate_view
+from ninja.errors import Throttled
 from ninja.parser import Parser
 from ninja.renderers import BaseRenderer
 from ninja.throttling import AnonRateThrottle, AuthRateThrottle
+
+from otodb.models.enums import ErrorCode
 
 from .auth import auth_router
 from .comment import comment_router
@@ -17,11 +19,12 @@ from .common import ApiError
 from .history import history_router
 from .list import list_router
 from .moderation import moderation_router
-from .post import post_router
 from .profile import profile_router
 from .requests import request_router
 from .source import source_router
 from .tag import tag_router
+from .thread import thread_router
+from .wiki import wiki_router
 from .work import work_router
 
 
@@ -121,11 +124,21 @@ api.add_router('/upload/', source_router)
 api.add_router('/profile/', profile_router)
 api.add_router('/list/', list_router)
 api.add_router('/tag/', tag_router)
-api.add_router('/post/', post_router)
+api.add_router('/wiki/', wiki_router)
+api.add_router('/thread/', thread_router)
 api.add_router('/comment/', comment_router)
 api.add_router('/history/', history_router)
 api.add_router('/request/', request_router)
 api.add_router('/moderation/', moderation_router)
+
+
+logger = logging.getLogger(__name__)
+
+
+@api.exception_handler(Exception)
+def _handle_unexpected_error(request, exc: Exception):
+	logger.exception('Unhandled exception in API handler', exc_info=exc)
+	return api.create_response(request, {'code': ErrorCode.INTERNAL_ERROR}, status=500)
 
 
 @api.exception_handler(ApiError)
@@ -136,8 +149,12 @@ def _handle_api_error(request, exc: ApiError):
 	return api.create_response(request, body, status=exc.status)
 
 
+@api.exception_handler(Throttled)
+def _handle_throttled(request, exc: Throttled):
+	return api.create_response(request, {'code': ErrorCode.RATE_LIMITED}, status=429)
+
+
 @api.get('stats', response=tuple[int, int, int, int])
-@decorate_view(cache_page(60))
 def statistics(request):
 	from otodb.models import MediaSong, MediaWork, Pool, TagWork
 

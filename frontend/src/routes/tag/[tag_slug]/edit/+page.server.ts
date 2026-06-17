@@ -1,5 +1,6 @@
-import client from '$lib/api.server';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import client, { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 import { userLevelGuard } from '$lib/route_guard';
@@ -9,7 +10,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 	userLevelGuard(locals.user, Levels.Member, url.pathname);
 
 	const [{ data: wiki_page }, { data: details }, { data: connections }] = await Promise.all([
-		client.GET('/api/tag/wiki_page', {
+		client.GET('/api/wiki/tag', {
 			fetch,
 			params: {
 				query: {
@@ -82,34 +83,31 @@ export const actions = {
 					}
 				: null;
 
-		try {
-			await client.PUT('/api/tag/tag', {
-				fetch,
-				params: {
-					query: {
-						tag_slug: params.tag_slug!
-					}
-				},
-				body: {
-					payload: {
-						parent_slugs,
-						category: +category,
-						deprecated,
-						media_type,
-						primary: +primary === -1 ? null : +primary
-					},
-					song_payload: song
+		const { error: apiError } = await rawClient.PUT('/api/tag/tag', {
+			fetch,
+			params: {
+				query: {
+					tag_slug: params.tag_slug!
 				}
-			});
-		} catch {
-			return fail(400, {
+			},
+			body: {
+				payload: {
+					parent_slugs,
+					category: +category,
+					deprecated,
+					media_type,
+					primary: +primary === -1 ? null : +primary
+				},
+				song_payload: song
+			}
+		});
+		if (apiError)
+			return apiFail(apiError, {
 				category: +category as WorkTagCategory,
 				parent_slugs,
 				deprecated,
-				failed: true,
 				primary: +primary
 			});
-		}
 		redirect(303, `/tag/${params.tag_slug}`);
 	},
 	wiki_page: async ({ request, fetch, params }) => {
@@ -118,7 +116,7 @@ export const actions = {
 		if (pages.length === 0) {
 			redirect(303, `/tag/${params.tag_slug}`);
 		}
-		await client.POST('/api/tag/wiki_page', {
+		await client.POST('/api/wiki/tag', {
 			fetch,
 			params: { query: { tag_slug: params.tag_slug! } },
 			body: pages

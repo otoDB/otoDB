@@ -23,6 +23,10 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		(s) => +s
 	);
 	const has_connections = url.searchParams.get('has_connections');
+	const min_parents_raw = url.searchParams.get('min_parents');
+	const min_parents = min_parents_raw ? parseInt(min_parents_raw, 10) : undefined;
+	const max_parents_raw = url.searchParams.get('max_parents');
+	const max_parents = max_parents_raw ? parseInt(max_parents_raw, 10) : undefined;
 	const page = parseInt(url.searchParams.get('page') ?? '1', 10) || 1;
 
 	const { data } = await client.GET('/api/tag/search', {
@@ -41,7 +45,9 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 				wiki_lang_missing,
 				lang_pref,
 				lang_pref_missing,
-				has_connections: has_connections ? has_connections === 'true' : undefined
+				has_connections: has_connections ? has_connections === 'true' : undefined,
+				min_parents,
+				max_parents
 			}
 		}
 	});
@@ -60,7 +66,8 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		lang_pref,
 		lang_pref_missing,
 		has_connections,
-		page,
+		min_parents,
+		max_parents,
 		head: {
 			title: m.mild_loud_shad_enchant({
 				type: m.mean_top_antelope_love(),

@@ -9,8 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models, transaction
 from django.db.models import Case, Exists, F, OuterRef, Q, Subquery, When, Window
 from django.db.models.fields.related import RelatedField
-from django.db.models.functions import RowNumber
-from django.forms.models import model_to_dict
+from django.db.models.functions import Coalesce, RowNumber
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
@@ -27,6 +26,7 @@ from otodb.models import (
 	RevisionChangeEntity,
 	TagSong,
 	TagWork,
+	WikiPage,
 )
 from otodb.models.enums import RevisionChain, Route
 from otodb.models.tag import OtodbTagModel
@@ -35,7 +35,7 @@ from .common import (
 	OtodbID,
 	add_revision_message,
 	track_revision,
-	user_is_staff,
+	user_is_mod,
 	with_revision_route,
 )
 
@@ -106,7 +106,7 @@ class HistoricalEntities(str, Enum):
 
 
 class HistoricalEntitySchema(Schema):
-	id: OtodbID
+	id: str
 	entity: HistoricalEntities
 
 
@@ -132,23 +132,6 @@ class RevisionChangeSchema(ModelSchema):
 	class Meta:
 		model = RevisionChange
 		fields = ['deleted', 'target_column', 'target_value']
-
-
-def get_history_dict(historical):
-	d = model_to_dict(
-		historical,
-		fields=[
-			'history_id',
-			'history_date',
-			'history_user',
-			'history_change_reason',
-		],
-	) | {'delta': [], 'model': historical.model}
-	if d['history_user']:
-		d['history_user'] = Account.objects.get(id=d['history_user']).username
-	else:
-		d['history_user'] = Account.objects.get(id=1).username
-	return d
 
 
 @history_router.get('recent', response=list[RevisionSchema])
@@ -181,6 +164,17 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			*OtodbTagModel.__subclasses__()
 		).values()
 	]
+	wikipage_ct = ContentType.objects.get_for_model(WikiPage)
+	ent_wikipage_slug = Subquery(
+		WikiPage.objects.filter(pk=OuterRef('revisionchangeentity__entity_id')).values(
+			'slug'
+		)[:1]
+	)
+	tg_wikipage_slug = Coalesce(
+		Subquery(WikiPage.objects.filter(pk=OuterRef('target_id')).values('slug')[:1]),
+		models.functions.Cast(F('target_id'), output_field=models.TextField()),
+		output_field=models.TextField(),
+	)
 	qq = (
 		RevisionChange.objects.filter(rev=rev)
 		.filter(revisionchangeentity__isnull=False)
@@ -199,10 +193,15 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 							).values('target_value')[:1]
 						),
 					),
+					When(
+						Q(revisionchangeentity__entity_type=wikipage_ct),
+						then=ent_wikipage_slug,
+					),
 					default=models.functions.Cast(
 						F('revisionchangeentity__entity_id'),
 						output_field=models.TextField(),
 					),
+					output_field=models.TextField(),
 				)
 			),
 			tg_id=(
@@ -217,13 +216,22 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 							).values('target_value')[:1]
 						),
 					),
+					When(
+						Q(target_type=wikipage_ct),
+						then=tg_wikipage_slug,
+					),
 					default=models.functions.Cast(
 						F('target_id'), output_field=models.TextField()
 					),
+					output_field=models.TextField(),
 				)
 			),
 			ent_type=F('revisionchangeentity__entity_type__model'),
 			route=F('revisionchangeentity__route'),
+		)
+		.exclude(
+			revisionchangeentity__entity_type=wikipage_ct,
+			ent_id__isnull=True,
 		)
 		.order_by('id')
 	)
@@ -231,6 +239,9 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 
 
 def find_rev_rst(ctpk, query_pk, rev):
+	"""One hop forward (original -> restored): the pk that query_pk was restored
+	*to*, from a committed restored=True record or an in-flight rollback, else None.
+	"""
 	if q := RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=query_pk, restored=True
 	):
@@ -240,6 +251,9 @@ def find_rev_rst(ctpk, query_pk, rev):
 
 
 def get_rev_restored(ctpk, pk):
+	"""Resolve pk forward to the end of its original -> restored chain (its current
+	live pk), or None if that row is deleted / not yet restored.
+	"""
 	cache = get_request_cache()
 	rev = cache.get('rev_rst')
 	rev_del = cache.get('rev_del')
@@ -258,6 +272,9 @@ def get_rev_restored(ctpk, pk):
 
 
 def add_rev_restore(ctpk, pk, new_pk):
+	"""Record (in the current rollback) that pk -- resolved to the end of its
+	restored chain -- has been restored as new_pk.
+	"""
 	assert pk != new_pk
 	cache = get_request_cache()
 	rev = cache.get('rev_rst')
@@ -272,6 +289,29 @@ def add_rev_restore(ctpk, pk, new_pk):
 	).exists() or any(ctpk == ctid and last == idd for ctid, idd, _ in rev_del)
 	rev[(ctpk, last)] = new_pk
 	cache.set('rev_rst', rev)
+
+
+def get_rev_origin(ctpk, pk):
+	"""Resolve pk *backward* through restored=True chains to the original entity it
+	was restored from -- the inverse of get_rev_restored, which only walks forward.
+
+	A row created by a prior rollback has no revision history before its restoration,
+	so its pre-rollback-date state must be looked up under that original id.
+	"""
+	seen = set()
+	while pk not in seen:
+		seen.add(pk)
+		prior = (
+			RevisionChange.objects.filter(
+				target_type_id=ctpk, target_value=str(pk), restored=True
+			)
+			.values_list('target_id', flat=True)
+			.first()
+		)
+		if prior is None:
+			return pk
+		pk = prior
+	return pk
 
 
 def _get_all_previous_field_values(
@@ -545,6 +585,7 @@ def rollback_entity(
 
 			actual_target_id = get_rev_restored(target_type_id, target_id)
 			if actual_target_id:
+				origin_id = get_rev_origin(target_type_id, target_id)
 				# Extract just the field names
 				fields_to_fetch = [
 					field_name_tuple[2] for field_name_tuple in target_columns
@@ -553,7 +594,7 @@ def rollback_entity(
 					completed, values = _get_all_previous_field_values(
 						model_class,
 						target_type_id,
-						target_id,
+						origin_id,
 						date,
 						related_targets,
 						fields=fields_to_fetch,
@@ -613,7 +654,7 @@ def rollback_entity(
 
 
 @history_router.post('rollback', auth=django_auth)
-@user_is_staff  # TODO: for now
+@user_is_mod  # TODO: for now
 @track_revision
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic
@@ -652,7 +693,7 @@ def rollback(
 
 
 @history_router.post('rollback_user', auth=django_auth)
-@user_is_staff
+@user_is_mod
 @track_revision
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic

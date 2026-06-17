@@ -21,7 +21,7 @@
 			'outline-2 outline-sky-600': work.status === Status.Pending,
 			'outline-2 outline-yellow-600': work?.pending_flag,
 			'outline-2 outline-orange-600': work?.pending_appeal,
-			'outline-2 outline-red-600': work.status === Status.Unapproved && !work?.pending_appeal
+			'outline-2 outline-red-600': work.status === Status.Delisted && !work?.pending_appeal
 		}
 	]}
 >

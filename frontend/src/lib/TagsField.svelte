@@ -13,17 +13,17 @@
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
 
-	const endpoint = $derived(type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search');
-
 	let textarea: HTMLTextAreaElement;
 	let suggestions = $state<any[]>([]);
 	let lastQuery = $state('');
 
+	const slug_re = /[\p{L}\p{N}_\-]/v;
+
 	const getWordAtPos = (str: string, pos: number) => {
 		let start = pos;
-		while (start > 0 && /[\w-]/.test(str[start - 1])) start--;
+		while (start > 0 && slug_re.test(str[start - 1])) start--;
 		let end = pos;
-		while (end < str.length && /[\w-]/.test(str[end])) end++;
+		while (end < str.length && slug_re.test(str[end])) end++;
 		while (start < end && str[start] === '-') start++;
 		return { word: str.slice(start, end), start, end };
 	};
@@ -43,9 +43,21 @@
 		}
 		if (word === lastQuery) return;
 		lastQuery = word;
-		const { data } = await client.GET(endpoint, {
-			params: { query: { query: word, limit: 10, resolve_aliases: false } }
-		});
+		const { data } =
+			type === 'work'
+				? await client.GET('/api/tag/search', {
+						params: {
+							query: {
+								query: word,
+								limit: 10,
+								order: 'count',
+								autocomplete: true
+							}
+						}
+					})
+				: await client.GET('/api/tag/song_tag_search', {
+						params: { query: { query: word, limit: 10, autocomplete: true } }
+					});
 		if (!data) return;
 		suggestions = data.items;
 	});

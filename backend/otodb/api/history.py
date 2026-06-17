@@ -490,27 +490,32 @@ def add_rev_restore(ctpk, pk, new_pk):
 	cache.set('rev_rst', rev)
 
 
-def get_rev_origin(ctpk, pk):
-	"""Resolve pk *backward* through restored=True chains to the original entity it
-	was restored from -- the inverse of get_rev_restored, which only walks forward.
+def get_rev_origin(ctpk, pk, cutoff_date):
+	"""Resolve pk *backward* through restored=True chains to the generation that was
+	already alive at cutoff_date -- the inverse of get_rev_restored, which only walks
+	forward.
 
 	A row created by a prior rollback has no revision history before its restoration,
-	so its pre-rollback-date state must be looked up under that original id.
+	so if it was born after the cutoff its pre-cutoff state must be looked up under an
+	earlier generation. We stop at the first (newest) generation whose own restore
+	predates the cutoff -- walking further back would read a stale generation's values.
 	"""
-	seen = set()
-	while pk not in seen:
-		seen.add(pk)
+	while True:
 		prior = (
 			RevisionChange.objects.filter(
 				target_type_id=ctpk, target_value=str(pk), restored=True
 			)
-			.values_list('target_id', flat=True)
+			.values_list('target_id', 'rev__date')
 			.first()
 		)
 		if prior is None:
 			return pk
-		pk = prior
-	return pk
+		ancestor, pk_created = prior
+		# `pk` was created (restored) at pk_created. If that is at/before the cutoff,
+		# `pk` itself was the live row then, so its history holds the values we want.
+		if pk_created <= cutoff_date:
+			return pk
+		pk = ancestor
 
 
 def _get_all_previous_field_values(
@@ -745,8 +750,14 @@ def rollback_entity(
 						created = False
 						model_class.objects.filter(id=new_id).update(**values)
 					else:
-						new_instance, created = model_class.objects.update_or_create(
-							**values
+						# N.B. we must not use select_related/prefetch_related here,
+						# or update_or_create will run its internal select_for_update() over
+						# the resulting outer join -- which Postgres rejects with
+						# "FOR UPDATE cannot be applied to the nullable side of an outer join"
+						new_instance, created = (
+							model_class.objects.select_related(None)
+							.prefetch_related(None)
+							.update_or_create(**values)
 						)
 						npk = new_instance.pk
 					if created:
@@ -783,8 +794,16 @@ def rollback_entity(
 				return
 
 			actual_target_id = get_rev_restored(target_type_id, target_id)
+			# if entry was deleted but not restored, it would have been restored earlier
+			# hence only proceed if entry was restored or never deleted to begin with
 			if actual_target_id:
-				origin_id = get_rev_origin(target_type_id, target_id)
+				# however target_id may refer to a restored version of an entry deleted after this rev
+				# so we need to rewind its ID if necessary
+				# N.B. if the entry was restored in the current revision:
+				# 	- origin_id will be the restored id
+				# - _get_all_previous_field_values will not be able to fetch the changes
+				# - it will enter the delete branch as desired
+				origin_id = get_rev_origin(target_type_id, target_id, date)
 				# Extract just the field names
 				fields_to_fetch = [
 					field_name_tuple[2] for field_name_tuple in target_columns
@@ -807,6 +826,7 @@ def rollback_entity(
 					if model_class not in updates_by_model:
 						updates_by_model[model_class] = []
 					updates_by_model[model_class].append((actual_target_id, values))
+				# Entry did not exist at this time, so delete it to complete rollback
 				elif set(fields_to_fetch) == values:
 					if model_class not in delete_models:
 						delete_models[model_class] = []
@@ -836,15 +856,17 @@ def rollback_entity(
 			# Apply to_active to resolve soft deletes (aliased_to/moved_to)
 			changes = {}
 			for f, rctid, v in fs:
+				# vv is the related target's live pk if exists. Skip otherwise.
 				vv = get_rev_restored(rctid, v)
 				model_class = ContentType.objects.get(id=rctid).model_class()
 				if (
-					model_class
+					vv is not None
+					and model_class
 					and hasattr(model_class, '_revision_meta')
 					and model_class._revision_meta.to_active
 				):
 					vv = model_class._revision_meta.to_active(
-						model_class.objects.get(pk=v)
+						model_class.objects.get(pk=vv)
 					).pk
 				changes[f] = vv
 			ContentType.objects.get(id=ctid).model_class().objects.filter(

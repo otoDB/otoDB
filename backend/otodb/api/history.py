@@ -438,6 +438,9 @@ def revision_refs(request: HttpRequest, revision_id: OtodbID):
 
 
 def find_rev_rst(ctpk, query_pk, rev):
+	"""One hop forward (original -> restored): the pk that query_pk was restored
+	*to*, from a committed restored=True record or an in-flight rollback, else None.
+	"""
 	if q := RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=query_pk, restored=True
 	):
@@ -447,6 +450,9 @@ def find_rev_rst(ctpk, query_pk, rev):
 
 
 def get_rev_restored(ctpk, pk):
+	"""Resolve pk forward to the end of its original -> restored chain (its current
+	live pk), or None if that row is deleted / not yet restored.
+	"""
 	cache = get_request_cache()
 	rev = cache.get('rev_rst')
 	rev_del = cache.get('rev_del')
@@ -465,6 +471,9 @@ def get_rev_restored(ctpk, pk):
 
 
 def add_rev_restore(ctpk, pk, new_pk):
+	"""Record (in the current rollback) that pk -- resolved to the end of its
+	restored chain -- has been restored as new_pk.
+	"""
 	assert pk != new_pk
 	cache = get_request_cache()
 	rev = cache.get('rev_rst')
@@ -479,6 +488,29 @@ def add_rev_restore(ctpk, pk, new_pk):
 	).exists() or any(ctpk == ctid and last == idd for ctid, idd, _ in rev_del)
 	rev[(ctpk, last)] = new_pk
 	cache.set('rev_rst', rev)
+
+
+def get_rev_origin(ctpk, pk):
+	"""Resolve pk *backward* through restored=True chains to the original entity it
+	was restored from -- the inverse of get_rev_restored, which only walks forward.
+
+	A row created by a prior rollback has no revision history before its restoration,
+	so its pre-rollback-date state must be looked up under that original id.
+	"""
+	seen = set()
+	while pk not in seen:
+		seen.add(pk)
+		prior = (
+			RevisionChange.objects.filter(
+				target_type_id=ctpk, target_value=str(pk), restored=True
+			)
+			.values_list('target_id', flat=True)
+			.first()
+		)
+		if prior is None:
+			return pk
+		pk = prior
+	return pk
 
 
 def _get_all_previous_field_values(
@@ -752,6 +784,7 @@ def rollback_entity(
 
 			actual_target_id = get_rev_restored(target_type_id, target_id)
 			if actual_target_id:
+				origin_id = get_rev_origin(target_type_id, target_id)
 				# Extract just the field names
 				fields_to_fetch = [
 					field_name_tuple[2] for field_name_tuple in target_columns
@@ -760,7 +793,7 @@ def rollback_entity(
 					completed, values = _get_all_previous_field_values(
 						model_class,
 						target_type_id,
-						target_id,
+						origin_id,
 						date,
 						related_targets,
 						fields=fields_to_fetch,

@@ -350,6 +350,7 @@ class ErrorCode(OtodbIntegerEnum):
 	TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR = 10021
 	SOURCE_PENDING = 10022
 	CAPTCHA_FAILED = 10023
+	MAX_THREAD_LEVEL = 10024
 
 
 class Preferences(OtodbIntegerEnum):

@@ -356,21 +356,26 @@ def delete_post(request: AuthedHttpRequest, thread_id: OtodbID, num: int):
 
 @thread_router.put('close', auth=django_auth)
 @transaction.atomic
-def toggle_close(request: AuthedHttpRequest, thread_id: OtodbID):
+def close_thread(request: AuthedHttpRequest, thread_id: OtodbID):
+	t = get_object_or_404(Thread, id=thread_id, is_removed=False)
+	if not request.user.is_mod:
+		raise HttpError(403, 'Forbidden')
+	if not t.closed_at:
+		t.closed_at = datetime.now(tz=timezone.utc)
+		t.save(update_fields=['closed_at'])
+
+
+@thread_router.put('reopen', auth=django_auth)
+@transaction.atomic
+def reopen_thread(request: AuthedHttpRequest, thread_id: OtodbID):
 	t = get_object_or_404(Thread, id=thread_id, is_removed=False)
 	is_mod = request.user.is_mod
 	is_author = t.added_by_id == request.user.pk
-	if not t.closed_at:
-		if is_mod:
-			t.closed_at = datetime.now(tz=timezone.utc)
-		else:
-			raise HttpError(403, 'Forbidden')
-	else:
-		if is_mod or is_author:
-			t.closed_at = None
-		else:
-			raise HttpError(403, 'Forbidden')
-	t.save(update_fields=['closed_at'])
+	if not (is_mod or is_author):
+		raise HttpError(403, 'Forbidden')
+	if t.closed_at:
+		t.closed_at = None
+		t.save(update_fields=['closed_at'])
 
 
 def _visible_threads():

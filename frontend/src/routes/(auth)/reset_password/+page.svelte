@@ -45,7 +45,7 @@
 			<table>
 				<tbody>
 					<tr>
-						<th><label for="email">Email:</label></th>
+						<th><label for="email">{m.moving_funny_spider_feast()}</label></th>
 						<td><input type="email" name="email" required /></td>
 					</tr>
 				</tbody>

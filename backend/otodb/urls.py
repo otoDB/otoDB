@@ -9,4 +9,5 @@ urlpatterns = [
 	path('sitemap.xml', sitemap, name='sitemap'),
 	path('api/', api.urls),
 	path('chores/cookies', views.upload_cookies, name='upload_cookies'),
+	path('auth_forward', views.auth_forward),
 ]

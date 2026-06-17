@@ -16,7 +16,6 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	});
 	return {
 		revisions,
-		page,
 		batch_size
 	};
 };

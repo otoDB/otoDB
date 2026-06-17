@@ -81,5 +81,5 @@
 			</li>
 		{/each}
 	</ul>
-	<Pager n_count={data.changes.count} page={data.page} page_size={data.batch_size} />
+	<Pager n_count={data.changes.count} page_size={data.batch_size} />
 </Section>

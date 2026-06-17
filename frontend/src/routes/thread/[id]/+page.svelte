@@ -90,7 +90,6 @@
 		</div>
 		<Pager
 			n_count={data.post_count}
-			page={data.page}
 			page_size={data.batch_size}
 			base_url="/thread/{data.thread.id}"
 		/>

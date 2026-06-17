@@ -1,13 +1,18 @@
 <script lang="ts">
 	import Time from '$lib/Time.svelte';
 	import { routeNames } from '$lib/enums/route';
+	import Pager from './Pager.svelte';
 	import { m } from './paraglide/messages';
 	import type { components } from './schema';
 	interface Props {
-		revisions: components['schemas']['RevisionSchema'][];
-		user: App.Locals['user'] | null;
+		revisions: {
+			items: components['schemas']['RevisionSchema'][];
+			count: number;
+		};
+		batch_size: number;
+		page_param?: string;
 	}
-	let { revisions }: Props = $props();
+	let { revisions, batch_size, page_param }: Props = $props();
 </script>
 
 <table class="w-full table-auto text-center">
@@ -17,7 +22,7 @@
 				>{m.super_agent_pigeon_aim()}</th
 			><th>{m.weary_spicy_fly_attend()}</th>
 		</tr>
-		{#each revisions as rev, i (i)}
+		{#each revisions.items as rev, i (i)}
 			<tr
 				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
 					>{rev.route !== null && rev.route !== undefined ? routeNames[rev.route]() : ''}</td
@@ -32,3 +37,4 @@
 		{/each}
 	</tbody>
 </table>
+<Pager page_size={batch_size} n_count={revisions.count} param_name={page_param} />

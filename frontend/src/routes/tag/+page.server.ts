@@ -68,7 +68,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		has_connections,
 		min_parents,
 		max_parents,
-		page,
 		head: {
 			title: m.mild_loud_shad_enchant({
 				type: m.mean_top_antelope_love(),

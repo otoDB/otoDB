@@ -18,7 +18,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	});
 	return {
 		threads: data,
-		batch_size,
-		page
+		batch_size
 	};
 };

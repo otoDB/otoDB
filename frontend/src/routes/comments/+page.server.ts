@@ -17,7 +17,6 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 	});
 	return {
 		comments,
-		page,
 		batch_size,
 		head: { title: m.same_broad_haddock_pinch() }
 	};

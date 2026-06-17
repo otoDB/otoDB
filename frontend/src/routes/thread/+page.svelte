@@ -7,6 +7,7 @@
 	import { PostCategory } from '$lib/schema.js';
 	import { enumValues } from '$lib/enums.js';
 	import { postCategoryNames } from '$lib/enums/postCategory.js';
+	import { page } from '$app/state';
 
 	let { data } = $props();
 </script>
@@ -37,5 +38,5 @@
 	<hr class="my-5" />
 
 	<ThreadTable posts={data.results.items} showCategory showAuthor />
-	<Pager n_count={data.results.count} page={data.page} page_size={data.batch_size} />
+	<Pager n_count={data.results.count} page_size={data.batch_size} base_url={page.url.toString()} />
 </Section>

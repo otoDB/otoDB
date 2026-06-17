@@ -4,6 +4,7 @@
 	import { buildEntityRoutes, type EntityModelType } from './enums';
 	import { m } from './paraglide/messages';
 	import Time from '$lib/Time.svelte';
+	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	interface Post {
 		id: string;
@@ -31,7 +32,7 @@
 		<tr>
 			<th class="text-left">{m.large_factual_octopus_exhale()}</th>
 			{#if showCategory}<th class="w-32 text-left">{m.plane_awful_bobcat_spark()}</th>{/if}
-			{#if showAuthor}<th class="w-32 text-left">{m.crisp_red_canary_tickle()}</th>{/if}
+			{#if showAuthor}<th class="w-32 text-left">{m.funny_heroic_whale_gleam()}</th>{/if}
 			<th class="w-64 text-right">{m.plain_polite_eagle_build()}</th>
 		</tr>
 	</thead>
@@ -63,9 +64,12 @@
 					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td>
 				{/if}
 				<td class="text-right">
-					<a href="/profile/{lastUser}">{lastUser}</a>
-					@
 					<Time format="absolute" date={lastTime} />
+					<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}>
+						{#snippet content()}
+							<a href="/profile/{lastUser}">{lastUser}</a>
+						{/snippet}
+					</ParaglideMessage>
 				</td>
 			</tr>
 		{/each}

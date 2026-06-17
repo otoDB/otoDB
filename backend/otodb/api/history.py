@@ -291,27 +291,32 @@ def add_rev_restore(ctpk, pk, new_pk):
 	cache.set('rev_rst', rev)
 
 
-def get_rev_origin(ctpk, pk):
-	"""Resolve pk *backward* through restored=True chains to the original entity it
-	was restored from -- the inverse of get_rev_restored, which only walks forward.
+def get_rev_origin(ctpk, pk, cutoff_date):
+	"""Resolve pk *backward* through restored=True chains to the generation that was
+	already alive at cutoff_date -- the inverse of get_rev_restored, which only walks
+	forward.
 
 	A row created by a prior rollback has no revision history before its restoration,
-	so its pre-rollback-date state must be looked up under that original id.
+	so if it was born after the cutoff its pre-cutoff state must be looked up under an
+	earlier generation. We stop at the first (newest) generation whose own restore
+	predates the cutoff -- walking further back would read a stale generation's values.
 	"""
-	seen = set()
-	while pk not in seen:
-		seen.add(pk)
+	while True:
 		prior = (
 			RevisionChange.objects.filter(
 				target_type_id=ctpk, target_value=str(pk), restored=True
 			)
-			.values_list('target_id', flat=True)
+			.values_list('target_id', 'rev__date')
 			.first()
 		)
 		if prior is None:
 			return pk
-		pk = prior
-	return pk
+		ancestor, pk_created = prior
+		# `pk` was created (restored) at pk_created. If that is at/before the cutoff,
+		# `pk` itself was the live row then, so its history holds the values we want.
+		if pk_created <= cutoff_date:
+			return pk
+		pk = ancestor
 
 
 def _get_all_previous_field_values(
@@ -584,8 +589,16 @@ def rollback_entity(
 				return
 
 			actual_target_id = get_rev_restored(target_type_id, target_id)
+			# if entry was deleted but not restored, it would have been restored earlier
+			# hence only proceed if entry was restored or never deleted to begin with
 			if actual_target_id:
-				origin_id = get_rev_origin(target_type_id, target_id)
+				# however target_id may refer to a restored version of an entry deleted after this rev
+				# so we need to rewind its ID if necessary
+				# N.B. if the entry was restored in the current revision:
+				# 	- origin_id will be the restored id
+				# - _get_all_previous_field_values will not be able to fetch the changes
+				# - it will enter the delete branch as desired
+				origin_id = get_rev_origin(target_type_id, target_id, date)
 				# Extract just the field names
 				fields_to_fetch = [
 					field_name_tuple[2] for field_name_tuple in target_columns
@@ -608,6 +621,7 @@ def rollback_entity(
 					if model_class not in updates_by_model:
 						updates_by_model[model_class] = []
 					updates_by_model[model_class].append((actual_target_id, values))
+				# Entry did not exist at this time, so delete it to complete rollback
 				elif set(fields_to_fetch) == values:
 					if model_class not in delete_models:
 						delete_models[model_class] = []

@@ -415,5 +415,6 @@
 	"fresh_lucky_swan_dwell": "Unbound",
 	"lucky_brisk_falcon_rest": "Rate limit exceeded.",
 	"noble_tidy_boar_lock": "({#content/})",
-	"funny_heroic_whale_gleam": "OP"
+	"funny_heroic_whale_gleam": "OP",
+	"small_fresh_hyena_rest": "This comment thread is too deeply nested to reply to."
 }

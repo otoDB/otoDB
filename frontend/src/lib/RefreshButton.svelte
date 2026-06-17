@@ -18,7 +18,7 @@
 			error: m.green_due_javelina_pop()
 		});
 		const { error } = await props;
-		if (!error) invalidateAll();
+		if (!error) await invalidateAll();
 	};
 </script>
 

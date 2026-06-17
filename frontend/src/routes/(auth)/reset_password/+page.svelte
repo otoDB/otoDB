@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import Section from '$lib/Section.svelte';
+	import Turnstile from '$lib/Turnstile.svelte';
 
 	let { data, form } = $props();
 	import { m } from '$lib/paraglide/messages.js';
@@ -20,7 +21,7 @@
 	{#if form?.reset_success}
 		<p>{m.stock_jolly_crocodile_cheer()}</p>
 	{:else if data.token || data.user}
-		<form method="POST" use:enhance action="?/reset">
+		<form method="POST" use:dirtyEnhance action="?/reset">
 			<table>
 				<tbody>
 					<tr>
@@ -34,20 +35,22 @@
 				</tbody>
 			</table>
 			<input hidden type="text" name="token" value={data.token} />
+			<Turnstile action="reset_password" />
 			<input type="submit" />
 		</form>
 	{:else if form?.success}
 		<p>{m.grand_lucky_halibut_chop()}</p>
 	{:else}
-		<form method="POST" use:enhance action="?/request">
+		<form method="POST" use:dirtyEnhance action="?/request">
 			<table>
 				<tbody>
 					<tr>
-						<th><label for="email">Email:</label></th>
+						<th><label for="email">{m.moving_funny_spider_feast()}</label></th>
 						<td><input type="email" name="email" required /></td>
 					</tr>
 				</tbody>
 			</table>
+			<Turnstile action="reset_request" />
 			<input type="submit" />
 		</form>
 	{/if}

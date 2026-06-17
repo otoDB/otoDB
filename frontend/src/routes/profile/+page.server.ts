@@ -33,7 +33,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		order,
 		results: data,
 		batch_size,
-		page,
 		head: {
 			title: m.bright_nimble_eagle_glide()
 		}

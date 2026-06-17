@@ -1,4 +1,6 @@
+import WorkTag from '$lib/WorkTag.svelte';
 import { PostEntities } from '$lib/schema';
+import type { Root as HastRoot } from 'hast';
 import type { Parent, PhrasingContent, Root } from 'mdast';
 import { findAndReplace } from 'mdast-util-find-and-replace';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
@@ -10,8 +12,11 @@ import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
+import { unmount } from 'svelte';
 import { unified, type Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
+import { rawClient } from '$lib/api';
+import { mount } from 'svelte';
 
 const ENTITIES = [
 	{ shortPrefix: 'w', longLabel: 'work', urlPath: 'work' },
@@ -27,6 +32,7 @@ const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N
 const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
 const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 const SEARCH_RE = /\{\{([^}]+?)\}\}/g;
+const POST_REF_RE = /(?<![/\w])t(\d+)\.(\d+)(?!\w)/g;
 
 const LinkableEntities: [PostEntities, RegExp][] = [
 	[PostEntities.mediawork, short_prefix_re_gen(ENTITIES[0].shortPrefix)],
@@ -36,7 +42,26 @@ const LinkableEntities: [PostEntities, RegExp][] = [
 ];
 
 function link(href: string, text: string): PhrasingContent {
-	return { type: 'link', url: href, children: [{ type: 'text', value: text }] };
+	return {
+		type: 'link',
+		url: href,
+		children: [{ type: 'text', value: text }]
+	};
+}
+
+function postRef(thread: string, num: string): PhrasingContent {
+	return {
+		type: 'link',
+		url: `/thread/${thread}.${num}`,
+		data: {
+			hProperties: {
+				dataPostrefThread: thread,
+				dataPostrefNum: num,
+				dataSveltekitNoscroll: ''
+			}
+		},
+		children: [{ type: 'text', value: `t${thread}.${num}` }]
+	};
 }
 
 function remarkStripImages() {
@@ -63,6 +88,8 @@ function remarkStripImages() {
 }
 
 const OtodbReplacements: [RegExp, (...args: string[]) => PhrasingContent | false][] = [
+	// Post references (t{thread}.{num}) are resolved first.
+	[POST_REF_RE, (_, thread, num) => postRef(thread, num)],
 	...ENTITIES.flatMap(({ shortPrefix, longLabel, urlPath }) => [
 		// Short form: w123, l42, r99
 		[
@@ -103,7 +130,10 @@ export const string_link_entities = (s: string) => {
 				let match;
 				while ((match = regex.exec(v)) !== null) {
 					if (match.index > lastIndex) result.push(v.slice(lastIndex, match.index));
-					const l = tf(...match) as { url: string; children: { value: string }[] };
+					const l = tf(...match) as {
+						url: string;
+						children: { value: string }[];
+					};
 					result.push({ url: l.url, text: l.children[0].value });
 					lastIndex = regex.lastIndex;
 				}
@@ -144,8 +174,32 @@ export const entity_to_shorthand = (entity: string, id: string): string =>
 
 const sanitizeSchema = {
 	...defaultSchema,
-	tagNames: [...(defaultSchema.tagNames ?? []), 'otodb-worktag'],
-	attributes: { ...defaultSchema.attributes, 'otodb-worktag': ['slug'] }
+	attributes: {
+		...defaultSchema.attributes,
+		a: [
+			...(defaultSchema.attributes?.a ?? []),
+			'dataWorktagSlug',
+			'dataPostrefThread',
+			'dataPostrefNum',
+			'dataSveltekitNoscroll'
+		]
+	}
+};
+
+// <otodb-worktag slug="x"> (raw HTML) -> a plain /tag link, which hydrateMarkdown()
+// upgrades to a rich WorkTag on the client
+const rehypeWorktagLinks: Plugin<[], HastRoot> = () => (tree: HastRoot) => {
+	visit(tree, 'element', (node) => {
+		const slug = node.properties?.slug;
+		if (node.tagName === 'otodb-worktag' && typeof slug === 'string') {
+			node.tagName = 'a';
+			node.properties = {
+				href: `/tag/${encodeURIComponent(slug)}`,
+				dataWorktagSlug: slug
+			};
+			node.children = [{ type: 'text', value: slug }];
+		}
+	});
 };
 
 const remarkDecodeSimpleLinks: Plugin<[], Root> = () => (tree: Root) => {
@@ -170,6 +224,7 @@ const processor = unified()
 	.use(remarkStripImages)
 	.use(remarkRehype, { allowDangerousHtml: true })
 	.use(rehypeRaw)
+	.use(rehypeWorktagLinks)
 	.use(rehypeSanitize, sanitizeSchema)
 	.use(rehypeSlug)
 	.use(rehypeAutolinkHeadings, { behavior: 'wrap' })
@@ -187,3 +242,59 @@ export const renderMarkdown = (text: string) => String(processor.processSync(tex
 export const parseMentions = (text: string) => [
 	...new Set(text.matchAll(MENTION_RE).map((n) => n[1]))
 ];
+
+/**
+ * Hydrate otoDB markdown
+ *
+ *  - `<a data-worktag-slug="...">` (a tag link, SSR'd from `<otodb-worktag>`) is upgraded
+ *    in place to a rich `WorkTag` element fetched via `/api/tag/tag`
+ *  - `<a data-postref-num>` (a `t{thread}.{num}` reference) becomes
+ *    "#num by <author>" (same thread) / "t{thread}.{num} by <author>" (cross-thread),
+ *    with the author fetched via `/api/thread/post`
+ */
+export function hydrate(root: HTMLElement, thread?: string): () => void {
+	const mounted: ReturnType<typeof mount>[] = [];
+	const hidden: HTMLElement[] = [];
+	let cancelled = false;
+
+	for (const link of root.querySelectorAll<HTMLAnchorElement>('a[data-worktag-slug]')) {
+		rawClient
+			.GET('/api/tag/tag', {
+				fetch,
+				params: { query: { tag_slug: link.dataset.worktagSlug! } }
+			})
+			.then((r) => {
+				const parent = link.parentElement;
+				if (cancelled || !r.data || !parent) return;
+				mounted.push(
+					mount(WorkTag, {
+						target: parent,
+						anchor: link,
+						props: { tag: r.data }
+					})
+				);
+				link.style.display = 'none';
+				hidden.push(link);
+			});
+	}
+
+	for (const a of root.querySelectorAll<HTMLAnchorElement>('a[data-postref-num]')) {
+		const t = a.dataset.postrefThread!;
+		const n = a.dataset.postrefNum!;
+		rawClient
+			.GET('/api/thread/post', {
+				fetch,
+				params: { query: { thread_id: t, num: +n } }
+			})
+			.then((r) => {
+				if (!cancelled && r.data)
+					a.textContent = `${t === thread ? `#${n}` : `t${t}.${n}`} by ${r.data.user.username}`;
+			});
+	}
+
+	return () => {
+		cancelled = true;
+		mounted.forEach((c) => unmount(c));
+		hidden.forEach((l) => (l.style.display = ''));
+	};
+}

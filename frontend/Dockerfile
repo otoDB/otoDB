@@ -16,15 +16,16 @@ ENV PUBLIC_OTODB_HASH=${OTODB_HASH}
 
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
+COPY --from=backend openapi.json /app/openapi.json
 
 RUN bun run sync-schema
 RUN bun run prepare
 RUN bun run build
 
-FROM base AS build
+FROM node:lts-alpine AS build
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /app/build .
 
 EXPOSE 5173/tcp
 
-ENTRYPOINT [ "sh", "-c", "exec env PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 bun ./" ]
+ENTRYPOINT [ "sh", "-c", "exec env PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 node ./" ]

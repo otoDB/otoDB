@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from django.apps import apps
@@ -8,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import (
 	Case,
-	CharField,
+	Count,
 	DateTimeField,
 	F,
 	OuterRef,
@@ -18,46 +17,46 @@ from django.db.models import (
 	TextField,
 	When,
 )
-from django.db.models.functions import Cast, Coalesce, Greatest
+from django.db.models.functions import Cast, Coalesce
+from django.utils.timezone import now as tz_now
 from django_comments_xtd.models import XtdComment
 
-from .enums import LanguageTypes, NotificationReason, PostCategory
+from .enums import NotificationReason, PostCategory
 from .revision import Revision
 
 
-class PostQuerySet(models.QuerySet):
+class ThreadQuerySet(models.QuerySet):
 	def with_activity(self):
-		ct = ContentType.objects.get_for_model(Post)
-		latest_comment = XtdComment.objects.filter(
-			content_type=ct,
-			object_pk=Cast(OuterRef('id'), CharField()),
+		latest_post = ThreadPost.objects.filter(
+			thread_id=OuterRef('id'),
 			is_removed=False,
-		).order_by('-submit_date')
+		).order_by('-num')
 
 		return self.annotate(
-			modified=Greatest(
-				Subquery(
-					PostContent.objects.filter(post_id=OuterRef('id'))
-					.order_by('-modified')
-					.values('modified')[:1]
-				),
-				Coalesce(
-					'edited_at',
-					datetime.fromtimestamp(0, tz=timezone.utc),
-					output_field=DateTimeField(),
-				),
-				Coalesce(
-					Subquery(latest_comment.values('submit_date')[:1]),
-					datetime.fromtimestamp(0, tz=timezone.utc),
-					output_field=DateTimeField(),
-				),
+			# Last activity = the most recent post's date (edits don't bump a thread)
+			modified=Coalesce(
+				Subquery(latest_post.values('created_at')[:1]),
+				F('created_at'),
+				output_field=DateTimeField(),
 			),
-			last_post_by=Subquery(latest_comment.values('user__username')[:1]),
-			last_post_at=Subquery(latest_comment.values('submit_date')[:1]),
+			last_post_by=Subquery(latest_post.values('user__username')[:1]),
+			last_post_at=Subquery(latest_post.values('created_at')[:1]),
+			post_count=Coalesce(
+				Subquery(
+					ThreadPost.objects.filter(
+						thread_id=OuterRef('id'), is_removed=False
+					)
+					.order_by()
+					.values('thread_id')
+					.annotate(c=Count('id'))
+					.values('c')
+				),
+				0,
+			),
 		).order_by('-modified')
 
 
-class PostManager(models.Manager):
+class ThreadManager(models.Manager):
 	def with_activity(self):
 		return self.get_queryset().with_activity()
 
@@ -74,7 +73,7 @@ class PostManager(models.Manager):
 		]
 		user_model_class = apps.get_model(settings.AUTH_USER_MODEL)
 		user_model = ContentType.objects.get_for_model(user_model_class).id
-		return PostQuerySet(self.model, using=self._db).prefetch_related(
+		return ThreadQuerySet(self.model, using=self._db).prefetch_related(
 			Prefetch(
 				'entitylink_set',
 				queryset=EntityLink.objects.order_by('id').annotate(
@@ -109,7 +108,7 @@ class PostManager(models.Manager):
 		)
 
 
-class Post(models.Model):
+class Thread(models.Model):
 	title = models.CharField(max_length=1000, null=False, blank=False)
 	added_by = models.ForeignKey(
 		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.CASCADE
@@ -117,46 +116,60 @@ class Post(models.Model):
 	category = models.IntegerField(
 		choices=PostCategory.choices, null=False, blank=False
 	)
+	created_at = models.DateTimeField(default=tz_now)
 	closed_at = models.DateTimeField(null=True, blank=True)
-	edited_at = models.DateTimeField(null=True, blank=True)
-	edited_by = models.ForeignKey(
-		settings.AUTH_USER_MODEL,
-		null=True,
-		blank=True,
-		on_delete=models.SET_NULL,
-		related_name='edited_posts',
-	)
+	is_removed = models.BooleanField(default=False, db_index=True)
 
-	objects: PostManager = PostManager()
+	objects: ThreadManager = ThreadManager()
 
 	if TYPE_CHECKING:
 		from django.db.models import QuerySet
 
 		entitylink_set: QuerySet['EntityLink']
 		_entity_links: list['EntityLink']
-		postcontent_set: QuerySet['PostContent']
+		posts: QuerySet['ThreadPost']
 
 	class Meta:
-		verbose_name = 'Post'
-		verbose_name_plural = 'Posts'
-
-	@property
-	def pages(self):
-		return self.postcontent_set
+		verbose_name = 'Thread'
+		verbose_name_plural = 'Threads'
 
 	@property
 	def entities(self) -> list[dict]:
 		return [{'entity': link.ent, 'id': link.tg_id} for link in self._entity_links]
 
 
-class PostContent(models.Model):
-	post = models.ForeignKey(Post, blank=False, null=False, on_delete=models.CASCADE)
-	page = models.TextField(null=False)
-	lang = models.IntegerField(choices=LanguageTypes.choices, null=False, blank=False)
-	modified = models.DateTimeField(auto_now=True)
+class ThreadPost(models.Model):
+	thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name='posts')
+	# 1 = OP
+	num = models.PositiveIntegerField()
+	user = models.ForeignKey(
+		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.CASCADE
+	)
+	body = models.TextField()
+	# default=tz_now (not auto_now_add) so the data migration can set historical dates
+	created_at = models.DateTimeField(default=tz_now)
+	edited_at = models.DateTimeField(null=True, blank=True)
+	edited_by = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		null=True,
+		blank=True,
+		on_delete=models.SET_NULL,
+		related_name='edited_threadposts',
+	)
+	is_removed = models.BooleanField(default=False, db_index=True)
 
 	class Meta:
-		unique_together = (('post', 'lang'),)
+		ordering = ['num']
+		constraints = [
+			models.UniqueConstraint(
+				fields=['thread', 'num'], name='threadpost_unique_num'
+			),
+			# The opening post (num=1) should never be soft-removed
+			models.CheckConstraint(
+				condition=Q(num__gt=1) | Q(is_removed=False),
+				name='threadpost_op_kept',
+			),
+		]
 
 
 class Notification(models.Model):
@@ -185,8 +198,10 @@ class Notification(models.Model):
 		null=True,
 		on_delete=models.CASCADE,
 	)
-	post = models.ForeignKey(
-		Post,
+	# Thread activity points at a specific post (the OP for thread-level
+	# notifications, the reply itself for replies).
+	threadpost = models.ForeignKey(
+		ThreadPost,
 		blank=True,
 		null=True,
 		on_delete=models.CASCADE,
@@ -198,13 +213,19 @@ class Notification(models.Model):
 			models.CheckConstraint(
 				condition=(
 					models.Q(
-						revision__isnull=False, comment__isnull=True, post__isnull=True
+						revision__isnull=False,
+						comment__isnull=True,
+						threadpost__isnull=True,
 					)
 					| models.Q(
-						revision__isnull=True, comment__isnull=False, post__isnull=True
+						revision__isnull=True,
+						comment__isnull=False,
+						threadpost__isnull=True,
 					)
 					| models.Q(
-						revision__isnull=True, comment__isnull=True, post__isnull=False
+						revision__isnull=True,
+						comment__isnull=True,
+						threadpost__isnull=False,
 					)
 				),
 				name='notification_union',
@@ -247,7 +268,7 @@ class CommentMeta(models.Model):
 
 
 class EntityLink(models.Model):
-	post = models.ForeignKey(Post, on_delete=models.CASCADE)
+	thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
 	entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
 	entity_id = models.PositiveBigIntegerField()
 	entity = GenericForeignKey('entity_type', 'entity_id')
@@ -255,7 +276,7 @@ class EntityLink(models.Model):
 	class Meta:
 		constraints = [
 			models.UniqueConstraint(
-				fields=['entity_type', 'entity_id', 'post'],
+				fields=['entity_type', 'entity_id', 'thread'],
 				name='entitylink_unique_post',
 			)
 		]

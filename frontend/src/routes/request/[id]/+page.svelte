@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
 	import CommentTree from '$lib/CommentTree.svelte';
+	import { dirtyClick } from '$lib/dirty';
 	import { RequestActions, StatusNames } from '$lib/enums.js';
 	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
@@ -20,7 +21,7 @@
 			fetch,
 			params: { query: { request_id: data.id, status } }
 		});
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 
@@ -48,8 +49,7 @@
 	</h3>
 	<h4>
 		{StatusNames[data.request.status]()}{#if data.request?.processed_by}(<a
-				href="/profile/{data.request.processed_by.username}"
-				>{data.request.processed_by.username}</a
+				href="/profile/{data.request.processed_by.username}">{data.request.processed_by.username}</a
 			>){/if}
 	</h4>
 
@@ -63,8 +63,8 @@
 		{/each}
 	</ul>
 	{#if hasUserLevel(data.user?.level, Levels.Editor) && data.request.status === Status.Pending}
-		<button onclick={() => set(1)}>{m.lucky_bold_hornet_push()}</button>
-		<button onclick={() => set(2)}>{m.alive_blue_marlin_push()}</button>
+		<button {@attach dirtyClick(() => set(1))}>{m.lucky_bold_hornet_push()}</button>
+		<button {@attach dirtyClick(() => set(2))}>{m.alive_blue_marlin_push()}</button>
 	{/if}
 </Section>
 

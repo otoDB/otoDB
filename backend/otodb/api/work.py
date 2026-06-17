@@ -43,7 +43,6 @@ from otodb.models.enums import (
 	ErrorCode,
 	FlagStatus,
 	MediaType,
-	ModerationAction,
 	ModerationEventType,
 	ModQueueCategory,
 	OtodbIntegerEnum,
@@ -57,6 +56,7 @@ from otodb.models.enums import (
 	WorkStatus,
 	WorkTagCategory,
 )
+from otodb.moderation import resolve_work
 from otodb.tasks import (
 	enqueue_deferred,
 	resolve_expired_appeal,
@@ -91,7 +91,7 @@ from .common import (
 	make_range_metatag,
 	post_relations,
 	user_is_editor,
-	user_is_staff,
+	user_is_mod,
 	user_is_trusted,
 	with_revision_route,
 )
@@ -101,8 +101,9 @@ work_router = RouterWithRevision()
 
 
 class ExternalQuery(Schema):
-	work_id: int
-	tags: List[TagWorkInstanceSchema]
+	work_id: int | None = None
+	upload_id: int | None = None
+	tags: List[TagWorkInstanceSchema] = []
 
 
 def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
@@ -151,7 +152,11 @@ def query_external(
 			"Either 'url' or both 'platform' and 'id' parameters must be provided"
 		)
 
-	return {'tags': work.media.tags_annotated, 'work_id': work.media.id}
+	# Unbound upload
+	if work.media is None:
+		return {'upload_id': work.pk}
+
+	return {'tags': work.media.tags_annotated, 'work_id': work.media.pk}
 
 
 class WorkOrder(OtodbIntegerEnum):
@@ -188,24 +193,24 @@ class WorkOrder(OtodbIntegerEnum):
 	UNCATTAGS_ASC = 29, 'uncattags_asc'
 
 
-_WORK_TAG_CATEGORY_METATAGS = {
-	'eventtags': WorkTagCategory.EVENT,
-	'creatortags': WorkTagCategory.CREATOR,
-	'mediatags': WorkTagCategory.MEDIA,
-	'sourcetags': WorkTagCategory.SOURCE,
-	'songtags': WorkTagCategory.SONG,
-	'gentags': WorkTagCategory.GENERAL,
-	'metatags': WorkTagCategory.META,
-	'uncattags': WorkTagCategory.UNCATEGORIZED,
+_WORK_TAG_CATEGORY_FILTERS = {
+	'eventtags': Q(work_tag__category=WorkTagCategory.EVENT),
+	'creatortags': Q(work_tag__category=WorkTagCategory.CREATOR, used_as_source=False),
+	'mediatags': Q(work_tag__category=WorkTagCategory.MEDIA, used_as_source=False),
+	'sourcetags': Q(work_tag__category=WorkTagCategory.SOURCE) | Q(used_as_source=True),
+	'songtags': Q(work_tag__category=WorkTagCategory.SONG, used_as_source=False),
+	'gentags': Q(work_tag__category=WorkTagCategory.GENERAL),
+	'metatags': Q(work_tag__category=WorkTagCategory.META),
+	'uncattags': Q(work_tag__category=WorkTagCategory.UNCATEGORIZED),
 }
 
 
-_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', tuple[bool, dict]] = {
-	WorkOrder.TAGCOUNT: (False, {}),
-	WorkOrder.TAGCOUNT_ASC: (True, {}),
+_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', tuple[bool, Q]] = {
+	WorkOrder.TAGCOUNT: (False, Q()),
+	WorkOrder.TAGCOUNT_ASC: (True, Q()),
 	**{
-		WorkOrder[name.upper() + suffix]: (asc, {'work_tag__category': cat})
-		for name, cat in _WORK_TAG_CATEGORY_METATAGS.items()
+		WorkOrder[name.upper() + suffix]: (asc, q)
+		for name, q in _WORK_TAG_CATEGORY_FILTERS.items()
 		for suffix, asc in (('', False), ('_ASC', True))
 	},
 }
@@ -269,8 +274,8 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 		case WorkOrder.RANDOM:
 			return {}, Q(), ('?',)
 		case v if v in _WORK_TAG_COUNT_ORDERS:
-			asc, filters = _WORK_TAG_COUNT_ORDERS[v]
-			sub = TagWorkInstance.objects.filter(work_id=OuterRef('id'), **filters)
+			asc, q = _WORK_TAG_COUNT_ORDERS[v]
+			sub = TagWorkInstance.objects.filter(q, work_id=OuterRef('id'))
 			ann = {
 				'_tagcount': Coalesce(
 					Subquery(sub.values('work_id').annotate(c=Count('*')).values('c')),
@@ -285,17 +290,16 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 def _user_to_q(username):
 	"""Match works whose 'first user' is `username`.
 
-	The first user is the author of the earliest non-admin revision targeting
-	the work; for works with no non-admin revisions (e.g. those created before
+	The first user is the author of the earliest non-system revision targeting
+	the work; for works with no non-system revisions (e.g. those created before
 	the revision model existed) it falls back to a `WorkSource.added_by` match.
 	"""
 	mediawork_ct = ContentType.objects.get_for_model(MediaWork)
-	non_admin_rev = RevisionChange.objects.filter(
-		target_type=mediawork_ct,
-		rev__user__level__lt=Account.Levels.ADMIN,
+	non_system_rev = RevisionChange.objects.filter(target_type=mediawork_ct).exclude(
+		rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME
 	)
 	first_rev_pks = (
-		non_admin_rev.order_by('target_id', 'rev__date')
+		non_system_rev.order_by('target_id', 'rev__date')
 		.distinct('target_id')
 		.values('pk')
 	)
@@ -306,7 +310,7 @@ def _user_to_q(username):
 		WorkSource.objects.filter(
 			added_by__username__iexact=username, media_id__isnull=False
 		)
-		.exclude(media_id__in=non_admin_rev.values('target_id'))
+		.exclude(media_id__in=non_system_rev.values('target_id'))
 		.values('media_id')
 	)
 	return Q(id__in=rev_match_ids) | Q(id__in=src_match_ids)
@@ -447,14 +451,13 @@ work_metatag_grammars = {
 	**{
 		name: MetatagSpec(
 			int,
-			make_range_metatag(
-				model=TagWorkInstance,
-				fk_field='work_id',
-				count=True,
-				work_tag__category=cat,
+			lambda op, value, q=q: count_predicate_q(
+				TagWorkInstance.objects.filter(q, work_id=OuterRef('id')),
+				op,
+				value,
 			),
 		)
-		for name, cat in _WORK_TAG_CATEGORY_METATAGS.items()
+		for name, q in _WORK_TAG_CATEGORY_FILTERS.items()
 	},
 	'relations': MetatagSpec(
 		int,
@@ -598,7 +601,10 @@ def search(
 
 @work_router.get('work', response=WorkSchema)
 def work(request: AuthedHttpRequest, work_id: OtodbID):
-	work = get_object_or_404(MediaWork.objects.with_pending_moderation(), id=work_id)
+	work = get_object_or_404(
+		MediaWork.objects.with_pending_moderation().prefetch_related('wikipage_set'),
+		id=work_id,
+	)
 	if work.moved_to:
 		work = work.moved_to
 
@@ -616,11 +622,11 @@ def work(request: AuthedHttpRequest, work_id: OtodbID):
 
 
 @work_router.delete('work', auth=django_auth)
-@user_is_staff
+@user_is_mod
 @with_revision_route(Route.MEDIAWORK_DELETE)
 def delete_work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	work.worksource_set.update(media=None)
+	work.worksource_set.update(media=None, is_pending=False)
 	work.delete()
 
 
@@ -764,7 +770,9 @@ def sources(request: AuthedHttpRequest, work_id: OtodbID):
 @with_revision_route(Route.MEDIAWORK_CREATE)
 def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	"""Creates a MediaWork from a source with user-chosen metadata and tags."""
-	src = get_object_or_404(WorkSource.objects, id=payload.source_id)
+	src = get_object_or_404(
+		WorkSource.objects.select_for_update(of=('self',)), id=payload.source_id
+	)
 	if src.media is not None:
 		raise ApiError(409, ErrorCode.SOURCE_HAS_WORK)
 
@@ -820,16 +828,6 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	return work.pk
 
 
-def resolve_work(work: MediaWork):
-	"""Resolve a work's pending state and dismiss any pending flags/appeals."""
-	work.moderation_events.filter(
-		event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
-		status=FlagStatus.PENDING,
-	).update(status=FlagStatus.REJECTED)
-	work.status = Status.UNAPPROVED
-	work.save(update_fields=['status'])
-
-
 @work_router.post('approve', auth=django_auth, response={200: None, 403: Error})
 @user_is_editor
 def approve_work(request: AuthedHttpRequest, work_id: OtodbID):
@@ -868,17 +866,11 @@ def disapprove_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 
 
 @work_router.post('resolve', auth=django_auth)
-@user_is_staff
-def resolve_work_admin(request: AuthedHttpRequest, work_id: OtodbID):
-	"""Immediate resolution by staff - same as expiry, skips the waiting period."""
+@user_is_mod
+def resolve_work_mod(request: AuthedHttpRequest, work_id: OtodbID):
+	"""Immediate resolution by mods - same as expiry, skips the waiting period."""
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	resolve_work(work)
-	ModerationEvent.objects.create(
-		work=work,
-		event_type=ModerationEventType.MOD_ACTION,
-		status=ModerationAction.WORK_DELISTED,
-		by=request.user,
-	)
+	resolve_work(work, by=request.user)
 
 
 @work_router.post(
@@ -936,9 +928,9 @@ def flag_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 )
 @user_is_trusted
 def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
-	"""Appeal an unapproved work to send it back to the mod queue."""
+	"""Appeal a delisted work to send it back to the mod queue."""
 	work = get_object_or_404(
-		MediaWork.objects.filter(status=Status.UNAPPROVED), id=work_id
+		MediaWork.objects.filter(status=Status.DELISTED), id=work_id
 	)
 	if work.moderation_events.filter(
 		event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING

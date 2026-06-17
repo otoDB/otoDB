@@ -4,9 +4,10 @@
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
+	import WikiEditor from '$lib/WikiEditor.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
 	import client from '$lib/api';
-	import { dirtyEnhance } from '$lib/dirty';
+	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
@@ -27,7 +28,7 @@
 				fetch,
 				params: { query: { work_id: data.id } }
 			});
-			goto('/upload', { invalidateAll: true });
+			await goto('/upload', { invalidateAll: true });
 		}
 	};
 	const unbind = async (source_id: string) => {
@@ -35,8 +36,8 @@
 			if (!confirm(m.tired_real_gazelle_evoke())) return;
 		}
 		await client.POST('/api/upload/unbind', { fetch, params: { query: { source_id } } });
-		if (data.sources?.length === 1) goto('/upload');
-		else invalidateAll();
+		if (data.sources?.length === 1) await goto('/upload');
+		else await invalidateAll();
 	};
 	const updateStatus = async (source_id: string, origin: number) => {
 		const p = client.PUT('/api/upload/origin', {
@@ -53,21 +54,12 @@
 <Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
 	<GuidelineWarning />
 	<div class="flex text-xs">
-		<form
-			method="POST"
-			use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }}
-			action="?/edit"
-		>
+		<form method="POST" use:dirtyEnhance={{ barrier: form_barrier, priority: 0 }} action="?/edit">
 			<table>
 				<tbody>
 					<tr
 						><th><label for="title">{m.large_factual_octopus_exhale()}</label></th><td
-							><input
-								type="text"
-								name="title"
-								bind:value={title}
-								autocomplete="off"
-							/></td
+							><input type="text" name="title" bind:value={title} autocomplete="off" /></td
 						></tr
 					>
 					<tr
@@ -82,9 +74,7 @@
 									<label
 										class={[
 											'cursor-pointer border px-3 py-1',
-											rating === r
-												? 'bg-otodb-content-primary text-otodb-bg-primary'
-												: ''
+											rating === r ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
 										]}
 									>
 										<input
@@ -101,10 +91,7 @@
 						></tr
 					>
 					<tr
-						><th
-							><label for="thumbnail_source">{m.heroic_ideal_orangutan_aid()}</label
-							></th
-						><td
+						><th><label for="thumbnail_source">{m.heroic_ideal_orangutan_aid()}</label></th><td
 							><select name="thumbnail_source" bind:value={thumbnail_source_id}>
 								{#each data.sources! as src (src.id)}
 									<option value={src.id}
@@ -118,9 +105,7 @@
 								{/each}
 							</select>
 							{#if thumbnail_source_id}
-								{@const selectedSource = data.sources!.find(
-									(s) => s.id === thumbnail_source_id
-								)}
+								{@const selectedSource = data.sources!.find((s) => s.id === thumbnail_source_id)}
 								<WorkThumbnail
 									class="mt-2 aspect-video w-20"
 									thumbnail={selectedSource?.thumbnail}
@@ -169,8 +154,8 @@
 						<td class="whitespace-nowrap">{src.title || src.url}</td>
 						<td
 							><details>
-								<summary>[{m.tough_early_sparrow_bask()}]</summary><span
-									class="whitespace-pre-wrap">{src.description}</span
+								<summary>[{m.tough_early_sparrow_bask()}]</summary><span class="whitespace-pre-wrap"
+									>{src.description}</span
 								>
 							</details></td
 						>
@@ -191,12 +176,10 @@
 							></td
 						>
 						<td>
-							{src.thumbnail
-								? m.full_best_canary_view()
-								: m.simple_less_marlin_enchant()}
+							{src.thumbnail ? m.full_best_canary_view() : m.simple_less_marlin_enchant()}
 						</td>
 						<td
-							><button type="button" onclick={() => unbind(src.id)}
+							><button type="button" {@attach dirtyClick(() => unbind(src.id))}
 								>{m.sour_lime_shad_edit()}</button
 							></td
 						><td>
@@ -204,9 +187,7 @@
 								<RefreshButton source={src} />
 							{:else if src.work_status === WorkStatus.Down}
 								{#if hasUserLevel(data.user?.level, Levels.Editor)}
-									<a href="/upload/add?for_source={src.id}"
-										>{m.minor_crisp_cobra_list()}</a
-									>
+									<a href="/upload/add?for_source={src.id}">{m.minor_crisp_cobra_list()}</a>
 								{:else}
 									{m.simple_less_marlin_enchant()}
 								{/if}
@@ -217,9 +198,20 @@
 			</tbody>
 		</table>
 	</div>
-	{#if hasUserLevel(data.user?.level, Levels.Admin)}
-		<button onclick={del}>{m.suave_less_deer_grip()}</button>
+	{#if hasUserLevel(data.user?.level, Levels.Mod)}
+		<button {@attach dirtyClick(del)}>{m.suave_less_deer_grip()}</button>
 	{/if}
+</Section>
+
+<Section title={m.curly_zesty_pelican_aim()}>
+	<form
+		action="?/wiki_page"
+		method="POST"
+		use:dirtyEnhance={{ barrier: form_barrier, priority: 2 }}
+	>
+		<WikiEditor wiki_page={data.wiki_page} />
+		<input type="submit" />
+	</form>
 </Section>
 
 <Section title={m.alive_these_jay_pick()}>

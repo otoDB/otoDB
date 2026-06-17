@@ -52,12 +52,10 @@
 	class={[
 		className,
 		'bg-otodb-bg-faint/90 fixed top-0 left-0 z-2 m-0 flex h-full max-w-[85vw] flex-col gap-y-2 overflow-y-auto p-8 md:visible md:relative md:w-min md:min-w-64 md:bg-transparent md:p-0 md:after:content-none',
-		{
-			invisible: !isMobileNavOpen
-		}
+		!isMobileNavOpen && 'invisible'
 	]}
 	use:clickOutside
-	onoutclick={() => (isMobileNavOpen = false)}
+	onoutclick={closeMobileNav}
 >
 	<form target="_self" method="get" action="/{search_type}" class="flex w-full">
 		<select bind:value={search_type} class="bg-otodb-bg-faint/75 pl-1">
@@ -76,9 +74,7 @@
 			aria-label="Search"
 			class="bg-otodb-bg-faint/75 hover:bg-otodb-bg-fainter/75 px-2"
 		>
-			<svg class="h-[16px] w-[16px]">
-				<use href="/search.svg#img"></use>
-			</svg>
+			<span class="icon-[gravity-ui--magnifier]" aria-hidden="true"></span>
 		</button>
 	</form>
 
@@ -90,43 +86,41 @@
 		</div>
 		<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 			{@render link('/', m.fine_late_chicken_quiz())}
-			{@render link('/post/2', m.noble_fine_iguana_pull())}
+			{@render link('/wiki/about', m.noble_fine_iguana_pull())}
 			{@render link('/work', m.grand_merry_fly_succeed())}
 			{@render link('/upload/add', `> ${m.fluffy_crisp_horse_imagine()}`)}
 			{@render link('/tag', m.empty_legal_chicken_taste())}
 			{@render link('/song', m.grand_nice_pony_belong())}
 			{@render link('/song_attribute', `> ${m.dull_plain_angelfish_cuddle()}`)}
+			{@render link('/wiki', `${m.curly_zesty_pelican_aim()}`)}
 			{@render link('/list', m.stale_loose_squid_cut())}
-			{@render link('/post/overview', m.just_salty_anaconda_nourish())}
+			{@render link('/thread/overview', m.just_salty_anaconda_nourish())}
 			{@render link('/comments', m.same_broad_haddock_pinch())}
 			{@render link('/profile', m.bright_nimble_eagle_glide())}
-			{@render link('/post/3', 'FAQ')}
+			{@render link('/wiki/faq', 'FAQ')}
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		</ul>
 	</div>
 	<div
 		class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 md:mt-0 md:border md:px-3 md:py-2"
 	>
-		<div
-			class="border-otodb-content-faint mb-2 flex items-center justify-between border-b text-xs"
-		>
+		<div class="border-otodb-content-faint mb-2 flex items-center justify-between border-b text-xs">
 			<span>{m.maroon_least_pony_evoke()}</span>
 			{#if user}
 				<a
 					href={`/profile/${user.username}/notifications`}
 					title={m.free_keen_wren_exhale()}
-					class="relative -top-0.5 no-underline"
+					class="relative -top-0.5 inline-flex no-underline"
 					onclick={closeMobileNav}
 				>
 					{#if user.notifs_nonsub_count > 0}({user.notifs_nonsub_count}){/if}
 					<span
+						aria-hidden="true"
 						class={[
-							'text-transparent',
-							user.notifs_count > 0
-								? '[text-shadow:0_0_var(--otodb-color-content-fainter)]'
-								: 'opacity-25 [text-shadow:0_0_var(--otodb-color-content-primary)]'
-						]}>🔔</span
-					>
+							'text-otodb-content-fainter ml-1 size-4',
+							user.notifs_count > 0 ? 'icon-[gravity-ui--bell-fill]' : 'icon-[gravity-ui--bell]'
+						]}
+					></span>
 				</a>
 			{/if}
 		</div>
@@ -138,10 +132,7 @@
 			{:else}
 				{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
 				{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
-				{@render link(
-					`/profile/${user.username}/submissions`,
-					m.flaky_gross_marlin_evoke()
-				)}
+				{@render link(`/profile/${user.username}/submissions`, m.flaky_gross_marlin_evoke())}
 				{@render link(`/request/new`, m.muddy_tough_swan_view())}
 				{@render link(`/settings`, m.orange_born_seal_ascend())}
 				<li class="mt-4">
@@ -169,7 +160,7 @@
 				{@render link('/moderation', m.minor_inner_lynx_adapt())}
 				{@render link('/tag/alias', m.front_maroon_hamster_urge())}
 				{@render link('/work/merge', m.heroic_same_wasp_conquer())}
-				{@render link('/post/4', m.arable_direct_cougar_win())}
+				{@render link('/wiki/editing_guidelines', m.arable_direct_cougar_win())}
 			</ul>
 		</div>
 	{/if}
@@ -182,8 +173,7 @@
 			</div>
 			<ul class="mt-4 list-none space-y-4 md:mt-0 md:space-y-0.5">
 				<li>
-					<a href="/admin" data-sveltekit-reload class="no-underline"
-						>{m.simple_few_sheep_lend()}</a
+					<a href="/admin" data-sveltekit-reload class="no-underline">{m.simple_few_sheep_lend()}</a
 					>
 				</li>
 			</ul>

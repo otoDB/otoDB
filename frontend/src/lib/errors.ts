@@ -10,8 +10,10 @@ export type ApiError = {
 
 const errorCodeMessages: Partial<Record<ErrorCode, (payload: ErrorPayload) => string | null>> = {
 	[ErrorCode.Internal_Error]: () => m.green_due_javelina_pop(),
+	[ErrorCode.Rate_Limited]: () => m.lucky_brisk_falcon_rest(),
 	[ErrorCode.Source_Flagged]: () => m.antsy_main_puffin_dust(),
 	[ErrorCode.Source_Unapproved]: () => m.clean_civil_jellyfish_promise(),
+	[ErrorCode.Source_Pending]: () => m.stout_brave_otter_reject(),
 	[ErrorCode.Self_Moderation]: () => m.fluffy_noble_gadfly_adapt(),
 	[ErrorCode.Login_Failed]: () => m.brave_stark_orca_note(),
 	[ErrorCode.Not_Logged_In]: () => m.major_keen_oryx_fall(),
@@ -30,6 +32,8 @@ const errorCodeMessages: Partial<Record<ErrorCode, (payload: ErrorPayload) => st
 	[ErrorCode.Appeal_Pending]: () => m.calm_brisk_swan_queue(),
 	[ErrorCode.Tag_Has_Information]: () => m.that_new_mayfly_spur(),
 	[ErrorCode.Thumbnail_Source_Required]: () => m.sleek_brave_heron_choose(),
+	[ErrorCode.Captcha_Failed]: () => m.quiet_proud_lion_block(),
+	[ErrorCode.Max_Thread_Level]: () => m.small_fresh_hyena_rest(),
 	[ErrorCode.Tag_With_Instances_Merge_Requires_Editor]: (payload) =>
 		typeof payload.into_tag === 'string'
 			? m.witty_brisk_hawk_merge({ into_tag: payload.into_tag })
@@ -52,8 +56,7 @@ export const formatApiErrorMessage = (err: ApiError): string =>
 export const parseApiErrorResponse = async (response: Response): Promise<ApiError> => {
 	try {
 		const body = await response.clone().json();
-		if (body && typeof body.code === 'number')
-			return { code: body.code, data: body.data ?? {} };
+		if (body && typeof body.code === 'number') return { code: body.code, data: body.data ?? {} };
 	} catch {
 		// fall through to default error
 	}

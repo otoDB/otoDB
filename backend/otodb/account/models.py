@@ -1,11 +1,27 @@
+import unicodedata
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db import IntegrityError, models
 from django.urls import reverse
 from django.utils import timezone
 
 from otodb.models.enums import OtodbIntegerEnum
+
+# Disallow:
+# - RFC 3986 reserved
+# - % (percent-encoding)
+# - HTML special characters
+# - Markdown or tag search syntax characters
+# - whitespace and control characters (Unicode categories "Z" and "C" -- see below)
+#
+# Allow:
+# - RFC 3986 unreserved (alphanumeric, "-", ".", "_", "~")
+# - Unicode characters (including emoji)
+USERNAME_DISALLOWED_CHARS = frozenset(':/?#[]@!$&\'()*+,;=%<>"\\{}|^')
 
 
 class AccountManager(BaseUserManager):
@@ -15,11 +31,25 @@ class AccountManager(BaseUserManager):
 	def create_user(self, username, email, password=None, **extra_fields):
 		if not username:
 			raise ValueError('Users must have a username')
+		username = User.normalize_username(username)
+		if not 1 <= len(username) <= 32:
+			raise ValueError('Username must be between 1 and 32 characters long')
+		if any(
+			c in USERNAME_DISALLOWED_CHARS or unicodedata.category(c)[0] in 'CZ'
+			for c in username
+		):
+			raise ValueError(
+				'Username may not contain whitespace, control characters, or '
+				'symbols such as "@" or "/"'
+			)
 		if not email:
 			raise ValueError('Users must have an email address')
+		try:
+			validate_email(email)
+		except ValidationError:
+			raise ValueError('Invalid email address')
 		if self.filter(username__iexact=username).exists():
 			raise IntegrityError('This username is already taken')
-		username = User.normalize_username(username)
 		user: Account = self.model(username=username, email=email, **extra_fields)
 		user.set_password(password)
 		user.save(using=self._db)
@@ -30,7 +60,7 @@ class AccountManager(BaseUserManager):
 			raise ValueError('This username is already taken')
 		user: Account = self.create_user(username, email, password, **extra_fields)
 		user.email_activated = True
-		user.level = Account.Levels.OWNER
+		user.level = Account.Levels.ADMIN
 		user.save(using=self._db)
 		return user
 
@@ -41,8 +71,8 @@ class Account(AbstractBaseUser):
 		RESTRICTED = 10
 		MEMBER = 20
 		EDITOR = 40
-		ADMIN = 50
-		OWNER = 100
+		MOD = 50
+		ADMIN = 100
 
 	if TYPE_CHECKING:
 		from django.db.models import QuerySet
@@ -93,16 +123,25 @@ class Account(AbstractBaseUser):
 		return self.level >= self.Levels.EDITOR
 
 	@property
-	def is_staff(self):
+	def is_mod(self):
+		return self.level >= self.Levels.MOD
+
+	@property
+	def is_admin(self):
 		return self.level >= self.Levels.ADMIN
+
+	# Used by Django admin
+	@property
+	def is_staff(self):
+		return self.is_admin
 
 	@property
 	def is_superuser(self):
 		return self.is_staff
 
-	@property
-	def is_owner(self):
-		return self.level >= self.Levels.OWNER
+	@classmethod
+	def get_system(cls) -> 'Account':
+		return cls.objects.get(username=settings.OTODB_SYSTEM_BOT_USERNAME)
 
 	def has_perm(self, perm, obj=None):
 		return True

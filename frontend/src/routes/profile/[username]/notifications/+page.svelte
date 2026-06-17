@@ -4,6 +4,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import Time from '$lib/Time.svelte';
 	import client from '$lib/api';
+	import { dirtyClick } from '$lib/dirty';
 	import { buildEntityRoutes } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/enums/language';
 	import { routeNames } from '$lib/enums/route.js';
@@ -19,7 +20,7 @@
 				fetch,
 				params: { query: { notif_id: id } }
 			});
-		goto(target, { invalidateAll: true });
+		await goto(target, { invalidateAll: true });
 	};
 
 	const remove = async (id: string) => {
@@ -27,7 +28,7 @@
 			fetch,
 			params: { query: { notif_id: id } }
 		});
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 
@@ -42,15 +43,14 @@
 						<tr>
 							{#if n.comment}
 								{@const route = buildEntityRoutes(n.comment[0], n.comment[1])}
-								<td class={{ 'opacity-40': n.dismissed }}
-									>{m.curly_these_mule_ascend()}</td
-								>
+								<td class={{ 'opacity-40': n.dismissed }}>{m.curly_these_mule_ascend()}</td>
 								<td class={{ 'opacity-40': n.dismissed }}>
-									<button onclick={() => dismiss(n.id, n.dismissed, route)}
+									<button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, route))}
 										>{route}
 									</button>
 								</td>
-							{:else if n.post}
+							{:else if n.threadpost}
+								{@const route = `/thread/${n.threadpost[0]}.${n.threadpost[1]}`}
 								<td class={{ 'opacity-40': n.dismissed }}
 									>{n.reason === NotificationReason.Thread_Linked
 										? m.aqua_safe_beetle_list()
@@ -59,10 +59,8 @@
 											: m.curly_these_mule_ascend()}</td
 								>
 								<td class={{ 'opacity-40': n.dismissed }}
-									><button
-										onclick={() =>
-											dismiss(n.id, n.dismissed, `/post/${n.post}`)}
-										>/post/{n.post}</button
+									><button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, route))}
+										>{route}</button
 									></td
 								>
 							{/if}
@@ -70,7 +68,7 @@
 								><Time format="relative" date={n.created_at} /></td
 							>
 							<td
-								>{#if n.dismissed}<button onclick={() => remove(n.id)}
+								>{#if n.dismissed}<button {@attach dirtyClick(() => remove(n.id))}
 										>{m.even_alert_grebe_taste()}</button
 									>{/if}</td
 							>
@@ -78,11 +76,7 @@
 					{/each}
 				</tbody>
 			</table>
-			<Pager
-				n_count={data.nonsub_notifications.count}
-				page={data.page}
-				page_size={data.batch_size}
-			/>
+			<Pager n_count={data.nonsub_notifications.count} page_size={data.batch_size} />
 		{:else}
 			{m.wacky_weird_swallow_trust()}
 		{/if}
@@ -96,15 +90,12 @@
 						<tr>
 							<td class={{ 'opacity-40': n.dismissed }}
 								><button
-									onclick={() =>
-										dismiss(n.id, n.dismissed, `/revision/${n.revision}`)}
+									{@attach dirtyClick(() => dismiss(n.id, n.dismissed, `/revision/${n.revision}`))}
 									>#{n.revision}</button
 								>
 							</td>
 							<td class={{ 'opacity-40': n.dismissed }}
-								>{typeof n.revision_route === 'number'
-									? routeNames[n.revision_route]()
-									: ''}</td
+								>{typeof n.revision_route === 'number' ? routeNames[n.revision_route]() : ''}</td
 							>
 							<td class={{ 'opacity-40': n.dismissed }}>
 								{#if isSVO(getLocale())}
@@ -121,7 +112,7 @@
 								><Time format="relative" date={n.created_at} /></td
 							>
 							<td
-								>{#if n.dismissed}<button onclick={() => remove(n.id)}
+								>{#if n.dismissed}<button {@attach dirtyClick(() => remove(n.id))}
 										>{m.even_alert_grebe_taste()}</button
 									>{/if}</td
 							>
@@ -131,7 +122,6 @@
 			</table>
 			<Pager
 				n_count={data.sub_notifications.count}
-				page={data.sub_page}
 				page_size={data.batch_size}
 				param_name="sub_page"
 			/>

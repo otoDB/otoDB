@@ -14,6 +14,7 @@ from otodb.common import clean_tag, slugify_tag
 
 from .enums import LanguageTypes, MediaType, SongTagCategory, WorkTagCategory
 from .revision import RevisionTrackedManager, RevisionTrackedModel
+from .wiki import WikiPage
 
 _tagulous_models.slugify = lambda value, **_: slugify_tag(value)
 
@@ -116,7 +117,6 @@ class TagSongManager(TagModelManagerBase):
 		return (
 			super()
 			.get_queryset()
-			.prefetch_related('children')
 			.select_related('aliased_to')
 			.prefetch_related(
 				Prefetch('tagsonglangpreference_set', queryset=lang_prefs_qs),
@@ -192,10 +192,10 @@ class OtodbTagModel(BaseTagModel):
 				EntityLink.objects.filter(
 					entity_type=self_ct,
 					entity_id=tag.pk,
-					post_id__in=EntityLink.objects.filter(
+					thread_id__in=EntityLink.objects.filter(
 						entity_type=self_ct,
 						entity_id=into_tag.pk,
-					).values('post_id'),
+					).values('thread_id'),
 				).delete()
 				EntityLink.objects.filter(
 					entity_type=self_ct,
@@ -523,24 +523,6 @@ class TagWorkLangPreference(RevisionTrackedModel):
 		unique_together = (('tag', 'lang'),)
 
 
-class WikiPage(RevisionTrackedModel):
-	tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
-	page = models.TextField(null=False)
-	lang = models.IntegerField(
-		choices=LanguageTypes.choices,
-		default=LanguageTypes.NOT_APPLICABLE,
-		null=False,
-		blank=False,
-	)
-
-	class RevisionMeta:
-		tracked_fields = ['lang', 'tag', 'page']
-		entity_attrs = ['tag']
-
-	class Meta:
-		unique_together = (('tag', 'lang'),)
-
-
 class TagSong(RevisionTrackedModel, OtodbTagModel):
 	objects = TagSongManager()
 
@@ -582,9 +564,14 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 
 	@classmethod
 	def transfer_data(cls, from_tag: Self, to_tag: Self):
-		for song in from_tag.songs.all():
-			song.tags.add(to_tag)
-			song.tags.remove(from_tag)
+		from .media import TagSongInstance
+
+		for tsi in TagSongInstance.objects.filter(song_tag=from_tag):
+			if TagSongInstance.objects.filter(song=tsi.song, song_tag=to_tag).exists():
+				tsi.delete()
+			else:
+				tsi.song_tag = to_tag
+				tsi.save()
 		cls.objects.filter(parent=from_tag).update(parent=to_tag)
 
 		# carry over category and parenthood

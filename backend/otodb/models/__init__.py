@@ -17,9 +17,9 @@ from .posts import (
 	CommentMeta,
 	EntityLink,
 	Notification,
-	Post,
-	PostContent,
 	Subscription,
+	Thread,
+	ThreadPost,
 )
 from .prefs import UserPreference
 from .relations import SongRelation, WorkRelation
@@ -31,8 +31,8 @@ from .tag import (
 	TagWork,
 	TagWorkLangPreference,
 	TagWorkParenthood,
-	WikiPage,
 )
+from .wiki import WikiPage
 from .work_source import WorkSource
 
 __all__ = [
@@ -53,8 +53,8 @@ __all__ = [
 	'ModerationEvent',
 	'WorkRelation',
 	'SongRelation',
-	'Post',
-	'PostContent',
+	'Thread',
+	'ThreadPost',
 	'Notification',
 	'Subscription',
 	'EntityLink',

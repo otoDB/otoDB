@@ -1,4 +1,5 @@
 node_modules
+openapi.json
 Dockerfile*
 docker-compose*
 .dockerignore
@@ -6,7 +7,7 @@ docker-compose*
 .gitignore
 .gitattributes
 .npmrc
-.prettierrc
+.oxfmtrc.json
 README.md
 LICENSE
 .svelte-kit

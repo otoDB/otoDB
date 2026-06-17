@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import Banner from '$lib/Banner.svelte';
+	import { dirtyEnhance } from '$lib/dirty';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
@@ -7,6 +8,7 @@
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import TagsEditor from '$lib/TagsEditor.svelte';
+	import { autolinkDescription } from '$lib/ui.js';
 	import WorkField from '$lib/WorkField.svelte';
 
 	let { data } = $props();
@@ -41,10 +43,14 @@
 	type={m.extra_brave_tapir_skip()}
 	menuLinks={data.links}
 >
+	{#if data.source.is_pending}
+		<Banner variant="info" title={m.brisk_lucky_heron_mend()} />
+	{/if}
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
 				<SourcesViewer
+					user={data.user}
 					sources={sourceArray}
 					thumbnail={data.source.thumbnail}
 					thumbnailAlt={data.source.title ?? ''}
@@ -62,7 +68,7 @@
 							<td>
 								<div class="description-cell external-link-icon">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-									{@html data.source.description}
+									{@html autolinkDescription(data.source.description ?? '')}
 								</div>
 							</td>
 						</tr>
@@ -109,10 +115,7 @@
 						</tr>
 						<tr>
 							<th class="w-24">URL</th>
-							<td
-								><a href={data.source.url} target="_blank" rel="noopener"
-									>{data.source.url}</a
-								></td
+							<td><a href={data.source.url} target="_blank" rel="noopener">{data.source.url}</a></td
 							>
 						</tr>
 						{#if data.isBound}
@@ -120,17 +123,7 @@
 								<th class="w-24">{m.grand_merry_fly_succeed()}</th>
 								<td
 									><a href="/work/{data.source.media}"
-										>{data.source.media_title ||
-											`Work #${data.source.media}`}</a
-									></td
-								>
-							</tr>
-						{/if}
-						{#if data.source.is_pending}
-							<tr>
-								<th class="w-24">Status</th>
-								<td
-									><span class="text-sky-600">{m.lost_weird_squid_commend()}</span
+										>{data.source.media_title || `Work #${data.source.media}`}</a
 									></td
 								>
 							</tr>
@@ -164,19 +157,13 @@
 		</div>
 
 		{#if mode === 'create'}
-			<form method="POST" action="?/create" use:enhance>
+			<form method="POST" action="?/create" use:dirtyEnhance>
 				<table>
 					<tbody>
 						<tr>
 							<th><label for="title">{m.large_factual_octopus_exhale()}</label></th>
 							<td>
-								<input
-									id="title"
-									name="title"
-									type="text"
-									class="w-full"
-									bind:value={title}
-								/>
+								<input id="title" name="title" type="text" class="w-full" bind:value={title} />
 							</td>
 						</tr>
 						<tr>
@@ -198,8 +185,7 @@
 										<label
 											class={[
 												'relative cursor-pointer border px-3 py-1',
-												rating === r &&
-													'bg-otodb-content-primary text-otodb-bg-primary'
+												rating === r && 'bg-otodb-content-primary text-otodb-bg-primary'
 											]}
 										>
 											<input
@@ -228,7 +214,7 @@
 				<input type="submit" />
 			</form>
 		{:else}
-			<form method="POST" action="?/bind" use:enhance>
+			<form method="POST" action="?/bind" use:dirtyEnhance>
 				<input type="hidden" name="source_url" value={data.source.url} />
 				<table>
 					<tbody>

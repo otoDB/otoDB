@@ -14,7 +14,7 @@
 	import { ThemePref } from '$lib/schema';
 	import { themes } from '$lib/themes/themes';
 	import { callApiErrorToast, callErrorToast } from '$lib/toast';
-	import { getLocalPref, getLocalPrefs, updateLocalPref } from '$lib/ui';
+	import { getLocalPref, getStoredPrefs, updateLocalPrefs } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
 
@@ -22,12 +22,12 @@
 
 	defineCustomClientStrategy('custom-userPreference', {
 		getLocale: () => {
-			const lang = data.user?.prefs.LANGUAGE ?? getLocalPrefs()?.LANGUAGE; // Don't want our default behaviour here
+			const lang = data.user?.prefs.LANGUAGE ?? getStoredPrefs().LANGUAGE; // Don't want our default behaviour here
 			return lang ? resolveLanguageKeyById(lang) : undefined;
 		},
 		setLocale: (locale) => {
 			if (!data.user)
-				updateLocalPref('LANGUAGE', languages[locale as keyof typeof languages].id);
+				updateLocalPrefs({ LANGUAGE: languages[locale as keyof typeof languages].id });
 		}
 	});
 
@@ -48,14 +48,23 @@
 		}
 	});
 
+	function isTurnstileError(reason: unknown): boolean {
+		if (!reason || typeof reason !== 'object') return false;
+		const r = reason as { name?: string; message?: string };
+		return r.name === 'TurnstileError' || (r.message?.includes('Turnstile') ?? false);
+	}
+
 	function handleError(e: Event) {
 		const err = e as ErrorEvent;
-		console.error(err.error ?? err.message);
+		const reason = err.error ?? err.message;
+		console.error(reason);
+		if (isTurnstileError(reason) || err.filename?.includes('challenges.cloudflare.com')) return;
 		callErrorToast(m.ideal_soft_falcon_urge());
 	}
 
 	function handleRejection(e: PromiseRejectionEvent) {
 		console.error(e.reason);
+		if (isTurnstileError(e.reason)) return;
 		callErrorToast(m.ideal_soft_falcon_urge());
 	}
 
@@ -108,9 +117,7 @@
 					JSON.stringify({
 						'@context': 'https://schema.org',
 						'@type': 'BreadcrumbList',
-						'itemListElement': (
-							page.data.head.breadcrumbs as { name: string; url: string }[]
-						).map(
+						'itemListElement': (page.data.head.breadcrumbs as { name: string; url: string }[]).map(
 							(
 								crumb: { name: string; url: string },
 								i: number,
@@ -119,9 +126,7 @@
 								'@type': 'ListItem',
 								'position': i + 1,
 								'name': crumb.name,
-								...(i < arr.length - 1
-									? { item: `https://otodb.net${crumb.url}` }
-									: {})
+								...(i < arr.length - 1 ? { item: `https://otodb.net${crumb.url}` } : {})
 							})
 						)
 					})
@@ -189,12 +194,13 @@
 		<!-- Hamburger button -->
 		<button
 			class={[
-				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-[3] h-12 w-12',
-				{ invisible: isMobileNavOpen }
+				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-3 h-12 w-12',
+				isMobileNavOpen && 'invisible'
 			]}
+			aria-label={m.clean_kind_stork_affirm()}
 			onclick={toggleMobileNav}
 		>
-			<div class="white place-self-center text-2xl">☰</div>
+			<span class="icon-[gravity-ui--bars] m-auto size-6" aria-hidden="true"></span>
 		</button>
 	</div>
 	<Toaster
@@ -203,7 +209,8 @@
 		toastOptions={{
 			unstyled: true,
 			classes: {
-				toast: 'bg-otodb-bg-faint text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
+				toast:
+					'bg-otodb-bg-faint text-otodb-content-color flex p-2 gap-3 border-otodb-fainter-content border'
 			}
 		}}
 	/>

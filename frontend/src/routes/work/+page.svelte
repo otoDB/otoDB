@@ -6,7 +6,6 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
-	import { SEARCH_DOCS_POST_ID } from '$lib/ui';
 	let { data } = $props();
 
 	const examples = [
@@ -60,7 +59,7 @@
 				{/each}
 			</ul>
 			<div class="mt-2">
-				<a href="/post/{SEARCH_DOCS_POST_ID}">
+				<a href="/wiki/search_syntax">
 					{m.swift_keen_otter_guide()}
 				</a>
 			</div>
@@ -72,12 +71,7 @@
 			<WorkCard {work} />
 		{/each}
 	</div>
-	<Pager
-		n_count={data.results.count}
-		page={data.page}
-		page_size={data.batch_size}
-		base_url={page.url.toString()}
-	/>
+	<Pager n_count={data.results.count} page_size={data.batch_size} base_url={page.url.toString()} />
 </Section>
 
 <style>

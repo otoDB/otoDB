@@ -46,36 +46,38 @@ flowchart ${direction}
 				(type === 'work'
 					? `
     ${(nodes as Work[])
-		.map(
-			(w) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
-    ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
+									.map(
+										(
+											w
+										) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
+    ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
     click ${w.id} "${`/work/${w.id}`}"`
-		)
-		.join('\n')}
+									)
+									.join('\n')}
     ${links
-		.map((r) =>
-			//  Reverse relation for 'sequel'
-			r.relation === WorkRelationTypes.Sequel
-				? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationNames[r.relation]()}| ${r.A_id}`
-				: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationNames[r.relation]()}| ${r.B_id}`
-		)
-		.join('\n')}
+									.map((r) =>
+										//  Reverse relation for 'sequel'
+										r.relation === WorkRelationTypes.Sequel
+											? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationNames[r.relation]()}| ${r.A_id}`
+											: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationNames[r.relation]()}| ${r.B_id}`
+									)
+									.join('\n')}
 	${ext
-		.map(
-			(a) => `${a}MORE["${m.fresh_deft_warbler_edit()}"]
+								.map(
+									(a) => `${a}MORE["${m.fresh_deft_warbler_edit()}"]
 	class ${a}MORE moreNodes;
 	${a[0] !== '-' ? `${a}MORE -.- ${a}` : `${-a} -.- ${a}MORE`}`
-		)
-		.join('\n')}`
+								)
+								.join('\n')}`
 					: `
     ${nodes
-		.map(
-			(
-				w
-			) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title == null ? ':::untitled' : ''}
+									.map(
+										(
+											w
+										) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
     click ${w.id} "${`/tag/${(w as Song).work_tag}`}"`
-		)
-		.join('\n')}
+									)
+									.join('\n')}
     ${links.map((r) => `${r.A_id} -->|${RelationNames[r.relation]()}| ${r.B_id}`).join('\n')}`)
 		);
 
@@ -98,11 +100,7 @@ flowchart ${direction}
 					...[
 						...new Set(
 							links
-								.filter(
-									(v) =>
-										allowed_types.includes(v.relation) &&
-										(v.A_id === n || v.B_id === n)
-								)
+								.filter((v) => allowed_types.includes(v.relation) && (v.A_id === n || v.B_id === n))
 								.flatMap((v) => [v.A_id, v.B_id])
 						)
 					].map((nn) => [nn, curr_distance + 1] as [string, number])
@@ -123,9 +121,7 @@ flowchart ${direction}
 					links
 						.filter((v) => allowed_types.includes(v.relation))
 						.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)!))
-						.filter(
-							([a, b]) => (a.distance === undefined) !== (b.distance === undefined)
-						)
+						.filter(([a, b]) => (a.distance === undefined) !== (b.distance === undefined))
 						.map(([a, b]) => (a.distance !== undefined ? a.id : '-' + b.id))
 				)
 			]
@@ -245,7 +241,7 @@ flowchart ${direction}
 	}}
 />
 
-<style>
+<style lang="postcss">
 	@reference "../app.css";
 	option.type-label {
 		&:checked {

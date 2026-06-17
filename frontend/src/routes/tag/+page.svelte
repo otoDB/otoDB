@@ -140,9 +140,7 @@
 				<tr class="border-otodb-bg-fainter border-b">
 					<td class="py-1.5">
 						<WorkTag {tag} />
-						<span class="text-otodb-content-faint ml-1 tabular-nums"
-							>{tag.n_instance ?? 0}</span
-						>
+						<span class="text-otodb-content-faint ml-1 tabular-nums">{tag.n_instance ?? 0}</span>
 					</td>
 				</tr>
 			{/each}
@@ -151,7 +149,6 @@
 	{#if data.results?.count}
 		<Pager
 			n_count={data.results.count}
-			page={data.page}
 			page_size={data.batch_size}
 			base_url={page.url.toString()}
 		/>

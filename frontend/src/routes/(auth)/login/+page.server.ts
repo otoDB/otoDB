@@ -17,13 +17,14 @@ export const actions = {
 	default: async ({ cookies, request, fetch }) => {
 		const data = await request.formData();
 		const username = data.get('username') as string,
-			password = data.get('password') as string;
+			password = data.get('password') as string,
+			turnstile_token = (data.get('cf-turnstile-response') as string) || undefined;
 
 		if (!username || !password) return fail(400, { username, missing: true });
 
 		const { response, error: apiError } = await rawClient.POST('/api/auth/login', {
 			fetch,
-			body: { username, password },
+			body: { username, password, turnstile_token },
 			headers: { 'X-CSRFToken': cookies.get('csrftoken') }
 		});
 		if (apiError) return apiFail(apiError, { username });

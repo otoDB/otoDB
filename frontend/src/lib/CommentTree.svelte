@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
 	import { makeCommentTree } from '$lib/CommentTree/makeCommentTree';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { renderMarkdown } from '$lib/markdown';
 	import { m } from '$lib/paraglide/messages';
@@ -29,6 +29,7 @@
 	let editPreviewMode = $state(false);
 
 	const EDIT_WINDOW_MS = 180 * 24 * 60 * 60 * 1000;
+	const MAX_THREAD_LEVEL = 3;
 
 	const togglePreview = (reply_to: string) => {
 		if (previewMode[reply_to]) {
@@ -69,11 +70,11 @@
 	};
 
 	const can_comment = $derived(hasUserLevel(user?.level, Levels.Member));
-	const is_admin = $derived(!!user && hasUserLevel(user?.level, Levels.Admin));
+	const is_mod = $derived(!!user && hasUserLevel(user?.level, Levels.Mod));
 
 	const canEdit = (data: ReturnType<typeof makeCommentTree>[number]) => {
 		if (!user) return false;
-		if (is_admin) return true;
+		if (is_mod) return true;
 		if (data.user.username !== user.username) return false;
 		// Lock: if edited by a different user (admin), original author can no longer edit
 		if (data.edited_by && data.edited_by.username !== data.user.username) return false;
@@ -85,7 +86,7 @@
 			fetch,
 			params: { query: { comment_id, model, pk } }
 		});
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 
@@ -94,21 +95,23 @@
 		class="reply-form gap-2"
 		method="POST"
 		action="/comments?/create"
-		use:enhance={() => {
-			return async ({ update, result }) => {
-				if (result.type === 'success') {
-					const comment_text = drafts[reply_to]?.trim();
-					if (comment_text) {
-						document
-							.querySelectorAll('.reply-toggle')
-							.forEach((e) => ((e as HTMLInputElement).checked = false));
-						drafts[reply_to] = '';
-						previews[reply_to] = '';
-						previewMode[reply_to] = false;
+		use:dirtyEnhance={{
+			custom_submit: () => {
+				return async ({ update, result }) => {
+					if (result.type === 'success') {
+						const comment_text = drafts[reply_to]?.trim();
+						if (comment_text) {
+							document
+								.querySelectorAll('.reply-toggle')
+								.forEach((e) => ((e as HTMLInputElement).checked = false));
+							drafts[reply_to] = '';
+							previews[reply_to] = '';
+							previewMode[reply_to] = false;
+						}
 					}
-				}
-				await update({ reset: false });
-			};
+					await update({ reset: false });
+				};
+			}
 		}}
 	>
 		<input type="text" name="model" hidden value={model} />
@@ -156,30 +159,28 @@
 			{/if}
 		</div>
 		<div>
-			<span class="text-otodb-content-fainter float-right text-xs leading-none"
-				>#{data.index}</span
-			>
+			<span class="text-otodb-content-fainter float-right text-xs leading-none">#{data.index}</span>
 			{#if editingId === data.id}
 				<form
 					class="edit-form"
 					method="POST"
 					action="/comments?/edit"
-					use:enhance={() => {
-						return async ({ update, result }) => {
-							if (result.type === 'success') {
-								cancelEdit();
-							}
-							await update({ reset: false });
-						};
+					use:dirtyEnhance={{
+						custom_submit: () => {
+							return async ({ update, result }) => {
+								if (result.type === 'success') {
+									cancelEdit();
+								}
+								await update({ reset: false });
+							};
+						}
 					}}
 				>
 					<input type="hidden" name="comment_id" value={data.id} />
 					<div class="reply-main">
 						{#if editPreviewMode}
 							<div class="editor-panel reply-editor">
-								<div
-									class="prose prose-neutral prose-sm dark:prose-invert max-w-none"
-								>
+								<div class="prose prose-neutral prose-sm dark:prose-invert max-w-none">
 									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 									{@html editPreview}
 								</div>
@@ -193,15 +194,9 @@
 						{/if}
 						<div class="reply-actions">
 							<button type="button" class="h-15 p-3" onclick={toggleEditPreview}>
-								{editPreviewMode
-									? m.minor_crisp_cobra_list()
-									: m.many_each_wolf_arrive()}
+								{editPreviewMode ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}
 							</button>
-							<input
-								type="submit"
-								class="h-15 p-3"
-								value={m.last_late_penguin_bubble()}
-							/>
+							<input type="submit" class="h-15 p-3" value={m.last_late_penguin_bubble()} />
 							<button type="button" class="h-15 p-3" onclick={cancelEdit}>
 								{m.lower_whole_gopher_fulfill()}
 							</button>
@@ -216,7 +211,7 @@
 			{/if}
 			{#if editingId === null}
 				<div class="comment-actions flex justify-end gap-2 pt-2">
-					{#if can_comment}
+					{#if can_comment && data.level < MAX_THREAD_LEVEL}
 						<label class="cursor-pointer px-2 py-1">
 							{m.kind_brief_earthworm_dash()}
 							<input type="checkbox" class="reply-toggle hidden" value={false} />
@@ -227,7 +222,7 @@
 							{m.minor_crisp_cobra_list()}
 						</button>
 					{/if}
-					{#if user && (hasUserLevel(user?.level, Levels.Admin) || data.user.username === user.username)}
+					{#if user && (hasUserLevel(user?.level, Levels.Mod) || data.user.username === user.username)}
 						<button class="px-2 py-1" onclick={() => delete_comment(data.id)}
 							>{m.even_alert_grebe_taste()}</button
 						>

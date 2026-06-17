@@ -1,6 +1,9 @@
 import client from '$lib/api.server';
 import { asEnum } from '$lib/enums';
-import { PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0, Status } from '$lib/schema';
+import {
+	PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0,
+	SubmissionStanding
+} from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, params, url }) => {
@@ -11,7 +14,7 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 		status = parseInt(url.searchParams.get('status') ?? '', 10) || null,
 		paramStanding = parseInt(url.searchParams.get('standing') ?? '1', 10) || 0;
 
-	const standing = asEnum(Status, paramStanding);
+	const standing = asEnum(SubmissionStanding, paramStanding);
 
 	const paramDir = url.searchParams.get('dir') === '-' ? '-' : '';
 	const paramOrder = url.searchParams.get('order');
@@ -43,7 +46,6 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	});
 	return {
 		submissions,
-		page,
 		batch_size,
 		order: paramOrder,
 		origin,

@@ -140,3 +140,49 @@ class TestRollbackRestoreChain:
 			f'expected gen2 edited value 3, got {roles} '
 			'(resolved back to a stale older generation)'
 		)
+
+
+@pytest.mark.django_db
+class TestRollbackRestoresDeletedTag:
+	"""Rolling back a work whose tag was also deleted must restore the tag too.
+
+	Regression for two Postgres-only failures hit while restoring a deleted TagWork:
+	  1. update_or_create on TagWork ran its internal select_for_update() over the
+	     manager's select_related('aliased_to') outer join, which Postgres rejects
+	     with "FOR UPDATE cannot be applied to the nullable side of an outer join".
+	  2. the related-target fix-up then resolved to_active against the tag's stale
+	     pre-delete pk, raising TagWork.DoesNotExist because the tag had just been
+	     restored under a new pk.
+	"""
+
+	def test_rollback_restores_deleted_tag_and_relinks_instance(self, member):
+		now = timezone.now()
+		t_create = now - timedelta(seconds=300)
+		t_delete = now - timedelta(seconds=200)
+		cutoff = now - timedelta(seconds=250)  # between create and delete
+
+		# rev A: create the work, a tag, and the instance linking them.
+		with revision(user=member, message='create'):
+			work = MediaWork.objects.create(title='W', description='d', rating=0)
+			tag = TagWork.objects.create(name='t', slug='t')
+			TagWorkInstance.objects.create(work=work, work_tag=tag)
+		_set_date(Revision.objects.latest('id').id, t_create)
+
+		# rev B: delete the instance and the tag itself.
+		with revision(user=member, message='delete instance and tag'):
+			TagWorkInstance.objects.filter(work=work, work_tag=tag).delete()
+			tag.delete()
+		_set_date(Revision.objects.latest('id').id, t_delete)
+
+		assert not TagWork.objects.filter(slug='t').exists()
+		assert not TagWorkInstance.objects.filter(work=work).exists()
+
+		# Roll the work back to before the deletion. Restoring the deleted instance
+		# must recursively restore the deleted tag (exercising both fixes) and the
+		# restored instance must point at the restored tag.
+		with revision(user=member, message='rollback'):
+			rollback_entity(work.pk, 'mediawork', cutoff)
+
+		restored_tag = TagWork.objects.get(slug='t')
+		instance = TagWorkInstance.objects.get(work=work)
+		assert instance.work_tag_id == restored_tag.id

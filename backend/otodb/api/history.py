@@ -551,8 +551,14 @@ def rollback_entity(
 						created = False
 						model_class.objects.filter(id=new_id).update(**values)
 					else:
-						new_instance, created = model_class.objects.update_or_create(
-							**values
+						# N.B. we must not use select_related/prefetch_related here,
+						# or update_or_create will run its internal select_for_update() over
+						# the resulting outer join -- which Postgres rejects with
+						# "FOR UPDATE cannot be applied to the nullable side of an outer join"
+						new_instance, created = (
+							model_class.objects.select_related(None)
+							.prefetch_related(None)
+							.update_or_create(**values)
 						)
 						npk = new_instance.pk
 					if created:
@@ -651,15 +657,17 @@ def rollback_entity(
 			# Apply to_active to resolve soft deletes (aliased_to/moved_to)
 			changes = {}
 			for f, rctid, v in fs:
+				# vv is the related target's live pk if exists. Skip otherwise.
 				vv = get_rev_restored(rctid, v)
 				model_class = ContentType.objects.get(id=rctid).model_class()
 				if (
-					model_class
+					vv is not None
+					and model_class
 					and hasattr(model_class, '_revision_meta')
 					and model_class._revision_meta.to_active
 				):
 					vv = model_class._revision_meta.to_active(
-						model_class.objects.get(pk=v)
+						model_class.objects.get(pk=vv)
 					).pk
 				changes[f] = vv
 			ContentType.objects.get(id=ctid).model_class().objects.filter(

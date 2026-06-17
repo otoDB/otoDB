@@ -657,11 +657,7 @@ def rollback_entity(
 			# Apply to_active to resolve soft deletes (aliased_to/moved_to)
 			changes = {}
 			for f, rctid, v in fs:
-				# vv is the related target's current live pk: v itself if it was never
-				# deleted, or the new pk if an earlier step restored it. Resolve
-				# to_active against that live row -- not the stale historical pk v, which
-				# no longer exists once the target was restored under a new id. Skip when
-				# vv is None (target deleted and not restored): there is no row to load.
+				# vv is the related target's live pk if exists. Skip otherwise.
 				vv = get_rev_restored(rctid, v)
 				model_class = ContentType.objects.get(id=rctid).model_class()
 				if (

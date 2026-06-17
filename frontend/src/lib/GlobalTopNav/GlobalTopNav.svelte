@@ -40,7 +40,7 @@
 				/>
 			</div>
 		</div>
-		<div class="flex flex-shrink-0">
+		<div class="flex flex-shrink-0 items-center">
 			<span class="icon-[gravity-ui--globe] text-otodb-content-faint text-base"></span>
 			<select
 				onchange={(e) => {

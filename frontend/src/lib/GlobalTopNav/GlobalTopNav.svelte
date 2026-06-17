@@ -3,8 +3,6 @@
 	import { set_lang } from '$lib/languages';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import Search from '@lucide/svelte/icons/search';
-	import Languages from '@lucide/svelte/icons/languages';
 	import type { ClassValue } from 'svelte/elements';
 
 	let {
@@ -33,7 +31,7 @@
 			<div
 				class="bg-otodb-bg-faint/75 border-otodb-content-faint border-otodb-content-faint bg-otodb-bg-fainter/75 flex h-full w-full items-center border px-2"
 			>
-				<Search class="h-full" size={16} />
+				<span class="icon-[gravity-ui--magnifier] text-base"></span>
 				<input
 					type="text"
 					name="query"
@@ -43,7 +41,7 @@
 			</div>
 		</div>
 		<div class="flex flex-shrink-0">
-			<Languages class="text-otodb-content-faint" />
+			<span class="icon-[gravity-ui--globe] text-otodb-content-faint text-base"></span>
 			<select
 				onchange={(e) => {
 					set_lang(e.currentTarget.value as (typeof locales)[number], !!user);

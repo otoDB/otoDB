@@ -17,18 +17,21 @@ const group_RCs = (
 			entities: (Object.values(Object.groupBy(rent!, (c) => c.ent_type + c.ent_id)) as RC[][])
 				.map((cs) => cs.filter((c) => isValidEntityModelType(c.ent_type)))
 				.filter((ec) => ec.length)
-				.map((tg) => ({
-					ent_type: tg[0].ent_type as EntityModelType,
-					ent_id: tg[0].ent_id,
-					rows: (
+				.map((tg) => {
+					const ent_type = tg[0].ent_type as EntityModelType;
+					const ent_id = tg[0].ent_id;
+					const rows: Row[] = (
 						Object.values(Object.groupBy(tg, (c) => c.target_type + ':' + c.target_id)) as RC[][]
 					).map((rcs) => ({
 						target_type: rcs[0].target_type,
 						tg_id: rcs[0].tg_id,
 						target_id: rcs[0].target_id,
 						rcs
-					}))
-				}))
+					}));
+					const isOwn = (r: Row) => r.target_type === ent_type && r.tg_id === ent_id;
+					rows.sort((a, b) => Number(isOwn(b)) - Number(isOwn(a)));
+					return { ent_type, ent_id, rows };
+				})
 		}))
 		.filter(({ entities }) => entities.length);
 

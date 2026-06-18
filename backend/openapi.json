@@ -9726,6 +9726,16 @@
           "category": {
             "$ref": "#/components/schemas/PostCategory"
           },
+          "edited_by": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProfileSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "title": {
             "maxLength": 1000,
             "title": "Title",

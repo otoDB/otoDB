@@ -73,10 +73,16 @@ class ThreadSchema(ModelSchema):
 	added_by: ProfileSchema
 	entities: list[PostEntitySchema] = []
 	category: PostCategory
+	edited_by: ProfileSchema | None = None
 
 	class Meta:
 		model = Thread
 		fields = ['title', 'closed_at', 'created_at']
+
+	@staticmethod
+	def resolve_edited_by(obj: Thread):
+		op = obj.posts.filter(num=1).select_related('edited_by').defer('body').first()
+		return op and op.edited_by
 
 
 class ThreadPostSchema(ModelSchema):

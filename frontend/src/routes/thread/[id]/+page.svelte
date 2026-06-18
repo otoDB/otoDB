@@ -24,9 +24,15 @@
 		await invalidateAll();
 	};
 
+	const op_edited_by_another = $derived(
+		!!data.thread?.edited_by && data.thread.edited_by.username !== data.thread.added_by.username
+	);
 	const can_reopen = $derived(
-		(is_mod || (!!data.user && data.user.username === data.thread?.added_by.username)) &&
-			!!data.thread?.closed_at
+		!!data.thread?.closed_at &&
+			(is_mod ||
+				(!!data.user &&
+					data.user.username === data.thread?.added_by.username &&
+					!op_edited_by_another))
 	);
 	const reopen_thread = async () => {
 		await client.PUT('/api/thread/reopen', {

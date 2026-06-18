@@ -36,7 +36,7 @@
 			{#if showCategory}<th class="w-32 text-left">{m.plane_awful_bobcat_spark()}</th>{/if}
 			<th class="w-20 text-right">{m.these_full_lion_exhale()}</th>
 			<th class="w-32 text-left">{m.funny_heroic_whale_gleam()}</th>
-			<th class="w-64 text-right">{m.plain_polite_eagle_build()}</th>
+			<th class="w-64 text-left">{m.plain_polite_eagle_build()}</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -82,8 +82,8 @@
 				{/if}
 				<td class="text-right">{Math.max(0, (post.post_count ?? 0) - 1)}</td>
 				<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td>
-				<td class="text-right">
-					<Time format="absolute" date={lastTime} />
+				<td class="text-left">
+					<Time format="relative" date={lastTime} />
 					<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}>
 						{#snippet content()}
 							<a href="/profile/{lastUser}">{lastUser}</a>

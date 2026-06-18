@@ -369,10 +369,12 @@ def close_thread(request: AuthedHttpRequest, thread_id: OtodbID):
 @transaction.atomic
 def reopen_thread(request: AuthedHttpRequest, thread_id: OtodbID):
 	t = get_object_or_404(Thread, id=thread_id, is_removed=False)
-	is_mod = request.user.is_mod
-	is_author = t.added_by_id == request.user.pk
-	if not (is_mod or is_author):
-		raise HttpError(403, 'Forbidden')
+	if not request.user.is_mod:
+		if t.added_by_id != request.user.pk:
+			raise HttpError(403, 'Forbidden')
+		op = t.posts.get(num=1)
+		if op.edited_by_id and op.edited_by_id != op.user_id:
+			raise HttpError(403, 'Forbidden')
 	if t.closed_at:
 		t.closed_at = None
 		t.save(update_fields=['closed_at'])

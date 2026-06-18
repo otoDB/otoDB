@@ -54,6 +54,11 @@ _dmp = diff_match_patch()
 
 
 @functools.cache
+def _wikipage_ct_id() -> int:
+	return ContentType.objects.get_for_model(WikiPage).id
+
+
+@functools.cache
 def _slug_model_ids() -> tuple[int, ...]:
 	return tuple(
 		[ContentType.objects.get_for_model(WikiPage).id]
@@ -334,6 +339,21 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			ent_id=(
 				Case(
 					When(
+						# Wikipage slugs live on the row, not in slug-column history
+						Q(revisionchangeentity__entity_type_id=_wikipage_ct_id()),
+						then=Coalesce(
+							Subquery(
+								WikiPage.objects.filter(
+									pk=OuterRef('revisionchangeentity__entity_id')
+								).values('slug')[:1]
+							),
+							models.functions.Cast(
+								F('revisionchangeentity__entity_id'),
+								output_field=models.TextField(),
+							),
+						),
+					),
+					When(
 						Q(revisionchangeentity__entity_type__id__in=_slug_model_ids()),
 						# Fall back to the numeric id when no slug change was recorded
 						then=Coalesce(
@@ -365,6 +385,20 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			),
 			tg_id=(
 				Case(
+					When(
+						# Wikipage slugs live on the row, not in slug-column history
+						Q(target_type_id=_wikipage_ct_id()),
+						then=Coalesce(
+							Subquery(
+								WikiPage.objects.filter(
+									pk=OuterRef('target_id')
+								).values('slug')[:1]
+							),
+							models.functions.Cast(
+								F('target_id'), output_field=models.TextField()
+							),
+						),
+					),
 					When(
 						Q(target_type__id__in=_slug_model_ids()),
 						# Fall back to the numeric id when no slug change was recorded

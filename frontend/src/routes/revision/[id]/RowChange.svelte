@@ -33,10 +33,18 @@
 	}: Props = $props();
 
 	const isOwnEntity = $derived(target_type === ent_type && tg_id === ent_id);
-	// Slug-identified targets resolve tg_id to their slug; only number ids get a "#"
-	const tgLabel = $derived(/^\d+$/.test(tg_id) ? `#${tg_id}` : tg_id);
+	// A wikipage has exactly one attachment (slug, tag, or work); a slugless one
+	// has no /wiki/<id> page, so when nested reference its tag/work page instead.
+	const wikiNested = $derived(target_type === 'wikipage' && !isOwnEntity);
+	const ref = $derived(
+		wikiNested ? { type: ent_type, id: ent_id } : { type: target_type, id: tg_id }
+	);
 	const tgHref = $derived(
-		isValidEntityModelType(target_type) ? buildEntityRoutes(target_type, tg_id) : undefined
+		isValidEntityModelType(ref.type) ? buildEntityRoutes(ref.type, ref.id) : undefined
+	);
+	// Nested wikipages show their page path; others show the slug, or "#" + numeric id
+	const tgLabel = $derived(
+		wikiNested && tgHref ? tgHref : /^\d+$/.test(ref.id) ? `#${ref.id}` : ref.id
 	);
 	const deletedChange = $derived(rcs.find((c) => c.deleted));
 	const restoredChange = $derived(rcs.find((c) => c.restored));

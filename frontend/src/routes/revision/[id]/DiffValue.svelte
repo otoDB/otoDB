@@ -5,9 +5,11 @@
 	interface Props {
 		change: components['schemas']['RevisionChangeSchema'];
 		card?: boolean;
+		works: Record<string, components['schemas']['SlimWorkSchema']>;
+		labels: Record<string, string>;
 	}
 
-	const { change, card = false }: Props = $props();
+	const { change, card = false, works, labels }: Props = $props();
 </script>
 
 {#snippet valueOf(value: string | null | undefined)}
@@ -16,6 +18,8 @@
 		column={change.target_column ?? ''}
 		{value}
 		ref={change.ref}
+		{works}
+		{labels}
 		{card}
 	/>
 {/snippet}

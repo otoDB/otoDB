@@ -7,9 +7,11 @@
 		label: string;
 		layout?: 'inline' | 'split';
 		windowed?: boolean;
+		works: Record<string, components['schemas']['SlimWorkSchema']>;
+		labels: Record<string, string>;
 	}
 
-	const { change, label, layout = 'inline', windowed = true }: Props = $props();
+	const { change, label, layout = 'inline', windowed = true, works, labels }: Props = $props();
 
 	const segments = $derived(change.diff ?? []);
 </script>
@@ -23,6 +25,8 @@
 		column={change.target_column ?? ''}
 		{value}
 		ref={change.ref}
+		{works}
+		{labels}
 	/>
 {/snippet}
 

@@ -18,6 +18,10 @@
 		ent_id: string;
 		deletedRows: Record<string, components['schemas']['OldColumnSchema'][]>;
 		rowContext: Record<string, components['schemas']['OldColumnSchema'][]>;
+		/** Keyed by work id -> slim work data, for rendering mediawork cards */
+		works: Record<string, components['schemas']['SlimWorkSchema']>;
+		/** Keyed by `model:id` -> display label for non-work FK refs */
+		labels: Record<string, string>;
 		layout?: 'inline' | 'split';
 		windowed?: boolean;
 	}
@@ -30,6 +34,8 @@
 		ent_id,
 		deletedRows,
 		rowContext,
+		works,
+		labels,
 		layout = 'inline',
 		windowed = true
 	}: Props = $props();
@@ -101,6 +107,8 @@
 						column="A"
 						value={oldByColumn.get('A')?.value}
 						ref={oldByColumn.get('A')?.ref}
+						{works}
+						{labels}
 						card
 					/>
 					<span>—{displayValue(target_type, 'relation', oldByColumn.get('relation')?.value)}→</span>
@@ -109,6 +117,8 @@
 						column="B"
 						value={oldByColumn.get('B')?.value}
 						ref={oldByColumn.get('B')?.ref}
+						{works}
+						{labels}
 						card
 					/>
 				</del>
@@ -127,6 +137,8 @@
 							column={entry.column}
 							value={entry.value}
 							ref={entry.ref}
+							{works}
+							{labels}
 						/>
 					</del>
 				</td>
@@ -150,6 +162,8 @@
 						column="A"
 						value={byColumn.get('A')?.target_value}
 						ref={byColumn.get('A')?.ref}
+						{works}
+						{labels}
 						card
 					/>
 					<span
@@ -160,6 +174,8 @@
 						column="B"
 						value={byColumn.get('B')?.target_value}
 						ref={byColumn.get('B')?.ref}
+						{works}
+						{labels}
 						card
 					/>
 				</ins>
@@ -173,7 +189,7 @@
 					{@render relationSlot('A')}
 					<div class="flex flex-col items-center">
 						{#if byColumn.has('relation')}
-							<DiffValue change={byColumn.get('relation')!} />
+							<DiffValue change={byColumn.get('relation')!} {works} {labels} />
 						{:else}
 							<span
 								>{displayValue(
@@ -193,7 +209,14 @@
 {:else}
 	{@render relHeader()}
 	{#each rcs.filter((c) => c.target_column) as c, k (k)}
-		<DiffRows change={c} label={columnLabel(c.target_column!)} {layout} {windowed} />
+		<DiffRows
+			change={c}
+			label={columnLabel(c.target_column!)}
+			{layout}
+			{windowed}
+			{works}
+			{labels}
+		/>
 	{/each}
 	<!-- Columns the revision didn't touch, shown for context -->
 	{#each context.filter((e) => !byColumn.has(e.column)) as entry (entry.column)}
@@ -201,7 +224,14 @@
 			<td></td>
 			<td class="font-mono">{columnLabel(entry.column)}</td>
 			<td>
-				<Value targetType={target_type} column={entry.column} value={entry.value} ref={entry.ref} />
+				<Value
+					targetType={target_type}
+					column={entry.column}
+					value={entry.value}
+					ref={entry.ref}
+					{works}
+					{labels}
+				/>
 			</td>
 		</tr>
 	{/each}
@@ -209,13 +239,15 @@
 
 {#snippet relationSlot(col: string)}
 	{#if byColumn.has(col)}
-		<DiffValue change={byColumn.get(col)!} card />
+		<DiffValue change={byColumn.get(col)!} {works} {labels} card />
 	{:else}
 		<Value
 			targetType={target_type}
 			column={col}
 			value={contextByColumn.get(col)?.value}
 			ref={contextByColumn.get(col)?.ref}
+			{works}
+			{labels}
 			card
 		/>
 	{/if}

@@ -11,7 +11,6 @@
 	import { Levels, PostCategory } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import { callSavingToast } from '$lib/toast';
-	import { setRevisionRefs } from './refs';
 	import RowChange from './RowChange.svelte';
 
 	let { data } = $props();
@@ -21,17 +20,6 @@
 	const worksById = $derived(
 		Object.fromEntries((data.changes.works ?? []).map((w) => [w.id, w] as const))
 	);
-
-	// Shared via context (reactive getters) so leaf components resolve refs
-	// without these maps being threaded through every intermediate component.
-	setRevisionRefs({
-		get works() {
-			return worksById;
-		},
-		get labels() {
-			return data.changes.labels;
-		}
-	});
 
 	let diffLayout = $state<'inline' | 'split'>('inline');
 	let windowedDiffs = $state(true);
@@ -215,6 +203,8 @@
 												windowed={windowedDiffs}
 												deletedRows={data.changes.deleted_rows}
 												rowContext={data.changes.row_context}
+												works={worksById}
+												labels={data.changes.labels}
 											/>
 										{/each}
 									</tbody>

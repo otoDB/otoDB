@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { isValidEntityModelType } from '$lib/enums.js';
 	import RefValue from './RefValue.svelte';
 	import { displayValue } from './displayValue';
 
@@ -12,7 +13,7 @@
 	const { targetType, column, value, ref, card = false }: Props = $props();
 </script>
 
-{#if ref}
+{#if ref && isValidEntityModelType(ref)}
 	<RefValue {ref} id={value} {card} />
 {:else}
 	<span class="whitespace-pre-wrap">{displayValue(targetType, column, value)}</span>

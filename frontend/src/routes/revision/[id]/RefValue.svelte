@@ -1,11 +1,11 @@
 <script lang="ts">
 	import WorkCard from '$lib/WorkCard.svelte';
-	import { buildEntityRoutes, isValidEntityModelType } from '$lib/enums.js';
+	import { buildEntityRoutes, isValidEntityModelType, type EntityModelType } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages';
 	import { getRevisionRefs } from './refs';
 
 	interface Props {
-		ref: string;
+		ref: EntityModelType;
 		id: string | null | undefined;
 		/** Render mediawork refs as a work card instead of a title link */
 		card?: boolean;

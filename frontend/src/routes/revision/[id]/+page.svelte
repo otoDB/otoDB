@@ -82,42 +82,63 @@
 	{/if}
 
 	{#if data.routes.length}
-		<div class="flex justify-start gap-2">
-			<button
-				type="button"
-				class="bg-otodb-bg-faint/75 hover:bg-otodb-bg-fainter/75 px-2 py-1"
-				aria-label={allExpanded ? 'Collapse all entities' : 'Expand all entities'}
-				onclick={toggleAll}
-			>
-				<span
-					class={[
-						'block size-5',
-						allExpanded
-							? 'icon-[gravity-ui--chevrons-collapse-vertical]'
-							: 'icon-[gravity-ui--chevrons-expand-vertical]'
-					]}
-					aria-hidden="true"
-				></span>
-			</button>
-			<button
-				type="button"
-				class="bg-otodb-bg-faint/75 hover:bg-otodb-bg-fainter/75 px-2 py-1"
-				aria-label={diffLayout === 'inline'
-					? m.caring_elegant_gadfly_tear()
-					: m.antsy_stout_gorilla_borrow()}
-				onclick={() => (diffLayout = diffLayout === 'inline' ? 'split' : 'inline')}
-			>
-				<span
-					class={[
-						'block size-5',
-						diffLayout === 'inline'
-							? 'icon-[gravity-ui--layout-columns]'
-							: 'icon-[gravity-ui--layout-rows]'
-					]}
-					aria-hidden="true"
-				></span>
-			</button>
-		</div>
+		<menu
+			class="my-2 flex list-none justify-start gap-2"
+			aria-label={m.fluffy_icy_bobcat_believe()}
+		>
+			<li>
+				<button
+					type="button"
+					class="flex items-center gap-1 p-1"
+					aria-pressed={allExpanded}
+					onclick={toggleAll}
+				>
+					<span
+						class={[
+							'size-4',
+							allExpanded
+								? 'icon-[gravity-ui--chevrons-collapse-vertical]'
+								: 'icon-[gravity-ui--chevrons-expand-vertical]'
+						]}
+						aria-hidden="true"
+					></span>
+					<span class="grid">
+						<span class={['col-start-1 row-start-1', !allExpanded && 'invisible']}>
+							{m.game_slow_crab_fade()}
+						</span>
+						<span class={['col-start-1 row-start-1', allExpanded && 'invisible']}>
+							{m.sleek_factual_antelope_belong()}
+						</span>
+					</span>
+				</button>
+			</li>
+			<li>
+				<button
+					type="button"
+					class="flex items-center gap-1 p-1"
+					aria-pressed={diffLayout === 'split'}
+					onclick={() => (diffLayout = diffLayout === 'inline' ? 'split' : 'inline')}
+				>
+					<span
+						class={[
+							'size-4',
+							diffLayout === 'inline'
+								? 'icon-[gravity-ui--layout-columns]'
+								: 'icon-[gravity-ui--layout-rows]'
+						]}
+						aria-hidden="true"
+					></span>
+					<span class="grid">
+						<span class={['col-start-1 row-start-1', diffLayout !== 'inline' && 'invisible']}>
+							{m.caring_elegant_gadfly_tear()}
+						</span>
+						<span class={['col-start-1 row-start-1', diffLayout === 'inline' && 'invisible']}>
+							{m.antsy_stout_gorilla_borrow()}
+						</span>
+					</span>
+				</button>
+			</li>
+		</menu>
 	{/if}
 
 	<ul class="my-5 flex list-none flex-col gap-8">

@@ -518,18 +518,10 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 		)
 		.order_by('id')
 	)
-	qq_list = list(qq)
 
-	# A wikipage change is shown as its own top-level "self" group (by slug), and
-	# also under any tag/work it belongs to. Once it belongs to a tag/work, the
-	# self group is redundant, so drop it and let the wiki nest under the tag/work.
-	# A bare wiki page (grouped under nothing else) keeps its top-level group.
-	ids_under_tag_or_work = {c.id for c in qq_list if c.ent_type != 'wikipage'}
-	qq_list = [
-		c
-		for c in qq_list
-		if not (c.ent_type == 'wikipage' and c.id in ids_under_tag_or_work)
-	]
+	if qq.exclude(ent_type='wikipage').exists():
+		qq = qq.exclude(ent_type='wikipage')
+	qq_list = list(qq)
 
 	"""
 	Resolve everything a revision's changes reference, for display purposes:

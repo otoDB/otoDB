@@ -35,7 +35,7 @@ const group_RCs = (
 		}))
 		.filter(({ entities }) => entities.length);
 
-export const load: PageServerLoad = async ({ params, fetch, url }) => {
+export const load: PageServerLoad = async ({ params, fetch }) => {
 	const revision_id = params.id;
 
 	const [{ data: revision }, { data: changes }] = await Promise.all([

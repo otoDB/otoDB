@@ -10329,7 +10329,14 @@
             "type": "string"
           },
           "first_entity": {
-            "$ref": "#/components/schemas/HistoricalEntitySchema"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HistoricalEntitySchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "n_ent": {
             "title": "N Ent",
@@ -10340,7 +10347,6 @@
           "id",
           "date",
           "user",
-          "first_entity",
           "n_ent"
         ],
         "title": "RevisionEntitySummarySchema",
@@ -10394,6 +10400,24 @@
           "user"
         ],
         "title": "RevisionSchema",
+        "type": "object"
+      },
+      "DiffSegmentSchema": {
+        "properties": {
+          "op": {
+            "title": "Op",
+            "type": "integer"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "text"
+        ],
+        "title": "DiffSegmentSchema",
         "type": "object"
       },
       "OldColumnSchema": {
@@ -10481,6 +10505,20 @@
               }
             ],
             "title": "Ref"
+          },
+          "diff": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DiffSegmentSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diff"
           },
           "deleted": {
             "default": false,

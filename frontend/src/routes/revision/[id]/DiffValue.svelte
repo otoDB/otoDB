@@ -5,11 +5,9 @@
 	interface Props {
 		change: components['schemas']['RevisionChangeSchema'];
 		card?: boolean;
-		works: components['schemas']['SlimWorkSchema'][];
-		labels: Record<string, string>;
 	}
 
-	const { change, card = false, works, labels }: Props = $props();
+	const { change, card = false }: Props = $props();
 </script>
 
 {#snippet valueOf(value: string | null | undefined)}
@@ -19,8 +17,6 @@
 		{value}
 		ref={change.ref}
 		{card}
-		{works}
-		{labels}
 	/>
 {/snippet}
 
@@ -46,6 +42,7 @@
 		text-decoration: none;
 	}
 
+	/* Standalone "created" value keeps its background as the only add cue. */
 	ins {
 		background-color: var(--otodb-color-ins);
 	}
@@ -54,11 +51,21 @@
 		background-color: var(--otodb-color-del);
 	}
 
+	/* In the −/+ change view, colour the indicator and leave the value plain. */
+	div:has(> span) > ins,
+	div:has(> span) > del {
+		background-color: transparent;
+	}
+
 	div:has(> ins) > span {
-		color: var(--otodb-color-ins);
+		border-radius: var(--radius-xs);
+		padding-inline: 0.25rem;
+		background-color: var(--otodb-color-ins);
 	}
 
 	div:has(> del) > span {
-		color: var(--otodb-color-del);
+		border-radius: var(--radius-xs);
+		padding-inline: 0.25rem;
+		background-color: var(--otodb-color-del);
 	}
 </style>

@@ -1,29 +1,14 @@
 <script lang="ts">
 	import type { components } from '$lib/schema';
 	import Value from './Value.svelte';
-	import { hasDisplayHandler } from './displayValue';
 
 	interface Props {
 		change: components['schemas']['RevisionChangeSchema'];
 		label: string;
-		works: components['schemas']['SlimWorkSchema'][];
-		labels: Record<string, string>;
+		layout?: 'inline' | 'split';
 	}
 
-	const { change, label, works, labels }: Props = $props();
-
-	// Word-level diffs only make sense for free text, not enums or references
-	const useWordDiff = $derived(
-		!change.ref &&
-			!hasDisplayHandler(change.target_type, change.target_column) &&
-			typeof change.old_value === 'string' &&
-			typeof change.target_value === 'string' &&
-			change.old_value.length > 255
-	);
-
-	const segments = $derived(
-		useWordDiff ? diffWords(change.old_value ?? '', change.target_value ?? '') : []
-	);
+	const { change, label, layout = 'inline' }: Props = $props();
 </script>
 
 {#snippet valueOf(value: string | null | undefined)}
@@ -32,38 +17,61 @@
 		column={change.target_column ?? ''}
 		{value}
 		ref={change.ref}
-		{works}
-		{labels}
 	/>
 {/snippet}
 
 {#if change.created}
 	<tr>
-		<td>+</td>
-		<td>{label}</td>
+		<td class="ind">+</td>
+		<td class="font-mono">{label}</td>
 		<td><ins>{@render valueOf(change.target_value)}</ins></td>
 	</tr>
-{:else if useWordDiff}
+{:else if layout === 'split'}
 	<tr>
-		<td></td>
-		<td>{label}</td>
+		<td class="ind">±</td>
+		<td class="font-mono">{label}</td>
+		<td class="split">
+			<div class="grid grid-cols-2">
+				<div class="py-[0.1rem] pr-3 whitespace-pre-wrap">
+					{#if change.diff}
+						{#each change.diff as segment, i (i)}{#if segment.op === -1}<del>{segment.text}</del
+								>{:else if segment.op === 0}{segment.text}{/if}{/each}
+					{:else}
+						<del>{@render valueOf(change.old_value)}</del>
+					{/if}
+				</div>
+				<div class="py-[0.1rem] pl-3 whitespace-pre-wrap">
+					{#if change.diff}
+						{#each change.diff as segment, i (i)}{#if segment.op === 1}<ins>{segment.text}</ins
+								>{:else if segment.op === 0}{segment.text}{/if}{/each}
+					{:else}
+						<ins>{@render valueOf(change.target_value)}</ins>
+					{/if}
+				</div>
+			</div>
+		</td>
+	</tr>
+{:else if change.diff}
+	<tr>
+		<td class="ind"></td>
+		<td class="font-mono">{label}</td>
 		<td>
 			<span
-				>{#each segments as segment, i (i)}{#if segment.added}<ins>{segment.value}</ins
-						>{:else if segment.removed}<del>{segment.value}</del
-						>{:else}{segment.value}{/if}{/each}</span
+				>{#each change.diff as segment, i (i)}{#if segment.op === 1}<ins>{segment.text}</ins
+						>{:else if segment.op === -1}<del>{segment.text}</del
+						>{:else}{segment.text}{/if}{/each}</span
 			>
 		</td>
 	</tr>
 {:else}
 	<tr>
-		<td>−</td>
-		<td>{label}</td>
+		<td class="ind">−</td>
+		<td class="font-mono">{label}</td>
 		<td><del>{@render valueOf(change.old_value)}</del></td>
 	</tr>
 	<tr>
-		<td>+</td>
-		<td>{label}</td>
+		<td class="ind">+</td>
+		<td class="font-mono">{label}</td>
 		<td><ins>{@render valueOf(change.target_value)}</ins></td>
 	</tr>
 {/if}
@@ -72,29 +80,50 @@
 	ins,
 	del {
 		border-radius: var(--radius-xs);
+		text-decoration: none;
 	}
 
+	/* Large-text diffs (inline segments + split columns) keep coloured text. */
 	ins {
-		text-decoration: none;
 		background-color: var(--otodb-color-ins);
 	}
 
 	del {
-		text-decoration: none;
 		background-color: var(--otodb-color-del);
 	}
 
+	/* Whole-value add/remove rows: plain text, colour the +/- column instead. */
+	td > ins,
+	td > del {
+		background-color: transparent;
+	}
+
 	tr {
-		&:has(> td > ins) > td:first-child {
-			color: var(--otodb-color-ins);
+		&:has(> td > ins) > td.ind {
+			border-radius: var(--radius-xs);
+			background-color: var(--otodb-color-ins);
 		}
 
-		&:has(> td > del) > td:first-child {
-			color: var(--otodb-color-del);
+		&:has(> td > del) > td.ind {
+			border-radius: var(--radius-xs);
+			background-color: var(--otodb-color-del);
 		}
 	}
 
 	td > span {
 		white-space: pre-wrap;
+	}
+
+	td.split {
+		position: relative;
+		padding-block: 0;
+	}
+
+	td.split::after {
+		content: '';
+		position: absolute;
+		inset-block: -1px;
+		left: 50%;
+		border-left: 1px solid var(--otodb-color-content-faint);
 	}
 </style>

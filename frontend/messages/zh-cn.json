@@ -194,6 +194,7 @@
 	"swift_each_zebra_assure": "发布日期",
 	"livid_same_wren_create": "筛选",
 	"icy_each_pigeon_transform": "更多（{count}）",
+	"mellow_brave_marten_gather": "，等其他 {count} 个",
 	"giant_away_scallop_hike": "历史",
 	"sea_cute_beaver_file": "最新更改",
 	"legal_mean_slug_link": "回滚",
@@ -308,5 +309,7 @@
 	"nice_close_goldfish_taste": "独立页面",
 	"noble_tidy_boar_lock": "（{#content/}）",
 	"funny_heroic_whale_gleam": "楼主",
-	"small_fresh_hyena_rest": "该评论层级过深，无法回复。"
+	"small_fresh_hyena_rest": "该评论层级过深，无法回复。",
+	"caring_elegant_gadfly_tear": "并排显示",
+	"antsy_stout_gorilla_borrow": "行内显示"
 }

@@ -2,23 +2,20 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import { buildEntityRoutes, isValidEntityModelType } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages';
-	import type { components } from '$lib/schema';
+	import { getRevisionRefs } from './refs';
 
 	interface Props {
 		ref: string;
 		id: string | null | undefined;
 		/** Render mediawork refs as a work card instead of a title link */
 		card?: boolean;
-		works: components['schemas']['SlimWorkSchema'][];
-		labels: Record<string, string>;
 	}
-	const { ref, id, card = false, works, labels }: Props = $props();
+	const { ref, id, card = false }: Props = $props();
 
-	const work = $derived(
-		ref === 'mediawork' && id != null ? works.find((w) => w.id === id) : undefined
-	);
+	const refs = getRevisionRefs();
+	const work = $derived(ref === 'mediawork' && id != null ? refs.works[id] : undefined);
 	const label = $derived(
-		id != null ? (labels[`${ref}:${id}`] ?? work?.title ?? undefined) : undefined
+		id != null ? (refs.labels[`${ref}:${id}`] ?? work?.title ?? undefined) : undefined
 	);
 	const href = $derived.by(() => {
 		if (id == null || !isValidEntityModelType(ref)) return undefined;

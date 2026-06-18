@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { buildEntityRoutes, isValidEntityModelType } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages';
 	import type { components } from '$lib/schema';
 	import DiffRows from './DiffRows.svelte';
@@ -15,10 +16,9 @@
 		rcs: RC[];
 		ent_type: string;
 		ent_id: string;
-		works: components['schemas']['SlimWorkSchema'][];
-		labels: Record<string, string>;
 		deletedRows: Record<string, components['schemas']['OldColumnSchema'][]>;
 		rowContext: Record<string, components['schemas']['OldColumnSchema'][]>;
+		layout?: 'inline' | 'split';
 	}
 	const {
 		target_type,
@@ -27,13 +27,17 @@
 		rcs,
 		ent_type,
 		ent_id,
-		works,
-		labels,
 		deletedRows,
-		rowContext
+		rowContext,
+		layout = 'inline'
 	}: Props = $props();
 
 	const isOwnEntity = $derived(target_type === ent_type && tg_id === ent_id);
+	// Slug-identified targets resolve tg_id to their slug; only number ids get a "#"
+	const tgLabel = $derived(/^\d+$/.test(tg_id) ? `#${tg_id}` : tg_id);
+	const tgHref = $derived(
+		isValidEntityModelType(target_type) ? buildEntityRoutes(target_type, tg_id) : undefined
+	);
 	const deletedChange = $derived(rcs.find((c) => c.deleted));
 	const restoredChange = $derived(rcs.find((c) => c.restored));
 	const allCreated = $derived(rcs.length > 0 && rcs.every((c) => c.created));
@@ -62,18 +66,25 @@
 	};
 </script>
 
-{#snippet targetPrefix()}
+<!-- A related row (not the entity itself): a full-width header linking the object -->
+{#snippet relHeader()}
 	{#if !isOwnEntity}
-		<div class="text-otodb-content-fainter">{target_type} #{tg_id}</div>
+		<tr class="rel">
+			<th colspan="3">
+				<span class="arrow" aria-hidden="true">↳</span>
+				<span class="type font-mono">{target_type}</span>
+				{#if tgHref}<a href={tgHref}>{tgLabel}</a>{:else}<span>{tgLabel}</span>{/if}
+			</th>
+		</tr>
 	{/if}
 {/snippet}
 
 {#if deletedChange}
-	<div class="my-2">
-		{@render targetPrefix()}
-		{#if isRelation && oldByColumn.has('A') && oldByColumn.has('B')}
-			<div class="flex items-center gap-1">
-				<span>−</span>
+	{@render relHeader()}
+	{#if isRelation && oldByColumn.has('A') && oldByColumn.has('B')}
+		<tr>
+			<td class="ind">−</td>
+			<td colspan="2">
 				<del class="flex items-center gap-2 p-1 opacity-70">
 					<Value
 						targetType={target_type}
@@ -81,8 +92,6 @@
 						value={oldByColumn.get('A')?.value}
 						ref={oldByColumn.get('A')?.ref}
 						card
-						{works}
-						{labels}
 					/>
 					<span>—{displayValue(target_type, 'relation', oldByColumn.get('relation')?.value)}→</span>
 					<Value
@@ -91,50 +100,40 @@
 						value={oldByColumn.get('B')?.value}
 						ref={oldByColumn.get('B')?.ref}
 						card
-						{works}
-						{labels}
 					/>
 				</del>
-			</div>
-		{:else}
-			<del>{m.quick_calm_mole_vanish()}</del>
-			{#if oldRow.length}
-				<table>
-					<tbody>
-						{#each oldRow as entry (entry.column)}
-							<tr>
-								<td>−</td>
-								<td>{columnLabel(entry.column)}</td>
-								<td>
-									<del>
-										<Value
-											targetType={target_type}
-											column={entry.column}
-											value={entry.value}
-											ref={entry.ref}
-											{works}
-											{labels}
-										/>
-									</del>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			{/if}
-		{/if}
-	</div>
+			</td>
+		</tr>
+	{:else}
+		<tr class="note"><td colspan="3">{m.quick_calm_mole_vanish()}</td></tr>
+		{#each oldRow as entry (entry.column)}
+			<tr>
+				<td class="ind">−</td>
+				<td class="font-mono">{columnLabel(entry.column)}</td>
+				<td>
+					<del>
+						<Value
+							targetType={target_type}
+							column={entry.column}
+							value={entry.value}
+							ref={entry.ref}
+						/>
+					</del>
+				</td>
+			</tr>
+		{/each}
+	{/if}
 {:else if restoredChange}
-	<div class="my-2">
-		{@render targetPrefix()}
-		<span>{m.warm_civil_heron_return({ id: restoredChange.target_value ?? '?' })}</span>
-	</div>
+	{@render relHeader()}
+	<tr class="note">
+		<td colspan="3">{m.warm_civil_heron_return({ id: restoredChange.target_value ?? '?' })}</td>
+	</tr>
 {:else if isRelation && hasCol('A') && hasCol('B')}
-	<div class="my-2">
-		{@render targetPrefix()}
-		{#if allCreated}
-			<div class="flex items-center gap-1">
-				<span>+</span>
+	{@render relHeader()}
+	{#if allCreated}
+		<tr>
+			<td class="ind">+</td>
+			<td colspan="2">
 				<ins class="flex items-center gap-2 p-1">
 					<Value
 						targetType={target_type}
@@ -142,8 +141,6 @@
 						value={byColumn.get('A')?.target_value}
 						ref={byColumn.get('A')?.ref}
 						card
-						{works}
-						{labels}
 					/>
 					<span
 						>—{displayValue(target_type, 'relation', byColumn.get('relation')?.target_value)}→</span
@@ -154,61 +151,55 @@
 						value={byColumn.get('B')?.target_value}
 						ref={byColumn.get('B')?.ref}
 						card
-						{works}
-						{labels}
 					/>
 				</ins>
-			</div>
-		{:else}
-			<div class="flex items-center gap-2">
-				{@render relationSlot('A')}
-				<div class="flex flex-col items-center">
-					{#if byColumn.has('relation')}
-						<DiffValue change={byColumn.get('relation')!} {works} {labels} />
-					{:else}
-						<span
-							>{displayValue(target_type, 'relation', contextByColumn.get('relation')?.value)}</span
-						>
-					{/if}
-					<span>→</span>
+			</td>
+		</tr>
+	{:else}
+		<tr>
+			<td class="ind">±</td>
+			<td colspan="2">
+				<div class="flex items-center gap-2">
+					{@render relationSlot('A')}
+					<div class="flex flex-col items-center">
+						{#if byColumn.has('relation')}
+							<DiffValue change={byColumn.get('relation')!} />
+						{:else}
+							<span
+								>{displayValue(
+									target_type,
+									'relation',
+									contextByColumn.get('relation')?.value
+								)}</span
+							>
+						{/if}
+						<span>→</span>
+					</div>
+					{@render relationSlot('B')}
 				</div>
-				{@render relationSlot('B')}
-			</div>
-		{/if}
-	</div>
+			</td>
+		</tr>
+	{/if}
 {:else}
-	<div class="my-2">
-		{@render targetPrefix()}
-		<table>
-			<tbody>
-				{#each rcs.filter((c) => c.target_column) as c, k (k)}
-					<DiffRows change={c} label={columnLabel(c.target_column!)} {works} {labels} />
-				{/each}
-				<!-- Columns the revision didn't touch, shown for context -->
-				{#each context.filter((e) => !byColumn.has(e.column)) as entry (entry.column)}
-					<tr>
-						<td></td>
-						<td>{columnLabel(entry.column)}</td>
-						<td>
-							<Value
-								targetType={target_type}
-								column={entry.column}
-								value={entry.value}
-								ref={entry.ref}
-								{works}
-								{labels}
-							/>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	</div>
+	{@render relHeader()}
+	{#each rcs.filter((c) => c.target_column) as c, k (k)}
+		<DiffRows change={c} label={columnLabel(c.target_column!)} {layout} />
+	{/each}
+	<!-- Columns the revision didn't touch, shown for context -->
+	{#each context.filter((e) => !byColumn.has(e.column)) as entry (entry.column)}
+		<tr>
+			<td></td>
+			<td class="font-mono">{columnLabel(entry.column)}</td>
+			<td>
+				<Value targetType={target_type} column={entry.column} value={entry.value} ref={entry.ref} />
+			</td>
+		</tr>
+	{/each}
 {/if}
 
 {#snippet relationSlot(col: string)}
 	{#if byColumn.has(col)}
-		<DiffValue change={byColumn.get(col)!} card {works} {labels} />
+		<DiffValue change={byColumn.get(col)!} card />
 	{:else}
 		<Value
 			targetType={target_type}
@@ -216,8 +207,6 @@
 			value={contextByColumn.get(col)?.value}
 			ref={contextByColumn.get(col)?.ref}
 			card
-			{works}
-			{labels}
 		/>
 	{/if}
 {/snippet}
@@ -229,23 +218,33 @@
 		text-decoration: none;
 	}
 
-	ins {
+	tr:has(> td > ins) > td.ind,
+	tr:has(> td > del) > td.ind {
+		border-radius: var(--radius-xs);
+	}
+
+	tr:has(> td > ins) > td.ind {
 		background-color: var(--otodb-color-ins);
 	}
 
-	del {
+	tr:has(> td > del) > td.ind {
 		background-color: var(--otodb-color-del);
 	}
 
-	div:has(> ins) > span {
-		color: var(--otodb-color-ins);
+	/* Relationship header: a related row in another table connected to the entity */
+	tr.rel > th {
+		text-align: left;
+		font-weight: bold;
+		background-color: var(--otodb-color-bg-fainter);
 	}
 
-	div:has(> del) > span {
-		color: var(--otodb-color-del);
+	tr.rel .arrow,
+	tr.rel .type {
+		font-weight: normal;
 	}
 
-	tr:has(> td > del) > td:first-child {
-		color: var(--otodb-color-del);
+	tr.note > td {
+		color: var(--otodb-color-content-fainter);
+		font-style: italic;
 	}
 </style>

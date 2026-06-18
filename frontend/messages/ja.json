@@ -194,6 +194,7 @@
 	"swift_each_zebra_assure": "公開日",
 	"livid_same_wren_create": "フィルター",
 	"icy_each_pigeon_transform": "他{count}件のタグ",
+	"mellow_brave_marten_gather": "、他{count}件",
 	"giant_away_scallop_hike": "履歴",
 	"sea_cute_beaver_file": "最近の更新",
 	"legal_mean_slug_link": "ロールバック",
@@ -307,5 +308,7 @@
 	"nice_close_goldfish_taste": "独立ページ",
 	"noble_tidy_boar_lock": "（{#content/}）",
 	"funny_heroic_whale_gleam": "スレッド主",
-	"small_fresh_hyena_rest": "このコメントスレッドはネストが深すぎるため返信できません。"
+	"small_fresh_hyena_rest": "このコメントスレッドはネストが深すぎるため返信できません。",
+	"caring_elegant_gadfly_tear": "左右に並べて表示",
+	"antsy_stout_gorilla_borrow": "インライン表示"
 }

@@ -1,9 +1,11 @@
+import functools
 import logging
 from datetime import date, datetime
 from enum import Enum
 from itertools import groupby
 from typing import Any
 
+from diff_match_patch import diff_match_patch
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models, transaction
 from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, When, Window
@@ -48,6 +50,21 @@ history_router = Router()
 
 logger = logging.getLogger(__name__)
 
+_dmp = diff_match_patch()
+
+
+@functools.cache
+def _slug_model_ids() -> tuple[int, ...]:
+	return tuple(
+		[ContentType.objects.get_for_model(WikiPage).id]
+		+ [
+			ct.id
+			for ct in ContentType.objects.get_for_models(
+				*OtodbTagModel.__subclasses__()
+			).values()
+		]
+	)
+
 
 class HistoricalEntities(str, Enum):
 	WORK = 'mediawork'
@@ -76,12 +93,13 @@ class RevisionSchema(ModelSchema):
 
 
 class RevisionEntitySummarySchema(RevisionSchema):
-	first_entity: HistoricalEntitySchema
+	first_entity: HistoricalEntitySchema | None = None
 	n_ent: int
 
 	@staticmethod
-	def resolve_first_entity(obj) -> str | None:
-		print({'id': obj.first_ent, 'entity': obj.first_ent_type})
+	def resolve_first_entity(obj) -> dict | None:
+		if obj.first_ent_type is None:
+			return None
 		return {'id': obj.first_ent, 'entity': obj.first_ent_type}
 
 
@@ -90,6 +108,18 @@ class OldColumnSchema(Schema):
 	value: str | None = None
 	# Related model name when the column is a foreign key
 	ref: str | None = None
+
+
+class DiffSegmentSchema(Schema):
+	# diff-match-patch op: -1 delete, 0 equal, 1 insert
+	op: int
+	text: str
+
+
+_DIFF_MIN_LENGTH = 255
+
+# Models whose rows are displayed as a whole (all columns) rather than per-column
+_CONTEXT_MODELS = ('workrelation', 'songrelation', 'tagworkparenthood')
 
 
 class RevisionChangeSchema(ModelSchema):
@@ -103,6 +133,7 @@ class RevisionChangeSchema(ModelSchema):
 	created: bool
 	# Related model name when target_column is a foreign key
 	ref: str | None = None
+	diff: list[DiffSegmentSchema] | None = None
 
 	class Meta:
 		model = RevisionChange
@@ -110,7 +141,22 @@ class RevisionChangeSchema(ModelSchema):
 
 	@staticmethod
 	def resolve_ref(obj) -> str | None:
-		return REVISION_FK_COLUMNS[obj.target_type_id].get(obj.target_column)
+		model = REVISION_FK_COLUMNS()[obj.target_type_id].get(obj.target_column)
+		return model._meta.model_name if model is not None else None
+
+	@staticmethod
+	def resolve_diff(obj) -> list[dict] | None:
+		cols = REVISION_TEXT_COLUMNS().get(obj.target_type_id)
+		if not cols or obj.target_column not in cols:
+			return None
+		old, new = obj.old_value, obj.target_value
+		if not isinstance(old, str) or not isinstance(new, str):
+			return None
+		if len(old) <= _DIFF_MIN_LENGTH:
+			return None
+		diffs = _dmp.diff_main(old, new)
+		_dmp.diff_cleanupSemantic(diffs)
+		return [{'op': op, 'text': text} for op, text in diffs]
 
 
 class RevisionDetailsSchema(Schema):
@@ -126,27 +172,38 @@ class RevisionDetailsSchema(Schema):
 	row_context: dict[str, list[OldColumnSchema]]
 
 
-# Models whose rows are displayed as a whole (all columns) rather than per-column
-_CONTEXT_MODELS = ('workrelation', 'songrelation', 'tagworkparenthood')
-
-
 @history_router.get('recent', response=list[RevisionEntitySummarySchema])
 @paginate
 def recent(request: HttpRequest, username: str | None = None):
 	rce_subq = RevisionChangeEntity.objects.filter(change__rev=OuterRef('id')).order_by(
 		'id'
 	)
-	slug_models = [ContentType.objects.get_for_model(WikiPage).id] + [
-		ct.id
-		for ct in ContentType.objects.get_for_models(
-			*OtodbTagModel.__subclasses__()
-		).values()
-	]
 	q = (
 		Revision.objects.select_related('user')
 		.annotate(
 			route=Subquery(rce_subq.values('route')[:1]),
-			n_ent=Count('revisionchange__revisionchangeentity'),
+			n_ent=Coalesce(
+				Subquery(
+					rce_subq.order_by()
+					.values('change__rev')
+					.annotate(
+						c=Count(
+							models.functions.Concat(
+								models.functions.Cast(
+									'entity_type_id', output_field=models.CharField()
+								),
+								models.Value('-'),
+								models.functions.Cast(
+									'entity_id', output_field=models.CharField()
+								),
+							),
+							distinct=True,
+						)
+					)
+					.values('c')[:1]
+				),
+				0,
+			),
 			first_ent_id=Subquery(rce_subq.values('entity_id')[:1]),
 			first_ent_type=Subquery(rce_subq.values('entity_type__model')[:1]),
 			first_ent_type_id=Subquery(rce_subq.values('entity_type_id')[:1]),
@@ -154,13 +211,22 @@ def recent(request: HttpRequest, username: str | None = None):
 		.annotate(
 			first_ent=Case(
 				When(
-					Q(first_ent_type_id__in=slug_models),
-					then=Subquery(
-						RevisionChange.objects.filter(
-							target_type_id=OuterRef('first_ent_type_id'),
-							target_id=OuterRef('first_ent_id'),
-							target_column='slug',
-						).values('target_value')[:1]
+					Q(first_ent_type_id__in=_slug_model_ids()),
+					# Fall back to the numeric id when no slug change was recorded
+					then=Coalesce(
+						Subquery(
+							RevisionChange.objects.filter(
+								target_type_id=OuterRef('first_ent_type_id'),
+								target_id=OuterRef('first_ent_id'),
+								target_column='slug',
+							)
+							.order_by('-rev_id')
+							.values('target_value')[:1]
+						),
+						models.functions.Cast(
+							F('first_ent_id'),
+							output_field=models.TextField(),
+						),
 					),
 				),
 				default=models.functions.Cast(
@@ -182,14 +248,28 @@ def revision(request: HttpRequest, revision_id: OtodbID):
 	return get_object_or_404(Revision, id=revision_id)
 
 
-REVISION_FK_COLUMNS = {
-	ContentType.objects.get_for_model(c).id: {
-		f: c._meta.get_field(f).related_model
-		for f in c._revision_meta.tracked_fields
-		if isinstance(c._meta.get_field(f), RelatedField)
+@functools.cache
+def REVISION_FK_COLUMNS() -> dict[int, dict[str, Any]]:
+	return {
+		ContentType.objects.get_for_model(c).id: {
+			f: c._meta.get_field(f).related_model
+			for f in c._revision_meta.tracked_fields
+			if isinstance(c._meta.get_field(f), RelatedField)
+		}
+		for c in RevisionTrackedModel.__subclasses__()
 	}
-	for c in RevisionTrackedModel.__subclasses__()
-}
+
+
+@functools.cache
+def REVISION_TEXT_COLUMNS() -> dict[int, set[str]]:
+	return {
+		ContentType.objects.get_for_model(c).id: {
+			f
+			for f in c._revision_meta.tracked_fields
+			if isinstance(c._meta.get_field(f), (models.CharField, models.TextField))
+		}
+		for c in RevisionTrackedModel.__subclasses__()
+	}
 
 
 # The most recent value the target column held before this change's revision.
@@ -233,12 +313,19 @@ def _historic_labels(model_class, ids: set[int], label_field: str) -> dict[int, 
 @history_router.get('revision_changes', response=RevisionDetailsSchema)
 def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	rev = get_object_or_404(Revision, id=revision_id)
-	slug_models = [ContentType.objects.get_for_model(WikiPage).model] + [
-		ct.id
-		for ct in ContentType.objects.get_for_models(
-			*OtodbTagModel.__subclasses__()
-		).values()
-	]
+
+	# TODO: Don't display 1st revision changes with a ton of objects for now.
+	# Should revisit to remove the need for this constraint.
+	is_first = not Revision.objects.filter(pk__lt=rev.pk).exists()
+	if is_first and RevisionChange.objects.filter(rev=rev).count() > 50_000:
+		return RevisionDetailsSchema(
+			changes=[],
+			works=[],
+			labels={},
+			deleted_rows={},
+			row_context={},
+		)
+
 	qq = (
 		RevisionChange.objects.filter(rev=rev)
 		.filter(revisionchangeentity__isnull=False)
@@ -247,15 +334,26 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			ent_id=(
 				Case(
 					When(
-						Q(revisionchangeentity__entity_type__id__in=slug_models),
-						then=Subquery(
-							RevisionChange.objects.filter(
-								target_type_id=OuterRef(
-									'revisionchangeentity__entity_type_id'
-								),
-								target_id=OuterRef('revisionchangeentity__entity_id'),
-								target_column='slug',
-							).values('target_value')[:1]
+						Q(revisionchangeentity__entity_type__id__in=_slug_model_ids()),
+						# Fall back to the numeric id when no slug change was recorded
+						then=Coalesce(
+							Subquery(
+								RevisionChange.objects.filter(
+									target_type_id=OuterRef(
+										'revisionchangeentity__entity_type_id'
+									),
+									target_id=OuterRef(
+										'revisionchangeentity__entity_id'
+									),
+									target_column='slug',
+								)
+								.order_by('-rev_id')
+								.values('target_value')[:1]
+							),
+							models.functions.Cast(
+								F('revisionchangeentity__entity_id'),
+								output_field=models.TextField(),
+							),
 						),
 					),
 					default=models.functions.Cast(
@@ -268,13 +366,21 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			tg_id=(
 				Case(
 					When(
-						Q(target_type__id__in=slug_models),
-						then=Subquery(
-							RevisionChange.objects.filter(
-								target_type_id=OuterRef('target_type_id'),
-								target_id=OuterRef('target_id'),
-								target_column='slug',
-							).values('target_value')[:1]
+						Q(target_type__id__in=_slug_model_ids()),
+						# Fall back to the numeric id when no slug change was recorded
+						then=Coalesce(
+							Subquery(
+								RevisionChange.objects.filter(
+									target_type_id=OuterRef('target_type_id'),
+									target_id=OuterRef('target_id'),
+									target_column='slug',
+								)
+								.order_by('-rev_id')
+								.values('target_value')[:1]
+							),
+							models.functions.Cast(
+								F('target_id'), output_field=models.TextField()
+							),
 						),
 					),
 					default=models.functions.Cast(
@@ -297,6 +403,7 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 		)
 		.order_by('id')
 	)
+	qq_list = list(qq)
 
 	"""
 	Resolve everything a revision's changes reference, for display purposes:
@@ -308,7 +415,21 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	content_types = ContentType.objects.in_bulk(
 		set(changes.values_list('target_type_id', flat=True).distinct())
 	)
-	fk_columns = {ct_id: REVISION_FK_COLUMNS[ct_id] for ct_id in content_types}
+	fk_columns = {ct_id: REVISION_FK_COLUMNS()[ct_id] for ct_id in content_types}
+
+	col_order = {
+		ct.model: {
+			field: index
+			for index, field in enumerate(
+				getattr(
+					getattr(ct.model_class(), '_revision_meta', None),
+					'tracked_fields',
+					[],
+				)
+			)
+		}
+		for ct in content_types.values()
+	}
 
 	ref_ids: dict[str, set[int]] = {}
 
@@ -322,31 +443,24 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 		return name
 
 	# Collect new and previous ids from changes to FK columns
-	fk_cond = None
-	for ct_id, cols in fk_columns.items():
-		if cols:
-			q = Q(target_type_id=ct_id, target_column__in=list(cols))
-			fk_cond = q if fk_cond is None else fk_cond | q
-	if fk_cond is not None:
-		for c in changes.filter(fk_cond).annotate(old_value=_old_value_subquery):
-			ref_model = fk_columns[c.target_type_id][c.target_column]
+	for c in qq_list:
+		ref_model = fk_columns.get(c.target_type_id, {}).get(c.target_column)
+		if ref_model is not None:
 			collect_ref(ref_model, c.target_value)
 			collect_ref(ref_model, c.old_value)
 
 	def reconstruct_rows(
-		pairs: list[tuple[int, int]], **rev_filter
+		targets: models.QuerySet, **rev_filter
 	) -> dict[str, list[OldColumnSchema]]:
 		"""Latest known value per column for each (target_type, target_id) row."""
 		rows: dict[str, list[OldColumnSchema]] = {}
-		cond = None
-		for tt, tid in pairs:
-			q = Q(target_type_id=tt, target_id=tid)
-			cond = q if cond is None else cond | q
-		if cond is None:
-			return rows
+		member = targets.filter(
+			target_type_id=OuterRef('target_type_id'),
+			target_id=OuterRef('target_id'),
+		)
 		latest = (
 			RevisionChange.objects.filter(
-				cond, target_column__isnull=False, **rev_filter
+				Exists(member), target_column__isnull=False, **rev_filter
 			)
 			.order_by('target_type_id', 'target_id', 'target_column', '-rev_id')
 			.distinct('target_type_id', 'target_id', 'target_column')
@@ -361,22 +475,22 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 					ref=collect_ref(rm, value) if rm else None,
 				)
 			)
+		# Re-order each row's columns to match the model's declared field order
+		for key, cols in rows.items():
+			order = col_order.get(key.rsplit(':', 1)[0], {})
+			cols.sort(key=lambda c: order.get(c.column, len(order)))
 		return rows
 
 	# Reconstruct the last known column values of rows deleted in this revision
 	deleted_rows = reconstruct_rows(
-		list(changes.filter(deleted=True).values_list('target_type_id', 'target_id')),
+		changes.filter(deleted=True),
 		rev_id__lt=rev.pk,
 	)
 
 	# Full-row context for relation-like rows: a change to only some columns
 	# would otherwise lose what the row connects (e.g. relation type-only edits)
 	row_context = reconstruct_rows(
-		list(
-			changes.filter(deleted=False, target_type__model__in=_CONTEXT_MODELS)
-			.values_list('target_type_id', 'target_id')
-			.distinct()
-		),
+		changes.filter(deleted=False, target_type__model__in=_CONTEXT_MODELS),
 		rev_id__lte=rev.pk,
 	)
 
@@ -413,7 +527,7 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 		'labels': labels,
 		'deleted_rows': deleted_rows,
 		'row_context': row_context,
-		'changes': qq,
+		'changes': qq_list,
 	}
 
 

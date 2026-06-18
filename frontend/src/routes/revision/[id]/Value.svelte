@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { components } from '$lib/schema';
 	import RefValue from './RefValue.svelte';
 	import { displayValue } from './displayValue';
 
@@ -9,14 +8,12 @@
 		value: string | null | undefined;
 		ref?: string | null;
 		card?: boolean;
-		works: components['schemas']['SlimWorkSchema'][];
-		labels: Record<string, string>;
 	}
-	const { targetType, column, value, ref, card = false, works, labels }: Props = $props();
+	const { targetType, column, value, ref, card = false }: Props = $props();
 </script>
 
 {#if ref}
-	<RefValue {ref} id={value} {card} {works} {labels} />
+	<RefValue {ref} id={value} {card} />
 {:else}
 	<span class="whitespace-pre-wrap">{displayValue(targetType, column, value)}</span>
 {/if}

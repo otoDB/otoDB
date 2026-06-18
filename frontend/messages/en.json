@@ -201,6 +201,7 @@
 	"swift_each_zebra_assure": "Date published",
 	"livid_same_wren_create": "Filters",
 	"icy_each_pigeon_transform": "{count} more",
+	"mellow_brave_marten_gather": ", and {count} more...",
 	"round_extra_impala_fry": "Skip to content",
 	"giant_away_scallop_hike": "History",
 	"sea_cute_beaver_file": "Recent changes",
@@ -433,5 +434,7 @@
 	"flat_neat_swan_mark": "Field changed",
 	"noble_tidy_boar_lock": "({#content/})",
 	"funny_heroic_whale_gleam": "OP",
-	"small_fresh_hyena_rest": "This comment thread is too deeply nested to reply to."
+	"small_fresh_hyena_rest": "This comment thread is too deeply nested to reply to.",
+	"caring_elegant_gadfly_tear": "Side-by-side view",
+	"antsy_stout_gorilla_borrow": "Inline view"
 }

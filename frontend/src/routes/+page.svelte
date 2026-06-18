@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { EntityModelRoutes } from '$lib/enums.js';
+	import { buildEntityRoutes } from '$lib/enums.js';
 	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import Section from '$lib/Section.svelte';
@@ -48,14 +48,15 @@
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
 							>{typeof r.route === 'number' ? routeNames[r.route]() : ''}</td
 						><td
-							>{#if r.n_ent == 1}<a
-									href="{EntityModelRoutes[r.first_entity.entity]}/{r.first_entity.id}"
-									>/{EntityModelRoutes[r.first_entity.entity]}/{r.first_entity.id}</a
-								>{:else}{r.n_ent} Entities{/if}</td
+							>{#if r.first_entity}<a
+									href={buildEntityRoutes(r.first_entity.entity, r.first_entity.id)}
+									>{r.first_entity.id}</a
+								>{#if r.n_ent > 1}{m.mellow_brave_marten_gather({
+										count: r.n_ent - 1
+									})}{/if}{/if}</td
 						><td
-							><Time format="relative" date={r.date} /><ParaglideMessage
-								message={m.noble_tidy_boar_lock}
-								inputs={{}}
+							><Time format="relative" date={r.date} />
+							<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
 								>{#snippet content()}<a href="/profile/{r.user}">{r.user}</a
 									>{/snippet}</ParaglideMessage
 							></td

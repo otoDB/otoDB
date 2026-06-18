@@ -1,141 +1,46 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import client from '$lib/api.js';
 	import { dirtyClick } from '$lib/dirty';
-	import {
-		buildEntityRoutes,
-		MimeType,
-		PlatformNames,
-		RatingNames,
-		SongRelationNames,
-		SongTagCategoryNames,
-		WorkOriginNames,
-		WorkRelationNames,
-		WorkStatusNames,
-		type Enum
-	} from '$lib/enums.js';
-	import { creatorRole, resolveCreatorRoleKeyById } from '$lib/enums/creatorRole.js';
-	import { isSOV, isSVO, languages, resolveLanguageKeyById } from '$lib/enums/language.js';
-	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
-	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/mediaType.js';
-	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { buildEntityRoutes } from '$lib/enums.js';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import { routeNames } from '$lib/enums/route.js';
-	import { songConnectionMap } from '$lib/enums/songConnection.js';
-	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
-	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
-	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { Levels, PostCategory } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
+	import { callSavingToast } from '$lib/toast';
+	import RowChange from './RowChange.svelte';
 
 	let { data } = $props();
 
-	type DisplayFunction = () => string;
-	const EnumMap_to_DisplayFunction =
-		<E extends Enum<E>>(fs: Record<E[keyof E], { name: string }>) =>
-		(v: number): DisplayFunction =>
-		() =>
-			fs[v as E[keyof E]].name;
-	const EnumValues_to_DisplayFunction =
-		<E extends Enum<E>>(fs: Record<E[keyof E], { nameFn: DisplayFunction }>) =>
-		(v: number): DisplayFunction =>
-			fs[v as E[keyof E]].nameFn;
-	const Values_to_DisplayFunction =
-		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
-		(v: number): DisplayFunction =>
-			fs[r(v)].nameFn;
-	const StraightValues_to_DisplayFunction =
-		(r: (b: number) => string, fs: Record<string, { name: string }>) =>
-		(v: number): DisplayFunction =>
-		() =>
-			fs[r(v)].name;
-	const EnumStraightRecord_to_DisplayFunction =
-		<E extends Enum<E>>(fs: Record<E[keyof E], string>) =>
-		(v: number): DisplayFunction =>
-		() =>
-			fs[v as E[keyof E]];
-	const StraightRecord_to_DisplayFunction =
-		<T extends number>(r: Record<T, string>) =>
-		(v: number): DisplayFunction =>
-		() =>
-			r[v as T];
-	const EnumRecord_to_DisplayFunction =
-		<E extends Enum<E>>(fs: Record<E[keyof E], DisplayFunction>) =>
-		(v: number): DisplayFunction =>
-			fs[v as E[keyof E]];
-	const expand_bit_field =
-		(r: (b: number) => string, fs: Record<string, { nameFn: DisplayFunction }>) =>
-		(v: number): DisplayFunction =>
-		() =>
-			[...v.toString(2)]
-				.reduce(
-					(a, e, i, aa) =>
-						e === '1' ? [...a, Values_to_DisplayFunction(r, fs)(1 << (aa.length - 1 - i))()] : a,
-					[] as string[]
-				)
-				.join(', ') || 'N/A';
+	// Keyed once here so child components can resolve a single work by id (O(1))
+	// instead of receiving and scanning the whole array at every level.
+	const worksById = $derived(
+		Object.fromEntries((data.changes.works ?? []).map((w) => [w.id, w] as const))
+	);
 
-	const Languages = StraightValues_to_DisplayFunction(resolveLanguageKeyById, languages);
+	let diffLayout = $state<'inline' | 'split'>('inline');
+	let windowedDiffs = $state(true);
+	const hasWindow = $derived(
+		data.routes.some((r) =>
+			r.entities.some((e) =>
+				e.rows.some((row) => row.rcs.some((rc) => rc.diff?.some((seg) => seg.op === 2)))
+			)
+		)
+	);
 
-	const ValueDisplayMap: Record<string, Record<string, (v: number) => DisplayFunction>> = {
-		mediawork: {
-			rating: EnumRecord_to_DisplayFunction(RatingNames)
-		},
-		tagwork: {
-			category: EnumValues_to_DisplayFunction(WorkTagCategoryMap),
-			media_type: expand_bit_field(resolveMediaTypeKeyById, mediaTypes)
-		},
-		tagsong: {
-			category: EnumRecord_to_DisplayFunction(SongTagCategoryNames)
-		},
-		tagworkconnection: {
-			site: EnumMap_to_DisplayFunction(TagWorkConnectionMap)
-		},
-		mediasongconnection: {
-			site: EnumMap_to_DisplayFunction(songConnectionMap)
-		},
-		tagworkmediaconnection: {
-			site: EnumMap_to_DisplayFunction(mediaConnectionMap)
-		},
-		tagworkcreatorconnection: {
-			site: EnumMap_to_DisplayFunction(profileConnectionMap)
-		},
-		tagworklangpreference: {
-			lang: Languages
-		},
-		tagsonglangpreference: {
-			lang: Languages
-		},
-		workrelation: {
-			relation: EnumRecord_to_DisplayFunction(WorkRelationNames)
-		},
-		songrelation: {
-			relation: EnumRecord_to_DisplayFunction(SongRelationNames)
-		},
-		tagworkinstance: {
-			creator_roles: expand_bit_field(resolveCreatorRoleKeyById, creatorRole)
-		},
-		wikipage: {
-			lang: Languages
-		},
-		worksource: {
-			platform: EnumStraightRecord_to_DisplayFunction(PlatformNames),
-			thumbnail_mime: StraightRecord_to_DisplayFunction(MimeType),
-			work_origin: EnumRecord_to_DisplayFunction(WorkOriginNames),
-			work_status: EnumRecord_to_DisplayFunction(WorkStatusNames)
-		}
-	};
-
-	const displayValue = (
-		type: keyof typeof ValueDisplayMap,
-		col: string,
-		val: string | null | undefined
-	) => {
-		if (val === null || val === undefined) return 'None';
-		const handler = ValueDisplayMap[type]?.[col];
-		return handler ? handler(+val)() : val;
+	// Per-entity expand/collapse, defaulting open; keyed by route+entity index.
+	let entityOpen = $state<Record<string, boolean>>({});
+	const entityKey = (i: number, j: number) => `${i}:${j}`;
+	const allKeys = $derived(
+		data.routes.flatMap((r, i) => r.entities.map((_, j) => entityKey(i, j)))
+	);
+	const allExpanded = $derived(allKeys.length > 0 && allKeys.every((k) => entityOpen[k] ?? true));
+	const toggleAll = () => {
+		const target = !allExpanded;
+		for (const k of allKeys) entityOpen[k] = target;
 	};
 </script>
 
@@ -154,11 +59,13 @@
 			class="my-5"
 			{@attach dirtyClick(async () => {
 				if (!confirm('Are you sure?')) return;
-				await client.POST('/api/history/rollback', {
+				const p = client.POST('/api/history/rollback', {
 					fetch,
 					params: { query: { revision_id: data.revision.id } }
 				});
-				await invalidateAll();
+				callSavingToast(p);
+				const { error } = await p;
+				if (!error) await goto('/revision');
 			})}>Revert changes made in this revision</button
 		>{/if}
 	{#if data.user && data.user.username !== data.revision.user}
@@ -170,45 +77,183 @@
 		>
 	{/if}
 
-	<ul class="my-5">
+	{#if data.routes.length}
+		<menu
+			class="my-2 flex list-none justify-start gap-2"
+			aria-label={m.fluffy_icy_bobcat_believe()}
+		>
+			<li>
+				<button
+					type="button"
+					class="flex items-center gap-1 p-1"
+					aria-pressed={allExpanded}
+					onclick={toggleAll}
+				>
+					<span
+						class={[
+							'size-4',
+							allExpanded
+								? 'icon-[gravity-ui--chevrons-collapse-vertical]'
+								: 'icon-[gravity-ui--chevrons-expand-vertical]'
+						]}
+						aria-hidden="true"
+					></span>
+					<span class="grid">
+						<span class={['col-start-1 row-start-1', !allExpanded && 'invisible']}>
+							{m.game_slow_crab_fade()}
+						</span>
+						<span class={['col-start-1 row-start-1', allExpanded && 'invisible']}>
+							{m.sleek_factual_antelope_belong()}
+						</span>
+					</span>
+				</button>
+			</li>
+			{#if hasWindow}
+				<li>
+					<button
+						type="button"
+						class="flex items-center gap-1 p-1"
+						aria-pressed={!windowedDiffs}
+						onclick={() => (windowedDiffs = !windowedDiffs)}
+					>
+						<span
+							class={[
+								'size-4',
+								windowedDiffs
+									? 'icon-[gravity-ui--chevrons-expand-vertical]'
+									: 'icon-[gravity-ui--chevrons-collapse-vertical]'
+							]}
+							aria-hidden="true"
+						></span>
+						<span class="grid">
+							<span class={['col-start-1 row-start-1', !windowedDiffs && 'invisible']}>
+								{m.bald_strong_opossum_flip()}
+							</span>
+							<span class={['col-start-1 row-start-1', windowedDiffs && 'invisible']}>
+								{m.shy_new_penguin_reap()}
+							</span>
+						</span>
+					</button>
+				</li>
+			{/if}
+			<li>
+				<button
+					type="button"
+					class="flex items-center gap-1 p-1"
+					aria-pressed={diffLayout === 'split'}
+					onclick={() => (diffLayout = diffLayout === 'inline' ? 'split' : 'inline')}
+				>
+					<span
+						class={[
+							'size-4',
+							diffLayout === 'inline'
+								? 'icon-[gravity-ui--layout-columns]'
+								: 'icon-[gravity-ui--layout-rows]'
+						]}
+						aria-hidden="true"
+					></span>
+					<span class="grid">
+						<span class={['col-start-1 row-start-1', diffLayout !== 'inline' && 'invisible']}>
+							{m.caring_elegant_gadfly_tear()}
+						</span>
+						<span class={['col-start-1 row-start-1', diffLayout === 'inline' && 'invisible']}>
+							{m.antsy_stout_gorilla_borrow()}
+						</span>
+					</span>
+				</button>
+			</li>
+		</menu>
+	{/if}
+
+	<ul class="my-5 flex list-none flex-col gap-8">
 		{#each data.routes as { route, entities }, i (i)}
-			<li>{routeNames[route]()}</li>
-			<li class="ml-2 list-none">
-				<ul>
-					{#each entities as { ent_type, ent_id, rcs }, j (j)}
+			<li>
+				<h3 class="mb-3 font-bold">
+					{routeNames[route]()}
+				</h3>
+				<ul class="flex list-none flex-col gap-3">
+					{#each entities as { ent_type, ent_id, rows }, j (j)}
 						<li>
-							<a href={buildEntityRoutes(ent_type, ent_id)}>
-								{buildEntityRoutes(ent_type, ent_id)}
-							</a>
-						</li>
-						<li class="list-none">
-							<table class="inline-block">
-								<tbody>
-									{#each rcs as c, k (k)}
-										{#if c.target_column}
-											<tr
-												><td
-													>{#if !(c.target_type === ent_type && c.tg_id === ent_id)}{c.target_type}
-														#{c.tg_id}{/if}
-													{c.target_column}</td
-												>
-												<td
-													>{#if c.deleted}Deleted{:else}<pre>{displayValue(
-																c.target_type,
-																c.target_column,
-																c.target_value
-															)}</pre>{/if}</td
-												></tr
-											>
-										{/if}
-									{/each}
-								</tbody>
-							</table>
+							<details
+								class="entity"
+								open={entityOpen[entityKey(i, j)] ?? true}
+								ontoggle={(e) => (entityOpen[entityKey(i, j)] = e.currentTarget.open)}
+							>
+								<summary>
+									<a
+										href={buildEntityRoutes(ent_type, ent_id)}
+										onclick={(e) => e.stopPropagation()}
+									>
+										{buildEntityRoutes(ent_type, ent_id)}
+									</a>
+								</summary>
+								<table class="changes">
+									<colgroup>
+										<col class="c-ind" />
+										<col class="c-field" />
+										<col />
+									</colgroup>
+									<tbody>
+										{#each rows as row (row.target_type + ':' + row.target_id)}
+											<RowChange
+												{...row}
+												{ent_type}
+												{ent_id}
+												layout={diffLayout}
+												windowed={windowedDiffs}
+												deletedRows={data.changes.deleted_rows}
+												rowContext={data.changes.row_context}
+												works={worksById}
+												labels={data.changes.labels}
+											/>
+										{/each}
+									</tbody>
+								</table>
+							</details>
 						</li>
 					{/each}
 				</ul>
 			</li>
 		{/each}
 	</ul>
-	<Pager n_count={data.changes.count} page_size={data.batch_size} />
 </Section>
+
+<style>
+	details.entity {
+		margin: 0;
+		padding: 0;
+		border: 1px solid var(--otodb-color-content-faint);
+	}
+
+	details.entity > summary {
+		padding: 0.25rem 0.5rem;
+	}
+
+	details.entity[open] > summary {
+		margin-bottom: 0;
+		border-bottom: 1px solid var(--otodb-color-content-faint);
+	}
+
+	table.changes {
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	table.changes > colgroup > .c-ind {
+		width: 1.75rem;
+	}
+
+	table.changes > colgroup > .c-field {
+		width: 10rem;
+	}
+
+	/* Center the +/- indicator */
+	table.changes :global(td.ind) {
+		text-align: center;
+	}
+
+	/* Long unbroken values must wrap rather than overflow the fixed columns */
+	table.changes :global(td) {
+		overflow-wrap: anywhere;
+	}
+</style>

@@ -9,16 +9,13 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		fetch,
 		params: {
 			query: {
-				entity: HistoricalEntities.tagsong,
-				id: params.tag_slug,
+				entity: HistoricalEntities.wikipage,
+				id: params.page_slug,
 				limit: batch_size,
 				offset: (page - 1) * batch_size
 			}
 		}
 	});
 
-	return {
-		history,
-		batch_size
-	};
+	return { history, batch_size };
 };

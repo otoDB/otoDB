@@ -19,17 +19,23 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 		head: {
 			title: wiki_page.find((p) => p.title)?.title ?? params.page_slug
 		},
-		menuLinks: canEdit
-			? [
-					{
-						pathname: `wiki/${params.page_slug}`,
-						title: m.curly_zesty_pelican_aim()
-					},
-					{
-						pathname: `wiki/${params.page_slug}/edit`,
-						title: m.minor_crisp_cobra_list()
-					}
-				]
-			: null
+		menuLinks: [
+			{
+				pathname: `wiki/${params.page_slug}`,
+				title: m.curly_zesty_pelican_aim()
+			},
+			...(canEdit
+				? [
+						{
+							pathname: `wiki/${params.page_slug}/edit`,
+							title: m.minor_crisp_cobra_list()
+						}
+					]
+				: []),
+			{
+				pathname: `wiki/${params.page_slug}/history`,
+				title: m.giant_away_scallop_hike()
+			}
+		]
 	};
 };

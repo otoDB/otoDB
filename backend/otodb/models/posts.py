@@ -73,37 +73,41 @@ class ThreadManager(models.Manager):
 		]
 		user_model_class = apps.get_model(settings.AUTH_USER_MODEL)
 		user_model = ContentType.objects.get_for_model(user_model_class).id
-		return ThreadQuerySet(self.model, using=self._db).prefetch_related(
-			Prefetch(
-				'entitylink_set',
-				queryset=EntityLink.objects.order_by('id').annotate(
-					tg_id=Case(
-						When(
-							Q(entity_type__id__in=tag_models),
-							then=Subquery(
-								RevisionChange.objects.filter(
-									target_type_id=OuterRef('entity_type_id'),
-									target_id=OuterRef('entity_id'),
-									target_column='slug',
-								).values('target_value')[:1]
-							),
-						),
-						When(
-							Q(entity_type__id=user_model),
-							then=Cast(
-								Subquery(
-									user_model_class.objects.filter(
-										id=OuterRef('entity_id'),
-									).values('username')[:1],
+		return (
+			ThreadQuerySet(self.model, using=self._db)
+			.select_related('added_by')
+			.prefetch_related(
+				Prefetch(
+					'entitylink_set',
+					queryset=EntityLink.objects.order_by('id').annotate(
+						tg_id=Case(
+							When(
+								Q(entity_type__id__in=tag_models),
+								then=Subquery(
+									RevisionChange.objects.filter(
+										target_type_id=OuterRef('entity_type_id'),
+										target_id=OuterRef('entity_id'),
+										target_column='slug',
+									).values('target_value')[:1]
 								),
-								output_field=TextField(),
 							),
+							When(
+								Q(entity_type__id=user_model),
+								then=Cast(
+									Subquery(
+										user_model_class.objects.filter(
+											id=OuterRef('entity_id'),
+										).values('username')[:1],
+									),
+									output_field=TextField(),
+								),
+							),
+							default=Cast(F('entity_id'), output_field=TextField()),
 						),
-						default=Cast(F('entity_id'), output_field=TextField()),
+						ent=F('entity_type__model'),
 					),
-					ent=F('entity_type__model'),
-				),
-				to_attr='_entity_links',
+					to_attr='_entity_links',
+				)
 			)
 		)
 

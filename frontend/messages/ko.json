@@ -193,6 +193,7 @@
 	"swift_each_zebra_assure": "게시일",
 	"livid_same_wren_create": "필터",
 	"icy_each_pigeon_transform": "{count}개 더",
+	"mellow_brave_marten_gather": ", 외 {count}개",
 	"giant_away_scallop_hike": "역사",
 	"sea_cute_beaver_file": "최근 변경",
 	"legal_mean_slug_link": "롤백",
@@ -307,5 +308,10 @@
 	"nice_close_goldfish_taste": "독립 페이지",
 	"noble_tidy_boar_lock": "({#content/})",
 	"funny_heroic_whale_gleam": "원글",
-	"small_fresh_hyena_rest": "이 댓글 스레드는 너무 깊게 중첩되어 답글을 달 수 없습니다."
+	"small_fresh_hyena_rest": "이 댓글 스레드는 너무 깊게 중첩되어 답글을 달 수 없습니다.",
+	"caring_elegant_gadfly_tear": "나란히 보기",
+	"antsy_stout_gorilla_borrow": "인라인 보기",
+	"sleek_factual_antelope_belong": "모두 펼치기",
+	"game_slow_crab_fade": "모두 접기",
+	"fluffy_icy_bobcat_believe": "보기 옵션"
 }

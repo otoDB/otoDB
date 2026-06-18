@@ -5,7 +5,6 @@ from enum import Enum
 from itertools import groupby
 from typing import Any
 
-from diff_match_patch import diff_match_patch
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models, transaction
 from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, When, Window
@@ -15,6 +14,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
 from django_request_cache import get_request_cache
+from fast_diff_match_patch import diff
 from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
@@ -49,8 +49,6 @@ from .common import (
 history_router = Router()
 
 logger = logging.getLogger(__name__)
-
-_dmp = diff_match_patch()
 
 
 @functools.cache
@@ -136,6 +134,8 @@ _DIFF_MIN_GAP = 40
 # Snap a cut to a nearby line boundary, but only if it's close.
 _DIFF_SNAP = 200
 
+_DIFF_OP_CODES = {'-': -1, '=': 0, '+': 1}
+
 
 def _head_context(text: str, keep: int) -> int:
 	"""End index keeping the first `keep` chars, extended to the line's end."""
@@ -217,8 +217,13 @@ class RevisionChangeSchema(ModelSchema):
 			return None
 		if len(old) <= _DIFF_MIN_LENGTH:
 			return None
-		diffs = _dmp.diff_main(old, new)
-		_dmp.diff_cleanupSemantic(diffs)
+		try:
+			raw = diff(old, new, counts_only=False, cleanup='Semantic', timelimit=1)
+		except ValueError, RuntimeError:
+			# Windows moment
+			# https://github.com/JoshData/fast_diff_match_patch#:~:text=On%20Windows
+			return None
+		diffs = [(_DIFF_OP_CODES[op], text) for op, text in raw]
 		return _window_diff(diffs)
 
 

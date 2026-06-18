@@ -5,7 +5,7 @@ description = "otoDB is a community-driven website consisting of a collaborative
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "diff-match-patch>=20241021",
+    "fast-diff-match-patch>=2.1.0",
     "django-comments-xtd>=2.10.11",
     "django-cors-headers>=4.9.0",
     "django>=6.0.6",

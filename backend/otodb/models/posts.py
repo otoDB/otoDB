@@ -132,6 +132,7 @@ class Thread(models.Model):
 		entitylink_set: QuerySet['EntityLink']
 		_entity_links: list['EntityLink']
 		posts: QuerySet['ThreadPost']
+		added_by_id: int
 
 	class Meta:
 		verbose_name = 'Thread'
@@ -161,6 +162,10 @@ class ThreadPost(models.Model):
 		related_name='edited_threadposts',
 	)
 	is_removed = models.BooleanField(default=False, db_index=True)
+
+	if TYPE_CHECKING:
+		user_id: int
+		edited_by_id: int
 
 	class Meta:
 		ordering = ['num']

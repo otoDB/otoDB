@@ -95,14 +95,14 @@
 							aria-hidden="true"
 						></span>
 						<div class="text-otodb-content-primary">
-							{m.thread_status_closed()}
+							{m.topical_small_alligator_aspire()}
 						</div>
 					</div>
 				{:else}
 					<div class="flex items-center">
 						<span class="icon-[gravity-ui--comment] mr-1 size-4" aria-hidden="true"></span>
 						<div class="text-otodb-content-primary font-bold">
-							{m.thread_status_open()}
+							{m.flat_tasty_okapi_cut()}
 						</div>
 					</div>
 				{/if}
@@ -126,12 +126,12 @@
 			<div class="shrink-0">
 				{#if can_close}
 					<button type="button" class="px-3 py-1" onclick={close_thread}>
-						{m.thread_action_close()}
+						{m.mean_watery_pig_walk()}
 					</button>
 				{/if}
 				{#if can_reopen}
 					<button type="button" class="px-3 py-1" onclick={reopen_thread}>
-						{m.thread_action_reopen()}
+						{m.elegant_each_ant_approve()}
 					</button>
 				{/if}
 			</div>

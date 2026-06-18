@@ -393,7 +393,7 @@ def _visible_threads():
 @thread_router.get('categories', response=dict[str, list[ThreadOverviewSchema]])
 def categories(request: HttpRequest):
 	return {
-		str(i): _visible_threads().filter(category=i).with_activity()[:5]
+		str(i): _visible_threads().filter(category=i).with_activity()[:10]
 		for i, _ in PostCategory.choices
 	}
 

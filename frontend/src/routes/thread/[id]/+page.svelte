@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
+	import { dirtyClick } from '$lib/dirty';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
+	import Banner from '$lib/Banner.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import Section from '$lib/Section.svelte';
 	import ThreadView from '$lib/ThreadView.svelte';
@@ -92,33 +94,19 @@
 			{/each}
 		{/snippet}
 
+		{#if data.thread.closed_at}
+			<Banner variant="info" title={m.any_fair_gull_treat()} />
+		{/if}
+
 		<div class="text-otodb-content-fainter mb-6 flex items-center gap-4 text-xs">
-			<div class="flex flex-grow items-center space-x-2">
-				{#if data.thread.closed_at}
-					<div class="flex items-center">
-						<span
-							class="icon-[gravity-ui--check] text-otodb-content-fainter mr-1 size-4"
-							aria-hidden="true"
-						></span>
-						<div class="text-otodb-content-primary">
-							{m.topical_small_alligator_aspire()}
-						</div>
-					</div>
-				{:else}
-					<div class="flex items-center">
-						<span class="icon-[gravity-ui--comment] mr-1 size-4" aria-hidden="true"></span>
-						<div class="text-otodb-content-primary font-bold">
-							{m.flat_tasty_okapi_cut()}
-						</div>
-					</div>
-				{/if}
+			<div class="flex grow items-center space-x-2">
 				<p>
 					<a href="/thread?category={data.thread.category}"
 						>{postCategoryNames[data.thread.category]()}</a
 					>
 				</p>
 				{#if data.thread.entities?.length}
-					<p class="mt-1">
+					<p>
 						{m.fine_zany_octopus_trim()}:
 						{#each data.thread.entities as { id, entity }, i (i)}
 							{#if i > 0},
@@ -131,12 +119,12 @@
 			</div>
 			<div class="shrink-0">
 				{#if can_close}
-					<button type="button" class="px-3 py-1" onclick={close_thread}>
+					<button type="button" class="px-3 py-1" {@attach dirtyClick(close_thread)}>
 						{m.mean_watery_pig_walk()}
 					</button>
 				{/if}
 				{#if can_reopen}
-					<button type="button" class="px-3 py-1" onclick={reopen_thread}>
+					<button type="button" class="px-3 py-1" {@attach dirtyClick(reopen_thread)}>
 						{m.elegant_each_ant_approve()}
 					</button>
 				{/if}

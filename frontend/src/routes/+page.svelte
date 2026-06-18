@@ -73,6 +73,23 @@
 			<tbody>
 				{#each data.posts.items as p, i (i)}
 					<tr>
+						<td class="w-6 text-center">
+							{#if p.closed_at}
+								<span
+									class="icon-[gravity-ui--check] text-otodb-content-fainter size-4 align-middle"
+									role="img"
+									aria-label={m.topical_small_alligator_aspire()}
+									title={m.topical_small_alligator_aspire()}
+								></span>
+							{:else}
+								<span
+									class="icon-[gravity-ui--comment] text-otodb-content-fainter size-4 align-middle"
+									role="img"
+									aria-label={m.flat_tasty_okapi_cut()}
+									title={m.flat_tasty_okapi_cut()}
+								></span>
+							{/if}
+						</td>
 						<td><a href="/thread/{p.id}">{p.title}</a></td>
 						<td
 							><Time format="relative" date={p.modified} />

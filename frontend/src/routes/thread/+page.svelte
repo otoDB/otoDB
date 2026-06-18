@@ -37,6 +37,6 @@
 	</form>
 	<hr class="my-5" />
 
-	<ThreadTable posts={data.results.items} showCategory showAuthor />
+	<ThreadTable posts={data.results.items} showCategory />
 	<Pager n_count={data.results.count} page_size={data.batch_size} base_url={page.url.toString()} />
 </Section>

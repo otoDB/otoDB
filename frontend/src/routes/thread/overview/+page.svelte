@@ -15,7 +15,7 @@
 			<h2 class="mt-4 text-base">
 				<a href="/thread?category={i}">{postCategoryNames[c]()}</a>
 			</h2>
-			<ThreadTable posts={data.categories[c]} showAuthor={i > 0} />
+			<ThreadTable posts={data.categories[c]} />
 		{/if}
 	{/each}
 </Section>

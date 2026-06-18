@@ -54,7 +54,6 @@
 	const byColumn = $derived(
 		new Map(rcs.filter((c) => c.target_column).map((c) => [c.target_column!, c] as const))
 	);
-	const isRelation = $derived(target_type === 'workrelation' || target_type === 'songrelation');
 
 	const oldRow = $derived(deletedRows[`${target_type}:${target_id}`] ?? []);
 	const oldByColumn = $derived(new Map(oldRow.map((e) => [e.column, e] as const)));
@@ -64,6 +63,7 @@
 	const contextByColumn = $derived(new Map(context.map((e) => [e.column, e] as const)));
 	const hasCol = (col: string) => byColumn.has(col) || contextByColumn.has(col);
 
+	// Localized labels for tagworkparenthood's columns
 	const columnLabel = (col: string) => {
 		if (target_type !== 'tagworkparenthood') return col;
 		return (
@@ -91,7 +91,7 @@
 
 {#if deletedChange}
 	{@render relHeader()}
-	{#if isRelation && oldByColumn.has('A') && oldByColumn.has('B')}
+	{#if oldByColumn.has('A') && oldByColumn.has('B')}
 		<tr>
 			<td class="ind">−</td>
 			<td colspan="2">
@@ -138,7 +138,7 @@
 	<tr class="note">
 		<td colspan="3">{m.warm_civil_heron_return({ id: restoredChange.target_value ?? '?' })}</td>
 	</tr>
-{:else if isRelation && hasCol('A') && hasCol('B')}
+{:else if hasCol('A') && hasCol('B')}
 	{@render relHeader()}
 	{#if allCreated}
 		<tr>

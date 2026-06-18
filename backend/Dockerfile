@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+ENV CC=g++ CXX=g++
+
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
@@ -34,7 +36,7 @@ RUN OTODB_SECRET_KEY=build OTODB_SKIP_DB=1 uv run manage.py collectstatic --noin
 FROM python:3.14-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates git patch curl \
+    ca-certificates git patch curl libstdc++6 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

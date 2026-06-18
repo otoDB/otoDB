@@ -78,6 +78,19 @@ class HistoricalEntities(str, Enum):
 	WIKI = 'wikipage'
 
 
+class EntityModels(str, Enum):
+	WORK = 'mediawork'
+	SONG = 'mediasong'
+	TAG = 'tagwork'
+	SONG_ATTRIBUTE = 'tagsong'
+	UPLOAD = 'worksource'
+	PROFILE = 'account'
+	LIST = 'pool'
+	REQUEST = 'bulkrequest'
+	WIKI = 'wikipage'
+	POST = 'post'
+
+
 class HistoricalEntitySchema(Schema):
 	id: str
 	entity: HistoricalEntities
@@ -109,8 +122,8 @@ class RevisionEntitySummarySchema(RevisionSchema):
 class OldColumnSchema(Schema):
 	column: str
 	value: str | None = None
-	# Related model name when the column is a foreign key
-	ref: str | None = None
+	# Related model when the column is a foreign key
+	ref: EntityModels | None = None
 
 
 class DiffSegmentSchema(Schema):
@@ -194,8 +207,8 @@ class RevisionChangeSchema(ModelSchema):
 	tg_id: str
 	old_value: str | None = None
 	created: bool
-	# Related model name when target_column is a foreign key
-	ref: str | None = None
+	# Related model when target_column is a foreign key
+	ref: EntityModels | None = None
 	diff: list[DiffSegmentSchema] | None = None
 
 	class Meta:
@@ -203,9 +216,14 @@ class RevisionChangeSchema(ModelSchema):
 		fields = ['deleted', 'restored', 'target_column', 'target_value']
 
 	@staticmethod
-	def resolve_ref(obj) -> str | None:
+	def resolve_ref(obj) -> EntityModels | None:
 		model = REVISION_FK_COLUMNS()[obj.target_type_id].get(obj.target_column)
-		return model._meta.model_name if model is not None else None
+		if model is None:
+			return None
+		try:
+			return EntityModels(model._meta.model_name)
+		except ValueError:
+			return None
 
 	@staticmethod
 	def resolve_diff(obj) -> list[DiffSegmentSchema] | None:
@@ -539,14 +557,17 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 
 	ref_ids: dict[str, set[int]] = {}
 
-	def collect_ref(model_class, value) -> str | None:
+	def collect_ref(model_class, value) -> EntityModels | None:
 		name = model_class._meta.model_name
 		if name and value is not None:
 			try:
 				ref_ids.setdefault(name, set()).add(int(value))
 			except ValueError:
 				pass
-		return name
+		try:
+			return EntityModels(name) if name else None
+		except ValueError:
+			return None
 
 	# Collect new and previous ids from changes to FK columns
 	for c in qq_list:

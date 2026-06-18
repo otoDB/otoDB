@@ -10420,6 +10420,22 @@
         "title": "DiffSegmentSchema",
         "type": "object"
       },
+      "EntityModels": {
+        "enum": [
+          "mediawork",
+          "mediasong",
+          "tagwork",
+          "tagsong",
+          "worksource",
+          "account",
+          "pool",
+          "bulkrequest",
+          "wikipage",
+          "post"
+        ],
+        "title": "EntityModels",
+        "type": "string"
+      },
       "OldColumnSchema": {
         "properties": {
           "column": {
@@ -10440,13 +10456,12 @@
           "ref": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/EntityModels"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Ref"
+            ]
           }
         },
         "required": [
@@ -10498,13 +10513,12 @@
           "ref": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/EntityModels"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Ref"
+            ]
           },
           "diff": {
             "anyOf": [

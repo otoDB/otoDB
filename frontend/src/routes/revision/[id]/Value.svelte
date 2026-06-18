@@ -1,15 +1,15 @@
 <script lang="ts">
 	import WorkCard from '$lib/WorkCard.svelte';
-	import { buildEntityRoutes, isValidEntityModelType } from '$lib/enums.js';
+	import { buildEntityRoutes } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages';
-	import type { components } from '$lib/schema';
+	import { EntityModels, type components } from '$lib/schema';
 	import { displayValue } from './displayValue';
 
 	interface Props {
 		targetType: string;
 		column: string;
 		value: string | null | undefined;
-		ref?: string | null;
+		ref?: EntityModels | null;
 		/** Render mediawork refs as a work card instead of a title link */
 		card?: boolean;
 		/** Keyed by work id -> slim work data, for rendering mediawork cards */
@@ -19,20 +19,24 @@
 	}
 	const { targetType, column, value, ref, card = false, works, labels }: Props = $props();
 
-	const work = $derived(ref === 'mediawork' && value != null ? works[value] : undefined);
+	const work = $derived(ref === EntityModels.mediawork && value != null ? works[value] : undefined);
 	const label = $derived(
 		value != null ? (labels[`${ref}:${value}`] ?? work?.title ?? undefined) : undefined
 	);
 	const href = $derived.by(() => {
-		if (value == null || !ref || !isValidEntityModelType(ref)) return undefined;
+		if (value == null || !ref) return undefined;
 		// Tag and profile routes are slug/username-based; that's the label
-		if (ref === 'tagwork' || ref === 'tagsong' || ref === 'account')
+		if (
+			ref === EntityModels.tagwork ||
+			ref === EntityModels.tagsong ||
+			ref === EntityModels.account
+		)
 			return label ? buildEntityRoutes(ref, label) : undefined;
 		return buildEntityRoutes(ref, value);
 	});
 </script>
 
-{#if ref && isValidEntityModelType(ref)}
+{#if ref}
 	{#if value == null}
 		<span>{m.pale_blunt_moth_lack()}</span>
 	{:else if card && work}

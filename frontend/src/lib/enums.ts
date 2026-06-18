@@ -6,6 +6,7 @@ import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
 import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 import { m } from '$lib/paraglide/messages.js';
 import {
+	EntityModels,
 	HistoricalEntities,
 	ModelsWithComments,
 	Platform,
@@ -136,6 +137,7 @@ export type EntityModelType =
 	| 'wikipage'
 	| 'bulkrequest'
 	// This is obvious but we make it explicit
+	| EntityModels
 	| PostEntities
 	| ModelsWithComments
 	| HistoricalEntities;

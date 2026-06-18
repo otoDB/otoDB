@@ -5683,7 +5683,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedRevisionSchema"
+                  "$ref": "#/components/schemas/PagedRevisionEntitySummarySchema"
                 }
               }
             }

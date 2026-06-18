@@ -1,38 +1,45 @@
+import functools
 import logging
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from itertools import groupby
 from typing import Any
 
-import diff_match_patch as dmp_mod
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models, transaction
-from django.db.models import Case, Exists, F, OuterRef, Q, Subquery, When, Window
+from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, When, Window
 from django.db.models.fields.related import RelatedField
 from django.db.models.functions import Coalesce, RowNumber
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
 from django_request_cache import get_request_cache
+from fast_diff_match_patch import diff
 from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 
 from otodb.account.models import Account
+from otodb.common import slugify_tag
 from otodb.models import (
+	MediaSong,
 	MediaWork,
 	Revision,
 	RevisionChange,
 	RevisionChangeEntity,
 	TagSong,
 	TagWork,
+	TagWorkInstance,
 	WikiPage,
+	WorkSource,
 )
 from otodb.models.enums import RevisionChain, Route
+from otodb.models.revision import RevisionTrackedModel
 from otodb.models.tag import OtodbTagModel
 
 from .common import (
 	OtodbID,
+	SlimWorkSchema,
 	add_revision_message,
 	track_revision,
 	user_is_mod,
@@ -41,60 +48,25 @@ from .common import (
 
 history_router = Router()
 
-dmp = dmp_mod.diff_match_patch()
 logger = logging.getLogger(__name__)
 
 
-def get_diff(delta):
-	def diff_prettyHtml(diffs):
-		html = []
-		for op, data in diffs:
-			text = (
-				data.replace('&', '&amp;')
-				.replace('<', '&lt;')
-				.replace('>', '&gt;')
-				.replace('\n', '&para;<br>')
-			)
-			if op == dmp.DIFF_INSERT:
-				html.append('<ins>%s</ins>' % text)
-			elif op == dmp.DIFF_DELETE:
-				html.append('<del>%s</del>' % text)
-			elif op == dmp.DIFF_EQUAL:
-				html.append('<span>%s</span>' % text)
-		return ''.join(html)
+@functools.cache
+def _wikipage_ct_id() -> int:
+	return ContentType.objects.get_for_model(WikiPage).id
 
-	diffs_html = []
 
-	for change in delta.changes:
-		if change.field == 'tags':
-			field = [f for f in (change.old + change.new)[0].keys() if 'tag' in f][0]
-			old, new = {c[field] for c in change.old}, {c[field] for c in change.new}
-			old, new = old - new, new - old
-			changes = [
-				'- ' + t
-				for t in TagWork.objects.filter(id__in=old).values_list(
-					'slug', flat=True
-				)
-			] + [
-				'+ ' + t
-				for t in TagWork.objects.filter(id__in=new).values_list(
-					'slug', flat=True
-				)
-			]
-			diffs_html.append({'html': ('<br>').join(changes), 'field': change.field})
-		else:
-			old, new = change.old, change.new
-			diff_field = dmp.diff_main(str(old), str(new))
-			dmp.diff_cleanupSemantic(diff_field)
-
-			diffs_html.append(
-				{
-					'html': diff_prettyHtml(diff_field).replace('&para;', ''),
-					'field': change.field,
-				}
-			)
-
-	return diffs_html
+@functools.cache
+def _slug_model_ids() -> tuple[int, ...]:
+	return tuple(
+		[ContentType.objects.get_for_model(WikiPage).id]
+		+ [
+			ct.id
+			for ct in ContentType.objects.get_for_models(
+				*OtodbTagModel.__subclasses__()
+			).values()
+		]
+	)
 
 
 class HistoricalEntities(str, Enum):
@@ -103,6 +75,20 @@ class HistoricalEntities(str, Enum):
 	SONG_ATTRIBUTE = 'tagsong'
 	SONG = 'mediasong'
 	UPLOAD = 'worksource'
+	WIKI = 'wikipage'
+
+
+class EntityModels(str, Enum):
+	WORK = 'mediawork'
+	SONG = 'mediasong'
+	TAG = 'tagwork'
+	SONG_ATTRIBUTE = 'tagsong'
+	UPLOAD = 'worksource'
+	PROFILE = 'account'
+	LIST = 'pool'
+	REQUEST = 'bulkrequest'
+	WIKI = 'wikipage'
+	POST = 'post'
 
 
 class HistoricalEntitySchema(Schema):
@@ -122,28 +108,222 @@ class RevisionSchema(ModelSchema):
 		fields = ['message']
 
 
+class RevisionEntitySummarySchema(RevisionSchema):
+	first_entity: HistoricalEntitySchema | None = None
+	n_ent: int
+
+	@staticmethod
+	def resolve_first_entity(obj) -> dict | None:
+		if obj.first_ent_type is None:
+			return None
+		return {'id': obj.first_ent, 'entity': obj.first_ent_type}
+
+
+class OldColumnSchema(Schema):
+	column: str
+	value: str | None = None
+	# Related model when the column is a foreign key
+	ref: EntityModels | None = None
+
+
+class DiffSegmentSchema(Schema):
+	# diff-match-patch op:
+	# -1 delete, 0 equal, 1 insert
+	# custom op:
+	# 2 collapsed unchanged region
+	op: int
+	text: str
+
+
+_DIFF_MIN_LENGTH = 255
+
+# Collapse long unchanged runs to a window of context around each change, so
+# minor edits aren't buried in the middle of a large field.
+_DIFF_OP_GAP = 2
+# Characters of unchanged context to keep on each side of a change.
+_DIFF_CONTEXT = 80
+# Don't collapse unless it actually hides a meaningful chunk.
+_DIFF_MIN_GAP = 40
+# Snap a cut to a nearby line boundary, but only if it's close.
+_DIFF_SNAP = 200
+
+_DIFF_OP_CODES = {'-': -1, '=': 0, '+': 1}
+
+
+def _head_context(text: str, keep: int) -> int:
+	"""End index keeping the first `keep` chars, extended to the line's end."""
+	end = min(len(text), keep)
+	nl = text.find('\n', end)
+	if nl != -1 and nl - end <= _DIFF_SNAP:
+		end = nl
+	return end
+
+
+def _tail_context(text: str, keep: int) -> int:
+	"""Start index keeping the last `keep` chars, extended to the line's start."""
+	start = max(0, len(text) - keep)
+	if start > 0:
+		nl = text.rfind('\n', 0, start + 1)
+		if nl != -1 and start - nl <= _DIFF_SNAP:
+			start = nl + 1
+	return start
+
+
+def _window_diff(diffs: list[tuple[int, str]]) -> list[DiffSegmentSchema]:
+	n = len(diffs)
+	out: list[DiffSegmentSchema] = []
+	for i, (op, text) in enumerate(diffs):
+		has_before = i > 0
+		has_after = i < n - 1
+		keep = (_DIFF_CONTEXT if has_before else 0) + (
+			_DIFF_CONTEXT if has_after else 0
+		)
+		if op != 0 or len(text) - keep < _DIFF_MIN_GAP:
+			out.append(DiffSegmentSchema(op=op, text=text))
+			continue
+		head_end = _head_context(text, _DIFF_CONTEXT) if has_before else 0
+		tail_start = _tail_context(text, _DIFF_CONTEXT) if has_after else len(text)
+		if tail_start - head_end < _DIFF_MIN_GAP:
+			out.append(DiffSegmentSchema(op=op, text=text))
+			continue
+		if has_before:
+			out.append(DiffSegmentSchema(op=0, text=text[:head_end]))
+		out.append(DiffSegmentSchema(op=_DIFF_OP_GAP, text=text[head_end:tail_start]))
+		if has_after:
+			out.append(DiffSegmentSchema(op=0, text=text[tail_start:]))
+	return out
+
+
+# Models whose rows are displayed as a whole (all columns) rather than per-column
+_CONTEXT_MODELS = ('workrelation', 'songrelation', 'tagworkparenthood')
+
+
 class RevisionChangeSchema(ModelSchema):
 	target_type: str = Field(..., alias='target_type.model')
+	target_id: OtodbID
 	ent_type: str
 	ent_id: str
 	route: Route
 	tg_id: str
+	old_value: str | None = None
+	created: bool
+	# Related model when target_column is a foreign key
+	ref: EntityModels | None = None
+	diff: list[DiffSegmentSchema] | None = None
 
 	class Meta:
 		model = RevisionChange
-		fields = ['deleted', 'target_column', 'target_value']
+		fields = ['deleted', 'restored', 'target_column', 'target_value']
+
+	@staticmethod
+	def resolve_ref(obj) -> EntityModels | None:
+		model = REVISION_FK_COLUMNS()[obj.target_type_id].get(obj.target_column)
+		if model is None:
+			return None
+		try:
+			return EntityModels(model._meta.model_name)
+		except ValueError:
+			return None
+
+	@staticmethod
+	def resolve_diff(obj) -> list[DiffSegmentSchema] | None:
+		cols = REVISION_TEXT_COLUMNS().get(obj.target_type_id)
+		if not cols or obj.target_column not in cols:
+			return None
+		old, new = obj.old_value, obj.target_value
+		if not isinstance(old, str) or not isinstance(new, str):
+			return None
+		if len(old) <= _DIFF_MIN_LENGTH:
+			return None
+		try:
+			raw = diff(old, new, counts_only=False, cleanup='Semantic', timelimit=1)
+		except ValueError, RuntimeError:
+			# Windows moment
+			# https://github.com/JoshData/fast_diff_match_patch#:~:text=On%20Windows
+			return None
+		diffs = [(_DIFF_OP_CODES[op], text) for op, text in raw]
+		return _window_diff(diffs)
 
 
-@history_router.get('recent', response=list[RevisionSchema])
+class RevisionDetailsSchema(Schema):
+	changes: list[RevisionChangeSchema]
+	works: list[SlimWorkSchema]
+	# "model:id" -> display label (e.g. tag slug, song title) for non-work FK refs
+	labels: dict[str, str]
+	# "model:id" -> last known column values of rows deleted in this revision
+	deleted_rows: dict[str, list[OldColumnSchema]]
+	# "model:id" -> current column values of rows touched by this revision, for
+	# rows whose identity lives in FK columns (a change to only one column would
+	# otherwise lose the context of what the row connects)
+	row_context: dict[str, list[OldColumnSchema]]
+
+
+@history_router.get('recent', response=list[RevisionEntitySummarySchema])
 @paginate
 def recent(request: HttpRequest, username: str | None = None):
-	q = Revision.objects.annotate(
-		route=Subquery(
-			RevisionChangeEntity.objects.filter(change__rev_id=OuterRef('id')).values(
-				'route'
-			)[:1]
+	rce_subq = RevisionChangeEntity.objects.filter(change__rev=OuterRef('id')).order_by(
+		'id'
+	)
+	q = (
+		Revision.objects.select_related('user')
+		.annotate(
+			route=Subquery(rce_subq.values('route')[:1]),
+			n_ent=Coalesce(
+				Subquery(
+					rce_subq.order_by()
+					.values('change__rev')
+					.annotate(
+						c=Count(
+							models.functions.Concat(
+								models.functions.Cast(
+									'entity_type_id', output_field=models.CharField()
+								),
+								models.Value('-'),
+								models.functions.Cast(
+									'entity_id', output_field=models.CharField()
+								),
+							),
+							distinct=True,
+						)
+					)
+					.values('c')[:1]
+				),
+				0,
+			),
+			first_ent_id=Subquery(rce_subq.values('entity_id')[:1]),
+			first_ent_type=Subquery(rce_subq.values('entity_type__model')[:1]),
+			first_ent_type_id=Subquery(rce_subq.values('entity_type_id')[:1]),
 		)
-	).order_by('-id')
+		.annotate(
+			first_ent=Case(
+				When(
+					Q(first_ent_type_id__in=_slug_model_ids()),
+					# Fall back to the numeric id when no slug change was recorded
+					then=Coalesce(
+						Subquery(
+							RevisionChange.objects.filter(
+								target_type_id=OuterRef('first_ent_type_id'),
+								target_id=OuterRef('first_ent_id'),
+								target_column='slug',
+							)
+							.order_by('-rev_id')
+							.values('target_value')[:1]
+						),
+						models.functions.Cast(
+							F('first_ent_id'),
+							output_field=models.TextField(),
+						),
+					),
+				),
+				default=models.functions.Cast(
+					F('first_ent_id'),
+					output_field=models.TextField(),
+				),
+				output_field=models.TextField(),
+			)
+		)
+		.order_by('-id')
+	)
 	if username:
 		q = q.filter(user__username=username)
 	return q
@@ -154,48 +334,128 @@ def revision(request: HttpRequest, revision_id: OtodbID):
 	return get_object_or_404(Revision, id=revision_id)
 
 
-@history_router.get('revision_changes', response=list[RevisionChangeSchema])
-@paginate
+@functools.cache
+def REVISION_FK_COLUMNS() -> dict[int, dict[str, Any]]:
+	return {
+		ContentType.objects.get_for_model(c).id: {
+			f: c._meta.get_field(f).related_model
+			for f in c._revision_meta.tracked_fields
+			if isinstance(c._meta.get_field(f), RelatedField)
+		}
+		for c in RevisionTrackedModel.__subclasses__()
+	}
+
+
+@functools.cache
+def REVISION_TEXT_COLUMNS() -> dict[int, set[str]]:
+	return {
+		ContentType.objects.get_for_model(c).id: {
+			f
+			for f in c._revision_meta.tracked_fields
+			if isinstance(c._meta.get_field(f), (models.CharField, models.TextField))
+		}
+		for c in RevisionTrackedModel.__subclasses__()
+	}
+
+
+# The most recent value the target column held before this change's revision.
+_old_value_subquery = Subquery(
+	RevisionChange.objects.filter(
+		target_type_id=OuterRef('target_type_id'),
+		target_id=OuterRef('target_id'),
+		target_column=OuterRef('target_column'),
+		rev_id__lt=OuterRef('rev_id'),
+	)
+	.order_by('-rev_id')
+	.values('target_value')[:1]
+)
+
+
+def _label_field(model_class) -> str | None:
+	field_names = {f.name for f in model_class._meta.fields}
+	if 'slug' in field_names:
+		return 'slug'
+	if 'username' in field_names:
+		return 'username'
+	if 'title' in field_names:
+		return 'title'
+	return None
+
+
+def _historic_labels(model_class, ids: set[int], label_field: str) -> dict[int, str]:
+	"""Last recorded label values for rows that no longer exist in the live table."""
+	return dict(
+		RevisionChange.objects.filter(
+			target_type=ContentType.objects.get_for_model(model_class),
+			target_id__in=ids,
+			target_column=label_field,
+		)
+		.order_by('target_id', '-rev_id')
+		.distinct('target_id')
+		.values_list('target_id', 'target_value')
+	)
+
+
+@history_router.get('revision_changes', response=RevisionDetailsSchema)
 def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	rev = get_object_or_404(Revision, id=revision_id)
-	tag_models = [
-		ct.id
-		for ct in ContentType.objects.get_for_models(
-			*OtodbTagModel.__subclasses__()
-		).values()
-	]
-	wikipage_ct = ContentType.objects.get_for_model(WikiPage)
-	ent_wikipage_slug = Subquery(
-		WikiPage.objects.filter(pk=OuterRef('revisionchangeentity__entity_id')).values(
-			'slug'
-		)[:1]
-	)
-	tg_wikipage_slug = Coalesce(
-		Subquery(WikiPage.objects.filter(pk=OuterRef('target_id')).values('slug')[:1]),
-		models.functions.Cast(F('target_id'), output_field=models.TextField()),
-		output_field=models.TextField(),
-	)
+
+	# TODO: Don't display 1st revision changes with a ton of objects for now.
+	# Should revisit to remove the need for this constraint.
+	is_first = not Revision.objects.filter(pk__lt=rev.pk).exists()
+	if is_first and RevisionChange.objects.filter(rev=rev).count() > 50_000:
+		return RevisionDetailsSchema(
+			changes=[],
+			works=[],
+			labels={},
+			deleted_rows={},
+			row_context={},
+		)
+
 	qq = (
 		RevisionChange.objects.filter(rev=rev)
 		.filter(revisionchangeentity__isnull=False)
+		.select_related('target_type')
 		.annotate(
 			ent_id=(
 				Case(
 					When(
-						Q(revisionchangeentity__entity_type__id__in=tag_models),
-						then=Subquery(
-							RevisionChange.objects.filter(
-								target_type_id=OuterRef(
-									'revisionchangeentity__entity_type_id'
-								),
-								target_id=OuterRef('revisionchangeentity__entity_id'),
-								target_column='slug',
-							).values('target_value')[:1]
+						# Wikipage slugs live on the row, not in slug-column history
+						Q(revisionchangeentity__entity_type_id=_wikipage_ct_id()),
+						then=Coalesce(
+							Subquery(
+								WikiPage.objects.filter(
+									pk=OuterRef('revisionchangeentity__entity_id')
+								).values('slug')[:1]
+							),
+							models.functions.Cast(
+								F('revisionchangeentity__entity_id'),
+								output_field=models.TextField(),
+							),
 						),
 					),
 					When(
-						Q(revisionchangeentity__entity_type=wikipage_ct),
-						then=ent_wikipage_slug,
+						Q(revisionchangeentity__entity_type__id__in=_slug_model_ids()),
+						# Fall back to the numeric id when no slug change was recorded
+						then=Coalesce(
+							Subquery(
+								RevisionChange.objects.filter(
+									target_type_id=OuterRef(
+										'revisionchangeentity__entity_type_id'
+									),
+									target_id=OuterRef(
+										'revisionchangeentity__entity_id'
+									),
+									target_column='slug',
+								)
+								.order_by('-rev_id')
+								.values('target_value')[:1]
+							),
+							models.functions.Cast(
+								F('revisionchangeentity__entity_id'),
+								output_field=models.TextField(),
+							),
+						),
 					),
 					default=models.functions.Cast(
 						F('revisionchangeentity__entity_id'),
@@ -207,18 +467,36 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			tg_id=(
 				Case(
 					When(
-						Q(target_type__id__in=tag_models),
-						then=Subquery(
-							RevisionChange.objects.filter(
-								target_type_id=OuterRef('target_type_id'),
-								target_id=OuterRef('target_id'),
-								target_column='slug',
-							).values('target_value')[:1]
+						# Wikipage slugs live on the row, not in slug-column history
+						Q(target_type_id=_wikipage_ct_id()),
+						then=Coalesce(
+							Subquery(
+								WikiPage.objects.filter(
+									pk=OuterRef('target_id')
+								).values('slug')[:1]
+							),
+							models.functions.Cast(
+								F('target_id'), output_field=models.TextField()
+							),
 						),
 					),
 					When(
-						Q(target_type=wikipage_ct),
-						then=tg_wikipage_slug,
+						Q(target_type__id__in=_slug_model_ids()),
+						# Fall back to the numeric id when no slug change was recorded
+						then=Coalesce(
+							Subquery(
+								RevisionChange.objects.filter(
+									target_type_id=OuterRef('target_type_id'),
+									target_id=OuterRef('target_id'),
+									target_column='slug',
+								)
+								.order_by('-rev_id')
+								.values('target_value')[:1]
+							),
+							models.functions.Cast(
+								F('target_id'), output_field=models.TextField()
+							),
+						),
 					),
 					default=models.functions.Cast(
 						F('target_id'), output_field=models.TextField()
@@ -228,14 +506,150 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			),
 			ent_type=F('revisionchangeentity__entity_type__model'),
 			route=F('revisionchangeentity__route'),
-		)
-		.exclude(
-			revisionchangeentity__entity_type=wikipage_ct,
-			ent_id__isnull=True,
+			old_value=_old_value_subquery,
+			# No prior change for the row at all ~= row created in this revision
+			created=~Exists(
+				RevisionChange.objects.filter(
+					target_type_id=OuterRef('target_type_id'),
+					target_id=OuterRef('target_id'),
+					rev_id__lt=OuterRef('rev_id'),
+				)
+			),
 		)
 		.order_by('id')
 	)
-	return qq
+
+	if qq.exclude(ent_type='wikipage').exists():
+		qq = qq.exclude(ent_type='wikipage')
+	qq_list = list(qq)
+
+	"""
+	Resolve everything a revision's changes reference, for display purposes:
+	works referenced by FK columns (as card data), labels for other FK refs,
+	and the last known values of rows deleted in the revision.
+	"""
+	changes = RevisionChange.objects.filter(rev=rev)
+
+	content_types = ContentType.objects.in_bulk(
+		set(changes.values_list('target_type_id', flat=True).distinct())
+	)
+	fk_columns = {ct_id: REVISION_FK_COLUMNS()[ct_id] for ct_id in content_types}
+
+	col_order = {
+		ct.model: {
+			field: index
+			for index, field in enumerate(
+				getattr(
+					getattr(ct.model_class(), '_revision_meta', None),
+					'tracked_fields',
+					[],
+				)
+			)
+		}
+		for ct in content_types.values()
+	}
+
+	ref_ids: dict[str, set[int]] = {}
+
+	def collect_ref(model_class, value) -> EntityModels | None:
+		name = model_class._meta.model_name
+		if name and value is not None:
+			try:
+				ref_ids.setdefault(name, set()).add(int(value))
+			except ValueError:
+				pass
+		try:
+			return EntityModels(name) if name else None
+		except ValueError:
+			return None
+
+	# Collect new and previous ids from changes to FK columns
+	for c in qq_list:
+		ref_model = fk_columns.get(c.target_type_id, {}).get(c.target_column)
+		if ref_model is not None:
+			collect_ref(ref_model, c.target_value)
+			collect_ref(ref_model, c.old_value)
+
+	def reconstruct_rows(
+		targets: models.QuerySet, **rev_filter
+	) -> dict[str, list[OldColumnSchema]]:
+		"""Latest known value per column for each (target_type, target_id) row."""
+		rows: dict[str, list[OldColumnSchema]] = {}
+		member = targets.filter(
+			target_type_id=OuterRef('target_type_id'),
+			target_id=OuterRef('target_id'),
+		)
+		latest = (
+			RevisionChange.objects.filter(
+				Exists(member), target_column__isnull=False, **rev_filter
+			)
+			.order_by('target_type_id', 'target_id', 'target_column', '-rev_id')
+			.distinct('target_type_id', 'target_id', 'target_column')
+			.values_list('target_type_id', 'target_id', 'target_column', 'target_value')
+		)
+		for tt, tid, column, value in latest:
+			rm = fk_columns.get(tt, {}).get(column)
+			rows.setdefault(f'{content_types[tt].model}:{tid}', []).append(
+				OldColumnSchema(
+					column=column,
+					value=value,
+					ref=collect_ref(rm, value) if rm else None,
+				)
+			)
+		# Re-order each row's columns to match the model's declared field order
+		for key, cols in rows.items():
+			order = col_order.get(key.rsplit(':', 1)[0], {})
+			cols.sort(key=lambda c: order.get(c.column, len(order)))
+		return rows
+
+	# Reconstruct the last known column values of rows deleted in this revision
+	deleted_rows = reconstruct_rows(
+		changes.filter(deleted=True),
+		rev_id__lt=rev.pk,
+	)
+
+	# Full-row context for relation-like rows: a change to only some columns
+	# would otherwise lose what the row connects (e.g. relation type-only edits)
+	row_context = reconstruct_rows(
+		changes.filter(deleted=False, target_type__model__in=_CONTEXT_MODELS),
+		rev_id__lte=rev.pk,
+	)
+
+	works = []
+	labels: dict[str, str] = {}
+	ref_models = {
+		model._meta.model_name: model
+		for cols in fk_columns.values()
+		for model in cols.values()
+	}
+	if work_ids := ref_ids.pop('mediawork', set()):
+		works = list(
+			MediaWork.objects.filter(id__in=work_ids)
+			.select_related('thumbnail_source')
+			.prefetch_related('worksource_set')
+		)
+		# Hard-deleted works can't render as cards; fall back to a title label
+		if missing := work_ids - {w.pk for w in works}:
+			for pk, v in _historic_labels(MediaWork, missing, 'title').items():
+				if v:
+					labels[f'mediawork:{pk}'] = v
+	for model_name, ids in ref_ids.items():
+		model_class = ref_models[model_name]
+		lf = _label_field(model_class)
+		if lf is None:
+			continue
+		found = dict(model_class.objects.filter(pk__in=ids).values_list('pk', lf))
+		if missing := ids - found.keys():
+			found.update(_historic_labels(model_class, missing, lf))
+		labels.update({f'{model_name}:{pk}': v for pk, v in found.items() if v})
+
+	return {
+		'works': works,
+		'labels': labels,
+		'deleted_rows': deleted_rows,
+		'row_context': row_context,
+		'changes': qq_list,
+	}
 
 
 def find_rev_rst(ctpk, query_pk, rev):
@@ -785,9 +1199,19 @@ def history(request: HttpRequest, entity: Query[HistoricalEntitySchema]):
 			pass
 		case 'worksource':
 			pass
+		case 'wikipage':
+			# A wiki slug has one WikiPage row per language
+			page_ids = [
+				*WikiPage.objects.filter(slug=entity.id).values_list('id', flat=True)
+			]
+			if not page_ids:
+				raise WikiPage.DoesNotExist(f'No wiki pages with slug {entity.id}')
+			entity.id = page_ids[0]
+			query_ids = query_ids + page_ids[1:]
 	query_ids.append(entity.id)
 	return (
-		Revision.objects.filter(
+		Revision.objects.select_related('user')
+		.filter(
 			id__in=Subquery(
 				Revision.objects.filter(
 					revisionchange__revisionchangeentity__entity_id__in=query_ids,
@@ -806,4 +1230,165 @@ def history(request: HttpRequest, entity: Query[HistoricalEntitySchema]):
 			),
 		)
 		.order_by('-index')
+	)
+
+
+def _value_change_q(model: type[models.Model], column: str, value: str) -> Q:
+	"""Revisions containing a change that set `model.column` to `value`"""
+	return Q(
+		pk__in=RevisionChange.objects.filter(
+			target_type=ContentType.objects.get_for_model(model),
+			target_column=column,
+			target_value=value,
+		).values('rev_id')
+	)
+
+
+def _resolve_work_tag(slug: str) -> TagWork | None:
+	try:
+		tag = TagWork.objects.get(slug=slugify_tag(slug))
+	except TagWork.DoesNotExist:
+		return None
+	return tag.aliased_to or tag
+
+
+def _tag_added_q(slug: str) -> Q:
+	"""Revisions where tag was attached to a work"""
+	tag = _resolve_work_tag(slug)
+	if tag is None:
+		return Q(pk__in=[])
+	return _value_change_q(TagWorkInstance, 'work_tag', str(tag.pk))
+
+
+def _tag_removed_q(slug: str) -> Q:
+	"""Revisions where tag was detached from a work (TagWorkInstance row deleted)"""
+	tag = _resolve_work_tag(slug)
+	if tag is None:
+		return Q(pk__in=[])
+	twi_ct = ContentType.objects.get_for_model(TagWorkInstance)
+	had_tag = RevisionChange.objects.filter(
+		target_type=twi_ct,
+		target_column='work_tag',
+		target_value=str(tag.pk),
+	)
+	return Q(
+		pk__in=RevisionChange.objects.filter(
+			target_type=twi_ct,
+			deleted=True,
+			target_id__in=had_tag.values('target_id'),
+		).values('rev_id')
+	)
+
+
+def _changed_field_q(
+	column: str, value: str | None = None, from_value: str | None = None
+) -> Q:
+	"""Revisions containing a change to a tracked column with this name,
+	optionally only changes that set it to `value` and/or whose previous value
+	was `from_value` (raw serialized form, e.g. the integer behind an enum)."""
+	flt = {'target_value': value} if value is not None else {}
+	changes = RevisionChange.objects.filter(target_column=column, **flt)
+	if from_value is not None:
+		changes = changes.annotate(_old=_old_value_subquery).filter(_old=from_value)
+	return Q(pk__in=changes.values('rev_id'))
+
+
+def _is_new_q() -> Q:
+	"""Revisions containing the first-ever change for an entity-level model row"""
+	cts = list(
+		ContentType.objects.get_for_models(
+			MediaWork, TagWork, TagSong, MediaSong, WorkSource, WikiPage
+		).values()
+	)
+	first_change = RevisionChange.objects.filter(
+		rev_id=OuterRef('pk'),
+		target_type__in=cts,
+		deleted=False,
+		restored=False,
+	).filter(
+		~Exists(
+			RevisionChange.objects.filter(
+				target_type_id=OuterRef('target_type_id'),
+				target_id=OuterRef('target_id'),
+				rev_id__lt=OuterRef('rev_id'),
+			)
+		)
+	)
+	return Q(Exists(first_change))
+
+
+def _change_flag_q(**flags) -> Q:
+	return Q(Exists(RevisionChange.objects.filter(rev_id=OuterRef('pk'), **flags)))
+
+
+@history_router.get('search', response=list[RevisionSchema])
+@paginate
+def search(
+	request: HttpRequest,
+	username: str | None = None,
+	routes: list[Route] | None = Query(None),
+	entity: HistoricalEntities | None = None,
+	reason: str | None = None,
+	since: date | None = None,
+	until: date | None = None,
+	is_new: bool | None = None,
+	is_deleted: bool | None = None,
+	added_tags: list[str] | None = Query(None),
+	removed_tags: list[str] | None = Query(None),
+	changed_tags: list[str] | None = Query(None),
+	changed_field: str | None = None,
+	changed_value: str | None = None,
+	changed_from: str | None = None,
+):
+	q = Q()
+	if username:
+		q &= Q(user__username__iexact=username)
+	if routes:
+		q &= Q(
+			Exists(
+				RevisionChangeEntity.objects.filter(
+					change__rev_id=OuterRef('pk'), route__in=routes
+				)
+			)
+		)
+	if entity is not None:
+		q &= Q(
+			Exists(
+				RevisionChangeEntity.objects.filter(
+					change__rev_id=OuterRef('pk'),
+					entity_type__model=entity.value,
+				)
+			)
+		)
+	if reason:
+		q &= Q(message__icontains=reason)
+	if since is not None:
+		q &= Q(date__date__gte=since)
+	if until is not None:
+		q &= Q(date__date__lte=until)
+	if is_new is not None:
+		q &= _is_new_q() if is_new else ~_is_new_q()
+	if is_deleted is not None:
+		flag = _change_flag_q(deleted=True)
+		q &= flag if is_deleted else ~flag
+	for slug in added_tags or []:
+		q &= _tag_added_q(slug)
+	for slug in removed_tags or []:
+		q &= _tag_removed_q(slug)
+	for slug in changed_tags or []:
+		q &= _tag_added_q(slug) | _tag_removed_q(slug)
+	if changed_field:
+		q &= _changed_field_q(changed_field, changed_value, changed_from)
+
+	return (
+		Revision.objects.select_related('user')
+		.filter(q)
+		.annotate(
+			route=Subquery(
+				RevisionChangeEntity.objects.filter(
+					change__rev_id=OuterRef('id')
+				).values('route')[:1]
+			)
+		)
+		.order_by('-id')
 	)

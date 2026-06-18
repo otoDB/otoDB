@@ -38,8 +38,8 @@
 		var(--otodb-color-content-primary)
 	);
 
-	--otodb-color-ins: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, green);
-	--otodb-color-del: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, red);
+	--otodb-color-ins: color-mix(in oklab, var(--otodb-color-bg-faint) 30%, green);
+	--otodb-color-del: color-mix(in oklab, var(--otodb-color-bg-faint) 30%, red);
 }
 
 :root[data-theme='aniki'] {

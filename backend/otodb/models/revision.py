@@ -4,6 +4,7 @@ from dirtyfields import DirtyFieldsMixin
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.indexes import HashIndex
 from django.db import models
 from django.db.models.deletion import Collector
 from django.dispatch import receiver
@@ -50,6 +51,14 @@ class RevisionChange(models.Model):
 			models.Index(
 				fields=['target_type', 'target_id'], name='revisionchange_target_idx'
 			),
+			models.Index(
+				fields=['target_column', 'target_type'],
+				name='revisionchange_column_idx',
+			),
+			HashIndex(
+				fields=['target_value'],
+				name='revisionchange_value_hash_idx',
+			),
 		]
 		constraints = [
 			models.CheckConstraint(
@@ -86,6 +95,12 @@ class RevisionChangeEntity(models.Model):
 				'entity_id',
 			),
 		)
+		indexes = [
+			models.Index(
+				fields=['entity_type', 'entity_id'],
+				name='revisionchangeentity_ent_idx',
+			),
+		]
 
 
 def get_serialized_value(instance: models.Model, field):

@@ -5202,7 +5202,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedRevisionSchema"
+                  "$ref": "#/components/schemas/PagedRevisionEntitySummarySchema"
                 }
               }
             }
@@ -5252,29 +5252,6 @@
               "type": "string"
             },
             "required": true
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "default": 30,
-              "maximum": 30,
-              "minimum": 1,
-              "title": "Limit",
-              "type": "integer"
-            },
-            "required": false
-          },
-          {
-            "in": "query",
-            "name": "offset",
-            "schema": {
-              "default": 0,
-              "minimum": 0,
-              "title": "Offset",
-              "type": "integer"
-            },
-            "required": false
           }
         ],
         "responses": {
@@ -5283,7 +5260,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedRevisionChangeSchema"
+                  "$ref": "#/components/schemas/RevisionDetailsSchema"
                 }
               }
             }
@@ -5395,6 +5372,286 @@
               "$ref": "#/components/schemas/HistoricalEntities"
             },
             "required": true
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 30,
+              "maximum": 30,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedRevisionSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/history/search": {
+      "get": {
+        "operationId": "otodb_api_history_search",
+        "summary": "Search",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "username",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Username"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "routes",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/components/schemas/Route"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Routes"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "entity",
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/HistoricalEntities"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "reason",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reason"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "is_new",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is New"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "is_deleted",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Deleted"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "added_tags",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Added Tags"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "removed_tags",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Removed Tags"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "changed_tags",
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Changed Tags"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "changed_field",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Changed Field"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "changed_value",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Changed Value"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "changed_from",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Changed From"
+            },
+            "required": false
           },
           {
             "in": "query",
@@ -9980,11 +10237,40 @@
         "title": "PagedExtCommentSchema",
         "type": "object"
       },
-      "PagedRevisionSchema": {
+      "HistoricalEntities": {
+        "enum": [
+          "mediawork",
+          "tagwork",
+          "tagsong",
+          "mediasong",
+          "worksource",
+          "wikipage"
+        ],
+        "title": "HistoricalEntities",
+        "type": "string"
+      },
+      "HistoricalEntitySchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "entity": {
+            "$ref": "#/components/schemas/HistoricalEntities"
+          }
+        },
+        "required": [
+          "id",
+          "entity"
+        ],
+        "title": "HistoricalEntitySchema",
+        "type": "object"
+      },
+      "PagedRevisionEntitySummarySchema": {
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/RevisionSchema"
+              "$ref": "#/components/schemas/RevisionEntitySummarySchema"
             },
             "title": "Items",
             "type": "array"
@@ -9998,7 +10284,72 @@
           "items",
           "count"
         ],
-        "title": "PagedRevisionSchema",
+        "title": "PagedRevisionEntitySummarySchema",
+        "type": "object"
+      },
+      "RevisionEntitySummarySchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "date": {
+            "format": "date-time",
+            "title": "Date",
+            "type": "string"
+          },
+          "user": {
+            "title": "User",
+            "type": "string"
+          },
+          "index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Index"
+          },
+          "route": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Route"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "default": "",
+            "title": "Message",
+            "type": "string"
+          },
+          "first_entity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HistoricalEntitySchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "n_ent": {
+            "title": "N Ent",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "user",
+          "n_ent"
+        ],
+        "title": "RevisionEntitySummarySchema",
         "type": "object"
       },
       "RevisionSchema": {
@@ -10051,31 +10402,82 @@
         "title": "RevisionSchema",
         "type": "object"
       },
-      "PagedRevisionChangeSchema": {
+      "DiffSegmentSchema": {
         "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/RevisionChangeSchema"
-            },
-            "title": "Items",
-            "type": "array"
-          },
-          "count": {
-            "title": "Count",
+          "op": {
+            "title": "Op",
             "type": "integer"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
           }
         },
         "required": [
-          "items",
-          "count"
+          "op",
+          "text"
         ],
-        "title": "PagedRevisionChangeSchema",
+        "title": "DiffSegmentSchema",
+        "type": "object"
+      },
+      "EntityModels": {
+        "enum": [
+          "mediawork",
+          "mediasong",
+          "tagwork",
+          "tagsong",
+          "worksource",
+          "account",
+          "pool",
+          "bulkrequest",
+          "wikipage",
+          "post"
+        ],
+        "title": "EntityModels",
+        "type": "string"
+      },
+      "OldColumnSchema": {
+        "properties": {
+          "column": {
+            "title": "Column",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          },
+          "ref": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityModels"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "column"
+        ],
+        "title": "OldColumnSchema",
         "type": "object"
       },
       "RevisionChangeSchema": {
         "properties": {
           "target_type": {
             "title": "Target Type",
+            "type": "string"
+          },
+          "target_id": {
+            "title": "Target Id",
             "type": "string"
           },
           "ent_type": {
@@ -10093,9 +10495,53 @@
             "title": "Tg Id",
             "type": "string"
           },
+          "old_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Old Value"
+          },
+          "created": {
+            "title": "Created",
+            "type": "boolean"
+          },
+          "ref": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityModels"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "diff": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DiffSegmentSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diff"
+          },
           "deleted": {
             "default": false,
             "title": "Deleted",
+            "type": "boolean"
+          },
+          "restored": {
+            "default": false,
+            "title": "Restored",
             "type": "boolean"
           },
           "target_column": {
@@ -10124,40 +10570,89 @@
         },
         "required": [
           "target_type",
+          "target_id",
           "ent_type",
           "ent_id",
           "route",
-          "tg_id"
+          "tg_id",
+          "created"
         ],
         "title": "RevisionChangeSchema",
         "type": "object"
       },
-      "HistoricalEntities": {
-        "enum": [
-          "mediawork",
-          "tagwork",
-          "tagsong",
-          "mediasong",
-          "worksource"
-        ],
-        "title": "HistoricalEntities",
-        "type": "string"
-      },
-      "HistoricalEntitySchema": {
+      "RevisionDetailsSchema": {
         "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/RevisionChangeSchema"
+            },
+            "title": "Changes",
+            "type": "array"
           },
-          "entity": {
-            "$ref": "#/components/schemas/HistoricalEntities"
+          "works": {
+            "items": {
+              "$ref": "#/components/schemas/SlimWorkSchema"
+            },
+            "title": "Works",
+            "type": "array"
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Labels",
+            "type": "object"
+          },
+          "deleted_rows": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/OldColumnSchema"
+              },
+              "type": "array"
+            },
+            "title": "Deleted Rows",
+            "type": "object"
+          },
+          "row_context": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/OldColumnSchema"
+              },
+              "type": "array"
+            },
+            "title": "Row Context",
+            "type": "object"
           }
         },
         "required": [
-          "id",
-          "entity"
+          "changes",
+          "works",
+          "labels",
+          "deleted_rows",
+          "row_context"
         ],
-        "title": "HistoricalEntitySchema",
+        "title": "RevisionDetailsSchema",
+        "type": "object"
+      },
+      "PagedRevisionSchema": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RevisionSchema"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "count"
+        ],
+        "title": "PagedRevisionSchema",
         "type": "object"
       },
       "BulkRequestSchema": {

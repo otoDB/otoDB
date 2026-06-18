@@ -405,6 +405,15 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	)
 	qq_list = list(qq)
 
+	# Drop a wikipage's own 'self' group when the change is also grouped under its
+	# tag/work, so the wiki nests there instead of as a redundant top-level group.
+	qq_list = [
+		c
+		for c in qq_list
+		if c.ent_type != 'wikipage'
+		or c.id not in {c.id for c in qq_list if c.ent_type != 'wikipage'}
+	]
+
 	"""
 	Resolve everything a revision's changes reference, for display purposes:
 	works referenced by FK columns (as card data), labels for other FK refs,

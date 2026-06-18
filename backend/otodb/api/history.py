@@ -258,71 +258,74 @@ class RevisionDetailsSchema(Schema):
 	row_context: dict[str, list[OldColumnSchema]]
 
 
-@history_router.get('recent', response=list[RevisionEntitySummarySchema])
-@paginate
-def recent(request: HttpRequest, username: str | None = None):
+def _annotate_entity_summary(qs):
+	"""Annotate a Revision queryset with the route, entity count, and first
+	affected entity used by the revision summary schema."""
 	rce_subq = RevisionChangeEntity.objects.filter(change__rev=OuterRef('id')).order_by(
 		'id'
 	)
-	q = (
-		Revision.objects.select_related('user')
-		.annotate(
-			route=Subquery(rce_subq.values('route')[:1]),
-			n_ent=Coalesce(
-				Subquery(
-					rce_subq.order_by()
-					.values('change__rev')
-					.annotate(
-						c=Count(
-							models.functions.Concat(
-								models.functions.Cast(
-									'entity_type_id', output_field=models.CharField()
-								),
-								models.Value('-'),
-								models.functions.Cast(
-									'entity_id', output_field=models.CharField()
-								),
+	return qs.annotate(
+		route=Subquery(rce_subq.values('route')[:1]),
+		n_ent=Coalesce(
+			Subquery(
+				rce_subq.order_by()
+				.values('change__rev')
+				.annotate(
+					c=Count(
+						models.functions.Concat(
+							models.functions.Cast(
+								'entity_type_id', output_field=models.CharField()
 							),
-							distinct=True,
-						)
+							models.Value('-'),
+							models.functions.Cast(
+								'entity_id', output_field=models.CharField()
+							),
+						),
+						distinct=True,
 					)
-					.values('c')[:1]
-				),
-				0,
+				)
+				.values('c')[:1]
 			),
-			first_ent_id=Subquery(rce_subq.values('entity_id')[:1]),
-			first_ent_type=Subquery(rce_subq.values('entity_type__model')[:1]),
-			first_ent_type_id=Subquery(rce_subq.values('entity_type_id')[:1]),
-		)
-		.annotate(
-			first_ent=Case(
-				When(
-					Q(first_ent_type_id__in=_slug_model_ids()),
-					# Fall back to the numeric id when no slug change was recorded
-					then=Coalesce(
-						Subquery(
-							RevisionChange.objects.filter(
-								target_type_id=OuterRef('first_ent_type_id'),
-								target_id=OuterRef('first_ent_id'),
-								target_column='slug',
-							)
-							.order_by('-rev_id')
-							.values('target_value')[:1]
-						),
-						models.functions.Cast(
-							F('first_ent_id'),
-							output_field=models.TextField(),
-						),
+			0,
+		),
+		first_ent_id=Subquery(rce_subq.values('entity_id')[:1]),
+		first_ent_type=Subquery(rce_subq.values('entity_type__model')[:1]),
+		first_ent_type_id=Subquery(rce_subq.values('entity_type_id')[:1]),
+	).annotate(
+		first_ent=Case(
+			When(
+				Q(first_ent_type_id__in=_slug_model_ids()),
+				# Fall back to the numeric id when no slug change was recorded
+				then=Coalesce(
+					Subquery(
+						RevisionChange.objects.filter(
+							target_type_id=OuterRef('first_ent_type_id'),
+							target_id=OuterRef('first_ent_id'),
+							target_column='slug',
+						)
+						.order_by('-rev_id')
+						.values('target_value')[:1]
+					),
+					models.functions.Cast(
+						F('first_ent_id'),
+						output_field=models.TextField(),
 					),
 				),
-				default=models.functions.Cast(
-					F('first_ent_id'),
-					output_field=models.TextField(),
-				),
+			),
+			default=models.functions.Cast(
+				F('first_ent_id'),
 				output_field=models.TextField(),
-			)
+			),
+			output_field=models.TextField(),
 		)
-		.order_by('-id')
+	)
+
+
+@history_router.get('recent', response=list[RevisionEntitySummarySchema])
+@paginate
+def recent(request: HttpRequest, username: str | None = None):
+	q = _annotate_entity_summary(Revision.objects.select_related('user')).order_by(
+		'-id'
 	)
 	if username:
 		q = q.filter(user__username=username)
@@ -1321,7 +1324,7 @@ def _change_flag_q(**flags) -> Q:
 	return Q(Exists(RevisionChange.objects.filter(rev_id=OuterRef('pk'), **flags)))
 
 
-@history_router.get('search', response=list[RevisionSchema])
+@history_router.get('search', response=list[RevisionEntitySummarySchema])
 @paginate
 def search(
 	request: HttpRequest,
@@ -1380,15 +1383,6 @@ def search(
 	if changed_field:
 		q &= _changed_field_q(changed_field, changed_value, changed_from)
 
-	return (
-		Revision.objects.select_related('user')
-		.filter(q)
-		.annotate(
-			route=Subquery(
-				RevisionChangeEntity.objects.filter(
-					change__rev_id=OuterRef('id')
-				).values('route')[:1]
-			)
-		)
-		.order_by('-id')
-	)
+	return _annotate_entity_summary(
+		Revision.objects.select_related('user').filter(q)
+	).order_by('-id')

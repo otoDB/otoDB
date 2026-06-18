@@ -909,8 +909,9 @@ class BitmaskAttr(_KVEnumAttr):
 		)
 
 
-def count_predicate_q(base, op, value):
-	grouped = base.annotate(_g=Value(1)).values('_g').annotate(c=Count('*'))
+def count_predicate_q(base, op, value, distinct_field=None):
+	counter = Count(distinct_field, distinct=True) if distinct_field else Count('*')
+	grouped = base.annotate(_g=Value(1)).values('_g').annotate(c=counter)
 	positive = Exists(grouped.filter(**{f'c__{op}': value}))
 	zero_matches = (
 		op == 'lte'

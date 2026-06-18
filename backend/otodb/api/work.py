@@ -34,6 +34,7 @@ from otodb.models import (
 	MediaWork,
 	ModerationEvent,
 	RevisionChange,
+	RevisionChangeEntity,
 	TagWork,
 	TagWorkInstance,
 	WorkRelation,
@@ -191,6 +192,8 @@ class WorkOrder(OtodbIntegerEnum):
 	METATAGS_ASC = 27, 'metatags_asc'
 	UNCATTAGS = 28, 'uncattags'
 	UNCATTAGS_ASC = 29, 'uncattags_asc'
+	REVISION = 30, 'revision'
+	REVISION_ASC = 31, 'revision_asc'
 
 
 _WORK_TAG_CATEGORY_FILTERS = {
@@ -271,6 +274,19 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 			}
 			field = '-_last_comment' if v is WorkOrder.COMMENT else '_last_comment'
 			return ann, Q(_last_comment__isnull=False), (field,)
+		case WorkOrder.REVISION | WorkOrder.REVISION_ASC:
+			ann = {
+				'_last_rev': Subquery(
+					RevisionChangeEntity.objects.filter(
+						entity_type=ContentType.objects.get_for_model(MediaWork),
+						entity_id=OuterRef('id'),
+					)
+					.order_by('-change_id')
+					.values('change_id')[:1]
+				)
+			}
+			field = '-_last_rev' if v is WorkOrder.REVISION else '_last_rev'
+			return ann, Q(_last_rev__isnull=False), (field,)
 		case WorkOrder.RANDOM:
 			return {}, Q(), ('?',)
 		case v if v in _WORK_TAG_COUNT_ORDERS:
@@ -287,10 +303,10 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 			raise ValueError(f'unrecognized WorkOrder: {v!r}')
 
 
-def _user_to_q(username):
-	"""Match works whose 'first user' is `username`.
+def _submitter_to_q(username):
+	"""Match works whose submitter (their 'first user') is `username`.
 
-	The first user is the author of the earliest non-system revision targeting
+	The submitter is the author of the earliest non-system revision targeting
 	the work; for works with no non-system revisions (e.g. those created before
 	the revision model existed) it falls back to a `WorkSource.added_by` match.
 	"""
@@ -316,6 +332,28 @@ def _user_to_q(username):
 	return Q(id__in=rev_match_ids) | Q(id__in=src_match_ids)
 
 
+def _contributor_to_q(username):
+	"""Match works `username` contributed to but did *not* submit.
+
+	A contribution is any non-system revision affecting the work entity (its own
+	fields, tags, sources, relations, ...), or a `WorkSource.added_by` match for
+	works that predate the revision model. `submitter:` and `contributor:` are
+	disjoint roles, so everyone who ever touched a work is the union
+	`submitter:X | contributor:X`.
+	"""
+	mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+	rev_match = RevisionChangeEntity.objects.filter(
+		entity_type=mediawork_ct,
+		entity_id=OuterRef('id'),
+		change__rev__user__username__iexact=username,
+	).exclude(change__rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME)
+	src_match = WorkSource.objects.filter(
+		media_id=OuterRef('id'), added_by__username__iexact=username
+	)
+	touched = Q(Exists(rev_match)) | Q(Exists(src_match))
+	return touched & ~_submitter_to_q(username)
+
+
 work_metatag_grammars = {
 	'rating': MetatagSpec(Rating, lambda v: Q(rating=v)),
 	'status': MetatagSpec(Status, lambda v: Q(status=v)),
@@ -337,7 +375,21 @@ work_metatag_grammars = {
 			WorkSource.objects.filter(media_id=OuterRef('id'), work_origin=v)
 		),
 	),
-	'user': MetatagSpec(str, _user_to_q),
+	'submitter': MetatagSpec(str, _submitter_to_q),
+	'contributor': MetatagSpec(str, _contributor_to_q),
+	'contributors': MetatagSpec(
+		int,
+		lambda op, value: count_predicate_q(
+			RevisionChangeEntity.objects.filter(
+				entity_type=ContentType.objects.get_for_model(MediaWork),
+				entity_id=OuterRef('id'),
+				change__rev__user__isnull=False,
+			).exclude(change__rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME),
+			op,
+			value,
+			distinct_field='change__rev__user_id',
+		),
+	),
 	'id': MetatagSpec(int, make_range_metatag('id')),
 	'width': MetatagSpec(
 		int,

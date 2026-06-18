@@ -34,6 +34,14 @@
 	});
 
 	let diffLayout = $state<'inline' | 'split'>('inline');
+	let windowedDiffs = $state(true);
+	const hasWindow = $derived(
+		data.routes.some((r) =>
+			r.entities.some((e) =>
+				e.rows.some((row) => row.rcs.some((rc) => rc.diff?.some((seg) => seg.op === 2)))
+			)
+		)
+	);
 
 	// Per-entity expand/collapse, defaulting open; keyed by route+entity index.
 	let entityOpen = $state<Record<string, boolean>>({});
@@ -112,6 +120,34 @@
 					</span>
 				</button>
 			</li>
+			{#if hasWindow}
+				<li>
+					<button
+						type="button"
+						class="flex items-center gap-1 p-1"
+						aria-pressed={!windowedDiffs}
+						onclick={() => (windowedDiffs = !windowedDiffs)}
+					>
+						<span
+							class={[
+								'size-4',
+								windowedDiffs
+									? 'icon-[gravity-ui--chevrons-expand-vertical]'
+									: 'icon-[gravity-ui--chevrons-collapse-vertical]'
+							]}
+							aria-hidden="true"
+						></span>
+						<span class="grid">
+							<span class={['col-start-1 row-start-1', !windowedDiffs && 'invisible']}>
+								{m.bald_strong_opossum_flip()}
+							</span>
+							<span class={['col-start-1 row-start-1', windowedDiffs && 'invisible']}>
+								{m.shy_new_penguin_reap()}
+							</span>
+						</span>
+					</button>
+				</li>
+			{/if}
 			<li>
 				<button
 					type="button"
@@ -176,6 +212,7 @@
 												{ent_type}
 												{ent_id}
 												layout={diffLayout}
+												windowed={windowedDiffs}
 												deletedRows={data.changes.deleted_rows}
 												rowContext={data.changes.row_context}
 											/>

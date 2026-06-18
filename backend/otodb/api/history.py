@@ -116,12 +116,70 @@ class OldColumnSchema(Schema):
 
 
 class DiffSegmentSchema(Schema):
-	# diff-match-patch op: -1 delete, 0 equal, 1 insert
+	# diff-match-patch op:
+	# -1 delete, 0 equal, 1 insert
+	# custom op:
+	# 2 collapsed unchanged region
 	op: int
 	text: str
 
 
 _DIFF_MIN_LENGTH = 255
+
+# Collapse long unchanged runs to a window of context around each change, so
+# minor edits aren't buried in the middle of a large field.
+_DIFF_OP_GAP = 2
+# Characters of unchanged context to keep on each side of a change.
+_DIFF_CONTEXT = 80
+# Don't collapse unless it actually hides a meaningful chunk.
+_DIFF_MIN_GAP = 40
+# Snap a cut to a nearby line boundary, but only if it's close.
+_DIFF_SNAP = 200
+
+
+def _head_context(text: str, keep: int) -> int:
+	"""End index keeping the first `keep` chars, extended to the line's end."""
+	end = min(len(text), keep)
+	nl = text.find('\n', end)
+	if nl != -1 and nl - end <= _DIFF_SNAP:
+		end = nl
+	return end
+
+
+def _tail_context(text: str, keep: int) -> int:
+	"""Start index keeping the last `keep` chars, extended to the line's start."""
+	start = max(0, len(text) - keep)
+	if start > 0:
+		nl = text.rfind('\n', 0, start + 1)
+		if nl != -1 and start - nl <= _DIFF_SNAP:
+			start = nl + 1
+	return start
+
+
+def _window_diff(diffs: list[tuple[int, str]]) -> list[DiffSegmentSchema]:
+	n = len(diffs)
+	out: list[DiffSegmentSchema] = []
+	for i, (op, text) in enumerate(diffs):
+		has_before = i > 0
+		has_after = i < n - 1
+		keep = (_DIFF_CONTEXT if has_before else 0) + (
+			_DIFF_CONTEXT if has_after else 0
+		)
+		if op != 0 or len(text) - keep < _DIFF_MIN_GAP:
+			out.append(DiffSegmentSchema(op=op, text=text))
+			continue
+		head_end = _head_context(text, _DIFF_CONTEXT) if has_before else 0
+		tail_start = _tail_context(text, _DIFF_CONTEXT) if has_after else len(text)
+		if tail_start - head_end < _DIFF_MIN_GAP:
+			out.append(DiffSegmentSchema(op=op, text=text))
+			continue
+		if has_before:
+			out.append(DiffSegmentSchema(op=0, text=text[:head_end]))
+		out.append(DiffSegmentSchema(op=_DIFF_OP_GAP, text=text[head_end:tail_start]))
+		if has_after:
+			out.append(DiffSegmentSchema(op=0, text=text[tail_start:]))
+	return out
+
 
 # Models whose rows are displayed as a whole (all columns) rather than per-column
 _CONTEXT_MODELS = ('workrelation', 'songrelation', 'tagworkparenthood')
@@ -150,7 +208,7 @@ class RevisionChangeSchema(ModelSchema):
 		return model._meta.model_name if model is not None else None
 
 	@staticmethod
-	def resolve_diff(obj) -> list[dict] | None:
+	def resolve_diff(obj) -> list[DiffSegmentSchema] | None:
 		cols = REVISION_TEXT_COLUMNS().get(obj.target_type_id)
 		if not cols or obj.target_column not in cols:
 			return None
@@ -161,7 +219,7 @@ class RevisionChangeSchema(ModelSchema):
 			return None
 		diffs = _dmp.diff_main(old, new)
 		_dmp.diff_cleanupSemantic(diffs)
-		return [{'op': op, 'text': text} for op, text in diffs]
+		return _window_diff(diffs)
 
 
 class RevisionDetailsSchema(Schema):

@@ -6,10 +6,16 @@
 		change: components['schemas']['RevisionChangeSchema'];
 		label: string;
 		layout?: 'inline' | 'split';
+		windowed?: boolean;
 	}
 
-	const { change, label, layout = 'inline' }: Props = $props();
+	const { change, label, layout = 'inline', windowed = true }: Props = $props();
+
+	const segments = $derived(change.diff ?? []);
 </script>
+
+<!-- A windowed run of unchanged text: a marker when windowed, the text when not -->
+{#snippet gap(text: string)}{#if windowed}<span class="gap">⋯</span>{:else}{text}{/if}{/snippet}
 
 {#snippet valueOf(value: string | null | undefined)}
 	<Value
@@ -34,16 +40,20 @@
 			<div class="grid grid-cols-2">
 				<div class="py-[0.1rem] pr-3 whitespace-pre-wrap">
 					{#if change.diff}
-						{#each change.diff as segment, i (i)}{#if segment.op === -1}<del>{segment.text}</del
-								>{:else if segment.op === 0}{segment.text}{/if}{/each}
+						{#each segments as segment, i (i)}{#if segment.op === -1}<del>{segment.text}</del
+								>{:else if segment.op === 2}{@render gap(
+									segment.text
+								)}{:else if segment.op === 0}{segment.text}{/if}{/each}
 					{:else}
 						<del>{@render valueOf(change.old_value)}</del>
 					{/if}
 				</div>
 				<div class="py-[0.1rem] pl-3 whitespace-pre-wrap">
 					{#if change.diff}
-						{#each change.diff as segment, i (i)}{#if segment.op === 1}<ins>{segment.text}</ins
-								>{:else if segment.op === 0}{segment.text}{/if}{/each}
+						{#each segments as segment, i (i)}{#if segment.op === 1}<ins>{segment.text}</ins
+								>{:else if segment.op === 2}{@render gap(
+									segment.text
+								)}{:else if segment.op === 0}{segment.text}{/if}{/each}
 					{:else}
 						<ins>{@render valueOf(change.target_value)}</ins>
 					{/if}
@@ -57,9 +67,11 @@
 		<td class="font-mono">{label}</td>
 		<td>
 			<span
-				>{#each change.diff as segment, i (i)}{#if segment.op === 1}<ins>{segment.text}</ins
+				>{#each segments as segment, i (i)}{#if segment.op === 1}<ins>{segment.text}</ins
 						>{:else if segment.op === -1}<del>{segment.text}</del
-						>{:else}{segment.text}{/if}{/each}</span
+						>{:else if segment.op === 2}{@render gap(
+							segment.text
+						)}{:else}{segment.text}{/if}{/each}</span
 			>
 		</td>
 	</tr>
@@ -112,6 +124,14 @@
 
 	td > span {
 		white-space: pre-wrap;
+	}
+
+	/* Collapsed unchanged region between context windows. */
+	.gap {
+		display: block;
+		text-align: center;
+		color: var(--otodb-color-content-faint);
+		user-select: none;
 	}
 
 	td.split {

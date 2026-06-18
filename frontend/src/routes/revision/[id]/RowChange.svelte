@@ -19,6 +19,7 @@
 		deletedRows: Record<string, components['schemas']['OldColumnSchema'][]>;
 		rowContext: Record<string, components['schemas']['OldColumnSchema'][]>;
 		layout?: 'inline' | 'split';
+		windowed?: boolean;
 	}
 	const {
 		target_type,
@@ -29,7 +30,8 @@
 		ent_id,
 		deletedRows,
 		rowContext,
-		layout = 'inline'
+		layout = 'inline',
+		windowed = true
 	}: Props = $props();
 
 	const isOwnEntity = $derived(target_type === ent_type && tg_id === ent_id);
@@ -191,7 +193,7 @@
 {:else}
 	{@render relHeader()}
 	{#each rcs.filter((c) => c.target_column) as c, k (k)}
-		<DiffRows change={c} label={columnLabel(c.target_column!)} {layout} />
+		<DiffRows change={c} label={columnLabel(c.target_column!)} {layout} {windowed} />
 	{/each}
 	<!-- Columns the revision didn't touch, shown for context -->
 	{#each context.filter((e) => !byColumn.has(e.column)) as entry (entry.column)}

@@ -133,7 +133,11 @@
 				></textarea>
 			{/if}
 			<div class="reply-actions">
-				<button type="button" class="h-15 p-3" onclick={() => togglePreview(reply_to)}>
+				<button
+					type="button"
+					class="h-15 p-3 whitespace-nowrap"
+					onclick={() => togglePreview(reply_to)}
+				>
 					{previewMode[reply_to] ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}
 				</button>
 				<input type="submit" class="h-15 p-3" value={m.inner_solid_toad_zap()} />
@@ -193,7 +197,7 @@
 							></textarea>
 						{/if}
 						<div class="reply-actions">
-							<button type="button" class="h-15 p-3" onclick={toggleEditPreview}>
+							<button type="button" class="h-15 p-3 whitespace-nowrap" onclick={toggleEditPreview}>
 								{editPreviewMode ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}
 							</button>
 							<input type="submit" class="h-15 p-3" value={m.last_late_penguin_bubble()} />

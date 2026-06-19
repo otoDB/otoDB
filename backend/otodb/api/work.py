@@ -403,6 +403,18 @@ work_metatag_grammars = {
 			distinct_field='change__rev__user_id',
 		),
 	),
+	'revisions': MetatagSpec(
+		int,
+		lambda op, value: count_predicate_q(
+			RevisionChangeEntity.objects.filter(
+				entity_type=ContentType.objects.get_for_model(MediaWork),
+				entity_id=OuterRef('id'),
+			).exclude(change__rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME),
+			op,
+			value,
+			distinct_field='change__rev_id',
+		),
+	),
 	'id': MetatagSpec(int, make_range_metatag('id')),
 	'width': MetatagSpec(
 		int,

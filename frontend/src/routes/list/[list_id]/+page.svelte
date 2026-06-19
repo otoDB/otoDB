@@ -1,6 +1,6 @@
 <script lang="ts">
 	import client from '$lib/api';
-	import CommentTree from '$lib/CommentTree.svelte';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import { PlatformNames, WorkOriginNames } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';

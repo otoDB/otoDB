@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
-	import CommentTree from '$lib/CommentTree.svelte';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import { dirtyClick } from '$lib/dirty';
 	import { RequestActions, StatusNames } from '$lib/enums.js';
 	import { isSOV, isSVO } from '$lib/enums/language.js';

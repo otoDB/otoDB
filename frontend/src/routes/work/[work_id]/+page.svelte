@@ -1,7 +1,7 @@
 <script lang="ts">
 	import client from '$lib/api';
 	import Banner from '$lib/Banner.svelte';
-	import CommentTree from '$lib/CommentTree.svelte';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import { dirtyClick } from '$lib/dirty';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import {

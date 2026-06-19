@@ -8,7 +8,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { Levels, ModelsWithComments } from '$lib/schema';
 	import Time from '$lib/Time.svelte';
-	import EditedBy from './EditedBy.svelte';
+	import EditedBy from '$lib/EditedBy.svelte';
 
 	interface Props {
 		user: App.Locals['user'] | null;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { buildEntityRoutes } from '$lib/enums.js';
+	import Icon from '$lib/Icon/Icon.svelte';
 	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import Section from '$lib/Section.svelte';
@@ -75,19 +76,9 @@
 					<tr>
 						<td class="w-6 text-center">
 							{#if p.closed_at}
-								<span
-									class="icon-[gravity-ui--check] text-otodb-content-fainter size-4 align-middle"
-									role="img"
-									aria-label={m.topical_small_alligator_aspire()}
-									title={m.topical_small_alligator_aspire()}
-								></span>
+								<Icon key="thread-closed" class="text-otodb-content-fainter size-4 align-middle" />
 							{:else}
-								<span
-									class="icon-[gravity-ui--comment] text-otodb-content-fainter size-4 align-middle"
-									role="img"
-									aria-label={m.flat_tasty_okapi_cut()}
-									title={m.flat_tasty_okapi_cut()}
-								></span>
+								<Icon key="thread-opened" class="text-otodb-content-fainter size-4 align-middle" />
 							{/if}
 						</td>
 						<td><a href="/thread/{p.id}">{p.title}</a></td>

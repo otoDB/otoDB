@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/sveltekit';
 import type { Handle, HandleFetch, HandleServerError } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
-import client from '$lib/api.server';
+import { rawClient } from '$lib/api.server';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { defineCustomServerStrategy } from '$lib/paraglide/runtime';
 import { getRequestEvent } from '$app/server';
@@ -49,7 +49,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	const csrf = event.cookies.get('csrftoken');
 
 	if (session && csrf) {
-		const status = await client.GET('/api/auth/status', { fetch: event.fetch });
+		const status = await rawClient.GET('/api/auth/status', { fetch: event.fetch });
 
 		if (status.data) event.locals.user = { csrf: csrf, ...status.data };
 		else event.locals.user = null;

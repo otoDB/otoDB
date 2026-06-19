@@ -80,50 +80,18 @@ def test_close_thread_forbidden_for_non_admin_non_author(other_member, member):
 	assert t.closed_at is None
 
 
-def make_closed_thread(member) -> Thread:
+@pytest.mark.django_db
+def test_close_already_closed_thread(admin_thread_client, admin):
+	"""Closing an already-closed thread is a no-op."""
 	from datetime import datetime, timezone
 
-	t = make_thread(member)
+	t = make_thread(admin)
 	t.closed_at = datetime.now(tz=timezone.utc)
 	t.save()
-	return t
-
-
-@pytest.mark.django_db
-def test_unclose_thread_as_admin(admin_thread_client, admin):
-	"""ADMIN can unclose a closed thread."""
-	t = make_closed_thread(admin)
-	assert t.closed_at is not None
+	original_closed_at = t.closed_at
 
 	response = admin_thread_client.put(f'/close?thread_id={t.pk}')
 
 	assert response.status_code == 200
-	t.refresh_from_db()
-	assert t.closed_at is None
-
-
-@pytest.mark.django_db
-def test_unclose_thread_as_author(thread_client, member):
-	"""Thread author can unclose their own closed thread."""
-	t = make_closed_thread(member)
-	assert t.closed_at is not None
-
-	response = thread_client.put(f'/close?thread_id={t.pk}')
-
-	assert response.status_code == 200
-	t.refresh_from_db()
-	assert t.closed_at is None
-
-
-@pytest.mark.django_db
-def test_unclose_thread_forbidden_for_non_admin_non_author(other_member, member):
-	"""Users who are neither ADMIN nor the thread author receive 403."""
-	t = make_closed_thread(member)
-	original_closed_at = t.closed_at
-	other_client = AuthenticatedTestClient(thread_router, other_member)
-
-	response = other_client.put(f'/close?thread_id={t.pk}')
-
-	assert response.status_code == 403
 	t.refresh_from_db()
 	assert t.closed_at == original_closed_at

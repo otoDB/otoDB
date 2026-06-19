@@ -13,7 +13,7 @@
 	import { ThemePref } from '$lib/schema';
 	import { themes } from '$lib/themes/themes';
 	import { callApiErrorToast, callErrorToast } from '$lib/toast';
-	import { getLocalPref, updateLocalPrefs } from '$lib/ui';
+	import { getLocalPref, getStoredPrefs, updateLocalPrefs } from '$lib/ui';
 	import { Toaster } from 'svelte-sonner';
 	import '../app.css';
 
@@ -21,7 +21,7 @@
 
 	defineCustomClientStrategy('custom-userPreference', {
 		getLocale: () => {
-			const lang = data.user?.prefs.LANGUAGE ?? getLocalPref('LANGUAGE'); // Don't want our default behaviour here
+			const lang = data.user?.prefs.LANGUAGE ?? getStoredPrefs().LANGUAGE; // Don't want our default behaviour here
 			return lang ? resolveLanguageKeyById(lang) : undefined;
 		},
 		setLocale: (locale) => {

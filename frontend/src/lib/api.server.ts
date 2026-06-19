@@ -74,11 +74,12 @@ export const rawClient = createClient<paths>({
 });
 
 export const forwardCookies = (cookies: Cookies, response: Response) => {
-	for (const { name, value, expires, maxAge, sameSite } of setCookie.parse(
+	for (const { name, value, domain, expires, maxAge, sameSite } of setCookie.parse(
 		response.headers.getSetCookie()
 	))
 		cookies.set(name, value, {
 			path: '/',
+			domain,
 			expires,
 			maxAge,
 			sameSite: sameSite as CookieSerializeOptions['sameSite']

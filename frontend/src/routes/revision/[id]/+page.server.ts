@@ -4,27 +4,39 @@ import { isValidEntityModelType, type EntityModelType } from '$lib/enums';
 import type { components, Route } from '$lib/schema';
 
 type RC = components['schemas']['RevisionChangeSchema'];
+type Row = { target_type: string; tg_id: string; target_id: string; rcs: RC[] };
 const group_RCs = (
 	items: RC[]
-): { route: Route; entities: { rcs: RC[]; ent_type: EntityModelType; ent_id: string }[] }[] =>
+): {
+	route: Route;
+	entities: { rows: Row[]; ent_type: EntityModelType; ent_id: string }[];
+}[] =>
 	(Object.values(Object.groupBy(items, (c) => c.route)) as RC[][])
 		.map((rent) => ({
 			route: rent![0].route,
 			entities: (Object.values(Object.groupBy(rent!, (c) => c.ent_type + c.ent_id)) as RC[][])
 				.map((cs) => cs.filter((c) => isValidEntityModelType(c.ent_type)))
 				.filter((ec) => ec.length)
-				.map((tg) => ({
-					ent_type: tg[0].ent_type as EntityModelType,
-					ent_id: tg[0].ent_id,
-					rcs: tg
-				}))
+				.map((tg) => {
+					const ent_type = tg[0].ent_type as EntityModelType;
+					const ent_id = tg[0].ent_id;
+					const rows: Row[] = (
+						Object.values(Object.groupBy(tg, (c) => c.target_type + ':' + c.target_id)) as RC[][]
+					).map((rcs) => ({
+						target_type: rcs[0].target_type,
+						tg_id: rcs[0].tg_id,
+						target_id: rcs[0].target_id,
+						rcs
+					}));
+					const isOwn = (r: Row) => r.target_type === ent_type && r.tg_id === ent_id;
+					rows.sort((a, b) => Number(isOwn(b)) - Number(isOwn(a)));
+					return { ent_type, ent_id, rows };
+				})
 		}))
 		.filter(({ entities }) => entities.length);
 
-export const load: PageServerLoad = async ({ params, fetch, url }) => {
+export const load: PageServerLoad = async ({ params, fetch }) => {
 	const revision_id = params.id;
-	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
-	const batch_size = 30;
 
 	const [{ data: revision }, { data: changes }] = await Promise.all([
 		client.GET('/api/history/revision', {
@@ -35,9 +47,7 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 			fetch,
 			params: {
 				query: {
-					revision_id,
-					limit: batch_size,
-					offset: batch_size * (page - 1)
+					revision_id
 				}
 			}
 		})
@@ -46,7 +56,6 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 	return {
 		revision,
 		changes,
-		batch_size,
-		routes: group_RCs(changes.items)
+		routes: group_RCs(changes.changes)
 	};
 };

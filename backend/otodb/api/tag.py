@@ -855,7 +855,7 @@ media_connection_parser = make_alt_value_parser(
 	),
 	(
 		MediaConnectionTypes.IMDB,
-		re_to_parser(re.compile(r'https?:\/\/www\.imdb\.com\/title\/(\d+)\/?')),
+		re_to_parser(re.compile(r'https?:\/\/www\.imdb\.com\/title\/(tt\d+)\/?')),
 	),
 	(
 		MediaConnectionTypes.LETTERBOXD,

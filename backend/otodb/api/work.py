@@ -163,37 +163,53 @@ def query_external(
 class WorkOrder(OtodbIntegerEnum):
 	RANDOM = -1, 'random'
 	ID = 0, 'id'
-	ID_DESC = 1, 'id_desc'
-	SUBMITTED = 2, 'submitted'
-	SUBMITTED_ASC = 3, 'submitted_asc'
-	PUBLISHED = 4, 'published'
-	PUBLISHED_ASC = 5, 'published_asc'
-	COMMENT = 6, 'comment'
-	COMMENT_ASC = 7, 'comment_asc'
-	RESOLUTION = 8, 'resolution'
-	RESOLUTION_ASC = 9, 'resolution_asc'
-	DURATION = 10, 'duration'
-	DURATION_ASC = 11, 'duration_asc'
-	TAGCOUNT = 12, 'tagcount'
-	TAGCOUNT_ASC = 13, 'tagcount_asc'
-	EVENTTAGS = 14, 'eventtags'
-	EVENTTAGS_ASC = 15, 'eventtags_asc'
-	CREATORTAGS = 16, 'creatortags'
-	CREATORTAGS_ASC = 17, 'creatortags_asc'
-	MEDIATAGS = 18, 'mediatags'
-	MEDIATAGS_ASC = 19, 'mediatags_asc'
-	SOURCETAGS = 20, 'sourcetags'
-	SOURCETAGS_ASC = 21, 'sourcetags_asc'
-	SONGTAGS = 22, 'songtags'
-	SONGTAGS_ASC = 23, 'songtags_asc'
-	GENTAGS = 24, 'gentags'
-	GENTAGS_ASC = 25, 'gentags_asc'
-	METATAGS = 26, 'metatags'
-	METATAGS_ASC = 27, 'metatags_asc'
-	UNCATTAGS = 28, 'uncattags'
-	UNCATTAGS_ASC = 29, 'uncattags_asc'
-	REVISION = 30, 'revision'
-	REVISION_ASC = 31, 'revision_asc'
+	ID_ASC = 1, 'id_asc'
+	ID_DESC = 2, 'id_desc'
+	SUBMITTED = 3, 'submitted'
+	SUBMITTED_ASC = 4, 'submitted_asc'
+	SUBMITTED_DESC = 5, 'submitted_desc'
+	PUBLISHED = 6, 'published'
+	PUBLISHED_ASC = 7, 'published_asc'
+	PUBLISHED_DESC = 8, 'published_desc'
+	COMMENT = 9, 'comment'
+	COMMENT_ASC = 10, 'comment_asc'
+	COMMENT_DESC = 11, 'comment_desc'
+	RESOLUTION = 12, 'resolution'
+	RESOLUTION_ASC = 13, 'resolution_asc'
+	RESOLUTION_DESC = 14, 'resolution_desc'
+	DURATION = 15, 'duration'
+	DURATION_ASC = 16, 'duration_asc'
+	DURATION_DESC = 17, 'duration_desc'
+	TAGCOUNT = 18, 'tagcount'
+	TAGCOUNT_ASC = 19, 'tagcount_asc'
+	TAGCOUNT_DESC = 20, 'tagcount_desc'
+	EVENTTAGS = 21, 'eventtags'
+	EVENTTAGS_ASC = 22, 'eventtags_asc'
+	EVENTTAGS_DESC = 23, 'eventtags_desc'
+	CREATORTAGS = 24, 'creatortags'
+	CREATORTAGS_ASC = 25, 'creatortags_asc'
+	CREATORTAGS_DESC = 26, 'creatortags_desc'
+	MEDIATAGS = 27, 'mediatags'
+	MEDIATAGS_ASC = 28, 'mediatags_asc'
+	MEDIATAGS_DESC = 29, 'mediatags_desc'
+	SOURCETAGS = 30, 'sourcetags'
+	SOURCETAGS_ASC = 31, 'sourcetags_asc'
+	SOURCETAGS_DESC = 32, 'sourcetags_desc'
+	SONGTAGS = 33, 'songtags'
+	SONGTAGS_ASC = 34, 'songtags_asc'
+	SONGTAGS_DESC = 35, 'songtags_desc'
+	GENTAGS = 36, 'gentags'
+	GENTAGS_ASC = 37, 'gentags_asc'
+	GENTAGS_DESC = 38, 'gentags_desc'
+	METATAGS = 39, 'metatags'
+	METATAGS_ASC = 40, 'metatags_asc'
+	METATAGS_DESC = 41, 'metatags_desc'
+	UNCATTAGS = 42, 'uncattags'
+	UNCATTAGS_ASC = 43, 'uncattags_asc'
+	UNCATTAGS_DESC = 44, 'uncattags_desc'
+	REVISION = 45, 'revision'
+	REVISION_ASC = 46, 'revision_asc'
+	REVISION_DESC = 47, 'revision_desc'
 
 
 _WORK_TAG_CATEGORY_FILTERS = {
@@ -208,28 +224,31 @@ _WORK_TAG_CATEGORY_FILTERS = {
 }
 
 
-_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', tuple[bool, Q]] = {
-	WorkOrder.TAGCOUNT: (False, Q()),
-	WorkOrder.TAGCOUNT_ASC: (True, Q()),
-	**{
-		WorkOrder[name.upper() + suffix]: (asc, q)
-		for name, q in _WORK_TAG_CATEGORY_FILTERS.items()
-		for suffix, asc in (('', False), ('_ASC', True))
-	},
+_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', Q] = {
+	WorkOrder.TAGCOUNT: Q(),
+	**{WorkOrder[name.upper()]: q for name, q in _WORK_TAG_CATEGORY_FILTERS.items()},
 }
 
 
 def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
-	match v:
+	if v.name.endswith('_ASC'):
+		base, ascending = WorkOrder[v.name.removesuffix('_ASC')], True
+	elif v.name.endswith('_DESC'):
+		base, ascending = WorkOrder[v.name.removesuffix('_DESC')], False
+	else:
+		base, ascending = v, v is WorkOrder.ID
+
+	def by(field: str) -> tuple[str, ...]:
+		return (field if ascending else f'-{field}',)
+
+	match base:
+		case WorkOrder.RANDOM:
+			return {}, Q(), ('?',)
 		case WorkOrder.ID:
-			return {}, Q(), ('id',)
-		case WorkOrder.ID_DESC:
-			return {}, Q(), ('-id',)
+			return {}, Q(), by('id')
 		case WorkOrder.SUBMITTED:
-			return {}, Q(), ('-created_at',)
-		case WorkOrder.SUBMITTED_ASC:
-			return {}, Q(), ('created_at',)
-		case WorkOrder.PUBLISHED | WorkOrder.PUBLISHED_ASC:
+			return {}, Q(), by('created_at')
+		case WorkOrder.PUBLISHED:
 			ann = {
 				'_pub': Subquery(
 					WorkSource.objects.filter(media_id=OuterRef('id'))
@@ -237,9 +256,8 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 					.values('published_date')[:1]
 				)
 			}
-			field = '-_pub' if v is WorkOrder.PUBLISHED else '_pub'
-			return ann, Q(), (field,)
-		case WorkOrder.RESOLUTION | WorkOrder.RESOLUTION_ASC:
+			return ann, Q(), by('_pub')
+		case WorkOrder.RESOLUTION:
 			ann = {
 				'_mpixels': Subquery(
 					WorkSource.objects.filter(media_id=OuterRef('id'))
@@ -248,9 +266,8 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 					.values('_mp')[:1]
 				)
 			}
-			field = '-_mpixels' if v is WorkOrder.RESOLUTION else '_mpixels'
-			return ann, Q(_mpixels__isnull=False), (field,)
-		case WorkOrder.DURATION | WorkOrder.DURATION_ASC:
+			return ann, Q(_mpixels__isnull=False), by('_mpixels')
+		case WorkOrder.DURATION:
 			ann = {
 				'_duration': Subquery(
 					WorkSource.objects.filter(media_id=OuterRef('id'))
@@ -258,9 +275,8 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 					.values('work_duration')[:1]
 				)
 			}
-			field = '-_duration' if v is WorkOrder.DURATION else '_duration'
-			return ann, Q(_duration__isnull=False), (field,)
-		case WorkOrder.COMMENT | WorkOrder.COMMENT_ASC:
+			return ann, Q(_duration__isnull=False), by('_duration')
+		case WorkOrder.COMMENT:
 			ann = {
 				'_last_comment': Subquery(
 					XtdComment.objects.filter(
@@ -272,9 +288,8 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 					.values('submit_date')[:1]
 				)
 			}
-			field = '-_last_comment' if v is WorkOrder.COMMENT else '_last_comment'
-			return ann, Q(_last_comment__isnull=False), (field,)
-		case WorkOrder.REVISION | WorkOrder.REVISION_ASC:
+			return ann, Q(_last_comment__isnull=False), by('_last_comment')
+		case WorkOrder.REVISION:
 			ann = {
 				'_last_rev': Subquery(
 					RevisionChangeEntity.objects.filter(
@@ -285,20 +300,18 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 					.values('change_id')[:1]
 				)
 			}
-			field = '-_last_rev' if v is WorkOrder.REVISION else '_last_rev'
-			return ann, Q(_last_rev__isnull=False), (field,)
-		case WorkOrder.RANDOM:
-			return {}, Q(), ('?',)
-		case v if v in _WORK_TAG_COUNT_ORDERS:
-			asc, q = _WORK_TAG_COUNT_ORDERS[v]
-			sub = TagWorkInstance.objects.filter(q, work_id=OuterRef('id'))
+			return ann, Q(_last_rev__isnull=False), by('_last_rev')
+		case _ if base in _WORK_TAG_COUNT_ORDERS:
+			sub = TagWorkInstance.objects.filter(
+				_WORK_TAG_COUNT_ORDERS[base], work_id=OuterRef('id')
+			)
 			ann = {
 				'_tagcount': Coalesce(
 					Subquery(sub.values('work_id').annotate(c=Count('*')).values('c')),
 					0,
 				)
 			}
-			return ann, Q(), ('_tagcount' if asc else '-_tagcount',)
+			return ann, Q(), by('_tagcount')
 		case _:
 			raise ValueError(f'unrecognized WorkOrder: {v!r}')
 

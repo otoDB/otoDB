@@ -50,9 +50,9 @@
 			<tr>
 				<td class="text-center">
 					{#if post.closed_at}
-						<Icon key="thread-closed" />
+						<Icon key="thread-closed" class="mx-auto block size-4" />
 					{:else}
-						<Icon key="thread-opened" />
+						<Icon key="thread-opened" class="mx-auto block size-4" />
 					{/if}
 				</td>
 				<td>

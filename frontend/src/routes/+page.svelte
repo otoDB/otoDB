@@ -76,9 +76,9 @@
 					<tr>
 						<td class="w-6 text-center">
 							{#if p.closed_at}
-								<Icon key="thread-closed" class="text-otodb-content-fainter size-4 align-middle" />
+								<Icon key="thread-closed" class="mx-auto block size-4" />
 							{:else}
-								<Icon key="thread-opened" class="text-otodb-content-fainter size-4 align-middle" />
+								<Icon key="thread-opened" class="mx-auto block size-4" />
 							{/if}
 						</td>
 						<td><a href="/thread/{p.id}">{p.title}</a></td>

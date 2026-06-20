@@ -2,7 +2,7 @@
 	import Section from '$lib/Section.svelte';
 
 	import { m } from '$lib/paraglide/messages.js';
-	import CommentTree from '$lib/CommentTree.svelte';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import Connections from '$lib/Connections.svelte';
 	import { getVersionKey, versions } from '$lib/enums/version';
 	import { userLevelNames } from '$lib/enums/userLevel.js';

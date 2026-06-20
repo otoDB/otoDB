@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CommentTree from '$lib/CommentTree.svelte';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import Section from '$lib/Section.svelte';
 	import { SongTagCategoryNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';

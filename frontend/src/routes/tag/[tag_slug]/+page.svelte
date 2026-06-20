@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import CommentTree from '$lib/CommentTree.svelte';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import Connections from '$lib/Connections.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import RelationViewer from '$lib/RelationViewer.svelte';

@@ -1,20 +1,17 @@
 <script lang="ts">
 	import type { ClassValue } from 'svelte/elements';
-	import icons from "./icons";
+	import icons from './icons';
 
 	interface Props {
 		class?: ClassValue;
-		key : keyof typeof icons;
+		key: keyof typeof icons;
 	}
 
-	const {
-		key,
-		...props
-	}: Props = $props();
+	const { key, ...props }: Props = $props();
 </script>
 
 <span
-	class="{[icons[key].icon,props.class]}"
+	class={[icons[key].icon, props.class]}
 	role="img"
 	aria-label={icons[key].label}
 	title={icons[key].label}

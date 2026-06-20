@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { buildEntityRoutes } from '$lib/enums.js';
+	import Icon from '$lib/Icon/Icon.svelte';
 	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import Section from '$lib/Section.svelte';
@@ -73,6 +74,13 @@
 			<tbody>
 				{#each data.posts.items as p, i (i)}
 					<tr>
+						<td class="w-6 text-center">
+							{#if p.closed_at}
+								<Icon key="thread-closed" class="mx-auto block size-4" />
+							{:else}
+								<Icon key="thread-opened" class="mx-auto block size-4" />
+							{/if}
+						</td>
 						<td><a href="/thread/{p.id}">{p.title}</a></td>
 						<td
 							><Time format="relative" date={p.modified} />

@@ -1,4 +1,9 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
+	import client from '$lib/api';
+	import { dirtyClick } from '$lib/dirty';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
+	import Banner from '$lib/Banner.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import Section from '$lib/Section.svelte';
 	import ThreadView from '$lib/ThreadView.svelte';
@@ -6,9 +11,38 @@
 	import { postCategoryNames } from '$lib/enums/postCategory.js';
 	import { entity_to_shorthand, string_link_entities } from '$lib/markdown.js';
 	import { m } from '$lib/paraglide/messages.js';
-	import { PostCategory } from '$lib/schema.js';
+	import { Levels, PostCategory } from '$lib/schema.js';
 
 	let { data } = $props();
+
+	const is_mod = $derived(!!data.user && hasUserLevel(data.user.level, Levels.Mod));
+
+	const can_close = $derived(is_mod && !data.thread?.closed_at);
+	const close_thread = async () => {
+		await client.PUT('/api/thread/close', {
+			fetch,
+			params: { query: { thread_id: data.thread.id } }
+		});
+		await invalidateAll();
+	};
+
+	const op_edited_by_another = $derived(
+		!!data.thread?.edited_by && data.thread.edited_by.username !== data.thread.added_by.username
+	);
+	const can_reopen = $derived(
+		!!data.thread?.closed_at &&
+			(is_mod ||
+				(!!data.user &&
+					data.user.username === data.thread?.added_by.username &&
+					!op_edited_by_another))
+	);
+	const reopen_thread = async () => {
+		await client.PUT('/api/thread/reopen', {
+			fetch,
+			params: { query: { thread_id: data.thread.id } }
+		});
+		await invalidateAll();
+	};
 
 	const entitiesText = $derived(
 		(data.thread?.entities ?? [])
@@ -60,23 +94,41 @@
 			{/each}
 		{/snippet}
 
-		<div class="text-otodb-content-fainter mb-6 text-xs">
-			<p>
-				<a href="/thread?category={data.thread.category}"
-					>{postCategoryNames[data.thread.category]()}</a
-				>
-			</p>
-			{#if data.thread.entities?.length}
-				<p class="mt-1">
-					{m.fine_zany_octopus_trim()}:
-					{#each data.thread.entities as { id, entity }, i (i)}
-						{#if i > 0},
-						{/if}
-						{@const link = `/${EntityModelRoutes[entity]}/${id}`}
-						<a href={link}>{link}</a>
-					{/each}
+		{#if data.thread.closed_at}
+			<Banner variant="info" title={m.any_fair_gull_treat()} />
+		{/if}
+
+		<div class="text-otodb-content-fainter mb-6 flex items-center gap-4 text-xs">
+			<div class="flex grow items-center space-x-2">
+				<p>
+					<a href="/thread?category={data.thread.category}"
+						>{postCategoryNames[data.thread.category]()}</a
+					>
 				</p>
-			{/if}
+				{#if data.thread.entities?.length}
+					<p>
+						{m.fine_zany_octopus_trim()}:
+						{#each data.thread.entities as { id, entity }, i (i)}
+							{#if i > 0},
+							{/if}
+							{@const link = `/${EntityModelRoutes[entity]}/${id}`}
+							<a href={link}>{link}</a>
+						{/each}
+					</p>
+				{/if}
+			</div>
+			<div class="shrink-0">
+				{#if can_close}
+					<button type="button" class="px-3 py-1" {@attach dirtyClick(close_thread)}>
+						{m.mean_watery_pig_walk()}
+					</button>
+				{/if}
+				{#if can_reopen}
+					<button type="button" class="px-3 py-1" {@attach dirtyClick(reopen_thread)}>
+						{m.elegant_each_ant_approve()}
+					</button>
+				{/if}
+			</div>
 		</div>
 
 		<div class="thread-posts">

@@ -11,8 +11,8 @@
 	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
 	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
-	import { Levels, Rating, WorkOrigin, WorkStatus } from '$lib/schema.js';
-	import { callSavingToast } from '$lib/toast';
+	import { Levels, Rating, Status, WorkOrigin, WorkStatus } from '$lib/schema.js';
+	import { callSuccessToast } from '$lib/toast';
 	import { getDisplayText } from '$lib/ui.js';
 
 	let { data, form } = $props();
@@ -40,12 +40,12 @@
 		else await invalidateAll();
 	};
 	const updateStatus = async (source_id: string, origin: number) => {
-		const p = client.PUT('/api/upload/origin', {
+		const { error } = await client.PUT('/api/upload/origin', {
 			fetch,
 			params: { query: { source_id, status: origin } }
 		});
-		callSavingToast(p);
-		await p;
+		if (error) return await invalidateAll();
+		callSuccessToast(m.deft_full_quail_coax());
 	};
 
 	const form_barrier = {};
@@ -164,6 +164,9 @@
 							><select
 								bind:value={src.work_origin}
 								onchange={() => updateStatus(src.id, src.work_origin)}
+								disabled={data.status !== Status.Pending &&
+									!src.is_pending &&
+									!hasUserLevel(data.user?.level, Levels.Editor)}
 								>{#each enumValues(WorkOrigin) as w, i (i)}
 									<option value={w}>{WorkOriginNames[w]()}</option>
 								{/each}</select

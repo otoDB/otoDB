@@ -37,7 +37,7 @@
 					<tr>
 						<th
 							><label for="invite"
-								>{m.tiny_great_robin_commend()} (<a href="/thread/19">?</a>)</label
+								>{m.tiny_great_robin_commend()} (<a href="/wiki/about">?</a>)</label
 							></th
 						>
 						<td><input required type="text" name="invite" /></td>

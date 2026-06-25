@@ -15,6 +15,7 @@
 	<body>
 		 <nav>
 		   <a href="{% url 'otodb:upload_cookies' %}">Upload Cookies</a>
+		   {% if user.is_mod %}<a href="{% url 'otodb:set_user_role' %}">Set User Role</a>{% endif %}
 		 </nav>
 		<main>
 		  {% block content %}{% endblock content %}

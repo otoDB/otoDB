@@ -3,8 +3,15 @@
 	import { m } from '$lib/paraglide/messages';
 	import type { components } from '$lib/schema';
 	import { clickOutside, debounce } from '$lib/ui';
+	import { tick } from 'svelte';
 
 	let self: HTMLElement;
+	let search_input: HTMLInputElement | undefined = $state();
+
+	export async function focus() {
+		await tick();
+		search_input?.focus();
+	}
 
 	let input: string = $state('');
 	interface Props {
@@ -16,6 +23,37 @@
 
 	let suggestions: components['schemas']['SongSchema'][] = $state([]);
 	let locked_in = $state(false);
+	let selectedIndex = $state(0);
+
+	$effect(() => {
+		void suggestions;
+		selectedIndex = 0;
+	});
+
+	const selectSong = (v: (typeof suggestions)[number]) => {
+		value = v;
+		input = v.title;
+		suggestions = [];
+		locked_in = true;
+		if (oninput) oninput(self, v);
+	};
+
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (!suggestions.length) return;
+
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			selectedIndex = (selectedIndex + 1) % suggestions.length;
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			selectedIndex = selectedIndex <= 0 ? suggestions.length - 1 : selectedIndex - 1;
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			selectSong(suggestions[selectedIndex]);
+		} else if (e.key === 'Escape') {
+			suggestions = [];
+		}
+	};
 
 	const search = async () => {
 		if (input === '') {
@@ -49,11 +87,19 @@
 				value = null;
 				locked_in = false;
 				if (oninput) oninput(self, null);
+				focus();
 			}}>{m.quick_happy_trout_amuse()}</button
 		>
 		<a target="_blank" href="/tag/{value?.work_tag}">{value?.title}</a>
 	{:else}
-		<input type="text" oninput={debounce(search)} disabled={locked_in} bind:value={input} />
+		<input
+			type="text"
+			oninput={debounce(search)}
+			onkeydown={handleKeyDown}
+			disabled={locked_in}
+			bind:value={input}
+			bind:this={search_input}
+		/>
 	{/if}
 	{#if suggestions.length}
 		<table
@@ -65,7 +111,10 @@
 		>
 			<tbody>
 				{#each suggestions as v, i (i)}
-					<tr class="w bg-otodb-bg-fainter hover:bg-otodb-bg-faint p-1">
+					<tr
+						class={['p-1', selectedIndex === i ? 'bg-otodb-bg-faint' : 'bg-otodb-bg-fainter']}
+						onmouseenter={() => (selectedIndex = i)}
+					>
 						<td
 							><a
 								class="cursor-pointer"
@@ -73,11 +122,7 @@
 								onclick={(e) => {
 									if (e.button !== 0) return;
 									e.preventDefault();
-									value = v;
-									input = v.title;
-									suggestions = [];
-									locked_in = true;
-									if (oninput) oninput(self, v);
+									selectSong(v);
 								}}>{v.title}</a
 							>
 						</td>

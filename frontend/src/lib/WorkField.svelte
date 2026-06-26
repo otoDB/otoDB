@@ -6,8 +6,15 @@
 	import { clickOutside, debounce } from '$lib/ui';
 	import { getDisplayText } from '$lib/ui.js';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import { tick } from 'svelte';
 
 	let self: HTMLElement;
+	let search_input: HTMLInputElement | undefined = $state();
+
+	export async function focus() {
+		await tick();
+		search_input?.focus();
+	}
 
 	let input: string = $state('');
 	interface Props {
@@ -82,6 +89,7 @@
 		onkeydown={handleKeyDown}
 		disabled={locked_in}
 		bind:value={input}
+		bind:this={search_input}
 	/>
 	<input type="text" hidden value={value?.id ?? '-1'} {name} />
 	{#if locked_in}
@@ -91,6 +99,7 @@
 				value = null;
 				locked_in = false;
 				if (oninput) oninput(self, null);
+				focus();
 			}}>{m.quick_happy_trout_amuse()}</button
 		>
 		<a target="_blank" href="/work/{value?.id}"

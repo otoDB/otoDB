@@ -1147,11 +1147,13 @@ def user_rollback(request: HttpRequest, date: datetime, username: str):
 			change__rev__date__gte=date,
 			change__rev__user=get_object_or_404(Account, username=username),
 		)
-		.values('entity_id', 'entity_type__model')
-		.distinct()
-		.all()
+		.values('entity_id', 'entity_type__model', 'change__rev__date')
+		.order_by('change__rev__date')
+		.distinct('entity_id', 'entity_type__model')
 	):
-		rollback_entity(ent['entity_id'], ent['entity_type__model'], date)
+		rollback_entity(
+			ent['entity_id'], ent['entity_type__model'], ent['change__rev__date']
+		)
 
 
 @history_router.get('history', response=list[RevisionSchema])

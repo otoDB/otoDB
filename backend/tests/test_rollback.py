@@ -186,3 +186,56 @@ class TestRollbackRestoresDeletedTag:
 		restored_tag = TagWork.objects.get(slug='t')
 		instance = TagWorkInstance.objects.get(work=work)
 		assert instance.work_tag_id == restored_tag.id
+
+
+@pytest.mark.django_db
+class TestRollbackAliasedTagDuplicate:
+	"""Restoring a deleted tag instance whose tag has since been aliased into a
+	tag the work already carries must not blow up on the (work, work_tag) unique
+	constraint.
+
+	The second-pass FK fix-up runs to_active on the restored instance's work_tag,
+	resolving the aliased tag to its alias target -- a tag the work already has --
+	so a naive UPDATE collides on otodb_tagworkinstance's unique constraint. The
+	redundant restored row should be dropped instead.
+	"""
+
+	def test_rollback_restored_instance_resolving_to_existing_tag(self, member):
+		now = timezone.now()
+		t_create = now - timedelta(seconds=300)  # work tagged with both A and B
+		t_remove = now - timedelta(seconds=200)  # remove A from the work
+		t_alias = now - timedelta(seconds=100)  # alias A -> B
+		cutoff = now - timedelta(seconds=250)  # between create and remove
+
+		# rev A: the work carries both tag A and tag B.
+		with revision(user=member, message='create'):
+			work = MediaWork.objects.create(title='W', description='d', rating=0)
+			tag_a = TagWork.objects.create(name='a', slug='a')
+			tag_b = TagWork.objects.create(name='b', slug='b')
+			TagWorkInstance.objects.create(work=work, work_tag=tag_a)
+			TagWorkInstance.objects.create(work=work, work_tag=tag_b)
+		_set_date(Revision.objects.latest('id').id, t_create)
+
+		# rev B: remove tag A from the work (deletes that instance).
+		with revision(user=member, message='remove a'):
+			TagWorkInstance.objects.filter(work=work, work_tag=tag_a).delete()
+		_set_date(Revision.objects.latest('id').id, t_remove)
+
+		# rev C: alias A into B. A separate, later revision so rolling the work
+		# back to `cutoff` never resets the alias -- to_active(A) stays B.
+		with revision(user=member, message='alias a -> b'):
+			tag_a.refresh_from_db()
+			tag_a.aliased_to = tag_b
+			tag_a.save()
+		_set_date(Revision.objects.latest('id').id, t_alias)
+
+		# Roll the work back to before A was removed. The restored A-instance's
+		# work_tag resolves through to_active to B, which the work already has, so
+		# the restore must not raise an IntegrityError.
+		with revision(user=member, message='rollback'):
+			rollback_entity(work.pk, 'mediawork', cutoff)
+
+		# The redundant restored row is dropped; the pre-existing B instance stays.
+		instances = TagWorkInstance.objects.filter(work=work)
+		assert instances.count() == 1
+		assert instances.get().work_tag_id == tag_b.id

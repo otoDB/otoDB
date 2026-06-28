@@ -1148,7 +1148,7 @@ def user_rollback(request: HttpRequest, date: datetime, username: str):
 			change__rev__user=get_object_or_404(Account, username=username),
 		)
 		.values('entity_id', 'entity_type__model', 'change__rev__date')
-		.order_by('change__rev__date')
+		.order_by('entity_id', 'entity_type__model', 'change__rev__date')
 		.distinct('entity_id', 'entity_type__model')
 	):
 		rollback_entity(

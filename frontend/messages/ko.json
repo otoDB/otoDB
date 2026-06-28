@@ -313,5 +313,8 @@
 	"antsy_stout_gorilla_borrow": "인라인 보기",
 	"sleek_factual_antelope_belong": "모두 펼치기",
 	"game_slow_crab_fade": "모두 접기",
-	"fluffy_icy_bobcat_believe": "보기 옵션"
+	"fluffy_icy_bobcat_believe": "보기 옵션",
+	"lucky_brave_marten_glide": "이 날짜 이전으로 롤백",
+	"bold_keen_otter_vault": "이 변경 이전으로 롤백",
+	"tame_swift_heron_plead": "{username}님의 모든 변경을 {label} 이전으로 롤백하시겠습니까?"
 }

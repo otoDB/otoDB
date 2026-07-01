@@ -447,5 +447,7 @@
 	"game_slow_crab_fade": "Collapse all",
 	"fluffy_icy_bobcat_believe": "View options",
 	"bald_strong_opossum_flip": "Show full text",
-	"shy_new_penguin_reap": "Collapse unchanged"
+	"shy_new_penguin_reap": "Collapse unchanged",
+	"thread_overview_tab_open": "Open",
+	"thread_overview_tab_closed": "Closed"
 }

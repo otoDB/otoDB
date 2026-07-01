@@ -14,7 +14,8 @@ const baseData = {
 	user: null,
 	stats: { works: 1234, tags: 567, songs: 89, lists: 42 },
 	head: { title: m.just_salty_anaconda_nourish() },
-	links
+	links,
+	status: 'open' as const
 };
 
 const addedBy = {
@@ -107,6 +108,19 @@ export const SingleCategory: Story = {
 			categories: {
 				...emptyCategories,
 				[PostCategory.General]: sampleThreads
+			}
+		}
+	}
+};
+
+export const ClosedTab: Story = {
+	args: {
+		data: {
+			...baseData,
+			status: 'closed',
+			categories: {
+				...emptyCategories,
+				[PostCategory.Bug_Report]: [sampleThreads[1]]
 			}
 		}
 	}

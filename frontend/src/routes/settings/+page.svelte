@@ -6,7 +6,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { ThemePref, VideoPlatformPref } from '$lib/schema.js';
-	import { themes } from '$lib/themes/themes.js';
+	import { themeDisplayOrder, themes } from '$lib/themes/themes.js';
 	import { getLocalPrefs, updateLocalPrefs } from '$lib/ui.js';
 	import { set_lang } from '$lib/languages.js';
 
@@ -68,7 +68,7 @@
 				role="radiogroup"
 				aria-labelledby="theme-label"
 			>
-				{#each enumValues(ThemePref) as theme (theme)}
+				{#each themeDisplayOrder as theme (theme)}
 					<div
 						class="bg-otodb-bg-faint hover:bg-otodb-bg-fainter aria-checked:bg-otodb-bg-fainter cursor-pointer border pb-4 text-center text-lg"
 						role="radio"

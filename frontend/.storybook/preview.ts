@@ -58,15 +58,15 @@ const preview: Preview = {
 		},
 		withThemeByDataAttribute({
 			themes: {
-				'plain-light': 'plain-light',
 				'plain-dark': 'plain-dark',
+				'plain-light': 'plain-light',
 				'aniki': 'aniki',
 				'otogroove': 'otogroove',
 				'retro-voyage': 'retro-voyage',
 				'sorimix': 'sorimix',
 				'resample': 'resample'
 			},
-			defaultTheme: 'plain-light',
+			defaultTheme: 'plain-dark',
 			attributeName: 'data-theme'
 		}),
 		(storyFn, context) => {

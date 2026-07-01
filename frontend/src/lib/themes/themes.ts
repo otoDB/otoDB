@@ -48,8 +48,8 @@ export const themes: Record<ThemePref, { key: string; nameFn: () => string; prev
 
 // Display order for theme pickers. Independent of the ThemePref enum's numeric values.
 export const themeDisplayOrder: ThemePref[] = [
-	ThemePref.Plain_Light,
 	ThemePref.Plain_Dark,
+	ThemePref.Plain_Light,
 	ThemePref.Aniki,
 	ThemePref.otogroove,
 	ThemePref.Retro_Voyage,

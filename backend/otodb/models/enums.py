@@ -163,13 +163,14 @@ class Role(OtodbIntegerEnum):
 
 
 class ThemePref(OtodbIntegerEnum):
-	PLAIN_DARK = 0, 'Plain Dark'
-	ANIKI = 1, 'Aniki'
-	OTOGROOVE = 2, 'otogroove'
-	RETRO_VOYAGE = 3, 'Retro Voyage'
-	SORIMIX = 4, 'SORIMIX'
-	RESAMPLE = 5, 'Re:Sample'
-	PLAIN_LIGHT = 6, 'Plain Light'
+	AUTO = 0, 'Auto'
+	PLAIN_DARK = 1, 'Plain Dark'
+	PLAIN_LIGHT = 2, 'Plain Light'
+	ANIKI = 3, 'Aniki'
+	OTOGROOVE = 4, 'otogroove'
+	RETRO_VOYAGE = 5, 'Retro Voyage'
+	SORIMIX = 6, 'SORIMIX'
+	RESAMPLE = 7, 'Re:Sample'
 
 
 VideoPlatformPref = OtodbIntegerEnum(

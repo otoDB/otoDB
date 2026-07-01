@@ -6060,18 +6060,20 @@
           3,
           4,
           5,
-          6
+          6,
+          7
         ],
         "title": "ThemePref",
         "type": "integer",
         "x-enum-varnames": [
+          "Auto",
           "Plain Dark",
+          "Plain Light",
           "Aniki",
           "otogroove",
           "Retro Voyage",
           "SORIMIX",
-          "Re:Sample",
-          "Plain Light"
+          "Re:Sample"
         ]
       },
       "UserPreferenceSchema": {

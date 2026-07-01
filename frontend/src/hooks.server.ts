@@ -38,10 +38,7 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 const handleThemeAttribute: Handle = async ({ event, resolve }) =>
 	resolve(event, {
 		transformPageChunk: ({ html }) =>
-			html.replace(
-				'%otodb.theme%',
-				themes[event.locals.user?.prefs?.THEME ?? ThemePref.Plain_Dark].key
-			)
+			html.replace('%otodb.theme%', themes[event.locals.user?.prefs?.THEME ?? ThemePref.Auto].key)
 	});
 
 const handleAuth: Handle = async ({ event, resolve }) => {

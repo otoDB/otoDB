@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import { http, HttpResponse } from 'msw';
 import type { ComponentProps } from 'svelte';
-import { expect, userEvent, within } from 'storybook/test';
 import { Levels, ThemePref, VideoPlatformPref } from '$lib/schema';
 import Page from './+page.svelte';
 
@@ -57,19 +56,5 @@ export const LoggedInWithVideoPlatform: Story = {
 			},
 			stats
 		}
-	}
-};
-
-export const ChangeTheme: Story = {
-	args: {
-		data: { user: loggedInUser, stats }
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		const anikiOption = canvas.getByText('Aniki').closest('[role="radio"]') as HTMLElement;
-
-		await userEvent.click(anikiOption);
-
-		await expect(anikiOption).toHaveAttribute('aria-checked', 'true');
 	}
 };

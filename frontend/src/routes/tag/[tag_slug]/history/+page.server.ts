@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ params, fetch, parent, url }) => {
 	const batch_size = 20;
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const song_page = parseInt(url.searchParams.get('song_page') ?? '0', 10) || 1;
-	const { tag: tag } = await parent();
+	const { tag } = await parent();
 
 	const { data: history } = await client.GET('/api/history/history', {
 		fetch,

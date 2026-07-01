@@ -12,7 +12,7 @@ import { ThemePref } from '$lib/schema';
 export const themes: Record<ThemePref, { key: string; nameFn: () => string; preview: string }> = {
 	[ThemePref.Auto]: {
 		key: 'auto',
-		nameFn: () => 'Auto',
+		nameFn: m.grassy_noble_walrus_wish,
 		preview: previewAuto
 	},
 	[ThemePref.Plain_Light]: {

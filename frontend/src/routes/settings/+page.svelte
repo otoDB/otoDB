@@ -82,10 +82,7 @@
 						<img
 							src={themes[theme].preview}
 							alt={themes[theme].nameFn()}
-							class={[
-								'mb-4 h-48 w-full object-cover',
-								theme === ThemePref.Default && 'invert dark:filter-none'
-							]}
+							class="mb-4 h-48 w-full object-cover"
 							width={240}
 							height={180}
 						/>

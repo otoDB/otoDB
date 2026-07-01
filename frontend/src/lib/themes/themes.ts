@@ -4,14 +4,14 @@ import previewOtogroove from '$lib/themes/otogroove.webp';
 import previewRetroVoyage from '$lib/themes/retro-voyage.webp';
 import previewSorimix from '$lib/themes/sorimix.webp';
 import previewResample from '$lib/themes/resample.webp';
-import previewDefault from '$lib/themes/default.webp';
+import previewPlain from '$lib/themes/default.webp';
 import { ThemePref } from '$lib/schema';
 
 export const themes: Record<ThemePref, { key: string; nameFn: () => string; preview: string }> = {
-	[ThemePref.Default]: {
-		key: 'default',
+	[ThemePref.Plain_Light]: {
+		key: 'plain-light',
 		nameFn: m.grassy_noble_walrus_wish,
-		preview: previewDefault
+		preview: previewPlain
 	},
 	[ThemePref.Aniki]: {
 		key: 'aniki',
@@ -37,5 +37,10 @@ export const themes: Record<ThemePref, { key: string; nameFn: () => string; prev
 		key: 'resample',
 		nameFn: () => 'Re:Sample',
 		preview: previewResample
+	},
+	[ThemePref.Plain_Dark]: {
+		key: 'plain-dark',
+		nameFn: m.hazy_calm_otter_dream,
+		preview: previewPlain
 	}
 };

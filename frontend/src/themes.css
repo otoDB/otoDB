@@ -1,4 +1,10 @@
 :root {
+	--otodb-color-ins: color-mix(in oklab, var(--otodb-color-bg-faint) 30%, green);
+	--otodb-color-del: color-mix(in oklab, var(--otodb-color-bg-faint) 30%, red);
+}
+
+:root[data-theme='plain-dark'] {
+	color-scheme: dark;
 	--otodb-color-bg-primary: black;
 	--otodb-color-content-primary: white;
 	--otodb-color-bg-faint: color-mix(
@@ -11,22 +17,6 @@
 		var(--otodb-color-bg-primary) 80%,
 		var(--otodb-color-content-primary)
 	);
-
-	@media (prefers-color-scheme: light) {
-		--otodb-color-bg-fainter: white;
-		--otodb-color-content-primary: black;
-		--otodb-color-bg-faint: color-mix(
-			in hsl,
-			var(--otodb-color-bg-fainter) 95%,
-			var(--otodb-color-content-primary)
-		);
-		--otodb-color-bg-primary: color-mix(
-			in hsl,
-			var(--otodb-color-bg-fainter) 90%,
-			var(--otodb-color-content-primary)
-		);
-	}
-
 	--otodb-color-content-faint: color-mix(
 		in hsl,
 		var(--otodb-color-bg-primary) 12.5%,
@@ -38,8 +28,39 @@
 		var(--otodb-color-content-primary)
 	);
 
-	--otodb-color-ins: color-mix(in oklab, var(--otodb-color-bg-faint) 30%, green);
-	--otodb-color-del: color-mix(in oklab, var(--otodb-color-bg-faint) 30%, red);
+	& .prose {
+		@apply prose-invert;
+	}
+}
+
+:root[data-theme='plain-light'] {
+	color-scheme: light;
+	--otodb-color-bg-fainter: white;
+	--otodb-color-content-primary: black;
+	--otodb-color-bg-faint: color-mix(
+		in hsl,
+		var(--otodb-color-bg-fainter) 95%,
+		var(--otodb-color-content-primary)
+	);
+	--otodb-color-bg-primary: color-mix(
+		in hsl,
+		var(--otodb-color-bg-fainter) 90%,
+		var(--otodb-color-content-primary)
+	);
+	--otodb-color-content-faint: color-mix(
+		in hsl,
+		var(--otodb-color-bg-primary) 12.5%,
+		var(--otodb-color-content-primary)
+	);
+	--otodb-color-content-fainter: color-mix(
+		in hsl,
+		var(--otodb-color-bg-primary) 30%,
+		var(--otodb-color-content-primary)
+	);
+
+	& .prose {
+		@apply prose-neutral;
+	}
 }
 
 :root[data-theme='aniki'] {

@@ -40,7 +40,7 @@ const handleThemeAttribute: Handle = async ({ event, resolve }) =>
 		transformPageChunk: ({ html }) =>
 			html.replace(
 				'%otodb.theme%',
-				themes[event.locals.user?.prefs?.THEME ?? ThemePref.Default].key
+				themes[event.locals.user?.prefs?.THEME ?? ThemePref.Plain_Light].key
 			)
 	});
 

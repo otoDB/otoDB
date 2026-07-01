@@ -6067,13 +6067,13 @@
         "type": "integer",
         "x-enum-varnames": [
           "Auto",
-          "Plain Dark",
-          "Plain Light",
           "Aniki",
           "otogroove",
           "Retro Voyage",
           "SORIMIX",
-          "Re:Sample"
+          "Re:Sample",
+          "Plain Light",
+          "Plain Dark"
         ]
       },
       "UserPreferenceSchema": {

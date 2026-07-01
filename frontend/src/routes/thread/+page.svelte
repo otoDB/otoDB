@@ -27,6 +27,14 @@
 				{/each}
 			</select>
 		</label>
+		<label class="block"
+			>{m.just_noisy_moth_beam()}
+			<select name="closed" value={data.closed}>
+				<option value={-1}>{m.keen_soft_crow_relish()}</option>
+				<option value={0}>{m.flat_tasty_okapi_cut()}</option>
+				<option value={1}>{m.topical_small_alligator_aspire()}</option>
+			</select>
+		</label>
 		<input
 			type="text"
 			name="query"

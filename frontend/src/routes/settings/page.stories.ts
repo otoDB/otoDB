@@ -14,7 +14,7 @@ const loggedInUser = {
 	username: 'member_user',
 	level: Levels.Member,
 	prefs: {
-		THEME: ThemePref.Default,
+		THEME: ThemePref.Plain_Light,
 		VIDEO_PLATFORM: VideoPlatformPref.Auto,
 		PREFER_AUTHOR_UPLOAD: false
 	},

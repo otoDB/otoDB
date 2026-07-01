@@ -12,16 +12,12 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const paramCategory = parseInt(url.searchParams.get('category') as string, 10);
 	const category = asEnum(PostCategory, paramCategory);
 
-	const paramClosed = parseInt(url.searchParams.get('closed') as string, 10);
-	const closed = Number.isNaN(paramClosed) ? -1 : paramClosed;
-
 	const { data } = await client.GET('/api/thread/search', {
 		fetch,
 		params: {
 			query: {
 				query,
 				category,
-				closed,
 				limit: batch_size,
 				offset: (page - 1) * batch_size
 			}
@@ -31,7 +27,6 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	return {
 		query,
 		category,
-		closed,
 		results: data,
 		batch_size,
 		head: {

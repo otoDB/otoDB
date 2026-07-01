@@ -6065,13 +6065,13 @@
         "title": "ThemePref",
         "type": "integer",
         "x-enum-varnames": [
-          "Plain Light",
+          "Plain Dark",
           "Aniki",
           "otogroove",
           "Retro Voyage",
           "SORIMIX",
           "Re:Sample",
-          "Plain Dark"
+          "Plain Light"
         ]
       },
       "UserPreferenceSchema": {

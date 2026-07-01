@@ -14,8 +14,7 @@ const baseData = {
 	user: null,
 	stats: { works: 1234, tags: 567, songs: 89, lists: 42 },
 	head: { title: m.just_salty_anaconda_nourish() },
-	links,
-	status: 'open' as const
+	links
 };
 
 const addedBy = {
@@ -48,7 +47,7 @@ const sampleThreads = [
 		entities: [],
 		category: PostCategory.Bug_Report,
 		title: 'Reported a bug in the upload flow',
-		closed_at: '2024-05-21T10:00:00Z'
+		closed_at: null
 	},
 	{
 		id: '3',
@@ -108,19 +107,6 @@ export const SingleCategory: Story = {
 			categories: {
 				...emptyCategories,
 				[PostCategory.General]: sampleThreads
-			}
-		}
-	}
-};
-
-export const ClosedTab: Story = {
-	args: {
-		data: {
-			...baseData,
-			status: 'closed',
-			categories: {
-				...emptyCategories,
-				[PostCategory.Bug_Report]: [sampleThreads[1]]
 			}
 		}
 	}

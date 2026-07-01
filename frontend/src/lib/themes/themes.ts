@@ -17,7 +17,7 @@ export const themes: Record<ThemePref, { key: string; nameFn: () => string; prev
 	},
 	[ThemePref.Plain_Light]: {
 		key: 'plain-light',
-		nameFn: m.grassy_noble_walrus_wish,
+		nameFn: m.misty_plain_finch_glow,
 		preview: previewPlainLight
 	},
 	[ThemePref.Aniki]: {

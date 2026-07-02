@@ -6066,7 +6066,7 @@
         "title": "ThemePref",
         "type": "integer",
         "x-enum-varnames": [
-          "Auto",
+          "Default",
           "Aniki",
           "otogroove",
           "Retro Voyage",

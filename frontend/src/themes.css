@@ -3,7 +3,7 @@
 	--otodb-color-del: color-mix(in oklab, var(--otodb-color-bg-faint) 30%, red);
 }
 
-:root[data-theme='auto'] {
+:root[data-theme='default'] {
 	color-scheme: light dark;
 	--otodb-color-bg-primary: black;
 	--otodb-color-content-primary: white;

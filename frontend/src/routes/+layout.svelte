@@ -137,7 +137,7 @@
 	$effect(() => {
 		document.documentElement.setAttribute(
 			'data-theme',
-			themes[data.user?.prefs?.THEME ?? getLocalPref('THEME') ?? ThemePref.Auto].key
+			themes[data.user?.prefs?.THEME ?? getLocalPref('THEME') ?? ThemePref.Default].key
 		);
 	});
 </script>

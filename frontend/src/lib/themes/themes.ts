@@ -4,16 +4,16 @@ import previewOtogroove from '$lib/themes/otogroove.webp';
 import previewRetroVoyage from '$lib/themes/retro-voyage.webp';
 import previewSorimix from '$lib/themes/sorimix.webp';
 import previewResample from '$lib/themes/resample.webp';
-import previewPlainDark from '$lib/themes/default.webp';
+import previewPlainDark from '$lib/themes/plain-dark.webp';
 import previewPlainLight from '$lib/themes/plain-light.webp';
-import previewAuto from '$lib/themes/auto.webp';
+import previewDefault from '$lib/themes/default.webp';
 import { ThemePref } from '$lib/schema';
 
 export const themes: Record<ThemePref, { key: string; nameFn: () => string; preview: string }> = {
-	[ThemePref.Auto]: {
-		key: 'auto',
+	[ThemePref.Default]: {
+		key: 'default',
 		nameFn: m.grassy_noble_walrus_wish,
-		preview: previewAuto
+		preview: previewDefault
 	},
 	[ThemePref.Plain_Light]: {
 		key: 'plain-light',
@@ -54,7 +54,7 @@ export const themes: Record<ThemePref, { key: string; nameFn: () => string; prev
 
 // Display order for theme pickers. Independent of the ThemePref enum's numeric values.
 export const themeDisplayOrder: ThemePref[] = [
-	ThemePref.Auto,
+	ThemePref.Default,
 	ThemePref.Plain_Dark,
 	ThemePref.Plain_Light,
 	ThemePref.Aniki,

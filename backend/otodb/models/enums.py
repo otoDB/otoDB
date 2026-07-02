@@ -163,7 +163,7 @@ class Role(OtodbIntegerEnum):
 
 
 class ThemePref(OtodbIntegerEnum):
-	AUTO = 0, 'Auto'
+	DEFAULT = 0, 'Default'
 	ANIKI = 1, 'Aniki'
 	OTOGROOVE = 2, 'otogroove'
 	RETRO_VOYAGE = 3, 'Retro Voyage'

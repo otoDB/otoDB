@@ -43,7 +43,7 @@ type Prefs = components['schemas']['UserPreferenceSchema'];
 
 const defaultPrefs: Required<Prefs> = {
 	LANGUAGE: LanguageTypes.en, // reflects baseLocale
-	THEME: ThemePref.Auto,
+	THEME: ThemePref.Default,
 	VIDEO_PLATFORM: VideoPlatformPref.Auto,
 	PREFER_AUTHOR_UPLOAD: false
 };

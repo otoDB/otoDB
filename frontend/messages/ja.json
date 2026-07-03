@@ -314,6 +314,9 @@
 	"sleek_factual_antelope_belong": "すべて展開",
 	"game_slow_crab_fade": "すべて折りたたむ",
 	"fluffy_icy_bobcat_believe": "表示オプション",
+	"lucky_brave_marten_glide": "この日付より前にロールバック",
+	"bold_keen_otter_vault": "この変更より前にロールバック",
+	"tame_swift_heron_plead": "{username} のすべての変更を {label} より前にロールバックしますか？",
 	"hazy_calm_otter_dream": "無地（ダーク）",
 	"misty_plain_finch_glow": "無地（ライト）"
 }

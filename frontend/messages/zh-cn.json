@@ -315,6 +315,9 @@
 	"sleek_factual_antelope_belong": "全部展开",
 	"game_slow_crab_fade": "全部折叠",
 	"fluffy_icy_bobcat_believe": "显示选项",
+	"lucky_brave_marten_glide": "回滚到此日期之前",
+	"bold_keen_otter_vault": "回滚到此更改之前",
+	"tame_swift_heron_plead": "将 {username} 的所有更改回滚到 {label} 之前？",
 	"hazy_calm_otter_dream": "素色深色",
 	"misty_plain_finch_glow": "素色浅色"
 }

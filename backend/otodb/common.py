@@ -270,8 +270,11 @@ def process_video_info(full_info, link=None):
 				pass  # webpage_url already set
 			case Platform.SOUNDCLOUD:
 				# TODO
+				tags = info.get('tags') or []
+				genre = info.get('genre')
+				genres = info.get('genres') or []
 				info['tags'] = list(
-					set(info['tags'] + [info['genre']] + info['genres'])
+					dict.fromkeys(tags + ([genre] if genre else []) + genres)
 				)
 			case Platform.TWITTER:
 				info['id'] = info['display_id']

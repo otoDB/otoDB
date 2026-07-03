@@ -15,6 +15,11 @@ export const themes: Record<ThemePref, { key: string; nameFn: () => string; prev
 		nameFn: m.grassy_noble_walrus_wish,
 		preview: previewDefault
 	},
+	[ThemePref.Plain_Dark]: {
+		key: 'plain-dark',
+		nameFn: m.hazy_calm_otter_dream,
+		preview: previewPlainDark
+	},
 	[ThemePref.Plain_Light]: {
 		key: 'plain-light',
 		nameFn: m.misty_plain_finch_glow,
@@ -44,15 +49,9 @@ export const themes: Record<ThemePref, { key: string; nameFn: () => string; prev
 		key: 'resample',
 		nameFn: () => 'Re:Sample',
 		preview: previewResample
-	},
-	[ThemePref.Plain_Dark]: {
-		key: 'plain-dark',
-		nameFn: m.hazy_calm_otter_dream,
-		preview: previewPlainDark
 	}
 };
 
-// Display order for theme pickers. Independent of the ThemePref enum's numeric values.
 export const themeDisplayOrder: ThemePref[] = [
 	ThemePref.Default,
 	ThemePref.Plain_Dark,

@@ -169,8 +169,8 @@ class ThemePref(OtodbIntegerEnum):
 	RETRO_VOYAGE = 3, 'Retro Voyage'
 	SORIMIX = 4, 'SORIMIX'
 	RESAMPLE = 5, 'Re:Sample'
-	PLAIN_LIGHT = 6, 'Plain Light'
-	PLAIN_DARK = 7, 'Plain Dark'
+	PLAIN_DARK = 6, 'Plain Dark'
+	PLAIN_LIGHT = 7, 'Plain Light'
 
 
 VideoPlatformPref = OtodbIntegerEnum(

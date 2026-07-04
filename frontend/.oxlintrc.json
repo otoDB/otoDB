@@ -1,0 +1,24 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["typescript", "unicorn", "oxc"],
+	"categories": {
+		"correctness": "error"
+	},
+	"rules": {
+		"no-unused-vars": "warn",
+		"no-explicit-any": "warn"
+	},
+	"overrides": [
+		{
+			"files": ["**/*.svelte"],
+			"rules": {
+				"no-self-assign": "off",
+				"no-unassigned-vars": "off"
+			}
+		}
+	],
+	"env": {
+		"builtin": true
+	},
+	"ignorePatterns": ["static/mockServiceWorker.js"]
+}

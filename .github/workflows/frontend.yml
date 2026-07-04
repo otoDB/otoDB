@@ -26,8 +26,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install --frozen-lockfile
-      - run: bunx oxfmt --check .
-      - run: bunx eslint .
+      - run: bun run format --check
+      - run: bun run lint
 
   test:
     name: Test

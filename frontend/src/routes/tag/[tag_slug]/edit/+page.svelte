@@ -25,18 +25,18 @@
 	} from '$lib/schema.js';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 	import { enumValues } from '$lib/enums';
-	import { getTagDisplaySlug } from '$lib/ui.js';
+	import { getTagDisplayToken } from '$lib/ui.js';
 
 	let { data, form } = $props();
 
-	let parents = $state(form?.parent_slugs ?? data.parents.map(getTagDisplaySlug));
+	let parents = $state(form?.parent_slugs ?? data.parents.map(getTagDisplayToken));
 	let prev_n_parents = parents.length;
 	let primary = $state(
 		form?.primary ??
 			(data.details?.primary_parent
 				? (() => {
 						const parentTag = data.parents.find((t) => t.slug === data.details.primary_parent);
-						return parentTag ? parents.indexOf(getTagDisplaySlug(parentTag)) : -1;
+						return parentTag ? parents.indexOf(getTagDisplayToken(parentTag)) : -1;
 					})()
 				: -1)
 	);

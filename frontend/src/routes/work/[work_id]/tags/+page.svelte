@@ -7,15 +7,15 @@
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import TagsEditor from '$lib/TagsEditor.svelte';
 	import type { components } from '$lib/schema.js';
-	import { getTagDisplaySlug, getMissingCategories } from '$lib/ui.js';
+	import { getTagDisplayToken, getMissingCategories } from '$lib/ui.js';
 	import Banner from '$lib/Banner.svelte';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
 
 	let { data } = $props();
 
-	let tags: string[] = $state(data.tags.map((t) => getTagDisplaySlug(t)));
+	let tags: string[] = $state(data.tags.map((t) => getTagDisplayToken(t)));
 	let cache: Record<string, components['schemas']['TagWorkInstanceThinSchema']> = $state(
-		Object.fromEntries(data.tags.map((t) => [getTagDisplaySlug(t), t]))
+		Object.fromEntries(data.tags.map((t) => [getTagDisplayToken(t), t]))
 	);
 
 	let missingCategories = $derived.by(() => getMissingCategories(Object.values(cache)));

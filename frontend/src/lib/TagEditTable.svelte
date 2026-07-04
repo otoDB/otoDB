@@ -4,7 +4,6 @@
 	import { allCreatorRoles, creatorRole } from '$lib/enums/creatorRole';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getTagDisplaySlug } from '$lib/ui.js';
 	import type { ComponentProps } from 'svelte';
 	import { WorkTagCategory } from './schema';
 
@@ -77,11 +76,7 @@
 					<td><WorkTag {tag} /></td>
 					<td>
 						{#if WorkTagCategoryMap[tag.category].canSetAsSource}
-							<input
-								type="checkbox"
-								onclick={() => toggle_sample(getTagDisplaySlug(tag))}
-								checked={tag.sample}
-							/>
+							<input type="checkbox" onclick={() => toggle_sample(slug)} checked={tag.sample} />
 						{:else}{m.simple_less_marlin_enchant()}{/if}
 					</td>
 					<td>
@@ -92,7 +87,7 @@
 										class="hidden"
 										type="checkbox"
 										checked={tag.creator_roles?.includes(creatorRole[k].id) || false}
-										onchange={() => toggle_creator_role(getTagDisplaySlug(tag), creatorRole[k].id)}
+										onchange={() => toggle_creator_role(slug, creatorRole[k].id)}
 									/>{creatorRole[k].nameFn()}
 								</label>
 							{/each}

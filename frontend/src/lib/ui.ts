@@ -74,6 +74,18 @@ export const getTagDisplaySlug = (tag: {
 	lang_prefs: { lang: number; slug: string }[];
 }) => tag.lang_prefs.find(({ lang }) => lang === languages[getLocale()].id)?.slug ?? tag.slug;
 
+/* Matches backend's `clean_tag`; used for frontend display, slugified on the backend */
+export const getTagDisplayToken = (tag: {
+	name: string;
+	lang_prefs: { lang: number; tag: string }[];
+}) =>
+	getTagDisplayName(tag)
+		.normalize('NFKC')
+		.trim()
+		.replace(/\s+/gu, '_')
+		.replace(/[^\p{L}\p{N}_-]+/gu, '')
+		.replace(/^[-_]+|[-_]+$/g, '');
+
 export function getDisplayText(
 	value: string | null | undefined,
 	placeholder: string | undefined = undefined

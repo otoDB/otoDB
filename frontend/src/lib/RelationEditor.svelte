@@ -50,7 +50,7 @@
 	);
 
 	let new_item: null | Work | Song = $state(null);
-	let field: { focus: () => void } | undefined = $state();
+	let field: WorkField | SongField | null = null;
 
 	const add = (self: HTMLElement, v: Work | Song | null) => {
 		if (v && v.id !== this_id && !relations.some((r) => r.item.id === v.id)) {

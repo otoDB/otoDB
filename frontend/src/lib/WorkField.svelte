@@ -9,7 +9,7 @@
 	import { tick } from 'svelte';
 
 	let self: HTMLElement;
-	let search_input: HTMLInputElement | undefined = $state();
+	let search_input: HTMLInputElement | null = null;
 
 	export async function focus() {
 		await tick();
@@ -17,15 +17,15 @@
 	}
 
 	let input: string = $state('');
+	type Work = components['schemas']['ThinWorkSchema'];
 	interface Props {
-		value: components['schemas']['ThinWorkSchema'] | null | undefined;
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-		oninput?: Function;
+		value: Work | null | undefined;
+		oninput?: (element: HTMLSpanElement, v: Work | null) => void;
 		name?: string;
 	}
 	let { value = $bindable(undefined), oninput = undefined, name }: Props = $props();
 
-	let suggestions: components['schemas']['ThinWorkSchema'][] = $state([]);
+	let suggestions: Work[] = $state([]);
 	let locked_in = $state(false);
 	let selectedIndex = $state(0);
 
@@ -34,7 +34,7 @@
 		selectedIndex = 0;
 	});
 
-	const selectWork = (v: (typeof suggestions)[number]) => {
+	const selectWork = (v: Work) => {
 		value = v;
 		input = getDisplayText(v.title, '');
 		suggestions = [];

@@ -6,7 +6,7 @@
 	import { tick } from 'svelte';
 
 	let self: HTMLElement;
-	let search_input: HTMLInputElement | undefined = $state();
+	let search_input: HTMLInputElement | null = null;
 
 	export async function focus() {
 		await tick();
@@ -14,14 +14,14 @@
 	}
 
 	let input: string = $state('');
+	type Song = components['schemas']['SongSchema'];
 	interface Props {
-		value: components['schemas']['SongSchema'] | null | undefined;
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-		oninput?: Function;
+		value: Song | null | undefined;
+		oninput?: (element: HTMLSpanElement, v: Song | null) => void;
 	}
 	let { value = $bindable(undefined), oninput = undefined, ...props }: Props = $props();
 
-	let suggestions: components['schemas']['SongSchema'][] = $state([]);
+	let suggestions: Song[] = $state([]);
 	let locked_in = $state(false);
 	let selectedIndex = $state(0);
 
@@ -30,7 +30,7 @@
 		selectedIndex = 0;
 	});
 
-	const selectSong = (v: (typeof suggestions)[number]) => {
+	const selectSong = (v: Song) => {
 		value = v;
 		input = v.title;
 		suggestions = [];

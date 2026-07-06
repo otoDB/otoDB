@@ -6,19 +6,26 @@
 	import { clickOutside, debounce } from '$lib/ui';
 	import { getDisplayText } from '$lib/ui.js';
 	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import { tick } from 'svelte';
 
 	let self: HTMLElement;
+	let search_input: HTMLInputElement | null = null;
+
+	export async function focus() {
+		await tick();
+		search_input?.focus();
+	}
 
 	let input: string = $state('');
+	type Work = components['schemas']['ThinWorkSchema'];
 	interface Props {
-		value: components['schemas']['ThinWorkSchema'] | null | undefined;
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-		oninput?: Function;
+		value: Work | null | undefined;
+		oninput?: (element: HTMLSpanElement, v: Work | null) => void;
 		name?: string;
 	}
 	let { value = $bindable(undefined), oninput = undefined, name }: Props = $props();
 
-	let suggestions: components['schemas']['ThinWorkSchema'][] = $state([]);
+	let suggestions: Work[] = $state([]);
 	let locked_in = $state(false);
 	let selectedIndex = $state(0);
 
@@ -27,7 +34,7 @@
 		selectedIndex = 0;
 	});
 
-	const selectWork = (v: (typeof suggestions)[number]) => {
+	const selectWork = (v: Work) => {
 		value = v;
 		input = getDisplayText(v.title, '');
 		suggestions = [];
@@ -82,6 +89,7 @@
 		onkeydown={handleKeyDown}
 		disabled={locked_in}
 		bind:value={input}
+		bind:this={search_input}
 	/>
 	<input type="text" hidden value={value?.id ?? '-1'} {name} />
 	{#if locked_in}
@@ -91,6 +99,7 @@
 				value = null;
 				locked_in = false;
 				if (oninput) oninput(self, null);
+				focus();
 			}}>{m.quick_happy_trout_amuse()}</button
 		>
 		<a target="_blank" href="/work/{value?.id}"

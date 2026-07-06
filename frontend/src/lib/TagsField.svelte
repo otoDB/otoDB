@@ -4,6 +4,7 @@
 	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
 	import { clickOutside, debounce } from '$lib/ui';
 	import { getTagDisplaySlug } from '$lib/ui.js';
+	import type { components } from './schema';
 
 	interface Props {
 		value: string[];
@@ -14,7 +15,10 @@
 	let { value = $bindable([]), type, ...props }: Props = $props();
 
 	let textarea: HTMLTextAreaElement;
-	let suggestions = $state<any[]>([]);
+	let suggestions = $state<
+		| components['schemas']['TagWorkSearchResultSchema'][]
+		| components['schemas']['TagSongSearchResultSchema'][]
+	>([]);
 	let lastQuery = $state('');
 
 	const slug_re = /[\p{L}\p{N}_\-]/v;
@@ -73,7 +77,7 @@
 		];
 	};
 
-	const selectTag = (tag: any) => {
+	const selectTag = (tag: (typeof suggestions)[number]) => {
 		textarea.value = replaceWordAtPos(
 			textarea.value,
 			textarea.selectionStart,

@@ -124,6 +124,7 @@ class TagSongSchema(Schema):
 	name: str
 	slug: str
 	category: SongTagCategory
+	aliased_to: Optional['TagSongSchema']
 	lang_prefs: list[TagLangPreferenceSchema]
 
 

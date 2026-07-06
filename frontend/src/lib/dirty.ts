@@ -35,10 +35,7 @@ export type Control = {
 
 export const dirtyEnhance = (
 	node: HTMLFormElement,
-	props?: {
-		form?: any;
-		custom_submit?: SubmitFunction;
-	} & (Control | { [K in keyof Control]?: never })
+	props?: { custom_submit?: SubmitFunction } & (Control | { [K in keyof Control]?: never })
 ) => {
 	if (props?.priority) node.dataset.priority = props.priority.toString();
 	node.addEventListener('change', () => {

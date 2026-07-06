@@ -8683,6 +8683,16 @@
           "category": {
             "$ref": "#/components/schemas/SongTagCategory"
           },
+          "aliased_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TagSongSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "lang_prefs": {
             "items": {
               "$ref": "#/components/schemas/TagLangPreferenceSchema"
@@ -8696,6 +8706,7 @@
           "name",
           "slug",
           "category",
+          "aliased_to",
           "lang_prefs"
         ],
         "title": "TagSongSchema",
@@ -9196,6 +9207,16 @@
           "category": {
             "$ref": "#/components/schemas/SongTagCategory"
           },
+          "aliased_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TagSongSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "lang_prefs": {
             "items": {
               "$ref": "#/components/schemas/TagLangPreferenceSchema"
@@ -9213,6 +9234,7 @@
           "name",
           "slug",
           "category",
+          "aliased_to",
           "lang_prefs",
           "n_instance"
         ],
@@ -9236,6 +9258,16 @@
           "category": {
             "$ref": "#/components/schemas/SongTagCategory"
           },
+          "aliased_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TagSongSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "lang_prefs": {
             "items": {
               "$ref": "#/components/schemas/TagLangPreferenceSchema"
@@ -9256,6 +9288,7 @@
           "name",
           "slug",
           "category",
+          "aliased_to",
           "lang_prefs",
           "children"
         ],

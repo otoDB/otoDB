@@ -76,7 +76,7 @@ def unbind_source(request: AuthedHttpRequest, source_id: OtodbID):
 	if src.is_pending:
 		raise ApiError(400, ErrorCode.SOURCE_PENDING)
 	if src.media.worksource_set.count() == 1:
-		src.media.delete()
+		raise ApiError(400, ErrorCode.ONLY_WORK_SOURCE)
 	src.media = None
 	src.save()
 

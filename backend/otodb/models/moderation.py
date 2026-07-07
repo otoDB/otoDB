@@ -59,4 +59,10 @@ class ModerationEvent(models.Model):
 				condition=Q(event_type=ModerationEventType.DISAPPROVAL),
 				name='unique_disapproval_per_work_per_user',
 			),
+			# work and source cannot both be null
+			models.CheckConstraint(
+				name='moderation_event_has_target',
+				condition=Q(work_id__isnull=False) | Q(source_id__isnull=False),
+				violation_error_message='tag cannot be own parent',
+			),
 		]

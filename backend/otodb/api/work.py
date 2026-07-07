@@ -1012,6 +1012,7 @@ def mod_queue(
 			id__in=ModerationEvent.objects.filter(
 				event_type=ModerationEventType.DISAPPROVAL,
 				by=request.user,
+				work_id__isnull=False,
 			).values_list('work_id', flat=True)
 		)
 

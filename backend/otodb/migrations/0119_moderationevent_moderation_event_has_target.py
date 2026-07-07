@@ -5,15 +5,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		('otodb', '0118_revisionchange_indexes'),
+		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+	]
 
-    dependencies = [
-        ('otodb', '0118_revisionchange_indexes'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-    ]
-
-    operations = [
-        migrations.AddConstraint(
-            model_name='moderationevent',
-            constraint=models.CheckConstraint(condition=models.Q(('work_id__isnull', False), ('source_id__isnull', False), _connector='OR'), name='moderation_event_has_target', violation_error_message='tag cannot be own parent'),
-        ),
-    ]
+	operations = [
+		migrations.AddConstraint(
+			model_name='moderationevent',
+			constraint=models.CheckConstraint(
+				condition=models.Q(
+					('work_id__isnull', False),
+					('source_id__isnull', False),
+					_connector='OR',
+				),
+				name='moderation_event_has_target',
+				violation_error_message='tag cannot be own parent',
+			),
+		),
+	]

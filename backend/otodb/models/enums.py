@@ -353,6 +353,7 @@ class ErrorCode(OtodbIntegerEnum):
 	SOURCE_PENDING = 10022
 	CAPTCHA_FAILED = 10023
 	MAX_THREAD_LEVEL = 10024
+	ONLY_WORK_SOURCE = 10025
 
 
 class Preferences(OtodbIntegerEnum):

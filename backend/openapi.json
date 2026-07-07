@@ -5951,7 +5951,8 @@
           10021,
           10022,
           10023,
-          10024
+          10024,
+          10025
         ],
         "title": "ErrorCode",
         "type": "integer",
@@ -5982,7 +5983,8 @@
           "Tag With Instances Merge Requires Editor",
           "Source Pending",
           "Captcha Failed",
-          "Max Thread Level"
+          "Max Thread Level",
+          "Only Work Source"
         ]
       },
       "LoginRequestSchema": {

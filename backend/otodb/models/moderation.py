@@ -18,7 +18,8 @@ class ModerationEvent(models.Model):
 		'MediaWork',
 		null=True,
 		blank=True,
-		on_delete=models.SET_NULL,
+		on_delete=models.DO_NOTHING,
+		db_constraint=False,
 		related_name='moderation_events',
 	)
 	source = models.ForeignKey(

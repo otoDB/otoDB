@@ -16,11 +16,12 @@ from yt_dlp import YoutubeDL
 from yt_dlp.extractor.acfun import AcFunVideoIE
 from yt_dlp.extractor.bilibili import BilibiliFavoritesListIE, BiliBiliIE
 from yt_dlp.extractor.common import InfoExtractor
-from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
+from yt_dlp.extractor.niconico import NiconicoPlaylistIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
-from yt_dlp.extractor.twitter import TwitterIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.utils import DownloadError
+
+from otodb.ytdlp_custom import NiconicoIECustom, TwitterIECustom
 
 from .models.enums import MimeType, Platform
 
@@ -61,11 +62,6 @@ def slugify_tag(s: str):
 	return slugify(canonicalize_tag(s), allow_unicode=True)
 
 
-class NiconicoIECustom(NiconicoIE):
-	# Support nico.ms short URLs and /shorts/ URLs
-	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/(?:watch|shorts)|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
-
-
 ydl_playlist = YoutubeDL(
 	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True
 )
@@ -100,10 +96,11 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		NiconicoIECustom,
 		BiliBiliIE,
 		SoundcloudIE,
-		TwitterIE,
+		TwitterIECustom,
 		AcFunVideoIE,
 	):
-		ydl.add_info_extractor(e)
+		# Register the instance, not the class
+		ydl.add_info_extractor(e())
 
 
 reset_cookies()
@@ -113,7 +110,7 @@ platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
 	(Platform.NICONICO, NiconicoIECustom),
 	(Platform.BILIBILI, BiliBiliIE),
 	(Platform.SOUNDCLOUD, SoundcloudIE),
-	(Platform.TWITTER, TwitterIE),
+	(Platform.TWITTER, TwitterIECustom),
 	(Platform.ACFUN, AcFunVideoIE),
 ]  # type: ignore
 make_video_url = {
@@ -273,8 +270,11 @@ def process_video_info(full_info, link=None):
 				pass  # webpage_url already set
 			case Platform.SOUNDCLOUD:
 				# TODO
+				tags = info.get('tags') or []
+				genre = info.get('genre')
+				genres = info.get('genres') or []
 				info['tags'] = list(
-					set(info['tags'] + [info['genre']] + info['genres'])
+					dict.fromkeys(tags + ([genre] if genre else []) + genres)
 				)
 			case Platform.TWITTER:
 				info['id'] = info['display_id']

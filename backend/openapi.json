@@ -6059,7 +6059,9 @@
           2,
           3,
           4,
-          5
+          5,
+          6,
+          7
         ],
         "title": "ThemePref",
         "type": "integer",
@@ -6069,7 +6071,9 @@
           "otogroove",
           "Retro Voyage",
           "SORIMIX",
-          "Re:Sample"
+          "Re:Sample",
+          "Plain Dark",
+          "Plain Light"
         ]
       },
       "UserPreferenceSchema": {
@@ -8679,6 +8683,16 @@
           "category": {
             "$ref": "#/components/schemas/SongTagCategory"
           },
+          "aliased_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TagSongSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "lang_prefs": {
             "items": {
               "$ref": "#/components/schemas/TagLangPreferenceSchema"
@@ -8692,6 +8706,7 @@
           "name",
           "slug",
           "category",
+          "aliased_to",
           "lang_prefs"
         ],
         "title": "TagSongSchema",
@@ -9192,6 +9207,16 @@
           "category": {
             "$ref": "#/components/schemas/SongTagCategory"
           },
+          "aliased_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TagSongSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "lang_prefs": {
             "items": {
               "$ref": "#/components/schemas/TagLangPreferenceSchema"
@@ -9209,6 +9234,7 @@
           "name",
           "slug",
           "category",
+          "aliased_to",
           "lang_prefs",
           "n_instance"
         ],
@@ -9232,6 +9258,16 @@
           "category": {
             "$ref": "#/components/schemas/SongTagCategory"
           },
+          "aliased_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TagSongSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "lang_prefs": {
             "items": {
               "$ref": "#/components/schemas/TagLangPreferenceSchema"
@@ -9252,6 +9288,7 @@
           "name",
           "slug",
           "category",
+          "aliased_to",
           "lang_prefs",
           "children"
         ],

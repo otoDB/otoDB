@@ -17,6 +17,19 @@
 
 ## Workflow
 
+### New worktree setup
+
+A fresh worktree does not have `node_modules`, the generated schema, the compiled i18n messages, or a local `.env`. Before running `bun run check`, `bun run lint`, or Storybook in a new worktree, run these from the frontend directory:
+
+```
+bun install
+bun run sync-schema
+bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+cp .env.example .env
+```
+
+`sync-schema` reads `backend/openapi.json`, which is committed to git, so this works without running the backend. Skipping any of these steps causes spurious type errors (missing `$lib/schema`, missing paraglide message exports, missing `$env/static/public` vars) that are unrelated to your actual changes.
+
 ### Updating schema.ts
 
 `src/lib/schema.ts` is auto-generated from `backend/openapi.json` and is **not** tracked in git.

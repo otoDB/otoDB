@@ -18,7 +18,8 @@ class ModerationEvent(models.Model):
 		'MediaWork',
 		null=True,
 		blank=True,
-		on_delete=models.SET_NULL,
+		on_delete=models.DO_NOTHING,
+		db_constraint=False,
 		related_name='moderation_events',
 	)
 	source = models.ForeignKey(
@@ -58,5 +59,11 @@ class ModerationEvent(models.Model):
 				fields=['work', 'by'],
 				condition=Q(event_type=ModerationEventType.DISAPPROVAL),
 				name='unique_disapproval_per_work_per_user',
+			),
+			# work and source cannot both be null
+			models.CheckConstraint(
+				name='moderation_event_has_target',
+				condition=Q(work_id__isnull=False) | Q(source_id__isnull=False),
+				violation_error_message='Moderation event must have a target',
 			),
 		]

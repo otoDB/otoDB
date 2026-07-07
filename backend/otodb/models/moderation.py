@@ -64,6 +64,6 @@ class ModerationEvent(models.Model):
 			models.CheckConstraint(
 				name='moderation_event_has_target',
 				condition=Q(work_id__isnull=False) | Q(source_id__isnull=False),
-				violation_error_message='tag cannot be own parent',
+				violation_error_message='Moderation event must have a target',
 			),
 		]

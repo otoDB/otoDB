@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import ExternalSiteEditor from '$lib/ExternalSiteEditor/ExternalSiteEditor.svelte';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
@@ -65,23 +66,21 @@
 	let to_delete: string[] = $state([]);
 	let base = $state(data.tag.slug);
 
-	let urls = $state(
-		[
-			...data.connections[0]!.map(({ site, content_id }) =>
-				TagWorkConnectionMap[site].linkFn(content_id)
-			),
-			...(data.connections[1]?.map(
-				({ site, content_id, dead }) =>
-					(dead ? '-' : '') +
-					(data.tag.category === WorkTagCategory.Media
-						? mediaConnectionMap[site as MediaConnectionTypes].linkFn
-						: profileConnectionMap[site as ProfileConnectionTypes].linkFn)(content_id)
-			) ?? []),
-			...(data.song_connections?.map(({ site, content_id }) =>
-				songConnectionMap[site].linkFn(content_id)
-			) ?? [])
-		].join('\n') ?? ''
-	);
+	let urls: string[] = $state([
+		...data.connections[0]!.map(({ site, content_id }) =>
+			TagWorkConnectionMap[site].linkFn(content_id)
+		),
+		...(data.connections[1]?.map(
+			({ site, content_id, dead }) =>
+				(dead ? '-' : '') +
+				(data.tag.category === WorkTagCategory.Media
+					? mediaConnectionMap[site as MediaConnectionTypes].linkFn
+					: profileConnectionMap[site as ProfileConnectionTypes].linkFn)(content_id)
+		) ?? []),
+		...(data.song_connections?.map(({ site, content_id }) =>
+			songConnectionMap[site].linkFn(content_id)
+		) ?? [])
+	]);
 
 	const del = async () => {
 		const { response } = await client.DELETE('/api/tag/tag', {
@@ -390,8 +389,8 @@
 		method="POST"
 		use:dirtyEnhance={{ barrier: form_barrier, priority: 3 }}
 	>
-		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
-		></textarea>
+		<ExternalSiteEditor bind:urls />
+		<input type="hidden" name="urls" value={urls.filter((u) => u.trim().length > 0).join('\n')} />
 		<input type="submit" />
 	</form>
 </Section>

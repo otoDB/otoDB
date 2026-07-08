@@ -3,6 +3,7 @@
 	import client from '$lib/api.js';
 	import { dirtyEnhance } from '$lib/dirty';
 	import { enumValues } from '$lib/enums.js';
+	import ExternalSiteEditor from '$lib/ExternalSiteEditor/ExternalSiteEditor.svelte';
 	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
 	import { hasUserLevel, userLevelNames } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages';
@@ -13,10 +14,10 @@
 
 	let { data } = $props();
 
-	let urls = $state(
-		data.connections
-			?.map(({ site, content_id }) => profileConnectionMap[site].linkFn(content_id))
-			.join('\n') ?? ''
+	let urls: string[] = $state(
+		data.connections?.map(({ site, content_id }) =>
+			profileConnectionMap[site].linkFn(content_id)
+		) ?? []
 	);
 
 	const invite_interval = 1 * 7 * 24 * 60 * 60 * 1000; // two weeks
@@ -63,8 +64,8 @@
 		</table>
 	</details>
 	<form action="?/connections" method="POST" use:dirtyEnhance>
-		<textarea bind:value={urls} name="urls" class="w-full" placeholder={m.close_any_racoon_cut()}
-		></textarea>
+		<ExternalSiteEditor bind:urls />
+		<input type="hidden" name="urls" value={urls.filter((u) => u.trim().length > 0).join('\n')} />
 		<input type="submit" />
 	</form>
 </Section>

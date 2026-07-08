@@ -391,6 +391,6 @@
 	>
 		<ExternalSiteEditor bind:urls />
 		<input type="hidden" name="urls" value={urls.filter((u) => u.trim().length > 0).join('\n')} />
-		<input type="submit" />
+		<input type="submit" class="mt-2" />
 	</form>
 </Section>

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import { http, HttpResponse } from 'msw';
 import type { ComponentProps } from 'svelte';
+import { expect, userEvent, within } from 'storybook/test';
 import { m } from '$lib/paraglide/messages.js';
 import { Levels, ProfileConnectionTypes } from '$lib/schema';
 import Page from './+page.svelte';
@@ -131,6 +132,52 @@ export const EditorWithInvites: Story = {
 				restrictedInvitee: null
 			}
 		}
+	}
+};
+
+export const SubmittingConnectionsSendsRequest: Story = {
+	args: {
+		data: {
+			...baseData,
+			user: loggedInMember,
+			connections: [],
+			invites: null
+		}
+	},
+	play: async ({ canvasElement }) => {
+		const form = canvasElement.querySelector('form[action="?/connections"]');
+		if (!(form instanceof HTMLElement)) throw new Error('connections form not found');
+		const formCanvas = within(form);
+
+		await userEvent.type(
+			formCanvas.getByRole('textbox'),
+			'https://bsky.app/profile/example.bsky.social'
+		);
+		await userEvent.click(formCanvas.getByRole('button', { name: 'Add' }));
+
+		const submitInput = form.querySelector('input[type="submit"]');
+		if (!(submitInput instanceof HTMLElement)) throw new Error('submit input not found');
+
+		// @storybook/sveltekit mocks `enhance` from `$app/forms`: instead of performing a
+		// real fetch, it prevents the default submission and dispatches this window event
+		// with the original SubmitEvent, which is what confirms the form would have submitted.
+		const submitEventPromise = new Promise<SubmitEvent>((resolve) => {
+			window.addEventListener(
+				'storybook:enhance',
+				(e) => resolve((e as CustomEvent<[SubmitEvent]>).detail[0]),
+				{ once: true }
+			);
+		});
+
+		await userEvent.click(submitInput);
+		const submitEvent = await submitEventPromise;
+
+		const submittedForm = submitEvent.target;
+		if (!(submittedForm instanceof HTMLFormElement)) throw new Error('unexpected submit target');
+
+		await expect(new FormData(submittedForm).get('urls')).toContain(
+			'bsky.app/profile/example.bsky.social'
+		);
 	}
 };
 

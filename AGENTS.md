@@ -16,7 +16,3 @@
 ## Tooling preferences
 
 - Use `jq` (not `python3 -c`) when querying or inspecting JSON files.
-
-## Editing CLAUDE.md
-
-- `CLAUDE.md` files in this repo (root and per-directory, e.g. `frontend/CLAUDE.md`) are symlinks to `AGENTS.md`. Writing through the symlink fails, so check with `ls -la` first and edit the real `AGENTS.md` target directly.

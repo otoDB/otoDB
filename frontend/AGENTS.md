@@ -60,8 +60,6 @@ All three commands must succeed without errors before committing. Do not skip or
 
 - When importing components or libraries in `lib`, use `$lib` for import path.
 - Write story by Typescript. e.g. `*.stories.ts`
-- When creating a new component, always create a directory named after the component under `src/lib`, and place the component itself and its story inside it (e.g. `src/lib/ExternalSiteEditor/ExternalSiteEditor.svelte`, `src/lib/ExternalSiteEditor/ExternalSiteEditor.stories.ts`).
-- Icons are provided by the `gravity-ui` iconify set (`@iconify-json/gravity-ui`) via `icon-[gravity-ui--<name>]` Tailwind classes, registered in `src/lib/Icon/icons.ts` and rendered through `src/lib/Icon/Icon.svelte`. Browse available icons at https://github.com/gravity-ui/icons/tree/main/svgs to find the `<name>` to use.
 
 ## Boundaries
 

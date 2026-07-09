@@ -7,16 +7,16 @@
 			"bgFainter": "#333333",
 			"contentFaint": "#dfdfdf",
 			"contentFainter": "#b3b3b3",
-			"highlightPrimary": "#3b82f6",
-			"highlightSecondary": "#fbbf24"
+			"highlightPrimary": "#3c83f6",
+			"highlightSecondary": "#fbbd23"
 		},
 		"prefersColorSchemeLight": {
 			"bgFainter": "#ffffff",
 			"contentPrimary": "#000000",
 			"bgFaint": "#f2f2f2",
 			"bgPrimary": "#e6e6e6",
-			"highlightPrimary": "#2563eb",
-			"highlightSecondary": "#d97706"
+			"highlightPrimary": "#2463eb",
+			"highlightSecondary": "#db7706"
 		}
 	},
 	"plain-dark": {
@@ -27,8 +27,8 @@
 			"bgFainter": "#333333",
 			"contentFaint": "#dfdfdf",
 			"contentFainter": "#b3b3b3",
-			"highlightPrimary": "#3b82f6",
-			"highlightSecondary": "#fbbf24"
+			"highlightPrimary": "#fbbd23",
+			"highlightSecondary": "#77bef9"
 		}
 	},
 	"plain-light": {
@@ -39,8 +39,8 @@
 			"bgPrimary": "#e6e6e6",
 			"contentFaint": "#1d1d1d",
 			"contentFainter": "#454545",
-			"highlightPrimary": "#2563eb",
-			"highlightSecondary": "#d97706"
+			"highlightPrimary": "#db7706",
+			"highlightSecondary": "#2463eb"
 		}
 	},
 	"aniki": {
@@ -51,8 +51,8 @@
 			"bgFainter": "#252b50",
 			"bgFaint": "#0a0a20",
 			"bgPrimary": "#000000",
-			"highlightPrimary": "#6083ff",
-			"highlightSecondary": "#c88cff"
+			"highlightPrimary": "#c68aff",
+			"highlightSecondary": "#6183ff"
 		}
 	},
 	"otogroove": {
@@ -63,8 +63,8 @@
 			"bgPrimary": "#ffffff",
 			"bgFaint": "#fdefef",
 			"bgFainter": "#e6d3d3",
-			"highlightPrimary": "#e73045",
-			"highlightSecondary": "#d79d59"
+			"highlightPrimary": "#e73247",
+			"highlightSecondary": "#d79d5b"
 		}
 	},
 	"retro-voyage": {
@@ -75,8 +75,8 @@
 			"bgPrimary": "#64dfe7",
 			"bgFaint": "#e4f5f4",
 			"bgFainter": "#a3f4f7",
-			"highlightPrimary": "#cb7c91",
-			"highlightSecondary": "#64bd9e"
+			"highlightPrimary": "#d05374",
+			"highlightSecondary": "#288a68"
 		}
 	},
 	"sorimix": {
@@ -87,8 +87,8 @@
 			"bgFainter": "#154705",
 			"bgFaint": "#021f19",
 			"bgPrimary": "#041309",
-			"highlightPrimary": "#00ffa3",
-			"highlightSecondary": "#01cf87"
+			"highlightPrimary": "#00ffa2",
+			"highlightSecondary": "#01b274"
 		}
 	},
 	"resample": {
@@ -99,8 +99,8 @@
 			"bgPrimary": "#acf3ff",
 			"bgFaint": "#eff5fd",
 			"bgFainter": "#d3dbe6",
-			"highlightPrimary": "#efc131",
-			"highlightSecondary": "#f3608d"
+			"highlightPrimary": "#f35e8a",
+			"highlightSecondary": "#276ebe"
 		}
 	}
 }

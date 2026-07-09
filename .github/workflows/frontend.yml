@@ -46,6 +46,22 @@ jobs:
         run: cp .env.example .env
       - run: bun run check
       - run: bun run test
+
+  test_storybook:
+    name: Test Storybook
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install --frozen-lockfile
+      - name: Generate schema.ts
+        run: bun run sync-schema
+      - name: Compile Paraglide project
+        run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+      - name: Copy dotenv file to generate type-safe environment variables
+        run: cp .env.example .env
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
       - run: bun run test-storybook
@@ -56,6 +72,7 @@ jobs:
     needs:
       - lint
       - test
+      - test_storybook
     permissions:
       packages: write
     steps:

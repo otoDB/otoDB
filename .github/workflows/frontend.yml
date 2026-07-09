@@ -48,8 +48,7 @@ jobs:
       - run: bun run test
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
-      - run: bun run build-storybook --quiet
-      - run: bun run test-storybook:ci
+      - run: bun run test-storybook
 
   build_docker:
     name: Build Docker image

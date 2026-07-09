@@ -20,14 +20,16 @@ vary by machine.
 		<ColorItem
 			key={t.name}
 			title={t.name}
-			subtitle="bg-primary / bg-faint / bg-fainter / content-primary / content-faint / content-fainter"
+			subtitle="bg-primary / bg-faint / bg-fainter / content-primary / content-faint / content-fainter / highlight-primary / highlight-secondary"
 			colors={{
 				'bg-primary': t.bgPrimary,
 				'bg-faint': t.bgFaint,
 				'bg-fainter': t.bgFainter,
 				'content-primary': t.contentPrimary,
 				'content-faint': t.contentFaint,
-				'content-fainter': t.contentFainter
+				'content-fainter': t.contentFainter,
+				'highlight-primary': t.highlightPrimary,
+				'highlight-secondary': t.highlightSecondary
 			}}
 		/>
 	))}
@@ -51,6 +53,37 @@ How each theme's content colors read on top of its own backgrounds.
           <div style={{ color: t.contentPrimary, fontWeight: 'bold' }}>Heading</div>
           <div style={{ color: t.contentFaint }}>Faint on {label}</div>
           <div style={{ color: t.contentFainter }}>Fainter on {label}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+))}
+
+## Highlight accent
+
+`highlight-primary` / `highlight-secondary` mark a "currently selected" accent, as an alternative
+to ad-hoc uses of `content-primary` or `bg-fainter`.
+
+{themeColors.map((t) => (
+
+  <div key={t.name} style={{ marginBottom: '1.5rem' }}>
+    <strong>{t.name}</strong>
+    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+      {[
+        ['highlight-primary', t.highlightPrimary],
+        ['highlight-secondary', t.highlightSecondary]
+      ].map(([label, color]) => (
+        <div
+          key={label}
+          style={{
+            background: color,
+            color: t.bgPrimary,
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            fontWeight: 'bold'
+          }}
+        >
+          {label}
         </div>
       ))}
     </div>

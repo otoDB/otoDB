@@ -18,6 +18,7 @@ COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 COPY --from=backend openapi.json /app/openapi.json
 
+RUN bunx msw init static --save
 RUN bun run sync-schema
 RUN bun run prepare
 RUN bun run build

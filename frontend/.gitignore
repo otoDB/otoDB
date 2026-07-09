@@ -3,6 +3,7 @@ package-lock.json
 
 # Generated
 src/lib/schema.ts
+static/mockServiceWorker.js
 
 # Output
 .output

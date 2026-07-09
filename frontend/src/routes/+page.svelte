@@ -26,8 +26,10 @@
 	class="grid grid-cols-[repeat(auto-fill,minmax(max(calc(50%-var(--spacing)*2),min(100%,576px)),1fr))] gap-x-4"
 >
 	<Section title={m.fuzzy_chunky_niklas_peek()} href="/work/random">
-		<!-- Capped to 3 columns of 192px cards so 6 items always form a clean 3x2 grid -->
-		<div class="grid max-w-[608px] grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
+		<!-- Track min-width grows with the container so at most 3 columns ever fit, filling the row instead of leaving blank space -->
+		<div
+			class="grid grid-cols-[repeat(auto-fill,minmax(max(192px,calc((100%-var(--spacing)*8)/3)),1fr))] gap-x-4 gap-y-4"
+		>
 			{#each data.random as w, i (i)}
 				<WorkCard work={w} />
 			{/each}
@@ -35,8 +37,10 @@
 	</Section>
 
 	<Section title={m.big_long_squirrel_kiss()} href="/work">
-		<!-- Capped to 3 columns of 192px cards so 6 items always form a clean 3x2 grid -->
-		<div class="grid max-w-[608px] grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
+		<!-- Track min-width grows with the container so at most 3 columns ever fit, filling the row instead of leaving blank space -->
+		<div
+			class="grid grid-cols-[repeat(auto-fill,minmax(max(192px,calc((100%-var(--spacing)*8)/3)),1fr))] gap-x-4 gap-y-4"
+		>
 			{#each data.recent as w, i (i)}
 				<WorkCard work={w} />
 			{/each}

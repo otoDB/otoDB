@@ -43,7 +43,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		);
 
 	// Collapse tag set along primary parenthood. For sources over the cap, we
-	// keep only the highest-level applied tags, while creators and 
+	// keep only the highest-level applied tags, while creators and
 	// songs keep only the lowest applied descendants.
 	const roots = (tags: WorkTag[]) => {
 		const ids = new Set(tags.map((tag) => tag.id));

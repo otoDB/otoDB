@@ -205,6 +205,14 @@ export const SongTag: Story = {
 				[{ A_id: '100', B_id: '200', relation: SongRelationTypes.Remix }],
 				[
 					{
+						id: '100',
+						work_tag: '10',
+						title: 'Example Song',
+						bpm: 128,
+						variable_bpm: false,
+						author: 'Example Author'
+					},
+					{
 						id: '200',
 						work_tag: '20',
 						title: 'Original Song',

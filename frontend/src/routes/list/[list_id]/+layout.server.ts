@@ -1,5 +1,6 @@
 import client from '$lib/api.server';
 import type { LayoutServerLoad } from './$types';
+import { markdownExcerpt } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 
 export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
@@ -30,6 +31,7 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 		],
 		head: {
 			title: data.name,
+			description: data.description ? markdownExcerpt(data.description) : null,
 			canonicalParams: ['page'],
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },

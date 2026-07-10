@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from django.db import models
 
-from otodb.common import fetch_thumbnail_mime_type, process_video_info, video_info
+from otodb.common import fetch_thumbnail_mime_type
 from otodb.storage_manager import storage_manager
 
 from .enums import MimeType, Platform, WorkOrigin, WorkStatus
@@ -92,20 +92,10 @@ class WorkSource(RevisionTrackedModel):
 		verbose_name_plural = 'Media Sources'
 		ordering = ['work_status', 'work_origin', 'published_date']
 
-	async def refresh(self, use_cache=False):
+	def refresh(self, info, full_info):
 		"""
 		Refresh work source information.
-
-		Args:
-		    use_cache: If `True`, use previously cached payload instead of requesting new data.
 		"""
-		full_info = None
-
-		if use_cache and getattr(self, 'info_payload', None):
-			info = process_video_info(self.info_payload.payload, self.url)
-		else:
-			info, full_info = await video_info(self.url)
-
 		if info:
 			self.title = info['title']
 			self.description = info['description']
@@ -117,7 +107,7 @@ class WorkSource(RevisionTrackedModel):
 			self.work_duration = info.get('work_duration', self.work_duration)
 
 			# Re-upload thumbnail to CDN for non-cached refreshes
-			if not use_cache and self.thumbnail_url and self.thumbnail_mime:
+			if self.thumbnail_url and self.thumbnail_mime:
 				self.save_thumbnail()
 
 			if full_info is not None:
@@ -164,7 +154,7 @@ class WorkSource(RevisionTrackedModel):
 	@staticmethod
 	def from_url(
 		url, user, is_reupload, info, full_info, metadata=None
-	) -> tuple['WorkSource | None', 'dict | None']:
+	) -> tuple['WorkSource | None']:
 		"""
 		Gets or creates a WorkSource from a URL.
 
@@ -177,7 +167,7 @@ class WorkSource(RevisionTrackedModel):
 		    metadata: Optional metadata dict for unavailable sources (editors only)
 
 		Returns:
-		    WorkSourc or None if failed
+		    WorkSource or None if failed
 		"""
 		from otodb.common import (
 			fetch_thumbnail_mime_type,

@@ -1,10 +1,11 @@
 import asyncio
 from typing import List
 
+from asgiref.sync import sync_to_async
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
+from django.shortcuts import aget_object_or_404, get_object_or_404
 from ninja import ModelSchema, Router, Schema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
@@ -147,7 +148,6 @@ def delete(request: HttpRequest, list_id: OtodbID):
 	return
 
 
-@transaction.atomic
 def import_ext_into_pool(entries, infos, list_: Pool, user):
 	old_entries = list_.poolitem_set.values_list('work__id', flat=True)
 
@@ -184,25 +184,34 @@ def import_ext_into_pool(entries, infos, list_: Pool, user):
 @user_is_editor
 @track_revision
 async def import_ext(request: HttpRequest, url: str):
-	info = playlist_info(url)
-	list_ = Pool.objects.create(
-		name=info['title'], description=info['description'], author=request.user
-	)
-	PoolUpstream.objects.create(pool=list_, upstream=url)
-
+	info = await playlist_info(url)
 	infos = await asyncio.gather(*[video_info(v) for v in info['entries']])
-	import_ext_into_pool(info['entries'], infos, list_, request.user)
 
-	return list_.id
+	@transaction.atomic
+	def make_pool():
+		list_ = Pool.objects.create(
+			name=info['title'], description=info['description'], author=request.user
+		)
+		PoolUpstream.objects.create(pool=list_, upstream=url)
+		import_ext_into_pool(info['entries'], infos, list_, request.user)
+		return list_.id
+
+	list_id = await sync_to_async(make_pool)()
+
+	return list_id
 
 
 @list_router.post('pull_upstream', auth=django_auth)
 async def pull_upstream(request: HttpRequest, list_id: OtodbID):
-	lst = get_object_or_404(Pool, id=list_id)
+	lst = await aget_object_or_404(
+		Pool.objects.select_related('poolupstream'), id=list_id
+	)
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
 
-	info = playlist_info(lst.poolupstream.upstream)
+	info = await playlist_info(lst.poolupstream.upstream)
 
 	infos = await asyncio.gather(*[video_info(v) for v in info['entries']])
-	import_ext_into_pool(info['entries'], infos, lst, request.user)
+	await sync_to_async(transaction.atomic(import_ext_into_pool))(
+		info['entries'], infos, lst, request.user
+	)

@@ -340,13 +340,13 @@ async def video_info(link, expected_unavailable=False):
 		return None, None
 
 
-def playlist_info(link):
+async def playlist_info(link):
 	keys = {
 		'title': 'title',
 		'description': 'description',
 		'entries': 'entries',
 	}
-	info = ydl_playlist.extract_info(link, download=False)
+	info = await asyncio.to_thread(ydl_playlist.extract_info, link, download=False)
 	if info.get('_type') != 'playlist':
 		return None
 

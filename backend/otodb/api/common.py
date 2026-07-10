@@ -1,4 +1,4 @@
-import asyncio
+import inspect
 import operator
 import re
 from abc import abstractmethod
@@ -8,6 +8,7 @@ from functools import lru_cache, reduce, wraps
 from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
 
 import lark
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, Exists, F, OuterRef, Q, Value
@@ -307,21 +308,34 @@ class ListSchema(ModelSchema):
 	def upstream_str(cls, value) -> str:
 		return value.upstream
 
-def make_decorator(before, after=lambda x: x):
+
+def _default_after_passthrough(ret, request, *args, **kwargs):
+	return ret
+
+
+def make_decorator(before, after=_default_after_passthrough):
 	def universal_decorator(func):
-		if asyncio.iscoroutinefunction(func):
+		if inspect.iscoroutinefunction(func):
+
 			@wraps(func)
 			async def async_wrapper(request, *args, **kwargs):
 				request, args, kwargs = before(request, *args, **kwargs)
-				return after(await func(request, *args, **kwargs))
+				return await sync_to_async(after)(
+					await func(request, *args, **kwargs), request, *args, **kwargs
+				)
+
 			return async_wrapper
 		else:
+
 			@wraps(func)
 			def sync_wrapper(request, *args, **kwargs):
 				request, args, kwargs = before(request, *args, **kwargs)
-				return after(func(request, *args, **kwargs))
+				return after(func(request, *args, **kwargs), request, *args, **kwargs)
+
 			return sync_wrapper
+
 	return universal_decorator
+
 
 def perm_decorator_ctor(uf):
 	def before(request, *args, **kwargs):
@@ -617,23 +631,23 @@ def _commit_pending_revision(cache, request):
 	)
 
 
-def track_revision(f):
-	@wraps(f)
-	def wrapper(request, *args, **kwargs):
-		cache = get_request_cache()
-		cache.add(
-			'rev', {}
-		)  # key: (ContentType.pk, pk, field as str), value: (entity_pks, str)
-		cache.add('rev_del', [])  # list of (ContentType.pk, pk, ...entity_pks)
-		cache.add('rev_rst', {})
-		cache.add('rev_msg', '')
+def _track_revision_before(request, *args, **kwargs):
+	cache = get_request_cache()
+	cache.add(
+		'rev', {}
+	)  # key: (ContentType.pk, pk, field as str), value: (entity_pks, str)
+	cache.add('rev_del', [])  # list of (ContentType.pk, pk, ...entity_pks)
+	cache.add('rev_rst', {})
+	cache.add('rev_msg', '')
+	return request, args, kwargs
 
-		ret = f(request, *args, **kwargs)
 
-		_commit_pending_revision(cache, request)
-		return ret
+def _track_revision_after(ret, request, *args, **kwargs):
+	_commit_pending_revision(get_request_cache(), request)
+	return ret
 
-	return wrapper
+
+track_revision = make_decorator(_track_revision_before, _track_revision_after)
 
 
 def add_revision_message(message: str):
@@ -678,6 +692,7 @@ def revision(
 
 def with_revision_route(route: Route):
 	"""Decorator to set the revision route for a API endpoint."""
+
 	def before(request, *args, **kwargs):
 		cache = get_request_cache()
 		cache.set('rev_route', route.value)

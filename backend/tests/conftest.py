@@ -4,7 +4,7 @@ import pytest
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.test import RequestFactory
-from ninja.testing import TestClient
+from ninja.testing import TestAsyncClient, TestClient
 
 from otodb.account.models import Account
 from otodb.api.auth import auth_router
@@ -19,6 +19,21 @@ def clear_cache():
 	cache.clear()
 	yield
 	cache.clear()
+
+
+class AuthenticatedAsyncTestClient(TestAsyncClient):
+	"""TestClient that automatically uses a real user for all requests."""
+
+	def __init__(self, router, user):
+		super().__init__(router)
+		self.test_user = user
+
+	def _build_request(self, method, path, data, request_params):
+		"""Override to set real user on request object."""
+		# If no user was explicitly provided, use our default test user
+		if 'user' not in request_params:
+			request_params['user'] = self.test_user
+		return super()._build_request(method, path, data, request_params)
 
 
 class AuthenticatedTestClient(TestClient):
@@ -110,6 +125,12 @@ def tag_client(member):
 def source_client(member):
 	"""Create a test client for the source router."""
 	return AuthenticatedTestClient(source_router, member)
+
+
+@pytest.fixture
+def async_source_client(member):
+	"""Create a test client for the source router."""
+	return AuthenticatedAsyncTestClient(source_router, member)
 
 
 @pytest.fixture

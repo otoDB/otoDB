@@ -5,7 +5,7 @@ from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
+from django.shortcuts import aget_object_or_404, get_object_or_404
 from ninja import Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
@@ -105,8 +105,9 @@ def source_origin(request: AuthedHttpRequest, source_id: OtodbID, status: WorkOr
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REFRESH)
 async def refresh_source(request: AuthedHttpRequest, source_id: OtodbID):
-	src: WorkSource = get_object_or_404(WorkSource.objects, id=source_id)
-	await src.refresh()
+	src: WorkSource = await aget_object_or_404(WorkSource.objects, id=source_id)
+	info, full_info = await video_info(src.url)
+	await sync_to_async(src.refresh)(info, full_info)
 	return
 
 

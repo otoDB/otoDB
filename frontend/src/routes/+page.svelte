@@ -26,28 +26,24 @@
 	class="grid grid-cols-[repeat(auto-fill,minmax(max(calc(50%-var(--spacing)*2),min(100%,576px)),1fr))] gap-x-4"
 >
 	<Section title={m.fuzzy_chunky_niklas_peek()} href="/work/random">
-		<!-- Container query caps columns at 3 based on the section's own width, so cards always fill the row -->
-		<div class="@container">
-			<div
-				class="grid grid-cols-1 gap-x-4 gap-y-4 @min-[400px]:grid-cols-2 @min-[608px]:grid-cols-3"
-			>
-				{#each data.random as w, i (i)}
-					<WorkCard work={w} />
-				{/each}
-			</div>
+		<!-- Track min-width grows with the container so at most 3 columns ever fit, filling the row instead of leaving blank space -->
+		<div
+			class="grid grid-cols-[repeat(auto-fill,minmax(max(12rem,(100%-2rem)/3),1fr))] gap-x-4 gap-y-4"
+		>
+			{#each data.random as w, i (i)}
+				<WorkCard work={w} />
+			{/each}
 		</div>
 	</Section>
 
 	<Section title={m.big_long_squirrel_kiss()} href="/work">
-		<!-- Container query caps columns at 3 based on the section's own width, so cards always fill the row -->
-		<div class="@container">
-			<div
-				class="grid grid-cols-1 gap-x-4 gap-y-4 @min-[400px]:grid-cols-2 @min-[608px]:grid-cols-3"
-			>
-				{#each data.recent as w, i (i)}
-					<WorkCard work={w} />
-				{/each}
-			</div>
+		<!-- Track min-width grows with the container so at most 3 columns ever fit, filling the row instead of leaving blank space -->
+		<div
+			class="grid grid-cols-[repeat(auto-fill,minmax(max(12rem,(100%-2rem)/3),1fr))] gap-x-4 gap-y-4"
+		>
+			{#each data.recent as w, i (i)}
+				<WorkCard work={w} />
+			{/each}
 		</div>
 	</Section>
 

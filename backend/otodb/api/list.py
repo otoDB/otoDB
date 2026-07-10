@@ -1,6 +1,4 @@
-import multiprocessing
-import sys
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+import asyncio
 from typing import List
 
 from django.db import transaction
@@ -149,30 +147,22 @@ def delete(request: HttpRequest, list_id: OtodbID):
 	return
 
 
-def import_ext_into_pool(info, list_: Pool, user):
-	if sys.platform == 'win32':
-		with ThreadPoolExecutor() as executor:
-			infos = list(executor.map(video_info, info['entries']))
-	else:
-		with ProcessPoolExecutor(
-			mp_context=multiprocessing.get_context('fork')
-		) as executor:
-			infos = list(executor.map(video_info, info['entries']))
-
+@transaction.atomic
+def import_ext_into_pool(entries, infos, list_: Pool, user):
 	old_entries = list_.poolitem_set.values_list('work__id', flat=True)
 
 	pool_items = []
 	for i, (vid_info, full_info) in enumerate(list(infos)):
 		if vid_info is None:
-			list_.description += f'\nFailed to fetch {info["entries"][i]}'
+			list_.description += f'\nFailed to fetch {entries[i]}'
 			continue
 
-		src, _ = WorkSource.from_url(
+		src = WorkSource.from_url(
 			vid_info['url'],
-			user=user,
-			is_reupload=False,
 			info=vid_info,
 			full_info=full_info,
+			user=user,
+			is_reupload=False,
 		)
 
 		if src.media is not None:
@@ -192,25 +182,27 @@ def import_ext_into_pool(info, list_: Pool, user):
 	'import', auth=django_auth, response=OtodbID, throttle=[AuthRateThrottle('3/30m')]
 )
 @user_is_editor
-@transaction.atomic
 @track_revision
-def import_ext(request: HttpRequest, url: str):
+async def import_ext(request: HttpRequest, url: str):
 	info = playlist_info(url)
 	list_ = Pool.objects.create(
 		name=info['title'], description=info['description'], author=request.user
 	)
 	PoolUpstream.objects.create(pool=list_, upstream=url)
 
-	import_ext_into_pool(info, list_, request.user)
+	infos = await asyncio.gather(*[video_info(v) for v in info['entries']])
+	import_ext_into_pool(info['entries'], infos, list_, request.user)
 
 	return list_.id
 
 
 @list_router.post('pull_upstream', auth=django_auth)
-def pull_upstream(request: HttpRequest, list_id: OtodbID):
+async def pull_upstream(request: HttpRequest, list_id: OtodbID):
 	lst = get_object_or_404(Pool, id=list_id)
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
 
 	info = playlist_info(lst.poolupstream.upstream)
-	import_ext_into_pool(info, lst, request.user)
+
+	infos = await asyncio.gather(*[video_info(v) for v in info['entries']])
+	import_ext_into_pool(info['entries'], infos, lst, request.user)

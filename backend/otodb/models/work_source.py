@@ -92,7 +92,7 @@ class WorkSource(RevisionTrackedModel):
 		verbose_name_plural = 'Media Sources'
 		ordering = ['work_status', 'work_origin', 'published_date']
 
-	def refresh(self, use_cache=False):
+	async def refresh(self, use_cache=False):
 		"""
 		Refresh work source information.
 
@@ -104,7 +104,7 @@ class WorkSource(RevisionTrackedModel):
 		if use_cache and getattr(self, 'info_payload', None):
 			info = process_video_info(self.info_payload.payload, self.url)
 		else:
-			info, full_info = video_info(self.url)
+			info, full_info = await video_info(self.url)
 
 		if info:
 			self.title = info['title']
@@ -163,31 +163,27 @@ class WorkSource(RevisionTrackedModel):
 	# Gets the source registered at the url if it exists, otherwise register as pending
 	@staticmethod
 	def from_url(
-		url, user, is_reupload, metadata=None, info=None, full_info=None
+		url, user, is_reupload, info, full_info, metadata=None
 	) -> tuple['WorkSource | None', 'dict | None']:
 		"""
 		Gets or creates a WorkSource from a URL.
 
 		Args:
 		    url: The URL to fetch
+		    info: Info dict
+		    full_info: Full info dict
 		    user: The user adding the source
 		    is_reupload: Whether this is a reupload (not by original author)
 		    metadata: Optional metadata dict for unavailable sources (editors only)
-		    info: Optional pre-fetched info dict (for optimization)
-		    full_info: Optional pre-fetched full info dict (for optimization)
 
 		Returns:
-		    Tuple of (WorkSource, info_dict) or (None, None) if failed
+		    WorkSourc or None if failed
 		"""
 		from otodb.common import (
 			fetch_thumbnail_mime_type,
 			make_video_url,
 			platform_extractors,
 		)
-
-		# Try to fetch info if not provided
-		if info is None:
-			info, full_info = video_info(url, expected_unavailable=metadata is not None)
 
 		# Handle unavailable sources
 		if info is None and metadata is not None:
@@ -212,10 +208,10 @@ class WorkSource(RevisionTrackedModel):
 						break
 				else:
 					logger.error(f'No suitable platform extractor found for URL: {url}')
-					return None, None
+					return None
 			except Exception:
 				logger.error(f'Failed to parse URL for platform: {url}')
-				return None, None
+				return None
 
 			published_date = metadata.get('published_date') if metadata else None
 			thumbnail_url = metadata.get('thumbnail_url') if metadata else None
@@ -246,10 +242,10 @@ class WorkSource(RevisionTrackedModel):
 			}
 		elif info is None:
 			logger.error(f'Failed to get video info for URL: {url}')
-			return None, None
+			return None
 
 		if info['site'] is None:
-			return None, None
+			return None
 
 		# Check if source already exists
 		try:
@@ -285,7 +281,7 @@ class WorkSource(RevisionTrackedModel):
 			if src.thumbnail_url and src.thumbnail_mime:
 				src.save_thumbnail()
 
-		return src, info
+		return src
 
 	@property
 	def thumbnail_path(self) -> str:

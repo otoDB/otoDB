@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import type { ComponentProps } from 'svelte';
+import { m } from '$lib/paraglide/messages.js';
 import {
 	FlagStatus,
 	Levels,
@@ -34,6 +35,7 @@ const loggedInLinks = [
 
 const head = {
 	title: 'A sample work title',
+	description: m.plain_witty_crane_hum(),
 	image: null,
 	isExplicit: false,
 	breadcrumbs: [

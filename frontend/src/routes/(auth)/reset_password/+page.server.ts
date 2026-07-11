@@ -11,10 +11,7 @@ export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
 		const { response } = await client.GET('/api/auth/csrf', { fetch });
 		forwardCookies(cookies, response);
 	}
-	return {
-		token,
-		head: { title: m.true_tough_butterfly_sew(), noindex: true }
-	};
+	return { token, head: { title: m.true_tough_butterfly_sew() } };
 };
 
 export const actions = {

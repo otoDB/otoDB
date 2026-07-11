@@ -11,7 +11,6 @@
         "@sentry/sveltekit": "^10.50.0",
         "@thisux/sveltednd": "^0.0.20",
         "mdast-util-find-and-replace": "^3.0.2",
-        "mdast-util-to-string": "^4.0.0",
         "mermaid": "^11.13.0",
         "openapi-fetch": "^0.15.2",
         "rehype-autolink-headings": "^7.1.0",

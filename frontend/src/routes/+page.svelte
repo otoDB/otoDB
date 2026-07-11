@@ -26,7 +26,6 @@
 	class="grid grid-cols-[repeat(auto-fill,minmax(max(calc(50%-var(--spacing)*2),min(100%,576px)),1fr))] gap-x-4"
 >
 	<Section title={m.fuzzy_chunky_niklas_peek()} href="/work/random">
-		<!-- Track min-width grows with the container so at most 3 columns ever fit, filling the row instead of leaving blank space -->
 		<div
 			class="grid grid-cols-[repeat(auto-fill,minmax(max(12rem,(100%-2rem)/3),1fr))] gap-x-4 gap-y-4"
 		>
@@ -37,7 +36,6 @@
 	</Section>
 
 	<Section title={m.big_long_squirrel_kiss()} href="/work">
-		<!-- Track min-width grows with the container so at most 3 columns ever fit, filling the row instead of leaving blank space -->
 		<div
 			class="grid grid-cols-[repeat(auto-fill,minmax(max(12rem,(100%-2rem)/3),1fr))] gap-x-4 gap-y-4"
 		>

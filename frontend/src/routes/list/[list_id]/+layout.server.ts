@@ -1,5 +1,6 @@
 import client from '$lib/api.server';
 import type { LayoutServerLoad } from './$types';
+import { markdownExcerpt } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 
 export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
@@ -20,11 +21,18 @@ export const load: LayoutServerLoad = async ({ fetch, params, locals }) => {
 				title: m.stale_loose_squid_cut() + ' ' + params.list_id
 			},
 			...(locals.user && locals.user.user_id === data.author.id
-				? [{ pathname: `list/${params.list_id}/edit`, title: m.minor_crisp_cobra_list() }]
+				? [
+						{
+							pathname: `list/${params.list_id}/edit`,
+							title: m.minor_crisp_cobra_list()
+						}
+					]
 				: [])
 		],
 		head: {
 			title: data.name,
+			description: data.description ? markdownExcerpt(data.description) : null,
+			canonicalParams: ['page'],
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
 				{ name: m.stale_loose_squid_cut(), url: '/list' },

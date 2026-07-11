@@ -63,9 +63,7 @@ const baseData = {
 		title: m.mild_loud_shad_enchant({
 			type: m.mean_top_antelope_love(),
 			name: m.empty_legal_chicken_taste()
-		}),
-		canonicalParams: ['page'],
-		noindex: false
+		})
 	}
 };
 

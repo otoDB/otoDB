@@ -318,14 +318,5 @@
 	"bold_keen_otter_vault": "この変更より前にロールバック",
 	"tame_swift_heron_plead": "{username} のすべての変更を {label} より前にロールバックしますか？",
 	"hazy_calm_otter_dream": "無地（ダーク）",
-	"misty_plain_finch_glow": "無地（ライト）",
-	"tidy_calm_gecko_sail": "{title}（{creator}）",
-	"zesty_brief_mole_chant": "音MAD作品 - {details}",
-	"plain_witty_crane_hum": "音MADデータベース「otoDB」に登録された音MAD作品。出典・タグ・関連作品を確認できます。",
-	"brave_misty_lark_glow": "{name} – 音MAD作者",
-	"sunny_civil_moth_drum": "{name} – 音MAD楽曲",
-	"witty_late_heron_bake": "{name} – 音MAD素材",
-	"quick_famous_otter_wave": "{name} – 音MADイベント",
-	"calm_super_finch_note": "{name} – 音MADタグ",
-	"keen_vivid_snail_march": "音MADデータベース「otoDB」で「{name}」タグの音MAD作品を閲覧"
+	"misty_plain_finch_glow": "無地（ライト）"
 }

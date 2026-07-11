@@ -4,14 +4,7 @@ import { hasUserLevel } from '$lib/enums/userLevel';
 import { m } from '$lib/paraglide/messages.js';
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
-import { Levels, WorkTagCategory } from '$lib/schema';
-
-const TITLE_BY_CATEGORY: Partial<Record<WorkTagCategory, (args: { name: string }) => string>> = {
-	[WorkTagCategory.Creator]: m.brave_misty_lark_glow,
-	[WorkTagCategory.Song]: m.sunny_civil_moth_drum,
-	[WorkTagCategory.Source]: m.witty_late_heron_bake,
-	[WorkTagCategory.Event]: m.quick_famous_otter_wave
-};
+import { Levels } from '$lib/schema';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => {
 	const { data } = await client.GET('/api/tag/tag', {
@@ -49,12 +42,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				title: m.empty_legal_chicken_taste() + ' ' + params.tag_slug
 			},
 			...(hasUserLevel(locals.user?.level, Levels.Member)
-				? [
-						{
-							pathname: `tag/${params.tag_slug}/edit`,
-							title: m.minor_crisp_cobra_list()
-						}
-					]
+				? [{ pathname: `tag/${params.tag_slug}/edit`, title: m.minor_crisp_cobra_list() }]
 				: []),
 			{
 				pathname: `tag/${params.tag_slug}/threads`,
@@ -93,8 +81,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		song_relations,
 		display_name,
 		head: {
-			title: (TITLE_BY_CATEGORY[data.category] ?? m.calm_super_finch_note)({ name: display_name }),
-			description: m.keen_vivid_snail_march({ name: display_name }),
+			title: display_name,
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
 				{ name: m.empty_legal_chicken_taste(), url: '/tag' },

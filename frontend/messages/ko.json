@@ -318,5 +318,14 @@
 	"bold_keen_otter_vault": "이 변경 이전으로 롤백",
 	"tame_swift_heron_plead": "{username}님의 모든 변경을 {label} 이전으로 롤백하시겠습니까?",
 	"hazy_calm_otter_dream": "무지 다크",
-	"misty_plain_finch_glow": "무지 라이트"
+	"misty_plain_finch_glow": "무지 라이트",
+	"tidy_calm_gecko_sail": "{title} – {creator}",
+	"zesty_brief_mole_chant": "음MAD 작품 - {details}",
+	"plain_witty_crane_hum": "음MAD 데이터베이스 otoDB에 등록된 음MAD 작품입니다. 출처, 태그, 관련 작품을 확인하세요.",
+	"brave_misty_lark_glow": "{name} – 음MAD 제작자",
+	"sunny_civil_moth_drum": "{name} – 음MAD 곡",
+	"witty_late_heron_bake": "{name} – 음MAD 소재",
+	"quick_famous_otter_wave": "{name} – 음MAD 이벤트",
+	"calm_super_finch_note": "{name} – 음MAD 태그",
+	"keen_vivid_snail_march": "음MAD 데이터베이스 otoDB에서 {name} 태그의 음MAD 작품을 둘러보세요"
 }

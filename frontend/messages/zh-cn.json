@@ -319,5 +319,14 @@
 	"bold_keen_otter_vault": "回滚到此更改之前",
 	"tame_swift_heron_plead": "将 {username} 的所有更改回滚到 {label} 之前？",
 	"hazy_calm_otter_dream": "素色深色",
-	"misty_plain_finch_glow": "素色浅色"
+	"misty_plain_finch_glow": "素色浅色",
+	"tidy_calm_gecko_sail": "{title}（{creator}）",
+	"zesty_brief_mole_chant": "音MAD作品 - {details}",
+	"plain_witty_crane_hum": "音MAD数据库otoDB收录的音MAD作品。查看出处、标签和相关作品。",
+	"brave_misty_lark_glow": "{name} – 音MAD作者",
+	"sunny_civil_moth_drum": "{name} – 音MAD乐曲",
+	"witty_late_heron_bake": "{name} – 音MAD素材",
+	"quick_famous_otter_wave": "{name} – 音MAD活动",
+	"calm_super_finch_note": "{name} – 音MAD标签",
+	"keen_vivid_snail_march": "在音MAD数据库otoDB浏览标签为「{name}」的音MAD作品"
 }

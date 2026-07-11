@@ -110,6 +110,17 @@
 		})
 	);
 
+	// Canonical URLs strip the query string except for params a route declares
+	// as content-significant (e.g. pagination) via head.canonicalParams
+	const canonicalUrl = $derived.by(() => {
+		const query = ((page.data.head?.canonicalParams ?? []) as string[])
+			.map((key) => [key, page.url.searchParams.get(key)])
+			.filter(([, value]) => value)
+			.map(([key, value]) => `${key}=${encodeURIComponent(value!)}`)
+			.join('&');
+		return page.url.origin + page.url.pathname + (query ? `?${query}` : '');
+	});
+
 	const breadcrumbLd = $derived(
 		page.data.head?.breadcrumbs
 			? ldTag(
@@ -162,14 +173,16 @@
 	{#if page.data.head?.image}
 		<meta property="og:image" content={page.data.head.image} />
 		<meta name="twitter:image" content={page.data.head.image} />
+		<meta name="twitter:card" content="summary_large_image" />
 	{:else}
-		<meta property="og:image" content="https://otodb.net/thumb.png" />
-		<meta name="twitter:image" content="https://otodb.net/thumb.png" />
+		<meta name="twitter:card" content="summary" />
 	{/if}
 	<meta property="og:type" content={page.data.head?.ogType ?? 'website'} />
-	<link rel="canonical" href="{page.url.origin}{page.url.pathname}" />
-	<meta property="og:url" content="{page.url.origin}{page.url.pathname}" />
-	<meta name="twitter:card" content="summary_large_image" />
+	<link rel="canonical" href={canonicalUrl} />
+	<meta property="og:url" content={canonicalUrl} />
+	{#if page.data.head?.noindex}
+		<meta name="robots" content="noindex" />
+	{/if}
 	{#if page.data.head?.isExplicit}
 		<meta name="rating" content="adult" />
 	{/if}

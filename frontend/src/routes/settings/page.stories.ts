@@ -1,12 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import { http, HttpResponse } from 'msw';
 import type { ComponentProps } from 'svelte';
+import { m } from '$lib/paraglide/messages.js';
 import { Levels, ThemePref, VideoPlatformPref } from '$lib/schema';
 import Page from './+page.svelte';
 
 const handlers = [http.post('*/api/profile/prefs', () => new HttpResponse(null, { status: 200 }))];
 
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
+
+const head = { title: m.flat_small_kitten_race(), noindex: true };
 
 const loggedInUser = {
 	csrf: 'csrf-token',
@@ -25,7 +28,7 @@ const loggedInUser = {
 const meta = {
 	component: Page,
 	args: {
-		data: { user: null, stats }
+		data: { user: null, stats, head }
 	},
 	parameters: {
 		msw: { handlers }
@@ -39,7 +42,7 @@ export const Guest: Story = {};
 
 export const LoggedIn: Story = {
 	args: {
-		data: { user: loggedInUser, stats }
+		data: { user: loggedInUser, stats, head }
 	}
 };
 
@@ -54,7 +57,8 @@ export const LoggedInWithVideoPlatform: Story = {
 					PREFER_AUTHOR_UPLOAD: true
 				}
 			},
-			stats
+			stats,
+			head
 		}
 	}
 };

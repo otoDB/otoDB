@@ -453,14 +453,5 @@
 	"bold_keen_otter_vault": "Rollback to before this revision",
 	"tame_swift_heron_plead": "Rollback ALL revisions made by {username} to before {label}?",
 	"hazy_calm_otter_dream": "Plain Dark",
-	"misty_plain_finch_glow": "Plain Light",
-	"tidy_calm_gecko_sail": "{title} by {creator}",
-	"zesty_brief_mole_chant": "Otomad/YTPMV - {details}",
-	"plain_witty_crane_hum": "An Otomad/YTPMV work on otoDB, the otomad/ytpmv database. View sources, tags, and related works.",
-	"brave_misty_lark_glow": "{name} – Otomad/YTPMV creator",
-	"sunny_civil_moth_drum": "{name} – Otomad/YTPMV song",
-	"witty_late_heron_bake": "{name} – Otomad/YTPMV source",
-	"quick_famous_otter_wave": "{name} – Otomad/YTPMV event",
-	"calm_super_finch_note": "{name} – Otomad/YTPMV tag",
-	"keen_vivid_snail_march": "Browse Otomad/YTPMV works tagged {name} on otoDB, the otomad/ytpmv database"
+	"misty_plain_finch_glow": "Plain Light"
 }

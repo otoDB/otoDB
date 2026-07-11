@@ -123,8 +123,7 @@ const baseData = {
 		description: m.mild_loud_shad_enchant({
 			type: 'otoDB',
 			name: m.glad_born_mouse_taste()
-		}),
-		image: 'https://otodb.net/thumb.png'
+		})
 	}
 };
 

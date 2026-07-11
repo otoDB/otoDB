@@ -13,7 +13,7 @@ const links = [
 const baseData = {
 	user: null,
 	stats: { works: 1234, tags: 567, songs: 89, lists: 42 },
-	head: { title: m.mean_top_antelope_love(), canonicalParams: ['page'], noindex: false },
+	head: { title: m.mean_top_antelope_love() },
 	links
 };
 

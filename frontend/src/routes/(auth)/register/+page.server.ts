@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ cookies, fetch, locals }) => {
 	const { response } = await client.GET('/api/auth/csrf', { fetch });
 	forwardCookies(cookies, response);
 	return {
-		head: { title: m.blue_whole_camel_type(), noindex: true },
+		head: { title: m.blue_whole_camel_type() },
 		inviteRequired: inviteRequired()
 	};
 };

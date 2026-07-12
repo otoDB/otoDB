@@ -1,30 +1,47 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from dotenv import load_dotenv
+from django.conf import settings
 from litestar import Litestar, Router, get
-from litestar.connection import ASGIConnection
-from litestar.middleware import AbstractAuthenticationMiddleware, AuthenticationResult
+from litestar.config.cors import CORSConfig
+from litestar.datastructures import CacheControlHeader
+from litestar.openapi import OpenAPIConfig
 from litestar.plugins.sqlalchemy import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
 from sqlalchemy import text
 from sqlalchemy.orm import DeclarativeBase
 
-load_dotenv()
+from otodb_next.middleware import (
+	CrossOriginProtectionMiddleware,
+	SessionAuthMiddleware,
+)
+
 if TYPE_CHECKING:
 	from sqlalchemy.ext.asyncio import AsyncSession
 
+# project.settings is the single config source while Django is still around;
+# it loads .env and derives everything from the environment.
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 
-@dataclass
-class User:
-	id: int
-	username: str
-	level: int  # TODO enum
+cors_config = CORSConfig(
+	allow_origins=settings.CORS_ALLOWED_ORIGINS,
+	allow_origin_regex='.*' if settings.DEBUG else None,
+	allow_credentials=True,
+	allow_methods=['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT'],
+	allow_headers=[
+		'accept',
+		'authorization',
+		'content-type',
+		'user-agent',
+		'x-csrftoken',
+		'x-requested-with',
+	],
+	max_age=86400,
+)
 
 
-@get('/stats')
+@get('/stats', cache=60, cache_control=CacheControlHeader(max_age=60))
 async def statistics(db_session: AsyncSession) -> tuple[int, int, int, int]:
 	query = text("""
 		SELECT
@@ -37,76 +54,28 @@ async def statistics(db_session: AsyncSession) -> tuple[int, int, int, int]:
 	return tuple(result.one())
 
 
-api = Router(path='/api', route_handlers=[statistics])
-
-
 class Base(DeclarativeBase): ...
 
 
-class SessionAuthMiddleware(AbstractAuthenticationMiddleware):
-	async def authenticate_request(
-		self, connection: ASGIConnection
-	) -> AuthenticationResult:
-		from datetime import datetime, timezone
-
-		from django.contrib.sessions.serializers import JSONSerializer
-		from django.core import signing
-
-		session_key = connection.cookies.get('sessionid')
-		if not session_key:
-			return AuthenticationResult()
-		session_maker = connection.scope['app'].state.session_maker_class
-		async with session_maker() as session:
-			query = text("""
-				SELECT session_data, expire_date
-				FROM django_session
-				WHERE session_key = :key
-			""")
-			result = await session.execute(query, {'key': session_key})
-			row = result.mappings().one_or_none()
-
-		if not row or row['expire_date'] < datetime.now(timezone.utc):
-			return AuthenticationResult()
-
-		try:
-			session_dict = signing.loads(
-				row['session_data'],
-				salt='django.contrib.sessions.SessionStore',
-				serializer=JSONSerializer,
-			)
-		except Exception:
-			return AuthenticationResult()
-
-		user_id = session_dict.get('_auth_user_id')
-
-		if not user_id:
-			return AuthenticationResult()
-
-		async with session_maker() as session:
-			user_query = text(
-				'SELECT id, username, level FROM account_account WHERE id = :id'
-			)
-			user_result = await session.execute(user_query, {'id': int(user_id)})
-			user_row = user_result.mappings().one()
-
-		return AuthenticationResult(
-			user=User(**user_row),
-			auth=session_key,
-		)
-
-
-if os.environ.get('OTODB_SKIP_DB'):
+_db = settings.DATABASES['default']
+if _db['ENGINE'] == 'django.db.backends.sqlite3':
 	conn = 'sqlite:///:memory:'
 else:
-	conn = f'postgresql+psycopg://{os.environ["OTODB_DB_USER"]}:{os.environ["OTODB_DB_PASSWORD"]}@{os.environ["OTODB_DB_HOST"]}/{os.environ["OTODB_DB_NAME"]}'
+	conn = f'postgresql+psycopg://{_db["USER"]}:{_db["PASSWORD"]}@{_db["HOST"]}:{_db["PORT"]}/{_db["NAME"]}'
 config = SQLAlchemyAsyncConfig(
 	connection_string=conn,
 	create_all=False,
 	metadata=Base.metadata,
 )
+
+api = Router(path='/api', route_handlers=[statistics])
 app = Litestar(
 	route_handlers=[api],
+	cors_config=cors_config,
+	middleware=[CrossOriginProtectionMiddleware(), SessionAuthMiddleware],
+	openapi_config=None
+	if settings.OTODB_PROTECT_API_DOCS
+	else OpenAPIConfig(title='otoDB', version='1'),
 	plugins=[SQLAlchemyPlugin(config=config)],
-	middleware=[SessionAuthMiddleware],
-	debug=os.environ.get('OTODB_DEBUG', 'False').lower() == 'true',
+	debug=settings.DEBUG,
 )

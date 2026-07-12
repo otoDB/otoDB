@@ -56,6 +56,9 @@ unfixable = [
 dev = [
     "django-silk>=5.5.0",
     "granian[reload]>=2.7.5",
+    # granian's auto loop picks this on Windows.
+    # ProactorEventLoop can't run psycopg async. (Litestar DB endpoints)
+    "winloop>=0.6.3; sys_platform == 'win32'",
     "pre-commit>=4.5.1",
     "pytest>=9.0.3",
     "pytest-django>=4.12.0",

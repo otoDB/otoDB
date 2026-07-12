@@ -5849,7 +5849,15 @@
         "responses": {
           "200": {
             "description": "Request fulfilled, document follows",
-            "headers": {},
+            "headers": {
+              "cache-control": {
+                "schema": {
+                  "type": "string"
+                },
+                "required": false,
+                "deprecated": false
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {

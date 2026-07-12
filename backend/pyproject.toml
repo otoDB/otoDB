@@ -5,6 +5,7 @@ description = "otoDB is a community-driven website consisting of a collaborative
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "litestar[pydantic,sqlalchemy]>=2.24.0",
     "fast-diff-match-patch>=2.1.0",
     "django-comments-xtd>=2.10.11",
     "django-cors-headers>=4.9.0",
@@ -54,6 +55,7 @@ unfixable = [
 [dependency-groups]
 dev = [
     "django-silk>=5.5.0",
+    "granian[reload]>=2.7.5",
     "pre-commit>=4.5.1",
     "pytest>=9.0.3",
     "pytest-django>=4.12.0",

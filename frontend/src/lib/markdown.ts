@@ -3,7 +3,6 @@ import { PostEntities } from '$lib/schema';
 import type { Root as HastRoot } from 'hast';
 import type { Parent, PhrasingContent, Root } from 'mdast';
 import { findAndReplace } from 'mdast-util-find-and-replace';
-import { toString as mdastToString } from 'mdast-util-to-string';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
@@ -235,22 +234,6 @@ const processor = unified()
  * Render markdown text to HTML with otoDB extensions.
  */
 export const renderMarkdown = (text: string) => String(processor.processSync(text));
-
-/**
- * Reduce markdown to a plain-text excerpt for meta descriptions,
- * truncated to `length` characters.
- */
-export const markdownExcerpt = (text: string, length = 160): string | null => {
-	const plain = processor
-		.parse(text)
-		.children.map((node) => mdastToString(node))
-		.join(' ')
-		.replace(TAGWORK_RE, (_, slug, display) => display ?? slug)
-		.replace(/\s+/g, ' ')
-		.trim();
-	if (!plain) return null;
-	return plain.length <= length ? plain : plain.slice(0, length - 1) + '…';
-};
 
 /**
  * Extract unique @mentions from markdown source text.

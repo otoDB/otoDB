@@ -1,7 +1,4 @@
 import client from '$lib/api.server';
-import { languages } from '$lib/enums/language';
-import { markdownExcerpt } from '$lib/markdown';
-import { getLocale } from '$lib/paraglide/runtime';
 import { ModelsWithComments } from '$lib/schema';
 import type { PageServerLoad } from './$types';
 
@@ -67,11 +64,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		})
 		.then((res) => res.data);
 
-	// Prefer tag's wiki over the generic tag description placeholder
-	const wikiEntry =
-		details.wiki_page.find((p) => p.lang === languages[getLocale()].id) ?? details.wiki_page[0];
-	const excerpt = wikiEntry ? markdownExcerpt(wikiEntry.page) : null;
-
 	return {
 		...details,
 		works,
@@ -80,7 +72,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		batch_size,
 		connections,
 		song_connections,
-		similar,
-		head: excerpt ? { ...data.head, description: excerpt } : data.head
+		similar
 	};
 };

@@ -8,13 +8,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 	const { data } = await client.GET('/api/list/search', {
 		fetch,
-		params: {
-			query: {
-				query: query,
-				limit: batch_size,
-				offset: (page - 1) * batch_size
-			}
-		}
+		params: { query: { query: query, limit: batch_size, offset: (page - 1) * batch_size } }
 	});
 	return {
 		query: query,
@@ -24,9 +18,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 			title: m.mild_loud_shad_enchant({
 				type: m.mean_top_antelope_love(),
 				name: m.stale_loose_squid_cut()
-			}),
-			canonicalParams: ['page'],
-			noindex: !!query
+			})
 		}
 	};
 };

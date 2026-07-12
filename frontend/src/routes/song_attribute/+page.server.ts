@@ -26,8 +26,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 			title: m.mild_loud_shad_enchant({
 				type: m.mean_top_antelope_love(),
 				name: m.dull_plain_angelfish_cuddle()
-			}),
-			noindex: !!query
+			})
 		}
 	};
 };

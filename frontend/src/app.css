@@ -19,6 +19,10 @@
 @custom-variant dark (@media not (prefers-color-scheme: light), &:where(.dark, .dark *), &:has(#bg-marker.dark));
 
 @layer base {
+	input {
+		accent-color: var(--otodb-color-highlight-primary);
+	}
+
 	thead {
 		background-color: var(--otodb-color-bg-primary);
 	}

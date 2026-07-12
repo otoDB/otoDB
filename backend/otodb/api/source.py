@@ -2,7 +2,6 @@ from datetime import date
 from typing import Annotated
 
 from asgiref.sync import sync_to_async
-from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import aget_object_or_404, get_object_or_404
@@ -32,7 +31,6 @@ from otodb.models.enums import (
 	WorkOrigin,
 	WorkStatus,
 )
-from otodb.tasks import enqueue_deferred, resolve_expired_source_task
 
 from .common import (
 	ApiError,
@@ -204,13 +202,6 @@ async def new_source_from_url(
 				raise ApiError(400, ErrorCode.SOURCE_FLAGGED)
 			if not is_editor and work.status == Status.APPROVED:
 				src.is_pending = True
-				transaction.on_commit(
-					lambda: enqueue_deferred(
-						resolve_expired_source_task,
-						src.pk,
-						delay=settings.OTODB_MODERATION_PERIOD,
-					)
-				)
 			sync_work_source(work, src)
 			return {'work_id': work.pk}
 

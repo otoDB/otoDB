@@ -59,12 +59,6 @@ from otodb.models.enums import (
 	WorkTagCategory,
 )
 from otodb.moderation import resolve_work
-from otodb.tasks import (
-	enqueue_deferred,
-	resolve_expired_appeal,
-	resolve_expired_flag,
-	resolve_expired_work,
-)
 
 from .common import (
 	AbstractTagTransformer,
@@ -896,13 +890,6 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	)
 	_resolve_and_apply_tags(work, payload.tags)
 
-	if work.status == Status.PENDING:
-		transaction.on_commit(
-			lambda: enqueue_deferred(
-				resolve_expired_work, work.pk, delay=settings.OTODB_MODERATION_PERIOD
-			)
-		)
-
 	src.media = work
 	src.save()
 
@@ -991,18 +978,12 @@ def flag_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 		if active_flags >= settings.OTODB_MAX_FLAGGED_WORKS:
 			raise ApiError(429, ErrorCode.FLAG_LIMIT_REACHED)
 
-	flag = ModerationEvent.objects.create(
+	ModerationEvent.objects.create(
 		work=work,
 		event_type=ModerationEventType.FLAG,
 		by=request.user,
 		reason=reason,
 		status=FlagStatus.PENDING,
-	)
-
-	transaction.on_commit(
-		lambda: enqueue_deferred(
-			resolve_expired_flag, flag.pk, delay=settings.OTODB_MODERATION_PERIOD
-		)
 	)
 
 
@@ -1046,18 +1027,12 @@ def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 		if total_slots_used + 3 > settings.OTODB_MAX_PENDING_WORKS:
 			raise ApiError(429, ErrorCode.NO_MORE_APPEAL_SLOTS)
 
-	appeal = ModerationEvent.objects.create(
+	ModerationEvent.objects.create(
 		work=work,
 		event_type=ModerationEventType.APPEAL,
 		by=request.user,
 		reason=reason,
 		status=FlagStatus.PENDING,
-	)
-
-	transaction.on_commit(
-		lambda: enqueue_deferred(
-			resolve_expired_appeal, appeal.pk, delay=settings.OTODB_MODERATION_PERIOD
-		)
 	)
 
 

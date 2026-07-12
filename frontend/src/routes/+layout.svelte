@@ -2,7 +2,7 @@
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import Banner from '$lib/Banner.svelte';
-	import Footer from '$lib/Footer.svelte';
+	import Footer from '$lib/Footer/Footer.svelte';
 	import GlobalSideNav from '$lib/GlobalSideNav/GlobalSideNav.svelte';
 	import Section from '$lib/Section.svelte';
 	import { isFormDirty } from '$lib/dirty';

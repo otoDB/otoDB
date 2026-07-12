@@ -33,6 +33,7 @@ from otodb.common import (
 from otodb.models import (
 	MediaWork,
 	ModerationEvent,
+	PoolItem,
 	RevisionChange,
 	RevisionChangeEntity,
 	TagWork,
@@ -416,6 +417,14 @@ work_metatag_grammars = {
 		),
 	),
 	'id': MetatagSpec(int, make_range_metatag('id')),
+	'list': MetatagSpec(
+		str,
+		lambda v: (
+			Exists(PoolItem.objects.filter(work_id=OuterRef('id'), pool_id=v))
+			if v.isdigit()
+			else Q(pk__in=[])
+		),
+	),
 	'width': MetatagSpec(
 		int,
 		make_range_metatag('work_width', model=WorkSource, fk_field='media_id'),

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import os
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from dotenv import load_dotenv
-from litestar import Litestar, Request, Router, get
+from litestar import Litestar, Router, get
 from litestar.connection import ASGIConnection
 from litestar.middleware import AbstractAuthenticationMiddleware, AuthenticationResult
 from litestar.plugins.sqlalchemy import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
@@ -16,11 +17,15 @@ if TYPE_CHECKING:
 	from sqlalchemy.ext.asyncio import AsyncSession
 
 
+@dataclass
+class User:
+	id: int
+	username: str
+	level: int  # TODO enum
+
+
 @get('/stats')
-async def statistics(
-	db_session: AsyncSession, request: Request
-) -> tuple[int, int, int, int]:
-	print(request.user)
+async def statistics(db_session: AsyncSession) -> tuple[int, int, int, int]:
 	query = text("""
 		SELECT
 			(SELECT COUNT(*) FROM otodb_mediawork WHERE otodb_mediawork.moved_to_id IS NULL),
@@ -84,7 +89,10 @@ class SessionAuthMiddleware(AbstractAuthenticationMiddleware):
 			user_result = await session.execute(user_query, {'id': int(user_id)})
 			user_row = user_result.mappings().one()
 
-		return AuthenticationResult(user=dict(user_row), auth=session_key)
+		return AuthenticationResult(
+			user=User(**user_row),
+			auth=session_key,
+		)
 
 
 if os.environ.get('OTODB_SKIP_DB'):

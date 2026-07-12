@@ -118,7 +118,7 @@ _SESSION_QUERY = text("""
 """)
 
 _USER_QUERY = text("""
-	SELECT id, username, level, password
+	SELECT id, username, level, password, is_active
 	FROM account_account
 	WHERE id = :id
 """)
@@ -183,7 +183,9 @@ class SessionAuthMiddleware(AbstractAuthenticationMiddleware):
 
 			result = await db.execute(_USER_QUERY, {'id': int(user_id)})
 			user = result.mappings().one_or_none()
-		if user is None:
+		# Django's ModelBackend.user_can_authenticate: deactivated accounts'
+		# sessions are anonymous.
+		if user is None or not user['is_active']:
 			return anonymous
 
 		# Django's get_user: the session stores an HMAC of the password hash,

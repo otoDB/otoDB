@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 from dirtyfields import DirtyFieldsMixin
 from django.conf import settings
@@ -19,6 +20,9 @@ _READ_ONLY_HTTP_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS'})
 
 
 class Revision(models.Model):
+	if TYPE_CHECKING:
+		revisionchange_set: models.QuerySet['RevisionChange']
+
 	user = models.ForeignKey(
 		settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True
 	)
@@ -27,6 +31,9 @@ class Revision(models.Model):
 
 
 class RevisionChange(models.Model):
+	if TYPE_CHECKING:
+		revisionchangeentity_set: models.QuerySet['RevisionChangeEntity']
+
 	rev = models.ForeignKey(Revision, null=False, on_delete=models.CASCADE)
 
 	target_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=False)

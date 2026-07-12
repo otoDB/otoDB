@@ -45,7 +45,13 @@ def session_row(session_dict: dict, expires_in_days: int = 14) -> dict:
 
 
 def user_row(**overrides) -> dict:
-	row = {'id': 1, 'username': 'user', 'level': 20, 'password': PASSWORD_HASH}
+	row = {
+		'id': 1,
+		'username': 'user',
+		'level': 20,
+		'password': PASSWORD_HASH,
+		'is_active': True,
+	}
 	return row | overrides
 
 
@@ -135,6 +141,16 @@ def test_deleted_user_is_anonymous():
 	rows = [
 		session_row({'_auth_user_id': '1', '_auth_user_hash': auth_hash()}),
 		None,
+	]
+	assert authenticate(rows).user is None
+
+
+def test_deactivated_user_is_anonymous():
+	# Django's ModelBackend.user_can_authenticate: is_active=False sessions
+	# are anonymous even though the auth hash still matches.
+	rows = [
+		session_row({'_auth_user_id': '1', '_auth_user_hash': auth_hash()}),
+		user_row(is_active=False),
 	]
 	assert authenticate(rows).user is None
 

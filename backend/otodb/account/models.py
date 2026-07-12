@@ -9,7 +9,7 @@ from django.db import IntegrityError, models
 from django.urls import reverse
 from django.utils import timezone
 
-from otodb.models.enums import OtodbIntegerEnum
+from otodb.models.enums import UserLevel
 
 # Disallow:
 # - RFC 3986 reserved
@@ -66,13 +66,7 @@ class AccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser):
-	class Levels(OtodbIntegerEnum):
-		ANONYMOUS = 0
-		RESTRICTED = 10
-		MEMBER = 20
-		EDITOR = 40
-		MOD = 50
-		ADMIN = 100
+	Levels = UserLevel
 
 	if TYPE_CHECKING:
 		from django.db.models import QuerySet
@@ -163,7 +157,8 @@ class Account(AbstractBaseUser):
 
 class Invitation(models.Model):
 	secret = models.CharField(max_length=127, unique=True)
-	level = models.IntegerField(choices=Account.Levels)
+	# .choices needed since UserLevel is no longer a Django Choices class
+	level = models.IntegerField(choices=Account.Levels.choices)
 	created_by = models.ForeignKey(
 		Account, on_delete=models.CASCADE, related_name='created_invitations'
 	)

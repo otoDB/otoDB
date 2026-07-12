@@ -81,25 +81,6 @@ def unbind_source(request: AuthedHttpRequest, source_id: OtodbID):
 	src.save()
 
 
-@source_router.put('origin', auth=django_auth)
-@user_is_trusted
-@with_revision_route(Route.WORKSOURCE_SET_ORIGIN)
-def source_origin(request: AuthedHttpRequest, source_id: OtodbID, status: WorkOrigin):
-	is_editor = request.user.level >= Account.Levels.EDITOR
-	src = get_object_or_404(WorkSource.objects, id=source_id)
-	# Trusted users may only set the origin while the work or the source itself
-	# is still pending; otherwise an editor is required.
-	if (
-		src.media
-		and not is_editor
-		and src.media.status != Status.PENDING
-		and not src.is_pending
-	):
-		raise ApiError(403, ErrorCode.EDITOR_ONLY)
-	src.work_origin = status
-	src.save()
-
-
 @source_router.post('refresh', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REFRESH)

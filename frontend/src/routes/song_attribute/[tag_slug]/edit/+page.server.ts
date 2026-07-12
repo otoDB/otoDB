@@ -30,6 +30,6 @@ export const actions = {
 		});
 		if (apiError) return apiFail(apiError, { category, parent_slug });
 
-		redirect(303, `/song_attribute/${params.tag_slug}`);
+		redirect(303, `/song_attribute/${encodeURIComponent(params.tag_slug!)}`);
 	}
 } satisfies Actions;

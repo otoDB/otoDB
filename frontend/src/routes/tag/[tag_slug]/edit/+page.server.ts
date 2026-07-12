@@ -108,20 +108,20 @@ export const actions = {
 				deprecated,
 				primary: +primary
 			});
-		redirect(303, `/tag/${params.tag_slug}`);
+		redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 	},
 	wiki_page: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 		const pages: { lang: number; md: string }[] = JSON.parse(data.get('wiki_pages') as string);
 		if (pages.length === 0) {
-			redirect(303, `/tag/${params.tag_slug}`);
+			redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 		}
 		await client.POST('/api/wiki/tag', {
 			fetch,
 			params: { query: { tag_slug: params.tag_slug! } },
 			body: pages
 		});
-		redirect(303, `/tag/${params.tag_slug}`);
+		redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 	},
 	connections: async ({ request, fetch, params }) => {
 		const data = await request.formData();
@@ -131,6 +131,6 @@ export const actions = {
 			fetch,
 			params: { query: { tag_slug: params.tag_slug!, urls } }
 		});
-		redirect(303, `/tag/${params.tag_slug}`);
+		redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 	}
 } satisfies Actions;

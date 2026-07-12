@@ -8,7 +8,8 @@ import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ fetch, locals, url, params }) => {
 	userLevelGuard(locals.user, Levels.Member);
-	if (params.username !== locals.user?.username) redirect(303, `/profile/${params.username}`);
+	if (params.username !== locals.user?.username)
+		redirect(303, `/profile/${encodeURIComponent(params.username!)}`);
 
 	const batch_size = 20;
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;

@@ -14,3 +14,11 @@ from django.core.asgi import get_asgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 
 application = get_asgi_application()
+
+if trusted_hosts := os.environ.get('OTODB_TRUSTED_PROXY_HOSTS'):
+	from granian.utils.proxies import wrap_asgi_with_proxy_headers
+
+	application = wrap_asgi_with_proxy_headers(
+		application,
+		trusted_hosts=[h.strip() for h in trusted_hosts.split(',')],
+	)

@@ -49,10 +49,10 @@ ENV OTODB_HASH=${OTODB_HASH} \
     PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    GRANIAN_INTERFACE=wsgi \
+    GRANIAN_INTERFACE=asginl \
     GRANIAN_HOST=0.0.0.0 \
     GRANIAN_PORT=8000 \
     GRANIAN_WORKERS=4
 
 EXPOSE 8000
-CMD ["sh", "-c", "cp -r static/. /srv/static/ && python manage.py migrate && exec granian project.wsgi:application"]
+CMD ["sh", "-c", "cp -r static/. /srv/static/ && python manage.py migrate && exec granian project.asgi:application"]

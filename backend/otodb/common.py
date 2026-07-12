@@ -1,3 +1,4 @@
+import asyncio
 import html
 import json
 import logging
@@ -72,6 +73,7 @@ for e in (
 	SoundcloudPlaylistIE,
 ):
 	ydl_playlist.add_info_extractor(e)
+
 
 ydl, jar = None, None
 
@@ -307,7 +309,7 @@ def process_video_info(full_info, link=None):
 		return None
 
 
-def video_info(link, expected_unavailable=False):
+def _video_info_sync(link, expected_unavailable=False):
 	try:
 		if NiconicoIECustom.suitable(link):
 			full_info = get_niconico_geoblocked(NiconicoIECustom.get_temp_id(link))
@@ -339,13 +341,17 @@ def video_info(link, expected_unavailable=False):
 		return None, None
 
 
-def playlist_info(link):
+async def video_info(link, expected_unavailable=False):
+	return await asyncio.to_thread(_video_info_sync, link, expected_unavailable)
+
+
+async def playlist_info(link):
 	keys = {
 		'title': 'title',
 		'description': 'description',
 		'entries': 'entries',
 	}
-	info = ydl_playlist.extract_info(link, download=False)
+	info = await asyncio.to_thread(ydl_playlist.extract_info, link, download=False)
 	if info.get('_type') != 'playlist':
 		return None
 

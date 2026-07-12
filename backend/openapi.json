@@ -6,42 +6,6 @@
     "description": ""
   },
   "paths": {
-    "/api/stats": {
-      "get": {
-        "operationId": "otodb_api_statistics",
-        "summary": "Statistics",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "maxItems": 4,
-                  "minItems": 4,
-                  "prefixItems": [
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "integer"
-                    }
-                  ],
-                  "title": "Response",
-                  "type": "array"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/auth/csrf": {
       "get": {
         "operationId": "otodb_api_auth_csrf",

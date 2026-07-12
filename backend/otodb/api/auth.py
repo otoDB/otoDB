@@ -51,7 +51,7 @@ def verify_turnstile(request: HttpRequest, token: str | None, action: str) -> No
 		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
 	data = {'secret': secret, 'response': token}
 	# REMOTE_ADDR is resolved to the real client IP by Granian's proxy-header wrapper
-	# (see project/asgi/wsgi.py + OTODB_TRUSTED_PROXY_HOSTS)
+	# (see project/[asgi/wsgi].py + OTODB_TRUSTED_PROXY_HOSTS)
 	remoteip = request.META.get('REMOTE_ADDR')
 	if remoteip:
 		data['remoteip'] = remoteip

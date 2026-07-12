@@ -320,9 +320,10 @@ def make_decorator(before, after=_default_after_passthrough):
 			@wraps(func)
 			async def async_wrapper(request, *args, **kwargs):
 				request, args, kwargs = before(request, *args, **kwargs)
-				return await sync_to_async(after)(
-					await func(request, *args, **kwargs), request, *args, **kwargs
-				)
+				ret = await func(request, *args, **kwargs)
+				if after is _default_after_passthrough:
+					return ret
+				return await sync_to_async(after)(ret, request, *args, **kwargs)
 
 			return async_wrapper
 		else:

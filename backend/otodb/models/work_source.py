@@ -154,7 +154,7 @@ class WorkSource(RevisionTrackedModel):
 	@staticmethod
 	def from_url(
 		url, user, is_reupload, info, full_info, metadata=None
-	) -> tuple['WorkSource | None']:
+	) -> 'WorkSource | None':
 		"""
 		Gets or creates a WorkSource from a URL.
 

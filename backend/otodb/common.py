@@ -63,16 +63,20 @@ def slugify_tag(s: str):
 	return slugify(canonicalize_tag(s), allow_unicode=True)
 
 
-ydl_playlist = YoutubeDL(
-	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True
-)
-for e in (
-	YoutubeTabIE,
-	NiconicoPlaylistIE,
-	BilibiliFavoritesListIE,
-	SoundcloudPlaylistIE,
-):
-	ydl_playlist.add_info_extractor(e)
+def _make_playlist_ydl():
+	ydl_playlist = YoutubeDL(
+		{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True},
+		auto_init=True,
+	)
+	for e in (
+		YoutubeTabIE,
+		NiconicoPlaylistIE,
+		BilibiliFavoritesListIE,
+		SoundcloudPlaylistIE,
+	):
+		ydl_playlist.add_info_extractor(e)
+	return ydl_playlist
+
 
 ydl, jar = None, None
 
@@ -308,7 +312,7 @@ def process_video_info(full_info, link=None):
 		return None
 
 
-async def video_info(link, expected_unavailable=False):
+def _video_info_sync(link, expected_unavailable=False):
 	try:
 		if NiconicoIECustom.suitable(link):
 			full_info = get_niconico_geoblocked(NiconicoIECustom.get_temp_id(link))
@@ -324,7 +328,7 @@ async def video_info(link, expected_unavailable=False):
 				link = f.url
 				assert YoutubeIE.suitable(link)
 
-			full_info = await asyncio.to_thread(ydl.extract_info, link, download=False)
+			full_info = ydl.extract_info(link, download=False)
 			info = process_video_info(full_info)
 			return info, full_info
 	except DownloadError as e:
@@ -340,13 +344,19 @@ async def video_info(link, expected_unavailable=False):
 		return None, None
 
 
+async def video_info(link, expected_unavailable=False):
+	return await asyncio.to_thread(_video_info_sync, link, expected_unavailable)
+
+
 async def playlist_info(link):
 	keys = {
 		'title': 'title',
 		'description': 'description',
 		'entries': 'entries',
 	}
-	info = await asyncio.to_thread(ydl_playlist.extract_info, link, download=False)
+	info = await asyncio.to_thread(
+		lambda: _make_playlist_ydl().extract_info(link, download=False)
+	)
 	if info.get('_type') != 'playlist':
 		return None
 

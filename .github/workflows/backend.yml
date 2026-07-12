@@ -75,7 +75,7 @@ jobs:
       - name: Check server can start
         timeout-minutes: 1
         run: |
-          uv run manage.py migrate --check
+          uv run manage.py migrate
           timeout 10 uv run granian --interface asgi gateway:application || code=$?
           if [[ ${code:-0} -ne 124 && ${code:-0} -ne 0 ]]; then exit $code; fi
 

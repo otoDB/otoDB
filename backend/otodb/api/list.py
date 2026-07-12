@@ -149,7 +149,7 @@ def delete(request: HttpRequest, list_id: OtodbID):
 
 
 def import_ext_into_pool(entries, infos, list_: Pool, user):
-	old_entries = list_.poolitem_set.values_list('work__id', flat=True)
+	old_entries = set(list_.poolitem_set.values_list('work__id', flat=True))
 
 	pool_items = []
 	for i, (vid_info, full_info) in enumerate(list(infos)):
@@ -164,6 +164,10 @@ def import_ext_into_pool(entries, infos, list_: Pool, user):
 			user=user,
 			is_reupload=False,
 		)
+
+		if src is None:
+			list_.description += f'\nFailed to fetch {entries[i]}'
+			continue
 
 		if src.media is not None:
 			# Source already has a work, add to pool if not already there
@@ -206,7 +210,7 @@ async def pull_upstream(request: HttpRequest, list_id: OtodbID):
 	lst = await aget_object_or_404(
 		Pool.objects.select_related('poolupstream'), id=list_id
 	)
-	if lst.author != request.user:
+	if lst.author_id != request.user.id:
 		raise HttpError(403, 'Forbidden')
 
 	info = await playlist_info(lst.poolupstream.upstream)

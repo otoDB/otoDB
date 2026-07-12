@@ -23,6 +23,7 @@ class Pool(models.Model):
 		from django.db.models import QuerySet
 
 		poolitem_set: QuerySet['PoolItem']
+		author_id: int
 
 	def __str__(self) -> str:
 		return f'{self.name}'

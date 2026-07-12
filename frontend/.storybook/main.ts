@@ -4,7 +4,12 @@ import { mergeConfig } from 'vite';
 export default defineMain({
 	framework: '@storybook/sveltekit',
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'],
-	addons: ['@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-themes'],
+	addons: [
+		'@storybook/addon-docs',
+		'@storybook/addon-a11y',
+		'@storybook/addon-themes',
+		'@storybook/addon-vitest'
+	],
 	staticDirs: [
 		{
 			from: './static',

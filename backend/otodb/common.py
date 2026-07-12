@@ -63,19 +63,16 @@ def slugify_tag(s: str):
 	return slugify(canonicalize_tag(s), allow_unicode=True)
 
 
-def _make_playlist_ydl():
-	ydl_playlist = YoutubeDL(
-		{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True},
-		auto_init=True,
-	)
-	for e in (
-		YoutubeTabIE,
-		NiconicoPlaylistIE,
-		BilibiliFavoritesListIE,
-		SoundcloudPlaylistIE,
-	):
-		ydl_playlist.add_info_extractor(e)
-	return ydl_playlist
+ydl_playlist = YoutubeDL(
+	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True
+)
+for e in (
+	YoutubeTabIE,
+	NiconicoPlaylistIE,
+	BilibiliFavoritesListIE,
+	SoundcloudPlaylistIE,
+):
+	ydl_playlist.add_info_extractor(e)
 
 
 ydl, jar = None, None
@@ -354,9 +351,7 @@ async def playlist_info(link):
 		'description': 'description',
 		'entries': 'entries',
 	}
-	info = await asyncio.to_thread(
-		lambda: _make_playlist_ydl().extract_info(link, download=False)
-	)
+	info = await asyncio.to_thread(ydl_playlist.extract_info, link, download=False)
 	if info.get('_type') != 'playlist':
 		return None
 

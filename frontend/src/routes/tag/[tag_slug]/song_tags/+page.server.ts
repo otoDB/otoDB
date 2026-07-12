@@ -6,5 +6,5 @@ import { Levels } from '$lib/schema';
 export const load: PageServerLoad = async ({ locals, parent, url }) => {
 	userLevelGuard(locals.user, Levels.Member, url.pathname);
 	const data = await parent();
-	if (!data.tag.song) redirect(303, `/tag/${data.tag.slug}`);
+	if (!data.tag.song) redirect(303, `/tag/${encodeURIComponent(data.tag.slug)}`);
 };

@@ -93,7 +93,7 @@ jobs:
           workingDirectory: frontend
           preCommands: |
             wrangler pages project create otodb-storybook --production-branch=master || true
-          command: pages deploy storybook-static --project-name=otodb-storybook --commit-dirty=true
+          command: pages deploy storybook-static --project-name=otodb-storybook --commit-dirty=true --branch=${{ github.head_ref || github.ref_name }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'

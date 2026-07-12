@@ -69,9 +69,6 @@ jobs:
   deploy_storybook:
     name: Deploy Storybook to Cloudflare Pages
     runs-on: ubuntu-latest
-    needs:
-      - lint
-      - test
     permissions:
       contents: read
       pull-requests: write
@@ -104,7 +101,13 @@ jobs:
         with:
           header: storybook-preview
           message: |
-            Storybook preview: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+            ## Storybook Preview
+
+            | | |
+            |---|---|
+            | **Status** | Deploy successful |
+            | **Preview URL** | ${{ steps.deploy.outputs.deployment-url }} |
+            | **Branch Preview URL** | ${{ steps.deploy.outputs.pages-deployment-alias-url }} |
 
   build_docker:
     name: Build Docker image

@@ -63,20 +63,17 @@ def slugify_tag(s: str):
 	return slugify(canonicalize_tag(s), allow_unicode=True)
 
 
-def _make_playlist_ydl():
-	ydl_playlist = YoutubeDL(
-		{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True},
-		auto_init=True,
-	)
-	for e in (
-		YoutubeTabIE,
-		NiconicoPlaylistIE,
-		BilibiliFavoritesListIE,
-		SoundcloudPlaylistIE,
-	):
-		ydl_playlist.add_info_extractor(e)
-	return ydl_playlist
-
+ydl_playlist = YoutubeDL(
+	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True},
+	auto_init=True,
+)
+for e in (
+	YoutubeTabIE,
+	NiconicoPlaylistIE,
+	BilibiliFavoritesListIE,
+	SoundcloudPlaylistIE,
+):
+	ydl_playlist.add_info_extractor(e)
 
 
 ydl, jar = None, None

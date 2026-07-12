@@ -59,4 +59,5 @@ dev = [
     "pre-commit>=4.5.1",
     "pytest>=9.0.3",
     "pytest-django>=4.12.0",
+    "pytest-asyncio>=1.4.0",
 ]

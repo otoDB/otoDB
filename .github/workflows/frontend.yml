@@ -94,7 +94,9 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
-          command: pages deploy storybook-static --project-name=otodb-storybook
+          preCommands: |
+            wrangler pages project create otodb-storybook --production-branch=master || true
+          command: pages deploy storybook-static --project-name=otodb-storybook --commit-dirty=true
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'

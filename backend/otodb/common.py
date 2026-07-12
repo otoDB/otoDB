@@ -64,7 +64,8 @@ def slugify_tag(s: str):
 
 
 ydl_playlist = YoutubeDL(
-	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True
+	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True},
+	auto_init=True,
 )
 for e in (
 	YoutubeTabIE,

@@ -33,8 +33,12 @@ async def statistics(
 class Base(DeclarativeBase): ...
 
 
+if os.environ.get('OTODB_SKIP_DB'):
+	conn = 'sqlite:///:memory:'
+else:
+	conn = f'postgresql+psycopg://{os.environ["OTODB_DB_USER"]}:{os.environ["OTODB_DB_PASSWORD"]}@{os.environ["OTODB_DB_HOST"]}/{os.environ["OTODB_DB_NAME"]}'
 config = SQLAlchemyAsyncConfig(
-	connection_string=f'postgresql+psycopg://{os.environ["OTODB_DB_USER"]}:{os.environ["OTODB_DB_PASSWORD"]}@{os.environ["OTODB_DB_HOST"]}/{os.environ["OTODB_DB_NAME"]}',
+	connection_string=conn,
 	create_all=False,
 	metadata=Base.metadata,
 )

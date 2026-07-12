@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { hasUserLevel } from '$lib/enums/userLevel';
+	import Icon from '$lib/Icon/Icon.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Levels } from '$lib/schema';
 	import { clickOutside } from '$lib/ui';
@@ -114,13 +115,11 @@
 					onclick={closeMobileNav}
 				>
 					{#if user.notifs_nonsub_count > 0}({user.notifs_nonsub_count}){/if}
-					<span
-						aria-hidden="true"
-						class={[
-							'text-otodb-content-fainter ml-1 size-4',
-							user.notifs_count > 0 ? 'icon-[gravity-ui--bell-fill]' : 'icon-[gravity-ui--bell]'
-						]}
-					></span>
+					<Icon
+						key={user.notifs_count > 0 ? 'notifications-unread' : 'notifications'}
+						class="text-otodb-content-fainter ml-1 size-4"
+						decorative
+					/>
 				</a>
 			{/if}
 		</div>

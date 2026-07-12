@@ -11,7 +11,7 @@
 	import { ModelsWithComments, WorkOrigin } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();

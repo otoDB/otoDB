@@ -149,12 +149,13 @@ def delete(request: HttpRequest, list_id: OtodbID):
 
 
 def import_ext_into_pool(entries, infos, list_: Pool, user):
-	old_entries = set(list_.poolitem_set.values_list('work__id', flat=True))
+	# set() instead of .distinct() because list has not yet been written to the DB
+	existing_work_ids = set(list_.poolitem_set.values_list('work__id', flat=True))
 
-	pool_items = []
-	for i, (vid_info, full_info) in enumerate(list(infos)):
+	new_works = {}
+	for entry, (vid_info, full_info) in zip(entries, infos):
 		if vid_info is None:
-			list_.description += f'\nFailed to fetch {entries[i]}'
+			list_.description += f'\nFailed to fetch {entry}'
 			continue
 
 		src = WorkSource.from_url(
@@ -166,20 +167,20 @@ def import_ext_into_pool(entries, infos, list_: Pool, user):
 		)
 
 		if src is None:
-			list_.description += f'\nFailed to fetch {entries[i]}'
+			list_.description += f'\nFailed to fetch {entry}'
 			continue
 
-		if src.media is not None:
-			# Source already has a work, add to pool if not already there
-			if src.media.id not in old_entries:
-				pool_items.append(PoolItem(work=src.media, description='', pool=list_))
-				old_entries.add(src.media.id)
-		else:
+		if src.media is None:
 			# No work yet - add to pending for user review
 			list_.pending_items.add(src)
+		elif src.media.pk not in existing_work_ids:
+			# Source already has a work - add to pool if not already there
+			new_works[src.media.pk] = src.media
 
 	list_.save()
-	PoolItem.objects.bulk_create(pool_items)
+	PoolItem.objects.bulk_create(
+		[PoolItem(work=work, description='', pool=list_) for work in new_works.values()]
+	)
 
 
 @list_router.post(

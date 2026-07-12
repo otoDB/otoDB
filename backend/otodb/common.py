@@ -78,6 +78,7 @@ def _make_playlist_ydl():
 	return ydl_playlist
 
 
+
 ydl, jar = None, None
 
 
@@ -354,9 +355,7 @@ async def playlist_info(link):
 		'description': 'description',
 		'entries': 'entries',
 	}
-	info = await asyncio.to_thread(
-		lambda: _make_playlist_ydl().extract_info(link, download=False)
-	)
+	info = await asyncio.to_thread(ydl_playlist.extract_info, link, download=False)
 	if info.get('_type') != 'playlist':
 		return None
 

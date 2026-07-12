@@ -309,11 +309,7 @@ class ListSchema(ModelSchema):
 		return value.upstream
 
 
-def _default_after_passthrough(ret, request, *args, **kwargs):
-	return ret
-
-
-def make_decorator(before, after=_default_after_passthrough):
+def make_decorator(before, after=None):
 	def universal_decorator(func):
 		if inspect.iscoroutinefunction(func):
 
@@ -321,7 +317,7 @@ def make_decorator(before, after=_default_after_passthrough):
 			async def async_wrapper(request, *args, **kwargs):
 				request, args, kwargs = before(request, *args, **kwargs)
 				ret = await func(request, *args, **kwargs)
-				if after is _default_after_passthrough:
+				if after is None:
 					return ret
 				return await sync_to_async(after)(ret, request, *args, **kwargs)
 
@@ -331,7 +327,10 @@ def make_decorator(before, after=_default_after_passthrough):
 			@wraps(func)
 			def sync_wrapper(request, *args, **kwargs):
 				request, args, kwargs = before(request, *args, **kwargs)
-				return after(func(request, *args, **kwargs), request, *args, **kwargs)
+				ret = func(request, *args, **kwargs)
+				if after is None:
+					return ret
+				return after(ret, request, *args, **kwargs)
 
 			return sync_wrapper
 

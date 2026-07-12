@@ -15,6 +15,7 @@
 		"test:watch": "bun test --watch",
 		"lint": "eslint .",
 		"storybook": "storybook dev -p 6006 --no-open",
+		"storybook:agent": "storybook dev -p 6006 --quiet --ci --disable-telemetry --no-version-updates",
 		"build-storybook": "storybook build",
 		"sync-schema": "openapi-typescript --enum",
 		"sync-schema:watch": "chokidar './openapi.json' --follow-symlinks --initial -c 'bun run sync-schema'"

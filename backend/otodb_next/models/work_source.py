@@ -81,6 +81,7 @@ class WorkSource(Base):
 	uploader_id: Mapped[str | None] = mapped_column(String(1000))
 	added_by_id: Mapped[int] = mapped_column(ForeignKey('account_account.id'))
 	is_pending: Mapped[bool] = mapped_column(Boolean)
+	pending_since: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 	created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 	media: Mapped[MediaWork | None] = relationship(MediaWork, foreign_keys=[media_id])

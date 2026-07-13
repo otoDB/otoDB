@@ -157,7 +157,7 @@ def prune_expired() -> int:
 		total += 1
 
 	for source_id in WorkSource.objects.filter(
-		is_pending=True, created_at__lt=cutoff
+		is_pending=True, pending_since__lt=cutoff
 	).values_list('id', flat=True):
 		resolve_expired_source(source_id)
 		total += 1

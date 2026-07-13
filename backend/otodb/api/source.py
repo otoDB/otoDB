@@ -5,6 +5,7 @@ from asgiref.sync import sync_to_async
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import aget_object_or_404, get_object_or_404
+from django.utils import timezone
 from ninja import Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
@@ -202,6 +203,7 @@ async def new_source_from_url(
 				raise ApiError(400, ErrorCode.SOURCE_FLAGGED)
 			if not is_editor and work.status == Status.APPROVED:
 				src.is_pending = True
+				src.pending_since = timezone.now()
 			sync_work_source(work, src)
 			return {'work_id': work.pk}
 
@@ -327,7 +329,8 @@ def reject_pending_source(src: WorkSource, by, reason: str):
 	work = src.media  # Capture before unbinding
 	src.media = None
 	src.is_pending = False
-	src.save(update_fields=['media', 'is_pending'])
+	src.pending_since = None
+	src.save(update_fields=['media', 'is_pending', 'pending_since'])
 	ModerationEvent.objects.create(
 		work=work,
 		source=src,
@@ -365,7 +368,8 @@ def approve_source(request: AuthedHttpRequest, source_id: OtodbID):
 	)
 	ensure_can_moderate(request.user, src.media)
 	src.is_pending = False
-	src.save(update_fields=['is_pending'])
+	src.pending_since = None
+	src.save(update_fields=['is_pending', 'pending_since'])
 	ModerationEvent.objects.create(
 		work=src.media,
 		source=src,

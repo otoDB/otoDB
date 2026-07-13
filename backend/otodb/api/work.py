@@ -706,7 +706,7 @@ def work(request: AuthedHttpRequest, work_id: OtodbID):
 @with_revision_route(Route.MEDIAWORK_DELETE)
 def delete_work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	work.worksource_set.update(media=None, is_pending=False)
+	work.worksource_set.update(media=None, is_pending=False, pending_since=None)
 	work.delete()
 
 

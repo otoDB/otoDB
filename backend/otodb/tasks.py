@@ -1,21 +1,39 @@
 import logging
-from datetime import timedelta
+from concurrent.futures import ThreadPoolExecutor
 
+from django.conf import settings
 from django.core.mail import send_mail
-from django.tasks import default_task_backend, task
+from django.db import close_old_connections
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
+# In-process replacement for the rq worker: fine for webhooks and emails,
+# which are allowed to be lost on process death. Anything that must not be
+# lost belongs in the database and gets picked up by prune_expired (run
+# periodically from the otodb_next lifespan sweep).
+_executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix='otodb-task')
 
-def enqueue_deferred(task_obj, *args, delay: timedelta):
-	"""Enqueue a task with run_after, skipping if the backend doesn't support defer."""
-	if not default_task_backend.supports_defer:
-		return
-	task_obj.using(run_after=timezone.now() + delay).enqueue(*args)
+
+def fire_and_forget(fn, /, *args, **kwargs) -> None:
+	"""Run fn in a background thread, logging errors instead of raising.
+
+	Transitional shim for Django-side callers (Django's tasks framework has no
+	backgroundable backend without a worker). Endpoints migrated to Litestar
+	should use its native response BackgroundTask instead.
+	"""
+
+	def run():
+		try:
+			fn(*args, **kwargs)
+		except Exception:
+			logger.exception('Background task %s failed', fn.__name__)
+		finally:
+			close_old_connections()
+
+	_executor.submit(run)
 
 
-@task
 def send_email(
 	subject: str,
 	body: str,
@@ -30,7 +48,6 @@ def send_email(
 		logger.exception('Failed to send email to %s', to)
 
 
-@task
 def resolve_expired_work(work_id: int):
 	"""Delist a work once its moderation window has elapsed."""
 	from otodb.account.models import Account
@@ -47,7 +64,6 @@ def resolve_expired_work(work_id: int):
 		resolve_work(work, by=Account.get_system(), reason='Auto-expired')
 
 
-@task
 def resolve_expired_flag(event_id: int):
 	"""Delist a flagged work whose pending flag was never actioned in time."""
 	from otodb.account.models import Account
@@ -70,7 +86,6 @@ def resolve_expired_flag(event_id: int):
 		)
 
 
-@task
 def resolve_expired_appeal(event_id: int):
 	"""Re-delist a work whose pending appeal was never actioned in time."""
 	from otodb.account.models import Account
@@ -93,8 +108,7 @@ def resolve_expired_appeal(event_id: int):
 		)
 
 
-@task
-def resolve_expired_source_task(source_id: int):
+def resolve_expired_source(source_id: int):
 	"""Auto-reject a pending source once its moderation window has elapsed."""
 	from otodb.account.models import Account
 	from otodb.api.source import reject_pending_source
@@ -107,3 +121,45 @@ def resolve_expired_source_task(source_id: int):
 
 	if src.is_pending:
 		reject_pending_source(src, by=Account.get_system(), reason='Auto-expired')
+
+
+def prune_expired() -> int:
+	"""Resolve every pending, flagged, and appealed work and pending source
+	whose moderation window has elapsed.
+	"""
+	from otodb.models import MediaWork, ModerationEvent
+	from otodb.models.enums import FlagStatus, ModerationEventType, Status
+	from otodb.models.work_source import WorkSource
+
+	cutoff = timezone.now() - settings.OTODB_MODERATION_PERIOD
+	total = 0
+
+	for work_id in MediaWork.objects.filter(
+		status=Status.PENDING, created_at__lt=cutoff
+	).values_list('id', flat=True):
+		resolve_expired_work(work_id)
+		total += 1
+
+	for event_id in ModerationEvent.objects.filter(
+		event_type=ModerationEventType.FLAG,
+		status=FlagStatus.PENDING,
+		date__lt=cutoff,
+	).values_list('id', flat=True):
+		resolve_expired_flag(event_id)
+		total += 1
+
+	for event_id in ModerationEvent.objects.filter(
+		event_type=ModerationEventType.APPEAL,
+		status=FlagStatus.PENDING,
+		date__lt=cutoff,
+	).values_list('id', flat=True):
+		resolve_expired_appeal(event_id)
+		total += 1
+
+	for source_id in WorkSource.objects.filter(
+		is_pending=True, created_at__lt=cutoff
+	).values_list('id', flat=True):
+		resolve_expired_source(source_id)
+		total += 1
+
+	return total

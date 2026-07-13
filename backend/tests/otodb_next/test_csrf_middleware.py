@@ -116,6 +116,15 @@ def test_origin_matching_host_passes_without_sec_fetch_site():
 	assert passed
 
 
+def test_origin_matching_host_is_case_insensitive():
+	headers = [
+		(b'origin', b'https://API.otodb.net'),
+		(b'host', b'API.otodb.net'),
+	]
+	passed, _ = run([], make_scope(headers=headers))
+	assert passed
+
+
 def test_origin_not_matching_host_rejected_without_sec_fetch_site():
 	headers = [
 		(b'origin', b'https://evil.example'),
@@ -142,6 +151,16 @@ def test_trusted_origin_passes_without_sec_fetch_site():
 	]
 	passed, _ = run(['https://otodb.net'], make_scope(headers=headers))
 	assert passed
+
+
+def test_malformed_origin_rejected_without_crashing():
+	headers = [
+		(b'origin', b'https://x:99999'),
+		(b'host', b'otodb.net'),
+	]
+	passed, sent = run([], make_scope(headers=headers))
+	assert not passed
+	assert_rejected(sent, 'malformed')
 
 
 def test_csrf_exempt_opt_skips_checks():

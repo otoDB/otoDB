@@ -54,6 +54,7 @@ EMAIL_HOST = os.environ.get('OTODB_EMAIL_HOST')
 EMAIL_PORT = os.environ.get('OTODB_EMAIL_PORT')
 EMAIL_HOST_USER = os.environ.get('OTODB_EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('OTODB_EMAIL_HOST_PASSWORD')
+EMAIL_TIMEOUT = int(os.environ.get('OTODB_EMAIL_TIMEOUT', '30'))
 
 ALLOWED_HOSTS = [
 	host.strip()

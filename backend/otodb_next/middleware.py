@@ -102,11 +102,15 @@ class CrossOriginProtectionMiddleware(ASGIMiddleware):
 		# Fallback for older browsers: Origin host must match the Host header
 		# (host only, like Go -- the scheme is not reliably known behind proxies)
 		host = (headers.get(b'host') or b'').decode('latin1')
-		parsed = urllib.parse.urlparse(origin)
+		try:
+			parsed = urllib.parse.urlparse(origin)
+			port = parsed.port
+		except ValueError:
+			return f'Origin {origin!r} is malformed'
 		origin_host = parsed.hostname or ''
-		if parsed.port:
-			origin_host = f'{origin_host}:{parsed.port}'
-		if host and origin_host == host:
+		if port:
+			origin_host = f'{origin_host}:{port}'
+		if host and origin_host.lower() == host.lower():
 			return None
 		return f'Origin {origin!r} does not match Host {host!r} or trusted origins'
 

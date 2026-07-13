@@ -13,7 +13,7 @@ from tagulous.models import BaseTagModel, TagModelManager
 from otodb.common import clean_tag, slugify_tag
 
 from .enums import LanguageTypes, MediaType, SongTagCategory, WorkTagCategory
-from .revision import RevisionTrackedManager, RevisionTrackedModel
+from .revision import RevisionTrackedModel
 from .wiki import WikiPage
 
 _tagulous_models.slugify = lambda value, **_: slugify_tag(value)
@@ -59,7 +59,7 @@ def tagwork_ordering_case(prefix=''):
 	)
 
 
-class TagModelManagerBase(RevisionTrackedManager, TagModelManager):
+class TagModelManagerBase(TagModelManager):
 	"""Base manager that converts name lookups to slug lookups"""
 
 	def get_or_create(self, *args, **kwargs):

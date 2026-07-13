@@ -3,7 +3,6 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.test import RequestFactory
 from ninja.testing import TestAsyncClient, TestClient
 
 from otodb.account.models import Account
@@ -51,31 +50,11 @@ class AuthenticatedTestClient(TestClient):
 		return super()._build_request(method, path, data, request_params)
 
 
-# Request cache fixture
 @pytest.fixture(autouse=True)
 def enable_request_cache(db, member):
-	"""Enable request cache for all tests to support revision tracking."""
-	from django_request_cache.middleware import RequestCache
-	from django_userforeignkey import request as ufk_request
-
-	# Create a fake request with cache attribute using the actual RequestCache
-	factory = RequestFactory()
-	request = factory.get('/')
-	request.cache = RequestCache()
-	request.user = member  # Set a real user for revision tracking
-
-	# Initialize cache keys for revision tracking
-	request.cache.add('rev', {})
-	request.cache.add('rev_del', [])
-	request.cache.add('rev_msg', '')
-
-	# Set it as the current request
-	ufk_request.set_current_request(request)
-
+	"""Autouse: DB access + a default user for every test. Revision capture now lives in
+	the DB triggers, so the former request-cache / current-request wiring is obsolete."""
 	yield
-
-	# Clean up
-	ufk_request.set_current_request(None)
 
 
 # REVIEW: Required because some tests use reset_sequences=True, but this should not be necessary

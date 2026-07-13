@@ -1,0 +1,260 @@
+"""DB-trigger revision system: capture, serialization parity, and fan-out.
+
+Self-contained -- the ``revision_triggers`` fixture installs the codegen'd triggers for
+every tracked model (validating that all 17 compile against the real schema) and lets
+pytest-django's per-test transaction roll them back, so it needs no applied migration
+and never pollutes the rest of the suite. Edits are raw SQL to prove that *any* writer
+is captured (the property the ORM capture never had).
+"""
+
+from datetime import date
+
+import pytest
+from django.contrib.contenttypes.models import ContentType
+from django.db import connection
+
+from otodb.models import (
+	MediaWork,
+	Revision,
+	RevisionChange,
+	WorkSource,
+)
+from otodb.models.enums import Platform, Route, WorkOrigin, WorkStatus
+from otodb.models.posts import Notification, Subscription
+from otodb.models.revision import RevisionChangeEntity
+from otodb.revision_codegen import generate_sql
+from otodb.revision_db import db_revision
+
+ROUTE = int(Route.WORKSOURCE_SET_ORIGIN)  # 62
+
+
+@pytest.fixture
+def revision_triggers(db):
+	"""Install the codegen'd capture triggers for every tracked model."""
+	with connection.cursor() as cursor:
+		cursor.execute(generate_sql())
+	yield
+
+
+def _ct(model: str) -> int:
+	return ContentType.objects.get(app_label='otodb', model=model).id
+
+
+def _make_worksource(member, media=None) -> WorkSource:
+	ws = WorkSource.objects.create(
+		added_by=member,
+		platform=Platform.YOUTUBE,
+		url='https://www.youtube.com/watch?v=abc',
+		source_id='abc',
+		work_origin=WorkOrigin.AUTHOR,
+		work_status=WorkStatus.AVAILABLE,
+		media=media,
+	)
+	Revision.objects.all().delete()  # clear the INSERT-triggered rows
+	return ws
+
+
+def _changes() -> list[dict]:
+	return list(
+		RevisionChange.objects.values(
+			'target_type_id',
+			'target_id',
+			'target_column',
+			'target_value',
+			'deleted',
+			'restored',
+		).order_by('target_column')
+	)
+
+
+def _entities() -> set:
+	return set(
+		RevisionChangeEntity.objects.values_list('entity_type_id', 'entity_id', 'route')
+	)
+
+
+def _sql_value(expr: str):
+	with connection.cursor() as cursor:
+		cursor.execute(f'SELECT {expr}')
+		return cursor.fetchone()[0]
+
+
+# --- capture ---------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_update_captures_single_change(revision_triggers, member):
+	ws = _make_worksource(member)
+	ws_ct = _ct('worksource')
+
+	with db_revision(user=member, message='set origin', route=ROUTE):
+		with connection.cursor() as cursor:
+			cursor.execute(
+				'UPDATE otodb_worksource SET work_origin = %s WHERE id = %s',
+				[int(WorkOrigin.REUPLOAD), ws.id],
+			)
+
+	rev = Revision.objects.get()
+	assert rev.user_id == member.pk
+	assert rev.message == 'set origin'
+	assert _changes() == [
+		{
+			'target_type_id': ws_ct,
+			'target_id': ws.id,
+			'target_column': 'work_origin',
+			'target_value': str(int(WorkOrigin.REUPLOAD)),
+			'deleted': False,
+			'restored': False,
+		}
+	]
+	assert _entities() == {(ws_ct, ws.id, ROUTE)}  # media NULL -> self only
+
+
+@pytest.mark.django_db
+def test_update_with_media_emits_media_entity(revision_triggers, member):
+	mw = MediaWork.objects.create(title='W', description='D', rating=0)
+	ws = _make_worksource(member, media=mw)
+	ws_ct, mw_ct = _ct('worksource'), _ct('mediawork')
+
+	with db_revision(user=member, message='m', route=ROUTE):
+		with connection.cursor() as cursor:
+			cursor.execute(
+				'UPDATE otodb_worksource SET work_origin = %s WHERE id = %s',
+				[int(WorkOrigin.REUPLOAD), ws.id],
+			)
+
+	assert _entities() == {(ws_ct, ws.id, ROUTE), (mw_ct, mw.id, ROUTE)}
+
+
+@pytest.mark.django_db
+def test_insert_captures_all_tracked_fields(revision_triggers, member):
+	with db_revision(user=member, message='create', route=ROUTE):
+		WorkSource.objects.create(
+			added_by=member,
+			platform=Platform.YOUTUBE,
+			url='https://www.youtube.com/watch?v=xyz',
+			source_id='xyz',
+			work_origin=WorkOrigin.AUTHOR,
+			work_status=WorkStatus.AVAILABLE,
+		)
+
+	captured = {
+		c['target_column']: c['target_value']
+		for c in RevisionChange.objects.values('target_column', 'target_value')
+	}
+	assert set(captured) == set(WorkSource.RevisionMeta.tracked_fields)
+	assert captured['platform'] == '1'
+	assert captured['work_origin'] == '0'
+	assert captured['added_by'] == str(member.pk)
+	assert captured['title'] is None
+	assert captured['media'] is None
+
+
+@pytest.mark.django_db
+def test_delete_captures_marker(revision_triggers, member):
+	ws = _make_worksource(member)
+	ws_ct = _ct('worksource')
+
+	with db_revision(user=member, message='del', route=ROUTE):
+		with connection.cursor() as cursor:
+			cursor.execute('DELETE FROM otodb_worksource WHERE id = %s', [ws.id])
+
+	assert _changes() == [
+		{
+			'target_type_id': ws_ct,
+			'target_id': ws.id,
+			'target_column': None,
+			'target_value': None,
+			'deleted': True,
+			'restored': False,
+		}
+	]
+
+
+@pytest.mark.django_db
+def test_noop_update_creates_no_revision(revision_triggers, member):
+	"""Lazy revision creation: a write with no real change makes neither a Revision nor
+	a RevisionChange."""
+	ws = _make_worksource(member)
+
+	with db_revision(user=member, message='noop', route=ROUTE):
+		with connection.cursor() as cursor:
+			cursor.execute(
+				'UPDATE otodb_worksource SET work_origin = %s WHERE id = %s',
+				[int(WorkOrigin.AUTHOR), ws.id],
+			)
+
+	assert Revision.objects.count() == 0
+	assert RevisionChange.objects.count() == 0
+
+
+# --- serialization parity (the codegen landmine) ---------------------------
+
+
+@pytest.mark.django_db
+def test_serialization_matches_python_str(revision_triggers):
+	"""The generated per-type expressions reproduce Django value_to_string = str()."""
+	assert _sql_value("CASE WHEN true THEN 'True' ELSE 'False' END") == str(True)
+	assert _sql_value("CASE WHEN false THEN 'True' ELSE 'False' END") == str(False)
+	# float8 column: PG float8::text drops the .0 that Python str() keeps, so the
+	# generated expression re-appends it. (Literals are cast to float8 to match the
+	# real bpm column type -- a bare 120.0 is numeric, whose ::text already has .0.)
+	assert _sql_value(
+		'CASE WHEN 120.0::float8 = trunc(120.0::float8) AND abs(120.0::float8) < 1e16'
+		" THEN 120.0::float8::text || '.0' ELSE 120.0::float8::text END"
+	) == str(120.0)
+	assert _sql_value(
+		'CASE WHEN 0.5::float8 = trunc(0.5::float8) AND abs(0.5::float8) < 1e16'
+		" THEN 0.5::float8::text || '.0' ELSE 0.5::float8::text END"
+	) == str(0.5)
+	assert _sql_value("to_char(date '2024-01-05', 'YYYY-MM-DD')") == str(
+		date(2024, 1, 5)
+	)
+
+
+# --- fan-out ---------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_fan_out_notifies_and_resubscribes(revision_triggers, member, editor):
+	ws = _make_worksource(member)
+	ws_ct = _ct('worksource')
+	# editor is watching this source
+	Subscription.objects.create(
+		subscriber=editor, entity_type_id=ws_ct, entity_id=ws.id
+	)
+
+	with db_revision(user=member, message='edit', route=ROUTE):
+		with connection.cursor() as cursor:
+			cursor.execute(
+				'UPDATE otodb_worksource SET title = %s WHERE id = %s', ['T', ws.id]
+			)
+
+	rev = Revision.objects.get()
+	# editor notified once, their watch consumed
+	assert list(Notification.objects.values_list('target_id', 'revision_id')) == [
+		(editor.pk, rev.id)
+	]
+	assert not Subscription.objects.filter(subscriber=editor).exists()
+	# active actor auto-subscribed to the edited entity
+	assert Subscription.objects.filter(
+		subscriber=member, entity_type_id=ws_ct, entity_id=ws.id
+	).exists()
+
+
+@pytest.mark.django_db
+def test_fan_out_excludes_actor(revision_triggers, member):
+	"""An actor watching their own edit isn't notified about it."""
+	ws = _make_worksource(member)
+	ws_ct = _ct('worksource')
+	Subscription.objects.create(
+		subscriber=member, entity_type_id=ws_ct, entity_id=ws.id
+	)
+
+	with db_revision(user=member, message='edit', route=ROUTE):
+		with connection.cursor() as cursor:
+			cursor.execute(
+				'UPDATE otodb_worksource SET title = %s WHERE id = %s', ['T', ws.id]
+			)
+
+	assert Notification.objects.count() == 0

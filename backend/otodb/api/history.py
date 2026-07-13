@@ -13,7 +13,6 @@ from django.db.models.functions import Coalesce, RowNumber
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
-from django_request_cache import get_request_cache
 from fast_diff_match_patch import diff
 from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
@@ -655,57 +654,57 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	}
 
 
-def find_rev_rst(ctpk, query_pk, rev):
-	"""One hop forward (original -> restored): the pk that query_pk was restored
-	*to*, from a committed restored=True record or an in-flight rollback, else None.
+def find_rev_rst(ctpk, query_pk):
+	"""One hop forward (original -> restored): the pk that query_pk was restored *to*,
+	from a restored=True RevisionChange, else None. In-flight rollback restores are now
+	persisted rows (written by add_rev_restore) visible within the same transaction, so
+	no request-cache lookup is needed.
 	"""
-	if q := RevisionChange.objects.filter(
+	q = RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=query_pk, restored=True
-	):
-		return int(q.first().target_value)
-	if (ctpk, query_pk) in rev:
-		return rev[ctpk, query_pk]
+	).first()
+	return int(q.target_value) if q else None
 
 
 def get_rev_restored(ctpk, pk):
 	"""Resolve pk forward to the end of its original -> restored chain (its current
 	live pk), or None if that row is deleted / not yet restored.
 	"""
-	cache = get_request_cache()
-	rev = cache.get('rev_rst')
-	rev_del = cache.get('rev_del')
-
 	while pk is not None:
 		last = pk
-		pk = find_rev_rst(ctpk, pk, rev)
+		pk = find_rev_rst(ctpk, pk)
 
-	# Check if deleted
 	if RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=last, deleted=True
-	).exists() or any([ctpk == ctid and last == idd for ctid, idd, _ in rev_del]):
+	).exists():
 		return None
-	else:
-		return last
+	return last
 
 
 def add_rev_restore(ctpk, pk, new_pk):
-	"""Record (in the current rollback) that pk -- resolved to the end of its
-	restored chain -- has been restored as new_pk.
+	"""Record (in the current rollback's Revision) that pk -- resolved to the end of its
+	restored chain -- has been restored as new_pk. Written as a restored=True
+	RevisionChange under the transaction's revision (created by the capture triggers, or
+	on demand here via otodb_current_revision()).
 	"""
 	assert pk != new_pk
-	cache = get_request_cache()
-	rev = cache.get('rev_rst')
-	rev_del = cache.get('rev_del')
-
 	while pk is not None:
 		last = pk
-		pk = find_rev_rst(ctpk, pk, rev)
+		pk = find_rev_rst(ctpk, pk)
 
 	assert RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=last, deleted=True
-	).exists() or any(ctpk == ctid and last == idd for ctid, idd, _ in rev_del)
-	rev[(ctpk, last)] = new_pk
-	cache.set('rev_rst', rev)
+	).exists()
+	with connection.cursor() as cursor:
+		cursor.execute('SELECT otodb_current_revision()')
+		rev_id = cursor.fetchone()[0]
+	RevisionChange.objects.create(
+		rev_id=rev_id,
+		target_type_id=ctpk,
+		target_id=last,
+		target_value=str(new_pk),
+		restored=True,
+	)
 
 
 def get_rev_origin(ctpk, pk, cutoff_date):

@@ -1,21 +1,14 @@
 import logging
 
-from dirtyfields import DirtyFieldsMixin
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.indexes import HashIndex
 from django.db import models
-from django.db.models.deletion import Collector
-from django.dispatch import receiver
-from django_request_cache import get_request_cache
-from django_userforeignkey.request import get_current_request
 
 from otodb.models.enums import RevisionChain, Route
 
 logger = logging.getLogger(__name__)
-
-_READ_ONLY_HTTP_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS'})
 
 
 class Revision(models.Model):
@@ -103,139 +96,6 @@ class RevisionChangeEntity(models.Model):
 		]
 
 
-def get_serialized_value(instance: models.Model, field):
-	field_obj = instance._meta.get_field(field)
-	value = field_obj.value_from_object(instance)
-	if value is None:
-		return None
-	return field_obj.value_to_string(instance)  # type: ignore
-
-
-def _bulk_get_new_rev(model, objs):
-	all_changes = []
-	for obj in objs:
-		changes = {}
-		for k in obj.get_dirty_fields(check_relationship=True):
-			if k in model._revision_meta.tracked_fields:
-				changes[k] = get_serialized_value(obj, k)
-		all_changes.append(changes)
-
-	return all_changes
-
-
-def _get_ents(obj) -> tuple[int, int, tuple]:
-	return tuple(
-		obj.pk if attr == 'self' else getattr(obj, obj._meta.get_field(attr).attname)
-		for attr in type(obj)._revision_meta.entity_attrs
-	)
-
-
-def _collect_cascade_deletions(
-	instances, using='default'
-) -> list[tuple[int, int, tuple]]:
-	if not instances:
-		return []
-
-	deletions = []
-	collector = Collector(using=using)
-	collector.collect(instances)
-
-	for model, instance_set in getattr(collector, 'data', {}).items():
-		if hasattr(model, '_revision_meta'):
-			ctpk = ContentType.objects.get_for_model(model).pk
-			for instance in instance_set:
-				ents = _get_ents(instance)
-				deletions.append((ctpk, instance.pk, ents))
-
-	# Django's fast_deletes skip `data`, so materialize them before super().delete()
-	for qs in getattr(collector, 'fast_deletes', []):
-		model = qs.model
-		if not hasattr(model, '_revision_meta'):
-			continue
-		ctpk = ContentType.objects.get_for_model(model).pk
-		for instance in qs:
-			ents = _get_ents(instance)
-			deletions.append((ctpk, instance.pk, ents))
-
-	return deletions
-
-
-class RevisionTrackedQuerySet(models.QuerySet):
-	def bulk_create(self, objs, *args, **kwargs):
-		if kwargs.get('update_conflicts'):
-			raise NotImplementedError
-
-		all_changes = _bulk_get_new_rev(self.model, objs)
-		cache = get_request_cache()
-		rev = cache.get('rev')
-		ctpk = ContentType.objects.get_for_model(self.model).pk
-		objs = super().bulk_create(objs, *args, **kwargs)
-		for changes, obj in zip(all_changes, objs):
-			if obj.pk is not None:
-				ents = _get_ents(obj)
-				for k in changes:
-					rev[(ctpk, obj.pk, k)] = ents, changes[k]
-		cache.set('rev', rev)
-
-		return objs
-
-	def bulk_update(self, objs, *args, **kwargs):
-		all_changes = _bulk_get_new_rev(self.model, objs)
-		cache = get_request_cache()
-		rev = cache.get('rev')
-		ctpk = ContentType.objects.get_for_model(self.model).pk
-		ret = super().bulk_update(objs, *args, **kwargs)
-		for changes, obj in zip(all_changes, objs):
-			if obj.pk is not None:
-				ents = _get_ents(obj)
-				for k in changes:
-					rev[(ctpk, obj.pk, k)] = ents, changes[k]
-		cache.set('rev', rev)
-
-		return ret
-
-	def update(self, **kwargs):
-		# This seems bad but we need to record revisions anyway, so it's as good as it can be
-		matched = 0
-		for instance in self.all():
-			for k, v in kwargs.items():
-				setattr(instance, k, v)
-			instance.save()
-			matched += 1
-		return matched
-
-	def delete(self):
-		# Collect all objects that will be deleted (including cascades)
-		instances_to_delete = list(self.all())
-		deletions = _collect_cascade_deletions(instances_to_delete, using=self.db)
-
-		cache = get_request_cache()
-		if cache is None:
-			logger.warning(
-				'DELETING %d %s ROW(S) WITHOUT REVISION TRACKING. Cascades: %s',
-				len(instances_to_delete),
-				self.model.__name__,
-				[
-					(ContentType.objects.get(pk=ctpk).model, pk)
-					for ctpk, pk, _ in deletions
-				],
-			)
-		else:
-			rev_del = cache.get('rev_del')
-			# Add all deletions (direct + cascade) to rev_del
-			for ctpk, pk, ents in deletions:
-				rev_del.append((ctpk, pk, ents))
-			cache.set('rev_del', rev_del)
-
-		super().delete()
-		return len(instances_to_delete)
-
-
-class RevisionTrackedManager(models.Manager):
-	def get_queryset(self):
-		return RevisionTrackedQuerySet(self.model, using=self._db)
-
-
 class _RevisionMetaConfig:
 	"""Holds revision tracking configuration for a model"""
 
@@ -252,106 +112,26 @@ class _RevisionMetaConfig:
 		self.to_active = to_active
 
 
-class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
-	objects = RevisionTrackedManager()
+class RevisionTrackedModel(models.Model):
+	"""Marker base for models whose edits are captured by the DB revision triggers
+	(see ``otodb/revision_codegen.py``). Declaring ``class RevisionMeta`` populates
+	``_revision_meta`` -- read by the trigger spec/codegen and by ``history.py`` rollback.
+	Capture itself lives in the database; this class carries no runtime behavior, and
+	plain/bulk ORM writes are captured because the triggers fire per row.
+	"""
 
 	class Meta:
 		abstract = True
-		# Keep _base_manager tracked so cascades don't bypass revision tracking
-		base_manager_name = 'objects'
-
-	def __init__(self, *args, **kwargs):
-		request = get_current_request()
-		if request is not None and request.method in _READ_ONLY_HTTP_METHODS:
-			models.Model.__init__(self, *args, **kwargs)
-			self._original_state = {}
-		else:
-			super().__init__(*args, **kwargs)
 
 	def __init_subclass__(cls, **kwargs):
 		super().__init_subclass__(**kwargs)
-
-		# Extract RevisionMeta
 		if hasattr(cls, 'RevisionMeta'):
 			meta = getattr(cls, 'RevisionMeta')
-			tracked_fields = getattr(meta, 'tracked_fields', [])
-			entity_attrs = getattr(meta, 'entity_attrs', [])
-			chain = getattr(meta, 'chain', RevisionChain.STRONG)
-			to_active = getattr(meta, 'to_active', None)
-
 			cls._revision_meta = _RevisionMetaConfig(
-				tracked_fields=tracked_fields,
-				entity_attrs=entity_attrs,
-				chain=chain,
-				to_active=to_active,
+				tracked_fields=getattr(meta, 'tracked_fields', []),
+				entity_attrs=getattr(meta, 'entity_attrs', []),
+				chain=getattr(meta, 'chain', RevisionChain.STRONG),
+				to_active=getattr(meta, 'to_active', None),
 			)
 		else:
-			# Default empty config
 			cls._revision_meta = _RevisionMetaConfig()
-
-	def save(self, *args, **kwargs) -> bool:
-		cache = get_request_cache()
-		dirty = self.get_dirty_fields(check_relationship=True)
-		# Needs to commit so we get a PK, but only after dirty fields have been copied
-		super().save(*args, **kwargs)
-		if cache is None:
-			tracked_dirty = [
-				k for k in dirty if k in type(self)._revision_meta.tracked_fields
-			]
-			if tracked_dirty:
-				logger.warning(
-					'SAVING %s (%s pk=%s) WITHOUT REVISION TRACKING. Untracked field changes: %s',
-					self,
-					type(self).__name__,
-					self.pk,
-					{k: (dirty[k], getattr(self, k)) for k in tracked_dirty},
-				)
-		else:
-			rev = cache.get('rev')
-			ctpk = ContentType.objects.get_for_model(model=type(self)).pk
-			ents = _get_ents(self)
-			for k in dirty:
-				if k in type(self)._revision_meta.tracked_fields:
-					rev[(ctpk, self.pk, k)] = ents, get_serialized_value(self, k)
-			cache.set('rev', rev)
-		return len(self.get_dirty_fields(check_relationship=True)) > 0
-
-	def delete(self, *args, **kwargs):
-		pk = self.pk  # actually deleting will null the PK
-		using = self._state.db or 'default'
-		deletions = _collect_cascade_deletions([self], using=using)
-
-		if ret := super().delete(*args, **kwargs):
-			cache = get_request_cache()
-			if cache is None:
-				logger.warning(
-					'DELETING %s (%s pk=%s) WITHOUT REVISION TRACKING. Cascades: %s',
-					self,
-					type(self).__name__,
-					pk,
-					[
-						(ContentType.objects.get(pk=ctpk).model, obj_pk)
-						for ctpk, obj_pk, _ in deletions
-					],
-				)
-			else:
-				rev_del = cache.get('rev_del')
-				for ctpk, obj_pk, ents in deletions:
-					rev_del.append((ctpk, obj_pk, ents))
-				cache.set('rev_del', rev_del)
-
-			return ret
-
-
-@receiver(models.signals.class_prepared)
-def _pin_base_manager(sender, **kwargs):
-	# Intermediate abstract parents (e.g. tagulous's TaggedModel) break base_manager_name inheritance, so re-pin it here
-	if not issubclass(sender, RevisionTrackedModel):
-		return
-	meta = sender._meta
-	if meta.abstract or meta.base_manager_name:
-		return
-	if 'objects' not in meta.managers_map:
-		return
-	meta.base_manager_name = 'objects'
-	meta.__dict__.pop('base_manager', None)

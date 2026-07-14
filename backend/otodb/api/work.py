@@ -33,6 +33,7 @@ from otodb.common import (
 from otodb.models import (
 	MediaWork,
 	ModerationEvent,
+	PoolItem,
 	RevisionChange,
 	RevisionChangeEntity,
 	TagWork,
@@ -58,12 +59,6 @@ from otodb.models.enums import (
 	WorkTagCategory,
 )
 from otodb.moderation import resolve_work
-from otodb.tasks import (
-	enqueue_deferred,
-	resolve_expired_appeal,
-	resolve_expired_flag,
-	resolve_expired_work,
-)
 
 from .common import (
 	AbstractTagTransformer,
@@ -416,6 +411,14 @@ work_metatag_grammars = {
 		),
 	),
 	'id': MetatagSpec(int, make_range_metatag('id')),
+	'list': MetatagSpec(
+		str,
+		lambda v: (
+			Exists(PoolItem.objects.filter(work_id=OuterRef('id'), pool_id=v))
+			if v.isdigit()
+			else Q(pk__in=[])
+		),
+	),
 	'width': MetatagSpec(
 		int,
 		make_range_metatag('work_width', model=WorkSource, fk_field='media_id'),
@@ -703,7 +706,7 @@ def work(request: AuthedHttpRequest, work_id: OtodbID):
 @with_revision_route(Route.MEDIAWORK_DELETE)
 def delete_work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	work.worksource_set.update(media=None, is_pending=False)
+	work.worksource_set.update(media=None, is_pending=False, pending_since=None)
 	work.delete()
 
 
@@ -887,13 +890,6 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 	)
 	_resolve_and_apply_tags(work, payload.tags)
 
-	if work.status == Status.PENDING:
-		transaction.on_commit(
-			lambda: enqueue_deferred(
-				resolve_expired_work, work.pk, delay=settings.OTODB_MODERATION_PERIOD
-			)
-		)
-
 	src.media = work
 	src.save()
 
@@ -982,18 +978,12 @@ def flag_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 		if active_flags >= settings.OTODB_MAX_FLAGGED_WORKS:
 			raise ApiError(429, ErrorCode.FLAG_LIMIT_REACHED)
 
-	flag = ModerationEvent.objects.create(
+	ModerationEvent.objects.create(
 		work=work,
 		event_type=ModerationEventType.FLAG,
 		by=request.user,
 		reason=reason,
 		status=FlagStatus.PENDING,
-	)
-
-	transaction.on_commit(
-		lambda: enqueue_deferred(
-			resolve_expired_flag, flag.pk, delay=settings.OTODB_MODERATION_PERIOD
-		)
 	)
 
 
@@ -1037,18 +1027,12 @@ def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 		if total_slots_used + 3 > settings.OTODB_MAX_PENDING_WORKS:
 			raise ApiError(429, ErrorCode.NO_MORE_APPEAL_SLOTS)
 
-	appeal = ModerationEvent.objects.create(
+	ModerationEvent.objects.create(
 		work=work,
 		event_type=ModerationEventType.APPEAL,
 		by=request.user,
 		reason=reason,
 		status=FlagStatus.PENDING,
-	)
-
-	transaction.on_commit(
-		lambda: enqueue_deferred(
-			resolve_expired_appeal, appeal.pk, delay=settings.OTODB_MODERATION_PERIOD
-		)
 	)
 
 

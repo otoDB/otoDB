@@ -56,6 +56,11 @@ When making any changes to frontend code, you MUST run the following commands in
 
 All three commands must succeed without errors before committing. Do not skip or bypass these checks.
 
+## Storybook
+
+- When a coding agent starts Storybook, always use `bun run storybook:agent`, not `bun run storybook`. It runs with `--quiet --ci --disable-telemetry --no-version-updates` to minimize console output and token usage, and it does not pass `--no-open`, so it may open a browser automatically.
+- `bun run storybook` (without those flags) is reserved for a human developer running Storybook interactively.
+
 ## Coding
 
 - When importing components or libraries in `lib`, use `$lib` for import path.

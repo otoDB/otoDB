@@ -12,6 +12,6 @@ export const load: PageServerLoad = async ({ params, parent, fetch }) => {
 			fetch,
 			params: { query: { list_id: data.list.id } }
 		});
-		redirect(303, `/profile/${data.user?.username}/lists`);
+		redirect(303, `/profile/${encodeURIComponent(data.user.username)}/lists`);
 	} else redirect(303, '/');
 };

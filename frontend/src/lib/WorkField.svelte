@@ -5,7 +5,7 @@
 	import type { components } from '$lib/schema';
 	import { clickOutside, debounce } from '$lib/ui';
 	import { getDisplayText } from '$lib/ui.js';
-	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import { tick } from 'svelte';
 
 	let self: HTMLElement;

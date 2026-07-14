@@ -9,7 +9,7 @@
 	import { callSavingToast } from '$lib/toast';
 	import DisplayText from '$lib/DisplayText.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
-	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 
 	let { data, form } = $props();
 

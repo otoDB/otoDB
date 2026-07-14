@@ -1,5 +1,5 @@
 <script lang="ts">
-	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
 	import { PlatformNames, WorkOriginNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';

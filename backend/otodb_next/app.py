@@ -12,10 +12,12 @@ from litestar.plugins.sqlalchemy import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
 from sqlalchemy import text
 from sqlalchemy.orm import DeclarativeBase
 
+from otodb.tasks import prune_expired
 from otodb_next.middleware import (
 	CrossOriginProtectionMiddleware,
 	SessionAuthMiddleware,
 )
+from otodb_next.scheduler import Job, scheduler
 
 if TYPE_CHECKING:
 	from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,6 +70,10 @@ config = SQLAlchemyAsyncConfig(
 	metadata=Base.metadata,
 )
 
+jobs = [
+	Job('moderation sweep', interval=15 * 60, run=prune_expired),
+]
+
 api = Router(path='/api', route_handlers=[statistics])
 app = Litestar(
 	route_handlers=[api],
@@ -77,5 +83,6 @@ app = Litestar(
 	if settings.OTODB_PROTECT_API_DOCS
 	else OpenAPIConfig(title='otoDB', version='1'),
 	plugins=[SQLAlchemyPlugin(config=config)],
+	lifespan=[scheduler(jobs, config.get_engine)],
 	debug=settings.DEBUG,
 )

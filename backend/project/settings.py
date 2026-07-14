@@ -283,35 +283,16 @@ OTODB_CDN_ENABLED = (
 )
 OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
 
-# Task queue + cache (Valkey in production, synchronous fallback for dev)
+# Cache (Valkey in production so rate limits and the anon response cache are
+# shared across workers; per-process local memory otherwise)
 OTODB_VALKEY_URL = os.environ.get('OTODB_VALKEY_URL') or os.environ.get(
 	'OTODB_REDIS_URL'
 )
 if OTODB_VALKEY_URL:
-	INSTALLED_APPS.append('django_rq')
 	CACHES = {
 		'default': {
 			'BACKEND': 'django_vcache.backend.ValkeyCache',
 			'LOCATION': OTODB_VALKEY_URL,
-		}
-	}
-	# RQ talks to the broker via redis-py, which expects a redis:// URL
-	OTODB_RQ_URL = OTODB_VALKEY_URL.replace('valkey://', 'redis://', 1)
-	RQ_QUEUES = {
-		'default': {
-			'URL': OTODB_RQ_URL,
-		}
-	}
-	TASKS = {
-		'default': {
-			'BACKEND': 'django_tasks_rq.RQBackend',
-			'QUEUES': ['default'],
-		}
-	}
-else:
-	TASKS = {
-		'default': {
-			'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend',
 		}
 	}
 

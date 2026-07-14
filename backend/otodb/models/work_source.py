@@ -58,6 +58,7 @@ class WorkSource(RevisionTrackedModel):
 	)
 
 	is_pending = models.BooleanField(default=False)
+	pending_since = models.DateTimeField(null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 
 	class RevisionMeta:

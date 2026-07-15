@@ -1,5 +1,8 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"plain_wide_globe_open": "External link",
+	"quiet_plain_otter_return": "Undo",
+	"spare_kind_otter_gain": "Add",
 	"glad_born_mouse_taste": "the otomad/ytpmv database",
 	"large_factual_octopus_exhale": "Title",
 	"clear_lucky_peacock_pick": "Description",

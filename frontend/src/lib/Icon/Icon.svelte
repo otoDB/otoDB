@@ -11,7 +11,7 @@
 </script>
 
 <span
-	class={[icons[key].icon, props.class]}
+	class={['inline-block', icons[key].icon, props.class]}
 	role="img"
 	aria-label={icons[key].label}
 	title={icons[key].label}

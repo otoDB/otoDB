@@ -41,7 +41,7 @@
 	import type { songConnectionMap } from '$lib/enums/songConnection';
 	import type { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection';
 
-	type FaviconKey =
+	export type FaviconKey =
 		| (typeof TagWorkConnectionMap)[keyof typeof TagWorkConnectionMap]['name']
 		| (typeof mediaConnectionMap)[keyof typeof mediaConnectionMap]['name']
 		| (typeof songConnectionMap)[keyof typeof songConnectionMap]['name']

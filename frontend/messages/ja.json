@@ -1,5 +1,8 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"plain_wide_globe_open": "外部リンク",
+	"quiet_plain_otter_return": "元に戻す",
+	"spare_kind_otter_gain": "追加",
 	"glad_born_mouse_taste": "音MADデータベース",
 	"large_factual_octopus_exhale": "タイトル",
 	"clear_lucky_peacock_pick": "説明文",

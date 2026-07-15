@@ -200,13 +200,7 @@
 	</header>
 
 	<div class="relative mx-auto w-full gap-x-4 px-4 md:flex">
-		<div
-			class={[
-				'fixed top-0 left-0 z-2 md:pointer-events-auto md:relative md:size-auto md:bg-transparent'
-			]}
-		>
-			<GlobalSideNav user={data.user} stats={data.stats} />
-		</div>
+		<GlobalSideNav user={data.user} stats={data.stats} />
 		<div class="grow">
 			<main id="content">
 				<svelte:boundary onerror={handleBoundaryError}>

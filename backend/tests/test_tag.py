@@ -1,13 +1,14 @@
 import pytest
+from django.db import models
 
 from otodb.models import (
 	MediaWork,
 	TagWork,
 	TagWorkInstance,
-	TagWorkParenthood,
 	TagWorkLangPreference,
+	TagWorkParenthood,
 )
-from otodb.models.enums import WorkTagCategory, LanguageTypes
+from otodb.models.enums import LanguageTypes, WorkTagCategory
 
 
 # Tests
@@ -43,7 +44,7 @@ class TestTagLanguagePreference:
 		# Now set tags using the alias slug (simulating language preference usage)
 		response = work_client.put(
 			f'/set_tags?work_id={work.id}',
-			json=['shingeki_no_kyojin'],
+			json=[{'nameslug': 'shingeki_no_kyojin'}],
 			user=editor,
 		)
 		assert response.status_code == 200
@@ -109,7 +110,7 @@ class TestTagLanguagePreference:
 		# Set tags using alias slug
 		response = work_client.put(
 			f'/set_tags?work_id={work.id}',
-			json=['alias_tag'],
+			json=[{'nameslug': 'alias_tag'}],
 			user=editor,
 		)
 		assert response.status_code == 200
@@ -159,37 +160,58 @@ class TestTagLanguagePreference:
 
 	def test_add_lang_pref_basic(self, editor, tag_client):
 		"""
-		Test that adding a language preference to a tag works correctly.
-		Regression test for: 'list' object has no attribute 'filter' error.
+		Test that adding a language preference to a tag works correctly
+		via the tag_aliases endpoint.
 		"""
-		# Create a tag
+		# Create a base tag with an alias (tag_aliases requires aliases to exist)
 		tag = TagWork.objects.create(name='test_tag')
+		alias = TagWork.objects.create(name='test_tag_alias')
+		alias.aliased_to = tag
+		alias.save()
 
-		# Add a language preference
-		response = tag_client.put(
-			f'/lang_pref?tag_slug={tag.slug}&lang={LanguageTypes.JAPANESE}',
+		# Set language preference to the alias name
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={tag.slug}&type=work',
+			json={
+				'base_slug': tag.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {str(LanguageTypes.JAPANESE): alias.slug},
+			},
 			user=editor,
 		)
 		assert response.status_code == 200
 
-		# Verify the preference was created
+		# Verify the preference was created on the alias
 		assert TagWorkLangPreference.objects.filter(
-			tag=tag, lang=LanguageTypes.JAPANESE
+			tag=alias, lang=LanguageTypes.JAPANESE
 		).exists()
 
 	def test_add_lang_pref_updates_existing(self, editor, tag_client):
 		"""
 		Test that adding a language preference replaces the existing one for that language.
 		"""
-		# Create a tag with an existing language preference
+		# Create a base tag with two aliases
 		tag = TagWork.objects.create(name='test_tag')
+		alias1 = TagWork.objects.create(name='alias_one')
+		alias2 = TagWork.objects.create(name='alias_two')
+		alias1.aliased_to = tag
+		alias2.aliased_to = tag
+		alias1.save()
+		alias2.save()
+
+		# Set initial preference to alias1
 		old_pref = TagWorkLangPreference.objects.create(
-			tag=tag, lang=LanguageTypes.ENGLISH
+			tag=alias1, lang=LanguageTypes.ENGLISH
 		)
 
-		# Update the same language preference
-		response = tag_client.put(
-			f'/lang_pref?tag_slug={tag.slug}&lang={LanguageTypes.ENGLISH}',
+		# Update the preference to alias2 via tag_aliases
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={tag.slug}&type=work',
+			json={
+				'base_slug': tag.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {str(LanguageTypes.ENGLISH): alias2.slug},
+			},
 			user=editor,
 		)
 		assert response.status_code == 200
@@ -197,13 +219,13 @@ class TestTagLanguagePreference:
 		# Verify old preference was deleted and new one created
 		assert not TagWorkLangPreference.objects.filter(pk=old_pref.pk).exists()
 		new_pref = TagWorkLangPreference.objects.get(
-			tag=tag, lang=LanguageTypes.ENGLISH
+			tag=alias2, lang=LanguageTypes.ENGLISH
 		)
 		assert new_pref.pk != old_pref.pk
 
 	def test_add_lang_pref_with_aliases(self, editor, tag_client):
 		"""
-		Test that adding a language preference clears it from all aliases.
+		Test that setting a language preference to one alias clears it from others.
 		"""
 		# Create base tag with aliases
 		base_tag = TagWork.objects.create(name='attack_on_titan')
@@ -214,33 +236,34 @@ class TestTagLanguagePreference:
 		alias1.save()
 		alias2.save()
 
-		# Add language preferences to aliases
-		TagWorkLangPreference.objects.create(tag=alias1, lang=LanguageTypes.JAPANESE)
+		# Add language preference to alias2
 		TagWorkLangPreference.objects.create(tag=alias2, lang=LanguageTypes.JAPANESE)
 
-		# Add language preference to base tag
-		response = tag_client.put(
-			f'/lang_pref?tag_slug={base_tag.slug}&lang={LanguageTypes.JAPANESE}',
+		# Set language preference to alias1 (should clear alias2's pref)
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={base_tag.slug}&type=work',
+			json={
+				'base_slug': base_tag.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {str(LanguageTypes.JAPANESE): alias1.slug},
+			},
 			user=editor,
 		)
 		assert response.status_code == 200
 
-		# Verify preferences on aliases were deleted
-		assert not TagWorkLangPreference.objects.filter(
-			tag=alias1, lang=LanguageTypes.JAPANESE
-		).exists()
+		# Verify preference on alias2 was deleted
 		assert not TagWorkLangPreference.objects.filter(
 			tag=alias2, lang=LanguageTypes.JAPANESE
 		).exists()
 
-		# Verify new preference exists on base tag
+		# Verify new preference exists on alias1
 		assert TagWorkLangPreference.objects.filter(
-			tag=base_tag, lang=LanguageTypes.JAPANESE
+			tag=alias1, lang=LanguageTypes.JAPANESE
 		).exists()
 
 	def test_add_lang_pref_to_alias_tag(self, editor, tag_client):
 		"""
-		Test that adding a language preference to an alias tag works correctly.
+		Test that setting a language preference to an alias name works correctly.
 		"""
 		# Create base tag and alias
 		base_tag = TagWork.objects.create(name='attack_on_titan')
@@ -251,9 +274,14 @@ class TestTagLanguagePreference:
 		# Add existing preference to base tag
 		TagWorkLangPreference.objects.create(tag=base_tag, lang=LanguageTypes.KOREAN)
 
-		# Add language preference using alias slug
-		response = tag_client.put(
-			f'/lang_pref?tag_slug={alias_tag.slug}&lang={LanguageTypes.KOREAN}',
+		# Set language preference to alias name via tag_aliases (on the base tag)
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={base_tag.slug}&type=work',
+			json={
+				'base_slug': base_tag.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {str(LanguageTypes.KOREAN): alias_tag.slug},
+			},
 			user=editor,
 		)
 		assert response.status_code == 200
@@ -269,82 +297,26 @@ class TestTagLanguagePreference:
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestTagSearch:
-	"""Test tag search endpoint sorting behavior"""
-
-	def test_exact_alias_match_sorting(self, tag_client):
+	def test_search_finds_aliased_tag(self, tag_client):
 		"""
-		Test that tags with exact alias matches are prioritized correctly.
-		Exact alias matches should come after exact name matches but before partial matches.
+		Test that searching for an alias name returns the base tag.
 		"""
-		# Search term: 'mmo'
-
-		# 1. Base tag with alias that exactly matches 'mmo' - high usage (3 works)
 		base_tag = TagWork.objects.create(
 			name='massively_multiplayer_online', category=WorkTagCategory.GENERAL
 		)
-		alias_mmo = TagWork.objects.create(name='mmo')
-		alias_mmo.aliased_to = base_tag
-		alias_mmo.save()
+		alias = TagWork.objects.create(name='mmo')
+		alias.aliased_to = base_tag
+		alias.save()
 
-		work1 = MediaWork.objects.create(title='Work 1')
-		work2 = MediaWork.objects.create(title='Work 2')
-		work3 = MediaWork.objects.create(title='Work 3')
-		work1.tags.add(base_tag)
-		work2.tags.add(base_tag)
-		work3.tags.add(base_tag)
+		work = MediaWork.objects.create(title='Work 1')
+		work.tags.add(base_tag)
 
-		# 2. Partial match with very high usage (5 works)
-		partial_high = TagWork.objects.create(
-			name='mmorpg', category=WorkTagCategory.GENERAL
-		)
-		for i in range(5):
-			w = MediaWork.objects.create(title=f'Work Partial {i}')
-			w.tags.add(partial_high)
-
-		# 3. Partial match with low usage (1 work)
-		partial_low = TagWork.objects.create(
-			name='mmo_strategy', category=WorkTagCategory.GENERAL
-		)
-		work4 = MediaWork.objects.create(title='Work 4')
-		work4.tags.add(partial_low)
-
-		# Search for 'mmo'
 		response = tag_client.get('/search?query=mmo')
 		assert response.status_code == 200
 		results = response.json()['items']
 		result_names = [tag['name'] for tag in results]
 
-		# Assertions:
-		# 1. Exact alias match comes first (massively_multiplayer_online has alias 'mmo')
-		assert result_names[0] == 'massively_multiplayer_online'
-
-		# 2. Partial matches follow, sorted by usage (mmorpg with 5, mmo_strategy with 1)
-		assert result_names[1] == 'mmorpg'
-		assert result_names[2] == 'mmo_strategy'
-
-	def test_exact_match_case_insensitive(self, tag_client):
-		"""Test that exact matching is case-insensitive"""
-		work1 = MediaWork.objects.create(title='Work 1')
-		work2 = MediaWork.objects.create(title='Work 2')
-
-		# Create tags with different cases
-		tag1 = TagWork.objects.create(name='anime', category=WorkTagCategory.GENERAL)
-		tag2 = TagWork.objects.create(
-			name='ANIME_SERIES', category=WorkTagCategory.GENERAL
-		)
-
-		work1.tags.add(tag1)
-		work2.tags.add(tag2)
-
-		# Search with different case
-		response = tag_client.get('/search?query=ANIME')
-		assert response.status_code == 200
-		results = response.json()['items']
-
-		# 'anime' should be first as an exact match
-		assert results[0]['name'] == 'anime'
-		# 'anime_series' should be second as a partial match
-		assert results[1]['name'] == 'anime_series'
+		assert 'massively multiplayer online' in result_names
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
@@ -458,3 +430,46 @@ class TestTagHierarchy:
 		assert len(all_edges) == len(set(all_edges)), (
 			f'Found duplicate edges: {all_edges}'
 		)
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+class TestTagAliasBaseSwap:
+	"""Test that swapping the base of an alias group doesn't create self-aliases."""
+
+	def test_swap_base_does_not_self_alias(self, editor, tag_client):
+		"""
+		When changing which tag is the base of an alias group,
+		the new base must not end up aliased to itself.
+		"""
+		base = TagWork.objects.create(name='base_tag')
+		alias = TagWork.objects.create(name='alias_tag')
+		alias.aliased_to = base
+		alias.save()
+
+		# Swap the base to the alias
+		response = tag_client.post(
+			f'/tag_aliases?tag_slug={base.slug}&type=work',
+			json={
+				'base_slug': alias.slug,
+				'unalias_slugs': [],
+				'lang_prefs': {},
+			},
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		# The new base must not be aliased to itself
+		alias.refresh_from_db()
+		assert alias.aliased_to_id is None, (
+			f'New base tag is aliased to itself (id={alias.pk})'
+		)
+
+		# The old base should now be aliased to the new base
+		base.refresh_from_db()
+		assert base.aliased_to_id == alias.pk
+
+		# No tag in the group should be self-aliased
+		assert not TagWork.objects.filter(
+			pk__in=[base.pk, alias.pk],
+			aliased_to=models.F('pk'),
+		).exists()

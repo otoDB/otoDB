@@ -1,6 +1,7 @@
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client from '$lib/api';
+import client, { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const data = await parent();
@@ -11,12 +12,13 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		fetch,
 		params: {
 			query: {
-				list_id: +params.list_id,
+				list_id: params.list_id,
 				limit: batch_size,
 				offset: 0
 			}
 		}
 	});
+
 	return { batch_size, entries };
 };
 
@@ -26,16 +28,15 @@ export const actions = {
 		const name = data.get('name') as string,
 			description = data.get('description') as string;
 
-		const { error, data: _list_id } = await client.PUT('/api/list/list', {
+		const { error: apiError } = await rawClient.PUT('/api/list/list', {
 			fetch,
-			params: { query: { list_id: +params.list_id! } },
+			params: { query: { list_id: params.list_id! } },
 			body: {
 				name,
 				description
 			}
 		});
-		if (error) return fail(400, { name, description, failed: true });
-
+		if (apiError) return apiFail(apiError, { name, description });
 		redirect(303, `/list/${params.list_id}`);
 	}
 } satisfies Actions;

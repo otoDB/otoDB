@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { components } from './schema';
+	import type { components } from '$lib/schema';
 
 	interface Props {
 		tag: components['schemas']['TagSongSchema'];

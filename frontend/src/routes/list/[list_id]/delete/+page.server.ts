@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client from '$lib/api';
+import client from '$lib/api.server';
 
 export const load: PageServerLoad = async ({ params, parent, fetch }) => {
 	const data = await parent();
@@ -12,6 +12,6 @@ export const load: PageServerLoad = async ({ params, parent, fetch }) => {
 			fetch,
 			params: { query: { list_id: data.list.id } }
 		});
-		redirect(303, `/profile/${data.user?.username}/lists`);
+		redirect(303, `/profile/${encodeURIComponent(data.user.username)}/lists`);
 	} else redirect(303, '/');
 };

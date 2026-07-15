@@ -1,11 +1,13 @@
-import client from '$lib/api';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+
+import { userLevelGuard } from '$lib/route_guard';
+import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+	userLevelGuard(locals.user, Levels.Member, url.pathname);
 };
 
 export const actions = {
@@ -14,7 +16,7 @@ export const actions = {
 		const category = data.get('category') as string,
 			parent_slug = data.get('parent') as string;
 
-		const { error } = await client.PUT('/api/tag/song_tag', {
+		const { error: apiError } = await rawClient.PUT('/api/tag/song_tag', {
 			fetch,
 			params: {
 				query: {
@@ -26,9 +28,8 @@ export const actions = {
 				parent_slug
 			}
 		});
+		if (apiError) return apiFail(apiError, { category, parent_slug });
 
-		if (error) return fail(400, { category, parent_slug, failed: true });
-
-		redirect(303, `/song_attribute/${params.tag_slug}`);
+		redirect(303, `/song_attribute/${encodeURIComponent(params.tag_slug!)}`);
 	}
 } satisfies Actions;

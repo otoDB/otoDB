@@ -2,35 +2,45 @@
 	import Section from '$lib/Section.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import WorkField from '$lib/WorkField.svelte';
-	import type { components } from '$lib/schema';
-	import { Platform, Rating, WorkOrigin } from '$lib/enums';
-	import client, { getDisplayText } from '$lib/api';
+	import { Rating, WorkOrigin, type components } from '$lib/schema';
+	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';
+	import client from '$lib/api';
+	import { dirtyEnhance } from '$lib/dirty';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
+	import type { ComponentProps } from 'svelte';
+	import { getDisplayText } from '$lib/ui';
 
-	let work: {
-		work: components['schemas']['WorkSchema'] | null;
-		title: string;
-		description: string;
-		thumbnail_source_id: number | null;
-		rating: number;
-	}[] = $state([
+	let work: Record<
+		'a' | 'b',
 		{
-			work: null,
-			title: '',
-			description: '',
-			thumbnail_source_id: null,
-			rating: 0
-		},
-		{
-			work: null,
-			title: '',
-			description: '',
-			thumbnail_source_id: null,
-			rating: 0
+			work: null | ComponentProps<typeof WorkField>['value'];
+			title: string;
+			description: string;
+			thumbnail_source_id: string | null;
+			rating: Rating;
+			sources: null | components['schemas']['WorkSourceSchema'][];
 		}
-	]);
+	> = $state({
+		a: {
+			work: null,
+			title: '',
+			description: '',
+			thumbnail_source_id: null,
+			rating: 0,
+			sources: null
+		},
+		b: {
+			work: null,
+			title: '',
+			description: '',
+			thumbnail_source_id: null,
+			rating: 0,
+			sources: null
+		}
+	});
 
-	async function updateInfo(i: number) {
+	async function updateInfo(i: keyof typeof work) {
 		if (work[i].work) {
 			const [workResponse, sourcesResponse] = await Promise.all([
 				client.GET('/api/work/work', {
@@ -43,17 +53,15 @@
 				})
 			]);
 
-			if (workResponse.data) {
+			if (workResponse.data && sourcesResponse.data) {
 				work[i].work = workResponse.data;
-				work[i].title = workResponse.data.title;
-				work[i].description = workResponse.data.description!;
+				work[i].title = workResponse.data.title || '';
+				work[i].description = workResponse.data.description || '';
 				work[i].rating = workResponse.data.rating;
-			}
 
-			if (sourcesResponse.data) {
-				work[i].work.sources = sourcesResponse.data;
+				work[i].sources = sourcesResponse.data;
 				work[i].thumbnail_source_id =
-					workResponse.data?.thumbnail_source ?? sourcesResponse.data?.[0]?.id ?? null;
+					workResponse.data?.thumbnail_source_id ?? sourcesResponse.data?.[0]?.id ?? null;
 			}
 		} else {
 			work[i].work = null;
@@ -64,31 +72,25 @@
 		}
 	}
 
-	let selecting = $state({
-		title: 0,
-		description: 0,
-		thumbnail_source: 0,
-		rating: 0
-	});
+	let selectingTitle = $state<keyof typeof work>('a');
+	let selectingDescription = $state<keyof typeof work>('a');
+	let selectingThumbnailSource = $state<keyof typeof work>('a');
+	let selectingRating = $state<keyof typeof work>('a');
 </script>
-
-<svelte:head>
-	<title>{m.heroic_same_wasp_conquer()}</title>
-</svelte:head>
 
 <Section title={m.heroic_same_wasp_conquer()}>
 	<GuidelineWarning />
-	<form method="POST">
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody>
 				<tr
 					><th></th>
 					<td>
-						<WorkField bind:value={work[0].work} oninput={() => updateInfo(0)} />
+						<WorkField bind:value={work['a'].work} oninput={() => updateInfo('a')} />
 					</td>
 					<td></td><td></td>
 					<td>
-						<WorkField bind:value={work[1].work} oninput={() => updateInfo(1)} />
+						<WorkField bind:value={work['b'].work} oninput={() => updateInfo('b')} />
 					</td>
 					<th></th></tr
 				>
@@ -97,31 +99,31 @@
 					<td
 						><input
 							type="text"
-							disabled={!work[0].work || selecting.title !== 0}
-							bind:value={work[0].title}
+							disabled={!work['a'].work || selectingTitle !== 'a'}
+							bind:value={work['a'].title}
 						/></td
 					>
 					<td
 						><input
 							type="radio"
-							disabled={!work[0].work}
-							value={0}
-							bind:group={selecting.title}
+							disabled={!work['a'].work}
+							value="a"
+							bind:group={selectingTitle}
 						/></td
 					>
 					<td
 						><input
 							type="radio"
-							disabled={!work[1].work}
-							value={1}
-							bind:group={selecting.title}
+							disabled={!work['b'].work}
+							value="b"
+							bind:group={selectingTitle}
 						/></td
 					>
 					<td
 						><input
 							type="text"
-							disabled={!work[1].work || selecting.title !== 1}
-							bind:value={work[1].title}
+							disabled={!work['b'].work || selectingTitle !== 'b'}
+							bind:value={work['b'].title}
 						/></td
 					>
 					<th>{m.large_factual_octopus_exhale()}</th></tr
@@ -130,30 +132,30 @@
 					><th>{m.clear_lucky_peacock_pick()}</th>
 					<td
 						><textarea
-							disabled={!work[0].work || selecting.description !== 0}
-							bind:value={work[0].description}
+							disabled={!work['a'].work || selectingDescription !== 'a'}
+							bind:value={work['a'].description}
 						></textarea></td
 					>
 					<td
 						><input
 							type="radio"
-							disabled={!work[0].work}
-							value={0}
-							bind:group={selecting.description}
+							disabled={!work['a'].work}
+							value="a"
+							bind:group={selectingDescription}
 						/></td
 					>
 					<td
 						><input
 							type="radio"
-							disabled={!work[1].work}
-							value={1}
-							bind:group={selecting.description}
+							disabled={!work['b'].work}
+							value="b"
+							bind:group={selectingDescription}
 						/></td
 					>
 					<td
 						><textarea
-							disabled={!work[1].work || selecting.description !== 1}
-							bind:value={work[1].description}
+							disabled={!work['b'].work || selectingDescription !== 'b'}
+							bind:value={work['b'].description}
 						></textarea></td
 					>
 					<th>{m.clear_lucky_peacock_pick()}</th></tr
@@ -161,70 +163,66 @@
 				<tr
 					><th>{m.heroic_ideal_orangutan_aid()}</th>
 					<td>
-						{#if work[0].work?.sources && work[0].work.sources.length > 0}
+						{#if work['a'].sources && work['a'].sources.length > 0}
 							<select
-								disabled={!work[0].work || selecting.thumbnail_source !== 0}
-								bind:value={work[0].thumbnail_source_id}
+								disabled={!work['a'].work || selectingThumbnailSource !== 'a'}
+								bind:value={work['a'].thumbnail_source_id}
 							>
-								{#each work[0].work.sources as source (source.id)}
+								{#each work['a'].sources as source (source.id)}
 									<option value={source.id}
-										>{Platform[source.platform]}
-										{source.work_origin === 0
+										>{PlatformNames[source.platform]}
+										{source.work_origin === WorkOrigin.Author
 											? ''
-											: ' ' + WorkOrigin[source.work_origin]()}
+											: ' ' + WorkOriginNames[source.work_origin]()}
 										-
 										{source.title}</option
 									>
 								{/each}
 							</select>
-							{@const selectedSource = work[0].work.sources.find(
-								(s) => s.id === work[0].thumbnail_source_id
+							{@const selectedSource = work['a'].sources.find(
+								(s) => s.id === work['a'].thumbnail_source_id
 							)}
-							{#if selectedSource?.thumbnail}
-								<img
-									class="mt-2 w-15"
-									src={selectedSource.thumbnail}
-									alt={getDisplayText(work[0].title)}
-								/>
-							{/if}
+							<WorkThumbnail
+								class="mt-2 aspect-video w-15"
+								thumbnail={selectedSource?.thumbnail}
+								alt={getDisplayText(work['a'].title)}
+							/>
 						{/if}
 					</td>
 					<td
 						><input
 							type="radio"
-							disabled={!work[0].work}
-							value={0}
-							bind:group={selecting.thumbnail_source}
+							disabled={!work['a'].work}
+							value="a"
+							bind:group={selectingThumbnailSource}
 						/></td
 					>
 					<td
 						><input
 							type="radio"
-							disabled={!work[1].work}
-							value={1}
-							bind:group={selecting.thumbnail_source}
+							disabled={!work['b'].work}
+							value="b"
+							bind:group={selectingThumbnailSource}
 						/></td
 					>
 					<td>
-						{#if work[1].work?.sources && work[1].work.sources.length > 0}
+						{#if work['b'].sources && work['b'].sources.length > 0}
 							<select
-								disabled={!work[1].work || selecting.thumbnail_source !== 1}
-								bind:value={work[1].thumbnail_source_id}
+								disabled={!work['b'].work || selectingThumbnailSource !== 'b'}
+								bind:value={work['b'].thumbnail_source_id}
 							>
-								{#each work[1].work.sources as source (source.id)}
+								{#each work['b'].sources as source (source.id)}
 									<option value={source.id}>{source.title}</option>
 								{/each}
 							</select>
-							{@const selectedSource = work[1].work.sources.find(
-								(s) => s.id === work[1].thumbnail_source_id
+							{@const selectedSource = work['b'].sources.find(
+								(s) => s.id === work['b'].thumbnail_source_id
 							)}
-							{#if selectedSource?.thumbnail}
-								<img
-									class="mt-2 w-15"
-									src={selectedSource.thumbnail}
-									alt={getDisplayText(work[1].title)}
-								/>
-							{/if}
+							<WorkThumbnail
+								class="mt-2 aspect-video w-15"
+								thumbnail={selectedSource?.thumbnail}
+								alt={getDisplayText(work['b'].title)}
+							/>
 						{/if}
 					</td>
 					<th>{m.heroic_ideal_orangutan_aid()}</th></tr
@@ -233,52 +231,53 @@
 					><th>{m.good_dark_bumblebee_spur()}</th>
 					<td
 						><select
-							disabled={!work[0].work || selecting.rating != 0}
-							bind:value={work[0].rating}
+							disabled={!work['a'].work || selectingRating !== 'a'}
+							bind:value={work['a'].rating}
 						>
-							{#each Rating as r, i (i)}<option value={i}>{r()}</option>{/each}
+							{#each enumValues(Rating) as r, i (i)}<option value={r}>{RatingNames[r]()}</option
+								>{/each}
 						</select></td
 					>
 					<td
 						><input
 							type="radio"
-							disabled={!work[0].work}
-							value={0}
-							bind:group={selecting.rating}
+							disabled={!work['a'].work}
+							value="a"
+							bind:group={selectingRating}
 						/></td
 					>
 					<td
 						><input
 							type="radio"
-							disabled={!work[1].work}
-							value={1}
-							bind:group={selecting.rating}
+							disabled={!work['b'].work}
+							value="b"
+							bind:group={selectingRating}
 						/></td
 					>
 					<td
 						><select
-							disabled={!work[1].work || selecting.rating != 1}
-							bind:value={work[1].rating}
+							disabled={!work['b'].work || selectingRating !== 'b'}
+							bind:value={work['b'].rating}
 						>
-							{#each Rating as r, i (i)}<option value={i}>{r()}</option>{/each}
+							{#each enumValues(Rating) as r, i (i)}<option value={r}>{RatingNames[r]()}</option
+								>{/each}
 						</select></td
 					>
 					<th>{m.good_dark_bumblebee_spur()}</th></tr
 				>
 			</tbody>
 		</table>
-		<input hidden type="number" name="A" value={work[0].work?.id} />
-		<input hidden type="number" name="B" value={work[1].work?.id} />
-		<input hidden type="text" name="title" value={work[selecting.title].title} />
-		<textarea hidden value={work[selecting.description].description} name="description"
-		></textarea>
+		<input hidden type="text" name="A" value={work['a'].work?.id} />
+		<input hidden type="text" name="B" value={work['b'].work?.id} />
+		<input hidden type="text" name="title" value={work[selectingTitle].title} autocomplete="off" />
+		<textarea hidden value={work[selectingDescription].description} name="description"></textarea>
 		<input
 			hidden
-			type="number"
-			value={work[selecting.thumbnail_source].thumbnail_source_id}
+			type="text"
+			value={work[selectingThumbnailSource].thumbnail_source_id}
 			name="thumbnail_source_id"
 		/>
-		<input hidden type="number" name="rating" value={work[selecting.rating].rating} />
-		<input type="submit" disabled={!work[0].work || !work[1].work} />
+		<input hidden type="number" name="rating" value={work[selectingRating].rating} />
+		<input type="submit" disabled={!work['a'].work || !work['b'].work} />
 	</form>
 </Section>

@@ -1,30 +1,44 @@
-from .media import MediaWork, TagWorkInstance, MediaSong
-from .pool import Pool, PoolItem, PoolUpstream
-from .tag import (
-	TagWork,
-	TagSong,
-	WikiPage,
-	TagWorkLangPreference,
-	TagWorkParenthood,
-	TagSongLangPreference,
-)
-from .work_source import WorkSource, WorkSourceRejection
-from .relations import WorkRelation, SongRelation
-from .posts import Post, PostContent, Notification, Subscription
 from .connection import (
-	ProfileConnection,
 	MediaSongConnection,
+	ProfileConnection,
 	TagWorkConnection,
-	TagWorkMediaConnection,
 	TagWorkCreatorConnection,
+	TagWorkMediaConnection,
 )
-from .prefs import UserPreferences
+from .media import (
+	MediaSong,
+	MediaWork,
+	TagSongInstance,
+	TagWorkInstance,
+)
+from .moderation import ModerationEvent
+from .pool import Pool, PoolItem, PoolUpstream
+from .posts import (
+	CommentMeta,
+	EntityLink,
+	Notification,
+	Subscription,
+	Thread,
+	ThreadPost,
+)
+from .prefs import UserPreference
+from .relations import SongRelation, WorkRelation
 from .request import BulkRequest, UserRequest
 from .revision import Revision, RevisionChange, RevisionChangeEntity
+from .tag import (
+	TagSong,
+	TagSongLangPreference,
+	TagWork,
+	TagWorkLangPreference,
+	TagWorkParenthood,
+)
+from .wiki import WikiPage
+from .work_source import WorkSource
 
 __all__ = [
 	'MediaWork',
 	'TagWorkInstance',
+	'TagSongInstance',
 	'MediaSong',
 	'Pool',
 	'PoolItem',
@@ -36,19 +50,21 @@ __all__ = [
 	'TagWorkLangPreference',
 	'TagWorkParenthood',
 	'WorkSource',
-	'WorkSourceRejection',
+	'ModerationEvent',
 	'WorkRelation',
 	'SongRelation',
-	'Post',
-	'PostContent',
+	'Thread',
+	'ThreadPost',
 	'Notification',
 	'Subscription',
+	'EntityLink',
+	'CommentMeta',
 	'ProfileConnection',
 	'MediaSongConnection',
 	'TagWorkConnection',
 	'TagWorkMediaConnection',
 	'TagWorkCreatorConnection',
-	'UserPreferences',
+	'UserPreference',
 	'BulkRequest',
 	'UserRequest',
 	'Revision',

@@ -4,7 +4,8 @@
 	import TagsField from '$lib/TagsField.svelte';
 	import client from '$lib/api';
 	import { goto } from '$app/navigation';
-	import { isSOV, isSVO } from '$lib/ui';
+	import { dirtyEnhance } from '$lib/dirty';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
 
@@ -13,27 +14,26 @@
 	let tags = $state(data.from),
 		selected = $state(''),
 		del = $state(false);
-
-	const submit = async (e: SubmitEvent) => {
-		e.preventDefault();
-		const { error, data } = await client.POST('/api/tag/alias', {
-			fetch,
-			params: { query: { into_tag: selected, delete: del } },
-			body: tags
-		});
-		if (!error) goto(`/tag/${data.merged_slug}`, { invalidateAll: true });
-	};
 </script>
-
-<svelte:head>
-	<title>{m.front_maroon_hamster_urge()}</title>
-</svelte:head>
 
 <Section title={m.front_maroon_hamster_urge()}>
 	<GuidelineWarning />
 	<TagsField type="work" class="w-full" bind:value={tags} />
 	{#if tags.length}
-		<form onsubmit={submit}>
+		<form
+			method="POST"
+			use:dirtyEnhance={{
+				custom_submit: async ({ cancel }) => {
+					cancel();
+					const { error, data } = await client.POST('/api/tag/alias', {
+						fetch,
+						params: { query: { into_tag: selected, delete: del } },
+						body: tags
+					});
+					if (!error) await goto(`/tag/${data.merged_slug}/edit`, { invalidateAll: true });
+				}
+			}}
+		>
 			{#if isSVO(getLocale())}
 				{m.male_gross_angelfish_reap()}
 			{/if}
@@ -51,8 +51,8 @@
 					type: m.still_happy_cheetah_savor(),
 					name: ''
 				})}<select name="behaviour" bind:value={del}
-					><option value={false}>{m.dirty_lazy_mammoth_empower()}</option><option
-						value={true}>{m.real_born_goat_snap()}</option
+					><option value={false}>{m.dirty_lazy_mammoth_empower()}</option><option value={true}
+						>{m.real_born_goat_snap()}</option
 					></select
 				></label
 			>

@@ -2,9 +2,12 @@ venv
 .venv
 __pycache__
 .env
-*.sqlite3
 media
 static
 .python-version
 *cookies.txt
 .ruff_cache
+
+# for sample data
+otodb-latest.sql
+otodb-latest.sql.gz

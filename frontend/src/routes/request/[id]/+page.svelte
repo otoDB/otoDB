@@ -1,39 +1,41 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api.js';
-	import CommentTree from '$lib/CommentTree.svelte';
-	import { RequestActions, Status, UserLevel } from '$lib/enums.js';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
+	import { dirtyClick } from '$lib/dirty';
+	import { RequestActions, StatusNames } from '$lib/enums.js';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
+	import { hasUserLevel } from '$lib/enums/userLevel.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { Levels, ModelsWithComments, Status } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO } from '$lib/ui.js';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
+	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();
 
-	const set = async (status: number) => {
+	const set = async (status: 0 | 1 | 2) => {
 		await client.POST('/api/request/confirm', {
 			fetch,
 			params: { query: { request_id: data.id, status } }
 		});
-		invalidateAll();
+		await invalidateAll();
 	};
 </script>
 
-{#snippet render_entity(ent)}
+{#snippet render_entity(
+	ent:
+		| ['tagwork', ComponentProps<typeof WorkTag>['tag']]
+		| ['mediawork', ComponentProps<typeof WorkCard>['work']]
+)}
 	{#if ent[0] === 'tagwork'}
 		<WorkTag tag={ent[1]} />
 	{:else if ent[0] === 'mediawork'}
 		<WorkCard work={ent[1]} />
 	{/if}
 {/snippet}
-
-<svelte:head>
-	<title
-		>{m.mild_loud_shad_enchant({ type: m.last_jumpy_barbel_mop(), name: '#' + data.id })}</title
-	>
-</svelte:head>
 
 <Section title={'#' + data.id} type={m.last_jumpy_barbel_mop()}>
 	<h3>
@@ -46,24 +48,23 @@
 		{/if}
 	</h3>
 	<h4>
-		{Status[data.request.status]()}{#if data.request?.processed_by}(<a
-				href="/profile/{data.request.processed_by.username}"
-				>{data.request.processed_by.username}</a
+		{StatusNames[data.request.status]()}{#if data.request?.processed_by}(<a
+				href="/profile/{data.request.processed_by.username}">{data.request.processed_by.username}</a
 			>){/if}
 	</h4>
 
 	<ul>
 		{#each data.request.requests as r, i (i)}
 			<li>
-				<code>{RequestActions[r.command]}</code>
-				{@render render_entity(r.A)}
-				{@render render_entity(r.B)}
+				<code>{RequestActions[r.command as keyof typeof RequestActions]}</code>
+				{@render render_entity(r.A as Parameters<typeof render_entity>[0])}
+				{@render render_entity(r.B as Parameters<typeof render_entity>[0])}
 			</li>
 		{/each}
 	</ul>
-	{#if data.user.level >= UserLevel.EDITOR && data.request.status === 0}
-		<button onclick={() => set(1)}>{m.lucky_bold_hornet_push()}</button>
-		<button onclick={() => set(2)}>{m.alive_blue_marlin_push()}</button>
+	{#if hasUserLevel(data.user?.level, Levels.Editor) && data.request.status === Status.Pending}
+		<button {@attach dirtyClick(() => set(1))}>{m.lucky_bold_hornet_push()}</button>
+		<button {@attach dirtyClick(() => set(2))}>{m.alive_blue_marlin_push()}</button>
 	{/if}
 </Section>
 
@@ -71,7 +72,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="bulkrequest"
+		model={ModelsWithComments.bulkrequest}
 		pk={data.id}
 	/>
 </Section>

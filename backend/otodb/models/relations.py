@@ -1,13 +1,11 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q
-
 from django_cte import CTE, with_cte
 
-from .media import MediaWork, MediaSong
-
-from .enums import WorkRelationTypes, SongRelationTypes, RevisionChain
-from .revision import RevisionTrackedModel, RevisionTrackedManager
+from .enums import RevisionChain, SongRelationTypes, WorkRelationTypes
+from .media import MediaSong, MediaWork
+from .revision import RevisionTrackedManager, RevisionTrackedModel
 
 
 def _get_component(model, obj_id: int):
@@ -23,10 +21,7 @@ def _get_component(model, obj_id: int):
 		)
 	)
 	# Note that we cannot use UNION ALL here because A-B will fetch each other forever.
-	relations = with_cte(cte, select=cte.join(model, id=cte.col.id)).select_related(
-		'A', 'B'
-	)
-	return relations
+	return with_cte(cte, select=cte.join(model, id=cte.col.id))
 
 
 class BidirectionalManager(RevisionTrackedManager):

@@ -11,24 +11,21 @@ COPY package.json bun.lock /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production
 
 FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
-COPY . .
-
-ARG OTODB_FRONTEND_DOMAIN
-ENV OTODB_FRONTEND_DOMAIN=${OTODB_FRONTEND_DOMAIN}
-ENV PUBLIC_BACKEND_URL_EXTERNAL=https://${OTODB_FRONTEND_DOMAIN}/
-ENV PUBLIC_BACKEND_URL_INTERNAL=http://backend:8000/
-
 ARG OTODB_HASH
 ENV PUBLIC_OTODB_HASH=${OTODB_HASH}
 
+COPY --from=install /temp/dev/node_modules node_modules
+COPY . .
+COPY --from=backend openapi.json /app/openapi.json
+
+RUN bun run sync-schema
 RUN bun run prepare
 RUN bun run build
 
-FROM base AS build
+FROM node:lts-alpine AS build
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /app/build .
 
 EXPOSE 5173/tcp
 
-ENTRYPOINT [ "sh", "-c", "PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 bun ./" ]
+ENTRYPOINT [ "sh", "-c", "exec env PROTOCOL_HEADER=x-forwarded-proto HOST_HEADER=x-forwarded-host HOST=0.0.0.0 PORT=5173 node ./" ]

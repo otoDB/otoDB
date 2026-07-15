@@ -1,25 +1,21 @@
-from typing import TYPE_CHECKING
-from datetime import date, datetime
-import logging
-from django.db import models
-import requests
-
-from .enums import Platform, WorkOrigin, WorkStatus, MimeType
-from .media import MediaWork
 import hashlib
+import logging
+from datetime import date, datetime
+from typing import TYPE_CHECKING
 
-from otodb.account.models import Account
-from otodb.common import video_info, process_video_info, fetch_thumbnail_mime_type
+import requests
+from django.conf import settings
+from django.db import models
+
+from otodb.common import fetch_thumbnail_mime_type
 from otodb.storage_manager import storage_manager
 
-from .revision import RevisionTrackedModel, RevisionTrackedManager
+from .enums import MimeType, Platform, WorkOrigin, WorkStatus
+from .fields import IRIURLField
+from .media import MediaWork
+from .revision import RevisionTrackedModel
 
 logger = logging.getLogger(__name__)
-
-
-class ActiveManager(RevisionTrackedManager):
-	def get_queryset(self):
-		return super().get_queryset().filter(rejection__isnull=True)
 
 
 class WorkSource(RevisionTrackedModel):
@@ -34,7 +30,7 @@ class WorkSource(RevisionTrackedModel):
 	platform = models.IntegerField(choices=Platform.choices)
 	source_id = models.CharField(max_length=1000, null=True, blank=False)
 
-	url = models.URLField(null=False, blank=False)
+	url = IRIURLField(null=False, blank=False)
 	published_date = models.DateField(
 		auto_now=False, auto_now_add=False, null=True, blank=True
 	)
@@ -50,7 +46,7 @@ class WorkSource(RevisionTrackedModel):
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
-	thumbnail_url = models.URLField(null=True, blank=False)
+	thumbnail_url = IRIURLField(null=True, blank=False)
 	thumbnail_mime = models.IntegerField(
 		choices=MimeType.choices, null=True, blank=True
 	)
@@ -58,10 +54,12 @@ class WorkSource(RevisionTrackedModel):
 	uploader_id = models.CharField(max_length=1000, null=True, blank=False)
 
 	added_by = models.ForeignKey(
-		Account, blank=False, null=False, on_delete=models.CASCADE
+		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.CASCADE
 	)
 
-	active_objects = ActiveManager()
+	is_pending = models.BooleanField(default=False)
+	pending_since = models.DateTimeField(null=True, blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
 
 	class RevisionMeta:
 		tracked_fields = [
@@ -95,20 +93,10 @@ class WorkSource(RevisionTrackedModel):
 		verbose_name_plural = 'Media Sources'
 		ordering = ['work_status', 'work_origin', 'published_date']
 
-	def refresh(self, use_cache=False):
+	def refresh(self, info, full_info):
 		"""
 		Refresh work source information.
-
-		Args:
-		    use_cache: If `True`, use previously cached payload instead of requesting new data.
 		"""
-		full_info = None
-
-		if use_cache and getattr(self, 'info_payload', None):
-			info = process_video_info(self.info_payload.payload, self.url)
-		else:
-			info, full_info = video_info(self.url)
-
 		if info:
 			self.title = info['title']
 			self.description = info['description']
@@ -120,7 +108,7 @@ class WorkSource(RevisionTrackedModel):
 			self.work_duration = info.get('work_duration', self.work_duration)
 
 			# Re-upload thumbnail to CDN for non-cached refreshes
-			if not use_cache and self.thumbnail_url and self.thumbnail_mime:
+			if self.thumbnail_url and self.thumbnail_mime:
 				self.save_thumbnail()
 
 			if full_info is not None:
@@ -129,20 +117,6 @@ class WorkSource(RevisionTrackedModel):
 					source=self, defaults={'payload': full_info}
 				)
 
-			if self.media:
-				from .tag import TagWork
-
-				tags = info.get('tags', [])
-				exists = TagWork.objects.filter(name__in=tags)
-				created = [
-					TagWork.objects.create(name=name)
-					for name in tags
-					if name not in set(exists.values_list('name', flat=True))
-				]
-				self.media.tags.add(*exists, *created)
-				self.media.tagworkinstance_set.filter(work_tag__in=created).update(
-					instance_imported_from_source=True
-				)
 		else:
 			logger.error(
 				f'Failed to refresh WorkSource {self.pk} - {self.url}: No info found.'
@@ -180,31 +154,27 @@ class WorkSource(RevisionTrackedModel):
 	# Gets the source registered at the url if it exists, otherwise register as pending
 	@staticmethod
 	def from_url(
-		url, user, is_reupload, metadata=None, info=None, full_info=None
-	) -> tuple['WorkSource | None', 'dict | None']:
+		url, user, is_reupload, info, full_info, metadata=None
+	) -> 'WorkSource | None':
 		"""
 		Gets or creates a WorkSource from a URL.
 
 		Args:
 		    url: The URL to fetch
+		    info: Info dict
+		    full_info: Full info dict
 		    user: The user adding the source
 		    is_reupload: Whether this is a reupload (not by original author)
 		    metadata: Optional metadata dict for unavailable sources (editors only)
-		    info: Optional pre-fetched info dict (for optimization)
-		    full_info: Optional pre-fetched full info dict (for optimization)
 
 		Returns:
-		    Tuple of (WorkSource, info_dict) or (None, None) if failed
+		    WorkSource or None if failed
 		"""
 		from otodb.common import (
 			fetch_thumbnail_mime_type,
 			make_video_url,
 			platform_extractors,
 		)
-
-		# Try to fetch info if not provided
-		if info is None:
-			info, full_info = video_info(url, expected_unavailable=metadata is not None)
 
 		# Handle unavailable sources
 		if info is None and metadata is not None:
@@ -229,10 +199,10 @@ class WorkSource(RevisionTrackedModel):
 						break
 				else:
 					logger.error(f'No suitable platform extractor found for URL: {url}')
-					return None, None
+					return None
 			except Exception:
 				logger.error(f'Failed to parse URL for platform: {url}')
-				return None, None
+				return None
 
 			published_date = metadata.get('published_date') if metadata else None
 			thumbnail_url = metadata.get('thumbnail_url') if metadata else None
@@ -263,10 +233,10 @@ class WorkSource(RevisionTrackedModel):
 			}
 		elif info is None:
 			logger.error(f'Failed to get video info for URL: {url}')
-			return None, None
+			return None
 
 		if info['site'] is None:
-			return None, None
+			return None
 
 		# Check if source already exists
 		try:
@@ -302,7 +272,7 @@ class WorkSource(RevisionTrackedModel):
 			if src.thumbnail_url and src.thumbnail_mime:
 				src.save_thumbnail()
 
-		return src, info
+		return src
 
 	@property
 	def thumbnail_path(self) -> str:
@@ -325,15 +295,6 @@ class WorkSource(RevisionTrackedModel):
 		if self.thumbnail_path:
 			return storage_manager.url(self.thumbnail_path)
 		return self.thumbnail_url  # type: ignore -- Fallback to 3rd-party remote thumbnail URL
-
-
-class WorkSourceRejection(models.Model):
-	source = models.OneToOneField(
-		WorkSource, null=False, on_delete=models.CASCADE, related_name='rejection'
-	)
-	reason = models.CharField(max_length=1000, null=False, blank=False)
-	by = models.ForeignKey(Account, blank=False, null=False, on_delete=models.RESTRICT)
-	date = models.DateTimeField(auto_now_add=True, null=False)
 
 
 class WorkSourceInfoPayload(models.Model):

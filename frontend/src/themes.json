@@ -1,0 +1,88 @@
+{
+	"default": {
+		"colors": {
+			"bgPrimary": "#000000",
+			"contentPrimary": "#ffffff",
+			"bgFaint": "#191919",
+			"bgFainter": "#333333",
+			"contentFaint": "#dfdfdf",
+			"contentFainter": "#b3b3b3"
+		},
+		"prefersColorSchemeLight": {
+			"bgFainter": "#ffffff",
+			"contentPrimary": "#000000",
+			"bgFaint": "#f2f2f2",
+			"bgPrimary": "#e6e6e6"
+		}
+	},
+	"plain-dark": {
+		"colors": {
+			"bgPrimary": "#000000",
+			"contentPrimary": "#ffffff",
+			"bgFaint": "#191919",
+			"bgFainter": "#333333",
+			"contentFaint": "#dfdfdf",
+			"contentFainter": "#b3b3b3"
+		}
+	},
+	"plain-light": {
+		"colors": {
+			"bgFainter": "#ffffff",
+			"contentPrimary": "#000000",
+			"bgFaint": "#f2f2f2",
+			"bgPrimary": "#e6e6e6",
+			"contentFaint": "#1d1d1d",
+			"contentFainter": "#454545"
+		}
+	},
+	"aniki": {
+		"colors": {
+			"contentPrimary": "#ffffff",
+			"contentFainter": "#b8b4d4",
+			"contentFaint": "#797a97",
+			"bgFainter": "#252b50",
+			"bgFaint": "#0a0a20",
+			"bgPrimary": "#000000"
+		}
+	},
+	"otogroove": {
+		"colors": {
+			"contentPrimary": "#021b0e",
+			"contentFaint": "#e61e1e",
+			"contentFainter": "#bd4966",
+			"bgPrimary": "#ffffff",
+			"bgFaint": "#fdefef",
+			"bgFainter": "#e6d3d3"
+		}
+	},
+	"retro-voyage": {
+		"colors": {
+			"contentPrimary": "#243350",
+			"contentFaint": "#061983",
+			"contentFainter": "#6480a0",
+			"bgPrimary": "#64dfe7",
+			"bgFaint": "#e4f5f4",
+			"bgFainter": "#a3f4f7"
+		}
+	},
+	"sorimix": {
+		"colors": {
+			"contentPrimary": "#c5ffc3",
+			"contentFainter": "#2de44b",
+			"contentFaint": "#00ffa3",
+			"bgFainter": "#154705",
+			"bgFaint": "#021f19",
+			"bgPrimary": "#041309"
+		}
+	},
+	"resample": {
+		"colors": {
+			"contentPrimary": "#02141b",
+			"contentFaint": "#1e6ee6",
+			"contentFainter": "#4998bd",
+			"bgPrimary": "#acf3ff",
+			"bgFaint": "#eff5fd",
+			"bgFainter": "#d3dbe6"
+		}
+	}
+}

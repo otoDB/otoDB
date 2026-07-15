@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import os
 import logging
+import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -24,18 +25,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = os.environ.get('OTODB_DEBUG', 'False').lower() == 'true'
 
-if OTODB_SENTRY_DSN := os.environ.get('OTODB_SENTRY_DSN'):
+if OTODB_BACKEND_SENTRY_DSN := os.environ.get('OTODB_BACKEND_SENTRY_DSN'):
 	import sentry_sdk
 
 	sentry_sdk.init(
-		dsn=OTODB_SENTRY_DSN,
+		dsn=OTODB_BACKEND_SENTRY_DSN,
 		send_default_pii=False,  # May need to enable later
 		enable_logs=True,
 		traces_sample_rate=float(
-			os.environ.get('OTODB_SENTRY_TRACES_SAMPLE_RATE', '0.1')
+			os.environ.get('OTODB_BACKEND_SENTRY_TRACES_SAMPLE_RATE', '0.1')
 		),
 		profiles_sample_rate=float(
-			os.environ.get('OTODB_SENTRY_PROFILES_SAMPLE_RATE', '0.1')
+			os.environ.get('OTODB_BACKEND_SENTRY_PROFILES_SAMPLE_RATE', '0.1')
 		),
 		release=os.environ.get('OTODB_HASH', 'unknown'),
 	)
@@ -73,7 +74,7 @@ INSTALLED_APPS = [
 	'django.contrib.contenttypes',
 	'django.contrib.sessions',
 	'django.contrib.messages',
-	'markdownfield',
+	'django.contrib.postgres',
 	'django.contrib.staticfiles',
 	'otodb',
 	'otodb.account',
@@ -88,6 +89,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
+	'otodb.middleware.AnonymousReadOnlyCacheMiddleware',
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'corsheaders.middleware.CorsMiddleware',
 	'django.middleware.locale.LocaleMiddleware',
@@ -122,49 +124,39 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'project.wsgi.application'
+ASGI_APPLICATION = 'project.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-ALLOWED_DATABASE_BACKENDS = ['sqlite3', 'postgresql']
-if (
-	'OTODB_DB_BACKEND' in os.environ
-	and os.environ['OTODB_DB_BACKEND'] not in ALLOWED_DATABASE_BACKENDS
-):
-	logger.critical(
-		f'Database backend {os.environ["OTODB_DB_BACKEND"]} not allowed -- exiting'
-	)
-	exit(1)
-
-DATABASE_BACKEND = os.environ.get('OTODB_DB_BACKEND', 'sqlite3')
-DATABASE = {
-	'ENGINE': f'django.db.backends.{DATABASE_BACKEND}',
-	'OPTIONS': {},
-}
-
-if (
-	DATABASE_BACKEND == 'postgresql'
-	and os.environ.get('OTODB_DB_SERVICE')
-	and os.environ.get('OTODB_DB_PASSFILE')
-):
-	DATABASE['OPTIONS']['service'] = os.environ['OTODB_DB_SERVICE']
-	DATABASE['OPTIONS']['passfile'] = os.environ['OTODB_DB_PASSFILE']
-elif DATABASE_BACKEND == 'postgresql':
-	DATABASE['NAME'] = os.environ['OTODB_DB_NAME']
-	DATABASE['USER'] = os.environ['OTODB_DB_USER']
-	DATABASE['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
-	DATABASE['HOST'] = os.environ['OTODB_DB_HOST']
-	DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
-	DATABASE['CONN_MAX_AGE'] = 0
-	DATABASE['OPTIONS']['pool'] = {
-		'min_size': int(os.environ.get('OTODB_DB_POOL_MIN_SIZE', '4')),
-		'max_size': int(os.environ.get('OTODB_DB_POOL_MAX_SIZE', '16')),
-		'timeout': int(os.environ.get('OTODB_DB_POOL_TIMEOUT', '10')),
-		'max_lifetime': int(os.environ.get('OTODB_DB_POOL_MAX_LIFETIME', '1800')),
-		'max_idle': int(os.environ.get('OTODB_DB_POOL_MAX_IDLE', '300')),
+if os.environ.get('OTODB_SKIP_DB'):
+	DATABASE = {
+		'ENGINE': 'django.db.backends.sqlite3',
+		'NAME': ':memory:',
 	}
 else:
-	DATABASE['NAME'] = BASE_DIR / f'{os.environ.get("OTODB_DB_NAME", "db")}.sqlite3'
+	DATABASE = {
+		'ENGINE': 'django.db.backends.postgresql',
+		'OPTIONS': {},
+	}
+
+	if os.environ.get('OTODB_DB_SERVICE') and os.environ.get('OTODB_DB_PASSFILE'):
+		DATABASE['OPTIONS']['service'] = os.environ['OTODB_DB_SERVICE']
+		DATABASE['OPTIONS']['passfile'] = os.environ['OTODB_DB_PASSFILE']
+	else:
+		DATABASE['NAME'] = os.environ['OTODB_DB_NAME']
+		DATABASE['USER'] = os.environ['OTODB_DB_USER']
+		DATABASE['PASSWORD'] = os.environ['OTODB_DB_PASSWORD']
+		DATABASE['HOST'] = os.environ['OTODB_DB_HOST']
+		DATABASE['PORT'] = os.environ['OTODB_DB_PORT']
+		DATABASE['CONN_MAX_AGE'] = 0
+		DATABASE['OPTIONS']['pool'] = {
+			'min_size': int(os.environ.get('OTODB_DB_POOL_MIN_SIZE', '4')),
+			'max_size': int(os.environ.get('OTODB_DB_POOL_MAX_SIZE', '16')),
+			'timeout': int(os.environ.get('OTODB_DB_POOL_TIMEOUT', '10')),
+			'max_lifetime': int(os.environ.get('OTODB_DB_POOL_MAX_LIFETIME', '1800')),
+			'max_idle': int(os.environ.get('OTODB_DB_POOL_MAX_IDLE', '300')),
+		}
 
 DATABASES = {
 	'default': DATABASE,
@@ -225,7 +217,6 @@ SERIALIZATION_MODULES = {
 
 TAGULOUS_SLUG_ALLOW_UNICODE = True
 
-SITE_URL = ALLOWED_HOSTS[0]
 SITE_ID = 1
 COMMENTS_APP = 'django_comments_xtd'
 COMMENTS_XTD_MAX_THREAD_LEVEL = 3
@@ -240,6 +231,8 @@ COMMENTS_XTD_APP_MODEL_OPTIONS = {
 }
 
 CORS_ALLOW_CREDENTIALS = True
+if DEBUG:
+	CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
 	'https://cdn.jsdelivr.net',
 	'https://unpkg.com',
@@ -256,8 +249,18 @@ if OTODB_FRONTEND_DOMAIN:
 		'http://' + OTODB_FRONTEND_DOMAIN,
 		'https://' + OTODB_FRONTEND_DOMAIN,
 	]
+	SESSION_COOKIE_DOMAIN = '.' + OTODB_FRONTEND_DOMAIN
 
 OTODB_PROTECT_API_DOCS = os.environ.get('OTODB_PROTECT_API_DOCS', '').lower() == 'true'
+
+OTODB_INVITE_REQUIRED = (
+	os.environ.get('OTODB_INVITE_REQUIRED', 'False').lower() == 'true'
+)
+
+# Captcha
+OTODB_TURNSTILE_SECRET_KEY = os.environ.get('OTODB_TURNSTILE_SECRET_KEY')
+
+INTERNAL_API_SECRET = os.environ.get('INTERNAL_API_SECRET')
 
 # CDN Configuration
 OTODB_CDN_BUCKET_NAME = os.environ.get('OTODB_CDN_BUCKET_NAME')
@@ -280,6 +283,21 @@ OTODB_CDN_ENABLED = (
 )
 OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
 
+# Cache (Valkey in production so rate limits and the anon response cache are
+# shared across workers; per-process local memory otherwise)
+OTODB_VALKEY_URL = os.environ.get('OTODB_VALKEY_URL') or os.environ.get(
+	'OTODB_REDIS_URL'
+)
+if OTODB_VALKEY_URL:
+	CACHES = {
+		'default': {
+			'BACKEND': 'django_vcache.backend.ValkeyCache',
+			'LOCATION': OTODB_VALKEY_URL,
+		}
+	}
+
+OTODB_DISCORD_WEBHOOK_URL = os.environ.get('OTODB_DISCORD_WEBHOOK_URL')
+
 NINJA_PAGINATION_PER_PAGE = 30
 NINJA_PAGINATION_MAX_PER_PAGE_SIZE = 30
 NINJA_PAGINATION_MAX_LIMIT = 30
@@ -300,3 +318,14 @@ LOGGING = {
 		'level': 'INFO',
 	},
 }
+
+# Application specific
+
+# TODO: Consider making these dynamic per user rather than a fixed number
+OTODB_MAX_PENDING_WORKS = 10
+OTODB_MAX_FLAGGED_WORKS = 5
+
+OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)
+OTODB_MODERATION_PERIOD = timedelta(days=3)
+
+OTODB_SYSTEM_BOT_USERNAME = os.environ.get('OTODB_SYSTEM_BOT_USERNAME', 'otoDB')

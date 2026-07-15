@@ -1,32 +1,33 @@
 <script lang="ts">
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import Section from '$lib/Section.svelte';
+	import { SongTagCategoryNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
-	import { SongTagCategory } from '$lib/enums';
-	import CommentTree from '$lib/CommentTree.svelte';
-	import { getTagDisplayName, makeTagDisplayName } from '$lib/api.js';
+	import { ModelsWithComments } from '$lib/schema.js';
+	import { getTagDisplayName } from '$lib/ui.js';
 
 	let { data } = $props();
 
 	const aliases = $derived(
-		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])]
-			.map(makeTagDisplayName)
-			.filter((e) => e !== data.display_name)
+		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])].filter(
+			(e) => e !== data.display_name
+		)
 	);
 </script>
 
-<Section title={data.tag.name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
+<Section title={data.display_name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
 	<div>
 		<span>{m.dull_plain_angelfish_cuddle()}</span>
 		{#each data.tree as node, i (i)}
 			> {#if node.slug === data.tag.slug}{data.display_name}{:else}<a href={node.slug}
 					>{getTagDisplayName(node)}</a
-				>{/if}&nbsp;{/each}> <span>{data.tag.name}</span>
+				>{/if}&nbsp;{/each}> <span>{data.display_name}</span>
 	</div>
 
 	<h2>
 		{m.mild_loud_shad_enchant({
 			type: m.plane_awful_bobcat_spark(),
-			name: SongTagCategory[data.tag.category]()
+			name: SongTagCategoryNames[data.tag.category]()
 		})}
 	</h2>
 
@@ -44,13 +45,13 @@
 	<Section title={m.misty_great_gazelle_comfort()}>
 		<ul>
 			{#each data.tag.children as tag, i (i)}
-				<li><a href={tag.slug}>{tag.name}</a></li>
+				<li><a href={tag.slug}>{getTagDisplayName(tag)}</a></li>
 			{/each}
 		</ul>
 	</Section>
 {/if}
 
-<Section title={m.red_petty_jurgen_sway({ name: data.tag.name })}>
+<Section title={m.red_petty_jurgen_sway({ name: data.display_name })}>
 	{#if data.songs.items.length}
 		<table>
 			<thead
@@ -79,7 +80,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="tagsong"
+		model={ModelsWithComments.tagsong}
 		pk={data.tag.id}
 	/>
 </Section>

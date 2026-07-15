@@ -1,31 +1,24 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+	import { hasUserLevel } from '$lib/enums/userLevel';
+	import { Levels } from '$lib/schema';
+
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
-	import { callErrorToast } from '$lib/toast';
+	import { dirtyEnhance } from '$lib/dirty';
 
-	let { form }: PageProps = $props();
-
-	$effect(() => {
-		if (form?.failed) {
-			callErrorToast(m.green_due_javelina_pop());
-		}
-	});
+	let { data, form } = $props();
 </script>
-
-<svelte:head>
-	<title>{m.plane_inner_chipmunk_race()}</title>
-</svelte:head>
 
 <Section
 	title={m.plane_inner_chipmunk_race()}
 	menuLinks={[
 		{ pathname: 'list/new', title: m.swift_dry_gecko_boost() },
-		{ pathname: 'list/import', title: m.kind_tiny_lemur_praise() }
+		...(hasUserLevel(data.user?.level, Levels.Editor)
+			? [{ pathname: 'list/import', title: m.kind_tiny_lemur_praise() }]
+			: [])
 	]}
 >
-	<form use:enhance method="POST">
+	<form use:dirtyEnhance method="POST">
 		<table>
 			<tbody>
 				<tr
@@ -35,8 +28,7 @@
 				>
 				<tr
 					><th><label for="description">{m.clear_lucky_peacock_pick()}</label></th><td
-						><textarea name="description" value={form?.description ?? ''}
-						></textarea></td
+						><textarea name="description" value={form?.description ?? ''}></textarea></td
 					></tr
 				>
 			</tbody>

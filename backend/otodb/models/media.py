@@ -1,48 +1,85 @@
 from typing import TYPE_CHECKING, cast
 
-import nh3
-
 from django.db import models
 from django.db.models import Prefetch
 from django.urls import reverse
 from django.utils.functional import cached_property
 from tagulous.models import TagField, TaggedManager
 
-from .enums import Rating, WorkTagCategory, Role
-from .tag import TagWork, TagSong, tagwork_ordering_case
-from .revision import RevisionTrackedModel
+from otodb.common import clean_description
+
+from .enums import (
+	FlagStatus,
+	ModerationEventType,
+	Rating,
+	Role,
+	Status,
+	WorkTagCategory,
+)
+from .moderation import ModerationEvent
+from .revision import RevisionTrackedModel, RevisionTrackedQuerySet
+from .tag import TagSong, TagWork, tagwork_ordering_case
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
-	from .work_source import WorkSource
+
+	from otodb.account.models import Account
+
 	from .pool import PoolItem
 	from .relations import WorkRelation
+	from .work_source import WorkSource
 
 
-class ActiveManager(models.Manager):
-	def get_queryset(self):
-		qs = super().get_queryset().filter(moved_to__isnull=True)
-
-		instances_queryset = (
-			TagWorkInstance.objects.filter(work_tag__deprecated=False)
-			.select_related(
-				'work_tag',
-				'work_tag__aliased_to',
-			)
-			.prefetch_related(
-				'work_tag__tagworklangpreference_set',
-				'work_tag__aliases',
-				'work_tag__aliases__tagworklangpreference_set',
-			)
-			.order_by(
-				tagwork_ordering_case(prefix='work_tag__'),
-				'work_tag__name',
-			)
+class MediaWorkQuerySet(RevisionTrackedQuerySet):
+	def with_pending_moderation(self):
+		"""Prefetch the pending flag and appeal so `pending_flag`/`pending_appeal` read from cache."""
+		return self.select_related('thumbnail_source').prefetch_related(
+			Prefetch('tagworkinstance_set', queryset=TagWorkInstance.active_queryset()),
+			Prefetch(
+				'moderation_events',
+				queryset=ModerationEvent.objects.filter(
+					event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
+				)[:1],
+				to_attr='_pending_flag',
+			),
+			Prefetch(
+				'moderation_events',
+				queryset=ModerationEvent.objects.filter(
+					event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+				)[:1],
+				to_attr='_pending_appeal',
+			),
+			'worksource_set',
 		)
 
-		return qs.select_related('thumbnail_source').prefetch_related(
-			Prefetch('tagworkinstance_set', queryset=instances_queryset),
-			'worksource_set',
+	def visible(self):
+		"""Exclude delisted works, but keep ones with a pending appeal."""
+		appealed_ids = ModerationEvent.objects.filter(
+			event_type=ModerationEventType.APPEAL, status=FlagStatus.PENDING
+		).values_list('work_id', flat=True)
+		return self.exclude(
+			models.Q(status=Status.DELISTED) & ~models.Q(id__in=appealed_ids)
+		)
+
+
+class MediaWorkManager(models.Manager['MediaWork']):
+	def get_queryset(self) -> 'MediaWorkQuerySet':
+		return MediaWorkQuerySet(self.model, using=self._db)
+
+	def with_pending_moderation(self) -> 'MediaWorkQuerySet':
+		return self.get_queryset().with_pending_moderation()
+
+	def visible(self) -> 'MediaWorkQuerySet':
+		return self.get_queryset().visible()
+
+
+class ActiveManager(MediaWorkManager):
+	def get_queryset(self) -> 'MediaWorkQuerySet':
+		return (
+			super()
+			.get_queryset()
+			.filter(moved_to__isnull=True)
+			.with_pending_moderation()
 		)
 
 
@@ -60,6 +97,22 @@ class TagWorkInstance(RevisionTrackedModel):
 	class Meta:
 		unique_together = (('work', 'work_tag'),)
 
+	@classmethod
+	def active_queryset(cls):
+		return (
+			cls.objects.filter(work_tag__deprecated=False)
+			.select_related('work_tag', 'work_tag__aliased_to')
+			.prefetch_related(
+				'work_tag__tagworklangpreference_set',
+				'work_tag__aliases',
+				'work_tag__aliases__tagworklangpreference_set',
+			)
+			.order_by(
+				tagwork_ordering_case(prefix='work_tag__'),
+				'work_tag__name',
+			)
+		)
+
 	work = models.ForeignKey('MediaWork', on_delete=models.CASCADE)
 	work_tag = models.ForeignKey(TagWork, on_delete=models.CASCADE)
 
@@ -67,7 +120,6 @@ class TagWorkInstance(RevisionTrackedModel):
 	creator_roles = models.IntegerField(
 		null=True, blank=True, help_text='Creator role bitmask'
 	)
-	instance_imported_from_source = models.BooleanField(null=False, default=True)
 
 	def set_creator_roles(self, roles: list[Role | int]):
 		if self.work_tag.category != WorkTagCategory.CREATOR:
@@ -101,11 +153,16 @@ class TagSongInstance(RevisionTrackedModel):
 
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
+		objects: 'MediaWorkManager'  # type: ignore
+		active_objects: 'ActiveManager'
 		worksource_set: QuerySet['WorkSource']
 		poolitem_set: QuerySet['PoolItem']
 		relation_A: QuerySet['WorkRelation']
 		relation_B: QuerySet['WorkRelation']
 		tagworkinstance_set: QuerySet['TagWorkInstance']
+		moderation_events: QuerySet['ModerationEvent']
+		_pending_flag: list['ModerationEvent']
+		_pending_appeal: list['ModerationEvent']
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
@@ -122,11 +179,15 @@ class MediaWork(RevisionTrackedModel):
 		'self', null=True, blank=True, on_delete=models.CASCADE
 	)
 
+	status = models.IntegerField(choices=Status.choices, default=Status.APPROVED)
+	created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
 	class RevisionMeta:
 		tracked_fields = ['title', 'description', 'rating', 'moved_to']
 		entity_attrs = ['self', 'moved_to']
 
-		def to_active(instance):
+		@staticmethod
+		def to_active(instance: 'MediaWork') -> 'MediaWork':
 			return instance.moved_to or instance
 
 	# deprecated!
@@ -137,7 +198,22 @@ class MediaWork(RevisionTrackedModel):
 		help_text='Deprecated: Use thumbnail_source instead',
 	)
 
+	objects = TaggedManager.cast_class(MediaWorkManager())
 	active_objects = TaggedManager.cast_class(ActiveManager())
+
+	@property
+	def pending_flag(self) -> 'ModerationEvent | None':
+		flags = getattr(self, '_pending_flag', [])
+		return flags[0] if flags else None
+
+	@property
+	def pending_appeal(self) -> 'ModerationEvent | None':
+		appeals = getattr(self, '_pending_appeal', [])
+		return appeals[0] if appeals else None
+
+	def was_contributed_by(self, user: 'Account') -> bool:
+		"""True if user added any source to this work."""
+		return self.worksource_set.filter(added_by=user).exists()
 
 	def __str__(self):
 		return f'{self.pk}: {self.title}'
@@ -162,6 +238,8 @@ class MediaWork(RevisionTrackedModel):
 	):
 		from django.contrib.contenttypes.models import ContentType
 		from django_comments_xtd.models import XtdComment
+
+		from otodb.models.posts import EntityLink
 
 		# Ensure we always merge into the work with the lower ID
 		if from_work.pk < to_work.pk:
@@ -189,32 +267,53 @@ class MediaWork(RevisionTrackedModel):
 		from_work.relation_B.update(B=to_work)
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
+
 		XtdComment.objects.filter(
 			content_type=mediawork_ct, object_pk=str(from_work.pk)
 		).update(object_pk=str(to_work.pk))
+		EntityLink.objects.filter(
+			entity_type=mediawork_ct,
+			entity_id=from_work.pk,
+			thread_id__in=EntityLink.objects.filter(
+				entity_type=mediawork_ct,
+				entity_id=to_work.pk,
+			).values('thread_id'),
+		).delete()
+		EntityLink.objects.filter(
+			entity_type=mediawork_ct,
+			entity_id=from_work.pk,
+		).update(entity_id=to_work.pk)
 
 		from_work.moved_to = to_work
 		from_work.save()
 
 	def save(self, *args, **kwargs):
 		if self.description:
-			self.description = nh3.clean(self.description)
+			self.description = clean_description(self.description)
 		super().save(*args, **kwargs)
 
 	@cached_property
-	def tags_annotated(self):
+	def tags_annotated_thin(self):
+		twis = list(self.tagworkinstance_set.all())
 		t = []
-		twis = self.tagworkinstance_set.filter(work_tag__deprecated=False)
-		primary_paths = TagWork.get_primary_paths(
-			twis.values_list('work_tag_id', flat=True)
-		)
+		for instance in twis:
+			tag = instance.work_tag
+			tag.sample = instance.used_as_source
+			tag.creator_roles = instance.creator_roles
+			t.append(tag)
+		return t
+
+	@cached_property
+	def tags_annotated(self):
+		twis = list(TagWorkInstance.active_queryset().filter(work=self))
+		primary_paths = TagWork.get_primary_paths([i.work_tag_id for i in twis])
+		t = []
 		for instance in twis:
 			tag = instance.work_tag
 			tag.sample = instance.used_as_source
 			tag.creator_roles = instance.creator_roles
 			tag.primary_path = primary_paths.get(tag.id, [])
 			t.append(tag)
-
 		return t
 
 	@property
@@ -230,13 +329,18 @@ class MediaWork(RevisionTrackedModel):
 
 	@property
 	def relations(self):
-		rs = self.relation_A.all() | self.relation_B.all()
-		return rs, MediaWork.active_objects.filter(
-			id__in=[
-				*rs.values_list('A_id', flat=True),
-				*rs.values_list('B_id', flat=True),
-			]
-		).exclude(id=self.pk)
+		from .relations import WorkRelation
+
+		rs = list(
+			WorkRelation.objects.filter(models.Q(A_id=self.pk) | models.Q(B_id=self.pk))
+		)
+		work_ids = {x_id for r in rs for x_id in (r.A_id, r.B_id)} - {self.pk}
+		works = (
+			MediaWork.objects.filter(id__in=work_ids, moved_to__isnull=True)
+			.select_related('thumbnail_source')
+			.prefetch_related('worksource_set')
+		)
+		return rs, works
 
 
 class MediaSong(RevisionTrackedModel):

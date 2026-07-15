@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
+
 	import { m } from '$lib/paraglide/messages.js';
-	import { enhance } from '$app/forms';
+	import { dirtyEnhance } from '$lib/dirty';
 	import { callErrorToast } from '$lib/toast';
 
-	let { form }: PageProps = $props();
+	let { form } = $props();
 
 	$effect(() => {
 		if (form?.failed) {
@@ -13,10 +13,6 @@
 		}
 	});
 </script>
-
-<svelte:head>
-	<title>{m.proof_heroic_rat_cuddle()}</title>
-</svelte:head>
 
 <Section
 	title={m.proof_heroic_rat_cuddle()}
@@ -32,7 +28,7 @@
 		<li>Bilibili Playlists</li>
 		<li>SoundCloud Playlists</li>
 	</ul>
-	<form use:enhance method="POST">
+	<form use:dirtyEnhance method="POST">
 		<table>
 			<tbody>
 				<tr

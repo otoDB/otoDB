@@ -1,30 +1,33 @@
 import { browser } from '$app/environment';
-import client from './api';
-import { Languages } from './enums';
-import { setLocale } from './paraglide/runtime';
-import { applyAction, enhance } from '$app/forms';
+import { languages } from '$lib/enums/language';
+import { getLocale } from '$lib/paraglide/runtime';
+import { unified } from 'unified';
+import { WorkTagCategoryMap } from './enums/workTagCategory';
 import { m } from './paraglide/messages';
+import {
+	WorkTagCategory,
+	LanguageTypes,
+	ThemePref,
+	VideoPlatformPref,
+	type components
+} from './schema';
+import rehypeStringify from 'rehype-stringify';
+import rehypeParse from 'rehype-parse';
+import { visit, SKIP } from 'unist-util-visit';
+import type { Root, Element, Text } from 'hast';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export const debounce = (callback: Function, wait = 300) => {
+export const debounce = <T extends unknown[]>(callback: (...args: T) => void, wait = 300) => {
 	let timeout: ReturnType<typeof setTimeout> | null = null;
-	return (...args: any[]) => {
+	return (...args: T) => {
 		if (timeout) clearTimeout(timeout);
 		timeout = setTimeout(() => callback(...args), wait);
-	};
-};
-
-export const once = (fn) => {
-	return function (event) {
-		if (fn) fn.call(this, event);
-		fn = null;
 	};
 };
 
 export const clickOutside = (node: HTMLElement) => {
 	const handleClick = (event: MouseEvent) => {
 		if (!node.contains(event.target as Node)) {
-			node.dispatchEvent(new CustomEvent('Outclick'));
+			node.dispatchEvent(new CustomEvent('outclick'));
 		}
 	};
 
@@ -36,55 +39,142 @@ export const clickOutside = (node: HTMLElement) => {
 		}
 	};
 };
+type Prefs = components['schemas']['UserPreferenceSchema'];
 
-export const isSVO = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'en' || lang === 'zh-cn';
-export const isSOV = (lang: 'en' | 'zh-cn' | 'ko' | 'ja') => lang === 'ko' || lang === 'ja';
-
-export const set_lang = async (lang, logged_in) => {
-	if (logged_in) {
-		await client.POST('/api/profile/prefs', {
-			fetch,
-			body: { theme: null, language: Languages[lang] }
-		});
-	}
-	setLocale(lang);
+const defaultPrefs: Required<Prefs> = {
+	LANGUAGE: LanguageTypes.en, // reflects baseLocale
+	THEME: ThemePref.Default,
+	VIDEO_PLATFORM: VideoPlatformPref.Auto,
+	PREFER_AUTHOR_UPLOAD: false
 };
 
-interface Prefs {
-	theme: string | undefined;
+export const getStoredPrefs = (): Partial<Prefs> =>
+	JSON.parse(browser ? (localStorage.getItem('prefs') ?? '{}') : '{}');
+
+export const getLocalPrefs = (): Required<Prefs> => ({
+	...defaultPrefs,
+	...getStoredPrefs()
+});
+
+export const getLocalPref = <T extends keyof Prefs>(setting: T): Required<Prefs>[T] =>
+	(getStoredPrefs()[setting] ?? defaultPrefs[setting]) as Required<Prefs>[T];
+
+export const updateLocalPrefs = (values: Partial<Prefs>) => {
+	if (!browser) return;
+	localStorage.setItem('prefs', JSON.stringify({ ...getStoredPrefs(), ...values }));
+};
+
+export const getTagDisplayName = (tag: {
+	name: string;
+	lang_prefs: { lang: number; tag: string }[];
+}) => tag.lang_prefs.find(({ lang }) => lang === languages[getLocale()].id)?.tag ?? tag.name;
+
+export const getTagDisplaySlug = (tag: {
+	slug: string;
+	lang_prefs: { lang: number; slug: string }[];
+}) => tag.lang_prefs.find(({ lang }) => lang === languages[getLocale()].id)?.slug ?? tag.slug;
+
+export function getDisplayText(
+	value: string | null | undefined,
+	placeholder: string | undefined = undefined
+): string {
+	return value ?? placeholder ?? m.lost_game_mink_loop();
 }
 
-export const get_prefs = (): Prefs | undefined => {
-	if (browser) return JSON.parse(localStorage.getItem('prefs') ?? '{}');
-};
-
-export const update_prefs = (opts: Prefs) => {
-	if (browser) localStorage.setItem('prefs', JSON.stringify({ ...get_prefs(), ...opts }));
-};
-
-export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
-
-export const dirtyEnhance = (node: HTMLFormElement) => {
-	node.addEventListener('change', () => {
-		node.dataset.dirty = 'true';
-	});
-
-	return enhance(node, ({ cancel }) => {
-		if (Array.from(document.querySelectorAll('form')).some((f) => f !== node && isFormDirty(f)))
-			if (!confirm(m.active_lime_panther_buzz())) cancel();
-		return async ({ result }) => {
-			await applyAction(result);
-		};
-	});
-};
-
-export const version_end_dates = [
-	['Pre-Alpha', 1752505560412],
-	['Alpha', 1766984874569],
-	['Beta', Number.POSITIVE_INFINITY]
+const WORKTAG_REQUIRED_CATEGORIES = [
+	WorkTagCategory.Creator,
+	WorkTagCategory.Song,
+	WorkTagCategory.Source
 ];
+export const getMissingCategories = (
+	tags: components['schemas']['TagWorkInstanceThinSchema'][]
+) => {
+	const present = new Set(
+		tags.flatMap((t) =>
+			WorkTagCategoryMap[t.category].canSetAsSource && t.sample
+				? [WorkTagCategory.Source, t.category]
+				: [t.category]
+		)
+	);
+	return WORKTAG_REQUIRED_CATEGORIES.filter((c) => !present.has(c));
+};
 
-export const current_version = version_end_dates.at(-1)![0];
+const splitTrailingPunctuation = (url: string): [string, string] => {
+	let end = url.length;
+	while (end > 0) {
+		const c = url[end - 1];
+		if (c === ')') {
+			const s = url.slice(0, end);
+			if ((s.match(/\)/g)?.length ?? 0) <= (s.match(/\(/g)?.length ?? 0)) break;
+		} else if (!/[.,!?;:'"\]}>]/.test(c)) break;
+		end--;
+	}
+	return [url.slice(0, end), url.slice(end)];
+};
 
-export const GUIDELINE_POST_ID = 4;
-export const FAQ_POST_ID = 3;
+function rehypeAutolink() {
+	return (tree: Root) => {
+		visit(tree, (node, index, parent) => {
+			if (node.type === 'element' && node.tagName === 'a') return SKIP;
+			if (node.type !== 'text' || !parent || index === undefined) return;
+
+			const text = node.value;
+
+			const URL_RE =
+				/(?<![\w@/.])(https?:\/\/|www\.)[a-z0-9-]+(\.[a-z0-9-]+)+(:\d+)?([/?#][^\s]*)?/gi;
+			if (!URL_RE.test(text)) return;
+			URL_RE.lastIndex = 0;
+
+			const children: (Text | Element)[] = [];
+			let lastIndex = 0;
+			let match;
+
+			while ((match = URL_RE.exec(text))) {
+				if (match.index > lastIndex)
+					children.push({
+						type: 'text',
+						value: text.slice(lastIndex, match.index)
+					});
+
+				const [url, trailing] = splitTrailingPunctuation(match[0]);
+
+				children.push({
+					type: 'element',
+					tagName: 'a',
+					properties: {
+						href: /^https?:\/\//i.test(url) ? url : 'https://' + url,
+						target: '_blank',
+						rel: ['noopener', 'noreferrer']
+					},
+					children: [
+						{
+							type: 'text',
+							value: url
+						}
+					]
+				});
+
+				if (trailing) children.push({ type: 'text', value: trailing });
+
+				lastIndex = match.index + match[0].length;
+			}
+
+			if (lastIndex < text.length)
+				children.push({
+					type: 'text',
+					value: text.slice(lastIndex)
+				});
+
+			parent.children.splice(index, 1, ...children);
+			return index + children.length;
+		});
+	};
+}
+
+const autolinkDescriptionProcessor = unified()
+	.use(rehypeParse, { fragment: true })
+	.use(rehypeAutolink)
+	.use(rehypeStringify);
+
+export const autolinkDescription = (description: string) =>
+	autolinkDescriptionProcessor.processSync(description).toString();

@@ -1,12 +1,19 @@
-FROM ghcr.io/astral-sh/uv:bookworm-slim
+FROM python:3.14-slim AS build
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never
 
 WORKDIR /app
+
+# Add build tools for Python extensions (fast_diff_match_patch)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV CXX=g++
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
@@ -17,13 +24,35 @@ ADD . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
-RUN apt-get update && apt-get install -y ca-certificates git patch curl unzip
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates git patch curl unzip \
+    && rm -rf /var/lib/apt/lists/*
 ENV DENO_INSTALL=/usr/local
 RUN curl -fsSL https://deno.land/install.sh | sh -s -- -y
-RUN uv run p12y apply
+RUN uvx --from patch-package-py p12y apply
 
-# Ensure cookies.txt exists so volume mount doesn't create a directory
-RUN touch cookies.txt
+RUN OTODB_SECRET_KEY=build OTODB_SKIP_DB=1 uv run manage.py collectstatic --noinput
+
+FROM python:3.14-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates git patch curl libstdc++6 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=build /usr/local/bin/deno /usr/local/bin/deno
+COPY --from=build /app /app
+
+ARG OTODB_HASH
+ENV OTODB_HASH=${OTODB_HASH} \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    GRANIAN_INTERFACE=asgi \
+    GRANIAN_HOST=0.0.0.0 \
+    GRANIAN_PORT=8000 \
+    GRANIAN_WORKERS=4
 
 EXPOSE 8000
-CMD ["sh", "-c", "uv run _setup.py && uv run manage.py collectstatic --noinput && uv run granian --interface wsgi project.wsgi:application --host 0.0.0.0 --workers 4"]
+CMD ["sh", "-c", "cp -r static/. /srv/static/ && python manage.py migrate && exec granian gateway:application"]

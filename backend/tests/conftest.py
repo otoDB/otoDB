@@ -1,15 +1,39 @@
 """Shared pytest fixtures for all tests."""
 
 import pytest
-from ninja.testing import TestClient
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.test import RequestFactory
+from ninja.testing import TestAsyncClient, TestClient
 
 from otodb.account.models import Account
 from otodb.api.auth import auth_router
+from otodb.api.source import source_router
 from otodb.api.tag import tag_router
 from otodb.api.work import work_router
 from otodb.models import MediaWork, Revision, RevisionChange
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+	cache.clear()
+	yield
+	cache.clear()
+
+
+class AuthenticatedAsyncTestClient(TestAsyncClient):
+	"""TestClient that automatically uses a real user for all requests."""
+
+	def __init__(self, router, user):
+		super().__init__(router)
+		self.test_user = user
+
+	def _build_request(self, method, path, data, request_params):
+		"""Override to set real user on request object."""
+		# If no user was explicitly provided, use our default test user
+		if 'user' not in request_params:
+			request_params['user'] = self.test_user
+		return super()._build_request(method, path, data, request_params)
 
 
 class AuthenticatedTestClient(TestClient):
@@ -31,8 +55,8 @@ class AuthenticatedTestClient(TestClient):
 @pytest.fixture(autouse=True)
 def enable_request_cache(db, member):
 	"""Enable request cache for all tests to support revision tracking."""
-	from django_userforeignkey import request as ufk_request
 	from django_request_cache.middleware import RequestCache
+	from django_userforeignkey import request as ufk_request
 
 	# Create a fake request with cache attribute using the actual RequestCache
 	factory = RequestFactory()
@@ -54,10 +78,22 @@ def enable_request_cache(db, member):
 	ufk_request.set_current_request(None)
 
 
+# REVIEW: Required because some tests use reset_sequences=True, but this should not be necessary
+def _advance_account_sequence():
+	from django.db import connection
+
+	with connection.cursor() as cursor:
+		cursor.execute(
+			"SELECT setval(pg_get_serial_sequence('account_account', 'id'),"
+			' coalesce((SELECT MAX(id) FROM account_account), 1));'
+		)
+
+
 # User fixtures
 @pytest.fixture
 def member(db):
 	"""Create a member user for testing."""
+	_advance_account_sequence()
 	return Account.objects.create_user(
 		'user', 'user@test.com', password='user_pass', level=Account.Levels.MEMBER
 	)
@@ -66,6 +102,7 @@ def member(db):
 @pytest.fixture
 def editor(db):
 	"""Create an editor user for testing."""
+	_advance_account_sequence()
 	return Account.objects.create_user(
 		'editor', 'editor@test.com', password='editor_pass', level=Account.Levels.EDITOR
 	)
@@ -82,6 +119,18 @@ def work_client(member):
 def tag_client(member):
 	"""Create a test client for the tag router."""
 	return AuthenticatedTestClient(tag_router, member)
+
+
+@pytest.fixture
+def source_client(member):
+	"""Create a test client for the source router."""
+	return AuthenticatedTestClient(source_router, member)
+
+
+@pytest.fixture
+def async_source_client(member):
+	"""Create a test client for the source router."""
+	return AuthenticatedAsyncTestClient(source_router, member)
 
 
 @pytest.fixture

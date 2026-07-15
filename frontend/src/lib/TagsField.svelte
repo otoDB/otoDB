@@ -1,28 +1,34 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import client, { getTagDisplaySlug } from './api';
-	import { clickOutside, debounce } from './ui';
-	import { m } from './paraglide/messages';
-	import TagSuggestionResults from './TagSuggestionResults.svelte';
+	import client from '$lib/api';
+	import { m } from '$lib/paraglide/messages';
+	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
+	import { clickOutside, debounce } from '$lib/ui';
+	import { getTagDisplaySlug } from '$lib/ui.js';
+	import type { components } from './schema';
 
 	interface Props {
 		value: string[];
-		class: string;
+		class?: string;
 		type: 'work' | 'song';
+		name?: string;
 	}
 	let { value = $bindable([]), type, ...props }: Props = $props();
 
-	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
-
 	let textarea: HTMLTextAreaElement;
-	let suggestions = $state<any[]>([]);
+	let suggestions = $state<
+		| components['schemas']['TagWorkSearchResultSchema'][]
+		| components['schemas']['TagSongSearchResultSchema'][]
+	>([]);
 	let lastQuery = $state('');
 
+	const slug_re = /[\p{L}\p{N}_\-]/v;
+
 	const getWordAtPos = (str: string, pos: number) => {
-		let start = [...str.slice(0, pos)].reverse().join('').search(/\s/g);
-		let end = str.slice(pos).search(/\s/g);
-		start = start === -1 ? 0 : pos - start;
-		end = end === -1 ? str.length : pos + end;
+		let start = pos;
+		while (start > 0 && slug_re.test(str[start - 1])) start--;
+		let end = pos;
+		while (end < str.length && slug_re.test(str[end])) end++;
+		while (start < end && str[start] === '-') start++;
 		return { word: str.slice(start, end), start, end };
 	};
 
@@ -32,17 +38,30 @@
 	};
 
 	const search = debounce(async () => {
-		const query = getWordAtPos(textarea.value, textarea.selectionStart).word;
-		if (query === '') {
+		const { word, start } = getWordAtPos(textarea.value, textarea.selectionStart);
+		const before = textarea.value[start - 1];
+		if (!word || before === ':' || before === '[' || before === ',') {
 			suggestions = [];
 			lastQuery = '';
 			return;
 		}
-		if (query === lastQuery) return;
-		lastQuery = query;
-		const { data } = await client.GET(endpoint, {
-			params: { query: { query, limit: 10, resolve_aliases: false } }
-		});
+		if (word === lastQuery) return;
+		lastQuery = word;
+		const { data } =
+			type === 'work'
+				? await client.GET('/api/tag/search', {
+						params: {
+							query: {
+								query: word,
+								limit: 10,
+								order: 'count',
+								autocomplete: true
+							}
+						}
+					})
+				: await client.GET('/api/tag/song_tag_search', {
+						params: { query: { query: word, limit: 10, autocomplete: true } }
+					});
 		if (!data) return;
 		suggestions = data.items;
 	});
@@ -58,7 +77,7 @@
 		];
 	};
 
-	const selectTag = (tag: any) => {
+	const selectTag = (tag: (typeof suggestions)[number]) => {
 		textarea.value = replaceWordAtPos(
 			textarea.value,
 			textarea.selectionStart,
@@ -69,8 +88,16 @@
 		textarea.focus();
 	};
 
-	onMount(() => {
-		if (value) {
+	$effect(() => {
+		if (!textarea) return;
+		const current = new Set(
+			textarea.value
+				.split(' ')
+				.map((s) => s.trim())
+				.filter(Boolean)
+		);
+		const target = new Set(value);
+		if (current.size !== target.size || ![...target].every((v) => current.has(v))) {
 			textarea.value = value.join(' ');
 		}
 	});
@@ -91,7 +118,7 @@
 		<ul
 			class="absolute z-1 list-none"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>

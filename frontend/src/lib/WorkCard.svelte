@@ -1,12 +1,19 @@
 <script lang="ts">
-	import type { components } from './schema';
-	import WorkTag from './WorkTag.svelte';
-	import DisplayText from './DisplayText.svelte';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getDisplayText } from './api';
+	import { getDisplayText } from '$lib/ui.js';
+	import { Status, type components } from './schema';
+
+	type SlimWork = components['schemas']['SlimWorkSchema'];
+	type ThinWork = components['schemas']['ThinWorkSchema'];
+	// A full thin work, or a slim one (e.g. in revision diffs) where the
+	// extra display data (tags, pending moderation) is simply absent
+	type CardWork = SlimWork & Partial<Omit<ThinWork, keyof SlimWork>>;
 
 	interface Props {
-		work: components['schemas']['WorkSchema'];
+		work: CardWork;
 		class?: string;
 	}
 	const { work, ...props }: Props = $props();
@@ -15,14 +22,20 @@
 <div
 	class={[
 		props.class,
-		'group bg-otodb-bg-primary relative row-span-2 grid size-full grid-rows-subgrid gap-0'
+		'group bg-otodb-bg-primary relative row-span-2 grid size-full grid-rows-subgrid gap-0',
+		{
+			'outline-2 outline-sky-600': work.status === Status.Pending,
+			'outline-2 outline-yellow-600': work?.pending_flag,
+			'outline-2 outline-orange-600': work?.pending_appeal,
+			'outline-2 outline-red-600': work.status === Status.Delisted && !work?.pending_appeal
+		}
 	]}
 >
 	<a href="/work/{work.id}" tabindex="-1" class="flex h-full items-center">
-		<img
-			src={work.thumbnail}
+		<WorkThumbnail
+			thumbnail={work.thumbnail}
 			alt={getDisplayText(work.title)}
-			class="aspect-video h-full object-cover"
+			class="aspect-video h-full min-w-full object-cover"
 		/>
 	</a>
 	<a href="/work/{work.id}" class="my-2 line-clamp-2 self-center px-4"

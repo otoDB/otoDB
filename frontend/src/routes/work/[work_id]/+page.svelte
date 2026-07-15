@@ -1,28 +1,38 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import { m } from '$lib/paraglide/messages.js';
+	import client from '$lib/api';
+	import Banner from '$lib/Banner.svelte';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
+	import { dirtyClick } from '$lib/dirty';
+	import DisplayText from '$lib/DisplayText.svelte';
 	import {
-		Platform,
-		Rating,
-		WorkOrigin,
+		PlatformNames,
+		RatingNames,
+		WorkOriginNames,
 		WorkRelationDisplayBackward,
 		WorkRelationDisplayForward,
-		WorkStatus,
-		WorkTagCategoriesSettableAsSource,
-		WorkTagCategory,
-		WorkTagPresentationColours,
-		WorkTagPresentationOrder
+		WorkStatusNames
 	} from '$lib/enums';
-	import WorkTag from '$lib/WorkTag.svelte';
-	import client, { getDisplayText } from '$lib/api';
-	import type { components } from '$lib/schema';
-	import DisplayText from '$lib/DisplayText.svelte';
-	import RefreshButton from '../RefreshButton.svelte';
-	import CommentTree from '$lib/CommentTree.svelte';
-	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
+	import { merge_paths } from '$lib/merge_paths';
+	import { m } from '$lib/paraglide/messages.js';
+	import RefreshButton from '$lib/RefreshButton.svelte';
+	import {
+		ModelsWithComments,
+		Status,
+		WorkOrigin,
+		WorkRelationTypes,
+		WorkTagCategory,
+		type components
+	} from '$lib/schema.js';
+	import Section from '$lib/Section.svelte';
+	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import { callSavingToast } from '$lib/toast';
-	import { SvelteMap } from 'svelte/reactivity';
+	import { autolinkDescription, getDisplayText } from '$lib/ui.js';
+	import { getMissingCategories } from '$lib/ui';
 	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkTagTree from '$lib/WorkTagTree.svelte';
+	import WikiView from '$lib/WikiView.svelte';
+	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
 
@@ -42,7 +52,7 @@
 			userListsShown = !userListsShown;
 		}
 	};
-	const toggleWork = async (list_id: number) => {
+	const toggleWork = async (list_id: string) => {
 		const p = client.PUT('/api/list/toggle_work', {
 			fetch,
 			params: { query: { list_id, work_id: data.id } }
@@ -55,79 +65,145 @@
 		}
 	};
 
-	// Force dpendence on page route
-	let cover_select = $derived(data ? -1 : -1);
+	const groupedTags: [WorkTagCategory, PageProps['data']['tags']][] = $derived(
+		[
+			...Map.groupBy(data.tags, (t) => {
+				const c = t.category;
+				if (WorkTagCategoryMap[c].canSetAsSource && t.sample) return WorkTagCategory.Source;
+				else return c;
+			}).entries()
+		].toSorted(([a], [b]) => WorkTagCategoryMap[a].order - WorkTagCategoryMap[b].order)
+	);
 
-	const merge_paths = (paths) => {
-		const graph = new SvelteMap();
-		paths
-			.filter((p) => p.primary_path.length)
-			.forEach((path) =>
-				path.primary_path.forEach((p, i, a) => {
-					const next_node = (i + 1 === a.length ? path : a[i + 1]).slug;
-					if (graph.has(p.slug)) graph.get(p.slug).add(next_node);
-					else graph.set(p.slug, new Set([next_node]));
-				})
-			);
-		const traverse = (node) => ({
-			node: [...paths, ...paths.flatMap((p) => p.primary_path)].find((n) => n.slug === node),
-			real: paths.some((n) => n.slug === node),
-			children: Array.from(graph.get(node) ?? []).map((n) => traverse(n))
-		});
-		return [
-			...graph
-				.keys()
-				.filter((n) => !graph.values().some((s) => s.has(n)))
-				.map(traverse),
-			...paths
-				.filter((p) => p.primary_path.length === 0 && !graph.has(p.slug))
-				.map((n) => ({ node: n, real: true }))
-		];
-	};
+	const missingCategories = $derived.by(() => getMissingCategories(data.tags));
+
+	const relTree = $derived(
+		data.relations[0].length > 0
+			? ([...Map.groupBy(data.relations[0], (r) => +(r.A_id === data.id)).entries()].map((d) => [
+					+d[0],
+					[...Map.groupBy(d[1]!, (r) => r.relation).entries()]
+				]) as [0 | 1, [WorkRelationTypes, { A_id: string; B_id: string }[]][]][])
+			: null
+	);
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
+	{#if missingCategories.length > 0}
+		<Banner variant="info">
+			<div class="text-sm">
+				{m.watery_kind_quail_climb({
+					missing: missingCategories.map((c) => WorkTagCategoryMap[c].nameFn()).join(', ')
+				})}
+			</div>
+			<div class="mt-1 text-sm">
+				<a href="/wiki/editing_guidelines" class="underline">
+					{m.arable_direct_cougar_win()}
+				</a>
+			</div>
+		</Banner>
+	{/if}
+	{#if data.status === Status.Pending}
+		<Banner variant="info" title={m.broad_inner_boar_devour()} />
+	{:else if data.status === Status.Delisted && data?.pending_appeal}
+		<Banner variant="caution" title={m.quiet_tasty_earthworm_trip()}>
+			{#if data.pending_appeal.reason}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.weary_spicy_fly_attend(),
+						name: data.pending_appeal.reason
+					})}
+				</div>
+			{/if}
+			{#if data.pending_appeal.by}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.any_light_lamb_gaze(),
+						name: data.pending_appeal.by.username
+					})}
+				</div>
+			{/if}
+		</Banner>
+	{:else if data.status === Status.Delisted}
+		<Banner variant="danger" title={m.livid_main_bat_lift()} />
+	{/if}
+	{#if data.sources.some((s) => s.is_pending)}
+		<Banner variant="info" title={m.proud_zesty_otter_gleam()} />
+	{/if}
+	{#if data?.pending_flag}
+		<Banner variant="warning" title={m.small_red_finch_lock()}>
+			{#if data.pending_flag.reason}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.weary_spicy_fly_attend(),
+						name: data.pending_flag.reason
+					})}
+				</div>
+			{/if}
+			{#if data.pending_flag.by}
+				<div class="mt-1 text-sm">
+					{m.mild_loud_shad_enchant({
+						type: m.arable_keen_rook_nail(),
+						name: data.pending_flag.by.username
+					})}
+				</div>
+			{/if}
+		</Banner>
+	{/if}
+	{#if data.user && (data.status === Status.Pending || data?.pending_flag || data?.pending_appeal)}
+		<div class="mb-3 flex flex-wrap gap-2">
+			{#if data.user.level >= 40}
+				<button
+					class="border border-green-600 px-3 py-1 text-green-600"
+					{@attach dirtyClick(async () => {
+						const { error } = await client.POST('/api/work/approve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (!error) location.reload();
+					})}
+				>
+					Approve
+				</button>
+				<button
+					class="border px-3 py-1"
+					{@attach dirtyClick(async () => {
+						const reason = prompt(m.honest_tangy_butterfly_dream());
+						if (!reason) return;
+						await client.POST('/api/work/disapprove', {
+							fetch,
+							params: { query: { work_id: data.id, reason: reason } }
+						});
+					})}
+				>
+					{m.alive_blue_marlin_push()}
+				</button>
+			{/if}
+			{#if data.user.level >= 50}
+				<button
+					class="border border-red-600 px-3 py-1 text-red-600"
+					{@attach dirtyClick(async () => {
+						if (!confirm(m.cool_house_barbel_cheer())) return;
+						const { error } = await client.POST('/api/work/resolve', {
+							fetch,
+							params: { query: { work_id: data.id } }
+						});
+						if (!error) location.reload();
+					})}
+				>
+					{m.proof_deft_reindeer_smile()}
+				</button>
+			{/if}
+		</div>
+	{/if}
 	<div class="@container">
 		<div class="flex w-full flex-col @[720px]:flex-row">
 			<div class="shrink-0">
-				{#if cover_select === -1}
-					<img
-						src={data.thumbnail}
-						alt={getDisplayText(data.title)}
-						class="h-[270px] w-[480px] object-cover"
-					/>
-				{:else}
-					<ExternalEmbed width={480} height={270} src={data.sources[cover_select]} />
-				{/if}
-				<div class="my-2 max-w-[480px]">
-					<a
-						href={data.thumbnail}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="cover_select"
-						class:selected={cover_select === -1}
-						onclick={(e) => {
-							e.preventDefault();
-							cover_select = -1;
-						}}
-					>
-						{m.heroic_ideal_orangutan_aid()}
-					</a>{#each data.sources as s, i (i)}{#if s.work_status !== 1}<a
-								href={s.url}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="cover_select"
-								class:selected={cover_select === i}
-								onclick={(e) => {
-									e.preventDefault();
-									cover_select = i;
-								}}
-							>
-								{Platform[s.platform]}{s.work_origin === 0
-									? ''
-									: ' ' + WorkOrigin[s.work_origin]()}
-							</a>{/if}{/each}
-				</div>
+				<SourcesViewer
+					user={data.user}
+					sources={data.sources ?? []}
+					thumbnail={data.thumbnail}
+					thumbnailAlt={getDisplayText(data.title)}
+				/>
 			</div>
 			<div class="ml-2 grow">
 				<div>
@@ -139,38 +215,34 @@
 							</tr>
 							<tr>
 								<th class="w-24">{m.clear_lucky_peacock_pick()}</th>
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-								<td><div class="description-cell">{@html data.description}</div></td
+								<td
+									><div class="description-cell external-link-icon">
+										<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+										{@html autolinkDescription(data.description ?? '')}
+									</div></td
 								>
 							</tr>
-							{#if data.relations[0].length}
+							{#if relTree}
 								<tr>
 									<th>{m.alive_these_jay_pick()}</th>
 									<td
 										><ul>
-											{#each Object.entries(Object.groupBy(data.relations[0], (r) => +(r.A_id === data.id))).map( (d) => [d[0], Object.entries(Object.groupBy(d[1], (r) => r.relation))] ) as [dir, rels], i (i)}
+											{#each relTree as [dir, rels], i (i)}
 												{#each rels as [tp, relations], j (j)}
 													<li>
 														{m.mild_loud_shad_enchant({
-															type: [
-																WorkRelationDisplayBackward,
-																WorkRelationDisplayForward
-															][+dir][tp](),
+															type: [WorkRelationDisplayBackward, WorkRelationDisplayForward][dir][
+																tp
+															](),
 															name: ''
 														})}
 														<ul class="ml-2">
 															{#each relations as r, j (j)}
 																{@const w = data.relations[1].find(
-																	(w) =>
-																		w.id ===
-																		(r.A_id === data.id
-																			? r.B_id
-																			: r.A_id)
-																)}
+																	(w) => w.id === (r.A_id === data.id ? r.B_id : r.A_id)
+																)!}
 																<li>
-																	<a href="/work/{w.id}"
-																		>#{w.id} - {w.title}</a
-																	>
+																	<a href="/work/{w.id}">#{w.id} - {w.title}</a>
 																</li>
 															{/each}
 														</ul>
@@ -183,7 +255,7 @@
 							{/if}
 							<tr>
 								<th class="w-24">{m.good_dark_bumblebee_spur()}</th>
-								<td>{Rating[data.rating]()}</td>
+								<td>{RatingNames[data.rating]()}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -200,63 +272,140 @@
 											{m.proud_every_goat_affirm()}
 										</button>
 										{#if userListsShown}
-											<table class="absolute">
+											<table class="bg-otodb-bg-primary absolute border">
 												<tbody>
 													{#each userLists as list, i (i)}
 														<tr>
-															<td>{list[0].name}</td>
-															<td>
-																<input
-																	type="checkbox"
-																	checked={list[1]}
-																	oninput={() => {
-																		toggleWork(list[0].id);
-																	}}
-																/>
+															<td class="p-0">
+																<label class="flex cursor-pointer items-center gap-2 px-1 py-0.5">
+																	<input
+																		type="checkbox"
+																		checked={list[1]}
+																		oninput={() => {
+																			toggleWork(list[0].id);
+																		}}
+																	/>
+																	{list[0].name}
+																</label>
+															</td>
+															<td class="p-0">
+																<a
+																	class="flex h-full items-center justify-center px-1"
+																	href="/list/{list[0].id}">»</a
+																>
 															</td>
 														</tr>
 													{/each}
+													<tr>
+														<td colspan="2">
+															<a class="flex items-center px-1 py-0.5" href="/list/new"
+																>{m.plane_inner_chipmunk_race()}</a
+															>
+														</td>
+													</tr>
 												</tbody>
 											</table>
 										{/if}
 									</td>
 								</tr>
+								{#if data.status === Status.Approved && !data?.pending_flag}
+									<tr>
+										<th class="w-24">{m.nimble_gaudy_scallop_fold()}</th>
+										<td>
+											<button
+												{@attach dirtyClick(async () => {
+													const reason = prompt(m.royal_big_chipmunk_absorb());
+													if (!reason?.trim()) {
+														// Show message
+														alert(
+															m.fun_bland_llama_twirl({
+																thing: m.royal_big_chipmunk_absorb()
+															})
+														);
+														return;
+													}
+													const { error } = await client.POST('/api/work/flag', {
+														fetch,
+														params: {
+															query: { work_id: data.id, reason }
+														}
+													});
+													if (!error) location.reload();
+												})}
+											>
+												{m.nimble_gaudy_scallop_fold()}
+											</button>
+										</td>
+									</tr>
+								{/if}
+								{#if data.status === Status.Delisted && !data?.pending_appeal}
+									<tr>
+										<th class="w-24">{m.key_last_racoon_clasp()}</th>
+										<td>
+											<button
+												{@attach dirtyClick(async () => {
+													const reason = prompt(m.zippy_dark_mayfly_cut());
+													if (!reason?.trim()) {
+														// Show message
+														alert(
+															m.fun_bland_llama_twirl({
+																thing: m.zippy_dark_mayfly_cut()
+															})
+														);
+														return;
+													}
+													const { error } = await client.POST('/api/work/appeal', {
+														fetch,
+														params: {
+															query: { work_id: data.id, reason }
+														}
+													});
+													if (!error) location.reload();
+												})}
+											>
+												{m.key_last_racoon_clasp()}
+											</button>
+										</td>
+									</tr>
+								{/if}
 							</tbody>
 						</table>
 					</div>
 				{/if}
 			</div>
 		</div>
-		<div
-			class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}
-		>
-			{#each Object.entries(Object.groupBy( data.tags, (t) => (WorkTagCategoriesSettableAsSource.includes(t.category) && t.sample ? 3 : t.category) )).toSorted((a, b) => WorkTagPresentationOrder.indexOf(+a[0]) - WorkTagPresentationOrder.indexOf(+b[0])) as cat, i (i)}
+		<div class={['mt-2 flex flex-row flex-wrap gap-x-3 border-t', { hidden: !data.tags.length }]}>
+			{#each groupedTags as [cat, tags] (cat)}
 				<span
 					class="mt-4 border-l-2 px-3 pb-2"
-					style="border-color: {WorkTagPresentationColours[
-						cat[0]
-					]};background-color: color-mix(in hsl, {WorkTagPresentationColours[
-						cat[0]
-					]}, transparent 85%);"
+					style="border-color: {WorkTagCategoryMap[cat]
+						.color};background-color: color-mix(in hsl, {WorkTagCategoryMap[cat]
+						.color}, transparent 85%);"
 				>
 					<h5 class="my-2 font-bold">
-						{WorkTagCategory[cat[0]]()}
+						{WorkTagCategoryMap[cat].nameFn()}
 					</h5>
 					<ul class="flex list-none flex-wrap gap-2">
-						{#each merge_paths(cat[1]) as tag, j (j)}
-							<li class="m-0"><WorkTag {tag} tree={true} /></li>
+						{#each merge_paths(tags) as tree, j (j)}
+							<li class="m-0">
+								<WorkTagTree {tree} />
+							</li>
 						{/each}
 					</ul>
 				</span>
 			{/each}
 		</div>
+		{#if data.wiki_page.length > 0}
+			<hr class="my-2" />
+			<WikiView wiki_page={data.wiki_page} />
+		{/if}
 	</div>
 </Section>
 
 <Section
 	title={m.extra_brave_tapir_skip()}
 	menuLinks={data.user
-		? [{ pathname: `work/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]
+		? [{ pathname: `upload/add?for_work=${data.id}`, title: m.helpful_away_jay_succeed() }]
 		: []}
 >
 	<div class="mt-2 flex w-full flex-col gap-y-4">
@@ -264,7 +413,8 @@
 			<div
 				class={[
 					'w-full border px-4 py-2',
-					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : ''
+					src.work_status !== 0 ? 'bg-otodb-bg-fainter text-otodb-content-fainter' : '',
+					{ 'outline-4 outline-sky-600': src.is_pending }
 				]}
 			>
 				{#if data.user}
@@ -280,12 +430,15 @@
 							rel="noopener noreferrer"
 							class={[src.work_status !== 0 ? 'text-otodb-content-fainter' : '']}
 						>
-							{Platform[src.platform]}
-							{src.work_origin === 0 ? '' : ' ' + WorkOrigin[src.work_origin]()}
+							{PlatformNames[src.platform]}
+							{src.work_origin === WorkOrigin.Author
+								? ''
+								: ' ' + WorkOriginNames[src.work_origin]()}
 							-
 							{src.title || src.url}
 						</a>
 					</strong>
+					<a href="/upload/{src.id}" class="ml-2 text-sm">»</a>
 				</div>
 
 				<div class="mt-2 flex flex-wrap gap-x-2">
@@ -304,12 +457,12 @@
 					<div>
 						{m.large_polite_otter_thrive()}:
 						<strong>
-							{WorkOrigin[src.work_origin]()}
+							{WorkOriginNames[src.work_origin]()}
 						</strong>
 					</div>
 					<div>
 						{m.civil_trick_oryx_clap()}:
-						<strong>{WorkStatus[src.work_status]()}</strong>
+						<strong>{WorkStatusNames[src.work_status]()}</strong>
 					</div>
 					<div>
 						{m.big_dry_seahorse_succeed()}:
@@ -325,10 +478,7 @@
 						{m.nice_tense_mule_grasp()}:
 						<strong>
 							{#if src.work_duration}
-								{Math.floor(src.work_duration / 60)}:{(
-									'0' +
-									(src.work_duration % 60)
-								).slice(-2)}
+								{Math.floor(src.work_duration / 60)}:{('0' + (src.work_duration % 60)).slice(-2)}
 							{:else}
 								{m.simple_less_marlin_enchant()}
 							{/if}
@@ -338,8 +488,10 @@
 				<div class="my-2">
 					<details>
 						<summary>{m.clear_lucky_peacock_pick()}</summary>
-						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html src.description}
+						<div class="external-link-icon whitespace-pre-wrap">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							{@html autolinkDescription(src.description ?? '')}
+						</div>
 					</details>
 				</div>
 			</div>
@@ -362,7 +514,12 @@
 {/await}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree comments={data.comments} user={data.user ?? null} model="mediawork" pk={data.id} />
+	<CommentTree
+		comments={data.comments}
+		user={data.user ?? null}
+		model={ModelsWithComments.mediawork}
+		pk={data.id}
+	/>
 </Section>
 
 <style>
@@ -374,23 +531,5 @@
 	}
 	th {
 		white-space: nowrap;
-	}
-	.cover_select {
-		padding: 0.2rem 0.5rem;
-		display: inline-block;
-		background-color: var(--otodb-color-bg-primary);
-		border: 1px solid var(--otodb-color-content-primary);
-		text-decoration: none;
-		&:hover {
-			background-color: var(--otodb-color-bg-fainter);
-		}
-		&:active {
-			background-color: var(--otodb-color-bg-faint);
-		}
-		&.selected {
-			background-color: var(--otodb-color-content-primary);
-			border: 1px solid var(--otodb-color-bg-primary);
-			color: var(--otodb-color-bg-primary);
-		}
 	}
 </style>

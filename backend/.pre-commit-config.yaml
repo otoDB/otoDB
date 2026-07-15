@@ -5,3 +5,11 @@ repos:
     - id: ruff-check
       args: [ --fix ]
     - id: ruff-format
+- repo: local
+  hooks:
+    - id: check-migrations
+      name: Check for missing migrations
+      entry: env OTODB_SKIP_DB=1 uv run --directory backend python manage.py makemigrations --check --dry-run
+      language: system
+      pass_filenames: false
+      files: models.*\.py$

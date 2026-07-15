@@ -1,75 +1,93 @@
 from django.db import models
+from pydantic import GetJsonSchemaHandler
+from pydantic.json_schema import JsonSchemaValue
+from pydantic_core import CoreSchema
 
 
-class WorkTagCategory(models.IntegerChoices):
-	GENERAL = 0, 'General'
+class OtodbIntegerEnum(models.IntegerChoices):
+	@classmethod
+	def __get_pydantic_json_schema__(
+		cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler
+	) -> JsonSchemaValue:
+		json_schema = handler(core_schema)
+		target_schema = handler.resolve_ref_schema(json_schema)
+		target_schema['x-enum-varnames'] = [v.label for v in cls]
+		return json_schema
+
+
+class WorkTagCategory(OtodbIntegerEnum):
+	UNCATEGORIZED = 0, 'Uncategorized'
 	EVENT = 1, 'Event'
 	SONG = 2, 'Song'
 	SOURCE = 3, 'Source'
 	CREATOR = 4, 'Creator'
 	META = 5, 'Meta'
 	MEDIA = 6, 'Media'
+	GENERAL = 7, 'General'
 
 
-class SongTagCategory(models.IntegerChoices):
+class SongTagCategory(OtodbIntegerEnum):
 	GENERAL = 0, 'General'
 	GENRE = 1, 'Genre'
 	AUTHOR = 2, 'Author'
 	META = 3, 'Meta'
 
 
-class Rating(models.IntegerChoices):
+class Rating(OtodbIntegerEnum):
 	GENERAL = 0, 'General'
 	SENSITIVE = 1, 'Sensitive'
 	EXPLICIT = 2, 'Explicit'
 
 
-class Status(models.IntegerChoices):
+class Status(OtodbIntegerEnum):
 	PENDING = 0, 'Pending'
 	APPROVED = 1, 'Approved'
-	UNAPPROVED = 2, 'Unapproved'
+	DELISTED = 2, 'Delisted'
 
 
-class WorkOrigin(models.IntegerChoices):
+class WorkOrigin(OtodbIntegerEnum):
 	AUTHOR = 0, 'Author'
 	REUPLOAD = 1, 'Reupload'
 
 
-class WorkStatus(models.IntegerChoices):
+class WorkStatus(OtodbIntegerEnum):
 	AVAILABLE = 0, 'Available'
 	DOWN = 1, 'Down'
 
 
-class Platform(models.IntegerChoices):
+class Platform(OtodbIntegerEnum):
 	YOUTUBE = 1, 'YouTube'
 	NICONICO = 2, 'Niconico'
 	BILIBILI = 3, 'Bilibili'
 	SOUNDCLOUD = 4, 'SoundCloud'
 	TWITTER = 5, 'Twitter'
+	ACFUN = 6, 'AcFun'
 
 	@staticmethod
 	def from_str(s):
+		aliases = {'acfunvideo': 'acfun'}
+		s = aliases.get(s.lower(), s)
 		for choice, string in Platform.choices:
 			if string.lower() == s.lower():
 				return choice
 		return None
 
 
-class WorkRelationTypes(models.IntegerChoices):
+class WorkRelationTypes(OtodbIntegerEnum):
 	SEQUEL = 0, 'Sequel'
 	RESPECT = 1, 'Respect'
 	COLLAB_PART = 2, 'Collab Part'
 	SAMPLE = 3, 'Sample'
 
 
-class SongRelationTypes(models.IntegerChoices):
+class SongRelationTypes(OtodbIntegerEnum):
 	REMIX = 0, 'Remix'
 	REMASTER = 1, 'Remaster'
 	MEDLEY = 2, 'Medley'
 	SEQUEL = 3, 'Sequel'
 
 
-class ProfileConnectionTypes(models.IntegerChoices):
+class ProfileConnectionTypes(OtodbIntegerEnum):
 	WEBSITE = 0, 'Website'
 
 	NICONICO = 1, 'Niconico'
@@ -80,13 +98,14 @@ class ProfileConnectionTypes(models.IntegerChoices):
 	SOUNDCLOUD = 6, 'Soundcloud'
 
 
-class SongConnectionTypes(models.IntegerChoices):
+class SongConnectionTypes(OtodbIntegerEnum):
 	VGMDB = 0, 'VGMdb'
 	VOCADB = 1, 'VocaDB'
 	DISCOGS = 2, 'Discogs'
 	MUSICBRAINZ = 3, 'MusicBrainz'
 	RATEYOURMUSIC = 4, 'Rate Your Music'
 	DOJINMUSIC = 5, 'dojin-music.info'
+	TOUHOUDB = 6, 'TouhouDB'
 
 	REMYWIKI = 20, 'RemyWiki'
 	SILENTBLUE = 21, 'Silent Blue'
@@ -97,7 +116,7 @@ class SongConnectionTypes(models.IntegerChoices):
 	MODARCHIVE = 40, 'The Mod Archive'
 
 
-class TagWorkConnectionTypes(models.IntegerChoices):
+class TagWorkConnectionTypes(OtodbIntegerEnum):
 	OTOMADWIKI = 1, 'otomad.wiki'
 	OTOMADFANDOM = 2, 'Otomad Wiki 2'
 
@@ -108,7 +127,7 @@ class TagWorkConnectionTypes(models.IntegerChoices):
 	KNOWYOURMEME = 24, 'Know Your Meme'
 
 
-class MediaConnectionTypes(models.IntegerChoices):
+class MediaConnectionTypes(OtodbIntegerEnum):
 	ANIKORE = 1, 'AniKore'
 	BANGUMI = 2, 'Bangumi'
 	ANIDB = 3, 'AniDB'
@@ -126,7 +145,7 @@ class MediaConnectionTypes(models.IntegerChoices):
 	VGMDB = 50, 'VGMdb'
 
 
-class LanguageTypes(models.IntegerChoices):
+class LanguageTypes(OtodbIntegerEnum):
 	NOT_APPLICABLE = 0, 'N/A'
 	ENGLISH = 1, 'en'
 	JAPANESE = 2, 'ja'
@@ -134,7 +153,7 @@ class LanguageTypes(models.IntegerChoices):
 	KOREAN = 4, 'ko'
 
 
-class Role(models.IntegerChoices):
+class Role(OtodbIntegerEnum):
 	AUDIO = 1, 'Audio'
 	VISUALS = 2, 'Visuals'
 	DIRECTOR = 4, 'Director'
@@ -143,23 +162,31 @@ class Role(models.IntegerChoices):
 	THANKS = 32, 'Special Thanks'
 
 
-class ThemePref(models.IntegerChoices):
+class ThemePref(OtodbIntegerEnum):
 	DEFAULT = 0, 'Default'
 	ANIKI = 1, 'Aniki'
 	OTOGROOVE = 2, 'otogroove'
 	RETRO_VOYAGE = 3, 'Retro Voyage'
 	SORIMIX = 4, 'SORIMIX'
 	RESAMPLE = 5, 'Re:Sample'
+	PLAIN_DARK = 6, 'Plain Dark'
+	PLAIN_LIGHT = 7, 'Plain Light'
 
 
-class MediaType(models.IntegerChoices):
+VideoPlatformPref = OtodbIntegerEnum(
+	'VideoPlatformPref',
+	[('AUTO', (0, 'Auto'))] + [(p.name, (p.value, p.label)) for p in Platform],
+)
+
+
+class MediaType(OtodbIntegerEnum):
 	ANIME = 1, 'Anime'
 	SHOW = 2, 'TV Show'
 	FILM = 4, 'Film'
 	GAME = 8, 'Game'
 
 
-class RequestActions(models.IntegerChoices):
+class RequestActions(OtodbIntegerEnum):
 	TAGWORK_ALIAS = 1
 	TAGWORK_UNALIAS = 2
 	TAGWORK_DEPRECATE = 3
@@ -167,12 +194,8 @@ class RequestActions(models.IntegerChoices):
 	TAGWORK_PARENT = 5
 	TAGWORK_UNPARENT = 6
 
-	WORKSOURCE_ATTACHTAG = 11
 
-	MEDIAWORK_ATTACHTAG = 21
-
-
-class MimeType(models.IntegerChoices):
+class MimeType(OtodbIntegerEnum):
 	JPEG = 1, 'image/jpeg'
 	PNG = 2, 'image/png'
 	WEBP = 3, 'image/webp'
@@ -194,50 +217,97 @@ class MimeType(models.IntegerChoices):
 		return None
 
 
-class PostCategory(models.IntegerChoices):
+class NotificationReason(OtodbIntegerEnum):
+	REPLY = 0, 'Reply'
+	MENTION = 1, 'Mention'
+	THREAD_LINKED = 2, 'Thread Linked'
+
+
+class PostCategory(OtodbIntegerEnum):
 	ANNOUNCEMENT = 0, 'Announcement'
 	FEATURE_REQUEST = 1, 'Feature Request'
 	BUG_REPORT = 2, 'Bug Report'
 	GARDENING = 3, 'Gardening'
+	GENERAL = 4, 'General'
 
 
-class RevisionChain(models.IntegerChoices):
+class ModerationEventType(models.IntegerChoices):
+	FLAG = 0, 'Flag'
+	APPEAL = 1, 'Appeal'
+	DISAPPROVAL = 2, 'Disapproval'
+	APPROVAL = 3, 'Approval'
+	MOD_ACTION = 4, 'Mod Action'
+
+
+class ModQueueCategory(OtodbIntegerEnum):
+	PENDING = 0, 'Pending'
+	FLAGGED = 1, 'Flagged'
+	APPEALED = 2, 'Appealed'
+
+
+class FlagStatus(models.IntegerChoices):
+	PENDING = 0, 'Pending'
+	SUCCEEDED = 1, 'Succeeded'
+	REJECTED = 2, 'Rejected'
+
+
+class ModerationAction(models.IntegerChoices):
+	# Work delisted via auto-expiry or staff action
+	WORK_DELISTED = (
+		1,
+		'Work Delisted',
+	)
+	# Pending source on existing work approved (immediate)
+	SOURCE_APPROVED = (
+		10,
+		'Source Approved',
+	)
+	# Pending source on existing work rejected (immediate, unbinds)
+	SOURCE_REJECTED = (
+		11,
+		'Source Rejected',
+	)
+
+
+class RevisionChain(OtodbIntegerEnum):
 	STRONG = 0, 'Strong'
 	WEAK = 1, 'Weak'
 
 
-class Route(models.IntegerChoices):
+class Route(OtodbIntegerEnum):
 	UNKNOWN = 0, 'Unknown'
 	TAGWORK_ALIAS = 1, 'Tag Work Alias'
-	TAGWORK_UNALIAS = 2, 'Tag Work Unalias'
+	TAGWORK_UNALIAS = 2, 'Tag Work Alias Control'
 	TAGWORK_DELETE = 3, 'Tag Work Delete'
 	TAGWORK_UPDATE = 4, 'Tag Work Update'
-	TAGWORK_SET_BASE = 5, 'Tag Work Set Base'
-	TAGWORK_ADD_LANG_PREF = 6, 'Tag Work Add Language Preference'
+	# TAGWORK_SET_BASE = 5, 'DEPRECATED - Tag Work Set Base'
+	# TAGWORK_ADD_LANG_PREF = 6, 'DEPRECATED - Tag Work Add Language Preference'
 	TAGWORK_EDIT_WIKI = 7, 'Tag Work Edit Wiki'
 	TAGWORK_EDIT_CONNECTIONS = 8, 'Tag Work Edit Connections'
 
 	SONGTAG_UPDATE = 20, 'Song Tag Update'
 	MEDIASONG_SET_TAGS = 21, 'Song Tag Set Tags'
 	SONGTAG_ALIAS = 22, 'Song Tag Alias'
-	SONGTAG_UNALIAS = 23, 'Song Tag Unalias'
+	SONGTAG_UNALIAS = 23, 'Song Tag Alias Control'
 	SONGTAG_DELETE = 24, 'Song Tag Delete'
-	SONGTAG_SET_BASE = 25, 'Song Tag Set Base'
-	SONGTAG_ADD_LANG_PREF = 26, 'Song Tag Add Language Preference'
+	# SONGTAG_SET_BASE = 25, 'DEPRECATED -Song Tag Set Base'
+	# SONGTAG_ADD_LANG_PREF = 26, 'DEPRECATED - Song Tag Add Language Preference'
 
-	SONGRELATION_CREATE = 30, 'Song Relation Create'
-	SONGRELATION_DELETE = 31, 'Song Relation Delete'
+	SONGRELATION_CREATE = 30, 'Song Relation Control'
+	# SONGRELATION_DELETE = 31, 'DEPRECATED - Song Relation Delete'
 
 	MEDIAWORK_DELETE = 40, 'Media Work Delete'
 	MEDIAWORK_SET_TAGS = 41, 'Media Work Set Tags'
-	MEDIAWORK_REMOVE_TAG = 42, 'Media Work Remove Tag'
-	MEDIAWORK_UPDATE_CREATOR_ROLES = 43, 'Media Work Update Creator Roles'
-	MEDIAWORK_TOGGLE_SAMPLE = 44, 'Media Work Toggle Sample'
+	# MEDIAWORK_REMOVE_TAG = 42, 'DEPRECATED - Media Work Remove Tag'
+	# MEDIAWORK_UPDATE_CREATOR_ROLES = 43, 'DEPRECATED - Media Work Update Creator Roles'
+	# MEDIAWORK_TOGGLE_SAMPLE = 44, 'DEPRECATED - Media Work Toggle Sample'
 	MEDIAWORK_UPDATE = 45, 'Media Work Update'
 	MEDIAWORK_MERGE = 46, 'Media Work Merge'
+	MEDIAWORK_CREATE = 47, 'Media Work Create'
+	MEDIAWORK_EDIT_WIKI = 48, 'Media Work Edit Wiki'
 
-	WORKRELATION_CREATE = 50, 'Work Relation Create'
-	WORKRELATION_DELETE = 51, 'Work Relation Delete'
+	WORKRELATION_CREATE = 50, 'Work Relation Control'
+	# WORKRELATION_DELETE = 51, 'DEPRECATED - Work Relation Delete'
 
 	WORKSOURCE_CREATE = 60, 'Work Source Create'
 	WORKSOURCE_UNBIND = 61, 'Work Source Unbind'
@@ -245,5 +315,57 @@ class Route(models.IntegerChoices):
 	WORKSOURCE_REFRESH = 63, 'Work Source Refresh'
 	WORKSOURCE_ASSIGN = 64, 'Work Source Assign'
 	WORKSOURCE_REJECT = 65, 'Work Source Reject'
+	WORKSOURCE_UPDATE = 66, 'Work Source Update'
+
+	WIKI_EDIT = 70, 'Wiki Edit'
 
 	ROLLBACK = 100, 'Rollback'
+	SYSTEM = 10000, 'System'
+
+
+class ErrorCode(OtodbIntegerEnum):
+	INTERNAL_ERROR = -1
+
+	RATE_LIMITED = 429
+
+	LOGIN_FAILED = 10000
+	NOT_LOGGED_IN = 10001
+	USERNAME_TAKEN = 10002
+	VALIDATION_ERROR = 10003
+	EDITOR_ONLY = 10004
+	BAD_URL = 10005
+	SOURCE_HAS_WORK = 10006
+	NO_MATCHING_ENTITIES = 10007
+	NAME_SLUG_MISMATCH = 10008
+	SOURCE_UNAPPROVED = 10009
+	SOURCE_FLAGGED = 10010
+	NO_MORE_UPLOAD_SLOTS = 10011
+	SELF_MODERATION = 10012
+	FLAG_NOT_APPROVED = 10013
+	FLAG_PENDING_FLAG = 10014
+	FLAG_PENDING_APPEAL = 10015
+	FLAG_LIMIT_REACHED = 10016
+	APPEAL_PENDING = 10017
+	NO_MORE_APPEAL_SLOTS = 10018
+	TAG_HAS_INFORMATION = 10019
+	THUMBNAIL_SOURCE_REQUIRED = 10020
+	TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR = 10021
+	SOURCE_PENDING = 10022
+	CAPTCHA_FAILED = 10023
+	MAX_THREAD_LEVEL = 10024
+	ONLY_WORK_SOURCE = 10025
+
+
+class Preferences(OtodbIntegerEnum):
+	LANGUAGE = 1
+	THEME = 2
+	VIDEO_PLATFORM = 3
+	PREFER_AUTHOR_UPLOAD = 4
+
+
+PreferencesValueTypeMap = {
+	Preferences.LANGUAGE: LanguageTypes,
+	Preferences.THEME: ThemePref,
+	Preferences.VIDEO_PLATFORM: VideoPlatformPref,
+	Preferences.PREFER_AUTHOR_UPLOAD: bool,
+}

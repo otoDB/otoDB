@@ -1,11 +1,16 @@
-import client from '$lib/api';
+import client from '$lib/api.server';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ fetch, locals }) => {
-	const stats = await client.GET('/api/stats', { fetch });
+	const { data: stats } = await client.GET('/api/stats', { fetch });
 
 	return {
 		user: locals.user,
-		stats: stats.data
+		stats: {
+			works: stats[0] as number,
+			tags: stats[1] as number,
+			songs: stats[2] as number,
+			lists: stats[3] as number
+		}
 	};
 };

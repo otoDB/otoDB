@@ -1,52 +1,71 @@
-import requests
-import json
+import asyncio
 import html
-import re
+import json
 import logging
-from time import mktime
-from datetime import datetime
+import re
 import unicodedata
+from datetime import datetime
 from http.cookiejar import MozillaCookieJar
-from django.utils.text import slugify
+from time import mktime
 
-from furl import furl
 import nh3
-
-from yt_dlp import YoutubeDL
-from yt_dlp.utils import DownloadError
-from yt_dlp.extractor.common import InfoExtractor
-from yt_dlp.extractor.bilibili import BiliBiliIE, BilibiliFavoritesListIE
-from yt_dlp.extractor.niconico import NiconicoIE, NiconicoPlaylistIE
-from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
-from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
-from yt_dlp.extractor.twitter import TwitterIE
-
+import requests
 from django.conf import settings
+from django.utils.text import slugify
+from furl import furl
+from yt_dlp import YoutubeDL
+from yt_dlp.extractor.acfun import AcFunVideoIE
+from yt_dlp.extractor.bilibili import BilibiliFavoritesListIE, BiliBiliIE
+from yt_dlp.extractor.common import InfoExtractor
+from yt_dlp.extractor.niconico import NiconicoPlaylistIE
+from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
+from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
+from yt_dlp.utils import DownloadError
 
-from .models.enums import Platform, MimeType
+from otodb.ytdlp_custom import NiconicoIECustom, TwitterIECustom
+
+from .models.enums import MimeType, Platform
 
 logger = logging.getLogger(__name__)
+
+# https://qa.nicovideo.jp/faq/show/821
+# https://qa.nicovideo.jp/faq/show/822
+# Older Niconico uploads used <font> instead of <span style="...">
+# and <b> instead of <strong>
+ALLOWED_TAGS = {'a', 'b', 'br', 'font', 'strong', 'i', 's', 'u', 'span'}
+ALLOWED_ATTRIBUTES = {'a': {'href'}, 'font': {'color', 'size'}, 'span': {'style'}}
+ALLOWED_STYLE_PROPERTIES = {'color', 'font-size'}
+
+
+def clean_description(text: str) -> str:
+	"""Sanitize video HTML description using `nh3`"""
+	return nh3.clean(
+		text,
+		tags=ALLOWED_TAGS,
+		attributes=ALLOWED_ATTRIBUTES,
+		filter_style_properties=ALLOWED_STYLE_PROPERTIES,
+	)
 
 
 def NFKC(s: str):
 	return unicodedata.normalize('NFKC', s)
 
 
-def clean_incoming_tag_name(s: str):
-	return NFKC(s).lower().replace(' ', '_')
+def clean_tag(s: str):
+	return NFKC(s).strip()
 
 
-def clean_incoming_slug(s: str):
-	return slugify(clean_incoming_tag_name(s), True)
+def canonicalize_tag(s: str):
+	return clean_tag(s).lower().replace(' ', '_')
 
 
-class NiconicoIECustom(NiconicoIE):
-	# Support nico.ms short URLs
-	_VALID_URL = r'https?://(?:(?:embed|sp|www\.)?nicovideo\.jp/watch|nico\.ms)/(?P<id>(?:[a-z]{2})?\d+)'
+def slugify_tag(s: str):
+	return slugify(canonicalize_tag(s), allow_unicode=True)
 
 
 ydl_playlist = YoutubeDL(
-	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True
+	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True},
+	auto_init=True,
 )
 for e in (
 	YoutubeTabIE,
@@ -56,25 +75,35 @@ for e in (
 ):
 	ydl_playlist.add_info_extractor(e)
 
+
 ydl, jar = None, None
 
 
 def reset_cookies(cookie_file=settings.COOKIES_FILE):
 	global ydl, jar
 
-	jar = MozillaCookieJar(cookie_file)
-	try:
-		jar.load()
-	except OSError:
-		pass
+	jar = MozillaCookieJar(cookie_file) if cookie_file else MozillaCookieJar()
+	if cookie_file:
+		try:
+			jar.load()
+		except OSError:
+			pass
 
 	opts = {'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}
 	if cookie_file:
 		opts['cookiefile'] = cookie_file
 	ydl = YoutubeDL(opts, auto_init=False)
 
-	for e in (YoutubeIE, NiconicoIECustom, BiliBiliIE, SoundcloudIE, TwitterIE):
-		ydl.add_info_extractor(e)
+	for e in (
+		YoutubeIE,
+		NiconicoIECustom,
+		BiliBiliIE,
+		SoundcloudIE,
+		TwitterIECustom,
+		AcFunVideoIE,
+	):
+		# Register the instance, not the class
+		ydl.add_info_extractor(e())
 
 
 reset_cookies()
@@ -84,16 +113,25 @@ platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
 	(Platform.NICONICO, NiconicoIECustom),
 	(Platform.BILIBILI, BiliBiliIE),
 	(Platform.SOUNDCLOUD, SoundcloudIE),
-	(Platform.TWITTER, TwitterIE),
+	(Platform.TWITTER, TwitterIECustom),
+	(Platform.ACFUN, AcFunVideoIE),
 ]  # type: ignore
 make_video_url = {
 	Platform.YOUTUBE: lambda s, uid=None: f'https://youtube.com/watch?v={s}',
 	Platform.NICONICO: lambda s, uid=None: f'https://nicovideo.jp/watch/{s}',
-	Platform.BILIBILI: lambda s, uid=None: f'https://www.bilibili.com/video/{s}/',
-	Platform.SOUNDCLOUD: lambda s, uid=None: s,  # TODO
-	Platform.TWITTER: lambda s, uid=None: f'https://twitter.com/{uid}/status/{s}'
-	if uid
-	else f'https://twitter.com/i/status/{s}',
+	Platform.BILIBILI: lambda s, uid=None: (
+		f'https://www.bilibili.com/video/{s + "/" if "_p" not in s else s[: s.index("_p")] + "/" + "?p=" + s[s.index("_p") + 2 :]}'
+	),
+	# TODO
+	# Platform.SOUNDCLOUD: lambda s, uid=None: s,
+	Platform.TWITTER: lambda s, uid=None: (
+		f'https://twitter.com/{uid}/status/{s}'
+		if uid
+		else f'https://twitter.com/i/status/{s}'
+	),
+	Platform.ACFUN: lambda s, uid=None: (
+		f'https://www.acfun.cn/v/{s if s.startswith("ac") else "ac" + s}'
+	),
 }
 
 niconico_meta_re = re.compile(
@@ -181,20 +219,28 @@ def process_video_info(full_info, link=None):
 				'uploader_id': full_info['owner']['id'] if full_info['owner'] else 0,
 			}
 		else:
-			# Standard yt-dlp response
-			info = full_info.copy()
+			# Standard yt-dlp response, deep copied to avoid mutating original
+			info = json.loads(json.dumps(full_info))
 
 			if info.get('_type') == 'playlist':
 				info = info['entries'][0]  # TODO need some work...
 			resolutions = [
 				(f['width'], f['height'])
 				for f in info['formats']
-				if 'width' in f and f['width'] is not None
+				if 'width' in f
+				and f['width'] is not None
+				# Exclude super-resolution (AI upscaled) formats
+				and not f.get('format_id', '').endswith('-sr')
 			]
 			if resolutions:
 				info['width'], info['height'] = max(resolutions, key=lambda s: s[0])
 
-		info['extractor'] = Platform.from_str(info['extractor'])
+		# Tolerate legacy payloads with int extractor -- see PR #467
+		info['extractor'] = (
+			Platform(info['extractor'])
+			if isinstance(info['extractor'], int)
+			else Platform.from_str(info['extractor'])
+		)
 		if info['extractor'] in make_video_url:
 			info['webpage_url'] = make_video_url[info['extractor']](
 				info['display_id']
@@ -210,13 +256,12 @@ def process_video_info(full_info, link=None):
 			case Platform.YOUTUBE:
 				info['tags'].extend(hashtag_re.findall(info['description']))
 			case Platform.BILIBILI:
-				info['id'] = _clean_bilibili_source_id(info['id'])
-				title_chapter_mark = info['title'].find(
-					' p01'
-				)  # TODO this is far from perfect
-				if title_chapter_mark != -1:
-					info['title'] = info['title'][:title_chapter_mark]
-				info['webpage_url'] = make_video_url[info['extractor']](info['id'])
+				if 'p' not in furl(info['webpage_url']).args:
+					info['id'] = _clean_bilibili_source_id(info['id'])
+					title_chapter_mark = info['title'].find(' p01')
+					if title_chapter_mark != -1:
+						info['title'] = info['title'][:title_chapter_mark]
+					info['webpage_url'] = make_video_url[info['extractor']](info['id'])
 				if 'tags' in info:
 					info['tags'] = [
 						tag[3:-1]
@@ -227,10 +272,18 @@ def process_video_info(full_info, link=None):
 			case Platform.NICONICO:
 				pass  # webpage_url already set
 			case Platform.SOUNDCLOUD:
-				pass  # TODO
+				# TODO
+				tags = info.get('tags') or []
+				genre = info.get('genre')
+				genres = info.get('genres') or []
+				info['tags'] = list(
+					dict.fromkeys(tags + ([genre] if genre else []) + genres)
+				)
 			case Platform.TWITTER:
 				info['id'] = info['display_id']
 				info['title'] = None
+			case Platform.ACFUN:
+				info['id'] = 'ac' + info['id']
 			case _:
 				return None
 
@@ -242,10 +295,11 @@ def process_video_info(full_info, link=None):
 
 		# Process tags
 		if 'tags' in info:
-			info['tags'] = [clean_incoming_tag_name(tag) for tag in info['tags']]
+			info['tags'] = [canonicalize_tag(tag) for tag in info['tags']]
+			info['tags'] = list(dict.fromkeys(info['tags']))
 
 		# Clean description
-		info['description'] = nh3.clean(info['description'])
+		info['description'] = clean_description(info['description'])
 
 		# Get thumbnail mime type
 		info['thumbnail_mime'] = fetch_thumbnail_mime_type(info['thumbnail'])
@@ -256,7 +310,7 @@ def process_video_info(full_info, link=None):
 		return None
 
 
-def video_info(link, expected_unavailable=False):
+def _video_info_sync(link, expected_unavailable=False):
 	try:
 		if NiconicoIECustom.suitable(link):
 			full_info = get_niconico_geoblocked(NiconicoIECustom.get_temp_id(link))
@@ -288,13 +342,17 @@ def video_info(link, expected_unavailable=False):
 		return None, None
 
 
-def playlist_info(link):
+async def video_info(link, expected_unavailable=False):
+	return await asyncio.to_thread(_video_info_sync, link, expected_unavailable)
+
+
+async def playlist_info(link):
 	keys = {
 		'title': 'title',
 		'description': 'description',
 		'entries': 'entries',
 	}
-	info = ydl_playlist.extract_info(link, download=False)
+	info = await asyncio.to_thread(ydl_playlist.extract_info, link, download=False)
 	if info.get('_type') != 'playlist':
 		return None
 

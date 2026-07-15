@@ -1,30 +1,23 @@
 <script lang="ts">
+	import { buildEntityRoutes } from '$lib/enums.js';
+	import Icon from '$lib/Icon/Icon.svelte';
+	import { routeNames } from '$lib/enums/route.js';
 	import { m } from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-
 	import Section from '$lib/Section.svelte';
-	import { isSOV, isSVO } from '$lib/ui.js';
+	import Time from '$lib/Time.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import { Route } from '$lib/enums.js';
+	import { ParaglideMessage } from '@inlang/paraglide-js-svelte';
 
 	let { data } = $props();
 </script>
 
-<svelte:head>
-	<title>{m.fine_late_chicken_quiz()}</title>
-	<meta
-		name="description"
-		content={m.mild_loud_shad_enchant({ type: 'otoDB', name: m.glad_born_mouse_taste() })}
-	/>
-</svelte:head>
-
 <Section title={m.fine_late_chicken_quiz()}>
 	<p>{m.silly_main_reindeer_chop()}</p>
 	<ul>
-		<li><a href="/post/2">{m.noble_fine_iguana_pull()}</a></li>
-		<li><a href="/post/3">FAQ</a></li>
+		<li><a href="/wiki/about">{m.noble_fine_iguana_pull()}</a></li>
+		<li><a href="/wiki/faq">FAQ</a></li>
 		{#if data.user}
-			<li><a href="/post/4">{m.arable_direct_cougar_win()}</a></li>
+			<li><a href="/wiki/editing_guidelines">{m.arable_direct_cougar_win()}</a></li>
 		{/if}
 	</ul>
 </Section>
@@ -32,56 +25,78 @@
 <div
 	class="grid grid-cols-[repeat(auto-fill,minmax(max(calc(50%-var(--spacing)*2),min(100%,576px)),1fr))] gap-x-4"
 >
-	<Section title={m.fuzzy_chunky_niklas_peek()}>
-		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
+	<Section title={m.fuzzy_chunky_niklas_peek()} href="/work/random">
+		<div
+			class="grid grid-cols-[repeat(auto-fill,minmax(max(12rem,(100%-2rem)/3),1fr))] gap-x-4 gap-y-4"
+		>
 			{#each data.random as w, i (i)}
 				<WorkCard work={w} />
 			{/each}
 		</div>
 	</Section>
 
-	<Section title={m.big_long_squirrel_kiss()}>
-		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
+	<Section title={m.big_long_squirrel_kiss()} href="/work">
+		<div
+			class="grid grid-cols-[repeat(auto-fill,minmax(max(12rem,(100%-2rem)/3),1fr))] gap-x-4 gap-y-4"
+		>
 			{#each data.recent as w, i (i)}
 				<WorkCard work={w} />
 			{/each}
 		</div>
 	</Section>
 
-	<Section title={m.sea_cute_beaver_file()}>
+	<Section title={m.sea_cute_beaver_file()} href="/revision">
 		<table class="w-full">
 			<tbody>
 				{#each data.changes.items as r, i (i)}
 					<tr
 						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-							>{r.route !== null && r.route !== undefined ? Route[r.route] : ''}</td
-						><td>
-							{#if isSVO(getLocale())}
-								{m.curly_safe_lynx_fond()}
-							{/if}
-							<a href="/profile/{r.user}">{r.user}</a>
-							{#if isSOV(getLocale())}
-								{m.curly_safe_lynx_fond()}
-							{/if}</td
-						><td>{new Date(r.date).toLocaleString()}</td></tr
+							>{typeof r.route === 'number' ? routeNames[r.route]() : ''}</td
+						><td
+							>{#if r.first_entity}<a
+									href={buildEntityRoutes(r.first_entity.entity, r.first_entity.id)}
+									>{r.first_entity.id}</a
+								>{#if r.n_ent > 1}{m.mellow_brave_marten_gather({
+										count: r.n_ent - 1
+									})}{/if}{/if}</td
+						><td
+							><Time format="relative" date={r.date} />
+							<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
+								>{#snippet content()}<a href="/profile/{r.user}">{r.user}</a
+									>{/snippet}</ParaglideMessage
+							></td
+						></tr
 					>
 				{/each}
 			</tbody>
 		</table>
-		<a href="/revision/history" class="float-right">{m.fresh_deft_warbler_edit()}</a>
+		<a href="/revision" class="float-right">{m.fresh_deft_warbler_edit()}</a>
 	</Section>
 
-	<Section title={m.curly_fuzzy_turkey_launch()}>
+	<Section title={m.curly_fuzzy_turkey_launch()} href="/thread/overview">
 		<table class="w-full">
 			<tbody>
 				{#each data.posts.items as p, i (i)}
 					<tr>
-						<td><a href="/post/{p.id}">{p.title}</a></td>
-						<td>{new Date(p.modified).toLocaleString()}</td>
+						<td class="w-6 text-center">
+							{#if p.closed_at}
+								<Icon key="thread-closed" class="mx-auto block size-4" />
+							{:else}
+								<Icon key="thread-opened" class="mx-auto block size-4" />
+							{/if}
+						</td>
+						<td><a href="/thread/{p.id}">{p.title}</a></td>
+						<td
+							><Time format="relative" date={p.modified} />
+							<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
+								>{#snippet content()}<a href="/profile/{p.last_post_by}">{p.last_post_by}</a
+									>{/snippet}</ParaglideMessage
+							></td
+						>
 					</tr>
 				{/each}
 			</tbody>
 		</table>
-		<a href="/post/overview" class="float-right">{m.fresh_deft_warbler_edit()}</a>
+		<a href="/thread/overview" class="float-right">{m.fresh_deft_warbler_edit()}</a>
 	</Section>
 </div>

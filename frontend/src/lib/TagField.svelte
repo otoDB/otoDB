@@ -1,29 +1,41 @@
 <script lang="ts">
-	import client, { getTagDisplaySlug } from './api';
-	import TagSuggestionResults from './TagSuggestionResults.svelte';
-	import { clickOutside, debounce } from './ui';
+	import client from '$lib/api';
+	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
+	import { clickOutside, debounce } from '$lib/ui';
+	import { getTagDisplaySlug } from '$lib/ui.js';
+	import type { components } from './schema';
 
 	interface Props {
 		value: string;
 		type: 'work' | 'song';
-		resolve_aliases?: boolean;
+		name?: string;
 	}
 	let { value = $bindable(''), type, ...props }: Props = $props();
 
-	const endpoint = type === 'work' ? '/api/tag/search' : '/api/tag/song_tag_search';
-
-	let suggestions = $state([]);
+	let suggestions:
+		| components['schemas']['TagWorkSearchResultSchema'][]
+		| components['schemas']['TagSongSearchResultSchema'][] = $state([]);
 
 	const search = async () => {
 		if (value === '') {
 			suggestions = [];
 			return;
 		}
-		const { data } = await client.GET(endpoint, {
-			params: {
-				query: { query: value, limit: 10, resolve_aliases: props.resolve_aliases ?? true }
-			}
-		});
+		const { data } =
+			type === 'work'
+				? await client.GET('/api/tag/search', {
+						params: {
+							query: {
+								query: value,
+								limit: 10,
+								order: 'count',
+								autocomplete: true
+							}
+						}
+					})
+				: await client.GET('/api/tag/song_tag_search', {
+						params: { query: { query: value, limit: 10, autocomplete: true } }
+					});
 		if (!data) return;
 		suggestions = data.items;
 	};
@@ -35,7 +47,7 @@
 		<ul
 			class="absolute z-1 list-none"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>

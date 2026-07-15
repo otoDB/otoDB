@@ -14,11 +14,11 @@ When fields are renamed or removed from models with revision_tracked_fields, thi
 3. Prints confirmation messages
 """
 
+from django.apps import apps
 from django.core.management.commands.makemigrations import (
 	Command as MakeMigrationsCommand,
 )
 from django.db import migrations
-from django.apps import apps
 
 
 # Module-level migration functions that can be properly serialized

@@ -1,14 +1,17 @@
+import client, { forwardCookies, rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
+import { m } from '$lib/paraglide/messages';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import client, { forwardCookies } from '$lib/api';
 
 export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
+	let token = undefined;
 	if (!locals.user) {
-		const token = url.searchParams.get('token');
+		token = url.searchParams.get('token');
 		const { response } = await client.GET('/api/auth/csrf', { fetch });
 		forwardCookies(cookies, response);
-		return { token };
 	}
+	return { token, head: { title: m.true_tough_butterfly_sew() } };
 };
 
 export const actions = {
@@ -16,13 +19,14 @@ export const actions = {
 		const data = await request.formData();
 		const password = data.get('password') as string,
 			confirm = data.get('confirm') as string,
-			token = data.get('token') as string;
+			token = data.get('token') as string,
+			turnstile_token = (data.get('cf-turnstile-response') as string) || undefined;
 
 		if (!password || !confirm) return fail(400, { missing: true });
-		else if (password != confirm) return fail(400, { mismatch: true });
+		else if (password !== confirm) return fail(400, { mismatch: true });
 
-		const { error } = await client.POST('/api/auth/reset_password', {
-			body: { password, token },
+		const { error } = await rawClient.POST('/api/auth/reset_password', {
+			body: { password, token, turnstile_token },
 			fetch
 		});
 
@@ -30,14 +34,16 @@ export const actions = {
 	},
 	request: async ({ request, fetch }) => {
 		const data = await request.formData();
-		const email = data.get('email') as string;
+		const email = data.get('email') as string,
+			turnstile_token = (data.get('cf-turnstile-response') as string) || undefined;
 
 		if (!email) return fail(400, { missing: true });
 
-		await client.PUT('/api/auth/reset_password', {
-			body: { email },
+		const { error } = await rawClient.PUT('/api/auth/reset_password', {
+			body: { email, turnstile_token },
 			fetch
 		});
+		if (error) return apiFail(error);
 
 		return { success: true };
 	}

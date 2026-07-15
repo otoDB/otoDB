@@ -1,30 +1,33 @@
+import asyncio
 from typing import List
-import multiprocessing
-from concurrent.futures import ProcessPoolExecutor
 
-from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
+from asgiref.sync import sync_to_async
 from django.db import transaction
 from django.db.models import Q
-
-from ninja import Router, Schema, ModelSchema
-from ninja.security import django_auth
+from django.http import HttpRequest
+from django.shortcuts import aget_object_or_404, get_object_or_404
+from ninja import ModelSchema, Router, Schema
+from ninja.errors import HttpError
 from ninja.pagination import paginate
+from ninja.security import django_auth
 from ninja.throttling import AuthRateThrottle
 
-from otodb.common import video_info, playlist_info
+from otodb.common import playlist_info, video_info
 from otodb.models import (
 	Pool,
 	PoolItem,
 	PoolUpstream,
 	WorkSource,
-	TagWork,
-	TagWorkInstance,
-	MediaWork,
 )
-from otodb.account.models import Account
 
-from .common import ListSchema, ListItemSchema, WorkSourceSchema, track_revision
+from .common import (
+	ListItemSchema,
+	ListSchema,
+	OtodbID,
+	WorkSourceSchema,
+	track_revision,
+	user_is_editor,
+)
 
 list_router = Router()
 
@@ -38,27 +41,27 @@ def search(request: HttpRequest, query: str):
 
 
 @list_router.get('list', response=ListSchema)
-def lst(request: HttpRequest, list_id: int):
+def lst(request: HttpRequest, list_id: OtodbID):
 	list_ = get_object_or_404(Pool, pk=list_id)
 	return list_
 
 
 @list_router.get('entries', response=List[ListItemSchema])
 @paginate
-def entries(request: HttpRequest, list_id: int):
+def entries(request: HttpRequest, list_id: OtodbID):
 	list_ = get_object_or_404(Pool, pk=list_id)
 	return list_.poolitem_set.order_by('order')
 
 
 @list_router.get('pending', response=List[WorkSourceSchema])
 @paginate
-def pending(request: HttpRequest, list_id: int):
+def pending(request: HttpRequest, list_id: OtodbID):
 	list_ = get_object_or_404(Pool, pk=list_id)
 	return list_.pending_items.all()
 
 
 class ListItemInSchema(ModelSchema):
-	work_id: int
+	work_id: OtodbID
 
 	class Meta:
 		model = PoolItem
@@ -71,17 +74,17 @@ class ListInSchema(ModelSchema):
 		fields = ['name', 'description']
 
 
-@list_router.post('list', auth=django_auth, response=int)
+@list_router.post('list', auth=django_auth, response=OtodbID)
 def new(request: HttpRequest, payload: ListInSchema):
 	lst = Pool.objects.create(author=request.user, **payload.dict())
 	return lst.id
 
 
 @list_router.put('list', auth=django_auth)
-def update(request: HttpRequest, list_id: int, payload: ListInSchema):
+def update(request: HttpRequest, list_id: OtodbID, payload: ListInSchema):
 	lst = get_object_or_404(Pool, id=list_id)
 	if lst.author != request.user:
-		return 403
+		raise HttpError(403, 'Forbidden')
 
 	lst.name = payload.name
 	lst.description = payload.description
@@ -90,14 +93,14 @@ def update(request: HttpRequest, list_id: int, payload: ListInSchema):
 
 class ListUpdateSchema(Schema):
 	# Diffs applied in this exact order: WorkIDs -> Descriptions -> Moves -> Delete
-	update_work: List[tuple[int, int]] = []
+	update_work: List[tuple[int, OtodbID]] = []
 	update_description: List[tuple[int, str]] = []
 	move: List[tuple[int, int]] = []  # [(from, to)]
 	delete: List[int] = []  # delete at index
 
 
 @list_router.put('items', auth=django_auth)
-def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
+def update_items(request: HttpRequest, list_id: OtodbID, payload: ListUpdateSchema):
 	lst = get_object_or_404(Pool, id=list_id)
 
 	items = lst.poolitem_set
@@ -117,16 +120,16 @@ def update_items(request: HttpRequest, list_id: int, payload: ListUpdateSchema):
 
 
 @list_router.get('work_in_pool', response=bool)
-def work_in_pool(request: HttpRequest, list_id: int, work_id: int):
+def work_in_pool(request: HttpRequest, list_id: OtodbID, work_id: OtodbID):
 	lst = get_object_or_404(Pool, pk=list_id)
 	return lst.work_in_pool(work_id)
 
 
 @list_router.put('toggle_work', auth=django_auth)
-def toggle(request: HttpRequest, list_id: int, work_id: int):
+def toggle(request: HttpRequest, list_id: OtodbID, work_id: OtodbID):
 	lst = get_object_or_404(Pool, pk=list_id)
 	if lst.author != request.user:
-		return 403
+		raise HttpError(403, 'Forbidden')
 
 	if entries := lst.work_in_pool(work_id):
 		entries.delete()
@@ -137,86 +140,83 @@ def toggle(request: HttpRequest, list_id: int, work_id: int):
 
 
 @list_router.delete('list', auth=django_auth)
-def delete(request: HttpRequest, list_id: int):
+def delete(request: HttpRequest, list_id: OtodbID):
 	lst = get_object_or_404(Pool, id=list_id)
 	if lst.author != request.user:
-		return 403
+		raise HttpError(403, 'Forbidden')
 	lst.delete()
 	return
 
 
-def import_ext_into_pool(info, list_: Pool, user):
-	with ProcessPoolExecutor(
-		mp_context=multiprocessing.get_context('fork')
-	) as executor:
-		infos = executor.map(video_info, info['entries'])
+def import_ext_into_pool(entries, infos, list_: Pool, user):
+	# set() instead of .distinct() because list has not yet been written to the DB
+	existing_work_ids = set(list_.poolitem_set.values_list('work__id', flat=True))
 
-	old_entries = list_.poolitem_set.values_list('work__id', flat=True)
-
-	pool_items = []
-	for i, (vid_info, full_info) in enumerate(list(infos)):
+	new_works = {}
+	for entry, (vid_info, full_info) in zip(entries, infos):
 		if vid_info is None:
-			list_.description += f'\nFailed to fetch {info["entries"][i]}'
+			list_.description += f'\nFailed to fetch {entry}'
 			continue
 
-		src, _ = WorkSource.from_url(
+		src = WorkSource.from_url(
 			vid_info['url'],
-			user=user,
-			is_reupload=False,
 			info=vid_info,
 			full_info=full_info,
+			user=user,
+			is_reupload=False,
 		)
-		if getattr(src, 'rejection', None):
-			continue
-		elif src.media is not None or user.level >= Account.Levels.EDITOR:
-			if src.media is not None:
-				work = src.media
-				if work.id in old_entries:
-					continue
-			else:
-				work = MediaWork.objects.create(
-					title=src.title, description=src.description, thumbnail_source=src
-				)
-				src.media = work
-				src.save()
-			for t in vid_info['tags']:
-				tt, _ = TagWork.objects.get_or_create(name=t)
-				if tt.aliased_to:
-					tt = tt.aliased_to
-				TagWorkInstance.objects.create(
-					work=work, work_tag=tt, instance_imported_from_source=True
-				)
 
-			pool_items.append(PoolItem(work=work, description='', pool=list_))
-		elif src.media is None:
+		if src is None:
+			list_.description += f'\nFailed to fetch {entry}'
+			continue
+
+		if src.media is None:
+			# No work yet - add to pending for user review
 			list_.pending_items.add(src)
+		elif src.media.pk not in existing_work_ids:
+			# Source already has a work - add to pool if not already there
+			new_works[src.media.pk] = src.media
 
 	list_.save()
-	PoolItem.objects.bulk_create(pool_items)
+	PoolItem.objects.bulk_create(
+		[PoolItem(work=work, description='', pool=list_) for work in new_works.values()]
+	)
 
 
 @list_router.post(
-	'import', auth=django_auth, response=int, throttle=[AuthRateThrottle('3/30m')]
+	'import', auth=django_auth, response=OtodbID, throttle=[AuthRateThrottle('3/30m')]
 )
-@transaction.atomic
+@user_is_editor
 @track_revision
-def import_ext(request: HttpRequest, url: str):
-	info = playlist_info(url)
-	list_ = Pool.objects.create(
-		name=info['title'], description=info['description'], author=request.user
-	)
-	PoolUpstream.objects.create(pool=list_, upstream=url)
+async def import_ext(request: HttpRequest, url: str):
+	info = await playlist_info(url)
+	infos = await asyncio.gather(*[video_info(v) for v in info['entries']])
 
-	import_ext_into_pool(info, list_, request.user)
+	@transaction.atomic
+	def make_pool():
+		list_ = Pool.objects.create(
+			name=info['title'], description=info['description'], author=request.user
+		)
+		PoolUpstream.objects.create(pool=list_, upstream=url)
+		import_ext_into_pool(info['entries'], infos, list_, request.user)
+		return list_.id
 
-	return list_.id
+	list_id = await sync_to_async(make_pool)()
+
+	return list_id
 
 
 @list_router.post('pull_upstream', auth=django_auth)
-def pull_upstream(request: HttpRequest, list_id: int):
-	lst = get_object_or_404(Pool, id=list_id)
-	if lst.author != request.user:
-		return 403
+async def pull_upstream(request: HttpRequest, list_id: OtodbID):
+	lst = await aget_object_or_404(
+		Pool.objects.select_related('poolupstream'), id=list_id
+	)
+	if lst.author_id != request.user.id:
+		raise HttpError(403, 'Forbidden')
 
-	info = playlist_info(lst.poolupstream.upstream)
-	import_ext_into_pool(info, lst, request.user)
+	info = await playlist_info(lst.poolupstream.upstream)
+
+	infos = await asyncio.gather(*[video_info(v) for v in info['entries']])
+	await sync_to_async(transaction.atomic(import_ext_into_pool))(
+		info['entries'], infos, lst, request.user
+	)

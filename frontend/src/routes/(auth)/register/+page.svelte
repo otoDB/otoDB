@@ -1,17 +1,15 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
-	let { form }: PageProps = $props();
+	import { dirtyEnhance } from '$lib/dirty';
 	import { m } from '$lib/paraglide/messages.js';
+	import Section from '$lib/Section.svelte';
+	import Turnstile from '$lib/Turnstile.svelte';
 	import { callErrorToast } from '$lib/toast';
+
+	let { form, data } = $props();
 
 	$effect(() => {
 		if (form?.missing) {
 			callErrorToast(m.tiny_round_shark_express());
-		}
-		if (form?.failed) {
-			callErrorToast(form.message);
 		}
 		if (form?.mismatch) {
 			callErrorToast(m.front_clean_termite_treat());
@@ -19,12 +17,8 @@
 	});
 </script>
 
-<svelte:head>
-	<title>{m.blue_whole_camel_type()}</title>
-</svelte:head>
-
 <Section title={m.blue_whole_camel_type()}>
-	<form method="POST" use:enhance>
+	<form method="POST" use:dirtyEnhance>
 		<table>
 			<tbody>
 				<tr>
@@ -34,17 +28,24 @@
 							required
 							type="text"
 							name="username"
+							maxlength="32"
 							value={form?.username ?? ''}
 						/></td
 					>
 				</tr>
-				<tr>
-					<th><label for="invite">{m.tiny_great_robin_commend()}</label></th>
-					<td><input required type="text" name="invite" /></td>
-				</tr>
+				{#if data.inviteRequired}
+					<tr>
+						<th
+							><label for="invite"
+								>{m.tiny_great_robin_commend()} (<a href="/wiki/about">?</a>)</label
+							></th
+						>
+						<td><input required type="text" name="invite" /></td>
+					</tr>
+				{/if}
 				<tr>
 					<th><label for="username">{m.moving_funny_spider_feast()}</label></th>
-					<td><input required type="text" name="email" value={form?.email ?? ''} /></td>
+					<td><input required type="email" name="email" value={form?.email ?? ''} /></td>
 				</tr>
 				<tr>
 					<th><label for="password">{m.vexed_merry_niklas_greet()}</label></th>
@@ -56,6 +57,7 @@
 				</tr>
 			</tbody>
 		</table>
+		<Turnstile action="register" />
 		<input type="submit" value={m.blue_whole_camel_type()} />
 	</form>
 </Section>

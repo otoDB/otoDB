@@ -1,21 +1,59 @@
 <script lang="ts">
-	import client from './api';
-	import { m } from './paraglide/messages';
-	import type { components } from './schema';
-	import { clickOutside, debounce } from './ui';
+	import client from '$lib/api';
+	import { m } from '$lib/paraglide/messages';
+	import type { components } from '$lib/schema';
+	import { clickOutside, debounce } from '$lib/ui';
+	import { tick } from 'svelte';
 
 	let self: HTMLElement;
+	let search_input: HTMLInputElement | null = null;
+
+	export async function focus() {
+		await tick();
+		search_input?.focus();
+	}
 
 	let input: string = $state('');
+	type Song = components['schemas']['SongSchema'];
 	interface Props {
-		value: components['schemas']['SongSchema'] | null | undefined;
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-		oninput: Function | undefined;
+		value: Song | null | undefined;
+		oninput?: (element: HTMLSpanElement, v: Song | null) => void;
 	}
 	let { value = $bindable(undefined), oninput = undefined, ...props }: Props = $props();
 
-	let suggestions: components['schemas']['SongSchema'][] = $state([]);
+	let suggestions: Song[] = $state([]);
 	let locked_in = $state(false);
+	let selectedIndex = $state(0);
+
+	$effect(() => {
+		void suggestions;
+		selectedIndex = 0;
+	});
+
+	const selectSong = (v: Song) => {
+		value = v;
+		input = v.title;
+		suggestions = [];
+		locked_in = true;
+		if (oninput) oninput(self, v);
+	};
+
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (!suggestions.length) return;
+
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			selectedIndex = (selectedIndex + 1) % suggestions.length;
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			selectedIndex = selectedIndex <= 0 ? suggestions.length - 1 : selectedIndex - 1;
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			selectSong(suggestions[selectedIndex]);
+		} else if (e.key === 'Escape') {
+			suggestions = [];
+		}
+	};
 
 	const search = async () => {
 		if (input === '') {
@@ -41,7 +79,7 @@
 </script>
 
 <span role="none" bind:this={self}>
-	<input type="number" hidden value={value?.id ?? -1} {...props} />
+	<input type="text" hidden value={value?.id ?? '-1'} {...props} />
 	{#if locked_in}
 		<button
 			type="button"
@@ -49,33 +87,42 @@
 				value = null;
 				locked_in = false;
 				if (oninput) oninput(self, null);
+				focus();
 			}}>{m.quick_happy_trout_amuse()}</button
 		>
 		<a target="_blank" href="/tag/{value?.work_tag}">{value?.title}</a>
 	{:else}
-		<input type="text" oninput={debounce(search)} disabled={locked_in} bind:value={input} />
+		<input
+			type="text"
+			oninput={debounce(search)}
+			onkeydown={handleKeyDown}
+			disabled={locked_in}
+			bind:value={input}
+			bind:this={search_input}
+		/>
 	{/if}
 	{#if suggestions.length}
 		<table
 			class="absolute z-1 px-1"
 			use:clickOutside
-			onOutclick={() => {
+			onoutclick={() => {
 				suggestions = [];
 			}}
 		>
 			<tbody>
 				{#each suggestions as v, i (i)}
-					<tr class="w bg-otodb-bg-fainter hover:bg-otodb-bg-faint p-1">
+					<tr
+						class={['p-1', selectedIndex === i ? 'bg-otodb-bg-faint' : 'bg-otodb-bg-fainter']}
+						onmouseenter={() => (selectedIndex = i)}
+					>
 						<td
 							><a
 								class="cursor-pointer"
-								href={null}
-								onclick={() => {
-									value = v;
-									input = v.title;
-									suggestions = [];
-									locked_in = true;
-									if (oninput) oninput(self, v);
+								href={`/tag/${v.work_tag}`}
+								onclick={(e) => {
+									if (e.button !== 0) return;
+									e.preventDefault();
+									selectSong(v);
 								}}>{v.title}</a
 							>
 						</td>
@@ -86,10 +133,3 @@
 		</table>
 	{/if}
 </span>
-
-<style>
-	ul {
-		background-color: var(--otodb-color-bg-primary);
-		z-index: 10;
-	}
-</style>

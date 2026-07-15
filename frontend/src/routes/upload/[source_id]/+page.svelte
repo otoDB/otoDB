@@ -1,0 +1,243 @@
+<script lang="ts">
+	import Banner from '$lib/Banner.svelte';
+	import { dirtyEnhance } from '$lib/dirty';
+	import DisplayText from '$lib/DisplayText.svelte';
+	import { enumValues, RatingNames, WorkOriginNames, WorkStatusNames } from '$lib/enums';
+	import { m } from '$lib/paraglide/messages.js';
+	import { Rating, type components } from '$lib/schema.js';
+	import Section from '$lib/Section.svelte';
+	import SourcesViewer from '$lib/SourcesViewer.svelte';
+	import TagsEditor from '$lib/TagsEditor.svelte';
+	import { autolinkDescription } from '$lib/ui.js';
+	import WorkField from '$lib/WorkField.svelte';
+
+	let { data } = $props();
+
+	let mode: 'create' | 'bind' = $state('create');
+	let sourceArray = $derived([data.source]);
+
+	let tags = $state<string[]>([]);
+
+	let title = $state(data.suggestions?.title ?? data.source.title ?? '');
+	let description = $state(data.suggestions?.description ?? data.source.description ?? '');
+	let rating: Rating | null = $state(null);
+	let bindWork = $state<components['schemas']['WorkSchema'] | null>(null);
+
+	let cache: Record<string, components['schemas']['TagWorkInstanceThinSchema']> = $state({});
+
+	let tagsJson = $derived(
+		JSON.stringify(
+			tags
+				.filter((t) => cache[t])
+				.map((t) => ({
+					nameslug: cache[t].slug,
+					sample: cache[t].sample,
+					roles: cache[t].creator_roles
+				}))
+		)
+	);
+</script>
+
+<Section
+	title={data.source.title || `#${data.source.id}`}
+	type={m.extra_brave_tapir_skip()}
+	menuLinks={data.links}
+>
+	{#if data.source.is_pending}
+		<Banner variant="info" title={m.brisk_lucky_heron_mend()} />
+	{/if}
+	<div class="@container">
+		<div class="flex w-full flex-col @[720px]:flex-row">
+			<div class="shrink-0">
+				<SourcesViewer
+					user={data.user}
+					sources={sourceArray}
+					thumbnail={data.source.thumbnail}
+					thumbnailAlt={data.source.title ?? ''}
+				/>
+			</div>
+			<div class="ml-2 grow">
+				<table class="w-full">
+					<tbody>
+						<tr>
+							<th class="w-24">{m.large_factual_octopus_exhale()}</th>
+							<td><DisplayText value={data.source.title} /></td>
+						</tr>
+						<tr>
+							<th class="w-24">{m.clear_lucky_peacock_pick()}</th>
+							<td>
+								<div class="description-cell external-link-icon">
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+									{@html autolinkDescription(data.source.description ?? '')}
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th class="w-24">{m.super_agent_pigeon_aim()}</th>
+							<td>
+								{#if data.source.published_date}
+									{data.source.published_date}
+								{:else}
+									{m.simple_less_marlin_enchant()}
+								{/if}
+							</td>
+						</tr>
+						<tr>
+							<th class="w-24">{m.large_polite_otter_thrive()}</th>
+							<td>{WorkOriginNames[data.source.work_origin]()}</td>
+						</tr>
+						<tr>
+							<th class="w-24">{m.civil_trick_oryx_clap()}</th>
+							<td>{WorkStatusNames[data.source.work_status]()}</td>
+						</tr>
+						<tr>
+							<th class="w-24">{m.big_dry_seahorse_succeed()}</th>
+							<td>
+								{#if data.source.work_width}
+									{data.source.work_width}x{data.source.work_height}
+								{:else}
+									{m.simple_less_marlin_enchant()}
+								{/if}
+							</td>
+						</tr>
+						<tr>
+							<th class="w-24">{m.nice_tense_mule_grasp()}</th>
+							<td>
+								{#if data.source.work_duration}
+									{Math.floor(data.source.work_duration / 60)}:{(
+										'0' +
+										(data.source.work_duration % 60)
+									).slice(-2)}
+								{:else}
+									{m.simple_less_marlin_enchant()}
+								{/if}
+							</td>
+						</tr>
+						<tr>
+							<th class="w-24">URL</th>
+							<td><a href={data.source.url} target="_blank" rel="noopener">{data.source.url}</a></td
+							>
+						</tr>
+						{#if data.isBound}
+							<tr>
+								<th class="w-24">{m.grand_merry_fly_succeed()}</th>
+								<td
+									><a href="/work/{data.source.media}"
+										>{data.source.media_title || `Work #${data.source.media}`}</a
+									></td
+								>
+							</tr>
+						{/if}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	{#if !data.isBound}
+		<div class="mt-4 mb-4 flex gap-2">
+			<label
+				class={[
+					'cursor-pointer border px-4 py-1',
+					mode === 'create' ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
+				]}
+			>
+				<input type="radio" value="create" bind:group={mode} class="hidden" />
+				{m.careful_red_cow_evoke()}
+			</label>
+			<label
+				class={[
+					'cursor-pointer border px-4 py-1',
+					mode === 'bind' ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
+				]}
+			>
+				<input type="radio" value="bind" bind:group={mode} class="hidden" />
+				{m.formal_ok_fly_buzz()}
+			</label>
+		</div>
+
+		{#if mode === 'create'}
+			<form method="POST" action="?/create" use:dirtyEnhance>
+				<table>
+					<tbody>
+						<tr>
+							<th><label for="title">{m.large_factual_octopus_exhale()}</label></th>
+							<td>
+								<input id="title" name="title" type="text" class="w-full" bind:value={title} />
+							</td>
+						</tr>
+						<tr>
+							<th><label for="description">{m.clear_lucky_peacock_pick()}</label></th>
+							<td>
+								<textarea
+									id="description"
+									name="description"
+									class="h-32 w-full"
+									bind:value={description}
+								></textarea>
+							</td>
+						</tr>
+						<tr>
+							<th><label>{m.good_dark_bumblebee_spur()}</label></th>
+							<td>
+								<div class="flex gap-2">
+									{#each enumValues(Rating) as r, i (i)}
+										<label
+											class={[
+												'relative cursor-pointer border px-3 py-1',
+												rating === r && 'bg-otodb-content-primary text-otodb-bg-primary'
+											]}
+										>
+											<input
+												type="radio"
+												name="rating"
+												value={r}
+												bind:group={rating}
+												class="absolute inset-0 cursor-pointer opacity-0"
+												required
+											/>
+											{RatingNames[r]()}
+										</label>
+									{/each}
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th><label>{m.empty_legal_chicken_taste()}</label></th>
+							<td>
+								<TagsEditor bind:tags bind:cache suggestions={data.suggestions} />
+								<input type="hidden" name="tags_json" value={tagsJson} />
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<input type="submit" />
+			</form>
+		{:else}
+			<form method="POST" action="?/bind" use:dirtyEnhance>
+				<input type="hidden" name="source_url" value={data.source.url} />
+				<table>
+					<tbody>
+						<tr>
+							<th><label>{m.grand_merry_fly_succeed()}</label></th>
+							<td><WorkField bind:value={bindWork} name="work_id" /></td>
+						</tr>
+					</tbody>
+				</table>
+				<input type="submit" />
+			</form>
+		{/if}
+	{/if}
+</Section>
+
+<style>
+	.description-cell {
+		white-space: pre-wrap;
+		max-height: 15em;
+		overflow-y: auto;
+		overflow-wrap: anywhere;
+	}
+	th {
+		white-space: nowrap;
+	}
+</style>

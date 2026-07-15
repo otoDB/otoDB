@@ -1,9 +1,10 @@
-import re
 import logging
+import re
+from io import BytesIO
+from pathlib import Path
+
 import boto3
 from django.conf import settings
-from pathlib import Path
-from io import BytesIO
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,9 @@ class StorageManager:
 					Fileobj=BytesIO(file_content),
 					Bucket=self.bucket_name,
 					Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/'),
+					ExtraArgs={
+						'CacheControl': 'public, max-age=31536000, immutable',
+					},
 				)
 				return file_path
 			except Exception as e:

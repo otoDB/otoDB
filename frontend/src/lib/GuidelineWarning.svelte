@@ -1,11 +1,26 @@
-<script>
-	import client from './api';
-	import { m } from './paraglide/messages';
-	import { getLocale } from './paraglide/runtime';
-	import { FAQ_POST_ID, GUIDELINE_POST_ID, isSOV, isSVO } from './ui';
-	const r = client.GET('/api/post/post', {
-		fetch,
-		params: { query: { post_id: GUIDELINE_POST_ID } }
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import client from '$lib/api';
+	import { m } from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import { isSOV, isSVO } from '$lib/enums/language';
+
+	let latestMod: null | Date = $state(null);
+
+	onMount(async () => {
+		const { data } = await client.GET('/api/wiki/page', {
+			fetch,
+			params: { query: { page_slug: 'editing_guidelines' } }
+		});
+		if (!data || data.length === 0) return;
+
+		latestMod =
+			data
+				.map((p) => p.modified)
+				.filter((m): m is string => !!m)
+				.map((m) => new Date(m))
+				.sort((a, b) => b.getTime() - a.getTime())
+				.at(0) ?? null;
 	});
 </script>
 
@@ -13,19 +28,13 @@
 	{#if isSVO(getLocale())}
 		{m.born_these_snake_devour()}
 	{/if}
-	<a href="/post/{GUIDELINE_POST_ID}">{m.arable_direct_cougar_win()}</a>
-	& <a href="/post/{FAQ_POST_ID}">FAQ</a>
+	<a href="/wiki/editing_guidelines">{m.arable_direct_cougar_win()}</a>
+	& <a href="/wiki/faq">FAQ</a>
 	{#if isSOV(getLocale())}{m.born_these_snake_devour()}{/if}
-	{#await r}
-		<!-- Blank -->
-	{:then post}
-		{#if post.data}
-			({m.mild_loud_shad_enchant({
-				type: m.lower_full_opossum_bless(),
-				name: new Date(
-					Math.max(...post.data.pages.map((p) => new Date(p.modified)))
-				).toLocaleString()
-			})})
-		{/if}
-	{/await}
+	{#if latestMod}
+		({m.mild_loud_shad_enchant({
+			type: m.lower_full_opossum_bless(),
+			name: latestMod.toLocaleString()
+		})})
+	{/if}
 </h4>

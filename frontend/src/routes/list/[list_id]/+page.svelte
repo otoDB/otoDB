@@ -1,36 +1,39 @@
 <script lang="ts">
-	import Section from '$lib/Section.svelte';
-	import type { PageProps } from './$types';
-	import { m } from '$lib/paraglide/messages.js';
-	import CommentTree from '$lib/CommentTree.svelte';
-	import { Platform, WorkOrigin } from '$lib/enums';
-	import { isSOV, isSVO } from '$lib/ui';
-	import { getLocale } from '$lib/paraglide/runtime';
 	import client from '$lib/api';
-	import type { components } from '$lib/schema';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
+	import { PlatformNames, WorkOriginNames } from '$lib/enums';
+	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
-	import WorkCard from '$lib/WorkCard.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import Pager from '$lib/Pager.svelte';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import { ModelsWithComments, WorkOrigin } from '$lib/schema.js';
+	import Section from '$lib/Section.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
+	import type { ComponentProps } from 'svelte';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 
 	let pending_items = $derived(data.pending_items!.items);
 
 	let current = $state(0);
 	let select = $state(-1);
-	let sources: components['schemas']['WorkSourceSchema'][] | undefined = $state();
+	let sources: ComponentProps<typeof ExternalEmbed>['src'][] | undefined = $state();
 
 	$effect(() => {
-		client
-			.GET('/api/work/sources', {
-				fetch,
-				params: { query: { work_id: data.entries.items[current].work.id } }
-			})
-			.then(({ data }) => {
-				sources = data;
-				select = 0;
-			});
+		if (data.entries.items[current]) {
+			client
+				.GET('/api/work/sources', {
+					fetch,
+					params: { query: { work_id: data.entries.items[current].work.id } }
+				})
+				.then(({ data }) => {
+					sources = data;
+					select = 0;
+				});
+		}
 	});
 </script>
 
@@ -62,9 +65,9 @@
 						name="cover_select"
 						value={i}
 						bind:group={select}
-					/>{Platform[s.platform]}{s.work_origin === 0
+					/>{PlatformNames[s.platform]}{s.work_origin === WorkOrigin.Author
 						? ''
-						: ' ' + WorkOrigin[s.work_origin]()}</label
+						: ' ' + WorkOriginNames[s.work_origin]()}</label
 				>
 			{/each}
 		</div>
@@ -95,7 +98,7 @@
 			</ol>
 		</div>
 		{#if data.entries?.count}
-			<Pager n_count={data.entries.count} page={data.page} page_size={data.batch_size} />
+			<Pager n_count={data.entries.count} page_size={data.batch_size} />
 		{/if}
 	{:else}
 		<h3>{m.hour_flat_finch_zoom()}</h3>
@@ -109,26 +112,19 @@
 				<li>
 					<span>
 						<h3>
-							<a href={src.url} target="_blank" rel="noopener noreferrer"
-								>{src.title || src.url}</a
-							>
+							<a href="/upload/{src.id}">{src.title || src.url}</a>
 						</h3>
-						<h4>{Platform[src.platform]} {src.published_date}</h4>
-						{#if src.rejection}
-							<p class="text-red-400">
-								{m.mild_loud_shad_enchant({
-									type: m.weary_spicy_fly_attend(),
-									name: src.rejection.reason
-								})}
-							</p>
+						<h4>{PlatformNames[src.platform]} {src.published_date}</h4>
+						{#if src.is_pending}
+							<p class="text-sky-600">{m.such_actual_okapi_dare()}</p>
 						{/if}
 					</span>
 					<span>
 						<a href={src.url} target="_blank" rel="noopener noreferrer"
-							><img
-								src={src.thumbnail}
+							><WorkThumbnail
+								thumbnail={src.thumbnail}
 								alt={src.title || src.url}
-								class="float-right clear-both w-50"
+								class="float-right clear-both aspect-video w-50"
 							/></a
 						>
 					</span>
@@ -154,7 +150,12 @@
 {/if}
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<CommentTree comments={data.comments} user={data.user ?? null} model="pool" pk={data.list.id} />
+	<CommentTree
+		comments={data.comments}
+		user={data.user ?? null}
+		model={ModelsWithComments.pool}
+		pk={data.list.id}
+	/>
 </Section>
 
 <style>

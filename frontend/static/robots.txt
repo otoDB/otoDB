@@ -4,18 +4,72 @@ Disallow: /
 
 Allow: /$
 
-Disallow: /api
-Disallow: */edit
-Disallow: */history
-Disallow: /work/random
+Disallow: /*/add$
+Disallow: /*/new$
+Disallow: /*/import$
+Disallow: /*/edit$
+Disallow: /*/delete$
+Disallow: /*/alias$
+Disallow: /*/threads$
+Disallow: /*/notifications$
+Disallow: /*/submissions$
+Disallow: /*/revisions$
+Disallow: /*/random$
 
+Disallow: /profile/*/edit$
+Disallow: /song_attribute/*/edit$
+Disallow: /song_attribute/*/history$
+Disallow: /song_attribute/alias$
+
+# SvelteKit build assets
+Allow: /_app/
+
+# Static resources
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.svg$
+Allow: /*.ico$
+Allow: /*.woff$
+Allow: /*.woff2$
+
+# Pages
 Allow: /post
+Allow: /thread
 Allow: /work
 Allow: /tag
 Allow: /song
+Allow: /song_attribute
 Allow: /list
+Allow: /wiki
 Allow: /profile
-
+Allow: /comments
+Allow: /register
+Allow: /login
+Allow: /settings
 Allow: /404
-Allow: /favicon.ico
-Allow: /favicon.svg
+Allow: /sitemap.xml
+
+# Special cases
+## API and other non-public endpoints
+Disallow: /api
+Disallow: /work/merge
+Disallow: /work/unbound
+
+## Only allow main revision history page for discovery
+Disallow: /revision
+Disallow: /*/history$
+Allow: /revision/history$
+
+## Allow search pages but not search queries
+Allow: /*/search$
+Disallow: /*/search?
+
+# Sitemaps
+Sitemap: https://otodb.net/sitemap.xml?type=works
+Sitemap: https://otodb.net/sitemap.xml?type=tags
+Sitemap: https://otodb.net/sitemap.xml?type=song_attributes
+Sitemap: https://otodb.net/sitemap.xml?type=lists
+Sitemap: https://otodb.net/sitemap.xml?type=posts
+Sitemap: https://otodb.net/sitemap.xml?type=profiles

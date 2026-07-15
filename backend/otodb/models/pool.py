@@ -1,12 +1,11 @@
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
-
 from ordered_model.models import OrderedModel
 
-from otodb.account.models import Account
-
+from .fields import IRIURLField
 from .media import MediaWork
 
 
@@ -15,7 +14,7 @@ class Pool(models.Model):
 	description = models.TextField(null=True, blank=True)
 
 	author = models.ForeignKey(
-		Account, blank=False, null=False, on_delete=models.CASCADE
+		settings.AUTH_USER_MODEL, blank=False, null=False, on_delete=models.CASCADE
 	)
 
 	pending_items = models.ManyToManyField('WorkSource')
@@ -24,6 +23,7 @@ class Pool(models.Model):
 		from django.db.models import QuerySet
 
 		poolitem_set: QuerySet['PoolItem']
+		author_id: int
 
 	def __str__(self) -> str:
 		return f'{self.name}'
@@ -61,4 +61,4 @@ class PoolItem(OrderedModel):
 
 class PoolUpstream(models.Model):
 	pool = models.OneToOneField(Pool, null=False, on_delete=models.CASCADE)
-	upstream = models.URLField(null=False, blank=False)
+	upstream = IRIURLField(null=False, blank=False)

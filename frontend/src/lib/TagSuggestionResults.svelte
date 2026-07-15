@@ -1,10 +1,19 @@
 <script lang="ts">
-	import { WorkTagPresentationColours } from './enums';
-	import { makeTagDisplayName } from './api';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
+	import type { components, SongTagCategory, WorkTagCategory } from '$lib/schema';
+
+	const showBaseTag = (
+		alias: { slug: string },
+		canonical: { lang_prefs: { slug: string }[] }
+	): boolean => !canonical.lang_prefs.some((p) => p.slug === alias.slug);
+
+	type Tag =
+		| components['schemas']['TagWorkSearchResultSchema']
+		| components['schemas']['TagSongSearchResultSchema'];
 
 	interface Props {
-		suggestions: any[];
-		onselect: (tag: any) => void;
+		suggestions: Tag[];
+		onselect: (tag: Tag) => void;
 		onclose?: () => void;
 		type: 'work' | 'song';
 		query?: string;
@@ -37,35 +46,31 @@
 	};
 
 	const highlightMatch = (text: string, query: string) => {
-		const displayText = makeTagDisplayName(text);
-		if (!query) return { before: displayText, match: '', after: '' };
+		if (!query) return { before: text, match: '', after: '' };
 		const index = text.toLowerCase().indexOf(query.toLowerCase());
-		if (index === -1) return { before: displayText, match: '', after: '' };
+		if (index === -1) return { before: text, match: '', after: '' };
 		const result = {
-			before: displayText.slice(0, index),
-			match: displayText.slice(index, index + query.length),
-			after: displayText.slice(index + query.length)
+			before: text.slice(0, index),
+			match: text.slice(index, index + query.length),
+			after: text.slice(index + query.length)
 		};
 		return result;
 	};
 
-	const getTagStyle = (category: number) => {
-		return type === 'work' && category !== 0
-			? `color: ${WorkTagPresentationColours[category]}`
-			: '';
+	const getTagStyle = (category: WorkTagCategory | SongTagCategory) => {
+		return type === 'work' && category !== 0 ? `color: ${WorkTagCategoryMap[category].color}` : '';
 	};
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
 
 {#each suggestions as t, i (i)}
-	<li
-		class:bg-otodb-bg-fainter={selectedIndex === i}
-		class:bg-otodb-bg-faint={selectedIndex !== i}
-	>
+	<li class:bg-otodb-bg-fainter={selectedIndex === i} class:bg-otodb-bg-faint={selectedIndex !== i}>
 		<a
 			href="/tag/{t.aliased_to?.slug || t.slug}"
 			class="flex w-full cursor-pointer justify-between gap-10 px-2 py-1 no-underline"
+			data-sveltekit-preload-data="off"
+			data-sveltekit-preload-code="off"
 			onmouseenter={() => (selectedIndex = i)}
 			onclick={(e) => {
 				if (e.button === 0) {
@@ -77,31 +82,21 @@
 			<span class="max-w-60">
 				{#if t.aliased_to}
 					{@const parts = highlightMatch(t.name, query)}
-					{@const aliasedParts = highlightMatch(t.aliased_to.name, query)}
 					<span style={getTagStyle(t.aliased_to.category)}>
 						{parts.before}<strong>{parts.match}</strong>{parts.after}
 					</span>
-					<span>→</span>
-					<span style={getTagStyle(t.aliased_to.category)}>
-						{aliasedParts.before}<strong>{aliasedParts.match}</strong
-						>{aliasedParts.after}
-					</span>
+					{#if showBaseTag(t, t.aliased_to)}
+						{@const aliasedParts = highlightMatch(t.aliased_to.name, query)}
+						<span>→</span>
+						<span style={getTagStyle(t.aliased_to.category)}>
+							{aliasedParts.before}<strong>{aliasedParts.match}</strong>{aliasedParts.after}
+						</span>
+					{/if}
 				{:else}
 					{@const parts = highlightMatch(t.name, query)}
 					<span style={getTagStyle(t.category)}>
 						{parts.before}<strong>{parts.match}</strong>{parts.after}
 					</span>
-				{/if}
-				{#if t.slug !== t.name}
-					{@const slugParts = highlightMatch(t.slug, query)}
-					<address class="inline">
-						({slugParts.before}<strong>{slugParts.match}</strong>{slugParts.after}{[
-							'',
-							...t.lang_prefs
-						]
-							.map((p) => p.tag)
-							.join(', ')})
-					</address>
 				{/if}
 			</span>
 			<span>{t.n_instance}</span>

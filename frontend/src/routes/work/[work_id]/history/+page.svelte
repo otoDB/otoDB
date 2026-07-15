@@ -2,11 +2,10 @@
 	import HistoryView from '$lib/HistoryView.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Section from '$lib/Section.svelte';
-	import type { PageProps } from '../$types';
 
-	let { data }: PageProps = $props();
+	let { data } = $props();
 </script>
 
 <Section title={data.title} type={m.giant_away_scallop_hike()} menuLinks={data.links}>
-	<HistoryView revisions={data.history.items} user={data.user} />
+	<HistoryView revisions={data.history} batch_size={data.batch_size} />
 </Section>

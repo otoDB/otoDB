@@ -1,8 +1,15 @@
-import client from '$lib/api';
-import { error } from '@sveltejs/kit';
+import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
+import { m } from '$lib/paraglide/messages';
 
-export const load: PageServerLoad = async ({ fetch }) => {
+export const load: PageServerLoad = async ({ fetch, setHeaders, locals }) => {
+	if (!locals.user) {
+		setHeaders({
+			'Cache-Control': 'public, s-maxage=600, max-age=0',
+			'Vary': 'Accept-Language'
+		});
+	}
+
 	const [randomWork, recentWork, changes, posts] = await Promise.all([
 		client.GET('/api/work/random', {
 			fetch,
@@ -16,18 +23,23 @@ export const load: PageServerLoad = async ({ fetch }) => {
 			fetch,
 			params: { query: { limit: 8, offset: 0 } }
 		}),
-		client.GET('/api/post/recent', {
+		client.GET('/api/thread/recent', {
 			fetch,
 			params: { query: { limit: 8, offset: 0 } }
 		})
 	]);
-	if (randomWork.error || recentWork.error || changes.error || posts.error)
-		error(500, { message: 'Internal server error' });
 
 	return {
 		random: randomWork.data,
 		recent: recentWork.data,
 		changes: changes.data,
-		posts: posts.data
+		posts: posts.data,
+		head: {
+			title: m.glad_born_mouse_taste(),
+			description: m.mild_loud_shad_enchant({
+				type: 'otoDB',
+				name: m.glad_born_mouse_taste()
+			})
+		}
 	};
 };

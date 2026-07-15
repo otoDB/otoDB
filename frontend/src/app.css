@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+@plugin '@iconify/tailwind4';
 @import './themes.css';
 
 @theme inline {
@@ -12,51 +13,7 @@
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
 }
 
-@custom-variant dark (@media (prefers-color-scheme: dark), &:where(.dark, .dark *), &:has(div.bg-marker.dark));
-
-:root {
-	--otodb-color-bg-fainter: white;
-	--otodb-color-content-primary: black;
-	--otodb-color-bg-faint: color-mix(
-		in hsl,
-		var(--otodb-color-bg-fainter) 95%,
-		var(--otodb-color-content-primary)
-	);
-	--otodb-color-bg-primary: color-mix(
-		in hsl,
-		var(--otodb-color-bg-fainter) 90%,
-		var(--otodb-color-content-primary)
-	);
-
-	@variant dark {
-		--otodb-color-bg-primary: black;
-		--otodb-color-content-primary: white;
-		--otodb-color-bg-faint: color-mix(
-			in hsl,
-			var(--otodb-color-bg-primary) 90%,
-			var(--otodb-color-content-primary)
-		);
-		--otodb-color-bg-fainter: color-mix(
-			in hsl,
-			var(--otodb-color-bg-primary) 80%,
-			var(--otodb-color-content-primary)
-		);
-	}
-
-	--otodb-color-content-faint: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 12.5%,
-		var(--otodb-color-content-primary)
-	);
-	--otodb-color-content-fainter: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 30%,
-		var(--otodb-color-content-primary)
-	);
-
-	--otodb-color-ins: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, green);
-	--otodb-color-del: color-mix(in hsl, var(--otodb-color-bg-faint) 35%, red);
-}
+@custom-variant dark (@media not (prefers-color-scheme: light), &:where(.dark, .dark *), &:has(#bg-marker.dark));
 
 @layer base {
 	thead {
@@ -65,6 +22,14 @@
 
 	tbody > tr:nth-of-type(odd) {
 		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
+	}
+
+	tbody > tr:hover {
+		background-color: color-mix(
+			in hsl,
+			var(--otodb-color-bg-fainter) 80%,
+			var(--otodb-color-content-primary)
+		);
 	}
 
 	ul {
@@ -110,13 +75,18 @@
 	input[type='reset'],
 	input[type='button'],
 	select,
-	button {
+	button,
+	label[role='button'] {
 		border: 1px solid var(--otodb-color-content-faint);
 		outline: none;
 		background-color: var(--otodb-color-bg-faint);
-		&:disabled {
+		cursor: pointer;
+
+		&:disabled,
+		[inert] & {
 			background-color: var(--otodb-color-bg-primary) !important;
 			color: var(--otodb-color-content-fainter);
+			cursor: default;
 		}
 		&:hover {
 			background-color: var(--otodb-color-bg-fainter);
@@ -126,17 +96,98 @@
 		}
 	}
 
-	ins {
-		background-color: var(--otodb-color-ins);
-	}
-
-	del {
-		background-color: var(--otodb-color-del);
-	}
-
 	/* Labels next to required fields in table forms */
 	main table > tbody > tr > th:has(+ td *:required) > label::after {
 		content: '*';
 		color: var(--otodb-color-del);
+	}
+
+	details {
+		background-color: color-mix(in hsl, transparent 40%, var(--otodb-color-bg-fainter));
+		padding: 0.5rem;
+		cursor: pointer;
+		user-select: none;
+		font-weight: bold;
+		margin: 0.5rem 0;
+
+		&:hover {
+			background-color: var(--otodb-color-bg-primary);
+		}
+
+		&[open] {
+			cursor: pointer;
+			user-select: auto;
+			background-color: var(--otodb-color-bg-faint);
+
+			&:hover {
+				background-color: var(--otodb-color-bg-faint);
+			}
+
+			> :not(summary) {
+				cursor: default;
+				font-weight: normal;
+			}
+		}
+
+		&[open] > summary {
+			cursor: pointer;
+			user-select: none;
+			margin-bottom: 0.5rem;
+
+			&:hover {
+				background-color: inherit;
+			}
+		}
+	}
+}
+
+@utility external-link-icon {
+	a[href^='//'],
+	a[href^='http://'],
+	a[href^='https://'] {
+		&:not([href^='http://otodb.net']):not([href^='https://otodb.net'])::after {
+			content: '';
+			display: inline-block;
+			background-image: url(/external-link.svg);
+			background-size: 100%;
+			width: 0.6em;
+			height: 0.6em;
+			margin-left: 0.2em;
+		}
+	}
+}
+
+/* Typography overrides */
+.prose {
+	table {
+		width: fit-content;
+	}
+	@apply external-link-icon;
+}
+
+/* Search icon for work search links (from `{{...}}` markdown and elsewhere) */
+a[href^='/work?tags=']::after {
+	@apply icon-[gravity-ui--magnifier];
+	content: '';
+	margin-left: 0.25em;
+	vertical-align: middle;
+}
+
+/* Autolink headings */
+:is(h1, h2, h3, h4, h5, h6) {
+	& a[href^='#'] {
+		text-decoration: none;
+		color: inherit;
+		font-weight: inherit;
+		font-size: inherit;
+		&:hover {
+			text-decoration: dotted underline 1px;
+		}
+	}
+
+	&:target {
+		box-shadow: -4px 0 0 var(--otodb-color-content-faint);
+		padding-left: 0.5rem;
+		margin-left: -0.5rem;
 	}
 }

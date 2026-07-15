@@ -1,19 +1,23 @@
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-
 from django.db import models
 
-from otodb.account.models import Account
-
-from .enums import Status, RequestActions
+from .enums import RequestActions, Status
 
 
 class BulkRequest(models.Model):
 	user = models.ForeignKey(
-		Account, on_delete=models.CASCADE, related_name='bulk_requests', null=False
+		settings.AUTH_USER_MODEL,
+		on_delete=models.CASCADE,
+		related_name='bulk_requests',
+		null=False,
 	)
 	processed_by = models.ForeignKey(
-		Account, on_delete=models.CASCADE, related_name='processed_requests', null=True
+		settings.AUTH_USER_MODEL,
+		on_delete=models.CASCADE,
+		related_name='processed_requests',
+		null=True,
 	)
 	status = models.IntegerField(choices=Status.choices, default=Status.PENDING)
 

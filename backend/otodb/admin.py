@@ -6,15 +6,14 @@ from .models import (
 	MediaSong,
 	MediaWork,
 	Pool,
-	TagWork,
-	TagSong,
-	WorkSource,
-	WorkSourceRejection,
-	WorkRelation,
 	SongRelation,
+	TagSong,
+	TagWork,
 	TagWorkInstance,
-	Post,
-	PostContent,
+	Thread,
+	ThreadPost,
+	WorkRelation,
+	WorkSource,
 )
 
 
@@ -49,9 +48,8 @@ class TagWorkInstanceInline(admin.TabularInline):
 
 
 class TagWorkAdmin(admin.ModelAdmin):
-	readonly_fields = ('display_name',)
-	search_fields = ['name', 'aliases__name']
-	list_display = ['name', 'display_name', 'category', 'aliased_to']
+	search_fields = ['name', 'slug', 'aliases__name']
+	list_display = ['name', 'slug', 'category', 'aliased_to']
 	list_filter = ['category', 'aliased_to']
 
 
@@ -159,24 +157,25 @@ class MediaSongAdmin(MediaAdmin):
 	inlines = [SongRelationAInline, SongRelationBInline]
 
 
-class WorkSourceRejectionInline(admin.TabularInline):
-	model = WorkSourceRejection
-
-
 class WorkSourceAdmin(admin.ModelAdmin):
 	list_display = ['__str__', 'title', 'platform', 'work_status', 'published_date']
 	list_filter = ['work_status', 'platform', 'work_origin']
 	search_fields = ['title', 'url', 'uploader_id']
 	readonly_fields = ['info_payload']
-	inlines = [WorkSourceRejectionInline]
 
 
-class PostContentInline(admin.TabularInline):
-	model = PostContent
+class ThreadPostInline(admin.TabularInline):
+	model = ThreadPost
+	extra = 0
+	fields = ['num', 'user', 'body', 'created_at', 'is_removed']
+	readonly_fields = ['num', 'user', 'created_at']
+	ordering = ['num']
 
 
-class PostAdmin(admin.ModelAdmin):
-	inlines = [PostContentInline]
+class ThreadAdmin(admin.ModelAdmin):
+	list_display = ['__str__', 'title', 'category', 'added_by', 'created_at']
+	list_filter = ['category', 'is_removed']
+	inlines = [ThreadPostInline]
 
 
 admin.site.register(WorkSource, WorkSourceAdmin)
@@ -186,4 +185,4 @@ admin.site.register(TagSong, TagWorkAdmin)
 admin.site.register(MediaWork, MediaWorkAdmin)
 admin.site.register(MediaSong, MediaSongAdmin)
 admin.site.register(TagWorkInstance, TagWorkInstanceAdmin)
-admin.site.register(Post, PostAdmin)
+admin.site.register(Thread, ThreadAdmin)

@@ -1,14 +1,16 @@
-import client from '$lib/api';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import client, { rawClient } from '$lib/api.server';
+import { apiFail } from '$lib/errors';
+import { redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { Languages, UserLevel } from '$lib/enums';
-import userLevelGuard from '$lib/route_guard';
+
+import { userLevelGuard } from '$lib/route_guard';
+import { Levels, WorkTagCategory } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, locals, url, parent }) => {
-	userLevelGuard(locals.user, UserLevel.MEMBER, url.pathname);
+	userLevelGuard(locals.user, Levels.Member, url.pathname);
 
 	const [{ data: wiki_page }, { data: details }, { data: connections }] = await Promise.all([
-		client.GET('/api/tag/wiki_page', {
+		client.GET('/api/wiki/tag', {
 			fetch,
 			params: {
 				query: {
@@ -47,8 +49,8 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 
 	return {
 		wiki_page,
-		parents: details?.paths[1][params.tag_slug]?.map((s) =>
-			details?.paths[0].find((t) => t.slug === s)
+		parents: (details.paths[1][params.tag_slug] ?? []).map(
+			(s) => details.paths[0].find((t) => t.slug === s)!
 		),
 		details,
 		connections,
@@ -81,7 +83,7 @@ export const actions = {
 					}
 				: null;
 
-		const { error } = await client.PUT('/api/tag/tag', {
+		const { error: apiError } = await rawClient.PUT('/api/tag/tag', {
 			fetch,
 			params: {
 				query: {
@@ -99,31 +101,27 @@ export const actions = {
 				song_payload: song
 			}
 		});
-
-		if (error)
-			return fail(400, {
-				category,
+		if (apiError)
+			return apiFail(apiError, {
+				category: +category as WorkTagCategory,
 				parent_slugs,
 				deprecated,
-				failed: true,
 				primary: +primary
 			});
-
-		redirect(303, `/tag/${params.tag_slug}`);
+		redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 	},
 	wiki_page: async ({ request, fetch, params }) => {
 		const data = await request.formData();
-		await client.POST('/api/tag/wiki_page', {
+		const pages: { lang: number; md: string }[] = JSON.parse(data.get('wiki_pages') as string);
+		if (pages.length === 0) {
+			redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
+		}
+		await client.POST('/api/wiki/tag', {
 			fetch,
-			params: {
-				query: {
-					tag_slug: params.tag_slug!,
-					md: data.get('md') as string,
-					lang: Languages[data.get('lang') as string]
-				}
-			}
+			params: { query: { tag_slug: params.tag_slug! } },
+			body: pages
 		});
-		redirect(303, `/tag/${params.tag_slug}`);
+		redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 	},
 	connections: async ({ request, fetch, params }) => {
 		const data = await request.formData();
@@ -133,6 +131,6 @@ export const actions = {
 			fetch,
 			params: { query: { tag_slug: params.tag_slug!, urls } }
 		});
-		redirect(303, `/tag/${params.tag_slug}`);
+		redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 	}
 } satisfies Actions;

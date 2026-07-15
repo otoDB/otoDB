@@ -1,3 +1,19 @@
+name: otodb
+
+x-backend: &backend
+  image: ghcr.io/otodb/otodb-backend:latest
+  env_file:
+    - .env
+  environment:
+    OTODB_DB_HOST: db
+    OTODB_DB_PORT: "5432"
+    OTODB_VALKEY_URL: valkey://valkey:6379/0
+  working_dir: /app
+  depends_on:
+    - db
+    - valkey
+  restart: always
+
 services:
   db:
     image: postgres:17.6
@@ -13,32 +29,28 @@ services:
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
     command: -c config_file=/etc/postgresql/postgresql.conf
 
-  backend:
-    build: ./backend
-    env_file:
-      - .env
-    environment:
-      OTODB_DB_BACKEND: postgresql
-      OTODB_DB_HOST: db
-      OTODB_DB_PORT: "5432"
-    volumes:
-      - /mnt/otodb-block/static:/app/static # Mount to specific location
-      - ./backend/cookies.txt:/app/cookies.txt:ro # Mount cookies for yt-dlp
-      # - ./backend:/app  # For development purposes only
-    working_dir: /app
-    depends_on:
-      - db
+  valkey:
+    image: valkey/valkey:9-alpine
     restart: always
+
+  backend:
+    <<: *backend
+    build: ./backend
+    volumes:
+      - ./cookies.txt:/app/cookies.txt:ro # Mount cookies for yt-dlp
+      - static:/srv/static
     stop_signal: SIGINT
 
   frontend:
+    image: ghcr.io/otodb/otodb-frontend:latest
     build:
       context: ./frontend
-      args:
-        OTODB_FRONTEND_DOMAIN: ${OTODB_FRONTEND_DOMAIN}
-        OTODB_HASH: ${OTODB_HASH}
+      additional_contexts:
+        backend: ./backend
+    env_file:
+      - .env
     environment:
-      - OTODB_FRONTEND_DOMAIN=${OTODB_FRONTEND_DOMAIN}
+      INTERNAL_API_ENDPOINT: http://backend:8000/
     restart: always
 
   caddy:
@@ -54,12 +66,19 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-      - /mnt/otodb-block/static:/srv/static
+      - static:/srv/static
     depends_on:
       - backend
       - frontend
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
 
 volumes:
   postgres17_data:
   caddy_data:
   caddy_config:
+  static:

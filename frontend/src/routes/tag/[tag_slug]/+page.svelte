@@ -1,44 +1,53 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
+	import Connections from '$lib/Connections.svelte';
+	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
+	import RelationViewer from '$lib/RelationViewer.svelte';
 	import Section from '$lib/Section.svelte';
+	import SongTag from '$lib/SongTag.svelte';
+	import WorkCard from '$lib/WorkCard.svelte';
+	import WorkTag from '$lib/WorkTag.svelte';
+	import WikiView from '$lib/WikiView.svelte';
+	import client from '$lib/api.js';
+	import { mediaTypes, resolveMediaTypeKeyById } from '$lib/enums/mediaType.js';
+	import { mediaConnectionMap } from '$lib/enums/mediaConnection.js';
+	import { profileConnectionMap } from '$lib/enums/profileConnection.js';
+	import { songConnectionMap } from '$lib/enums/songConnection.js';
+	import { TagWorkConnectionMap } from '$lib/enums/tagWorkConnection.js';
+
 	import { m } from '$lib/paraglide/messages.js';
 	import {
-		Languages,
-		ProfileConnectionLink,
-		ProfileConnectionTypes,
-		SongConnectionLink,
-		SongConnectionTypes,
-		MediaConnectionLink,
 		MediaConnectionTypes,
-		TagWorkConnectionLink,
-		TagWorkConnectionTypes,
+		ModelsWithComments,
+		ProfileConnectionTypes,
 		WorkTagCategory,
-		MediaType
-	} from '$lib/enums';
-	import WorkCard from '$lib/WorkCard.svelte';
-	import CommentTree from '$lib/CommentTree.svelte';
-	import SongTag from '$lib/SongTag.svelte';
-	import client, { getTagDisplayName, makeTagDisplayName } from '$lib/api.js';
-	import { getLocale } from '$lib/paraglide/runtime.js';
-	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
-	import ConnectionFavicon from '$lib/ConnectionFavicon.svelte';
-	import WorkTag from '$lib/WorkTag.svelte';
-	import LangSwitch from '$lib/LangSwitch.svelte';
-	import type { components } from '$lib/schema.js';
-	import RelationViewer from '$lib/RelationViewer.svelte';
+		type components
+	} from '$lib/schema.js';
+	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory.js';
+	import { getTagDisplayName, getTagDisplaySlug } from '$lib/ui.js';
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
 
-	const aliases = $derived(
-		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])]
-			.map(makeTagDisplayName)
-			.filter((e) => e !== data.display_name)
+	const articleLd = $derived(
+		data.wiki_page?.length
+			? '<script type="application/ld+json">' +
+					JSON.stringify({
+						'@context': 'https://schema.org',
+						'@type': 'Article',
+						'headline': data.display_name,
+						'url': `https://otodb.net${page.url.pathname}`
+					}) +
+					'</' +
+					'script>'
+			: null
 	);
 
-	let wikiView = $derived(
-		Languages[data.wiki_page?.find(({ lang }) => lang === Languages[getLocale()])?.lang] ??
-			Languages[data.wiki_page?.at(0)?.lang] ??
-			undefined
+	const aliases = $derived(
+		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])].filter(
+			(e) => e !== data.display_name
+		)
 	);
 
 	const fetchNextBatch = () =>
@@ -53,11 +62,8 @@
 			}
 		});
 
-	const ext_cat_types = $derived(
-		data.tag.category === 6 ? MediaConnectionTypes : ProfileConnectionTypes
-	);
-	const ext_cat_links = $derived(
-		data.tag.category === 6 ? MediaConnectionLink : ProfileConnectionLink
+	const sortedChildTags = $derived(
+		[...data.tag.children].sort((a, b) => Number(a.deprecated) - Number(b.deprecated))
 	);
 
 	const paths = $derived.by(() => {
@@ -73,6 +79,13 @@
 		return get_paths(data.tag.slug);
 	});
 </script>
+
+<svelte:head>
+	{#if articleLd}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html articleLd}
+	{/if}
+</svelte:head>
 
 <Section title={data.display_name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<div>
@@ -91,12 +104,12 @@
 	<h2>
 		{m.mild_loud_shad_enchant({
 			type: m.plane_awful_bobcat_spark(),
-			name: WorkTagCategory[data.tag.category]()
+			name: WorkTagCategoryMap[data.tag.category].nameFn()
 		})}
-		{#if data.tag.category === 6 && data.tag.media_type?.length}
-			({#each data.tag.media_type as t, i (i)}{MediaType[
-					t
-				]()}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
+		{#if data.tag.category === WorkTagCategory.Media && data.tag.media_type?.length}
+			({#each data.tag.media_type as t, i (i)}{mediaTypes[
+					resolveMediaTypeKeyById(t)
+				].nameFn()}{#if i + 1 !== data.tag.media_type.length},&nbsp;{/if}{/each})
 		{/if}
 	</h2>
 
@@ -114,59 +127,32 @@
 	{/if}
 
 	{#if data.connections}
-		<ul class="list-none">
-			{#each data.connections[0] as s, i (i)}
-				<li>
-					<ConnectionFavicon
-						type={TagWorkConnectionTypes[s.site]}
-						class="inline size-4"
-					/>
-					<a
-						href={TagWorkConnectionLink[s.site](s.content_id)}
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{decodeURI(TagWorkConnectionLink[s.site](s.content_id))}
-					</a>
-				</li>
-			{/each}
-			{#if data.connections[1]}
-				{#each data.connections[1] as s, i (i)}
-					<li class={{ 'opacity-60': s.dead }}>
-						<ConnectionFavicon type={ext_cat_types[s.site]} class="inline size-4" />
-						<a
-							href={ext_cat_links[s.site](s.content_id)}
-							target="_blank"
-							rel="noopener noreferrer"
-							class={{ 'line-through': s.dead }}
-						>
-							{ext_cat_links[s.site](s.content_id)}
-						</a>
-					</li>
-				{/each}
+		<Connections items={data.connections[0]} map={TagWorkConnectionMap} />
+		{#if data.connections[1]?.length}
+			{#if data.tag.category === WorkTagCategory.Media}
+				<Connections
+					items={data.connections[1] as {
+						site: MediaConnectionTypes;
+						content_id: string;
+					}[]}
+					map={mediaConnectionMap}
+				/>
+			{:else if data.tag.category === WorkTagCategory.Creator}
+				<Connections
+					items={data.connections[1] as {
+						site: ProfileConnectionTypes;
+						content_id: string;
+						dead?: boolean | null;
+					}[]}
+					map={profileConnectionMap}
+				/>
 			{/if}
-		</ul>
+		{/if}
 	{/if}
 
 	<hr class="my-2" />
 
-	{#if data.wiki_page && data.wiki_page.length}
-		<div class="float-right clear-left my-2">
-			<LangSwitch
-				availableLanguages={data.wiki_page.map((v) => Languages[v.lang])}
-				bind:value={wikiView}
-			/>
-		</div>
-		<div class="prose prose-neutral prose-sm dark:prose-invert max-w-4xl">
-			{#if data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])}
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html data.wiki_page?.find(({ lang }) => lang === Languages[wikiView])
-					?.page_rendered}
-			{/if}
-		</div>
-	{:else}
-		<p>{m.tame_dirty_goldfish_flow()}</p>
-	{/if}
+	<WikiView wiki_page={data.wiki_page} />
 </Section>
 
 {#if data.tag.song}
@@ -189,23 +175,7 @@
 			</tbody>
 		</table>
 		{#if data.song_connections}
-			<ul class="list-none">
-				{#each data.song_connections as s, i (i)}
-					<li>
-						<ConnectionFavicon
-							type={SongConnectionTypes[s.site]}
-							class="inline size-4"
-						/>
-						<a
-							href={SongConnectionLink[s.site](s.content_id)}
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							{decodeURI(SongConnectionLink[s.site](s.content_id))}
-						</a>
-					</li>
-				{/each}
-			</ul>
+			<Connections items={data.song_connections} map={songConnectionMap} />
 		{/if}
 		{#if data.tag?.song.tags.length}
 			<ul id="song-tags">
@@ -214,7 +184,7 @@
 				{/each}
 			</ul>
 		{/if}
-		{#if data.song_relations[0]?.length}
+		{#if data.song_relations && data.song_relations[0].length}
 			<RelationViewer
 				id={data.tag.song.id}
 				objects={data.song_relations[1]}
@@ -227,11 +197,11 @@
 	</Section>
 {/if}
 
-{#if data.tag.children.length}
+{#if sortedChildTags.length}
 	<Section title={m.weird_nimble_fireant_climb()}>
 		<div class="flex flex-wrap gap-3">
-			{#each data.tag.children as tag, i (i)}
-				<WorkTag {tag} />
+			{#each sortedChildTags as tag, i (i)}
+				<WorkTag {tag} fade={tag.deprecated} />
 			{/each}
 		</div>
 	</Section>
@@ -251,7 +221,10 @@
 	{/if}
 {/await}
 
-<Section title="{m.quiet_super_kangaroo_kiss({ tag: data.display_name })} ({data.works?.count})">
+<Section
+	title="{m.quiet_super_kangaroo_kiss({ tag: data.display_name })} ({data.works?.count})"
+	href="/work?tags={encodeURIComponent('^' + getTagDisplaySlug(data.tag))}"
+>
 	{#if results.length}
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
 			{#each results as work, i (i)}
@@ -268,7 +241,7 @@
 	<CommentTree
 		comments={data.comments}
 		user={data.user ?? null}
-		model="tagwork"
+		model={ModelsWithComments.tagwork}
 		pk={data.tag.id}
 	/>
 </Section>

@@ -1,18 +1,32 @@
-import type { StorybookConfig } from '@storybook/sveltekit';
+import { defineMain } from '@storybook/sveltekit/node';
+import { mergeConfig } from 'vite';
 
-const config: StorybookConfig = {
+export default defineMain({
+	framework: '@storybook/sveltekit',
 	stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|ts|svelte)'],
 	addons: [
-		'@storybook/addon-svelte-csf',
-		'@chromatic-com/storybook',
 		'@storybook/addon-docs',
 		'@storybook/addon-a11y',
-		'@storybook/addon-vitest',
-		'@storybook/addon-themes'
+		'@storybook/addon-themes',
+		'@storybook/addon-vitest'
 	],
-	framework: {
-		name: '@storybook/sveltekit',
-		options: {}
+	staticDirs: [
+		{
+			from: './static',
+			to: '/storybook-static'
+		},
+		{
+			from: '../static',
+			to: '/'
+		}
+	],
+	async viteFinal(config) {
+		return mergeConfig(config, {
+			resolve: {
+				alias: {
+					'$env/dynamic/public': import.meta.resolve('./env.public.ts')
+				}
+			}
+		});
 	}
-};
-export default config;
+});

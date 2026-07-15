@@ -2,5 +2,5 @@
 .env
 Caddyfile
 docker-compose.dev.yml
-browser-extension/src/manifest.json
+docker-compose.override.yml
 postgresql.conf

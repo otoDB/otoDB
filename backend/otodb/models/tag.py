@@ -1,30 +1,32 @@
-from typing import TYPE_CHECKING, Self
+import re
 from itertools import chain
+from typing import TYPE_CHECKING, Self
 
+# Monkeypatch tagulous to use our slugify (underscores as separator, not hyphens)
+import tagulous.models.models as _tagulous_models
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Value, Q, Prefetch
+from django.db.models import Prefetch, Q, Value
+from django_cte import CTE, with_cte
 from tagulous.models import BaseTagModel, TagModelManager
 
-from django_cte import CTE, with_cte
+from otodb.common import clean_tag, slugify_tag
 
-from markdownfield.models import MarkdownField, RenderedMarkdownField
-from markdownfield.validators import VALIDATOR_CLASSY
+from .enums import LanguageTypes, MediaType, SongTagCategory, WorkTagCategory
+from .revision import RevisionTrackedManager, RevisionTrackedModel
+from .wiki import WikiPage
 
-from .enums import WorkTagCategory, SongTagCategory, LanguageTypes, MediaType
-from .revision import RevisionTrackedModel, RevisionTrackedManager
+_tagulous_models.slugify = lambda value, **_: slugify_tag(value)
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
+
 	from .connection import (
 		TagWorkConnection,
-		TagWorkMediaConnection,
 		TagWorkCreatorConnection,
+		TagWorkMediaConnection,
 	)
 	from .media import MediaSong
-
-
-def name_cleaner(s):
-	return s.lower()
 
 
 def tagwork_ordering_case(prefix=''):
@@ -46,31 +48,41 @@ def tagwork_ordering_case(prefix=''):
 			**{f'{prefix}category': WorkTagCategory.SONG}, then=models.Value(30)
 		),
 		models.When(
-			**{f'{prefix}category': WorkTagCategory.GENERAL}, then=models.Value(40)
+			**{f'{prefix}category': WorkTagCategory.META}, then=models.Value(1000)
 		),
 		models.When(
-			**{f'{prefix}category': WorkTagCategory.META}, then=models.Value(1000)
+			**{f'{prefix}category': WorkTagCategory.UNCATEGORIZED},
+			then=models.Value(9999),
 		),
 		default=models.Value(999),
 		output_field=models.IntegerField(),
 	)
 
 
-class LowerCaseTagModelManager(RevisionTrackedManager, TagModelManager):
-	"""Base manager that handles lowercase name normalization for all tag models"""
+class TagModelManagerBase(RevisionTrackedManager, TagModelManager):
+	"""Base manager that converts name lookups to slug lookups"""
 
 	def get_or_create(self, *args, **kwargs):
 		if 'name' in kwargs:
-			kwargs['name'] = name_cleaner(kwargs['name'])
+			name = kwargs.pop('name')
+			slug = slugify_tag(name)
+			defaults = kwargs.pop('defaults', {})
+			defaults.setdefault('name', name.replace('_', ' '))
+			return super().get_or_create(slug=slug, defaults=defaults, **kwargs)
 		return super().get_or_create(*args, **kwargs)
+
+	def create(self, *args, **kwargs):
+		if 'name' in kwargs:
+			kwargs['name'] = kwargs['name'].replace('_', ' ')
+		return super().create(*args, **kwargs)
 
 	def get(self, *args, **kwargs):
 		if 'name' in kwargs:
-			kwargs['name'] = name_cleaner(kwargs['name'])
+			kwargs['slug'] = slugify_tag(kwargs.pop('name'))
 		return super().get(*args, **kwargs)
 
 
-class TagWorkManager(LowerCaseTagModelManager):
+class TagWorkManager(TagModelManagerBase):
 	def get_queryset(self):
 		# Prefetch language preferences with their tag relationship
 		lang_prefs_qs = TagWorkLangPreference.objects.select_related('tag')
@@ -94,7 +106,7 @@ class TagWorkManager(LowerCaseTagModelManager):
 		)
 
 
-class TagSongManager(LowerCaseTagModelManager):
+class TagSongManager(TagModelManagerBase):
 	def get_queryset(self):
 		# Prefetch language preferences with their tag relationship
 		lang_prefs_qs = TagSongLangPreference.objects.select_related('tag')
@@ -105,7 +117,6 @@ class TagSongManager(LowerCaseTagModelManager):
 		return (
 			super()
 			.get_queryset()
-			.prefetch_related('children')
 			.select_related('aliased_to')
 			.prefetch_related(
 				Prefetch('tagsonglangpreference_set', queryset=lang_prefs_qs),
@@ -137,8 +148,20 @@ class OtodbTagModel(BaseTagModel):
 	)
 
 	def save(self, *args, **kwargs):
-		if self.name:
-			self.name = name_cleaner(self.name)
+		assert self.name
+		self.name = clean_tag(self.name)
+		if not self.slug:
+			self.slug = slugify_tag(self.name)
+			if not self.slug:
+				raise ValidationError(
+					message=f'Tag name "{self.name}" cannot be converted to a valid slug'
+				)
+		else:
+			expected = slugify_tag(self.name)
+			if not re.fullmatch(rf'{re.escape(expected)}(_\d+)?', self.slug):
+				raise ValidationError(
+					f'Name "{self.name}" does not normalize to slug "{self.slug}"'
+				)
 		super().save(*args, **kwargs)
 
 	class Meta:
@@ -150,18 +173,34 @@ class OtodbTagModel(BaseTagModel):
 		from django.contrib.contenttypes.models import ContentType
 		from django_comments_xtd.models import XtdComment
 
+		from otodb.models.posts import EntityLink
+
 		self_ct = ContentType.objects.get_for_model(cls)
+
 		for tag in from_tags:
 			if tag.aliased_to:
 				tag = tag.aliased_to
-			if tag.id != into_tag.id:
+			if tag.pk != into_tag.pk:
 				tag.aliased_to = into_tag
 				tag.save()
 				cls.transfer_data(tag, into_tag)
 				cls.objects.filter(aliased_to=tag).update(aliased_to=into_tag)
+
 				XtdComment.objects.filter(
 					content_type=self_ct, object_pk=str(tag.pk)
 				).update(object_pk=str(into_tag.pk))
+				EntityLink.objects.filter(
+					entity_type=self_ct,
+					entity_id=tag.pk,
+					thread_id__in=EntityLink.objects.filter(
+						entity_type=self_ct,
+						entity_id=into_tag.pk,
+					).values('thread_id'),
+				).delete()
+				EntityLink.objects.filter(
+					entity_type=self_ct,
+					entity_id=tag.pk,
+				).update(entity_id=into_tag.pk)
 
 
 class TagWork(RevisionTrackedModel, OtodbTagModel):
@@ -181,7 +220,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 	class TagMeta:
 		protect_all = True
 		case_sensitive = False
-		force_lowercase = True
+		force_lowercase = False
 
 	class Meta:
 		ordering = [
@@ -191,7 +230,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 	deprecated = models.BooleanField(default=False, null=False)
 	category = models.IntegerField(
-		choices=WorkTagCategory.choices, default=WorkTagCategory.GENERAL
+		choices=WorkTagCategory.choices, default=WorkTagCategory.UNCATEGORIZED
 	)
 	media_type = models.IntegerField(
 		null=True, blank=True, help_text='Media type bitmask'
@@ -208,12 +247,9 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		]
 		entity_attrs = ['self', 'aliased_to']
 
-		def to_active(instance):
+		@staticmethod
+		def to_active(instance: 'TagWork') -> 'TagWork':
 			return instance.aliased_to or instance
-
-	@property
-	def display_name(self):
-		return self.name.replace('_', ' ')
 
 	def __str__(self):
 		return self.name
@@ -256,7 +292,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 				self.wikipage_set.exists()
 				and any([p.page.strip() != '' for p in self.wikipage_set]),
 				self.tagworkconnection_set.exists(),
-				self.category != WorkTagCategory.GENERAL,
+				self.category != WorkTagCategory.UNCATEGORIZED,
 			]
 		)
 
@@ -272,23 +308,32 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			]
 		)
 
+	@classmethod
+	def any_have_instances(cls, tags: list[Self]) -> bool:
+		"""Check if any of the given tags have associated works"""
+		return cls.objects.filter(
+			pk__in=[t.pk for t in tags], works__isnull=False
+		).exists()
+
 	@property
 	def children(self):
 		return TagWork.objects.filter(childhood__parent=self, aliased_to__isnull=True)
 
 	def get_descendants(self):
 		cte = CTE.recursive(
-			lambda cte: TagWork.objects.order_by()
-			.filter(id=self.id)
-			.values('id')
-			.union(
-				cte.join(
-					TagWork.objects.order_by(),
-					childhood__parent_id=cte.col.id,
-					aliased_to__isnull=True,
-					deprecated=False,
-				).values('id'),
-				all=True,
+			lambda cte: (
+				TagWork.objects.order_by()
+				.filter(id=self.id)
+				.values('id')
+				.union(
+					cte.join(
+						TagWork.objects.order_by(),
+						childhood__parent_id=cte.col.id,
+						aliased_to__isnull=True,
+						deprecated=False,
+					).values('id'),
+					all=True,
+				)
 			)
 		)
 		return (
@@ -300,24 +345,26 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 	def get_paths(self):
 		cte = CTE.recursive(
-			lambda cte: TagWork.objects.order_by()
-			.filter(id=self.id)
-			.values(
-				'id',
-				'slug',
-				fr=Value('', output_field=models.TextField()),
-			)
-			.union(
-				cte.join(
-					TagWork.objects.order_by(),
-					parenthood__tag_id=cte.col.id,
-					aliased_to__isnull=True,
-					deprecated=False,
-				).values(
+			lambda cte: (
+				TagWork.objects.order_by()
+				.filter(id=self.id)
+				.values(
 					'id',
 					'slug',
-					fr=models.functions.Cast(cte.col.slug, models.TextField()),
-				),  # Cannot do all=True because we could have diamond problems
+					fr=Value('', output_field=models.TextField()),
+				)
+				.union(
+					cte.join(
+						TagWork.objects.order_by(),
+						parenthood__tag_id=cte.col.id,
+						aliased_to__isnull=True,
+						deprecated=False,
+					).values(
+						'id',
+						'slug',
+						fr=models.functions.Cast(cte.col.slug, models.TextField()),
+					),  # Cannot do all=True because we could have diamond problems
+				)
 			)
 		)
 		return with_cte(
@@ -330,26 +377,29 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			return {}
 
 		cte = CTE.recursive(
-			lambda cte: cls.objects.order_by()
-			.filter(id__in=tag_ids)
-			.values(
-				'id',
-				source_tag_id=models.F('id'),
-				depth=Value(0, output_field=models.IntegerField()),
-			)
-			.union(
-				cte.join(
-					cls.objects.order_by(),
-					parenthood__tag_id=cte.col.id,
-					parenthood__primary=True,
-					aliased_to__isnull=True,
-					deprecated=False,
-				).values(
+			lambda cte: (
+				cls.objects.order_by()
+				.filter(id__in=tag_ids)
+				.values(
 					'id',
-					source_tag_id=cte.col.source_tag_id,
-					depth=cte.col.depth + Value(1, output_field=models.IntegerField()),
-				),
-				all=True,
+					source_tag_id=models.F('id'),
+					depth=Value(0, output_field=models.IntegerField()),
+				)
+				.union(
+					cte.join(
+						cls.objects.order_by(),
+						parenthood__tag_id=cte.col.id,
+						parenthood__primary=True,
+						aliased_to__isnull=True,
+						deprecated=False,
+					).values(
+						'id',
+						source_tag_id=cte.col.source_tag_id,
+						depth=cte.col.depth
+						+ Value(1, output_field=models.IntegerField()),
+					),
+					all=True,
+				)
 			)
 		)
 
@@ -392,13 +442,6 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 				if twi.used_as_source:
 					existing_twi.used_as_source = True
 
-				# keep instance_imported_from_source as True if either is True
-				if (
-					twi.instance_imported_from_source
-					or existing_twi.instance_imported_from_source
-				):
-					existing_twi.instance_imported_from_source = True
-
 				existing_twi.save()
 				twi.delete()
 			else:
@@ -424,8 +467,8 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			else:
 				tp.delete()
 		if (
-			from_tag.category != WorkTagCategory.GENERAL
-			and to_tag.category == WorkTagCategory.GENERAL
+			from_tag.category != WorkTagCategory.UNCATEGORIZED
+			and to_tag.category == WorkTagCategory.UNCATEGORIZED
 		):
 			to_tag.category = from_tag.category
 			if from_tag.category == WorkTagCategory.MEDIA:
@@ -435,7 +478,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 				s = from_tag.mediasong
 				s.work_tag = to_tag
 				s.save()
-			from_tag.category = WorkTagCategory.GENERAL
+			from_tag.category = WorkTagCategory.UNCATEGORIZED
 			from_tag.save()
 		for p in from_tag.wikipage_set.all():
 			try:
@@ -480,34 +523,13 @@ class TagWorkLangPreference(RevisionTrackedModel):
 		unique_together = (('tag', 'lang'),)
 
 
-class WikiPage(RevisionTrackedModel):
-	tag = models.ForeignKey(TagWork, on_delete=models.CASCADE, null=False, blank=False)
-	page = MarkdownField(
-		rendered_field='page_rendered', validator=VALIDATOR_CLASSY, null=False
-	)  # type: ignore
-	page_rendered = RenderedMarkdownField()
-	lang = models.IntegerField(
-		choices=LanguageTypes.choices,
-		default=LanguageTypes.NOT_APPLICABLE,
-		null=False,
-		blank=False,
-	)
-
-	class RevisionMeta:
-		tracked_fields = ['lang', 'tag', 'page']
-		entity_attrs = ['tag']
-
-	class Meta:
-		unique_together = (('tag', 'lang'),)
-
-
 class TagSong(RevisionTrackedModel, OtodbTagModel):
 	objects = TagSongManager()
 
 	class TagMeta:
 		protect_all = True
 		case_sensitive = False
-		force_lowercase = True
+		force_lowercase = False
 
 	category = models.IntegerField(
 		choices=SongTagCategory.choices, default=SongTagCategory.GENERAL
@@ -524,6 +546,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 		tracked_fields = ['name', 'slug', 'aliased_to', 'category', 'parent']
 		entity_attrs = ['self']
 
+		@staticmethod
 		def to_active(instance):
 			return instance.aliased_to or instance
 
@@ -536,18 +559,19 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 			),
 		]
 
-	@property
-	def display_name(self):
-		return self.name.replace('_', ' ')
-
 	def __str__(self):
 		return self.name
 
 	@classmethod
 	def transfer_data(cls, from_tag: Self, to_tag: Self):
-		for song in from_tag.songs.all():
-			song.tags.add(to_tag)
-			song.tags.remove(from_tag)
+		from .media import TagSongInstance
+
+		for tsi in TagSongInstance.objects.filter(song_tag=from_tag):
+			if TagSongInstance.objects.filter(song=tsi.song, song_tag=to_tag).exists():
+				tsi.delete()
+			else:
+				tsi.song_tag = to_tag
+				tsi.save()
 		cls.objects.filter(parent=from_tag).update(parent=to_tag)
 
 		# carry over category and parenthood
@@ -584,20 +608,32 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 			]
 		)
 
+	@classmethod
+	def any_have_instances(cls, tags: list[Self]) -> bool:
+		"""Check if any of the given tags have associated songs"""
+		return cls.objects.filter(
+			pk__in=[t.pk for t in tags], songs__isnull=False
+		).exists()
+
 	def get_tree(self):
 		cte = CTE.recursive(
-			lambda cte: TagSong.objects.order_by()
-			.filter(id=self.id)
-			.values(
-				'id', 'parent_id', depth=Value(0, output_field=models.IntegerField())
-			)
-			.union(
-				cte.join(TagSong.objects.order_by(), id=cte.col.parent_id).values(
+			lambda cte: (
+				TagSong.objects.order_by()
+				.filter(id=self.id)
+				.values(
 					'id',
 					'parent_id',
-					depth=cte.col.depth + Value(1, output_field=models.IntegerField()),
-				),
-				all=True,
+					depth=Value(0, output_field=models.IntegerField()),
+				)
+				.union(
+					cte.join(TagSong.objects.order_by(), id=cte.col.parent_id).values(
+						'id',
+						'parent_id',
+						depth=cte.col.depth
+						+ Value(1, output_field=models.IntegerField()),
+					),
+					all=True,
+				)
 			)
 		)
 		return with_cte(
@@ -606,16 +642,18 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 
 	def get_descendants(self):
 		cte = CTE.recursive(
-			lambda cte: TagSong.objects.order_by()
-			.filter(id=self.id)
-			.values('id')
-			.union(
-				cte.join(
-					TagSong.objects.order_by(),
-					parent_id=cte.col.id,
-					aliased_to__isnull=True,
-				).values('id'),
-				all=True,
+			lambda cte: (
+				TagSong.objects.order_by()
+				.filter(id=self.id)
+				.values('id')
+				.union(
+					cte.join(
+						TagSong.objects.order_by(),
+						parent_id=cte.col.id,
+						aliased_to__isnull=True,
+					).values('id'),
+					all=True,
+				)
 			)
 		)
 		return (

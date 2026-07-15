@@ -1,10 +1,10 @@
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
 from django.db.models import Q
 from django.db.models.signals import m2m_changed, pre_delete
-from django.contrib.contenttypes.models import ContentType
 from django.dispatch import receiver
-from django.contrib.sessions.models import Session
 
-from otodb.models import MediaWork, MediaSong, TagWork, TagSong, UserRequest
+from otodb.models import MediaSong, MediaWork, TagSong, TagWork, UserRequest
 
 
 # IMPORTANT- maintain following invariants:

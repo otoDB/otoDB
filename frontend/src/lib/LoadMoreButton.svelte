@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m } from './paraglide/messages';
+	import { m } from '$lib/paraglide/messages';
 	let { fetchNextBatch, results = $bindable([]), maxCount } = $props();
 
 	let fetching = $state(false);

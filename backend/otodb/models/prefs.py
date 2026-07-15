@@ -1,17 +1,23 @@
+from django.conf import settings
 from django.db import models
 
-from otodb.account.models import Account
-from .enums import ThemePref, LanguageTypes
+from .enums import Preferences
 
 
-class UserPreferences(models.Model):
-	user = models.OneToOneField(
-		Account, on_delete=models.CASCADE, related_name='prefs', null=False
+class UserPreference(models.Model):
+	user = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.CASCADE,
+		related_name='preferences',
+		null=False,
 	)
+	setting = models.IntegerField(choices=Preferences.choices, null=False)
+	value = models.IntegerField(null=False)
 
-	language = models.IntegerField(
-		choices=LanguageTypes.choices, default=LanguageTypes.NOT_APPLICABLE, null=False
-	)
-	theme = models.IntegerField(
-		choices=ThemePref.choices, default=ThemePref.DEFAULT, null=False
-	)
+	class Meta:
+		constraints = [
+			models.UniqueConstraint(
+				fields=['user', 'setting'],
+				name='userpreference_single_value_for_setting',
+			),
+		]

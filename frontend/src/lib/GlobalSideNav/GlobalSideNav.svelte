@@ -3,23 +3,11 @@
 	import { hasUserLevel } from '$lib/enums/userLevel';
 	import { m } from '$lib/paraglide/messages.js';
 	import { Levels } from '$lib/schema';
-	import { clickOutside } from '$lib/ui';
-	import type { ClassValue } from 'svelte/elements';
 
 	let {
-		class: className,
-
-		isMobileNavOpen,
-		closeMobileNav,
-
 		user,
 		stats
 	}: {
-		class?: ClassValue;
-
-		isMobileNavOpen: boolean;
-		closeMobileNav: () => void;
-
 		user: {
 			level: Levels;
 			username: string;
@@ -35,6 +23,11 @@
 	} = $props();
 
 	let search_type = $state<'work' | 'tag' | 'list'>('work');
+
+	let isSidebarOpen = $state(false);
+	const closeSidebar = () => {
+		isSidebarOpen = false;
+	};
 </script>
 
 {#snippet link(pathname: string, title: string)}
@@ -43,19 +36,21 @@
 			href={pathname}
 			class="aria-[current=page]:text-otodb-content-fainter text-xl no-underline md:text-sm"
 			aria-current={page.url.pathname === pathname ? 'page' : undefined}
-			onclick={closeMobileNav}>{title}</a
+			onclick={closeSidebar}>{title}</a
 		>
 	</li>
 {/snippet}
 
+<input type="checkbox" class="peer hidden" bind:checked={isSidebarOpen} id="sidebar-open" />
+<label
+	for="sidebar-open"
+	class="border-otodb-content-faint/90 bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-2 flex h-12 w-12 cursor-pointer border peer-checked:top-0 peer-checked:left-0 peer-checked:h-full peer-checked:w-full peer-checked:cursor-auto md:hidden"
+	aria-label={m.clean_kind_stork_affirm()}
+>
+	<span class="icon-[gravity-ui--bars] m-auto size-6" aria-hidden="true"></span>
+</label>
 <nav
-	class={[
-		className,
-		'bg-otodb-bg-faint/90 fixed top-0 left-0 z-2 m-0 flex h-full max-w-[85vw] flex-col gap-y-2 overflow-y-auto p-8 md:visible md:relative md:w-min md:min-w-64 md:bg-transparent md:p-0 md:after:content-none',
-		!isMobileNavOpen && 'invisible'
-	]}
-	use:clickOutside
-	onoutclick={closeMobileNav}
+	class="bg-otodb-bg-faint/90 fixed top-0 left-0 z-3 m-0 hidden h-full max-w-[85vw] flex-col gap-y-2 overflow-y-auto p-8 peer-checked:flex md:visible md:relative md:flex md:w-min md:min-w-64 md:bg-transparent md:p-0 md:after:content-none"
 >
 	<form target="_self" method="get" action="/{search_type}" class="flex w-full">
 		<select bind:value={search_type} class="bg-otodb-bg-faint/75 pl-1">
@@ -111,7 +106,7 @@
 					href={`/profile/${user.username}/notifications`}
 					title={m.free_keen_wren_exhale()}
 					class="relative -top-0.5 inline-flex no-underline"
-					onclick={closeMobileNav}
+					onclick={closeSidebar}
 				>
 					{#if user.notifs_nonsub_count > 0}({user.notifs_nonsub_count}){/if}
 					<span
@@ -140,7 +135,7 @@
 						<button
 							type="submit"
 							class="w-full cursor-pointer border-none bg-transparent p-0 text-left text-xl text-[inherit] no-underline md:text-sm"
-							onclick={closeMobileNav}
+							onclick={closeSidebar}
 						>
 							{m.best_front_swallow_play()}
 						</button>
@@ -199,3 +194,9 @@
 		</div>
 	</div>
 </nav>
+
+<style>
+	input[type='checkbox']:checked ~ label > span {
+		display: none;
+	}
+</style>

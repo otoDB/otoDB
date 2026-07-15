@@ -1,7 +1,12 @@
 <script lang="ts" generics="T extends 'work' | 'song'">
 	import { enumValues, SongRelationNames, WorkRelationNames } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
-	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
+	import {
+		SongRelationTypes,
+		WorkRelationTypes,
+		type components,
+		GraphViewBackends
+	} from '$lib/schema';
 	import { getDisplayText } from '$lib/ui';
 	import elkLayouts from '@mermaid-js/layout-elk';
 	import mermaid from 'mermaid';
@@ -21,14 +26,23 @@
 		defaultDir: 'TB' | 'LR';
 		objects: Node[];
 		relations: Edge[];
+		backend?: GraphViewBackends;
 	}
-	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 }: Props = $props();
+	let {
+		id,
+		objects,
+		relations,
+		defaultDir = 'TB',
+		type,
+		min_height = 600,
+		backend = GraphViewBackends.Graphviz
+	}: Props = $props();
 
 	const RelationTypes = $derived(type === 'work' ? WorkRelationTypes : SongRelationTypes);
 	const RelationNames = $derived(type === 'work' ? WorkRelationNames : SongRelationNames);
 
 	let deg = $state(1);
-	let direction = $state(defaultDir);
+	let direction = $derived(defaultDir);
 	let allowed_types: RelationType[] = $state(enumValues(RelationTypes) as RelationType[]);
 
 	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: string[]) =>
@@ -82,7 +96,7 @@ flowchart ${direction}
     ${links.map((r) => `${r.A_id} -->|${RelationNames[r.relation]()}| ${r.B_id}`).join('\n')}`)
 		);
 
-	const mermaid_BFS = (
+	const relation_BFS = (
 		ns: Node[],
 		ls: Edge[],
 		start: string,
@@ -130,29 +144,28 @@ flowchart ${direction}
 	};
 
 	const max_distance = $derived(
-		Math.max(...mermaid_BFS(objects, relations, id)[0].map((n) => n.distance))
+		Math.max(...relation_BFS(objects, relations, id)[0].map((n) => n.distance))
 	);
 
 	let distance = $derived(Math.max(Math.min(deg, max_distance), 1));
 
-	let [nodes, links, ext] = $derived(mermaid_BFS(objects, relations, id, distance));
-	// let svg = $derived(get_svg_mermaid(nodes, links, ext));
-	console.log(objects, relations, id);
-	const c = 'white';
-	let svg = $derived(
+	let [nodes, links, ext] = $derived(relation_BFS(objects, relations, id, distance));
+
+	const gv_col = 'white';
+	const get_svg_gv = (nodes: (Node & { distance: number })[], links: Edge[], ext: string[]) =>
 		Viz.instance().then((viz) =>
 			viz.renderString(
 				{
 					...(type === 'work'
 						? {
-								nodes: objects.map((ob) => ({
+								nodes: nodes.map((ob) => ({
 									name: ob.id,
 									attributes: {
 										label: { html: `${ob.title}` },
 										URL: `/work/${ob.id}`
 									}
 								})),
-								edges: relations.map((r) =>
+								edges: links.map((r) =>
 									r.relation === 0
 										? {
 												tail: r.A_id,
@@ -167,13 +180,13 @@ flowchart ${direction}
 								)
 							}
 						: {
-								nodes: objects.map((ob) => ({
+								nodes: nodes.map((ob) => ({
 									name: ob.id,
 									attributes: {
 										label: { html: `<a href="/tag/${ob.id}">${ob.title}</a>` }
 									}
 								})),
-								edges: relations.map((r) => ({
+								edges: links.map((r) => ({
 									tail: r.B_id,
 									head: r.A_id,
 									attributes: { label: RelationNames[r.relation]() }
@@ -182,20 +195,27 @@ flowchart ${direction}
 					nodeAttributes: {
 						margin: 0,
 						width: 5,
-						fontcolor: c,
+						fontcolor: gv_col,
 						shape: 'none',
 						fixedsize: true
 					},
-					edgeAttributes: { color: c, fontcolor: c }
+					edgeAttributes: { color: gv_col, fontcolor: gv_col }
 				},
 				{ format: 'svg_inline', graphAttributes: { bgcolor: 'transparent' } }
 			)
-		)
+		);
+
+	let svg = $derived(
+		backend === GraphViewBackends.Graphviz
+			? get_svg_gv(nodes, links, ext)
+			: get_svg_mermaid(nodes, links, ext)
 	);
 
 	onMount(() => {
-		mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'base' });
-		mermaid.registerLayoutLoaders(elkLayouts);
+		if (backend === GraphViewBackends.Mermaid) {
+			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'base' });
+			mermaid.registerLayoutLoaders(elkLayouts);
+		}
 	});
 
 	let svgContainer = $state<HTMLDivElement | undefined>(undefined);
@@ -237,7 +257,7 @@ flowchart ${direction}
 		}
 	}
 
-	let svg_height = $state(min_height),
+	let svg_height = $derived(min_height),
 		old_svg_height = 0;
 	let svg_resizing_begin = -1;
 </script>
@@ -260,32 +280,38 @@ flowchart ${direction}
 		<option value={t} class="type-label">{RelationNames[t]()}</option>
 	{/each}
 </select>
-{#await svg}
-	{m.sunny_light_duck_surge()}
-{:then s}
-	<div
-		class="mt-2"
-		bind:this={svgContainer}
-		onmouseover={svgMouseOver}
-		onmouseout={svgMouseOut}
-		role="main"
-		onblur={() => {}}
-		onfocus={() => {}}
-	>
-		<button
-			class="absolute right-0 bottom-0 hidden cursor-ns-resize text-3xl md:block"
-			onmousedown={(e) => {
-				svg_resizing_begin = e.clientY;
-				old_svg_height = svg_height;
-			}}>↕</button
-		>
-		<SVGViewer resizeBehavior="zoom" maxScale={90} height={`${svg_height}px`} width="100%">
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html s}
-		</SVGViewer>
-	</div>
-{/await}
 
+<!-- Mermaid requires browser API, for GV use browser for view directly -->
+{#if backend === GraphViewBackends.Mermaid}
+	{#await svg}
+		{m.sunny_light_duck_surge()}
+	{:then s}
+		<div
+			class="mt-2"
+			bind:this={svgContainer}
+			onmouseover={svgMouseOver}
+			onmouseout={svgMouseOut}
+			role="main"
+			onblur={() => {}}
+			onfocus={() => {}}
+		>
+			<button
+				class="absolute right-0 bottom-0 hidden cursor-ns-resize text-3xl md:block"
+				onmousedown={(e) => {
+					svg_resizing_begin = e.clientY;
+					old_svg_height = svg_height;
+				}}>↕</button
+			>
+			<SVGViewer resizeBehavior="zoom" maxScale={90} height={`${svg_height}px`} width="100%">
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+				{@html s}
+			</SVGViewer>
+		</div>
+	{/await}
+{:else}
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html await svg}
+{/if}
 <svelte:body
 	onmouseup={() => {
 		svg_resizing_begin = -1;

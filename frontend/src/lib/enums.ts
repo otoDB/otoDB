@@ -19,7 +19,8 @@ import {
 	WorkOrigin,
 	WorkRelationTypes,
 	WorkStatus,
-	VideoPlatformPref
+	VideoPlatformPref,
+	GraphViewBackends
 } from '$lib/schema';
 
 export const SongTagCategoryNames = {
@@ -71,6 +72,11 @@ export const VideoPlatformPrefNames = {
 		Object.entries(PlatformNames).map(([value, name]) => [value, () => name])
 	) as Record<Platform, () => string>)
 } satisfies Record<VideoPlatformPref, () => string>;
+
+export const GraphViewBackendNames = {
+	[GraphViewBackends.Graphviz]: 'Graphviz',
+	[GraphViewBackends.Mermaid]: 'Mermaid'
+} satisfies Record<GraphViewBackends, string>;
 
 export const WorkStatusNames = {
 	[WorkStatus.Available]: m.this_lime_porpoise_launch,

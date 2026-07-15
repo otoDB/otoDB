@@ -6022,6 +6022,18 @@
         "title": "LoginRequestSchema",
         "type": "object"
       },
+      "GraphViewBackends": {
+        "enum": [
+          0,
+          1
+        ],
+        "title": "GraphViewBackends",
+        "type": "integer",
+        "x-enum-varnames": [
+          "Mermaid",
+          "Graphviz"
+        ]
+      },
       "LanguageTypes": {
         "enum": [
           0,
@@ -6110,6 +6122,13 @@
           "PREFER_AUTHOR_UPLOAD": {
             "title": "Prefer Author Upload",
             "type": "boolean"
+          },
+          "GRAPH_VIEW_BACKEND": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GraphViewBackends"
+              }
+            ]
           }
         },
         "title": "UserPreferenceSchema",

@@ -25,6 +25,8 @@
 	let search_type = $state<'work' | 'tag' | 'list'>('work');
 
 	let isSidebarOpen = $state(false);
+	// If JS is unavailable, gets collapsed on navigation (above)
+	// If JS is available, gets collapsed (below)
 	const closeSidebar = () => {
 		isSidebarOpen = false;
 	};

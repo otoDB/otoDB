@@ -51,9 +51,8 @@ class AuthenticatedTestClient(TestClient):
 
 
 @pytest.fixture(autouse=True)
-def enable_request_cache(db, member):
-	"""Autouse: DB access + a default user for every test. Revision capture now lives in
-	the DB triggers, so the former request-cache / current-request wiring is obsolete."""
+def enable_db_access(db, member):
+	"""Autouse: DB access + a default user for every test."""
 	yield
 
 

@@ -152,19 +152,23 @@ flowchart ${direction}
 	let [nodes, links, ext] = $derived(relation_BFS(objects, relations, id, distance));
 
 	const gv_col = 'white';
-	const get_svg_gv = (nodes: (Node & { distance: number })[], links: Edge[], ext: string[]) =>
-		Viz.instance().then((viz) =>
+	const gv_font = 'Arial';
+	const gv_node = (ob: Node, url: string) => ({
+		name: ob.id,
+		attributes: {
+			label: getDisplayText(ob.title),
+			tooltip: getDisplayText(ob.title),
+			URL: url
+		}
+	});
+	const get_svg_gv = (nodes: (Node & { distance: number })[], links: Edge[], ext: string[]) => {
+		const rankdir = direction;
+		return Viz.instance().then((viz) =>
 			viz.renderString(
 				{
 					...(type === 'work'
 						? {
-								nodes: nodes.map((ob) => ({
-									name: ob.id,
-									attributes: {
-										label: { html: `${ob.title}` },
-										URL: `/work/${ob.id}`
-									}
-								})),
+								nodes: nodes.map((ob) => gv_node(ob, `/work/${ob.id}`)),
 								edges: links.map((r) =>
 									r.relation === 0
 										? {
@@ -180,12 +184,7 @@ flowchart ${direction}
 								)
 							}
 						: {
-								nodes: nodes.map((ob) => ({
-									name: ob.id,
-									attributes: {
-										label: { html: `<a href="/tag/${ob.id}">${ob.title}</a>` }
-									}
-								})),
+								nodes: nodes.map((ob) => gv_node(ob, `/tag/${(ob as Song).work_tag}`)),
 								edges: links.map((r) => ({
 									tail: r.B_id,
 									head: r.A_id,
@@ -193,17 +192,28 @@ flowchart ${direction}
 								}))
 							}),
 					nodeAttributes: {
-						margin: 0,
-						width: 5,
+						shape: 'box',
+						fontname: gv_font,
+						fontsize: 9,
 						fontcolor: gv_col,
-						shape: 'none',
-						fixedsize: true
+						color: gv_col
 					},
-					edgeAttributes: { color: gv_col, fontcolor: gv_col }
+					edgeAttributes: {
+						minlen: 2,
+						fontname: gv_font,
+						fontsize: 8,
+						arrowsize: 0.7,
+						color: gv_col,
+						fontcolor: gv_col
+					}
 				},
-				{ format: 'svg_inline', graphAttributes: { bgcolor: 'transparent' } }
+				{
+					format: 'svg_inline',
+					graphAttributes: { bgcolor: 'transparent', rankdir }
+				}
 			)
 		);
+	};
 
 	let svg = $derived(
 		backend === GraphViewBackends.Graphviz
@@ -309,8 +319,10 @@ flowchart ${direction}
 		</div>
 	{/await}
 {:else}
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html await svg}
+	<div class="gv-graph">
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html await svg}
+	</div>
 {/if}
 <svelte:body
 	onmouseup={() => {
@@ -325,6 +337,9 @@ flowchart ${direction}
 
 <style lang="postcss">
 	@reference "../app.css";
+	.gv-graph :global(svg text) {
+		font-family: Arial, Helvetica, sans-serif;
+	}
 	option.type-label {
 		&:checked {
 			@apply text-otodb-bg-primary;

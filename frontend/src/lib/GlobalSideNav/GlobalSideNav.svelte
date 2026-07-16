@@ -47,7 +47,7 @@
 <input type="checkbox" class="peer hidden" bind:checked={isSidebarOpen} id="sidebar-open" />
 <label
 	for="sidebar-open"
-	class="border-otodb-content-faint/90 bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-2 flex h-12 w-12 cursor-pointer border peer-checked:top-0 peer-checked:left-0 peer-checked:h-full peer-checked:w-full peer-checked:cursor-auto md:hidden"
+	class="border-otodb-content-faint/90 bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-2 flex h-12 w-12 cursor-pointer border peer-checked:top-0 peer-checked:left-0 peer-checked:h-full peer-checked:w-full peer-checked:cursor-auto peer-checked:border-none md:hidden"
 	aria-label={m.clean_kind_stork_affirm()}
 >
 	<span class="icon-[gravity-ui--bars] m-auto size-6" aria-hidden="true"></span>

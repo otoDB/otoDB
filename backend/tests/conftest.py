@@ -1,6 +1,8 @@
 """Shared pytest fixtures for all tests."""
 
 import pytest
+from django.conf import settings as django_settings
+from django.contrib.auth.hashers import make_password
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from ninja.testing import TestAsyncClient, TestClient
@@ -50,9 +52,27 @@ class AuthenticatedTestClient(TestClient):
 		return super()._build_request(method, path, data, request_params)
 
 
+def _ensure_system_bot():
+	"""transaction=True tests flush the test DB at teardown, deleting migration data --
+	including the system bot (account id 1), which the capture triggers attribute
+	unstamped writes to. Restore it exactly as account migration 0008 created it."""
+	if Account.objects.filter(pk=1).exists():
+		return
+	Account.objects.create(
+		pk=1,
+		username=django_settings.OTODB_SYSTEM_BOT_USERNAME,
+		email=f'{django_settings.OTODB_SYSTEM_BOT_USERNAME.lower()}@otodb.invalid',
+		level=Account.Levels.EDITOR,
+		is_active=False,
+		email_activated=True,
+		password=make_password(None),
+	)
+
+
 @pytest.fixture(autouse=True)
 def enable_db_access(db, member):
 	"""Autouse: DB access + a default user for every test."""
+	_ensure_system_bot()
 	yield
 
 

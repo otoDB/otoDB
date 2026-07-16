@@ -53,7 +53,6 @@ $$;
 -- mediasong: tracked=['title', 'bpm', 'variable_bpm', 'work_tag', 'author']
 CREATE OR REPLACE FUNCTION otodb_mediasong_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'mediasong');
@@ -124,7 +123,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_mediasong_capture();
 -- mediasongconnection: tracked=['song', 'site', 'content_id']
 CREATE OR REPLACE FUNCTION otodb_mediasongconnection_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'mediasongconnection');
@@ -175,7 +173,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_mediasongconnection_capture();
 -- mediawork: tracked=['title', 'description', 'rating', 'moved_to']
 CREATE OR REPLACE FUNCTION otodb_mediawork_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'mediawork');
@@ -237,7 +234,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_mediawork_capture();
 -- songrelation: tracked=['A', 'B', 'relation']
 CREATE OR REPLACE FUNCTION otodb_songrelation_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'songrelation');
@@ -292,7 +288,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_songrelation_capture();
 -- tagsong: tracked=['name', 'slug', 'aliased_to', 'category', 'parent']
 CREATE OR REPLACE FUNCTION otodb_tagsong_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagsong');
@@ -356,7 +351,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagsong_capture();
 -- tagsonginstance: tracked=['song', 'song_tag']
 CREATE OR REPLACE FUNCTION otodb_tagsonginstance_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagsonginstance');
@@ -400,7 +394,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagsonginstance_capture();
 -- tagsonglangpreference: tracked=['lang', 'tag']
 CREATE OR REPLACE FUNCTION otodb_tagsonglangpreference_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagsonglangpreference');
@@ -444,7 +437,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagsonglangpreference_capture();
 -- tagwork: tracked=['name', 'slug', 'aliased_to', 'deprecated', 'category', 'media_type']
 CREATE OR REPLACE FUNCTION otodb_tagwork_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagwork');
@@ -522,7 +514,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagwork_capture();
 -- tagworkconnection: tracked=['tag', 'site', 'content_id']
 CREATE OR REPLACE FUNCTION otodb_tagworkconnection_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkconnection');
@@ -573,7 +564,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagworkconnection_capture();
 -- tagworkcreatorconnection: tracked=['tag', 'site', 'content_id', 'dead']
 CREATE OR REPLACE FUNCTION otodb_tagworkcreatorconnection_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkcreatorconnection');
@@ -631,7 +621,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagworkcreatorconnection_capture();
 -- tagworkinstance: tracked=['work', 'work_tag', 'used_as_source', 'creator_roles']
 CREATE OR REPLACE FUNCTION otodb_tagworkinstance_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkinstance');
@@ -689,7 +678,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagworkinstance_capture();
 -- tagworklangpreference: tracked=['lang', 'tag']
 CREATE OR REPLACE FUNCTION otodb_tagworklangpreference_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworklangpreference');
@@ -733,7 +721,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagworklangpreference_capture();
 -- tagworkmediaconnection: tracked=['tag', 'site', 'content_id']
 CREATE OR REPLACE FUNCTION otodb_tagworkmediaconnection_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkmediaconnection');
@@ -784,7 +771,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagworkmediaconnection_capture();
 -- tagworkparenthood: tracked=['tag', 'parent', 'primary']
 CREATE OR REPLACE FUNCTION otodb_tagworkparenthood_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkparenthood');
@@ -839,7 +825,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_tagworkparenthood_capture();
 -- wikipage: tracked=['lang', 'tag', 'work', 'slug', 'title', 'page']
 CREATE OR REPLACE FUNCTION otodb_wikipage_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'wikipage');
@@ -926,7 +911,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_wikipage_capture();
 -- workrelation: tracked=['A', 'B', 'relation']
 CREATE OR REPLACE FUNCTION otodb_workrelation_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'workrelation');
@@ -981,7 +965,6 @@ FOR EACH ROW EXECUTE FUNCTION otodb_workrelation_capture();
 -- worksource: tracked=['media', 'platform', 'source_id', 'url', 'published_date', 'work_origin', 'work_status', 'work_width', 'work_height', 'work_duration', 'title', 'description', 'thumbnail_url', 'thumbnail_mime', 'thumbnail_hash', 'uploader_id', 'added_by']
 CREATE OR REPLACE FUNCTION otodb_worksource_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
-	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'worksource');

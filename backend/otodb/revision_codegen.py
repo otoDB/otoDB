@@ -8,9 +8,11 @@ This module imports ONLY ``revision_spec`` (plain data) -- no Django -- so trigg
 generation outlives the migration off Django. Generate with:
 
     python -m otodb.revision_codegen        > otodb/sql/revision_triggers.sql
-    python -m otodb.revision_codegen --drop  # teardown / migration reverse_sql
+    python -m otodb.revision_codegen --drop   # teardown / migration reverse_sql
+    python -m otodb.revision_codegen --check  # fail if the committed .sql is stale
 
-A Django-based parity test keeps the spec honest against the models while both exist.
+A Django-based parity test keeps the spec honest against the models while both exist;
+``tests/test_revision_codegen.py`` runs the same staleness check as ``--check`` in CI.
 """
 
 from otodb.revision_spec import TABLES
@@ -98,7 +100,6 @@ def _table_sql(spec):
 	# One ct variable per distinct (app, model) referenced by entity routing.
 	ct_var = {(app, model): 'own_ct'}
 	decls = [
-		'\trev bigint;',
 		f'\ttid bigint := coalesce(NEW."{pk}", OLD."{pk}");',
 		"\troute integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);",
 		f"\town_ct integer := otodb_ct('{app}', '{model}');",
@@ -189,6 +190,16 @@ def generate_drop_sql():
 if __name__ == '__main__':
 	import sys
 
-	sys.stdout.write(
-		generate_drop_sql() if '--drop' in sys.argv[1:] else generate_sql()
-	)
+	if '--check' in sys.argv[1:]:
+		from pathlib import Path
+
+		artifact = Path(__file__).parent / 'sql' / 'revision_triggers.sql'
+		if artifact.read_text(encoding='utf-8') != generate_sql():
+			sys.exit(
+				'otodb/sql/revision_triggers.sql is stale -- regenerate:'
+				' python -m otodb.revision_codegen > otodb/sql/revision_triggers.sql'
+			)
+	else:
+		sys.stdout.write(
+			generate_drop_sql() if '--drop' in sys.argv[1:] else generate_sql()
+		)

@@ -170,15 +170,15 @@ flowchart ${direction}
 						? {
 								nodes: nodes.map((ob) => gv_node(ob, `/work/${ob.id}`)),
 								edges: links.map((r) =>
-									r.relation === 0
+									r.relation === WorkRelationTypes.Sequel
 										? {
-												tail: r.A_id,
-												head: r.B_id,
+												tail: r.B_id,
+												head: r.A_id,
 												attributes: { label: RelationNames[r.relation]() }
 											}
 										: {
-												tail: r.B_id,
-												head: r.A_id,
+												tail: r.A_id,
+												head: r.B_id,
 												attributes: { label: RelationNames[r.relation]() }
 											}
 								)
@@ -186,8 +186,8 @@ flowchart ${direction}
 						: {
 								nodes: nodes.map((ob) => gv_node(ob, `/tag/${(ob as Song).work_tag}`)),
 								edges: links.map((r) => ({
-									tail: r.B_id,
-									head: r.A_id,
+									tail: r.A_id,
+									head: r.B_id,
 									attributes: { label: RelationNames[r.relation]() }
 								}))
 							}),

@@ -8,7 +8,7 @@
 		type components,
 		GraphViewBackends
 	} from '$lib/schema';
-	import { getDisplayText } from '$lib/ui';
+	import { getDisplayText, getLocalPref } from '$lib/ui';
 	import elkLayouts from '@mermaid-js/layout-elk';
 	import mermaid from 'mermaid';
 	import { onMount } from 'svelte';
@@ -29,15 +29,11 @@
 		relations: Edge[];
 		backend?: GraphViewBackends;
 	}
-	let {
-		id,
-		objects,
-		relations,
-		defaultDir,
-		type,
-		min_height = 600,
-		backend = GraphViewBackends.Graphviz
-	}: Props = $props();
+	let { id, objects, relations, defaultDir, type, min_height = 600, backend }: Props = $props();
+
+	const active_backend = $derived(
+		backend ?? page.data.user?.prefs?.GRAPH_VIEW_BACKEND ?? getLocalPref('GRAPH_VIEW_BACKEND')
+	);
 
 	const RelationTypes = $derived(type === 'work' ? WorkRelationTypes : SongRelationTypes);
 	const RelationNames = $derived(type === 'work' ? WorkRelationNames : SongRelationNames);
@@ -247,13 +243,13 @@ flowchart ${direction}
 	};
 
 	let svg = $derived(
-		backend === GraphViewBackends.Graphviz
+		active_backend === GraphViewBackends.Graphviz
 			? get_svg_gv(nodes, links, ext)
 			: get_svg_mermaid(nodes, links, ext)
 	);
 
 	onMount(() => {
-		if (backend === GraphViewBackends.Mermaid) {
+		if (active_backend === GraphViewBackends.Mermaid) {
 			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'base' });
 			mermaid.registerLayoutLoaders(elkLayouts);
 		}
@@ -365,7 +361,7 @@ flowchart ${direction}
 </form>
 
 <!-- Mermaid requires browser API, for GV use browser for view directly -->
-{#if backend === GraphViewBackends.Mermaid}
+{#if active_backend === GraphViewBackends.Mermaid}
 	{#await svg}
 		{m.sunny_light_duck_surge()}
 	{:then s}

@@ -49,7 +49,8 @@
 		{#if isSVO(getLocale())}
 			{m.curly_safe_lynx_fond()}
 		{/if}
-		<a href="/profile/{data.revision.user}">{data.revision.user}</a>
+		{#if data.revision.user}<a href="/profile/{data.revision.user}">{data.revision.user}</a
+			>{:else}{m.this_late_gadfly_sail()}{/if}
 		{#if isSOV(getLocale())}
 			{m.curly_safe_lynx_fond()}
 		{/if}
@@ -68,7 +69,7 @@
 				if (!error) await goto('/revision');
 			})}>Revert changes made in this revision</button
 		>{/if}
-	{#if data.user && data.user.username !== data.revision.user}
+	{#if data.user && data.revision.user && data.user.username !== data.revision.user}
 		<button
 			onclick={() =>
 				goto(

@@ -27,7 +27,8 @@
 				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
 					>{rev.route !== null && rev.route !== undefined ? routeNames[rev.route]() : ''}</td
 				><td>
-					<a href="/profile/{rev.user}">{rev.user}</a>
+					{#if rev.user}<a href="/profile/{rev.user}">{rev.user}</a
+						>{:else}{m.this_late_gadfly_sail()}{/if}
 				</td><td>
 					<Time format="relative" date={rev.date} />
 				</td><td>

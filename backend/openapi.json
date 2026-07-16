@@ -10354,8 +10354,15 @@
             "type": "string"
           },
           "user": {
-            "title": "User",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User"
           },
           "index": {
             "anyOf": [
@@ -10401,7 +10408,6 @@
         "required": [
           "id",
           "date",
-          "user",
           "n_ent"
         ],
         "title": "RevisionEntitySummarySchema",
@@ -10419,8 +10425,15 @@
             "type": "string"
           },
           "user": {
-            "title": "User",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User"
           },
           "index": {
             "anyOf": [
@@ -10451,8 +10464,7 @@
         },
         "required": [
           "id",
-          "date",
-          "user"
+          "date"
         ],
         "title": "RevisionSchema",
         "type": "object"

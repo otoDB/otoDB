@@ -66,12 +66,14 @@
 		</details>
 	</form>
 	<hr />
-	<div
-		class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-9"
-	>
-		{#each data.results.items as work, i (i)}
-			<WorkCard {work} />
-		{/each}
+	<div class="@container">
+		<div
+			class="grid grid-cols-1 gap-x-4 gap-y-4 @[400px]:grid-cols-2 @[616px]:grid-cols-3 @[1264px]:grid-cols-6 @[1912px]:grid-cols-9"
+		>
+			{#each data.results.items as work, i (i)}
+				<WorkCard {work} />
+			{/each}
+		</div>
 	</div>
 	<Pager n_count={data.results.count} page_size={data.batch_size} base_url={page.url.toString()} />
 </Section>

@@ -24,6 +24,7 @@ from otodb.models.posts import Notification, Subscription
 from otodb.models.revision import RevisionChangeEntity
 from otodb.revision_codegen import generate_sql
 from otodb.revision_db import db_revision
+from otodb.revision_spec import TABLES
 
 ROUTE = int(Route.WORKSOURCE_SET_ORIGIN)  # 62
 
@@ -51,6 +52,11 @@ def _make_worksource(member, media=None) -> WorkSource:
 		media=media,
 	)
 	Revision.objects.all().delete()  # clear the INSERT-triggered rows
+	with connection.cursor() as cursor:
+		# The txn-local otodb.rev_id still points at the revision just deleted (the
+		# whole test is one transaction); reset it so a later unstamped write mints a
+		# fresh revision instead of dangling on the deleted id.
+		cursor.execute("SELECT set_config('otodb.rev_id', '', true)")
 	return ws
 
 
@@ -172,19 +178,44 @@ def test_delete_captures_marker(revision_triggers, member):
 
 
 @pytest.mark.django_db
-def test_untracked_only_update_records_nothing(revision_triggers, member):
-	"""The UPDATE trigger's WHEN guard skips the capture function entirely for writes
-	touching no tracked column (moderation flags, tagulous counts, ...)."""
+def test_update_when_guard_skips_function(revision_triggers, member):
+	"""An untracked-only write (moderation flags, tagulous counts, ...) must not even
+	invoke the capture function. EXPLAIN ANALYZE reports each row trigger that fired;
+	a WHEN guard evaluating false means the trigger is never queued, so it is absent.
+	The tracked write doubles as proof that EXPLAIN does report the trigger when fired.
+	"""
 	ws = _make_worksource(member)
 
-	with db_revision(user=member, message='untracked', route=ROUTE):
+	def update_fires_trigger(set_clause, value) -> bool:
 		with connection.cursor() as cursor:
 			cursor.execute(
-				'UPDATE otodb_worksource SET is_pending = true WHERE id = %s', [ws.id]
+				f'EXPLAIN ANALYZE UPDATE otodb_worksource SET {set_clause} = %s'
+				' WHERE id = %s',
+				[value, ws.id],
 			)
+			plan = '\n'.join(row[0] for row in cursor.fetchall())
+		return 'zz_otodb_worksource_capture_u' in plan
 
-	assert Revision.objects.count() == 0
-	assert RevisionChange.objects.count() == 0
+	assert not update_fires_trigger('is_pending', True)  # untracked -> skipped
+	assert update_fires_trigger('title', 'T')  # tracked -> enters the function
+
+
+@pytest.mark.django_db
+def test_update_when_guard_installed_on_every_table(revision_triggers):
+	"""Every tracked table's UPDATE trigger carries a WHEN qualification (pg_trigger
+	.tgqual), so no table silently regresses to fire-on-every-write."""
+	with connection.cursor() as cursor:
+		cursor.execute(
+			"""
+			SELECT c.relname, t.tgqual IS NOT NULL
+			FROM pg_trigger t
+			JOIN pg_class c ON c.oid = t.tgrelid
+			WHERE t.tgname LIKE 'zz\\_otodb\\_%\\_capture\\_u'
+			"""
+		)
+		guarded = dict(cursor.fetchall())
+	assert set(guarded) == {spec['table'] for spec in TABLES}
+	assert all(guarded.values()), f'unguarded UPDATE triggers: {guarded}'
 
 
 @pytest.mark.django_db

@@ -122,7 +122,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_mediasong_capture ON otodb_mediasong;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_mediasong_capture ON otodb_mediasong;
 CREATE OR REPLACE TRIGGER zz_otodb_mediasong_capture_i
 AFTER INSERT ON otodb_mediasong
 FOR EACH ROW EXECUTE FUNCTION otodb_mediasong_capture();
@@ -188,7 +188,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_mediasongconnection_capture ON otodb_mediasongconnection;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_mediasongconnection_capture ON otodb_mediasongconnection;
 CREATE OR REPLACE TRIGGER zz_otodb_mediasongconnection_capture_i
 AFTER INSERT ON otodb_mediasongconnection
 FOR EACH ROW EXECUTE FUNCTION otodb_mediasongconnection_capture();
@@ -264,7 +264,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_mediawork_capture ON otodb_mediawork;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_mediawork_capture ON otodb_mediawork;
 CREATE OR REPLACE TRIGGER zz_otodb_mediawork_capture_i
 AFTER INSERT ON otodb_mediawork
 FOR EACH ROW EXECUTE FUNCTION otodb_mediawork_capture();
@@ -333,7 +333,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_songrelation_capture ON otodb_songrelation;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_songrelation_capture ON otodb_songrelation;
 CREATE OR REPLACE TRIGGER zz_otodb_songrelation_capture_i
 AFTER INSERT ON otodb_songrelation
 FOR EACH ROW EXECUTE FUNCTION otodb_songrelation_capture();
@@ -412,7 +412,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagsong_capture ON otodb_tagsong;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagsong_capture ON otodb_tagsong;
 CREATE OR REPLACE TRIGGER zz_otodb_tagsong_capture_i
 AFTER INSERT ON otodb_tagsong
 FOR EACH ROW EXECUTE FUNCTION otodb_tagsong_capture();
@@ -470,7 +470,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagsonginstance_capture ON otodb_tagsonginstance;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagsonginstance_capture ON otodb_tagsonginstance;
 CREATE OR REPLACE TRIGGER zz_otodb_tagsonginstance_capture_i
 AFTER INSERT ON otodb_tagsonginstance
 FOR EACH ROW EXECUTE FUNCTION otodb_tagsonginstance_capture();
@@ -525,7 +525,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagsonglangpreference_capture ON otodb_tagsonglangpreference;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagsonglangpreference_capture ON otodb_tagsonglangpreference;
 CREATE OR REPLACE TRIGGER zz_otodb_tagsonglangpreference_capture_i
 AFTER INSERT ON otodb_tagsonglangpreference
 FOR EACH ROW EXECUTE FUNCTION otodb_tagsonglangpreference_capture();
@@ -618,7 +618,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagwork_capture ON otodb_tagwork;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagwork_capture ON otodb_tagwork;
 CREATE OR REPLACE TRIGGER zz_otodb_tagwork_capture_i
 AFTER INSERT ON otodb_tagwork
 FOR EACH ROW EXECUTE FUNCTION otodb_tagwork_capture();
@@ -685,7 +685,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkconnection_capture ON otodb_tagworkconnection;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagworkconnection_capture ON otodb_tagworkconnection;
 CREATE OR REPLACE TRIGGER zz_otodb_tagworkconnection_capture_i
 AFTER INSERT ON otodb_tagworkconnection
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkconnection_capture();
@@ -757,7 +757,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkcreatorconnection_capture ON otodb_tagworkcreatorconnection;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagworkcreatorconnection_capture ON otodb_tagworkcreatorconnection;
 CREATE OR REPLACE TRIGGER zz_otodb_tagworkcreatorconnection_capture_i
 AFTER INSERT ON otodb_tagworkcreatorconnection
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkcreatorconnection_capture();
@@ -830,7 +830,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkinstance_capture ON otodb_tagworkinstance;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagworkinstance_capture ON otodb_tagworkinstance;
 CREATE OR REPLACE TRIGGER zz_otodb_tagworkinstance_capture_i
 AFTER INSERT ON otodb_tagworkinstance
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkinstance_capture();
@@ -887,7 +887,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworklangpreference_capture ON otodb_tagworklangpreference;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagworklangpreference_capture ON otodb_tagworklangpreference;
 CREATE OR REPLACE TRIGGER zz_otodb_tagworklangpreference_capture_i
 AFTER INSERT ON otodb_tagworklangpreference
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworklangpreference_capture();
@@ -950,7 +950,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkmediaconnection_capture ON otodb_tagworkmediaconnection;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagworkmediaconnection_capture ON otodb_tagworkmediaconnection;
 CREATE OR REPLACE TRIGGER zz_otodb_tagworkmediaconnection_capture_i
 AFTER INSERT ON otodb_tagworkmediaconnection
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkmediaconnection_capture();
@@ -1018,7 +1018,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkparenthood_capture ON otodb_tagworkparenthood;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_tagworkparenthood_capture ON otodb_tagworkparenthood;
 CREATE OR REPLACE TRIGGER zz_otodb_tagworkparenthood_capture_i
 AFTER INSERT ON otodb_tagworkparenthood
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkparenthood_capture();
@@ -1121,7 +1121,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_wikipage_capture ON otodb_wikipage;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_wikipage_capture ON otodb_wikipage;
 CREATE OR REPLACE TRIGGER zz_otodb_wikipage_capture_i
 AFTER INSERT ON otodb_wikipage
 FOR EACH ROW EXECUTE FUNCTION otodb_wikipage_capture();
@@ -1192,7 +1192,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_workrelation_capture ON otodb_workrelation;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_workrelation_capture ON otodb_workrelation;
 CREATE OR REPLACE TRIGGER zz_otodb_workrelation_capture_i
 AFTER INSERT ON otodb_workrelation
 FOR EACH ROW EXECUTE FUNCTION otodb_workrelation_capture();
@@ -1386,7 +1386,7 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_worksource_capture ON otodb_worksource;  -- pre-split single trigger
+DROP TRIGGER IF EXISTS zz_otodb_worksource_capture ON otodb_worksource;
 CREATE OR REPLACE TRIGGER zz_otodb_worksource_capture_i
 AFTER INSERT ON otodb_worksource
 FOR EACH ROW EXECUTE FUNCTION otodb_worksource_capture();

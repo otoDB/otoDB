@@ -98,7 +98,7 @@ class HistoricalEntitySchema(Schema):
 class RevisionSchema(ModelSchema):
 	id: OtodbID
 	date: datetime
-	user: str = Field(..., alias='user.username')
+	user: str | None = Field(None, alias='user.username')
 	index: None | int = None
 	route: None | Route = None
 

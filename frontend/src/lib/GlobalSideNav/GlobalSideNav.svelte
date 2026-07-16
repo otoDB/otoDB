@@ -106,7 +106,7 @@
 			<span>{m.maroon_least_pony_evoke()}</span>
 			{#if user}
 				<a
-					href={`/profile/${user.username}/notifications`}
+					href="/notifications"
 					title={m.free_keen_wren_exhale()}
 					class="relative -top-0.5 inline-flex no-underline"
 					onclick={closeSidebar}

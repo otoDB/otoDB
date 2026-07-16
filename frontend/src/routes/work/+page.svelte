@@ -66,7 +66,9 @@
 		</details>
 	</form>
 	<hr />
-	<div class="grid grid-cols-[repeat(auto-fill,minmax(192px,1fr))] gap-x-4 gap-y-4">
+	<div
+		class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-9"
+	>
 		{#each data.results.items as work, i (i)}
 			<WorkCard {work} />
 		{/each}

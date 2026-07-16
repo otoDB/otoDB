@@ -6,6 +6,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { set_lang } from '$lib/languages';
+	import Icon from '$lib/Icon/Icon.svelte';
 	import type { ClassValue } from 'svelte/elements';
 
 	let {
@@ -49,7 +50,7 @@
 	</div>
 
 	<div class="footer-right flex items-center">
-		<span class="icon-[gravity-ui--globe] mr-1 size-4" aria-hidden="true"></span>
+		<Icon key="language" class="mr-1 size-4" decorative />
 		<select
 			onchange={(e) => {
 				set_lang(e.currentTarget.value as (typeof locales)[number], !!user);

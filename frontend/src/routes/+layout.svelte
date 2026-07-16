@@ -76,13 +76,6 @@
 		boundaryReset = reset;
 	}
 
-	let isMobileNavOpen = $state(false);
-	function toggleMobileNav() {
-		isMobileNavOpen = !isMobileNavOpen;
-	}
-	function closeMobileNav() {
-		isMobileNavOpen = false;
-	}
 	beforeNavigate(({ cancel, type }) => {
 		if (
 			type !== 'form' &&
@@ -187,19 +180,6 @@
 
 <div class="text-otodb-content-primary">
 	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
-	<div class="contents md:hidden">
-		<!-- Hamburger button -->
-		<button
-			class={[
-				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-3 h-12 w-12',
-				isMobileNavOpen && 'invisible'
-			]}
-			aria-label={m.clean_kind_stork_affirm()}
-			onclick={toggleMobileNav}
-		>
-			<span class="icon-[gravity-ui--bars] m-auto size-6" aria-hidden="true"></span>
-		</button>
-	</div>
 	<Toaster
 		expand={true}
 		position="bottom-right"
@@ -220,14 +200,7 @@
 	</header>
 
 	<div class="relative mx-auto w-full gap-x-4 px-4 md:flex">
-		<div
-			class={[
-				'fixed top-0 left-0 z-2 size-full md:pointer-events-auto md:relative md:size-auto md:bg-transparent',
-				isMobileNavOpen ? 'bg-otodb-bg-primary/90' : 'pointer-events-none bg-transparent'
-			]}
-		>
-			<GlobalSideNav user={data.user} {isMobileNavOpen} {closeMobileNav} stats={data.stats} />
-		</div>
+		<GlobalSideNav user={data.user} stats={data.stats} />
 		<div class="min-w-0 grow">
 			<main id="content">
 				<svelte:boundary onerror={handleBoundaryError}>

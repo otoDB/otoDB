@@ -62,6 +62,8 @@ jobs:
         run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
       - name: Copy dotenv file to generate type-safe environment variables
         run: cp .env.example .env
+      - name: Generate MSW worker script
+        run: bunx msw init static --save
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps chromium
       - run: bun run test-storybook
@@ -83,6 +85,8 @@ jobs:
         run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
       - name: Copy dotenv file to generate type-safe environment variables
         run: cp .env.example .env
+      - name: Generate MSW worker script
+        run: bunx msw init static --save
       - run: bun run build-storybook
       - name: Deploy to Cloudflare Pages
         id: deploy

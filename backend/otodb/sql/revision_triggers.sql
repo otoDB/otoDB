@@ -97,7 +97,7 @@ CREATE OR REPLACE FUNCTION otodb_mediasong_capture() RETURNS trigger LANGUAGE pl
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'mediasong');
 	cid bigint;
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
@@ -185,7 +185,7 @@ CREATE OR REPLACE FUNCTION otodb_mediasongconnection_capture() RETURNS trigger L
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'mediasongconnection');
 	cid bigint;
 	ct_mediasong integer := otodb_ct('otodb', 'mediasong');
@@ -249,7 +249,7 @@ CREATE OR REPLACE FUNCTION otodb_mediawork_capture() RETURNS trigger LANGUAGE pl
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'mediawork');
 	cid bigint;
 BEGIN
@@ -326,7 +326,7 @@ CREATE OR REPLACE FUNCTION otodb_songrelation_capture() RETURNS trigger LANGUAGE
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'songrelation');
 	cid bigint;
 	ct_mediasong integer := otodb_ct('otodb', 'mediasong');
@@ -394,7 +394,7 @@ CREATE OR REPLACE FUNCTION otodb_tagsong_capture() RETURNS trigger LANGUAGE plpg
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagsong');
 	cid bigint;
 BEGIN
@@ -475,7 +475,7 @@ CREATE OR REPLACE FUNCTION otodb_tagsonginstance_capture() RETURNS trigger LANGU
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagsonginstance');
 	cid bigint;
 	ct_mediasong integer := otodb_ct('otodb', 'mediasong');
@@ -530,7 +530,7 @@ CREATE OR REPLACE FUNCTION otodb_tagsonglangpreference_capture() RETURNS trigger
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagsonglangpreference');
 	cid bigint;
 	ct_tagsong integer := otodb_ct('otodb', 'tagsong');
@@ -585,7 +585,7 @@ CREATE OR REPLACE FUNCTION otodb_tagwork_capture() RETURNS trigger LANGUAGE plpg
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagwork');
 	cid bigint;
 BEGIN
@@ -682,7 +682,7 @@ CREATE OR REPLACE FUNCTION otodb_tagworkconnection_capture() RETURNS trigger LAN
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagworkconnection');
 	cid bigint;
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
@@ -746,7 +746,7 @@ CREATE OR REPLACE FUNCTION otodb_tagworkcreatorconnection_capture() RETURNS trig
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagworkcreatorconnection');
 	cid bigint;
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
@@ -819,7 +819,7 @@ CREATE OR REPLACE FUNCTION otodb_tagworkinstance_capture() RETURNS trigger LANGU
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagworkinstance');
 	cid bigint;
 	ct_mediawork integer := otodb_ct('otodb', 'mediawork');
@@ -892,7 +892,7 @@ CREATE OR REPLACE FUNCTION otodb_tagworklangpreference_capture() RETURNS trigger
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagworklangpreference');
 	cid bigint;
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
@@ -947,7 +947,7 @@ CREATE OR REPLACE FUNCTION otodb_tagworkmediaconnection_capture() RETURNS trigge
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagworkmediaconnection');
 	cid bigint;
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
@@ -1011,7 +1011,7 @@ CREATE OR REPLACE FUNCTION otodb_tagworkparenthood_capture() RETURNS trigger LAN
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'tagworkparenthood');
 	cid bigint;
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
@@ -1079,7 +1079,7 @@ CREATE OR REPLACE FUNCTION otodb_wikipage_capture() RETURNS trigger LANGUAGE plp
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'wikipage');
 	cid bigint;
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
@@ -1185,7 +1185,7 @@ CREATE OR REPLACE FUNCTION otodb_workrelation_capture() RETURNS trigger LANGUAGE
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'workrelation');
 	cid bigint;
 	ct_mediawork integer := otodb_ct('otodb', 'mediawork');
@@ -1253,7 +1253,7 @@ CREATE OR REPLACE FUNCTION otodb_worksource_capture() RETURNS trigger LANGUAGE p
 DECLARE
 	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
-	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
+	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
 	own_ct integer := otodb_ct('otodb', 'worksource');
 	cid bigint;
 	ct_mediawork integer := otodb_ct('otodb', 'mediawork');

@@ -145,7 +145,7 @@ def _table_sql(spec):
 	decls = [
 		'\trev bigint;',
 		f'\ttid bigint := coalesce(NEW."{pk}", OLD."{pk}");',
-		"\troute integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);",
+		"\troute integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM",
 		f"\town_ct integer := otodb_ct('{app}', '{model}');",
 		'\tcid bigint;',
 	]

@@ -754,13 +754,13 @@ def random(request: AuthedHttpRequest, n: int = 1):
 	return (
 		MediaWork.active_objects.visible()
 		.filter(rating=Rating.GENERAL)
-		.order_by('?')[: min(n, 20)]
+		.order_by('?')[: min(n, 18)]
 	)
 
 
 @work_router.get('recent', response=list[ThinWorkSchema], exclude_none=True)
 def recent(request: AuthedHttpRequest, n: int = 1):
-	return MediaWork.active_objects.visible().order_by('-id')[: min(n, 20)]
+	return MediaWork.active_objects.visible().order_by('-id')[: min(n, 18)]
 
 
 @work_router.get(

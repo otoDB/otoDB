@@ -654,31 +654,46 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	}
 
 
-def find_rev_rst(ctpk, query_pk):
-	"""One hop forward (original -> restored): the pk that query_pk was restored *to*,
-	from a restored=True RevisionChange, else None. In-flight rollback restores are now
-	persisted rows (written by add_rev_restore) visible within the same transaction, so
-	no request-cache lookup is needed.
+def _restored_chain_end(ctpk, pk):
+	"""Resolve pk forward through its original -> restored chain in one recursive query,
+	returning (last_pk, last_is_deleted). Terminates because a pk can be restored at
+	most once (revisionchange_model_can_only_be_restored_once) and a restore always
+	mints a fresh pk. In-flight rollback restores are persisted rows (written by
+	add_rev_restore) visible within the same transaction, so the whole chain lives in
+	the database.
 	"""
-	q = RevisionChange.objects.filter(
-		target_type_id=ctpk, target_id=query_pk, restored=True
-	).first()
-	return int(q.target_value) if q else None
+	with connection.cursor() as cursor:
+		cursor.execute(
+			"""
+			WITH RECURSIVE chain(pk, depth) AS (
+				SELECT %(pk)s::bigint, 0
+				UNION ALL
+				SELECT rc.target_value::bigint, c.depth + 1
+				FROM chain c
+				JOIN otodb_revisionchange rc ON rc.target_type_id = %(ct)s
+					AND rc.target_id = c.pk AND rc.restored
+			)
+			SELECT c.pk,
+				EXISTS (
+					SELECT 1 FROM otodb_revisionchange d
+					WHERE d.target_type_id = %(ct)s AND d.target_id = c.pk AND d.deleted
+				)
+			FROM chain c
+			ORDER BY c.depth DESC
+			LIMIT 1
+			""",
+			{'ct': ctpk, 'pk': pk},
+		)
+		[(last_pk, last_deleted)] = cursor.fetchall()
+	return last_pk, last_deleted
 
 
 def get_rev_restored(ctpk, pk):
 	"""Resolve pk forward to the end of its original -> restored chain (its current
 	live pk), or None if that row is deleted / not yet restored.
 	"""
-	while pk is not None:
-		last = pk
-		pk = find_rev_rst(ctpk, pk)
-
-	if RevisionChange.objects.filter(
-		target_type_id=ctpk, target_id=last, deleted=True
-	).exists():
-		return None
-	return last
+	last, deleted = _restored_chain_end(ctpk, pk)
+	return None if deleted else last
 
 
 def add_rev_restore(ctpk, pk, new_pk):
@@ -688,13 +703,9 @@ def add_rev_restore(ctpk, pk, new_pk):
 	on demand here via otodb_current_revision()).
 	"""
 	assert pk != new_pk
-	while pk is not None:
-		last = pk
-		pk = find_rev_rst(ctpk, pk)
+	last, deleted = _restored_chain_end(ctpk, pk)
 
-	assert RevisionChange.objects.filter(
-		target_type_id=ctpk, target_id=last, deleted=True
-	).exists()
+	assert deleted
 	with connection.cursor() as cursor:
 		cursor.execute('SELECT otodb_current_revision()')
 		rev_id = cursor.fetchone()[0]

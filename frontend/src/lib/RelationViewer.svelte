@@ -45,9 +45,10 @@
 	let allowed_types: RelationType[] = $state(enumValues(RelationTypes) as RelationType[]);
 
 	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: string[]) =>
-		mermaid.render(
-			'Relations',
-			`---
+		mermaid
+			.render(
+				'Relations',
+				`---
 config:
   layout: elk
   elk:
@@ -57,43 +58,44 @@ flowchart ${direction}
     style ${id} color:#f00
 	classDef moreNodes fill:none,stroke:none;
 	classDef untitled font-style:italic;` +
-				(type === 'work'
-					? `
+					(type === 'work'
+						? `
     ${(nodes as Work[])
-									.map(
-										(
-											w
-										) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
+										.map(
+											(
+												w
+											) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
     ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
     click ${w.id} "${`/work/${w.id}`}"`
-									)
-									.join('\n')}
+										)
+										.join('\n')}
     ${links
-									.map((r) =>
-										//  Reverse relation for 'sequel'
-										r.relation === WorkRelationTypes.Sequel
-											? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationNames[r.relation]()}| ${r.A_id}`
-											: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationNames[r.relation]()}| ${r.B_id}`
-									)
-									.join('\n')}
+										.map((r) =>
+											//  Reverse relation for 'sequel'
+											r.relation === WorkRelationTypes.Sequel
+												? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationNames[r.relation]()}| ${r.A_id}`
+												: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationNames[r.relation]()}| ${r.B_id}`
+										)
+										.join('\n')}
 	${ext
-								.map(
-									(a) => `${a}MORE["${m.fresh_deft_warbler_edit()}"]
+									.map(
+										(a) => `${a}MORE["${m.fresh_deft_warbler_edit()}"]
 	class ${a}MORE moreNodes;
 	${a[0] !== '-' ? `${a}MORE -.- ${a}` : `${-a} -.- ${a}MORE`}`
-								)
-								.join('\n')}`
-					: `
-    ${nodes
-									.map(
-										(
-											w
-										) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
-    click ${w.id} "${`/tag/${(w as Song).work_tag}`}"`
 									)
-									.join('\n')}
+									.join('\n')}`
+						: `
+    ${nodes
+										.map(
+											(
+												w
+											) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
+    click ${w.id} "${`/tag/${(w as Song).work_tag}`}"`
+										)
+										.join('\n')}
     ${links.map((r) => `${r.A_id} -->|${RelationNames[r.relation]()}| ${r.B_id}`).join('\n')}`)
-		).then((r) => r.svg);
+			)
+			.then((r) => r.svg);
 
 	const relation_BFS = (
 		ns: Node[],
@@ -257,12 +259,11 @@ flowchart ${direction}
 			return;
 		}
 
-		const node = target.closest('[id^="flowchart-"]');
+		const node = target.closest('[id*="-flowchart-"]');
 		const label: HTMLElement | null = target.closest('.label:has(.edgeLabel)');
 
 		if (node) {
-			// Extract numeric ID from node ID (e.g. "flowchart-1-0" -> "1")
-			const nodeId = node.id.split('-')[1];
+			const nodeId = node.id.match(/-flowchart-(.+)-\d+$/)?.[1];
 			if (nodeId) {
 				const links = svgContainer.querySelectorAll(`[id*="_${nodeId}_"]`);
 				links.forEach((link) => {

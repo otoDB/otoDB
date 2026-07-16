@@ -71,23 +71,24 @@ $$;
 def _serialize(column, kind, alias):
 	"""SQL on NEW/OLD reproducing Django value_to_string = str() for each field kind."""
 	col = f'{alias}."{column}"'
-	if kind in ('str',):
-		return col
-	if kind in ('int', 'fk'):  # ints and str(pk) both stringify plainly
-		return f'{col}::text'
-	if kind == 'bool':  # Python 'True'/'False', not PG 'true'/'false'
-		return (
-			f"CASE WHEN {col} IS NULL THEN NULL WHEN {col} THEN 'True' ELSE 'False' END"
-		)
-	if kind == 'float':  # Python str() keeps the .0 that PG float8::text drops
-		return (
-			f'CASE WHEN {col} IS NULL THEN NULL'
-			f" WHEN {col} = trunc({col}) AND abs({col}) < 1e16 THEN {col}::text || '.0'"
-			f' ELSE {col}::text END'
-		)
-	if kind == 'date':  # isoformat, DateStyle-proof, zero-padded
-		return f"to_char({col}, 'YYYY-MM-DD')"
-	raise ValueError(f'unhandled field kind {kind!r} for column {column!r}')
+
+	match kind:
+		case 'str':
+			return col
+		case 'int' | 'fk':  # ints and str(pk) both stringify plainly
+			return f'{col}::text'
+		case 'bool':  # Python 'True'/'False', not PG 'true'/'false'
+			return f"CASE WHEN {col} IS NULL THEN NULL WHEN {col} THEN 'True' ELSE 'False' END"
+		case 'float':  # Python str() keeps the .0 that PG float8::text drops
+			return (
+				f'CASE WHEN {col} IS NULL THEN NULL'
+				f" WHEN {col} = trunc({col}) AND abs({col}) < 1e16 THEN {col}::text || '.0'"
+				f' ELSE {col}::text END'
+			)
+		case 'date':  # isoformat, DateStyle-proof, zero-padded
+			return f"to_char({col}, 'YYYY-MM-DD')"
+		case _:
+			raise ValueError(f'unhandled field kind {kind!r} for column {column!r}')
 
 
 def _table_sql(spec):

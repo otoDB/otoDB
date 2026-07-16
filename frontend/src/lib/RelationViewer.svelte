@@ -1,4 +1,5 @@
 <script lang="ts" generics="T extends 'work' | 'song'">
+	import { page } from '$app/state';
 	import { enumValues, SongRelationNames, WorkRelationNames } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import {
@@ -41,9 +42,14 @@
 	const RelationTypes = $derived(type === 'work' ? WorkRelationTypes : SongRelationTypes);
 	const RelationNames = $derived(type === 'work' ? WorkRelationNames : SongRelationNames);
 
-	let deg = $state(1);
-	let show_thumbs = $state(true);
-	let allowed_types: RelationType[] = $state(enumValues(RelationTypes) as RelationType[]);
+	const query = page.url.searchParams;
+	let deg = $state(Number(query.get('deg')) || 1);
+	let show_thumbs = $state(query.getAll('thumbs').at(-1) !== '0');
+	let allowed_types: RelationType[] = $state(
+		query.has('types')
+			? (query.getAll('types').map(Number) as RelationType[])
+			: (enumValues(RelationTypes) as RelationType[])
+	);
 
 	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: string[]) =>
 		mermaid
@@ -162,7 +168,8 @@ flowchart ${direction}
 		}
 		return Math.max(0, ...fanout.values()) > 6 ? 'LR' : 'TB';
 	});
-	let direction = $derived(defaultDir ?? auto_dir);
+	let dir_override = $state((query.get('dir') as 'TB' | 'LR' | null) ?? null);
+	let direction = $derived(dir_override ?? defaultDir ?? auto_dir);
 
 	const gv_font = 'Arial';
 	// A node and each of its edges share a rel_<id> class, which is how hovering one finds the other
@@ -306,30 +313,56 @@ flowchart ${direction}
 	let svg_resizing_begin = -1;
 </script>
 
-<label>
-	{m.just_grassy_mantis_slurp()}
-	<input type="number" bind:value={deg} min="1" max={max_distance} /> / {max_distance}
-</label>
-<label class="mt-2 mb-2 block">
-	{m.fair_aware_salmon_twist()}
-	<select bind:value={direction}
-		><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
-			>{m.stout_jumpy_ox_feel()}</option
-		></select
-	>
-</label>
-{#if type === 'work'}
-	<label class="mt-2 mb-2 block">
-		<input type="checkbox" bind:checked={show_thumbs} />
-		{m.heroic_ideal_orangutan_aid()}
-	</label>
-{/if}
-{m.mild_loud_shad_enchant({ type: m.mellow_upper_finch_drip(), name: '' })}
-<select multiple bind:value={allowed_types}>
-	{#each enumValues(RelationTypes) as t, i (i)}
-		<option value={t} class="type-label">{RelationNames[t]()}</option>
-	{/each}
-</select>
+<form method="GET">
+	<table>
+		<tbody>
+			<tr>
+				<th><label for="deg">{m.just_grassy_mantis_slurp()}</label></th>
+				<td>
+					<input type="number" id="deg" name="deg" bind:value={deg} min="1" max={max_distance} /> / {max_distance}
+				</td>
+			</tr>
+			<tr>
+				<th><label for="dir">{m.fair_aware_salmon_twist()}</label></th>
+				<td>
+					<select
+						id="dir"
+						name="dir"
+						value={direction}
+						onchange={(e) => (dir_override = e.currentTarget.value as 'TB' | 'LR')}
+						><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
+							>{m.stout_jumpy_ox_feel()}</option
+						></select
+					>
+				</td>
+			</tr>
+			{#if type === 'work'}
+				<tr>
+					<th><label for="thumbs">{m.heroic_ideal_orangutan_aid()}</label></th>
+					<td>
+						<input type="hidden" name="thumbs" value="0" />
+						<input type="checkbox" id="thumbs" name="thumbs" value="1" bind:checked={show_thumbs} />
+					</td>
+				</tr>
+			{/if}
+			<tr>
+				<th>
+					<label for="types"
+						>{m.mild_loud_shad_enchant({ type: m.mellow_upper_finch_drip(), name: '' })}</label
+					>
+				</th>
+				<td>
+					<select multiple id="types" name="types" bind:value={allowed_types}>
+						{#each enumValues(RelationTypes) as t, i (i)}
+							<option value={t} class="type-label">{RelationNames[t]()}</option>
+						{/each}
+					</select>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<input type="submit" />
+</form>
 
 <!-- Mermaid requires browser API, for GV use browser for view directly -->
 {#if backend === GraphViewBackends.Mermaid}

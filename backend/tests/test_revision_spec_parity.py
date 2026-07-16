@@ -20,14 +20,29 @@ _INT = {
 	'AutoField',
 	'BigAutoField',
 }
+_STR = {'CharField', 'TextField', 'SlugField'}
+_KINDS = {'BooleanField': 'bool', 'FloatField': 'float', 'DateField': 'date'}
 
 
 def _kind(field):
+	"""Map a Django field to its trigger serialization kind.
+
+	An unmapped type (DateTimeField, JSONField, ...) raises,
+	so that tracking a field of a new type fails THIS test until a byte-parity
+	serialization for it is designed in revision_codegen.
+	"""
 	if field.is_relation:
 		return 'fk'
-	return {'BooleanField': 'bool', 'FloatField': 'float', 'DateField': 'date'}.get(
-		field.get_internal_type(),
-		'int' if field.get_internal_type() in _INT else 'str',
+	internal = field.get_internal_type()
+	if internal in _KINDS:
+		return _KINDS[internal]
+	if internal in _INT:
+		return 'int'
+	if internal in _STR:
+		return 'str'
+	raise AssertionError(
+		f'{field.model.__name__}.{field.name}: no serialization kind for {internal};'
+		' design one in revision_codegen._serialize and map it'
 	)
 
 

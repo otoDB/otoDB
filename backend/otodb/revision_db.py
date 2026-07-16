@@ -6,9 +6,9 @@ after the ORM capture was stripped:
 
 * ``db_revision(...)`` -- open a transaction, stamp it so the triggers attribute + group
   the writes into one Revision, then fan out its side effects on exit.
-* ``fan_out(revision_id)`` -- the subscription/notification side effects, ported from
-  ``_commit_pending_revision`` but driven entirely by the persisted revision rows, so it
-  is call-from-anywhere (Django, Litestar, a future axum).
+* ``fan_out(revision_id)`` -- the subscription/notification side effects, driven
+  entirely by the persisted revision rows, so it is call-from-anywhere (Django,
+  Litestar, a future axum).
 
 Revision merging is intentionally deferred (design in REVISION_TRIGGERS_EVAL.md §11/§13).
 """
@@ -59,11 +59,14 @@ def db_revision(user=None, message='', route=0):
 
 
 def fan_out(revision_id):
-	"""Consume + notify subscribers of the changed rows, then auto-subscribe the (active)
-	actor to the routed entities -- all from persisted rows, in the current transaction.
+	"""Notify subscribers of the changed rows, auto-subscribe the (active) actor to the
+	routed entities, then drop subscriptions whose row was deleted -- all from persisted
+	rows, in the current transaction.
 
-	Ordering matters: consume/notify BEFORE auto-subscribe so the actor's fresh
-	subscription is not immediately consumed (reproduces ``_commit_pending_revision``).
+	Subscriptions persist across changes (a subscriber is notified of every revision
+	touching the row); one is deleted only when the subscribed row itself is, since the
+	generic FK cannot cascade. Pruning runs LAST so a subscription to a row deleted in
+	this revision -- pre-existing or just auto-created -- never outlives it.
 	``IS DISTINCT FROM`` excludes the actor while still notifying everyone on an
 	anonymous (NULL-user) edit, matching Python ``sub != request.user.id``.
 	"""
@@ -73,17 +76,13 @@ def fan_out(revision_id):
 			WITH touched AS (
 				SELECT DISTINCT target_type_id AS et, target_id AS eid
 				FROM otodb_revisionchange WHERE rev_id = %(rev)s
-			),
-			consumed AS (
-				DELETE FROM otodb_subscription s USING touched t
-				WHERE s.entity_type_id = t.et AND s.entity_id = t.eid
-				RETURNING s.subscriber_id
 			)
 			INSERT INTO otodb_notification (target_id, revision_id, reason, dismissed, created_at)
-			SELECT DISTINCT c.subscriber_id, %(rev)s, 0, false, now()
-			FROM consumed c
+			SELECT DISTINCT s.subscriber_id, %(rev)s, 0, false, now()
+			FROM otodb_subscription s
+			JOIN touched t ON s.entity_type_id = t.et AND s.entity_id = t.eid
 			JOIN otodb_revision r ON r.id = %(rev)s
-			WHERE c.subscriber_id IS DISTINCT FROM r.user_id
+			WHERE s.subscriber_id IS DISTINCT FROM r.user_id
 			""",
 			{'rev': revision_id},
 		)
@@ -97,6 +96,16 @@ def fan_out(revision_id):
 			JOIN account_account a ON a.id = r.user_id AND a.is_active
 			WHERE r.id = %(rev)s
 			ON CONFLICT (subscriber_id, entity_type_id, entity_id) DO NOTHING
+			""",
+			{'rev': revision_id},
+		)
+		cursor.execute(
+			"""
+			DELETE FROM otodb_subscription s
+			USING otodb_revisionchange rc
+			WHERE rc.rev_id = %(rev)s AND rc.deleted
+				AND s.entity_type_id = rc.target_type_id
+				AND s.entity_id = rc.target_id
 			""",
 			{'rev': revision_id},
 		)

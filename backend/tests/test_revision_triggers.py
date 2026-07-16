@@ -216,7 +216,7 @@ def test_serialization_matches_python_str(revision_triggers):
 
 
 @pytest.mark.django_db
-def test_fan_out_notifies_and_resubscribes(revision_triggers, member, editor):
+def test_fan_out_notifies_and_keeps_subscription(revision_triggers, member, editor):
 	ws = _make_worksource(member)
 	ws_ct = _ct('worksource')
 	# editor is watching this source
@@ -231,14 +231,49 @@ def test_fan_out_notifies_and_resubscribes(revision_triggers, member, editor):
 			)
 
 	rev = Revision.objects.get()
-	# editor notified once, their watch consumed
 	assert list(Notification.objects.values_list('target_id', 'revision_id')) == [
 		(editor.pk, rev.id)
 	]
-	assert not Subscription.objects.filter(subscriber=editor).exists()
+	# the watch persists (not consumed by the notification) ...
+	assert Subscription.objects.filter(
+		subscriber=editor, entity_type_id=ws_ct, entity_id=ws.id
+	).exists()
 	# active actor auto-subscribed to the edited entity
 	assert Subscription.objects.filter(
 		subscriber=member, entity_type_id=ws_ct, entity_id=ws.id
+	).exists()
+
+	# ... so a second edit notifies again
+	with db_revision(user=member, message='edit again', route=ROUTE):
+		with connection.cursor() as cursor:
+			cursor.execute(
+				'UPDATE otodb_worksource SET title = %s WHERE id = %s', ['T2', ws.id]
+			)
+
+	assert Notification.objects.filter(target_id=editor.pk).count() == 2
+
+
+@pytest.mark.django_db
+def test_fan_out_deletes_subscription_with_row(revision_triggers, member, editor):
+	"""A subscription outlives any number of changes but not its row: subscribers are
+	notified of the deletion, then the dead row's subscriptions are pruned -- including
+	the actor's fresh auto-subscription to it."""
+	ws = _make_worksource(member)
+	ws_ct = _ct('worksource')
+	Subscription.objects.create(
+		subscriber=editor, entity_type_id=ws_ct, entity_id=ws.id
+	)
+
+	with db_revision(user=member, message='delete', route=ROUTE):
+		with connection.cursor() as cursor:
+			cursor.execute('DELETE FROM otodb_worksource WHERE id = %s', [ws.id])
+
+	rev = Revision.objects.get()
+	assert list(Notification.objects.values_list('target_id', 'revision_id')) == [
+		(editor.pk, rev.id)
+	]
+	assert not Subscription.objects.filter(
+		entity_type_id=ws_ct, entity_id=ws.id
 	).exists()
 
 

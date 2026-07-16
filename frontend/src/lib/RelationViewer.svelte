@@ -42,6 +42,7 @@
 	const RelationNames = $derived(type === 'work' ? WorkRelationNames : SongRelationNames);
 
 	let deg = $state(1);
+	let show_thumbs = $state(true);
 	let allowed_types: RelationType[] = $state(enumValues(RelationTypes) as RelationType[]);
 
 	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: string[]) =>
@@ -64,7 +65,7 @@ flowchart ${direction}
 										.map(
 											(
 												w
-											) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
+											) => `${w.id}@{ ${show_thumbs && w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
     ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
     click ${w.id} "${`/work/${w.id}`}"`
 										)
@@ -166,16 +167,22 @@ flowchart ${direction}
 	const gv_font = 'Arial';
 	// A node and each of its edges share a rel_<id> class, which is how hovering one finds the other
 	const rel_class = (...ids: string[]) => ids.map((i) => `rel_${i}`).join(' ');
-	const gv_node = (ob: Node, url: string) => ({
-		name: ob.id,
-		attributes: {
-			label: getDisplayText(ob.title),
-			tooltip: getDisplayText(ob.title),
-			URL: url,
-			class: `${rel_class(ob.id)}${ob.title === null ? ' untitled' : ''}`,
-			...(ob.id === id ? { id: 'graph_current' } : {})
-		}
-	});
+	const gv_thumb = (ob: Node) =>
+		show_thumbs && type === 'work' ? ((ob as Work).thumbnail ?? null) : null;
+	const gv_node = (ob: Node, url: string) => {
+		const thumb = gv_thumb(ob);
+		return {
+			name: ob.id,
+			attributes: {
+				label: getDisplayText(ob.title),
+				tooltip: getDisplayText(ob.title),
+				URL: url,
+				class: `${rel_class(ob.id)}${ob.title === null ? ' untitled' : ''}${thumb ? ' thumb' : ''}`,
+				...(ob.id === id ? { id: 'graph_current' } : {}),
+				...(thumb ? { image: thumb, imagescale: 'true', imagepos: 'tc', labelloc: 'b' } : {})
+			}
+		};
+	};
 	const gv_more_node = (a: string) => ({
 		name: `more:${a}`,
 		attributes: { label: m.fresh_deft_warbler_edit(), shape: 'plaintext' }
@@ -223,7 +230,10 @@ flowchart ${direction}
 				},
 				{
 					format: 'svg_inline',
-					graphAttributes: { bgcolor: 'transparent', rankdir }
+					graphAttributes: { bgcolor: 'transparent', rankdir },
+					images: nodes
+						.filter((ob) => gv_thumb(ob))
+						.map((ob) => ({ name: gv_thumb(ob)!, width: 160, height: 120 }))
 				}
 			)
 		);
@@ -308,6 +318,12 @@ flowchart ${direction}
 		></select
 	>
 </label>
+{#if type === 'work'}
+	<label class="mt-2 mb-2 block">
+		<input type="checkbox" bind:checked={show_thumbs} />
+		{m.heroic_ideal_orangutan_aid()}
+	</label>
+{/if}
 {m.mild_loud_shad_enchant({ type: m.mellow_upper_finch_drip(), name: '' })}
 <select multiple bind:value={allowed_types}>
 	{#each enumValues(RelationTypes) as t, i (i)}
@@ -395,6 +411,12 @@ flowchart ${direction}
 		}
 		svg g.untitled text {
 			font-style: italic;
+		}
+		svg g.node.thumb text {
+			text-shadow:
+				0 0 2px var(--otodb-color-bg-primary),
+				0 0 4px var(--otodb-color-bg-primary),
+				0 0 6px var(--otodb-color-bg-primary);
 		}
 		svg g.edge.highlighted {
 			& path {

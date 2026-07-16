@@ -185,7 +185,7 @@
 	{m.round_extra_impala_fry()}
 </a>
 
-<div class="text-otodb-content-primary overflow-auto">
+<div class="text-otodb-content-primary">
 	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<div class="contents md:hidden">
 		<!-- Hamburger button -->
@@ -228,7 +228,7 @@
 		>
 			<GlobalSideNav user={data.user} {isMobileNavOpen} {closeMobileNav} stats={data.stats} />
 		</div>
-		<div class="grow">
+		<div class="min-w-0 grow">
 			<main id="content">
 				<svelte:boundary onerror={handleBoundaryError}>
 					{@render children()}

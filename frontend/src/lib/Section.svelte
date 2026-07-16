@@ -19,11 +19,9 @@
 	{/if}
 {/snippet}
 
-<section
-	class="bg-otodb-bg-faint/75 border-otodb-content-faint relative mb-4 border px-5 pt-3 pb-6"
->
+<div class="relative mb-4">
 	{#if menuLinks}
-		<menu class="absolute -right-px bottom-full">
+		<menu class="absolute -right-px bottom-[calc(100%-1px)] z-1">
 			<ul class="flex list-none gap-2">
 				{#each menuLinks as { pathname, title }, i (i)}
 					<li
@@ -39,21 +37,25 @@
 		</menu>
 	{/if}
 
-	<h1 class="mb-2 text-2xl font-bold">
-		{#if href}
-			<a {href}>
-				{#if type}{m.mild_loud_shad_enchant({
-						type,
-						name: ''
-					})}{/if}{@render render_title()}
-			</a>
-		{:else}
-			{#if type}{m.mild_loud_shad_enchant({ type, name: '' })}{/if}{@render render_title()}
-		{/if}
-	</h1>
+	<section
+		class="bg-otodb-bg-faint/75 border-otodb-content-faint relative w-fit min-w-full border px-5 pt-3 pb-6"
+	>
+		<h1 class="mb-2 text-2xl font-bold">
+			{#if href}
+				<a {href}>
+					{#if type}{m.mild_loud_shad_enchant({
+							type,
+							name: ''
+						})}{/if}{@render render_title()}
+				</a>
+			{:else}
+				{#if type}{m.mild_loud_shad_enchant({ type, name: '' })}{/if}{@render render_title()}
+			{/if}
+		</h1>
 
-	{@render children()}
-</section>
+		{@render children()}
+	</section>
+</div>
 
 <style>
 	li[aria-current='true'] {

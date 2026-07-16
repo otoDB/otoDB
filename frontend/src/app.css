@@ -16,6 +16,10 @@
 @custom-variant dark (@media not (prefers-color-scheme: light), &:where(.dark, .dark *), &:has(#bg-marker.dark));
 
 @layer base {
+	body {
+		background-color: var(--otodb-color-bg-primary);
+	}
+
 	thead {
 		background-color: var(--otodb-color-bg-primary);
 	}

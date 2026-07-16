@@ -20,14 +20,6 @@ const handlers = [
 
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
 
-const links = [
-	{ pathname: 'profile/member_user', title: 'Profile: member_user' },
-	{ pathname: 'profile/member_user/lists', title: 'Lists' },
-	{ pathname: 'profile/member_user/threads', title: 'Threads' },
-	{ pathname: 'profile/member_user/submissions', title: 'Submissions' },
-	{ pathname: 'profile/member_user/revisions', title: 'Revisions' }
-];
-
 const head = { title: m.free_keen_wren_exhale() };
 
 const loggedInMember = {
@@ -46,15 +38,8 @@ const loggedInMember = {
 
 const baseData = {
 	stats,
-	links,
 	head,
 	user: loggedInMember,
-	profile: {
-		id: '1',
-		level: Levels.Member,
-		date_created: '2024-01-01T00:00:00Z',
-		username: 'member_user'
-	},
 	batch_size: 20
 };
 

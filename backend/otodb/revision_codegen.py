@@ -101,6 +101,7 @@ def _table_sql(spec):
 	# One ct variable per distinct (app, model) referenced by entity routing.
 	ct_var = {(app, model): 'own_ct'}
 	decls = [
+		'\trev bigint;',
 		f'\ttid bigint := coalesce(NEW."{pk}", OLD."{pk}");',
 		"\troute integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);",
 		f"\town_ct integer := otodb_ct('{app}', '{model}');",
@@ -121,9 +122,10 @@ def _table_sql(spec):
 
 	body = [
 		"\tIF TG_OP = 'DELETE' THEN",
+		'\t\trev := otodb_current_revision();',
 		'\t\tINSERT INTO otodb_revisionchange'
 		' (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)',
-		f'\t\tVALUES (otodb_current_revision(), own_ct, OLD."{pk}", NULL, NULL, true, false)',
+		f'\t\tVALUES (rev, own_ct, OLD."{pk}", NULL, NULL, true, false)',
 		'\t\tON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING',
 		'\t\tRETURNING id INTO cid;',
 		'\t\tIF cid IS NOT NULL THEN',
@@ -140,9 +142,10 @@ def _table_sql(spec):
 		)
 		body += [
 			f'\tIF {changed} THEN',
+			'\t\trev := coalesce(rev, otodb_current_revision());',
 			'\t\tINSERT INTO otodb_revisionchange'
 			' (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)',
-			f"\t\tVALUES (otodb_current_revision(), own_ct, tid, '{name}', {_serialize(column, kind, 'NEW')}, false, false)",
+			f"\t\tVALUES (rev, own_ct, tid, '{name}', {_serialize(column, kind, 'NEW')}, false, false)",
 			'\t\tON CONFLICT (rev_id, target_type_id, target_id, target_column)'
 			' DO UPDATE SET target_value = EXCLUDED.target_value',
 			'\t\tRETURNING id INTO cid;',

@@ -157,12 +157,12 @@ flowchart ${direction}
 
 	// heuristic from VNDB's `gen_dot`
 	const auto_dir = $derived.by(() => {
-		const fanout = new Map<string, number>();
+		const fanout: Record<string, number> = {};
 		for (const l of links) {
-			fanout.set(l.A_id, (fanout.get(l.A_id) ?? 0) + 1);
-			fanout.set(l.B_id, (fanout.get(l.B_id) ?? 0) + 1);
+			fanout[l.A_id] = (fanout[l.A_id] ?? 0) + 1;
+			fanout[l.B_id] = (fanout[l.B_id] ?? 0) + 1;
 		}
-		return Math.max(0, ...fanout.values()) > 6 ? 'LR' : 'TB';
+		return Math.max(0, ...Object.values(fanout)) > 6 ? 'LR' : 'TB';
 	});
 	let dir_override = $state((query.get('dir') as 'TB' | 'LR' | null) ?? null);
 	let direction = $derived(dir_override ?? defaultDir ?? auto_dir);

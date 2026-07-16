@@ -53,6 +53,7 @@ $$;
 -- mediasong: tracked=['title', 'bpm', 'variable_bpm', 'work_tag', 'author']
 CREATE OR REPLACE FUNCTION otodb_mediasong_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'mediasong');
@@ -60,8 +61,9 @@ DECLARE
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -72,40 +74,45 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."title" IS DISTINCT FROM OLD."title" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'title', NEW."title", false, false)
+		VALUES (rev, own_ct, tid, 'title', NEW."title", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."work_tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."bpm" IS DISTINCT FROM OLD."bpm" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'bpm', CASE WHEN NEW."bpm" IS NULL THEN NULL WHEN NEW."bpm" = trunc(NEW."bpm") AND abs(NEW."bpm") < 1e16 THEN NEW."bpm"::text || '.0' ELSE NEW."bpm"::text END, false, false)
+		VALUES (rev, own_ct, tid, 'bpm', CASE WHEN NEW."bpm" IS NULL THEN NULL WHEN NEW."bpm" = trunc(NEW."bpm") AND abs(NEW."bpm") < 1e16 THEN NEW."bpm"::text || '.0' ELSE NEW."bpm"::text END, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."work_tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."variable_bpm" IS DISTINCT FROM OLD."variable_bpm" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'variable_bpm', CASE WHEN NEW."variable_bpm" IS NULL THEN NULL WHEN NEW."variable_bpm" THEN 'True' ELSE 'False' END, false, false)
+		VALUES (rev, own_ct, tid, 'variable_bpm', CASE WHEN NEW."variable_bpm" IS NULL THEN NULL WHEN NEW."variable_bpm" THEN 'True' ELSE 'False' END, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."work_tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."work_tag_id" IS DISTINCT FROM OLD."work_tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'work_tag', NEW."work_tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'work_tag', NEW."work_tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."work_tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."author" IS DISTINCT FROM OLD."author" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'author', NEW."author", false, false)
+		VALUES (rev, own_ct, tid, 'author', NEW."author", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -115,14 +122,26 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_mediasong_capture ON otodb_mediasong;
-CREATE TRIGGER zz_otodb_mediasong_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_mediasong
+DROP TRIGGER IF EXISTS zz_otodb_mediasong_capture ON otodb_mediasong;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_mediasong_capture_i
+AFTER INSERT ON otodb_mediasong
+FOR EACH ROW EXECUTE FUNCTION otodb_mediasong_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_mediasong_capture_u
+AFTER UPDATE ON otodb_mediasong
+FOR EACH ROW WHEN (OLD."title" IS DISTINCT FROM NEW."title"
+	 OR OLD."bpm" IS DISTINCT FROM NEW."bpm"
+	 OR OLD."variable_bpm" IS DISTINCT FROM NEW."variable_bpm"
+	 OR OLD."work_tag_id" IS DISTINCT FROM NEW."work_tag_id"
+	 OR OLD."author" IS DISTINCT FROM NEW."author")
+EXECUTE FUNCTION otodb_mediasong_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_mediasong_capture_d
+AFTER DELETE ON otodb_mediasong
 FOR EACH ROW EXECUTE FUNCTION otodb_mediasong_capture();
 
 -- mediasongconnection: tracked=['song', 'site', 'content_id']
 CREATE OR REPLACE FUNCTION otodb_mediasongconnection_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'mediasongconnection');
@@ -130,8 +149,9 @@ DECLARE
 	ct_mediasong integer := otodb_ct('otodb', 'mediasong');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -141,22 +161,25 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."song_id" IS DISTINCT FROM OLD."song_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'song', NEW."song_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'song', NEW."song_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."song_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."site" IS DISTINCT FROM OLD."site" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'site', NEW."site"::text, false, false)
+		VALUES (rev, own_ct, tid, 'site', NEW."site"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."song_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."content_id" IS DISTINCT FROM OLD."content_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'content_id', NEW."content_id", false, false)
+		VALUES (rev, own_ct, tid, 'content_id', NEW."content_id", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."song_id", route);
@@ -165,22 +188,33 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_mediasongconnection_capture ON otodb_mediasongconnection;
-CREATE TRIGGER zz_otodb_mediasongconnection_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_mediasongconnection
+DROP TRIGGER IF EXISTS zz_otodb_mediasongconnection_capture ON otodb_mediasongconnection;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_mediasongconnection_capture_i
+AFTER INSERT ON otodb_mediasongconnection
+FOR EACH ROW EXECUTE FUNCTION otodb_mediasongconnection_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_mediasongconnection_capture_u
+AFTER UPDATE ON otodb_mediasongconnection
+FOR EACH ROW WHEN (OLD."song_id" IS DISTINCT FROM NEW."song_id"
+	 OR OLD."site" IS DISTINCT FROM NEW."site"
+	 OR OLD."content_id" IS DISTINCT FROM NEW."content_id")
+EXECUTE FUNCTION otodb_mediasongconnection_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_mediasongconnection_capture_d
+AFTER DELETE ON otodb_mediasongconnection
 FOR EACH ROW EXECUTE FUNCTION otodb_mediasongconnection_capture();
 
 -- mediawork: tracked=['title', 'description', 'rating', 'moved_to']
 CREATE OR REPLACE FUNCTION otodb_mediawork_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'mediawork');
 	cid bigint;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -191,32 +225,36 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."title" IS DISTINCT FROM OLD."title" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'title', NEW."title", false, false)
+		VALUES (rev, own_ct, tid, 'title', NEW."title", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."moved_to_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."description" IS DISTINCT FROM OLD."description" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'description', NEW."description", false, false)
+		VALUES (rev, own_ct, tid, 'description', NEW."description", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."moved_to_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."rating" IS DISTINCT FROM OLD."rating" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'rating', NEW."rating"::text, false, false)
+		VALUES (rev, own_ct, tid, 'rating', NEW."rating"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."moved_to_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."moved_to_id" IS DISTINCT FROM OLD."moved_to_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'moved_to', NEW."moved_to_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'moved_to', NEW."moved_to_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -226,14 +264,25 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_mediawork_capture ON otodb_mediawork;
-CREATE TRIGGER zz_otodb_mediawork_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_mediawork
+DROP TRIGGER IF EXISTS zz_otodb_mediawork_capture ON otodb_mediawork;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_mediawork_capture_i
+AFTER INSERT ON otodb_mediawork
+FOR EACH ROW EXECUTE FUNCTION otodb_mediawork_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_mediawork_capture_u
+AFTER UPDATE ON otodb_mediawork
+FOR EACH ROW WHEN (OLD."title" IS DISTINCT FROM NEW."title"
+	 OR OLD."description" IS DISTINCT FROM NEW."description"
+	 OR OLD."rating" IS DISTINCT FROM NEW."rating"
+	 OR OLD."moved_to_id" IS DISTINCT FROM NEW."moved_to_id")
+EXECUTE FUNCTION otodb_mediawork_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_mediawork_capture_d
+AFTER DELETE ON otodb_mediawork
 FOR EACH ROW EXECUTE FUNCTION otodb_mediawork_capture();
 
 -- songrelation: tracked=['A', 'B', 'relation']
 CREATE OR REPLACE FUNCTION otodb_songrelation_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'songrelation');
@@ -241,8 +290,9 @@ DECLARE
 	ct_mediasong integer := otodb_ct('otodb', 'mediasong');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -253,24 +303,27 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."A_id" IS DISTINCT FROM OLD."A_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'A', NEW."A_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'A', NEW."A_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."A_id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."B_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."B_id" IS DISTINCT FROM OLD."B_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'B', NEW."B_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'B', NEW."B_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."A_id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."B_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."relation" IS DISTINCT FROM OLD."relation" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'relation', NEW."relation"::text, false, false)
+		VALUES (rev, own_ct, tid, 'relation', NEW."relation"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."A_id", route);
@@ -280,22 +333,33 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_songrelation_capture ON otodb_songrelation;
-CREATE TRIGGER zz_otodb_songrelation_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_songrelation
+DROP TRIGGER IF EXISTS zz_otodb_songrelation_capture ON otodb_songrelation;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_songrelation_capture_i
+AFTER INSERT ON otodb_songrelation
+FOR EACH ROW EXECUTE FUNCTION otodb_songrelation_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_songrelation_capture_u
+AFTER UPDATE ON otodb_songrelation
+FOR EACH ROW WHEN (OLD."A_id" IS DISTINCT FROM NEW."A_id"
+	 OR OLD."B_id" IS DISTINCT FROM NEW."B_id"
+	 OR OLD."relation" IS DISTINCT FROM NEW."relation")
+EXECUTE FUNCTION otodb_songrelation_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_songrelation_capture_d
+AFTER DELETE ON otodb_songrelation
 FOR EACH ROW EXECUTE FUNCTION otodb_songrelation_capture();
 
 -- tagsong: tracked=['name', 'slug', 'aliased_to', 'category', 'parent']
 CREATE OR REPLACE FUNCTION otodb_tagsong_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagsong');
 	cid bigint;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -305,36 +369,41 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."name" IS DISTINCT FROM OLD."name" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'name', NEW."name", false, false)
+		VALUES (rev, own_ct, tid, 'name', NEW."name", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."slug" IS DISTINCT FROM OLD."slug" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'slug', NEW."slug", false, false)
+		VALUES (rev, own_ct, tid, 'slug', NEW."slug", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."aliased_to_id" IS DISTINCT FROM OLD."aliased_to_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'aliased_to', NEW."aliased_to_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'aliased_to', NEW."aliased_to_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."category" IS DISTINCT FROM OLD."category" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'category', NEW."category"::text, false, false)
+		VALUES (rev, own_ct, tid, 'category', NEW."category"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."parent_id" IS DISTINCT FROM OLD."parent_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'parent', NEW."parent_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'parent', NEW."parent_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -343,14 +412,26 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagsong_capture ON otodb_tagsong;
-CREATE TRIGGER zz_otodb_tagsong_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagsong
+DROP TRIGGER IF EXISTS zz_otodb_tagsong_capture ON otodb_tagsong;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagsong_capture_i
+AFTER INSERT ON otodb_tagsong
+FOR EACH ROW EXECUTE FUNCTION otodb_tagsong_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagsong_capture_u
+AFTER UPDATE ON otodb_tagsong
+FOR EACH ROW WHEN (OLD."name" IS DISTINCT FROM NEW."name"
+	 OR OLD."slug" IS DISTINCT FROM NEW."slug"
+	 OR OLD."aliased_to_id" IS DISTINCT FROM NEW."aliased_to_id"
+	 OR OLD."category" IS DISTINCT FROM NEW."category"
+	 OR OLD."parent_id" IS DISTINCT FROM NEW."parent_id")
+EXECUTE FUNCTION otodb_tagsong_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagsong_capture_d
+AFTER DELETE ON otodb_tagsong
 FOR EACH ROW EXECUTE FUNCTION otodb_tagsong_capture();
 
 -- tagsonginstance: tracked=['song', 'song_tag']
 CREATE OR REPLACE FUNCTION otodb_tagsonginstance_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagsonginstance');
@@ -358,8 +439,9 @@ DECLARE
 	ct_mediasong integer := otodb_ct('otodb', 'mediasong');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -369,15 +451,17 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."song_id" IS DISTINCT FROM OLD."song_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'song', NEW."song_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'song', NEW."song_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."song_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."song_tag_id" IS DISTINCT FROM OLD."song_tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'song_tag', NEW."song_tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'song_tag', NEW."song_tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediasong, NEW."song_id", route);
@@ -386,14 +470,23 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagsonginstance_capture ON otodb_tagsonginstance;
-CREATE TRIGGER zz_otodb_tagsonginstance_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagsonginstance
+DROP TRIGGER IF EXISTS zz_otodb_tagsonginstance_capture ON otodb_tagsonginstance;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagsonginstance_capture_i
+AFTER INSERT ON otodb_tagsonginstance
+FOR EACH ROW EXECUTE FUNCTION otodb_tagsonginstance_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagsonginstance_capture_u
+AFTER UPDATE ON otodb_tagsonginstance
+FOR EACH ROW WHEN (OLD."song_id" IS DISTINCT FROM NEW."song_id"
+	 OR OLD."song_tag_id" IS DISTINCT FROM NEW."song_tag_id")
+EXECUTE FUNCTION otodb_tagsonginstance_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagsonginstance_capture_d
+AFTER DELETE ON otodb_tagsonginstance
 FOR EACH ROW EXECUTE FUNCTION otodb_tagsonginstance_capture();
 
 -- tagsonglangpreference: tracked=['lang', 'tag']
 CREATE OR REPLACE FUNCTION otodb_tagsonglangpreference_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagsonglangpreference');
@@ -401,8 +494,9 @@ DECLARE
 	ct_tagsong integer := otodb_ct('otodb', 'tagsong');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -412,15 +506,17 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."lang" IS DISTINCT FROM OLD."lang" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'lang', NEW."lang"::text, false, false)
+		VALUES (rev, own_ct, tid, 'lang', NEW."lang"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagsong, NEW."tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."tag_id" IS DISTINCT FROM OLD."tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagsong, NEW."tag_id", route);
@@ -429,22 +525,32 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagsonglangpreference_capture ON otodb_tagsonglangpreference;
-CREATE TRIGGER zz_otodb_tagsonglangpreference_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagsonglangpreference
+DROP TRIGGER IF EXISTS zz_otodb_tagsonglangpreference_capture ON otodb_tagsonglangpreference;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagsonglangpreference_capture_i
+AFTER INSERT ON otodb_tagsonglangpreference
+FOR EACH ROW EXECUTE FUNCTION otodb_tagsonglangpreference_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagsonglangpreference_capture_u
+AFTER UPDATE ON otodb_tagsonglangpreference
+FOR EACH ROW WHEN (OLD."lang" IS DISTINCT FROM NEW."lang"
+	 OR OLD."tag_id" IS DISTINCT FROM NEW."tag_id")
+EXECUTE FUNCTION otodb_tagsonglangpreference_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagsonglangpreference_capture_d
+AFTER DELETE ON otodb_tagsonglangpreference
 FOR EACH ROW EXECUTE FUNCTION otodb_tagsonglangpreference_capture();
 
 -- tagwork: tracked=['name', 'slug', 'aliased_to', 'deprecated', 'category', 'media_type']
 CREATE OR REPLACE FUNCTION otodb_tagwork_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagwork');
 	cid bigint;
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -455,48 +561,54 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."name" IS DISTINCT FROM OLD."name" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'name', NEW."name", false, false)
+		VALUES (rev, own_ct, tid, 'name', NEW."name", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."aliased_to_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."slug" IS DISTINCT FROM OLD."slug" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'slug', NEW."slug", false, false)
+		VALUES (rev, own_ct, tid, 'slug', NEW."slug", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."aliased_to_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."aliased_to_id" IS DISTINCT FROM OLD."aliased_to_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'aliased_to', NEW."aliased_to_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'aliased_to', NEW."aliased_to_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."aliased_to_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."deprecated" IS DISTINCT FROM OLD."deprecated" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'deprecated', CASE WHEN NEW."deprecated" IS NULL THEN NULL WHEN NEW."deprecated" THEN 'True' ELSE 'False' END, false, false)
+		VALUES (rev, own_ct, tid, 'deprecated', CASE WHEN NEW."deprecated" IS NULL THEN NULL WHEN NEW."deprecated" THEN 'True' ELSE 'False' END, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."aliased_to_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."category" IS DISTINCT FROM OLD."category" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'category', NEW."category"::text, false, false)
+		VALUES (rev, own_ct, tid, 'category', NEW."category"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."aliased_to_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."media_type" IS DISTINCT FROM OLD."media_type" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'media_type', NEW."media_type"::text, false, false)
+		VALUES (rev, own_ct, tid, 'media_type', NEW."media_type"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -506,14 +618,27 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagwork_capture ON otodb_tagwork;
-CREATE TRIGGER zz_otodb_tagwork_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagwork
+DROP TRIGGER IF EXISTS zz_otodb_tagwork_capture ON otodb_tagwork;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagwork_capture_i
+AFTER INSERT ON otodb_tagwork
+FOR EACH ROW EXECUTE FUNCTION otodb_tagwork_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagwork_capture_u
+AFTER UPDATE ON otodb_tagwork
+FOR EACH ROW WHEN (OLD."name" IS DISTINCT FROM NEW."name"
+	 OR OLD."slug" IS DISTINCT FROM NEW."slug"
+	 OR OLD."aliased_to_id" IS DISTINCT FROM NEW."aliased_to_id"
+	 OR OLD."deprecated" IS DISTINCT FROM NEW."deprecated"
+	 OR OLD."category" IS DISTINCT FROM NEW."category"
+	 OR OLD."media_type" IS DISTINCT FROM NEW."media_type")
+EXECUTE FUNCTION otodb_tagwork_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagwork_capture_d
+AFTER DELETE ON otodb_tagwork
 FOR EACH ROW EXECUTE FUNCTION otodb_tagwork_capture();
 
 -- tagworkconnection: tracked=['tag', 'site', 'content_id']
 CREATE OR REPLACE FUNCTION otodb_tagworkconnection_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkconnection');
@@ -521,8 +646,9 @@ DECLARE
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -532,22 +658,25 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."tag_id" IS DISTINCT FROM OLD."tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."site" IS DISTINCT FROM OLD."site" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'site', NEW."site"::text, false, false)
+		VALUES (rev, own_ct, tid, 'site', NEW."site"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."content_id" IS DISTINCT FROM OLD."content_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'content_id', NEW."content_id", false, false)
+		VALUES (rev, own_ct, tid, 'content_id', NEW."content_id", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
@@ -556,14 +685,24 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkconnection_capture ON otodb_tagworkconnection;
-CREATE TRIGGER zz_otodb_tagworkconnection_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagworkconnection
+DROP TRIGGER IF EXISTS zz_otodb_tagworkconnection_capture ON otodb_tagworkconnection;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkconnection_capture_i
+AFTER INSERT ON otodb_tagworkconnection
+FOR EACH ROW EXECUTE FUNCTION otodb_tagworkconnection_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkconnection_capture_u
+AFTER UPDATE ON otodb_tagworkconnection
+FOR EACH ROW WHEN (OLD."tag_id" IS DISTINCT FROM NEW."tag_id"
+	 OR OLD."site" IS DISTINCT FROM NEW."site"
+	 OR OLD."content_id" IS DISTINCT FROM NEW."content_id")
+EXECUTE FUNCTION otodb_tagworkconnection_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkconnection_capture_d
+AFTER DELETE ON otodb_tagworkconnection
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkconnection_capture();
 
 -- tagworkcreatorconnection: tracked=['tag', 'site', 'content_id', 'dead']
 CREATE OR REPLACE FUNCTION otodb_tagworkcreatorconnection_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkcreatorconnection');
@@ -571,8 +710,9 @@ DECLARE
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -582,29 +722,33 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."tag_id" IS DISTINCT FROM OLD."tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."site" IS DISTINCT FROM OLD."site" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'site', NEW."site"::text, false, false)
+		VALUES (rev, own_ct, tid, 'site', NEW."site"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."content_id" IS DISTINCT FROM OLD."content_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'content_id', NEW."content_id", false, false)
+		VALUES (rev, own_ct, tid, 'content_id', NEW."content_id", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."dead" IS DISTINCT FROM OLD."dead" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'dead', CASE WHEN NEW."dead" IS NULL THEN NULL WHEN NEW."dead" THEN 'True' ELSE 'False' END, false, false)
+		VALUES (rev, own_ct, tid, 'dead', CASE WHEN NEW."dead" IS NULL THEN NULL WHEN NEW."dead" THEN 'True' ELSE 'False' END, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
@@ -613,14 +757,25 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkcreatorconnection_capture ON otodb_tagworkcreatorconnection;
-CREATE TRIGGER zz_otodb_tagworkcreatorconnection_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagworkcreatorconnection
+DROP TRIGGER IF EXISTS zz_otodb_tagworkcreatorconnection_capture ON otodb_tagworkcreatorconnection;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkcreatorconnection_capture_i
+AFTER INSERT ON otodb_tagworkcreatorconnection
+FOR EACH ROW EXECUTE FUNCTION otodb_tagworkcreatorconnection_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkcreatorconnection_capture_u
+AFTER UPDATE ON otodb_tagworkcreatorconnection
+FOR EACH ROW WHEN (OLD."tag_id" IS DISTINCT FROM NEW."tag_id"
+	 OR OLD."site" IS DISTINCT FROM NEW."site"
+	 OR OLD."content_id" IS DISTINCT FROM NEW."content_id"
+	 OR OLD."dead" IS DISTINCT FROM NEW."dead")
+EXECUTE FUNCTION otodb_tagworkcreatorconnection_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkcreatorconnection_capture_d
+AFTER DELETE ON otodb_tagworkcreatorconnection
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkcreatorconnection_capture();
 
 -- tagworkinstance: tracked=['work', 'work_tag', 'used_as_source', 'creator_roles']
 CREATE OR REPLACE FUNCTION otodb_tagworkinstance_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkinstance');
@@ -628,8 +783,9 @@ DECLARE
 	ct_mediawork integer := otodb_ct('otodb', 'mediawork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -639,29 +795,33 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."work_id" IS DISTINCT FROM OLD."work_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'work', NEW."work_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'work', NEW."work_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."work_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."work_tag_id" IS DISTINCT FROM OLD."work_tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'work_tag', NEW."work_tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'work_tag', NEW."work_tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."work_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."used_as_source" IS DISTINCT FROM OLD."used_as_source" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'used_as_source', CASE WHEN NEW."used_as_source" IS NULL THEN NULL WHEN NEW."used_as_source" THEN 'True' ELSE 'False' END, false, false)
+		VALUES (rev, own_ct, tid, 'used_as_source', CASE WHEN NEW."used_as_source" IS NULL THEN NULL WHEN NEW."used_as_source" THEN 'True' ELSE 'False' END, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."work_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."creator_roles" IS DISTINCT FROM OLD."creator_roles" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'creator_roles', NEW."creator_roles"::text, false, false)
+		VALUES (rev, own_ct, tid, 'creator_roles', NEW."creator_roles"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."work_id", route);
@@ -670,14 +830,25 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkinstance_capture ON otodb_tagworkinstance;
-CREATE TRIGGER zz_otodb_tagworkinstance_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagworkinstance
+DROP TRIGGER IF EXISTS zz_otodb_tagworkinstance_capture ON otodb_tagworkinstance;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkinstance_capture_i
+AFTER INSERT ON otodb_tagworkinstance
+FOR EACH ROW EXECUTE FUNCTION otodb_tagworkinstance_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkinstance_capture_u
+AFTER UPDATE ON otodb_tagworkinstance
+FOR EACH ROW WHEN (OLD."work_id" IS DISTINCT FROM NEW."work_id"
+	 OR OLD."work_tag_id" IS DISTINCT FROM NEW."work_tag_id"
+	 OR OLD."used_as_source" IS DISTINCT FROM NEW."used_as_source"
+	 OR OLD."creator_roles" IS DISTINCT FROM NEW."creator_roles")
+EXECUTE FUNCTION otodb_tagworkinstance_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkinstance_capture_d
+AFTER DELETE ON otodb_tagworkinstance
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkinstance_capture();
 
 -- tagworklangpreference: tracked=['lang', 'tag']
 CREATE OR REPLACE FUNCTION otodb_tagworklangpreference_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworklangpreference');
@@ -685,8 +856,9 @@ DECLARE
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -696,15 +868,17 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."lang" IS DISTINCT FROM OLD."lang" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'lang', NEW."lang"::text, false, false)
+		VALUES (rev, own_ct, tid, 'lang', NEW."lang"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."tag_id" IS DISTINCT FROM OLD."tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
@@ -713,14 +887,23 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworklangpreference_capture ON otodb_tagworklangpreference;
-CREATE TRIGGER zz_otodb_tagworklangpreference_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagworklangpreference
+DROP TRIGGER IF EXISTS zz_otodb_tagworklangpreference_capture ON otodb_tagworklangpreference;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagworklangpreference_capture_i
+AFTER INSERT ON otodb_tagworklangpreference
+FOR EACH ROW EXECUTE FUNCTION otodb_tagworklangpreference_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworklangpreference_capture_u
+AFTER UPDATE ON otodb_tagworklangpreference
+FOR EACH ROW WHEN (OLD."lang" IS DISTINCT FROM NEW."lang"
+	 OR OLD."tag_id" IS DISTINCT FROM NEW."tag_id")
+EXECUTE FUNCTION otodb_tagworklangpreference_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworklangpreference_capture_d
+AFTER DELETE ON otodb_tagworklangpreference
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworklangpreference_capture();
 
 -- tagworkmediaconnection: tracked=['tag', 'site', 'content_id']
 CREATE OR REPLACE FUNCTION otodb_tagworkmediaconnection_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkmediaconnection');
@@ -728,8 +911,9 @@ DECLARE
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -739,22 +923,25 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."tag_id" IS DISTINCT FROM OLD."tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."site" IS DISTINCT FROM OLD."site" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'site', NEW."site"::text, false, false)
+		VALUES (rev, own_ct, tid, 'site', NEW."site"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."content_id" IS DISTINCT FROM OLD."content_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'content_id', NEW."content_id", false, false)
+		VALUES (rev, own_ct, tid, 'content_id', NEW."content_id", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
@@ -763,14 +950,24 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkmediaconnection_capture ON otodb_tagworkmediaconnection;
-CREATE TRIGGER zz_otodb_tagworkmediaconnection_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagworkmediaconnection
+DROP TRIGGER IF EXISTS zz_otodb_tagworkmediaconnection_capture ON otodb_tagworkmediaconnection;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkmediaconnection_capture_i
+AFTER INSERT ON otodb_tagworkmediaconnection
+FOR EACH ROW EXECUTE FUNCTION otodb_tagworkmediaconnection_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkmediaconnection_capture_u
+AFTER UPDATE ON otodb_tagworkmediaconnection
+FOR EACH ROW WHEN (OLD."tag_id" IS DISTINCT FROM NEW."tag_id"
+	 OR OLD."site" IS DISTINCT FROM NEW."site"
+	 OR OLD."content_id" IS DISTINCT FROM NEW."content_id")
+EXECUTE FUNCTION otodb_tagworkmediaconnection_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkmediaconnection_capture_d
+AFTER DELETE ON otodb_tagworkmediaconnection
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkmediaconnection_capture();
 
 -- tagworkparenthood: tracked=['tag', 'parent', 'primary']
 CREATE OR REPLACE FUNCTION otodb_tagworkparenthood_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'tagworkparenthood');
@@ -778,8 +975,9 @@ DECLARE
 	ct_tagwork integer := otodb_ct('otodb', 'tagwork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -790,24 +988,27 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."tag_id" IS DISTINCT FROM OLD."tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."parent_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."parent_id" IS DISTINCT FROM OLD."parent_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'parent', NEW."parent_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'parent', NEW."parent_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."parent_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."primary" IS DISTINCT FROM OLD."primary" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'primary', CASE WHEN NEW."primary" IS NULL THEN NULL WHEN NEW."primary" THEN 'True' ELSE 'False' END, false, false)
+		VALUES (rev, own_ct, tid, 'primary', CASE WHEN NEW."primary" IS NULL THEN NULL WHEN NEW."primary" THEN 'True' ELSE 'False' END, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_tagwork, NEW."tag_id", route);
@@ -817,14 +1018,24 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_tagworkparenthood_capture ON otodb_tagworkparenthood;
-CREATE TRIGGER zz_otodb_tagworkparenthood_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_tagworkparenthood
+DROP TRIGGER IF EXISTS zz_otodb_tagworkparenthood_capture ON otodb_tagworkparenthood;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkparenthood_capture_i
+AFTER INSERT ON otodb_tagworkparenthood
+FOR EACH ROW EXECUTE FUNCTION otodb_tagworkparenthood_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkparenthood_capture_u
+AFTER UPDATE ON otodb_tagworkparenthood
+FOR EACH ROW WHEN (OLD."tag_id" IS DISTINCT FROM NEW."tag_id"
+	 OR OLD."parent_id" IS DISTINCT FROM NEW."parent_id"
+	 OR OLD."primary" IS DISTINCT FROM NEW."primary")
+EXECUTE FUNCTION otodb_tagworkparenthood_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_tagworkparenthood_capture_d
+AFTER DELETE ON otodb_tagworkparenthood
 FOR EACH ROW EXECUTE FUNCTION otodb_tagworkparenthood_capture();
 
 -- wikipage: tracked=['lang', 'tag', 'work', 'slug', 'title', 'page']
 CREATE OR REPLACE FUNCTION otodb_wikipage_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'wikipage');
@@ -833,8 +1044,9 @@ DECLARE
 	ct_mediawork integer := otodb_ct('otodb', 'mediawork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -846,8 +1058,9 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."lang" IS DISTINCT FROM OLD."lang" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'lang', NEW."lang"::text, false, false)
+		VALUES (rev, own_ct, tid, 'lang', NEW."lang"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -855,8 +1068,9 @@ BEGIN
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."work_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."tag_id" IS DISTINCT FROM OLD."tag_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'tag', NEW."tag_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -864,8 +1078,9 @@ BEGIN
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."work_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."work_id" IS DISTINCT FROM OLD."work_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'work', NEW."work_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'work', NEW."work_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -873,8 +1088,9 @@ BEGIN
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."work_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."slug" IS DISTINCT FROM OLD."slug" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'slug', NEW."slug", false, false)
+		VALUES (rev, own_ct, tid, 'slug', NEW."slug", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -882,8 +1098,9 @@ BEGIN
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."work_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."title" IS DISTINCT FROM OLD."title" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'title', NEW."title", false, false)
+		VALUES (rev, own_ct, tid, 'title', NEW."title", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -891,8 +1108,9 @@ BEGIN
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."work_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."page" IS DISTINCT FROM OLD."page" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'page', NEW."page", false, false)
+		VALUES (rev, own_ct, tid, 'page', NEW."page", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -903,14 +1121,27 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_wikipage_capture ON otodb_wikipage;
-CREATE TRIGGER zz_otodb_wikipage_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_wikipage
+DROP TRIGGER IF EXISTS zz_otodb_wikipage_capture ON otodb_wikipage;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_wikipage_capture_i
+AFTER INSERT ON otodb_wikipage
+FOR EACH ROW EXECUTE FUNCTION otodb_wikipage_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_wikipage_capture_u
+AFTER UPDATE ON otodb_wikipage
+FOR EACH ROW WHEN (OLD."lang" IS DISTINCT FROM NEW."lang"
+	 OR OLD."tag_id" IS DISTINCT FROM NEW."tag_id"
+	 OR OLD."work_id" IS DISTINCT FROM NEW."work_id"
+	 OR OLD."slug" IS DISTINCT FROM NEW."slug"
+	 OR OLD."title" IS DISTINCT FROM NEW."title"
+	 OR OLD."page" IS DISTINCT FROM NEW."page")
+EXECUTE FUNCTION otodb_wikipage_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_wikipage_capture_d
+AFTER DELETE ON otodb_wikipage
 FOR EACH ROW EXECUTE FUNCTION otodb_wikipage_capture();
 
 -- workrelation: tracked=['A', 'B', 'relation']
 CREATE OR REPLACE FUNCTION otodb_workrelation_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'workrelation');
@@ -918,8 +1149,9 @@ DECLARE
 	ct_mediawork integer := otodb_ct('otodb', 'mediawork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -930,24 +1162,27 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."A_id" IS DISTINCT FROM OLD."A_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'A', NEW."A_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'A', NEW."A_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."A_id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."B_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."B_id" IS DISTINCT FROM OLD."B_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'B', NEW."B_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'B', NEW."B_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."A_id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."B_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."relation" IS DISTINCT FROM OLD."relation" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'relation', NEW."relation"::text, false, false)
+		VALUES (rev, own_ct, tid, 'relation', NEW."relation"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."A_id", route);
@@ -957,14 +1192,24 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_workrelation_capture ON otodb_workrelation;
-CREATE TRIGGER zz_otodb_workrelation_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_workrelation
+DROP TRIGGER IF EXISTS zz_otodb_workrelation_capture ON otodb_workrelation;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_workrelation_capture_i
+AFTER INSERT ON otodb_workrelation
+FOR EACH ROW EXECUTE FUNCTION otodb_workrelation_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_workrelation_capture_u
+AFTER UPDATE ON otodb_workrelation
+FOR EACH ROW WHEN (OLD."A_id" IS DISTINCT FROM NEW."A_id"
+	 OR OLD."B_id" IS DISTINCT FROM NEW."B_id"
+	 OR OLD."relation" IS DISTINCT FROM NEW."relation")
+EXECUTE FUNCTION otodb_workrelation_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_workrelation_capture_d
+AFTER DELETE ON otodb_workrelation
 FOR EACH ROW EXECUTE FUNCTION otodb_workrelation_capture();
 
 -- worksource: tracked=['media', 'platform', 'source_id', 'url', 'published_date', 'work_origin', 'work_status', 'work_width', 'work_height', 'work_duration', 'title', 'description', 'thumbnail_url', 'thumbnail_mime', 'thumbnail_hash', 'uploader_id', 'added_by']
 CREATE OR REPLACE FUNCTION otodb_worksource_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
+	rev bigint;
 	tid bigint := coalesce(NEW."id", OLD."id");
 	route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 0);
 	own_ct integer := otodb_ct('otodb', 'worksource');
@@ -972,8 +1217,9 @@ DECLARE
 	ct_mediawork integer := otodb_ct('otodb', 'mediawork');
 BEGIN
 	IF TG_OP = 'DELETE' THEN
+		rev := otodb_current_revision();
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, OLD."id", NULL, NULL, true, false)
+		VALUES (rev, own_ct, OLD."id", NULL, NULL, true, false)
 		ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
 		RETURNING id INTO cid;
 		IF cid IS NOT NULL THEN
@@ -984,136 +1230,153 @@ BEGIN
 	END IF;
 
 	IF TG_OP = 'INSERT' OR NEW."media_id" IS DISTINCT FROM OLD."media_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'media', NEW."media_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'media', NEW."media_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."platform" IS DISTINCT FROM OLD."platform" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'platform', NEW."platform"::text, false, false)
+		VALUES (rev, own_ct, tid, 'platform', NEW."platform"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."source_id" IS DISTINCT FROM OLD."source_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'source_id', NEW."source_id", false, false)
+		VALUES (rev, own_ct, tid, 'source_id', NEW."source_id", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."url" IS DISTINCT FROM OLD."url" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'url', NEW."url", false, false)
+		VALUES (rev, own_ct, tid, 'url', NEW."url", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."published_date" IS DISTINCT FROM OLD."published_date" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'published_date', to_char(NEW."published_date", 'YYYY-MM-DD'), false, false)
+		VALUES (rev, own_ct, tid, 'published_date', to_char(NEW."published_date", 'YYYY-MM-DD'), false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."work_origin" IS DISTINCT FROM OLD."work_origin" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'work_origin', NEW."work_origin"::text, false, false)
+		VALUES (rev, own_ct, tid, 'work_origin', NEW."work_origin"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."work_status" IS DISTINCT FROM OLD."work_status" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'work_status', NEW."work_status"::text, false, false)
+		VALUES (rev, own_ct, tid, 'work_status', NEW."work_status"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."work_width" IS DISTINCT FROM OLD."work_width" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'work_width', NEW."work_width"::text, false, false)
+		VALUES (rev, own_ct, tid, 'work_width', NEW."work_width"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."work_height" IS DISTINCT FROM OLD."work_height" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'work_height', NEW."work_height"::text, false, false)
+		VALUES (rev, own_ct, tid, 'work_height', NEW."work_height"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."work_duration" IS DISTINCT FROM OLD."work_duration" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'work_duration', NEW."work_duration"::text, false, false)
+		VALUES (rev, own_ct, tid, 'work_duration', NEW."work_duration"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."title" IS DISTINCT FROM OLD."title" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'title', NEW."title", false, false)
+		VALUES (rev, own_ct, tid, 'title', NEW."title", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."description" IS DISTINCT FROM OLD."description" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'description', NEW."description", false, false)
+		VALUES (rev, own_ct, tid, 'description', NEW."description", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."thumbnail_url" IS DISTINCT FROM OLD."thumbnail_url" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'thumbnail_url', NEW."thumbnail_url", false, false)
+		VALUES (rev, own_ct, tid, 'thumbnail_url', NEW."thumbnail_url", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."thumbnail_mime" IS DISTINCT FROM OLD."thumbnail_mime" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'thumbnail_mime', NEW."thumbnail_mime"::text, false, false)
+		VALUES (rev, own_ct, tid, 'thumbnail_mime', NEW."thumbnail_mime"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."thumbnail_hash" IS DISTINCT FROM OLD."thumbnail_hash" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'thumbnail_hash', NEW."thumbnail_hash", false, false)
+		VALUES (rev, own_ct, tid, 'thumbnail_hash', NEW."thumbnail_hash", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."uploader_id" IS DISTINCT FROM OLD."uploader_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'uploader_id', NEW."uploader_id", false, false)
+		VALUES (rev, own_ct, tid, 'uploader_id', NEW."uploader_id", false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
 		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
 	END IF;
 	IF TG_OP = 'INSERT' OR NEW."added_by_id" IS DISTINCT FROM OLD."added_by_id" THEN
+		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
-		VALUES (otodb_current_revision(), own_ct, tid, 'added_by', NEW."added_by_id"::text, false, false)
+		VALUES (rev, own_ct, tid, 'added_by', NEW."added_by_id"::text, false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -1123,7 +1386,30 @@ BEGIN
 END;
 $$;
 
-DROP TRIGGER IF EXISTS zz_otodb_worksource_capture ON otodb_worksource;
-CREATE TRIGGER zz_otodb_worksource_capture
-AFTER INSERT OR UPDATE OR DELETE ON otodb_worksource
+DROP TRIGGER IF EXISTS zz_otodb_worksource_capture ON otodb_worksource;  -- pre-split single trigger
+CREATE OR REPLACE TRIGGER zz_otodb_worksource_capture_i
+AFTER INSERT ON otodb_worksource
+FOR EACH ROW EXECUTE FUNCTION otodb_worksource_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_worksource_capture_u
+AFTER UPDATE ON otodb_worksource
+FOR EACH ROW WHEN (OLD."media_id" IS DISTINCT FROM NEW."media_id"
+	 OR OLD."platform" IS DISTINCT FROM NEW."platform"
+	 OR OLD."source_id" IS DISTINCT FROM NEW."source_id"
+	 OR OLD."url" IS DISTINCT FROM NEW."url"
+	 OR OLD."published_date" IS DISTINCT FROM NEW."published_date"
+	 OR OLD."work_origin" IS DISTINCT FROM NEW."work_origin"
+	 OR OLD."work_status" IS DISTINCT FROM NEW."work_status"
+	 OR OLD."work_width" IS DISTINCT FROM NEW."work_width"
+	 OR OLD."work_height" IS DISTINCT FROM NEW."work_height"
+	 OR OLD."work_duration" IS DISTINCT FROM NEW."work_duration"
+	 OR OLD."title" IS DISTINCT FROM NEW."title"
+	 OR OLD."description" IS DISTINCT FROM NEW."description"
+	 OR OLD."thumbnail_url" IS DISTINCT FROM NEW."thumbnail_url"
+	 OR OLD."thumbnail_mime" IS DISTINCT FROM NEW."thumbnail_mime"
+	 OR OLD."thumbnail_hash" IS DISTINCT FROM NEW."thumbnail_hash"
+	 OR OLD."uploader_id" IS DISTINCT FROM NEW."uploader_id"
+	 OR OLD."added_by_id" IS DISTINCT FROM NEW."added_by_id")
+EXECUTE FUNCTION otodb_worksource_capture();
+CREATE OR REPLACE TRIGGER zz_otodb_worksource_capture_d
+AFTER DELETE ON otodb_worksource
 FOR EACH ROW EXECUTE FUNCTION otodb_worksource_capture();

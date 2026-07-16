@@ -155,6 +155,10 @@ def _table_sql(spec):
 	body.append('\tRETURN NEW;')
 
 	tracked_names = [name for name, _c, _k in spec['tracked']]
+	when_changed = '\n\t OR '.join(
+		f'OLD."{column}" IS DISTINCT FROM NEW."{column}"'
+		for _name, column, _kind in spec['tracked']
+	)
 	return (
 		f'-- {model}: tracked={tracked_names}\n'
 		f'CREATE OR REPLACE FUNCTION {fn}() RETURNS trigger LANGUAGE plpgsql AS $$\n'
@@ -164,8 +168,15 @@ def _table_sql(spec):
 		+ '\n'.join(body)
 		+ '\nEND;\n$$;\n\n'
 		f'DROP TRIGGER IF EXISTS zz_{fn} ON {table};\n'
-		f'CREATE TRIGGER zz_{fn}\n'
-		f'AFTER INSERT OR UPDATE OR DELETE ON {table}\n'
+		f'CREATE OR REPLACE TRIGGER zz_{fn}_i\n'
+		f'AFTER INSERT ON {table}\n'
+		f'FOR EACH ROW EXECUTE FUNCTION {fn}();\n'
+		f'CREATE OR REPLACE TRIGGER zz_{fn}_u\n'
+		f'AFTER UPDATE ON {table}\n'
+		f'FOR EACH ROW WHEN ({when_changed})\n'
+		f'EXECUTE FUNCTION {fn}();\n'
+		f'CREATE OR REPLACE TRIGGER zz_{fn}_d\n'
+		f'AFTER DELETE ON {table}\n'
 		f'FOR EACH ROW EXECUTE FUNCTION {fn}();\n'
 	)
 

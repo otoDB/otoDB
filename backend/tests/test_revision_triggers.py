@@ -172,6 +172,22 @@ def test_delete_captures_marker(revision_triggers, member):
 
 
 @pytest.mark.django_db
+def test_untracked_only_update_records_nothing(revision_triggers, member):
+	"""The UPDATE trigger's WHEN guard skips the capture function entirely for writes
+	touching no tracked column (moderation flags, tagulous counts, ...)."""
+	ws = _make_worksource(member)
+
+	with db_revision(user=member, message='untracked', route=ROUTE):
+		with connection.cursor() as cursor:
+			cursor.execute(
+				'UPDATE otodb_worksource SET is_pending = true WHERE id = %s', [ws.id]
+			)
+
+	assert Revision.objects.count() == 0
+	assert RevisionChange.objects.count() == 0
+
+
+@pytest.mark.django_db
 def test_noop_update_creates_no_revision(revision_triggers, member):
 	"""Lazy revision creation: a write with no real change makes neither a Revision nor
 	a RevisionChange."""

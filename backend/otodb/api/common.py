@@ -501,13 +501,17 @@ def print_queries(f):
 	return wrapper
 
 
+_READ_ONLY_HTTP_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS'})
+
+
 def track_revision(view_func):
 	"""Wrap an endpoint so its writes are captured as one Revision by the DB triggers:
 	open a ``db_revision`` transaction stamped with the request user + route (the route
-	is tagged onto the handler by ``@with_revision_route``). Handles sync and async
-	handlers; for async, the sync DB work runs in a thread via ``sync_to_async`` (the
-	same thread the handler's own ``sync_to_async`` DB calls use, so it shares the
-	transaction).
+	is tagged onto the handler by ``@with_revision_route``). Read-only requests skip the
+	transaction + stamping round-trips entirely -- they have nothing to capture.
+	Handles sync and async handlers; for async, the sync DB work runs in a thread via
+	``sync_to_async`` (the same thread the handler's own ``sync_to_async`` DB calls use,
+	so it shares the transaction).
 	"""
 
 	def _kwargs(request):
@@ -520,6 +524,8 @@ def track_revision(view_func):
 
 		@wraps(view_func)
 		async def async_wrapper(request, *args, **kwargs):
+			if request.method in _READ_ONLY_HTTP_METHODS:
+				return await view_func(request, *args, **kwargs)
 			ctx = db_revision(**_kwargs(request))
 			await sync_to_async(ctx.__enter__)()
 			try:
@@ -537,6 +543,8 @@ def track_revision(view_func):
 
 	@wraps(view_func)
 	def wrapper(request, *args, **kwargs):
+		if request.method in _READ_ONLY_HTTP_METHODS:
+			return view_func(request, *args, **kwargs)
 		with db_revision(**_kwargs(request)):
 			return view_func(request, *args, **kwargs)
 

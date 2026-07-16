@@ -21,7 +21,7 @@
 
 <div class="relative mb-4">
 	{#if menuLinks}
-		<menu class="absolute -right-px bottom-[calc(100%-1px)] z-1">
+		<menu class="absolute right-0 bottom-[calc(100%-1px)] z-1">
 			<ul class="flex list-none gap-2">
 				{#each menuLinks as { pathname, title }, i (i)}
 					<li

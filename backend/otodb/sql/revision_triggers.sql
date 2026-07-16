@@ -49,6 +49,45 @@ BEGIN
 END;
 $$;
 
+-- Side effects of a completed Revision, invoked by the writer in the same transaction:
+-- SELECT otodb_fan_out(rev_id). Notifies subscribers of the changed rows, auto-
+-- subscribes the (active) actor to the routed entities, then drops subscriptions whose
+-- row was deleted (the generic FK cannot cascade). Subscriptions persist across changes
+-- (a subscriber is notified of every revision touching the row); pruning runs LAST so a
+-- subscription to a row deleted in this revision -- pre-existing or just auto-created --
+-- never outlives it. IS DISTINCT FROM excludes the actor while still notifying everyone
+-- on an anonymous (NULL-user) edit.
+CREATE OR REPLACE FUNCTION otodb_fan_out(p_rev bigint)
+RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+	WITH touched AS (
+		SELECT DISTINCT target_type_id AS et, target_id AS eid
+		FROM otodb_revisionchange WHERE rev_id = p_rev
+	)
+	INSERT INTO otodb_notification (target_id, revision_id, reason, dismissed, created_at)
+	SELECT DISTINCT s.subscriber_id, p_rev, 0, false, now()
+	FROM otodb_subscription s
+	JOIN touched t ON s.entity_type_id = t.et AND s.entity_id = t.eid
+	JOIN otodb_revision r ON r.id = p_rev
+	WHERE s.subscriber_id IS DISTINCT FROM r.user_id;
+
+	INSERT INTO otodb_subscription (subscriber_id, entity_type_id, entity_id)
+	SELECT r.user_id, rce.entity_type_id, rce.entity_id
+	FROM otodb_revision r
+	JOIN otodb_revisionchange rc ON rc.rev_id = r.id
+	JOIN otodb_revisionchangeentity rce ON rce.change_id = rc.id
+	JOIN account_account a ON a.id = r.user_id AND a.is_active
+	WHERE r.id = p_rev
+	ON CONFLICT (subscriber_id, entity_type_id, entity_id) DO NOTHING;
+
+	DELETE FROM otodb_subscription s
+	USING otodb_revisionchange rc
+	WHERE rc.rev_id = p_rev AND rc.deleted
+		AND s.entity_type_id = rc.target_type_id
+		AND s.entity_id = rc.target_id;
+END;
+$$;
+
 
 -- mediasong: tracked=['title', 'bpm', 'variable_bpm', 'work_tag', 'author']
 CREATE OR REPLACE FUNCTION otodb_mediasong_capture() RETURNS trigger LANGUAGE plpgsql AS $$

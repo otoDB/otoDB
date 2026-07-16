@@ -6,9 +6,9 @@ after the ORM capture was stripped:
 
 * ``db_revision(...)`` -- open a transaction, stamp it so the triggers attribute + group
   the writes into one Revision, then fan out its side effects on exit.
-* ``fan_out(revision_id)`` -- the subscription/notification side effects, driven
-  entirely by the persisted revision rows, so it is call-from-anywhere (Django,
-  Litestar, a future axum).
+* ``fan_out(revision_id)`` -- invokes the codegen'd ``otodb_fan_out`` DB function
+  holding the subscription/notification side effects; driven entirely by the persisted
+  revision rows, so any backend triggers identical side effects with one call.
 
 Revision merging is intentionally deferred (design in REVISION_TRIGGERS_EVAL.md §11/§13).
 """
@@ -59,53 +59,11 @@ def db_revision(user=None, message='', route=0):
 
 
 def fan_out(revision_id):
-	"""Notify subscribers of the changed rows, auto-subscribe the (active) actor to the
-	routed entities, then drop subscriptions whose row was deleted -- all from persisted
-	rows, in the current transaction.
-
-	Subscriptions persist across changes (a subscriber is notified of every revision
-	touching the row); one is deleted only when the subscribed row itself is, since the
-	generic FK cannot cascade. Pruning runs LAST so a subscription to a row deleted in
-	this revision -- pre-existing or just auto-created -- never outlives it.
-	``IS DISTINCT FROM`` excludes the actor while still notifying everyone on an
-	anonymous (NULL-user) edit, matching Python ``sub != request.user.id``.
-	"""
+	"""Run the Revision's side effects: notify subscribers of the changed rows,
+	auto-subscribe the (active) actor to the routed entities, prune subscriptions of
+	deleted rows. The logic lives in the codegen'd ``otodb_fan_out`` DB function (see
+	``revision_codegen._BASE_SQL`` for the semantics), so every backend -- Django,
+	Litestar, a future axum -- triggers identical side effects with this one call in
+	its write transaction."""
 	with connection.cursor() as cursor:
-		cursor.execute(
-			"""
-			WITH touched AS (
-				SELECT DISTINCT target_type_id AS et, target_id AS eid
-				FROM otodb_revisionchange WHERE rev_id = %(rev)s
-			)
-			INSERT INTO otodb_notification (target_id, revision_id, reason, dismissed, created_at)
-			SELECT DISTINCT s.subscriber_id, %(rev)s, 0, false, now()
-			FROM otodb_subscription s
-			JOIN touched t ON s.entity_type_id = t.et AND s.entity_id = t.eid
-			JOIN otodb_revision r ON r.id = %(rev)s
-			WHERE s.subscriber_id IS DISTINCT FROM r.user_id
-			""",
-			{'rev': revision_id},
-		)
-		cursor.execute(
-			"""
-			INSERT INTO otodb_subscription (subscriber_id, entity_type_id, entity_id)
-			SELECT r.user_id, rce.entity_type_id, rce.entity_id
-			FROM otodb_revision r
-			JOIN otodb_revisionchange rc ON rc.rev_id = r.id
-			JOIN otodb_revisionchangeentity rce ON rce.change_id = rc.id
-			JOIN account_account a ON a.id = r.user_id AND a.is_active
-			WHERE r.id = %(rev)s
-			ON CONFLICT (subscriber_id, entity_type_id, entity_id) DO NOTHING
-			""",
-			{'rev': revision_id},
-		)
-		cursor.execute(
-			"""
-			DELETE FROM otodb_subscription s
-			USING otodb_revisionchange rc
-			WHERE rc.rev_id = %(rev)s AND rc.deleted
-				AND s.entity_type_id = rc.target_type_id
-				AND s.entity_id = rc.target_id
-			""",
-			{'rev': revision_id},
-		)
+		cursor.execute('SELECT otodb_fan_out(%s)', [revision_id])

@@ -46,7 +46,8 @@ def db_revision(user=None, message='', route=0):
 	"""Open a transaction, stamp it for the capture triggers, and on clean exit fan out
 	the resulting Revision's side effects.
 
-	``user`` may be a user instance, an id, or None (anonymous). Resetting
+	``user`` may be a user instance, an id, or None -- which stamps no author, so the
+	trigger attributes the Revision to the system bot (account id 1). Resetting
 	``otodb.rev_id`` on entry starts a fresh Revision for this block.
 	"""
 	user_id = getattr(user, 'pk', user)

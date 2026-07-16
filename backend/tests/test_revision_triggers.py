@@ -13,6 +13,7 @@ import pytest
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection
 
+from otodb.account.models import Account
 from otodb.models import (
 	MediaWork,
 	Revision,
@@ -340,3 +341,25 @@ def test_fan_out_excludes_actor(revision_triggers, member):
 			)
 
 	assert Notification.objects.count() == 0
+
+
+# --- attribution ------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_unstamped_write_attributed_to_system_bot(revision_triggers, member):
+	"""A tracked write with no db_revision stamp (scheduler jobs like prune_expired,
+	raw SQL, data migrations) is attributed to the system bot instead of left
+	authorless. The trigger hardcodes account id 1; comparing against get_system()
+	also guards the invariant that the bot -- created first, by account migration
+	0008 -- really holds that id."""
+	WorkSource.objects.create(
+		added_by=member,
+		platform=Platform.YOUTUBE,
+		url='https://www.youtube.com/watch?v=bot',
+		source_id='bot',
+		work_origin=WorkOrigin.AUTHOR,
+		work_status=WorkStatus.AVAILABLE,
+	)
+
+	assert Revision.objects.get().user_id == Account.get_system().pk

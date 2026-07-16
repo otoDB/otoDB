@@ -31,6 +31,9 @@ $$;
 
 -- One Revision per transaction, created LAZILY on the first real change; its id is
 -- parked in a txn-local setting so later changes in the same txn attach to it.
+-- Attribution: an absent/empty otodb.user_id (unstamped writes -- scheduler jobs like
+-- prune_expired, raw SQL, data migrations) falls back to the system bot: account id 1,
+-- the first account, created by account migration 0008 on a fresh schema.
 CREATE OR REPLACE FUNCTION otodb_current_revision()
 RETURNS bigint LANGUAGE plpgsql AS $$
 DECLARE
@@ -44,7 +47,7 @@ BEGIN
 	uid := nullif(current_setting('otodb.user_id', true), '');
 	INSERT INTO otodb_revision (user_id, "date", message)
 	VALUES (
-		uid::bigint,
+		coalesce(uid::bigint, 1),
 		now(),
 		coalesce(nullif(current_setting('otodb.message', true), ''), '')
 	)

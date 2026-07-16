@@ -130,7 +130,7 @@
 			<div class="mt-1 flex items-center gap-2">
 				<select id="graph_view_backend" bind:value={graph_view_backend} onchange={savePrefs}>
 					{#each enumValues(GraphViewBackends) as v (v)}
-						<option value={v}>{GraphViewBackendNames[graph_view_backend]}</option>
+						<option value={v}>{GraphViewBackendNames[v]}</option>
 					{/each}
 				</select>
 			</div>

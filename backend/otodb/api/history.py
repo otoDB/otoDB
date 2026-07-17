@@ -1103,7 +1103,8 @@ def rollback_entity(
 
 
 @history_router.post('rollback', auth=django_auth)
-@user_is_mod  # TODO: for now
+# TODO: for now; in the future, needs to be permissioned by the revision's route
+@user_is_mod
 @track_revision
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic

@@ -68,7 +68,7 @@
 	<hr />
 	<div class="@container">
 		<div
-			class="grid grid-cols-1 gap-x-4 gap-y-4 @[400px]:grid-cols-2 @[616px]:grid-cols-3 @[1264px]:grid-cols-6 @[1912px]:grid-cols-9"
+			class="grid grid-cols-1 gap-x-4 gap-y-4 @[25rem]:grid-cols-2 @[38.5rem]:grid-cols-3 @[80rem]:grid-cols-6 @[120rem]:grid-cols-9"
 		>
 			{#each data.results.items as work, i (i)}
 				<WorkCard {work} />

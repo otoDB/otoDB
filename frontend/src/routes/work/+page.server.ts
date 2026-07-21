@@ -3,7 +3,7 @@ import { m } from '$lib/paraglide/messages';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
-	const batch_size = 20;
+	const batch_size = 18;
 	const query = url.searchParams.get('query') ?? '';
 	const tags = url.searchParams.get('tags') ?? '';
 

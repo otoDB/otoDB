@@ -8,7 +8,7 @@
 
 {#if loading}
 	<div
-		class="loading-indicator [--trail-duration:0.5s] [--trail-width:66.667vw] md:[--trail-duration:0.3s] md:[--trail-width:40vw]"
+		class="loading-indicator [--trail-duration:1s] [--trail-width:66.667vw] md:[--trail-duration:0.6s] md:[--trail-width:40vw]"
 		role="status"
 	></div>
 {/if}

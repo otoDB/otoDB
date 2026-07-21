@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { navigating } from '$app/state';
 	import { PUBLIC_OTODB_HASH } from '$env/static/public';
 	import { languages } from '$lib/enums/language';
 	import { currentVersion, versions } from '$lib/enums/version';
@@ -19,11 +18,7 @@
 </script>
 
 <footer class={props.class}>
-	<div class="footer-left">
-		{#if navigating.to}
-			<span id="loading-indicator"></span>
-		{/if}
-	</div>
+	<div class="footer-left"></div>
 
 	<div class="footer-center">
 		<span>
@@ -99,24 +94,5 @@
 
 	.social-links a:hover {
 		opacity: 0.7;
-	}
-
-	@keyframes loading-dot {
-		0% {
-			content: '.';
-		}
-		33% {
-			content: '..';
-		}
-		66% {
-			content: '...';
-		}
-		100% {
-			content: '.';
-		}
-	}
-	#loading-indicator::after {
-		content: '.';
-		animation: loading-dot 0.4s infinite;
 	}
 </style>

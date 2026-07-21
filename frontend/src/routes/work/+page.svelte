@@ -69,10 +69,10 @@
 	<div class="@container">
 		<div
 			class="grid grid-cols-1 gap-4
-    @[calc(12rem*2+1rem)]:grid-cols-2
-    @[calc(12rem*3+2rem)]:grid-cols-3
-    @[calc(12rem*6+5rem)]:grid-cols-6
-    @[calc(12rem*9+8rem)]:grid-cols-9"
+    @[calc(9rem*2+1rem)]:grid-cols-2
+    @[calc(9rem*3+2rem)]:grid-cols-3
+    @[calc(9rem*6+5rem)]:grid-cols-6
+    @[calc(9rem*9+8rem)]:grid-cols-9"
 		>
 			{#each data.results.items as work, i (i)}
 				<WorkCard {work} />

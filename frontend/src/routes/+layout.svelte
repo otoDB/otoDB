@@ -4,6 +4,7 @@
 	import Banner from '$lib/Banner.svelte';
 	import Footer from '$lib/Footer/Footer.svelte';
 	import GlobalSideNav from '$lib/GlobalSideNav/GlobalSideNav.svelte';
+	import LoadingIndicator from '$lib/LoadingIndicator/LoadingIndicator.svelte';
 	import Section from '$lib/Section.svelte';
 	import { isFormDirty } from '$lib/dirty';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
@@ -180,6 +181,7 @@
 
 <div class="text-otodb-content-primary overflow-auto">
 	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
+	<LoadingIndicator />
 	<Toaster
 		expand={true}
 		position="bottom-right"

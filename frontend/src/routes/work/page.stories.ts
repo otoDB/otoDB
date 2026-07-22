@@ -28,34 +28,29 @@ const songTag = {
 	creator_roles: null
 };
 
-const ordinals = [
-	'One',
-	'Two',
-	'Three',
-	'Four',
-	'Five',
-	'Six',
-	'Seven',
-	'Eight',
-	'Nine',
-	'Ten',
-	'Eleven',
-	'Twelve',
-	'Thirteen',
-	'Fourteen',
-	'Fifteen',
-	'Sixteen',
-	'Seventeen',
-	'Eighteen'
+const sampleWorks = [
+	{
+		id: '1',
+		tags: [mediaTag, songTag],
+		thumbnail: null,
+		status: Status.Approved,
+		title: 'Example Work One'
+	},
+	{
+		id: '2',
+		tags: [mediaTag],
+		thumbnail: null,
+		status: Status.Approved,
+		title: 'Example Work Two'
+	},
+	{
+		id: '3',
+		tags: [],
+		thumbnail: null,
+		status: Status.Pending,
+		title: 'Example Work Three'
+	}
 ];
-
-const sampleWorks = ordinals.map((ordinal, i) => ({
-	id: `${i + 1}`,
-	tags: i % 3 === 0 ? [] : i % 3 === 1 ? [mediaTag] : [mediaTag, songTag],
-	thumbnail: null,
-	status: i % 5 === 0 ? Status.Pending : Status.Approved,
-	title: `Example Work ${ordinal}`
-}));
 
 const links = [
 	{ pathname: 'work', title: 'Works' },
@@ -72,7 +67,7 @@ const baseData = {
 	query: '',
 	query_tags: '',
 	results: { items: sampleWorks, count: sampleWorks.length },
-	batch_size: 18,
+	batch_size: 20,
 	head: {
 		title: m.mild_loud_shad_enchant({
 			type: m.mean_top_antelope_love(),

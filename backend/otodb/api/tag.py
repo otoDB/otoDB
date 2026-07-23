@@ -593,6 +593,7 @@ def update(
 	tag = get_object_or_404(
 		TagWork.objects.select_for_update(of=('self',)), slug=tag_slug
 	)
+	original_category = tag.category
 	if (
 		tag.category == WorkTagCategory.SONG
 		and payload.category != WorkTagCategory.SONG
@@ -613,10 +614,13 @@ def update(
 		except MediaSong.DoesNotExist:
 			tag.category = WorkTagCategory.SONG
 			song = MediaSong.objects.create(work_tag=tag, **song_payload.dict())
-	# If category changed from source to creator or media, mark all instances with used_as_source
-	if tag.category == WorkTagCategory.SOURCE and payload.category in (
-		WorkTagCategory.CREATOR,
-		WorkTagCategory.MEDIA,
+	# If category changed from source to a sampleable category, preserve the
+	# existing entries as a source by marking all instances used_as_source.
+	# Compare against the original category since the song branch above may
+	# have already reassigned tag.category in memory.
+	if (
+		original_category == WorkTagCategory.SOURCE
+		and payload.category in WorkTagCategory.sampleable()
 	):
 		TagWorkInstance.objects.filter(work_tag=tag).update(used_as_source=True)
 

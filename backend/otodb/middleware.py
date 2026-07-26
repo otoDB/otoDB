@@ -1,19 +1,12 @@
 from django.core.cache import cache
 from django.http import HttpResponse
-from django.utils.cache import (
-	get_cache_key,
-	get_max_age,
-	learn_cache_key,
-	patch_response_headers,
-)
+from django.utils.cache import get_max_age, patch_response_headers
 
 CACHE_TIMEOUT = 60
 KEY_PREFIX = 'anon_api'
 
 # Paths cached for everyone, including authenticated users, with per-prefix
-# timeouts in seconds. These responses don't vary by user, language, or
-# origin, so they use a deterministic path+query key and skip Django's
-# Vary-aware machinery.
+# timeouts in seconds.
 ALWAYS_CACHE_PREFIXES = {
 	'/api/stats': 60,
 	'/sitemap.xml': 3600,
@@ -51,6 +44,11 @@ def _always_cache_key(request) -> str:
 	return f'{KEY_PREFIX}:always:{request.method}:{request.get_full_path()}'
 
 
+def _anon_cache_key(request) -> str:
+	origin = request.headers.get('Origin', '')
+	return f'{KEY_PREFIX}:anon:{request.method}:{origin}:{request.get_full_path()}'
+
+
 class AnonymousReadOnlyCacheMiddleware:
 	def __init__(self, get_response):
 		self.get_response = get_response
@@ -70,21 +68,14 @@ class AnonymousReadOnlyCacheMiddleware:
 
 	def __call__(self, request):
 		always_timeout: int | None = None
-		anon_eligible = False
+		cache_key = None
 
 		if request.method in ('GET', 'HEAD'):
 			always_timeout = self._always_timeout(request)
 			if always_timeout is not None:
 				cache_key = _always_cache_key(request)
 			elif self._is_anon_eligible(request):
-				anon_eligible = True
-				cache_key = get_cache_key(
-					request, key_prefix=KEY_PREFIX, method=request.method
-				)
-			else:
-				cache_key = None
-		else:
-			cache_key = None
+				cache_key = _anon_cache_key(request)
 
 		if cache_key is not None:
 			cached = cache.get(cache_key)
@@ -98,14 +89,10 @@ class AnonymousReadOnlyCacheMiddleware:
 
 		if always_timeout is not None:
 			patch_response_headers(response, always_timeout)
-			cache.set(_always_cache_key(request), _pack(response), always_timeout)
-		elif anon_eligible:
+			cache.set(cache_key, _pack(response), always_timeout)
+		elif cache_key is not None:
 			timeout = get_max_age(response) or CACHE_TIMEOUT
 			patch_response_headers(response, timeout)
-			cache.set(
-				learn_cache_key(request, response, timeout, KEY_PREFIX),
-				_pack(response),
-				timeout,
-			)
+			cache.set(cache_key, _pack(response), timeout)
 
 		return response

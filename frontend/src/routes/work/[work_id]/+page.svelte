@@ -272,22 +272,37 @@
 											{m.proud_every_goat_affirm()}
 										</button>
 										{#if userListsShown}
-											<table class="absolute">
+											<table class="bg-otodb-bg-primary absolute border">
 												<tbody>
 													{#each userLists as list, i (i)}
 														<tr>
-															<td><a href="/list/{list[0].id}">{list[0].name}</a></td>
-															<td>
-																<input
-																	type="checkbox"
-																	checked={list[1]}
-																	oninput={() => {
-																		toggleWork(list[0].id);
-																	}}
-																/>
+															<td class="p-0">
+																<label class="flex cursor-pointer items-center gap-2 px-1 py-0.5">
+																	<input
+																		type="checkbox"
+																		checked={list[1]}
+																		oninput={() => {
+																			toggleWork(list[0].id);
+																		}}
+																	/>
+																	{list[0].name}
+																</label>
+															</td>
+															<td class="p-0">
+																<a
+																	class="flex h-full items-center justify-center px-1"
+																	href="/list/{list[0].id}">»</a
+																>
 															</td>
 														</tr>
 													{/each}
+													<tr>
+														<td colspan="2">
+															<a class="flex items-center px-1 py-0.5" href="/list/new"
+																>{m.plane_inner_chipmunk_race()}</a
+															>
+														</td>
+													</tr>
 												</tbody>
 											</table>
 										{/if}

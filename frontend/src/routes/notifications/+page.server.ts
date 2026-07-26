@@ -3,12 +3,10 @@ import client from '$lib/api.server';
 import { userLevelGuard } from '$lib/route_guard';
 import type { PageServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages';
-import { redirect } from '@sveltejs/kit';
 import { Levels } from '$lib/schema';
 
-export const load: PageServerLoad = async ({ fetch, locals, url, params }) => {
+export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 	userLevelGuard(locals.user, Levels.Member);
-	if (params.username !== locals.user?.username) redirect(303, `/profile/${params.username}`);
 
 	const batch_size = 20;
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;

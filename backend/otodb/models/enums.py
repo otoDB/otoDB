@@ -25,6 +25,11 @@ class WorkTagCategory(OtodbIntegerEnum):
 	MEDIA = 6, 'Media'
 	GENERAL = 7, 'General'
 
+	@classmethod
+	def sampleable(cls):
+		"""Categories whose tags can be marked as a sample (`used_as_source`)."""
+		return [cls.CREATOR, cls.MEDIA, cls.SONG]
+
 
 class SongTagCategory(OtodbIntegerEnum):
 	GENERAL = 0, 'General'
@@ -169,6 +174,8 @@ class ThemePref(OtodbIntegerEnum):
 	RETRO_VOYAGE = 3, 'Retro Voyage'
 	SORIMIX = 4, 'SORIMIX'
 	RESAMPLE = 5, 'Re:Sample'
+	PLAIN_DARK = 6, 'Plain Dark'
+	PLAIN_LIGHT = 7, 'Plain Light'
 
 
 VideoPlatformPref = OtodbIntegerEnum(
@@ -351,6 +358,7 @@ class ErrorCode(OtodbIntegerEnum):
 	SOURCE_PENDING = 10022
 	CAPTCHA_FAILED = 10023
 	MAX_THREAD_LEVEL = 10024
+	ONLY_WORK_SOURCE = 10025
 
 
 class Preferences(OtodbIntegerEnum):

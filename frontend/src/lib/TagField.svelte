@@ -3,7 +3,7 @@
 	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
 	import { clickOutside, debounce } from '$lib/ui';
 	import { getTagDisplaySlug } from '$lib/ui.js';
-	import type { ComponentProps } from 'svelte';
+	import type { components } from './schema';
 
 	interface Props {
 		value: string;
@@ -12,7 +12,9 @@
 	}
 	let { value = $bindable(''), type, ...props }: Props = $props();
 
-	let suggestions: ComponentProps<typeof TagSuggestionResults>['suggestions'] = $state([]);
+	let suggestions:
+		| components['schemas']['TagWorkSearchResultSchema'][]
+		| components['schemas']['TagSongSearchResultSchema'][] = $state([]);
 
 	const search = async () => {
 		if (value === '') {

@@ -10,5 +10,5 @@ export const userLevelGuard = (
 ): user is Exclude<App.Locals['user'], null> => {
 	if (hasUserLevel(user?.level, userLevel)) return true;
 	if (user) error(403, { message: 'Forbidden' });
-	redirect(303, to === '/login' && from ? `${to}?from=${from}` : to);
+	redirect(303, to === '/login' && from ? `${to}?from=${encodeURIComponent(from)}` : to);
 };

@@ -23,7 +23,7 @@ from otodb.models.enums import (
 	LanguageTypes,
 	Preferences,
 )
-from otodb.tasks import send_email
+from otodb.tasks import fire_and_forget, send_email
 
 from .common import (
 	ApiError,
@@ -51,7 +51,7 @@ def verify_turnstile(request: HttpRequest, token: str | None, action: str) -> No
 		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
 	data = {'secret': secret, 'response': token}
 	# REMOTE_ADDR is resolved to the real client IP by Granian's proxy-header wrapper
-	# (see project/wsgi.py + OTODB_TRUSTED_PROXY_HOSTS)
+	# (see project/[asgi/wsgi].py + OTODB_TRUSTED_PROXY_HOSTS)
 	remoteip = request.META.get('REMOTE_ADDR')
 	if remoteip:
 		data['remoteip'] = remoteip
@@ -305,7 +305,8 @@ def send_reset_password_token(request: HttpRequest, body: SendResetTokenRequestS
 		user.reset_token = get_random_string(120, string.ascii_letters + string.digits)
 		user.save()
 		language = get_user_language(user, request)
-		send_email.enqueue(
+		fire_and_forget(
+			send_email,
 			subject=PASSWORD_RESET_EMAIL[language][0],
 			body=PASSWORD_RESET_EMAIL[language][1](user.username, user.reset_token),
 			from_email='noreply@otodb.net',

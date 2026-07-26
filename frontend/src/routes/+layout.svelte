@@ -2,8 +2,9 @@
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import Banner from '$lib/Banner.svelte';
-	import Footer from '$lib/Footer.svelte';
+	import Footer from '$lib/Footer/Footer.svelte';
 	import GlobalSideNav from '$lib/GlobalSideNav/GlobalSideNav.svelte';
+	import LoadingIndicator from '$lib/LoadingIndicator/LoadingIndicator.svelte';
 	import Section from '$lib/Section.svelte';
 	import { isFormDirty } from '$lib/dirty';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
@@ -76,13 +77,6 @@
 		boundaryReset = reset;
 	}
 
-	let isMobileNavOpen = $state(false);
-	function toggleMobileNav() {
-		isMobileNavOpen = !isMobileNavOpen;
-	}
-	function closeMobileNav() {
-		isMobileNavOpen = false;
-	}
 	beforeNavigate(({ cancel, type }) => {
 		if (
 			type !== 'form' &&
@@ -187,19 +181,7 @@
 
 <div class="text-otodb-content-primary overflow-auto">
 	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
-	<div class="contents md:hidden">
-		<!-- Hamburger button -->
-		<button
-			class={[
-				'bg-otodb-bg-primary/90 fixed bottom-[32px] left-[32px] z-3 h-12 w-12',
-				isMobileNavOpen && 'invisible'
-			]}
-			aria-label={m.clean_kind_stork_affirm()}
-			onclick={toggleMobileNav}
-		>
-			<span class="icon-[gravity-ui--bars] m-auto size-6" aria-hidden="true"></span>
-		</button>
-	</div>
+	<LoadingIndicator />
 	<Toaster
 		expand={true}
 		position="bottom-right"
@@ -220,14 +202,7 @@
 	</header>
 
 	<div class="relative mx-auto w-full gap-x-4 px-4 md:flex">
-		<div
-			class={[
-				'fixed top-0 left-0 z-2 size-full md:pointer-events-auto md:relative md:size-auto md:bg-transparent',
-				isMobileNavOpen ? 'bg-otodb-bg-primary/90' : 'pointer-events-none bg-transparent'
-			]}
-		>
-			<GlobalSideNav user={data.user} {isMobileNavOpen} {closeMobileNav} stats={data.stats} />
-		</div>
+		<GlobalSideNav user={data.user} stats={data.stats} />
 		<div class="grow">
 			<main id="content">
 				<svelte:boundary onerror={handleBoundaryError}>

@@ -1,17 +1,18 @@
 from datetime import date
 from typing import Annotated
 
-from django.conf import settings
+from asgiref.sync import sync_to_async
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
+from django.shortcuts import aget_object_or_404, get_object_or_404
+from django.utils import timezone
 from ninja import Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 from pydantic import StringConstraints
 
 from otodb.account.models import Account
-from otodb.common import process_video_info, slugify_tag
+from otodb.common import process_video_info, slugify_tag, video_info
 from otodb.models import (
 	MediaWork,
 	ModerationEvent,
@@ -31,7 +32,6 @@ from otodb.models.enums import (
 	WorkOrigin,
 	WorkStatus,
 )
-from otodb.tasks import enqueue_deferred, resolve_expired_source_task
 
 from .common import (
 	ApiError,
@@ -76,7 +76,7 @@ def unbind_source(request: AuthedHttpRequest, source_id: OtodbID):
 	if src.is_pending:
 		raise ApiError(400, ErrorCode.SOURCE_PENDING)
 	if src.media.worksource_set.count() == 1:
-		src.media.delete()
+		raise ApiError(400, ErrorCode.ONLY_WORK_SOURCE)
 	src.media = None
 	src.save()
 
@@ -103,9 +103,10 @@ def source_origin(request: AuthedHttpRequest, source_id: OtodbID, status: WorkOr
 @source_router.post('refresh', auth=django_auth)
 @user_is_editor
 @with_revision_route(Route.WORKSOURCE_REFRESH)
-def refresh_source(request: AuthedHttpRequest, source_id: OtodbID):
-	src: WorkSource = get_object_or_404(WorkSource.objects, id=source_id)
-	src.refresh()
+async def refresh_source(request: AuthedHttpRequest, source_id: OtodbID):
+	src: WorkSource = await aget_object_or_404(WorkSource.objects, id=source_id)
+	info, full_info = await video_info(src.url)
+	await sync_to_async(src.refresh)(info, full_info)
 	return
 
 
@@ -146,9 +147,8 @@ def update_source(
 	response={200: SourceCreationResponse, 400: Error},
 )
 @user_is_trusted
-@transaction.atomic
 @with_revision_route(Route.WORKSOURCE_CREATE)
-def new_source_from_url(
+async def new_source_from_url(
 	request: AuthedHttpRequest,
 	url: Annotated[str, StringConstraints(strip_whitespace=True)],
 	is_reupload: bool,
@@ -167,44 +167,50 @@ def new_source_from_url(
 		raise ApiError(403, ErrorCode.EDITOR_ONLY)
 
 	metadata_dict = metadata.dict() if metadata else None
-	src, info = WorkSource.from_url(
-		url, user=request.user, is_reupload=is_reupload, metadata=metadata_dict
-	)
 
-	if src is None:
-		raise ApiError(400, ErrorCode.BAD_URL)
+	info, full_info = await video_info(url, expected_unavailable=metadata is not None)
 
-	src = WorkSource.objects.select_for_update(of=('self',)).get(pk=src.pk)
-
-	# Source already has a work -> redirect
-	if src.media:
-		return {'work_id': src.media.pk}
-
-	# work_id provided -> bind source to existing work
-	if work_id:
-		work = get_object_or_404(
-			MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+	@transaction.atomic
+	def make_source():
+		src = WorkSource.from_url(
+			url,
+			info=info,
+			full_info=full_info,
+			user=request.user,
+			is_reupload=is_reupload,
+			metadata=metadata_dict,
 		)
-		if work.status == Status.DELISTED:
-			raise ApiError(400, ErrorCode.SOURCE_UNAPPROVED)
-		if work.moderation_events.filter(
-			event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
-		).exists():
-			raise ApiError(400, ErrorCode.SOURCE_FLAGGED)
-		if not is_editor and work.status == Status.APPROVED:
-			src.is_pending = True
-			transaction.on_commit(
-				lambda: enqueue_deferred(
-					resolve_expired_source_task,
-					src.pk,
-					delay=settings.OTODB_MODERATION_PERIOD,
-				)
-			)
-		sync_work_source(work, src)
-		return {'work_id': work.pk}
 
-	# New source, no existing work -> return source_id for review
-	return {'source_id': src.pk}
+		if src is None:
+			raise ApiError(400, ErrorCode.BAD_URL)
+
+		src = WorkSource.objects.select_for_update(of=('self',)).get(pk=src.pk)
+
+		# Source already has a work -> redirect
+		if src.media:
+			return {'work_id': src.media.pk}
+
+		# work_id provided -> bind source to existing work
+		if work_id:
+			work = get_object_or_404(
+				MediaWork.objects.filter(moved_to__isnull=True), id=work_id
+			)
+			if work.status == Status.DELISTED:
+				raise ApiError(400, ErrorCode.SOURCE_UNAPPROVED)
+			if work.moderation_events.filter(
+				event_type=ModerationEventType.FLAG, status=FlagStatus.PENDING
+			).exists():
+				raise ApiError(400, ErrorCode.SOURCE_FLAGGED)
+			if not is_editor and work.status == Status.APPROVED:
+				src.is_pending = True
+				src.pending_since = timezone.now()
+			sync_work_source(work, src)
+			return {'work_id': work.pk}
+
+		# New source, no existing work -> return source_id for review
+		return {'source_id': src.pk}
+
+	return await sync_to_async(make_source)()
 
 
 def resolve_creator_tags(src: WorkSource, info: dict) -> list:
@@ -323,7 +329,8 @@ def reject_pending_source(src: WorkSource, by, reason: str):
 	work = src.media  # Capture before unbinding
 	src.media = None
 	src.is_pending = False
-	src.save(update_fields=['media', 'is_pending'])
+	src.pending_since = None
+	src.save(update_fields=['media', 'is_pending', 'pending_since'])
 	ModerationEvent.objects.create(
 		work=work,
 		source=src,
@@ -361,7 +368,8 @@ def approve_source(request: AuthedHttpRequest, source_id: OtodbID):
 	)
 	ensure_can_moderate(request.user, src.media)
 	src.is_pending = False
-	src.save(update_fields=['is_pending'])
+	src.pending_since = None
+	src.save(update_fields=['is_pending', 'pending_since'])
 	ModerationEvent.objects.create(
 		work=src.media,
 		source=src,

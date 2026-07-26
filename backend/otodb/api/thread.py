@@ -25,6 +25,7 @@ from otodb.models import (
 	ThreadPost,
 )
 from otodb.models.enums import NotificationReason, PostCategory
+from otodb.tasks import fire_and_forget
 
 from .common import (
 	AuthedHttpRequest,
@@ -232,7 +233,9 @@ def new_thread(request: AuthedHttpRequest, payload: ThreadInSchema):
 
 	Subscription.objects.create(subscriber=request.user, entity=t)
 
-	transaction.on_commit(lambda: discord_thread.enqueue(t.pk, request.user.username))
+	transaction.on_commit(
+		lambda: fire_and_forget(discord_thread, t.pk, request.user.username)
+	)
 
 	return t.pk
 
@@ -311,7 +314,7 @@ def new_post(request: AuthedHttpRequest, payload: PostInSchema):
 	)
 
 	transaction.on_commit(
-		lambda: discord_threadpost.enqueue(post.pk, request.user.username)
+		lambda: fire_and_forget(discord_threadpost, post.pk, request.user.username)
 	)
 	return num
 

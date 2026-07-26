@@ -1,0 +1,58 @@
+import { Meta, ColorPalette, ColorItem } from '@storybook/addon-docs/blocks';
+import { themeColors } from './theme-colors';
+
+<Meta title="Themes/Colors" />
+
+# Theme colors
+
+Reference for every theme's palette, generated from `src/themes.json` — the single source of
+truth also used by the `postcss-map` plugin (see `postcss.config.js`) that expands these colors
+into `src/themes.css`. Editing `themes.json` updates both the app and this page; there is no
+separate value to keep in sync by hand.
+
+The `default` theme follows the OS `prefers-color-scheme` and is omitted here since its colors
+vary by machine.
+
+## Palette
+
+<ColorPalette>
+	{themeColors.map((t) => (
+		<ColorItem
+			key={t.name}
+			title={t.name}
+			subtitle="bg-primary / bg-faint / bg-fainter / content-primary / content-faint / content-fainter"
+			colors={{
+				'bg-primary': t.bgPrimary,
+				'bg-faint': t.bgFaint,
+				'bg-fainter': t.bgFainter,
+				'content-primary': t.contentPrimary,
+				'content-faint': t.contentFaint,
+				'content-fainter': t.contentFainter
+			}}
+		/>
+	))}
+</ColorPalette>
+
+## Text on background
+
+How each theme's content colors read on top of its own backgrounds.
+
+{themeColors.map((t) => (
+
+  <div key={t.name} style={{ marginBottom: '1.5rem' }}>
+    <strong>{t.name}</strong>
+    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+      {[
+        ['bg-primary', t.bgPrimary],
+        ['bg-faint', t.bgFaint],
+        ['bg-fainter', t.bgFainter]
+      ].map(([label, bg]) => (
+        <div key={label} style={{ background: bg, padding: '0.5rem', flex: 1 }}>
+          <div style={{ color: t.contentPrimary, fontWeight: 'bold' }}>Heading</div>
+          <div style={{ color: t.contentFaint }}>Faint on {label}</div>
+          <div style={{ color: t.contentFainter }}>Fainter on {label}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+))}

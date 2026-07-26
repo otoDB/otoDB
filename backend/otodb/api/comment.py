@@ -18,6 +18,7 @@ from otodb.account.models import Account
 from otodb.discord import discord_comment
 from otodb.models import CommentMeta, Notification, RevisionChange, Subscription
 from otodb.models.enums import ErrorCode
+from otodb.tasks import fire_and_forget
 
 from .common import (
 	ApiError,
@@ -140,8 +141,12 @@ def post(
 	)
 
 	transaction.on_commit(
-		lambda: discord_comment.enqueue(
-			comment.pk, payload.model, payload.pk, request.user.username
+		lambda: fire_and_forget(
+			discord_comment,
+			comment.pk,
+			payload.model,
+			payload.pk,
+			request.user.username,
 		)
 	)
 

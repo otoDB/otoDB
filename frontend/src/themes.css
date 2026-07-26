@@ -1,55 +1,76 @@
+/* The `--otodb-color-bg-*`/`--otodb-color-content-*` declarations inside each
+   `:root[data-theme='X']` rule below are expanded at build time by the `postcss-map` plugin
+   (see postcss.config.js) from `./themes.json` — edit that file, not the values here.
+   Everything else (color-scheme, background art, .prose mapping) is hand-authored as usual. */
+
 :root {
-	--otodb-color-bg-primary: black;
-	--otodb-color-content-primary: white;
-	--otodb-color-bg-faint: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 90%,
-		var(--otodb-color-content-primary)
-	);
-	--otodb-color-bg-fainter: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 80%,
-		var(--otodb-color-content-primary)
-	);
-
-	@media (prefers-color-scheme: light) {
-		--otodb-color-bg-fainter: white;
-		--otodb-color-content-primary: black;
-		--otodb-color-bg-faint: color-mix(
-			in hsl,
-			var(--otodb-color-bg-fainter) 95%,
-			var(--otodb-color-content-primary)
-		);
-		--otodb-color-bg-primary: color-mix(
-			in hsl,
-			var(--otodb-color-bg-fainter) 90%,
-			var(--otodb-color-content-primary)
-		);
-	}
-
-	--otodb-color-content-faint: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 12.5%,
-		var(--otodb-color-content-primary)
-	);
-	--otodb-color-content-fainter: color-mix(
-		in hsl,
-		var(--otodb-color-bg-primary) 30%,
-		var(--otodb-color-content-primary)
-	);
-
 	--otodb-color-ins: color-mix(in oklab, var(--otodb-color-bg-faint) 30%, green);
 	--otodb-color-del: color-mix(in oklab, var(--otodb-color-bg-faint) 30%, red);
 }
 
+:root[data-theme='default'] {
+	color-scheme: light dark;
+	--otodb-color-bg-primary: map(themes, default, colors, bgPrimary);
+	--otodb-color-content-primary: map(themes, default, colors, contentPrimary);
+	--otodb-color-bg-faint: map(themes, default, colors, bgFaint);
+	--otodb-color-bg-fainter: map(themes, default, colors, bgFainter);
+	--otodb-color-content-faint: map(themes, default, colors, contentFaint);
+	--otodb-color-content-fainter: map(themes, default, colors, contentFainter);
+
+	@media (prefers-color-scheme: light) {
+		--otodb-color-bg-fainter: map(themes, default, prefersColorSchemeLight, bgFainter);
+		--otodb-color-content-primary: map(themes, default, prefersColorSchemeLight, contentPrimary);
+		--otodb-color-bg-faint: map(themes, default, prefersColorSchemeLight, bgFaint);
+		--otodb-color-bg-primary: map(themes, default, prefersColorSchemeLight, bgPrimary);
+	}
+
+	& .prose {
+		@apply prose-invert;
+	}
+
+	@media (prefers-color-scheme: light) {
+		& .prose {
+			@apply prose-neutral;
+		}
+	}
+}
+
+:root[data-theme='plain-dark'] {
+	color-scheme: dark;
+	--otodb-color-bg-primary: map(themes, plain-dark, colors, bgPrimary);
+	--otodb-color-content-primary: map(themes, plain-dark, colors, contentPrimary);
+	--otodb-color-bg-faint: map(themes, plain-dark, colors, bgFaint);
+	--otodb-color-bg-fainter: map(themes, plain-dark, colors, bgFainter);
+	--otodb-color-content-faint: map(themes, plain-dark, colors, contentFaint);
+	--otodb-color-content-fainter: map(themes, plain-dark, colors, contentFainter);
+
+	& .prose {
+		@apply prose-invert;
+	}
+}
+
+:root[data-theme='plain-light'] {
+	color-scheme: light;
+	--otodb-color-bg-fainter: map(themes, plain-light, colors, bgFainter);
+	--otodb-color-content-primary: map(themes, plain-light, colors, contentPrimary);
+	--otodb-color-bg-faint: map(themes, plain-light, colors, bgFaint);
+	--otodb-color-bg-primary: map(themes, plain-light, colors, bgPrimary);
+	--otodb-color-content-faint: map(themes, plain-light, colors, contentFaint);
+	--otodb-color-content-fainter: map(themes, plain-light, colors, contentFainter);
+
+	& .prose {
+		@apply prose-neutral;
+	}
+}
+
 :root[data-theme='aniki'] {
 	color-scheme: dark;
-	--otodb-color-content-primary: white;
-	--otodb-color-content-fainter: rgb(184, 180, 212);
-	--otodb-color-content-faint: rgb(121, 122, 151);
-	--otodb-color-bg-fainter: rgb(37, 43, 80);
-	--otodb-color-bg-faint: rgb(10, 10, 32);
-	--otodb-color-bg-primary: black;
+	--otodb-color-content-primary: map(themes, aniki, colors, contentPrimary);
+	--otodb-color-content-fainter: map(themes, aniki, colors, contentFainter);
+	--otodb-color-content-faint: map(themes, aniki, colors, contentFaint);
+	--otodb-color-bg-fainter: map(themes, aniki, colors, bgFainter);
+	--otodb-color-bg-faint: map(themes, aniki, colors, bgFaint);
+	--otodb-color-bg-primary: map(themes, aniki, colors, bgPrimary);
 
 	& #bg-marker {
 		background-image: url('/aniki-bg.png'), url('/aniki-right.png');
@@ -66,12 +87,12 @@
 
 :root[data-theme='otogroove'] {
 	color-scheme: light;
-	--otodb-color-content-primary: rgb(2, 27, 14);
-	--otodb-color-content-faint: rgb(230, 30, 30);
-	--otodb-color-content-fainter: rgb(189, 73, 102);
-	--otodb-color-bg-primary: rgb(255, 255, 255);
-	--otodb-color-bg-faint: rgb(253, 239, 239);
-	--otodb-color-bg-fainter: rgb(230, 211, 211);
+	--otodb-color-content-primary: map(themes, otogroove, colors, contentPrimary);
+	--otodb-color-content-faint: map(themes, otogroove, colors, contentFaint);
+	--otodb-color-content-fainter: map(themes, otogroove, colors, contentFainter);
+	--otodb-color-bg-primary: map(themes, otogroove, colors, bgPrimary);
+	--otodb-color-bg-faint: map(themes, otogroove, colors, bgFaint);
+	--otodb-color-bg-fainter: map(themes, otogroove, colors, bgFainter);
 
 	& .prose {
 		@apply prose-neutral;
@@ -115,12 +136,12 @@
 
 :root[data-theme='retro-voyage'] {
 	color-scheme: light;
-	--otodb-color-content-primary: rgb(36, 51, 80);
-	--otodb-color-content-faint: rgb(6, 25, 131);
-	--otodb-color-content-fainter: rgb(100, 128, 160);
-	--otodb-color-bg-primary: #64dfe7;
-	--otodb-color-bg-faint: rgb(228, 245, 244);
-	--otodb-color-bg-fainter: rgb(163, 244, 247);
+	--otodb-color-content-primary: map(themes, retro-voyage, colors, contentPrimary);
+	--otodb-color-content-faint: map(themes, retro-voyage, colors, contentFaint);
+	--otodb-color-content-fainter: map(themes, retro-voyage, colors, contentFainter);
+	--otodb-color-bg-primary: map(themes, retro-voyage, colors, bgPrimary);
+	--otodb-color-bg-faint: map(themes, retro-voyage, colors, bgFaint);
+	--otodb-color-bg-fainter: map(themes, retro-voyage, colors, bgFainter);
 
 	& .prose {
 		@apply prose-neutral;
@@ -165,12 +186,12 @@
 
 :root[data-theme='sorimix'] {
 	color-scheme: dark;
-	--otodb-color-content-primary: rgb(197, 255, 195);
-	--otodb-color-content-fainter: rgb(45, 228, 75);
-	--otodb-color-content-faint: rgb(0, 255, 163);
-	--otodb-color-bg-fainter: rgb(21, 71, 5);
-	--otodb-color-bg-faint: rgb(2, 31, 25);
-	--otodb-color-bg-primary: #041309;
+	--otodb-color-content-primary: map(themes, sorimix, colors, contentPrimary);
+	--otodb-color-content-fainter: map(themes, sorimix, colors, contentFainter);
+	--otodb-color-content-faint: map(themes, sorimix, colors, contentFaint);
+	--otodb-color-bg-fainter: map(themes, sorimix, colors, bgFainter);
+	--otodb-color-bg-faint: map(themes, sorimix, colors, bgFaint);
+	--otodb-color-bg-primary: map(themes, sorimix, colors, bgPrimary);
 
 	& .prose {
 		@apply prose-invert;
@@ -201,12 +222,12 @@
 
 :root[data-theme='resample'] {
 	color-scheme: light;
-	--otodb-color-content-primary: rgb(2, 20, 27);
-	--otodb-color-content-faint: rgb(30, 110, 230);
-	--otodb-color-content-fainter: rgb(73, 152, 189);
-	--otodb-color-bg-primary: rgb(172, 243, 255);
-	--otodb-color-bg-faint: rgb(239, 245, 253);
-	--otodb-color-bg-fainter: rgb(211, 219, 230);
+	--otodb-color-content-primary: map(themes, resample, colors, contentPrimary);
+	--otodb-color-content-faint: map(themes, resample, colors, contentFaint);
+	--otodb-color-content-fainter: map(themes, resample, colors, contentFainter);
+	--otodb-color-bg-primary: map(themes, resample, colors, bgPrimary);
+	--otodb-color-bg-faint: map(themes, resample, colors, bgFaint);
+	--otodb-color-bg-fainter: map(themes, resample, colors, bgFainter);
 
 	& .prose {
 		@apply prose-neutral;

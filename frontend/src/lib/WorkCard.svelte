@@ -1,7 +1,7 @@
 <script lang="ts">
 	import DisplayText from '$lib/DisplayText.svelte';
 	import WorkTag from '$lib/WorkTag.svelte';
-	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getDisplayText } from '$lib/ui.js';
 	import { Status, type components } from './schema';

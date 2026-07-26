@@ -1,3 +1,4 @@
+import asyncio
 import html
 import json
 import logging
@@ -63,7 +64,8 @@ def slugify_tag(s: str):
 
 
 ydl_playlist = YoutubeDL(
-	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True
+	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True},
+	auto_init=True,
 )
 for e in (
 	YoutubeTabIE,
@@ -72,6 +74,7 @@ for e in (
 	SoundcloudPlaylistIE,
 ):
 	ydl_playlist.add_info_extractor(e)
+
 
 ydl, jar = None, None
 
@@ -270,8 +273,11 @@ def process_video_info(full_info, link=None):
 				pass  # webpage_url already set
 			case Platform.SOUNDCLOUD:
 				# TODO
+				tags = info.get('tags') or []
+				genre = info.get('genre')
+				genres = info.get('genres') or []
 				info['tags'] = list(
-					set(info['tags'] + [info['genre']] + info['genres'])
+					dict.fromkeys(tags + ([genre] if genre else []) + genres)
 				)
 			case Platform.TWITTER:
 				info['id'] = info['display_id']
@@ -304,7 +310,7 @@ def process_video_info(full_info, link=None):
 		return None
 
 
-def video_info(link, expected_unavailable=False):
+def _video_info_sync(link, expected_unavailable=False):
 	try:
 		if NiconicoIECustom.suitable(link):
 			full_info = get_niconico_geoblocked(NiconicoIECustom.get_temp_id(link))
@@ -336,13 +342,17 @@ def video_info(link, expected_unavailable=False):
 		return None, None
 
 
-def playlist_info(link):
+async def video_info(link, expected_unavailable=False):
+	return await asyncio.to_thread(_video_info_sync, link, expected_unavailable)
+
+
+async def playlist_info(link):
 	keys = {
 		'title': 'title',
 		'description': 'description',
 		'entries': 'entries',
 	}
-	info = ydl_playlist.extract_info(link, download=False)
+	info = await asyncio.to_thread(ydl_playlist.extract_info, link, download=False)
 	if info.get('_type') != 'playlist':
 		return None
 

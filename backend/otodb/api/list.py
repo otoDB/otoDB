@@ -1,12 +1,11 @@
-import multiprocessing
-import sys
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+import asyncio
 from typing import List
 
+from asgiref.sync import sync_to_async
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404
+from django.shortcuts import aget_object_or_404, get_object_or_404
 from ninja import ModelSchema, Router, Schema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
@@ -149,68 +148,75 @@ def delete(request: HttpRequest, list_id: OtodbID):
 	return
 
 
-def import_ext_into_pool(info, list_: Pool, user):
-	if sys.platform == 'win32':
-		with ThreadPoolExecutor() as executor:
-			infos = list(executor.map(video_info, info['entries']))
-	else:
-		with ProcessPoolExecutor(
-			mp_context=multiprocessing.get_context('fork')
-		) as executor:
-			infos = list(executor.map(video_info, info['entries']))
+def import_ext_into_pool(entries, infos, list_: Pool, user):
+	# set() instead of .distinct() because list has not yet been written to the DB
+	existing_work_ids = set(list_.poolitem_set.values_list('work__id', flat=True))
 
-	old_entries = list_.poolitem_set.values_list('work__id', flat=True)
-
-	pool_items = []
-	for i, (vid_info, full_info) in enumerate(list(infos)):
+	new_works = {}
+	for entry, (vid_info, full_info) in zip(entries, infos):
 		if vid_info is None:
-			list_.description += f'\nFailed to fetch {info["entries"][i]}'
+			list_.description += f'\nFailed to fetch {entry}'
 			continue
 
-		src, _ = WorkSource.from_url(
+		src = WorkSource.from_url(
 			vid_info['url'],
-			user=user,
-			is_reupload=False,
 			info=vid_info,
 			full_info=full_info,
+			user=user,
+			is_reupload=False,
 		)
 
-		if src.media is not None:
-			# Source already has a work, add to pool if not already there
-			if src.media.id not in old_entries:
-				pool_items.append(PoolItem(work=src.media, description='', pool=list_))
-				old_entries.add(src.media.id)
-		else:
+		if src is None:
+			list_.description += f'\nFailed to fetch {entry}'
+			continue
+
+		if src.media is None:
 			# No work yet - add to pending for user review
 			list_.pending_items.add(src)
+		elif src.media.pk not in existing_work_ids:
+			# Source already has a work - add to pool if not already there
+			new_works[src.media.pk] = src.media
 
 	list_.save()
-	PoolItem.objects.bulk_create(pool_items)
+	PoolItem.objects.bulk_create(
+		[PoolItem(work=work, description='', pool=list_) for work in new_works.values()]
+	)
 
 
 @list_router.post(
 	'import', auth=django_auth, response=OtodbID, throttle=[AuthRateThrottle('3/30m')]
 )
 @user_is_editor
-@transaction.atomic
 @track_revision
-def import_ext(request: HttpRequest, url: str):
-	info = playlist_info(url)
-	list_ = Pool.objects.create(
-		name=info['title'], description=info['description'], author=request.user
-	)
-	PoolUpstream.objects.create(pool=list_, upstream=url)
+async def import_ext(request: HttpRequest, url: str):
+	info = await playlist_info(url)
+	infos = await asyncio.gather(*[video_info(v) for v in info['entries']])
 
-	import_ext_into_pool(info, list_, request.user)
+	@transaction.atomic
+	def make_pool():
+		list_ = Pool.objects.create(
+			name=info['title'], description=info['description'], author=request.user
+		)
+		PoolUpstream.objects.create(pool=list_, upstream=url)
+		import_ext_into_pool(info['entries'], infos, list_, request.user)
+		return list_.id
 
-	return list_.id
+	list_id = await sync_to_async(make_pool)()
+
+	return list_id
 
 
 @list_router.post('pull_upstream', auth=django_auth)
-def pull_upstream(request: HttpRequest, list_id: OtodbID):
-	lst = get_object_or_404(Pool, id=list_id)
-	if lst.author != request.user:
+async def pull_upstream(request: HttpRequest, list_id: OtodbID):
+	lst = await aget_object_or_404(
+		Pool.objects.select_related('poolupstream'), id=list_id
+	)
+	if lst.author_id != request.user.id:
 		raise HttpError(403, 'Forbidden')
 
-	info = playlist_info(lst.poolupstream.upstream)
-	import_ext_into_pool(info, lst, request.user)
+	info = await playlist_info(lst.poolupstream.upstream)
+
+	infos = await asyncio.gather(*[video_info(v) for v in info['entries']])
+	await sync_to_async(transaction.atomic(import_ext_into_pool))(
+		info['entries'], infos, lst, request.user
+	)

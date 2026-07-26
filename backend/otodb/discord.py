@@ -3,7 +3,6 @@ from typing import Any, cast
 
 import requests
 from django.conf import settings
-from django.tasks import task
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +85,6 @@ def _entity_info(
 			return f'{model_name} #{entity_pk}', None
 
 
-@task
 def discord_thread(thread_id: int, username: str) -> None:
 	if not ENABLED:
 		return
@@ -115,7 +113,6 @@ def discord_thread(thread_id: int, username: str) -> None:
 	)
 
 
-@task
 def discord_threadpost(post_id: int, username: str) -> None:
 	if not ENABLED:
 		return
@@ -156,7 +153,6 @@ def discord_threadpost(post_id: int, username: str) -> None:
 	)
 
 
-@task
 def discord_comment(
 	comment_id: int,
 	model_name: str,

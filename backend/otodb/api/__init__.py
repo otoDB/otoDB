@@ -152,15 +152,3 @@ def _handle_api_error(request, exc: ApiError):
 @api.exception_handler(Throttled)
 def _handle_throttled(request, exc: Throttled):
 	return api.create_response(request, {'code': ErrorCode.RATE_LIMITED}, status=429)
-
-
-@api.get('stats', response=tuple[int, int, int, int])
-def statistics(request):
-	from otodb.models import MediaSong, MediaWork, Pool, TagWork
-
-	return [
-		MediaWork.objects.filter(moved_to__isnull=True).count(),
-		TagWork.objects.filter(aliased_to__isnull=True).count(),
-		MediaSong.objects.count(),
-		Pool.objects.count(),
-	]

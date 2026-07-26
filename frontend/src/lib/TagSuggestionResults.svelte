@@ -1,31 +1,19 @@
 <script lang="ts">
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
-	import type { WorkTagCategory } from '$lib/schema';
+	import type { components, SongTagCategory, WorkTagCategory } from '$lib/schema';
 
 	const showBaseTag = (
 		alias: { slug: string },
 		canonical: { lang_prefs: { slug: string }[] }
 	): boolean => !canonical.lang_prefs.some((p) => p.slug === alias.slug);
 
-	type SuggestionTag = {
-		id: string;
-		name: string;
-		slug: string;
-		category: number;
-		aliased_to?: null | {
-			id: string;
-			name: string;
-			slug: string;
-			category: number;
-			lang_prefs: { slug: string }[];
-		};
-		lang_prefs: { tag: string }[];
-		n_instance: number;
-	};
+	type Tag =
+		| components['schemas']['TagWorkSearchResultSchema']
+		| components['schemas']['TagSongSearchResultSchema'];
 
 	interface Props {
-		suggestions: SuggestionTag[];
-		onselect: (tag: any) => void;
+		suggestions: Tag[];
+		onselect: (tag: Tag) => void;
 		onclose?: () => void;
 		type: 'work' | 'song';
 		query?: string;
@@ -69,7 +57,7 @@
 		return result;
 	};
 
-	const getTagStyle = (category: WorkTagCategory) => {
+	const getTagStyle = (category: WorkTagCategory | SongTagCategory) => {
 		return type === 'work' && category !== 0 ? `color: ${WorkTagCategoryMap[category].color}` : '';
 	};
 </script>

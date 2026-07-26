@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { makeCommentTree } from './makeCommentTree';
 
 type Comment = Parameters<typeof makeCommentTree>[0][number];

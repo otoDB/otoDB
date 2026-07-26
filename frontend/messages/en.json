@@ -363,6 +363,7 @@
 	"antsy_main_puffin_dust": "Cannot add sources to flagged works.",
 	"clean_civil_jellyfish_promise": "Cannot add sources to delisted works.",
 	"stout_brave_otter_reject": "Cannot unbind a pending source. Reject it instead.",
+	"giant_helpful_goose_explore": "Cannot unbind the only source of a work.",
 	"direct_fluffy_finch_believe": "Queue",
 	"awake_aware_quail_bake": "Moderation Event",
 	"cool_house_barbel_cheer": "Immediately resolve this work?",
@@ -447,5 +448,10 @@
 	"game_slow_crab_fade": "Collapse all",
 	"fluffy_icy_bobcat_believe": "View options",
 	"bald_strong_opossum_flip": "Show full text",
-	"shy_new_penguin_reap": "Collapse unchanged"
+	"shy_new_penguin_reap": "Collapse unchanged",
+	"lucky_brave_marten_glide": "Rollback to before this date",
+	"bold_keen_otter_vault": "Rollback to before this revision",
+	"tame_swift_heron_plead": "Rollback ALL revisions made by {username} to before {label}?",
+	"hazy_calm_otter_dream": "Plain Dark",
+	"misty_plain_finch_glow": "Plain Light"
 }

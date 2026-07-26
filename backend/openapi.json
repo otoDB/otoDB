@@ -6,42 +6,6 @@
     "description": ""
   },
   "paths": {
-    "/api/stats": {
-      "get": {
-        "operationId": "otodb_api_statistics",
-        "summary": "Statistics",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "maxItems": 4,
-                  "minItems": 4,
-                  "prefixItems": [
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "integer"
-                    }
-                  ],
-                  "title": "Response",
-                  "type": "array"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/auth/csrf": {
       "get": {
         "operationId": "otodb_api_auth_csrf",
@@ -5877,6 +5841,48 @@
           }
         }
       }
+    },
+    "/api/stats": {
+      "get": {
+        "summary": "Statistics",
+        "operationId": "ApiStatsStatistics",
+        "responses": {
+          "200": {
+            "description": "Request fulfilled, document follows",
+            "headers": {
+              "cache-control": {
+                "schema": {
+                  "type": "string"
+                },
+                "required": false,
+                "deprecated": false
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
     }
   },
   "components": {
@@ -5951,7 +5957,8 @@
           10021,
           10022,
           10023,
-          10024
+          10024,
+          10025
         ],
         "title": "ErrorCode",
         "type": "integer",
@@ -5982,7 +5989,8 @@
           "Tag With Instances Merge Requires Editor",
           "Source Pending",
           "Captcha Failed",
-          "Max Thread Level"
+          "Max Thread Level",
+          "Only Work Source"
         ]
       },
       "LoginRequestSchema": {
@@ -6059,7 +6067,9 @@
           2,
           3,
           4,
-          5
+          5,
+          6,
+          7
         ],
         "title": "ThemePref",
         "type": "integer",
@@ -6069,7 +6079,9 @@
           "otogroove",
           "Retro Voyage",
           "SORIMIX",
-          "Re:Sample"
+          "Re:Sample",
+          "Plain Dark",
+          "Plain Light"
         ]
       },
       "UserPreferenceSchema": {
@@ -8679,6 +8691,16 @@
           "category": {
             "$ref": "#/components/schemas/SongTagCategory"
           },
+          "aliased_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TagSongSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "lang_prefs": {
             "items": {
               "$ref": "#/components/schemas/TagLangPreferenceSchema"
@@ -8692,6 +8714,7 @@
           "name",
           "slug",
           "category",
+          "aliased_to",
           "lang_prefs"
         ],
         "title": "TagSongSchema",
@@ -9192,6 +9215,16 @@
           "category": {
             "$ref": "#/components/schemas/SongTagCategory"
           },
+          "aliased_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TagSongSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "lang_prefs": {
             "items": {
               "$ref": "#/components/schemas/TagLangPreferenceSchema"
@@ -9209,6 +9242,7 @@
           "name",
           "slug",
           "category",
+          "aliased_to",
           "lang_prefs",
           "n_instance"
         ],
@@ -9232,6 +9266,16 @@
           "category": {
             "$ref": "#/components/schemas/SongTagCategory"
           },
+          "aliased_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TagSongSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "lang_prefs": {
             "items": {
               "$ref": "#/components/schemas/TagLangPreferenceSchema"
@@ -9252,6 +9296,7 @@
           "name",
           "slug",
           "category",
+          "aliased_to",
           "lang_prefs",
           "children"
         ],

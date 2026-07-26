@@ -26,6 +26,6 @@ export const actions = {
 			body: pages
 		});
 		if (apiError) return apiFail(apiError);
-		redirect(303, `/wiki/${params.page_slug}`);
+		redirect(303, `/wiki/${encodeURIComponent(params.page_slug!)}`);
 	}
 } satisfies Actions;

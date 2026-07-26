@@ -20,7 +20,7 @@ mswInitialize({
 let localeState: Locale | undefined = undefined;
 overwriteGetLocale(() => localeState || 'en');
 overwriteSetLocale((nw) => {
-	if (localeState !== undefined) window.location.reload();
+	if (localeState !== undefined && localeState !== nw) window.location.reload();
 	localeState = nw;
 });
 
@@ -32,6 +32,13 @@ const preview: Preview = {
 				color: /(background|color)$/i,
 				date: /Date$/i
 			}
+		},
+
+		a11y: {
+			// 'todo' - show a11y violations in the test UI only
+			// 'error' - fail CI on a11y violations
+			// 'off' - skip a11y checks entirely
+			test: 'todo'
 		}
 	},
 	globalTypes: {
@@ -58,14 +65,15 @@ const preview: Preview = {
 		},
 		withThemeByDataAttribute({
 			themes: {
-				'default': 'default',
+				'plain-dark': 'plain-dark',
+				'plain-light': 'plain-light',
 				'aniki': 'aniki',
 				'otogroove': 'otogroove',
 				'retro-voyage': 'retro-voyage',
 				'sorimix': 'sorimix',
 				'resample': 'resample'
 			},
-			defaultTheme: 'default',
+			defaultTheme: 'plain-dark',
 			attributeName: 'data-theme'
 		}),
 		(storyFn, context) => {

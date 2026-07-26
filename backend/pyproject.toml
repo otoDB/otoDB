@@ -45,9 +45,17 @@ extend-select = [
 ]
 ignore = [
     "W191", # tabs
+    "RUF012", # Django class attrs
+    "B008",   # Django Ninja Query()/File()
 ]
 unfixable = [
     "B007",
+]
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "N999", # naming
+    "PLE2502", # special characters testing
+    "PLE2515", # ditto
 ]
 
 [dependency-groups]

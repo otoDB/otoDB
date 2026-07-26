@@ -147,10 +147,9 @@ def get_niconico_geoblocked(sm):
 		headers={'User-Agent': 'Twitterbot/1.0', 'Accept-Language': 'ja'},
 		cookies=jar,
 	)
-	if r.ok:
-		if match := niconico_meta_re.search(r.text):
-			res = json.loads(html.unescape(match.group(1)))['data']['response']
-			return res
+	if r.ok and (match := niconico_meta_re.search(r.text)):
+		res = json.loads(html.unescape(match.group(1)))['data']['response']
+		return res
 	return None
 
 

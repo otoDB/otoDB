@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import logging
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -43,7 +44,7 @@ if OTODB_BACKEND_SENTRY_DSN := os.environ.get('OTODB_BACKEND_SENTRY_DSN'):
 
 if not DEBUG and 'OTODB_SECRET_KEY' not in os.environ:
 	logger.critical('No secret key provided (OTODB_SECRET_KEY) -- exiting')
-	exit(1)
+	sys.exit(1)
 
 SECRET_KEY = os.environ.get('OTODB_SECRET_KEY', '1145141919')
 

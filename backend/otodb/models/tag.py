@@ -290,7 +290,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		return any(
 			[
 				self.wikipage_set.exists()
-				and any([p.page.strip() != '' for p in self.wikipage_set]),
+				and any(p.page.strip() != '' for p in self.wikipage_set),
 				self.tagworkconnection_set.exists(),
 				self.category != WorkTagCategory.UNCATEGORIZED,
 			]

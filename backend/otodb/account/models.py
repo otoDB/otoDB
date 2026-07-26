@@ -150,9 +150,7 @@ class Account(AbstractBaseUser):
 		return all(self.has_perm(p) for p in perms)
 
 	def has_module_perms(self, app_label):
-		if self.is_staff:
-			return True
-		return False
+		return bool(self.is_staff)
 
 	def get_full_name(self):
 		return self.username

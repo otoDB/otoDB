@@ -533,7 +533,7 @@ def _commit_pending_revision(cache, request):
 
 	# Pre-fetch all ContentTypes in bulk
 	content_types = ContentType.objects.in_bulk(
-		set(ctpk for ctpk, *_ in rev_del) | set(ctpk for (ctpk, *_), _ in rev.items())
+		{ctpk for ctpk, *_ in rev_del} | {ctpk for (ctpk, *_), _ in rev.items()}
 	)
 
 	# For batching

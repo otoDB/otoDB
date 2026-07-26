@@ -47,6 +47,10 @@ ignore = [
     "W191", # tabs
     "RUF012", # Django class attrs
     "B008",   # Django Ninja Query()/File()
+    # TODO: Dates -- for now, should revisit so dates are displayed consistent
+    "DTZ007", # strptime without %z
+    "DTZ011", # date.today()
+    "DTZ012", # date.fromtimestamp()
 ]
 unfixable = [
     "B007",

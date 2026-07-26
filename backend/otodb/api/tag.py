@@ -499,16 +499,12 @@ def tag_alias_control(
 
 	curr_aliases_slugs = [t.slug for t in curr_aliases]
 	assert payload.base_slug == tag.slug or payload.base_slug in curr_aliases_slugs
-	assert all(
-		[v == tag_slug or v in curr_aliases_slugs for v in payload.unalias_slugs]
-	)
+	assert all(v == tag_slug or v in curr_aliases_slugs for v in payload.unalias_slugs)
 
 	assert all(
-		[
-			v == tag.slug or v in curr_aliases_slugs
-			for v in payload.lang_prefs.values()
-			if v is not None
-		]
+		v == tag.slug or v in curr_aliases_slugs
+		for v in payload.lang_prefs.values()
+		if v is not None
 	)
 
 	# update display names
@@ -538,7 +534,6 @@ def tag_alias_control(
 
 	# lang prefs
 	for lang, slug_val in payload.lang_prefs.items():
-		lang = lang
 		assert lang != 0
 		if slug_val:
 			tags_to_clear = list(tag.aliases.exclude(slug=slug_val))
@@ -639,10 +634,9 @@ def update(
 		TagWorkMediaConnection.objects.filter(tag=tag).delete()
 		tag.set_media_type([])
 
-	if payload.category == WorkTagCategory.MEDIA:
-		if payload.media_type:
-			tag.category = payload.category
-			tag.set_media_type(payload.media_type)
+	if payload.category == WorkTagCategory.MEDIA and payload.media_type:
+		tag.category = payload.category
+		tag.set_media_type(payload.media_type)
 
 	tag.deprecated = payload.deprecated
 	tag.category = payload.category

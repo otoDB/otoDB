@@ -6,6 +6,7 @@ from django.db import transaction
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import ModelSchema, Router, Schema
+from ninja.errors import HttpError
 from ninja.security import django_auth
 from pydantic import field_validator
 
@@ -110,7 +111,7 @@ def make_bulk(request: HttpRequest, s: str):
 	lines = [line for line in s.splitlines() if line.strip()]
 	bulk = BulkRequest.objects.create(user=request.user)
 	if not lines:
-		raise Exception
+		raise HttpError(400, 'Bad Request')
 	reqs = []
 	for _, line in enumerate(lines):
 		c = line.split()

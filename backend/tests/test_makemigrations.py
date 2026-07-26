@@ -273,23 +273,25 @@ class TestCommandIntegration:
 		command = Command()
 
 		# Mock the parent's write_migration_files
-		with patch.object(
-			Command.__bases__[0], 'write_migration_files', return_value=None
-		) as mock_parent:
-			with patch.object(command, '_inject_revision_updates') as mock_inject:
-				# Create mock changes
-				mock_migration = Mock()
-				mock_migration.operations = []
-				changes = {'otodb': [mock_migration]}
+		with (
+			patch.object(
+				Command.__bases__[0], 'write_migration_files', return_value=None
+			) as mock_parent,
+			patch.object(command, '_inject_revision_updates') as mock_inject,
+		):
+			# Create mock changes
+			mock_migration = Mock()
+			mock_migration.operations = []
+			changes = {'otodb': [mock_migration]}
 
-				# Call the method
-				command.write_migration_files(changes)
+			# Call the method
+			command.write_migration_files(changes)
 
-				# Verify _inject_revision_updates was called
-				mock_inject.assert_called_once_with('otodb', mock_migration)
+			# Verify _inject_revision_updates was called
+			mock_inject.assert_called_once_with('otodb', mock_migration)
 
-				# Verify parent was called
-				mock_parent.assert_called_once()
+			# Verify parent was called
+			mock_parent.assert_called_once()
 
 	def test_command_prints_success_messages(self, capsys):
 		"""Test that the command prints success messages."""

@@ -682,7 +682,7 @@ def get_rev_restored(ctpk, pk):
 	# Check if deleted
 	if RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=last, deleted=True
-	).exists() or any([ctpk == ctid and last == idd for ctid, idd, _ in rev_del]):
+	).exists() or any(ctpk == ctid and last == idd for ctid, idd, _ in rev_del):
 		return None
 	else:
 		return last
@@ -900,7 +900,7 @@ def rollback_entity(
 
 		# Bulk fetch all unique ContentTypes we'll need
 		deleted_targets = del_rcs.values_list('target_type_id', 'target_id').distinct()
-		content_type_ids = set(ct_id for ct_id, _ in deleted_targets)
+		content_type_ids = {ct_id for ct_id, _ in deleted_targets}
 
 		# Also get content types for modified entities
 		modified_targets = (

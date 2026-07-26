@@ -305,8 +305,8 @@ def process_video_info(full_info, link=None):
 		info['thumbnail_mime'] = fetch_thumbnail_mime_type(info['thumbnail'])
 
 		return {keys[key]: info[key] for key in keys if key in info}
-	except Exception as e:
-		logger.error(f'Error processing video info: {e}')
+	except Exception:
+		logger.exception('Error processing video info')
 		return None
 
 
@@ -337,8 +337,8 @@ def _video_info_sync(link, expected_unavailable=False):
 		else:
 			logger.error(f'yt-dlp DownloadError extracting video info from {link}: {e}')
 		return None, None
-	except Exception as e:
-		logger.error(f'Error extracting video info from {link}: {e}')
+	except Exception:
+		logger.exception(f'Error extracting video info from {link}')
 		return None, None
 
 
@@ -393,6 +393,6 @@ def fetch_thumbnail_mime_type(thumbnail_url: str):
 		response = requests.get(thumbnail_url, allow_redirects=True, timeout=5)
 		content_type = response.headers.get('Content-Type')
 		return MimeType.from_str(content_type)
-	except Exception as e:
-		logger.error(f'Error fetching thumbnail mime type: {e}')
+	except Exception:
+		logger.exception('Error fetching thumbnail mime type')
 		return None

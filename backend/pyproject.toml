@@ -62,6 +62,9 @@ unfixable = [
     "UP045", # Optional['X'] -> 'X' | None is a runtime TypeError
     "UP007", # ditto for Union['X', Y]
 ]
+"otodb/management/commands/**" = [
+    "BLE001", # blind-except
+]
 
 [dependency-groups]
 dev = [

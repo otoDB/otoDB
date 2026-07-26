@@ -147,8 +147,8 @@ class WorkSource(RevisionTrackedModel):
 			else:
 				logger.error(f'Failed to upload thumbnail for WorkSource {self.pk}')
 				return False
-		except Exception as e:
-			logger.error(f'Error uploading thumbnail for WorkSource {self.pk}: {e}')
+		except Exception:
+			logger.exception(f'Error uploading thumbnail for WorkSource {self.pk}')
 			return False
 
 	# Gets the source registered at the url if it exists, otherwise register as pending
@@ -201,7 +201,7 @@ class WorkSource(RevisionTrackedModel):
 					logger.error(f'No suitable platform extractor found for URL: {url}')
 					return None
 			except Exception:
-				logger.error(f'Failed to parse URL for platform: {url}')
+				logger.exception(f'Failed to parse URL for platform: {url}')
 				return None
 
 			published_date = metadata.get('published_date') if metadata else None

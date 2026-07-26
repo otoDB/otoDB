@@ -172,7 +172,7 @@ class SessionAuthMiddleware(AbstractAuthenticationMiddleware):
 					salt=_SESSION_SALT,
 					serializer=JSONSerializer,
 				)
-			except Exception:
+			except Exception:  # noqa: BLE001
 				# Tampered or truncated session data; Django's SessionBase
 				# .decode treats any failure here as an empty session.
 				return anonymous

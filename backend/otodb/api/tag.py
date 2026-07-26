@@ -698,8 +698,8 @@ def query_parser(param_arg: str, param_match=None):
 			parse = parse_qs(urlparse(link).query)[param_arg][0]
 			if param_match is None or param_match(parse):
 				return parse
-		except Exception:
-			pass
+		except KeyError, IndexError, ValueError:
+			return None
 
 	return match
 

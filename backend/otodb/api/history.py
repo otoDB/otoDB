@@ -1039,7 +1039,9 @@ def rollback_entity(
 					logger.error(f'{e}, skipping entity')
 					raise
 				except Exception as e:
-					logger.warning(f'Could not process {model_class.__name__}: {e}')
+					logger.warning(
+						f'Could not process {model_class.__name__}: {e}', exc_info=e
+					)
 				if completed:
 					if model_class not in updates_by_model:
 						updates_by_model[model_class] = []

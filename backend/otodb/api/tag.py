@@ -2,7 +2,7 @@ import re
 from enum import Enum
 from functools import reduce, wraps
 from itertools import groupby
-from typing import Annotated, Dict, Optional
+from typing import Annotated, Optional
 from urllib.parse import parse_qs, unquote, urlparse
 
 import lark
@@ -113,7 +113,7 @@ class WikiPageSchema(ModelSchema):
 
 
 class TagWorkDetailsSchema(Schema):
-	paths: tuple[list[TagWorkSchema], Dict[str, list[str]]]
+	paths: tuple[list[TagWorkSchema], dict[str, list[str]]]
 	wiki_page: list[WikiPageSchema]
 	aliases: list[TagWorkSchema]
 	primary_parent: str | None = None
@@ -667,8 +667,6 @@ def update(
 		if payload.primary is not None:
 			tag.childhood.filter(parent=ps[payload.primary]).update(primary=True)
 
-	return
-
 
 class TagWorkConnectionSchema(ConnectionSchema):
 	site: TagWorkConnectionTypes
@@ -1145,7 +1143,6 @@ def song_tags(
 		ids.append(tag.id)
 		TagSongInstance.objects.update_or_create(song=song, song_tag=tag)
 	song.tags.remove(*song.tags.exclude(id__in=ids))
-	return
 
 
 @tag_router.get('song_tag', response=FatTagSongSchema)
@@ -1184,7 +1181,6 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchem
 	else:
 		tag.parent = None
 	tag.save()
-	return
 
 
 @tag_router.get('songs', response=list[SongSchema])

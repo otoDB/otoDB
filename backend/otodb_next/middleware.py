@@ -14,7 +14,7 @@ import hmac
 import logging
 import urllib.parse
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import orjson
@@ -163,7 +163,7 @@ class SessionAuthMiddleware(AbstractAuthenticationMiddleware):
 		async with session_maker() as db:
 			result = await db.execute(_SESSION_QUERY, {'key': session_key})
 			row = result.mappings().one_or_none()
-			if row is None or row['expire_date'] < datetime.now(timezone.utc):
+			if row is None or row['expire_date'] < datetime.now(UTC):
 				return anonymous
 
 			try:

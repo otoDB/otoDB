@@ -273,7 +273,7 @@ class RevisionTrackedModel(DirtyFieldsMixin, models.Model):
 
 		# Extract RevisionMeta
 		if hasattr(cls, 'RevisionMeta'):
-			meta = getattr(cls, 'RevisionMeta')
+			meta = cls.RevisionMeta
 			tracked_fields = getattr(meta, 'tracked_fields', [])
 			entity_attrs = getattr(meta, 'entity_attrs', [])
 			chain = getattr(meta, 'chain', RevisionChain.STRONG)

@@ -776,7 +776,7 @@ def _get_all_previous_field_values(
 	# Pre-fetch field objects
 	related_fields = {
 		field_name: model_class._meta.get_field(field_name)
-		for field_name in latest_changes.keys()
+		for field_name in latest_changes
 	}
 	model_to_ct_id = {
 		field_obj.related_model: ContentType.objects.get_for_model(

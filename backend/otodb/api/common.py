@@ -2,10 +2,11 @@ import inspect
 import operator
 import re
 from abc import abstractmethod
+from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime
 from functools import lru_cache, reduce, wraps
-from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
+from typing import Annotated, Any, NamedTuple, Optional, Self
 
 import lark
 from asgiref.sync import sync_to_async

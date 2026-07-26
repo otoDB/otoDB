@@ -57,6 +57,11 @@ unfixable = [
     "PLE2502", # special characters testing
     "PLE2515", # ditto
 ]
+"otodb/api/**" = [
+    "UP037", # quoted-annotation
+    "UP045", # Optional['X'] -> 'X' | None is a runtime TypeError
+    "UP007", # ditto for Union['X', Y]
+]
 
 [dependency-groups]
 dev = [

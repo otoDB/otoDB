@@ -7,7 +7,7 @@ re-implementation.
 """
 
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 from django.conf import settings
@@ -40,7 +40,7 @@ def encode_session(session_dict: dict) -> str:
 def session_row(session_dict: dict, expires_in_days: int = 14) -> dict:
 	return {
 		'session_data': encode_session(session_dict),
-		'expire_date': datetime.now(timezone.utc) + timedelta(days=expires_in_days),
+		'expire_date': datetime.now(UTC) + timedelta(days=expires_in_days),
 	}
 
 

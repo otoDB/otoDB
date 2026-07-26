@@ -23,7 +23,7 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 
 if TYPE_CHECKING:
-	from project import settings  # noqa: F811
+	from project import settings
 
 urlpatterns = [
 	path('admin/', admin.site.urls),

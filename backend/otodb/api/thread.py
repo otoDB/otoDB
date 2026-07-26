@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 
 from django.conf import settings
@@ -338,13 +338,10 @@ def edit_post(request: AuthedHttpRequest, payload: PostEditSchema):
 		# Lock: if a mod has edited this post, the author can no longer edit.
 		if post.edited_by_id and post.edited_by_id != post.user_id:
 			raise HttpError(403, 'Forbidden')
-		if (
-			datetime.now(tz=timezone.utc) - post.created_at
-			> settings.OTODB_COMMENT_EDIT_WINDOW
-		):
+		if datetime.now(tz=UTC) - post.created_at > settings.OTODB_COMMENT_EDIT_WINDOW:
 			raise HttpError(403, 'Edit window has passed')
 	post.body = payload.body
-	post.edited_at = datetime.now(tz=timezone.utc)
+	post.edited_at = datetime.now(tz=UTC)
 	post.edited_by = request.user
 	post.save(update_fields=['body', 'edited_at', 'edited_by'])
 
@@ -370,7 +367,7 @@ def close_thread(request: AuthedHttpRequest, thread_id: OtodbID):
 	if not request.user.is_mod:
 		raise HttpError(403, 'Forbidden')
 	if not t.closed_at:
-		t.closed_at = datetime.now(tz=timezone.utc)
+		t.closed_at = datetime.now(tz=UTC)
 		t.save(update_fields=['closed_at'])
 
 

@@ -1,5 +1,7 @@
 """Tests for PUT /api/thread/close endpoint."""
 
+from datetime import UTC
+
 import pytest
 
 from otodb.account.models import Account
@@ -83,10 +85,10 @@ def test_close_thread_forbidden_for_non_admin_non_author(other_member, member):
 @pytest.mark.django_db
 def test_close_already_closed_thread(admin_thread_client, admin):
 	"""Closing an already-closed thread is a no-op."""
-	from datetime import datetime, timezone
+	from datetime import datetime
 
 	t = make_thread(admin)
-	t.closed_at = datetime.now(tz=timezone.utc)
+	t.closed_at = datetime.now(tz=UTC)
 	t.save()
 	original_closed_at = t.closed_at
 

@@ -22,7 +22,7 @@ class WorkSource(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		from .pool import Pool
 
-		pool_set: 'models.QuerySet[Pool]'
+		pool_set: models.QuerySet[Pool]
 
 	media = models.ForeignKey(
 		MediaWork, on_delete=models.CASCADE, null=True, blank=True
@@ -83,7 +83,7 @@ class WorkSource(RevisionTrackedModel):
 		]
 		entity_attrs = ['self', 'media']
 
-	info_payload: 'WorkSourceInfoPayload'
+	info_payload: WorkSourceInfoPayload
 
 	def __str__(self) -> str:
 		return f'#{self.media.pk} - {self.url}' if self.media else self.title
@@ -155,7 +155,7 @@ class WorkSource(RevisionTrackedModel):
 	@staticmethod
 	def from_url(
 		url, user, is_reupload, info, full_info, metadata=None
-	) -> 'WorkSource | None':
+	) -> WorkSource | None:
 		"""
 		Gets or creates a WorkSource from a URL.
 

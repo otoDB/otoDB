@@ -82,10 +82,10 @@ class Account(AbstractBaseUser):
 		from ..models.posts import Notification
 		from ..models.work_source import WorkSource
 
-		worksource_set: QuerySet['WorkSource']
-		notifs: QuerySet['Notification']
-		pool_set: QuerySet['Pool']
-		profileconnection_set: QuerySet['ProfileConnection']
+		worksource_set: QuerySet[WorkSource]
+		notifs: QuerySet[Notification]
+		pool_set: QuerySet[Pool]
+		profileconnection_set: QuerySet[ProfileConnection]
 
 	username = models.CharField(
 		verbose_name='username',
@@ -116,7 +116,7 @@ class Account(AbstractBaseUser):
 		return self.username
 
 	def save(self, *args, **kwargs):
-		super(Account, self).save(*args, **kwargs)
+		super().save(*args, **kwargs)
 
 	@property
 	def is_editor(self):
@@ -140,7 +140,7 @@ class Account(AbstractBaseUser):
 		return self.is_staff
 
 	@classmethod
-	def get_system(cls) -> 'Account':
+	def get_system(cls) -> Account:
 		return cls.objects.get(username=settings.OTODB_SYSTEM_BOT_USERNAME)
 
 	def has_perm(self, perm, obj=None):

@@ -6,7 +6,7 @@ from itertools import groupby
 from typing import Any
 
 from django.contrib.contenttypes.models import ContentType
-from django.db import connection, models, transaction
+from django.db import IntegrityError, connection, models, transaction
 from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, When, Window
 from django.db.models.fields.related import RelatedField
 from django.db.models.functions import Coalesce, RowNumber
@@ -1089,35 +1089,16 @@ def rollback_entity(
 				changes[f] = vv
 			target_model = ContentType.objects.get(id=ctid).model_class()
 			target_pk = get_rev_restored(ctid, rid)
-			# Updating this row could duplicate an existing one on a unique
-			# constraint -- e.g. a TagWorkInstance whose work_tag was aliased into
-			# a tag the work already has. If so, the existing row is the one to
-			# keep, so drop this redundant restored row instead of updating it.
-			#
-			# Mechanically: `unique_groups` is each unique constraint as a list of
-			# field names; `attnames` are the columns it covers. A constraint only
-			# applies if `changes` sets all of those columns, and it's only a real
-			# clash if a *different* row already has that combination -- in which
-			# case we delete this row rather than apply the (now-duplicate) update.
-			meta = target_model._meta
-			unique_groups = list(meta.unique_together) + [
-				c.fields for c in meta.total_unique_constraints
-			]
-			duplicate = False
-			if target_pk is not None:
-				for group in unique_groups:
-					attnames = [meta.get_field(f).attname for f in group]
-					if all(a in changes for a in attnames) and (
-						target_model.objects.filter(**{a: changes[a] for a in attnames})
-						.exclude(pk=target_pk)
-						.exists()
-					):
-						duplicate = True
-						break
-			if duplicate:
+			try:
+				with transaction.atomic():
+					target_model.objects.filter(id=target_pk).update(**changes)
+			except IntegrityError:
+				# The restored row duplicates one that already exists -- e.g. tag A
+				# was removed from a work and later merged into tag B, so restoring
+				# it resolves to a B row the work already has. The existing row says
+				# the same thing, so drop the redundant restored one. The atomic()
+				# above is a savepoint, so only this statement rolled back.
 				target_model.objects.filter(id=target_pk).delete()
-			else:
-				target_model.objects.filter(id=target_pk).update(**changes)
 
 
 @history_router.post('rollback', auth=django_auth)

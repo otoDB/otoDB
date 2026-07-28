@@ -421,7 +421,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 	@classmethod
 	def transfer_data(cls, from_tag: Self, to_tag: Self):
-		from .media import TagWorkInstance
+		from .media import MediaSong, TagWorkInstance
 
 		# transfer/merge TagWorkInstance records (creator_roles, used_as_source, etc.)
 		for twi in TagWorkInstance.objects.filter(work_tag=from_tag):
@@ -478,6 +478,21 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 				s = from_tag.mediasong
 				s.work_tag = to_tag
 				s.save()
+			from_tag.category = WorkTagCategory.UNCATEGORIZED
+			from_tag.save()
+		if (
+			from_tag.category == WorkTagCategory.MEDIA
+			and to_tag.category == WorkTagCategory.MEDIA
+		):
+			to_tag.media_type = to_tag.media_type | from_tag.media_type
+			to_tag.save()
+			from_tag.category = WorkTagCategory.UNCATEGORIZED
+			from_tag.save()
+		if (
+			from_tag.category == WorkTagCategory.SONG
+			and to_tag.category == WorkTagCategory.SONG
+		):
+			MediaSong.merge(from_song=from_tag.mediasong, to_song=to_tag.mediasong)
 			from_tag.category = WorkTagCategory.UNCATEGORIZED
 			from_tag.save()
 		for p in from_tag.wikipage_set.all():

@@ -99,6 +99,9 @@ jobs:
             wrangler pages project create otodb-storybook --production-branch=master || true
           command: pages deploy storybook-static --project-name=otodb-storybook --commit-dirty=true --branch=${{ github.head_ref || github.ref_name }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Record deploy timestamp
+        id: deployed_at
+        run: echo "timestamp=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> "$GITHUB_OUTPUT"
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
@@ -112,6 +115,8 @@ jobs:
             | **Status** | Deploy successful |
             | **Preview URL** | ${{ steps.deploy.outputs.deployment-url }} |
             | **Branch Preview URL** | ${{ steps.deploy.outputs.pages-deployment-alias-url }} |
+            | **Commit** | [`${{ github.event.pull_request.head.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}) |
+            | **Deployed at** | ${{ steps.deployed_at.outputs.timestamp }} |
 
   build_docker:
     name: Build Docker image

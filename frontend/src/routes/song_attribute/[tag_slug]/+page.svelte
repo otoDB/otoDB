@@ -1,6 +1,7 @@
 <script lang="ts">
 	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import Section from '$lib/Section.svelte';
+	import SongTag from '$lib/SongTag.svelte';
 	import { SongTagCategoryNames } from '$lib/enums';
 	import { m } from '$lib/paraglide/messages.js';
 	import { ModelsWithComments } from '$lib/schema.js';
@@ -43,11 +44,11 @@
 
 {#if data.tag.children.length}
 	<Section title={m.misty_great_gazelle_comfort()}>
-		<ul>
+		<div class="flex flex-wrap gap-3">
 			{#each data.tag.children as tag, i (i)}
-				<li><a href={tag.slug}>{getTagDisplayName(tag)}</a></li>
+				<SongTag {tag} />
 			{/each}
-		</ul>
+		</div>
 	</Section>
 {/if}
 

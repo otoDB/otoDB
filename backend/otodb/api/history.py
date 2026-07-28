@@ -6,7 +6,7 @@ from itertools import groupby
 from typing import Any
 
 from django.contrib.contenttypes.models import ContentType
-from django.db import connection, models, transaction
+from django.db import IntegrityError, connection, models, transaction
 from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, When, Window
 from django.db.models.fields.related import RelatedField
 from django.db.models.functions import Coalesce, RowNumber
@@ -1089,9 +1089,18 @@ def rollback_entity(
 						model_class.objects.get(pk=vv)
 					).pk
 				changes[f] = vv
-			ContentType.objects.get(id=ctid).model_class().objects.filter(
-				id=get_rev_restored(ctid, rid)
-			).update(**changes)
+			target_model = ContentType.objects.get(id=ctid).model_class()
+			target_pk = get_rev_restored(ctid, rid)
+			try:
+				with transaction.atomic():
+					target_model.objects.filter(id=target_pk).update(**changes)
+			except IntegrityError:
+				# The restored row duplicates one that already exists -- e.g. tag A
+				# was removed from a work and later merged into tag B, so restoring
+				# it resolves to a B row the work already has. The existing row says
+				# the same thing, so drop the redundant restored one. The atomic()
+				# above is a savepoint, so only this statement rolled back.
+				target_model.objects.filter(id=target_pk).delete()
 
 
 @history_router.post('rollback', auth=django_auth)

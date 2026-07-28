@@ -6030,8 +6030,8 @@
         "title": "GraphViewBackends",
         "type": "integer",
         "x-enum-varnames": [
-          "Mermaid",
-          "Graphviz"
+          "Graphviz",
+          "Mermaid"
         ]
       },
       "LanguageTypes": {

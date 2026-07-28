@@ -126,13 +126,14 @@
 		</div>
 
 		<div>
-			<label for="graph_view_backend" class="font-bold">Graph view backend</label>
+			<label for="graph_view_backend" class="font-bold">{m.main_topical_beaver_tickle()}</label>
 			<div class="mt-1 flex items-center gap-2">
 				<select id="graph_view_backend" bind:value={graph_view_backend} onchange={savePrefs}>
 					{#each enumValues(GraphViewBackends) as v (v)}
 						<option value={v}>{GraphViewBackendNames[v]}</option>
 					{/each}
 				</select>
+				<span class="text-otodb-content-fainter italic">{m.jolly_minor_shell_roam()}</span>
 			</div>
 		</div>
 	</div>

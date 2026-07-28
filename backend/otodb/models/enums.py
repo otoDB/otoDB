@@ -370,8 +370,8 @@ class Preferences(OtodbIntegerEnum):
 
 
 class GraphViewBackends(OtodbIntegerEnum):
-	MERMAID = 0
-	GRAPHVIZ = 1
+	GRAPHVIZ = 0
+	MERMAID = 1
 
 
 PreferencesValueTypeMap = {

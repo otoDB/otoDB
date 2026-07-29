@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
+	import Pager from '$lib/Pager.svelte';
 	import Section from '$lib/Section.svelte';
 	import SongTag from '$lib/SongTag.svelte';
 	import { SongTagCategoryNames } from '$lib/enums';
@@ -53,7 +54,7 @@
 {/if}
 
 <Section title={m.red_petty_jurgen_sway({ name: data.display_name })}>
-	{#if data.songs.items.length}
+	{#if data.songs.count}
 		<table>
 			<thead
 				><tr>
@@ -72,6 +73,7 @@
 				{/each}
 			</tbody>
 		</table>
+		<Pager n_count={data.songs.count} page_size={data.batch_size} />
 	{:else}
 		<p>{m.noble_sleek_duck_lift()}</p>
 	{/if}

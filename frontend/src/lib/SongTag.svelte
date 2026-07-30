@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { components } from '$lib/schema';
+	import { getTagDisplayName } from './ui';
 
 	interface Props {
 		tag: components['schemas']['TagSongSchema'];
@@ -15,5 +16,5 @@
 		'border-orange-600',
 		'border-yellow-600',
 		'border-red-600'
-	][tag.category]}">{tag.name}</a
+	][tag.category]}">{getTagDisplayName(tag)}</a
 >

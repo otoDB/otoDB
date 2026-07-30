@@ -411,6 +411,15 @@ class MediaSong(RevisionTrackedModel):
 		).update(song=to_song)
 		TagSongInstance.objects.filter(song=from_song).delete()
 
+		for c in from_song.mediasongconnection_set.all():
+			if to_song.mediasongconnection_set.filter(
+				site=c.site, content_id=c.content_id
+			).exists():
+				c.delete()
+			else:
+				c.song = to_song
+				c.save()
+
 		mediasong_ct = ContentType.objects.get_for_model(MediaSong)
 
 		EntityLink.objects.filter(

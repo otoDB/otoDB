@@ -484,9 +484,11 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 			from_tag.category == WorkTagCategory.MEDIA
 			and to_tag.category == WorkTagCategory.MEDIA
 		):
-			to_tag.media_type = to_tag.media_type | from_tag.media_type
+			if from_tag.media_type:
+				to_tag.media_type = (to_tag.media_type or 0) | from_tag.media_type
 			to_tag.save()
 			from_tag.category = WorkTagCategory.UNCATEGORIZED
+			from_tag.media_type = None
 			from_tag.save()
 		if (
 			from_tag.category == WorkTagCategory.SONG

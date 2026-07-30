@@ -394,10 +394,9 @@ class MediaSong(RevisionTrackedModel):
 
 		from otodb.models.posts import EntityLink
 
-		# Special handling for title: if current is NULL and new is blank, keep NULL
-		for f in ['bpm', 'variable_bpm']:
-			if getattr(to_song, f) is None:
-				setattr(to_song, f, getattr(from_song, f))
+		if to_song.bpm is None:
+			to_song.bpm = from_song.bpm
+		to_song.variable_bpm = to_song.variable_bpm or from_song.variable_bpm
 
 		from_song.relation_A.filter(B=to_song).delete()
 		from_song.relation_A.update(A=to_song)

@@ -263,8 +263,8 @@ class MediaWork(RevisionTrackedModel):
 			ft = from_work.tagworkinstance_set.get(work_tag_id=tt.work_tag_id)
 			if ft.used_as_source:
 				tt.used_as_source = True
-			if tt.work_tag.category == WorkTagCategory.CREATOR:
-				tt.creator_roles = tt.creator_roles | ft.creator_roles
+			if tt.work_tag.category == WorkTagCategory.CREATOR and ft.creator_roles:
+				tt.creator_roles = (tt.creator_roles or 0) | ft.creator_roles
 			tt.save()
 			ft.delete()
 

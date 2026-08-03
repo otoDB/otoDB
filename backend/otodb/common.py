@@ -19,6 +19,7 @@ from yt_dlp.extractor.bilibili import BilibiliFavoritesListIE, BiliBiliIE
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.extractor.niconico import NiconicoPlaylistIE
 from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
+from yt_dlp.extractor.vimeo import VimeoIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.utils import DownloadError
 
@@ -101,6 +102,7 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		SoundcloudIE,
 		TwitterIECustom,
 		AcFunVideoIE,
+		VimeoIE,
 	):
 		# Register the instance, not the class
 		ydl.add_info_extractor(e())
@@ -115,6 +117,7 @@ platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
 	(Platform.SOUNDCLOUD, SoundcloudIE),
 	(Platform.TWITTER, TwitterIECustom),
 	(Platform.ACFUN, AcFunVideoIE),
+	(Platform.VIMEO, VimeoIE),
 ]  # type: ignore
 make_video_url = {
 	Platform.YOUTUBE: lambda s, uid=None: f'https://youtube.com/watch?v={s}',
@@ -132,6 +135,7 @@ make_video_url = {
 	Platform.ACFUN: lambda s, uid=None: (
 		f'https://www.acfun.cn/v/{s if s.startswith("ac") else "ac" + s}'
 	),
+	Platform.VIMEO: lambda s, uid=None: f'https://vimeo.com/{s}',
 }
 
 niconico_meta_re = re.compile(
@@ -284,6 +288,8 @@ def process_video_info(full_info, link=None):
 				info['title'] = None
 			case Platform.ACFUN:
 				info['id'] = 'ac' + info['id']
+			case Platform.VIMEO:
+				pass  # numeric ID needs no fixup
 			case _:
 				return None
 

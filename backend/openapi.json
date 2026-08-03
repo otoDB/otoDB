@@ -6159,7 +6159,8 @@
           3,
           4,
           5,
-          6
+          6,
+          7
         ],
         "title": "VideoPlatformPref",
         "type": "integer",
@@ -6170,7 +6171,8 @@
           "Bilibili",
           "SoundCloud",
           "Twitter",
-          "AcFun"
+          "AcFun",
+          "Vimeo"
         ]
       },
       "RegisterRequestSchema": {
@@ -7207,7 +7209,8 @@
           3,
           4,
           5,
-          6
+          6,
+          7
         ],
         "title": "Platform",
         "type": "integer",
@@ -7217,7 +7220,8 @@
           "Bilibili",
           "SoundCloud",
           "Twitter",
-          "AcFun"
+          "AcFun",
+          "Vimeo"
         ]
       },
       "WorkOrigin": {

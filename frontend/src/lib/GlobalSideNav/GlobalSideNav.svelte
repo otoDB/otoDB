@@ -97,6 +97,9 @@
 			{@render link('/profile', m.bright_nimble_eagle_glide())}
 			{@render link('/wiki/faq', 'FAQ')}
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
+			<!-- The statistics panel below, which links to the same page, is desktop-only,
+			     so this entry is the only way to reach it on a narrow screen. -->
+			{@render link('/stats/works', m.white_helpful_lion_rise())}
 		</ul>
 	</div>
 	<div
@@ -179,7 +182,7 @@
 		class="md:border-otodb-content-faint md:bg-otodb-bg-faint/75 mt-8 hidden md:mt-0 md:block md:border md:px-3 md:py-2"
 	>
 		<div class="border-otodb-content-faint mb-2 border-b text-xs">
-			{m.white_helpful_lion_rise()}
+			<a href="/stats/works" class="no-underline">{m.white_helpful_lion_rise()}</a>
 		</div>
 		<div class="flex justify-between">
 			<span>{m.grand_merry_fly_succeed()}</span><span>{stats.works}</span>

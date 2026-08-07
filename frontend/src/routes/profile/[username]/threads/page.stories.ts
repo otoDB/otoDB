@@ -100,18 +100,6 @@ type Story = StoryObj<ComponentProps<typeof Page>>;
 
 export const Default: Story = {};
 
-export const Empty: Story = {
-	args: {
-		data: {
-			...baseData,
-			threads: {
-				items: [],
-				count: 0
-			}
-		}
-	}
-};
-
 export const WithPagination: Story = {
 	args: {
 		data: {

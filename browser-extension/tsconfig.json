@@ -1,6 +1,12 @@
 {
-  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noEmit": true,
     "allowJs": true,
     "checkJs": false,
     "esModuleInterop": true,
@@ -9,15 +15,12 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "moduleResolution": "bundler",
-    "types": ["chrome"]
+    "types": ["chrome"],
+    "paths": {
+      "$lib": ["../frontend/src/lib"],
+      "$lib/*": ["../frontend/src/lib/*"],
+      "$app/environment": ["./src/app-environment.ts"]
+    }
   },
-  "include": [
-    ".svelte-kit/ambient.d.ts",
-    ".svelte-kit/non-ambient.d.ts",
-    ".svelte-kit/types/**/*.d.ts",
-    "src/**/*.js",
-    "src/**/*.ts",
-    "src/**/*.svelte"
-  ]
+  "include": ["src/**/*.js", "src/**/*.ts", "src/**/*.svelte"]
 }

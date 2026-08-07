@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { navigating } from '$app/state';
 	import { PUBLIC_OTODB_HASH } from '$env/static/public';
 	import { languages } from '$lib/enums/language';
 	import { currentVersion, versions } from '$lib/enums/version';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
 	import { set_lang } from '$lib/languages';
+	import Icon from '$lib/Icon/Icon.svelte';
 	import type { ClassValue } from 'svelte/elements';
 
 	let {
@@ -18,11 +18,7 @@
 </script>
 
 <footer class={props.class}>
-	<div class="footer-left">
-		{#if navigating.to}
-			<span id="loading-indicator"></span>
-		{/if}
-	</div>
+	<div class="footer-left"></div>
 
 	<div class="footer-center">
 		<span>
@@ -49,7 +45,7 @@
 	</div>
 
 	<div class="footer-right flex items-center">
-		<span class="icon-[gravity-ui--globe] mr-1 size-4" aria-hidden="true"></span>
+		<Icon key="language" class="mr-1 size-4" decorative />
 		<select
 			onchange={(e) => {
 				set_lang(e.currentTarget.value as (typeof locales)[number], !!user);
@@ -98,24 +94,5 @@
 
 	.social-links a:hover {
 		opacity: 0.7;
-	}
-
-	@keyframes loading-dot {
-		0% {
-			content: '.';
-		}
-		33% {
-			content: '..';
-		}
-		66% {
-			content: '...';
-		}
-		100% {
-			content: '.';
-		}
-	}
-	#loading-indicator::after {
-		content: '.';
-		animation: loading-dot 0.4s infinite;
 	}
 </style>

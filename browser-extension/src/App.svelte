@@ -7,7 +7,8 @@
 	} from "$lib/paraglide/runtime";
 	import { ThemePref } from "$lib/schema";
 	import { themes } from "$lib/themes/themes";
-	import "../styles.css";
+	import Popup from "./Popup.svelte";
+	import "./styles.css";
 
 	const CACHE = "otodb.theme";
 
@@ -24,8 +25,6 @@
 		getLocale: () => resolvedLang,
 		setLocale: () => {},
 	});
-
-	let { children } = $props();
 
 	async function pickDefaultLocale(): Promise<
 		keyof typeof languages | undefined
@@ -77,33 +76,22 @@
 
 		themeKey = themes[prefs?.THEME ?? ThemePref.Default].key;
 		localStorage.setItem(CACHE, themeKey);
-
-		// Frontend components link with relative paths like `/tag/foo` which
-		// would otherwise resolve to chrome-extension://.../tag/foo.
-		// Intercept every click on anchors and open in a browser tab on otodb.net,
-		// preserving modifier/middle-click "open in background tab" semantics.
-		function handleLinkClick(e: MouseEvent) {
-			if (e.defaultPrevented) return;
-			const a = (e.target as HTMLElement | null)?.closest("a");
-			if (!a) return;
-			const href = a.getAttribute("href");
-			if (!href) return;
-			if (e.button !== 0 && e.button !== 1) return;
-			e.preventDefault();
-			const background =
-				e.button === 1 || e.ctrlKey || e.metaKey || e.shiftKey;
-			chrome.tabs.create({
-				url: new URL(href, "https://otodb.net/").toString(),
-				active: !background,
-			});
-			if (!background) window.close();
-		}
-		document.addEventListener("click", handleLinkClick);
-		document.addEventListener("auxclick", handleLinkClick);
 	});
+
+	// Frontend components link with site-relative paths like `/tag/foo` which
+	// would otherwise resolve to chrome-extension://.../tag/foo
+	function resolveLink(e: MouseEvent) {
+		const a = (e.target as HTMLElement | null)?.closest("a");
+		const href = a?.getAttribute("href");
+		if (!a || !href) return;
+		a.href = new URL(href, "https://otodb.net/").toString();
+		a.target = "_blank";
+	}
 </script>
+
+<svelte:window onclick={resolveLink} onauxclick={resolveLink} />
 
 <div class="text-otodb-content-primary h-full">
 	<div id="bg-marker" class="bg-otodb-bg-primary fixed inset-0 -z-10"></div>
-	{@render children()}
+	<Popup />
 </div>

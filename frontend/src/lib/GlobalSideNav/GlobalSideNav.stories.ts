@@ -13,8 +13,6 @@ const defaultStats = {
 const meta = {
 	component: GlobalSideNav,
 	args: {
-		isMobileNavOpen: true,
-		closeMobileNav: () => {},
 		user: null,
 		stats: defaultStats
 	}
@@ -75,7 +73,6 @@ export const Admin: Story = {
 
 export const MobileNavClosed: Story = {
 	args: {
-		isMobileNavOpen: false,
 		user: null
 	}
 };

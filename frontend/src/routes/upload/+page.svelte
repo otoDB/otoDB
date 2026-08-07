@@ -3,7 +3,7 @@
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 	import { Platform } from '$lib/schema.js';
-	import { enumValues } from '$lib/enums.js';
+	import { enumValues, PlatformNames } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
 
 	let { data } = $props();
@@ -16,7 +16,7 @@
 			<select name="platform" class="border" value={data.filters.platform ?? ''}>
 				<option value="">All</option>
 				{#each enumValues(Platform) as p, i (i)}
-					<option value={p}>{p}</option>
+					<option value={p}>{PlatformNames[p]}</option>
 				{/each}
 			</select>
 		</label>
@@ -61,7 +61,7 @@
 								{source.title || source.url}
 							</a>
 						</td>
-						<td>{Platform[source.platform] ?? source.platform}</td>
+						<td>{PlatformNames[source.platform]}</td>
 						<td>
 							{#if source.media}
 								<a href="/work/{source.media}">{source.media_title || `Work #${source.media}`}</a>

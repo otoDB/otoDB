@@ -20,18 +20,15 @@
 
 	/** Every date the component handles is a UTC midnight timestamp of an ISO `YYYY-MM-DD`. */
 	const parseDay = (date: string) => Date.parse(`${date}T00:00:00Z`);
-	const formatDay = (time: number) => new Date(time).toISOString().slice(0, 10);
 
 	const startTime = $derived(parseDay(activity.start));
 	const endTime = $derived(parseDay(activity.end));
 
 	/** Pad back to the Sunday on or before `start` so every column is a full week. */
 	const gridStartTime = $derived(startTime - new Date(startTime).getUTCDay() * MS_PER_DAY);
-	const weeks = $derived(
-		Math.max(1, Math.ceil(((endTime - gridStartTime) / MS_PER_DAY + 1) / DAYS_PER_WEEK))
-	);
+	const weeks = $derived(Math.ceil(((endTime - gridStartTime) / MS_PER_DAY + 1) / DAYS_PER_WEEK));
 
-	const counts = $derived(new Map(activity.days.map(({ date, count }) => [date, count])));
+	const counts = $derived(new Map(activity.days.map(({ date, count }) => [parseDay(date), count])));
 	const maxCount = $derived(activity.days.reduce((max, { count }) => Math.max(max, count), 0));
 
 	const level = (count: number) => {
@@ -56,32 +53,30 @@
 		)
 	);
 
-	type Cell = { date: string; count: number; label: string } | null;
+	type Cell = { count: number; label: string } | null;
 
 	const columns: { month: string; cells: Cell[] }[] = $derived.by(() => {
 		const result: { month: string; cells: Cell[] }[] = [];
 		let labelledMonth = -1;
 
 		for (let week = 0; week < weeks; week++) {
+			const weekStart = gridStartTime + week * DAYS_PER_WEEK * MS_PER_DAY;
 			const cells = Array.from({ length: DAYS_PER_WEEK }, (_, row): Cell => {
-				const time = gridStartTime + (week * DAYS_PER_WEEK + row) * MS_PER_DAY;
+				const time = weekStart + row * MS_PER_DAY;
 				// Days before `start` (the leading pad) and after `end` are rendered as gaps.
 				if (time < startTime || time > endTime) return null;
 
-				const date = formatDay(time);
-				const count = counts.get(date) ?? 0;
+				const count = counts.get(time) ?? 0;
 				return {
-					date,
 					count,
 					label: m.warm_still_marmot_reflect({ count, date: dayFormat.format(time) })
 				};
 			});
 
 			// A column carries a month label the first time that month appears along the top.
-			const first = cells.find((cell) => cell !== null);
-			const time = first ? parseDay(first.date) : 0;
-			const monthIndex = first ? new Date(time).getUTCMonth() : labelledMonth;
-			const month = monthIndex === labelledMonth ? '' : monthFormat.format(time);
+			const first = Math.max(weekStart, startTime);
+			const monthIndex = first <= endTime ? new Date(first).getUTCMonth() : labelledMonth;
+			const month = monthIndex === labelledMonth ? '' : monthFormat.format(first);
 			labelledMonth = monthIndex;
 
 			result.push({ month, cells });

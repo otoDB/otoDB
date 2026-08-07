@@ -105,35 +105,20 @@ const comments = [
 ];
 
 /**
- * A fixed 365-day window (`start` = `end` − 364) with deterministic per-day counts, so the
- * heatmap renders identically on every run instead of following the current date.
+ * A fixed 365-day window (`start` = `end` − 364), so the heatmap renders identically on
+ * every run instead of following the current date. `ActivityHeatmap.stories.ts` covers what
+ * a full year looks like; here only the section needs to show up.
  */
-const activity = (() => {
-	const MS_PER_DAY = 86_400_000;
-	const start = '2025-01-01';
-	const startTime = Date.parse(`${start}T00:00:00Z`);
-
-	const days = [];
-	let total = 0;
-
-	for (let index = 0; index < 365; index++) {
-		let x = Math.imul(index + 1, 2654435761);
-		x ^= x >>> 15;
-		x = Math.imul(x, 2246822519);
-		x ^= x >>> 13;
-		const value = (x >>> 0) / 4294967296;
-
-		if (value < 0.35) continue;
-		const count = 1 + Math.floor(value * 9);
-		days.push({
-			date: new Date(startTime + index * MS_PER_DAY).toISOString().slice(0, 10),
-			count
-		});
-		total += count;
-	}
-
-	return { start, end: '2025-12-31', total, days };
-})();
+const activity = {
+	start: '2025-01-01',
+	end: '2025-12-31',
+	total: 9,
+	days: [
+		{ date: '2025-03-04', count: 1 },
+		{ date: '2025-07-19', count: 5 },
+		{ date: '2025-11-28', count: 3 }
+	]
+};
 
 const baseData = {
 	stats,

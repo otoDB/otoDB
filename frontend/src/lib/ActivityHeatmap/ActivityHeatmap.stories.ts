@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import type { ComponentProps } from 'svelte';
 import ActivityHeatmap from './ActivityHeatmap.svelte';
-import type { ProfileActivity } from './types';
+
+type Props = ComponentProps<typeof ActivityHeatmap>;
 
 /**
  * The API returns a window rolling back from today (`start` = `end` − 364), so it starts and
@@ -29,7 +30,7 @@ const noise = (index: number) => {
 	return (x >>> 0) / 4294967296;
 };
 
-const buildActivity = (count: (value: number) => number): ProfileActivity => {
+const buildActivity = (count: (value: number) => number): Props['activity'] => {
 	const days = [];
 	let total = 0;
 
@@ -52,10 +53,10 @@ const sparse = buildActivity((value) => (value < 0.9 ? 0 : 1 + Math.floor(value 
 const meta = {
 	component: ActivityHeatmap,
 	args: { activity: dense }
-} satisfies Meta<ComponentProps<typeof ActivityHeatmap>>;
+} satisfies Meta<Props>;
 
 export default meta;
-type Story = StoryObj<ComponentProps<typeof ActivityHeatmap>>;
+type Story = StoryObj<Props>;
 
 /** A year with contributions on most days. */
 export const Dense: Story = {

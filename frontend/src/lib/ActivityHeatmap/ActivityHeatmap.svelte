@@ -1,10 +1,23 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import type { ProfileActivity } from './types';
 
 	interface Props {
-		activity: ProfileActivity;
+		/**
+		 * Contribution activity over a window rolling back from today. Described structurally
+		 * rather than pulled from `$lib/schema` so the component only depends on the shape it
+		 * actually renders, and the API is free to grow fields around it.
+		 */
+		activity: {
+			/** First day of the window, `YYYY-MM-DD` (UTC). */
+			start: string;
+			/** Last day of the window, `YYYY-MM-DD` (UTC). Typically today. */
+			end: string;
+			/** Sum of every `days[].count`. */
+			total: number;
+			/** Ascending by date. Days with no contributions are omitted. */
+			days: { date: string; count: number }[];
+		};
 	}
 
 	const { activity }: Props = $props();
@@ -95,6 +108,13 @@
 
 <style>
 	.cell {
+		/*
+		 * The theme's accent, desaturated: at full chroma a wall of 365 tiles is far louder
+		 * than a "currently selected" accent is meant to be. Keeping the hue and lightness
+		 * means the heatmap still reads as part of the active theme.
+		 */
+		--tile: oklch(from var(--otodb-color-highlight-primary) l calc(c * 0.55) h);
+
 		/* A hairline keeps empty days visible against the surrounding `bg-faint` panel. */
 		outline: 1px solid color-mix(in oklab, var(--otodb-color-content-fainter) 20%, transparent);
 		outline-offset: -1px;
@@ -103,16 +123,16 @@
 			background-color: var(--otodb-color-bg-faint);
 		}
 		&[data-level='1'] {
-			background-color: color-mix(in oklab, green 25%, var(--otodb-color-bg-faint));
+			background-color: color-mix(in oklab, var(--tile) 25%, var(--otodb-color-bg-faint));
 		}
 		&[data-level='2'] {
-			background-color: color-mix(in oklab, green 45%, var(--otodb-color-bg-faint));
+			background-color: color-mix(in oklab, var(--tile) 45%, var(--otodb-color-bg-faint));
 		}
 		&[data-level='3'] {
-			background-color: color-mix(in oklab, green 70%, var(--otodb-color-bg-faint));
+			background-color: color-mix(in oklab, var(--tile) 70%, var(--otodb-color-bg-faint));
 		}
 		&[data-level='4'] {
-			background-color: color-mix(in oklab, green 95%, var(--otodb-color-bg-faint));
+			background-color: color-mix(in oklab, var(--tile) 95%, var(--otodb-color-bg-faint));
 		}
 	}
 </style>

@@ -200,14 +200,3 @@ export const Approved: Story = {
 		}
 	}
 };
-
-export const Empty: Story = {
-	args: {
-		data: {
-			...baseData,
-			user: null,
-			standing: SubmissionStanding.Pending,
-			submissions: { items: [], count: 0 }
-		}
-	}
-};

@@ -166,17 +166,6 @@ export const MemberWithHistory: Story = {
 	}
 };
 
-export const EmptyHistory: Story = {
-	args: {
-		data: {
-			...baseData,
-			links: loggedInLinks,
-			user: editorUser,
-			history: { items: [], count: 0 }
-		}
-	}
-};
-
 export const PaginatedHistory: Story = {
 	args: {
 		data: {

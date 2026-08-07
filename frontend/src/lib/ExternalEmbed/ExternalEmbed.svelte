@@ -74,6 +74,16 @@
 		scrolling="no"
 		allowfullscreen
 	></iframe>
+{:else if src.platform === Platform.Vimeo}
+	<iframe
+		title="Vimeo Player"
+		{width}
+		{height}
+		src="https://player.vimeo.com/video/{src.source_id}{autoplay ? '?autoplay=1' : ''}"
+		frameborder="0"
+		allow="autoplay; fullscreen; picture-in-picture"
+		allowfullscreen
+	></iframe>
 {/if}
 
 <style>

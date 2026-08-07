@@ -3,7 +3,7 @@
 	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import { PlatformNames, WorkOriginNames } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/enums/language.js';
-	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
+	import ExternalEmbed from '$lib/ExternalEmbed/ExternalEmbed.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';

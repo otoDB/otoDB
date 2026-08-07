@@ -12,12 +12,6 @@
 	const MS_PER_DAY = 86_400_000;
 	const DAYS_PER_WEEK = 7;
 
-	/**
-	 * A fixed Sunday, used only to render the weekday labels. Hard-coded rather than derived
-	 * from the current date so the component stays deterministic.
-	 */
-	const REFERENCE_SUNDAY = Date.UTC(2024, 0, 7);
-
 	/** Every date the component handles is a UTC midnight timestamp of an ISO `YYYY-MM-DD`. */
 	const parseDay = (date: string) => Date.parse(`${date}T00:00:00Z`);
 
@@ -41,16 +35,6 @@
 	);
 	const monthFormat = $derived(
 		new Intl.DateTimeFormat(getLocale(), { month: 'short', timeZone: 'UTC' })
-	);
-	const weekdayFormat = $derived(
-		new Intl.DateTimeFormat(getLocale(), { weekday: 'short', timeZone: 'UTC' })
-	);
-
-	/** GitHub-style: only every other weekday is labelled, to keep the axis readable. */
-	const weekdayLabels = $derived(
-		Array.from({ length: DAYS_PER_WEEK }, (_, row) =>
-			row % 2 === 1 ? weekdayFormat.format(REFERENCE_SUNDAY + row * MS_PER_DAY) : ''
-		)
 	);
 
 	type Cell = { count: number; label: string } | null;
@@ -88,16 +72,9 @@
 
 <p class="mb-2">{m.plain_swift_otter_gather({ count: activity.total })}</p>
 
-<div class="flex gap-1 overflow-x-auto pb-1">
-	<div class="text-otodb-content-fainter grid grid-rows-[1rem_repeat(7,0.75rem)] gap-[3px] text-xs">
-		<span></span>
-		{#each weekdayLabels as label, row (row)}
-			<span class="flex items-center pr-1 leading-none">{label}</span>
-		{/each}
-	</div>
-
+<div class="overflow-x-auto pb-1">
 	<div
-		class="grid [grid-auto-columns:0.75rem] grid-flow-col grid-rows-[1rem_repeat(7,0.75rem)] gap-[3px]"
+		class="grid w-max [grid-auto-columns:0.75rem] grid-flow-col grid-rows-[1rem_repeat(7,0.75rem)] gap-[3px]"
 	>
 		{#each columns as column, week (week)}
 			<span class="text-otodb-content-fainter relative text-xs">

@@ -4,12 +4,12 @@ import ActivityHeatmap from './ActivityHeatmap.svelte';
 import type { ProfileActivity } from './types';
 
 /**
- * The window is hard-coded rather than derived from the current date so the stories render
- * identically on every run. `2025-01-01` … `2025-12-31` is exactly the 365 days the API
- * returns (`start` = `end` − 364).
+ * The API returns a window rolling back from today (`start` = `end` − 364), so it starts and
+ * ends mid-month rather than on a calendar year. A fixed pair of dates stands in for it here
+ * so the stories render identically on every run.
  */
-const START = '2025-01-01';
-const END = '2025-12-31';
+const START = '2025-08-08';
+const END = '2026-08-07';
 const WINDOW_DAYS = 365;
 const MS_PER_DAY = 86_400_000;
 

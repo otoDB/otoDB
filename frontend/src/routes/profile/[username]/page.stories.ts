@@ -105,18 +105,18 @@ const comments = [
 ];
 
 /**
- * A fixed 365-day window (`start` = `end` − 364), so the heatmap renders identically on
- * every run instead of following the current date. `ActivityHeatmap.stories.ts` covers what
- * a full year looks like; here only the section needs to show up.
+ * A fixed stand-in for the window rolling back from today (`start` = `end` − 364), so the
+ * heatmap renders identically on every run. `ActivityHeatmap.stories.ts` covers what a busy
+ * year looks like; here only the section needs to show up.
  */
 const activity = {
-	start: '2025-01-01',
-	end: '2025-12-31',
+	start: '2025-08-08',
+	end: '2026-08-07',
 	total: 9,
 	days: [
-		{ date: '2025-03-04', count: 1 },
-		{ date: '2025-07-19', count: 5 },
-		{ date: '2025-11-28', count: 3 }
+		{ date: '2025-10-04', count: 1 },
+		{ date: '2026-02-19', count: 5 },
+		{ date: '2026-06-28', count: 3 }
 	]
 };
 

@@ -1,0 +1,82 @@
+import type { Meta, StoryObj } from '@storybook/sveltekit';
+import type { ComponentProps } from 'svelte';
+import ActivityHeatmap from './ActivityHeatmap.svelte';
+import type { ProfileActivity } from './types';
+
+/**
+ * The window is hard-coded rather than derived from the current date so the stories render
+ * identically on every run. `2025-01-01` … `2025-12-31` is exactly the 365 days the API
+ * returns (`start` = `end` − 364).
+ */
+const START = '2025-01-01';
+const END = '2025-12-31';
+const WINDOW_DAYS = 365;
+const MS_PER_DAY = 86_400_000;
+
+const startTime = Date.parse(`${START}T00:00:00Z`);
+const dayAt = (index: number) =>
+	new Date(startTime + index * MS_PER_DAY).toISOString().slice(0, 10);
+
+/**
+ * A deterministic 0..1 value per day index, standing in for a seeded RNG — `Math.random()`
+ * would make the stories non-reproducible.
+ */
+const noise = (index: number) => {
+	let x = Math.imul(index + 1, 2654435761);
+	x ^= x >>> 15;
+	x = Math.imul(x, 2246822519);
+	x ^= x >>> 13;
+	return (x >>> 0) / 4294967296;
+};
+
+const buildActivity = (count: (index: number, value: number) => number): ProfileActivity => {
+	const days = [];
+	let total = 0;
+
+	for (let index = 0; index < WINDOW_DAYS; index++) {
+		const value = count(index, noise(index));
+		if (value <= 0) continue;
+		days.push({ date: dayAt(index), count: value });
+		total += value;
+	}
+
+	return { start: START, end: END, total, days };
+};
+
+/** An active user: most days have contributions, spread over the whole range of levels. */
+const dense = buildActivity((_, value) => (value < 0.12 ? 0 : 1 + Math.floor(value * 11)));
+
+/** An occasional contributor: a handful of low-count days scattered across the year. */
+const sparse = buildActivity((_, value) => (value < 0.9 ? 0 : 1 + Math.floor(value * 3)));
+
+/**
+ * One burst of activity far above everything else — e.g. a bulk import. It pins the level
+ * scale, so every ordinary day collapses to level 1.
+ */
+const outlier = buildActivity((index, value) => {
+	if (index === 214) return 480;
+	return value < 0.4 ? 0 : 1 + Math.floor(value * 5);
+});
+
+const meta = {
+	component: ActivityHeatmap,
+	args: { activity: dense }
+} satisfies Meta<ComponentProps<typeof ActivityHeatmap>>;
+
+export default meta;
+type Story = StoryObj<ComponentProps<typeof ActivityHeatmap>>;
+
+/** A year with contributions on most days. */
+export const Dense: Story = {
+	args: { activity: dense }
+};
+
+/** A year with only a few scattered contributions. */
+export const Sparse: Story = {
+	args: { activity: sparse }
+};
+
+/** A year containing a single very high-count day. */
+export const WithOutlierDay: Story = {
+	args: { activity: outlier }
+};

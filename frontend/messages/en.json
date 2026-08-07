@@ -453,5 +453,8 @@
 	"bold_keen_otter_vault": "Rollback to before this revision",
 	"tame_swift_heron_plead": "Rollback ALL revisions made by {username} to before {label}?",
 	"hazy_calm_otter_dream": "Plain Dark",
-	"misty_plain_finch_glow": "Plain Light"
+	"misty_plain_finch_glow": "Plain Light",
+	"brave_deep_falcon_soar": "Recent activity",
+	"plain_swift_otter_gather": "{count} contributions in the last year",
+	"warm_still_marmot_reflect": "{count} contributions on {date}"
 }

@@ -102,6 +102,11 @@ export const AcFun: Story = {
 	args: { src: source(Platform.AcFun, 'ac1234567') }
 };
 
+/** A Vimeo source, addressed by its numeric video id. */
+export const Vimeo: Story = {
+	args: { src: source(Platform.Vimeo, '123456789') }
+};
+
 /** Autoplay enabled, the default the component ships with. */
 export const Autoplay: Story = {
 	args: { autoplay: true }

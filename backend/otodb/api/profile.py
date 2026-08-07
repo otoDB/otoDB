@@ -1,4 +1,5 @@
 import datetime
+from collections import Counter
 from typing import List, Literal
 
 from django.core.cache import cache
@@ -101,7 +102,7 @@ def _count_per_day(
 	rows = (
 		qs.filter(**{f'{field}__gte': since, f'{field}__lt': until})
 		.order_by()
-		.annotate(day=TruncDate(field, tzinfo=datetime.timezone.utc))
+		.annotate(day=TruncDate(field, tzinfo=datetime.UTC))
 		.values('day')
 		.annotate(n=Count('id'))
 	)
@@ -109,18 +110,12 @@ def _count_per_day(
 
 
 def _compute_activity(user: Account) -> dict:
-	end = datetime.datetime.now(datetime.timezone.utc).date()
+	end = datetime.datetime.now(datetime.UTC).date()
 	start = end - datetime.timedelta(days=ACTIVITY_WINDOW_DAYS - 1)
-	since = datetime.datetime.combine(
-		start, datetime.time.min, tzinfo=datetime.timezone.utc
-	)
-	until = datetime.datetime.combine(
-		end + datetime.timedelta(days=1),
-		datetime.time.min,
-		tzinfo=datetime.timezone.utc,
-	)
+	since = datetime.datetime.combine(start, datetime.time.min, tzinfo=datetime.UTC)
+	until = since + datetime.timedelta(days=ACTIVITY_WINDOW_DAYS)
 
-	counts: dict[datetime.date, int] = {}
+	counts: Counter[datetime.date] = Counter()
 	# WorkSource uploads are revision-tracked, so counting them separately would
 	# double count them.
 	sources = (
@@ -129,8 +124,7 @@ def _compute_activity(user: Account) -> dict:
 		(XtdComment.objects.filter(user=user, is_removed=False), 'submit_date'),
 	)
 	for qs, field in sources:
-		for day, n in _count_per_day(qs, field, since, until).items():
-			counts[day] = counts.get(day, 0) + n
+		counts.update(_count_per_day(qs, field, since, until))
 
 	# Serialized as ISO strings so the payload survives any cache backend's
 	# serializer; the response schema parses them back into dates.

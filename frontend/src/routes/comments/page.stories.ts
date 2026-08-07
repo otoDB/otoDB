@@ -26,12 +26,9 @@ const memberUser = {
 
 const batch_size = 20;
 
-const baseData = {
-	stats,
-	head,
-	user: memberUser,
-	batch_size
-};
+// The real endpoint has several thousand comments behind it, so the page is
+// effectively always a full batch with a pager.
+const total_count = 4317;
 
 const commenter = (id: string, username: string, level: Levels) => ({
 	id,
@@ -40,69 +37,67 @@ const commenter = (id: string, username: string, level: Levels) => ({
 	date_created: '2023-01-15T09:00:00Z'
 });
 
-const workComment: Comment = {
-	id: 'comment-1',
-	user: commenter('1', 'member_user', Levels.Member),
-	comment: 'The audio on this upload is much cleaner than the previous one.',
-	submit_date: '2024-06-05T14:32:00Z',
-	entity_type: 'mediawork',
-	entity_id: '1'
-};
+// One template per entity type `buildEntityRoutes` knows about, so every link
+// shape the table can produce is exercised.
+const templates = [
+	{
+		user: commenter('1', 'member_user', Levels.Member),
+		comment: 'The audio on this upload is much cleaner than the previous one.',
+		entity_type: 'mediawork',
+		entity_id: '1'
+	},
+	{
+		user: commenter('2', 'editor_user', Levels.Editor),
+		comment: 'Aliased this tag to the canonical spelling.',
+		entity_type: 'tagwork',
+		entity_id: 'sample-tag'
+	},
+	{
+		user: commenter('3', 'mod_user', Levels.Mod),
+		comment: 'Merged the duplicate entry into this one.',
+		entity_type: 'mediasong',
+		entity_id: '42'
+	},
+	{
+		user: commenter('4', 'restricted_user', Levels.Restricted),
+		comment:
+			'A considerably longer comment that wraps onto several lines, so the table layout can be checked against realistic prose rather than a single short sentence. It also mentions https://example.com to show how raw URLs are rendered here.',
+		entity_type: 'wikipage',
+		entity_id: 'style-guide'
+	},
+	{
+		user: commenter('5', 'admin_user', Levels.Admin),
+		comment: 'Great selection, thanks for putting this list together.',
+		entity_type: 'pool',
+		entity_id: '7'
+	},
+	{
+		user: commenter('6', 'another_member', Levels.Member),
+		comment: 'Welcome aboard!',
+		entity_type: 'account',
+		entity_id: 'member_user'
+	}
+] satisfies Omit<Comment, 'id' | 'submit_date'>[];
 
-const tagComment: Comment = {
-	id: 'comment-2',
-	user: commenter('2', 'editor_user', Levels.Editor),
-	comment: 'Aliased this tag to the canonical spelling.',
-	submit_date: '2024-06-05T13:50:00Z',
-	entity_type: 'tagwork',
-	entity_id: 'sample-tag'
-};
+// Fixed anchor, not the current clock, so the story renders the same thing on
+// every open and can serve as a regression-test baseline.
+const NEWEST_SUBMIT_DATE = Date.parse('2024-06-05T14:32:00Z');
 
-const songComment: Comment = {
-	id: 'comment-3',
-	user: commenter('3', 'mod_user', Levels.Mod),
-	comment: 'Merged the duplicate entry into this one.',
-	submit_date: '2024-06-05T09:15:00Z',
-	entity_type: 'mediasong',
-	entity_id: '42'
-};
-
-const wikiComment: Comment = {
-	id: 'comment-4',
-	user: commenter('4', 'restricted_user', Levels.Restricted),
-	comment:
-		'A considerably longer comment that wraps onto several lines, so the table layout can be checked against realistic prose rather than a single short sentence. It also mentions https://example.com to show how raw URLs are rendered here.',
-	submit_date: '2024-06-04T08:00:00Z',
-	entity_type: 'wikipage',
-	entity_id: 'style-guide'
-};
-
-const listComment: Comment = {
-	id: 'comment-5',
-	user: commenter('5', 'admin_user', Levels.Admin),
-	comment: 'Great selection, thanks for putting this list together.',
-	submit_date: '2024-05-27T18:20:00Z',
-	entity_type: 'pool',
-	entity_id: '7'
-};
-
-const profileComment: Comment = {
-	id: 'comment-6',
-	user: commenter('6', 'another_member', Levels.Member),
-	comment: 'Welcome aboard!',
-	submit_date: '2023-05-01T11:05:00Z',
-	entity_type: 'account',
-	entity_id: 'member_user'
-};
-
-const comments = [workComment, tagComment, songComment, wikiComment, listComment, profileComment];
+const comments: Comment[] = Array.from({ length: batch_size }, (_, i) => ({
+	...templates[i % templates.length],
+	id: `comment-${i + 1}`,
+	submit_date: new Date(NEWEST_SUBMIT_DATE - i * 7 * 60 * 1000).toISOString()
+}));
 
 const meta = {
 	component: Page,
 	args: {
 		data: {
-			...baseData,
-			comments: { items: comments, count: comments.length }
+			stats,
+			head,
+			user: memberUser,
+			batch_size,
+			comments: { items: comments, count: total_count }
 		}
 	}
 } satisfies Meta<ComponentProps<typeof Page>>;
@@ -110,32 +105,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<ComponentProps<typeof Page>>;
 
+/** A full batch of `batch_size` comments with the pager below the table. */
 export const Default: Story = {};
-
-export const Empty: Story = {
-	args: {
-		data: {
-			...baseData,
-			comments: { items: [], count: 0 }
-		}
-	}
-};
-
-/** `count` exceeds `batch_size`, so the pager is rendered below the table. */
-export const Paginated: Story = {
-	args: {
-		data: {
-			...baseData,
-			comments: { items: comments, count: 137 }
-		}
-	}
-};
-
-export const SingleComment: Story = {
-	args: {
-		data: {
-			...baseData,
-			comments: { items: [workComment], count: 1 }
-		}
-	}
-};

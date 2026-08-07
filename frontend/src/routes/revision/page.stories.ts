@@ -70,7 +70,7 @@ const meta = {
 	args: {
 		data: {
 			...baseData,
-			results: { items: [], count: 0 }
+			results: { items: [...sampleItems, rollbackItem], count: 145 }
 		}
 	}
 } satisfies Meta<ComponentProps<typeof Page>>;
@@ -78,16 +78,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<ComponentProps<typeof Page>>;
 
-export const Empty: Story = {};
-
-export const Populated: Story = {
-	args: {
-		data: {
-			...baseData,
-			results: { items: [...sampleItems, rollbackItem], count: sampleItems.length + 1 }
-		}
-	}
-};
+export const Populated: Story = {};
 
 export const WithPagination: Story = {
 	args: {

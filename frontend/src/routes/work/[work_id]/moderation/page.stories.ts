@@ -101,6 +101,62 @@ const baseData = {
 	head
 };
 
+const events = {
+	items: [
+		{
+			event_id: '1',
+			event_type: ModerationEventType.Value0,
+			work_id: '1',
+			source_id: null,
+			by: eventAuthor,
+			reason: 'Flagged for review by a member.',
+			status: FlagStatus.Value0,
+			event_at: '2024-06-01T10:00:00Z'
+		},
+		{
+			event_id: '2',
+			event_type: ModerationEventType.Value1,
+			work_id: '1',
+			source_id: null,
+			by: modAuthor,
+			reason: 'Delisted pending investigation.',
+			status: FlagStatus.Value1,
+			event_at: '2024-06-02T09:00:00Z'
+		},
+		{
+			event_id: '3',
+			event_type: ModerationEventType.Value4,
+			work_id: '1',
+			source_id: null,
+			by: modAuthor,
+			reason: 'Approved after review.',
+			status: ModerationAction.Value1,
+			event_at: '2024-06-03T12:30:00Z'
+		},
+		{
+			event_id: '4',
+			event_type: ModerationEventType.Value4,
+			work_id: null,
+			source_id: '10',
+			by: modAuthor,
+			reason: 'Source unbound from work.',
+			status: ModerationAction.Value10,
+			event_at: '2024-06-04T15:00:00Z'
+		},
+		{
+			event_id: '5',
+			event_type: ModerationEventType.Value4,
+			work_id: '1',
+			source_id: null,
+			by: null,
+			reason: 'Automatically re-checked by the system.',
+			status: ModerationAction.Value11,
+			event_at: '2024-06-05T00:00:00Z'
+		}
+	],
+	count: 5
+};
+
 const meta = {
 	component: Page,
 	args: {
@@ -108,7 +164,7 @@ const meta = {
 			...baseData,
 			...baseWork,
 			user: guestUser,
-			events: { items: [], count: 0 }
+			events
 		}
 	}
 } satisfies Meta<ComponentProps<typeof Page>>;
@@ -116,73 +172,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<ComponentProps<typeof Page>>;
 
-export const Empty: Story = {};
-
-export const WithEvents: Story = {
-	args: {
-		data: {
-			...baseData,
-			...baseWork,
-			links: loggedInLinks,
-			user: modUser,
-			events: {
-				items: [
-					{
-						event_id: '1',
-						event_type: ModerationEventType.Value0,
-						work_id: '1',
-						source_id: null,
-						by: eventAuthor,
-						reason: 'Flagged for review by a member.',
-						status: FlagStatus.Value0,
-						event_at: '2024-06-01T10:00:00Z'
-					},
-					{
-						event_id: '2',
-						event_type: ModerationEventType.Value1,
-						work_id: '1',
-						source_id: null,
-						by: modAuthor,
-						reason: 'Delisted pending investigation.',
-						status: FlagStatus.Value1,
-						event_at: '2024-06-02T09:00:00Z'
-					},
-					{
-						event_id: '3',
-						event_type: ModerationEventType.Value4,
-						work_id: '1',
-						source_id: null,
-						by: modAuthor,
-						reason: 'Approved after review.',
-						status: ModerationAction.Value1,
-						event_at: '2024-06-03T12:30:00Z'
-					},
-					{
-						event_id: '4',
-						event_type: ModerationEventType.Value4,
-						work_id: null,
-						source_id: '10',
-						by: modAuthor,
-						reason: 'Source unbound from work.',
-						status: ModerationAction.Value10,
-						event_at: '2024-06-04T15:00:00Z'
-					},
-					{
-						event_id: '5',
-						event_type: ModerationEventType.Value4,
-						work_id: '1',
-						source_id: null,
-						by: null,
-						reason: 'Automatically re-checked by the system.',
-						status: ModerationAction.Value11,
-						event_at: '2024-06-05T00:00:00Z'
-					}
-				],
-				count: 5
-			}
-		}
-	}
-};
+export const Guest: Story = {};
 
 export const MemberView: Story = {
 	args: {
@@ -191,7 +181,19 @@ export const MemberView: Story = {
 			...baseWork,
 			links: loggedInLinks,
 			user: memberUser,
-			events: { items: [], count: 0 }
+			events
+		}
+	}
+};
+
+export const ModView: Story = {
+	args: {
+		data: {
+			...baseData,
+			...baseWork,
+			links: loggedInLinks,
+			user: modUser,
+			events
 		}
 	}
 };

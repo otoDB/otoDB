@@ -10,23 +10,29 @@
 </script>
 
 <Section title={m.same_broad_haddock_pinch()}>
-	<table>
+	<table class="w-full table-fixed">
+		<colgroup>
+			<col class="w-2/12" />
+			<col class="w-2/12" />
+			<col />
+			<col class="w-2/12" />
+		</colgroup>
 		<tbody>
 			{#each data.comments?.items as c, i (i)}
 				{@const link = buildEntityRoutes(c.entity_type as EntityModelType, c.entity_id)}
 				<tr>
-					<td>
+					<td class="wrap-anywhere">
 						<a href={link}>
 							{link}
 						</a>
 					</td>
-					<td>
+					<td class="wrap-anywhere">
 						<a href="/profile/{c.user.username}">{c.user.username}</a>
 					</td>
-					<td>
+					<td class="wrap-anywhere">
 						{c.comment}
 					</td>
-					<td>
+					<td class="wrap-anywhere">
 						<Time format="relative" date={c.submit_date} />
 					</td>
 				</tr>

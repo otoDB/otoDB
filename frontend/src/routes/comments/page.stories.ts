@@ -38,7 +38,9 @@ const commenter = (id: string, username: string, level: Levels) => ({
 });
 
 // One template per entity type `buildEntityRoutes` knows about, so every link
-// shape the table can produce is exercised.
+// shape the table can produce is exercised. A couple of them deliberately carry
+// unbreakable content — a bare long URL, a long tag slug — because those are what
+// used to blow the column widths out and push the table past the section.
 const templates = [
 	{
 		user: commenter('1', 'member_user', Levels.Member),
@@ -50,7 +52,7 @@ const templates = [
 		user: commenter('2', 'editor_user', Levels.Editor),
 		comment: 'Aliased this tag to the canonical spelling.',
 		entity_type: 'tagwork',
-		entity_id: 'sample-tag'
+		entity_id: 'a-deliberately-long-sample-tag-slug'
 	},
 	{
 		user: commenter('3', 'mod_user', Levels.Mod),
@@ -61,7 +63,7 @@ const templates = [
 	{
 		user: commenter('4', 'restricted_user', Levels.Restricted),
 		comment:
-			'A considerably longer comment that wraps onto several lines, so the table layout can be checked against realistic prose rather than a single short sentence. It also mentions https://example.com to show how raw URLs are rendered here.',
+			'A considerably longer comment that wraps onto several lines, so the table layout can be checked against realistic prose rather than a single short sentence. It also pastes a bare source link, https://example.com/watch?v=aVeryLongVideoIdentifier&list=AnEquallyLongPlaylistIdentifier&index=12, which has no break opportunity in it at all.',
 		entity_type: 'wikipage',
 		entity_id: 'style-guide'
 	},

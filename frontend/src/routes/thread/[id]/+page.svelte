@@ -76,6 +76,7 @@
 </script>
 
 <svelte:head>
+	<meta name="robots" content="noindex" />
 	{#if postLd}
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html postLd}

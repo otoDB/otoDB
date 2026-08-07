@@ -41,6 +41,10 @@
 	}
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title={m.orange_born_seal_ascend()}>
 	<div class="flex flex-col gap-8">
 		<div>

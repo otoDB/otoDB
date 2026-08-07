@@ -37,6 +37,10 @@
 	});
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title={data.list.name} type={m.stale_loose_squid_cut()} menuLinks={data.links}>
 	<h3>
 		{#if isSVO(getLocale())}

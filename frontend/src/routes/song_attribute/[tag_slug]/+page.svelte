@@ -17,6 +17,10 @@
 	);
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title={data.display_name} type={m.dull_plain_angelfish_cuddle()} menuLinks={data.links}>
 	<div>
 		<span>{m.dull_plain_angelfish_cuddle()}</span>

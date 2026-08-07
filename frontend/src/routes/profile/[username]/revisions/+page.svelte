@@ -31,6 +31,10 @@
 	};
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title={data.profile.username} type={m.fuzzy_crazy_cobra_lead()} menuLinks={data.links}>
 	{#if is_mod}
 		<div class="my-4 flex items-center gap-2">

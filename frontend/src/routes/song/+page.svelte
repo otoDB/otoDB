@@ -9,6 +9,10 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section
 	title={m.grand_nice_pony_belong()}
 	type={m.mean_top_antelope_love()}

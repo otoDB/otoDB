@@ -33,6 +33,10 @@
 	}
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 {#snippet sortHeader(col: SortableColumn, label: string)}
 	<a href={sortUrl(col)} class="inline-flex items-center justify-end whitespace-nowrap">
 		<span>{label}</span>

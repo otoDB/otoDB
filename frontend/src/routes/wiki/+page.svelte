@@ -25,6 +25,10 @@
 	}
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title={data.head.title}>
 	<form method="get" class="mb-4 flex flex-wrap items-end gap-1">
 		<label class="flex flex-col text-sm">

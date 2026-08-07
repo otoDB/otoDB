@@ -14,6 +14,10 @@
 	});
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title={m.inner_stale_anteater_walk()}>
 	<form method="POST" use:dirtyEnhance>
 		<table>

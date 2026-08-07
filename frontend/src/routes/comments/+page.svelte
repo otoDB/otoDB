@@ -9,6 +9,10 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title={m.same_broad_haddock_pinch()}>
 	<table class="w-full table-fixed">
 		<colgroup>

@@ -8,6 +8,10 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section
 	title={m.stale_loose_squid_cut()}
 	type={m.mean_top_antelope_love()}

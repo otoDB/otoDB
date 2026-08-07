@@ -20,6 +20,10 @@
 	];
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section
 	title={m.grand_merry_fly_succeed()}
 	type={m.mean_top_antelope_love()}

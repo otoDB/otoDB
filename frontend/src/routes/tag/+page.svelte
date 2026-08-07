@@ -17,6 +17,10 @@
 	let category = $state(data.category);
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section
 	title={m.empty_legal_chicken_taste()}
 	type={m.mean_top_antelope_love()}

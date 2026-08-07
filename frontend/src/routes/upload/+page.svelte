@@ -9,6 +9,10 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title="Sources">
 	<form method="get" class="mb-4 flex flex-wrap items-end gap-3">
 		<label class="flex flex-col gap-1">

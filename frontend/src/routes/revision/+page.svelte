@@ -27,6 +27,10 @@
 	let filtersOpen = $state(Object.values(data.filters).some((v) => v !== undefined));
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title={m.giant_away_scallop_hike()}>
 	<form target="_self" method="get">
 		<details bind:open={filtersOpen}>

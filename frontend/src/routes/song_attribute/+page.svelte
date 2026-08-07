@@ -26,6 +26,10 @@
 		});
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section
 	title={m.dull_plain_angelfish_cuddle()}
 	type={m.mean_top_antelope_love()}

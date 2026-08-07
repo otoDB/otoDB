@@ -12,6 +12,10 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section
 	title={m.just_salty_anaconda_nourish()}
 	type={m.mean_top_antelope_love()}

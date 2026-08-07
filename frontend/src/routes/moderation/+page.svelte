@@ -39,6 +39,10 @@
 	};
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <div class="mb-4 flex gap-2">
 	{#each tabs as tab (tab.key)}
 		<a

@@ -7,6 +7,10 @@
 	let { data } = $props();
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex" />
+</svelte:head>
+
 <Section title={data.tag.name} type={m.big_tiny_kitten_devour()} menuLinks={data.links}>
 	<a href="/thread/new?category=3&entity=[[{data.tag.slug}]]">{m.antsy_aloof_horse_grace()}</a>
 	{#if data.threads.items.length}

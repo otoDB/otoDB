@@ -9,7 +9,7 @@
 	let { data } = $props();
 </script>
 
-<Section title="Sources">
+<Section title={data.head.title}>
 	<form method="get" class="mb-4 flex flex-wrap items-end gap-3">
 		<label class="flex flex-col gap-1">
 			<span class="text-sm">Platform</span>

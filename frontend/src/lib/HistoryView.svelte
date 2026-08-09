@@ -15,26 +15,37 @@
 	let { revisions, batch_size, page_param }: Props = $props();
 </script>
 
-<table class="w-full table-auto text-center">
-	<tbody>
-		<tr>
-			<th>Version</th><th>Revision</th><th>Action</th><th>{m.fuzzy_crazy_cobra_lead()}</th><th
-				>{m.super_agent_pigeon_aim()}</th
-			><th>{m.weary_spicy_fly_attend()}</th>
-		</tr>
-		{#each revisions.items as rev, i (i)}
-			<tr
-				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
-					>{rev.route !== null && rev.route !== undefined ? routeNames[rev.route]() : ''}</td
-				><td>
-					<a href="/profile/{rev.user}">{rev.user}</a>
-				</td><td>
-					<Time format="relative" date={rev.date} />
-				</td><td>
-					{rev.message}
-				</td>
+<div class="overflow-x-auto">
+	<table class="w-full min-w-3xl table-fixed text-center wrap-anywhere">
+		<colgroup>
+			<col class="w-1/12" />
+			<col class="w-1/12" />
+			<col class="w-2/12" />
+			<col class="w-2/12" />
+			<col class="w-2/12" />
+			<col />
+		</colgroup>
+		<tbody>
+			<tr>
+				<th>Version</th><th>Revision</th><th>Action</th><th>{m.fuzzy_crazy_cobra_lead()}</th><th
+					>{m.super_agent_pigeon_aim()}</th
+				><th>{m.weary_spicy_fly_attend()}</th>
 			</tr>
-		{/each}
-	</tbody>
-</table>
+			{#each revisions.items as rev, i (i)}
+				<tr
+					><td class="whitespace-nowrap">{rev.index}</td><td class="whitespace-nowrap"
+						><a href="/revision/{rev.id}">#{rev.id}</a></td
+					><td>{rev.route !== null && rev.route !== undefined ? routeNames[rev.route]() : ''}</td
+					><td>
+						<a href="/profile/{rev.user}">{rev.user}</a>
+					</td><td>
+						<Time format="relative" date={rev.date} />
+					</td><td>
+						{rev.message}
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</div>
 <Pager page_size={batch_size} n_count={revisions.count} param_name={page_param} />

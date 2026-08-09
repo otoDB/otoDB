@@ -122,7 +122,10 @@ const revisions = [
 		user: 'mod_user',
 		index: 2,
 		route: Route.Rollback,
-		message: 'Rolled back a vandalism edit.'
+		// An edit message is free text, so it can hold a pasted URL. A URL has no
+		// break opportunity, which is the shape that used to widen the column.
+		message:
+			'Rolled back a vandalism edit. Source: https://www.nicovideo.jp/watch/sm0000002?ref=search_key_video&playlist=eyJpZCI6IiUyRnNlYXJjaCUyRmV4YW1wbGUiLCJ0eXBlIjoic2VhcmNoIn0'
 	},
 	{
 		id: '100',

@@ -36,6 +36,18 @@ const results: TagWorkSearchResult[] = [
 		category: WorkTagCategory.Source,
 		deprecated: true,
 		n_instance: 3
+	},
+	{
+		// A single unbroken run of characters, so the row only stays inside the
+		// table if the cell is allowed to wrap mid-word.
+		id: '4',
+		lang_prefs: [],
+		aliased_to: null,
+		name: 'Exampleunbreakabletagnamewithnowhitespaceatallanywhereinsideit',
+		slug: 'example-unbreakable-tag-name',
+		category: WorkTagCategory.Creator,
+		deprecated: false,
+		n_instance: 8
 	}
 ];
 

@@ -134,7 +134,7 @@
 
 	<hr class="my-5" />
 
-	<table class="w-full">
+	<table class="w-full table-fixed wrap-anywhere">
 		<tbody>
 			{#each data.results?.items ?? [] as tag, i (i)}
 				<tr class="border-otodb-bg-fainter border-b">

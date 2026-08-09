@@ -91,7 +91,11 @@ const unboundSource = {
 	media: null
 };
 
-/** Still awaiting metadata retrieval, so every fetched field is null. */
+/**
+ * Still awaiting metadata retrieval, so every fetched field is null and the
+ * Title column falls back to the raw submitted URL. A query string survives that
+ * fallback, so this is the widest string that has no break opportunity.
+ */
 const unboundPendingSource = {
 	added_by: uploader('4', 'Beazty'),
 	thumbnail: null,
@@ -99,7 +103,7 @@ const unboundPendingSource = {
 	platform: Platform.Niconico,
 	work_origin: WorkOrigin.Reupload,
 	work_status: WorkStatus.Available,
-	url: 'https://www.nicovideo.jp/watch/sm0000002',
+	url: 'https://www.nicovideo.jp/watch/sm0000002?ref=search_key_video&playlist=eyJpZCI6IiUyRnNlYXJjaCUyRmV4YW1wbGUiLCJ0eXBlIjoic2VhcmNoIn0',
 	work_width: null,
 	work_height: null,
 	work_duration: null,

@@ -98,49 +98,66 @@
 	<hr class="my-2" />
 	<h2>{SubmissionStandingNames[standing]()}</h2>
 	{#if data.submissions?.items.length}
-		<table class="w-full">
-			<thead
-				><tr>
-					<th>{m.large_factual_octopus_exhale()}</th>
-					<th>{m.sour_swift_sparrow_spin()}</th>
-					<th>{m.super_agent_pigeon_aim()}</th>
-					<th>{m.large_polite_otter_thrive()}</th>
+		<div class="overflow-x-auto">
+			<table class="w-full min-w-2xl table-fixed wrap-anywhere">
+				<colgroup>
+					<col />
+					<col class="w-1/12" />
+					<col class="w-2/12" />
+					<col class="w-1/12" />
 					{#if isBound}
-						<th>{m.civil_trick_oryx_clap()}</th>
+						<col class="w-1/12" />
 					{/if}
-					<th>{m.noisy_moving_newt_belong()}</th>
+					<col class="w-1/12" />
 					{#if canRefresh}
-						<th>{m.mushy_proof_hornet_dig()}</th>
+						<col class="w-2/12" />
 					{/if}
-				</tr></thead
-			>
-			<tbody>
-				{#each data.submissions.items as src, i (i)}
-					<tr>
-						<td class="whitespace-nowrap">
-							{#if isBound}
-								<a href="/work/{src.media}">#{src.media} - {src.title || src.url}</a>
-							{:else}
-								<a href="/upload/{src.id}">{src.title || src.url}</a>
-							{/if}
-						</td>
-						<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
-						<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
+				</colgroup>
+				<thead
+					><tr>
+						<th>{m.large_factual_octopus_exhale()}</th>
+						<th>{m.sour_swift_sparrow_spin()}</th>
+						<th>{m.super_agent_pigeon_aim()}</th>
+						<th>{m.large_polite_otter_thrive()}</th>
 						{#if isBound}
-							<td class="whitespace-nowrap">{WorkStatusNames[src.work_status]()}</td>
+							<th>{m.civil_trick_oryx_clap()}</th>
 						{/if}
-						<td class="whitespace-nowrap"
-							><a href={src.url} target="_blank" rel="noopener noreferrer"
-								>{m.noisy_moving_newt_belong()}</a
-							></td
-						>
+						<th>{m.noisy_moving_newt_belong()}</th>
 						{#if canRefresh}
-							<td><RefreshButton source={src} /></td>
+							<th>{m.mushy_proof_hornet_dig()}</th>
 						{/if}
-					</tr>
-				{/each}
-			</tbody>
-		</table>
+					</tr></thead
+				>
+				<tbody>
+					{#each data.submissions.items as src, i (i)}
+						<tr>
+							<td>
+								{#if isBound}
+									<a href="/work/{src.media}">#{src.media} - {src.title || src.url}</a>
+								{:else}
+									<a href="/upload/{src.id}">{src.title || src.url}</a>
+								{/if}
+							</td>
+							<td>{PlatformNames[src.platform]}</td><td class="whitespace-nowrap"
+								>{src.published_date}</td
+							>
+							<td>{WorkOriginNames[src.work_origin]()}</td>
+							{#if isBound}
+								<td>{WorkStatusNames[src.work_status]()}</td>
+							{/if}
+							<td
+								><a href={src.url} target="_blank" rel="noopener noreferrer"
+									>{m.noisy_moving_newt_belong()}</a
+								></td
+							>
+							{#if canRefresh}
+								<td><RefreshButton source={src} /></td>
+							{/if}
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	{:else}
 		<p>{m.moving_such_seal_hug()}</p>
 	{/if}

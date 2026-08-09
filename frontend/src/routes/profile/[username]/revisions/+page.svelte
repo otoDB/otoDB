@@ -43,28 +43,38 @@
 		</div>
 	{/if}
 	{#if data.revisions?.items.length}
-		<table class="w-full">
-			<tbody>
-				{#each data.revisions?.items as r, i (i)}
-					<tr>
-						<td>
-							<a href="/revision/{r.id}">#{r.id}</a>
-						</td>
-						<td>{r.route ? routeNames[r.route]() : ''}</td>
-						<td>
-							<Time format="relative" date={r.date} />
-						</td>
-						{#if is_mod}
-							<td>
-								<button {@attach dirtyClick(() => rollbackSince(r.date, `#${r.id}`))}>
-									{m.bold_keen_otter_vault()}
-								</button>
+		<div class="overflow-x-auto">
+			<table class="w-full min-w-xl table-fixed wrap-anywhere">
+				<colgroup>
+					<col class="w-2/12" />
+					<col />
+					<col class="w-3/12" />
+					{#if is_mod}
+						<col class="w-3/12" />
+					{/if}
+				</colgroup>
+				<tbody>
+					{#each data.revisions?.items as r, i (i)}
+						<tr>
+							<td class="whitespace-nowrap">
+								<a href="/revision/{r.id}">#{r.id}</a>
 							</td>
-						{/if}
-					</tr>
-				{/each}
-			</tbody>
-		</table>
+							<td>{r.route ? routeNames[r.route]() : ''}</td>
+							<td>
+								<Time format="relative" date={r.date} />
+							</td>
+							{#if is_mod}
+								<td>
+									<button {@attach dirtyClick(() => rollbackSince(r.date, `#${r.id}`))}>
+										{m.bold_keen_otter_vault()}
+									</button>
+								</td>
+							{/if}
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	{:else}
 		<p>{m.spry_dizzy_mouse_roam()}</p>
 	{/if}

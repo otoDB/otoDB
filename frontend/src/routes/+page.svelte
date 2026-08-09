@@ -46,39 +46,52 @@
 	</Section>
 
 	<Section title={m.sea_cute_beaver_file()} href="/revision">
-		<table class="w-full">
-			<tbody>
-				{#each data.changes.items as r, i (i)}
-					<tr
-						><td><a href="/revision/{r.id}">#{r.id}</a> </td><td
-							>{typeof r.route === 'number' ? routeNames[r.route]() : ''}</td
-						><td
-							>{#if r.first_entity}<a
-									href={buildEntityRoutes(r.first_entity.entity, r.first_entity.id)}
-									>{r.first_entity.id}</a
-								>{#if r.n_ent > 1}{m.mellow_brave_marten_gather({
-										count: r.n_ent - 1
-									})}{/if}{/if}</td
-						><td
-							><Time format="relative" date={r.date} />
-							<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
-								>{#snippet content()}<a href="/profile/{r.user}">{r.user}</a
-									>{/snippet}</ParaglideMessage
-							></td
-						></tr
-					>
-				{/each}
-			</tbody>
-		</table>
+		<div class="overflow-x-auto">
+			<table class="w-full min-w-xl table-fixed wrap-anywhere">
+				<colgroup>
+					<col class="w-2/12" />
+					<col class="w-3/12" />
+					<col class="w-3/12" />
+					<col />
+				</colgroup>
+				<tbody>
+					{#each data.changes.items as r, i (i)}
+						<tr
+							><td class="whitespace-nowrap"><a href="/revision/{r.id}">#{r.id}</a> </td><td
+								>{typeof r.route === 'number' ? routeNames[r.route]() : ''}</td
+							><td
+								>{#if r.first_entity}<a
+										href={buildEntityRoutes(r.first_entity.entity, r.first_entity.id)}
+										>{r.first_entity.id}</a
+									>{#if r.n_ent > 1}{m.mellow_brave_marten_gather({
+											count: r.n_ent - 1
+										})}{/if}{/if}</td
+							><td
+								><Time format="relative" date={r.date} />
+								<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
+									>{#snippet content()}<a href="/profile/{r.user}">{r.user}</a
+										>{/snippet}</ParaglideMessage
+								></td
+							></tr
+						>
+					{/each}
+				</tbody>
+			</table>
+		</div>
 		<a href="/revision" class="float-right">{m.fresh_deft_warbler_edit()}</a>
 	</Section>
 
 	<Section title={m.curly_fuzzy_turkey_launch()} href="/thread/overview">
-		<table class="w-full">
+		<table class="w-full table-fixed wrap-anywhere">
+			<colgroup>
+				<col class="w-6" />
+				<col />
+				<col class="w-5/12" />
+			</colgroup>
 			<tbody>
 				{#each data.posts.items as p, i (i)}
 					<tr>
-						<td class="w-6 text-center">
+						<td class="text-center">
 							{#if p.closed_at}
 								<Icon key="thread-closed" class="mx-auto block size-4" />
 							{:else}

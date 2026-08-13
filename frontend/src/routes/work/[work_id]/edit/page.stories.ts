@@ -81,9 +81,12 @@ const addedBy = {
 // back to the raw URL with its query string.
 const sources = [
 	{
+		// `baseWork.thumbnail_source_id` points at this source, so its thumbnail
+		// also fills the preview below the thumbnail select. Storybook serves the
+		// image from `.storybook/static`.
 		id: '10',
 		added_by: addedBy,
-		thumbnail: null,
+		thumbnail: '/storybook-static/thumbnail_1280x720.jpg',
 		media_title: 'Original upload',
 		platform: Platform.YouTube,
 		work_origin: WorkOrigin.Author,
@@ -123,7 +126,8 @@ const sources = [
 	},
 	{
 		// This source has no title, so the table shows the raw URL instead. The
-		// query string makes the cell very wide.
+		// query string makes the cell very wide. The source also has no published
+		// date, so the date cell stays empty.
 		id: '12',
 		added_by: addedBy,
 		thumbnail: null,
@@ -132,7 +136,7 @@ const sources = [
 		work_origin: WorkOrigin.Reupload,
 		work_status: WorkStatus.Available,
 		url: 'https://www.bilibili.com/video/SAMPLE3?spm_id_from=333.999.0.0&vd_source=0123456789abcdef0123456789abcdef',
-		published_date: '2023-08-02',
+		published_date: null,
 		work_width: null,
 		work_height: null,
 		work_duration: null,
@@ -207,7 +211,13 @@ const relations: [
 	(typeof relatedWork)[]
 ] = [[{ A_id: '1', B_id: '2', relation: WorkRelationTypes.Sequel }], [relatedWork]];
 
-const wikiPage = [{ lang: 2, page: 'A sample wiki page in **markdown**.', title: null }];
+// `WikiEditor` picks the page whose `lang` matches the active locale, so the
+// editor needs an English page to show content at the default locale. The
+// language ids come from `$lib/enums/language`: English is 1 and Japanese is 2.
+const wikiPage = [
+	{ lang: 1, page: 'A sample wiki page in **markdown**.', title: null },
+	{ lang: 2, page: 'サンプルの wiki ページです。**markdown** で書きます。', title: null }
+];
 
 // Fields that the `work/[work_id]` layout load returns (`WorkSchema`), plus
 // `links`/`head` from the same layout. This page's own load adds `sources`.

@@ -59,18 +59,18 @@ const links = [
 	{ pathname: 'song_attribute/example-genre/history', title: 'History' }
 ];
 
-// An editor also gets the edit link in the section menu.
-const editorLinks = [
+// A member also gets the edit link in the section menu.
+const memberLinks = [
 	links[0],
 	{ pathname: 'song_attribute/example-genre/edit', title: 'Edit' },
 	links[1]
 ];
 
-const editorUser = {
+const memberUser = {
 	csrf: 'csrf-token',
 	user_id: '1',
-	username: 'editor_user',
-	level: Levels.Editor,
+	username: 'logged_in_user',
+	level: Levels.Member,
 	prefs: {
 		THEME: 0,
 		VIDEO_PLATFORM: 0,
@@ -99,7 +99,8 @@ const comments: Comment[] = [
 
 // The row templates cover the content shapes that decide the column widths: a
 // short title, a long title with spaces, a long title with no break opportunity
-// at all, a fixed BPM, and a variable BPM that renders the "N/A" placeholder.
+// at all, a fixed BPM, and a null BPM that renders the "N/A" placeholder. The
+// page ignores `variable_bpm`, so only a null `bpm` shows the placeholder.
 const templates = [
 	{
 		work_tag: '101',
@@ -149,7 +150,8 @@ const baseData = {
 	stats,
 	links,
 	tag,
-	tree: [parentTag, tag],
+	// The API returns the ancestors only. It drops the tag itself from the tree.
+	tree: [parentTag],
 	aliases: [] as TagSong[],
 	display_name: tag.name,
 	head: {
@@ -176,10 +178,10 @@ type Story = StoryObj<ComponentProps<typeof Page>>;
 /** A logged out visitor sees a full batch of songs and the pager. */
 export const Default: Story = {};
 
-/** An editor also gets the edit link in the section menu and the comment form. */
-export const Editor: Story = {
+/** A logged in member also gets the edit link in the section menu and the comment form. */
+export const LoggedIn: Story = {
 	args: {
-		data: { ...baseData, user: editorUser, links: editorLinks }
+		data: { ...baseData, user: memberUser, links: memberLinks }
 	}
 };
 

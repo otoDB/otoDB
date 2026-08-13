@@ -67,11 +67,17 @@ const docsRow = (slug: string, title: string | null, langs: LanguageTypes[]) => 
 // the content of the current page, so the widest and the narrowest cells must
 // both appear here.
 const templates = [
+	// `getTagDisplayName` shows the preference that matches the current locale,
+	// so the row needs a preference for the default locale too. Storybook starts
+	// at `en`, and without an `en` preference the branch never runs.
 	tagRow(
 		'invented_character_name',
 		'invented_character_name',
 		[LanguageTypes.ja],
-		[{ tag: '架空のキャラクター名', slug: 'kakuu_no_character', lang: LanguageTypes.ja }]
+		[
+			{ tag: '架空のキャラクター名', slug: 'kakuu_no_character', lang: LanguageTypes.ja },
+			{ tag: 'Invented Character Name', slug: 'invented_character', lang: LanguageTypes.en }
+		]
 	),
 	workRow(4821, 'A Sample Work Title With Several Words In It', [
 		LanguageTypes.en,
@@ -81,6 +87,8 @@ const templates = [
 	tagRow('short', 'short', [LanguageTypes.en, LanguageTypes.ja, LanguageTypes.ko]),
 	// The work has no title, so the cell falls back to `#id`.
 	workRow(90210, null, [LanguageTypes.ko]),
+	// The underscores give the browser no break opportunity, so this cell is the
+	// widest one that cannot wrap. It sets the floor for the title column.
 	tagRow(
 		'a_sample_tag_slug_that_runs_on_for_a_very_long_time_without_a_break',
 		'a_sample_tag_slug_that_runs_on_for_a_very_long_time_without_a_break',
@@ -90,8 +98,8 @@ const templates = [
 		LanguageTypes.ja,
 		LanguageTypes.zh_cn
 	]),
-	// The docs page has no title, so the cell falls back to the raw slug, and
-	// this slug is one long unbreakable run.
+	// The docs page has no title, so the cell falls back to the raw slug. Each
+	// hyphen is a break opportunity, so this long cell still wraps.
 	docsRow('sample-docs-slug-with-no-title-that-keeps-going-and-going-and-never-breaks', null, [
 		LanguageTypes.en
 	]),
@@ -104,11 +112,57 @@ const templates = [
 const NEWEST_EDIT_DATE = Date.parse('2024-06-05T14:32:00Z');
 const HOUR = 60 * 60 * 1000;
 
-const items: Row[] = Array.from({ length: batch_size }, (_, i) => ({
-	...templates[i % templates.length],
-	// Every fifth row never got an edit stamp, so the cell shows the dash.
-	last_edited_at: i % 5 === 4 ? null : new Date(NEWEST_EDIT_DATE - i * 19 * HOUR).toISOString()
-}));
+// A page holds more rows than the templates above, so the extra rows repeat a
+// template. Mix the row number into the text of each repeat. Two rows with the
+// same text render the same cells, and the table then hides a column width.
+const varyRow = (row: Omit<Row, 'last_edited_at'>, n: number): Omit<Row, 'last_edited_at'> => {
+	if (row.tag)
+		return {
+			...row,
+			tag: {
+				...row.tag,
+				slug: `${row.tag.slug}_${n}`,
+				name: `${row.tag.name}_${n}`,
+				lang_prefs: row.tag.lang_prefs.map((pref) => ({
+					...pref,
+					tag: `${pref.tag} ${n}`,
+					slug: `${pref.slug}_${n}`
+				}))
+			}
+		};
+	if (row.work)
+		return {
+			...row,
+			work: {
+				...row.work,
+				id: row.work.id + n,
+				title: row.work.title && `${row.work.title} ${n}`
+			}
+		};
+	if (row.docs)
+		return {
+			...row,
+			docs: {
+				...row.docs,
+				slug: `${row.docs.slug}-${n}`,
+				title: row.docs.title && `${row.docs.title} ${n}`
+			}
+		};
+	return row;
+};
+
+const pageOf = (shapes: Omit<Row, 'last_edited_at'>[]): Row[] =>
+	Array.from({ length: batch_size }, (_, i) => ({
+		...(i < shapes.length ? shapes[i] : varyRow(shapes[i % shapes.length], i + 1)),
+		// Every fifth row never got an edit stamp, so the cell shows the dash.
+		last_edited_at: i % 5 === 4 ? null : new Date(NEWEST_EDIT_DATE - i * 19 * HOUR).toISOString()
+	}));
+
+const items = pageOf(templates);
+
+// The `docs` filter returns wiki pages only, and its first page is as full as
+// the unfiltered one.
+const docsItems = pageOf(templates.filter((row) => row.docs));
 
 const baseData = {
 	stats,
@@ -140,7 +194,7 @@ export const FilteredDocs: Story = {
 			...baseData,
 			kind: WikiKind.docs,
 			results: {
-				items: items.filter((row) => row.docs),
+				items: docsItems,
 				count: 47
 			}
 		}

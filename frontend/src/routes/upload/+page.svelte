@@ -43,23 +43,23 @@
 
 	{#if data.sources?.items?.length}
 		<div class="overflow-x-auto">
-			<table class="w-full min-w-2xl table-fixed wrap-anywhere">
+			<table class="w-full min-w-4xl table-fixed wrap-anywhere">
 				<colgroup>
 					<col />
-					<col class="w-1/12" />
+					<col class="w-40" />
 					<col class="w-2/12" />
 					<col class="w-2/12" />
-					<col class="w-2/12" />
-					<col class="w-1/12" />
+					<col class="w-28" />
+					<col class="w-24" />
 				</colgroup>
 				<thead>
 					<tr>
 						<th>{m.large_factual_octopus_exhale()}</th>
-						<th>{m.sour_swift_sparrow_spin()}</th>
+						<th class="text-center whitespace-nowrap">{m.sour_swift_sparrow_spin()}</th>
 						<th>{m.grand_merry_fly_succeed()}</th>
 						<th>{m.each_born_quail_gleam()}</th>
-						<th>{m.super_agent_pigeon_aim()}</th>
-						<th>{m.just_noisy_moth_beam()}</th>
+						<th class="text-center whitespace-nowrap">{m.super_agent_pigeon_aim()}</th>
+						<th class="text-center whitespace-nowrap">{m.just_noisy_moth_beam()}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -70,7 +70,7 @@
 									{source.title || source.url}
 								</a>
 							</td>
-							<td>{PlatformNames[source.platform]}</td>
+							<td class="text-center whitespace-nowrap">{PlatformNames[source.platform]}</td>
 							<td>
 								{#if source.media}
 									<a href="/work/{source.media}">{source.media_title || `Work #${source.media}`}</a>
@@ -81,8 +81,8 @@
 							<td>
 								<a href="/profile/{source.added_by.username}">{source.added_by.username}</a>
 							</td>
-							<td>{source.published_date ?? '-'}</td>
-							<td>
+							<td class="text-center whitespace-nowrap">{source.published_date ?? '-'}</td>
+							<td class="text-center whitespace-nowrap">
 								{#if source.is_pending}
 									<span class="text-sky-600">{m.such_actual_okapi_dare()}</span>
 								{:else}

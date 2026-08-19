@@ -37,45 +37,53 @@
 >
 	<Section title={m.free_keen_wren_exhale()}>
 		{#if data.nonsub_notifications?.count}
-			<table class="w-full">
-				<tbody>
-					{#each data.nonsub_notifications.items as n, i (i)}
-						<tr>
-							{#if n.comment}
-								{@const route = buildEntityRoutes(n.comment[0], n.comment[1])}
-								<td class={{ 'opacity-40': n.dismissed }}>{m.curly_these_mule_ascend()}</td>
-								<td class={{ 'opacity-40': n.dismissed }}>
-									<button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, route))}
-										>{route}
-									</button>
-								</td>
-							{:else if n.threadpost}
-								{@const route = `/thread/${n.threadpost[0]}.${n.threadpost[1]}`}
+			<div class="overflow-x-auto">
+				<table class="w-full min-w-xl table-fixed wrap-anywhere">
+					<colgroup>
+						<col class="w-3/12" />
+						<col />
+						<col class="w-3/12" />
+						<col class="w-2/12" />
+					</colgroup>
+					<tbody>
+						{#each data.nonsub_notifications.items as n, i (i)}
+							<tr>
+								{#if n.comment}
+									{@const route = buildEntityRoutes(n.comment[0], n.comment[1])}
+									<td class={{ 'opacity-40': n.dismissed }}>{m.curly_these_mule_ascend()}</td>
+									<td class={{ 'opacity-40': n.dismissed }}>
+										<button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, route))}
+											>{route}
+										</button>
+									</td>
+								{:else if n.threadpost}
+									{@const route = `/thread/${n.threadpost[0]}.${n.threadpost[1]}`}
+									<td class={{ 'opacity-40': n.dismissed }}
+										>{n.reason === NotificationReason.Thread_Linked
+											? m.aqua_safe_beetle_list()
+											: n.reason === NotificationReason.Mention
+												? m.vexed_polite_haddock_trim()
+												: m.curly_these_mule_ascend()}</td
+									>
+									<td class={{ 'opacity-40': n.dismissed }}
+										><button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, route))}
+											>{route}</button
+										></td
+									>
+								{/if}
 								<td class={{ 'opacity-40': n.dismissed }}
-									>{n.reason === NotificationReason.Thread_Linked
-										? m.aqua_safe_beetle_list()
-										: n.reason === NotificationReason.Mention
-											? m.vexed_polite_haddock_trim()
-											: m.curly_these_mule_ascend()}</td
+									><Time format="relative" date={n.created_at} /></td
 								>
-								<td class={{ 'opacity-40': n.dismissed }}
-									><button {@attach dirtyClick(() => dismiss(n.id, n.dismissed, route))}
-										>{route}</button
-									></td
+								<td
+									>{#if n.dismissed}<button {@attach dirtyClick(() => remove(n.id))}
+											>{m.even_alert_grebe_taste()}</button
+										>{/if}</td
 								>
-							{/if}
-							<td class={{ 'opacity-40': n.dismissed }}
-								><Time format="relative" date={n.created_at} /></td
-							>
-							<td
-								>{#if n.dismissed}<button {@attach dirtyClick(() => remove(n.id))}
-										>{m.even_alert_grebe_taste()}</button
-									>{/if}</td
-							>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 			<Pager n_count={data.nonsub_notifications.count} page_size={data.batch_size} />
 		{:else}
 			{m.wacky_weird_swallow_trust()}
@@ -84,42 +92,52 @@
 
 	<Section title={m.house_patient_cuckoo_trust()}>
 		{#if data.sub_notifications?.count}
-			<table class="w-full">
-				<tbody>
-					{#each data.sub_notifications.items as n, i (i)}
-						<tr>
-							<td class={{ 'opacity-40': n.dismissed }}
-								><button
-									{@attach dirtyClick(() => dismiss(n.id, n.dismissed, `/revision/${n.revision}`))}
-									>#{n.revision}</button
+			<div class="overflow-x-auto">
+				<table class="w-full min-w-xl table-fixed wrap-anywhere">
+					<colgroup>
+						<col class="w-2/12" />
+						<col class="w-3/12" />
+						<col />
+						<col class="w-3/12" />
+						<col class="w-2/12" />
+					</colgroup>
+					<tbody>
+						{#each data.sub_notifications.items as n, i (i)}
+							<tr>
+								<td class={['whitespace-nowrap', { 'opacity-40': n.dismissed }]}
+									><button
+										{@attach dirtyClick(() =>
+											dismiss(n.id, n.dismissed, `/revision/${n.revision}`)
+										)}>#{n.revision}</button
+									>
+								</td>
+								<td class={{ 'opacity-40': n.dismissed }}
+									>{typeof n.revision_route === 'number' ? routeNames[n.revision_route]() : ''}</td
 								>
-							</td>
-							<td class={{ 'opacity-40': n.dismissed }}
-								>{typeof n.revision_route === 'number' ? routeNames[n.revision_route]() : ''}</td
-							>
-							<td class={{ 'opacity-40': n.dismissed }}>
-								{#if isSVO(getLocale())}
-									{m.curly_safe_lynx_fond()}
-								{/if}
-								{#if n.revision_user}
-									<a href="/profile/{n.revision_user}">{n.revision_user}</a>
-								{/if}
-								{#if isSOV(getLocale())}
-									{m.curly_safe_lynx_fond()}
-								{/if}
-							</td>
-							<td class={{ 'opacity-40': n.dismissed }}
-								><Time format="relative" date={n.created_at} /></td
-							>
-							<td
-								>{#if n.dismissed}<button {@attach dirtyClick(() => remove(n.id))}
-										>{m.even_alert_grebe_taste()}</button
-									>{/if}</td
-							>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
+								<td class={{ 'opacity-40': n.dismissed }}>
+									{#if isSVO(getLocale())}
+										{m.curly_safe_lynx_fond()}
+									{/if}
+									{#if n.revision_user}
+										<a href="/profile/{n.revision_user}">{n.revision_user}</a>
+									{/if}
+									{#if isSOV(getLocale())}
+										{m.curly_safe_lynx_fond()}
+									{/if}
+								</td>
+								<td class={{ 'opacity-40': n.dismissed }}
+									><Time format="relative" date={n.created_at} /></td
+								>
+								<td
+									>{#if n.dismissed}<button {@attach dirtyClick(() => remove(n.id))}
+											>{m.even_alert_grebe_taste()}</button
+										>{/if}</td
+								>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 			<Pager
 				n_count={data.sub_notifications.count}
 				page_size={data.batch_size}

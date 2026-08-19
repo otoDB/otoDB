@@ -29,59 +29,69 @@
 	let { posts, showCategory = false, entityFilter }: Props = $props();
 </script>
 
-<table class="w-full table-fixed">
-	<thead>
-		<tr>
-			<th class="w-6"></th>
-			<th class="text-left">{m.large_factual_octopus_exhale()}</th>
-			{#if showCategory}<th class="w-32 text-left">{m.plane_awful_bobcat_spark()}</th>{/if}
-			<th class="w-20 text-left">{m.these_full_lion_exhale()}</th>
-			<th class="w-32 text-left">{m.funny_heroic_whale_gleam()}</th>
-			<th class="w-64 text-left">{m.plain_polite_eagle_build()}</th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each posts as post, i (i)}
-			{@const entities = entityFilter
-				? (post.entities?.filter(entityFilter) ?? [])
-				: (post.entities ?? [])}
-			{@const lastUser = post.last_post_by ?? post.added_by.username}
-			{@const lastTime = post.last_post_at ?? post.modified}
+<div class="overflow-x-auto">
+	<table class="w-full min-w-xl table-fixed wrap-anywhere">
+		<colgroup>
+			<col class="w-6" />
+			<col />
+			{#if showCategory}<col class="w-2/12" />{/if}
+			<col class="w-1/12" />
+			<col class="w-2/12" />
+			<col class="w-4/12" />
+		</colgroup>
+		<thead>
 			<tr>
-				<td class="text-center">
-					{#if post.closed_at}
-						<Icon key="thread-closed" class="mx-auto block size-4" />
-					{:else}
-						<Icon key="thread-opened" class="mx-auto block size-4" />
-					{/if}
-				</td>
-				<td>
-					<a href="/thread/{post.id}">{post.title}</a>
-					{#if entities.length}
-						<span class="text-otodb-content-fainter ml-3 text-xs">
-							{#each entities as { id, entity }, j (j)}
-								{#if j > 0},{/if}
-								<a href={buildEntityRoutes(entity, id)}>
-									{buildEntityRoutes(entity, id)}
-								</a>
-							{/each}
-						</span>
-					{/if}
-				</td>
-				{#if showCategory}
-					<td>{postCategoryNames[post.category]()}</td>
-				{/if}
-				<td class="text-left">{Math.max(0, (post.post_count ?? 0) - 1)}</td>
-				<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td>
-				<td class="text-left">
-					<Time format="relative" date={lastTime} />
-					<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}>
-						{#snippet content()}
-							<a href="/profile/{lastUser}">{lastUser}</a>
-						{/snippet}
-					</ParaglideMessage>
-				</td>
+				<th></th>
+				<th class="text-left">{m.large_factual_octopus_exhale()}</th>
+				{#if showCategory}<th class="text-left">{m.plane_awful_bobcat_spark()}</th>{/if}
+				<th class="text-left">{m.these_full_lion_exhale()}</th>
+				<th class="text-left">{m.funny_heroic_whale_gleam()}</th>
+				<th class="text-left">{m.plain_polite_eagle_build()}</th>
 			</tr>
-		{/each}
-	</tbody>
-</table>
+		</thead>
+		<tbody>
+			{#each posts as post, i (i)}
+				{@const entities = entityFilter
+					? (post.entities?.filter(entityFilter) ?? [])
+					: (post.entities ?? [])}
+				{@const lastUser = post.last_post_by ?? post.added_by.username}
+				{@const lastTime = post.last_post_at ?? post.modified}
+				<tr>
+					<td class="text-center">
+						{#if post.closed_at}
+							<Icon key="thread-closed" class="mx-auto block size-4" />
+						{:else}
+							<Icon key="thread-opened" class="mx-auto block size-4" />
+						{/if}
+					</td>
+					<td>
+						<a href="/thread/{post.id}">{post.title}</a>
+						{#if entities.length}
+							<span class="text-otodb-content-fainter ml-3 text-xs">
+								{#each entities as { id, entity }, j (j)}
+									{#if j > 0},{/if}
+									<a href={buildEntityRoutes(entity, id)}>
+										{buildEntityRoutes(entity, id)}
+									</a>
+								{/each}
+							</span>
+						{/if}
+					</td>
+					{#if showCategory}
+						<td>{postCategoryNames[post.category]()}</td>
+					{/if}
+					<td class="text-left">{Math.max(0, (post.post_count ?? 0) - 1)}</td>
+					<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td>
+					<td class="text-left">
+						<Time format="relative" date={lastTime} />
+						<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}>
+							{#snippet content()}
+								<a href="/profile/{lastUser}">{lastUser}</a>
+							{/snippet}
+						</ParaglideMessage>
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</div>

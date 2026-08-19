@@ -72,59 +72,63 @@
 	</form>
 	<hr class="my-5" />
 
-	<table class="w-full table-fixed">
-		<colgroup>
-			<col />
-			<col class="w-24" />
-			<col class="w-24" />
-			<col class="w-24" />
-			<col class="w-24" />
-			<col class="w-40" />
-			<col class="w-32" />
-		</colgroup>
-		<thead>
-			<tr>
-				<th class="text-left">
-					{@render sortHeader('username', m.careful_cozy_elk_dare())}
-				</th>
-				<th class="text-right">
-					{@render sortHeader('works_count', m.grand_merry_fly_succeed())}
-				</th>
-				<th class="text-right">
-					{@render sortHeader('revisions_count', m.house_patient_cuckoo_trust())}
-				</th>
-				<th class="text-right">
-					{@render sortHeader('posts_count', m.inner_solid_toad_zap())}
-				</th>
-				<th class="text-right">
-					{@render sortHeader('comments_count', m.same_broad_haddock_pinch())}
-				</th>
-				<th class="text-right">
-					{@render sortHeader('level', m.basic_upper_racoon_type())}
-				</th>
-				<th class="text-right">
-					{@render sortHeader('date_created', m.stale_early_squirrel_prosper())}
-				</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each data.results?.items ?? [] as user, i (i)}
+	<div class="overflow-x-auto">
+		<!-- The sort headers are deliberately `whitespace-nowrap`, so these columns
+		     are sized to their labels rather than to a share of the table. -->
+		<table class="w-full min-w-4xl table-fixed wrap-anywhere">
+			<colgroup>
+				<col />
+				<col class="w-28" />
+				<col class="w-28" />
+				<col class="w-28" />
+				<col class="w-28" />
+				<col class="w-24" />
+				<col class="w-36" />
+			</colgroup>
+			<thead>
 				<tr>
-					<td class="truncate text-left">
-						<a href="/profile/{user.username}">{user.username}</a>
-					</td>
-					<td class="text-right">{user.works_count}</td>
-					<td class="text-right">{user.revisions_count}</td>
-					<td class="text-right">{user.posts_count}</td>
-					<td class="text-right">{user.comments_count}</td>
-					<td class="text-right">{userLevelNames[user.level]()}</td>
-					<td class="text-right">
-						<Time format="absolute" date={user.date_created} />
-					</td>
+					<th class="text-left">
+						{@render sortHeader('username', m.careful_cozy_elk_dare())}
+					</th>
+					<th class="text-right">
+						{@render sortHeader('works_count', m.grand_merry_fly_succeed())}
+					</th>
+					<th class="text-right">
+						{@render sortHeader('revisions_count', m.house_patient_cuckoo_trust())}
+					</th>
+					<th class="text-right">
+						{@render sortHeader('posts_count', m.inner_solid_toad_zap())}
+					</th>
+					<th class="text-right">
+						{@render sortHeader('comments_count', m.same_broad_haddock_pinch())}
+					</th>
+					<th class="text-right">
+						{@render sortHeader('level', m.basic_upper_racoon_type())}
+					</th>
+					<th class="text-right">
+						{@render sortHeader('date_created', m.stale_early_squirrel_prosper())}
+					</th>
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				{#each data.results?.items ?? [] as user, i (i)}
+					<tr>
+						<td class="text-left">
+							<a href="/profile/{user.username}">{user.username}</a>
+						</td>
+						<td class="text-right">{user.works_count}</td>
+						<td class="text-right">{user.revisions_count}</td>
+						<td class="text-right">{user.posts_count}</td>
+						<td class="text-right">{user.comments_count}</td>
+						<td class="text-right">{userLevelNames[user.level]()}</td>
+						<td class="text-right">
+							<Time format="absolute" date={user.date_created} />
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
 	{#if data.results?.count}
 		<Pager
 			n_count={data.results.count}

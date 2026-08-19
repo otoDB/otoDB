@@ -104,7 +104,10 @@ const pendingSubmissions = {
 			platform: Platform.Niconico,
 			work_origin: WorkOrigin.Reupload,
 			work_status: WorkStatus.Available,
-			url: 'https://www.nicovideo.jp/watch/example2',
+			// No title yet, so the Title column falls back to this URL. A query
+			// string makes it the widest string with no break opportunity that the
+			// column has to fit.
+			url: 'https://www.nicovideo.jp/watch/example2?ref=search_key_video&playlist=eyJpZCI6IiUyRnNlYXJjaCUyRmV4YW1wbGUiLCJ0eXBlIjoic2VhcmNoIn0',
 			published_date: '2024-02-15',
 			work_width: null,
 			work_height: null,

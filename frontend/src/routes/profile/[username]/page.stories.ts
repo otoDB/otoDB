@@ -104,6 +104,22 @@ const comments = [
 	}
 ];
 
+/**
+ * A fixed stand-in for the window rolling back from today (`start` = `end` − 364), so the
+ * heatmap renders identically on every run. `ActivityHeatmap.stories.ts` covers what a busy
+ * year looks like; here only the section needs to show up.
+ */
+const activity = {
+	start: '2025-08-08',
+	end: '2026-08-07',
+	total: 9,
+	days: [
+		{ date: '2025-10-04', count: 1 },
+		{ date: '2026-02-19', count: 5 },
+		{ date: '2026-06-28', count: 3 }
+	]
+};
+
 const baseData = {
 	stats,
 	links: linksWithoutEdit,
@@ -111,7 +127,8 @@ const baseData = {
 	profile: memberProfile,
 	user: null,
 	connections: [],
-	comments: []
+	comments: [],
+	activity
 };
 
 const meta = {

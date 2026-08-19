@@ -318,5 +318,8 @@
 	"bold_keen_otter_vault": "この変更より前にロールバック",
 	"tame_swift_heron_plead": "{username} のすべての変更を {label} より前にロールバックしますか？",
 	"hazy_calm_otter_dream": "無地（ダーク）",
-	"misty_plain_finch_glow": "無地（ライト）"
+	"misty_plain_finch_glow": "無地（ライト）",
+	"brave_deep_falcon_soar": "最近の活動",
+	"plain_swift_otter_gather": "過去1年間で{count}件の貢献",
+	"warm_still_marmot_reflect": "{date}に{count}件の貢献"
 }

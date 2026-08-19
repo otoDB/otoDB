@@ -318,5 +318,8 @@
 	"bold_keen_otter_vault": "이 변경 이전으로 롤백",
 	"tame_swift_heron_plead": "{username}님의 모든 변경을 {label} 이전으로 롤백하시겠습니까?",
 	"hazy_calm_otter_dream": "무지 다크",
-	"misty_plain_finch_glow": "무지 라이트"
+	"misty_plain_finch_glow": "무지 라이트",
+	"brave_deep_falcon_soar": "최근 활동",
+	"plain_swift_otter_gather": "지난 1년간 {count}건의 기여",
+	"warm_still_marmot_reflect": "{date}에 {count}건의 기여"
 }

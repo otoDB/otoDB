@@ -2,6 +2,7 @@
 	import Section from '$lib/Section.svelte';
 
 	import { m } from '$lib/paraglide/messages.js';
+	import ActivityHeatmap from '$lib/ActivityHeatmap/ActivityHeatmap.svelte';
 	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import Connections from '$lib/Connections.svelte';
 	import { getVersionKey, versions } from '$lib/enums/version';
@@ -51,6 +52,12 @@
 		<Connections items={data.connections} map={profileConnectionMap} />
 	{/if}
 </Section>
+
+{#if data.activity}
+	<Section title={m.brave_deep_falcon_soar()}>
+		<ActivityHeatmap activity={data.activity} />
+	</Section>
+{/if}
 
 <Section title={m.same_broad_haddock_pinch()}>
 	<CommentTree

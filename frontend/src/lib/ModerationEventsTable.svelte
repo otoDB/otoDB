@@ -69,7 +69,7 @@
 					<td class="max-w-xs truncate">{event.reason || '-'}</td>
 					<td>
 						{#if event.by}
-							<a href="/profile/{event.by.username}">{event.by.username}</a>
+							<a href="/user/{event.by.username}">{event.by.username}</a>
 						{:else}
 							-
 						{/if}

@@ -187,7 +187,7 @@
 			<div
 				class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 			>
-				<a href="/profile/{p.user.username}">{p.user.username}</a>
+				<a href="/user/{p.user.username}">{p.user.username}</a>
 				<a href="/thread/{thread.id}.{p.num}"
 					><Time format="relative" date={p.created_at ?? ''} /></a
 				>

@@ -94,7 +94,7 @@
 			{@render link('/list', m.stale_loose_squid_cut())}
 			{@render link('/thread/overview', m.just_salty_anaconda_nourish())}
 			{@render link('/comments', m.same_broad_haddock_pinch())}
-			{@render link('/profile', m.bright_nimble_eagle_glide())}
+			{@render link('/user', m.bright_nimble_eagle_glide())}
 			{@render link('/wiki/faq', 'FAQ')}
 			{@render link('/work/random', m.fuzzy_chunky_niklas_peek())}
 		</ul>
@@ -126,9 +126,9 @@
 				{@render link('/register', m.blue_whole_camel_type())}
 				{@render link(`/settings`, m.orange_born_seal_ascend())}
 			{:else}
-				{@render link(`/profile/${user.username}`, m.petty_basic_sheep_win())}
-				{@render link(`/profile/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
-				{@render link(`/profile/${user.username}/submissions`, m.flaky_gross_marlin_evoke())}
+				{@render link(`/user/${user.username}`, m.petty_basic_sheep_win())}
+				{@render link(`/user/${user.username}/lists`, m.jumpy_honest_mole_exhale())}
+				{@render link(`/user/${user.username}/submissions`, m.flaky_gross_marlin_evoke())}
 				{@render link(`/request/new`, m.muddy_tough_swan_view())}
 				{@render link(`/settings`, m.orange_born_seal_ascend())}
 				<li class="mt-4">

@@ -102,7 +102,7 @@
 									{m.curly_safe_lynx_fond()}
 								{/if}
 								{#if n.revision_user}
-									<a href="/profile/{n.revision_user}">{n.revision_user}</a>
+									<a href="/user/{n.revision_user}">{n.revision_user}</a>
 								{/if}
 								{#if isSOV(getLocale())}
 									{m.curly_safe_lynx_fond()}

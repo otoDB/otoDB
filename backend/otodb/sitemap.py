@@ -64,7 +64,7 @@ SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
 	'profiles': {
 		'model': Account,
 		'filters': {'is_active': True},
-		'url_pattern': '/profile/{value}',
+		'url_pattern': '/user/{value}',
 		'value_field': 'username',
 		'date_field': 'date_created',
 	},

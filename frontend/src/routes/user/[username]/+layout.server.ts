@@ -48,7 +48,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 			}),
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },
-				{ name: data.username, url: `/profile/${params.username}` }
+				{ name: data.username, url: `/user/${params.username}` }
 			]
 		}
 	};

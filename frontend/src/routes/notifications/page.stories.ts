@@ -14,8 +14,8 @@ import Page from './+page.svelte';
 type Notification = components['schemas']['NotificationSchema'];
 
 const handlers = [
-	http.put('*/api/profile/notification', () => new HttpResponse(null, { status: 200 })),
-	http.delete('*/api/profile/notification', () => new HttpResponse(null, { status: 200 }))
+	http.put('*/api/user/notification', () => new HttpResponse(null, { status: 200 })),
+	http.delete('*/api/user/notification', () => new HttpResponse(null, { status: 200 }))
 ];
 
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };

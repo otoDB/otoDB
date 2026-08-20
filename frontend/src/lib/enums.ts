@@ -144,7 +144,7 @@ export type EntityModelType =
 
 export const EntityModelRoutes: Record<EntityModelType, string> = {
 	mediawork: 'work',
-	account: 'profile',
+	account: 'user',
 	pool: 'list',
 	tagwork: 'tag',
 	tagsong: 'song_attribute',

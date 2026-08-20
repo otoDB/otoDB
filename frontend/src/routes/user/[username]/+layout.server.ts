@@ -3,7 +3,7 @@ import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages.js';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
-	const { data } = await client.GET('/api/profile/profile', {
+	const { data } = await client.GET('/api/user/user', {
 		fetch,
 		params: {
 			query: {
@@ -15,27 +15,27 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 	return {
 		links: [
 			{
-				pathname: `profile/${params.username}`,
-				title: m.frail_maroon_tadpole_inspire() + ' ' + data.username
+				pathname: `user/${params.username}`,
+				title: m.fuzzy_crazy_cobra_lead() + ' ' + data.username
 			},
-			{ pathname: `profile/${params.username}/lists`, title: m.stale_loose_squid_cut() },
+			{ pathname: `user/${params.username}/lists`, title: m.stale_loose_squid_cut() },
 			{
-				pathname: `profile/${params.username}/threads`,
+				pathname: `user/${params.username}/threads`,
 				title: m.big_tiny_kitten_devour()
 			},
 			{
-				pathname: `profile/${params.username}/submissions`,
+				pathname: `user/${params.username}/submissions`,
 				title: m.active_front_anteater_cry()
 			},
 			{
-				pathname: `profile/${params.username}/revisions`,
+				pathname: `user/${params.username}/revisions`,
 				title: m.house_patient_cuckoo_trust()
 			},
 			...(params.username !== locals.user?.username
 				? []
 				: [
 						{
-							pathname: `profile/${params.username}/edit`,
+							pathname: `user/${params.username}/edit`,
 							title: m.minor_crisp_cobra_list()
 						}
 					])

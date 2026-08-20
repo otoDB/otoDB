@@ -6,7 +6,7 @@ export const load: PageServerLoad = async ({ fetch, parent, params }) => {
 	const data = await parent();
 
 	const [{ data: connections }, { data: comments }] = await Promise.all([
-		client.GET('/api/profile/connection', {
+		client.GET('/api/user/connection', {
 			fetch,
 			params: {
 				query: {

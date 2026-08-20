@@ -1703,6 +1703,36 @@
         }
       }
     },
+    "/api/profile/activity": {
+      "get": {
+        "operationId": "otodb_api_profile_activity",
+        "summary": "Activity",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "username",
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileActivitySchema"
+                }
+              }
+            }
+          }
+        },
+        "description": "Daily contribution counts (revisions, thread posts and comments) over the\nlast year, for the profile heatmap. Days with no activity are omitted."
+      }
+    },
     "/api/profile/search": {
       "get": {
         "operationId": "otodb_api_profile_search",
@@ -7616,6 +7646,58 @@
           "count"
         ],
         "title": "PagedWorkSourceSchema",
+        "type": "object"
+      },
+      "ActivityDaySchema": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date",
+          "count"
+        ],
+        "title": "ActivityDaySchema",
+        "type": "object"
+      },
+      "ProfileActivitySchema": {
+        "properties": {
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          },
+          "end": {
+            "format": "date",
+            "title": "End",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityDaySchema"
+            },
+            "title": "Days",
+            "type": "array"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "total",
+          "days"
+        ],
+        "title": "ProfileActivitySchema",
         "type": "object"
       },
       "ProfileSearchFilterSchema": {

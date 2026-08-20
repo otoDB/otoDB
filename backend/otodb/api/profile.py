@@ -1,11 +1,13 @@
-from datetime import datetime
+import datetime
+from collections import Counter
 from typing import List, Literal
 
+from django.core.cache import cache
 from django.db.models import Count, IntegerField, OuterRef, Q, Subquery
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, TruncDate
 from django.shortcuts import get_object_or_404
 from django_comments_xtd.models import XtdComment
-from ninja import Field, FilterSchema, ModelSchema, Query, Router
+from ninja import Field, FilterSchema, ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from ninja.security import django_auth
@@ -68,6 +70,86 @@ def profile(request: AuthedHttpRequest, username: str):
 	return user
 
 
+# Length of the contribution heatmap window, today included.
+ACTIVITY_WINDOW_DAYS = 365
+# The heatmap is expensive to compute and barely changes, so it is cached for an
+# hour. `/api/profile` is excluded from the anonymous response cache (see
+# otodb.middleware), so caching has to happen at the data level; that also keeps
+# it working for logged-in viewers.
+ACTIVITY_CACHE_TIMEOUT = 60 * 60
+
+
+class ActivityDaySchema(Schema):
+	date: datetime.date
+	count: int
+
+
+class ProfileActivitySchema(Schema):
+	start: datetime.date
+	end: datetime.date
+	total: int
+	days: list[ActivityDaySchema]
+
+
+def _count_per_day(
+	qs, field: str, since: datetime.datetime, until: datetime.datetime
+) -> dict[datetime.date, int]:
+	"""Count the rows of `qs` falling in [since, until), bucketed by UTC day.
+
+	TIME_ZONE is left at Django's default, so the bucket boundaries have to be
+	pinned to UTC explicitly to match the window the endpoint reports.
+	"""
+	rows = (
+		qs.filter(**{f'{field}__gte': since, f'{field}__lt': until})
+		.order_by()
+		.annotate(day=TruncDate(field, tzinfo=datetime.UTC))
+		.values('day')
+		.annotate(n=Count('id'))
+	)
+	return {row['day']: row['n'] for row in rows}
+
+
+def _compute_activity(user: Account) -> dict:
+	end = datetime.datetime.now(datetime.UTC).date()
+	start = end - datetime.timedelta(days=ACTIVITY_WINDOW_DAYS - 1)
+	since = datetime.datetime.combine(start, datetime.time.min, tzinfo=datetime.UTC)
+	until = since + datetime.timedelta(days=ACTIVITY_WINDOW_DAYS)
+
+	counts: Counter[datetime.date] = Counter()
+	# WorkSource uploads are revision-tracked, so counting them separately would
+	# double count them.
+	sources = (
+		(Revision.objects.filter(user=user), 'date'),
+		(ThreadPost.objects.filter(user=user, is_removed=False), 'created_at'),
+		(XtdComment.objects.filter(user=user, is_removed=False), 'submit_date'),
+	)
+	for qs, field in sources:
+		counts.update(_count_per_day(qs, field, since, until))
+
+	# Serialized as ISO strings so the payload survives any cache backend's
+	# serializer; the response schema parses them back into dates.
+	return {
+		'start': start.isoformat(),
+		'end': end.isoformat(),
+		'total': sum(counts.values()),
+		'days': [
+			{'date': day.isoformat(), 'count': counts[day]} for day in sorted(counts)
+		],
+	}
+
+
+@profile_router.get('activity', response=ProfileActivitySchema)
+def activity(request: AuthedHttpRequest, username: str):
+	"""Daily contribution counts (revisions, thread posts and comments) over the
+	last year, for the profile heatmap. Days with no activity are omitted."""
+	user = get_object_or_404(Account, username__iexact=username)
+	return cache.get_or_set(
+		f'profile_activity:{user.pk}',
+		lambda: _compute_activity(user),
+		ACTIVITY_CACHE_TIMEOUT,
+	)
+
+
 class ProfileIndexSchema(ModelSchema):
 	id: OtodbID
 	level: Account.Levels
@@ -75,7 +157,7 @@ class ProfileIndexSchema(ModelSchema):
 	revisions_count: int
 	posts_count: int
 	comments_count: int
-	date_created: datetime
+	date_created: datetime.datetime
 
 	class Meta:
 		model = Account

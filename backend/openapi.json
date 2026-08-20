@@ -4711,6 +4711,16 @@
           },
           {
             "in": "query",
+            "name": "closed",
+            "schema": {
+              "default": -1,
+              "title": "Closed",
+              "type": "integer"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
             "name": "limit",
             "schema": {
               "default": 30,
@@ -4833,6 +4843,16 @@
                   "type": "null"
                 }
               ]
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "closed",
+            "schema": {
+              "default": -1,
+              "title": "Closed",
+              "type": "integer"
             },
             "required": false
           },

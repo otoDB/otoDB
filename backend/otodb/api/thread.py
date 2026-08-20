@@ -393,6 +393,14 @@ def _visible_threads():
 	return Thread.objects.filter(is_removed=False)
 
 
+def _filter_closed(threads, closed: int):
+	if closed == 0:
+		return threads.filter(closed_at__isnull=True)
+	if closed == 1:
+		return threads.filter(closed_at__isnull=False)
+	return threads
+
+
 @thread_router.get('categories', response=dict[str, list[ThreadOverviewSchema]])
 def categories(request: HttpRequest):
 	return {
@@ -403,8 +411,9 @@ def categories(request: HttpRequest):
 
 @thread_router.get('category', response=list[ThreadOverviewSchema])
 @paginate
-def category(request: HttpRequest, category: PostCategory):
-	return _visible_threads().filter(category=category).with_activity()
+def category(request: HttpRequest, category: PostCategory, closed: int = -1):
+	threads = _visible_threads().filter(category=category).with_activity()
+	return _filter_closed(threads, closed)
 
 
 @thread_router.get('threads', response=list[ThreadOverviewSchema])
@@ -428,11 +437,12 @@ def search(
 	request: HttpRequest,
 	query: str,
 	category: PostCategory | None = None,
+	closed: int = -1,
 ):
 	threads = _visible_threads().filter(title__icontains=query).with_activity()
 	if category is not None and category >= 0:
 		threads = threads.filter(category=category)
-	return threads
+	return _filter_closed(threads, closed)
 
 
 @thread_router.get('recent', response=list[ThreadOverviewSchema])

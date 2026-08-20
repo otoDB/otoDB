@@ -27,7 +27,7 @@
 						</a>
 					</td>
 					<td class="wrap-anywhere">
-						<a href="/profile/{c.user.username}">{c.user.username}</a>
+						<a href="/user/{c.user.username}">{c.user.username}</a>
 					</td>
 					<td class="wrap-anywhere">
 						{c.comment}

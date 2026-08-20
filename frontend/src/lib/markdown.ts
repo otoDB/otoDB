@@ -110,7 +110,7 @@ const OtodbReplacements: [RegExp, (...args: string[]) => PhrasingContent | false
 			link(`/tag/${encodeURIComponent(slug.trim())}`, display?.trim() || slug.trim())
 	],
 	// Simple user mention: @username
-	[MENTION_RE, (_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)],
+	[MENTION_RE, (_, username) => link(`/user/${encodeURIComponent(username)}`, `@${username}`)],
 	// Work search: {{tags...}}
 	[SEARCH_RE, (_, query) => link(`/work?tags=${encodeURIComponent(query.trim())}`, query.trim())]
 ];

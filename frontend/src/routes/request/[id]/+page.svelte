@@ -42,14 +42,14 @@
 		{#if isSVO(getLocale())}
 			{m.curly_safe_lynx_fond()}
 		{/if}
-		<a href="/profile/{data.request.user.username}">{data.request.user.username}</a>
+		<a href="/user/{data.request.user.username}">{data.request.user.username}</a>
 		{#if isSOV(getLocale())}
 			{m.curly_safe_lynx_fond()}
 		{/if}
 	</h3>
 	<h4>
 		{StatusNames[data.request.status]()}{#if data.request?.processed_by}(<a
-				href="/profile/{data.request.processed_by.username}">{data.request.processed_by.username}</a
+				href="/user/{data.request.processed_by.username}">{data.request.processed_by.username}</a
 			>){/if}
 	</h4>
 

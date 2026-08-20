@@ -151,7 +151,7 @@
 		<div
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
-			<a href="/profile/{data.user.username}">{data.user.username}</a>
+			<a href="/user/{data.user.username}">{data.user.username}</a>
 			<a href="#c{data.id}"><Time format="relative" date={data.time} /></a>
 			{#if data.edited_at}
 				<EditedBy

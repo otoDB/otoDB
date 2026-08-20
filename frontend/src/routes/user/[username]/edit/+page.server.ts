@@ -7,7 +7,7 @@ import { Levels } from '$lib/schema';
 
 export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 	if (!locals.user || params.username !== locals.user?.username)
-		redirect(303, `/profile/${encodeURIComponent(params.username!)}`);
+		redirect(303, `/user/${encodeURIComponent(params.username!)}`);
 
 	const [payloadConnections, payloadInvites] = await Promise.all([
 		client.GET('/api/profile/connection', {
@@ -46,6 +46,6 @@ export const actions = {
 			params: { query: { urls } }
 		});
 		if (error) return apiFail(error);
-		redirect(303, `/profile/${encodeURIComponent(params.username!)}`);
+		redirect(303, `/user/${encodeURIComponent(params.username!)}`);
 	}
 } satisfies Actions;

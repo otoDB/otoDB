@@ -5883,6 +5883,37 @@
         },
         "deprecated": false
       }
+    },
+    "/api/stats/works/history": {
+      "get": {
+        "summary": "WorkHistory",
+        "operationId": "ApiStatsWorksHistoryWorkHistory",
+        "responses": {
+          "200": {
+            "description": "Request fulfilled, document follows",
+            "headers": {
+              "cache-control": {
+                "schema": {
+                  "type": "string"
+                },
+                "required": false,
+                "deprecated": false
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkHistoryPoint"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
     }
   },
   "components": {
@@ -10944,6 +10975,23 @@
         ],
         "title": "ModerationEventType",
         "type": "integer"
+      },
+      "WorkHistoryPoint": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "total"
+        ],
+        "title": "WorkHistoryPoint"
       }
     },
     "securitySchemes": {

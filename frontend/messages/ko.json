@@ -318,5 +318,8 @@
 	"bold_keen_otter_vault": "이 변경 이전으로 롤백",
 	"tame_swift_heron_plead": "{username}님의 모든 변경을 {label} 이전으로 롤백하시겠습니까?",
 	"hazy_calm_otter_dream": "무지 다크",
-	"misty_plain_finch_glow": "무지 라이트"
+	"misty_plain_finch_glow": "무지 라이트",
+	"proud_bold_gecko_thrive": "작품 수 추이",
+	"mellow_zesty_stork_bloom": "각 월말 기준 데이터베이스에 등록된 작품 수입니다.",
+	"sunny_smug_walrus_lift": "{month} 말 기준 {total}건"
 }

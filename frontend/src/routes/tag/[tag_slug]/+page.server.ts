@@ -46,8 +46,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 			})
 		]);
 
-	const song_relations = data.song_relations;
-
 	const song_connections = data.tag.song
 		? (
 				await client.GET('/api/tag/song_connection', {
@@ -68,7 +66,6 @@ export const load: PageServerLoad = async ({ params, fetch, parent }) => {
 		...details,
 		works,
 		comments,
-		song_relations,
 		batch_size,
 		connections,
 		song_connections,

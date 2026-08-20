@@ -19,9 +19,35 @@ type ThinWork = components['schemas']['ThinWorkSchema'];
 type TagWorkSchema = components['schemas']['TagWorkSchema'];
 type Comment = components['schemas']['CommentSchema'];
 
+const songRelations: [
+	components['schemas']['SongRelationSchema'][],
+	components['schemas']['SlimSongSchema'][]
+] = [
+	[{ A_id: '100', B_id: '200', relation: SongRelationTypes.Remix }],
+	[
+		{
+			id: '100',
+			work_tag: '10',
+			title: 'Example Song',
+			bpm: 128,
+			variable_bpm: false,
+			author: 'Example Author'
+		},
+		{
+			id: '200',
+			work_tag: '20',
+			title: 'Original Song',
+			bpm: 120,
+			variable_bpm: false,
+			author: 'Original Author'
+		}
+	]
+];
+
 const handlers = [
 	http.get('*/api/wiki/page', () => HttpResponse.json([])),
-	http.get('*/api/tag/search', () => HttpResponse.json({ items: [], count: 0 }))
+	http.get('*/api/tag/search', () => HttpResponse.json({ items: [], count: 0 })),
+	http.get('*/api/tag/song_relations', () => HttpResponse.json(songRelations))
 ];
 
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
@@ -117,7 +143,6 @@ const baseData = {
 	links,
 	song_links: null,
 	tag: mediaTag,
-	song_relations: null,
 	display_name: mediaTag.name,
 	head: {
 		title: mediaTag.name,
@@ -201,27 +226,6 @@ export const SongTag: Story = {
 					{ name: 'Example Song Tag', url: '/tag/example-song-tag' }
 				]
 			},
-			song_relations: [
-				[{ A_id: '100', B_id: '200', relation: SongRelationTypes.Remix }],
-				[
-					{
-						id: '100',
-						work_tag: '10',
-						title: 'Example Song',
-						bpm: 128,
-						variable_bpm: false,
-						author: 'Example Author'
-					},
-					{
-						id: '200',
-						work_tag: '20',
-						title: 'Original Song',
-						bpm: 120,
-						variable_bpm: false,
-						author: 'Original Author'
-					}
-				]
-			],
 			song_connections: [
 				{ site: SongConnectionTypes.VGMdb, content_id: '1234', dead: false },
 				{ site: SongConnectionTypes.VocaDB, content_id: 'S5678', dead: false }

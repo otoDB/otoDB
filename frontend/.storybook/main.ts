@@ -25,7 +25,8 @@ export default defineMain({
 		return mergeConfig(config, {
 			resolve: {
 				alias: {
-					'$env/dynamic/public': import.meta.resolve('./env.public.ts')
+					'$env/dynamic/public': import.meta.resolve('./env.public.ts'),
+					'$lib/graph.remote': import.meta.resolve('./graph-remote-mock.ts')
 				}
 			}
 		});

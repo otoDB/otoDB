@@ -38,14 +38,23 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 
 	const p = await parent();
 	// FIXME This is kind of waterfall but whatever...
-	const song_connections = p.tag.song
-		? (
-				await client.GET('/api/tag/song_connection', {
-					fetch,
-					params: { query: { song_id: p.tag.song.id } }
-				})
-			).data
-		: null;
+	const song = p.tag.song;
+	const [song_connections, song_relations] = song
+		? await Promise.all([
+				client
+					.GET('/api/tag/song_connection', {
+						fetch,
+						params: { query: { song_id: song.id } }
+					})
+					.then((r) => r.data),
+				client
+					.GET('/api/tag/song_relations', {
+						fetch,
+						params: { query: { song_id: song.id } }
+					})
+					.then((r) => r.data)
+			])
+		: [null, null];
 
 	return {
 		wiki_page,
@@ -54,7 +63,8 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 		),
 		details,
 		connections,
-		song_connections
+		song_connections,
+		song_relations
 	};
 };
 

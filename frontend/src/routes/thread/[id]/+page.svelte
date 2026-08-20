@@ -65,7 +65,7 @@
 				'author': {
 					'@type': 'Person',
 					'name': data.thread.added_by.username,
-					'url': `https://otodb.net/profile/${data.thread.added_by.username}`
+					'url': `https://otodb.net/user/${data.thread.added_by.username}`
 				},
 				'datePublished': opPost.created_at
 			}) +

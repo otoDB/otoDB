@@ -3,20 +3,20 @@
 	import Pager from '$lib/Pager.svelte';
 	import { page } from '$app/state';
 	import { Platform } from '$lib/schema.js';
-	import { enumValues } from '$lib/enums.js';
+	import { enumValues, PlatformNames } from '$lib/enums.js';
 	import { m } from '$lib/paraglide/messages.js';
 
 	let { data } = $props();
 </script>
 
-<Section title="Sources">
+<Section title={data.head.title}>
 	<form method="get" class="mb-4 flex flex-wrap items-end gap-3">
 		<label class="flex flex-col gap-1">
 			<span class="text-sm">Platform</span>
 			<select name="platform" class="border" value={data.filters.platform ?? ''}>
 				<option value="">All</option>
 				{#each enumValues(Platform) as p, i (i)}
-					<option value={p}>{p}</option>
+					<option value={p}>{PlatformNames[p]}</option>
 				{/each}
 			</select>
 		</label>
@@ -61,7 +61,7 @@
 								{source.title || source.url}
 							</a>
 						</td>
-						<td>{Platform[source.platform] ?? source.platform}</td>
+						<td>{PlatformNames[source.platform]}</td>
 						<td>
 							{#if source.media}
 								<a href="/work/{source.media}">{source.media_title || `Work #${source.media}`}</a>
@@ -69,7 +69,7 @@
 								-
 							{/if}
 						</td>
-						<td><a href="/profile/{source.added_by.username}">{source.added_by.username}</a></td>
+						<td><a href="/user/{source.added_by.username}">{source.added_by.username}</a></td>
 						<td>{source.published_date ?? '-'}</td>
 						<td>
 							{#if source.is_pending}

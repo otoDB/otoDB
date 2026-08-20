@@ -28,7 +28,8 @@ const short_prefix_re_gen = (short_prefix: string) =>
 	new RegExp(`(?<![/\\w])${short_prefix}(\\d+)(?!\\w)`, 'gi');
 const long_label_re_gen = (long_label: string) =>
 	new RegExp(`(?<!\\w)${long_label}\\s+#(\\d+)(?!\\w)`, 'gi');
-const MENTION_RE = /(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}_]+)(?![\p{L}\p{N}\p{M}_])/gu;
+const MENTION_RE =
+	/(?<![\p{L}\p{N}\p{M}_/.])@([\p{L}\p{N}\p{M}\-_.~]+)(?![\p{L}\p{N}\p{M}\-_.~])/gu;
 const TAGWORK_NO_DISPLAY_RE = /\[\[([^\]|]+)\]\]/g;
 const TAGWORK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 const SEARCH_RE = /\{\{([^}]+?)\}\}/g;
@@ -109,7 +110,7 @@ const OtodbReplacements: [RegExp, (...args: string[]) => PhrasingContent | false
 			link(`/tag/${encodeURIComponent(slug.trim())}`, display?.trim() || slug.trim())
 	],
 	// Simple user mention: @username
-	[MENTION_RE, (_, username) => link(`/profile/${encodeURIComponent(username)}`, `@${username}`)],
+	[MENTION_RE, (_, username) => link(`/user/${encodeURIComponent(username)}`, `@${username}`)],
 	// Work search: {{tags...}}
 	[SEARCH_RE, (_, query) => link(`/work?tags=${encodeURIComponent(query.trim())}`, query.trim())]
 ];

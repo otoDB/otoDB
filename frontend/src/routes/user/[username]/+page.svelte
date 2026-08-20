@@ -22,7 +22,7 @@
 				'mainEntity': {
 					'@type': 'Person',
 					'name': data.profile.username,
-					'url': `https://otodb.net/profile/${data.profile.username}`
+					'url': `https://otodb.net/user/${data.profile.username}`
 				}
 			}) +
 			'</' +

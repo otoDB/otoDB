@@ -16,12 +16,26 @@
 	--otodb-color-bg-fainter: map(themes, default, colors, bgFainter);
 	--otodb-color-content-faint: map(themes, default, colors, contentFaint);
 	--otodb-color-content-fainter: map(themes, default, colors, contentFainter);
+	--otodb-color-highlight-primary: map(themes, default, colors, highlightPrimary);
+	--otodb-color-highlight-secondary: map(themes, default, colors, highlightSecondary);
 
 	@media (prefers-color-scheme: light) {
 		--otodb-color-bg-fainter: map(themes, default, prefersColorSchemeLight, bgFainter);
 		--otodb-color-content-primary: map(themes, default, prefersColorSchemeLight, contentPrimary);
 		--otodb-color-bg-faint: map(themes, default, prefersColorSchemeLight, bgFaint);
 		--otodb-color-bg-primary: map(themes, default, prefersColorSchemeLight, bgPrimary);
+		--otodb-color-highlight-primary: map(
+			themes,
+			default,
+			prefersColorSchemeLight,
+			highlightPrimary
+		);
+		--otodb-color-highlight-secondary: map(
+			themes,
+			default,
+			prefersColorSchemeLight,
+			highlightSecondary
+		);
 	}
 
 	& .prose {
@@ -43,6 +57,8 @@
 	--otodb-color-bg-fainter: map(themes, plain-dark, colors, bgFainter);
 	--otodb-color-content-faint: map(themes, plain-dark, colors, contentFaint);
 	--otodb-color-content-fainter: map(themes, plain-dark, colors, contentFainter);
+	--otodb-color-highlight-primary: map(themes, plain-dark, colors, highlightPrimary);
+	--otodb-color-highlight-secondary: map(themes, plain-dark, colors, highlightSecondary);
 
 	& .prose {
 		@apply prose-invert;
@@ -57,6 +73,8 @@
 	--otodb-color-bg-primary: map(themes, plain-light, colors, bgPrimary);
 	--otodb-color-content-faint: map(themes, plain-light, colors, contentFaint);
 	--otodb-color-content-fainter: map(themes, plain-light, colors, contentFainter);
+	--otodb-color-highlight-primary: map(themes, plain-light, colors, highlightPrimary);
+	--otodb-color-highlight-secondary: map(themes, plain-light, colors, highlightSecondary);
 
 	& .prose {
 		@apply prose-neutral;
@@ -71,6 +89,8 @@
 	--otodb-color-bg-fainter: map(themes, aniki, colors, bgFainter);
 	--otodb-color-bg-faint: map(themes, aniki, colors, bgFaint);
 	--otodb-color-bg-primary: map(themes, aniki, colors, bgPrimary);
+	--otodb-color-highlight-primary: map(themes, aniki, colors, highlightPrimary);
+	--otodb-color-highlight-secondary: map(themes, aniki, colors, highlightSecondary);
 
 	& #bg-marker {
 		background-image: url('/aniki-bg.png'), url('/aniki-right.png');
@@ -93,6 +113,8 @@
 	--otodb-color-bg-primary: map(themes, otogroove, colors, bgPrimary);
 	--otodb-color-bg-faint: map(themes, otogroove, colors, bgFaint);
 	--otodb-color-bg-fainter: map(themes, otogroove, colors, bgFainter);
+	--otodb-color-highlight-primary: map(themes, otogroove, colors, highlightPrimary);
+	--otodb-color-highlight-secondary: map(themes, otogroove, colors, highlightSecondary);
 
 	& .prose {
 		@apply prose-neutral;
@@ -142,6 +164,8 @@
 	--otodb-color-bg-primary: map(themes, retro-voyage, colors, bgPrimary);
 	--otodb-color-bg-faint: map(themes, retro-voyage, colors, bgFaint);
 	--otodb-color-bg-fainter: map(themes, retro-voyage, colors, bgFainter);
+	--otodb-color-highlight-primary: map(themes, retro-voyage, colors, highlightPrimary);
+	--otodb-color-highlight-secondary: map(themes, retro-voyage, colors, highlightSecondary);
 
 	& .prose {
 		@apply prose-neutral;
@@ -192,6 +216,8 @@
 	--otodb-color-bg-fainter: map(themes, sorimix, colors, bgFainter);
 	--otodb-color-bg-faint: map(themes, sorimix, colors, bgFaint);
 	--otodb-color-bg-primary: map(themes, sorimix, colors, bgPrimary);
+	--otodb-color-highlight-primary: map(themes, sorimix, colors, highlightPrimary);
+	--otodb-color-highlight-secondary: map(themes, sorimix, colors, highlightSecondary);
 
 	& .prose {
 		@apply prose-invert;
@@ -228,6 +254,8 @@
 	--otodb-color-bg-primary: map(themes, resample, colors, bgPrimary);
 	--otodb-color-bg-faint: map(themes, resample, colors, bgFaint);
 	--otodb-color-bg-fainter: map(themes, resample, colors, bgFainter);
+	--otodb-color-highlight-primary: map(themes, resample, colors, highlightPrimary);
+	--otodb-color-highlight-secondary: map(themes, resample, colors, highlightSecondary);
 
 	& .prose {
 		@apply prose-neutral;

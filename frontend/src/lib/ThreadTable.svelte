@@ -72,12 +72,12 @@
 					<td>{postCategoryNames[post.category]()}</td>
 				{/if}
 				<td class="text-left">{Math.max(0, (post.post_count ?? 0) - 1)}</td>
-				<td><a href="/profile/{post.added_by.username}">{post.added_by.username}</a></td>
+				<td><a href="/user/{post.added_by.username}">{post.added_by.username}</a></td>
 				<td class="text-left">
 					<Time format="relative" date={lastTime} />
 					<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}>
 						{#snippet content()}
-							<a href="/profile/{lastUser}">{lastUser}</a>
+							<a href="/user/{lastUser}">{lastUser}</a>
 						{/snippet}
 					</ParaglideMessage>
 				</td>

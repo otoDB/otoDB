@@ -273,13 +273,14 @@ https://otodb.net/
 
 
 def get_user_language(user, request):
-	if user and hasattr(user, 'preferences'):
-		if pref := user.preferences.filter(setting=Preferences.LANGUAGE).first():
-			if (
-				pref.value in LanguageTypes.values
-				and pref.value != LanguageTypes.NOT_APPLICABLE
-			):
-				return LanguageTypes(pref.value)
+	if (
+		user
+		and hasattr(user, 'preferences')
+		and (pref := user.preferences.filter(setting=Preferences.LANGUAGE).first())
+		and pref.value in LanguageTypes.values
+		and pref.value != LanguageTypes.NOT_APPLICABLE
+	):
+		return LanguageTypes(pref.value)
 	if request:
 		if locale := request.COOKIES.get('PARAGLIDE_LOCALE'):
 			for value, label in LanguageTypes.choices[1:]:
@@ -355,7 +356,8 @@ def new_invite(request: AuthedHttpRequest):
 	assert (
 		request.user.level >= Account.Levels.MOD
 		or not Invitation.objects.filter(
-			created_by=request.user, created_at__gte=datetime.now() - timedelta(days=7)
+			created_by=request.user,
+			created_at__gte=timezone.now() - timedelta(days=7),
 		).exists()
 	)
 	assert not Invitation.objects.filter(

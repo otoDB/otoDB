@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Literal
+from typing import Literal
 
 from django.db.models import Count, IntegerField, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
@@ -87,7 +87,7 @@ class ProfileSearchFilterSchema(FilterSchema):
 	level: Account.Levels | None = None
 
 
-@profile_router.get('search', response=List[ProfileIndexSchema])
+@profile_router.get('search', response=list[ProfileIndexSchema])
 @paginate
 def search(
 	request: AuthedHttpRequest,
@@ -153,7 +153,7 @@ def search(
 	return qs.order_by(order, 'id')
 
 
-@profile_router.get('lists', response=List[ListSchema])
+@profile_router.get('lists', response=list[ListSchema])
 def lists(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.pool_set
@@ -163,7 +163,7 @@ class UserConnectionSchema(ConnectionSchema):
 	site: ProfileConnectionTypes
 
 
-@profile_router.get('connection', response=List[UserConnectionSchema])
+@profile_router.get('connection', response=list[UserConnectionSchema])
 def connection(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.profileconnection_set
@@ -188,7 +188,7 @@ def edit_connections(request: AuthedHttpRequest, urls: str):
 
 
 @profile_router.get(
-	'work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth
+	'work_in_my_lists', response=list[tuple[ListSchema, bool]], auth=django_auth
 )
 def work_in_lists(request: AuthedHttpRequest, work_id: OtodbID):
 	return [
@@ -216,7 +216,7 @@ class SubmissionsFilterSchema(FilterSchema):
 	status: WorkStatus | None = Field(None, json_schema_extra={'q': 'work_status'})
 
 
-@profile_router.get('submissions', response=List[SourceSubmissionSchema])
+@profile_router.get('submissions', response=list[SourceSubmissionSchema])
 @paginate
 def submissions(
 	request: AuthedHttpRequest,

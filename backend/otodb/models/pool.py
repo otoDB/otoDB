@@ -22,7 +22,7 @@ class Pool(models.Model):
 	if TYPE_CHECKING:
 		from django.db.models import QuerySet
 
-		poolitem_set: QuerySet['PoolItem']
+		poolitem_set: QuerySet[PoolItem]
 		author_id: int
 
 	def __str__(self) -> str:

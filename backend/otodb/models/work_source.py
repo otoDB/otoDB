@@ -22,7 +22,7 @@ class WorkSource(RevisionTrackedModel):
 	if TYPE_CHECKING:
 		from .pool import Pool
 
-		pool_set: 'models.QuerySet[Pool]'
+		pool_set: models.QuerySet[Pool]
 
 	media = models.ForeignKey(
 		MediaWork, on_delete=models.CASCADE, null=True, blank=True
@@ -83,7 +83,7 @@ class WorkSource(RevisionTrackedModel):
 		]
 		entity_attrs = ['self', 'media']
 
-	info_payload: 'WorkSourceInfoPayload'
+	info_payload: WorkSourceInfoPayload
 
 	def __str__(self) -> str:
 		return f'#{self.media.pk} - {self.url}' if self.media else self.title
@@ -147,15 +147,15 @@ class WorkSource(RevisionTrackedModel):
 			else:
 				logger.error(f'Failed to upload thumbnail for WorkSource {self.pk}')
 				return False
-		except Exception as e:
-			logger.error(f'Error uploading thumbnail for WorkSource {self.pk}: {e}')
+		except Exception:
+			logger.exception(f'Error uploading thumbnail for WorkSource {self.pk}')
 			return False
 
 	# Gets the source registered at the url if it exists, otherwise register as pending
 	@staticmethod
 	def from_url(
 		url, user, is_reupload, info, full_info, metadata=None
-	) -> 'WorkSource | None':
+	) -> WorkSource | None:
 		"""
 		Gets or creates a WorkSource from a URL.
 
@@ -201,7 +201,7 @@ class WorkSource(RevisionTrackedModel):
 					logger.error(f'No suitable platform extractor found for URL: {url}')
 					return None
 			except Exception:
-				logger.error(f'Failed to parse URL for platform: {url}')
+				logger.exception(f'Failed to parse URL for platform: {url}')
 				return None
 
 			published_date = metadata.get('published_date') if metadata else None

@@ -2,7 +2,7 @@ import re
 from enum import Enum
 from functools import reduce, wraps
 from itertools import groupby
-from typing import Annotated, Dict, Optional
+from typing import Annotated, Optional
 from urllib.parse import parse_qs, unquote, urlparse
 
 import lark
@@ -113,7 +113,7 @@ class WikiPageSchema(ModelSchema):
 
 
 class TagWorkDetailsSchema(Schema):
-	paths: tuple[list[TagWorkSchema], Dict[str, list[str]]]
+	paths: tuple[list[TagWorkSchema], dict[str, list[str]]]
 	wiki_page: list[WikiPageSchema]
 	aliases: list[TagWorkSchema]
 	primary_parent: str | None = None
@@ -499,16 +499,12 @@ def tag_alias_control(
 
 	curr_aliases_slugs = [t.slug for t in curr_aliases]
 	assert payload.base_slug == tag.slug or payload.base_slug in curr_aliases_slugs
-	assert all(
-		[v == tag_slug or v in curr_aliases_slugs for v in payload.unalias_slugs]
-	)
+	assert all(v == tag_slug or v in curr_aliases_slugs for v in payload.unalias_slugs)
 
 	assert all(
-		[
-			v == tag.slug or v in curr_aliases_slugs
-			for v in payload.lang_prefs.values()
-			if v is not None
-		]
+		v == tag.slug or v in curr_aliases_slugs
+		for v in payload.lang_prefs.values()
+		if v is not None
 	)
 
 	# update display names
@@ -538,7 +534,6 @@ def tag_alias_control(
 
 	# lang prefs
 	for lang, slug_val in payload.lang_prefs.items():
-		lang = lang
 		assert lang != 0
 		if slug_val:
 			tags_to_clear = list(tag.aliases.exclude(slug=slug_val))
@@ -639,10 +634,9 @@ def update(
 		TagWorkMediaConnection.objects.filter(tag=tag).delete()
 		tag.set_media_type([])
 
-	if payload.category == WorkTagCategory.MEDIA:
-		if payload.media_type:
-			tag.category = payload.category
-			tag.set_media_type(payload.media_type)
+	if payload.category == WorkTagCategory.MEDIA and payload.media_type:
+		tag.category = payload.category
+		tag.set_media_type(payload.media_type)
 
 	tag.deprecated = payload.deprecated
 	tag.category = payload.category
@@ -666,8 +660,6 @@ def update(
 		tag.childhood.update(primary=False)
 		if payload.primary is not None:
 			tag.childhood.filter(parent=ps[payload.primary]).update(primary=True)
-
-	return
 
 
 class TagWorkConnectionSchema(ConnectionSchema):
@@ -700,8 +692,8 @@ def query_parser(param_arg: str, param_match=None):
 			parse = parse_qs(urlparse(link).query)[param_arg][0]
 			if param_match is None or param_match(parse):
 				return parse
-		except Exception:
-			pass
+		except KeyError, IndexError, ValueError:
+			return None
 
 	return match
 
@@ -1145,7 +1137,6 @@ def song_tags(
 		ids.append(tag.id)
 		TagSongInstance.objects.update_or_create(song=song, song_tag=tag)
 	song.tags.remove(*song.tags.exclude(id__in=ids))
-	return
 
 
 @tag_router.get('song_tag', response=FatTagSongSchema)
@@ -1184,7 +1175,6 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchem
 	else:
 		tag.parent = None
 	tag.save()
-	return
 
 
 @tag_router.get('songs', response=list[SongSchema])

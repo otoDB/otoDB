@@ -63,18 +63,18 @@ class MediaWorkQuerySet(RevisionTrackedQuerySet):
 
 
 class MediaWorkManager(models.Manager['MediaWork']):
-	def get_queryset(self) -> 'MediaWorkQuerySet':
+	def get_queryset(self) -> MediaWorkQuerySet:
 		return MediaWorkQuerySet(self.model, using=self._db)
 
-	def with_pending_moderation(self) -> 'MediaWorkQuerySet':
+	def with_pending_moderation(self) -> MediaWorkQuerySet:
 		return self.get_queryset().with_pending_moderation()
 
-	def visible(self) -> 'MediaWorkQuerySet':
+	def visible(self) -> MediaWorkQuerySet:
 		return self.get_queryset().visible()
 
 
 class ActiveManager(MediaWorkManager):
-	def get_queryset(self) -> 'MediaWorkQuerySet':
+	def get_queryset(self) -> MediaWorkQuerySet:
 		return (
 			super()
 			.get_queryset()
@@ -153,16 +153,16 @@ class TagSongInstance(RevisionTrackedModel):
 
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
-		objects: 'MediaWorkManager'  # type: ignore
-		active_objects: 'ActiveManager'
-		worksource_set: QuerySet['WorkSource']
-		poolitem_set: QuerySet['PoolItem']
-		relation_A: QuerySet['WorkRelation']
-		relation_B: QuerySet['WorkRelation']
-		tagworkinstance_set: QuerySet['TagWorkInstance']
-		moderation_events: QuerySet['ModerationEvent']
-		_pending_flag: list['ModerationEvent']
-		_pending_appeal: list['ModerationEvent']
+		objects: MediaWorkManager  # type: ignore
+		active_objects: ActiveManager
+		worksource_set: QuerySet[WorkSource]
+		poolitem_set: QuerySet[PoolItem]
+		relation_A: QuerySet[WorkRelation]
+		relation_B: QuerySet[WorkRelation]
+		tagworkinstance_set: QuerySet[TagWorkInstance]
+		moderation_events: QuerySet[ModerationEvent]
+		_pending_flag: list[ModerationEvent]
+		_pending_appeal: list[ModerationEvent]
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
@@ -187,7 +187,7 @@ class MediaWork(RevisionTrackedModel):
 		entity_attrs = ['self', 'moved_to']
 
 		@staticmethod
-		def to_active(instance: 'MediaWork') -> 'MediaWork':
+		def to_active(instance: MediaWork) -> MediaWork:
 			return instance.moved_to or instance
 
 	# deprecated!
@@ -202,16 +202,16 @@ class MediaWork(RevisionTrackedModel):
 	active_objects = TaggedManager.cast_class(ActiveManager())
 
 	@property
-	def pending_flag(self) -> 'ModerationEvent | None':
+	def pending_flag(self) -> ModerationEvent | None:
 		flags = getattr(self, '_pending_flag', [])
 		return flags[0] if flags else None
 
 	@property
-	def pending_appeal(self) -> 'ModerationEvent | None':
+	def pending_appeal(self) -> ModerationEvent | None:
 		appeals = getattr(self, '_pending_appeal', [])
 		return appeals[0] if appeals else None
 
-	def was_contributed_by(self, user: 'Account') -> bool:
+	def was_contributed_by(self, user: Account) -> bool:
 		"""True if user added any source to this work."""
 		return self.worksource_set.filter(added_by=user).exists()
 
@@ -229,11 +229,11 @@ class MediaWork(RevisionTrackedModel):
 	@staticmethod
 	# Points work_B to work_A
 	def merge(
-		to_work: 'MediaWork',
-		from_work: 'MediaWork',
+		to_work: MediaWork,
+		from_work: MediaWork,
 		title: str,
 		description: str,
-		thumbnail_source: 'WorkSource',
+		thumbnail_source: WorkSource,
 		rating: int,
 	):
 		from django.contrib.contenttypes.models import ContentType

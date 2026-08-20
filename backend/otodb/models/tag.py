@@ -88,7 +88,7 @@ class TagWorkManager(TagModelManagerBase):
 		lang_prefs_qs = TagWorkLangPreference.objects.select_related('tag')
 
 		# For aliases, use parent's get_queryset to avoid infinite recursion
-		aliases_base_qs = super(TagWorkManager, self).get_queryset()
+		aliases_base_qs = super().get_queryset()
 
 		return (
 			super()
@@ -112,7 +112,7 @@ class TagSongManager(TagModelManagerBase):
 		lang_prefs_qs = TagSongLangPreference.objects.select_related('tag')
 
 		# For aliases, use parent's get_queryset to avoid infinite recursion
-		aliases_base_qs = super(TagSongManager, self).get_queryset()
+		aliases_base_qs = super().get_queryset()
 
 		return (
 			super()
@@ -207,15 +207,15 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 	objects = TagWorkManager()
 
 	if TYPE_CHECKING:
-		tagworkconnection_set: QuerySet['TagWorkConnection']
-		tagworkmediaconnection_set: QuerySet['TagWorkMediaConnection']
-		tagworkcreatorconnection_set: QuerySet['TagWorkCreatorConnection']
-		tagworklangpreference_set: QuerySet['TagWorkLangPreference']
-		aliases: QuerySet['TagWork']
-		mediasong: 'MediaSong | None'
-		childhood: QuerySet['TagWorkParenthood']
-		parenthood: QuerySet['TagWorkParenthood']
-		wikipage_set: QuerySet['WikiPage']
+		tagworkconnection_set: QuerySet[TagWorkConnection]
+		tagworkmediaconnection_set: QuerySet[TagWorkMediaConnection]
+		tagworkcreatorconnection_set: QuerySet[TagWorkCreatorConnection]
+		tagworklangpreference_set: QuerySet[TagWorkLangPreference]
+		aliases: QuerySet[TagWork]
+		mediasong: MediaSong | None
+		childhood: QuerySet[TagWorkParenthood]
+		parenthood: QuerySet[TagWorkParenthood]
+		wikipage_set: QuerySet[WikiPage]
 
 	class TagMeta:
 		protect_all = True
@@ -248,7 +248,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		entity_attrs = ['self', 'aliased_to']
 
 		@staticmethod
-		def to_active(instance: 'TagWork') -> 'TagWork':
+		def to_active(instance: TagWork) -> TagWork:
 			return instance.aliased_to or instance
 
 	def __str__(self):
@@ -290,7 +290,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		return any(
 			[
 				self.wikipage_set.exists()
-				and any([p.page.strip() != '' for p in self.wikipage_set]),
+				and any(p.page.strip() != '' for p in self.wikipage_set),
 				self.tagworkconnection_set.exists(),
 				self.category != WorkTagCategory.UNCATEGORIZED,
 			]

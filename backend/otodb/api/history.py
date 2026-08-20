@@ -682,7 +682,7 @@ def get_rev_restored(ctpk, pk):
 	# Check if deleted
 	if RevisionChange.objects.filter(
 		target_type_id=ctpk, target_id=last, deleted=True
-	).exists() or any([ctpk == ctid and last == idd for ctid, idd, _ in rev_del]):
+	).exists() or any(ctpk == ctid and last == idd for ctid, idd, _ in rev_del):
 		return None
 	else:
 		return last
@@ -776,7 +776,7 @@ def _get_all_previous_field_values(
 	# Pre-fetch field objects
 	related_fields = {
 		field_name: model_class._meta.get_field(field_name)
-		for field_name in latest_changes.keys()
+		for field_name in latest_changes
 	}
 	model_to_ct_id = {
 		field_obj.related_model: ContentType.objects.get_for_model(
@@ -900,7 +900,7 @@ def rollback_entity(
 
 		# Bulk fetch all unique ContentTypes we'll need
 		deleted_targets = del_rcs.values_list('target_type_id', 'target_id').distinct()
-		content_type_ids = set(ct_id for ct_id, _ in deleted_targets)
+		content_type_ids = {ct_id for ct_id, _ in deleted_targets}
 
 		# Also get content types for modified entities
 		modified_targets = (
@@ -1039,7 +1039,9 @@ def rollback_entity(
 					logger.error(f'{e}, skipping entity')
 					raise
 				except Exception as e:
-					logger.warning(f'Could not process {model_class.__name__}: {e}')
+					logger.warning(
+						f'Could not process {model_class.__name__}: {e}', exc_info=e
+					)
 				if completed:
 					if model_class not in updates_by_model:
 						updates_by_model[model_class] = []

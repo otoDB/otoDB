@@ -2,10 +2,11 @@ import inspect
 import operator
 import re
 from abc import abstractmethod
+from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime
 from functools import lru_cache, reduce, wraps
-from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
+from typing import Annotated, Any, NamedTuple, Optional, Self
 
 import lark
 from asgiref.sync import sync_to_async
@@ -532,7 +533,7 @@ def _commit_pending_revision(cache, request):
 
 	# Pre-fetch all ContentTypes in bulk
 	content_types = ContentType.objects.in_bulk(
-		set(ctpk for ctpk, *_ in rev_del) | set(ctpk for (ctpk, *_), _ in rev.items())
+		{ctpk for ctpk, *_ in rev_del} | {ctpk for (ctpk, *_), _ in rev.items()}
 	)
 
 	# For batching

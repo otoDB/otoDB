@@ -16,7 +16,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
 		links: [
 			{
 				pathname: `user/${params.username}`,
-				title: m.frail_maroon_tadpole_inspire() + ' ' + data.username
+				title: m.fuzzy_crazy_cobra_lead() + ' ' + data.username
 			},
 			{ pathname: `user/${params.username}/lists`, title: m.stale_loose_squid_cut() },
 			{

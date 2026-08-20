@@ -4,16 +4,15 @@ import re
 from abc import abstractmethod
 from contextlib import contextmanager
 from datetime import datetime
-from functools import lru_cache, reduce, wraps
+from functools import reduce, wraps
 from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
 
 import lark
 from asgiref.sync import sync_to_async
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
+from django.db import connection
 from django.db.models import Count, Exists, F, OuterRef, Q, Value
 from django.http import HttpRequest
-from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
 from ninja.utils import contribute_operation_args
@@ -32,14 +31,9 @@ from otodb.models import (
 	MediaSong,
 	MediaWork,
 	ModerationEvent,
-	Notification,
 	Pool,
 	PoolItem,
-	Revision,
-	RevisionChange,
-	RevisionChangeEntity,
 	SongRelation,
-	Subscription,
 	WorkRelation,
 	WorkSource,
 )
@@ -62,6 +56,7 @@ from otodb.models.enums import (
 	WorkTagCategory,
 )
 from otodb.models.tag import OtodbTagModel
+from otodb.revision_db import db_revision
 
 
 class AuthedHttpRequest(HttpRequest):
@@ -506,199 +501,104 @@ def print_queries(f):
 	return wrapper
 
 
-@lru_cache(maxsize=128)
-def _get_entity_cts(model):
-	return [
-		ContentType.objects.get_for_model(
-			model if attr == 'self' else model._meta.get_field(attr).related_model
-		)
-		for attr in model._revision_meta.entity_attrs
-	]
+_READ_ONLY_HTTP_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS'})
 
 
-def _commit_pending_revision(cache, request):
-	"""Materialize pending changes from the request cache into a single Revision"""
-	rev = cache.get('rev')
-	rev_del = cache.get('rev_del')
-	rev_msg = cache.get('rev_msg')
-	rev_rst = cache.get('rev_rst')
-	# REVIEW: This should never be unknown but some test cases might not set it; should fix those tests
-	rev_route = cache.get('rev_route', Route.UNKNOWN)
+def track_revision(view_func):
+	"""Wrap an endpoint so its writes are captured as one Revision by the DB triggers:
+	open a ``db_revision`` transaction stamped with the request user + route (the route
+	is tagged onto the handler by ``@with_revision_route``). Read-only requests skip the
+	transaction + stamping round-trips entirely -- they have nothing to capture.
+	Handles sync and async handlers; for async, the sync DB work runs in a thread via
+	``sync_to_async`` (the same thread the handler's own ``sync_to_async`` DB calls use,
+	so it shares the transaction).
+	"""
 
-	if not (len(rev) or len(rev_del) or len(rev_rst)):
-		return
+	def _kwargs(request):
+		return {
+			'user': getattr(request, 'user', None),
+			'route': getattr(view_func, '_otodb_route', Route.UNKNOWN.value),
+		}
 
-	revision = Revision.objects.create(user=request.user, message=rev_msg)
+	if inspect.iscoroutinefunction(view_func):
 
-	# Pre-fetch all ContentTypes in bulk
-	content_types = ContentType.objects.in_bulk(
-		set(ctpk for ctpk, *_ in rev_del) | set(ctpk for (ctpk, *_), _ in rev.items())
-	)
+		@wraps(view_func)
+		async def async_wrapper(request, *args, **kwargs):
+			if request.method in _READ_ONLY_HTTP_METHODS:
+				return await view_func(request, *args, **kwargs)
+			ctx = db_revision(**_kwargs(request))
+			await sync_to_async(ctx.__enter__)()
+			try:
+				ret = await view_func(request, *args, **kwargs)
+			except BaseException as exc:
+				if not await sync_to_async(ctx.__exit__)(
+					type(exc), exc, exc.__traceback__
+				):
+					raise
+				return None
+			await sync_to_async(ctx.__exit__)(None, None, None)
+			return ret
 
-	# For batching
-	revision_changes = []
-	pending_entities = []
-	subscribers = []
+		return async_wrapper
 
-	# Process deletions
-	seen_deletions = {}
-	for ctpk, pk, entities in rev_del:
-		key = (ctpk, pk)
-		if key not in seen_deletions:
-			seen_deletions[key] = entities
-			change = RevisionChange(
-				rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
-			)
-			revision_changes.append(change)
-			model = content_types[ctpk].model_class()
-			pending_entities.append((change, _get_entity_cts(model), entities))
+	@wraps(view_func)
+	def wrapper(request, *args, **kwargs):
+		if request.method in _READ_ONLY_HTTP_METHODS:
+			return view_func(request, *args, **kwargs)
+		with db_revision(**_kwargs(request)):
+			return view_func(request, *args, **kwargs)
 
-			subs = Subscription.objects.filter(entity_type_id=ctpk, entity_id=pk)
-			subscribers.extend(subs.values_list('subscriber_id', flat=True))
-			subs.delete()
-
-	# Process updates
-	for (ctpk, pk, field), (entities, val) in rev.items():
-		ct = content_types[ctpk]
-		model = ct.model_class()
-		change = RevisionChange(
-			rev=revision,
-			target_type_id=ctpk,
-			target_id=pk,
-			target_column=field,
-			target_value=val,
-		)
-		revision_changes.append(change)
-		pending_entities.append((change, _get_entity_cts(model), entities))
-		subs = Subscription.objects.filter(entity_type_id=ctpk, entity_id=pk)
-		subscribers.extend(subs.values_list('subscriber_id', flat=True))
-		subs.delete()
-
-	for (ctpk, pk), to_pk in rev_rst.items():
-		revision_changes.append(
-			RevisionChange(
-				rev=revision,
-				target_type_id=ctpk,
-				target_id=pk,
-				target_value=to_pk,
-				restored=True,
-			)
-		)
-
-	# Bulk create changes
-	RevisionChange.objects.bulk_create(revision_changes)
-
-	# Only add subscriptions for active users.
-	# This excludes the system bot account.
-	auto_subscribe = request.user.is_active
-
-	# Bulk create change entities
-	revision_change_entities = []
-	subscriptions = []
-	for change, entity_cts, entities in pending_entities:
-		for entity_type, ent_pk in zip(entity_cts, entities):
-			if ent_pk:
-				# TODO: add if rev_route == ROLLBACK OR better probably should move this to rollback_entity
-				from .history import get_rev_restored
-
-				ent_pk = get_rev_restored(entity_type.id, ent_pk) or ent_pk
-				revision_change_entities.append(
-					RevisionChangeEntity(
-						change=change,
-						entity_type=entity_type,
-						entity_id=ent_pk,
-						route=rev_route,
-					)
-				)
-				if auto_subscribe:
-					subscriptions.append(
-						Subscription(
-							subscriber=request.user,
-							entity_type=entity_type,
-							entity_id=ent_pk,
-						)
-					)
-
-	if revision_change_entities or subscriptions:
-		RevisionChangeEntity.objects.bulk_create(revision_change_entities)
-		Subscription.objects.bulk_create(subscriptions, ignore_conflicts=True)
-	Notification.objects.bulk_create(
-		[
-			Notification(revision=revision, target_id=sub)
-			for sub in set(subscribers)
-			if sub != request.user.id
-		]
-	)
-
-
-def _track_revision_before(request, *args, **kwargs):
-	cache = get_request_cache()
-	cache.add(
-		'rev', {}
-	)  # key: (ContentType.pk, pk, field as str), value: (entity_pks, str)
-	cache.add('rev_del', [])  # list of (ContentType.pk, pk, ...entity_pks)
-	cache.add('rev_rst', {})
-	cache.add('rev_msg', '')
-	return request, args, kwargs
-
-
-def _track_revision_after(ret, request, *args, **kwargs):
-	_commit_pending_revision(get_request_cache(), request)
-	return ret
-
-
-track_revision = make_decorator(_track_revision_before, _track_revision_after)
+	return wrapper
 
 
 def add_revision_message(message: str):
-	cache = get_request_cache()
-	rev_msg = cache.get_or_set('rev_msg', '')
-	rev_msg = rev_msg + ('\n' if rev_msg else '') + message
-	cache.set('rev_msg', rev_msg)
+	"""Append to the current transaction's revision message (and to the Revision row too,
+	if a capture trigger has already created it)."""
+	with connection.cursor() as cursor:
+		cursor.execute(
+			"SELECT nullif(current_setting('otodb.message', true), ''),"
+			" nullif(current_setting('otodb.rev_id', true), '')::bigint"
+		)
+		current, rev_id = cursor.fetchone()
+		combined = (current + '\n' + message) if current else message
+		cursor.execute("SELECT set_config('otodb.message', %s, true)", [combined])
+		if rev_id is not None:
+			cursor.execute(
+				'UPDATE otodb_revision SET message = %s WHERE id = %s',
+				[combined, rev_id],
+			)
 
 
 @contextmanager
 def revision(
 	user: Account | None = None, *, message: str = '', route: Route = Route.SYSTEM
 ):
-	"""Context manager that wraps arbitrary RevisionTrackedModel mutations into
-	a single Revision, intended for shell / programmatic use.
-	"""
-	from django.test import RequestFactory
-	from django_request_cache.middleware import RequestCache
-	from django_userforeignkey import request as ufk_request
-
+	"""Wrap arbitrary tracked-model mutations into a single Revision (shell / programmatic
+	use). Capture is done by the DB triggers; this only stamps the transaction."""
 	if user is None:
 		user = Account.get_system()
-
-	prev_request = ufk_request.get_current_request()
-	req = RequestFactory().post('/')
-	req.cache = RequestCache()
-	req.user = user
-	ufk_request.set_current_request(req)
-
-	cache = req.cache
-	cache.add('rev', {})
-	cache.add('rev_del', [])
-	cache.add('rev_rst', {})
-	cache.add('rev_msg', message)
-	cache.set('rev_route', route.value)
-	try:
+	with db_revision(user=user, message=message, route=route):
 		yield
-		_commit_pending_revision(cache, req)
-	finally:
-		ufk_request.set_current_request(prev_request)
 
 
 def with_revision_route(route: Route):
-	"""Decorator to set the revision route for a API endpoint."""
+	"""Tag a handler with its revision route. ``track_revision`` reads the tag and stamps
+	it when opening the transaction, so no runtime DB call is needed (works for async
+	handlers too). The tag propagates through intervening ``@wraps`` decorators.
+	"""
 
-	def before(request, *args, **kwargs):
-		cache = get_request_cache()
-		cache.set('rev_route', route.value)
-		return request, args, kwargs
+	def decorator(func):
+		func._otodb_route = route.value
+		return func
 
-	return make_decorator(before)
+	return decorator
+
+
+def set_revision_route(route: Route):
+	"""Override the route mid-request for a sub-operation (sync contexts only), e.g. when
+	one endpoint edits entities under different routes."""
+	with connection.cursor() as cursor:
+		cursor.execute("SELECT set_config('otodb.route', %s, true)", [str(route.value)])
 
 
 class RouterWithRevision(Router):

@@ -13,7 +13,6 @@ from django.db.models.functions import Coalesce, RowNumber
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
-from django_request_cache import get_request_cache
 from fast_diff_match_patch import diff
 from ninja import Field, ModelSchema, Query, Router, Schema
 from ninja.pagination import paginate
@@ -99,7 +98,7 @@ class HistoricalEntitySchema(Schema):
 class RevisionSchema(ModelSchema):
 	id: OtodbID
 	date: datetime
-	user: str = Field(..., alias='user.username')
+	user: str | None = Field(None, alias='user.username')
 	index: None | int = None
 	route: None | Route = None
 
@@ -655,57 +654,68 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	}
 
 
-def find_rev_rst(ctpk, query_pk, rev):
-	"""One hop forward (original -> restored): the pk that query_pk was restored
-	*to*, from a committed restored=True record or an in-flight rollback, else None.
+def _restored_chain_end(ctpk, pk):
+	"""Resolve pk forward through its original -> restored chain in one recursive query,
+	returning (last_pk, last_is_deleted). Terminates because a pk can be restored at
+	most once (revisionchange_model_can_only_be_restored_once) and a restore always
+	mints a fresh pk. In-flight rollback restores are persisted rows (written by
+	add_rev_restore) visible within the same transaction, so the whole chain lives in
+	the database.
 	"""
-	if q := RevisionChange.objects.filter(
-		target_type_id=ctpk, target_id=query_pk, restored=True
-	):
-		return int(q.first().target_value)
-	if (ctpk, query_pk) in rev:
-		return rev[ctpk, query_pk]
+	with connection.cursor() as cursor:
+		cursor.execute(
+			"""
+			WITH RECURSIVE chain(pk, depth) AS (
+				SELECT %(pk)s::bigint, 0
+				UNION ALL
+				SELECT rc.target_value::bigint, c.depth + 1
+				FROM chain c
+				JOIN otodb_revisionchange rc ON rc.target_type_id = %(ct)s
+					AND rc.target_id = c.pk AND rc.restored
+			)
+			SELECT c.pk,
+				EXISTS (
+					SELECT 1 FROM otodb_revisionchange d
+					WHERE d.target_type_id = %(ct)s AND d.target_id = c.pk AND d.deleted
+				)
+			FROM chain c
+			ORDER BY c.depth DESC
+			LIMIT 1
+			""",
+			{'ct': ctpk, 'pk': pk},
+		)
+		[(last_pk, last_deleted)] = cursor.fetchall()
+	return last_pk, last_deleted
 
 
 def get_rev_restored(ctpk, pk):
 	"""Resolve pk forward to the end of its original -> restored chain (its current
 	live pk), or None if that row is deleted / not yet restored.
 	"""
-	cache = get_request_cache()
-	rev = cache.get('rev_rst')
-	rev_del = cache.get('rev_del')
-
-	while pk is not None:
-		last = pk
-		pk = find_rev_rst(ctpk, pk, rev)
-
-	# Check if deleted
-	if RevisionChange.objects.filter(
-		target_type_id=ctpk, target_id=last, deleted=True
-	).exists() or any([ctpk == ctid and last == idd for ctid, idd, _ in rev_del]):
-		return None
-	else:
-		return last
+	last, deleted = _restored_chain_end(ctpk, pk)
+	return None if deleted else last
 
 
 def add_rev_restore(ctpk, pk, new_pk):
-	"""Record (in the current rollback) that pk -- resolved to the end of its
-	restored chain -- has been restored as new_pk.
+	"""Record (in the current rollback's Revision) that pk -- resolved to the end of its
+	restored chain -- has been restored as new_pk. Written as a restored=True
+	RevisionChange under the transaction's revision (created by the capture triggers, or
+	on demand here via otodb_current_revision()).
 	"""
 	assert pk != new_pk
-	cache = get_request_cache()
-	rev = cache.get('rev_rst')
-	rev_del = cache.get('rev_del')
+	last, deleted = _restored_chain_end(ctpk, pk)
 
-	while pk is not None:
-		last = pk
-		pk = find_rev_rst(ctpk, pk, rev)
-
-	assert RevisionChange.objects.filter(
-		target_type_id=ctpk, target_id=last, deleted=True
-	).exists() or any(ctpk == ctid and last == idd for ctid, idd, _ in rev_del)
-	rev[(ctpk, last)] = new_pk
-	cache.set('rev_rst', rev)
+	assert deleted
+	with connection.cursor() as cursor:
+		cursor.execute('SELECT otodb_current_revision()')
+		rev_id = cursor.fetchone()[0]
+	RevisionChange.objects.create(
+		rev_id=rev_id,
+		target_type_id=ctpk,
+		target_id=last,
+		target_value=str(new_pk),
+		restored=True,
+	)
 
 
 def get_rev_origin(ctpk, pk, cutoff_date):
@@ -1102,7 +1112,8 @@ def rollback_entity(
 
 
 @history_router.post('rollback', auth=django_auth)
-@user_is_mod  # TODO: for now
+# TODO: for now; in the future, needs to be permissioned by the revision's route
+@user_is_mod
 @track_revision
 @with_revision_route(Route.ROLLBACK)
 @transaction.atomic

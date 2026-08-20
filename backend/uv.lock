@@ -319,18 +319,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-dirtyfields"
-version = "1.9.9"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/0d/0c7d727f7f14f82450b72e5213c6ed0da3d16add2de2e59d46aea6b6eaa2/django_dirtyfields-1.9.9.tar.gz", hash = "sha256:c11c8e03827166d2c91f6634a4d10f5aa5cc7ea430d60e5bd576b3ebf319172f", size = 22209, upload-time = "2026-01-22T13:48:58.777Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/82/d274e924565c2b11eb59fadb5c95885b10502755b4f458bea477a9a6f8af/django_dirtyfields-1.9.9-py3-none-any.whl", hash = "sha256:80da479ab989331e6f29c90576e5f7d7b3df65b36f16bfd6f5d37a0dbdeda6b0", size = 7685, upload-time = "2026-01-22T13:48:57.876Z" },
-]
-
-[[package]]
 name = "django-ninja"
 version = "1.6.2"
 source = { registry = "https://pypi.org/simple" }
@@ -350,18 +338,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/15/79/c320791f4f811045a77404d5a73e08e1d94767661dafd25324779e4f95d7/django-ordered-model-3.7.4.tar.gz", hash = "sha256:f258b9762525c00a53009e82f8b8bf2a3aa315e8b453e281e8fdbbfe2b8cb3ba", size = 203491, upload-time = "2023-03-17T15:53:40.529Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e8/cb/109ea0483080c0bec559c64c28959f9ff4d85b4ebc53b2726dbb6bc3fc59/django_ordered_model-3.7.4-py3-none-any.whl", hash = "sha256:dfcd3183fe0749dad1c9971cba1d6240ce7328742a30ddc92feca41107bb241d", size = 20532, upload-time = "2023-03-17T15:53:38.689Z" },
-]
-
-[[package]]
-name = "django-request-cache"
-version = "1.5.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django-userforeignkey" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e0/08/a06444b95cd9fcd637f54a6a35e5c6e878cec0fd4b05b9287486dc10dbce/django-request-cache-1.5.0.tar.gz", hash = "sha256:d4659cdc21afececa7e9f9c36afd252dfb189b43bc1af0b1916294deff7868c6", size = 4592, upload-time = "2024-11-06T15:17:00.119Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/0f/43e799a7524be92137445b13b304b78908eb4bc8eeef65adeb2204a91eeb/django_request_cache-1.5.0-py3-none-any.whl", hash = "sha256:31bf8109d260310e144f28f502f16ae0c1ab9bb6bd6ae3b7429cc3f587bb0bd8", size = 4866, upload-time = "2024-11-06T15:16:58.402Z" },
 ]
 
 [[package]]
@@ -388,18 +364,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f4/f7/bef3d5ff4e0c7b786732ab77ca41eff8dd704f6552fb70b2fada1a0b64bc/django_tagulous-2.1.1.tar.gz", hash = "sha256:772941e0e359bb5478597fdafdb89e5619310a038e777e9599d0a5c036a05ceb", size = 291557, upload-time = "2025-06-22T23:21:34.262Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/66/03/e5bf7c3535f06d3962065a8e320aaca1cf6bef85e23e3fd8725e95c551be/django_tagulous-2.1.1-py3-none-any.whl", hash = "sha256:f5a6453407bcf4047f619f92be42e8b56615e00bbbd718d8810ce6fd5cf4888b", size = 286350, upload-time = "2025-06-22T23:21:32.588Z" },
-]
-
-[[package]]
-name = "django-userforeignkey"
-version = "0.6.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/34/92/387a32e6791f41cb8825c1fa111af65faa74a9572a54143b51ac14caa6bb/django_userforeignkey-0.6.1.tar.gz", hash = "sha256:d6f90049196356427bbb4a52f6075c97f2af92832092a6bb86d38ab7cb1f075c", size = 5412, upload-time = "2026-02-09T11:14:42.463Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/45/99ac1853ff5fbbc12827ff000074226b87b826bc75d808db386e79fdc15c/django_userforeignkey-0.6.1-py3-none-any.whl", hash = "sha256:089d9ca58636331c38e59d5297f6d74ca7fcfcf71623a8b8e4e57e73cef9a3d5", size = 6334, upload-time = "2026-02-09T11:14:40.96Z" },
 ]
 
 [[package]]
@@ -977,10 +941,8 @@ dependencies = [
     { name = "django-comments-xtd" },
     { name = "django-cors-headers" },
     { name = "django-cte" },
-    { name = "django-dirtyfields" },
     { name = "django-ninja" },
     { name = "django-ordered-model" },
-    { name = "django-request-cache" },
     { name = "django-tagulous" },
     { name = "django-vcache" },
     { name = "fast-diff-match-patch" },
@@ -1016,10 +978,8 @@ requires-dist = [
     { name = "django-comments-xtd", specifier = ">=2.10.11" },
     { name = "django-cors-headers", specifier = ">=4.9.0" },
     { name = "django-cte", specifier = ">=3.0.0" },
-    { name = "django-dirtyfields", specifier = ">=1.9.9" },
     { name = "django-ninja", specifier = ">=1.6.2" },
     { name = "django-ordered-model", specifier = ">=3.7.4" },
-    { name = "django-request-cache", specifier = ">=1.5.0" },
     { name = "django-tagulous", specifier = ">=2.1.1" },
     { name = "django-vcache", specifier = ">=2.1.1" },
     { name = "fast-diff-match-patch", specifier = ">=2.1.0" },

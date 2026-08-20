@@ -192,8 +192,8 @@
 					><td
 						><Time format="relative" date={r.date} />
 						<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
-							>{#snippet content()}<a href="/profile/{r.user}">{r.user}</a
-								>{/snippet}</ParaglideMessage
+							>{#snippet content()}{#if r.user}<a href="/profile/{r.user}">{r.user}</a
+									>{:else}{m.this_late_gadfly_sail()}{/if}{/snippet}</ParaglideMessage
 						></td
 					></tr
 				>

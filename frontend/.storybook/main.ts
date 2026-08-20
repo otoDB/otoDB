@@ -8,7 +8,8 @@ export default defineMain({
 		'@storybook/addon-docs',
 		'@storybook/addon-a11y',
 		'@storybook/addon-themes',
-		'@storybook/addon-vitest'
+		'@storybook/addon-vitest',
+		'@storybook/addon-mcp'
 	],
 	staticDirs: [
 		{

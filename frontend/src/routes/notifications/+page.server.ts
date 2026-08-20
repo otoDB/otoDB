@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 	const sub_page = parseInt(url.searchParams.get('sub_page') ?? '0', 10) || 1;
 
 	const [nonsub, sub] = await Promise.all([
-		client.GET('/api/profile/notifications', {
+		client.GET('/api/user/notifications', {
 			fetch,
 			params: {
 				query: {
@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 				}
 			}
 		}),
-		client.GET('/api/profile/notifications', {
+		client.GET('/api/user/notifications', {
 			fetch,
 			params: {
 				query: {

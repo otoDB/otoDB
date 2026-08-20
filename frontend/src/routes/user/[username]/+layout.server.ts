@@ -3,7 +3,7 @@ import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages.js';
 
 export const load: LayoutServerLoad = async ({ params, fetch, locals }) => {
-	const { data } = await client.GET('/api/profile/profile', {
+	const { data } = await client.GET('/api/user/user', {
 		fetch,
 		params: {
 			query: {

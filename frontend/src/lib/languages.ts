@@ -4,7 +4,7 @@ import { setLocale } from '$lib/paraglide/runtime';
 
 export const set_lang = async (lang: keyof typeof languages, logged_in: boolean) => {
 	if (logged_in)
-		await client.POST('/api/profile/prefs', { fetch, body: { LANGUAGE: languages[lang].id } });
+		await client.POST('/api/user/prefs', { fetch, body: { LANGUAGE: languages[lang].id } });
 
 	setLocale(lang);
 };

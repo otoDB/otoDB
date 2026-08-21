@@ -6,9 +6,9 @@
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
-	<RelationViewer id={data.id} type="work">
-		{#snippet fallback()}
-			<p>{m.left_watery_jellyfish_grip()}</p>
-		{/snippet}
-	</RelationViewer>
+	{#if data.relations[0].length}
+		<RelationViewer id={data.id} type="work" />
+	{:else}
+		<p>{m.left_watery_jellyfish_grip()}</p>
+	{/if}
 </Section>

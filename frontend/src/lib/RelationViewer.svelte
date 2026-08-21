@@ -8,7 +8,6 @@
 	import { GraphViewBackends, SongRelationTypes, WorkRelationTypes } from '$lib/schema';
 	import { getLocalPref } from '$lib/ui';
 	import { SVGViewer } from 'svelte-svg-viewer';
-	import type { Snippet } from 'svelte';
 
 	interface Props {
 		id: string;
@@ -16,10 +15,8 @@
 		min_height?: number;
 		defaultDir?: Direction;
 		backend?: GraphViewBackends;
-		/** Rendered in place of the graph when there is nothing to draw. */
-		fallback?: Snippet;
 	}
-	let { id, type, defaultDir, min_height = 600, backend, fallback }: Props = $props();
+	let { id, type, defaultDir, min_height = 600, backend }: Props = $props();
 
 	const active_backend = $derived(
 		backend ?? page.data.user?.prefs?.GRAPH_VIEW_BACKEND ?? getLocalPref('GRAPH_VIEW_BACKEND')
@@ -109,9 +106,7 @@
 	let svg_resizing_begin = -1;
 </script>
 
-{#if graph.empty}
-	{@render fallback?.()}
-{:else}
+{#if !graph.empty}
 	{#key page.url.search}
 		<form method="GET">
 			<table>

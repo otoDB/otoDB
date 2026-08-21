@@ -1,174 +1,94 @@
-<script lang="ts" generics="T extends 'work' | 'song'">
+<script lang="ts">
+	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 	import { enumValues, SongRelationNames, WorkRelationNames } from '$lib/enums.js';
+	import { asDirection, type Direction, type GraphType } from '$lib/graph';
+	import { graphView } from '$lib/graph.remote';
 	import { m } from '$lib/paraglide/messages.js';
-	import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
-	import { getDisplayText } from '$lib/ui';
-	import elkLayouts from '@mermaid-js/layout-elk';
-	import mermaid from 'mermaid';
-	import { onMount } from 'svelte';
+	import { GraphViewBackends, SongRelationTypes, WorkRelationTypes } from '$lib/schema';
+	import { getLocalPref } from '$lib/ui';
 	import { SVGViewer } from 'svelte-svg-viewer';
 
-	type Work = Omit<components['schemas']['SlimWorkSchema'], 'status'>;
-	type Song = components['schemas']['SongSchema'];
-	type RelationType = T extends 'work' ? WorkRelationTypes : SongRelationTypes;
-	type Node = (T extends 'work' ? Work : Song) & { distance?: number };
-	type Edge = { A_id: string; B_id: string; relation: RelationType };
 	interface Props {
 		id: string;
-		type: 'work' | 'song';
+		type: GraphType;
 		min_height?: number;
-		defaultDir: 'TB' | 'LR';
-		objects: Node[];
-		relations: Edge[];
+		defaultDir?: Direction;
+		backend?: GraphViewBackends;
 	}
-	let { id, objects, relations, defaultDir = 'TB', type, min_height = 600 }: Props = $props();
+	let { id, type, defaultDir, min_height = 600, backend }: Props = $props();
 
-	const RelationTypes = $derived(type === 'work' ? WorkRelationTypes : SongRelationTypes);
-	const RelationNames = $derived(type === 'work' ? WorkRelationNames : SongRelationNames);
-
-	let deg = $state(1);
-	let direction = $state(defaultDir);
-	let allowed_types: RelationType[] = $state(enumValues(RelationTypes) as RelationType[]);
-
-	const get_svg_mermaid = (nodes: Node[], links: Edge[], ext: string[]) =>
-		mermaid.render(
-			'Relations',
-			`---
-config:
-  layout: elk
-  elk:
-    mergeEdges: true
----
-flowchart ${direction}
-    style ${id} color:#f00
-	classDef moreNodes fill:none,stroke:none;
-	classDef untitled font-style:italic;` +
-				(type === 'work'
-					? `
-    ${(nodes as Work[])
-									.map(
-										(
-											w
-										) => `${w.id}@{ ${w.thumbnail ? `img: "${w.thumbnail}",` : ''} constraint: on, w: 10 }
-    ${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
-    click ${w.id} "${`/work/${w.id}`}"`
-									)
-									.join('\n')}
-    ${links
-									.map((r) =>
-										//  Reverse relation for 'sequel'
-										r.relation === WorkRelationTypes.Sequel
-											? `${r.B_id} _${r.B_id}_${r.A_id}_@-->|${RelationNames[r.relation]()}| ${r.A_id}`
-											: `${r.A_id} _${r.A_id}_${r.B_id}_@-->|${RelationNames[r.relation]()}| ${r.B_id}`
-									)
-									.join('\n')}
-	${ext
-								.map(
-									(a) => `${a}MORE["${m.fresh_deft_warbler_edit()}"]
-	class ${a}MORE moreNodes;
-	${a[0] !== '-' ? `${a}MORE -.- ${a}` : `${-a} -.- ${a}MORE`}`
-								)
-								.join('\n')}`
-					: `
-    ${nodes
-									.map(
-										(
-											w
-										) => `${w.id}["${getDisplayText(w.title).replaceAll('"', '#quot;')}"]${w.title === null ? ':::untitled' : ''}
-    click ${w.id} "${`/tag/${(w as Song).work_tag}`}"`
-									)
-									.join('\n')}
-    ${links.map((r) => `${r.A_id} -->|${RelationNames[r.relation]()}| ${r.B_id}`).join('\n')}`)
-		);
-
-	const mermaid_BFS = (
-		ns: Node[],
-		ls: Edge[],
-		start: string,
-		max_distance: number = Number.POSITIVE_INFINITY
-	): [(Node & { distance: number })[], Edge[], string[]] => {
-		const nodes = structuredClone(ns),
-			links = structuredClone(ls);
-		let queue: [string, number][] = [[start, 0]];
-		while (queue.length) {
-			const next_queue: [string, number][] = [];
-			for (const [n, curr_distance] of queue) {
-				const ng = nodes.find((nn) => nn.id === n)!;
-				if (curr_distance > max_distance || ng.distance !== undefined) continue;
-				ng.distance = curr_distance;
-				next_queue.push(
-					...[
-						...new Set(
-							links
-								.filter((v) => allowed_types.includes(v.relation) && (v.A_id === n || v.B_id === n))
-								.flatMap((v) => [v.A_id, v.B_id])
-						)
-					].map((nn) => [nn, curr_distance + 1] as [string, number])
-				);
-			}
-			queue = next_queue;
-		}
-		return [
-			nodes.filter((v) => v.distance !== undefined) as (Node & { distance: number })[],
-			links.filter(
-				(v) =>
-					allowed_types.includes(v.relation) &&
-					nodes.find((w) => w.id === v.A_id)?.distance !== undefined &&
-					nodes.find((w) => w.id === v.B_id)?.distance !== undefined
-			),
-			[
-				...new Set(
-					links
-						.filter((v) => allowed_types.includes(v.relation))
-						.map((v) => [v.A_id, v.B_id].map((n) => nodes.find((w) => w.id === n)!))
-						.filter(([a, b]) => (a.distance === undefined) !== (b.distance === undefined))
-						.map(([a, b]) => (a.distance !== undefined ? a.id : '-' + b.id))
-				)
-			]
-		];
-	};
-
-	const max_distance = $derived(
-		Math.max(...mermaid_BFS(objects, relations, id)[0].map((n) => n.distance))
+	const active_backend = $derived(
+		backend ?? page.data.user?.prefs?.GRAPH_VIEW_BACKEND ?? getLocalPref('GRAPH_VIEW_BACKEND')
 	);
 
-	let distance = $derived(Math.max(Math.min(deg, max_distance), 1));
+	const RelationTypes = $derived(type === 'work' ? WorkRelationTypes : SongRelationTypes);
+	const RelationNames = $derived(
+		(type === 'work' ? WorkRelationNames : SongRelationNames) as Record<number, () => string>
+	);
 
-	let [nodes, links, ext] = $derived(mermaid_BFS(objects, relations, id, distance));
-	let svg = $derived(get_svg_mermaid(nodes, links, ext));
+	const params = $derived(page.url.searchParams);
+	const deg = $derived(Number(params.get('deg')) || 1);
+	const thumbs = $derived(params.getAll('thumbs').at(-1) !== '0');
+	const types = $derived(params.has('types') ? params.getAll('types').map(Number) : null);
+	const dir = $derived(asDirection(params.get('dir')) ?? defaultDir ?? null);
 
-	onMount(() => {
-		mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'base' });
-		mermaid.registerLayoutLoaders(elkLayouts);
-	});
+	const graph = $derived(
+		await graphView({ type, id, deg, dir, thumbs, types, backend: active_backend })
+	);
+
+	let mermaid_ready = false;
+	const render_mermaid = async (source: string) => {
+		const [{ default: mermaid }, { default: elkLayouts }] = await Promise.all([
+			import('mermaid'),
+			import('@mermaid-js/layout-elk')
+		]);
+		if (!mermaid_ready) {
+			mermaid.initialize({ maxTextSize: 1000000, startOnLoad: false, theme: 'base' });
+			mermaid.registerLayoutLoaders(elkLayouts);
+			mermaid_ready = true;
+		}
+		return (await mermaid.render('Relations', source)).svg;
+	};
+	const mermaid_svg = $derived(browser && graph.mermaid ? render_mermaid(graph.mermaid) : null);
 
 	let svgContainer = $state<HTMLDivElement | undefined>(undefined);
 
-	function svgMouseOver(event: MouseEvent) {
+	function svgMouseOver(event: Event) {
+		if (!svgContainer) return;
 		const target = event.target as HTMLElement;
-		const node = target.closest('[id^="flowchart-"]');
+
+		// Hovering a node lights up every edge sharing its rel_<id> class
+		const gv_node_el = target.closest('g.node[class*="rel_"]');
+		if (gv_node_el) {
+			const rel = [...gv_node_el.classList].find((c) => c.startsWith('rel_'));
+			if (rel)
+				svgContainer
+					.querySelectorAll(`g.edge.${rel}`)
+					.forEach((e) => e.classList.add('highlighted'));
+			return;
+		}
+
+		const node = target.closest('[id*="-flowchart-"]');
 		const label: HTMLElement | null = target.closest('.label:has(.edgeLabel)');
 
-		if (svgContainer) {
-			if (node) {
-				// Extract numeric ID from node ID (e.g. "flowchart-1-0" -> "1")
-				const nodeId = node.id.split('-')[1];
-				if (nodeId) {
-					const links = svgContainer.querySelectorAll(`[id*="_${nodeId}_"]`);
-					links.forEach((link) => {
-						link.classList.add('highlighted');
-					});
-					const labels = svgContainer.querySelectorAll(`[data-id*="_${nodeId}_"]`);
-					labels.forEach((link) => {
-						link.classList.add('highlighted');
-					});
-				}
+		if (node) {
+			const nodeId = node.id.match(/-flowchart-(.+)-\d+$/)?.[1];
+			if (nodeId) {
+				const links = svgContainer.querySelectorAll(`[id*="_${nodeId}_"]`);
+				links.forEach((link) => {
+					link.classList.add('highlighted');
+				});
+				const labels = svgContainer.querySelectorAll(`[data-id*="_${nodeId}_"]`);
+				labels.forEach((link) => {
+					link.classList.add('highlighted');
+				});
 			}
-			if (label) {
-				const edge = svgContainer.querySelector(`[data-id="${label.dataset.id}"`)!;
-				edge.classList.add('highlighted');
-				label.classList.add('highlighted');
-			}
+		}
+		if (label) {
+			const edge = svgContainer.querySelector(`[data-id="${label.dataset.id}"`)!;
+			edge.classList.add('highlighted');
+			label.classList.add('highlighted');
 		}
 	}
 
@@ -181,54 +101,116 @@ flowchart ${direction}
 		}
 	}
 
-	let svg_height = $state(min_height),
+	let svg_height = $derived(min_height),
 		old_svg_height = 0;
 	let svg_resizing_begin = -1;
 </script>
 
-<label>
-	{m.just_grassy_mantis_slurp()}
-	<input type="number" bind:value={deg} min="1" max={max_distance} /> / {max_distance}
-</label>
-<label class="mt-2 mb-2 block">
-	{m.fair_aware_salmon_twist()}
-	<select bind:value={direction}
-		><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
-			>{m.stout_jumpy_ox_feel()}</option
-		></select
-	>
-</label>
-{m.mild_loud_shad_enchant({ type: m.mellow_upper_finch_drip(), name: '' })}
-<select multiple bind:value={allowed_types}>
-	{#each enumValues(RelationTypes) as t, i (i)}
-		<option value={t} class="type-label">{RelationNames[t]()}</option>
-	{/each}
-</select>
-{#await svg}
-	{m.sunny_light_duck_surge()}
-{:then s}
-	<div
-		class="mt-2"
-		bind:this={svgContainer}
-		onmouseover={svgMouseOver}
-		onmouseout={svgMouseOut}
-		role="main"
-		onblur={() => {}}
-		onfocus={() => {}}
-	>
-		<button
-			class="absolute right-0 bottom-0 hidden cursor-ns-resize text-3xl md:block"
-			onmousedown={(e) => {
-				svg_resizing_begin = e.clientY;
-				old_svg_height = svg_height;
-			}}>↕</button
+{#if !graph.empty}
+	{#key page.url.search}
+		<form method="GET">
+			<table>
+				<tbody>
+					<tr>
+						<th><label for="deg">{m.just_grassy_mantis_slurp()}</label></th>
+						<td>
+							<input
+								type="number"
+								id="deg"
+								name="deg"
+								value={graph.deg}
+								min="1"
+								max={graph.max_distance || 1}
+							/>
+							/ {graph.max_distance}
+						</td>
+					</tr>
+					<tr>
+						<th><label for="dir">{m.fair_aware_salmon_twist()}</label></th>
+						<td>
+							<select id="dir" name="dir" value={graph.dir}
+								><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
+									>{m.stout_jumpy_ox_feel()}</option
+								></select
+							>
+						</td>
+					</tr>
+					{#if type === 'work'}
+						<tr>
+							<th><label for="thumbs">{m.heroic_ideal_orangutan_aid()}</label></th>
+							<td>
+								<input type="hidden" name="thumbs" value="0" />
+								<input type="checkbox" id="thumbs" name="thumbs" value="1" checked={thumbs} />
+							</td>
+						</tr>
+					{/if}
+					<tr>
+						<th>
+							<label for="types"
+								>{m.mild_loud_shad_enchant({ type: m.mellow_upper_finch_drip(), name: '' })}</label
+							>
+						</th>
+						<td>
+							<select multiple id="types" name="types">
+								{#each enumValues(RelationTypes) as t, i (i)}
+									<option
+										value={t}
+										selected={(types ?? enumValues(RelationTypes)).includes(t)}
+										class="type-label">{RelationNames[t]()}</option
+									>
+								{/each}
+							</select>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<input type="submit" />
+		</form>
+	{/key}
+
+	{#if graph.svg}
+		<div
+			class="gv-graph"
+			bind:this={svgContainer}
+			onmouseover={svgMouseOver}
+			onmouseout={svgMouseOut}
+			onfocusin={svgMouseOver}
+			onfocusout={svgMouseOut}
+			role="presentation"
 		>
-		<SVGViewer resizeBehavior="zoom" maxScale={90} height={`${svg_height}px`} width="100%">
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			{@html s.svg}
-		</SVGViewer>
-	</div>
-{/await}
+			{@html graph.svg}
+		</div>
+	{:else if mermaid_svg}
+		{#await mermaid_svg}
+			{m.sunny_light_duck_surge()}
+		{:then s}
+			<div
+				class="mt-2"
+				bind:this={svgContainer}
+				onmouseover={svgMouseOver}
+				onmouseout={svgMouseOut}
+				role="main"
+				onblur={() => {}}
+				onfocus={() => {}}
+			>
+				<button
+					class="absolute right-0 bottom-0 hidden cursor-ns-resize text-3xl md:block"
+					onmousedown={(e) => {
+						svg_resizing_begin = e.clientY;
+						old_svg_height = svg_height;
+					}}>↕</button
+				>
+				<SVGViewer resizeBehavior="zoom" maxScale={90} height={`${svg_height}px`} width="100%">
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+					{@html s}
+				</SVGViewer>
+			</div>
+		{/await}
+	{:else}
+		{m.sunny_light_duck_surge()}
+	{/if}
+{/if}
 
 <svelte:body
 	onmouseup={() => {
@@ -243,6 +225,53 @@ flowchart ${direction}
 
 <style lang="postcss">
 	@reference "../app.css";
+	.gv-graph :global {
+		svg text {
+			font-family: Arial, Helvetica, sans-serif;
+			fill: var(--otodb-color-content-primary);
+		}
+		svg g.node polygon {
+			stroke: var(--otodb-color-content-faint);
+			/* Allow hovering node to highlight edges */
+			pointer-events: all;
+		}
+		svg g.edge path {
+			stroke: var(--otodb-color-content-fainter);
+		}
+		/* Arrowheads */
+		svg g.edge polygon {
+			fill: var(--otodb-color-content-faint);
+			stroke: var(--otodb-color-content-faint);
+		}
+		svg #graph_current polygon {
+			stroke: var(--otodb-color-del);
+		}
+		svg #graph_current text {
+			fill: var(--otodb-color-del);
+		}
+		svg g.untitled text {
+			font-style: italic;
+		}
+		svg g.node.thumb text {
+			text-shadow:
+				0 0 2px var(--otodb-color-bg-primary),
+				0 0 4px var(--otodb-color-bg-primary),
+				0 0 6px var(--otodb-color-bg-primary);
+		}
+		svg g.edge.highlighted {
+			& path {
+				stroke: var(--otodb-color-del);
+				stroke-width: 2px;
+			}
+			& polygon {
+				fill: var(--otodb-color-del);
+				stroke: var(--otodb-color-del);
+			}
+			& text {
+				fill: var(--otodb-color-del);
+			}
+		}
+	}
 	option.type-label {
 		&:checked {
 			@apply text-otodb-bg-primary;

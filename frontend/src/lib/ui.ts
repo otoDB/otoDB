@@ -9,7 +9,8 @@ import {
 	LanguageTypes,
 	ThemePref,
 	VideoPlatformPref,
-	type components
+	type components,
+	GraphViewBackends
 } from './schema';
 import rehypeStringify from 'rehype-stringify';
 import rehypeParse from 'rehype-parse';
@@ -45,7 +46,8 @@ const defaultPrefs: Required<Prefs> = {
 	LANGUAGE: LanguageTypes.en, // reflects baseLocale
 	THEME: ThemePref.Default,
 	VIDEO_PLATFORM: VideoPlatformPref.Auto,
-	PREFER_AUTHOR_UPLOAD: false
+	PREFER_AUTHOR_UPLOAD: false,
+	GRAPH_VIEW_BACKEND: GraphViewBackends.Graphviz
 };
 
 export const getStoredPrefs = (): Partial<Prefs> =>

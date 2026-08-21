@@ -184,16 +184,7 @@
 				{/each}
 			</ul>
 		{/if}
-		{#if data.song_relations && data.song_relations[0].length}
-			<RelationViewer
-				id={data.tag.song.id}
-				objects={data.song_relations[1]}
-				relations={data.song_relations[0]}
-				defaultDir="LR"
-				type="song"
-				min_height={80}
-			/>
-		{/if}
+		<RelationViewer id={data.tag.song.id} defaultDir="LR" type="song" min_height={80} />
 	</Section>
 {/if}
 

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import client from '$lib/api';
-	import { enumValues, VideoPlatformPrefNames } from '$lib/enums.js';
+	import { enumValues, GraphViewBackendNames, VideoPlatformPrefNames } from '$lib/enums.js';
 	import { languages } from '$lib/enums/language.js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { getLocale, locales } from '$lib/paraglide/runtime';
-	import { ThemePref, VideoPlatformPref } from '$lib/schema.js';
+	import { GraphViewBackends, ThemePref, VideoPlatformPref } from '$lib/schema.js';
 	import { themeDisplayOrder, themes } from '$lib/themes/themes.js';
 	import { getLocalPrefs, updateLocalPrefs } from '$lib/ui.js';
 	import { set_lang } from '$lib/languages.js';
@@ -17,6 +17,9 @@
 	let video_platform = $state(data.user?.prefs?.VIDEO_PLATFORM ?? local_prefs.VIDEO_PLATFORM);
 	let prefer_author_upload = $state(
 		data.user?.prefs.PREFER_AUTHOR_UPLOAD ?? local_prefs.PREFER_AUTHOR_UPLOAD
+	);
+	let graph_view_backend = $state(
+		data.user?.prefs?.GRAPH_VIEW_BACKEND ?? local_prefs?.GRAPH_VIEW_BACKEND
 	);
 
 	// "Prefer author uploads" only applies once a specific platform is chosen
@@ -34,7 +37,8 @@
 	async function savePrefs() {
 		const body = {
 			VIDEO_PLATFORM: video_platform,
-			PREFER_AUTHOR_UPLOAD: prefer_author
+			PREFER_AUTHOR_UPLOAD: prefer_author,
+			GRAPH_VIEW_BACKEND: graph_view_backend
 		};
 		if (data.user) await client.POST('/api/user/prefs', { fetch, body });
 		else updateLocalPrefs(body);
@@ -118,6 +122,18 @@
 					}}
 				/>
 				<span class="text-otodb-content-fainter italic">{m.tidy_warm_seal_glide()}</span>
+			</div>
+		</div>
+
+		<div>
+			<label for="graph_view_backend" class="font-bold">{m.main_topical_beaver_tickle()}</label>
+			<div class="mt-1 flex items-center gap-2">
+				<select id="graph_view_backend" bind:value={graph_view_backend} onchange={savePrefs}>
+					{#each enumValues(GraphViewBackends) as v (v)}
+						<option value={v}>{GraphViewBackendNames[v]}</option>
+					{/each}
+				</select>
+				<span class="text-otodb-content-fainter italic">{m.jolly_minor_shell_roam()}</span>
 			</div>
 		</div>
 	</div>

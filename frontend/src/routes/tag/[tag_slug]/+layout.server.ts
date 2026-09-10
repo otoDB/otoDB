@@ -22,6 +22,18 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 			url.pathname.replace(encodeURIComponent(params.tag_slug), encodeURIComponent(data.slug))
 		);
 
+	const song_relations = data.song
+		? (
+				await client.GET('/api/tag/song_relations', {
+					fetch,
+					params: {
+						query: {
+							song_id: data.song.id
+						}
+					}
+				})
+			).data
+		: null;
 	const display_name = getTagDisplayName(data);
 	return {
 		links: [
@@ -66,6 +78,7 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 				]
 			: null,
 		tag: data,
+		song_relations,
 		display_name,
 		head: {
 			title: display_name,

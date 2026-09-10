@@ -20,8 +20,6 @@ export const dirtyClick =
 		return () => node.removeEventListener('click', onclick);
 	};
 
-export const isFormDirty = (f: HTMLFormElement) => f.dataset.dirty && !f.action.includes('search');
-
 type Orchestrator = AsyncGenerator<void, void, null | (() => Promise<void> | void)>;
 type Barrier = {
 	orchestrator: Orchestrator;
@@ -50,7 +48,9 @@ export const dirtyEnhance = (
 
 	return enhance(node, async (input) => {
 		const { cancel } = input;
-		const dirty_forms = Array.from(document.querySelectorAll('form')).filter(isFormDirty);
+		const dirty_forms = Array.from(document.querySelectorAll('form')).filter(
+			(form) => form.dataset.dirty
+		);
 
 		if (props?.barrier) {
 			const first = !Object.hasOwn(props.barrier, 'orchestrator');

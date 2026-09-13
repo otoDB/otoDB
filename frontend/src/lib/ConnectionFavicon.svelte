@@ -12,6 +12,7 @@
 	import faviconKitsu from '$lib/connection_favicon/Kitsu.png';
 	import faviconKnowYourMeme from '$lib/connection_favicon/Know Your Meme.png';
 	import faviconLetterboxd from '$lib/connection_favicon/Letterboxd.png';
+	import faviconMisskey from '$lib/connection_favicon/Misskey.png';
 	import faviconMusicBrainz from '$lib/connection_favicon/MusicBrainz.png';
 	import faviconMyAnimeList from '$lib/connection_favicon/MyAnimeList.png';
 	import faviconNNDMedleyWiki from '$lib/connection_favicon/NND Medley Wiki.png';
@@ -32,6 +33,7 @@
 	import faviconWikipediaEn from '$lib/connection_favicon/Wikipedia (en).png';
 	import faviconYouTube from '$lib/connection_favicon/YouTube.png';
 	import faviconZenius from '$lib/connection_favicon/Zenius -I- vanisher.com.png';
+	import faviconOtomadSite from '$lib/connection_favicon/otomad.site.png';
 	import faviconOtomadWiki from '$lib/connection_favicon/otomad.wiki.png';
 	import faviconVndb from '$lib/connection_favicon/vndb.png';
 	import faviconDoujinMusicInfo from '$lib/connection_favicon/同人音楽info.png';
@@ -61,6 +63,7 @@
 		'Kitsu': faviconKitsu,
 		'Know Your Meme': faviconKnowYourMeme,
 		'Letterboxd': faviconLetterboxd,
+		'Misskey': faviconMisskey,
 		'The Mod Archive': faviconModArchive,
 		'MusicBrainz': faviconMusicBrainz,
 		'MyAnimeList': faviconMyAnimeList,
@@ -80,6 +83,7 @@
 		'Wikipedia (en)': faviconWikipediaEn,
 		'YouTube': faviconYouTube,
 		'Zenius -I- vanisher.com': faviconZenius,
+		'otomad.site': faviconOtomadSite,
 		'otomad.wiki': faviconOtomadWiki,
 		'vndb': faviconVndb,
 		'同人音楽info': faviconDoujinMusicInfo,

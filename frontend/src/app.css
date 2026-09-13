@@ -11,11 +11,18 @@
 	--color-otodb-content-primary: var(--otodb-color-content-primary);
 	--color-otodb-content-faint: var(--otodb-color-content-faint);
 	--color-otodb-content-fainter: var(--otodb-color-content-fainter);
+
+	--color-otodb-highlight-primary: var(--otodb-color-highlight-primary);
+	--color-otodb-highlight-secondary: var(--otodb-color-highlight-secondary);
 }
 
 @custom-variant dark (@media not (prefers-color-scheme: light), &:where(.dark, .dark *), &:has(#bg-marker.dark));
 
 @layer base {
+	input {
+		accent-color: var(--otodb-color-highlight-primary);
+	}
+
 	thead {
 		background-color: var(--otodb-color-bg-primary);
 	}

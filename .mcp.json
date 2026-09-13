@@ -1,0 +1,30 @@
+{
+	"mcpServers": {
+		"storybook": {
+			"type": "http",
+			"url": "http://localhost:6006/mcp"
+		},
+		"playwright": {
+			"command": "bunx",
+			"args": [
+				"@playwright/mcp@latest",
+				"--headless",
+				"--isolated",
+				"--browser",
+				"chromium",
+				"--viewport-size",
+				"1280x720",
+				"--output-dir",
+				".playwright-mcp"
+			]
+		},
+		"chrome-devtools": {
+			"command": "bunx",
+			"args": [
+				"chrome-devtools-mcp@latest",
+				"--headless=true",
+				"--isolated=true"
+			]
+		}
+	}
+}

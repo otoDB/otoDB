@@ -5,7 +5,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { enumValues } from '$lib/enums';
 	import { userLevelNames } from '$lib/enums/userLevel.js';
-	import { Levels, PathsApiProfileSearchGetParametersQueryOrder as OrderEnum } from '$lib/schema';
+	import { Levels, PathsApiUserSearchGetParametersQueryOrder as OrderEnum } from '$lib/schema';
 	import Time from '$lib/Time.svelte';
 
 	let { data } = $props();
@@ -111,7 +111,7 @@
 			{#each data.results?.items ?? [] as user, i (i)}
 				<tr>
 					<td class="truncate text-left">
-						<a href="/profile/{user.username}">{user.username}</a>
+						<a href="/user/{user.username}">{user.username}</a>
 					</td>
 					<td class="text-right">{user.works_count}</td>
 					<td class="text-right">{user.revisions_count}</td>

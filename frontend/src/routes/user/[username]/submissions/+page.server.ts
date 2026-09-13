@@ -1,7 +1,7 @@
 import client from '$lib/api.server';
 import { asEnum } from '$lib/enums';
 import {
-	PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0,
+	PathsApiUserSubmissionsGetParametersQueryOrderAnyOf0,
 	SubmissionStanding
 } from '$lib/schema';
 import type { PageServerLoad } from './$types';
@@ -20,16 +20,16 @@ export const load: PageServerLoad = async ({ fetch, params, url }) => {
 	const paramOrder = url.searchParams.get('order');
 	const paramDirOrder = `${paramDir}${paramOrder}`;
 
-	type Order = PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0;
+	type Order = PathsApiUserSubmissionsGetParametersQueryOrderAnyOf0;
 	const order: Order | null =
 		paramDirOrder &&
-		Object.values(PathsApiProfileSubmissionsGetParametersQueryOrderAnyOf0).includes(
+		Object.values(PathsApiUserSubmissionsGetParametersQueryOrderAnyOf0).includes(
 			paramDirOrder as Order
 		)
 			? (paramDirOrder as Order)
 			: null;
 
-	const { data: submissions } = await client.GET('/api/profile/submissions', {
+	const { data: submissions } = await client.GET('/api/user/submissions', {
 		fetch,
 		params: {
 			query: {

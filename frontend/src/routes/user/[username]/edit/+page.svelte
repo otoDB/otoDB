@@ -91,7 +91,7 @@
 							<td>{userLevelNames[inv.level]()}</td>
 							<td>
 								{#if inv.used_by}
-									<a href="/profile/{inv.used_by.username}">
+									<a href="/user/{inv.used_by.username}">
 										{inv.used_by.username}
 									</a>
 								{:else}

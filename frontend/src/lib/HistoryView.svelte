@@ -27,7 +27,7 @@
 				><td>{rev.index}</td><td><a href="/revision/{rev.id}">#{rev.id}</a></td><td
 					>{rev.route !== null && rev.route !== undefined ? routeNames[rev.route]() : ''}</td
 				><td>
-					<a href="/profile/{rev.user}">{rev.user}</a>
+					<a href="/user/{rev.user}">{rev.user}</a>
 				</td><td>
 					<Time format="relative" date={rev.date} />
 				</td><td>

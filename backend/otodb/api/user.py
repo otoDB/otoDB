@@ -49,7 +49,7 @@ from .common import (
 	profile_connection_parsers,
 )
 
-profile_router = Router()
+user_router = Router()
 
 
 # Used for filters on submission page
@@ -62,8 +62,8 @@ class SubmissionStanding(OtodbIntegerEnum):
 	APPEALED = 5, 'Appealed'
 
 
-@profile_router.get('profile', response=ProfileSchema)
-def profile(request: AuthedHttpRequest, username: str):
+@user_router.get('user', response=ProfileSchema)
+def user(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user
 
@@ -87,7 +87,7 @@ class ProfileSearchFilterSchema(FilterSchema):
 	level: Account.Levels | None = None
 
 
-@profile_router.get('search', response=List[ProfileIndexSchema])
+@user_router.get('search', response=List[ProfileIndexSchema])
 @paginate
 def search(
 	request: AuthedHttpRequest,
@@ -153,7 +153,7 @@ def search(
 	return qs.order_by(order, 'id')
 
 
-@profile_router.get('lists', response=List[ListSchema])
+@user_router.get('lists', response=List[ListSchema])
 def lists(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.pool_set
@@ -163,7 +163,7 @@ class UserConnectionSchema(ConnectionSchema):
 	site: ProfileConnectionTypes
 
 
-@profile_router.get('connection', response=List[UserConnectionSchema])
+@user_router.get('connection', response=List[UserConnectionSchema])
 def connection(request: AuthedHttpRequest, username: str):
 	user = get_object_or_404(Account, username__iexact=username)
 	return user.profileconnection_set
@@ -172,7 +172,7 @@ def connection(request: AuthedHttpRequest, username: str):
 creator_tag_connection_parser = make_alt_value_parser(*profile_connection_parsers)
 
 
-@profile_router.put('connection', auth=django_auth)
+@user_router.put('connection', auth=django_auth)
 def edit_connections(request: AuthedHttpRequest, urls: str):
 	user = request.user
 	ProfileConnection.objects.filter(profile=user).delete()
@@ -187,7 +187,7 @@ def edit_connections(request: AuthedHttpRequest, urls: str):
 	ProfileConnection.objects.bulk_create(connections)
 
 
-@profile_router.get(
+@user_router.get(
 	'work_in_my_lists', response=List[tuple[ListSchema, bool]], auth=django_auth
 )
 def work_in_lists(request: AuthedHttpRequest, work_id: OtodbID):
@@ -216,7 +216,7 @@ class SubmissionsFilterSchema(FilterSchema):
 	status: WorkStatus | None = Field(None, json_schema_extra={'q': 'work_status'})
 
 
-@profile_router.get('submissions', response=List[SourceSubmissionSchema])
+@user_router.get('submissions', response=List[SourceSubmissionSchema])
 @paginate
 def submissions(
 	request: AuthedHttpRequest,
@@ -267,7 +267,7 @@ def submissions(
 	return submissions.order_by(order)
 
 
-@profile_router.post('prefs', auth=django_auth)
+@user_router.post('prefs', auth=django_auth)
 def set_prefs(request: AuthedHttpRequest, payload: UserPreferenceSchema):
 	UserPreference.objects.bulk_create(
 		[
@@ -323,9 +323,7 @@ class NotificationSchema(ModelSchema):
 		return (value.thread_id, value.num)
 
 
-@profile_router.get(
-	'notifications', auth=django_auth, response=list[NotificationSchema]
-)
+@user_router.get('notifications', auth=django_auth, response=list[NotificationSchema])
 @paginate
 def notifications(request: AuthedHttpRequest, subscription: bool | None = None):
 	qs = (
@@ -346,7 +344,7 @@ def notifications(request: AuthedHttpRequest, subscription: bool | None = None):
 	return qs
 
 
-@profile_router.put('notification', auth=django_auth)
+@user_router.put('notification', auth=django_auth)
 def read_notif(request: AuthedHttpRequest, notif_id: OtodbID):
 	if request.user.notifs.filter(id=notif_id).update(dismissed=True) > 0:
 		return 200
@@ -354,7 +352,7 @@ def read_notif(request: AuthedHttpRequest, notif_id: OtodbID):
 		raise HttpError(400, 'Bad Request')
 
 
-@profile_router.delete('notification', auth=django_auth)
+@user_router.delete('notification', auth=django_auth)
 def del_notif(request: AuthedHttpRequest, notif_id: OtodbID):
 	if request.user.notifs.filter(id=notif_id).delete()[0] > 0:
 		return 200

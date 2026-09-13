@@ -305,15 +305,15 @@ class NotificationSchema(ModelSchema):
 
 		if value is None:
 			return None
+		ct = value.content_type
+		T = ct.model_class()
+		if issubclass(T, OtodbTagModel):
+			ident = T.objects.get(id=value.object_pk).slug
+		elif T is Account:
+			ident = T.objects.get(id=value.object_pk).username
 		else:
-			ct = value.content_type
-			T = ct.model_class()
-			return (
-				ct.model,
-				T.objects.get(id=value.object_pk).slug
-				if issubclass(T, OtodbTagModel)
-				else str(value.object_pk),
-			)
+			ident = str(value.object_pk)
+		return (ct.model, ident)
 
 	@field_validator('threadpost', mode='before', check_fields=False)
 	@classmethod

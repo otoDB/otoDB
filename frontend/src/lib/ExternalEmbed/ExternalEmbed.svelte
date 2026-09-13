@@ -74,6 +74,22 @@
 		scrolling="no"
 		allowfullscreen
 	></iframe>
+{:else if src.platform === Platform.otomad_site}
+	<iframe
+		title="otomad.site Note"
+		{width}
+		{height}
+		src="https://otomad.site/embed/notes/{src.source_id}?rounded=false&border=false"
+		allowfullscreen
+	></iframe>
+{:else if src.platform === Platform.Misskey}
+	<iframe
+		title="Misskey Note"
+		{width}
+		{height}
+		src="https://misskey.io/embed/notes/{src.source_id}?rounded=false&border=false"
+		allowfullscreen
+	></iframe>
 {/if}
 
 <style>

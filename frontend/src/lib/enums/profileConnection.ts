@@ -31,5 +31,13 @@ export const profileConnectionMap: Record<
 	[ProfileConnectionTypes.Soundcloud]: {
 		name: 'Soundcloud',
 		linkFn: (id: string) => `https://soundcloud.com/${id}`
+	},
+	[ProfileConnectionTypes.otomad_site]: {
+		name: 'otomad.site',
+		linkFn: (id: string) => `https://otomad.site/@${id}`
+	},
+	[ProfileConnectionTypes.Misskey]: {
+		name: 'Misskey',
+		linkFn: (id: string) => `https://misskey.io/@${id}`
 	}
 };

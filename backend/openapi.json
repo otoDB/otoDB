@@ -6159,7 +6159,9 @@
           3,
           4,
           5,
-          6
+          6,
+          7,
+          8
         ],
         "title": "VideoPlatformPref",
         "type": "integer",
@@ -6170,7 +6172,9 @@
           "Bilibili",
           "SoundCloud",
           "Twitter",
-          "AcFun"
+          "AcFun",
+          "otomad.site",
+          "Misskey"
         ]
       },
       "RegisterRequestSchema": {
@@ -7207,7 +7211,9 @@
           3,
           4,
           5,
-          6
+          6,
+          7,
+          8
         ],
         "title": "Platform",
         "type": "integer",
@@ -7217,7 +7223,9 @@
           "Bilibili",
           "SoundCloud",
           "Twitter",
-          "AcFun"
+          "AcFun",
+          "otomad.site",
+          "Misskey"
         ]
       },
       "WorkOrigin": {
@@ -7769,7 +7777,9 @@
           3,
           4,
           5,
-          6
+          6,
+          7,
+          8
         ],
         "title": "ProfileConnectionTypes",
         "type": "integer",
@@ -7780,7 +7790,9 @@
           "Bilibili",
           "Twitter",
           "Bluesky",
-          "Soundcloud"
+          "Soundcloud",
+          "otomad.site",
+          "Misskey"
         ]
       },
       "UserConnectionSchema": {

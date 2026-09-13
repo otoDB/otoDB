@@ -102,6 +102,16 @@ export const AcFun: Story = {
 	args: { src: source(Platform.AcFun, 'ac1234567') }
 };
 
+/** An otomad.site note. */
+export const OtomadSite: Story = {
+	args: { src: source(Platform.otomad_site, 'akkvpcrymqh3amtm') }
+};
+
+/** A misskey.io note. */
+export const Misskey: Story = {
+	args: { src: source(Platform.Misskey, 'akkvpcrymqh3amtm') }
+};
+
 /** Autoplay enabled, the default the component ships with. */
 export const Autoplay: Story = {
 	args: { autoplay: true }

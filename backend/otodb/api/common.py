@@ -253,7 +253,8 @@ class SourceCreationResponse(Schema):
 
 
 class TagWorkInstanceInSchema(Schema):
-	nameslug: str
+	slug: str
+	name: str | None = None
 	sample: bool | None = None
 	roles: list[Annotated[int, Field(ge=1, le=max(Role.values))]] | None = None
 

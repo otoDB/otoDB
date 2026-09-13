@@ -292,7 +292,7 @@ def extract_source_tag_suggestions(src: WorkSource):
 		TagWorkSchema(
 			id=0,
 			name=name,
-			slug=name,
+			slug=slug,
 			category=0,
 			lang_prefs=[],
 			aliased_to=None,
@@ -300,7 +300,7 @@ def extract_source_tag_suggestions(src: WorkSource):
 		)
 		# Deduplicate by slug -- see PR #467
 		for slug, name in slug_to_name.items()
-		if slug not in existing_slugs
+		if slug and slug not in existing_slugs
 	]
 	creator_tags = resolve_creator_tags(src, info)
 	return existing, new_tags, creator_tags

@@ -51,12 +51,16 @@ def NFKC(s: str):
 	return unicodedata.normalize('NFKC', s)
 
 
+def NFC(s: str):
+	return unicodedata.normalize('NFC', s)
+
+
 def clean_tag(s: str):
-	return NFKC(s).strip()
+	return NFC(s).strip()
 
 
 def canonicalize_tag(s: str):
-	return clean_tag(s).lower().replace(' ', '_')
+	return NFKC(s).strip().lower().replace(' ', '_')
 
 
 def slugify_tag(s: str):
@@ -295,8 +299,9 @@ def process_video_info(full_info, link=None):
 
 		# Process tags
 		if 'tags' in info:
-			info['tags'] = [canonicalize_tag(tag) for tag in info['tags']]
-			info['tags'] = list(dict.fromkeys(info['tags']))
+			info['tags'] = list(
+				dict.fromkeys(filter(None, map(clean_tag, info['tags'])))
+			)
 
 		# Clean description
 		info['description'] = clean_description(info['description'])

@@ -51,5 +51,27 @@ export const songConnectionMap: Record<
 	[SongConnectionTypes.The_Mod_Archive]: {
 		name: 'The Mod Archive',
 		linkFn: (id: string) => `https://modarchive.org/index.php?request=view_by_moduleid&query=${id}`
+	},
+	[SongConnectionTypes.Spotify]: {
+		name: 'Spotify',
+		linkFn: (id: string) => `https://open.spotify.com/track/${id}`
+	},
+	[SongConnectionTypes.Apple_Music]: {
+		name: 'Apple Music',
+		linkFn: (id: string) => `https://music.apple.com/song/${id}`
+	},
+	[SongConnectionTypes.YouTube_Music]: {
+		name: 'YouTube Music',
+		linkFn: (id: string) => `https://music.youtube.com/watch?v=${id}`
+	},
+	[SongConnectionTypes.Bandcamp]: {
+		name: 'Bandcamp',
+		// id is `{artist}.bandcamp.com/track/{slug}`
+		linkFn: (id: string) => `https://${id}`
+	},
+	[SongConnectionTypes.SoundCloud]: {
+		name: 'SoundCloud',
+		// id is `{user}/{track}`
+		linkFn: (id: string) => `https://soundcloud.com/${id}`
 	}
 };

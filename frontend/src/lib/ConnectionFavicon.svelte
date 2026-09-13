@@ -2,7 +2,9 @@
 	import faviconAniDB from '$lib/connection_favicon/AniDB.png';
 	import faviconAniKore from '$lib/connection_favicon/AniKore.png';
 	import faviconAniList from '$lib/connection_favicon/AniList.png';
+	import faviconAppleMusic from '$lib/connection_favicon/Apple Music.png';
 	import faviconAnimePlanet from '$lib/connection_favicon/Anime-Planet.png';
+	import faviconBandcamp from '$lib/connection_favicon/Bandcamp.png';
 	import faviconBangumi from '$lib/connection_favicon/Bangumi.png';
 	import faviconBilibili from '$lib/connection_favicon/Bilibili.png';
 	import faviconBluesky from '$lib/connection_favicon/Bluesky.png';
@@ -23,6 +25,7 @@
 	import faviconRemyWiki from '$lib/connection_favicon/RemyWiki.png';
 	import faviconSilentBlue from '$lib/connection_favicon/Silent Blue.png';
 	import faviconSoundcloud from '$lib/connection_favicon/Soundcloud.png';
+	import faviconSpotify from '$lib/connection_favicon/Spotify.png';
 	import faviconModArchive from '$lib/connection_favicon/The Mod Archive.png';
 	import faviconTouhouDB from '$lib/connection_favicon/TouhouDB.png';
 	import faviconTwitter from '$lib/connection_favicon/Twitter.png';
@@ -31,6 +34,7 @@
 	import faviconWebsite from '$lib/connection_favicon/Website.png';
 	import faviconWikipediaEn from '$lib/connection_favicon/Wikipedia (en).png';
 	import faviconYouTube from '$lib/connection_favicon/YouTube.png';
+	import faviconYouTubeMusic from '$lib/connection_favicon/YouTube Music.png';
 	import faviconZenius from '$lib/connection_favicon/Zenius -I- vanisher.com.png';
 	import faviconOtomadWiki from '$lib/connection_favicon/otomad.wiki.png';
 	import faviconVndb from '$lib/connection_favicon/vndb.png';
@@ -52,6 +56,8 @@
 		'AniKore': faviconAniKore,
 		'AniList': faviconAniList,
 		'Anime-Planet': faviconAnimePlanet,
+		'Apple Music': faviconAppleMusic,
+		'Bandcamp': faviconBandcamp,
 		'Bangumi': faviconBangumi,
 		'Bilibili': faviconBilibili,
 		'Bluesky': faviconBluesky,
@@ -73,12 +79,15 @@
 		'RemyWiki': faviconRemyWiki,
 		'Silent Blue': faviconSilentBlue,
 		'Soundcloud': faviconSoundcloud,
+		'SoundCloud': faviconSoundcloud,
+		'Spotify': faviconSpotify,
 		'TouhouDB': faviconTouhouDB,
 		'Twitter': faviconTwitter,
 		'VGMdb': faviconVGMdb,
 		'VocaDB': faviconVocaDB,
 		'Wikipedia (en)': faviconWikipediaEn,
 		'YouTube': faviconYouTube,
+		'YouTube Music': faviconYouTubeMusic,
 		'Zenius -I- vanisher.com': faviconZenius,
 		'otomad.wiki': faviconOtomadWiki,
 		'vndb': faviconVndb,

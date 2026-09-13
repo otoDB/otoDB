@@ -9393,7 +9393,12 @@
           21,
           22,
           30,
-          40
+          40,
+          50,
+          51,
+          52,
+          53,
+          54
         ],
         "title": "SongConnectionTypes",
         "type": "integer",
@@ -9409,7 +9414,12 @@
           "Silent Blue",
           "Zenius -I- vanisher.com",
           "NND Medley Wiki",
-          "The Mod Archive"
+          "The Mod Archive",
+          "Spotify",
+          "Apple Music",
+          "YouTube Music",
+          "Bandcamp",
+          "SoundCloud"
         ]
       },
       "ConnectionLookupResponse": {

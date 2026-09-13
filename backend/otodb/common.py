@@ -287,6 +287,14 @@ def process_video_info(full_info, link=None):
 			case _:
 				return None
 
+		if not info.get('timestamp') and info.get('upload_date'):
+			logger.warning(
+				f'Video info missing timestamp, using upload_date for {info.get("webpage_url")}'
+			)
+			info['timestamp'] = int(
+				mktime(datetime.strptime(info['upload_date'], '%Y%m%d').timetuple())
+			)
+
 		# Clean up ID
 		for c in ['?', '/']:  # drop query strings and subdirectories
 			i = info['id'].find(c)

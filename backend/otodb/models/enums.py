@@ -366,12 +366,6 @@ class Preferences(OtodbIntegerEnum):
 	THEME = 2
 	VIDEO_PLATFORM = 3
 	PREFER_AUTHOR_UPLOAD = 4
-	GRAPH_VIEW_BACKEND = 5
-
-
-class GraphViewBackends(OtodbIntegerEnum):
-	GRAPHVIZ = 0
-	MERMAID = 1
 
 
 PreferencesValueTypeMap = {
@@ -379,5 +373,4 @@ PreferencesValueTypeMap = {
 	Preferences.THEME: ThemePref,
 	Preferences.VIDEO_PLATFORM: VideoPlatformPref,
 	Preferences.PREFER_AUTHOR_UPLOAD: bool,
-	Preferences.GRAPH_VIEW_BACKEND: GraphViewBackends,
 }

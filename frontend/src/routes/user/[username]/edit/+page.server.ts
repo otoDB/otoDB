@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ params, fetch, locals }) => {
 		redirect(303, `/user/${encodeURIComponent(params.username!)}`);
 
 	const [payloadConnections, payloadInvites] = await Promise.all([
-		client.GET('/api/profile/connection', {
+		client.GET('/api/user/connection', {
 			fetch,
 			params: {
 				query: {
@@ -41,7 +41,7 @@ export const actions = {
 	connections: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 		const urls = (data.get('urls') as string) ?? '';
-		const { error } = await rawClient.PUT('/api/profile/connection', {
+		const { error } = await rawClient.PUT('/api/user/connection', {
 			fetch,
 			params: { query: { urls } }
 		});

@@ -3,7 +3,7 @@ import type { ComponentProps } from 'svelte';
 import { m } from '$lib/paraglide/messages.js';
 import {
 	Levels,
-	PathsApiProfileSearchGetParametersQueryOrder as OrderEnum,
+	PathsApiUserSearchGetParametersQueryOrder as OrderEnum,
 	type components
 } from '$lib/schema';
 import Page from './+page.svelte';

@@ -26,7 +26,7 @@
 		current_theme = theme;
 		document.documentElement.setAttribute('data-theme', themes[theme].key);
 
-		if (data.user) await client.POST('/api/profile/prefs', { fetch, body: { THEME: theme } });
+		if (data.user) await client.POST('/api/user/prefs', { fetch, body: { THEME: theme } });
 		else updateLocalPrefs({ THEME: theme });
 	}
 
@@ -35,7 +35,7 @@
 			VIDEO_PLATFORM: video_platform,
 			PREFER_AUTHOR_UPLOAD: prefer_author
 		};
-		if (data.user) await client.POST('/api/profile/prefs', { fetch, body });
+		if (data.user) await client.POST('/api/user/prefs', { fetch, body });
 		else updateLocalPrefs(body);
 	}
 </script>

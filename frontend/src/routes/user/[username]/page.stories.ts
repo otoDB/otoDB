@@ -7,27 +7,27 @@ import Page from './+page.svelte';
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
 
 const linksWithoutEdit = [
-	{ pathname: 'profile/member_user', title: 'Profile: member_user' },
-	{ pathname: 'profile/member_user/lists', title: 'Lists' },
-	{ pathname: 'profile/member_user/threads', title: 'Threads' },
-	{ pathname: 'profile/member_user/submissions', title: 'Submissions' },
-	{ pathname: 'profile/member_user/revisions', title: 'Revisions' }
+	{ pathname: 'user/member_user', title: 'Profile: member_user' },
+	{ pathname: 'user/member_user/lists', title: 'Lists' },
+	{ pathname: 'user/member_user/threads', title: 'Threads' },
+	{ pathname: 'user/member_user/submissions', title: 'Submissions' },
+	{ pathname: 'user/member_user/revisions', title: 'Revisions' }
 ];
 
 const linksWithEdit = [
-	{ pathname: 'profile/editor_user', title: 'Profile: editor_user' },
-	{ pathname: 'profile/editor_user/lists', title: 'Lists' },
-	{ pathname: 'profile/editor_user/threads', title: 'Threads' },
-	{ pathname: 'profile/editor_user/submissions', title: 'Submissions' },
-	{ pathname: 'profile/editor_user/revisions', title: 'Revisions' },
-	{ pathname: 'profile/editor_user/edit', title: 'Edit profile' }
+	{ pathname: 'user/editor_user', title: 'Profile: editor_user' },
+	{ pathname: 'user/editor_user/lists', title: 'Lists' },
+	{ pathname: 'user/editor_user/threads', title: 'Threads' },
+	{ pathname: 'user/editor_user/submissions', title: 'Submissions' },
+	{ pathname: 'user/editor_user/revisions', title: 'Revisions' },
+	{ pathname: 'user/editor_user/edit', title: 'Edit profile' }
 ];
 
 const head = {
 	title: m.mild_loud_shad_enchant({ type: m.fuzzy_crazy_cobra_lead(), name: 'member_user' }),
 	breadcrumbs: [
 		{ name: 'Home', url: '/' },
-		{ name: 'member_user', url: '/profile/member_user' }
+		{ name: 'member_user', url: '/user/member_user' }
 	]
 };
 
@@ -146,7 +146,7 @@ export const OwnProfileAsEditor: Story = {
 				title: m.mild_loud_shad_enchant({ type: m.fuzzy_crazy_cobra_lead(), name: 'editor_user' }),
 				breadcrumbs: [
 					{ name: 'Home', url: '/' },
-					{ name: 'editor_user', url: '/profile/editor_user' }
+					{ name: 'editor_user', url: '/user/editor_user' }
 				]
 			},
 			profile: editorProfile,

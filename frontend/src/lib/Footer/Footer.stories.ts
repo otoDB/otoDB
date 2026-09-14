@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw';
 import type { ComponentProps } from 'svelte';
 import Footer from './Footer.svelte';
 
-const handlers = [http.post('*/api/profile/prefs', () => new HttpResponse(null, { status: 200 }))];
+const handlers = [http.post('*/api/user/prefs', () => new HttpResponse(null, { status: 200 }))];
 
 const meta = {
 	component: Footer,

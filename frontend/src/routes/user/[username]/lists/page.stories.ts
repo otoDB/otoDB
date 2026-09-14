@@ -7,27 +7,27 @@ import Page from './+page.svelte';
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
 
 const ownerLinks = [
-	{ pathname: 'profile/member_user', title: 'Profile: member_user' },
-	{ pathname: 'profile/member_user/lists', title: 'Lists' },
-	{ pathname: 'profile/member_user/threads', title: 'Threads' },
-	{ pathname: 'profile/member_user/submissions', title: 'Submissions' },
-	{ pathname: 'profile/member_user/revisions', title: 'Revisions' },
-	{ pathname: 'profile/member_user/edit', title: 'Edit profile' }
+	{ pathname: 'user/member_user', title: 'Profile: member_user' },
+	{ pathname: 'user/member_user/lists', title: 'Lists' },
+	{ pathname: 'user/member_user/threads', title: 'Threads' },
+	{ pathname: 'user/member_user/submissions', title: 'Submissions' },
+	{ pathname: 'user/member_user/revisions', title: 'Revisions' },
+	{ pathname: 'user/member_user/edit', title: 'Edit profile' }
 ];
 
 const visitorLinks = [
-	{ pathname: 'profile/member_user', title: 'Profile: member_user' },
-	{ pathname: 'profile/member_user/lists', title: 'Lists' },
-	{ pathname: 'profile/member_user/threads', title: 'Threads' },
-	{ pathname: 'profile/member_user/submissions', title: 'Submissions' },
-	{ pathname: 'profile/member_user/revisions', title: 'Revisions' }
+	{ pathname: 'user/member_user', title: 'Profile: member_user' },
+	{ pathname: 'user/member_user/lists', title: 'Lists' },
+	{ pathname: 'user/member_user/threads', title: 'Threads' },
+	{ pathname: 'user/member_user/submissions', title: 'Submissions' },
+	{ pathname: 'user/member_user/revisions', title: 'Revisions' }
 ];
 
 const head = {
 	title: m.mild_loud_shad_enchant({ type: m.fuzzy_crazy_cobra_lead(), name: 'member_user' }),
 	breadcrumbs: [
 		{ name: 'Home', url: '/' },
-		{ name: 'member_user', url: '/profile/member_user' }
+		{ name: 'member_user', url: '/user/member_user' }
 	]
 };
 

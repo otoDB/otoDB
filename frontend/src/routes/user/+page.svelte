@@ -5,7 +5,7 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { enumValues } from '$lib/enums';
 	import { userLevelNames } from '$lib/enums/userLevel.js';
-	import { Levels, PathsApiProfileSearchGetParametersQueryOrder as OrderEnum } from '$lib/schema';
+	import { Levels, PathsApiUserSearchGetParametersQueryOrder as OrderEnum } from '$lib/schema';
 	import Time from '$lib/Time.svelte';
 
 	let { data } = $props();

@@ -6,7 +6,6 @@
 	import GlobalSideNav from '$lib/GlobalSideNav/GlobalSideNav.svelte';
 	import LoadingIndicator from '$lib/LoadingIndicator/LoadingIndicator.svelte';
 	import Section from '$lib/Section.svelte';
-	import { isFormDirty } from '$lib/dirty';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import type { ErrorPayload } from '$lib/errors';
 	import { m } from '$lib/paraglide/messages.js';
@@ -81,7 +80,7 @@
 		if (
 			type !== 'form' &&
 			type !== 'goto' &&
-			Array.from(document.querySelectorAll('form')).some(isFormDirty)
+			Array.from(document.querySelectorAll('form')).some((form) => form.dataset.dirty)
 		)
 			if (!confirm(m.raw_actual_mallard_exhale())) cancel();
 	});

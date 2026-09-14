@@ -1,6 +1,6 @@
 import client from '$lib/api.server';
 import { m } from '$lib/paraglide/messages';
-import { Levels, PathsApiProfileSearchGetParametersQueryOrder as OrderEnum } from '$lib/schema';
+import { Levels, PathsApiUserSearchGetParametersQueryOrder as OrderEnum } from '$lib/schema';
 import { asEnum } from '$lib/enums';
 import type { PageServerLoad } from './$types';
 
@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 	const order = asEnum(OrderEnum, orderParam) ?? OrderEnum.ValueMinusdate_created;
 	const page = parseInt(url.searchParams.get('page') ?? '0', 10) || 1;
 
-	const { data } = await client.GET('/api/profile/search', {
+	const { data } = await client.GET('/api/user/search', {
 		fetch,
 		params: {
 			query: {

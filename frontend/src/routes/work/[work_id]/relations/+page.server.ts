@@ -20,15 +20,15 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 
 	const direction_param = url.searchParams.get('rel_dir'),
 		allowed_types_param = url.searchParams.getAll('rel_allowed_types'),
-		show_thumbs_par = url.searchParams.get('rel_show_thumbs'),
-		degree = parseInt(url.searchParams.get('rel_deg') ?? '0', 10) || 1;
+		show_thumbs_params = url.searchParams.getAll('rel_show_thumbs'),
+		degree = Math.max(1, parseInt(url.searchParams.get('rel_deg') ?? '0', 10) || 1);
 	const allowed_types =
 		allowed_types_param.length !== 0
-			? (allowed_types_param
-					.map((v) => asEnum(WorkRelationTypes, v))
-					.filter((v) => v) as WorkRelationTypes[])
+			? allowed_types_param
+					.map((v) => asEnum(WorkRelationTypes, Number(v)))
+					.filter((v): v is WorkRelationTypes => v !== null)
 			: enumValues(WorkRelationTypes);
-	const show_thumbs = show_thumbs_par === null || show_thumbs_par === 'true';
+	const show_thumbs = show_thumbs_params.length === 0 || show_thumbs_params.includes('true');
 
 	const [nodes, links, images, max_distance, auto_dir] = prepare_work_graph(
 		works,

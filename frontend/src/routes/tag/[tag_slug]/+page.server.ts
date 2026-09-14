@@ -87,14 +87,16 @@ export const load: PageServerLoad = async ({ params, fetch, parent, url }) => {
 			})
 		]);
 
+		if (relations.length === 0) return { ...r, song_connections };
+
 		const direction_param = url.searchParams.get('rel_dir'),
 			allowed_types_param = url.searchParams.getAll('rel_allowed_types'),
-			degree = parseInt(url.searchParams.get('rel_deg') ?? '0', 10) || 1;
+			degree = Math.max(1, parseInt(url.searchParams.get('rel_deg') ?? '0', 10) || 1);
 		const allowed_types =
 			allowed_types_param.length !== 0
-				? (allowed_types_param
-						.map((v) => asEnum(SongRelationTypes, v))
-						.filter((v) => v) as SongRelationTypes[])
+				? allowed_types_param
+						.map((v) => asEnum(SongRelationTypes, Number(v)))
+						.filter((v): v is SongRelationTypes => v !== null)
 				: enumValues(SongRelationTypes);
 		const direction = (['LR', 'TB'] as unknown[]).includes(direction_param)
 			? (direction_param as 'LR' | 'TB')

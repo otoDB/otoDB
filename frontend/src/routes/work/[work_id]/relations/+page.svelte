@@ -6,7 +6,7 @@
 </script>
 
 <Section type={m.grand_merry_fly_succeed()} title={data.title} menuLinks={data.links}>
-	{#if data.works}svg: string;
+	{#if data.works}
 		<RelationViewer
 			svg={data.svg}
 			direction={data.direction}

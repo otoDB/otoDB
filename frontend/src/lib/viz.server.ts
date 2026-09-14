@@ -59,8 +59,9 @@ const relation_BFS = <T>(
 const gv_font = 'Arial';
 // A node and each of its edges share a rel_<id> class, which is how hovering one finds the other
 const rel_class = (...ids: string[]) => ids.map((i) => `rel_${i}`).join(' ');
+const image_url = (u: string | null | undefined) => (u && URL.parse(u)?.href) || null;
 const gv_node = <T>(id: string, ob: Node<T>, url: string, show_thumbs: boolean) => {
-	const thumb = show_thumbs ? ((ob as Work).thumbnail ?? null) : null;
+	const thumb = show_thumbs ? image_url((ob as Work).thumbnail) : null;
 	return {
 		name: ob.id,
 		attributes: {
@@ -75,12 +76,18 @@ const gv_node = <T>(id: string, ob: Node<T>, url: string, show_thumbs: boolean) 
 };
 const gv_more_node = (a: string) => ({
 	name: `more:${a}`,
-	attributes: { label: m.fresh_deft_warbler_edit(), shape: 'plaintext' }
+	attributes: {
+		label: m.fresh_deft_warbler_edit(),
+		tooltip: m.fresh_deft_warbler_edit(),
+		shape: 'plaintext'
+	}
 });
-const gv_more_edge = (a: string) =>
-	a[0] === '-'
-		? { tail: a.slice(1), head: `more:${a}`, attributes: { style: 'dashed', dir: 'none' } }
-		: { tail: `more:${a}`, head: a, attributes: { style: 'dashed', dir: 'none' } };
+const gv_more_edge = (a: string) => {
+	const attributes = { style: 'dashed', dir: 'none', tooltip: m.fresh_deft_warbler_edit() };
+	return a[0] === '-'
+		? { tail: a.slice(1), head: `more:${a}`, attributes }
+		: { tail: `more:${a}`, head: a, attributes };
+};
 
 const auto_dir = (links: { A_id: string; B_id: string }[]) => {
 	// heuristic from VNDB's `gen_dot`
@@ -110,17 +117,19 @@ export const prepare_work_graph = (
 			...links.map((r) => {
 				const [tail, head] =
 					r.relation === WorkRelationTypes.Sequel ? [r.B_id, r.A_id] : [r.A_id, r.B_id];
+				const label = WorkRelationNames[r.relation]();
 				return {
 					tail,
 					head,
-					attributes: { label: WorkRelationNames[r.relation](), class: rel_class(tail, head) }
+					attributes: { label, tooltip: label, class: rel_class(tail, head) }
 				};
 			}),
 			...ext.map(gv_more_edge)
 		],
-		nodes
-			.filter((ob) => ob.thumbnail)
-			.map((ob) => ({ name: ob.thumbnail!, width: 160, height: 120 })),
+		nodes.flatMap((ob) => {
+			const name = image_url(ob.thumbnail);
+			return name ? [{ name, width: 160, height: 120 }] : [];
+		}),
 		Math.max(
 			...relation_BFS(objects, relations, id, enumValues(WorkRelationTypes))[0].map(
 				(n) => n.distance
@@ -144,14 +153,14 @@ export const prepare_song_graph = (
 			...ext.map(gv_more_node)
 		],
 		[
-			...links.map((r) => ({
-				tail: r.A_id,
-				head: r.B_id,
-				attributes: {
-					label: SongRelationNames[r.relation](),
-					class: rel_class(r.A_id, r.B_id)
-				}
-			})),
+			...links.map((r) => {
+				const label = SongRelationNames[r.relation]();
+				return {
+					tail: r.A_id,
+					head: r.B_id,
+					attributes: { label, tooltip: label, class: rel_class(r.A_id, r.B_id) }
+				};
+			}),
 			...ext.map(gv_more_edge)
 		],
 		Math.max(
@@ -178,7 +187,7 @@ export const get_svg_gv = (
 		},
 		{
 			format: 'svg_inline',
-			graphAttributes: { bgcolor: 'transparent', direction },
+			graphAttributes: { bgcolor: 'transparent', rankdir: direction },
 			images
 		}
 	);

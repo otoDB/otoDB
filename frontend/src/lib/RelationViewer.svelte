@@ -20,40 +20,11 @@
 
 	function svgMouseOver(event: Event) {
 		if (!svgContainer) return;
-		const target = event.target as HTMLElement;
-
 		// Hovering a node lights up every edge sharing its rel_<id> class
-		const gv_node_el = target.closest('g.node[class*="rel_"]');
-		if (gv_node_el) {
-			const rel = [...gv_node_el.classList].find((c) => c.startsWith('rel_'));
-			if (rel)
-				svgContainer
-					.querySelectorAll(`g.edge.${rel}`)
-					.forEach((e) => e.classList.add('highlighted'));
-			return;
-		}
-
-		const node = target.closest('[id*="-flowchart-"]');
-		const label: HTMLElement | null = target.closest('.label:has(.edgeLabel)');
-
-		if (node) {
-			const nodeId = node.id.match(/-flowchart-(.+)-\d+$/)?.[1];
-			if (nodeId) {
-				const links = svgContainer.querySelectorAll(`[id*="_${nodeId}_"]`);
-				links.forEach((link) => {
-					link.classList.add('highlighted');
-				});
-				const labels = svgContainer.querySelectorAll(`[data-id*="_${nodeId}_"]`);
-				labels.forEach((link) => {
-					link.classList.add('highlighted');
-				});
-			}
-		}
-		if (label) {
-			const edge = svgContainer.querySelector(`[data-id="${label.dataset.id}"`)!;
-			edge.classList.add('highlighted');
-			label.classList.add('highlighted');
-		}
+		const node = (event.target as HTMLElement).closest('g.node[class*="rel_"]');
+		const rel = node && [...node.classList].find((c) => c.startsWith('rel_'));
+		if (rel)
+			svgContainer.querySelectorAll(`g.edge.${rel}`).forEach((e) => e.classList.add('highlighted'));
 	}
 
 	function svgMouseOut() {
@@ -74,6 +45,7 @@
 				<td>
 					<input
 						type="number"
+						id="rel_deg"
 						name="rel_deg"
 						value={Math.max(Math.min(degree ?? 1, max_distance), 1)}
 						min="1"
@@ -85,7 +57,7 @@
 			<tr>
 				<th><label for="rel_dir">{m.fair_aware_salmon_twist()}</label></th>
 				<td>
-					<select name="rel_dir" value={direction}
+					<select id="rel_dir" name="rel_dir" value={direction}
 						><option value="LR">{m.top_front_ray_treasure()}</option><option value="TB"
 							>{m.stout_jumpy_ox_feel()}</option
 						></select
@@ -96,7 +68,14 @@
 				<tr>
 					<th><label for="rel_show_thumbs">{m.heroic_ideal_orangutan_aid()}</label></th>
 					<td>
-						<input type="checkbox" name="reL_show_thumbs" checked={show_thumbs} />
+						<input
+							type="checkbox"
+							id="rel_show_thumbs"
+							name="rel_show_thumbs"
+							value="true"
+							checked={show_thumbs}
+						/>
+						<input type="hidden" name="rel_show_thumbs" value="false" />
 					</td>
 				</tr>
 			{/if}
@@ -107,7 +86,7 @@
 					>
 				</th>
 				<td>
-					<select multiple name="rel_allowed_types" value={allowed_types}>
+					<select multiple id="rel_allowed_types" name="rel_allowed_types" value={allowed_types}>
 						{#each enumValues(RelationTypes) as t, i (i)}
 							<option value={t} class="type-label">{RelationNames[t]()}</option>
 						{/each}
@@ -188,45 +167,5 @@
 		}
 		@apply bg-otodb-bg-primary;
 		@apply text-otodb-content-primary;
-	}
-	:global(svg#svg-viewer) {
-		& .highlighted {
-			stroke: #f00 !important;
-			stroke-width: 2px !important;
-		}
-		& > rect:first-child {
-			@apply fill-otodb-bg-primary;
-		}
-		& #Relations .icon-shape p,
-		& #Relations .image-shape span {
-			@apply bg-otodb-bg-fainter;
-			@apply text-otodb-content-primary;
-			@apply fill-otodb-content-primary;
-		}
-		& #Relations .image-shape p {
-			color: inherit;
-			background-color: inherit;
-			fill: inherit;
-		}
-		& #Relations .flowchart-link {
-			@apply stroke-otodb-content-fainter;
-		}
-		& #Relations .edgeLabel,
-		& #Relations .edgeLabel p {
-			@apply text-otodb-content-primary;
-			@apply fill-otodb-content-primary;
-			@apply stroke-otodb-content-fainter;
-			@apply bg-otodb-bg-fainter;
-		}
-		& #Relations .edgeLabel .label.highlighted {
-			outline: #f00 1px solid !important;
-		}
-		& #Relations .marker {
-			@apply stroke-otodb-content-faint;
-			@apply fill-otodb-content-faint;
-		}
-		& #Relations g.moreNodes p {
-			@apply text-otodb-content-primary;
-		}
 	}
 </style>

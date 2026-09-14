@@ -2,7 +2,7 @@ import re
 from enum import Enum
 from functools import reduce, wraps
 from itertools import groupby
-from typing import Annotated, Dict, Optional
+from typing import Dict, Optional
 from urllib.parse import parse_qs, unquote, urlparse
 
 import lark
@@ -27,7 +27,7 @@ from ninja import Field, ModelSchema, Query, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 from ninja.utils import contribute_operation_args
-from pydantic import AfterValidator, field_validator
+from pydantic import field_validator
 
 from otodb.common import NFKC, canonicalize_tag, slugify_tag
 from otodb.models import (
@@ -433,7 +433,7 @@ def alias_tags(
 		try:
 			tags.append(model.objects.get(slug=slugify_tag(tag_name)))
 		except model.DoesNotExist:
-			tags.append(model.objects.create(name=tag_name))
+			tags.append(model.objects.create(name=tag_name.replace('_', ' ')))
 
 	into = get_object_or_404(
 		model.objects.select_related('aliased_to'), slug=slugify_tag(into_tag)
@@ -1131,7 +1131,7 @@ def song_tag_search(
 def song_tags(
 	request: HttpRequest,
 	song_id: OtodbID,
-	tags: list[Annotated[str, AfterValidator(canonicalize_tag)]],
+	tags: list[str],
 ):
 	song = get_object_or_404(MediaSong.objects, id=song_id)
 	ids = []
@@ -1141,7 +1141,7 @@ def song_tags(
 			if tag.aliased_to:
 				tag = tag.aliased_to
 		except TagSong.DoesNotExist:
-			tag = TagSong.objects.create(name=t)
+			tag = TagSong.objects.create(name=t.replace('_', ' '))
 		ids.append(tag.id)
 		TagSongInstance.objects.update_or_create(song=song, song_tag=tag)
 	song.tags.remove(*song.tags.exclude(id__in=ids))

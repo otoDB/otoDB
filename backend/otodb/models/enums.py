@@ -120,6 +120,12 @@ class SongConnectionTypes(OtodbIntegerEnum):
 
 	MODARCHIVE = 40, 'The Mod Archive'
 
+	SPOTIFY = 50, 'Spotify'
+	APPLEMUSIC = 51, 'Apple Music'
+	YOUTUBEMUSIC = 52, 'YouTube Music'
+	BANDCAMP = 53, 'Bandcamp'
+	SOUNDCLOUD = 54, 'SoundCloud'
+
 
 class TagWorkConnectionTypes(OtodbIntegerEnum):
 	OTOMADWIKI = 1, 'otomad.wiki'

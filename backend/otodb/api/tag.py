@@ -788,6 +788,44 @@ song_connection_parser = make_alt_value_parser(
 			],
 		),
 	),
+	(
+		SongConnectionTypes.SPOTIFY,
+		re_to_parser(
+			re.compile(
+				r'https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?track\/([0-9A-Za-z]{22})(?:\?.*)?'
+			)
+		),
+	),
+	(
+		SongConnectionTypes.APPLEMUSIC,
+		re_to_parser(
+			re.compile(
+				r'https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?song\/(?:[^/]+\/)?(\d+)\/?'
+			)
+		),
+	),
+	(
+		SongConnectionTypes.YOUTUBEMUSIC,
+		re_to_parser(
+			re.compile(
+				r'https?:\/\/music\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})(?:&.*)?'
+			)
+		),
+	),
+	(
+		SongConnectionTypes.BANDCAMP,
+		# Stored as `{artist}.bandcamp.com/track/{slug}`
+		re_to_parser(
+			re.compile(r'https?:\/\/([a-z0-9-]+\.bandcamp\.com\/track\/[^/?#]+)\/?')
+		),
+	),
+	(
+		SongConnectionTypes.SOUNDCLOUD,
+		# Stored as `{user}/{track}`
+		re_to_parser(
+			re.compile(r'https?:\/\/soundcloud\.com\/([^/?#]+\/[^/?#]+)\/?(?:\?.*)?')
+		),
+	),
 )
 
 tag_work_connection_parser = make_alt_value_parser(

@@ -18,7 +18,6 @@
 	let prefer_author_upload = $state(
 		data.user?.prefs.PREFER_AUTHOR_UPLOAD ?? local_prefs.PREFER_AUTHOR_UPLOAD
 	);
-
 	// "Prefer author uploads" only applies once a specific platform is chosen
 	let platform_selected = $derived(video_platform !== VideoPlatformPref.Auto);
 	let prefer_author = $derived(platform_selected && prefer_author_upload);

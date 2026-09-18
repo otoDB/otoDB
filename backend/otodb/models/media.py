@@ -387,8 +387,8 @@ class MediaSong(RevisionTrackedModel):
 	@staticmethod
 	# Points work_B to work_A
 	def merge(
-		to_song: 'MediaSong',
-		from_song: 'MediaSong',
+		to_song: MediaSong,
+		from_song: MediaSong,
 	):
 		from django.contrib.contenttypes.models import ContentType
 

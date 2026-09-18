@@ -184,14 +184,14 @@
 				{/each}
 			</ul>
 		{/if}
-		{#if data.song_relations && data.song_relations[0].length}
+		{#if data.svg}
 			<RelationViewer
-				id={data.tag.song.id}
-				objects={data.song_relations[1]}
-				relations={data.song_relations[0]}
-				defaultDir="LR"
+				svg={data.svg}
+				direction={data.direction}
+				max_distance={data.max_distance}
+				degree={data.degree}
+				allowed_types={data.allowed_types}
 				type="song"
-				min_height={80}
 			/>
 		{/if}
 	</Section>

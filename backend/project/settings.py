@@ -18,11 +18,15 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Only load the first .env file found, in case there are multiple (e.g. in the parent directory)
+for _env_file in (BASE_DIR / '.env', BASE_DIR.parent / '.env'):
+	if _env_file.is_file():
+		load_dotenv(_env_file, override=False)
+		break
 
 DEBUG = os.environ.get('OTODB_DEBUG', 'False').lower() == 'true'
 
@@ -55,6 +59,9 @@ EMAIL_HOST = os.environ.get('OTODB_EMAIL_HOST')
 EMAIL_PORT = os.environ.get('OTODB_EMAIL_PORT')
 EMAIL_HOST_USER = os.environ.get('OTODB_EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('OTODB_EMAIL_HOST_PASSWORD')
+EMAIL_BACKEND = os.environ.get(
+	'OTODB_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'
+)
 
 ALLOWED_HOSTS = [
 	host.strip()

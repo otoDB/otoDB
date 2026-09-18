@@ -62,7 +62,7 @@
 						><td
 							><Time format="relative" date={r.date} />
 							<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
-								>{#snippet content()}<a href="/profile/{r.user}">{r.user}</a
+								>{#snippet content()}<a href="/user/{r.user}">{r.user}</a
 									>{/snippet}</ParaglideMessage
 							></td
 						></tr
@@ -89,7 +89,7 @@
 						<td
 							><Time format="relative" date={p.modified} />
 							<ParaglideMessage message={m.noble_tidy_boar_lock} inputs={{}}
-								>{#snippet content()}<a href="/profile/{p.last_post_by}">{p.last_post_by}</a
+								>{#snippet content()}<a href="/user/{p.last_post_by}">{p.last_post_by}</a
 									>{/snippet}</ParaglideMessage
 							></td
 						>

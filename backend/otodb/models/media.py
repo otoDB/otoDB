@@ -253,7 +253,21 @@ class MediaWork(RevisionTrackedModel):
 		to_work.description = description
 		to_work.thumbnail_source = thumbnail_source
 		to_work.rating = rating
-		to_work.tags.add(*from_work.tags.all())
+		from_work.tagworkinstance_set.exclude(
+			work_tag_id__in=to_work.tagworkinstance_set.values('work_tag_id')
+		).update(work=to_work)
+
+		for tt in to_work.tagworkinstance_set.filter(
+			work_tag_id__in=from_work.tagworkinstance_set.values('work_tag_id')
+		):
+			ft = from_work.tagworkinstance_set.get(work_tag_id=tt.work_tag_id)
+			if ft.used_as_source:
+				tt.used_as_source = True
+			if tt.work_tag.category == WorkTagCategory.CREATOR and ft.creator_roles:
+				tt.creator_roles = (tt.creator_roles or 0) | ft.creator_roles
+			tt.save()
+			ft.delete()
+
 		to_work.save()
 
 		from_work.worksource_set.update(media=to_work)
@@ -369,3 +383,57 @@ class MediaSong(RevisionTrackedModel):
 
 	def __str__(self):
 		return self.title
+
+	@staticmethod
+	# Points work_B to work_A
+	def merge(
+		to_song: 'MediaSong',
+		from_song: 'MediaSong',
+	):
+		from django.contrib.contenttypes.models import ContentType
+
+		from otodb.models.posts import EntityLink
+
+		if to_song.bpm is None:
+			to_song.bpm = from_song.bpm
+		to_song.variable_bpm = to_song.variable_bpm or from_song.variable_bpm
+
+		from_song.relation_A.filter(B=to_song).delete()
+		from_song.relation_A.update(A=to_song)
+
+		from_song.relation_B.filter(A=to_song).delete()
+		from_song.relation_B.update(B=to_song)
+
+		TagSongInstance.objects.filter(song=from_song).exclude(
+			song_tag_id__in=TagSongInstance.objects.filter(song=to_song).values(
+				'song_tag_id'
+			)
+		).update(song=to_song)
+		TagSongInstance.objects.filter(song=from_song).delete()
+
+		for c in from_song.mediasongconnection_set.all():
+			if to_song.mediasongconnection_set.filter(
+				site=c.site, content_id=c.content_id
+			).exists():
+				c.delete()
+			else:
+				c.song = to_song
+				c.save()
+
+		mediasong_ct = ContentType.objects.get_for_model(MediaSong)
+
+		EntityLink.objects.filter(
+			entity_type=mediasong_ct,
+			entity_id=from_song.pk,
+			thread_id__in=EntityLink.objects.filter(
+				entity_type=mediasong_ct,
+				entity_id=to_song.pk,
+			).values('thread_id'),
+		).delete()
+		EntityLink.objects.filter(
+			entity_type=mediasong_ct,
+			entity_id=from_song.pk,
+		).update(entity_id=to_song.pk)
+
+		from_song.delete()
+		to_song.save()

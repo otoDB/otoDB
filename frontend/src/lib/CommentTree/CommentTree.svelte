@@ -125,13 +125,13 @@
 						{@html previews[reply_to]}
 					</div>
 				</div>
-			{:else}
-				<textarea
-					class="reply-editor block min-h-15 w-full"
-					name="comment"
-					bind:value={drafts[reply_to]}
-				></textarea>
 			{/if}
+			<textarea
+				class="reply-editor block min-h-15 w-full"
+				name="comment"
+				bind:value={drafts[reply_to]}
+				hidden={previewMode[reply_to]}
+			></textarea>
 			<div class="reply-actions">
 				<button
 					type="button"
@@ -151,7 +151,7 @@
 		<div
 			class="text-otodb-content-fainter flex flex-col gap-1 text-xs max-sm:flex-row max-sm:items-center max-sm:gap-2"
 		>
-			<a href="/profile/{data.user.username}">{data.user.username}</a>
+			<a href="/user/{data.user.username}">{data.user.username}</a>
 			<a href="#c{data.id}"><Time format="relative" date={data.time} /></a>
 			{#if data.edited_at}
 				<EditedBy
@@ -189,13 +189,13 @@
 									{@html editPreview}
 								</div>
 							</div>
-						{:else}
-							<textarea
-								class="reply-editor block min-h-15 w-full"
-								name="comment"
-								bind:value={editingText}
-							></textarea>
 						{/if}
+						<textarea
+							class="reply-editor block min-h-15 w-full"
+							name="comment"
+							bind:value={editingText}
+							hidden={editPreviewMode}
+						></textarea>
 						<div class="reply-actions">
 							<button type="button" class="h-15 p-3 whitespace-nowrap" onclick={toggleEditPreview}>
 								{editPreviewMode ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}

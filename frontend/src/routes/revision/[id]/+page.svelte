@@ -49,7 +49,7 @@
 		{#if isSVO(getLocale())}
 			{m.curly_safe_lynx_fond()}
 		{/if}
-		<a href="/profile/{data.revision.user}">{data.revision.user}</a>
+		<a href="/user/{data.revision.user}">{data.revision.user}</a>
 		{#if isSOV(getLocale())}
 			{m.curly_safe_lynx_fond()}
 		{/if}

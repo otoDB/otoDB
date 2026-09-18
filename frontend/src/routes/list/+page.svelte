@@ -42,7 +42,7 @@
 			{#each data.results?.items as list, i (i)}
 				<tr>
 					<td><a href="/list/{list.id}">#{list.id} - {list.name}</a></td>
-					<td><a href="/profile/{list.author.username}">{list.author.username}</a></td>
+					<td><a href="/user/{list.author.username}">{list.author.username}</a></td>
 				</tr>
 			{/each}
 		</tbody>

@@ -41,7 +41,7 @@
 		userListsShown = $state(false);
 	const showLists = async () => {
 		if (!userListsFetched) {
-			const { data: lists } = await client.GET('/api/profile/work_in_my_lists', {
+			const { data: lists } = await client.GET('/api/user/work_in_my_lists', {
 				fetch,
 				params: { query: { work_id: data.id } }
 			});

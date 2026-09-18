@@ -16,7 +16,7 @@
 
 	const dismiss = async (id: string, dismissed: boolean, target: string) => {
 		if (!dismissed)
-			await client.PUT('/api/profile/notification', {
+			await client.PUT('/api/user/notification', {
 				fetch,
 				params: { query: { notif_id: id } }
 			});
@@ -24,7 +24,7 @@
 	};
 
 	const remove = async (id: string) => {
-		await client.DELETE('/api/profile/notification', {
+		await client.DELETE('/api/user/notification', {
 			fetch,
 			params: { query: { notif_id: id } }
 		});
@@ -102,7 +102,7 @@
 									{m.curly_safe_lynx_fond()}
 								{/if}
 								{#if n.revision_user}
-									<a href="/profile/{n.revision_user}">{n.revision_user}</a>
+									<a href="/user/{n.revision_user}">{n.revision_user}</a>
 								{/if}
 								{#if isSOV(getLocale())}
 									{m.curly_safe_lynx_fond()}

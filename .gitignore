@@ -4,3 +4,15 @@ Caddyfile
 docker-compose.dev.yml
 docker-compose.override.yml
 postgresql.conf
+
+# Agent tools
+.playwright-mcp
+
+# Claude Code
+.claude/plans
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+
+# Shared agent overrides
+AGENTS.override.md

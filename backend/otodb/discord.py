@@ -80,7 +80,7 @@ def _entity_info(
 				.first()
 			)
 			label = username or f'user #{entity_pk}'
-			return label, f'{BASE_URL}/profile/{username}' if username else None
+			return label, f'{BASE_URL}/user/{username}' if username else None
 		case _:
 			return f'{model_name} #{entity_pk}', None
 
@@ -106,7 +106,7 @@ def discord_thread(thread_id: int, username: str) -> None:
 				'timestamp': (op.created_at if op else thread.created_at).isoformat(),
 				'author': {
 					'name': username,
-					'url': f'{BASE_URL}/profile/{username}',
+					'url': f'{BASE_URL}/user/{username}',
 				},
 			}
 		]
@@ -134,7 +134,7 @@ def discord_threadpost(post_id: int, username: str) -> None:
 				'timestamp': post.created_at.isoformat(),
 				'author': {
 					'name': username,
-					'url': f'{BASE_URL}/profile/{username}',
+					'url': f'{BASE_URL}/user/{username}',
 				},
 				'fields': [
 					{
@@ -179,7 +179,7 @@ def discord_comment(
 		'timestamp': comment.submit_date.isoformat(),
 		'author': {
 			'name': username,
-			'url': f'{BASE_URL}/profile/{username}',
+			'url': f'{BASE_URL}/user/{username}',
 		},
 		'fields': [
 			{

@@ -16,7 +16,7 @@ Disallow: /*/submissions$
 Disallow: /*/revisions$
 Disallow: /*/random$
 
-Disallow: /profile/*/edit$
+Disallow: /user/*/edit$
 Disallow: /song_attribute/*/edit$
 Disallow: /song_attribute/*/history$
 Disallow: /song_attribute/alias$
@@ -43,7 +43,7 @@ Allow: /song
 Allow: /song_attribute
 Allow: /list
 Allow: /wiki
-Allow: /profile
+Allow: /user
 Allow: /comments
 Allow: /register
 Allow: /login

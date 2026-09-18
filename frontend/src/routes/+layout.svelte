@@ -6,7 +6,6 @@
 	import GlobalSideNav from '$lib/GlobalSideNav/GlobalSideNav.svelte';
 	import LoadingIndicator from '$lib/LoadingIndicator/LoadingIndicator.svelte';
 	import Section from '$lib/Section.svelte';
-	import { isFormDirty } from '$lib/dirty';
 	import { languages, resolveLanguageKeyById } from '$lib/enums/language';
 	import type { ErrorPayload } from '$lib/errors';
 	import { m } from '$lib/paraglide/messages.js';
@@ -81,7 +80,7 @@
 		if (
 			type !== 'form' &&
 			type !== 'goto' &&
-			Array.from(document.querySelectorAll('form')).some(isFormDirty)
+			Array.from(document.querySelectorAll('form')).some((form) => form.dataset.dirty)
 		)
 			if (!confirm(m.raw_actual_mallard_exhale())) cancel();
 	});
@@ -179,7 +178,7 @@
 	{m.round_extra_impala_fry()}
 </a>
 
-<div class="text-otodb-content-primary overflow-auto">
+<div class="text-otodb-content-primary">
 	<div id="bg-marker" class="bg-otodb-bg-primary fixed h-lvh w-full"></div>
 	<LoadingIndicator />
 	<Toaster
@@ -203,7 +202,7 @@
 
 	<div class="relative mx-auto w-full gap-x-4 px-4 md:flex">
 		<GlobalSideNav user={data.user} stats={data.stats} />
-		<div class="grow">
+		<div class="min-w-0 grow">
 			<main id="content">
 				<svelte:boundary onerror={handleBoundaryError}>
 					{@render children()}

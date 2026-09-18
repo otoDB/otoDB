@@ -15,7 +15,7 @@ ALWAYS_CACHE_PREFIXES = {
 # Paths never cached (auth-sensitive or admin surfaces).
 BYPASS_PREFIXES = (
 	'/api/auth',
-	'/api/profile',
+	'/api/user',
 	'/api/moderation',
 	'/admin',
 	'/silk',

@@ -80,7 +80,6 @@ from .common import (
 	post_relations,
 	profile_connection_parsers,
 	re_to_parser,
-	set_revision_route,
 	user_is_trusted,
 	with_revision_route,
 )
@@ -394,7 +393,6 @@ def tag_route_switch(work_route: Route, song_route: Route):
 				if type == 'work'
 				else (TagSong, TagSongLangPreference)
 			)
-			set_revision_route(work_route if type == 'work' else song_route)
 			return f(request, *args, **kwargs)
 
 		contribute_operation_args(
@@ -404,7 +402,13 @@ def tag_route_switch(work_route: Route, song_route: Route):
 			Query(TagTypes.WORK),
 		)
 
-		return wrapper
+		return with_revision_route(
+			lambda request, kwargs: (
+				work_route
+				if kwargs.get('type', TagTypes.WORK) == 'work'
+				else song_route
+			)
+		)(wrapper)
 
 	return decorator
 

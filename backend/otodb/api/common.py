@@ -514,11 +514,11 @@ def track_revision(view_func):
 	so it shares the transaction).
 	"""
 
-	def _kwargs(request):
-		return {
-			'user': getattr(request, 'user', None),
-			'route': getattr(view_func, '_otodb_route', Route.UNKNOWN.value),
-		}
+	def _kwargs(request, kwargs):
+		route = getattr(view_func, '_otodb_route', Route.UNKNOWN)
+		if callable(route):
+			route = route(request, kwargs)
+		return {'user': getattr(request, 'user', None), 'route': route.value}
 
 	if inspect.iscoroutinefunction(view_func):
 
@@ -526,7 +526,7 @@ def track_revision(view_func):
 		async def async_wrapper(request, *args, **kwargs):
 			if request.method in _READ_ONLY_HTTP_METHODS:
 				return await view_func(request, *args, **kwargs)
-			ctx = db_revision(**_kwargs(request))
+			ctx = db_revision(**_kwargs(request, kwargs))
 			await sync_to_async(ctx.__enter__)()
 			try:
 				ret = await view_func(request, *args, **kwargs)
@@ -545,7 +545,7 @@ def track_revision(view_func):
 	def wrapper(request, *args, **kwargs):
 		if request.method in _READ_ONLY_HTTP_METHODS:
 			return view_func(request, *args, **kwargs)
-		with db_revision(**_kwargs(request)):
+		with db_revision(**_kwargs(request, kwargs)):
 			return view_func(request, *args, **kwargs)
 
 	return wrapper
@@ -581,24 +581,19 @@ def revision(
 		yield
 
 
-def with_revision_route(route: Route):
-	"""Tag a handler with its revision route. ``track_revision`` reads the tag and stamps
-	it when opening the transaction, so no runtime DB call is needed (works for async
-	handlers too). The tag propagates through intervening ``@wraps`` decorators.
+def with_revision_route(route: Route | Callable[[HttpRequest, dict], Route]):
+	"""Tag endpoint with its revision route.
+
+	`route` is either a fixed `Route` or a callable `(request, kwargs) -> Route` for
+	endpoints whose route depends on the request (`kwargs` are the parsed operation
+	arguments, so query/body params are available).
 	"""
 
 	def decorator(func):
-		func._otodb_route = route.value
+		func._otodb_route = route
 		return func
 
 	return decorator
-
-
-def set_revision_route(route: Route):
-	"""Override the route mid-request for a sub-operation (sync contexts only), e.g. when
-	one endpoint edits entities under different routes."""
-	with connection.cursor() as cursor:
-		cursor.execute("SELECT set_config('otodb.route', %s, true)", [str(route.value)])
 
 
 class RouterWithRevision(Router):

@@ -1,16 +1,5 @@
-"""Application-side runtime for the DB-trigger revision system.
-
-Capture lives in Postgres (see ``otodb/revision_codegen.py`` /
-``otodb/sql/revision_triggers.sql``). This module is the thin app surface that remains
-after the ORM capture was stripped:
-
-* ``db_revision(...)`` -- open a transaction, stamp it so the triggers attribute + group
-  the writes into one Revision, then fan out its side effects on exit.
-* ``fan_out(revision_id)`` -- invokes the codegen'd ``otodb_fan_out`` DB function
-  holding the subscription/notification side effects; driven entirely by the persisted
-  revision rows, so any backend triggers identical side effects with one call.
-
-Revision merging is intentionally deferred (design in REVISION_TRIGGERS_EVAL.md §11/§13).
+"""
+Application-side runtime for the DB-backed revision system.
 """
 
 from contextlib import contextmanager

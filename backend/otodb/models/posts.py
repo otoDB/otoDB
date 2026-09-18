@@ -261,8 +261,6 @@ class Subscription(models.Model):
 			)
 		]
 		indexes = [
-			# fan_out (and the pre-trigger _commit) look up subscriptions by the entity
-			# being edited; without this the DELETE ... USING seq-scans the whole table.
 			models.Index(
 				fields=['entity_type', 'entity_id'], name='subscription_entity_idx'
 			),

@@ -113,13 +113,6 @@ class _RevisionMetaConfig:
 
 
 class RevisionTrackedModel(models.Model):
-	"""Marker base for models whose edits are captured by the DB revision triggers
-	(see ``otodb/revision_codegen.py``). Declaring ``class RevisionMeta`` populates
-	``_revision_meta`` -- read by the trigger spec/codegen and by ``history.py`` rollback.
-	Capture itself lives in the database; this class carries no runtime behavior, and
-	plain/bulk ORM writes are captured because the triggers fire per row.
-	"""
-
 	class Meta:
 		abstract = True
 

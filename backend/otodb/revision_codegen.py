@@ -1,18 +1,13 @@
-"""Generate the PostgreSQL revision-capture triggers from the Django-free spec.
+"""Generates PostgreSQL revision-capture triggers.
 
-The trigger system replaces the Django ORM capture (dirtyfields + save/delete hooks +
-request-cache). Capture lives in the DB, so any writer -- Django today, a future axum --
-produces identical revision rows with no application-side capture code.
+Usage:
 
-This module imports ONLY ``revision_spec`` (plain data) -- no Django -- so trigger
-generation outlives the migration off Django. Generate with:
-
-    python -m otodb.revision_codegen        > otodb/sql/revision_triggers.sql
+    python -m otodb.revision_codegen > otodb/sql/revision_triggers.sql
     python -m otodb.revision_codegen --drop   # teardown / migration reverse_sql
     python -m otodb.revision_codegen --check  # fail if the committed .sql is stale
 
-A Django-based parity test keeps the spec honest against the models while both exist;
-``tests/test_revision_codegen.py`` runs the same staleness check as ``--check`` in CI.
+A Django-based parity test keeps the spec honest against the models while both exist:
+`tests/test_revision_codegen.py` runs the same staleness check as `--check` in CI.
 """
 
 from otodb.revision_spec import TABLES

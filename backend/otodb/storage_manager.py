@@ -14,6 +14,9 @@ class StorageManager:
 
 	def __init__(self):
 		self.cdn_enabled: bool = settings.OTODB_CDN_ENABLED
+		self.fallback_host: str | None = (
+			None if self.cdn_enabled else settings.OTODB_CDN_HOST or None
+		)
 		self.cdn_root: str = settings.OTODB_CDN_ROOT
 
 		self.media_path: Path = settings.MEDIA_ROOT
@@ -173,6 +176,8 @@ class StorageManager:
 		elif file_path and self.exists(file_path):
 			# Fallback to local storage
 			return settings.MEDIA_URL + file_path.lstrip('/')
+		elif file_path and self.fallback_host:
+			return self.fallback_host + self.cdn_root + file_path.lstrip('/')
 
 		return ''
 

@@ -1,9 +1,17 @@
-.vscode
+# Configs
 .env
 Caddyfile
 docker-compose.dev.yml
 docker-compose.override.yml
 postgresql.conf
+
+# Python
+__pycache__/
+
+# Editors
+.vscode/
+.zed/
+.direnv/
 
 # Agent tools
 .playwright-mcp

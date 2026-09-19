@@ -8,8 +8,6 @@ its own token CSRF for its routes; the frontend's csrftoken/X-CSRFToken
 traffic is ignored here.
 """
 
-from __future__ import annotations
-
 import hmac
 import logging
 import urllib.parse

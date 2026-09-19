@@ -27,6 +27,7 @@ from ninja.throttling import AuthRateThrottle
 
 from otodb.account.models import Account
 from otodb.common import (
+	process_tag_for_display,
 	slugify_tag,
 )
 from otodb.models import (
@@ -105,10 +106,11 @@ def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
 	tags = []
 	for t in payload:
 		try:
-			tag = TagWork.objects.get(slug=slugify_tag(t.nameslug))
+			tag = TagWork.objects.get(slug=slugify_tag(t.slug))
 			tags.append(tag.aliased_to if tag.aliased_to else tag)
 		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=t.nameslug))
+			name = process_tag_for_display(t.name or '') or t.slug.replace('_', ' ')
+			tags.append(TagWork.objects.create(name=name))
 
 	for tag, p in zip(tags, payload):
 		changes = {}

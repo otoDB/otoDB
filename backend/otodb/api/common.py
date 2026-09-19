@@ -261,7 +261,10 @@ class SourceCreationResponse(Schema):
 
 
 class TagWorkInstanceInSchema(Schema):
-	nameslug: str
+	slug: str
+	name: str | None = None
+	# N.B. when name is supplied, it is assumed that the tag does not exist
+	# in which case the accompanying slug should NEVER be used to create the new tag
 	sample: bool | None = None
 	roles: list[Annotated[int, Field(ge=1, le=max(Role.values))]] | None = None
 

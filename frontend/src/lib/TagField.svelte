@@ -2,7 +2,7 @@
 	import client from '$lib/api';
 	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
 	import { clickOutside, debounce } from '$lib/ui';
-	import { getTagEditorToken } from '$lib/ui.js';
+	import { getTagDisplaySlug } from '$lib/ui.js';
 	import type { components } from './schema';
 
 	interface Props {
@@ -54,7 +54,7 @@
 			<TagSuggestionResults
 				{suggestions}
 				onselect={(t) => {
-					value = getTagEditorToken(t.aliased_to || t);
+					value = getTagDisplaySlug(t.aliased_to || t);
 					suggestions = [];
 				}}
 				onclose={() => (suggestions = [])}

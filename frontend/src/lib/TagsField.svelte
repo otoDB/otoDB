@@ -3,7 +3,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import TagSuggestionResults from '$lib/TagSuggestionResults.svelte';
 	import { clickOutside, debounce } from '$lib/ui';
-	import { getTagEditorToken } from '$lib/ui.js';
+	import { getTagDisplaySlug } from '$lib/ui.js';
 	import type { components } from './schema';
 
 	interface Props {
@@ -81,7 +81,7 @@
 		textarea.value = replaceWordAtPos(
 			textarea.value,
 			textarea.selectionStart,
-			getTagEditorToken(tag.aliased_to || tag) + ' '
+			getTagDisplaySlug(tag.aliased_to || tag) + ' '
 		);
 		suggestions = [];
 		updateValue();

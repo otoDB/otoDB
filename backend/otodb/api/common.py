@@ -218,6 +218,18 @@ class WikiPageContentSchema(Schema):
 	title: str | None = None
 
 
+class PendingModerationEventSchema(ModelSchema):
+	"""Thin view of a pending flag or appeal exposed on a work."""
+
+	id: OtodbID
+	by: ProfileSchema | None = None
+	status: FlagStatus
+
+	class Meta:
+		model = ModerationEvent
+		fields = ['reason', 'date']
+
+
 class WorkSchema(ModelSchema):
 	id: OtodbID
 	thumbnail_source_id: OtodbID | None
@@ -273,18 +285,6 @@ class SourceSuggestionsResponse(Schema):
 	source_tags: list[TagWorkSchema] = []
 	new_tags: list[TagWorkSchema] = []
 	creator_tags: list[TagWorkSchema] = []
-
-
-class PendingModerationEventSchema(ModelSchema):
-	"""Thin view of a pending flag or appeal exposed on a work."""
-
-	id: OtodbID
-	by: ProfileSchema | None = None
-	status: FlagStatus
-
-	class Meta:
-		model = ModerationEvent
-		fields = ['reason', 'date']
 
 
 class ListItemSchema(ModelSchema):

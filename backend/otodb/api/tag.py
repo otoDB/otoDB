@@ -87,25 +87,6 @@ from .common import (
 tag_router = RouterWithRevision()
 
 
-class FatTagWorkSchema(ModelSchema):
-	id: OtodbID
-	children: list[TagWorkSchema]
-	song: Optional[SongSchema] = Field(None, alias='get_song')
-	media_type: list[int] | None = None
-	lang_prefs: list[TagLangPreferenceSchema]
-	aliased_to: Optional[TagWorkSchema]
-	category: WorkTagCategory
-
-	class Meta:
-		model = TagWork
-		fields = ['name', 'slug', 'deprecated']
-
-	@field_validator('media_type', mode='before', check_fields=False)
-	@classmethod
-	def types(cls, value: int | None) -> list[int] | None:
-		return [r for r in MediaType if r & value] if value else None
-
-
 class WikiPageSchema(ModelSchema):
 	class Meta:
 		model = WikiPage
@@ -161,6 +142,25 @@ class SlimSongSchema(ModelSchema):
 	class Meta:
 		model = MediaSong
 		fields = ['title', 'bpm', 'variable_bpm', 'author']
+
+
+class FatTagWorkSchema(ModelSchema):
+	id: OtodbID
+	children: list[TagWorkSchema]
+	song: Optional[SongSchema] = Field(None, alias='get_song')
+	media_type: list[int] | None = None
+	lang_prefs: list[TagLangPreferenceSchema]
+	aliased_to: Optional[TagWorkSchema]
+	category: WorkTagCategory
+
+	class Meta:
+		model = TagWork
+		fields = ['name', 'slug', 'deprecated']
+
+	@field_validator('media_type', mode='before', check_fields=False)
+	@classmethod
+	def types(cls, value: int | None) -> list[int] | None:
+		return [r for r in MediaType if r & value] if value else None
 
 
 def filter_tags_by_media_type(qs, media_type: list[int]):

@@ -372,7 +372,7 @@ class TestTagHierarchy:
 		)
 
 		# Verify total unique edges (no duplicates)
-		assert len(path_list) == len(set((p['slug'], p['fr']) for p in path_list)), (
+		assert len(path_list) == len({(p['slug'], p['fr']) for p in path_list}), (
 			'Found duplicate edges in path list'
 		)
 

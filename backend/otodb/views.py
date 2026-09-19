@@ -26,8 +26,7 @@ def upload_cookies(request: HttpRequest):
 		form = UploadForm(request.POST, request.FILES)
 		if form.is_valid():
 			with open(settings.COOKIES_FILE, 'ab+') as destination:
-				for chunk in request.FILES['file'].chunks():
-					destination.write(chunk)
+				destination.writelines(request.FILES['file'].chunks())
 			reset_cookies(settings.COOKIES_FILE)
 			return redirect('/')
 	else:

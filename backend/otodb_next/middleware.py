@@ -8,15 +8,14 @@ its own token CSRF for its routes; the frontend's csrftoken/X-CSRFToken
 traffic is ignored here.
 """
 
-from __future__ import annotations
-
 import hmac
 import logging
 import urllib.parse
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
+import django.core.signing
 import orjson
 from litestar.enums import ScopeType
 from litestar.middleware import (
@@ -163,7 +162,7 @@ class SessionAuthMiddleware(AbstractAuthenticationMiddleware):
 		async with session_maker() as db:
 			result = await db.execute(_SESSION_QUERY, {'key': session_key})
 			row = result.mappings().one_or_none()
-			if row is None or row['expire_date'] < datetime.now(timezone.utc):
+			if row is None or row['expire_date'] < datetime.now(UTC):
 				return anonymous
 
 			try:
@@ -172,7 +171,7 @@ class SessionAuthMiddleware(AbstractAuthenticationMiddleware):
 					salt=_SESSION_SALT,
 					serializer=JSONSerializer,
 				)
-			except Exception:
+			except django.core.signing.BadSignature:
 				# Tampered or truncated session data; Django's SessionBase
 				# .decode treats any failure here as an empty session.
 				return anonymous

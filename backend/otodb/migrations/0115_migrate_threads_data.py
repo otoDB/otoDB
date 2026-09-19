@@ -75,9 +75,7 @@ def forward(apps, schema_editor):
 			# stores a top-level comment's parent_id as its own id (self-parent), so only
 			# prepend a reference when the parent is a different comment.
 			if c.parent_id and c.parent_id != c.id and c.parent_id in id_to_num:
-				cbody = 't{}.{}: \n\n{}'.format(
-					thread.id, id_to_num[c.parent_id], cbody
-				)
+				cbody = f't{thread.id}.{id_to_num[c.parent_id]}: \n\n{cbody}'
 			meta = metas.get(c.id)
 			new_posts.append(
 				ThreadPost(

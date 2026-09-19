@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
+import django.core.signing
 import orjson
 from litestar.enums import ScopeType
 from litestar.middleware import (
@@ -172,7 +173,7 @@ class SessionAuthMiddleware(AbstractAuthenticationMiddleware):
 					salt=_SESSION_SALT,
 					serializer=JSONSerializer,
 				)
-			except Exception:  # noqa: BLE001
+			except django.core.signing.BadSignature:
 				# Tampered or truncated session data; Django's SessionBase
 				# .decode treats any failure here as an empty session.
 				return anonymous

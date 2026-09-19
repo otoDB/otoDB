@@ -74,7 +74,7 @@ export const getTagDisplaySlug = (tag: {
 	lang_prefs: { lang: number; slug: string }[];
 }) => tag.lang_prefs.find(({ lang }) => lang === languages[getLocale()].id)?.slug ?? tag.slug;
 
-export const getTagEditorToken = (tag: Parameters<typeof getTagDisplayName>[0]) =>
+export const getSuggestedTagEditorToken = (tag: Parameters<typeof getTagDisplayName>[0]) =>
 	getTagDisplayName(tag).replace(/\s+/g, '_');
 
 export function getDisplayText(

@@ -1,5 +1,4 @@
 import asyncio
-from typing import List
 
 from asgiref.sync import sync_to_async
 from django.db import transaction
@@ -32,7 +31,7 @@ from .common import (
 list_router = Router()
 
 
-@list_router.get('search', response=List[ListSchema])
+@list_router.get('search', response=list[ListSchema])
 @paginate
 def search(request: HttpRequest, query: str):
 	return Pool.objects.filter(
@@ -46,14 +45,14 @@ def lst(request: HttpRequest, list_id: OtodbID):
 	return list_
 
 
-@list_router.get('entries', response=List[ListItemSchema])
+@list_router.get('entries', response=list[ListItemSchema])
 @paginate
 def entries(request: HttpRequest, list_id: OtodbID):
 	list_ = get_object_or_404(Pool, pk=list_id)
 	return list_.poolitem_set.order_by('order')
 
 
-@list_router.get('pending', response=List[WorkSourceSchema])
+@list_router.get('pending', response=list[WorkSourceSchema])
 @paginate
 def pending(request: HttpRequest, list_id: OtodbID):
 	list_ = get_object_or_404(Pool, pk=list_id)
@@ -93,10 +92,10 @@ def update(request: HttpRequest, list_id: OtodbID, payload: ListInSchema):
 
 class ListUpdateSchema(Schema):
 	# Diffs applied in this exact order: WorkIDs -> Descriptions -> Moves -> Delete
-	update_work: List[tuple[int, OtodbID]] = []
-	update_description: List[tuple[int, str]] = []
-	move: List[tuple[int, int]] = []  # [(from, to)]
-	delete: List[int] = []  # delete at index
+	update_work: list[tuple[int, OtodbID]] = []
+	update_description: list[tuple[int, str]] = []
+	move: list[tuple[int, int]] = []  # [(from, to)]
+	delete: list[int] = []  # delete at index
 
 
 @list_router.put('items', auth=django_auth)
@@ -115,8 +114,6 @@ def update_items(request: HttpRequest, list_id: OtodbID, payload: ListUpdateSche
 		items.get(order=a).to(b)
 
 	items.filter(order__in=payload.delete).delete()
-
-	return
 
 
 @list_router.get('work_in_pool', response=bool)
@@ -145,7 +142,6 @@ def delete(request: HttpRequest, list_id: OtodbID):
 	if lst.author != request.user:
 		raise HttpError(403, 'Forbidden')
 	lst.delete()
-	return
 
 
 def import_ext_into_pool(entries, infos, list_: Pool, user):

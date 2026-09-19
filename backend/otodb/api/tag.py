@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from enum import Enum
 from functools import reduce, wraps
@@ -90,7 +92,7 @@ tag_router = RouterWithRevision()
 class FatTagWorkSchema(ModelSchema):
 	id: OtodbID
 	children: list[TagWorkSchema]
-	song: Optional['SongSchema'] = Field(None, alias='get_song')
+	song: Optional[SongSchema] = Field(None, alias='get_song')
 	media_type: list[int] | None = None
 	lang_prefs: list[TagLangPreferenceSchema]
 	aliased_to: Optional[TagWorkSchema]
@@ -124,7 +126,7 @@ class TagSongSchema(Schema):
 	name: str
 	slug: str
 	category: SongTagCategory
-	aliased_to: Optional['TagSongSchema']
+	aliased_to: Optional[TagSongSchema]
 	lang_prefs: list[TagLangPreferenceSchema]
 
 

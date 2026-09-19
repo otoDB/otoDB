@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import reduce
 
 import lark
@@ -214,7 +216,7 @@ _WORK_TAG_CATEGORY_FILTERS = {
 }
 
 
-_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', Q] = {
+_WORK_TAG_COUNT_ORDERS: dict[WorkOrder, Q] = {
 	WorkOrder.TAGCOUNT: Q(),
 	**{WorkOrder[name.upper()]: q for name, q in _WORK_TAG_CATEGORY_FILTERS.items()},
 }

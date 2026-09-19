@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 import operator
 import re
@@ -129,7 +131,7 @@ class TagLangPreferenceSchema(Schema):
 class TagWorkSchema(Schema):
 	id: OtodbID
 	lang_prefs: list[TagLangPreferenceSchema]
-	aliased_to: Optional['TagWorkSchema']
+	aliased_to: Optional[TagWorkSchema]
 	name: str
 	slug: str
 	category: WorkTagCategory
@@ -223,8 +225,8 @@ class WorkSchema(ModelSchema):
 	thumbnail_source_id: OtodbID | None
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
-	pending_flag: 'PendingModerationEventSchema | None' = None
-	pending_appeal: 'PendingModerationEventSchema | None' = None
+	pending_flag: PendingModerationEventSchema | None = None
+	pending_appeal: PendingModerationEventSchema | None = None
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 	rating: Rating
 	status: Status
@@ -239,8 +241,8 @@ class ThinWorkSchema(ModelSchema):
 	id: OtodbID
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
-	pending_flag: 'PendingModerationEventSchema | None' = None
-	pending_appeal: 'PendingModerationEventSchema | None' = None
+	pending_flag: PendingModerationEventSchema | None = None
+	pending_appeal: PendingModerationEventSchema | None = None
 	status: Status
 
 	class Meta:

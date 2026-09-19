@@ -61,6 +61,17 @@ All three commands must succeed without errors before committing. Do not skip or
 
 - When a coding agent starts Storybook, always use `bun run storybook:agent`, not `bun run storybook`. It runs with `--quiet --ci --disable-telemetry --no-version-updates` to minimize console output and token usage, and it does not pass `--no-open`, so it may open a browser automatically.
 - `bun run storybook` (without those flags) is reserved for a human developer running Storybook interactively.
+- The dev server also exposes the `storybook` MCP server at `http://localhost:6006/mcp` via the `@storybook/addon-mcp` addon, so start Storybook before using those MCP tools. See the MCP servers section of the repository root `AGENTS.md`.
+
+### Running story tests
+
+`bun run test-storybook` (`vitest --project=storybook`) drives a real headless Chromium through Playwright, so it needs the browser binaries and their system libraries:
+
+```
+bunx playwright install chromium
+```
+
+If that download stalls — it has, for tens of minutes at a time, while `curl` on the same URL saturates the link — get the URLs from `bunx playwright install --dry-run chromium`, fetch the zips with `curl -L`, extract them into the printed install locations under `~/.cache/ms-playwright/`, and `touch INSTALLATION_COMPLETE` in each. See the root `AGENTS.md` for the system libraries the browser needs.
 
 ## Coding
 

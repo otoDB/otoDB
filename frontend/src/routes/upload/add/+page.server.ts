@@ -124,7 +124,7 @@ export const actions = {
 		if (result.source_id) redirect(303, `/upload/${result.source_id}`);
 
 		// Fallback
-		if (locals.user) redirect(303, `/profile/${locals.user.username}/submissions`);
+		if (locals.user) redirect(303, `/user/${locals.user.username}/submissions`);
 		else redirect(303, '/login');
 	}
 } satisfies Actions;

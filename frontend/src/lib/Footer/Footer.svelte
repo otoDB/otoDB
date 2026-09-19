@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { env } from '$env/dynamic/public';
 	import { PUBLIC_OTODB_HASH } from '$env/static/public';
 	import { languages } from '$lib/enums/language';
 	import { currentVersion, versions } from '$lib/enums/version';
@@ -15,6 +16,8 @@
 		user: null | { username: string };
 		class?: ClassValue;
 	} = $props();
+
+	const discordInviteCode = env.PUBLIC_DISCORD_INVITE_CODE;
 </script>
 
 <footer class={props.class}>
@@ -32,8 +35,10 @@
 			{/if}
 		</span>
 		<div class="social-links">
-			<a href="https://discord.com/invite/YRAvgAYHkh">Discord</a>
-			/
+			{#if discordInviteCode}
+				<a href="https://discord.com/invite/{discordInviteCode}">Discord</a>
+				/
+			{/if}
 			<a href="https://twitter.com/otoDBnet">Twitter</a>
 			/
 			<a href="irc://irc.rizon.net/otodb">#otodb @ Rizon</a>

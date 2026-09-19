@@ -1,0 +1,88 @@
+name: CI for Storybook
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/storybook.yml'
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  test_storybook:
+    name: Test Storybook
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install --frozen-lockfile
+      - name: Generate schema.ts
+        run: bun run sync-schema
+      - name: Compile Paraglide project
+        run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+      - name: Copy dotenv file to generate type-safe environment variables
+        run: cp .env.example .env
+      - name: Generate MSW worker script
+        run: bunx msw init static --save
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+      - run: bun run test-storybook
+
+  deploy_storybook:
+    name: Deploy Storybook to Cloudflare Pages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install --frozen-lockfile
+      - name: Generate schema.ts
+        run: bun run sync-schema
+      - name: Compile Paraglide project
+        run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
+      - name: Copy dotenv file to generate type-safe environment variables
+        run: cp .env.example .env
+      - name: Generate MSW worker script
+        run: bunx msw init static --save
+      - run: bun run build-storybook
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: frontend
+          preCommands: |
+            wrangler pages project create otodb-storybook --production-branch=master || true
+          command: pages deploy storybook-static --project-name=otodb-storybook --commit-dirty=true --branch=${{ github.head_ref || github.ref_name }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Record deploy timestamp
+        id: deployed_at
+        run: echo "timestamp=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> "$GITHUB_OUTPUT"
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: storybook-preview
+          message: |
+            ## Storybook Preview
+
+            | | |
+            |---|---|
+            | **Status** | Deploy successful |
+            | **Preview URL** | ${{ steps.deploy.outputs.deployment-url }} |
+            | **Branch Preview URL** | ${{ steps.deploy.outputs.pages-deployment-alias-url }} |
+            | **Commit** | [`${{ github.event.pull_request.head.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}) |
+            | **Deployed at** | ${{ steps.deployed_at.outputs.timestamp }} |

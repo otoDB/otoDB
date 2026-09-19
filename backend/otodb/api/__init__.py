@@ -1,5 +1,5 @@
 import logging
-from typing import Generator
+from collections.abc import Generator
 
 import ninja
 import orjson
@@ -19,11 +19,11 @@ from .common import ApiError
 from .history import history_router
 from .list import list_router
 from .moderation import moderation_router
-from .profile import profile_router
 from .requests import request_router
 from .source import source_router
 from .tag import tag_router
 from .thread import thread_router
+from .user import user_router
 from .wiki import wiki_router
 from .work import work_router
 
@@ -33,7 +33,7 @@ def flatten_properties(
 	prop_details: dict[str, any],
 	prop_required: bool,
 	definitions: dict[str, any],
-) -> Generator[tuple[str, dict[str, any], bool], None, None]:
+) -> Generator[tuple[str, dict[str, any], bool]]:
 	"""
 	extracts all nested model's properties into flat properties
 	(used f.e. in GET params with multiple arguments and models)
@@ -121,7 +121,7 @@ api = NinjaAPI(
 api.add_router('/auth/', auth_router)
 api.add_router('/work/', work_router)
 api.add_router('/upload/', source_router)
-api.add_router('/profile/', profile_router)
+api.add_router('/user/', user_router)
 api.add_router('/list/', list_router)
 api.add_router('/tag/', tag_router)
 api.add_router('/wiki/', wiki_router)

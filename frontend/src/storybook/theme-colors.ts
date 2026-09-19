@@ -14,6 +14,8 @@ export interface ThemeColors {
 	contentPrimary: string;
 	contentFaint: string;
 	contentFainter: string;
+	highlightPrimary: string;
+	highlightSecondary: string;
 }
 
 const LABELS = {

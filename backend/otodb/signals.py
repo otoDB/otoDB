@@ -31,7 +31,7 @@ def on_add_remove_tag_song(sender, instance, action, pk_set, **kwargs):
 @receiver(pre_delete)
 def post_group_deleted(sender, instance, using, **kwargs):
 	# Query tags with the instance of PostGroup and delete them
-	if isinstance(instance, UserRequest) or isinstance(instance, Session):
+	if isinstance(instance, (UserRequest, Session)):
 		return
 
 	UserRequest.objects.filter(

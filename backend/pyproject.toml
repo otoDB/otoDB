@@ -47,7 +47,7 @@ ignore = [
     "W191", # tabs
     "RUF012", # Django class attrs
     "B008",   # Django Ninja Query()/File()
-    # TODO: Dates -- see https://github.com/otoDB/otoDB/issues/1032
+    # TODO: Dates, see https://github.com/otoDB/otoDB/issues/1032
     "DTZ007", # strptime without %z
     "DTZ011", # date.today()
     "DTZ012", # date.fromtimestamp()

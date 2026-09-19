@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 
 from django.conf import settings
@@ -192,7 +192,7 @@ def edit(request: HttpRequest, payload: CommentEditSchema):
 		except CommentMeta.DoesNotExist:
 			pass
 		if (
-			datetime.now(tz=timezone.utc) - comment.submit_date
+			datetime.now(tz=UTC) - comment.submit_date
 			> settings.OTODB_COMMENT_EDIT_WINDOW
 		):
 			raise HttpError(403, 'Edit window has passed')
@@ -201,7 +201,7 @@ def edit(request: HttpRequest, payload: CommentEditSchema):
 	CommentMeta.objects.update_or_create(
 		comment=comment,
 		defaults={
-			'edited_at': datetime.now(tz=timezone.utc),
+			'edited_at': datetime.now(tz=UTC),
 			'edited_by': request.user,
 		},
 	)

@@ -1,5 +1,5 @@
 import logging
-from typing import Generator
+from collections.abc import Generator
 
 import ninja
 import orjson
@@ -33,7 +33,7 @@ def flatten_properties(
 	prop_details: dict[str, any],
 	prop_required: bool,
 	definitions: dict[str, any],
-) -> Generator[tuple[str, dict[str, any], bool], None, None]:
+) -> Generator[tuple[str, dict[str, any], bool]]:
 	"""
 	extracts all nested model's properties into flat properties
 	(used f.e. in GET params with multiple arguments and models)

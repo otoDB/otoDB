@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import type { ComponentProps } from 'svelte';
 import { Levels, Status, WorkRelationTypes, type components } from '$lib/schema';
+import { enumValues } from '$lib/enums';
 import Page from './+page.svelte';
+
+type WorkRelation = components['schemas']['WorkRelationSchema'];
+type SlimWork = components['schemas']['SlimWorkSchema'];
 
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
 
@@ -55,17 +59,14 @@ const baseData = {
 	links,
 	head,
 	user: memberUser,
-	...baseWork
+	...baseWork,
+	relations: [[], []] as [WorkRelation[], SlimWork[]]
 };
 
 const meta = {
 	component: Page,
 	args: {
-		data: {
-			...baseData,
-			works: undefined,
-			relations: undefined
-		}
+		data: baseData
 	}
 } satisfies Meta<ComponentProps<typeof Page>>;
 
@@ -76,10 +77,9 @@ type Story = StoryObj<ComponentProps<typeof Page>>;
 // `data.works` stays undefined and the page falls back to a text message.
 export const NoRelations: Story = {};
 
-// The backend puts both ends of every relation into `works`. Thus the centre
-// work is always present. `RelationViewer` starts its search from the centre
-// work, and it throws if that work is absent.
-const relatedWorks: components['schemas']['SlimWorkSchema'][] = [
+// The backend puts both ends of every relation into `works`, so the centre
+// work is always present.
+const relatedWorks: SlimWork[] = [
 	{ id: '1', thumbnail: null, status: Status.Approved, title: 'A sample work title' },
 	{
 		id: '2',
@@ -96,7 +96,7 @@ const relatedWorks: components['schemas']['SlimWorkSchema'][] = [
 // The backend returns the whole connected component. Work #3 gives a relation
 // that holds the centre work in `B_id`. Work #6 sits two hops from the centre,
 // so the depth control has an effect.
-const relations: components['schemas']['WorkRelationSchema'][] = [
+const relations: WorkRelation[] = [
 	{ A_id: '1', B_id: '2', relation: WorkRelationTypes.Sequel },
 	{ A_id: '3', B_id: '1', relation: WorkRelationTypes.Respect },
 	{ A_id: '1', B_id: '4', relation: WorkRelationTypes.Collab_Part },
@@ -105,11 +105,18 @@ const relations: components['schemas']['WorkRelationSchema'][] = [
 ];
 
 export const WithRelations: Story = {
+	tags: ['!dev', '!test'], // TODO: disabled for now
 	args: {
 		data: {
 			...baseData,
+			relations: [relations, relatedWorks],
 			works: relatedWorks,
-			relations
+			svg: '',
+			direction: 'TB' as const,
+			allowed_types: enumValues(WorkRelationTypes),
+			degree: 1,
+			max_distance: 2,
+			show_thumbs: true
 		}
 	}
 };

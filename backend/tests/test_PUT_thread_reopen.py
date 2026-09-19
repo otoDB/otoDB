@@ -1,6 +1,6 @@
 """Tests for PUT /api/thread/reopen endpoint."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -40,7 +40,7 @@ def make_closed_thread(member) -> Thread:
 		title='Test Thread',
 		added_by=member,
 		category=PostCategory.GENERAL,
-		closed_at=datetime.now(tz=timezone.utc),
+		closed_at=datetime.now(tz=UTC),
 	)
 	ThreadPost.objects.create(thread=t, num=1, user=member, body='content')
 	return t
@@ -94,7 +94,7 @@ def test_reopen_forbidden_for_author_when_op_edited_by_mod(
 	t = make_closed_thread(member)
 	op = t.posts.get(num=1)
 	op.edited_by = admin
-	op.edited_at = datetime.now(tz=timezone.utc)
+	op.edited_at = datetime.now(tz=UTC)
 	op.save(update_fields=['edited_by', 'edited_at'])
 	original_closed_at = t.closed_at
 
@@ -111,7 +111,7 @@ def test_reopen_allowed_for_author_when_op_edited_by_self(thread_client, member)
 	t = make_closed_thread(member)
 	op = t.posts.get(num=1)
 	op.edited_by = member
-	op.edited_at = datetime.now(tz=timezone.utc)
+	op.edited_at = datetime.now(tz=UTC)
 	op.save(update_fields=['edited_by', 'edited_at'])
 
 	response = thread_client.put(f'/reopen?thread_id={t.pk}')
@@ -129,7 +129,7 @@ def test_reopen_allowed_for_mod_when_op_edited_by_mod(
 	t = make_closed_thread(member)
 	op = t.posts.get(num=1)
 	op.edited_by = admin
-	op.edited_at = datetime.now(tz=timezone.utc)
+	op.edited_at = datetime.now(tz=UTC)
 	op.save(update_fields=['edited_by', 'edited_at'])
 
 	response = admin_thread_client.put(f'/reopen?thread_id={t.pk}')

@@ -12,7 +12,7 @@ dependencies = [
     "django>=6.0.6",
     "python-dotenv>=1.2.2",
     "pyyaml>=6.0.3",
-    "django-ninja>=1.6.2",
+    "django-ninja>=1.7.1",
     "requests>=2.34.2",
     "django-ordered-model>=3.7.4",
     "granian>=2.7.5",
@@ -45,9 +45,24 @@ extend-select = [
 ]
 ignore = [
     "W191", # tabs
+    "RUF012", # Django class attrs
+    "B008",   # Django Ninja Query()/File()
+    # TODO: Dates, see https://github.com/otoDB/otoDB/issues/1032
+    "DTZ007", # strptime without %z
+    "DTZ011", # date.today()
+    "DTZ012", # date.fromtimestamp()
 ]
 unfixable = [
     "B007",
+]
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "N999", # naming
+    "PLE2502", # special characters testing
+    "PLE2515", # ditto
+]
+"otodb/management/commands/**" = [
+    "BLE001", # blind-except
 ]
 
 [dependency-groups]

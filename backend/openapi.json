@@ -7110,9 +7110,20 @@
       },
       "TagWorkInstanceInSchema": {
         "properties": {
-          "nameslug": {
-            "title": "Nameslug",
+          "slug": {
+            "title": "Slug",
             "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           },
           "sample": {
             "anyOf": [
@@ -7143,7 +7154,7 @@
           }
         },
         "required": [
-          "nameslug"
+          "slug"
         ],
         "title": "TagWorkInstanceInSchema",
         "type": "object"

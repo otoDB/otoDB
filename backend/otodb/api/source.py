@@ -107,7 +107,6 @@ async def refresh_source(request: AuthedHttpRequest, source_id: OtodbID):
 	src: WorkSource = await aget_object_or_404(WorkSource.objects, id=source_id)
 	info, full_info = await video_info(src.url)
 	await sync_to_async(src.refresh)(info, full_info)
-	return
 
 
 @source_router.get('source', response=WorkSourceSchema)

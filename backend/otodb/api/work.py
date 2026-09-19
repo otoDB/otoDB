@@ -1,5 +1,4 @@
 from functools import reduce
-from typing import List
 
 import lark
 from django.conf import settings
@@ -100,7 +99,7 @@ work_router = RouterWithRevision()
 class ExternalQuery(Schema):
 	work_id: int | None = None
 	upload_id: int | None = None
-	tags: List[TagWorkInstanceSchema] = []
+	tags: list[TagWorkInstanceSchema] = []
 
 
 def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
@@ -217,7 +216,7 @@ _WORK_TAG_CATEGORY_FILTERS = {
 }
 
 
-_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', Q] = {
+_WORK_TAG_COUNT_ORDERS: dict[WorkOrder, Q] = {
 	WorkOrder.TAGCOUNT: Q(),
 	**{WorkOrder[name.upper()]: q for name, q in _WORK_TAG_CATEGORY_FILTERS.items()},
 }
@@ -612,7 +611,7 @@ class WorkTagTransformer(AbstractTagTransformer):
 	}
 
 
-@work_router.get('search', response=List[ThinWorkSchema], exclude_none=True)
+@work_router.get('search', response=list[ThinWorkSchema], exclude_none=True)
 @paginate
 def search(
 	request: AuthedHttpRequest,
@@ -814,7 +813,6 @@ def merge_works(
 		),
 		rating=payload.rating,
 	)
-	return
 
 
 @work_router.put('work', auth=django_auth)
@@ -833,10 +831,9 @@ def update_work(
 		else:
 			setattr(work, attr, value)
 	work.save()
-	return
 
 
-@work_router.get('sources', response=List[WorkSourceSchema])
+@work_router.get('sources', response=list[WorkSourceSchema])
 def sources(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	return work.worksource_set
@@ -1034,7 +1031,7 @@ def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 	)
 
 
-@work_router.get('queue', auth=django_auth, response=List[ThinWorkSchema])
+@work_router.get('queue', auth=django_auth, response=list[ThinWorkSchema])
 @user_is_editor
 @paginate
 def mod_queue(
@@ -1078,7 +1075,7 @@ def mod_queue(
 	return qs.order_by('-id')
 
 
-@work_router.get('similar', response=List[ThinWorkSchema])
+@work_router.get('similar', response=list[ThinWorkSchema])
 def similar(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	wt = work.tags.filter(deprecated=False).values_list('id', flat=True)

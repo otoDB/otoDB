@@ -86,6 +86,11 @@
 	};
 	const cancelEdit = () => {
 		editingNum = null;
+		editPreviewMode = false;
+		editPreview = '';
+		editBody = '';
+		editTitle = '';
+		editEntities = '';
 	};
 	const toggleEditPreview = () => {
 		if (editPreviewMode) {
@@ -308,8 +313,13 @@
 			custom_submit:
 				() =>
 				async ({ update, result }) => {
+					if (result.type === 'success') {
+						draft = '';
+						preview = '';
+						previewMode = false;
+						await goto(`/thread/${thread.id}.${result.data}`);
+					}
 					await update();
-					if (result.type === 'success') await goto(`/thread/${thread.id}.${result.data}`);
 				}
 		}}
 	>
@@ -324,14 +334,14 @@
 						{@html preview}
 					</div>
 				</div>
-			{:else}
-				<textarea
-					id="reply-box"
-					class="reply-editor block min-h-15 w-full"
-					name="body"
-					bind:value={draft}
-				></textarea>
 			{/if}
+			<textarea
+				id="reply-box"
+				class="reply-editor block min-h-15 w-full"
+				name="body"
+				bind:value={draft}
+				hidden={previewMode}
+			></textarea>
 			<div class="reply-actions">
 				<button type="button" class="h-15 p-3" onclick={togglePreview}>
 					{previewMode ? m.minor_crisp_cobra_list() : m.many_each_wolf_arrive()}

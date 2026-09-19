@@ -62,7 +62,6 @@ unfixable = [
     "PLE2515", # ditto
 ]
 "otodb/api/**" = [
-
     "UP045", # Optional['X'] -> 'X' | None is a runtime TypeError
     "UP007", # ditto for Union['X', Y]
 ]

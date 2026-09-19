@@ -2,7 +2,7 @@ import re
 from enum import Enum
 from functools import reduce, wraps
 from itertools import groupby
-from typing import Annotated, Optional
+from typing import Annotated
 from urllib.parse import parse_qs, unquote, urlparse
 
 import lark
@@ -105,7 +105,7 @@ class TagSongSchema(Schema):
 	name: str
 	slug: str
 	category: SongTagCategory
-	aliased_to: Optional[TagSongSchema]
+	aliased_to: TagSongSchema | None
 	lang_prefs: list[TagLangPreferenceSchema]
 
 
@@ -147,10 +147,10 @@ class SlimSongSchema(ModelSchema):
 class FatTagWorkSchema(ModelSchema):
 	id: OtodbID
 	children: list[TagWorkSchema]
-	song: Optional[SongSchema] = Field(None, alias='get_song')
+	song: SongSchema | None = Field(None, alias='get_song')
 	media_type: list[int] | None = None
 	lang_prefs: list[TagLangPreferenceSchema]
-	aliased_to: Optional[TagWorkSchema]
+	aliased_to: TagWorkSchema | None
 	category: WorkTagCategory
 
 	class Meta:

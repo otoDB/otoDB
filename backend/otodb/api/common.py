@@ -6,7 +6,7 @@ from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime
 from functools import lru_cache, reduce, wraps
-from typing import Annotated, Any, NamedTuple, Optional, Self
+from typing import Annotated, Any, NamedTuple, Self
 
 import lark
 from asgiref.sync import sync_to_async
@@ -129,7 +129,7 @@ class TagLangPreferenceSchema(Schema):
 class TagWorkSchema(Schema):
 	id: OtodbID
 	lang_prefs: list[TagLangPreferenceSchema]
-	aliased_to: Optional[TagWorkSchema]
+	aliased_to: TagWorkSchema | None
 	name: str
 	slug: str
 	category: WorkTagCategory

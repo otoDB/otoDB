@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import datetime
 import os
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -56,6 +58,37 @@ async def statistics(db_session: AsyncSession) -> tuple[int, int, int, int]:
 	return tuple(result.one())
 
 
+@dataclass
+class WorkHistoryPoint:
+	"""Works in the database at the end of one UTC day."""
+
+	date: datetime.date
+	total: int
+
+
+# The data has daily granularity, so one hour of cache staleness is not visible.
+@get('/stats/works/history', cache=3600, cache_control=CacheControlHeader(max_age=3600))
+async def work_history(db_session: AsyncSession) -> list[WorkHistoryPoint]:
+	"""Works total at the end of each UTC day, ascending. Quiet days get no point.
+
+	The query excludes merged works (`moved_to`). Thus the last total agrees with
+	`/api/stats`, but a merge also decreases the totals of past days.
+	"""
+	# `AT TIME ZONE 'UTC'` pins the day boundary; a bare `::date` obeys the session
+	# TimeZone. `::int` prevents a `Decimal` from the window sum.
+	query = text("""
+		SELECT
+			(created_at AT TIME ZONE 'UTC')::date,
+			SUM(COUNT(*)) OVER (ORDER BY (created_at AT TIME ZONE 'UTC')::date)::int
+		FROM otodb_mediawork
+		WHERE moved_to_id IS NULL
+		GROUP BY 1
+		ORDER BY 1;
+	""")
+	result = await db_session.execute(query)
+	return [WorkHistoryPoint(*row) for row in result]
+
+
 class Base(DeclarativeBase): ...
 
 
@@ -74,7 +107,7 @@ jobs = [
 	Job('moderation sweep', interval=15 * 60, run=prune_expired),
 ]
 
-api = Router(path='/api', route_handlers=[statistics])
+api = Router(path='/api', route_handlers=[statistics, work_history])
 app = Litestar(
 	route_handlers=[api],
 	cors_config=cors_config,

@@ -55,7 +55,7 @@ def NFC(s: str):
 	return unicodedata.normalize('NFC', s)
 
 
-def clean_tag(s: str):
+def process_tag_for_display(s: str):
 	return NFC(s).strip()
 
 
@@ -299,7 +299,7 @@ def process_video_info(full_info, link=None):
 		# Process tags
 		if 'tags' in info:
 			info['tags'] = list(
-				dict.fromkeys(filter(None, map(clean_tag, info['tags'])))
+				dict.fromkeys(filter(None, map(process_tag_for_display, info['tags'])))
 			)
 
 		# Clean description

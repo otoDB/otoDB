@@ -10,7 +10,7 @@ from django.db.models import Prefetch, Q, Value
 from django_cte import CTE, with_cte
 from tagulous.models import BaseTagModel, TagModelManager
 
-from otodb.common import clean_tag, slugify_tag
+from otodb.common import process_tag_for_display, slugify_tag
 
 from .enums import LanguageTypes, MediaType, SongTagCategory, WorkTagCategory
 from .revision import RevisionTrackedManager, RevisionTrackedModel
@@ -67,14 +67,9 @@ class TagModelManagerBase(RevisionTrackedManager, TagModelManager):
 			name = kwargs.pop('name')
 			slug = slugify_tag(name)
 			defaults = kwargs.pop('defaults', {})
-			defaults.setdefault('name', name.replace('_', ' '))
+			defaults.setdefault('name', name)
 			return super().get_or_create(slug=slug, defaults=defaults, **kwargs)
 		return super().get_or_create(*args, **kwargs)
-
-	def create(self, *args, **kwargs):
-		if 'name' in kwargs:
-			kwargs['name'] = kwargs['name'].replace('_', ' ')
-		return super().create(*args, **kwargs)
 
 	def get(self, *args, **kwargs):
 		if 'name' in kwargs:
@@ -149,7 +144,7 @@ class OtodbTagModel(BaseTagModel):
 
 	def save(self, *args, **kwargs):
 		assert self.name
-		self.name = clean_tag(self.name)
+		self.name = process_tag_for_display(self.name)
 		if not self.slug:
 			self.slug = slugify_tag(self.name)
 			if not self.slug:

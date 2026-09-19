@@ -4,7 +4,7 @@
 	import WorkTag from '$lib/WorkTag.svelte';
 	import { WorkTagCategoryMap } from '$lib/enums/workTagCategory';
 	import { m } from '$lib/paraglide/messages';
-	import { getTagDisplaySlug, getSuggestedTagEditorToken } from '$lib/ui.js';
+	import { getTagDisplaySlug, getTagDisplayName } from '$lib/ui.js';
 	import type { components } from '$lib/schema.js';
 	import type { ComponentProps } from 'svelte';
 
@@ -31,7 +31,7 @@
 	// Known tags go by slug, which can carry a `_N` suffix the name cannot reproduce.
 	// Suggested new tags (id `'0'`) have no slug yet, so they go by name.
 	const tokenOf = (tag: ComponentProps<typeof WorkTag>['tag']) =>
-		tag.id === '0' ? getSuggestedTagEditorToken(tag) : getTagDisplaySlug(tag);
+		tag.id === '0' ? getTagDisplayName(tag).replace(/\s+/g, '_') : getTagDisplaySlug(tag);
 
 	$effect(() => {
 		for (const t of sortedSuggestions) {

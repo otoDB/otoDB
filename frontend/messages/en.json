@@ -453,5 +453,8 @@
 	"bold_keen_otter_vault": "Rollback to before this revision",
 	"tame_swift_heron_plead": "Rollback ALL revisions made by {username} to before {label}?",
 	"hazy_calm_otter_dream": "Plain Dark",
-	"misty_plain_finch_glow": "Plain Light"
+	"misty_plain_finch_glow": "Plain Light",
+	"proud_bold_gecko_thrive": "Works over time",
+	"mellow_zesty_stork_bloom": "The number of works in the database at the end of each month.",
+	"sunny_smug_walrus_lift": "{total} works at the end of {month}"
 }

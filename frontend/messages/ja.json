@@ -318,5 +318,8 @@
 	"bold_keen_otter_vault": "この変更より前にロールバック",
 	"tame_swift_heron_plead": "{username} のすべての変更を {label} より前にロールバックしますか？",
 	"hazy_calm_otter_dream": "無地（ダーク）",
-	"misty_plain_finch_glow": "無地（ライト）"
+	"misty_plain_finch_glow": "無地（ライト）",
+	"proud_bold_gecko_thrive": "作品数の推移",
+	"mellow_zesty_stork_bloom": "各月末時点でデータベースに登録されていた作品の数です。",
+	"sunny_smug_walrus_lift": "{month}末時点で{total}件"
 }

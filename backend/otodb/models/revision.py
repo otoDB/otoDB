@@ -119,7 +119,7 @@ class RevisionTrackedModel(models.Model):
 	def __init_subclass__(cls, **kwargs):
 		super().__init_subclass__(**kwargs)
 		if hasattr(cls, 'RevisionMeta'):
-			meta = getattr(cls, 'RevisionMeta')
+			meta = cls.RevisionMeta
 			cls._revision_meta = _RevisionMetaConfig(
 				tracked_fields=getattr(meta, 'tracked_fields', []),
 				entity_attrs=getattr(meta, 'entity_attrs', []),

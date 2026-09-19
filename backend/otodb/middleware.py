@@ -62,9 +62,7 @@ class AnonymousReadOnlyCacheMiddleware:
 	def _is_anon_eligible(self, request) -> bool:
 		if request.COOKIES.get('sessionid'):
 			return False
-		if any(request.path.startswith(p) for p in BYPASS_PREFIXES):
-			return False
-		return True
+		return not any(request.path.startswith(p) for p in BYPASS_PREFIXES)
 
 	def __call__(self, request):
 		always_timeout: int | None = None

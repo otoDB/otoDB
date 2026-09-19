@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, NotRequired, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType

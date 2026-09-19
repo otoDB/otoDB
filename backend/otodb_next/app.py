@@ -1,7 +1,4 @@
-from __future__ import annotations
-
 import os
-from typing import TYPE_CHECKING
 
 from django.conf import settings
 from litestar import Litestar, Router, get
@@ -10,6 +7,7 @@ from litestar.datastructures import CacheControlHeader
 from litestar.openapi import OpenAPIConfig
 from litestar.plugins.sqlalchemy import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
 from otodb.tasks import prune_expired
@@ -18,9 +16,6 @@ from otodb_next.middleware import (
 	SessionAuthMiddleware,
 )
 from otodb_next.scheduler import Job, scheduler
-
-if TYPE_CHECKING:
-	from sqlalchemy.ext.asyncio import AsyncSession
 
 # project.settings is the single config source while Django is still around;
 # it loads .env and derives everything from the environment.

@@ -2,10 +2,11 @@ import inspect
 import operator
 import re
 from abc import abstractmethod
+from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime
 from functools import reduce, wraps
-from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
+from typing import Annotated, Any, NamedTuple, Self
 
 import lark
 from asgiref.sync import sync_to_async
@@ -123,7 +124,7 @@ class TagLangPreferenceSchema(Schema):
 class TagWorkSchema(Schema):
 	id: OtodbID
 	lang_prefs: list[TagLangPreferenceSchema]
-	aliased_to: Optional['TagWorkSchema']
+	aliased_to: TagWorkSchema | None
 	name: str
 	slug: str
 	category: WorkTagCategory
@@ -212,13 +213,25 @@ class WikiPageContentSchema(Schema):
 	title: str | None = None
 
 
+class PendingModerationEventSchema(ModelSchema):
+	"""Thin view of a pending flag or appeal exposed on a work."""
+
+	id: OtodbID
+	by: ProfileSchema | None = None
+	status: FlagStatus
+
+	class Meta:
+		model = ModerationEvent
+		fields = ['reason', 'date']
+
+
 class WorkSchema(ModelSchema):
 	id: OtodbID
 	thumbnail_source_id: OtodbID | None
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
-	pending_flag: 'PendingModerationEventSchema | None' = None
-	pending_appeal: 'PendingModerationEventSchema | None' = None
+	pending_flag: PendingModerationEventSchema | None = None
+	pending_appeal: PendingModerationEventSchema | None = None
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 	rating: Rating
 	status: Status
@@ -233,8 +246,8 @@ class ThinWorkSchema(ModelSchema):
 	id: OtodbID
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
-	pending_flag: 'PendingModerationEventSchema | None' = None
-	pending_appeal: 'PendingModerationEventSchema | None' = None
+	pending_flag: PendingModerationEventSchema | None = None
+	pending_appeal: PendingModerationEventSchema | None = None
 	status: Status
 
 	class Meta:
@@ -267,18 +280,6 @@ class SourceSuggestionsResponse(Schema):
 	source_tags: list[TagWorkSchema] = []
 	new_tags: list[TagWorkSchema] = []
 	creator_tags: list[TagWorkSchema] = []
-
-
-class PendingModerationEventSchema(ModelSchema):
-	"""Thin view of a pending flag or appeal exposed on a work."""
-
-	id: OtodbID
-	by: ProfileSchema | None = None
-	status: FlagStatus
-
-	class Meta:
-		model = ModerationEvent
-		fields = ['reason', 'date']
 
 
 class ListItemSchema(ModelSchema):

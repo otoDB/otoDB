@@ -7,6 +7,13 @@ import { execSync } from 'node:child_process';
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 
+	// Optional overrides so several checkouts can run side by side on different ports
+	const frontendPort = env.OTODB_DEV_FRONTEND_PORT;
+	const allowedHosts = (env.OTODB_DEV_ALLOWED_HOSTS || '')
+		.split(',')
+		.map((host) => host.trim())
+		.filter((host) => host !== '');
+
 	return {
 		plugins: [
 			sveltekit(),
@@ -28,9 +35,11 @@ export default defineConfig(({ mode }) => {
 			}
 		],
 		server: {
-			host: '127.0.0.1',
+			host: env.OTODB_DEV_BIND || '127.0.0.1',
+			...(frontendPort ? { port: Number(frontendPort), strictPort: true } : {}),
+			...(allowedHosts.length > 0 ? { allowedHosts } : {}),
 			proxy: {
-				'/media': env.PUBLIC_API_ENDPOINT || 'http://127.0.0.1:8000'
+				'/media': env.INTERNAL_API_ENDPOINT || env.PUBLIC_API_ENDPOINT || 'http://127.0.0.1:8000'
 			}
 		}
 	};

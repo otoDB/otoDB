@@ -160,8 +160,10 @@ def _table_sql(spec):
 	body = [
 		"\tIF TG_OP = 'DELETE' THEN",
 		'\t\trev := otodb_current_revision();',
-		'\t\tINSERT INTO otodb_revisionchange'
-		' (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)',
+		(
+			'\t\tINSERT INTO otodb_revisionchange'
+			' (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)'
+		),
 		f'\t\tVALUES (rev, own_ct, OLD."{pk}", NULL, NULL, true, false)',
 		'\t\tON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING',
 		'\t\tRETURNING id INTO cid;',
@@ -180,11 +182,15 @@ def _table_sql(spec):
 		body += [
 			f'\tIF {changed} THEN',
 			'\t\trev := coalesce(rev, otodb_current_revision());',
-			'\t\tINSERT INTO otodb_revisionchange'
-			' (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)',
+			(
+				'\t\tINSERT INTO otodb_revisionchange'
+				' (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)'
+			),
 			f"\t\tVALUES (rev, own_ct, tid, '{name}', {_serialize(column, kind, 'NEW')}, false, false)",
-			'\t\tON CONFLICT (rev_id, target_type_id, target_id, target_column)'
-			' DO UPDATE SET target_value = EXCLUDED.target_value',
+			(
+				'\t\tON CONFLICT (rev_id, target_type_id, target_id, target_column)'
+				' DO UPDATE SET target_value = EXCLUDED.target_value'
+			),
 			'\t\tRETURNING id INTO cid;',
 			emit('NEW'),
 			'\tEND IF;',

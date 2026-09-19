@@ -94,12 +94,14 @@ def test_update_captures_single_change(revision_triggers, member):
 	ws = _make_worksource(member)
 	ws_ct = _ct('worksource')
 
-	with db_revision(user=member, message='set origin', route=ROUTE):
-		with connection.cursor() as cursor:
-			cursor.execute(
-				'UPDATE otodb_worksource SET work_origin = %s WHERE id = %s',
-				[int(WorkOrigin.REUPLOAD), ws.id],
-			)
+	with (
+		db_revision(user=member, message='set origin', route=ROUTE),
+		connection.cursor() as cursor,
+	):
+		cursor.execute(
+			'UPDATE otodb_worksource SET work_origin = %s WHERE id = %s',
+			[int(WorkOrigin.REUPLOAD), ws.id],
+		)
 
 	rev = Revision.objects.get()
 	assert rev.user_id == member.pk
@@ -123,12 +125,14 @@ def test_update_with_media_emits_media_entity(revision_triggers, member):
 	ws = _make_worksource(member, media=mw)
 	ws_ct, mw_ct = _ct('worksource'), _ct('mediawork')
 
-	with db_revision(user=member, message='m', route=ROUTE):
-		with connection.cursor() as cursor:
-			cursor.execute(
-				'UPDATE otodb_worksource SET work_origin = %s WHERE id = %s',
-				[int(WorkOrigin.REUPLOAD), ws.id],
-			)
+	with (
+		db_revision(user=member, message='m', route=ROUTE),
+		connection.cursor() as cursor,
+	):
+		cursor.execute(
+			'UPDATE otodb_worksource SET work_origin = %s WHERE id = %s',
+			[int(WorkOrigin.REUPLOAD), ws.id],
+		)
 
 	assert _entities() == {(ws_ct, ws.id, ROUTE), (mw_ct, mw.id, ROUTE)}
 
@@ -162,9 +166,11 @@ def test_delete_captures_marker(revision_triggers, member):
 	ws = _make_worksource(member)
 	ws_ct = _ct('worksource')
 
-	with db_revision(user=member, message='del', route=ROUTE):
-		with connection.cursor() as cursor:
-			cursor.execute('DELETE FROM otodb_worksource WHERE id = %s', [ws.id])
+	with (
+		db_revision(user=member, message='del', route=ROUTE),
+		connection.cursor() as cursor,
+	):
+		cursor.execute('DELETE FROM otodb_worksource WHERE id = %s', [ws.id])
 
 	assert _changes() == [
 		{
@@ -225,12 +231,14 @@ def test_noop_update_creates_no_revision(revision_triggers, member):
 	a RevisionChange."""
 	ws = _make_worksource(member)
 
-	with db_revision(user=member, message='noop', route=ROUTE):
-		with connection.cursor() as cursor:
-			cursor.execute(
-				'UPDATE otodb_worksource SET work_origin = %s WHERE id = %s',
-				[int(WorkOrigin.AUTHOR), ws.id],
-			)
+	with (
+		db_revision(user=member, message='noop', route=ROUTE),
+		connection.cursor() as cursor,
+	):
+		cursor.execute(
+			'UPDATE otodb_worksource SET work_origin = %s WHERE id = %s',
+			[int(WorkOrigin.AUTHOR), ws.id],
+		)
 
 	assert Revision.objects.count() == 0
 	assert RevisionChange.objects.count() == 0
@@ -272,11 +280,13 @@ def test_fan_out_notifies_and_keeps_subscription(revision_triggers, member, edit
 		subscriber=editor, entity_type_id=ws_ct, entity_id=ws.id
 	)
 
-	with db_revision(user=member, message='edit', route=ROUTE):
-		with connection.cursor() as cursor:
-			cursor.execute(
-				'UPDATE otodb_worksource SET title = %s WHERE id = %s', ['T', ws.id]
-			)
+	with (
+		db_revision(user=member, message='edit', route=ROUTE),
+		connection.cursor() as cursor,
+	):
+		cursor.execute(
+			'UPDATE otodb_worksource SET title = %s WHERE id = %s', ['T', ws.id]
+		)
 
 	rev = Revision.objects.get()
 	assert list(Notification.objects.values_list('target_id', 'revision_id')) == [
@@ -292,11 +302,13 @@ def test_fan_out_notifies_and_keeps_subscription(revision_triggers, member, edit
 	).exists()
 
 	# ... so a second edit notifies again
-	with db_revision(user=member, message='edit again', route=ROUTE):
-		with connection.cursor() as cursor:
-			cursor.execute(
-				'UPDATE otodb_worksource SET title = %s WHERE id = %s', ['T2', ws.id]
-			)
+	with (
+		db_revision(user=member, message='edit again', route=ROUTE),
+		connection.cursor() as cursor,
+	):
+		cursor.execute(
+			'UPDATE otodb_worksource SET title = %s WHERE id = %s', ['T2', ws.id]
+		)
 
 	assert Notification.objects.filter(target_id=editor.pk).count() == 2
 
@@ -312,9 +324,11 @@ def test_fan_out_deletes_subscription_with_row(revision_triggers, member, editor
 		subscriber=editor, entity_type_id=ws_ct, entity_id=ws.id
 	)
 
-	with db_revision(user=member, message='delete', route=ROUTE):
-		with connection.cursor() as cursor:
-			cursor.execute('DELETE FROM otodb_worksource WHERE id = %s', [ws.id])
+	with (
+		db_revision(user=member, message='delete', route=ROUTE),
+		connection.cursor() as cursor,
+	):
+		cursor.execute('DELETE FROM otodb_worksource WHERE id = %s', [ws.id])
 
 	rev = Revision.objects.get()
 	assert list(Notification.objects.values_list('target_id', 'revision_id')) == [
@@ -334,11 +348,13 @@ def test_fan_out_excludes_actor(revision_triggers, member):
 		subscriber=member, entity_type_id=ws_ct, entity_id=ws.id
 	)
 
-	with db_revision(user=member, message='edit', route=ROUTE):
-		with connection.cursor() as cursor:
-			cursor.execute(
-				'UPDATE otodb_worksource SET title = %s WHERE id = %s', ['T', ws.id]
-			)
+	with (
+		db_revision(user=member, message='edit', route=ROUTE),
+		connection.cursor() as cursor,
+	):
+		cursor.execute(
+			'UPDATE otodb_worksource SET title = %s WHERE id = %s', ['T', ws.id]
+		)
 
 	assert Notification.objects.count() == 0
 

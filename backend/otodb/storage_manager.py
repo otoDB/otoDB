@@ -14,6 +14,9 @@ class StorageManager:
 
 	def __init__(self):
 		self.cdn_enabled: bool = settings.OTODB_CDN_ENABLED
+		self.fallback_host: str | None = (
+			None if self.cdn_enabled else settings.OTODB_CDN_HOST or None
+		)
 		self.cdn_root: str = settings.OTODB_CDN_ROOT
 
 		self.media_path: Path = settings.MEDIA_ROOT
@@ -59,8 +62,8 @@ class StorageManager:
 					},
 				)
 				return file_path
-			except Exception as e:
-				logger.error(f'CDN upload failed: {e}')
+			except Exception:
+				logger.exception('CDN upload failed')
 		else:
 			return self._save_local(file_content, file_path)
 
@@ -93,16 +96,16 @@ class StorageManager:
 					Key=re.sub(r'/+', '/', self.cdn_root + file_path).lstrip('/'),
 				)
 				return True
-			except Exception as e:
-				logger.error(f'CDN deletion failed: {e}')
+			except Exception:
+				logger.exception('CDN deletion failed')
 		else:
 			try:
 				local_path = self.media_path / file_path.lstrip('/')
 				if local_path.exists():
 					local_path.unlink()
 					return True
-			except Exception as e:
-				logger.error(f'Local deletion failed: {e}')
+			except Exception:
+				logger.exception('Local deletion failed')
 
 		return False
 
@@ -122,15 +125,15 @@ class StorageManager:
 				)
 				return response['Body'].read()
 			except Exception as e:
-				logger.warning(f'CDN read failed: {e}')
+				logger.warning(f'CDN read failed: {e}', exc_info=e)
 		else:
 			try:
 				local_path = self.media_path / file_path.lstrip('/')
 				if local_path.exists():
 					with open(local_path, 'rb') as f:
 						return f.read()
-			except Exception as e:
-				logger.error(f'Local read failed: {e}')
+			except Exception:
+				logger.exception('Local read failed')
 
 		return None
 
@@ -150,7 +153,7 @@ class StorageManager:
 				)
 				return True
 			except Exception as e:
-				logger.debug(f'CDN existence check failed: {e}')
+				logger.debug(f'CDN existence check failed: {e}', exc_info=e)
 		else:
 			local_path = self.media_path / file_path.lstrip('/')
 			return local_path.exists()
@@ -173,6 +176,8 @@ class StorageManager:
 		elif file_path and self.exists(file_path):
 			# Fallback to local storage
 			return settings.MEDIA_URL + file_path.lstrip('/')
+		elif file_path and self.fallback_host:
+			return self.fallback_host + self.cdn_root + file_path.lstrip('/')
 
 		return ''
 

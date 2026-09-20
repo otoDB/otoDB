@@ -51,6 +51,21 @@ async def statistics(db_session: AsyncSession) -> tuple[int, int, int, int]:
 	return tuple(result.one())
 
 
+@get('/queue_stats')
+async def mod_queue_stats(db_session: AsyncSession) -> tuple[int, int, int, int]:
+	query = text("""
+		SELECT
+			(SELECT COUNT(*) FROM otodb_mediawork WHERE (otodb_mediawork.moved_to_id IS NULL AND otodb_mediawork.status = 0)),
+			(SELECT COUNT(*) FROM otodb_mediawork WHERE (otodb_mediawork.moved_to_id IS NULL AND otodb_mediawork.id IN
+				(SELECT U0.work_id AS work_id FROM otodb_moderationevent U0 WHERE (U0.event_type = 0 AND U0.status = 0)))),
+			(SELECT COUNT(*) FROM otodb_mediawork WHERE (otodb_mediawork.moved_to_id IS NULL AND otodb_mediawork.id IN
+				(SELECT U0.work_id AS work_id FROM otodb_moderationevent U0 WHERE (U0.event_type = 1 AND U0.status = 0)))),
+			(SELECT COUNT(*) FROM otodb_worksource WHERE otodb_worksource.is_pending);
+	""")
+	result = await db_session.execute(query)
+	return tuple(result.one())
+
+
 class Base(DeclarativeBase): ...
 
 
@@ -69,7 +84,8 @@ jobs = [
 	Job('moderation sweep', interval=15 * 60, run=prune_expired),
 ]
 
-api = Router(path='/api', route_handlers=[statistics])
+work_router = Router(path='/work', route_handlers=[mod_queue_stats])
+api = Router(path='/api', route_handlers=[statistics, work_router])
 app = Litestar(
 	route_handlers=[api],
 	cors_config=cors_config,

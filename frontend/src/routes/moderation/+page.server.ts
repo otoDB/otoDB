@@ -16,30 +16,30 @@ export const load: PageServerLoad = async ({ fetch, locals, url }) => {
 	const tabs = ['all', 'pending', 'flagged', 'appealed', 'sources'];
 	const tab = url.searchParams.get('tab') || 'all';
 	const page = +(url.searchParams.get('page') || '1');
-	const cts = client.GET('/api/work/queue_stats', { fetch });
+
 	if (tab === 'sources') {
 		const { data: sources } = await client.GET('/api/upload/list', {
 			fetch,
 			params: { query: { is_pending: true, limit: 30, offset: (page - 1) * 30 } }
 		});
-		return { counts: (await cts).data, tab, page, sources, queue: null, batchSize: 30 };
-	} else {
-		const { data: queue } = await client.GET('/api/work/queue', {
-			fetch,
-			params: {
-				query: {
-					category: tabToCategory[tab],
-					limit: 30,
-					offset: (page - 1) * 30
-				}
-			}
-		});
-		return {
-			tab: (tabs.includes(tab) ? tab : 'all') as Tabs,
-			queue,
-			sources: null,
-			batchSize: 30,
-			counts: (await cts).data
-		};
+		return { tab, page, sources, queue: null, batchSize: 30 };
 	}
+
+	const { data: queue } = await client.GET('/api/work/queue', {
+		fetch,
+		params: {
+			query: {
+				category: tabToCategory[tab],
+				limit: 30,
+				offset: (page - 1) * 30
+			}
+		}
+	});
+
+	return {
+		tab: (tabs.includes(tab) ? tab : 'all') as Tabs,
+		queue,
+		sources: null,
+		batchSize: 30
+	};
 };

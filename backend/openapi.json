@@ -1073,6 +1073,47 @@
         ]
       }
     },
+    "/api/work/queue_stats": {
+      "get": {
+        "operationId": "otodb_api_work_mod_queue_stats",
+        "summary": "Mod Queue Stats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "maxItems": 4,
+                  "minItems": 4,
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "title": "Response",
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ]
+      }
+    },
     "/api/work/queue": {
       "get": {
         "operationId": "otodb_api_work_mod_queue",
@@ -1139,7 +1180,6 @@
             }
           }
         },
-        "description": "List works pending moderation: pending, flagged, or appealed.",
         "security": [
           {
             "SessionAuth": []

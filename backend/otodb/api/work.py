@@ -1031,6 +1031,44 @@ def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 	)
 
 
+def pending_event_work_ids(event_type):
+	return ModerationEvent.objects.filter(
+		event_type=event_type, status=FlagStatus.PENDING
+	).values_list('work_id', flat=True)
+
+
+def mod_queue_qs(category: ModQueueCategory | None = None):
+	"""List works pending moderation: pending, flagged, or appealed."""
+	base = MediaWork.active_objects.all()
+
+	if category == ModQueueCategory.PENDING:
+		return base.filter(status=Status.PENDING)
+	elif category == ModQueueCategory.FLAGGED:
+		return base.filter(id__in=pending_event_work_ids(ModerationEventType.FLAG))
+	elif category == ModQueueCategory.APPEALED:
+		return base.filter(id__in=pending_event_work_ids(ModerationEventType.APPEAL))
+	else:
+		pending = base.filter(status=Status.PENDING)
+		pending_flag_or_appeal_ids = ModerationEvent.objects.filter(
+			event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
+			status=FlagStatus.PENDING,
+		).values_list('work_id', flat=True)
+		return base.filter(
+			Q(id__in=pending) | Q(id__in=pending_flag_or_appeal_ids)
+		).distinct()
+
+
+@work_router.get('queue_stats', auth=django_auth, response=tuple[int, int, int, int])
+@user_is_editor
+def mod_queue_stats(request: AuthedHttpRequest):
+	return (
+		mod_queue_qs(ModQueueCategory.PENDING).count(),
+		mod_queue_qs(ModQueueCategory.FLAGGED).count(),
+		mod_queue_qs(ModQueueCategory.APPEALED).count(),
+		WorkSource.objects.filter(is_pending=True).count(),
+	)
+
+
 @work_router.get('queue', auth=django_auth, response=list[ThinWorkSchema])
 @user_is_editor
 @paginate
@@ -1039,29 +1077,7 @@ def mod_queue(
 	mode: str = 'unseen',
 	category: ModQueueCategory | None = None,
 ):
-	"""List works pending moderation: pending, flagged, or appealed."""
-	base = MediaWork.active_objects.all()
-
-	def pending_event_work_ids(event_type):
-		return ModerationEvent.objects.filter(
-			event_type=event_type, status=FlagStatus.PENDING
-		).values_list('work_id', flat=True)
-
-	if category == ModQueueCategory.PENDING:
-		qs = base.filter(status=Status.PENDING)
-	elif category == ModQueueCategory.FLAGGED:
-		qs = base.filter(id__in=pending_event_work_ids(ModerationEventType.FLAG))
-	elif category == ModQueueCategory.APPEALED:
-		qs = base.filter(id__in=pending_event_work_ids(ModerationEventType.APPEAL))
-	else:
-		pending = base.filter(status=Status.PENDING)
-		pending_flag_or_appeal_ids = ModerationEvent.objects.filter(
-			event_type__in=[ModerationEventType.FLAG, ModerationEventType.APPEAL],
-			status=FlagStatus.PENDING,
-		).values_list('work_id', flat=True)
-		qs = base.filter(
-			Q(id__in=pending) | Q(id__in=pending_flag_or_appeal_ids)
-		).distinct()
+	qs = mod_queue_qs(category)
 
 	if mode == 'unseen':
 		qs = qs.exclude(

@@ -9,13 +9,17 @@
 
 	let { data } = $props();
 
-	const tabs: { key: typeof data.tab; label: string }[] = [
-		{ key: 'all', label: m.keen_soft_crow_relish() },
-		{ key: 'pending', label: m.such_actual_okapi_dare() },
-		{ key: 'flagged', label: m.tangy_busy_liger_burn() },
-		{ key: 'appealed', label: m.brief_flat_bullock_dance() },
-		{ key: 'sources', label: m.suave_gray_stork_type() }
-	];
+	const tabs: { key: typeof data.tab; label: string; count: number }[] = $derived([
+		{
+			key: 'all',
+			label: m.keen_soft_crow_relish(),
+			count: data.counts[0] + data.counts[1] + data.counts[2]
+		},
+		{ key: 'pending', label: m.such_actual_okapi_dare(), count: data.counts[0] },
+		{ key: 'flagged', label: m.tangy_busy_liger_burn(), count: data.counts[1] },
+		{ key: 'appealed', label: m.brief_flat_bullock_dance(), count: data.counts[2] },
+		{ key: 'sources', label: m.suave_gray_stork_type(), count: data.counts[3] }
+	]);
 
 	const approveSource = async (sourceId: string) => {
 		const { error } = await client.POST('/api/upload/approve', {
@@ -48,7 +52,7 @@
 				data.tab === tab.key ? 'bg-otodb-content-primary text-otodb-bg-primary' : ''
 			]}
 		>
-			{tab.label}
+			{tab.label}{m.great_clean_beaver_amuse()}{m.awful_house_liger_expand({ content: tab.count })}
 		</a>
 	{/each}
 </div>

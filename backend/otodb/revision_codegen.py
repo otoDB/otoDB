@@ -6,9 +6,12 @@ Usage:
     python -m otodb.revision_codegen --drop   # teardown / migration reverse_sql
     python -m otodb.revision_codegen --check  # fail if the committed .sql is stale
 
-A Django-based parity test keeps the spec honest against the models while both exist:
-`tests/test_revision_codegen.py` runs the same staleness check as `--check` in CI.
+Two tests guard this in CI: `tests/test_revision_spec_parity.py` checks the spec against
+the Django models, and `tests/test_revision_codegen.py` runs the same staleness check as
+`--check`.
 """
+
+from textwrap import dedent, indent
 
 from otodb.revision_spec import TABLES
 
@@ -18,17 +21,15 @@ _BASE_SQL = """-- ==============================================================
 -- Regenerate: python -m otodb.revision_codegen > otodb/sql/revision_triggers.sql
 -- ===========================================================================
 
--- Content-type id for an app_label/model (STABLE: planner caches within a statement).
+-- Content-type id for an app_label/model
 CREATE OR REPLACE FUNCTION otodb_ct(p_app text, p_model text)
 RETURNS integer LANGUAGE sql STABLE AS $$
 	SELECT id FROM django_content_type WHERE app_label = p_app AND model = p_model;
 $$;
 
--- One Revision per transaction, created LAZILY on the first real change; its id is
+-- One Revision per transaction, created lazily on the first real change. Its id is
 -- parked in a txn-local setting so later changes in the same txn attach to it.
--- Attribution: an absent/empty otodb.user_id (unstamped writes -- scheduler jobs like
--- prune_expired, raw SQL, data migrations) falls back to the system bot: account id 1,
--- the first account, created by account migration 0008 on a fresh schema.
+-- An absent otodb.user_id falls back to the system bot (account id 1).
 CREATE OR REPLACE FUNCTION otodb_current_revision()
 RETURNS bigint LANGUAGE plpgsql AS $$
 DECLARE
@@ -52,7 +53,7 @@ BEGIN
 END;
 $$;
 
--- Emit one RevisionChangeEntity row (skips NULL entity ids; idempotent).
+-- Emit one RevisionChangeEntity row (skips NULL entity ids)
 CREATE OR REPLACE FUNCTION otodb_emit_entity(
 	p_change bigint, p_entity_ct integer, p_entity_id bigint, p_route integer
 )
@@ -67,26 +68,120 @@ BEGIN
 END;
 $$;
 
--- Side effects of a completed Revision, invoked by the writer in the same transaction:
--- SELECT otodb_fan_out(rev_id). Notifies subscribers of the changed rows, auto-
--- subscribes the (active) actor to the routed entities, then drops subscriptions whose
--- row was deleted (the generic FK cannot cascade). Subscriptions persist across changes
--- (a subscriber is notified of every revision touching the row); pruning runs LAST so a
--- subscription to a row deleted in this revision -- pre-existing or just auto-created --
--- never outlives it. IS DISTINCT FROM excludes the actor while still notifying everyone
--- on an anonymous (NULL-user) edit.
-CREATE OR REPLACE FUNCTION otodb_fan_out(p_rev bigint)
-RETURNS void LANGUAGE plpgsql AS $$
+-- Finalizes a Revision once its transaction is done writing. Run by the DEFERRED
+-- constraint trigger `otodb_revision_at_commit` on the Revision row.
+--   1. Forget rows created and deleted in same Revision (e.g. aliasing to a
+--      new tag and deleting it, or rollback restoring a row that's a duplicate).
+--      Nobody outside the transaction ever saw such a row, so everything the
+--      Revision wrote about it is erased. This is done here and not when the row is deleted,
+--      because only at COMMIT has everything been written. A cascade can delete a
+--      parent before the children whose changes name it.
+--   2. Prune no-op changes. (A column written twice in one Revision can end where it began)
+--   3. Notify subscribers of the changed rows, except the actor.
+--   4. Auto-subscribe the (active) actor to the routed entities.
+--   5. Drop subscriptions to rows deleted here.
+CREATE OR REPLACE FUNCTION otodb_finalize_revision()
+RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+	this_rev_id bigint := NEW.id;
 BEGIN
+	IF EXISTS (SELECT 1 FROM otodb_revisionchange WHERE rev_id = this_rev_id AND deleted) THEN
+		WITH created_and_deleted_here AS (
+			SELECT d.target_type_id AS ct, d.target_id AS id
+			FROM otodb_revisionchange d
+			WHERE d.rev_id = this_rev_id AND d.deleted
+				-- Created here. The Revision has a change row for every tracked column.
+				-- Only an INSERT writes them all, an edit writes just what it changed.
+				AND otodb_tracked_count(d.target_type_id) = (
+					SELECT count(*) FROM otodb_revisionchange c
+					WHERE c.rev_id = this_rev_id AND c.target_type_id = d.target_type_id
+						AND c.target_id = d.target_id AND c.target_column IS NOT NULL
+				)
+				-- Never seen before. No other Revision mentions the row.
+				AND NOT EXISTS (
+					SELECT 1 FROM otodb_revisionchange o
+					WHERE o.target_type_id = d.target_type_id AND o.target_id = d.target_id
+						AND o.rev_id <> this_rev_id
+				)
+				-- Nothing was restored from it. A rollback can restore a row, delete the
+				-- copy, and restore it again. The second copy is recorded as restored from
+				-- the first, so the first has to stay, as the link between the original
+				-- row and the live one.
+				AND NOT EXISTS (
+					SELECT 1 FROM otodb_revisionchange o
+					WHERE o.target_type_id = d.target_type_id AND o.target_id = d.target_id
+						AND o.restored
+				)
+		), history_to_erase AS (
+			-- Everything this Revision wrote about those rows, plus any marker saying
+			-- another row was restored as one of them (it holds the new id as text).
+			SELECT rc.id FROM otodb_revisionchange rc
+			WHERE rc.rev_id = this_rev_id
+				AND (
+					(rc.target_type_id, rc.target_id)
+						IN (SELECT ct, id FROM created_and_deleted_here)
+					OR (
+						rc.restored
+						AND (rc.target_type_id, rc.target_value)
+							IN (SELECT ct, id::text FROM created_and_deleted_here)
+					)
+				)
+		), erased_entity_rows AS (
+			-- The entity rows of that history, and the ones on OTHER rows' changes that
+			-- name one of those rows (a source pointed at a work that is gone again):
+			-- they would file the change under, and step 4 subscribe the actor to, a
+			-- row that never existed.
+			DELETE FROM otodb_revisionchangeentity e
+			USING otodb_revisionchange rc
+			WHERE e.change_id = rc.id AND rc.rev_id = this_rev_id
+				AND (
+					rc.id IN (SELECT id FROM history_to_erase)
+					OR (e.entity_type_id, e.entity_id)
+						IN (SELECT ct, id FROM created_and_deleted_here)
+				)
+		)
+		DELETE FROM otodb_revisionchange rc USING history_to_erase h WHERE rc.id = h.id;
+	END IF;
+
+	WITH no_op_changes AS (
+		SELECT rc.id FROM otodb_revisionchange rc
+		WHERE rc.rev_id = this_rev_id AND rc.target_column IS NOT NULL
+			AND EXISTS (
+				-- the previous change row, by change id rather than rev_id. Writers of
+				-- one row are serialized by its row lock, so change ids follow the true
+				-- write order even when two overlapping transactions got their Revision
+				-- ids the other way round
+				SELECT 1 FROM (
+					SELECT p.target_value FROM otodb_revisionchange p
+					WHERE p.target_type_id = rc.target_type_id AND p.target_id = rc.target_id
+						AND p.target_column = rc.target_column AND p.id < rc.id
+					ORDER BY p.id DESC LIMIT 1
+				) prev
+				WHERE prev.target_value IS NOT DISTINCT FROM rc.target_value
+			)
+	), erased_entity_rows AS (
+		DELETE FROM otodb_revisionchangeentity e USING no_op_changes n WHERE e.change_id = n.id
+	)
+	DELETE FROM otodb_revisionchange rc USING no_op_changes n WHERE rc.id = n.id;
+
+	DELETE FROM otodb_revision WHERE id = this_rev_id
+		AND NOT EXISTS (SELECT 1 FROM otodb_revisionchange WHERE rev_id = this_rev_id);
+
+	-- Closed. If finalized early (SET CONSTRAINTS ALL IMMEDIATE), later writes in this
+	-- transaction must open a new Revision rather than slip into this one unpruned.
+	PERFORM set_config('otodb.rev_id', '', true);
+
+	-- (all no-ops if the Revision was just deleted)
 	WITH touched AS (
 		SELECT DISTINCT target_type_id AS et, target_id AS eid
-		FROM otodb_revisionchange WHERE rev_id = p_rev
+		FROM otodb_revisionchange WHERE rev_id = this_rev_id
 	)
 	INSERT INTO otodb_notification (target_id, revision_id, reason, dismissed, created_at)
-	SELECT DISTINCT s.subscriber_id, p_rev, 0, false, now()
+	SELECT DISTINCT s.subscriber_id, this_rev_id, 0, false, now()
 	FROM otodb_subscription s
 	JOIN touched t ON s.entity_type_id = t.et AND s.entity_id = t.eid
-	JOIN otodb_revision r ON r.id = p_rev
+	JOIN otodb_revision r ON r.id = this_rev_id
+	-- not the actor; IS DISTINCT FROM so a NULL-user edit still notifies everyone
 	WHERE s.subscriber_id IS DISTINCT FROM r.user_id;
 
 	INSERT INTO otodb_subscription (subscriber_id, entity_type_id, entity_id)
@@ -95,14 +190,35 @@ BEGIN
 	JOIN otodb_revisionchange rc ON rc.rev_id = r.id
 	JOIN otodb_revisionchangeentity rce ON rce.change_id = rc.id
 	JOIN account_account a ON a.id = r.user_id AND a.is_active
-	WHERE r.id = p_rev
+	WHERE r.id = this_rev_id
+		-- Not to a deleted row. A rollback first restores a child pointing at its
+		-- parent's old, deleted id, and nothing would ever drop that subscription.
+		AND NOT EXISTS (
+			SELECT 1 FROM otodb_revisionchange d
+			WHERE d.deleted AND d.target_type_id = rce.entity_type_id
+				AND d.target_id = rce.entity_id
+		)
+	ORDER BY rce.entity_type_id, rce.entity_id
 	ON CONFLICT (subscriber_id, entity_type_id, entity_id) DO NOTHING;
 
 	DELETE FROM otodb_subscription s
 	USING otodb_revisionchange rc
-	WHERE rc.rev_id = p_rev AND rc.deleted
+	WHERE rc.rev_id = this_rev_id AND rc.deleted
 		AND s.entity_type_id = rc.target_type_id
 		AND s.entity_id = rc.target_id;
+	RETURN NULL;
+END;
+$$;
+
+-- CREATE OR REPLACE does not exist for constraint triggers, hence the guard
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'otodb_revision_at_commit') THEN
+		CREATE CONSTRAINT TRIGGER otodb_revision_at_commit
+		AFTER INSERT ON otodb_revision
+		DEFERRABLE INITIALLY DEFERRED
+		FOR EACH ROW EXECUTE FUNCTION otodb_finalize_revision();
+	END IF;
 END;
 $$;
 """
@@ -137,113 +253,146 @@ def _table_sql(spec):
 
 	# One ct variable per distinct (app, model) referenced by entity routing.
 	ct_var = {(app, model): 'own_ct'}
-	decls = [
-		'\trev bigint;',
-		f'\ttid bigint := coalesce(NEW."{pk}", OLD."{pk}");',
-		"\troute integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM",
-		f"\town_ct integer := otodb_ct('{app}', '{model}');",
-		'\tcid bigint;',
-	]
 	for _kind, e_app, e_model, _idcol in spec['entities']:
-		key = (e_app, e_model)
-		if key not in ct_var:
-			var = f'ct_{e_model}'
-			ct_var[key] = var
-			decls.append(f"\t{var} integer := otodb_ct('{e_app}', '{e_model}');")
+		ct_var.setdefault((e_app, e_model), f'ct_{e_model}')
+	# each on a line of its own after `cid`, so a table routing only to itself adds none
+	ct_decls = ''.join(
+		f"\n\t{var} integer := otodb_ct('{e_app}', '{e_model}');"
+		for (e_app, e_model), var in ct_var.items()
+		if var != 'own_ct'
+	)
 
-	def emit(alias):
+	def emit(alias, indentation):
 		return '\n'.join(
-			f'\t\tPERFORM otodb_emit_entity(cid, {ct_var[(e_app, e_model)]}, {alias}."{idcol}", route);'
+			f'{indentation}PERFORM otodb_emit_entity(cid, {ct_var[(e_app, e_model)]}, {alias}."{idcol}", route);'
 			for _kind, e_app, e_model, idcol in spec['entities']
 		)
 
-	body = [
-		"\tIF TG_OP = 'DELETE' THEN",
-		'\t\trev := otodb_current_revision();',
-		(
-			'\t\tINSERT INTO otodb_revisionchange'
-			' (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)'
-		),
-		f'\t\tVALUES (rev, own_ct, OLD."{pk}", NULL, NULL, true, false)',
-		'\t\tON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING',
-		'\t\tRETURNING id INTO cid;',
-		'\t\tIF cid IS NOT NULL THEN',
-		emit('OLD').replace('\t\t', '\t\t\t'),
-		'\t\tEND IF;',
-		'\t\tRETURN OLD;',
-		'\tEND IF;',
-		'',
-	]
-
-	for name, column, kind in spec['tracked']:
-		changed = (
-			f'TG_OP = \'INSERT\' OR NEW."{column}" IS DISTINCT FROM OLD."{column}"'
+	# sql
+	tracked_template = """\
+	IF TG_OP = 'INSERT' OR NEW."{column}" IS DISTINCT FROM OLD."{column}" THEN
+		rev := coalesce(rev, otodb_current_revision());
+		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
+		VALUES (rev, own_ct, tid, '{name}', {value}, false, false)
+		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
+		RETURNING id INTO cid;
+	{emit_new}
+	END IF;"""
+	tracked = '\n'.join(
+		dedent(tracked_template).format(
+			column=column,
+			name=name,
+			value=_serialize(column, kind, 'NEW'),
+			emit_new=emit('NEW', '\t'),
 		)
-		body += [
-			f'\tIF {changed} THEN',
-			'\t\trev := coalesce(rev, otodb_current_revision());',
-			(
-				'\t\tINSERT INTO otodb_revisionchange'
-				' (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)'
-			),
-			f"\t\tVALUES (rev, own_ct, tid, '{name}', {_serialize(column, kind, 'NEW')}, false, false)",
-			(
-				'\t\tON CONFLICT (rev_id, target_type_id, target_id, target_column)'
-				' DO UPDATE SET target_value = EXCLUDED.target_value'
-			),
-			'\t\tRETURNING id INTO cid;',
-			emit('NEW'),
-			'\tEND IF;',
-		]
-	body.append('\tRETURN NEW;')
+		for name, column, kind in spec['tracked']
+	)
 
-	tracked_names = [name for name, _c, _k in spec['tracked']]
 	when_changed = '\n\t OR '.join(
 		f'OLD."{column}" IS DISTINCT FROM NEW."{column}"'
 		for _name, column, _kind in spec['tracked']
 	)
-	return (
-		f'-- {model}: tracked={tracked_names}\n'
-		f'CREATE OR REPLACE FUNCTION {fn}() RETURNS trigger LANGUAGE plpgsql AS $$\n'
-		f'DECLARE\n'
-		+ '\n'.join(decls)
-		+ '\nBEGIN\n'
-		+ '\n'.join(body)
-		+ '\nEND;\n$$;\n\n'
-		f'DROP TRIGGER IF EXISTS zz_{fn} ON {table};\n'
-		f'CREATE OR REPLACE TRIGGER zz_{fn}_i\n'
-		f'AFTER INSERT ON {table}\n'
-		f'FOR EACH ROW EXECUTE FUNCTION {fn}();\n'
-		f'CREATE OR REPLACE TRIGGER zz_{fn}_u\n'
-		f'AFTER UPDATE ON {table}\n'
-		f'FOR EACH ROW WHEN ({when_changed})\n'
-		f'EXECUTE FUNCTION {fn}();\n'
-		f'CREATE OR REPLACE TRIGGER zz_{fn}_d\n'
-		f'AFTER DELETE ON {table}\n'
-		f'FOR EACH ROW EXECUTE FUNCTION {fn}();\n'
+
+	# sql
+	template = """\
+	-- {model}: tracked={tracked_names}
+	CREATE OR REPLACE FUNCTION {fn}() RETURNS trigger LANGUAGE plpgsql AS $$
+	DECLARE
+		rev bigint;
+		tid bigint := coalesce(NEW."{pk}", OLD."{pk}");
+		route integer := coalesce(nullif(current_setting('otodb.route', true), '')::int, 10000);  -- unstamped -> Route.SYSTEM
+		own_ct integer := otodb_ct('{app}', '{model}');
+		cid bigint;{ct_decls}
+	BEGIN
+		IF TG_OP = 'DELETE' THEN
+			rev := otodb_current_revision();
+			INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
+			VALUES (rev, own_ct, OLD."{pk}", NULL, NULL, true, false)
+			ON CONFLICT (target_type_id, target_id) WHERE deleted DO NOTHING
+			RETURNING id INTO cid;
+			IF cid IS NOT NULL THEN
+	{emit_old}
+			END IF;
+			RETURN OLD;
+		END IF;
+
+	{tracked}
+		RETURN NEW;
+	END;
+	$$;
+
+	CREATE OR REPLACE TRIGGER zz_{fn}_i
+	AFTER INSERT ON {table}
+	FOR EACH ROW EXECUTE FUNCTION {fn}();
+	CREATE OR REPLACE TRIGGER zz_{fn}_u
+	AFTER UPDATE ON {table}
+	FOR EACH ROW WHEN ({when_changed})
+	EXECUTE FUNCTION {fn}();
+	CREATE OR REPLACE TRIGGER zz_{fn}_d
+	AFTER DELETE ON {table}
+	FOR EACH ROW EXECUTE FUNCTION {fn}();
+	"""
+	return dedent(template).format(
+		model=model,
+		tracked_names=[name for name, _c, _k in spec['tracked']],
+		fn=fn,
+		pk=pk,
+		app=app,
+		ct_decls=ct_decls,
+		emit_old=emit('OLD', '\t\t\t'),
+		tracked=indent(tracked, '\t'),
+		table=table,
+		when_changed=when_changed,
 	)
+
+
+def _tracked_count_sql():
+	rows = ',\n'.join(
+		f"\t\t('{spec['app']}', '{spec['model']}', {len(spec['tracked'])})"
+		for spec in TABLES
+	)
+
+	# sql
+	template = """\
+	-- How many tracked columns a model has, i.e. how many change rows its INSERT emits.
+	CREATE OR REPLACE FUNCTION otodb_tracked_count(p_ct integer)
+	RETURNS integer LANGUAGE sql STABLE AS $$
+		SELECT v.n FROM django_content_type c
+		JOIN (VALUES
+	{rows}
+		) AS v(app, model, n) ON v.app = c.app_label AND v.model = c.model
+		WHERE c.id = p_ct;
+	$$;
+	"""
+	return dedent(template).format(rows=rows)
 
 
 def generate_sql():
 	"""Full install script: shared helpers + a capture trigger for every tracked table."""
-	return '\n'.join([_BASE_SQL, ''] + [_table_sql(spec) for spec in TABLES])
+	return '\n'.join(
+		[_BASE_SQL, _tracked_count_sql()] + [_table_sql(spec) for spec in TABLES]
+	)
 
 
 def generate_drop_sql():
 	"""Teardown (migration reverse_sql): drop every per-table function CASCADE (removes
 	its trigger) then the shared helpers."""
-	lines = ['-- GENERATED by otodb/revision_codegen.py -- DO NOT EDIT.']
-	for spec in TABLES:
-		lines.append(
-			f'DROP FUNCTION IF EXISTS otodb_{spec["model"]}_capture() CASCADE;'
-		)
-	lines += [
-		'DROP FUNCTION IF EXISTS otodb_fan_out(bigint);',
-		'DROP FUNCTION IF EXISTS otodb_emit_entity(bigint, integer, bigint, integer);',
-		'DROP FUNCTION IF EXISTS otodb_current_revision();',
-		'DROP FUNCTION IF EXISTS otodb_ct(text, text);',
-	]
-	return '\n'.join(lines) + '\n'
+	captures = '\n'.join(
+		f'DROP FUNCTION IF EXISTS otodb_{spec["model"]}_capture() CASCADE;'
+		for spec in TABLES
+	)
+
+	# sql
+	template = """\
+	-- GENERATED by otodb/revision_codegen.py -- DO NOT EDIT.
+	{captures}
+	DROP FUNCTION IF EXISTS otodb_finalize_revision() CASCADE;
+	DROP FUNCTION IF EXISTS otodb_tracked_count(integer);
+	DROP FUNCTION IF EXISTS otodb_emit_entity(bigint, integer, bigint, integer);
+	DROP FUNCTION IF EXISTS otodb_current_revision();
+	DROP FUNCTION IF EXISTS otodb_ct(text, text);
+	"""
+	return dedent(template).format(captures=captures)
 
 
 if __name__ == '__main__':

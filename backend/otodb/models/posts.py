@@ -88,7 +88,9 @@ class ThreadManager(models.Manager):
 										target_type_id=OuterRef('entity_type_id'),
 										target_id=OuterRef('entity_id'),
 										target_column='slug',
-									).values('target_value')[:1]
+									)
+									.order_by('-id')
+									.values('target_value')[:1]
 								),
 							),
 							When(

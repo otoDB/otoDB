@@ -208,7 +208,8 @@ const baseData = {
 	batchSize,
 	tab: 'all' as const,
 	queue: { items: queueWorks('all'), count: queueCount },
-	sources: null
+	sources: null,
+	counts: [0, 0, 0, 0] as [number, number, number, number]
 };
 
 const meta = {

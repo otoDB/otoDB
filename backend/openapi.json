@@ -5883,6 +5883,40 @@
         },
         "deprecated": false
       }
+    },
+    "/api/work/queue_stats": {
+      "get": {
+        "summary": "ModQueueStats",
+        "operationId": "ApiWorkQueueStatsModQueueStats",
+        "responses": {
+          "200": {
+            "description": "Request fulfilled, document follows",
+            "headers": {},
+            "content": {
+              "application/json": {
+                "schema": {
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
     }
   },
   "components": {

@@ -1,15 +1,27 @@
 import functools
 import logging
-from datetime import date, datetime
+from datetime import UTC, date, datetime, time, timedelta
 from enum import Enum
 from itertools import groupby
 from typing import Any
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError, connection, models, transaction
-from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, When, Window
+from django.db.models import (
+	Case,
+	Count,
+	Exists,
+	F,
+	OuterRef,
+	Q,
+	Subquery,
+	Value,
+	When,
+	Window,
+)
 from django.db.models.fields.related import RelatedField
-from django.db.models.functions import Coalesce, RowNumber
+from django.db.models.functions import MD5, Coalesce, RowNumber
+from django.db.models.lookups import Exact
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django_cte import CTE, with_cte
@@ -302,7 +314,7 @@ def _annotate_entity_summary(qs):
 							target_id=OuterRef('first_ent_id'),
 							target_column='slug',
 						)
-						.order_by('-rev_id')
+						.order_by('-id')
 						.values('target_value')[:1]
 					),
 					models.functions.Cast(
@@ -360,16 +372,26 @@ def REVISION_TEXT_COLUMNS() -> dict[int, set[str]]:
 	}
 
 
-# The most recent value the target column held before this change's revision.
+# The value the target column held before this change: its previous change row.
 _old_value_subquery = Subquery(
 	RevisionChange.objects.filter(
 		target_type_id=OuterRef('target_type_id'),
 		target_id=OuterRef('target_id'),
 		target_column=OuterRef('target_column'),
-		rev_id__lt=OuterRef('rev_id'),
+		id__lt=OuterRef('id'),
 	)
-	.order_by('-rev_id')
+	.order_by('-id')
 	.values('target_value')[:1]
+)
+
+# No change row for the target row from before this change's revision ~= the row was
+# created in this revision.
+_created_here = ~Exists(
+	RevisionChange.objects.filter(
+		target_type_id=OuterRef('target_type_id'),
+		target_id=OuterRef('target_id'),
+		id__lt=OuterRef('id'),
+	).exclude(rev_id=OuterRef('rev_id'))
 )
 
 
@@ -392,7 +414,7 @@ def _historic_labels(model_class, ids: set[int], label_field: str) -> dict[int, 
 			target_id__in=ids,
 			target_column=label_field,
 		)
-		.order_by('target_id', '-rev_id')
+		.order_by('target_id', '-id')
 		.distinct('target_id')
 		.values_list('target_id', 'target_value')
 	)
@@ -450,7 +472,7 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 									),
 									target_column='slug',
 								)
-								.order_by('-rev_id')
+								.order_by('-id')
 								.values('target_value')[:1]
 							),
 							models.functions.Cast(
@@ -492,7 +514,7 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 									target_id=OuterRef('target_id'),
 									target_column='slug',
 								)
-								.order_by('-rev_id')
+								.order_by('-id')
 								.values('target_value')[:1]
 							),
 							models.functions.Cast(
@@ -509,14 +531,7 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			ent_type=F('revisionchangeentity__entity_type__model'),
 			route=F('revisionchangeentity__route'),
 			old_value=_old_value_subquery,
-			# No prior change for the row at all ~= row created in this revision
-			created=~Exists(
-				RevisionChange.objects.filter(
-					target_type_id=OuterRef('target_type_id'),
-					target_id=OuterRef('target_id'),
-					rev_id__lt=OuterRef('rev_id'),
-				)
-			),
+			created=_created_here,
 		)
 		.order_by('id')
 	)
@@ -573,19 +588,26 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 			collect_ref(ref_model, c.old_value)
 
 	def reconstruct_rows(
-		targets: models.QuerySet, **rev_filter
+		targets: models.QuerySet, *, before_revision: bool
 	) -> dict[str, list[OldColumnSchema]]:
-		"""Latest known value per column for each (target_type, target_id) row."""
+		"""Latest known value per column for each (target_type, target_id) row: as the
+		row stood before this revision first wrote to it, or else as of its last write."""
 		rows: dict[str, list[OldColumnSchema]] = {}
-		member = targets.filter(
-			target_type_id=OuterRef('target_type_id'),
-			target_id=OuterRef('target_id'),
+		same_row = {
+			'target_type_id': OuterRef('target_type_id'),
+			'target_id': OuterRef('target_id'),
+		}
+		own_ids = changes.filter(**same_row).values('id')
+		cutoff = (
+			Q(id__lt=Subquery(own_ids.order_by('id')[:1]))
+			if before_revision
+			else Q(id__lte=Subquery(own_ids.order_by('-id')[:1]))
 		)
 		latest = (
 			RevisionChange.objects.filter(
-				Exists(member), target_column__isnull=False, **rev_filter
+				Exists(targets.filter(**same_row)), cutoff, target_column__isnull=False
 			)
-			.order_by('target_type_id', 'target_id', 'target_column', '-rev_id')
+			.order_by('target_type_id', 'target_id', 'target_column', '-id')
 			.distinct('target_type_id', 'target_id', 'target_column')
 			.values_list('target_type_id', 'target_id', 'target_column', 'target_value')
 		)
@@ -607,14 +629,14 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 	# Reconstruct the last known column values of rows deleted in this revision
 	deleted_rows = reconstruct_rows(
 		changes.filter(deleted=True),
-		rev_id__lt=rev.pk,
+		before_revision=True,
 	)
 
 	# Full-row context for relation-like rows: a change to only some columns
 	# would otherwise lose what the row connects (e.g. relation type-only edits)
 	row_context = reconstruct_rows(
 		changes.filter(deleted=False, target_type__model__in=_CONTEXT_MODELS),
-		rev_id__lte=rev.pk,
+		before_revision=False,
 	)
 
 	works = []
@@ -774,7 +796,7 @@ def _get_all_previous_field_values(
 		rev__date__lt=date,
 		target_column__in=fields or model_class._revision_meta.tracked_fields,
 	)
-	qs = query.order_by('target_column', '-rev__date').distinct('target_column')
+	qs = query.order_by('target_column', '-id').distinct('target_column')
 	latest_changes = dict(qs.values_list('target_column', 'target_value'))
 
 	# Check if we found all required fields
@@ -956,7 +978,7 @@ def rollback_entity(
 										target_id=values[field_name + '_id'],
 										rev__date__lt=date,
 									)
-									.order_by('-rev__date')
+									.order_by('-id')
 									.first()
 								)
 								for ent in rel.revisionchangeentity_set.all():
@@ -1260,13 +1282,21 @@ def history(request: HttpRequest, entity: Query[HistoricalEntitySchema]):
 	)
 
 
+def _target_value_md5_q(value: str) -> Q:
+	"""Changes whose target_value is `value`.
+
+	Compares md5(target_value), because that is the expression
+	revisionchange_col_value_idx indexes."""
+	return Q(Exact(MD5('target_value'), MD5(Value(value))), target_value=value)
+
+
 def _value_change_q(model: type[models.Model], column: str, value: str) -> Q:
 	"""Revisions containing a change that set `model.column` to `value`"""
 	return Q(
 		pk__in=RevisionChange.objects.filter(
+			_target_value_md5_q(value),
 			target_type=ContentType.objects.get_for_model(model),
 			target_column=column,
-			target_value=value,
 		).values('rev_id')
 	)
 
@@ -1294,9 +1324,9 @@ def _tag_removed_q(slug: str) -> Q:
 		return Q(pk__in=[])
 	twi_ct = ContentType.objects.get_for_model(TagWorkInstance)
 	had_tag = RevisionChange.objects.filter(
+		_target_value_md5_q(str(tag.pk)),
 		target_type=twi_ct,
 		target_column='work_tag',
-		target_value=str(tag.pk),
 	)
 	return Q(
 		pk__in=RevisionChange.objects.filter(
@@ -1313,8 +1343,9 @@ def _changed_field_q(
 	"""Revisions containing a change to a tracked column with this name,
 	optionally only changes that set it to `value` and/or whose previous value
 	was `from_value` (raw serialized form, e.g. the integer behind an enum)."""
-	flt = {'target_value': value} if value is not None else {}
-	changes = RevisionChange.objects.filter(target_column=column, **flt)
+	changes = RevisionChange.objects.filter(target_column=column)
+	if value is not None:
+		changes = changes.filter(_target_value_md5_q(value))
 	if from_value is not None:
 		changes = changes.annotate(_old=_old_value_subquery).filter(_old=from_value)
 	return Q(pk__in=changes.values('rev_id'))
@@ -1332,15 +1363,7 @@ def _is_new_q() -> Q:
 		target_type__in=cts,
 		deleted=False,
 		restored=False,
-	).filter(
-		~Exists(
-			RevisionChange.objects.filter(
-				target_type_id=OuterRef('target_type_id'),
-				target_id=OuterRef('target_id'),
-				rev_id__lt=OuterRef('rev_id'),
-			)
-		)
-	)
+	).filter(_created_here)
 	return Q(Exists(first_change))
 
 
@@ -1389,10 +1412,14 @@ def search(
 		)
 	if reason:
 		q &= Q(message__icontains=reason)
+	# `since` and `until` are inclusive UTC days. They are compared as datetimes instead
+	# of with date__date, which casts the column and so cannot use the index on date.
 	if since is not None:
-		q &= Q(date__date__gte=since)
+		q &= Q(date__gte=datetime.combine(since, time.min, tzinfo=UTC))
 	if until is not None:
-		q &= Q(date__date__lte=until)
+		q &= Q(
+			date__lt=datetime.combine(until + timedelta(days=1), time.min, tzinfo=UTC)
+		)
 	if is_new is not None:
 		q &= _is_new_q() if is_new else ~_is_new_q()
 	if is_deleted is not None:

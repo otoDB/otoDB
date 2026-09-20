@@ -3,8 +3,9 @@ import logging
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.indexes import HashIndex
 from django.db import models
+from django.db.models import F
+from django.db.models.functions import MD5
 
 from otodb.models.enums import RevisionChain, Route
 
@@ -15,7 +16,7 @@ class Revision(models.Model):
 	user = models.ForeignKey(
 		settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True
 	)
-	date = models.DateTimeField(auto_now_add=True)
+	date = models.DateTimeField(auto_now_add=True, db_index=True)
 	message = models.TextField(null=False, default='')
 
 
@@ -45,12 +46,10 @@ class RevisionChange(models.Model):
 				fields=['target_type', 'target_id'], name='revisionchange_target_idx'
 			),
 			models.Index(
-				fields=['target_column', 'target_type'],
-				name='revisionchange_column_idx',
-			),
-			HashIndex(
-				fields=['target_value'],
-				name='revisionchange_value_hash_idx',
+				F('target_column'),
+				MD5('target_value'),
+				F('target_type'),
+				name='revisionchange_col_value_idx',
 			),
 		]
 		constraints = [
@@ -72,8 +71,12 @@ class RevisionChange(models.Model):
 
 
 class RevisionChangeEntity(models.Model):
-	change = models.ForeignKey(RevisionChange, null=False, on_delete=models.CASCADE)
-	entity_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=False)
+	change = models.ForeignKey(
+		RevisionChange, null=False, on_delete=models.CASCADE, db_index=False
+	)
+	entity_type = models.ForeignKey(
+		ContentType, on_delete=models.CASCADE, null=False, db_index=False
+	)
 	entity_id = models.PositiveBigIntegerField(null=False)
 	entity = GenericForeignKey('entity_type', 'entity_id')
 	route = models.IntegerField(

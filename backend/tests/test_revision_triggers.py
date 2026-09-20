@@ -1,6 +1,6 @@
 """DB-trigger revision system: capture, serialization parity, and fan-out.
 
-Self-contained -- the ``revision_triggers`` fixture installs the codegen'd triggers for
+Self-contained -- the `revision_triggers` fixture installs the codegen'd triggers for
 every tracked model (validating that all 17 compile against the real schema) and lets
 pytest-django's per-test transaction roll them back, so it needs no applied migration
 and never pollutes the rest of the suite. Edits are raw SQL to prove that *any* writer

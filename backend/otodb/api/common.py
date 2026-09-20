@@ -510,11 +510,11 @@ _READ_ONLY_HTTP_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS'})
 
 def track_revision(view_func):
 	"""Wrap an endpoint so its writes are captured as one Revision by the DB triggers:
-	open a ``db_revision`` transaction stamped with the request user + route (the route
-	is tagged onto the handler by ``@with_revision_route``). Read-only requests skip the
+	open a `db_revision` transaction stamped with the request user + route (the route
+	is tagged onto the handler by `@with_revision_route`). Read-only requests skip the
 	transaction + stamping round-trips entirely -- they have nothing to capture.
 	Handles sync and async handlers; for async, the sync DB work runs in a thread via
-	``sync_to_async`` (the same thread the handler's own ``sync_to_async`` DB calls use,
+	`sync_to_async` (the same thread the handler's own `sync_to_async` DB calls use,
 	so it shares the transaction).
 	"""
 

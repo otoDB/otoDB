@@ -1,10 +1,10 @@
 """The committed trigger SQL must match fresh codegen output.
 
-Migration 0121 installs ``generate_sql()`` live, so a stale ``revision_triggers.sql``
+Migration 0121 installs `generate_sql()` live, so a stale `revision_triggers.sql`
 means the committed artifact no longer documents what a fresh migrate installs -- and a
 spec change was made without regenerating. Django-free on purpose: this check (also
-available as ``python -m otodb.revision_codegen --check``) survives the migration off
-Django, unlike ``test_revision_spec_parity``.
+available as `python -m otodb.revision_codegen --check`) survives the migration off
+Django, unlike `test_revision_spec_parity`.
 """
 
 from pathlib import Path

@@ -20,6 +20,16 @@
             "world": "MAIN"
         },
         {
+            "matches": [
+                "*://www.youtube.com/embed/*",
+                "*://www.youtube-nocookie.com/embed/*"
+            ],
+            "js": ["youtube.js"],
+            "run_at": "document_start",
+            "all_frames": true,
+            "world": "MAIN"
+        },
+        {
             "matches": ["https://otodb.net/*"],
             "js": ["otodb-prefs.js"],
             "run_at": "document_start"
@@ -35,7 +45,9 @@
         "https://otodb.net/*",
         "https://*.nicovideo.jp/*",
         "https://*.nicoseiga.jp/*",
-        "https://www.nicochart.jp/*"
+        "https://www.nicochart.jp/*",
+        "*://www.youtube.com/*",
+        "*://www.youtube-nocookie.com/*"
     ],
     "declarative_net_request": {
         "rule_resources": [

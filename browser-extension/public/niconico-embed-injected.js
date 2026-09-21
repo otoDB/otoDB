@@ -33,7 +33,10 @@
             console.error('Could not fetch watch data.');
             return;
         }
-        const { video, tags } = (await watchResponse.json()).data;
+        const watchJson = await watchResponse.text();
+        const { video, tags, media } = JSON.parse(watchJson).data;
+        // Lets injected.js answer the player's own request for this data, instead of requesting it twice
+        window.otodb_watch = { json: watchJson, expiresAt: Date.parse(media.hls.expiredAt) };
 
         // The player is rendered from these props alone
         Object.assign(props, {

@@ -73,11 +73,25 @@
 		// The embed player fetches its watch data (which includes the HLS URL) and counts the view
 		// as a guest. Guests get 403 HARMFUL_VIDEO for age-gated videos, so for the video set by
 		// niconico-embed-injected.js, make these requests as the logged in user instead.
+		const watchMatch = url.match(/^https:\/\/nvapi\.nicovideo\.jp\/v4\/watch\/([^/?]+)(\/side-effect)?(\?|$)/);
 		if (
 			window.location.hostname === 'embed.nicovideo.jp' &&
 			window.otodb_video_id &&
-			url.match(/^https:\/\/nvapi\.nicovideo\.jp\/v4\/watch\/([^/?]+)(\/side-effect)?(\?|$)/)?.[1] === window.otodb_video_id
+			watchMatch?.[1] === window.otodb_video_id
 		) {
+			// niconico-embed-injected.js already requested the watch data, use that the first time
+			const watch = window.otodb_watch;
+			if (!watchMatch[2] && watch) {
+				delete window.otodb_watch;
+				if (watch.expiresAt > Date.now()) {
+					return new Response(watch.json, {
+						status: 200,
+						statusText: 'OK',
+						headers: { 'Content-Type': 'application/json' }
+					});
+				}
+			}
+
 			try {
 				const init = { ...(args[1] || {}) };
 				init.body = JSON.stringify({ ...originalJSONParse(init.body), asGuest: false });

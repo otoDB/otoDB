@@ -13,27 +13,16 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://embed.nicovideo.jp/watch/*"],
-            "js": ["niconico-embed.js"],
-            "run_at": "document_idle",
-            "all_frames": true
-        },
-        {
             "matches": ["https://*.nicovideo.jp/*"],
-            "js": ["injector.js"],
+            "js": ["niconico.js"],
             "run_at": "document_start",
-            "all_frames": true
+            "all_frames": true,
+            "world": "MAIN"
         },
         {
             "matches": ["https://otodb.net/*"],
             "js": ["otodb-prefs.js"],
             "run_at": "document_start"
-        }
-    ],
-    "web_accessible_resources": [
-        {
-            "resources": ["injected.js", "niconico-embed-injected.js"],
-            "matches": ["https://*.nicovideo.jp/*"]
         }
     ],
     "permissions": [
@@ -57,9 +46,11 @@
             }
         ]
     },
+    "minimum_chrome_version": "111",
     "browser_specific_settings": {
         "gecko": {
-            "id": "{717c1436-7545-4acd-bed8-a473bac7698b}"
+            "id": "{717c1436-7545-4acd-bed8-a473bac7698b}",
+            "strict_min_version": "128.0"
         }
     }
 }

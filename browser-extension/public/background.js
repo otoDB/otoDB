@@ -26,12 +26,13 @@ async function updateUserSessionRule() {
 					}]
 				},
 				condition: {
+					// Only for the embed player, which as a third party frame does not get the session cookie by itself
+					initiatorDomains: ['embed.nicovideo.jp'],
 					// For nvapi.nicovideo.jp, require _=1 as the last parameter (which we inject) to add cookies; for others, allow anything.
 					// This is because normally requests on the embed.nicovideo.jp domain expect no cookies to be used.
 					// Adding cookies likely causes the JWT token or some other auth mechanism to fail.
-					regexFilter: "^(https://nvapi\\.nicovideo\\.jp/.*[?&]_=1$|https://(www|delivery\\.domand)\\.nicovideo\\.jp/.*$)",
+					regexFilter: "^https://(nvapi\\.nicovideo\\.jp/.*[?&]_=1|delivery\\.domand\\.nicovideo\\.jp/.*)$",
 					requestDomains: [
-						'www.nicovideo.jp',
 						'nvapi.nicovideo.jp',
 						'delivery.domand.nicovideo.jp'
 					],
@@ -54,9 +55,11 @@ async function updateUserSessionRule() {
 // Update rules on install, startup, and when the cookies change
 chrome.runtime.onInstalled.addListener(updateUserSessionRule);
 chrome.runtime.onStartup.addListener(updateUserSessionRule);
+let updateTimeout;
 chrome.cookies.onChanged.addListener(changeInfo => {
 	// If any cookie on nicovideo.jp changes, update the rule
 	if (changeInfo.cookie.domain === '.nicovideo.jp') {
-		updateUserSessionRule();
+		clearTimeout(updateTimeout);
+		updateTimeout = setTimeout(updateUserSessionRule, 500);
 	}
 });

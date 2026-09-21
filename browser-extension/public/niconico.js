@@ -1,4 +1,3 @@
-// Runs in the page's own world (see manifest.json), before any of the page's scripts
 (function() {
 	const SENSITIVE_KEYS = ['requireSensitiveMasking', 'sensitive'];
 	const WORKING_EMBED_VIDEO_ID = 'sm1097445';
@@ -7,10 +6,8 @@
 	const originalJSONParse = JSON.parse;
 	const originalFetch = window.fetch;
 
-	// The age-gated video the embed player was pointed at by replaceRefusedEmbed()
 	let embedVideoId = null;
-	// Its watch data, to answer the player's own request for it instead of requesting it twice
-	let embedWatch = null;
+	let embedWatchData = null;
 
 	function mentionsSensitive(text) {
 		return typeof text === 'string' && SENSITIVE_KEYS.some(key => text.includes(`"${key}"`));
@@ -77,9 +74,9 @@
 			// The embed player fetches its watch data (which includes the HLS URL) and counts the view as a guest
 			const watchMatch = url.match(/^https:\/\/nvapi\.nicovideo\.jp\/v4\/watch\/([^/?]+)(\/side-effect)?(\?|$)/);
 			if (watchMatch?.[1] === embedVideoId) {
-				const watch = embedWatch;
+				const watch = embedWatchData;
 				if (!watchMatch[2] && watch) {
-					embedWatch = null;
+					embedWatchData = null;
 					if (watch.expiresAt > Date.now()) {
 						return new Response(watch.json, {
 							status: 200,
@@ -177,7 +174,7 @@
 			doc.title = doc.title.replace(/^.*(?= - )/, () => video.title);
 
 			embedVideoId = videoId;
-			embedWatch = { json: watchJson, expiresAt: Date.parse(media.hls.expiredAt) };
+			embedWatchData = { json: watchJson, expiresAt: Date.parse(media.hls.expiredAt) };
 
 			document.open();
 			document.write('<!DOCTYPE html>\n' + doc.documentElement.outerHTML);

@@ -106,6 +106,7 @@ def _annotate_lastmod(
 			RevisionChange.objects.filter(
 				target_type=ct,
 				target_id=OuterRef('pk'),
+				revisionchangeentity__isnull=False,
 			)
 			.order_by('-rev__date')
 			.values('rev__date')[:1]

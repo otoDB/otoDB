@@ -19,9 +19,8 @@
 	const n_pages = $derived(Math.ceil(n_count / page_size));
 	const page_min = $derived(Math.max(1, page - window_size));
 	const page_max = $derived(Math.min(n_pages, page + window_size));
-	const page_range = $derived(
-		Array.from({ length: page_max - page_min + 1 }, (_, i) => i + page_min)
-	);
+	const range = (from: number, to: number) =>
+		Array.from({ length: to - from + 1 }, (_, i) => i + from);
 
 	const buildUrl = (page: number) => {
 		if (!base_url) return `?${param_name}=${page}`;
@@ -38,35 +37,38 @@
 	<a class="bg-otodb-bg-fainter border-otodb-content-faint border p-2" href={buildUrl(p)}>{p}</a>
 {/snippet}
 
-{#if page_range.length > 1}
-	<div class="mt-3 flex justify-center gap-2">
-		{#if page_range[0] !== 1}
-			{@render btn(1)}
-			{#if page_range[0] !== 2}
-				...
+{#if n_pages > 1}
+	<div class="mt-3 grid grid-cols-[1fr_auto_1fr] gap-2 tabular-nums">
+		<div class="flex justify-end gap-2">
+			{#if page_min > 1}
+				{@render btn(1)}
+				{#if page_min > 2}
+					...
+				{/if}
 			{/if}
-		{/if}
-		{#each page_range as index, i (i)}
-			{#if index === page}
-				<input
-					autocomplete="off"
-					class="p-2"
-					type="number"
-					min="1"
-					max={n_pages}
-					bind:value={pp}
-					onchange={() => goto(buildUrl(pp))}
-				/>
-			{:else}
-				{@render btn(index)}
+			{#each range(page_min, page - 1) as p (p)}
+				{@render btn(p)}
+			{/each}
+		</div>
+		<input
+			autocomplete="off"
+			class="p-2"
+			type="number"
+			min="1"
+			max={n_pages}
+			bind:value={pp}
+			onchange={() => goto(buildUrl(pp))}
+		/>
+		<div class="flex gap-2">
+			{#each range(page + 1, page_max) as p (p)}
+				{@render btn(p)}
+			{/each}
+			{#if page_max < n_pages}
+				{#if page_max < n_pages - 1}
+					...
+				{/if}
+				{@render btn(n_pages)}
 			{/if}
-		{/each}
-
-		{#if page_range.at(-1) !== n_pages}
-			{#if page_range.at(-1) !== n_pages - 1}
-				...
-			{/if}
-			{@render btn(n_pages)}
-		{/if}
+		</div>
 	</div>
 {/if}

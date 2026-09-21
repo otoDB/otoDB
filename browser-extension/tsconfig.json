@@ -22,5 +22,5 @@
       "$app/environment": ["./src/app-environment.ts"]
     }
   },
-  "include": ["src/**/*.js", "src/**/*.ts", "src/**/*.svelte"]
+  "include": ["public/**/*.js", "src/**/*.js", "src/**/*.ts", "src/**/*.svelte"]
 }

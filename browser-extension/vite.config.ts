@@ -19,6 +19,13 @@ export default defineConfig({
             strategy: ['custom-userPreference', 'preferredLanguage', 'baseLocale']
         })
     ],
+    build: {
+        watch: process.argv.includes('--watch')
+            ? {
+                  chokidar: { ignored: [/project\.inlang[\\/](\.lix|cache)/] }
+              }
+            : null
+    },
     css: {
         postcss: path.resolve(__dirname, '../frontend')
     },

@@ -231,7 +231,9 @@ def recent(request: HttpRequest):
 								output_field=models.BigIntegerField(),
 							),
 							target_column='slug',
-						).values('target_value')[:1]
+						)
+						.order_by('-id')
+						.values('target_value')[:1]
 					),
 				),
 				When(

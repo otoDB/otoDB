@@ -1,11 +1,22 @@
 from datetime import timedelta
 
 import pytest
+from django.contrib.contenttypes.models import ContentType
+from django.db import connection
 from django.utils import timezone
 
 from otodb.api.common import revision
-from otodb.api.history import rollback_entity
-from otodb.models import MediaWork, Revision, TagWork, TagWorkInstance
+from otodb.api.history import get_rev_restored, rollback_entity
+from otodb.models import (
+	MediaWork,
+	Revision,
+	RevisionChange,
+	TagWork,
+	TagWorkInstance,
+	WorkSource,
+)
+from otodb.models.enums import Platform, WorkOrigin, WorkStatus
+from otodb.models.posts import Subscription
 
 
 def _set_date(rev_id, when):
@@ -217,6 +228,7 @@ class TestRollbackAliasedTagDuplicate:
 		_set_date(Revision.objects.latest('id').id, t_create)
 
 		# rev B: remove tag A from the work (deletes that instance).
+		removed_pk = TagWorkInstance.objects.get(work=work, work_tag=tag_a).pk
 		with revision(user=member, message='remove a'):
 			TagWorkInstance.objects.filter(work=work, work_tag=tag_a).delete()
 		_set_date(Revision.objects.latest('id').id, t_remove)
@@ -239,3 +251,91 @@ class TestRollbackAliasedTagDuplicate:
 		instances = TagWorkInstance.objects.filter(work=work)
 		assert instances.count() == 1
 		assert instances.get().work_tag_id == tag_b.id
+
+		# At COMMIT the restore that was taken back leaves no trace: the short-lived row
+		# was created and deleted in the rollback's Revision, so finalize erases it together
+		# with its restored-marker -- and the Revision, which changed nothing, goes too.
+		connection.check_constraints()  # fires the deferred finalize, as COMMIT would
+		instance_ct = ContentType.objects.get_for_model(TagWorkInstance).id
+		assert get_rev_restored(instance_ct, removed_pk) is None
+		assert not RevisionChange.objects.filter(
+			target_type_id=instance_ct, restored=True
+		).exists()
+		assert not Revision.objects.filter(message='rollback').exists()
+
+
+@pytest.mark.django_db
+class TestRollbackWriteOrder:
+	"""Two overlapping transactions can write a row in the opposite order to their
+	Revisions' dates (a Revision is dated by its transaction's start). What a rollback
+	restores is the value last WRITTEN before the cutoff -- the latest change row by
+	change id -- not the one whose Revision carries the latest date.
+	"""
+
+	def test_restores_last_written_value(self, member):
+		now = timezone.now()
+		t_create = now - timedelta(seconds=400)
+		t_started_first = now - timedelta(seconds=300)
+		t_started_second = now - timedelta(seconds=200)
+		t_vandalism = now - timedelta(seconds=100)
+
+		with revision(user=member, message='create'):
+			work = MediaWork.objects.create(title='W', description='d0', rating=0)
+		_set_date(Revision.objects.latest('id').id, t_create)
+
+		for description, when in (
+			('started second, wrote first', t_started_second),
+			('started first, wrote second', t_started_first),
+			('vandalism', t_vandalism),
+		):
+			with revision(user=member, message=description):
+				MediaWork.objects.filter(pk=work.pk).update(description=description)
+			_set_date(Revision.objects.latest('id').id, when)
+
+		with revision(user=member, message='rollback vandalism'):
+			rollback_entity(work.pk, 'mediawork', t_vandalism)
+
+		work.refresh_from_db()
+		assert work.description == 'started first, wrote second'
+
+
+@pytest.mark.django_db
+class TestRollbackSubscriptions:
+	"""A rollback restores a deleted work's source while it still points at the work's old
+	id, and only afterwards re-points it at the restored work -- so the rollback's Revision
+	is routed to both ids. The moderator is auto-subscribed to the restored work only: a
+	subscription to the old, deleted id is one nothing would ever drop.
+	"""
+
+	def test_moderator_is_not_subscribed_to_the_deleted_id(self, member, editor):
+		now = timezone.now()
+		with revision(user=editor, message='create'):
+			work = MediaWork.objects.create(title='W', description='d', rating=0)
+			WorkSource.objects.create(
+				added_by=editor,
+				media=work,
+				platform=Platform.YOUTUBE,
+				url='https://www.youtube.com/watch?v=sub',
+				source_id='sub',
+				work_origin=WorkOrigin.AUTHOR,
+				work_status=WorkStatus.AVAILABLE,
+			)
+		_set_date(Revision.objects.latest('id').id, now - timedelta(seconds=300))
+		deleted_pk = work.pk
+
+		with revision(user=editor, message='delete work'):
+			work.delete()  # cascades to the source
+		_set_date(Revision.objects.latest('id').id, now - timedelta(seconds=200))
+
+		with revision(user=member, message='rollback'):
+			rollback_entity(deleted_pk, 'mediawork', now - timedelta(seconds=250))
+		connection.check_constraints()  # fires the deferred finalize, as COMMIT would
+
+		restored = MediaWork.objects.get()
+		assert WorkSource.objects.get().media_id == restored.pk != deleted_pk
+		work_ct = ContentType.objects.get_for_model(MediaWork).id
+		assert list(
+			Subscription.objects.filter(
+				subscriber=member, entity_type_id=work_ct
+			).values_list('entity_id', flat=True)
+		) == [restored.pk]

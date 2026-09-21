@@ -93,7 +93,7 @@
 			}
 
 			try {
-				const init = { ...(args[1] || {}) };
+				const init = { ...args[1] };
 				init.body = JSON.stringify({ ...originalJSONParse(init.body), asGuest: false });
 				init.credentials = 'include';
 

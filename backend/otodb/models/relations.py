@@ -5,7 +5,7 @@ from django_cte import CTE, with_cte
 
 from .enums import RevisionChain, SongRelationTypes, WorkRelationTypes
 from .media import MediaSong, MediaWork
-from .revision import RevisionTrackedManager, RevisionTrackedModel
+from .revision import RevisionTrackedModel
 
 
 def _get_component(model, obj_id: int):
@@ -24,7 +24,7 @@ def _get_component(model, obj_id: int):
 	return with_cte(cte, select=cte.join(model, id=cte.col.id))
 
 
-class BidirectionalManager(RevisionTrackedManager):
+class BidirectionalManager(models.Manager):
 	def get_relation(self, A, B):
 		try:
 			return super().get(A=A, B=B)

@@ -392,11 +392,7 @@ def tag_route_switch(work_route: Route, song_route: Route):
 				if type == 'work'
 				else (TagSong, TagSongLangPreference)
 			)
-			return with_revision_route(work_route if type == 'work' else song_route)(f)(
-				request,
-				*args,
-				**kwargs,
-			)
+			return f(request, *args, **kwargs)
 
 		contribute_operation_args(
 			wrapper,
@@ -405,7 +401,13 @@ def tag_route_switch(work_route: Route, song_route: Route):
 			Query(TagTypes.WORK),
 		)
 
-		return wrapper
+		return with_revision_route(
+			lambda request, kwargs: (
+				work_route
+				if kwargs.get('type', TagTypes.WORK) == 'work'
+				else song_route
+			)
+		)(wrapper)
 
 	return decorator
 

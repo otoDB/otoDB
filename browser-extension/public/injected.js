@@ -58,75 +58,39 @@
     };
 
 	window.fetch = async function(...args) {
+		const url = typeof args[0] === 'string' || args[0] instanceof URL ? String(args[0]) : '';
+
+		// Before playing, the embed player asks whether the video may be embedded, which is always
+		// refused for age-gated videos. Only the status of the response is looked at.
 		if (
 			window.location.hostname === 'embed.nicovideo.jp' &&
 			window.otodb_video_id &&
-			typeof args[0] === 'string' &&
-			args[0].match(/^https:\/\/nvapi\.nicovideo\.jp\/v1\/watch\/[^/]+\/access-rights\/hls/)
+			url.match(/^(?:https?:)?\/\/embed\.nicovideo\.jp\/play\/([^/?]+)(\?|$)/)?.[1] === window.otodb_video_id
 		) {
-			let init = args[1] || {};
-			let accessRightKey = '';
+			return new Response(null, { status: 200, statusText: 'OK' });
+		}
 
-			if (init.headers) {
-				let headersObj = init.headers instanceof Headers
-					? init.headers
-					: new Headers(init.headers);
-				accessRightKey = headersObj.get('X-Access-Right-Key') || '';
+		// The embed player fetches its watch data (which includes the HLS URL) and counts the view
+		// as a guest. Guests get 403 HARMFUL_VIDEO for age-gated videos, so for the video set by
+		// niconico-embed-injected.js, make these requests as the logged in user instead.
+		if (
+			window.location.hostname === 'embed.nicovideo.jp' &&
+			window.otodb_video_id &&
+			url.match(/^https:\/\/nvapi\.nicovideo\.jp\/v4\/watch\/([^/?]+)(\/side-effect)?(\?|$)/)?.[1] === window.otodb_video_id
+		) {
+			try {
+				const init = { ...(args[1] || {}) };
+				init.body = JSON.stringify({ ...originalJSONParse(init.body), asGuest: false });
+				init.credentials = 'include';
+
+				// Bogus parameter to denote that this is a request from extension
+				return originalFetch(url + (url.includes('?') ? '&' : '?') + '_=1', init);
+			} catch (e) {
+				console.error("Error rewriting watch request:", e);
 			}
-
-			init.headers = new Headers({
-				'X-Frontend-Id': '6',
-				'X-Frontend-Version': '0',
-				'X-Niconico-Language': 'ja-jp',
-				'X-Access-Right-Key': accessRightKey,
-				'X-Request-With': 'nicovideo',
-			});
-			init.credentials = 'include';
-
-			args[1] = init;
-			// Bogus parameter to denote that this is a request from extension
-			args[0] += '&_=1';
 
 			return originalFetch(...args);
 		}
-
-        if (
-			window.location.hostname === 'embed.nicovideo.jp' &&
-			window.otodb_video_id &&
-			typeof args[0] === 'string' &&
-			args[0].match(/https:\/\/www\.nicovideo\.jp\/api\/watch\/v3_guest\/.+/)
-		) {
-			const embedUrl = `https://www.nicovideo.jp/watch/${window.otodb_video_id}`;
-			try {
-				const embedResponse = await originalFetch(embedUrl, ...args.slice(1));
-				if (!embedResponse.ok) {
-					return originalFetch(...args);
-				}
-
-				const embedHtml = await embedResponse.text();
-				const parser = new DOMParser();
-				const doc = parser.parseFromString(embedHtml, 'text/html');
-				const metaTag = doc.querySelector('meta[name="server-response"]');
-
-				if (metaTag) {
-					const serverResponseJson = metaTag.getAttribute('content');
-					const responseData = originalJSONParse(serverResponseJson)?.data;
-					const data = {
-						meta: { status: 200 },
-						data: responseData.response
-					};
-					return new Response(JSON.stringify(data), {
-						status: 200,
-						statusText: 'OK',
-						headers: { 'Content-Type': 'application/json' }
-					});
-				}
-			} catch (e) {
-				console.error("Error fetching or parsing embed page:", e);
-			}
-
-			return originalFetch(...args);
-        }
 
         const response = await originalFetch(...args);
         if (response.ok && response.headers.get('Content-Type')?.split(';')[0] === 'application/json') {

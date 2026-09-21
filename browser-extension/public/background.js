@@ -26,10 +26,10 @@ async function updateUserSessionRule() {
 					}]
 				},
 				condition: {
-					// For nvapi.nicovideo.jp, require &_=1 at the end (which we inject) to add cookies; for others, allow anything.
+					// For nvapi.nicovideo.jp, require _=1 as the last parameter (which we inject) to add cookies; for others, allow anything.
 					// This is because normally requests on the embed.nicovideo.jp domain expect no cookies to be used.
 					// Adding cookies likely causes the JWT token or some other auth mechanism to fail.
-					regexFilter: "^(https://nvapi\\.nicovideo\\.jp/.*&_\\=1$|https://(www|delivery\\.domand)\\.nicovideo\\.jp/.*$)",
+					regexFilter: "^(https://nvapi\\.nicovideo\\.jp/.*[?&]_=1$|https://(www|delivery\\.domand)\\.nicovideo\\.jp/.*$)",
 					requestDomains: [
 						'www.nicovideo.jp',
 						'nvapi.nicovideo.jp',

@@ -6194,7 +6194,8 @@
           4,
           5,
           6,
-          7
+          7,
+          8
         ],
         "title": "VideoPlatformPref",
         "type": "integer",
@@ -6206,7 +6207,8 @@
           "SoundCloud",
           "Twitter",
           "AcFun",
-          "otomad.site"
+          "otomad.site",
+          "Bluesky"
         ]
       },
       "RegisterRequestSchema": {
@@ -7255,7 +7257,8 @@
           4,
           5,
           6,
-          7
+          7,
+          8
         ],
         "title": "Platform",
         "type": "integer",
@@ -7266,7 +7269,8 @@
           "SoundCloud",
           "Twitter",
           "AcFun",
-          "otomad.site"
+          "otomad.site",
+          "Bluesky"
         ]
       },
       "WorkOrigin": {

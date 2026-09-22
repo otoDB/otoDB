@@ -195,6 +195,12 @@ class WorkSource(RevisionTrackedModel):
 								extractor._match_valid_url(url).groups()
 							)
 
+						if platform == Platform.BLUESKY:
+							# '{handle or did}/{rkey}'; can't resolve a DID for a dead post
+							source_id = '/'.join(
+								extractor._match_valid_url(url).group('handle', 'id')
+							)
+
 						canonical_url = make_video_url[platform](source_id)
 						break
 				else:

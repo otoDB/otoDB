@@ -9,7 +9,16 @@
 	}
 
 	let { src, width = 560, height = 315, autoplay = true }: Props = $props();
+
+	const blueskyEmbedId = $props.id();
+	let blueskyHeight = $state<number>();
+	function onmessage(event: MessageEvent) {
+		if (event.origin === 'https://embed.bsky.app' && event.data?.id === blueskyEmbedId)
+			blueskyHeight = event.data.height;
+	}
 </script>
+
+<svelte:window {onmessage} />
 
 {#if src.platform === Platform.YouTube}
 	<iframe
@@ -81,6 +90,19 @@
 		{height}
 		src="https://otomad.site/embed/notes/{src.source_id}?rounded=false&border=false"
 		allowfullscreen
+	></iframe>
+{:else if src.platform === Platform.Bluesky}
+	<iframe
+		title="Bluesky Embed"
+		loading="lazy"
+		{width}
+		height={blueskyHeight ?? height}
+		src="https://embed.bsky.app/embed/{src.source_id?.replace(
+			'/',
+			'/app.bsky.feed.post/'
+		)}?id={blueskyEmbedId}"
+		frameborder="0"
+		scrolling="no"
 	></iframe>
 {/if}
 

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/sveltekit';
 import type { ComponentProps } from 'svelte';
 import { Levels, Status, WorkRelationTypes, type components } from '$lib/schema';
 import { enumValues } from '$lib/enums';
+import { m } from '$lib/paraglide/messages.js';
 import Page from './+page.svelte';
 
 type WorkRelation = components['schemas']['WorkRelationSchema'];
@@ -21,6 +22,7 @@ const links = [
 
 const head = {
 	title: 'A sample work title',
+	description: m.plain_witty_crane_hum(),
 	image: null,
 	isExplicit: false,
 	breadcrumbs: [

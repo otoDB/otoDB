@@ -1,4 +1,7 @@
 import client from '$lib/api.server';
+import { languages } from '$lib/enums/language';
+import { markdownExcerpt } from '$lib/markdown';
+import { getLocale } from '$lib/paraglide/runtime';
 import { ModelsWithComments, SongRelationTypes } from '$lib/schema';
 import { prepare_song_graph, get_svg_gv } from '$lib/viz.server';
 import { asEnum, enumValues } from '$lib/enums';
@@ -57,13 +60,19 @@ export const load: PageServerLoad = async ({ params, fetch, parent, url }) => {
 		})
 	]);
 
+	// Prefer tag's wiki over the generic tag description placeholder
+	const wikiEntry =
+		details.wiki_page.find((p) => p.lang === languages[getLocale()].id) ?? details.wiki_page[0];
+	const excerpt = wikiEntry ? markdownExcerpt(wikiEntry.page) : null;
+
 	const r = {
 		...details,
 		works,
 		comments,
 		batch_size,
 		connections,
-		similar
+		similar,
+		head: excerpt ? { ...data.head, description: excerpt } : data.head
 	};
 
 	if (data.tag.song) {

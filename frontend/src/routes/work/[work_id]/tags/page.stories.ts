@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/sveltekit';
 import { http, HttpResponse } from 'msw';
 import type { ComponentProps } from 'svelte';
 import { Levels, Rating, Status, WorkTagCategory } from '$lib/schema';
+import { m } from '$lib/paraglide/messages.js';
 import Page from './+page.svelte';
 
 const handlers = [
@@ -23,6 +24,7 @@ const links = [
 
 const head = {
 	title: 'A sample work title',
+	description: m.plain_witty_crane_hum(),
 	image: null,
 	isExplicit: false,
 	breadcrumbs: [

@@ -70,6 +70,7 @@
 		"@thisux/sveltednd": "^0.0.20",
 		"@viz-js/viz": "^3.24.0",
 		"mdast-util-find-and-replace": "^3.0.2",
+		"mdast-util-to-string": "^4.0.0",
 		"openapi-fetch": "^0.15.2",
 		"rehype-autolink-headings": "^7.1.0",
 		"rehype-parse": "^9.0.1",

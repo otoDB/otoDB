@@ -34,6 +34,7 @@ def _annotate_modified(qs):
 		Revision.objects.filter(
 			revisionchange__target_type=wikipage_ct,
 			revisionchange__target_id=OuterRef('pk'),
+			revisionchange__revisionchangeentity__isnull=False,
 		)
 		.order_by('-date')
 		.values('date')[:1]

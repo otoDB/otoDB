@@ -5883,6 +5883,40 @@
         },
         "deprecated": false
       }
+    },
+    "/api/work/queue_stats": {
+      "get": {
+        "summary": "ModQueueStats",
+        "operationId": "ApiWorkQueueStatsModQueueStats",
+        "responses": {
+          "200": {
+            "description": "Request fulfilled, document follows",
+            "headers": {},
+            "content": {
+              "application/json": {
+                "schema": {
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
     }
   },
   "components": {
@@ -10371,8 +10405,15 @@
             "type": "string"
           },
           "user": {
-            "title": "User",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User"
           },
           "index": {
             "anyOf": [
@@ -10418,7 +10459,6 @@
         "required": [
           "id",
           "date",
-          "user",
           "n_ent"
         ],
         "title": "RevisionEntitySummarySchema",
@@ -10436,8 +10476,15 @@
             "type": "string"
           },
           "user": {
-            "title": "User",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User"
           },
           "index": {
             "anyOf": [
@@ -10468,8 +10515,7 @@
         },
         "required": [
           "id",
-          "date",
-          "user"
+          "date"
         ],
         "title": "RevisionSchema",
         "type": "object"

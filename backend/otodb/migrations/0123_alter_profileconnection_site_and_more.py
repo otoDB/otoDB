@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0120_worksource_pending_since'),
+		('otodb', '0122_subscription_subscription_entity_idx'),
 	]
 
 	operations = [

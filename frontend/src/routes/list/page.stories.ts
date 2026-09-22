@@ -12,7 +12,9 @@ const head = {
 	title: m.mild_loud_shad_enchant({
 		type: m.mean_top_antelope_love(),
 		name: m.stale_loose_squid_cut()
-	})
+	}),
+	canonicalParams: ['page'],
+	noindex: false
 };
 
 const memberUser = {

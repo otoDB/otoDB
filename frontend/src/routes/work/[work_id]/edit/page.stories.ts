@@ -12,6 +12,7 @@ import {
 	WorkStatus,
 	WorkTagCategory
 } from '$lib/schema';
+import { m } from '$lib/paraglide/messages.js';
 import Page from './+page.svelte';
 
 // `GuidelineWarning` calls `/api/wiki/page` on mount. The other handlers cover
@@ -36,6 +37,7 @@ const links = [
 
 const head = {
 	title: 'A sample work title',
+	description: m.plain_witty_crane_hum(),
 	image: null,
 	isExplicit: false,
 	breadcrumbs: [

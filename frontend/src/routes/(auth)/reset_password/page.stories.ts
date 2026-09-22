@@ -7,7 +7,7 @@ import Page from './+page.svelte';
 
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
 
-const head = { title: m.true_tough_butterfly_sew() };
+const head = { title: m.true_tough_butterfly_sew(), noindex: true };
 
 const loggedInMember = {
 	csrf: 'csrf-token',

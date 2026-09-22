@@ -5,7 +5,7 @@ import Page from './+page.svelte';
 
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
 
-const head = { title: m.blue_whole_camel_type() };
+const head = { title: m.blue_whole_camel_type(), noindex: true };
 
 const baseData = { user: null, stats, head, inviteRequired: false };
 

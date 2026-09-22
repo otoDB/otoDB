@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ cookies, fetch, locals, url }) => {
 	const { response } = await client.GET('/api/auth/csrf', { fetch });
 	forwardCookies(cookies, response);
 
-	return { head: { title: m.inner_stale_anteater_walk() } };
+	return { head: { title: m.inner_stale_anteater_walk(), noindex: true } };
 };
 
 export const actions = {

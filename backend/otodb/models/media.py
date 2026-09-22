@@ -17,7 +17,7 @@ from .enums import (
 	WorkTagCategory,
 )
 from .moderation import ModerationEvent
-from .revision import RevisionTrackedModel, RevisionTrackedQuerySet
+from .revision import RevisionTrackedModel
 from .tag import TagSong, TagWork, tagwork_ordering_case
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 	from .work_source import WorkSource
 
 
-class MediaWorkQuerySet(RevisionTrackedQuerySet):
+class MediaWorkQuerySet(models.QuerySet):
 	def with_pending_moderation(self):
 		"""Prefetch the pending flag and appeal so `pending_flag`/`pending_appeal` read from cache."""
 		return self.select_related('thumbnail_source').prefetch_related(

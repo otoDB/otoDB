@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import { http, HttpResponse } from 'msw';
 import type { ComponentProps } from 'svelte';
+import { m } from '$lib/paraglide/messages.js';
 import {
 	LanguageTypes,
 	SongConnectionTypes,
@@ -71,6 +72,7 @@ const baseData = {
 	display_name: mediaTag.name,
 	head: {
 		title: mediaTag.name,
+		description: m.keen_vivid_snail_march({ name: mediaTag.name }),
 		breadcrumbs: [
 			{ name: 'Home', url: '/' },
 			{ name: 'Tags', url: '/tag' },
@@ -134,6 +136,7 @@ export const SongTag: Story = {
 			display_name: 'Example Song Tag',
 			head: {
 				title: 'Example Song Tag',
+				description: m.keen_vivid_snail_march({ name: 'Example Song Tag' }),
 				breadcrumbs: [
 					{ name: 'Home', url: '/' },
 					{ name: 'Tags', url: '/tag' },

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import type { ComponentProps } from 'svelte';
 import { Levels, Rating, Route, Status, WorkRelationTypes, WorkTagCategory } from '$lib/schema';
+import { m } from '$lib/paraglide/messages.js';
 import Page from './+page.svelte';
 
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
@@ -24,6 +25,7 @@ const loggedInLinks = [
 
 const head = {
 	title: 'A sample work title',
+	description: m.plain_witty_crane_hum(),
 	image: null,
 	isExplicit: false,
 	breadcrumbs: [

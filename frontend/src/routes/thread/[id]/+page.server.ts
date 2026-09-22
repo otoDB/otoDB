@@ -1,7 +1,7 @@
 import { env } from '$env/dynamic/private';
 import client, { rawClient } from '$lib/api.server';
 import { apiFail } from '$lib/errors';
-import { get_entity, parseMentions, renderMarkdown } from '$lib/markdown';
+import { get_entity, markdownExcerpt, parseMentions, renderMarkdown } from '$lib/markdown';
 import { m } from '$lib/paraglide/messages';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
@@ -45,13 +45,18 @@ export const load: PageServerLoad = async ({ params, fetch, url }) => {
 		})
 	]);
 
+	const items = posts?.items ?? [];
+	const permalinkedPost =
+		(highlight_num !== null ? items.find((p) => p.num === highlight_num) : null) ?? items[0];
+
 	return {
 		thread,
 		batch_size,
-		posts: posts?.items ?? [],
+		posts: items,
 		post_count: posts?.count ?? 0,
 		head: {
 			title: thread?.title,
+			description: permalinkedPost ? markdownExcerpt(permalinkedPost.body) : null,
 			ogType: 'article',
 			breadcrumbs: [
 				{ name: m.fine_late_chicken_quiz(), url: '/' },

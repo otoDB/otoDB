@@ -22,7 +22,12 @@ from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.utils import DownloadError
 
-from otodb.ytdlp_custom import NiconicoIECustom, OtomadSiteIE, TwitterIECustom
+from otodb.ytdlp_custom import (
+	BlueskyIECustom,
+	NiconicoIECustom,
+	OtomadSiteIE,
+	TwitterIECustom,
+)
 
 from .models.enums import MimeType, Platform
 
@@ -106,6 +111,7 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		TwitterIECustom,
 		AcFunVideoIE,
 		OtomadSiteIE,
+		BlueskyIECustom,
 	):
 		# Register the instance, not the class
 		ydl.add_info_extractor(e())
@@ -121,6 +127,7 @@ platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
 	(Platform.TWITTER, TwitterIECustom),
 	(Platform.ACFUN, AcFunVideoIE),
 	(Platform.OTOMAD_SITE, OtomadSiteIE),
+	(Platform.BLUESKY, BlueskyIECustom),
 ]  # type: ignore
 
 make_video_url = {
@@ -140,6 +147,10 @@ make_video_url = {
 		f'https://www.acfun.cn/v/{s if s.startswith("ac") else "ac" + s}'
 	),
 	Platform.OTOMAD_SITE: lambda s, uid=None: f'https://otomad.site/notes/{s}',
+	# s is '{did}/{rkey}'
+	Platform.BLUESKY: lambda s, uid=None: 'https://bsky.app/profile/{}/post/{}'.format(
+		*s.split('/', 1)
+	),
 }
 
 niconico_meta_re = re.compile(
@@ -291,16 +302,17 @@ def process_video_info(full_info, link=None):
 				info['title'] = None
 			case Platform.ACFUN:
 				info['id'] = 'ac' + info['id']
-			case Platform.OTOMAD_SITE:
+			case Platform.OTOMAD_SITE | Platform.BLUESKY:
 				info['title'] = None
 			case _:
 				return None
 
-		# Clean up ID
-		for c in ['?', '/']:  # drop query strings and subdirectories
-			i = info['id'].find(c)
-			if i != -1:
-				info['id'] = info['id'][:i]
+		# Make Bluesky IDs `{did}/{rkey}`
+		if info['extractor'] != Platform.BLUESKY:
+			for c in ['?', '/']:
+				i = info['id'].find(c)
+				if i != -1:
+					info['id'] = info['id'][:i]
 
 		# Process tags
 		if 'tags' in info:
@@ -393,6 +405,17 @@ def _clean_bilibili_source_id(source_id: str) -> str:
 	return source_id[:chapter_mark] if chapter_mark != -1 else source_id
 
 
+def _sniff_image_mime_type(data: bytes):
+	"""Detect the image MIME type from magic bytes."""
+	if data.startswith(b'\xff\xd8\xff'):
+		return MimeType.JPEG
+	if data.startswith(b'\x89PNG\r\n\x1a\n'):
+		return MimeType.PNG
+	if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+		return MimeType.WEBP
+	return None
+
+
 def fetch_thumbnail_mime_type(thumbnail_url: str):
 	"""
 	Fetch the MIME type of a thumbnail from its URL.
@@ -406,7 +429,10 @@ def fetch_thumbnail_mime_type(thumbnail_url: str):
 	try:
 		response = requests.get(thumbnail_url, allow_redirects=True, timeout=5)
 		content_type = response.headers.get('Content-Type')
-		return MimeType.from_str(content_type)
+		# Some CDNs (e.g. Bluesky) serve images as application/octet-stream
+		return MimeType.from_str(content_type) or (
+			_sniff_image_mime_type(response.content) if response.ok else None
+		)
 	except Exception:
 		logger.exception('Error fetching thumbnail mime type')
 		return None

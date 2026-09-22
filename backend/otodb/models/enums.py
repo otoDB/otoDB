@@ -68,6 +68,7 @@ class Platform(OtodbIntegerEnum):
 	TWITTER = 5, 'Twitter'
 	ACFUN = 6, 'AcFun'
 	OTOMAD_SITE = 7, 'otomad.site'
+	BLUESKY = 8, 'Bluesky'
 
 	@staticmethod
 	def from_str(s):

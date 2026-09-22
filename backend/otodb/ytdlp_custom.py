@@ -2,6 +2,7 @@ import json
 import logging
 import re
 
+from yt_dlp.extractor.bluesky import BlueskyIE
 from yt_dlp.extractor.common import InfoExtractor
 from yt_dlp.extractor.niconico import NiconicoIE
 from yt_dlp.extractor.twitter import TwitterIE
@@ -15,11 +16,13 @@ from yt_dlp.utils import (
 	mimetype2ext,
 	parse_iso8601,
 	traverse_obj,
+	url_basename,
 )
 
 logger = logging.getLogger(__name__)
 
 _MEDIA_TCO_RE = re.compile(r'\s*https?://t\.co/[0-9a-zA-Z]{10}$')
+_EXTINF_RE = re.compile(r'^#EXTINF:([\d.]+)', re.MULTILINE)
 
 
 class NiconicoIECustom(NiconicoIE):
@@ -87,6 +90,86 @@ class TwitterIECustom(TwitterIE):
 				entities = status.get('entities')
 			info['description'] = self._clean_tweet_text(text, entities)
 		return info
+
+
+class BlueskyIECustom(BlueskyIE):
+	"""Bluesky extractor limited to the post's own video.
+
+	Quoted posts and external link cards (e.g. a YouTube card) are skipped, the
+	id becomes `{did}/{rkey}`, links in the text are expanded, tags are the
+	post's hashtags instead of moderation labels, and the duration is summed
+	from the HLS playlist since the API doesn't expose it.
+	"""
+
+	IE_NAME = 'Bluesky'
+
+	def _extract_videos(self, root, video_id, *args, **kwargs):
+		if traverse_obj(root, ('uri', {url_basename})) != video_id:
+			return []  # quoted post
+		entries = [
+			info
+			for info in super()._extract_videos(root, video_id, *args, **kwargs)
+			if info.get('_type') != 'url'  # external link card
+		]
+		record = root['record']
+		for info in entries:
+			info.update(
+				{
+					'id': f'{root["author"]["did"]}/{video_id}',
+					'description': self._expand_links(record),
+					# upstream uses moderation labels
+					'tags': traverse_obj(
+						record,
+						(
+							(('facets', ..., 'features', ..., 'tag'), ('tags', ...)),
+							{str},
+						),
+					),
+					'timestamp': parse_iso8601(record.get('createdAt'))
+					or info.get('timestamp'),
+					'duration': self._hls_duration(info, video_id),
+				}
+			)
+		return entries
+
+	@staticmethod
+	def _expand_links(record):
+		"""
+		https://github.com/bluesky-social/atproto/blob/a0c49d9e8bc685c5a747a8d3b2775c73c63fdb6f/packages/api/src/rich-text/rich-text.ts#L195-L234
+		"""
+		text = (record.get('text') or '').encode()
+		segments, cursor = [], 0
+		for facet in sorted(
+			record.get('facets') or [], key=lambda f: f['index']['byteStart']
+		):
+			start, end = facet['index']['byteStart'], facet['index']['byteEnd']
+			if not cursor <= start <= end:
+				continue
+			subtext = text[start:end].decode(errors='replace')
+			uri = traverse_obj(
+				facet,
+				(
+					'features',
+					lambda _, f: f['$type'] == 'app.bsky.richtext.facet#link',
+					'uri',
+					any,
+				),
+			)
+			segments += (
+				text[cursor:start].decode(errors='replace'),
+				uri if uri and subtext.strip() else subtext,
+			)
+			cursor = end
+		return ''.join(segments) + text[cursor:].decode(errors='replace')
+
+	def _hls_duration(self, info, video_id):
+		variant = traverse_obj(
+			info, ('formats', lambda _, f: f['protocol'] == 'm3u8_native', 'url', any)
+		)
+		playlist = variant and self._download_webpage(
+			variant, video_id, 'Downloading HLS variant playlist', fatal=False
+		)
+		return round(sum(map(float, _EXTINF_RE.findall(playlist or '')))) or None
 
 
 def probe_media(ie, url: str) -> tuple[int | None, int | None, float | None]:

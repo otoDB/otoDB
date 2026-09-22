@@ -37,25 +37,33 @@ export const load: PageServerLoad = async ({ params, fetch, locals, url, parent 
 	]);
 
 	const p = await parent();
-	// FIXME This is kind of waterfall but whatever...
-	const song_connections = p.tag.song
-		? (
-				await client.GET('/api/tag/song_connection', {
-					fetch,
-					params: { query: { song_id: p.tag.song.id } }
-				})
-			).data
-		: null;
-
-	return {
+	const r = {
 		wiki_page,
 		parents: (details.paths[1][params.tag_slug] ?? []).map(
 			(s) => details.paths[0].find((t) => t.slug === s)!
 		),
 		details,
-		connections,
-		song_connections
+		connections
 	};
+
+	if (p.tag.song) {
+		const [{ data: song_connections }, { data: song_relations }] = await Promise.all([
+			client.GET('/api/tag/song_connection', {
+				fetch,
+				params: { query: { song_id: p.tag.song.id } }
+			}),
+			client.GET('/api/tag/song_relations', {
+				fetch,
+				params: {
+					query: {
+						song_id: p.tag.song.id
+					}
+				}
+			})
+		]);
+
+		return { ...r, song_connections, song_relations };
+	} else return r;
 };
 
 export const actions = {
@@ -108,20 +116,20 @@ export const actions = {
 				deprecated,
 				primary: +primary
 			});
-		redirect(303, `/tag/${params.tag_slug}`);
+		redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 	},
 	wiki_page: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 		const pages: { lang: number; md: string }[] = JSON.parse(data.get('wiki_pages') as string);
 		if (pages.length === 0) {
-			redirect(303, `/tag/${params.tag_slug}`);
+			redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 		}
 		await client.POST('/api/wiki/tag', {
 			fetch,
 			params: { query: { tag_slug: params.tag_slug! } },
 			body: pages
 		});
-		redirect(303, `/tag/${params.tag_slug}`);
+		redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 	},
 	connections: async ({ request, fetch, params }) => {
 		const data = await request.formData();
@@ -131,6 +139,6 @@ export const actions = {
 			fetch,
 			params: { query: { tag_slug: params.tag_slug!, urls } }
 		});
-		redirect(303, `/tag/${params.tag_slug}`);
+		redirect(303, `/tag/${encodeURIComponent(params.tag_slug!)}`);
 	}
 } satisfies Actions;

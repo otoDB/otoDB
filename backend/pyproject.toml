@@ -5,13 +5,14 @@ description = "otoDB is a community-driven website consisting of a collaborative
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "litestar[pydantic,sqlalchemy]>=2.24.0",
     "fast-diff-match-patch>=2.1.0",
     "django-comments-xtd>=2.10.11",
     "django-cors-headers>=4.9.0",
     "django>=6.0.6",
     "python-dotenv>=1.2.2",
     "pyyaml>=6.0.3",
-    "django-ninja>=1.6.2",
+    "django-ninja>=1.7.1",
     "requests>=2.34.2",
     "django-ordered-model>=3.7.4",
     "granian>=2.7.5",
@@ -20,14 +21,10 @@ dependencies = [
     "furl>=2.1.4",
     "django-cte>=3.0.0",
     "boto3>=1.43.24",
-    "django-dirtyfields>=1.9.9",
-    "django-request-cache>=1.5.0",
     "django-tagulous>=2.1.1",
     "sentry-sdk[django]>=2.61.1",
     "orjson>=3.11.9",
     "django-vcache>=2.1.1",
-    "django-tasks-rq>=0.12.0",
-    "django-rq>=4.1",
     "lark>=1.3.1",
     # has corresponding patch in patches/
     "yt-dlp[default]==2026.6.9",
@@ -46,15 +43,35 @@ extend-select = [
 ]
 ignore = [
     "W191", # tabs
+    "RUF012", # Django class attrs
+    "B008",   # Django Ninja Query()/File()
+    # TODO: Dates, see https://github.com/otoDB/otoDB/issues/1032
+    "DTZ007", # strptime without %z
+    "DTZ011", # date.today()
+    "DTZ012", # date.fromtimestamp()
 ]
 unfixable = [
     "B007",
+]
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "N999", # naming
+    "PLE2502", # special characters testing
+    "PLE2515", # ditto
+]
+"otodb/management/commands/**" = [
+    "BLE001", # blind-except
 ]
 
 [dependency-groups]
 dev = [
     "django-silk>=5.5.0",
+    "granian[reload]>=2.7.5",
+    # granian's auto loop picks this on Windows.
+    # ProactorEventLoop can't run psycopg async. (Litestar DB endpoints)
+    "winloop>=0.6.3; sys_platform == 'win32'",
     "pre-commit>=4.5.1",
     "pytest>=9.0.3",
     "pytest-django>=4.12.0",
+    "pytest-asyncio>=1.4.0",
 ]

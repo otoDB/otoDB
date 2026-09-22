@@ -46,17 +46,23 @@ class TwitterIECustom(TwitterIE):
 				status['note_tweet'] = note
 		return status
 
-	# Stash the raw status so _real_extract can rebuild description from it
+	# Stash raw status so _real_extract can rebuild description from it.
+	# Keyed by tweet id
+	_statuses = {}
+
 	def _extract_status(self, twid):
 		status = super()._extract_status(twid)
-		self._otodb_status = status if isinstance(status, dict) else None
+		if isinstance(status, dict):
+			self._statuses[twid] = status
 		return status
 
 	# Rebuild description with newlines preserved, links expanded, media t.co stripped
 	def _real_extract(self, url):
-		self._otodb_status = None
-		info = super()._real_extract(url)
-		status = getattr(self, '_otodb_status', None)
+		twid = self._match_id(url)
+		try:
+			info = super()._real_extract(url)
+		finally:
+			status = self._statuses.pop(twid, None)
 		if isinstance(info, dict) and 'description' in info and status:
 			note = status.get('note_tweet')
 			if note:

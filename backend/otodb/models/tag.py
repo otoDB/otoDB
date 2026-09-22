@@ -10,10 +10,10 @@ from django.db.models import Prefetch, Q, Value
 from django_cte import CTE, with_cte
 from tagulous.models import BaseTagModel, TagModelManager
 
-from otodb.common import clean_tag, slugify_tag
+from otodb.common import process_tag_for_display, slugify_tag
 
 from .enums import LanguageTypes, MediaType, SongTagCategory, WorkTagCategory
-from .revision import RevisionTrackedManager, RevisionTrackedModel
+from .revision import RevisionTrackedModel
 from .wiki import WikiPage
 
 _tagulous_models.slugify = lambda value, **_: slugify_tag(value)
@@ -59,7 +59,7 @@ def tagwork_ordering_case(prefix=''):
 	)
 
 
-class TagModelManagerBase(RevisionTrackedManager, TagModelManager):
+class TagModelManagerBase(TagModelManager):
 	"""Base manager that converts name lookups to slug lookups"""
 
 	def get_or_create(self, *args, **kwargs):
@@ -67,14 +67,9 @@ class TagModelManagerBase(RevisionTrackedManager, TagModelManager):
 			name = kwargs.pop('name')
 			slug = slugify_tag(name)
 			defaults = kwargs.pop('defaults', {})
-			defaults.setdefault('name', name.replace('_', ' '))
+			defaults.setdefault('name', name)
 			return super().get_or_create(slug=slug, defaults=defaults, **kwargs)
 		return super().get_or_create(*args, **kwargs)
-
-	def create(self, *args, **kwargs):
-		if 'name' in kwargs:
-			kwargs['name'] = kwargs['name'].replace('_', ' ')
-		return super().create(*args, **kwargs)
 
 	def get(self, *args, **kwargs):
 		if 'name' in kwargs:
@@ -88,7 +83,7 @@ class TagWorkManager(TagModelManagerBase):
 		lang_prefs_qs = TagWorkLangPreference.objects.select_related('tag')
 
 		# For aliases, use parent's get_queryset to avoid infinite recursion
-		aliases_base_qs = super(TagWorkManager, self).get_queryset()
+		aliases_base_qs = super().get_queryset()
 
 		return (
 			super()
@@ -112,7 +107,7 @@ class TagSongManager(TagModelManagerBase):
 		lang_prefs_qs = TagSongLangPreference.objects.select_related('tag')
 
 		# For aliases, use parent's get_queryset to avoid infinite recursion
-		aliases_base_qs = super(TagSongManager, self).get_queryset()
+		aliases_base_qs = super().get_queryset()
 
 		return (
 			super()
@@ -149,7 +144,7 @@ class OtodbTagModel(BaseTagModel):
 
 	def save(self, *args, **kwargs):
 		assert self.name
-		self.name = clean_tag(self.name)
+		self.name = process_tag_for_display(self.name)
 		if not self.slug:
 			self.slug = slugify_tag(self.name)
 			if not self.slug:
@@ -207,15 +202,15 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 	objects = TagWorkManager()
 
 	if TYPE_CHECKING:
-		tagworkconnection_set: QuerySet['TagWorkConnection']
-		tagworkmediaconnection_set: QuerySet['TagWorkMediaConnection']
-		tagworkcreatorconnection_set: QuerySet['TagWorkCreatorConnection']
-		tagworklangpreference_set: QuerySet['TagWorkLangPreference']
-		aliases: QuerySet['TagWork']
-		mediasong: 'MediaSong | None'
-		childhood: QuerySet['TagWorkParenthood']
-		parenthood: QuerySet['TagWorkParenthood']
-		wikipage_set: QuerySet['WikiPage']
+		tagworkconnection_set: QuerySet[TagWorkConnection]
+		tagworkmediaconnection_set: QuerySet[TagWorkMediaConnection]
+		tagworkcreatorconnection_set: QuerySet[TagWorkCreatorConnection]
+		tagworklangpreference_set: QuerySet[TagWorkLangPreference]
+		aliases: QuerySet[TagWork]
+		mediasong: MediaSong | None
+		childhood: QuerySet[TagWorkParenthood]
+		parenthood: QuerySet[TagWorkParenthood]
+		wikipage_set: QuerySet[WikiPage]
 
 	class TagMeta:
 		protect_all = True
@@ -248,7 +243,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		entity_attrs = ['self', 'aliased_to']
 
 		@staticmethod
-		def to_active(instance: 'TagWork') -> 'TagWork':
+		def to_active(instance: TagWork) -> TagWork:
 			return instance.aliased_to or instance
 
 	def __str__(self):
@@ -290,7 +285,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		return any(
 			[
 				self.wikipage_set.exists()
-				and any([p.page.strip() != '' for p in self.wikipage_set]),
+				and any(p.page.strip() != '' for p in self.wikipage_set),
 				self.tagworkconnection_set.exists(),
 				self.category != WorkTagCategory.UNCATEGORIZED,
 			]
@@ -421,7 +416,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 
 	@classmethod
 	def transfer_data(cls, from_tag: Self, to_tag: Self):
-		from .media import TagWorkInstance
+		from .media import MediaSong, TagWorkInstance
 
 		# transfer/merge TagWorkInstance records (creator_roles, used_as_source, etc.)
 		for twi in TagWorkInstance.objects.filter(work_tag=from_tag):
@@ -478,6 +473,23 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 				s = from_tag.mediasong
 				s.work_tag = to_tag
 				s.save()
+			from_tag.category = WorkTagCategory.UNCATEGORIZED
+			from_tag.save()
+		if (
+			from_tag.category == WorkTagCategory.MEDIA
+			and to_tag.category == WorkTagCategory.MEDIA
+		):
+			if from_tag.media_type:
+				to_tag.media_type = (to_tag.media_type or 0) | from_tag.media_type
+			to_tag.save()
+			from_tag.category = WorkTagCategory.UNCATEGORIZED
+			from_tag.media_type = None
+			from_tag.save()
+		if (
+			from_tag.category == WorkTagCategory.SONG
+			and to_tag.category == WorkTagCategory.SONG
+		):
+			MediaSong.merge(from_song=from_tag.mediasong, to_song=to_tag.mediasong)
 			from_tag.category = WorkTagCategory.UNCATEGORIZED
 			from_tag.save()
 		for p in from_tag.wikipage_set.all():

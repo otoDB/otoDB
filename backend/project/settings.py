@@ -12,16 +12,21 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import logging
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
 logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Only load the first .env file found, in case there are multiple (e.g. in the parent directory)
+for _env_file in (BASE_DIR / '.env', BASE_DIR.parent / '.env'):
+	if _env_file.is_file():
+		load_dotenv(_env_file, override=False)
+		break
 
 DEBUG = os.environ.get('OTODB_DEBUG', 'False').lower() == 'true'
 
@@ -43,7 +48,7 @@ if OTODB_BACKEND_SENTRY_DSN := os.environ.get('OTODB_BACKEND_SENTRY_DSN'):
 
 if not DEBUG and 'OTODB_SECRET_KEY' not in os.environ:
 	logger.critical('No secret key provided (OTODB_SECRET_KEY) -- exiting')
-	exit(1)
+	sys.exit(1)
 
 SECRET_KEY = os.environ.get('OTODB_SECRET_KEY', '1145141919')
 
@@ -54,6 +59,9 @@ EMAIL_HOST = os.environ.get('OTODB_EMAIL_HOST')
 EMAIL_PORT = os.environ.get('OTODB_EMAIL_PORT')
 EMAIL_HOST_USER = os.environ.get('OTODB_EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('OTODB_EMAIL_HOST_PASSWORD')
+EMAIL_BACKEND = os.environ.get(
+	'OTODB_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'
+)
 
 ALLOWED_HOSTS = [
 	host.strip()
@@ -98,8 +106,6 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'django_userforeignkey.middleware.UserForeignKeyMiddleware',
-	'django_request_cache.middleware.RequestCacheMiddleware',
 ]
 
 if DEBUG:
@@ -124,6 +130,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'project.wsgi.application'
+ASGI_APPLICATION = 'project.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -282,35 +289,16 @@ OTODB_CDN_ENABLED = (
 )
 OTODB_CDN_ROOT = os.environ.get('OTODB_CDN_ROOT', '/')
 
-# Task queue + cache (Valkey in production, synchronous fallback for dev)
+# Cache (Valkey in production so rate limits and the anon response cache are
+# shared across workers; per-process local memory otherwise)
 OTODB_VALKEY_URL = os.environ.get('OTODB_VALKEY_URL') or os.environ.get(
 	'OTODB_REDIS_URL'
 )
 if OTODB_VALKEY_URL:
-	INSTALLED_APPS.append('django_rq')
 	CACHES = {
 		'default': {
 			'BACKEND': 'django_vcache.backend.ValkeyCache',
 			'LOCATION': OTODB_VALKEY_URL,
-		}
-	}
-	# RQ talks to the broker via redis-py, which expects a redis:// URL
-	OTODB_RQ_URL = OTODB_VALKEY_URL.replace('valkey://', 'redis://', 1)
-	RQ_QUEUES = {
-		'default': {
-			'URL': OTODB_RQ_URL,
-		}
-	}
-	TASKS = {
-		'default': {
-			'BACKEND': 'django_tasks_rq.RQBackend',
-			'QUEUES': ['default'],
-		}
-	}
-else:
-	TASKS = {
-		'default': {
-			'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend',
 		}
 	}
 
@@ -344,6 +332,6 @@ OTODB_MAX_PENDING_WORKS = 10
 OTODB_MAX_FLAGGED_WORKS = 5
 
 OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)
-OTODB_MODERATION_PERIOD = timedelta(days=3)
+OTODB_MODERATION_PERIOD = timedelta(days=5)
 
 OTODB_SYSTEM_BOT_USERNAME = os.environ.get('OTODB_SYSTEM_BOT_USERNAME', 'otoDB')

@@ -69,7 +69,6 @@ const baseData = {
 	links,
 	song_links: null,
 	tag: mediaTag,
-	song_relations: null,
 	display_name: mediaTag.name,
 	head: {
 		title: mediaTag.name,
@@ -88,8 +87,7 @@ const baseData = {
 		aliases: [],
 		primary_parent: null
 	},
-	connections: [[], []] as Connections,
-	song_connections: null
+	connections: [[], []] as Connections
 };
 
 const meta = {

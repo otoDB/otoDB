@@ -3,7 +3,7 @@
 	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import { PlatformNames, WorkOriginNames } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/enums/language.js';
-	import ExternalEmbed from '$lib/ExternalEmbed.svelte';
+	import ExternalEmbed from '$lib/ExternalEmbed/ExternalEmbed.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
@@ -11,7 +11,7 @@
 	import { ModelsWithComments, WorkOrigin } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
-	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';
 
 	let { data } = $props();
@@ -42,7 +42,7 @@
 		{#if isSVO(getLocale())}
 			{m.curly_safe_lynx_fond()}
 		{/if}
-		<a href="/profile/{data.list?.author.username}">{data.list?.author.username}</a>
+		<a href="/user/{data.list?.author.username}">{data.list?.author.username}</a>
 		{#if isSOV(getLocale())}
 			{m.curly_safe_lynx_fond()}
 		{/if}

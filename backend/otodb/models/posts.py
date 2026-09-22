@@ -88,7 +88,9 @@ class ThreadManager(models.Manager):
 										target_type_id=OuterRef('entity_type_id'),
 										target_id=OuterRef('entity_id'),
 										target_column='slug',
-									).values('target_value')[:1]
+									)
+									.order_by('-id')
+									.values('target_value')[:1]
 								),
 							),
 							When(
@@ -129,9 +131,9 @@ class Thread(models.Model):
 	if TYPE_CHECKING:
 		from django.db.models import QuerySet
 
-		entitylink_set: QuerySet['EntityLink']
-		_entity_links: list['EntityLink']
-		posts: QuerySet['ThreadPost']
+		entitylink_set: QuerySet[EntityLink]
+		_entity_links: list[EntityLink]
+		posts: QuerySet[ThreadPost]
 		added_by_id: int
 
 	class Meta:
@@ -259,6 +261,11 @@ class Subscription(models.Model):
 				fields=['subscriber', 'entity_type', 'entity_id'],
 				name='unique_subscription',
 			)
+		]
+		indexes = [
+			models.Index(
+				fields=['entity_type', 'entity_id'], name='subscription_entity_idx'
+			),
 		]
 
 

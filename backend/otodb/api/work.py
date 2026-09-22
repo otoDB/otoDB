@@ -1,5 +1,4 @@
 from functools import reduce
-from typing import List
 
 import lark
 from django.conf import settings
@@ -28,11 +27,13 @@ from ninja.throttling import AuthRateThrottle
 
 from otodb.account.models import Account
 from otodb.common import (
+	process_tag_for_display,
 	slugify_tag,
 )
 from otodb.models import (
 	MediaWork,
 	ModerationEvent,
+	PoolItem,
 	RevisionChange,
 	RevisionChangeEntity,
 	TagWork,
@@ -58,12 +59,6 @@ from otodb.models.enums import (
 	WorkTagCategory,
 )
 from otodb.moderation import resolve_work
-from otodb.tasks import (
-	enqueue_deferred,
-	resolve_expired_appeal,
-	resolve_expired_flag,
-	resolve_expired_work,
-)
 
 from .common import (
 	AbstractTagTransformer,
@@ -104,25 +99,22 @@ work_router = RouterWithRevision()
 class ExternalQuery(Schema):
 	work_id: int | None = None
 	upload_id: int | None = None
-	tags: List[TagWorkInstanceSchema] = []
+	tags: list[TagWorkInstanceSchema] = []
 
 
 def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
 	tags = []
 	for t in payload:
 		try:
-			tag = TagWork.objects.get(slug=slugify_tag(t.nameslug))
+			tag = TagWork.objects.get(slug=slugify_tag(t.slug))
 			tags.append(tag.aliased_to if tag.aliased_to else tag)
 		except TagWork.DoesNotExist:
-			tags.append(TagWork.objects.create(name=t.nameslug))
+			name = process_tag_for_display(t.name or '') or t.slug.replace('_', ' ')
+			tags.append(TagWork.objects.create(name=name))
 
 	for tag, p in zip(tags, payload):
 		changes = {}
-		if p.sample is not None and tag.category in [
-			WorkTagCategory.CREATOR,
-			WorkTagCategory.MEDIA,
-			WorkTagCategory.SONG,
-		]:
+		if p.sample is not None and tag.category in WorkTagCategory.sampleable():
 			changes['used_as_source'] = p.sample
 		if p.roles and tag.category == WorkTagCategory.CREATOR:
 			changes['creator_roles'] = reduce(int.__or__, p.roles)
@@ -224,7 +216,7 @@ _WORK_TAG_CATEGORY_FILTERS = {
 }
 
 
-_WORK_TAG_COUNT_ORDERS: dict['WorkOrder', Q] = {
+_WORK_TAG_COUNT_ORDERS: dict[WorkOrder, Q] = {
 	WorkOrder.TAGCOUNT: Q(),
 	**{WorkOrder[name.upper()]: q for name, q in _WORK_TAG_CATEGORY_FILTERS.items()},
 }
@@ -416,6 +408,14 @@ work_metatag_grammars = {
 		),
 	),
 	'id': MetatagSpec(int, make_range_metatag('id')),
+	'list': MetatagSpec(
+		str,
+		lambda v: (
+			Exists(PoolItem.objects.filter(work_id=OuterRef('id'), pool_id=v))
+			if v.isdigit()
+			else Q(pk__in=[])
+		),
+	),
 	'width': MetatagSpec(
 		int,
 		make_range_metatag('work_width', model=WorkSource, fk_field='media_id'),
@@ -611,7 +611,7 @@ class WorkTagTransformer(AbstractTagTransformer):
 	}
 
 
-@work_router.get('search', response=List[ThinWorkSchema], exclude_none=True)
+@work_router.get('search', response=list[ThinWorkSchema], exclude_none=True)
 @paginate
 def search(
 	request: AuthedHttpRequest,
@@ -703,7 +703,7 @@ def work(request: AuthedHttpRequest, work_id: OtodbID):
 @with_revision_route(Route.MEDIAWORK_DELETE)
 def delete_work(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	work.worksource_set.update(media=None, is_pending=False)
+	work.worksource_set.update(media=None, is_pending=False, pending_since=None)
 	work.delete()
 
 
@@ -813,7 +813,6 @@ def merge_works(
 		),
 		rating=payload.rating,
 	)
-	return
 
 
 @work_router.put('work', auth=django_auth)
@@ -832,10 +831,9 @@ def update_work(
 		else:
 			setattr(work, attr, value)
 	work.save()
-	return
 
 
-@work_router.get('sources', response=List[WorkSourceSchema])
+@work_router.get('sources', response=list[WorkSourceSchema])
 def sources(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	return work.worksource_set
@@ -886,13 +884,6 @@ def create_work(request: AuthedHttpRequest, payload: CreateWorkPayload):
 		status=Status.PENDING if not is_editor else Status.APPROVED,
 	)
 	_resolve_and_apply_tags(work, payload.tags)
-
-	if work.status == Status.PENDING:
-		transaction.on_commit(
-			lambda: enqueue_deferred(
-				resolve_expired_work, work.pk, delay=settings.OTODB_MODERATION_PERIOD
-			)
-		)
 
 	src.media = work
 	src.save()
@@ -982,18 +973,12 @@ def flag_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 		if active_flags >= settings.OTODB_MAX_FLAGGED_WORKS:
 			raise ApiError(429, ErrorCode.FLAG_LIMIT_REACHED)
 
-	flag = ModerationEvent.objects.create(
+	ModerationEvent.objects.create(
 		work=work,
 		event_type=ModerationEventType.FLAG,
 		by=request.user,
 		reason=reason,
 		status=FlagStatus.PENDING,
-	)
-
-	transaction.on_commit(
-		lambda: enqueue_deferred(
-			resolve_expired_flag, flag.pk, delay=settings.OTODB_MODERATION_PERIOD
-		)
 	)
 
 
@@ -1037,7 +1022,7 @@ def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 		if total_slots_used + 3 > settings.OTODB_MAX_PENDING_WORKS:
 			raise ApiError(429, ErrorCode.NO_MORE_APPEAL_SLOTS)
 
-	appeal = ModerationEvent.objects.create(
+	ModerationEvent.objects.create(
 		work=work,
 		event_type=ModerationEventType.APPEAL,
 		by=request.user,
@@ -1045,14 +1030,8 @@ def appeal_work(request: AuthedHttpRequest, work_id: OtodbID, reason: str):
 		status=FlagStatus.PENDING,
 	)
 
-	transaction.on_commit(
-		lambda: enqueue_deferred(
-			resolve_expired_appeal, appeal.pk, delay=settings.OTODB_MODERATION_PERIOD
-		)
-	)
 
-
-@work_router.get('queue', auth=django_auth, response=List[ThinWorkSchema])
+@work_router.get('queue', auth=django_auth, response=list[ThinWorkSchema])
 @user_is_editor
 @paginate
 def mod_queue(
@@ -1096,7 +1075,7 @@ def mod_queue(
 	return qs.order_by('-id')
 
 
-@work_router.get('similar', response=List[ThinWorkSchema])
+@work_router.get('similar', response=list[ThinWorkSchema])
 def similar(request: AuthedHttpRequest, work_id: OtodbID):
 	work = get_object_or_404(MediaWork.active_objects, id=work_id)
 	wt = work.tags.filter(deprecated=False).values_list('id', flat=True)

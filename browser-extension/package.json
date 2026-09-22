@@ -1,18 +1,13 @@
 {
   "type": "module",
   "scripts": {
-    "build:chrome": "node build.js chrome",
-    "build:firefox": "node build.js firefox",
-    "watch:chrome": "node build.js chrome --watch",
-    "watch:firefox": "node build.js firefox --watch",
-    "pack": "node build.js pack",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "build": "bunx --bun vite build",
+    "watch": "bunx --bun vite build --watch --sourcemap",
+    "pack": "bun run build && node pack.js",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
     "@inlang/paraglide-js": "2.15.2",
-    "@sveltejs/adapter-static": "^3.0.9",
-    "@sveltejs/kit": "^2.55.0",
-    "sveltekit-adapter-chrome-extension": "^2.0.1",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.2",

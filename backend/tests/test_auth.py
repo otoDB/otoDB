@@ -11,6 +11,15 @@ from otodb.models import UserPreference
 from otodb.models.enums import ErrorCode, LanguageTypes, Preferences
 
 
+@pytest.fixture(autouse=True)
+def inline_tasks(monkeypatch):
+	"""Run fire-and-forget emails inline so mail.outbox is populated."""
+	monkeypatch.setattr(
+		'otodb.api.auth.fire_and_forget',
+		lambda fn, *args, **kwargs: fn(*args, **kwargs),
+	)
+
+
 @pytest.mark.django_db
 @override_settings(OTODB_TURNSTILE_SECRET_KEY=None)
 def test_password_reset_email_sends_successfully(auth_client, member):

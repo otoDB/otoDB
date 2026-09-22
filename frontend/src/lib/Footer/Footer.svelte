@@ -1,0 +1,103 @@
+<script lang="ts">
+	import { env } from '$env/dynamic/public';
+	import { PUBLIC_OTODB_HASH } from '$env/static/public';
+	import { languages } from '$lib/enums/language';
+	import { currentVersion, versions } from '$lib/enums/version';
+	import { m } from '$lib/paraglide/messages.js';
+	import { getLocale, locales } from '$lib/paraglide/runtime';
+	import { set_lang } from '$lib/languages';
+	import Icon from '$lib/Icon/Icon.svelte';
+	import type { ClassValue } from 'svelte/elements';
+
+	let {
+		user,
+		...props
+	}: {
+		user: null | { username: string };
+		class?: ClassValue;
+	} = $props();
+
+	const discordInviteCode = env.PUBLIC_DISCORD_INVITE_CODE;
+</script>
+
+<footer class={props.class}>
+	<div class="footer-left"></div>
+
+	<div class="footer-center">
+		<span>
+			{m.mild_loud_shad_enchant({
+				type: 'otoDB',
+				name: m.glad_born_mouse_taste()
+			})}
+			{versions[currentVersion].name}
+			{#if PUBLIC_OTODB_HASH}
+				- <span>{PUBLIC_OTODB_HASH}</span>
+			{/if}
+		</span>
+		<div class="social-links">
+			{#if discordInviteCode}
+				<a href="https://discord.com/invite/{discordInviteCode}">Discord</a>
+				/
+			{/if}
+			<a href="https://twitter.com/otoDBnet">Twitter</a>
+			/
+			<a href="irc://irc.rizon.net/otodb">#otodb @ Rizon</a>
+			/
+			<a href="mailto:contact@otodb.net">contact@otodb.net</a>
+			/
+			<a href="https://github.com/otoDB/otoDB">Source</a>
+		</div>
+	</div>
+
+	<div class="footer-right flex items-center">
+		<Icon key="language" class="mr-1 size-4" decorative />
+		<select
+			onchange={(e) => {
+				set_lang(e.currentTarget.value as (typeof locales)[number], !!user);
+			}}
+			value={getLocale()}
+		>
+			{#each locales as l (l)}
+				<option value={l}>{languages[l].name}</option>
+			{/each}
+		</select>
+	</div>
+</footer>
+
+<style>
+	footer {
+		display: flex;
+		width: 100%;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
+	}
+
+	.footer-left,
+	.footer-right {
+		flex: 1;
+	}
+
+	.footer-center {
+		flex: 3;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.footer-right {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.social-links a {
+		border-bottom: 1px dotted var(--otodb-color-content-primary);
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.social-links a:hover {
+		opacity: 0.7;
+	}
+</style>

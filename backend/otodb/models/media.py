@@ -17,7 +17,7 @@ from .enums import (
 	WorkTagCategory,
 )
 from .moderation import ModerationEvent
-from .revision import RevisionTrackedModel, RevisionTrackedQuerySet
+from .revision import RevisionTrackedModel
 from .tag import TagSong, TagWork, tagwork_ordering_case
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 	from .work_source import WorkSource
 
 
-class MediaWorkQuerySet(RevisionTrackedQuerySet):
+class MediaWorkQuerySet(models.QuerySet):
 	def with_pending_moderation(self):
 		"""Prefetch the pending flag and appeal so `pending_flag`/`pending_appeal` read from cache."""
 		return self.select_related('thumbnail_source').prefetch_related(
@@ -63,18 +63,18 @@ class MediaWorkQuerySet(RevisionTrackedQuerySet):
 
 
 class MediaWorkManager(models.Manager['MediaWork']):
-	def get_queryset(self) -> 'MediaWorkQuerySet':
+	def get_queryset(self) -> MediaWorkQuerySet:
 		return MediaWorkQuerySet(self.model, using=self._db)
 
-	def with_pending_moderation(self) -> 'MediaWorkQuerySet':
+	def with_pending_moderation(self) -> MediaWorkQuerySet:
 		return self.get_queryset().with_pending_moderation()
 
-	def visible(self) -> 'MediaWorkQuerySet':
+	def visible(self) -> MediaWorkQuerySet:
 		return self.get_queryset().visible()
 
 
 class ActiveManager(MediaWorkManager):
-	def get_queryset(self) -> 'MediaWorkQuerySet':
+	def get_queryset(self) -> MediaWorkQuerySet:
 		return (
 			super()
 			.get_queryset()
@@ -153,16 +153,16 @@ class TagSongInstance(RevisionTrackedModel):
 
 class MediaWork(RevisionTrackedModel):
 	if TYPE_CHECKING:
-		objects: 'MediaWorkManager'  # type: ignore
-		active_objects: 'ActiveManager'
-		worksource_set: QuerySet['WorkSource']
-		poolitem_set: QuerySet['PoolItem']
-		relation_A: QuerySet['WorkRelation']
-		relation_B: QuerySet['WorkRelation']
-		tagworkinstance_set: QuerySet['TagWorkInstance']
-		moderation_events: QuerySet['ModerationEvent']
-		_pending_flag: list['ModerationEvent']
-		_pending_appeal: list['ModerationEvent']
+		objects: MediaWorkManager  # type: ignore
+		active_objects: ActiveManager
+		worksource_set: QuerySet[WorkSource]
+		poolitem_set: QuerySet[PoolItem]
+		relation_A: QuerySet[WorkRelation]
+		relation_B: QuerySet[WorkRelation]
+		tagworkinstance_set: QuerySet[TagWorkInstance]
+		moderation_events: QuerySet[ModerationEvent]
+		_pending_flag: list[ModerationEvent]
+		_pending_appeal: list[ModerationEvent]
 
 	title = models.CharField(max_length=1000, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
@@ -187,7 +187,7 @@ class MediaWork(RevisionTrackedModel):
 		entity_attrs = ['self', 'moved_to']
 
 		@staticmethod
-		def to_active(instance: 'MediaWork') -> 'MediaWork':
+		def to_active(instance: MediaWork) -> MediaWork:
 			return instance.moved_to or instance
 
 	# deprecated!
@@ -202,16 +202,16 @@ class MediaWork(RevisionTrackedModel):
 	active_objects = TaggedManager.cast_class(ActiveManager())
 
 	@property
-	def pending_flag(self) -> 'ModerationEvent | None':
+	def pending_flag(self) -> ModerationEvent | None:
 		flags = getattr(self, '_pending_flag', [])
 		return flags[0] if flags else None
 
 	@property
-	def pending_appeal(self) -> 'ModerationEvent | None':
+	def pending_appeal(self) -> ModerationEvent | None:
 		appeals = getattr(self, '_pending_appeal', [])
 		return appeals[0] if appeals else None
 
-	def was_contributed_by(self, user: 'Account') -> bool:
+	def was_contributed_by(self, user: Account) -> bool:
 		"""True if user added any source to this work."""
 		return self.worksource_set.filter(added_by=user).exists()
 
@@ -229,11 +229,11 @@ class MediaWork(RevisionTrackedModel):
 	@staticmethod
 	# Points work_B to work_A
 	def merge(
-		to_work: 'MediaWork',
-		from_work: 'MediaWork',
+		to_work: MediaWork,
+		from_work: MediaWork,
 		title: str,
 		description: str,
-		thumbnail_source: 'WorkSource',
+		thumbnail_source: WorkSource,
 		rating: int,
 	):
 		from django.contrib.contenttypes.models import ContentType
@@ -253,7 +253,21 @@ class MediaWork(RevisionTrackedModel):
 		to_work.description = description
 		to_work.thumbnail_source = thumbnail_source
 		to_work.rating = rating
-		to_work.tags.add(*from_work.tags.all())
+		from_work.tagworkinstance_set.exclude(
+			work_tag_id__in=to_work.tagworkinstance_set.values('work_tag_id')
+		).update(work=to_work)
+
+		for tt in to_work.tagworkinstance_set.filter(
+			work_tag_id__in=from_work.tagworkinstance_set.values('work_tag_id')
+		):
+			ft = from_work.tagworkinstance_set.get(work_tag_id=tt.work_tag_id)
+			if ft.used_as_source:
+				tt.used_as_source = True
+			if tt.work_tag.category == WorkTagCategory.CREATOR and ft.creator_roles:
+				tt.creator_roles = (tt.creator_roles or 0) | ft.creator_roles
+			tt.save()
+			ft.delete()
+
 		to_work.save()
 
 		from_work.worksource_set.update(media=to_work)
@@ -369,3 +383,57 @@ class MediaSong(RevisionTrackedModel):
 
 	def __str__(self):
 		return self.title
+
+	@staticmethod
+	# Points work_B to work_A
+	def merge(
+		to_song: MediaSong,
+		from_song: MediaSong,
+	):
+		from django.contrib.contenttypes.models import ContentType
+
+		from otodb.models.posts import EntityLink
+
+		if to_song.bpm is None:
+			to_song.bpm = from_song.bpm
+		to_song.variable_bpm = to_song.variable_bpm or from_song.variable_bpm
+
+		from_song.relation_A.filter(B=to_song).delete()
+		from_song.relation_A.update(A=to_song)
+
+		from_song.relation_B.filter(A=to_song).delete()
+		from_song.relation_B.update(B=to_song)
+
+		TagSongInstance.objects.filter(song=from_song).exclude(
+			song_tag_id__in=TagSongInstance.objects.filter(song=to_song).values(
+				'song_tag_id'
+			)
+		).update(song=to_song)
+		TagSongInstance.objects.filter(song=from_song).delete()
+
+		for c in from_song.mediasongconnection_set.all():
+			if to_song.mediasongconnection_set.filter(
+				site=c.site, content_id=c.content_id
+			).exists():
+				c.delete()
+			else:
+				c.song = to_song
+				c.save()
+
+		mediasong_ct = ContentType.objects.get_for_model(MediaSong)
+
+		EntityLink.objects.filter(
+			entity_type=mediasong_ct,
+			entity_id=from_song.pk,
+			thread_id__in=EntityLink.objects.filter(
+				entity_type=mediasong_ct,
+				entity_id=to_song.pk,
+			).values('thread_id'),
+		).delete()
+		EntityLink.objects.filter(
+			entity_type=mediasong_ct,
+			entity_id=from_song.pk,
+		).update(entity_id=to_song.pk)
+
+		from_song.delete()
+		to_song.save()

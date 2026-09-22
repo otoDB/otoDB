@@ -5,7 +5,7 @@ import { m } from '$lib/paraglide/messages.js';
 import { Levels, ThemePref, VideoPlatformPref } from '$lib/schema';
 import Page from './+page.svelte';
 
-const handlers = [http.post('*/api/profile/prefs', () => new HttpResponse(null, { status: 200 }))];
+const handlers = [http.post('*/api/user/prefs', () => new HttpResponse(null, { status: 200 }))];
 
 const stats = { works: 1234, tags: 567, songs: 89, lists: 42 };
 

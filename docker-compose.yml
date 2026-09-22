@@ -41,10 +41,6 @@ services:
       - static:/srv/static
     stop_signal: SIGINT
 
-  worker:
-    <<: *backend
-    command: ["python", "manage.py", "rqworker", "--with-scheduler", "--job-class", "django_tasks_rq.Job"]
-
   frontend:
     image: ghcr.io/otodb/otodb-frontend:latest
     build:

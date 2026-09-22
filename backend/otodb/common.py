@@ -1,3 +1,4 @@
+import asyncio
 import html
 import json
 import logging
@@ -50,12 +51,16 @@ def NFKC(s: str):
 	return unicodedata.normalize('NFKC', s)
 
 
-def clean_tag(s: str):
-	return NFKC(s).strip()
+def NFC(s: str):
+	return unicodedata.normalize('NFC', s)
+
+
+def process_tag_for_display(s: str):
+	return NFC(s).strip()
 
 
 def canonicalize_tag(s: str):
-	return clean_tag(s).lower().replace(' ', '_')
+	return NFKC(s).strip().lower().replace(' ', '_')
 
 
 def slugify_tag(s: str):
@@ -63,7 +68,8 @@ def slugify_tag(s: str):
 
 
 ydl_playlist = YoutubeDL(
-	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True}, auto_init=True
+	{'http_headers': {'Accept-Language': 'ja'}, 'extract_flat': True},
+	auto_init=True,
 )
 for e in (
 	YoutubeTabIE,
@@ -72,6 +78,7 @@ for e in (
 	SoundcloudPlaylistIE,
 ):
 	ydl_playlist.add_info_extractor(e)
+
 
 ydl, jar = None, None
 
@@ -144,10 +151,9 @@ def get_niconico_geoblocked(sm):
 		headers={'User-Agent': 'Twitterbot/1.0', 'Accept-Language': 'ja'},
 		cookies=jar,
 	)
-	if r.ok:
-		if match := niconico_meta_re.search(r.text):
-			res = json.loads(html.unescape(match.group(1)))['data']['response']
-			return res
+	if r.ok and (match := niconico_meta_re.search(r.text)):
+		res = json.loads(html.unescape(match.group(1)))['data']['response']
+		return res
 	return None
 
 
@@ -292,8 +298,9 @@ def process_video_info(full_info, link=None):
 
 		# Process tags
 		if 'tags' in info:
-			info['tags'] = [canonicalize_tag(tag) for tag in info['tags']]
-			info['tags'] = list(dict.fromkeys(info['tags']))
+			info['tags'] = list(
+				dict.fromkeys(filter(None, map(process_tag_for_display, info['tags'])))
+			)
 
 		# Clean description
 		info['description'] = clean_description(info['description'])
@@ -302,12 +309,12 @@ def process_video_info(full_info, link=None):
 		info['thumbnail_mime'] = fetch_thumbnail_mime_type(info['thumbnail'])
 
 		return {keys[key]: info[key] for key in keys if key in info}
-	except Exception as e:
-		logger.error(f'Error processing video info: {e}')
+	except Exception:
+		logger.exception('Error processing video info')
 		return None
 
 
-def video_info(link, expected_unavailable=False):
+def _video_info_sync(link, expected_unavailable=False):
 	try:
 		if NiconicoIECustom.suitable(link):
 			full_info = get_niconico_geoblocked(NiconicoIECustom.get_temp_id(link))
@@ -334,18 +341,22 @@ def video_info(link, expected_unavailable=False):
 		else:
 			logger.error(f'yt-dlp DownloadError extracting video info from {link}: {e}')
 		return None, None
-	except Exception as e:
-		logger.error(f'Error extracting video info from {link}: {e}')
+	except Exception:
+		logger.exception(f'Error extracting video info from {link}')
 		return None, None
 
 
-def playlist_info(link):
+async def video_info(link, expected_unavailable=False):
+	return await asyncio.to_thread(_video_info_sync, link, expected_unavailable)
+
+
+async def playlist_info(link):
 	keys = {
 		'title': 'title',
 		'description': 'description',
 		'entries': 'entries',
 	}
-	info = ydl_playlist.extract_info(link, download=False)
+	info = await asyncio.to_thread(ydl_playlist.extract_info, link, download=False)
 	if info.get('_type') != 'playlist':
 		return None
 
@@ -386,6 +397,6 @@ def fetch_thumbnail_mime_type(thumbnail_url: str):
 		response = requests.get(thumbnail_url, allow_redirects=True, timeout=5)
 		content_type = response.headers.get('Content-Type')
 		return MimeType.from_str(content_type)
-	except Exception as e:
-		logger.error(f'Error fetching thumbnail mime type: {e}')
+	except Exception:
+		logger.exception('Error fetching thumbnail mime type')
 		return None

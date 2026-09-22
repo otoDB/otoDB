@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, NotRequired, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -64,7 +65,7 @@ SITEMAP_TYPES: dict[str, SitemapTypeConfig] = {
 	'profiles': {
 		'model': Account,
 		'filters': {'is_active': True},
-		'url_pattern': '/profile/{value}',
+		'url_pattern': '/user/{value}',
 		'value_field': 'username',
 		'date_field': 'date_created',
 	},
@@ -105,6 +106,7 @@ def _annotate_lastmod(
 			RevisionChange.objects.filter(
 				target_type=ct,
 				target_id=OuterRef('pk'),
+				revisionchangeentity__isnull=False,
 			)
 			.order_by('-rev__date')
 			.values('rev__date')[:1]

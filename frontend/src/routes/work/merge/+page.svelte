@@ -7,7 +7,7 @@
 	import client from '$lib/api';
 	import { dirtyEnhance } from '$lib/dirty';
 	import GuidelineWarning from '$lib/GuidelineWarning.svelte';
-	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';
 	import { getDisplayText } from '$lib/ui';
 

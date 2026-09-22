@@ -44,7 +44,7 @@ class TestTagLanguagePreference:
 		# Now set tags using the alias slug (simulating language preference usage)
 		response = work_client.put(
 			f'/set_tags?work_id={work.id}',
-			json=[{'nameslug': 'shingeki_no_kyojin'}],
+			json=[{'slug': 'shingeki_no_kyojin'}],
 			user=editor,
 		)
 		assert response.status_code == 200
@@ -110,7 +110,7 @@ class TestTagLanguagePreference:
 		# Set tags using alias slug
 		response = work_client.put(
 			f'/set_tags?work_id={work.id}',
-			json=[{'nameslug': 'alias_tag'}],
+			json=[{'slug': 'alias_tag'}],
 			user=editor,
 		)
 		assert response.status_code == 200
@@ -302,7 +302,7 @@ class TestTagSearch:
 		Test that searching for an alias name returns the base tag.
 		"""
 		base_tag = TagWork.objects.create(
-			name='massively_multiplayer_online', category=WorkTagCategory.GENERAL
+			name='massively multiplayer online', category=WorkTagCategory.GENERAL
 		)
 		alias = TagWork.objects.create(name='mmo')
 		alias.aliased_to = base_tag
@@ -372,7 +372,7 @@ class TestTagHierarchy:
 		)
 
 		# Verify total unique edges (no duplicates)
-		assert len(path_list) == len(set((p['slug'], p['fr']) for p in path_list)), (
+		assert len(path_list) == len({(p['slug'], p['fr']) for p in path_list}), (
 			'Found duplicate edges in path list'
 		)
 

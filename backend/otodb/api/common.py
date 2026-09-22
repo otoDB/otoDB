@@ -1,17 +1,19 @@
+import inspect
 import operator
 import re
 from abc import abstractmethod
+from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime
-from functools import lru_cache, reduce, wraps
-from typing import Annotated, Any, Callable, NamedTuple, Optional, Self
+from functools import reduce, wraps
+from typing import Annotated, Any, NamedTuple, Self
 
 import lark
+from asgiref.sync import sync_to_async
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
+from django.db import connection
 from django.db.models import Count, Exists, F, OuterRef, Q, Value
 from django.http import HttpRequest
-from django_request_cache import get_request_cache
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
 from ninja.utils import contribute_operation_args
@@ -30,14 +32,9 @@ from otodb.models import (
 	MediaSong,
 	MediaWork,
 	ModerationEvent,
-	Notification,
 	Pool,
 	PoolItem,
-	Revision,
-	RevisionChange,
-	RevisionChangeEntity,
 	SongRelation,
-	Subscription,
 	WorkRelation,
 	WorkSource,
 )
@@ -60,6 +57,7 @@ from otodb.models.enums import (
 	WorkTagCategory,
 )
 from otodb.models.tag import OtodbTagModel
+from otodb.revision_db import db_revision
 
 
 class AuthedHttpRequest(HttpRequest):
@@ -126,7 +124,7 @@ class TagLangPreferenceSchema(Schema):
 class TagWorkSchema(Schema):
 	id: OtodbID
 	lang_prefs: list[TagLangPreferenceSchema]
-	aliased_to: Optional['TagWorkSchema']
+	aliased_to: TagWorkSchema | None
 	name: str
 	slug: str
 	category: WorkTagCategory
@@ -215,13 +213,25 @@ class WikiPageContentSchema(Schema):
 	title: str | None = None
 
 
+class PendingModerationEventSchema(ModelSchema):
+	"""Thin view of a pending flag or appeal exposed on a work."""
+
+	id: OtodbID
+	by: ProfileSchema | None = None
+	status: FlagStatus
+
+	class Meta:
+		model = ModerationEvent
+		fields = ['reason', 'date']
+
+
 class WorkSchema(ModelSchema):
 	id: OtodbID
 	thumbnail_source_id: OtodbID | None
 	tags: list[TagWorkInstanceSchema] = Field(..., alias='tags_annotated')
 	thumbnail: str | None = None  # Exposed as property
-	pending_flag: 'PendingModerationEventSchema | None' = None
-	pending_appeal: 'PendingModerationEventSchema | None' = None
+	pending_flag: PendingModerationEventSchema | None = None
+	pending_appeal: PendingModerationEventSchema | None = None
 	relations: tuple[list[WorkRelationSchema], list[SlimWorkSchema]]
 	rating: Rating
 	status: Status
@@ -236,8 +246,8 @@ class ThinWorkSchema(ModelSchema):
 	id: OtodbID
 	tags: list[TagWorkInstanceThinSchema] = Field(..., alias='tags_annotated_thin')
 	thumbnail: str | None = None  # Exposed as property
-	pending_flag: 'PendingModerationEventSchema | None' = None
-	pending_appeal: 'PendingModerationEventSchema | None' = None
+	pending_flag: PendingModerationEventSchema | None = None
+	pending_appeal: PendingModerationEventSchema | None = None
 	status: Status
 
 	class Meta:
@@ -251,7 +261,10 @@ class SourceCreationResponse(Schema):
 
 
 class TagWorkInstanceInSchema(Schema):
-	nameslug: str
+	slug: str
+	name: str | None = None
+	# N.B. when name is supplied, it is assumed that the tag does not exist
+	# in which case the accompanying slug should NEVER be used to create the new tag
 	sample: bool | None = None
 	roles: list[Annotated[int, Field(ge=1, le=max(Role.values))]] | None = None
 
@@ -270,18 +283,6 @@ class SourceSuggestionsResponse(Schema):
 	source_tags: list[TagWorkSchema] = []
 	new_tags: list[TagWorkSchema] = []
 	creator_tags: list[TagWorkSchema] = []
-
-
-class PendingModerationEventSchema(ModelSchema):
-	"""Thin view of a pending flag or appeal exposed on a work."""
-
-	id: OtodbID
-	by: ProfileSchema | None = None
-	status: FlagStatus
-
-	class Meta:
-		model = ModerationEvent
-		fields = ['reason', 'date']
 
 
 class ListItemSchema(ModelSchema):
@@ -307,18 +308,42 @@ class ListSchema(ModelSchema):
 		return value.upstream
 
 
+def make_decorator(before, after=None):
+	def universal_decorator(func):
+		if inspect.iscoroutinefunction(func):
+
+			@wraps(func)
+			async def async_wrapper(request, *args, **kwargs):
+				request, args, kwargs = before(request, *args, **kwargs)
+				ret = await func(request, *args, **kwargs)
+				if after is None:
+					return ret
+				return await sync_to_async(after)(ret, request, *args, **kwargs)
+
+			return async_wrapper
+		else:
+
+			@wraps(func)
+			def sync_wrapper(request, *args, **kwargs):
+				request, args, kwargs = before(request, *args, **kwargs)
+				ret = func(request, *args, **kwargs)
+				if after is None:
+					return ret
+				return after(ret, request, *args, **kwargs)
+
+			return sync_wrapper
+
+	return universal_decorator
+
+
 def perm_decorator_ctor(uf):
-	def decorator(f):
-		@wraps(f)
-		def wrapper(request, *args, **kwargs):
-			if uf(request.user):
-				return f(request, *args, **kwargs)
-			else:
-				raise HttpError(403, 'Forbidden')
+	def before(request, *args, **kwargs):
+		if uf(request.user):
+			return request, args, kwargs
+		else:
+			raise HttpError(403, 'Forbidden')
 
-		return wrapper
-
-	return decorator
+	return make_decorator(before)
 
 
 user_is_trusted = perm_decorator_ctor(
@@ -480,201 +505,97 @@ def print_queries(f):
 	return wrapper
 
 
-@lru_cache(maxsize=128)
-def _get_entity_cts(model):
-	return [
-		ContentType.objects.get_for_model(
-			model if attr == 'self' else model._meta.get_field(attr).related_model
-		)
-		for attr in model._revision_meta.entity_attrs
-	]
+_READ_ONLY_HTTP_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS'})
 
 
-def _commit_pending_revision(cache, request):
-	"""Materialize pending changes from the request cache into a single Revision"""
-	rev = cache.get('rev')
-	rev_del = cache.get('rev_del')
-	rev_msg = cache.get('rev_msg')
-	rev_rst = cache.get('rev_rst')
-	# REVIEW: This should never be unknown but some test cases might not set it; should fix those tests
-	rev_route = cache.get('rev_route', Route.UNKNOWN)
+def track_revision(view_func):
+	"""Wrap an endpoint so its writes are captured as one Revision by the DB triggers:
+	open a `db_revision` transaction stamped with the request user + route (the route
+	is tagged onto the handler by `@with_revision_route`). Read-only requests skip the
+	transaction + stamping round-trips entirely -- they have nothing to capture.
+	Handles sync and async handlers; for async, the sync DB work runs in a thread via
+	`sync_to_async` (the same thread the handler's own `sync_to_async` DB calls use,
+	so it shares the transaction).
+	"""
 
-	if not (len(rev) or len(rev_del) or len(rev_rst)):
-		return
+	def _kwargs(request, kwargs):
+		route = getattr(view_func, '_otodb_route', Route.UNKNOWN)
+		if callable(route):
+			route = route(request, kwargs)
+		return {'user': getattr(request, 'user', None), 'route': route.value}
 
-	revision = Revision.objects.create(user=request.user, message=rev_msg)
+	if inspect.iscoroutinefunction(view_func):
 
-	# Pre-fetch all ContentTypes in bulk
-	content_types = ContentType.objects.in_bulk(
-		set(ctpk for ctpk, *_ in rev_del) | set(ctpk for (ctpk, *_), _ in rev.items())
-	)
+		@wraps(view_func)
+		async def async_wrapper(request, *args, **kwargs):
+			if request.method in _READ_ONLY_HTTP_METHODS:
+				return await view_func(request, *args, **kwargs)
+			ctx = db_revision(**_kwargs(request, kwargs))
+			await sync_to_async(ctx.__enter__)()
+			try:
+				ret = await view_func(request, *args, **kwargs)
+			except BaseException as exc:
+				if not await sync_to_async(ctx.__exit__)(
+					type(exc), exc, exc.__traceback__
+				):
+					raise
+				return None
+			await sync_to_async(ctx.__exit__)(None, None, None)
+			return ret
 
-	# For batching
-	revision_changes = []
-	pending_entities = []
-	subscribers = []
+		return async_wrapper
 
-	# Process deletions
-	seen_deletions = {}
-	for ctpk, pk, entities in rev_del:
-		key = (ctpk, pk)
-		if key not in seen_deletions:
-			seen_deletions[key] = entities
-			change = RevisionChange(
-				rev=revision, target_type_id=ctpk, target_id=pk, deleted=True
-			)
-			revision_changes.append(change)
-			model = content_types[ctpk].model_class()
-			pending_entities.append((change, _get_entity_cts(model), entities))
-
-			subs = Subscription.objects.filter(entity_type_id=ctpk, entity_id=pk)
-			subscribers.extend(subs.values_list('subscriber_id', flat=True))
-			subs.delete()
-
-	# Process updates
-	for (ctpk, pk, field), (entities, val) in rev.items():
-		ct = content_types[ctpk]
-		model = ct.model_class()
-		change = RevisionChange(
-			rev=revision,
-			target_type_id=ctpk,
-			target_id=pk,
-			target_column=field,
-			target_value=val,
-		)
-		revision_changes.append(change)
-		pending_entities.append((change, _get_entity_cts(model), entities))
-		subs = Subscription.objects.filter(entity_type_id=ctpk, entity_id=pk)
-		subscribers.extend(subs.values_list('subscriber_id', flat=True))
-		subs.delete()
-
-	for (ctpk, pk), to_pk in rev_rst.items():
-		revision_changes.append(
-			RevisionChange(
-				rev=revision,
-				target_type_id=ctpk,
-				target_id=pk,
-				target_value=to_pk,
-				restored=True,
-			)
-		)
-
-	# Bulk create changes
-	RevisionChange.objects.bulk_create(revision_changes)
-
-	# Only add subscriptions for active users.
-	# This excludes the system bot account.
-	auto_subscribe = request.user.is_active
-
-	# Bulk create change entities
-	revision_change_entities = []
-	subscriptions = []
-	for change, entity_cts, entities in pending_entities:
-		for entity_type, ent_pk in zip(entity_cts, entities):
-			if ent_pk:
-				# TODO: add if rev_route == ROLLBACK OR better probably should move this to rollback_entity
-				from .history import get_rev_restored
-
-				ent_pk = get_rev_restored(entity_type.id, ent_pk) or ent_pk
-				revision_change_entities.append(
-					RevisionChangeEntity(
-						change=change,
-						entity_type=entity_type,
-						entity_id=ent_pk,
-						route=rev_route,
-					)
-				)
-				if auto_subscribe:
-					subscriptions.append(
-						Subscription(
-							subscriber=request.user,
-							entity_type=entity_type,
-							entity_id=ent_pk,
-						)
-					)
-
-	if revision_change_entities or subscriptions:
-		RevisionChangeEntity.objects.bulk_create(revision_change_entities)
-		Subscription.objects.bulk_create(subscriptions, ignore_conflicts=True)
-	Notification.objects.bulk_create(
-		[
-			Notification(revision=revision, target_id=sub)
-			for sub in set(subscribers)
-			if sub != request.user.id
-		]
-	)
-
-
-def track_revision(f):
-	@wraps(f)
+	@wraps(view_func)
 	def wrapper(request, *args, **kwargs):
-		cache = get_request_cache()
-		cache.add(
-			'rev', {}
-		)  # key: (ContentType.pk, pk, field as str), value: (entity_pks, str)
-		cache.add('rev_del', [])  # list of (ContentType.pk, pk, ...entity_pks)
-		cache.add('rev_rst', {})
-		cache.add('rev_msg', '')
-
-		ret = f(request, *args, **kwargs)
-
-		_commit_pending_revision(cache, request)
-		return ret
+		if request.method in _READ_ONLY_HTTP_METHODS:
+			return view_func(request, *args, **kwargs)
+		with db_revision(**_kwargs(request, kwargs)):
+			return view_func(request, *args, **kwargs)
 
 	return wrapper
 
 
 def add_revision_message(message: str):
-	cache = get_request_cache()
-	rev_msg = cache.get_or_set('rev_msg', '')
-	rev_msg = rev_msg + ('\n' if rev_msg else '') + message
-	cache.set('rev_msg', rev_msg)
+	"""Append to the current transaction's revision message (and to the Revision row too,
+	if a capture trigger has already created it)."""
+	with connection.cursor() as cursor:
+		cursor.execute(
+			"SELECT nullif(current_setting('otodb.message', true), ''),"
+			" nullif(current_setting('otodb.rev_id', true), '')::bigint"
+		)
+		current, rev_id = cursor.fetchone()
+		combined = (current + '\n' + message) if current else message
+		cursor.execute("SELECT set_config('otodb.message', %s, true)", [combined])
+		if rev_id is not None:
+			cursor.execute(
+				'UPDATE otodb_revision SET message = %s WHERE id = %s',
+				[combined, rev_id],
+			)
 
 
 @contextmanager
 def revision(
 	user: Account | None = None, *, message: str = '', route: Route = Route.SYSTEM
 ):
-	"""Context manager that wraps arbitrary RevisionTrackedModel mutations into
-	a single Revision, intended for shell / programmatic use.
-	"""
-	from django.test import RequestFactory
-	from django_request_cache.middleware import RequestCache
-	from django_userforeignkey import request as ufk_request
-
+	"""Wrap arbitrary tracked-model mutations into a single Revision (shell / programmatic
+	use). Capture is done by the DB triggers; this only stamps the transaction."""
 	if user is None:
 		user = Account.get_system()
-
-	prev_request = ufk_request.get_current_request()
-	req = RequestFactory().post('/')
-	req.cache = RequestCache()
-	req.user = user
-	ufk_request.set_current_request(req)
-
-	cache = req.cache
-	cache.add('rev', {})
-	cache.add('rev_del', [])
-	cache.add('rev_rst', {})
-	cache.add('rev_msg', message)
-	cache.set('rev_route', route.value)
-	try:
+	with db_revision(user=user, message=message, route=route):
 		yield
-		_commit_pending_revision(cache, req)
-	finally:
-		ufk_request.set_current_request(prev_request)
 
 
-def with_revision_route(route: Route):
-	"""Decorator to set the revision route for a API endpoint."""
+def with_revision_route(route: Route | Callable[[HttpRequest, dict], Route]):
+	"""Tag endpoint with its revision route.
 
-	def decorator(f):
-		@wraps(f)
-		def wrapper(request, *args, **kwargs):
-			cache = get_request_cache()
-			cache.set('rev_route', route.value)
-			return f(request, *args, **kwargs)
+	`route` is either a fixed `Route` or a callable `(request, kwargs) -> Route` for
+	endpoints whose route depends on the request (`kwargs` are the parsed operation
+	arguments, so query/body params are available).
+	"""
 
-		return wrapper
+	def decorator(func):
+		func._otodb_route = route
+		return func
 
 	return decorator
 

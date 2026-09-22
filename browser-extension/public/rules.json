@@ -1,0 +1,62 @@
+[
+    {
+      "id": 1,
+      "condition": {
+        "urlFilter": "*://*.nicovideo.jp/*",
+        "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest", "stylesheet", "media", "image", "script"]
+      },
+      "action": {
+        "type": "modifyHeaders",
+        "requestHeaders": [
+          {
+            "operation": "set",
+            "header": "User-Agent",
+            "value": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "condition": {
+        "urlFilter": "*://*.nicoseiga.jp/*",
+        "resourceTypes": ["main_frame", "sub_frame", "xmlhttprequest", "stylesheet", "media", "image", "script"]
+      },
+      "action": {
+        "type": "modifyHeaders",
+        "requestHeaders": [
+          {
+            "operation": "set",
+            "header": "User-Agent",
+            "value": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "condition": {
+        "regexFilter": "^https://(www\\.youtube(-nocookie)?\\.com)/s/player/([^/]+)/player_embed_es6\\.vflset/(.+)$",
+        "resourceTypes": ["script"]
+      },
+      "action": {
+        "type": "redirect",
+        "redirect": {
+          "regexSubstitution": "https://\\1/s/player/\\3/player_es6.vflset/\\4"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "condition": {
+        "regexFilter": "^https://(www\\.youtube(-nocookie)?\\.com)/s/_/ytembeds/_/js/.*$",
+        "resourceTypes": ["script"]
+      },
+      "action": {
+        "type": "redirect",
+        "redirect": {
+          "regexSubstitution": "https://\\1/s/embeds/7c0ed1a1/www-embed-player-es6.vflset/www-embed-player-es6.js"
+        }
+      }
+    }
+  ]

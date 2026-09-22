@@ -32,7 +32,6 @@ export const actions = {
 		const comment_text = data.get('comment') as string;
 		const reply_to = data.get('reply_to') as string;
 		if (renderMarkdown(comment_text).trim() === '') return fail(400);
-
 		const { error } = await rawClient.POST('/api/comment/comment', {
 			fetch,
 			params: {

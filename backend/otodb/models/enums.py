@@ -25,6 +25,11 @@ class WorkTagCategory(OtodbIntegerEnum):
 	MEDIA = 6, 'Media'
 	GENERAL = 7, 'General'
 
+	@classmethod
+	def sampleable(cls):
+		"""Categories whose tags can be marked as a sample (`used_as_source`)."""
+		return [cls.CREATOR, cls.MEDIA, cls.SONG]
+
 
 class SongTagCategory(OtodbIntegerEnum):
 	GENERAL = 0, 'General'

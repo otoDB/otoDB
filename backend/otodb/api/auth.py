@@ -23,7 +23,7 @@ from otodb.models.enums import (
 	LanguageTypes,
 	Preferences,
 )
-from otodb.tasks import send_email
+from otodb.tasks import fire_and_forget, send_email
 
 from .common import (
 	ApiError,
@@ -51,7 +51,7 @@ def verify_turnstile(request: HttpRequest, token: str | None, action: str) -> No
 		raise ApiError(400, ErrorCode.CAPTCHA_FAILED)
 	data = {'secret': secret, 'response': token}
 	# REMOTE_ADDR is resolved to the real client IP by Granian's proxy-header wrapper
-	# (see project/wsgi.py + OTODB_TRUSTED_PROXY_HOSTS)
+	# (see project/[asgi/wsgi].py + OTODB_TRUSTED_PROXY_HOSTS)
 	remoteip = request.META.get('REMOTE_ADDR')
 	if remoteip:
 		data['remoteip'] = remoteip
@@ -273,13 +273,14 @@ https://otodb.net/
 
 
 def get_user_language(user, request):
-	if user and hasattr(user, 'preferences'):
-		if pref := user.preferences.filter(setting=Preferences.LANGUAGE).first():
-			if (
-				pref.value in LanguageTypes.values
-				and pref.value != LanguageTypes.NOT_APPLICABLE
-			):
-				return LanguageTypes(pref.value)
+	if (
+		user
+		and hasattr(user, 'preferences')
+		and (pref := user.preferences.filter(setting=Preferences.LANGUAGE).first())
+		and pref.value in LanguageTypes.values
+		and pref.value != LanguageTypes.NOT_APPLICABLE
+	):
+		return LanguageTypes(pref.value)
 	if request:
 		if locale := request.COOKIES.get('PARAGLIDE_LOCALE'):
 			for value, label in LanguageTypes.choices[1:]:
@@ -305,7 +306,8 @@ def send_reset_password_token(request: HttpRequest, body: SendResetTokenRequestS
 		user.reset_token = get_random_string(120, string.ascii_letters + string.digits)
 		user.save()
 		language = get_user_language(user, request)
-		send_email.enqueue(
+		fire_and_forget(
+			send_email,
 			subject=PASSWORD_RESET_EMAIL[language][0],
 			body=PASSWORD_RESET_EMAIL[language][1](user.username, user.reset_token),
 			from_email='noreply@otodb.net',
@@ -354,7 +356,8 @@ def new_invite(request: AuthedHttpRequest):
 	assert (
 		request.user.level >= Account.Levels.MOD
 		or not Invitation.objects.filter(
-			created_by=request.user, created_at__gte=datetime.now() - timedelta(days=7)
+			created_by=request.user,
+			created_at__gte=timezone.now() - timedelta(days=7),
 		).exists()
 	)
 	assert not Invitation.objects.filter(

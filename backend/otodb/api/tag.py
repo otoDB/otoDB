@@ -2,7 +2,6 @@ import re
 from enum import Enum
 from functools import reduce, wraps
 from itertools import groupby
-from typing import Annotated, Dict, Optional
 from urllib.parse import parse_qs, unquote, urlparse
 
 import lark
@@ -27,7 +26,7 @@ from ninja import Field, ModelSchema, Query, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
 from ninja.utils import contribute_operation_args
-from pydantic import AfterValidator, field_validator
+from pydantic import field_validator
 
 from otodb.common import NFKC, canonicalize_tag, slugify_tag
 from otodb.models import (
@@ -87,25 +86,6 @@ from .common import (
 tag_router = RouterWithRevision()
 
 
-class FatTagWorkSchema(ModelSchema):
-	id: OtodbID
-	children: list[TagWorkSchema]
-	song: Optional['SongSchema'] = Field(None, alias='get_song')
-	media_type: list[int] | None = None
-	lang_prefs: list[TagLangPreferenceSchema]
-	aliased_to: Optional[TagWorkSchema]
-	category: WorkTagCategory
-
-	class Meta:
-		model = TagWork
-		fields = ['name', 'slug', 'deprecated']
-
-	@field_validator('media_type', mode='before', check_fields=False)
-	@classmethod
-	def types(cls, value: int | None) -> list[int] | None:
-		return [r for r in MediaType if r & value] if value else None
-
-
 class WikiPageSchema(ModelSchema):
 	class Meta:
 		model = WikiPage
@@ -113,7 +93,7 @@ class WikiPageSchema(ModelSchema):
 
 
 class TagWorkDetailsSchema(Schema):
-	paths: tuple[list[TagWorkSchema], Dict[str, list[str]]]
+	paths: tuple[list[TagWorkSchema], dict[str, list[str]]]
 	wiki_page: list[WikiPageSchema]
 	aliases: list[TagWorkSchema]
 	primary_parent: str | None = None
@@ -124,7 +104,7 @@ class TagSongSchema(Schema):
 	name: str
 	slug: str
 	category: SongTagCategory
-	aliased_to: Optional['TagSongSchema']
+	aliased_to: TagSongSchema | None
 	lang_prefs: list[TagLangPreferenceSchema]
 
 
@@ -161,6 +141,25 @@ class SlimSongSchema(ModelSchema):
 	class Meta:
 		model = MediaSong
 		fields = ['title', 'bpm', 'variable_bpm', 'author']
+
+
+class FatTagWorkSchema(ModelSchema):
+	id: OtodbID
+	children: list[TagWorkSchema]
+	song: SongSchema | None = Field(None, alias='get_song')
+	media_type: list[int] | None = None
+	lang_prefs: list[TagLangPreferenceSchema]
+	aliased_to: TagWorkSchema | None
+	category: WorkTagCategory
+
+	class Meta:
+		model = TagWork
+		fields = ['name', 'slug', 'deprecated']
+
+	@field_validator('media_type', mode='before', check_fields=False)
+	@classmethod
+	def types(cls, value: int | None) -> list[int] | None:
+		return [r for r in MediaType if r & value] if value else None
 
 
 def filter_tags_by_media_type(qs, media_type: list[int]):
@@ -393,11 +392,7 @@ def tag_route_switch(work_route: Route, song_route: Route):
 				if type == 'work'
 				else (TagSong, TagSongLangPreference)
 			)
-			return with_revision_route(work_route if type == 'work' else song_route)(f)(
-				request,
-				*args,
-				**kwargs,
-			)
+			return f(request, *args, **kwargs)
 
 		contribute_operation_args(
 			wrapper,
@@ -406,7 +401,13 @@ def tag_route_switch(work_route: Route, song_route: Route):
 			Query(TagTypes.WORK),
 		)
 
-		return wrapper
+		return with_revision_route(
+			lambda request, kwargs: (
+				work_route
+				if kwargs.get('type', TagTypes.WORK) == 'work'
+				else song_route
+			)
+		)(wrapper)
 
 	return decorator
 
@@ -433,7 +434,7 @@ def alias_tags(
 		try:
 			tags.append(model.objects.get(slug=slugify_tag(tag_name)))
 		except model.DoesNotExist:
-			tags.append(model.objects.create(name=tag_name))
+			tags.append(model.objects.create(name=tag_name.replace('_', ' ')))
 
 	into = get_object_or_404(
 		model.objects.select_related('aliased_to'), slug=slugify_tag(into_tag)
@@ -499,16 +500,12 @@ def tag_alias_control(
 
 	curr_aliases_slugs = [t.slug for t in curr_aliases]
 	assert payload.base_slug == tag.slug or payload.base_slug in curr_aliases_slugs
-	assert all(
-		[v == tag_slug or v in curr_aliases_slugs for v in payload.unalias_slugs]
-	)
+	assert all(v == tag_slug or v in curr_aliases_slugs for v in payload.unalias_slugs)
 
 	assert all(
-		[
-			v == tag.slug or v in curr_aliases_slugs
-			for v in payload.lang_prefs.values()
-			if v is not None
-		]
+		v == tag.slug or v in curr_aliases_slugs
+		for v in payload.lang_prefs.values()
+		if v is not None
 	)
 
 	# update display names
@@ -538,7 +535,6 @@ def tag_alias_control(
 
 	# lang prefs
 	for lang, slug_val in payload.lang_prefs.items():
-		lang = lang
 		assert lang != 0
 		if slug_val:
 			tags_to_clear = list(tag.aliases.exclude(slug=slug_val))
@@ -593,6 +589,7 @@ def update(
 	tag = get_object_or_404(
 		TagWork.objects.select_for_update(of=('self',)), slug=tag_slug
 	)
+	original_category = tag.category
 	if (
 		tag.category == WorkTagCategory.SONG
 		and payload.category != WorkTagCategory.SONG
@@ -613,10 +610,13 @@ def update(
 		except MediaSong.DoesNotExist:
 			tag.category = WorkTagCategory.SONG
 			song = MediaSong.objects.create(work_tag=tag, **song_payload.dict())
-	# If category changed from source to creator or media, mark all instances with used_as_source
-	if tag.category == WorkTagCategory.SOURCE and payload.category in (
-		WorkTagCategory.CREATOR,
-		WorkTagCategory.MEDIA,
+	# If category changed from source to a sampleable category, preserve the
+	# existing entries as a source by marking all instances used_as_source.
+	# Compare against the original category since the song branch above may
+	# have already reassigned tag.category in memory.
+	if (
+		original_category == WorkTagCategory.SOURCE
+		and payload.category in WorkTagCategory.sampleable()
 	):
 		TagWorkInstance.objects.filter(work_tag=tag).update(used_as_source=True)
 
@@ -635,10 +635,9 @@ def update(
 		TagWorkMediaConnection.objects.filter(tag=tag).delete()
 		tag.set_media_type([])
 
-	if payload.category == WorkTagCategory.MEDIA:
-		if payload.media_type:
-			tag.category = payload.category
-			tag.set_media_type(payload.media_type)
+	if payload.category == WorkTagCategory.MEDIA and payload.media_type:
+		tag.category = payload.category
+		tag.set_media_type(payload.media_type)
 
 	tag.deprecated = payload.deprecated
 	tag.category = payload.category
@@ -662,8 +661,6 @@ def update(
 		tag.childhood.update(primary=False)
 		if payload.primary is not None:
 			tag.childhood.filter(parent=ps[payload.primary]).update(primary=True)
-
-	return
 
 
 class TagWorkConnectionSchema(ConnectionSchema):
@@ -696,8 +693,8 @@ def query_parser(param_arg: str, param_match=None):
 			parse = parse_qs(urlparse(link).query)[param_arg][0]
 			if param_match is None or param_match(parse):
 				return parse
-		except Exception:
-			pass
+		except KeyError, IndexError, ValueError:
+			return None
 
 	return match
 
@@ -1127,7 +1124,7 @@ def song_tag_search(
 def song_tags(
 	request: HttpRequest,
 	song_id: OtodbID,
-	tags: list[Annotated[str, AfterValidator(canonicalize_tag)]],
+	tags: list[str],
 ):
 	song = get_object_or_404(MediaSong.objects, id=song_id)
 	ids = []
@@ -1137,11 +1134,10 @@ def song_tags(
 			if tag.aliased_to:
 				tag = tag.aliased_to
 		except TagSong.DoesNotExist:
-			tag = TagSong.objects.create(name=t)
+			tag = TagSong.objects.create(name=t.replace('_', ' '))
 		ids.append(tag.id)
 		TagSongInstance.objects.update_or_create(song=song, song_tag=tag)
 	song.tags.remove(*song.tags.exclude(id__in=ids))
-	return
 
 
 @tag_router.get('song_tag', response=FatTagSongSchema)
@@ -1180,7 +1176,6 @@ def update_song_tag(request: HttpRequest, tag_slug: str, payload: SongTagInSchem
 	else:
 		tag.parent = None
 	tag.save()
-	return
 
 
 @tag_router.get('songs', response=list[SongSchema])

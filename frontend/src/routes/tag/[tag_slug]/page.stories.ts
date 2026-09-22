@@ -5,7 +5,6 @@ import type { ComponentProps } from 'svelte';
 import {
 	Levels,
 	SongConnectionTypes,
-	SongRelationTypes,
 	Status,
 	TagWorkConnectionTypes,
 	WorkTagCategory,
@@ -118,7 +117,6 @@ const baseData = {
 	links,
 	song_links: null,
 	tag: mediaTag,
-	song_relations: null,
 	display_name: mediaTag.name,
 	head: {
 		title: mediaTag.name,
@@ -134,11 +132,10 @@ const baseData = {
 	aliases: [] as (typeof aliasTag)[],
 	primary_parent: null as string | null,
 	connections: [[], []] as Connections,
-	song_connections: null,
 	works: { items: sampleWorks, count: sampleWorks.length },
 	comments: sampleComments,
 	batch_size: 20,
-	similar: Promise.resolve([])
+	similar: []
 };
 
 const meta = {
@@ -204,27 +201,6 @@ export const SongTag: Story = {
 					{ name: 'Example Song Tag', url: '/tag/example-song-tag' }
 				]
 			},
-			song_relations: [
-				[{ A_id: '100', B_id: '200', relation: SongRelationTypes.Remix }],
-				[
-					{
-						id: '100',
-						work_tag: '10',
-						title: 'Example Song',
-						bpm: 128,
-						variable_bpm: false,
-						author: 'Example Author'
-					},
-					{
-						id: '200',
-						work_tag: '20',
-						title: 'Original Song',
-						bpm: 120,
-						variable_bpm: false,
-						author: 'Original Author'
-					}
-				]
-			],
 			song_connections: [
 				{ site: SongConnectionTypes.VGMdb, content_id: '1234', dead: false },
 				{ site: SongConnectionTypes.VocaDB, content_id: 'S5678', dead: false }

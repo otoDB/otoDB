@@ -32,3 +32,6 @@ src/lib/paraglide
 # Storybook
 *storybook.log
 storybook-static
+
+# MSW (regenerated via `bunx msw init static --save`)
+static/mockServiceWorker.js

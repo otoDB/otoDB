@@ -5,7 +5,7 @@
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
 	import WikiEditor from '$lib/WikiEditor.svelte';
-	import WorkThumbnail from '$lib/WorkThumbnail.svelte';
+	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import client from '$lib/api';
 	import { dirtyClick, dirtyEnhance } from '$lib/dirty';
 	import { enumValues, PlatformNames, RatingNames, WorkOriginNames } from '$lib/enums';

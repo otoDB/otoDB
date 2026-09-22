@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 
 from django.conf import settings
@@ -18,6 +18,7 @@ from otodb.account.models import Account
 from otodb.discord import discord_comment
 from otodb.models import CommentMeta, Notification, RevisionChange, Subscription
 from otodb.models.enums import ErrorCode
+from otodb.tasks import fire_and_forget
 
 from .common import (
 	ApiError,
@@ -140,8 +141,12 @@ def post(
 	)
 
 	transaction.on_commit(
-		lambda: discord_comment.enqueue(
-			comment.pk, payload.model, payload.pk, request.user.username
+		lambda: fire_and_forget(
+			discord_comment,
+			comment.pk,
+			payload.model,
+			payload.pk,
+			request.user.username,
 		)
 	)
 
@@ -187,7 +192,7 @@ def edit(request: HttpRequest, payload: CommentEditSchema):
 		except CommentMeta.DoesNotExist:
 			pass
 		if (
-			datetime.now(tz=timezone.utc) - comment.submit_date
+			datetime.now(tz=UTC) - comment.submit_date
 			> settings.OTODB_COMMENT_EDIT_WINDOW
 		):
 			raise HttpError(403, 'Edit window has passed')
@@ -196,7 +201,7 @@ def edit(request: HttpRequest, payload: CommentEditSchema):
 	CommentMeta.objects.update_or_create(
 		comment=comment,
 		defaults={
-			'edited_at': datetime.now(tz=timezone.utc),
+			'edited_at': datetime.now(tz=UTC),
 			'edited_by': request.user,
 		},
 	)
@@ -226,7 +231,9 @@ def recent(request: HttpRequest):
 								output_field=models.BigIntegerField(),
 							),
 							target_column='slug',
-						).values('target_value')[:1]
+						)
+						.order_by('-id')
+						.values('target_value')[:1]
 					),
 				),
 				When(

@@ -6,42 +6,6 @@
     "description": ""
   },
   "paths": {
-    "/api/stats": {
-      "get": {
-        "operationId": "otodb_api_statistics",
-        "summary": "Statistics",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "maxItems": 4,
-                  "minItems": 4,
-                  "prefixItems": [
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "integer"
-                    }
-                  ],
-                  "title": "Response",
-                  "type": "array"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/auth/csrf": {
       "get": {
         "operationId": "otodb_api_auth_csrf",
@@ -1710,10 +1674,10 @@
         "description": "List sources with pagination, filterable by user, binding, and pending status."
       }
     },
-    "/api/profile/profile": {
+    "/api/user/user": {
       "get": {
-        "operationId": "otodb_api_profile_profile",
-        "summary": "Profile",
+        "operationId": "otodb_api_user_user",
+        "summary": "User",
         "parameters": [
           {
             "in": "query",
@@ -1739,9 +1703,9 @@
         }
       }
     },
-    "/api/profile/search": {
+    "/api/user/search": {
       "get": {
-        "operationId": "otodb_api_profile_search",
+        "operationId": "otodb_api_user_search",
         "summary": "Search",
         "parameters": [
           {
@@ -1840,9 +1804,9 @@
         }
       }
     },
-    "/api/profile/lists": {
+    "/api/user/lists": {
       "get": {
-        "operationId": "otodb_api_profile_lists",
+        "operationId": "otodb_api_user_lists",
         "summary": "Lists",
         "parameters": [
           {
@@ -1873,9 +1837,9 @@
         }
       }
     },
-    "/api/profile/connection": {
+    "/api/user/connection": {
       "get": {
-        "operationId": "otodb_api_profile_connection",
+        "operationId": "otodb_api_user_connection",
         "summary": "Connection",
         "parameters": [
           {
@@ -1906,7 +1870,7 @@
         }
       },
       "put": {
-        "operationId": "otodb_api_profile_edit_connections",
+        "operationId": "otodb_api_user_edit_connections",
         "summary": "Edit Connections",
         "parameters": [
           {
@@ -1931,9 +1895,9 @@
         ]
       }
     },
-    "/api/profile/work_in_my_lists": {
+    "/api/user/work_in_my_lists": {
       "get": {
-        "operationId": "otodb_api_profile_work_in_lists",
+        "operationId": "otodb_api_user_work_in_lists",
         "summary": "Work In Lists",
         "parameters": [
           {
@@ -1979,9 +1943,9 @@
         ]
       }
     },
-    "/api/profile/submissions": {
+    "/api/user/submissions": {
       "get": {
-        "operationId": "otodb_api_profile_submissions",
+        "operationId": "otodb_api_user_submissions",
         "summary": "Submissions",
         "parameters": [
           {
@@ -2114,9 +2078,9 @@
         }
       }
     },
-    "/api/profile/prefs": {
+    "/api/user/prefs": {
       "post": {
-        "operationId": "otodb_api_profile_set_prefs",
+        "operationId": "otodb_api_user_set_prefs",
         "summary": "Set Prefs",
         "parameters": [],
         "responses": {
@@ -2141,9 +2105,9 @@
         ]
       }
     },
-    "/api/profile/notifications": {
+    "/api/user/notifications": {
       "get": {
-        "operationId": "otodb_api_profile_notifications",
+        "operationId": "otodb_api_user_notifications",
         "summary": "Notifications",
         "parameters": [
           {
@@ -2205,9 +2169,9 @@
         ]
       }
     },
-    "/api/profile/notification": {
+    "/api/user/notification": {
       "put": {
-        "operationId": "otodb_api_profile_read_notif",
+        "operationId": "otodb_api_user_read_notif",
         "summary": "Read Notif",
         "parameters": [
           {
@@ -2232,7 +2196,7 @@
         ]
       },
       "delete": {
-        "operationId": "otodb_api_profile_del_notif",
+        "operationId": "otodb_api_user_del_notif",
         "summary": "Del Notif",
         "parameters": [
           {
@@ -5877,6 +5841,82 @@
           }
         }
       }
+    },
+    "/api/stats": {
+      "get": {
+        "summary": "Statistics",
+        "operationId": "ApiStatsStatistics",
+        "responses": {
+          "200": {
+            "description": "Request fulfilled, document follows",
+            "headers": {
+              "cache-control": {
+                "schema": {
+                  "type": "string"
+                },
+                "required": false,
+                "deprecated": false
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/api/work/queue_stats": {
+      "get": {
+        "summary": "ModQueueStats",
+        "operationId": "ApiWorkQueueStatsModQueueStats",
+        "responses": {
+          "200": {
+            "description": "Request fulfilled, document follows",
+            "headers": {},
+            "content": {
+              "application/json": {
+                "schema": {
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
     }
   },
   "components": {
@@ -7104,9 +7144,20 @@
       },
       "TagWorkInstanceInSchema": {
         "properties": {
-          "nameslug": {
-            "title": "Nameslug",
+          "slug": {
+            "title": "Slug",
             "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           },
           "sample": {
             "anyOf": [
@@ -7137,7 +7188,7 @@
           }
         },
         "required": [
-          "nameslug"
+          "slug"
         ],
         "title": "TagWorkInstanceInSchema",
         "type": "object"
@@ -10348,8 +10399,15 @@
             "type": "string"
           },
           "user": {
-            "title": "User",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User"
           },
           "index": {
             "anyOf": [
@@ -10395,7 +10453,6 @@
         "required": [
           "id",
           "date",
-          "user",
           "n_ent"
         ],
         "title": "RevisionEntitySummarySchema",
@@ -10413,8 +10470,15 @@
             "type": "string"
           },
           "user": {
-            "title": "User",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User"
           },
           "index": {
             "anyOf": [
@@ -10445,8 +10509,7 @@
         },
         "required": [
           "id",
-          "date",
-          "user"
+          "date"
         ],
         "title": "RevisionSchema",
         "type": "object"

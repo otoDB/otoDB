@@ -30,7 +30,8 @@
 			tags
 				.filter((t) => cache[t])
 				.map((t) => ({
-					nameslug: cache[t].slug,
+					slug: cache[t].slug,
+					name: cache[t].name,
 					sample: cache[t].sample,
 					roles: cache[t].creator_roles
 				}))

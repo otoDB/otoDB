@@ -1,3 +1,4 @@
+import asyncio
 import json
 import random
 import string
@@ -55,13 +56,13 @@ def base_video_info():
 def video_info_mock(base_video_info):
 	"""Create a mock for video_info with fuzzed data."""
 	fuzzed = fuzz_video_infos(base_video_info)
-	with patch('otodb.models.work_source.video_info') as mock:
+	with patch('otodb.api.source.video_info') as mock:
 		mock.return_value = fuzzed
 		yield mock, fuzzed
 
 
 @pytest.fixture
-def add_source(source_client):
+def add_source(async_source_client):
 	"""Helper to create a source via the source API."""
 
 	def _add(
@@ -76,9 +77,11 @@ def add_source(source_client):
 		if work_id is not None:
 			query_params['work_id'] = work_id
 
-		return source_client.post(
-			'/source?' + urlencode(query_params),
-			user=user,
+		return asyncio.run(
+			async_source_client.post(
+				'/source?' + urlencode(query_params),
+				user=user,
+			)
 		)
 
 	return _add

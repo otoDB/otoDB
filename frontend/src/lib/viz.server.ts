@@ -1,7 +1,7 @@
 import { SongRelationTypes, WorkRelationTypes, type components } from '$lib/schema';
 import { getDisplayText } from '$lib/ui';
 import * as Viz from '@viz-js/viz';
-import { enumValues, SongRelationNames, WorkRelationNames } from '$lib/enums';
+import { SongRelationNames, WorkRelationNames } from '$lib/enums';
 import { m } from './paraglide/messages.js';
 type Work = Omit<components['schemas']['SlimWorkSchema'], 'status'>;
 type Song = components['schemas']['SlimSongSchema'];
@@ -130,11 +130,7 @@ export const prepare_work_graph = (
 			const name = image_url(ob.thumbnail);
 			return name ? [{ name, width: 160, height: 120 }] : [];
 		}),
-		Math.max(
-			...relation_BFS(objects, relations, id, enumValues(WorkRelationTypes))[0].map(
-				(n) => n.distance
-			)
-		),
+		Math.max(...relation_BFS(objects, relations, id, allowed_types)[0].map((n) => n.distance)),
 		auto_dir(links)
 	];
 };
@@ -163,11 +159,7 @@ export const prepare_song_graph = (
 			}),
 			...ext.map(gv_more_edge)
 		],
-		Math.max(
-			...relation_BFS(objects, relations, id, enumValues(SongRelationTypes))[0].map(
-				(n) => n.distance
-			)
-		)
+		Math.max(...relation_BFS(objects, relations, id, allowed_types)[0].map((n) => n.distance))
 	];
 };
 

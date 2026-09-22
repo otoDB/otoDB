@@ -54,7 +54,7 @@
 	"grand_nice_pony_belong": "곡",
 	"spry_muddy_sloth_radiate": "후속작",
 	"inclusive_just_rabbit_succeed": "리스펙트",
-	"full_gaudy_sloth_value": "합작 단품",
+	"full_gaudy_sloth_value": "단품",
 	"icy_raw_gazelle_heal": "샘플링",
 	"light_caring_deer_coax": "메들리",
 	"bold_polite_myna_delight": "리마스터",
@@ -241,7 +241,7 @@
 	"curly_many_orangutan_grip": "의 후속작입니다",
 	"sound_funny_hound_embrace": "를 리스펙트하고 있습니다",
 	"major_tense_fly_savor": "를 샘플링하고 있습니다",
-	"shy_bland_bird_harbor": "의 합작 단품입니다",
+	"shy_bland_bird_harbor": "의 단품입니다",
 	"stale_early_squirrel_prosper": "생성일",
 	"basic_upper_racoon_type": "수준",
 	"suave_royal_jurgen_shine": "사용됨",
@@ -318,5 +318,6 @@
 	"bold_keen_otter_vault": "이 변경 이전으로 롤백",
 	"tame_swift_heron_plead": "{username}님의 모든 변경을 {label} 이전으로 롤백하시겠습니까?",
 	"hazy_calm_otter_dream": "무지 다크",
-	"misty_plain_finch_glow": "무지 라이트"
+	"misty_plain_finch_glow": "무지 라이트",
+	"minor_inner_lynx_adapt": "작품 심사"
 }

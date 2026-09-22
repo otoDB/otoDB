@@ -54,7 +54,7 @@
 	"grand_nice_pony_belong": "曲",
 	"spry_muddy_sloth_radiate": "续作",
 	"inclusive_just_rabbit_succeed": "致敬",
-	"full_gaudy_sloth_value": "合作单品",
+	"full_gaudy_sloth_value": "单品",
 	"icy_raw_gazelle_heal": "采样",
 	"light_caring_deer_coax": "组曲",
 	"bold_polite_myna_delight": "Remaster",
@@ -242,7 +242,7 @@
 	"curly_many_orangutan_grip": "接续了",
 	"sound_funny_hound_embrace": "致敬了",
 	"major_tense_fly_savor": "采样了",
-	"shy_bland_bird_harbor": "作为合作单品出现在",
+	"shy_bland_bird_harbor": "作为单品出现在",
 	"stale_early_squirrel_prosper": "创建于",
 	"basic_upper_racoon_type": "等级",
 	"suave_royal_jurgen_shine": "使用者",
@@ -318,6 +318,7 @@
 	"lucky_brave_marten_glide": "回滚到此日期之前",
 	"bold_keen_otter_vault": "回滚到此更改之前",
 	"tame_swift_heron_plead": "将 {username} 的所有更改回滚到 {label} 之前？",
-	"hazy_calm_otter_dream": "素色深色",
-	"misty_plain_finch_glow": "素色浅色"
+	"hazy_calm_otter_dream": "深色",
+	"misty_plain_finch_glow": "浅色",
+	"minor_inner_lynx_adapt": "作品审核"
 }

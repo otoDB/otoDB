@@ -35,9 +35,5 @@ export const profileConnectionMap: Record<
 	[ProfileConnectionTypes.otomad_site]: {
 		name: 'otomad.site',
 		linkFn: (id: string) => `https://otomad.site/@${id}`
-	},
-	[ProfileConnectionTypes.Misskey]: {
-		name: 'Misskey',
-		linkFn: (id: string) => `https://misskey.io/@${id}`
 	}
 };

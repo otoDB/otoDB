@@ -119,9 +119,13 @@ def probe_media(ie, url: str) -> tuple[int | None, int | None, float | None]:
 	return int_or_none(video.get('width')), int_or_none(video.get('height')), duration
 
 
-class MisskeyIE(InfoExtractor):
-	IE_NAME = 'misskey'
-	_VALID_URL = r'https?://(?P<host>misskey\.io)/notes/(?P<id>\w+)'
+class MisskeyBaseIE(InfoExtractor):
+	"""
+	Shared extractor for Misskey instances.
+	Subclasses set _VALID_URL with a `host` and an `id` group.
+	"""
+
+	_VALID_URL = False
 
 	def _real_extract(self, url):
 		host, note_id = self._match_valid_url(url).group('host', 'id')
@@ -154,13 +158,11 @@ class MisskeyIE(InfoExtractor):
 		description = '\n\n'.join(
 			part for part in (note.get('cw'), note.get('text')) if part
 		)
-		tags = (note.get('tags') or []) + re.findall(r'#(\w+)', description)
-
 		return {
 			'id': note_id,
 			'title': None,
 			'description': description,
-			'tags': tags,
+			'tags': note.get('tags') or [],
 			'timestamp': parse_iso8601(note.get('createdAt')),
 			'uploader_id': user['username'],
 			'uploader': user.get('name'),
@@ -182,6 +184,6 @@ class MisskeyIE(InfoExtractor):
 		}
 
 
-class OtomadSiteIE(MisskeyIE):
+class OtomadSiteIE(MisskeyBaseIE):
 	IE_NAME = 'otomad.site'
 	_VALID_URL = r'https?://(?P<host>otomad\.site)/notes/(?P<id>\w+)'

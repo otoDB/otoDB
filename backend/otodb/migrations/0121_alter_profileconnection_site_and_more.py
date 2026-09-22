@@ -22,7 +22,6 @@ class Migration(migrations.Migration):
 					(5, 'Bluesky'),
 					(6, 'Soundcloud'),
 					(7, 'otomad.site'),
-					(8, 'Misskey'),
 				]
 			),
 		),
@@ -39,7 +38,6 @@ class Migration(migrations.Migration):
 					(5, 'Bluesky'),
 					(6, 'Soundcloud'),
 					(7, 'otomad.site'),
-					(8, 'Misskey'),
 				]
 			),
 		),
@@ -55,7 +53,6 @@ class Migration(migrations.Migration):
 					(5, 'Twitter'),
 					(6, 'AcFun'),
 					(7, 'otomad.site'),
-					(8, 'Misskey'),
 				]
 			),
 		),

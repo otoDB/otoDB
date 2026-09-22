@@ -12,7 +12,6 @@
 	import faviconKitsu from '$lib/connection_favicon/Kitsu.png';
 	import faviconKnowYourMeme from '$lib/connection_favicon/Know Your Meme.png';
 	import faviconLetterboxd from '$lib/connection_favicon/Letterboxd.png';
-	import faviconMisskey from '$lib/connection_favicon/Misskey.png';
 	import faviconMusicBrainz from '$lib/connection_favicon/MusicBrainz.png';
 	import faviconMyAnimeList from '$lib/connection_favicon/MyAnimeList.png';
 	import faviconNNDMedleyWiki from '$lib/connection_favicon/NND Medley Wiki.png';
@@ -63,7 +62,6 @@
 		'Kitsu': faviconKitsu,
 		'Know Your Meme': faviconKnowYourMeme,
 		'Letterboxd': faviconLetterboxd,
-		'Misskey': faviconMisskey,
 		'The Mod Archive': faviconModArchive,
 		'MusicBrainz': faviconMusicBrainz,
 		'MyAnimeList': faviconMyAnimeList,

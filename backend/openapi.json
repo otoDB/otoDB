@@ -6160,8 +6160,7 @@
           4,
           5,
           6,
-          7,
-          8
+          7
         ],
         "title": "VideoPlatformPref",
         "type": "integer",
@@ -6173,8 +6172,7 @@
           "SoundCloud",
           "Twitter",
           "AcFun",
-          "otomad.site",
-          "Misskey"
+          "otomad.site"
         ]
       },
       "RegisterRequestSchema": {
@@ -7223,8 +7221,7 @@
           4,
           5,
           6,
-          7,
-          8
+          7
         ],
         "title": "Platform",
         "type": "integer",
@@ -7235,8 +7232,7 @@
           "SoundCloud",
           "Twitter",
           "AcFun",
-          "otomad.site",
-          "Misskey"
+          "otomad.site"
         ]
       },
       "WorkOrigin": {
@@ -7789,8 +7785,7 @@
           4,
           5,
           6,
-          7,
-          8
+          7
         ],
         "title": "ProfileConnectionTypes",
         "type": "integer",
@@ -7802,8 +7797,7 @@
           "Twitter",
           "Bluesky",
           "Soundcloud",
-          "otomad.site",
-          "Misskey"
+          "otomad.site"
         ]
       },
       "UserConnectionSchema": {

@@ -498,10 +498,6 @@ profile_connection_parsers = [
 		ProfileConnectionTypes.OTOMAD_SITE,
 		re_to_parser(re.compile(r'https?:\/\/otomad\.site\/@([A-Za-z0-9_]+)\/?')),
 	),
-	(
-		ProfileConnectionTypes.MISSKEY,
-		re_to_parser(re.compile(r'https?:\/\/misskey\.io\/@([A-Za-z0-9_]+)\/?')),
-	),
 	(ProfileConnectionTypes.WEBSITE, re_to_parser(re.compile(r'(https?://.+)'))),
 ]
 

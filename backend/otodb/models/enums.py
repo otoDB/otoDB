@@ -68,7 +68,6 @@ class Platform(OtodbIntegerEnum):
 	TWITTER = 5, 'Twitter'
 	ACFUN = 6, 'AcFun'
 	OTOMAD_SITE = 7, 'otomad.site'
-	MISSKEY = 8, 'Misskey'
 
 	@staticmethod
 	def from_str(s):
@@ -104,7 +103,6 @@ class ProfileConnectionTypes(OtodbIntegerEnum):
 	BLUESKY = 5, 'Bluesky'
 	SOUNDCLOUD = 6, 'Soundcloud'
 	OTOMAD_SITE = 7, 'otomad.site'
-	MISSKEY = 8, 'Misskey'
 
 
 class SongConnectionTypes(OtodbIntegerEnum):

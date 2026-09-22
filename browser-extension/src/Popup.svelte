@@ -22,8 +22,7 @@
                   | 'niconico'
                   | 'twitter'
                   | 'acfun'
-                  | 'otomad.site'
-                  | 'misskey';
+                  | 'otomad.site';
               id: string;
           }
         | { url: string };
@@ -47,9 +46,6 @@
         } else if (url.hostname.endsWith('otomad.site')) {
             const match = url.href.match(/\/notes\/(\w+)/);
             if (match) return { platform: 'otomad.site', id: match[1] };
-        } else if (url.hostname.endsWith('misskey.io')) {
-            const match = url.href.match(/\/notes\/(\w+)/);
-            if (match) return { platform: 'misskey', id: match[1] };
         } else if (url.hostname.endsWith('soundcloud.com')) {
             return { url: `${url.protocol}//${url.hostname}${url.pathname}` };
         }

@@ -134,8 +134,10 @@ export const load: LayoutServerLoad = async ({ params, fetch, locals, url }) => 
 		],
 		...data,
 		head: {
-			title: headTitle,
-			description: headDescription,
+			// TODO: Richer title/description disabled for now; see #878
+			// title: headTitle,
+			// description: headDescription,
+			title: getDisplayText(data.title),
 			image: data.rating <= 1 ? data.thumbnail : null,
 			isExplicit: data.rating === Rating.Explicit,
 			breadcrumbs: [

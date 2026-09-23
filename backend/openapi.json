@@ -4674,7 +4674,18 @@
       "get": {
         "operationId": "otodb_api_thread_categories",
         "summary": "Categories",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "is_open",
+            "schema": {
+              "default": true,
+              "title": "Is Open",
+              "type": "boolean"
+            },
+            "required": false
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",

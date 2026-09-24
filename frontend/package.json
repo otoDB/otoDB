@@ -64,7 +64,7 @@
 		"vitest": "^4.1.10"
 	},
 	"dependencies": {
-		"@inlang/paraglide-js": "^2.15.1",
+		"@inlang/paraglide-js": "2.25.4",
 		"@inlang/paraglide-js-svelte": "^1.0.1",
 		"@sentry/sveltekit": "^10.50.0",
 		"@thisux/sveltednd": "^0.0.20",

@@ -12,7 +12,6 @@ from sqlalchemy.orm import DeclarativeBase
 
 from otodb.tasks import prune_expired
 from otodb_next.middleware import (
-	AnonymousEdgeCacheMiddleware,
 	CrossOriginProtectionMiddleware,
 	SessionAuthMiddleware,
 )
@@ -90,11 +89,7 @@ api = Router(path='/api', route_handlers=[statistics, work_router])
 app = Litestar(
 	route_handlers=[api],
 	cors_config=cors_config,
-	middleware=[
-		AnonymousEdgeCacheMiddleware(),
-		CrossOriginProtectionMiddleware(),
-		SessionAuthMiddleware,
-	],
+	middleware=[CrossOriginProtectionMiddleware(), SessionAuthMiddleware],
 	openapi_config=None
 	if settings.OTODB_PROTECT_API_DOCS
 	else OpenAPIConfig(title='otoDB', version='1'),

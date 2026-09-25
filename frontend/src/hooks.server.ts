@@ -58,22 +58,6 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-const handleAnonymousCache: Handle = async ({ event, resolve }) => {
-	const response = await resolve(event);
-	if (
-		(event.request.method === 'GET' || event.request.method === 'HEAD') &&
-		!event.locals.user &&
-		response.status === 200 &&
-		!response.headers.has('set-cookie') &&
-		!response.headers.has('cache-control')
-	) {
-		response.headers.set('Cache-Control', 'no-cache');
-		response.headers.set('CDN-Cache-Control', 'public, max-age=60, stale-while-revalidate=600');
-		response.headers.append('Vary', 'Accept-Language');
-	}
-	return response;
-};
-
 const handleContentLength: Handle = async ({ event, resolve }) =>
 	resolve(event, {
 		filterSerializedResponseHeaders(name) {
@@ -85,7 +69,6 @@ const handleContentLength: Handle = async ({ event, resolve }) =>
 export const handle: Handle = sequence(
 	Sentry.sentryHandle(),
 	handleAuth,
-	handleAnonymousCache,
 	handleContentLength,
 	handleParaglide,
 	handleThemeAttribute

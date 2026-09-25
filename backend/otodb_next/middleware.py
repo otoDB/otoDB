@@ -1,5 +1,5 @@
-"""Middleware for the Litestar app: cross-origin (CSRF) protection,
-Django-session authentication, and edge caching of anonymous responses.
+"""Middleware for the Litestar app: cross-origin (CSRF) protection and
+Django-session authentication.
 
 CSRF uses the Sec-Fetch-Site + Origin header approach described in Filippo
 Valsorda's article (https://words.filippo.io/csrf/) and implemented in Go
@@ -27,11 +27,11 @@ from sqlalchemy import text
 
 if TYPE_CHECKING:
 	from litestar.connection import ASGIConnection
-	from litestar.datastructures import State
-	from litestar.handlers import BaseRouteHandler
-	from litestar.types import ASGIApp, Message, Receive, Scope, Send
+	from litestar.types import ASGIApp, Receive, Scope, Send
 
 logger = logging.getLogger(__name__)
+
+SAFE_METHODS = frozenset({'GET', 'HEAD', 'OPTIONS', 'TRACE'})
 
 
 class CrossOriginProtectionMiddleware(ASGIMiddleware):
@@ -57,12 +57,8 @@ class CrossOriginProtectionMiddleware(ASGIMiddleware):
 	async def handle(
 		self, scope: Scope, receive: Receive, send: Send, next_app: ASGIApp
 	) -> None:
-		if scope['type'] != ScopeType.HTTP or scope['method'] in (
-			'GET',
-			'HEAD',
-			'OPTIONS',
-			'TRACE',
-		):
+		# scopes already narrows to http; the type check re-narrows for pyright
+		if scope['type'] != 'http' or scope['method'] in SAFE_METHODS:
 			await next_app(scope, receive, send)
 			return
 		reason = self._check(scope)
@@ -114,40 +110,6 @@ class CrossOriginProtectionMiddleware(ASGIMiddleware):
 		return f'Origin {origin!r} does not match Host {host!r} or trusted origins'
 
 
-class AnonymousEdgeCacheMiddleware(ASGIMiddleware):
-	scopes = (ScopeType.HTTP,)
-
-	async def handle(
-		self, scope: Scope, receive: Receive, send: Send, next_app: ASGIApp
-	) -> None:
-		if (
-			scope['type'] != ScopeType.HTTP
-			or scope['method'] not in ('GET', 'HEAD')
-			or any(
-				name == b'cookie' and b'sessionid=' in value
-				for name, value in scope['headers']
-			)
-		):
-			await next_app(scope, receive, send)
-			return
-
-		async def send_wrapper(message: Message) -> None:
-			if message['type'] == 'http.response.start' and message['status'] == 200:
-				names = {name.lower() for name, _ in message['headers']}
-				if b'cache-control' not in names and b'set-cookie' not in names:
-					message['headers'] = [
-						*message['headers'],
-						(b'cache-control', b'no-cache'),
-						(
-							b'cdn-cache-control',
-							b'public, max-age=60, stale-while-revalidate=600',
-						),
-					]
-			await send(message)
-
-		await next_app(scope, receive, send_wrapper)
-
-
 _SESSION_QUERY = text("""
 	SELECT session_data, expire_date
 	FROM django_session
@@ -183,7 +145,7 @@ class SessionAuthMiddleware(AbstractAuthenticationMiddleware):
 	"""
 
 	async def authenticate_request(
-		self, connection: ASGIConnection[BaseRouteHandler, User, str, State]
+		self, connection: ASGIConnection
 	) -> AuthenticationResult:
 		# Django is only needed for its session/signing primitives, which read
 		# settings.SECRET_KEY (and fallbacks) themselves.

@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import client from '$lib/api';
 	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import { PlatformNames, WorkOriginNames } from '$lib/enums';
 	import { isSOV, isSVO } from '$lib/enums/language.js';
 	import ExternalEmbed from '$lib/ExternalEmbed/ExternalEmbed.svelte';
+	import Icon from '$lib/Icon/Icon.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
 	import Pager from '$lib/Pager.svelte';
 	import { m } from '$lib/paraglide/messages.js';
@@ -35,6 +37,20 @@
 				});
 		}
 	});
+
+	const prev = async () => {
+		if (current === 0 && data.page > 1) {
+			await goto(`?page=${data.page - 1}`);
+			current = data.batch_size - 1;
+		} else if (current > 0) current -= 1;
+	};
+	const next = async () => {
+		if (current + 1 < data.entries.items.length) current += 1;
+		else if (current === data.batch_size - 1 && data.entries.count > data.batch_size * data.page) {
+			await goto(`?page=${data.page + 1}`);
+			current = 0;
+		}
+	};
 </script>
 
 <Section title={data.list.name} type={m.stale_loose_squid_cut()} menuLinks={data.links}>
@@ -71,6 +87,19 @@
 				>
 			{/each}
 		</div>
+		{#if data.entries.count > 1}
+			<button class="h-10 w-10" onclick={prev} disabled={current === 0 && data.page === 1}
+				><Icon key="player-backward" /></button
+			>
+			<button
+				class="h-10 w-10"
+				onclick={next}
+				disabled={current + 1 === data.entries.items.length &&
+					(data.entries.items.length < data.batch_size ||
+						data.entries.count === data.batch_size * data.page)}
+				><Icon key="player-forward" /></button
+			>
+		{/if}
 	</Section>
 {/if}
 <Section title={m.bald_clear_marlin_grasp()}>

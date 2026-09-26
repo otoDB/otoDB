@@ -102,6 +102,11 @@ export const AcFun: Story = {
 	args: { src: source(Platform.AcFun, 'ac1234567') }
 };
 
+/** A Bluesky post. */
+export const Bluesky: Story = {
+	args: { src: source(Platform.Bluesky, 'did:plc:m5hkxo27ka53d7xnadvbmj73/3mthzmkc4jc2l') }
+};
+
 /** Autoplay enabled, the default the component ships with. */
 export const Autoplay: Story = {
 	args: { autoplay: true }

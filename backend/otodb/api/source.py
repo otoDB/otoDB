@@ -236,6 +236,12 @@ def resolve_creator_tags(src: WorkSource, info: dict) -> list:
 				| Q(content_id__endswith='/' + info['channel_id'])
 				| Q(content_id__endswith='user_id=' + info['channel_id'])
 			)
+		elif src.platform == Platform.BLUESKY:
+			q = q.filter(
+				content_id__in=[
+					i for i in (info['uploader_id'], info.get('channel_id')) if i
+				]
+			)
 		elif src.platform == Platform.SOUNDCLOUD:
 			q = q.filter(content_id=info['url'].split('/')[3])
 		else:

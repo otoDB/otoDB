@@ -67,6 +67,7 @@ class Platform(OtodbIntegerEnum):
 	SOUNDCLOUD = 4, 'SoundCloud'
 	TWITTER = 5, 'Twitter'
 	ACFUN = 6, 'AcFun'
+	VIMEO = 7, 'Vimeo'
 
 	@staticmethod
 	def from_str(s):

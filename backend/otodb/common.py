@@ -22,7 +22,7 @@ from yt_dlp.extractor.soundcloud import SoundcloudIE, SoundcloudPlaylistIE
 from yt_dlp.extractor.youtube import YoutubeIE, YoutubeTabIE
 from yt_dlp.utils import DownloadError
 
-from otodb.ytdlp_custom import NiconicoIECustom, TwitterIECustom
+from otodb.ytdlp_custom import NiconicoIECustom, OtomadSiteIE, TwitterIECustom
 
 from .models.enums import MimeType, Platform
 
@@ -105,6 +105,7 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		SoundcloudIE,
 		TwitterIECustom,
 		AcFunVideoIE,
+		OtomadSiteIE,
 	):
 		# Register the instance, not the class
 		ydl.add_info_extractor(e())
@@ -119,7 +120,9 @@ platform_extractors: list[tuple[Platform, type[InfoExtractor]]] = [
 	(Platform.SOUNDCLOUD, SoundcloudIE),
 	(Platform.TWITTER, TwitterIECustom),
 	(Platform.ACFUN, AcFunVideoIE),
+	(Platform.OTOMAD_SITE, OtomadSiteIE),
 ]  # type: ignore
+
 make_video_url = {
 	Platform.YOUTUBE: lambda s, uid=None: f'https://youtube.com/watch?v={s}',
 	Platform.NICONICO: lambda s, uid=None: f'https://nicovideo.jp/watch/{s}',
@@ -136,6 +139,7 @@ make_video_url = {
 	Platform.ACFUN: lambda s, uid=None: (
 		f'https://www.acfun.cn/v/{s if s.startswith("ac") else "ac" + s}'
 	),
+	Platform.OTOMAD_SITE: lambda s, uid=None: f'https://otomad.site/notes/{s}',
 }
 
 niconico_meta_re = re.compile(
@@ -287,6 +291,8 @@ def process_video_info(full_info, link=None):
 				info['title'] = None
 			case Platform.ACFUN:
 				info['id'] = 'ac' + info['id']
+			case Platform.OTOMAD_SITE:
+				info['title'] = None
 			case _:
 				return None
 
@@ -306,7 +312,11 @@ def process_video_info(full_info, link=None):
 		info['description'] = clean_description(info['description'])
 
 		# Get thumbnail mime type
-		info['thumbnail_mime'] = fetch_thumbnail_mime_type(info['thumbnail'])
+		info['thumbnail_mime'] = (
+			fetch_thumbnail_mime_type(info['thumbnail'])
+			if info.get('thumbnail')
+			else None
+		)
 
 		return {keys[key]: info[key] for key in keys if key in info}
 	except Exception:

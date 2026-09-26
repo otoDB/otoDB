@@ -38,7 +38,11 @@ const templates: Omit<Summary, 'id' | 'date'>[] = [
 		index: 1,
 		route: Route.Media_Work_Update,
 		message: '',
-		first_entity: { id: '10241', entity: HistoricalEntities.mediawork },
+		first_entity: {
+			id: '1',
+			entity: HistoricalEntities.mediawork,
+			label: '【合体】国際的男尻祭2021【糞晦日】'
+		},
 		n_ent: 1
 	},
 	{
@@ -46,7 +50,11 @@ const templates: Omit<Summary, 'id' | 'date'>[] = [
 		index: 1,
 		route: Route.Tag_Work_Edit_Connections,
 		message: '',
-		first_entity: { id: '778', entity: HistoricalEntities.tagwork },
+		first_entity: {
+			id: 'touhou_project',
+			entity: HistoricalEntities.tagwork,
+			label: 'touhou_project'
+		},
 		n_ent: 4
 	},
 	{
@@ -54,7 +62,11 @@ const templates: Omit<Summary, 'id' | 'date'>[] = [
 		index: 2,
 		route: Route.Work_Source_Create,
 		message: '',
-		first_entity: { id: '30022', entity: HistoricalEntities.worksource },
+		first_entity: {
+			id: '12345',
+			entity: HistoricalEntities.worksource,
+			label: '【Collaboration】International Wrestling Festival'
+		},
 		n_ent: 1
 	},
 	{
@@ -62,7 +74,7 @@ const templates: Omit<Summary, 'id' | 'date'>[] = [
 		index: 1,
 		route: Route.Song_Tag_Alias_Control,
 		message: '',
-		first_entity: { id: '4501', entity: HistoricalEntities.tagsong },
+		first_entity: { id: 'vocaloid', entity: HistoricalEntities.tagsong, label: 'vocaloid' },
 		n_ent: 12
 	},
 	{
@@ -70,7 +82,7 @@ const templates: Omit<Summary, 'id' | 'date'>[] = [
 		index: 1,
 		route: Route.Wiki_Edit,
 		message: '',
-		first_entity: { id: '61', entity: HistoricalEntities.wikipage },
+		first_entity: { id: 'about', entity: HistoricalEntities.wikipage, label: 'about' },
 		n_ent: 1
 	},
 	{
@@ -78,7 +90,8 @@ const templates: Omit<Summary, 'id' | 'date'>[] = [
 		index: 3,
 		route: Route.Media_Work_Merge,
 		message: '',
-		first_entity: { id: '9', entity: HistoricalEntities.mediawork },
+		// An untitled work shows the [Untitled] placeholder
+		first_entity: { id: '9', entity: HistoricalEntities.mediawork, label: null },
 		n_ent: 2
 	},
 	{
@@ -86,7 +99,11 @@ const templates: Omit<Summary, 'id' | 'date'>[] = [
 		index: 1,
 		route: Route.Song_Tag_Set_Tags,
 		message: '',
-		first_entity: { id: '512', entity: HistoricalEntities.mediasong },
+		first_entity: {
+			id: '512',
+			entity: HistoricalEntities.mediasong,
+			label: 'international_wrestling_festival'
+		},
 		n_ent: 1
 	},
 	{

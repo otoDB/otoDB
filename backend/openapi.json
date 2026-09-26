@@ -10349,7 +10349,7 @@
         "title": "HistoricalEntities",
         "type": "string"
       },
-      "HistoricalEntitySchema": {
+      "HistoricalEntitySummarySchema": {
         "properties": {
           "id": {
             "title": "Id",
@@ -10357,13 +10357,24 @@
           },
           "entity": {
             "$ref": "#/components/schemas/HistoricalEntities"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
           }
         },
         "required": [
           "id",
           "entity"
         ],
-        "title": "HistoricalEntitySchema",
+        "title": "HistoricalEntitySummarySchema",
         "type": "object"
       },
       "PagedRevisionEntitySummarySchema": {
@@ -10438,7 +10449,7 @@
           "first_entity": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/HistoricalEntitySchema"
+                "$ref": "#/components/schemas/HistoricalEntitySummarySchema"
               },
               {
                 "type": "null"
@@ -10744,6 +10755,23 @@
           "row_context"
         ],
         "title": "RevisionDetailsSchema",
+        "type": "object"
+      },
+      "HistoricalEntitySchema": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "entity": {
+            "$ref": "#/components/schemas/HistoricalEntities"
+          }
+        },
+        "required": [
+          "id",
+          "entity"
+        ],
+        "title": "HistoricalEntitySchema",
         "type": "object"
       },
       "PagedRevisionSchema": {

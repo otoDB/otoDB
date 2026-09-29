@@ -22,6 +22,14 @@
 		'notifications-unread': {
 			icon: 'icon-[gravity-ui--bell-fill]',
 			label: m.free_keen_wren_exhale()
+		},
+		'player-backward': {
+			icon: 'icon-[gravity-ui--backward-step-fill]',
+			label: m.cuddly_every_stingray_relish()
+		},
+		'player-forward': {
+			icon: 'icon-[gravity-ui--forward-step-fill]',
+			label: m.whole_misty_tiger_climb()
 		}
 	} as const satisfies Record<string, { icon: string; label: string }>;
 </script>

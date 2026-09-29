@@ -40,14 +40,14 @@
 
 	const prev = async () => {
 		if (current === 0 && data.page > 1) {
-			await goto(`?page=${data.page - 1}`);
+			await goto(`?page=${data.page - 1}`, { noScroll: true, keepFocus: true });
 			current = data.batch_size - 1;
 		} else if (current > 0) current -= 1;
 	};
 	const next = async () => {
 		if (current + 1 < data.entries.items.length) current += 1;
 		else if (current === data.batch_size - 1 && data.entries.count > data.batch_size * data.page) {
-			await goto(`?page=${data.page + 1}`);
+			await goto(`?page=${data.page + 1}`, { noScroll: true, keepFocus: true });
 			current = 0;
 		}
 	};

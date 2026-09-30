@@ -153,7 +153,7 @@ def get_niconico_geoblocked(sm):
 	)
 	if r.ok and (match := niconico_meta_re.search(r.text)):
 		res = json.loads(html.unescape(match.group(1)))['data']['response']
-		return res
+		return res['$watchV4']['data']
 	return None
 
 
@@ -187,7 +187,7 @@ def process_video_info(full_info, link=None):
 
 	try:
 		# Handle niconico special case
-		if 'video' in full_info and 'tag' in full_info:
+		if 'video' in full_info and ('tags' in full_info or 'tag' in full_info):
 			# This is a niconico geoblocked response
 			if not link:
 				return None
@@ -196,22 +196,30 @@ def process_video_info(full_info, link=None):
 				if not link.startswith('http')
 				else link
 			)
-			max_res = max(
-				full_info['media']['domand']['videos'], key=lambda s: s['width']
+			# Old payloads predate Niconico's $watchV4 format, which renamed
+			# tag -> tags, media.domand -> media.contents, and moved owner into jsonLd
+			tags = full_info.get('tags') or full_info['tag']
+			videos = (
+				full_info['media'].get('contents') or full_info['media']['domand']
+			)['videos']
+			owner = (
+				full_info['owner']
+				if 'owner' in full_info
+				else full_info['metadata']['jsonLd'].get('owner')
 			)
+			thumbnail = full_info['video']['thumbnail']
+			max_res = max(videos, key=lambda s: s['width'])
 			info = {
 				'extractor': 'niconico',
 				'title': full_info['video']['title'],
 				'description': full_info['video']['description'],
-				'tags': [x['name'] for x in full_info['tag']['items']],
+				'tags': [x['name'] for x in tags['items']],
 				'width': max_res['width'],
 				'height': max_res['height'],
 				'duration': full_info['video']['duration'],
 				'webpage_url': link,
 				'id': full_info['video']['id'],
-				'thumbnail': full_info['video']['thumbnail'].get(
-					'ogp', full_info['video']['thumbnail']['url']
-				),
+				'thumbnail': thumbnail.get('ogp') or thumbnail['url'],
 				'timestamp': int(
 					mktime(
 						datetime.fromisoformat(
@@ -219,7 +227,7 @@ def process_video_info(full_info, link=None):
 						).timetuple()
 					)
 				),
-				'uploader_id': full_info['owner']['id'] if full_info['owner'] else 0,
+				'uploader_id': owner['id'] if owner else 0,
 			}
 		else:
 			# Standard yt-dlp response, deep copied to avoid mutating original

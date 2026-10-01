@@ -18,6 +18,11 @@ Each table entry:
 
 To add a tracked field/model: edit here and regenerate
 (`python -m otodb.revision_codegen > otodb/sql/revision_triggers.sql`).
+No migration needed: the triggers are reinstalled after every `migrate`.
+
+To drop a tracked column: the trigger depends on it, so the migration has to
+`DROP FUNCTION otodb_<model>_capture() CASCADE` first. The next `migrate` puts the
+new trigger back.
 """
 
 TABLES = [

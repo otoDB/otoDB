@@ -1,10 +1,9 @@
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from django.db import models
 from django.db.models import Prefetch
 from django.urls import reverse
 from django.utils.functional import cached_property
-from tagulous.models import TagField, TaggedManager
 
 from otodb.common import clean_description
 
@@ -81,12 +80,6 @@ class ActiveManager(MediaWorkManager):
 			.filter(moved_to__isnull=True)
 			.with_pending_moderation()
 		)
-
-
-# allow setting a through table on tag fields
-TagField.forbidden_fields = cast(
-	tuple, tuple(v for v in TagField.forbidden_fields if v != 'through')
-)
 
 
 class TagWorkInstance(RevisionTrackedModel):
@@ -169,7 +162,9 @@ class MediaWork(RevisionTrackedModel):
 
 	rating = models.IntegerField(choices=Rating.choices, default=Rating.GENERAL)
 
-	tags = TagField(to=TagWork, related_name='works', through=TagWorkInstance)
+	tags = models.ManyToManyField(
+		TagWork, related_name='works', through=TagWorkInstance
+	)
 
 	thumbnail_source = models.ForeignKey(
 		'WorkSource', null=True, blank=True, on_delete=models.SET_NULL
@@ -198,8 +193,8 @@ class MediaWork(RevisionTrackedModel):
 		help_text='Deprecated: Use thumbnail_source instead',
 	)
 
-	objects = TaggedManager.cast_class(MediaWorkManager())
-	active_objects = TaggedManager.cast_class(ActiveManager())
+	objects = MediaWorkManager()
+	active_objects = ActiveManager()
 
 	@property
 	def pending_flag(self) -> ModerationEvent | None:
@@ -364,7 +359,9 @@ class MediaSong(RevisionTrackedModel):
 	work_tag = models.OneToOneField(TagWork, null=False, on_delete=models.CASCADE)
 	author = models.CharField(max_length=1000, null=False, blank=False)
 
-	tags = TagField(to=TagSong, related_name='songs', through=TagSongInstance)
+	tags = models.ManyToManyField(
+		TagSong, related_name='songs', through=TagSongInstance
+	)
 
 	class RevisionMeta:
 		tracked_fields = ['title', 'bpm', 'variable_bpm', 'work_tag', 'author']

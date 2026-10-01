@@ -86,7 +86,6 @@ INSTALLED_APPS = [
 	'django.contrib.staticfiles',
 	'otodb',
 	'otodb.account',
-	'tagulous',
 	'ordered_model',
 	'django.contrib.sites',
 	'django_comments_xtd',
@@ -211,15 +210,6 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login'
 
 OTODB_CONFIG_DICT = {'site_name': os.environ.get('OTODB_CONF_SITE_NAME', 'otoDB')}
-
-SERIALIZATION_MODULES = {
-	'xml': 'tagulous.serializers.xml_serializer',
-	'json': 'tagulous.serializers.json',
-	'python': 'tagulous.serializers.python',
-	'yaml': 'tagulous.serializers.pyyaml',
-}
-
-TAGULOUS_SLUG_ALLOW_UNICODE = True
 
 SITE_ID = 1
 COMMENTS_APP = 'django_comments_xtd'

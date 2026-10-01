@@ -9,7 +9,7 @@ COUNT = models.IntegerField(
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0122_subscription_subscription_entity_idx'),
+		('otodb', '0123_worksource_unique_platform_source_id'),
 	]
 
 	operations = [

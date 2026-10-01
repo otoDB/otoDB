@@ -364,6 +364,7 @@
 	"clean_civil_jellyfish_promise": "Cannot add sources to delisted works.",
 	"stout_brave_otter_reject": "Cannot unbind a pending source. Reject it instead.",
 	"giant_helpful_goose_explore": "Cannot unbind the only source of a work.",
+	"awful_day_tortoise_radiate": "Cannot merge a work with itself.",
 	"direct_fluffy_finch_believe": "Queue",
 	"awake_aware_quail_bake": "Moderation Event",
 	"cool_house_barbel_cheer": "Immediately resolve this work?",

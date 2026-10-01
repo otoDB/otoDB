@@ -803,9 +803,13 @@ def merge_works(
 ):
 	if payload.thumbnail_source_id is None:
 		raise ApiError(400, ErrorCode.THUMBNAIL_SOURCE_REQUIRED)
+	to_work = get_object_or_404(MediaWork.active_objects, id=to_work_id)
+	from_work = get_object_or_404(MediaWork.active_objects, id=from_work_id)
+	if to_work.pk == from_work.pk:
+		raise ApiError(400, ErrorCode.CANNOT_MERGE_WITH_SELF)
 	MediaWork.merge(
-		to_work=get_object_or_404(MediaWork.active_objects, id=to_work_id),
-		from_work=get_object_or_404(MediaWork.active_objects, id=from_work_id),
+		to_work=to_work,
+		from_work=from_work,
 		title=payload.title,
 		description=payload.description,
 		thumbnail_source=get_object_or_404(

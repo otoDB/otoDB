@@ -359,6 +359,7 @@ class ErrorCode(OtodbIntegerEnum):
 	CAPTCHA_FAILED = 10023
 	MAX_THREAD_LEVEL = 10024
 	ONLY_WORK_SOURCE = 10025
+	CANNOT_MERGE_WITH_SELF = 10026
 
 
 class Preferences(OtodbIntegerEnum):

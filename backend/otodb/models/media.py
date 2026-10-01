@@ -236,6 +236,9 @@ class MediaWork(RevisionTrackedModel):
 
 		from otodb.models.posts import EntityLink
 
+		if from_work.pk == to_work.pk:
+			raise ValueError(f'Cannot merge work {from_work.pk} into itself')
+
 		# Ensure we always merge into the work with the lower ID
 		if from_work.pk < to_work.pk:
 			to_work, from_work = from_work, to_work

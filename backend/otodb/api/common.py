@@ -483,7 +483,8 @@ profile_connection_parsers = [
 	),
 	(
 		ProfileConnectionTypes.BLUESKY,
-		re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/(.+?)(?:\/*)')),
+		# Handle or DID (did:plc:..., did:web:...)
+		re_to_parser(re.compile(r'https?:\/\/bsky\.app\/profile\/([\w.:%-]+)\/?')),
 	),
 	(
 		ProfileConnectionTypes.SOUNDCLOUD,

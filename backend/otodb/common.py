@@ -153,7 +153,7 @@ def get_niconico_geoblocked(sm):
 	)
 	if r.ok and (match := niconico_meta_re.search(r.text)):
 		res = json.loads(html.unescape(match.group(1)))['data']['response']
-		return res['$watchV4']['data']
+		return res['$watchV4']['data'] if '$watchV4' in res else res
 	return None
 
 

@@ -47,7 +47,7 @@ const sampleThreads = [
 		entities: [],
 		category: PostCategory.Bug_Report,
 		title: 'Reported a bug in the upload flow',
-		closed_at: '2024-05-21T10:00:00Z'
+		closed_at: null
 	},
 	{
 		id: '3',

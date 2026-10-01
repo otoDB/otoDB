@@ -183,9 +183,17 @@ class WorkSource(RevisionTrackedModel):
 				for platform, extractor in platform_extractors:
 					if extractor.suitable(url):
 						if platform == Platform.SOUNDCLOUD:
-							# Can't get source ID from URL alone for SoundCloud
-							source_id = None
-							canonical_url = url  # TODO
+							# SoundCloud's numeric track ID can't be resolved from a
+							# dead URL, and a NULL source_id would make the dedup
+							# lookup match any other NULL row, so use the
+							# permalink path as a stable "ID".
+							match = extractor._match_valid_url(url)
+							if match['track_id']:
+								source_id = match['track_id']
+								canonical_url = url
+							else:
+								source_id = f'{match["uploader"]}/{match["title"]}'
+								canonical_url = f'https://soundcloud.com/{source_id}'
 							break
 
 						source_id = extractor.get_temp_id(url)

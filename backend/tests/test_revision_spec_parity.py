@@ -29,7 +29,7 @@ def _kind(field):
 
 	An unmapped type (DateTimeField, JSONField, ...) raises,
 	so that tracking a field of a new type fails THIS test until a byte-parity
-	serialization for it is designed in revision_codegen.
+	serialization for it is designed in db_triggers.
 	"""
 	if field.is_relation:
 		return 'fk'
@@ -42,7 +42,7 @@ def _kind(field):
 		return 'str'
 	raise AssertionError(
 		f'{field.model.__name__}.{field.name}: no serialization kind for {internal};'
-		' design one in revision_codegen._serialize and map it'
+		' design one in db_triggers._serialize and map it'
 	)
 
 

@@ -1,8 +1,11 @@
 import pytest
+from django.core.exceptions import ValidationError
 from django.db import models
 
+from otodb.common import slugify_tag
 from otodb.models import (
 	MediaWork,
+	TagSong,
 	TagWork,
 	TagWorkInstance,
 	TagWorkLangPreference,
@@ -473,3 +476,89 @@ class TestTagAliasBaseSwap:
 			pk__in=[base.pk, alias.pk],
 			aliased_to=models.F('pk'),
 		).exists()
+
+
+@pytest.mark.django_db
+class TestTagSlugs:
+	"""Slugs are derived from the name on create and de-duplicated with a numeric
+	suffix, the way tagulous did: `base`, then `base_N` with N one past the highest
+	suffix ever handed out for that base. A rename may not move a slug to another base.
+	"""
+
+	def test_slug_is_derived_from_name(self):
+		assert TagWork.objects.create(name='Foo').slug == 'foo'
+		assert TagWork.objects.create(name='Foo Bar').slug == 'foo_bar'
+		assert TagSong.objects.create(name='Foo').slug == 'foo'
+
+	def test_colliding_names_get_numbered_suffixes(self):
+		# distinct names (unique column) whose slugs all normalize to 'dup'
+		assert slugify_tag('Dup') == slugify_tag('Dup!') == slugify_tag('Dup?') == 'dup'
+		assert TagWork.objects.create(name='Dup').slug == 'dup'
+		assert TagWork.objects.create(name='Dup!').slug == 'dup_1'
+		assert TagWork.objects.create(name='Dup?').slug == 'dup_2'
+
+	def test_song_tag_collisions_get_numbered_suffixes(self):
+		assert TagSong.objects.create(name='Dup').slug == 'dup'
+		assert TagSong.objects.create(name='Dup!').slug == 'dup_1'
+
+	def test_deleted_suffix_is_not_refilled(self):
+		TagWork.objects.create(name='Gap')
+		second = TagWork.objects.create(name='Gap!')
+		TagWork.objects.create(name='Gap?')
+		assert second.slug == 'gap_1'
+
+		second.delete()
+
+		# max + 1 over what still exists, never the freed 'gap_1'
+		assert TagWork.objects.create(name='Gap.').slug == 'gap_3'
+
+	def test_natural_numbered_slug_counts_toward_max(self):
+		TagWork.objects.create(name='Nat')
+		# 'Nat 1' is not a collision: its own slug is 'nat_1' ...
+		assert TagWork.objects.create(name='Nat 1').slug == 'nat_1'
+		# ... but it occupies the suffix, so the next collision skips past it
+		assert TagWork.objects.create(name='Nat!').slug == 'nat_2'
+
+	def test_rename_within_same_base_keeps_suffixed_slug(self):
+		TagWork.objects.create(name='Keep')
+		tag = TagWork.objects.create(name='Keep!')
+		assert tag.slug == 'keep_1'
+
+		tag.name = 'Keep?'
+		tag.save()
+
+		tag.refresh_from_db()
+		assert tag.name == 'Keep?'
+		assert tag.slug == 'keep_1'
+
+	def test_rename_to_different_base_is_rejected(self):
+		tag = TagWork.objects.create(name='Before')
+		tag.name = 'After'
+		with pytest.raises(ValidationError):
+			tag.save()
+
+		TagWork.objects.create(name='Suffixed')
+		suffixed = TagWork.objects.create(name='Suffixed!')
+		assert suffixed.slug == 'suffixed_1'
+		suffixed.name = 'Elsewhere'
+		with pytest.raises(ValidationError):
+			suffixed.save()
+
+	def test_unslugifiable_name_is_rejected(self):
+		assert slugify_tag('!!!') == ''
+		with pytest.raises(ValidationError):
+			TagWork.objects.create(name='!!!')
+		with pytest.raises(ValidationError):
+			TagSong.objects.create(name='!!!')
+
+	def test_explicit_slug_is_ignored_on_create(self):
+		# tagulous parity: callers (history restores included) cannot pick the slug;
+		# it is derived from the name even when the supplied one would be acceptable
+		tag = TagWork.objects.create(name='Explicit', slug='explicit_7')
+		assert tag.slug == 'explicit'
+		tag.refresh_from_db()
+		assert tag.slug == 'explicit'
+		assert (
+			TagSong.objects.create(name='Explicit', slug='explicit_3').slug
+			== 'explicit'
+		)

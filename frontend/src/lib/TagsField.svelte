@@ -20,6 +20,7 @@
 		| components['schemas']['TagSongSearchResultSchema'][]
 	>([]);
 	let lastQuery = $state('');
+	let controller: AbortController | undefined;
 
 	const slug_re = /[\p{L}\p{N}_\-]/v;
 
@@ -41,30 +42,41 @@
 		const { word, start } = getWordAtPos(textarea.value, textarea.selectionStart);
 		const before = textarea.value[start - 1];
 		if (!word || before === ':' || before === '[' || before === ',') {
+			controller?.abort();
 			suggestions = [];
 			lastQuery = '';
 			return;
 		}
 		if (word === lastQuery) return;
 		lastQuery = word;
-		const { data } =
-			type === 'work'
-				? await client.GET('/api/tag/search', {
-						params: {
-							query: {
-								query: word,
-								limit: 10,
-								order: 'count',
-								autocomplete: true
-							}
-						}
-					})
-				: await client.GET('/api/tag/song_tag_search', {
-						params: { query: { query: word, limit: 10, autocomplete: true } }
-					});
-		if (!data) return;
-		suggestions = data.items;
-	});
+		controller?.abort();
+		controller = new AbortController();
+		const { signal } = controller;
+		try {
+			const { data } =
+				type === 'work'
+					? await client.GET('/api/tag/search', {
+							params: {
+								query: {
+									query: word,
+									limit: 10,
+									order: 'count',
+									autocomplete: true
+								}
+							},
+							signal
+						})
+					: await client.GET('/api/tag/song_tag_search', {
+							params: { query: { query: word, limit: 10, autocomplete: true } },
+							signal
+						});
+			if (signal.aborted || !data) return;
+			suggestions = data.items;
+		} catch (e) {
+			if (signal.aborted) return;
+			throw e;
+		}
+	}, 100);
 
 	const updateValue = () => {
 		value = [

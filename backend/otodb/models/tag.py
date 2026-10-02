@@ -2,9 +2,11 @@ import re
 from itertools import chain
 from typing import TYPE_CHECKING, Self
 
+from django.contrib.postgres.indexes import GinIndex, OpClass
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch, Q, Value
+from django.db.models import F, Prefetch, Q, Value
+from django.db.models.functions import Upper
 from django_cte import CTE, with_cte
 
 from otodb.common import process_tag_for_display, slugify_tag
@@ -244,6 +246,18 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		ordering = [
 			tagwork_ordering_case(),
 			'name',
+		]
+		indexes = [
+			GinIndex(
+				OpClass(F('slug'), name='gin_trgm_ops'),
+				name='otodb_tagwork_slug_trgm',
+				fastupdate=False,
+			),
+			GinIndex(
+				OpClass(Upper('name'), name='gin_trgm_ops'),
+				name='otodb_tagwork_name_trgm',
+				fastupdate=False,
+			),
 		]
 
 	deprecated = models.BooleanField(default=False, null=False)
@@ -586,6 +600,18 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 				name='tagsong_parenthood_nonreflexive',
 				condition=~Q(parent_id=models.F('id')),
 				violation_error_message='tag cannot be own parent',
+			),
+		]
+		indexes = [
+			GinIndex(
+				OpClass(F('slug'), name='gin_trgm_ops'),
+				name='otodb_tagsong_slug_trgm',
+				fastupdate=False,
+			),
+			GinIndex(
+				OpClass(Upper('name'), name='gin_trgm_ops'),
+				name='otodb_tagsong_name_trgm',
+				fastupdate=False,
 			),
 		]
 

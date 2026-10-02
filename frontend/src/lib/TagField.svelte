@@ -16,28 +16,40 @@
 		| components['schemas']['TagWorkSearchResultSchema'][]
 		| components['schemas']['TagSongSearchResultSchema'][] = $state([]);
 
+	let controller: AbortController | undefined;
+
 	const search = async () => {
+		controller?.abort();
 		if (value === '') {
 			suggestions = [];
 			return;
 		}
-		const { data } =
-			type === 'work'
-				? await client.GET('/api/tag/search', {
-						params: {
-							query: {
-								query: value,
-								limit: 10,
-								order: 'count',
-								autocomplete: true
-							}
-						}
-					})
-				: await client.GET('/api/tag/song_tag_search', {
-						params: { query: { query: value, limit: 10, autocomplete: true } }
-					});
-		if (!data) return;
-		suggestions = data.items;
+		controller = new AbortController();
+		const { signal } = controller;
+		try {
+			const { data } =
+				type === 'work'
+					? await client.GET('/api/tag/search', {
+							params: {
+								query: {
+									query: value,
+									limit: 10,
+									order: 'count',
+									autocomplete: true
+								}
+							},
+							signal
+						})
+					: await client.GET('/api/tag/song_tag_search', {
+							params: { query: { query: value, limit: 10, autocomplete: true } },
+							signal
+						});
+			if (signal.aborted || !data) return;
+			suggestions = data.items;
+		} catch (e) {
+			if (signal.aborted) return;
+			throw e;
+		}
 	};
 </script>
 

@@ -260,9 +260,14 @@ def search(
 			),
 			'aliased_to__aliases',
 		)
+	elif not cleaned_slug_query and not cleaned_name_query:
+		qs = qs.filter(aliased_to__isnull=True)
 	else:
-		qs = qs.filter(aliased_to__isnull=True) | TagWork.objects.filter(
-			id__in=qs.values('aliased_to__id')
+		# Only list base tags. If an alias matches, show its base tag instead.
+		qs = TagWork.objects.filter(
+			id__in=qs.annotate(base_id=Coalesce('aliased_to_id', 'id')).values(
+				'base_id'
+			)
 		)
 
 	if category is not None and category != -1:
@@ -332,17 +337,17 @@ def search(
 	if max_parents is not None:
 		qs = qs.filter(n_parents__lte=max_parents)
 
-	order_field = {
-		'newest': '-id',
-		'count': '-n_instance',
-		'name': 'name',
-	}.get(order, '-id')
+	order_fields = {
+		'newest': ['-id'],
+		'count': ['-n_instance', 'name'],  # tie-breaker to keep pages stable
+		'name': ['name'],
+	}.get(order, ['-id'])
 
 	cleaned_slug = slugify_tag(query)
 	if cleaned_slug:
-		qs = _tag_exact_match(qs, cleaned_slug).order_by('exact_match', order_field)
+		qs = _tag_exact_match(qs, cleaned_slug).order_by('exact_match', *order_fields)
 	else:
-		qs = qs.order_by(order_field)
+		qs = qs.order_by(*order_fields)
 
 	if autocomplete:
 		qs = _collapse_aliases_into_single_suggestion(qs, cleaned_slug)
@@ -1114,9 +1119,14 @@ def song_tag_search(
 			),
 			'aliased_to__aliases',
 		)
+	elif not cleaned_slug_query and not cleaned_name_query:
+		qs = qs.filter(aliased_to__isnull=True)
 	else:
-		qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
-			id__in=qs.values('aliased_to__id')
+		# Only list base tags. If an alias matches, show its base tag instead.
+		qs = TagSong.objects.filter(
+			id__in=qs.annotate(base_id=Coalesce('aliased_to_id', 'id')).values(
+				'base_id'
+			)
 		)
 
 	if category is not None and category != -1:
@@ -1128,9 +1138,11 @@ def song_tag_search(
 
 	cleaned_slug = slugify_tag(query)
 	if cleaned_slug:
-		qs = _tag_exact_match(qs, cleaned_slug).order_by('exact_match', '-n_instance')
+		qs = _tag_exact_match(qs, cleaned_slug).order_by(
+			'exact_match', '-n_instance', 'name'
+		)
 	else:
-		qs = qs.order_by('-n_instance')
+		qs = qs.order_by('-n_instance', 'name')
 
 	if autocomplete:
 		qs = _collapse_aliases_into_single_suggestion(qs, cleaned_slug)

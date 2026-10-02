@@ -76,7 +76,7 @@
 			if (signal.aborted) return;
 			throw e;
 		}
-	});
+	}, 100);
 
 	const updateValue = () => {
 		value = [

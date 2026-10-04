@@ -96,7 +96,7 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 	opts = {
 		'http_headers': {'Accept-Language': 'ja'},
 		'noplaylist': True,
-		# Always request web_embedded in addition to the default
+		# YouTube: always request web_embedded in addition to the default
 		# Motivated by https://github.com/yt-dlp/yt-dlp/issues/17389
 		'extractor_args': {'youtube': {'player_client': ['default', 'web_embedded']}},
 	}

@@ -49,25 +49,53 @@ const sampleRecentWorks = makeWorks('recent', [
 ]);
 
 const changeRoutes = [
-	{ route: Route.Media_Work_Update, entity: HistoricalEntities.mediawork },
-	{ route: Route.Tag_Work_Update, entity: HistoricalEntities.tagwork },
-	{ route: Route.Song_Tag_Update, entity: HistoricalEntities.tagsong },
-	{ route: Route.Media_Work_Set_Tags, entity: HistoricalEntities.mediawork },
-	{ route: Route.Work_Source_Update, entity: HistoricalEntities.worksource },
-	{ route: Route.Wiki_Edit, entity: HistoricalEntities.wikipage },
-	{ route: Route.Tag_Work_Alias, entity: HistoricalEntities.tagwork },
-	{ route: Route.Media_Work_Merge, entity: HistoricalEntities.mediawork }
+	{
+		route: Route.Media_Work_Update,
+		first_entity: { id: '1', entity: HistoricalEntities.mediawork, label: 'Freshly uploaded track' }
+	},
+	{
+		route: Route.Tag_Work_Update,
+		first_entity: {
+			id: 'touhou_project',
+			entity: HistoricalEntities.tagwork,
+			label: 'touhou_project'
+		}
+	},
+	{
+		route: Route.Song_Tag_Update,
+		first_entity: { id: 'remix', entity: HistoricalEntities.tagsong, label: 'remix' }
+	},
+	{
+		route: Route.Media_Work_Set_Tags,
+		first_entity: { id: '4', entity: HistoricalEntities.mediawork, label: null }
+	},
+	{
+		route: Route.Work_Source_Update,
+		first_entity: { id: '5', entity: HistoricalEntities.worksource, label: 'Latest upload' }
+	},
+	{
+		route: Route.Wiki_Edit,
+		first_entity: { id: 'about', entity: HistoricalEntities.wikipage, label: 'about' }
+	},
+	{
+		route: Route.Tag_Work_Alias,
+		first_entity: { id: 'kirby', entity: HistoricalEntities.tagwork, label: 'kirby' }
+	},
+	{
+		route: Route.Media_Work_Merge,
+		first_entity: { id: '8', entity: HistoricalEntities.mediawork, label: 'Brand new entry' }
+	}
 ];
 
 const sampleChanges = {
-	items: changeRoutes.map(({ route, entity }, i) => ({
+	items: changeRoutes.map(({ route, first_entity }, i) => ({
 		id: `${i + 1}`,
 		date: `2024-06-${String(8 - i).padStart(2, '0')}T10:00:00Z`,
 		user: i % 2 === 0 ? 'member_user' : 'another_user',
 		index: 1,
 		route,
 		message: '',
-		first_entity: { id: `${i + 1}`, entity },
+		first_entity,
 		n_ent: (i % 3) + 1
 	})),
 	count: 8

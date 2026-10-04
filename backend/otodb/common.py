@@ -93,7 +93,13 @@ def reset_cookies(cookie_file=settings.COOKIES_FILE):
 		except OSError:
 			pass
 
-	opts = {'http_headers': {'Accept-Language': 'ja'}, 'noplaylist': True}
+	opts = {
+		'http_headers': {'Accept-Language': 'ja'},
+		'noplaylist': True,
+		# YouTube: always request web_embedded in addition to the default
+		# Motivated by https://github.com/yt-dlp/yt-dlp/issues/17389
+		'extractor_args': {'youtube': {'player_client': ['default', 'web_embedded']}},
+	}
 	if cookie_file:
 		opts['cookiefile'] = cookie_file
 	ydl = YoutubeDL(opts, auto_init=False)

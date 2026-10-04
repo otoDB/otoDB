@@ -261,11 +261,7 @@ def search(
 		.values('c')
 	)
 	qs = qs.annotate(
-		n_instance=Case(
-			When(aliased_to__isnull=False, then=Count('aliased_to__tagworkinstance')),
-			default=Count('tagworkinstance'),
-			output_field=models.IntegerField(),
-		),
+		n_instance=Coalesce(F('aliased_to__count'), F('count')),
 		_has_connections=Exists(TagWorkConnection.objects.filter(tag=OuterRef('pk')))
 		| Exists(TagWorkMediaConnection.objects.filter(tag=OuterRef('pk')))
 		| Exists(TagWorkCreatorConnection.objects.filter(tag=OuterRef('pk'))),
@@ -1099,11 +1095,7 @@ def song_tag_search(
 		qs = qs.filter(category=category)
 
 	qs = qs.annotate(
-		n_instance=Case(
-			When(aliased_to__isnull=False, then=Count('aliased_to__tagsonginstance')),
-			default=Count('tagsonginstance'),
-			output_field=models.IntegerField(),
-		),
+		n_instance=Coalesce(F('aliased_to__count'), F('count')),
 	)
 
 	cleaned_slug = slugify_tag(query)

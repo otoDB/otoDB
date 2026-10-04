@@ -2,8 +2,6 @@
 
 import django.db.models.deletion
 import django.db.models.manager
-import tagulous.models.fields
-import tagulous.models.models
 from django.conf import settings
 from django.db import migrations, models
 
@@ -889,10 +887,6 @@ class Migration(migrations.Migration):
 					),
 				),
 			],
-			bases=(
-				tagulous.models.models.BaseTagModel,
-				models.Model,
-			),
 		),
 		migrations.CreateModel(
 			name='TagSongInstance',
@@ -925,12 +919,7 @@ class Migration(migrations.Migration):
 		migrations.AddField(
 			model_name='mediasong',
 			name='tags',
-			field=tagulous.models.fields.TagField(
-				_set_tag_meta=True,
-				case_sensitive=False,
-				force_lowercase=False,
-				help_text='Enter a comma-separated tag string',
-				protect_all=True,
+			field=models.ManyToManyField(
 				related_name='songs',
 				through='otodb.TagSongInstance',
 				to='otodb.tagsong',
@@ -1051,10 +1040,6 @@ class Migration(migrations.Migration):
 					'name',
 				],
 			},
-			bases=(
-				tagulous.models.models.BaseTagModel,
-				models.Model,
-			),
 		),
 		migrations.AddField(
 			model_name='mediasong',
@@ -1174,12 +1159,7 @@ class Migration(migrations.Migration):
 		migrations.AddField(
 			model_name='mediawork',
 			name='tags',
-			field=tagulous.models.fields.TagField(
-				_set_tag_meta=True,
-				case_sensitive=False,
-				force_lowercase=False,
-				help_text='Enter a comma-separated tag string',
-				protect_all=True,
+			field=models.ManyToManyField(
 				related_name='works',
 				through='otodb.TagWorkInstance',
 				to='otodb.tagwork',

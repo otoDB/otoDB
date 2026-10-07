@@ -61,7 +61,8 @@ export const PlatformNames = {
 	[Platform.Bilibili]: 'Bilibili',
 	[Platform.SoundCloud]: 'SoundCloud',
 	[Platform.Twitter]: 'Twitter',
-	[Platform.AcFun]: 'AcFun'
+	[Platform.AcFun]: 'AcFun',
+	[Platform.Vimeo]: 'Vimeo'
 } as const satisfies Record<Platform, string>;
 
 // Auto is preference-only; the rest mirror PlatformNames

@@ -4,7 +4,6 @@ __pycache__
 .env
 media
 static
-.python-version
 *cookies.txt
 .ruff_cache
 

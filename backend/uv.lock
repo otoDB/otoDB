@@ -355,18 +355,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-tagulous"
-version = "2.1.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/f4/f7/bef3d5ff4e0c7b786732ab77ca41eff8dd704f6552fb70b2fada1a0b64bc/django_tagulous-2.1.1.tar.gz", hash = "sha256:772941e0e359bb5478597fdafdb89e5619310a038e777e9599d0a5c036a05ceb", size = 291557, upload-time = "2025-06-22T23:21:34.262Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/66/03/e5bf7c3535f06d3962065a8e320aaca1cf6bef85e23e3fd8725e95c551be/django_tagulous-2.1.1-py3-none-any.whl", hash = "sha256:f5a6453407bcf4047f619f92be42e8b56615e00bbbd718d8810ce6fd5cf4888b", size = 286350, upload-time = "2025-06-22T23:21:32.588Z" },
-]
-
-[[package]]
 name = "django-vcache"
 version = "2.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -943,7 +931,6 @@ dependencies = [
     { name = "django-cte" },
     { name = "django-ninja" },
     { name = "django-ordered-model" },
-    { name = "django-tagulous" },
     { name = "django-vcache" },
     { name = "fast-diff-match-patch" },
     { name = "furl" },
@@ -980,7 +967,6 @@ requires-dist = [
     { name = "django-cte", specifier = ">=3.0.0" },
     { name = "django-ninja", specifier = ">=1.7.1" },
     { name = "django-ordered-model", specifier = ">=3.7.4" },
-    { name = "django-tagulous", specifier = ">=2.1.1" },
     { name = "django-vcache", specifier = ">=2.1.1" },
     { name = "fast-diff-match-patch", specifier = ">=2.1.0" },
     { name = "furl", specifier = ">=2.1.4" },

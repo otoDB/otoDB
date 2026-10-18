@@ -1,6 +1,6 @@
 """Django-free source of truth for the revision-capture triggers.
 
-The trigger codegen (`revision_codegen.py`) reads ONLY this file, so trigger
+The trigger codegen (`db_triggers.py`) reads ONLY this file, so trigger
 generation never imports Django and survives the migration off it. While Django still
 exists, `tests/test_revision_spec_parity.py` asserts this spec matches the models'
 `RevisionMeta` + field types, so it can't silently drift; that test is deleted with
@@ -17,7 +17,7 @@ Each table entry:
                kind 'self' -> this row (id_column = pk); 'fk' -> the FK's target.
 
 To add a tracked field/model: edit here and regenerate
-(`python -m otodb.revision_codegen > otodb/sql/revision_triggers.sql`).
+(`python -m otodb.db_triggers > otodb/sql/db_triggers.sql`).
 No migration needed: the triggers are reinstalled after every `migrate`.
 
 To drop a tracked column: the trigger depends on it, so the migration has to

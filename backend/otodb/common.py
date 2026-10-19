@@ -150,8 +150,8 @@ niconico_meta_re = re.compile(
 hashtag_re = re.compile(r'#(\w+)')
 
 
-def _niconico_thumb_has_play_button(thumbnail):
-	# goptim endpoint ogp thumbnails have a play button baked in since October 2026
+def _niconico_thumb_is_goptim(thumbnail):
+	# goptim endpoint ogp thumbnails have a play button baked in or a blurred fill since October 2026
 	return 'goptim.video.nimg.jp' in (thumbnail.get('ogp') or '')
 
 
@@ -167,7 +167,7 @@ def get_niconico_geoblocked(sm):
 		res = res['$watchV4']['data'] if '$watchV4' in res else res
 		thumbnail = res['video']['thumbnail']
 		# The clean nHdUrl is only in nvapi's listing
-		if _niconico_thumb_has_play_button(thumbnail):
+		if _niconico_thumb_is_goptim(thumbnail) and not thumbnail.get('short'):
 			nv = requests.get(
 				'https://nvapi.nicovideo.jp/v1/videos',
 				params={'watchIds': sm},
@@ -233,12 +233,13 @@ def process_video_info(full_info, link=None):
 			)
 			thumbnail = full_info['video']['thumbnail']
 			max_res = max(videos, key=lambda s: s['width'])
-			# ogp unless it's goptim (play button baked in), else player when 16:9
-			# (it pads other aspects with black bars), else nHdUrl
+			# ogp unless it's goptim, else short (vertical, no bars), else player when
+			# 16:9 (it pads other aspects with black bars), else nHdUrl
 			is_16_9 = abs(max_res['width'] / max_res['height'] - 16 / 9) < 0.01
 			thumb = (
-				thumbnail.get('player' if is_16_9 else 'nHdUrl')
-				if _niconico_thumb_has_play_button(thumbnail)
+				thumbnail.get('short')
+				or thumbnail.get('player' if is_16_9 else 'nHdUrl')
+				if _niconico_thumb_is_goptim(thumbnail)
 				else thumbnail.get('ogp')
 			)
 			thumb = thumb or thumbnail.get('player') or thumbnail['url']

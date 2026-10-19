@@ -150,6 +150,11 @@ niconico_meta_re = re.compile(
 hashtag_re = re.compile(r'#(\w+)')
 
 
+def _niconico_thumb_has_play_button(thumbnail):
+	# goptim endpoint ogp thumbnails have a play button baked in since October 2026
+	return 'goptim.video.nimg.jp' in (thumbnail.get('ogp') or '')
+
+
 def get_niconico_geoblocked(sm):
 	clean_url = make_video_url[Platform.NICONICO](sm)
 	r = requests.get(
@@ -159,7 +164,20 @@ def get_niconico_geoblocked(sm):
 	)
 	if r.ok and (match := niconico_meta_re.search(r.text)):
 		res = json.loads(html.unescape(match.group(1)))['data']['response']
-		return res['$watchV4']['data'] if '$watchV4' in res else res
+		res = res['$watchV4']['data'] if '$watchV4' in res else res
+		thumbnail = res['video']['thumbnail']
+		# The clean nHdUrl is only in nvapi's listing
+		if _niconico_thumb_has_play_button(thumbnail):
+			nv = requests.get(
+				'https://nvapi.nicovideo.jp/v1/videos',
+				params={'watchIds': sm},
+				headers={'X-Frontend-Id': '6', 'X-Frontend-Version': '0'},
+				timeout=10,
+			)
+			video = nv.json()['data']['items'][0]['video'] if nv.ok else None
+			if video:
+				thumbnail['nHdUrl'] = video['thumbnail']['nHdUrl']
+		return res
 	return None
 
 
@@ -215,6 +233,15 @@ def process_video_info(full_info, link=None):
 			)
 			thumbnail = full_info['video']['thumbnail']
 			max_res = max(videos, key=lambda s: s['width'])
+			# ogp unless it's goptim (play button baked in), else player when 16:9
+			# (it pads other aspects with black bars), else nHdUrl
+			is_16_9 = abs(max_res['width'] / max_res['height'] - 16 / 9) < 0.01
+			thumb = (
+				thumbnail.get('player' if is_16_9 else 'nHdUrl')
+				if _niconico_thumb_has_play_button(thumbnail)
+				else thumbnail.get('ogp')
+			)
+			thumb = thumb or thumbnail.get('player') or thumbnail['url']
 			info = {
 				'extractor': 'niconico',
 				'title': full_info['video']['title'],
@@ -225,7 +252,7 @@ def process_video_info(full_info, link=None):
 				'duration': full_info['video']['duration'],
 				'webpage_url': link,
 				'id': full_info['video']['id'],
-				'thumbnail': thumbnail.get('ogp') or thumbnail['url'],
+				'thumbnail': thumb,
 				'timestamp': int(
 					mktime(
 						datetime.fromisoformat(

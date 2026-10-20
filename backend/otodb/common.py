@@ -186,7 +186,8 @@ def get_niconico_geoblocked(sm):
 				img = requests.get(nhd, timeout=10)
 				if img.ok:
 					# Read the size from the JPEG SOF marker; segments after SOI are
-					# FF, marker, 2-byte length, payload
+					# FF, marker, 2-byte length, payload.
+					# (Heavily adapted from imagesize_py)
 					data, size, i = img.content, None, 2
 					while i + 9 <= len(data) and data[i] == 0xFF:
 						marker = data[i + 1]

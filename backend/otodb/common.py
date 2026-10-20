@@ -3,6 +3,7 @@ import html
 import json
 import logging
 import re
+import struct
 import unicodedata
 from datetime import datetime
 from http.cookiejar import MozillaCookieJar
@@ -166,7 +167,13 @@ def get_niconico_geoblocked(sm):
 		res = json.loads(html.unescape(match.group(1)))['data']['response']
 		res = res['$watchV4']['data'] if '$watchV4' in res else res
 		thumbnail = res['video']['thumbnail']
-		# The clean nHdUrl is only in nvapi's listing
+		# The goal here is to acquire the biggest thumbnail with no black bars added
+		# by the resize (bars baked into Niconico's stored file stay either way).
+		# `player` is bigger (960x540), but pads a non-16:9 file with bars.
+		# `nHdUrl` (nvapi only) is smaller (fits to 640x360), but never pads.
+		# Nothing in the payload says what shape the stored file is,
+		# so download nHd and check: 640x360 means it's 16:9 and player is safe,
+		# anything else means player would pad, so keep nHdUrl to use it instead.
 		if _niconico_thumb_is_goptim(thumbnail) and not thumbnail.get('short'):
 			nv = requests.get(
 				'https://nvapi.nicovideo.jp/v1/videos',
@@ -175,9 +182,24 @@ def get_niconico_geoblocked(sm):
 				timeout=10,
 			)
 			video = nv.json()['data']['items'][0]['video'] if nv.ok else None
-			if video:
-				thumbnail['nHdUrl'] = video['thumbnail']['nHdUrl']
+			if video and (nhd := video['thumbnail'].get('nHdUrl')):
+				img = requests.get(nhd, timeout=10)
+				if img.ok and _jpeg_size(img.content) != (640, 360):
+					thumbnail['nHdUrl'] = nhd
 		return res
+	return None
+
+
+def _jpeg_size(data: bytes):
+	"""Return (width, height) of a JPEG, or None if it has no SOF marker."""
+	# Heavily adapted from imagesize_py
+	i = 2  # after SOI; each segment is FF, marker, 2-byte length, payload
+	while i + 9 <= len(data) and data[i] == 0xFF:
+		marker = data[i + 1]
+		if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):  # SOF0-SOF15
+			height, width = struct.unpack_from('>HH', data, i + 5)
+			return width, height
+		i += 2 + struct.unpack_from('>H', data, i + 2)[0]
 	return None
 
 
@@ -233,12 +255,10 @@ def process_video_info(full_info, link=None):
 			)
 			thumbnail = full_info['video']['thumbnail']
 			max_res = max(videos, key=lambda s: s['width'])
-			# ogp unless it's goptim, else short (vertical, no bars), else player when
-			# 16:9 (it pads other aspects with black bars), else nHdUrl
-			is_16_9 = abs(max_res['width'] / max_res['height'] - 16 / 9) < 0.01
+			# ogp unless it's goptim, else short (vertical), else nHdUrl (only set when
+			# player would add black bars), else player
 			thumb = (
-				thumbnail.get('short')
-				or thumbnail.get('player' if is_16_9 else 'nHdUrl')
+				thumbnail.get('short') or thumbnail.get('nHdUrl')
 				if _niconico_thumb_is_goptim(thumbnail)
 				else thumbnail.get('ogp')
 			)

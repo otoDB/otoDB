@@ -184,22 +184,20 @@ def get_niconico_geoblocked(sm):
 			video = nv.json()['data']['items'][0]['video'] if nv.ok else None
 			if video and (nhd := video['thumbnail'].get('nHdUrl')):
 				img = requests.get(nhd, timeout=10)
-				if img.ok and _jpeg_size(img.content) != (640, 360):
-					thumbnail['nHdUrl'] = nhd
+				if img.ok:
+					# Read the size from the JPEG SOF marker; segments after SOI are
+					# FF, marker, 2-byte length, payload
+					data, size, i = img.content, None, 2
+					while i + 9 <= len(data) and data[i] == 0xFF:
+						marker = data[i + 1]
+						if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+							height, width = struct.unpack_from('>HH', data, i + 5)
+							size = (width, height)
+							break
+						i += 2 + struct.unpack_from('>H', data, i + 2)[0]
+					if size != (640, 360):
+						thumbnail['nHdUrl'] = nhd
 		return res
-	return None
-
-
-def _jpeg_size(data: bytes):
-	"""Return (width, height) of a JPEG, or None if it has no SOF marker."""
-	# Heavily adapted from imagesize_py
-	i = 2  # after SOI; each segment is FF, marker, 2-byte length, payload
-	while i + 9 <= len(data) and data[i] == 0xFF:
-		marker = data[i + 1]
-		if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):  # SOF0-SOF15
-			height, width = struct.unpack_from('>HH', data, i + 5)
-			return width, height
-		i += 2 + struct.unpack_from('>H', data, i + 2)[0]
 	return None
 
 

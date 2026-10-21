@@ -3,6 +3,7 @@ import html
 import json
 import logging
 import re
+import struct
 import unicodedata
 from datetime import datetime
 from http.cookiejar import MozillaCookieJar
@@ -150,6 +151,11 @@ niconico_meta_re = re.compile(
 hashtag_re = re.compile(r'#(\w+)')
 
 
+def _niconico_thumb_is_goptim(thumbnail):
+	# goptim endpoint ogp thumbnails have a play button baked in or a blurred fill since October 2026
+	return 'goptim.video.nimg.jp' in (thumbnail.get('ogp') or '')
+
+
 def get_niconico_geoblocked(sm):
 	clean_url = make_video_url[Platform.NICONICO](sm)
 	r = requests.get(
@@ -159,7 +165,40 @@ def get_niconico_geoblocked(sm):
 	)
 	if r.ok and (match := niconico_meta_re.search(r.text)):
 		res = json.loads(html.unescape(match.group(1)))['data']['response']
-		return res['$watchV4']['data'] if '$watchV4' in res else res
+		res = res['$watchV4']['data'] if '$watchV4' in res else res
+		thumbnail = res['video']['thumbnail']
+		# The goal here is to acquire the biggest thumbnail with no black bars added
+		# by the resize (bars baked into Niconico's stored file stay either way).
+		# `player` is bigger (960x540), but pads a non-16:9 file with bars.
+		# `nHdUrl` (nvapi only) is smaller (fits to 640x360), but never pads.
+		# Nothing in the payload says what shape the stored file is,
+		# so download nHd and check: 640x360 means it's 16:9 and player is safe,
+		# anything else means player would pad, so keep nHdUrl to use it instead.
+		if _niconico_thumb_is_goptim(thumbnail) and not thumbnail.get('short'):
+			nv = requests.get(
+				'https://nvapi.nicovideo.jp/v1/videos',
+				params={'watchIds': sm},
+				headers={'X-Frontend-Id': '6', 'X-Frontend-Version': '0'},
+				timeout=10,
+			)
+			video = nv.json()['data']['items'][0]['video'] if nv.ok else None
+			if video and (nhd := video['thumbnail'].get('nHdUrl')):
+				img = requests.get(nhd, timeout=10)
+				if img.ok:
+					# Read the size from the JPEG SOF marker; segments after SOI are
+					# FF, marker, 2-byte length, payload.
+					# (Heavily adapted from imagesize_py)
+					data, size, i = img.content, None, 2
+					while i + 9 <= len(data) and data[i] == 0xFF:
+						marker = data[i + 1]
+						if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+							height, width = struct.unpack_from('>HH', data, i + 5)
+							size = (width, height)
+							break
+						i += 2 + struct.unpack_from('>H', data, i + 2)[0]
+					if size != (640, 360):
+						thumbnail['nHdUrl'] = nhd
+		return res
 	return None
 
 
@@ -215,6 +254,14 @@ def process_video_info(full_info, link=None):
 			)
 			thumbnail = full_info['video']['thumbnail']
 			max_res = max(videos, key=lambda s: s['width'])
+			# ogp unless it's goptim, else short (vertical), else nHdUrl (only set when
+			# player would add black bars), else player
+			thumb = (
+				thumbnail.get('short') or thumbnail.get('nHdUrl')
+				if _niconico_thumb_is_goptim(thumbnail)
+				else thumbnail.get('ogp')
+			)
+			thumb = thumb or thumbnail.get('player') or thumbnail['url']
 			info = {
 				'extractor': 'niconico',
 				'title': full_info['video']['title'],
@@ -225,7 +272,7 @@ def process_video_info(full_info, link=None):
 				'duration': full_info['video']['duration'],
 				'webpage_url': link,
 				'id': full_info['video']['id'],
-				'thumbnail': thumbnail.get('ogp') or thumbnail['url'],
+				'thumbnail': thumb,
 				'timestamp': int(
 					mktime(
 						datetime.fromisoformat(

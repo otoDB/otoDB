@@ -13,6 +13,7 @@ from django.db.models import (
 	Exists,
 	F,
 	OuterRef,
+	Prefetch,
 	Q,
 	Subquery,
 	Value,
@@ -23,7 +24,7 @@ from django.db.models.functions import Coalesce, RowNumber
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Field, ModelSchema, Query, Schema
-from ninja.pagination import paginate
+from ninja.pagination import LimitOffsetPagination, paginate
 from ninja.security import django_auth
 from ninja.utils import contribute_operation_args
 from pydantic import field_validator
@@ -190,6 +191,17 @@ def _tag_exact_match(qs, cleaned_slug: str):
 	)
 
 
+class AutocompletePagination(LimitOffsetPagination):
+	"""Autocomplete only ever shows the first page of suggestions, so skip counting the rest."""
+
+	def paginate_queryset(self, queryset, pagination, request, **params):
+		if not params.get('autocomplete'):
+			return super().paginate_queryset(queryset, pagination, request, **params)
+		limit = min(pagination.limit, self.max_limit)
+		items = list(queryset[pagination.offset : pagination.offset + limit])
+		return {self.items_attribute: items, 'count': len(items)}
+
+
 def _collapse_aliases_into_single_suggestion(qs, cleaned_slug: str | None):
 	rank_order = []
 	if cleaned_slug:
@@ -214,7 +226,7 @@ def _collapse_aliases_into_single_suggestion(qs, cleaned_slug: str | None):
 
 
 @tag_router.get('search', response=list[TagWorkSearchResultSchema])
-@paginate
+@paginate(AutocompletePagination)
 def search(
 	request: HttpRequest,
 	query: str,
@@ -239,10 +251,23 @@ def search(
 	)
 
 	if autocomplete:
-		pass
+		# Alias results show their base tag's lang_prefs, so fetch those up front
+		# instead of running extra queries for every result.
+		qs = qs.prefetch_related(
+			Prefetch(
+				'aliased_to__tagworklangpreference_set',
+				queryset=TagWorkLangPreference.objects.select_related('tag'),
+			),
+			'aliased_to__aliases',
+		)
+	elif not cleaned_slug_query and not cleaned_name_query:
+		qs = qs.filter(aliased_to__isnull=True)
 	else:
-		qs = qs.filter(aliased_to__isnull=True) | TagWork.objects.filter(
-			id__in=qs.values('aliased_to__id')
+		# Only list base tags. If an alias matches, show its base tag instead.
+		qs = TagWork.objects.filter(
+			id__in=qs.annotate(base_id=Coalesce('aliased_to_id', 'id')).values(
+				'base_id'
+			)
 		)
 
 	if category is not None and category != -1:
@@ -312,17 +337,17 @@ def search(
 	if max_parents is not None:
 		qs = qs.filter(n_parents__lte=max_parents)
 
-	order_field = {
-		'newest': '-id',
-		'count': '-n_instance',
-		'name': 'name',
-	}.get(order, '-id')
+	order_fields = {
+		'newest': ['-id'],
+		'count': ['-n_instance', 'name'],  # tie-breaker to keep pages stable
+		'name': ['name'],
+	}.get(order, ['-id'])
 
 	cleaned_slug = slugify_tag(query)
 	if cleaned_slug:
-		qs = _tag_exact_match(qs, cleaned_slug).order_by('exact_match', order_field)
+		qs = _tag_exact_match(qs, cleaned_slug).order_by('exact_match', *order_fields)
 	else:
-		qs = qs.order_by(order_field)
+		qs = qs.order_by(*order_fields)
 
 	if autocomplete:
 		qs = _collapse_aliases_into_single_suggestion(qs, cleaned_slug)
@@ -1071,7 +1096,7 @@ class TagSongSearchResultSchema(TagSongSchema):
 
 
 @tag_router.get('song_tag_search', response=list[TagSongSearchResultSchema])
-@paginate
+@paginate(AutocompletePagination)
 def song_tag_search(
 	request: HttpRequest,
 	query: str,
@@ -1085,10 +1110,23 @@ def song_tag_search(
 	)
 
 	if autocomplete:
-		pass
+		# Alias results show their base tag's lang_prefs, so fetch those up front
+		# instead of running extra queries for every result.
+		qs = qs.prefetch_related(
+			Prefetch(
+				'aliased_to__tagsonglangpreference_set',
+				queryset=TagSongLangPreference.objects.select_related('tag'),
+			),
+			'aliased_to__aliases',
+		)
+	elif not cleaned_slug_query and not cleaned_name_query:
+		qs = qs.filter(aliased_to__isnull=True)
 	else:
-		qs = qs.filter(aliased_to__isnull=True) | TagSong.objects.filter(
-			id__in=qs.values('aliased_to__id')
+		# Only list base tags. If an alias matches, show its base tag instead.
+		qs = TagSong.objects.filter(
+			id__in=qs.annotate(base_id=Coalesce('aliased_to_id', 'id')).values(
+				'base_id'
+			)
 		)
 
 	if category is not None and category != -1:
@@ -1100,9 +1138,11 @@ def song_tag_search(
 
 	cleaned_slug = slugify_tag(query)
 	if cleaned_slug:
-		qs = _tag_exact_match(qs, cleaned_slug).order_by('exact_match', '-n_instance')
+		qs = _tag_exact_match(qs, cleaned_slug).order_by(
+			'exact_match', '-n_instance', 'name'
+		)
 	else:
-		qs = qs.order_by('-n_instance')
+		qs = qs.order_by('-n_instance', 'name')
 
 	if autocomplete:
 		qs = _collapse_aliases_into_single_suggestion(qs, cleaned_slug)

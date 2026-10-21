@@ -116,8 +116,8 @@ def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
 		changes = {}
 		if p.sample is not None and tag.category in WorkTagCategory.sampleable():
 			changes['used_as_source'] = p.sample
-		if p.roles and tag.category == WorkTagCategory.CREATOR:
-			changes['creator_roles'] = reduce(int.__or__, p.roles)
+		if p.roles is not None and tag.category == WorkTagCategory.CREATOR:
+			changes['creator_roles'] = reduce(int.__or__, p.roles, 0) or None
 
 		TagWorkInstance.objects.update_or_create(
 			work=work, work_tag=tag, defaults=changes

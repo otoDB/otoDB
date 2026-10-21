@@ -62,6 +62,29 @@ class TestTagLanguagePreference:
 		assert twi.creator_roles == 3  # 1|2 = 3
 		assert twi.used_as_source is True
 
+	def test_setting_tags_with_empty_roles_clears_creator_roles(
+		self, editor, work_client
+	):
+		"""Unchecking a creator's last role sends `roles: []`, which must clear it."""
+		work = MediaWork.objects.create(title='Test Work')
+		tag = TagWork.objects.create(
+			name='some_artist', category=WorkTagCategory.CREATOR
+		)
+		work.tags.add(tag)
+		twi = TagWorkInstance.objects.get(work=work, work_tag=tag)
+		twi.set_creator_roles([16])
+		twi.save()
+
+		response = work_client.put(
+			f'/set_tags?work_id={work.id}',
+			json=[{'slug': tag.slug, 'roles': []}],
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		twi.refresh_from_db()
+		assert twi.creator_roles is None
+
 	def test_updating_tag_parents_with_alias_slug(self, editor, tag_client):
 		"""
 		Test that when updating a tag's parents using an alias slug (e.g., from language preference),

@@ -163,15 +163,16 @@ def discord_comment(
 		return
 
 	from django.contrib.contenttypes.models import ContentType
-	from django_comments_xtd.models import XtdComment
 
-	comment = XtdComment.objects.get(pk=comment_id)
+	from otodb.models import Comment
+
+	comment = Comment.objects.get(pk=comment_id)
 	text: str = comment.comment
 	description = (text[:2000] + '...') if len(text) > 2000 else text
 	label, url = _entity_info(model_name, entity_pk, comment.pk)
 
 	ct = ContentType.objects.get(model=model_name)
-	comments = XtdComment.objects.filter(content_type=ct, object_pk=entity_pk)
+	comments = Comment.objects.filter(content_type=ct, object_pk=entity_pk)
 
 	embed: dict[str, Any] = {
 		'title': f'💬 {label}',

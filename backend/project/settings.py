@@ -54,14 +54,24 @@ SECRET_KEY = os.environ.get('OTODB_SECRET_KEY', '1145141919')
 
 COOKIES_FILE = os.environ.get('OTODB_COOKIES_FILE')
 
-EMAIL_USE_TLS = True
-EMAIL_HOST = os.environ.get('OTODB_EMAIL_HOST')
-EMAIL_PORT = os.environ.get('OTODB_EMAIL_PORT')
-EMAIL_HOST_USER = os.environ.get('OTODB_EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('OTODB_EMAIL_HOST_PASSWORD')
-EMAIL_BACKEND = os.environ.get(
+_EMAIL_BACKEND = os.environ.get(
 	'OTODB_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'
 )
+_EMAIL_PORT = os.environ.get('OTODB_EMAIL_PORT')
+MAILERS = {
+	'default': {
+		'BACKEND': _EMAIL_BACKEND,
+		'OPTIONS': {
+			'host': os.environ.get('OTODB_EMAIL_HOST') or 'localhost',
+			'port': int(_EMAIL_PORT) if _EMAIL_PORT else None,
+			'username': os.environ.get('OTODB_EMAIL_HOST_USER'),
+			'password': os.environ.get('OTODB_EMAIL_HOST_PASSWORD'),
+			'use_tls': True,
+		}
+		if _EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend'
+		else {},
+	}
+}
 
 ALLOWED_HOSTS = [
 	host.strip()
@@ -87,10 +97,6 @@ INSTALLED_APPS = [
 	'otodb',
 	'otodb.account',
 	'ordered_model',
-	'django.contrib.sites',
-	'django_comments_xtd',
-	'django_comments',
-	'rest_framework',
 	'corsheaders',
 ]
 
@@ -211,19 +217,6 @@ LOGIN_URL = '/login'
 
 OTODB_CONFIG_DICT = {'site_name': os.environ.get('OTODB_CONF_SITE_NAME', 'otoDB')}
 
-SITE_ID = 1
-COMMENTS_APP = 'django_comments_xtd'
-COMMENTS_XTD_MAX_THREAD_LEVEL = 3
-
-COMMENTS_XTD_APP_MODEL_OPTIONS = {
-	'default': {
-		'allow_flagging': True,
-		'allow_feedback': False,
-		'show_feedback': False,
-		'who_can_post': 'users',
-	}
-}
-
 CORS_ALLOW_CREDENTIALS = True
 if DEBUG:
 	CORS_ALLOW_ALL_ORIGINS = True
@@ -320,6 +313,7 @@ OTODB_MAX_PENDING_WORKS = 10
 OTODB_MAX_FLAGGED_WORKS = 5
 
 OTODB_COMMENT_EDIT_WINDOW = timedelta(days=180)
+OTODB_COMMENT_MAX_THREAD_LEVEL = 3
 OTODB_MODERATION_PERIOD = timedelta(days=5)
 
 OTODB_SYSTEM_BOT_USERNAME = os.environ.get('OTODB_SYSTEM_BOT_USERNAME', 'otoDB')

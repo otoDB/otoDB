@@ -19,7 +19,6 @@ from django.db.models import (
 )
 from django.db.models.functions import Cast, Coalesce
 from django.utils.timezone import now as tz_now
-from django_comments_xtd.models import XtdComment
 
 from .enums import NotificationReason, PostCategory
 from .revision import Revision
@@ -183,6 +182,35 @@ class ThreadPost(models.Model):
 		]
 
 
+class Comment(models.Model):
+	"""
+	A comment on an entity (work, tag, list, profile, ...).
+	Modeled after django-comments-xtd (used prior).
+	"""
+
+	content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+	object_pk = models.PositiveBigIntegerField()
+	content_object = GenericForeignKey('content_type', 'object_pk')
+	user = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		null=True,
+		blank=True,
+		on_delete=models.SET_NULL,
+	)
+	comment = models.TextField()
+	submit_date = models.DateTimeField(auto_now_add=True, db_index=True)
+	is_removed = models.BooleanField(default=False)
+	parent_id = models.PositiveBigIntegerField(default=0)
+	level = models.PositiveSmallIntegerField(default=0)
+
+	class Meta:
+		indexes = [
+			models.Index(
+				fields=['content_type', 'object_pk'], name='comment_entity_idx'
+			),
+		]
+
+
 class Notification(models.Model):
 	target = models.ForeignKey(
 		settings.AUTH_USER_MODEL,
@@ -204,7 +232,7 @@ class Notification(models.Model):
 		on_delete=models.CASCADE,
 	)
 	comment = models.ForeignKey(
-		XtdComment,
+		Comment,
 		blank=True,
 		null=True,
 		on_delete=models.CASCADE,
@@ -271,7 +299,7 @@ class Subscription(models.Model):
 
 class CommentMeta(models.Model):
 	comment = models.OneToOneField(
-		XtdComment, on_delete=models.CASCADE, related_name='meta'
+		Comment, on_delete=models.CASCADE, related_name='meta'
 	)
 	edited_at = models.DateTimeField(null=True, blank=True)
 	edited_by = models.ForeignKey(

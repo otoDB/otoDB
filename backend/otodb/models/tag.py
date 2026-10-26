@@ -2,9 +2,11 @@ import re
 from itertools import chain
 from typing import TYPE_CHECKING, Self
 
+from django.contrib.postgres.indexes import GinIndex, OpClass
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch, Q, Value
+from django.db.models import F, Prefetch, Q, Value
+from django.db.models.functions import Upper
 from django_cte import CTE, with_cte
 
 from otodb.common import process_tag_for_display, slugify_tag
@@ -194,9 +196,8 @@ class OtodbTagModel(models.Model):
 	@classmethod
 	def alias(cls, from_tags: list[Self], into_tag: Self):
 		from django.contrib.contenttypes.models import ContentType
-		from django_comments_xtd.models import XtdComment
 
-		from otodb.models.posts import EntityLink
+		from otodb.models.posts import Comment, EntityLink
 
 		self_ct = ContentType.objects.get_for_model(cls)
 
@@ -209,9 +210,9 @@ class OtodbTagModel(models.Model):
 				cls.transfer_data(tag, into_tag)
 				cls.objects.filter(aliased_to=tag).update(aliased_to=into_tag)
 
-				XtdComment.objects.filter(
-					content_type=self_ct, object_pk=str(tag.pk)
-				).update(object_pk=str(into_tag.pk))
+				Comment.objects.filter(content_type=self_ct, object_pk=tag.pk).update(
+					object_pk=into_tag.pk
+				)
 				EntityLink.objects.filter(
 					entity_type=self_ct,
 					entity_id=tag.pk,
@@ -244,6 +245,18 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		ordering = [
 			tagwork_ordering_case(),
 			'name',
+		]
+		indexes = [
+			GinIndex(
+				OpClass(F('slug'), name='gin_trgm_ops'),
+				name='otodb_tagwork_slug_trgm',
+				fastupdate=False,
+			),
+			GinIndex(
+				OpClass(Upper('name'), name='gin_trgm_ops'),
+				name='otodb_tagwork_name_trgm',
+				fastupdate=False,
+			),
 		]
 
 	deprecated = models.BooleanField(default=False, null=False)
@@ -352,6 +365,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 					).values('id'),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return (
@@ -383,6 +397,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 						fr=models.functions.Cast(cte.col.slug, models.TextField()),
 					),  # Cannot do all=True because we could have diamond problems
 				)
+				.order_by()
 			)
 		)
 		return with_cte(
@@ -418,6 +433,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 					),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 
@@ -588,6 +604,18 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 				violation_error_message='tag cannot be own parent',
 			),
 		]
+		indexes = [
+			GinIndex(
+				OpClass(F('slug'), name='gin_trgm_ops'),
+				name='otodb_tagsong_slug_trgm',
+				fastupdate=False,
+			),
+			GinIndex(
+				OpClass(Upper('name'), name='gin_trgm_ops'),
+				name='otodb_tagsong_name_trgm',
+				fastupdate=False,
+			),
+		]
 
 	def __str__(self):
 		return self.name
@@ -664,6 +692,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 					),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return with_cte(
@@ -684,6 +713,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 					).values('id'),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return (

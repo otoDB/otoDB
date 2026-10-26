@@ -6,7 +6,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import (
 	Case,
-	CharField,
 	Count,
 	Exists,
 	F,
@@ -17,9 +16,8 @@ from django.db.models import (
 	Value,
 	When,
 )
-from django.db.models.functions import Cast, Coalesce
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
-from django_comments_xtd.models import XtdComment
 from ninja import ModelSchema, Schema
 from ninja.pagination import paginate
 from ninja.security import django_auth
@@ -31,6 +29,7 @@ from otodb.common import (
 	slugify_tag,
 )
 from otodb.models import (
+	Comment,
 	MediaWork,
 	ModerationEvent,
 	PoolItem,
@@ -116,8 +115,8 @@ def _resolve_and_apply_tags(work, payload: list[TagWorkInstanceInSchema]):
 		changes = {}
 		if p.sample is not None and tag.category in WorkTagCategory.sampleable():
 			changes['used_as_source'] = p.sample
-		if p.roles and tag.category == WorkTagCategory.CREATOR:
-			changes['creator_roles'] = reduce(int.__or__, p.roles)
+		if p.roles is not None and tag.category == WorkTagCategory.CREATOR:
+			changes['creator_roles'] = reduce(int.__or__, p.roles, 0) or None
 
 		TagWorkInstance.objects.update_or_create(
 			work=work, work_tag=tag, defaults=changes
@@ -271,9 +270,9 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 		case WorkOrder.COMMENT:
 			ann = {
 				'_last_comment': Subquery(
-					XtdComment.objects.filter(
+					Comment.objects.filter(
 						content_type=ContentType.objects.get_for_model(MediaWork),
-						object_pk=Cast(OuterRef('id'), CharField()),
+						object_pk=OuterRef('id'),
 						is_removed=False,
 					)
 					.order_by('-submit_date')
@@ -490,9 +489,9 @@ work_metatag_grammars = {
 	'comments': MetatagSpec(
 		int,
 		lambda op, value: count_predicate_q(
-			XtdComment.objects.filter(
+			Comment.objects.filter(
 				content_type=ContentType.objects.get_for_model(MediaWork),
-				object_pk=Cast(OuterRef('id'), CharField()),
+				object_pk=OuterRef('id'),
 				is_removed=False,
 			),
 			op,

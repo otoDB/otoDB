@@ -4,7 +4,6 @@ from typing import Literal
 from django.db.models import Count, IntegerField, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
-from django_comments_xtd.models import XtdComment
 from ninja import Field, FilterSchema, ModelSchema, Query, Router
 from ninja.errors import HttpError
 from ninja.pagination import paginate
@@ -13,6 +12,7 @@ from pydantic import field_validator
 
 from otodb.account.models import Account
 from otodb.models import (
+	Comment,
 	ModerationEvent,
 	Notification,
 	ProfileConnection,
@@ -130,7 +130,7 @@ def search(
 		.values('c')
 	)
 	other_comments_count = (
-		XtdComment.objects.filter(user=OuterRef('pk'), is_removed=False)
+		Comment.objects.filter(user=OuterRef('pk'), is_removed=False)
 		.order_by()
 		.values('user')
 		.annotate(c=Count('id'))

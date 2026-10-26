@@ -14,6 +14,7 @@ from .media import (
 from .moderation import ModerationEvent
 from .pool import Pool, PoolItem, PoolUpstream
 from .posts import (
+	Comment,
 	CommentMeta,
 	EntityLink,
 	Notification,
@@ -37,6 +38,7 @@ from .work_source import WorkSource
 
 __all__ = [
 	'BulkRequest',
+	'Comment',
 	'CommentMeta',
 	'EntityLink',
 	'MediaSong',

@@ -135,7 +135,6 @@ class Migration(migrations.Migration):
 
 	dependencies = [
 		('contenttypes', '0002_remove_content_type_name'),
-		('django_comments_xtd', '0008_auto_20200920_2037'),
 		migrations.swappable_dependency(settings.AUTH_USER_MODEL),
 	]
 
@@ -162,6 +161,49 @@ class Migration(migrations.Migration):
 				'verbose_name_plural': 'Songs',
 			},
 			bases=(models.Model,),
+		),
+		migrations.CreateModel(
+			name='Comment',
+			fields=[
+				(
+					'id',
+					models.BigAutoField(
+						auto_created=True,
+						primary_key=True,
+						serialize=False,
+						verbose_name='ID',
+					),
+				),
+				('object_pk', models.PositiveBigIntegerField()),
+				('comment', models.TextField()),
+				('submit_date', models.DateTimeField(auto_now_add=True, db_index=True)),
+				('is_removed', models.BooleanField(default=False)),
+				('parent_id', models.PositiveBigIntegerField(default=0)),
+				('level', models.PositiveSmallIntegerField(default=0)),
+				(
+					'content_type',
+					models.ForeignKey(
+						on_delete=django.db.models.deletion.CASCADE,
+						to='contenttypes.contenttype',
+					),
+				),
+				(
+					'user',
+					models.ForeignKey(
+						blank=True,
+						null=True,
+						on_delete=django.db.models.deletion.SET_NULL,
+						to=settings.AUTH_USER_MODEL,
+					),
+				),
+			],
+			options={
+				'indexes': [
+					models.Index(
+						fields=['content_type', 'object_pk'], name='comment_entity_idx'
+					)
+				],
+			},
 		),
 		migrations.CreateModel(
 			name='BulkRequest',
@@ -219,7 +261,7 @@ class Migration(migrations.Migration):
 					models.OneToOneField(
 						on_delete=django.db.models.deletion.CASCADE,
 						related_name='meta',
-						to='django_comments_xtd.xtdcomment',
+						to='otodb.comment',
 					),
 				),
 				(
@@ -618,7 +660,7 @@ class Migration(migrations.Migration):
 						blank=True,
 						null=True,
 						on_delete=django.db.models.deletion.CASCADE,
-						to='django_comments_xtd.xtdcomment',
+						to='otodb.comment',
 					),
 				),
 				(

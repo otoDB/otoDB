@@ -196,9 +196,8 @@ class OtodbTagModel(models.Model):
 	@classmethod
 	def alias(cls, from_tags: list[Self], into_tag: Self):
 		from django.contrib.contenttypes.models import ContentType
-		from django_comments_xtd.models import XtdComment
 
-		from otodb.models.posts import EntityLink
+		from otodb.models.posts import Comment, EntityLink
 
 		self_ct = ContentType.objects.get_for_model(cls)
 
@@ -211,9 +210,9 @@ class OtodbTagModel(models.Model):
 				cls.transfer_data(tag, into_tag)
 				cls.objects.filter(aliased_to=tag).update(aliased_to=into_tag)
 
-				XtdComment.objects.filter(
-					content_type=self_ct, object_pk=str(tag.pk)
-				).update(object_pk=str(into_tag.pk))
+				Comment.objects.filter(content_type=self_ct, object_pk=tag.pk).update(
+					object_pk=into_tag.pk
+				)
 				EntityLink.objects.filter(
 					entity_type=self_ct,
 					entity_id=tag.pk,
@@ -366,6 +365,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 					).values('id'),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return (
@@ -397,6 +397,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 						fr=models.functions.Cast(cte.col.slug, models.TextField()),
 					),  # Cannot do all=True because we could have diamond problems
 				)
+				.order_by()
 			)
 		)
 		return with_cte(
@@ -432,6 +433,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 					),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 
@@ -690,6 +692,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 					),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return with_cte(
@@ -710,6 +713,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 					).values('id'),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return (

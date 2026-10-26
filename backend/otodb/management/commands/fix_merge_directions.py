@@ -9,8 +9,8 @@ marked as moved_to a work with a higher ID, and reverses the merge direction.
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django_comments_xtd.models import XtdComment
 
+from otodb.models import Comment
 from otodb.models.media import MediaWork
 from otodb.models.pool import PoolItem
 from otodb.models.relations import WorkRelation
@@ -132,9 +132,9 @@ class Command(BaseCommand):
 
 		# Move comments
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
-		comments_moved = XtdComment.objects.filter(
-			content_type=mediawork_ct, object_pk=str(higher_id_work.pk)
-		).update(object_pk=str(lower_id_work.pk))
+		comments_moved = Comment.objects.filter(
+			content_type=mediawork_ct, object_pk=higher_id_work.pk
+		).update(object_pk=lower_id_work.pk)
 		if comments_moved:
 			self.stdout.write(f'    Moved {comments_moved} comment(s)')
 

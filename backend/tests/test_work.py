@@ -10,11 +10,10 @@ from urllib.parse import urlencode
 
 import pytest
 from django.contrib.contenttypes.models import ContentType
-from django_comments_xtd.models import XtdComment
 
 from otodb.api.common import ApiError
 from otodb.common import process_video_info
-from otodb.models import MediaWork, WorkSource
+from otodb.models import Comment, MediaWork, WorkSource
 from otodb.models.enums import ErrorCode, Platform, Rating
 
 
@@ -219,15 +218,13 @@ class TestWork:
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
 
-		comment_1 = XtdComment.objects.create(
+		comment_1 = Comment.objects.create(
 			content_type=mediawork_ct,
-			object_pk=str(work_1.pk),
-			site_id=1,
+			object_pk=work_1.pk,
 		)
-		comment_2 = XtdComment.objects.create(
+		comment_2 = Comment.objects.create(
 			content_type=mediawork_ct,
-			object_pk=str(work_2.pk),
-			site_id=1,
+			object_pk=work_2.pk,
 		)
 
 		MediaWork.merge(
@@ -241,8 +238,8 @@ class TestWork:
 
 		comment_1.refresh_from_db()
 		comment_2.refresh_from_db()
-		assert comment_1.object_pk == str(work_1.pk)
-		assert comment_2.object_pk == str(work_1.pk)
+		assert comment_1.object_pk == work_1.pk
+		assert comment_2.object_pk == work_1.pk
 
 	def test_merge_preserves_comments_with_chain(self, editor):
 		"""Test that comments are migrated correctly with chained merges."""
@@ -262,15 +259,13 @@ class TestWork:
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
 
-		comment_1 = XtdComment.objects.create(
+		comment_1 = Comment.objects.create(
 			content_type=mediawork_ct,
-			object_pk=str(work_2.pk),
-			site_id=1,
+			object_pk=work_2.pk,
 		)
-		comment_2 = XtdComment.objects.create(
+		comment_2 = Comment.objects.create(
 			content_type=mediawork_ct,
-			object_pk=str(work_3.pk),
-			site_id=1,
+			object_pk=work_3.pk,
 		)
 
 		MediaWork.merge(
@@ -293,8 +288,8 @@ class TestWork:
 
 		comment_1.refresh_from_db()
 		comment_2.refresh_from_db()
-		assert comment_1.object_pk == str(work_1.pk)
-		assert comment_2.object_pk == str(work_1.pk)
+		assert comment_1.object_pk == work_1.pk
+		assert comment_2.object_pk == work_1.pk
 
 	def test_merge_always_uses_lowest_id(self, editor):
 		"""Test that merge always keeps the lower ID work."""

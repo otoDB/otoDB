@@ -365,6 +365,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 					).values('id'),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return (
@@ -396,6 +397,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 						fr=models.functions.Cast(cte.col.slug, models.TextField()),
 					),  # Cannot do all=True because we could have diamond problems
 				)
+				.order_by()
 			)
 		)
 		return with_cte(
@@ -431,6 +433,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 					),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 
@@ -689,6 +692,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 					),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return with_cte(
@@ -709,6 +713,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 					).values('id'),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return (

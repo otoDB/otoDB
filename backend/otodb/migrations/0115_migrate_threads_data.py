@@ -5,7 +5,7 @@ LANG_LABEL = {0: 'N/A', 1: 'en', 2: 'ja', 3: 'zh-cn', 4: 'ko'}
 
 
 def forward(apps, schema_editor):
-	"""Fold each thread's multilingual opening body + its XtdComments into a flat
+	"""Fold each thread's multilingual opening body + its comments into a flat
 	list of ThreadPosts (OP = num 1), and repoint notifications at those posts."""
 	Thread = apps.get_model('otodb', 'Thread')
 	ThreadPost = apps.get_model('otodb', 'ThreadPost')
@@ -13,7 +13,7 @@ def forward(apps, schema_editor):
 	Notification = apps.get_model('otodb', 'Notification')
 	CommentMeta = apps.get_model('otodb', 'CommentMeta')
 	ContentType = apps.get_model('contenttypes', 'ContentType')
-	XtdComment = apps.get_model('django_comments_xtd', 'xtdcomment')
+	Comment = apps.get_model('otodb', 'Comment')
 
 	thread_ct = ContentType.objects.filter(app_label='otodb', model='thread').first()
 
@@ -55,8 +55,8 @@ def forward(apps, schema_editor):
 		if thread_ct is None:
 			continue
 		comments = list(
-			XtdComment.objects.filter(
-				content_type_id=thread_ct.id, object_pk=str(thread.id)
+			Comment.objects.filter(
+				content_type_id=thread_ct.id, object_pk=thread.id
 			).order_by('submit_date', 'id')
 		)
 		if not comments:
@@ -96,7 +96,7 @@ def forward(apps, schema_editor):
 			)
 
 	if thread_ct is not None:
-		XtdComment.objects.filter(content_type_id=thread_ct.id).delete()
+		Comment.objects.filter(content_type_id=thread_ct.id).delete()
 
 
 def reverse(apps, schema_editor):

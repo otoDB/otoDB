@@ -232,9 +232,8 @@ class MediaWork(RevisionTrackedModel):
 		rating: int,
 	):
 		from django.contrib.contenttypes.models import ContentType
-		from django_comments_xtd.models import XtdComment
 
-		from otodb.models.posts import EntityLink
+		from otodb.models.posts import Comment, EntityLink
 
 		if from_work.pk == to_work.pk:
 			raise ValueError(f'Cannot merge work {from_work.pk} into itself')
@@ -280,9 +279,9 @@ class MediaWork(RevisionTrackedModel):
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
 
-		XtdComment.objects.filter(
-			content_type=mediawork_ct, object_pk=str(from_work.pk)
-		).update(object_pk=str(to_work.pk))
+		Comment.objects.filter(
+			content_type=mediawork_ct, object_pk=from_work.pk
+		).update(object_pk=to_work.pk)
 		EntityLink.objects.filter(
 			entity_type=mediawork_ct,
 			entity_id=from_work.pk,

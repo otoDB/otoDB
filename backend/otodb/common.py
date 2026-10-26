@@ -183,7 +183,7 @@ def get_niconico_geoblocked(sm):
 			)
 			video = nv.json()['data']['items'][0]['video'] if nv.ok else None
 			if video and (nhd := video['thumbnail'].get('nHdUrl')):
-				img = requests.get(nhd, timeout=10)
+				img = requests.get(nhd, headers={'Range': 'bytes=0-2047'}, timeout=10)
 				if img.ok:
 					# Read the size from the JPEG SOF marker; segments after SOI are
 					# FF, marker, 2-byte length, payload.

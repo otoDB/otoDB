@@ -39,7 +39,7 @@
 Provided by the `@storybook/addon-mcp` addon registered in `frontend/.storybook/main.ts`, served over HTTP at `http://localhost:6006/mcp`.
 
 - **The Storybook dev server must be running for this server to work.** Start it first with `bun run storybook:agent` from `frontend/` (see `frontend/AGENTS.md`). When Storybook is not running, the server is simply unreachable.
-- Use `get-storybook-story-instructions` before writing or editing components and stories, `preview-stories` after any change that affects how the UI looks, and `run-story-tests` to validate.
+- Use `get-storybook-story-instructions` before writing or editing components and stories, `stories-preview` after any change that affects how the UI looks, and `test-run` to validate. `stories-find-by-component` locates the existing stories for a component.
 
 ### `playwright` — driving a browser and taking screenshots
 

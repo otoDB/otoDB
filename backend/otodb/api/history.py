@@ -63,21 +63,13 @@ logger = logging.getLogger(__name__)
 
 
 @functools.cache
-def _wikipage_ct_id() -> int:
-	return ContentType.objects.get_for_model(WikiPage).id
+def _ct_id(model) -> int:
+	return ContentType.objects.get_for_model(model).id
 
 
 @functools.cache
 def _slug_model_ids() -> tuple[int, ...]:
-	return tuple(
-		[ContentType.objects.get_for_model(WikiPage).id]
-		+ [
-			ct.id
-			for ct in ContentType.objects.get_for_models(
-				*OtodbTagModel.__subclasses__()
-			).values()
-		]
-	)
+	return tuple(_ct_id(model) for model in (WikiPage, *OtodbTagModel.__subclasses__()))
 
 
 class HistoricalEntities(str, Enum):
@@ -107,6 +99,11 @@ class HistoricalEntitySchema(Schema):
 	entity: HistoricalEntities
 
 
+class HistoricalEntitySummarySchema(HistoricalEntitySchema):
+	# What to call the entity in a listing
+	label: str | None = None
+
+
 class RevisionSchema(ModelSchema):
 	id: OtodbID
 	date: datetime
@@ -120,14 +117,18 @@ class RevisionSchema(ModelSchema):
 
 
 class RevisionEntitySummarySchema(RevisionSchema):
-	first_entity: HistoricalEntitySchema | None = None
+	first_entity: HistoricalEntitySummarySchema | None = None
 	n_ent: int
 
 	@staticmethod
 	def resolve_first_entity(obj) -> dict | None:
 		if obj.first_ent_type is None:
 			return None
-		return {'id': obj.first_ent, 'entity': obj.first_ent_type}
+		return {
+			'id': obj.first_ent,
+			'entity': obj.first_ent_type,
+			'label': obj.first_ent_label,
+		}
 
 
 class OldColumnSchema(Schema):
@@ -269,65 +270,137 @@ class RevisionDetailsSchema(Schema):
 	row_context: dict[str, list[OldColumnSchema]]
 
 
+def _column_value(model, column: str, pk_ref: str) -> Coalesce:
+	"""`column` of the `model` row whose pk is the outer `pk_ref`, as it is now or,
+	for a deleted row, as it was last recorded."""
+	return Coalesce(
+		# Live
+		models.functions.Cast(
+			Subquery(
+				model._base_manager.filter(pk=OuterRef(pk_ref)).values(column)[:1]
+			),
+			output_field=models.TextField(),
+		),
+		# Deleted
+		Subquery(
+			RevisionChange.objects.filter(
+				target_type_id=_ct_id(model),
+				target_id=OuterRef(pk_ref),
+				target_column=column,
+			)
+			.order_by('-id')
+			.values('target_value')[:1]
+		),
+		output_field=models.TextField(),
+	)
+
+
 def _annotate_entity_summary(qs):
 	"""Annotate a Revision queryset with the route, entity count, and first
-	affected entity used by the revision summary schema."""
+	affected entity used by the revision summary schema.
+
+	`first_ent` is what the entity's page is addressed by (a slug or a pk) and
+	`first_ent_label` is what to call the entity."""
+	wikipage_ct = _ct_id(WikiPage)
+	# A wiki page attached to a tag or work is how that tag or work was edited, so
+	# it only stands for a revision when nothing else does (revision_changes hides
+	# such wiki pages the same way)
 	rce_subq = RevisionChangeEntity.objects.filter(change__rev=OuterRef('id')).order_by(
-		'id'
+		Case(When(entity_type_id=wikipage_ct, then=Value(1)), default=Value(0)),
+		'id',
 	)
-	return qs.annotate(
-		route=Subquery(rce_subq.values('route')[:1]),
-		n_ent=Coalesce(
-			Subquery(
-				rce_subq.order_by()
-				.values('change__rev')
-				.annotate(
-					c=Count(
-						models.functions.Concat(
-							models.functions.Cast(
-								'entity_type_id', output_field=models.CharField()
-							),
-							models.Value('-'),
-							models.functions.Cast(
-								'entity_id', output_field=models.CharField()
-							),
+
+	def distinct_entities(rce_qs) -> Subquery:
+		return Subquery(
+			rce_qs.order_by()
+			.values('change__rev')
+			.annotate(
+				c=Count(
+					models.functions.Concat(
+						models.functions.Cast(
+							'entity_type_id', output_field=models.CharField()
 						),
-						distinct=True,
-					)
-				)
-				.values('c')[:1]
-			),
-			0,
-		),
-		first_ent_id=Subquery(rce_subq.values('entity_id')[:1]),
-		first_ent_type=Subquery(rce_subq.values('entity_type__model')[:1]),
-		first_ent_type_id=Subquery(rce_subq.values('entity_type_id')[:1]),
-	).annotate(
-		first_ent=Case(
-			When(
-				Q(first_ent_type_id__in=_slug_model_ids()),
-				# Fall back to the numeric id when no slug change was recorded
-				then=Coalesce(
-					Subquery(
-						RevisionChange.objects.filter(
-							target_type_id=OuterRef('first_ent_type_id'),
-							target_id=OuterRef('first_ent_id'),
-							target_column='slug',
-						)
-						.order_by('-id')
-						.values('target_value')[:1]
+						models.Value('-'),
+						models.functions.Cast(
+							'entity_id', output_field=models.CharField()
+						),
 					),
-					models.functions.Cast(
-						F('first_ent_id'),
+					distinct=True,
+				)
+			)
+			.values('c')[:1]
+		)
+
+	first_ent_pk = models.functions.Cast(
+		F('first_ent_id'), output_field=models.TextField()
+	)
+	return (
+		qs.annotate(
+			route=Subquery(rce_subq.values('route')[:1]),
+			n_ent=Coalesce(
+				distinct_entities(rce_subq.exclude(entity_type_id=wikipage_ct)),
+				distinct_entities(rce_subq),
+				0,
+			),
+			first_ent_id=Subquery(rce_subq.values('entity_id')[:1]),
+			first_ent_type=Subquery(rce_subq.values('entity_type__model')[:1]),
+			first_ent_type_id=Subquery(rce_subq.values('entity_type_id')[:1]),
+		)
+		.annotate(
+			# A song is named after its work tag, so find that tag's pk first
+			first_song_tag_id=Case(
+				When(
+					first_ent_type_id=_ct_id(MediaSong),
+					then=models.functions.Cast(
+						_column_value(MediaSong, 'work_tag', 'first_ent_id'),
+						output_field=models.BigIntegerField(),
+					),
+				),
+				output_field=models.BigIntegerField(),
+			),
+		)
+		.annotate(
+			first_ent_label=Case(
+				When(
+					first_ent_type_id=_ct_id(MediaWork),
+					then=_column_value(MediaWork, 'title', 'first_ent_id'),
+				),
+				When(
+					first_ent_type_id=_ct_id(WorkSource),
+					then=_column_value(WorkSource, 'title', 'first_ent_id'),
+				),
+				When(
+					first_ent_type_id=_ct_id(MediaSong),
+					then=Coalesce(
+						_column_value(TagWork, 'slug', 'first_song_tag_id'),
+						first_ent_pk,
 						output_field=models.TextField(),
 					),
 				),
-			),
-			default=models.functions.Cast(
-				F('first_ent_id'),
+				*[
+					When(
+						first_ent_type_id=_ct_id(model),
+						then=Coalesce(
+							_column_value(model, 'slug', 'first_ent_id'),
+							first_ent_pk,
+							output_field=models.TextField(),
+						),
+					)
+					for model in (WikiPage, *OtodbTagModel.__subclasses__())
+				],
+				default=first_ent_pk,
 				output_field=models.TextField(),
 			),
-			output_field=models.TextField(),
+		)
+		.annotate(
+			first_ent=Case(
+				When(
+					first_ent_type_id__in=_slug_model_ids(),
+					then=F('first_ent_label'),
+				),
+				default=first_ent_pk,
+				output_field=models.TextField(),
+			),
 		)
 	)
 
@@ -445,7 +518,7 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 				Case(
 					When(
 						# Wikipage slugs live on the row, not in slug-column history
-						Q(revisionchangeentity__entity_type_id=_wikipage_ct_id()),
+						Q(revisionchangeentity__entity_type_id=_ct_id(WikiPage)),
 						then=Coalesce(
 							Subquery(
 								WikiPage.objects.filter(
@@ -492,7 +565,7 @@ def revision_changes(request: HttpRequest, revision_id: OtodbID):
 				Case(
 					When(
 						# Wikipage slugs live on the row, not in slug-column history
-						Q(target_type_id=_wikipage_ct_id()),
+						Q(target_type_id=_ct_id(WikiPage)),
 						then=Coalesce(
 							Subquery(
 								WikiPage.objects.filter(

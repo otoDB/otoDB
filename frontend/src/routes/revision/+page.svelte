@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import DisplayText from '$lib/DisplayText.svelte';
 	import { buildEntityRoutes, fieldEnumOptions } from '$lib/enums.js';
 	import { routeNames } from '$lib/enums/route.js';
 	import Pager from '$lib/Pager.svelte';
@@ -185,7 +186,7 @@
 					><td
 						>{#if r.first_entity}<a
 								href={buildEntityRoutes(r.first_entity.entity, r.first_entity.id)}
-								>{r.first_entity.id}</a
+								><DisplayText value={r.first_entity.label} /></a
 							>{#if r.n_ent > 1}{m.mellow_brave_marten_gather({
 									count: r.n_ent - 1
 								})}{/if}{/if}</td

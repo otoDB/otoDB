@@ -6,7 +6,7 @@ export const TagWorkConnectionMap: Record<
 > = {
 	[TagWorkConnectionTypes.otomad_wiki]: {
 		name: 'otomad.wiki',
-		linkFn: (id: string) => `https://otomad.wiki/tag/${id}`
+		linkFn: (id: string) => `https://otomad.wiki/${id}`
 	},
 	[TagWorkConnectionTypes.Otomad_Wiki_2]: {
 		name: '音MAD Wiki 2',

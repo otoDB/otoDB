@@ -6,6 +6,6 @@
 	let { data } = $props();
 </script>
 
-<Section title={data.title} type={m.giant_away_scallop_hike()} menuLinks={data.links}>
+<Section title={data.title} type={m.grand_merry_fly_succeed()} menuLinks={data.links}>
 	<HistoryView revisions={data.history} batch_size={data.batch_size} />
 </Section>

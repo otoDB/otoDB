@@ -2,7 +2,9 @@ import client from '$lib/api.server';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ fetch }) => {
+export const load: PageServerLoad = async ({ fetch, setHeaders }) => {
+	setHeaders({ 'cache-control': 'no-store' });
+
 	const { data: random } = await client.GET('/api/work/random', { fetch });
 	if (random) redirect(303, `/work/${random[0].id}`);
 	else redirect(303, '/');

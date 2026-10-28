@@ -8,8 +8,8 @@ follows the moved_to chain and updates comments accordingly.
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
-from django_comments_xtd.models import XtdComment
 
+from otodb.models import Comment
 from otodb.models.media import MediaWork
 
 
@@ -57,8 +57,8 @@ class Command(BaseCommand):
 				final_work = final_work.moved_to
 
 			if final_work and final_work.pk != merged_work.pk:
-				comment_count = XtdComment.objects.filter(
-					content_type=mediawork_ct, object_pk=str(merged_work.pk)
+				comment_count = Comment.objects.filter(
+					content_type=mediawork_ct, object_pk=merged_work.pk
 				).count()
 
 				if comment_count > 0:
@@ -67,9 +67,9 @@ class Command(BaseCommand):
 							f'  Would migrate {comment_count} comment(s) from work {merged_work.pk} to {final_work.pk}'
 						)
 					else:
-						updated = XtdComment.objects.filter(
-							content_type=mediawork_ct, object_pk=str(merged_work.pk)
-						).update(object_pk=str(final_work.pk))
+						updated = Comment.objects.filter(
+							content_type=mediawork_ct, object_pk=merged_work.pk
+						).update(object_pk=final_work.pk)
 
 						self.stdout.write(
 							f'  Migrated {updated} comment(s) from work {merged_work.pk} to {final_work.pk}'

@@ -64,8 +64,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - name: Set up Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: uv sync
       - name: Copy .env.example to .env
@@ -88,8 +87,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - name: Set up Python
-        run: uv python install 3.14
       - name: Install dependencies
         run: uv sync
       - name: Check for missing migrations
@@ -147,7 +144,7 @@ jobs:
       - test
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
       - name: Install dependencies

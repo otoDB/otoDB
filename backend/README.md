@@ -5,9 +5,6 @@
 Install [uv](https://github.com/astral-sh/uv).
 
 ```shell
-# Setup pre-commit
-pre-commit
-
 # Copy the base .env file
 cp .env.example .env
 

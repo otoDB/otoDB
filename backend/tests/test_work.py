@@ -10,11 +10,11 @@ from urllib.parse import urlencode
 
 import pytest
 from django.contrib.contenttypes.models import ContentType
-from django_comments_xtd.models import XtdComment
 
+from otodb.api.common import ApiError
 from otodb.common import process_video_info
-from otodb.models import MediaWork, WorkSource
-from otodb.models.enums import Platform, Rating
+from otodb.models import Comment, MediaWork, WorkSource
+from otodb.models.enums import ErrorCode, Platform, Rating
 
 
 def random_str(length):
@@ -218,15 +218,13 @@ class TestWork:
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
 
-		comment_1 = XtdComment.objects.create(
+		comment_1 = Comment.objects.create(
 			content_type=mediawork_ct,
-			object_pk=str(work_1.pk),
-			site_id=1,
+			object_pk=work_1.pk,
 		)
-		comment_2 = XtdComment.objects.create(
+		comment_2 = Comment.objects.create(
 			content_type=mediawork_ct,
-			object_pk=str(work_2.pk),
-			site_id=1,
+			object_pk=work_2.pk,
 		)
 
 		MediaWork.merge(
@@ -240,8 +238,8 @@ class TestWork:
 
 		comment_1.refresh_from_db()
 		comment_2.refresh_from_db()
-		assert comment_1.object_pk == str(work_1.pk)
-		assert comment_2.object_pk == str(work_1.pk)
+		assert comment_1.object_pk == work_1.pk
+		assert comment_2.object_pk == work_1.pk
 
 	def test_merge_preserves_comments_with_chain(self, editor):
 		"""Test that comments are migrated correctly with chained merges."""
@@ -261,15 +259,13 @@ class TestWork:
 
 		mediawork_ct = ContentType.objects.get_for_model(MediaWork)
 
-		comment_1 = XtdComment.objects.create(
+		comment_1 = Comment.objects.create(
 			content_type=mediawork_ct,
-			object_pk=str(work_2.pk),
-			site_id=1,
+			object_pk=work_2.pk,
 		)
-		comment_2 = XtdComment.objects.create(
+		comment_2 = Comment.objects.create(
 			content_type=mediawork_ct,
-			object_pk=str(work_3.pk),
-			site_id=1,
+			object_pk=work_3.pk,
 		)
 
 		MediaWork.merge(
@@ -292,8 +288,8 @@ class TestWork:
 
 		comment_1.refresh_from_db()
 		comment_2.refresh_from_db()
-		assert comment_1.object_pk == str(work_1.pk)
-		assert comment_2.object_pk == str(work_1.pk)
+		assert comment_1.object_pk == work_1.pk
+		assert comment_2.object_pk == work_1.pk
 
 	def test_merge_always_uses_lowest_id(self, editor):
 		"""Test that merge always keeps the lower ID work."""
@@ -323,3 +319,43 @@ class TestWork:
 		work_2.refresh_from_db()
 		assert work_2.moved_to == work_1
 		assert work_1.title == 'Merged'
+
+	def test_merge_with_self_is_rejected(self, editor, work_client):
+		"""Merging a work into itself must not point it at itself or drop its tags."""
+		work = MediaWork.objects.create(title='Work', rating=Rating.GENERAL)
+		work_source = WorkSource.objects.create(
+			media=work,
+			platform=Platform.YOUTUBE,
+			source_id='test123',
+			url='https://youtube.com/test123',
+			published_date=date.today(),
+			title='Test Source',
+			added_by=editor,
+		)
+
+		with pytest.raises(ApiError) as exc_info:
+			work_client.post(
+				f'/merge?{urlencode({"from_work_id": work.pk, "to_work_id": work.pk})}',
+				json={
+					'title': 'Merged',
+					'description': '',
+					'thumbnail_source_id': work_source.pk,
+					'rating': Rating.GENERAL,
+				},
+				user=editor,
+			)
+		assert exc_info.value.code == ErrorCode.CANNOT_MERGE_WITH_SELF
+
+		with pytest.raises(ValueError):
+			MediaWork.merge(
+				to_work=work,
+				from_work=work,
+				title='Merged',
+				description='',
+				thumbnail_source=work_source,
+				rating=Rating.GENERAL,
+			)
+
+		work.refresh_from_db()
+		assert work.moved_to is None
+		assert work.title == 'Work'

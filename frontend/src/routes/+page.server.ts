@@ -2,14 +2,7 @@ import client from '$lib/api.server';
 import type { PageServerLoad } from './$types';
 import { m } from '$lib/paraglide/messages';
 
-export const load: PageServerLoad = async ({ fetch, setHeaders, locals }) => {
-	if (!locals.user) {
-		setHeaders({
-			'Cache-Control': 'public, s-maxage=600, max-age=0',
-			'Vary': 'Accept-Language'
-		});
-	}
-
+export const load: PageServerLoad = async ({ fetch }) => {
 	const [randomWork, recentWork, changes, posts] = await Promise.all([
 		client.GET('/api/work/random', {
 			fetch,

@@ -2,21 +2,18 @@ import re
 from itertools import chain
 from typing import TYPE_CHECKING, Self
 
-# Monkeypatch tagulous to use our slugify (underscores as separator, not hyphens)
-import tagulous.models.models as _tagulous_models
+from django.contrib.postgres.indexes import GinIndex, OpClass
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch, Q, Value
+from django.db.models import F, Prefetch, Q, Value
+from django.db.models.functions import Upper
 from django_cte import CTE, with_cte
-from tagulous.models import BaseTagModel, TagModelManager
 
 from otodb.common import process_tag_for_display, slugify_tag
 
 from .enums import LanguageTypes, MediaType, SongTagCategory, WorkTagCategory
 from .revision import RevisionTrackedModel
 from .wiki import WikiPage
-
-_tagulous_models.slugify = lambda value, **_: slugify_tag(value)
 
 if TYPE_CHECKING:
 	from django.db.models import QuerySet
@@ -59,7 +56,7 @@ def tagwork_ordering_case(prefix=''):
 	)
 
 
-class TagModelManagerBase(TagModelManager):
+class TagModelManagerBase(models.Manager):
 	"""Base manager that converts name lookups to slug lookups"""
 
 	def get_or_create(self, *args, **kwargs):
@@ -125,7 +122,7 @@ class TagSongManager(TagModelManagerBase):
 		)
 
 
-class OtodbTagModel(BaseTagModel):
+class OtodbTagModel(models.Model):
 	"""
 	Abstract base class for tag models
 	"""
@@ -133,31 +130,64 @@ class OtodbTagModel(BaseTagModel):
 	name = models.CharField(unique=True, max_length=255)
 	slug = models.SlugField(unique=True, max_length=255, allow_unicode=True)
 	count = models.IntegerField(
-		default=0, help_text='Internal counter of how many times this tag is in use'
-	)
-	protected = models.BooleanField(
-		default=False, help_text='Will not be deleted when the count reaches 0'
+		default=0,
+		editable=False,
+		help_text='Number of rows in the instance table for this tag, maintained by DB triggers (otodb/db_triggers.py).',
 	)
 	aliased_to = models.ForeignKey(
 		'self', null=True, blank=True, on_delete=models.CASCADE, related_name='aliases'
 	)
 
+	# Slug logic copied from tagulous, which this model used to inherit:
+	# https://github.com/radiac/django-tagulous/blob/v2.1.1/tagulous/models/models.py#L383-L447
 	def save(self, *args, **kwargs):
 		assert self.name
 		self.name = process_tag_for_display(self.name)
-		if not self.slug:
-			self.slug = slugify_tag(self.name)
-			if not self.slug:
-				raise ValidationError(
-					message=f'Tag name "{self.name}" cannot be converted to a valid slug'
-				)
-		else:
-			expected = slugify_tag(self.name)
-			if not re.fullmatch(rf'{re.escape(expected)}(_\d+)?', self.slug):
-				raise ValidationError(
-					f'Name "{self.name}" does not normalize to slug "{self.slug}"'
-				)
+		base = slugify_tag(self.name)
+		if not base:
+			raise ValidationError(
+				message=f'Tag name "{self.name}" cannot be converted to a valid slug'
+			)
+		if self.slug and not re.fullmatch(rf'{re.escape(base)}(_\d+)?', self.slug):
+			raise ValidationError(
+				f'Name "{self.name}" does not normalize to slug "{self.slug}"'
+			)
+		if self._state.adding:
+			# On create the slug always comes from the name, like tagulous did.
+			# history.py's rollback_entity_rec() restores tags with their old slug and relies on this.
+			self.slug = self._unique_slug(base)
+		elif not self.slug:
+			# Empty slug means rebuild it, like tagulous did.
+			self.slug = self._unique_slug(base)
+		if not self._state.adding and kwargs.get('update_fields') is None:
+			# DB triggers own `count` (otodb/db_triggers.py); don't overwrite it with a stale value.
+			kwargs['update_fields'] = [
+				f.name
+				for f in self._meta.concrete_fields
+				if not f.primary_key and f.name != 'count'
+			]
 		super().save(*args, **kwargs)
+
+	def _unique_slug(self, base: str) -> str:
+		"""`base`, or `base_N` with the next unused N. Same scheme as tagulous, except we
+		check before inserting instead of catching IntegrityError:
+		https://github.com/radiac/django-tagulous/blob/v2.1.1/tagulous/models/models.py#L432-L445
+		"""
+		qs = type(self)._default_manager.order_by()
+		if not qs.filter(slug=base).exists():
+			return base
+		pattern = re.compile(rf'{re.escape(base)}_([0-9]+)')
+		taken = qs.filter(slug__startswith=f'{base}_').values_list('slug', flat=True)
+		n = (
+			max(
+				(int(m.group(1)) for s in taken if (m := pattern.fullmatch(s))),
+				default=0,
+			)
+			+ 1
+		)
+		suffix = f'_{n}'
+		max_length = self._meta.get_field('slug').max_length
+		return f'{base[: max_length - len(suffix)]}{suffix}'
 
 	class Meta:
 		abstract = True
@@ -166,9 +196,8 @@ class OtodbTagModel(BaseTagModel):
 	@classmethod
 	def alias(cls, from_tags: list[Self], into_tag: Self):
 		from django.contrib.contenttypes.models import ContentType
-		from django_comments_xtd.models import XtdComment
 
-		from otodb.models.posts import EntityLink
+		from otodb.models.posts import Comment, EntityLink
 
 		self_ct = ContentType.objects.get_for_model(cls)
 
@@ -181,9 +210,9 @@ class OtodbTagModel(BaseTagModel):
 				cls.transfer_data(tag, into_tag)
 				cls.objects.filter(aliased_to=tag).update(aliased_to=into_tag)
 
-				XtdComment.objects.filter(
-					content_type=self_ct, object_pk=str(tag.pk)
-				).update(object_pk=str(into_tag.pk))
+				Comment.objects.filter(content_type=self_ct, object_pk=tag.pk).update(
+					object_pk=into_tag.pk
+				)
 				EntityLink.objects.filter(
 					entity_type=self_ct,
 					entity_id=tag.pk,
@@ -212,15 +241,22 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 		parenthood: QuerySet[TagWorkParenthood]
 		wikipage_set: QuerySet[WikiPage]
 
-	class TagMeta:
-		protect_all = True
-		case_sensitive = False
-		force_lowercase = False
-
 	class Meta:
 		ordering = [
 			tagwork_ordering_case(),
 			'name',
+		]
+		indexes = [
+			GinIndex(
+				OpClass(F('slug'), name='gin_trgm_ops'),
+				name='otodb_tagwork_slug_trgm',
+				fastupdate=False,
+			),
+			GinIndex(
+				OpClass(Upper('name'), name='gin_trgm_ops'),
+				name='otodb_tagwork_name_trgm',
+				fastupdate=False,
+			),
 		]
 
 	deprecated = models.BooleanField(default=False, null=False)
@@ -329,6 +365,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 					).values('id'),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return (
@@ -360,6 +397,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 						fr=models.functions.Cast(cte.col.slug, models.TextField()),
 					),  # Cannot do all=True because we could have diamond problems
 				)
+				.order_by()
 			)
 		)
 		return with_cte(
@@ -395,6 +433,7 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 					),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 
@@ -538,11 +577,6 @@ class TagWorkLangPreference(RevisionTrackedModel):
 class TagSong(RevisionTrackedModel, OtodbTagModel):
 	objects = TagSongManager()
 
-	class TagMeta:
-		protect_all = True
-		case_sensitive = False
-		force_lowercase = False
-
 	category = models.IntegerField(
 		choices=SongTagCategory.choices, default=SongTagCategory.GENERAL
 	)
@@ -568,6 +602,18 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 				name='tagsong_parenthood_nonreflexive',
 				condition=~Q(parent_id=models.F('id')),
 				violation_error_message='tag cannot be own parent',
+			),
+		]
+		indexes = [
+			GinIndex(
+				OpClass(F('slug'), name='gin_trgm_ops'),
+				name='otodb_tagsong_slug_trgm',
+				fastupdate=False,
+			),
+			GinIndex(
+				OpClass(Upper('name'), name='gin_trgm_ops'),
+				name='otodb_tagsong_name_trgm',
+				fastupdate=False,
 			),
 		]
 
@@ -646,6 +692,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 					),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return with_cte(
@@ -666,6 +713,7 @@ class TagSong(RevisionTrackedModel, OtodbTagModel):
 					).values('id'),
 					all=True,
 				)
+				.order_by()
 			)
 		)
 		return (

@@ -33,10 +33,13 @@
 		title="Niconico Player"
 	></iframe>
 {:else if src.platform === Platform.Bilibili}
+	{@const chapter = src.source_id?.match(/_p(\d+)$/)?.[1]}
 	<iframe
 		{width}
 		{height}
-		src="//player.bilibili.com/player.html?isOutside=true&bvid={src.source_id}&p={autoplay ? 1 : 0}"
+		src="//player.bilibili.com/player.html?isOutside=true&bvid={src.source_id?.slice(0, 12)}{chapter
+			? '&p=' + chapter
+			: ''}&autoplay={autoplay ? 1 : 0}"
 		scrolling="no"
 		frameborder="no"
 		allowfullscreen

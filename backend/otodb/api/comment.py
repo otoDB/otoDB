@@ -7,7 +7,6 @@ from django.db import models, transaction
 from django.db.models import Case, F, OuterRef, Subquery, When, Window
 from django.db.models.functions import Rank
 from django.http import HttpRequest
-from django_comments_xtd.models import XtdComment, max_thread_level_for_content_type
 from ninja import Router, Schema
 from ninja.errors import HttpError
 from ninja.pagination import paginate
@@ -16,7 +15,13 @@ from ninja.throttling import AuthRateThrottle
 
 from otodb.account.models import Account
 from otodb.discord import discord_comment
-from otodb.models import CommentMeta, Notification, RevisionChange, Subscription
+from otodb.models import (
+	Comment,
+	CommentMeta,
+	Notification,
+	RevisionChange,
+	Subscription,
+)
 from otodb.models.enums import ErrorCode
 from otodb.tasks import fire_and_forget
 
@@ -58,7 +63,7 @@ class CommentSchema(BaseCommentSchema):
 
 class CommentInSchema(Schema):
 	model: ModelsWithComments
-	pk: str
+	pk: OtodbID
 	comment_text: str
 	parent_id: OtodbID = 0
 	mentioned_users: list[str]
@@ -73,8 +78,8 @@ def get(request: HttpRequest, model: ModelsWithComments, pk: OtodbID):
 	)
 	result = []
 	for c in (
-		XtdComment.objects.filter(content_type=T, object_pk=pk)
-		.select_related('meta', 'meta__edited_by')
+		Comment.objects.filter(content_type=T, object_pk=pk)
+		.select_related('user', 'meta', 'meta__edited_by')
 		.order_by('id')
 		.annotate(index=index)
 	):
@@ -101,19 +106,19 @@ def post(
 	parent_id = payload.parent_id
 	comment_text = payload.comment_text
 	pk = payload.pk
-	parent = None if parent_id == 0 else XtdComment.objects.get(id=parent_id)
+	parent = None if parent_id == 0 else Comment.objects.get(id=parent_id)
 	if parent is not None and parent.is_removed:
 		raise HttpError(400, 'Bad Request')
-	if parent is not None and parent.level >= max_thread_level_for_content_type(T):
+	if parent is not None and parent.level >= settings.OTODB_COMMENT_MAX_THREAD_LEVEL:
 		raise ApiError(400, ErrorCode.MAX_THREAD_LEVEL)
 
-	comment = XtdComment.objects.create(
+	comment = Comment.objects.create(
 		content_type=T,
 		object_pk=pk,
-		site_id=1,
 		user=request.user,
 		comment=comment_text,
 		parent_id=parent_id,
+		level=0 if parent is None else parent.level + 1,
 	)
 	target_names: set[str] = set()
 	if parent is None:
@@ -160,9 +165,7 @@ def delete(
 	comment_id: OtodbID,
 ):
 	T = ContentType.objects.get(model=model)
-	comment = XtdComment.objects.get(
-		content_type=T, object_pk=pk, site_id=1, id=comment_id
-	)
+	comment = Comment.objects.get(content_type=T, object_pk=pk, id=comment_id)
 	if request.user.level >= Account.Levels.MOD or comment.user == request.user:
 		comment.is_removed = True
 		comment.save()
@@ -180,7 +183,7 @@ class CommentEditSchema(Schema):
 @user_is_trusted
 @restrict_internal
 def edit(request: HttpRequest, payload: CommentEditSchema):
-	comment = XtdComment.objects.select_related('meta').get(id=payload.comment_id)
+	comment = Comment.objects.select_related('meta').get(id=payload.comment_id)
 	if not request.user.is_mod:
 		if comment.user != request.user:
 			raise HttpError(403, 'Forbidden')
@@ -216,7 +219,8 @@ class ExtCommentSchema(BaseCommentSchema):
 @paginate
 def recent(request: HttpRequest):
 	return (
-		XtdComment.objects.filter(is_removed=False)
+		Comment.objects.filter(is_removed=False)
+		.select_related('user')
 		.exclude(content_type__model='account')
 		.order_by('-submit_date')
 		.annotate(
@@ -226,10 +230,7 @@ def recent(request: HttpRequest):
 					then=Subquery(
 						RevisionChange.objects.filter(
 							target_type_id=OuterRef('content_type_id'),
-							target_id=models.functions.Cast(
-								OuterRef('object_pk'),
-								output_field=models.BigIntegerField(),
-							),
+							target_id=OuterRef('object_pk'),
 							target_column='slug',
 						)
 						.order_by('-id')
@@ -240,10 +241,7 @@ def recent(request: HttpRequest):
 					content_type__model='account',
 					then=Subquery(
 						Account.objects.filter(
-							id=models.functions.Cast(
-								OuterRef('object_pk'),
-								output_field=models.BigIntegerField(),
-							),
+							id=OuterRef('object_pk'),
 						).values('username')[:1]
 					),
 				),

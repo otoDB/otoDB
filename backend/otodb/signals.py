@@ -28,6 +28,9 @@ def on_add_remove_tag_song(sender, instance, action, pk_set, **kwargs):
 				instance.tags.add(tag.aliased_to)
 
 
+# TODO: This runs on every delete of every model, which can make deletes slow,
+# since it then has to load the object into memory.
+# Only listen to the models that requests can point at.
 @receiver(pre_delete)
 def post_group_deleted(sender, instance, using, **kwargs):
 	# Query tags with the instance of PostGroup and delete them

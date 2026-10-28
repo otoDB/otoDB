@@ -92,6 +92,13 @@ class WorkSource(RevisionTrackedModel):
 		verbose_name = 'Media Source'
 		verbose_name_plural = 'Media Sources'
 		ordering = ['work_status', 'work_origin', 'published_date']
+		constraints = [
+			models.UniqueConstraint(
+				fields=['platform', 'source_id'],
+				name='unique_worksource_platform_source_id',
+				violation_error_message='This source is already registered',
+			),
+		]
 
 	def refresh(self, info, full_info):
 		"""
@@ -238,34 +245,32 @@ class WorkSource(RevisionTrackedModel):
 		if info['site'] is None:
 			return None
 
-		# Check if source already exists
-		try:
-			src = WorkSource.objects.get(platform=info['site'], source_id=info['id'])
-		except WorkSource.DoesNotExist:
-			# Create new source
-			src = WorkSource.objects.create(
-				media=None,
-				title=info['title'],
-				description=info['description'],
-				url=info['url'],
-				platform=info['site'],
-				source_id=info['id'],
-				published_date=(
+		src, created = WorkSource.objects.get_or_create(
+			platform=info['site'],
+			source_id=info['id'],
+			defaults={
+				'media': None,
+				'title': info['title'],
+				'description': info['description'],
+				'url': info['url'],
+				'published_date': (
 					date.fromtimestamp(info['timestamp']) if info['timestamp'] else None
 				),
-				work_origin=WorkOrigin(is_reupload),
-				work_status=WorkStatus.DOWN
+				'work_origin': WorkOrigin(is_reupload),
+				'work_status': WorkStatus.DOWN
 				if metadata is not None
 				else WorkStatus.AVAILABLE,
-				thumbnail_url=info.get('thumb'),
-				thumbnail_mime=info.get('thumb_mime'),
-				work_width=info.get('work_width'),
-				work_height=info.get('work_height'),
-				work_duration=info.get('work_duration'),
-				added_by=user,
-				uploader_id=info['uploader_id'],
-			)
+				'thumbnail_url': info.get('thumb'),
+				'thumbnail_mime': info.get('thumb_mime'),
+				'work_width': info.get('work_width'),
+				'work_height': info.get('work_height'),
+				'work_duration': info.get('work_duration'),
+				'added_by': user,
+				'uploader_id': info['uploader_id'],
+			},
+		)
 
+		if created:
 			if full_info is not None:
 				WorkSourceInfoPayload.objects.create(source=src, payload=full_info)
 

@@ -1222,6 +1222,7 @@ def history(request: HttpRequest, entity: Query[HistoricalEntitySchema]):
 						).values('id'),
 						all=True,
 					)
+					.order_by()
 				)
 			)
 			merged = (

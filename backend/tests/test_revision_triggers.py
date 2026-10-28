@@ -18,6 +18,7 @@ from django.db import DatabaseError, connection
 from otodb import revision_db
 from otodb.account.models import Account
 from otodb.api.history import _is_new_q, get_rev_restored, revision_changes
+from otodb.db_triggers import generate_sql
 from otodb.models import (
 	MediaWork,
 	Revision,
@@ -27,7 +28,6 @@ from otodb.models import (
 from otodb.models.enums import Platform, Route, WorkOrigin, WorkStatus
 from otodb.models.posts import Notification, Subscription
 from otodb.models.revision import RevisionChangeEntity
-from otodb.revision_codegen import generate_sql
 from otodb.revision_spec import TABLES
 
 ROUTE = int(Route.WORKSOURCE_SET_ORIGIN)  # 62
@@ -211,7 +211,7 @@ def test_delete_captures_marker(revision_triggers, member):
 
 @pytest.mark.django_db
 def test_update_when_guard_skips_function(revision_triggers, member):
-	"""An untracked-only write (moderation flags, tagulous counts, ...) must not even
+	"""An untracked-only write (moderation flags, tag instance counts, ...) must not even
 	invoke the capture function. EXPLAIN ANALYZE reports each row trigger that fired;
 	a WHEN guard evaluating false means the trigger is never queued, so it is absent.
 	The tracked write doubles as proof that EXPLAIN does report the trigger when fired.

@@ -6,14 +6,14 @@
 	let { data } = $props();
 </script>
 
-<Section title={data.tag.name} type={m.giant_away_scallop_hike()} menuLinks={data.links}>
+<Section title={data.tag.name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<HistoryView revisions={data.history} batch_size={data.batch_size} />
 </Section>
 
 {#if data.tag.song && data.song_history}
 	<Section
 		title={data.tag.song.title}
-		type={m.giant_away_scallop_hike()}
+		type={m.grand_nice_pony_belong()}
 		menuLinks={data.song_links}
 	>
 		<HistoryView

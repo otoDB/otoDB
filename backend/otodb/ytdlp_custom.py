@@ -148,10 +148,10 @@ class MisskeyBaseIE(InfoExtractor):
 			),
 			None,
 		)
-		if file is None:
+		if file is None:  # fail early if no MIME found
 			raise ExtractorError('Note has no video or audio attachment', expected=True)
 
-		mime = file.get('type') or ''
+		mime = file['type']
 		is_audio = mime.startswith('audio/')
 		width, height, duration = probe_media(self, file['url'])
 

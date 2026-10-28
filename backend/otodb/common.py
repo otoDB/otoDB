@@ -418,9 +418,11 @@ def fetch_thumbnail_mime_type(thumbnail_url: str):
 	    MimeType enum value or None if fetch fails
 	"""
 	try:
-		response = requests.get(thumbnail_url, allow_redirects=True, timeout=5)
-		content_type = response.headers.get('Content-Type')
-		return MimeType.from_str(content_type)
+		with requests.get(
+			thumbnail_url, allow_redirects=True, timeout=5, stream=True
+		) as response:
+			response.raise_for_status()
+			return MimeType.from_str(response.headers.get('Content-Type'))
 	except Exception:
 		logger.exception('Error fetching thumbnail mime type')
 		return None

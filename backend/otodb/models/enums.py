@@ -218,6 +218,10 @@ class MimeType(OtodbIntegerEnum):
 
 	@classmethod
 	def from_str(cls, value):
+		if not value:
+			return None
+		# strip optional parameter field
+		value = value.split(';', 1)[0].strip().lower()
 		for choice, string in cls.choices:
 			if string == value:
 				return choice

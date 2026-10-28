@@ -27,7 +27,7 @@
 		if (dragIndex !== -1 && !isNaN(dropIndex) && dragIndex !== dropIndex) {
 			const [item] = entries.splice(dragIndex, 1);
 			entries.splice(dropIndex, 0, item);
-			entries = entries;
+			entries = [...entries];
 			await client.PUT('/api/list/items', {
 				fetch,
 				params: { query: { list_id: data.list.id } },
@@ -70,7 +70,7 @@
 		});
 		if (!error) {
 			entries.splice(index, 1);
-			entries = entries;
+			entries = [...entries];
 			data.entries.count--;
 		}
 	}

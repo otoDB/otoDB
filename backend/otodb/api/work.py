@@ -657,13 +657,14 @@ def search(
 			qs = qs.annotate(**ann)
 		qs = qs.filter(filter_q).order_by(*order_fields)
 	elif query:
+		sources = WorkSource.objects.filter(media_id=OuterRef('id'))
 		qs = qs.annotate(
 			priority=Case(
 				When(id=search_id, then=Value(0)),
-				When(worksource__url=query, then=Value(1)),
-				When(worksource__source_id=query, then=Value(2)),
+				When(Exists(sources.filter(url=query)), then=Value(1)),
+				When(Exists(sources.filter(source_id=query)), then=Value(2)),
 				When(title__icontains=query, then=Value(100)),
-				When(worksource__title__icontains=query, then=Value(101)),
+				When(Exists(sources.filter(title__icontains=query)), then=Value(101)),
 				When(description__icontains=query, then=Value(102)),
 				default=Value(1000),
 				output_field=IntegerField(),

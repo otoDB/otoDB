@@ -222,6 +222,19 @@ _WORK_TAG_COUNT_ORDERS: dict[WorkOrder, Q] = {
 
 
 def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
+	"""
+	Returns `(annotations, filter, order_by)`, applied by the search as:
+	`qs.annotate(**annotations).filter(filter).order_by(*order_by)`
+
+	For example, `order:duration` returns roughly:
+	```
+	(
+		{'_duration': Subquery(<the work's longest source duration>)},
+		Exists(<a source of the work that has a duration>),
+		('-_duration',),
+	)
+	```
+	"""
 	if v.name.endswith('_ASC'):
 		base, ascending = WorkOrder[v.name.removesuffix('_ASC')], True
 	elif v.name.endswith('_DESC'):
@@ -240,58 +253,56 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 		case WorkOrder.SUBMITTED:
 			return {}, Q(), by('created_at')
 		case WorkOrder.PUBLISHED:
+			dates = WorkSource.objects.filter(
+				media_id=OuterRef('id'), published_date__isnull=False
+			)
 			ann = {
 				'_pub': Subquery(
-					WorkSource.objects.filter(media_id=OuterRef('id'))
-					.order_by('published_date')
-					.values('published_date')[:1]
+					dates.order_by('published_date').values('published_date')[:1]
 				)
 			}
-			return ann, Q(), by('_pub')
+			return ann, Exists(dates), by('_pub')
 		case WorkOrder.RESOLUTION:
-			ann = {
-				'_mpixels': Subquery(
-					WorkSource.objects.filter(media_id=OuterRef('id'))
-					.annotate(_mp=F('work_width') * F('work_height'))
-					.order_by(F('_mp').desc(nulls_last=True))
-					.values('_mp')[:1]
-				)
-			}
-			return ann, Q(_mpixels__isnull=False), by('_mpixels')
+			resolutions = WorkSource.objects.filter(
+				media_id=OuterRef('id'),
+				work_width__isnull=False,
+				work_height__isnull=False,
+			).annotate(_mp=F('work_width') * F('work_height'))
+			ann = {'_mpixels': Subquery(resolutions.order_by('-_mp').values('_mp')[:1])}
+			return ann, Exists(resolutions), by('_mpixels')
 		case WorkOrder.DURATION:
+			durations = WorkSource.objects.filter(
+				media_id=OuterRef('id'), work_duration__isnull=False
+			)
 			ann = {
 				'_duration': Subquery(
-					WorkSource.objects.filter(media_id=OuterRef('id'))
-					.order_by(F('work_duration').desc(nulls_last=True))
-					.values('work_duration')[:1]
+					durations.order_by('-work_duration').values('work_duration')[:1]
 				)
 			}
-			return ann, Q(_duration__isnull=False), by('_duration')
+			return ann, Exists(durations), by('_duration')
 		case WorkOrder.COMMENT:
+			comments = Comment.objects.filter(
+				content_type=ContentType.objects.get_for_model(MediaWork),
+				object_pk=OuterRef('id'),
+				is_removed=False,
+			)
 			ann = {
 				'_last_comment': Subquery(
-					Comment.objects.filter(
-						content_type=ContentType.objects.get_for_model(MediaWork),
-						object_pk=OuterRef('id'),
-						is_removed=False,
-					)
-					.order_by('-submit_date')
-					.values('submit_date')[:1]
+					comments.order_by('-submit_date').values('submit_date')[:1]
 				)
 			}
-			return ann, Q(_last_comment__isnull=False), by('_last_comment')
+			return ann, Exists(comments), by('_last_comment')
 		case WorkOrder.REVISION:
+			changes = RevisionChangeEntity.objects.filter(
+				entity_type=ContentType.objects.get_for_model(MediaWork),
+				entity_id=OuterRef('id'),
+			)
 			ann = {
 				'_last_rev': Subquery(
-					RevisionChangeEntity.objects.filter(
-						entity_type=ContentType.objects.get_for_model(MediaWork),
-						entity_id=OuterRef('id'),
-					)
-					.order_by('-change_id')
-					.values('change_id')[:1]
+					changes.order_by('-change_id').values('change_id')[:1]
 				)
 			}
-			return ann, Q(_last_rev__isnull=False), by('_last_rev')
+			return ann, Exists(changes), by('_last_rev')
 		case _ if base in _WORK_TAG_COUNT_ORDERS:
 			sub = TagWorkInstance.objects.filter(
 				_WORK_TAG_COUNT_ORDERS[base], work_id=OuterRef('id')
@@ -537,12 +548,13 @@ work_metatag_grammars = {
 	},
 	'relations': MetatagSpec(
 		int,
-		lambda op, value: count_predicate_q(
-			WorkRelation.objects.filter(
-				Q(A_id=OuterRef('id')) | Q(B_id=OuterRef('id'))
-			),
-			op,
-			value,
+		lambda op, value: Q(
+			id__in=MediaWork.objects.alias(
+				_n=Count('relation_A', distinct=True)
+				+ Count('relation_B', distinct=True)
+			)
+			.filter(**{f'_n__{op}': value})
+			.values('id')
 		),
 	),
 	'relation': MetatagSpec(

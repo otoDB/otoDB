@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/Section.svelte';
 	import Pager from '$lib/Pager.svelte';
+	import Time from '$lib/Time.svelte';
 	import { page } from '$app/state';
 	import { Platform } from '$lib/schema.js';
 	import { enumValues, PlatformNames } from '$lib/enums.js';
@@ -70,7 +71,13 @@
 							{/if}
 						</td>
 						<td><a href="/user/{source.added_by.username}">{source.added_by.username}</a></td>
-						<td>{source.published_date ?? '-'}</td>
+						<td>
+							{#if source.published_date && source.published_at}
+								<Time date={source.published_at}>{source.published_date}</Time>
+							{:else}
+								{source.published_date ?? '-'}
+							{/if}
+						</td>
 						<td>
 							{#if source.is_pending}
 								<span class="text-sky-600">{m.such_actual_okapi_dare()}</span>

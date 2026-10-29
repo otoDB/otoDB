@@ -9,7 +9,7 @@ is captured (the property the ORM capture never had).
 
 import threading
 from contextlib import contextmanager
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 from django.contrib.contenttypes.models import ContentType
@@ -18,7 +18,7 @@ from django.db import DatabaseError, connection
 from otodb import revision_db
 from otodb.account.models import Account
 from otodb.api.history import _is_new_q, get_rev_restored, revision_changes
-from otodb.db_triggers import generate_sql
+from otodb.db_triggers import _serialize, generate_sql
 from otodb.models import (
 	MediaWork,
 	Revision,
@@ -291,6 +291,49 @@ def test_serialization_matches_python_str(revision_triggers):
 	assert _sql_value("to_char(date '2024-01-05', 'YYYY-MM-DD')") == str(
 		date(2024, 1, 5)
 	)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+	'at',
+	[
+		datetime(2021, 12, 11, 20, tzinfo=UTC),
+		datetime(2021, 12, 11, 20, 0, 0, 500000, tzinfo=UTC),
+		None,
+	],
+)
+def test_datetime_serialization_matches_django(revision_triggers, at):
+	"""Django's value_to_string of the UTC instant, whatever the session TimeZone"""
+	field = WorkSource._meta.get_field('published_at')
+	expected = field.value_to_string(WorkSource(published_at=at)) if at else None
+	with connection.cursor() as cursor:
+		cursor.execute("SET LOCAL TimeZone = 'Asia/Tokyo'")
+		cursor.execute(
+			f'SELECT {_serialize("published_at", "datetime", "v")}'
+			' FROM (VALUES (%s::timestamptz)) AS v("published_at")',
+			[at],
+		)
+		assert cursor.fetchone()[0] == expected
+
+
+@pytest.mark.django_db
+def test_datetime_capture_round_trips(revision_triggers, member):
+	ws = _make_worksource(member)
+	at = datetime(2021, 12, 11, 20, tzinfo=UTC)
+
+	with (
+		db_revision(user=member, message='time', route=ROUTE),
+		connection.cursor() as cursor,
+	):
+		cursor.execute("SET LOCAL TimeZone = 'Asia/Tokyo'")
+		cursor.execute(
+			'UPDATE otodb_worksource SET published_at = %s WHERE id = %s', [at, ws.id]
+		)
+
+	change = RevisionChange.objects.get(target_column='published_at')
+	assert change.target_value == '2021-12-11T20:00:00+00:00'
+	field = WorkSource._meta.get_field('published_at')
+	assert field.to_python(change.target_value) == at
 
 
 # --- finalization ----------------------------------------------------------

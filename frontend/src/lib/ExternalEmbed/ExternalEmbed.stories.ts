@@ -31,6 +31,7 @@ const source = (
 	work_status: WorkStatus.Available,
 	url: 'https://example.com/',
 	published_date: '2024-01-05',
+	published_at: '2024-01-05T09:30:00+00:00',
 	work_width: null,
 	work_height: null,
 	work_duration: null,

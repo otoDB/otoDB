@@ -52,6 +52,7 @@ const unavailableSource = {
 	work_status: WorkStatus.Down,
 	url: 'https://example.com/watch?v=example',
 	published_date: '2024-01-01',
+	published_at: '2024-01-01T05:00:00+00:00',
 	work_width: 1920,
 	work_height: 1080,
 	work_duration: 180,

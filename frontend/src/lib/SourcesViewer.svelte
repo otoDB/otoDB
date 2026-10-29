@@ -26,14 +26,14 @@
 		user
 	}: Props = $props();
 
-	// Earliest published_date first; sources without a date sort last
+	// Earliest upload first, by its exact time when known; sources without a date sort last
 	function byDateAsc(a: Source, b: Source): number {
-		const da = a.published_date;
-		const db = b.published_date;
+		const da = a.published_at ?? a.published_date;
+		const db = b.published_at ?? b.published_date;
 		if (da == null && db == null) return 0;
 		if (da == null) return 1;
 		if (db == null) return -1;
-		return da < db ? -1 : da > db ? 1 : 0;
+		return Date.parse(da) - Date.parse(db);
 	}
 
 	// Index of the source to play. With a specific platform preferred: author upload on that

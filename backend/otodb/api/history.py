@@ -803,7 +803,17 @@ def _get_all_previous_field_values(
 	required_fields = fields or model_class._revision_meta.tracked_fields
 	missing_fields = set(required_fields) - set(latest_changes.keys())
 	if missing_fields:
-		return False, missing_fields
+		existed = RevisionChange.objects.filter(
+			target_type_id=target_type_id, target_id=target_id, rev__date__lt=date
+		).exists()
+		if not existed:
+			return False, missing_fields
+		# A column tracked only after the row was created has no earlier change;
+		# it held its default then
+		for field_name in missing_fields:
+			latest_changes[field_name] = model_class._meta.get_field(
+				field_name
+			).get_default()
 
 	# Pre-fetch field objects
 	related_fields = {

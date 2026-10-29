@@ -88,7 +88,7 @@ export const actions = {
 					work_duration: data.get('manual_duration')
 						? +(data.get('manual_duration') as string)
 						: null,
-					published_date: (data.get('manual_date') as string) || null
+					published_at: (data.get('manual_date') as string) || null
 				};
 			}
 		}

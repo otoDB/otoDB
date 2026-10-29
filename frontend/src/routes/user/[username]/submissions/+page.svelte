@@ -13,6 +13,7 @@
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import { Levels, Platform, SubmissionStanding, WorkOrigin, WorkStatus } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
+	import Time from '$lib/Time.svelte';
 
 	let { data } = $props();
 
@@ -124,7 +125,14 @@
 								<a href="/upload/{src.id}">{src.title || src.url}</a>
 							{/if}
 						</td>
-						<td>{PlatformNames[src.platform]}</td><td>{src.published_date}</td>
+						<td>{PlatformNames[src.platform]}</td>
+						<td>
+							{#if src.published_date && src.published_at}
+								<Time date={src.published_at}>{src.published_date}</Time>
+							{:else}
+								{src.published_date}
+							{/if}
+						</td>
 						<td class="whitespace-nowrap">{WorkOriginNames[src.work_origin]()}</td>
 						{#if isBound}
 							<td class="whitespace-nowrap">{WorkStatusNames[src.work_status]()}</td>

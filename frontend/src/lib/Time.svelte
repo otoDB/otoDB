@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
 
@@ -11,10 +12,11 @@
 
 	interface Props {
 		date: string | Date;
-		format: 'relative' | 'absolute';
+		format?: 'relative' | 'absolute';
+		children?: Snippet;
 	}
 
-	const { date, format }: Props = $props();
+	const { date, format, children }: Props = $props();
 
 	const parsedDate = $derived(date instanceof Date ? date : new Date(date));
 
@@ -52,7 +54,9 @@
 	);
 </script>
 
-{#if format === 'relative'}
+{#if children}
+	<time title={full} class="whitespace-nowrap">{@render children()}</time>
+{:else if format === 'relative'}
 	<time title={full} class="whitespace-nowrap">{relative}</time>
 {:else}
 	<time title={full} class="whitespace-nowrap">{short}</time>

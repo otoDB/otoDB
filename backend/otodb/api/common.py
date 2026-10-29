@@ -39,6 +39,7 @@ from otodb.models import (
 	WorkSource,
 )
 from otodb.models.enums import (
+	PLATFORM_TIMEZONES,
 	ErrorCode,
 	FlagStatus,
 	LanguageTypes,
@@ -152,11 +153,18 @@ class WorkSourceSchema(ModelSchema):
 	def resolve_media_title(obj):
 		return obj.media.title if obj.media else None
 
+	@staticmethod
+	def resolve_published_at(obj):
+		if obj.published_at is None:
+			return None
+		return obj.published_at.astimezone(PLATFORM_TIMEZONES[obj.platform])
+
 	class Meta:
 		model = WorkSource
 		fields = [
 			'url',
 			'published_date',
+			'published_at',
 			'work_width',
 			'work_height',
 			'work_duration',

@@ -148,11 +148,16 @@ const NEWEST_PUBLISHED_DATE = Date.parse('2024-06-05T00:00:00Z');
 const DAY = 24 * 60 * 60 * 1000;
 
 /** A full page of sources, as the real list always is. */
-const sources = Array.from({ length: batchSize }, (_, i) => ({
-	...templates[i % templates.length],
-	id: String(i + 1),
-	published_date: new Date(NEWEST_PUBLISHED_DATE - i * 37 * DAY).toISOString().slice(0, 10)
-}));
+const sources = Array.from({ length: batchSize }, (_, i) => {
+	const published_date = new Date(NEWEST_PUBLISHED_DATE - i * 37 * DAY).toISOString().slice(0, 10);
+	return {
+		...templates[i % templates.length],
+		id: String(i + 1),
+		published_date,
+		// Every third row has no exact upload time, so both hover and no-hover dates show.
+		published_at: i % 3 === 2 ? null : `${published_date}T12:00:00Z`
+	};
+});
 
 // `filters` mirrors the raw search params, so every value is a string or null.
 type Filters = { unbound: string | null; pending: string | null; platform: string | null };
@@ -188,8 +193,18 @@ export const FilteredUnboundPending: Story = {
 			...baseData,
 			sources: {
 				items: [
-					{ ...unboundPendingSource, id: '1', published_date: null },
-					{ ...unboundPendingSource, id: '2', published_date: null }
+					{
+						...unboundPendingSource,
+						id: '1',
+						published_date: null,
+						published_at: null
+					},
+					{
+						...unboundPendingSource,
+						id: '2',
+						published_date: null,
+						published_at: null
+					}
 				],
 				count: 2
 			},

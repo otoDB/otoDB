@@ -32,6 +32,7 @@
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkTagTree from '$lib/WorkTagTree.svelte';
 	import WikiView from '$lib/WikiView.svelte';
+	import Time from '$lib/Time.svelte';
 	import type { PageProps } from './$types.js';
 
 	let { data } = $props();
@@ -446,7 +447,9 @@
 						{m.super_agent_pigeon_aim()}:
 						<strong>
 							<date>
-								{#if src.published_date}
+								{#if src.published_date && src.published_at}
+									<Time date={src.published_at}>{src.published_date}</Time>
+								{:else if src.published_date}
 									{src.published_date}
 								{:else}
 									{m.simple_less_marlin_enchant()}

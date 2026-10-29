@@ -4,6 +4,7 @@
 	import RefreshButton from '$lib/RefreshButton.svelte';
 	import RelationEditor from '$lib/RelationEditor.svelte';
 	import Section from '$lib/Section.svelte';
+	import Time from '$lib/Time.svelte';
 	import WikiEditor from '$lib/WikiEditor.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import client from '$lib/api';
@@ -172,7 +173,13 @@
 								{/each}</select
 							></td
 						>
-						<td>{src.published_date}</td>
+						<td>
+							{#if src.published_date && src.published_at}
+								<Time date={src.published_at}>{src.published_date}</Time>
+							{:else}
+								{src.published_date}
+							{/if}
+						</td>
 						<td class="whitespace-nowrap"
 							><a href={src.url} target="_blank" rel="noopener noreferrer"
 								>{m.noisy_moving_newt_belong()}</a

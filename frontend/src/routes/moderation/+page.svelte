@@ -1,6 +1,7 @@
 <script lang="ts">
 	import WorkCard from '$lib/WorkCard.svelte';
 	import Pager from '$lib/Pager.svelte';
+	import Time from '$lib/Time.svelte';
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import client from '$lib/api';
@@ -87,7 +88,13 @@
 							{/if}
 						</td>
 						<td><a href="/user/{source.added_by.username}">{source.added_by.username}</a></td>
-						<td>{source.published_date ?? '-'}</td>
+						<td>
+							{#if source.published_date && source.published_at}
+								<Time date={source.published_at}>{source.published_date}</Time>
+							{:else}
+								{source.published_date ?? '-'}
+							{/if}
+						</td>
 						<td class="flex gap-2">
 							<button
 								class="border px-2 py-0.5"

@@ -1,3 +1,6 @@
+from datetime import UTC, date, datetime
+from zoneinfo import ZoneInfo
+
 from django.db import models
 from pydantic import GetJsonSchemaHandler
 from pydantic.json_schema import JsonSchemaValue
@@ -77,6 +80,26 @@ class Platform(OtodbIntegerEnum):
 			if string.lower() == s.lower():
 				return choice
 		return None
+
+	def local_date(self, instant: datetime) -> date:
+		"""The calendar day the aware `instant` falls on, as the platform shows it"""
+		return instant.astimezone(PLATFORM_TIMEZONES[self]).date()
+
+	def from_local(self, value: datetime) -> datetime:
+		"""The UTC instant of `value`, read as wall time in the platform's timezone if naive"""
+		if value.tzinfo is None:
+			value = value.replace(tzinfo=PLATFORM_TIMEZONES[self])
+		return value.astimezone(UTC)
+
+
+PLATFORM_TIMEZONES = {
+	Platform.YOUTUBE: ZoneInfo('America/Los_Angeles'),
+	Platform.NICONICO: ZoneInfo('Asia/Tokyo'),
+	Platform.BILIBILI: ZoneInfo('Asia/Shanghai'),
+	Platform.SOUNDCLOUD: UTC,
+	Platform.TWITTER: UTC,
+	Platform.ACFUN: ZoneInfo('Asia/Shanghai'),
+}
 
 
 class WorkRelationTypes(OtodbIntegerEnum):

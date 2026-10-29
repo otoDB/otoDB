@@ -214,7 +214,7 @@ class TestWork:
 			platform=Platform.YOUTUBE,
 			source_id='test123',
 			url='https://youtube.com/test123',
-			published_date=date.today(),
+			published_date=date(2024, 1, 1),
 			title='Test Source',
 			added_by=editor,
 		)
@@ -255,7 +255,7 @@ class TestWork:
 			platform=Platform.YOUTUBE,
 			source_id='test123',
 			url='https://youtube.com/test123',
-			published_date=date.today(),
+			published_date=date(2024, 1, 1),
 			title='Test Source',
 			added_by=editor,
 		)
@@ -304,7 +304,7 @@ class TestWork:
 			platform=Platform.YOUTUBE,
 			source_id='test123',
 			url='https://youtube.com/test123',
-			published_date=date.today(),
+			published_date=date(2024, 1, 1),
 			title='Test Source',
 			added_by=editor,
 		)
@@ -331,7 +331,7 @@ class TestWork:
 			platform=Platform.YOUTUBE,
 			source_id='test123',
 			url='https://youtube.com/test123',
-			published_date=date.today(),
+			published_date=date(2024, 1, 1),
 			title='Test Source',
 			added_by=editor,
 		)

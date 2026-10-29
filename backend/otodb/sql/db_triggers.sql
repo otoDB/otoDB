@@ -225,7 +225,7 @@ RETURNS integer LANGUAGE sql STABLE AS $$
 		('otodb', 'tagworkparenthood', 3),
 		('otodb', 'wikipage', 6),
 		('otodb', 'workrelation', 3),
-		('otodb', 'worksource', 17)
+		('otodb', 'worksource', 18)
 	) AS v(app, model, n) ON v.app = c.app_label AND v.model = c.model
 	WHERE c.id = p_ct;
 $$;
@@ -1370,7 +1370,7 @@ CREATE OR REPLACE TRIGGER zz_otodb_workrelation_capture_d
 AFTER DELETE ON otodb_workrelation
 FOR EACH ROW EXECUTE FUNCTION otodb_workrelation_capture();
 
--- worksource: tracked=['media', 'platform', 'source_id', 'url', 'published_date', 'work_origin', 'work_status', 'work_width', 'work_height', 'work_duration', 'title', 'description', 'thumbnail_url', 'thumbnail_mime', 'thumbnail_hash', 'uploader_id', 'added_by']
+-- worksource: tracked=['media', 'platform', 'source_id', 'url', 'published_date', 'published_at', 'work_origin', 'work_status', 'work_width', 'work_height', 'work_duration', 'title', 'description', 'thumbnail_url', 'thumbnail_mime', 'thumbnail_hash', 'uploader_id', 'added_by']
 CREATE OR REPLACE FUNCTION otodb_worksource_capture() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
 	rev bigint;
@@ -1433,6 +1433,15 @@ BEGIN
 		rev := coalesce(rev, otodb_current_revision());
 		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
 		VALUES (rev, own_ct, tid, 'published_date', to_char(NEW."published_date", 'YYYY-MM-DD'), false, false)
+		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
+		RETURNING id INTO cid;
+		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
+		PERFORM otodb_emit_entity(cid, ct_mediawork, NEW."media_id", route);
+	END IF;
+	IF TG_OP = 'INSERT' OR NEW."published_at" IS DISTINCT FROM OLD."published_at" THEN
+		rev := coalesce(rev, otodb_current_revision());
+		INSERT INTO otodb_revisionchange (rev_id, target_type_id, target_id, target_column, target_value, deleted, restored)
+		VALUES (rev, own_ct, tid, 'published_at', to_char((NEW."published_at" AT TIME ZONE 'UTC'), 'YYYY-MM-DD"T"HH24:MI:SS') || CASE WHEN date_trunc('second', NEW."published_at") = NEW."published_at" THEN '' ELSE to_char((NEW."published_at" AT TIME ZONE 'UTC'), '.US') END || '+00:00', false, false)
 		ON CONFLICT (rev_id, target_type_id, target_id, target_column) DO UPDATE SET target_value = EXCLUDED.target_value
 		RETURNING id INTO cid;
 		PERFORM otodb_emit_entity(cid, own_ct, NEW."id", route);
@@ -1560,6 +1569,7 @@ FOR EACH ROW WHEN (OLD."media_id" IS DISTINCT FROM NEW."media_id"
 	 OR OLD."source_id" IS DISTINCT FROM NEW."source_id"
 	 OR OLD."url" IS DISTINCT FROM NEW."url"
 	 OR OLD."published_date" IS DISTINCT FROM NEW."published_date"
+	 OR OLD."published_at" IS DISTINCT FROM NEW."published_at"
 	 OR OLD."work_origin" IS DISTINCT FROM NEW."work_origin"
 	 OR OLD."work_status" IS DISTINCT FROM NEW."work_status"
 	 OR OLD."work_width" IS DISTINCT FROM NEW."work_width"

@@ -12,6 +12,7 @@
 	import { getLocale } from '$lib/paraglide/runtime';
 	import { ModelsWithComments, WorkOrigin } from '$lib/schema.js';
 	import Section from '$lib/Section.svelte';
+	import Time from '$lib/Time.svelte';
 	import WorkCard from '$lib/WorkCard.svelte';
 	import WorkThumbnail from '$lib/WorkThumbnail/WorkThumbnail.svelte';
 	import type { ComponentProps } from 'svelte';
@@ -143,7 +144,14 @@
 						<h3>
 							<a href="/upload/{src.id}">{src.title || src.url}</a>
 						</h3>
-						<h4>{PlatformNames[src.platform]} {src.published_date}</h4>
+						<h4>
+							{PlatformNames[src.platform]}
+							{#if src.published_date && src.published_at}
+								<Time date={src.published_at}>{src.published_date}</Time>
+							{:else}
+								{src.published_date}
+							{/if}
+						</h4>
 						{#if src.is_pending}
 							<p class="text-sky-600">{m.such_actual_okapi_dare()}</p>
 						{/if}

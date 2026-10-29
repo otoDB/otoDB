@@ -58,6 +58,7 @@ const source = {
 	work_status: WorkStatus.Available,
 	url: 'https://www.youtube.com/watch?v=sample1',
 	published_date: '2024-01-05',
+	published_at: '2024-01-05T12:00:00-08:00',
 	work_width: 1920,
 	work_height: 1080,
 	work_duration: 245,
@@ -122,6 +123,7 @@ export const NoSuggestions: Story = {
 				title: null,
 				description: null,
 				published_date: null,
+				published_at: null,
 				work_width: null,
 				work_height: null,
 				work_duration: null

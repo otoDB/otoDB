@@ -7,7 +7,6 @@ import struct
 import unicodedata
 from datetime import datetime
 from http.cookiejar import MozillaCookieJar
-from time import mktime
 
 import nh3
 import requests
@@ -278,11 +277,9 @@ def process_video_info(full_info, link=None):
 				'id': full_info['video']['id'],
 				'thumbnail': thumb,
 				'timestamp': int(
-					mktime(
-						datetime.fromisoformat(
-							full_info['video']['registeredAt']
-						).timetuple()
-					)
+					datetime.fromisoformat(
+						full_info['video']['registeredAt']
+					).timestamp()
 				),
 				'uploader_id': owner['id'] if owner else 0,
 			}

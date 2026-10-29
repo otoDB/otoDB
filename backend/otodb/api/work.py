@@ -329,19 +329,19 @@ def _submitter_to_q(username):
 	non_system_rev = RevisionChange.objects.filter(target_type=mediawork_ct).exclude(
 		rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME
 	)
-	first_rev_pks = (
-		non_system_rev.order_by('target_id', 'rev__date')
-		.distinct('target_id')
-		.values('pk')
+	earlier_rev = non_system_rev.filter(
+		target_id=OuterRef('target_id'), rev__date__lt=OuterRef('rev__date')
 	)
-	rev_match_ids = RevisionChange.objects.filter(
-		pk__in=first_rev_pks, rev__user__username__iexact=username
-	).values('target_id')
+	rev_match_ids = (
+		non_system_rev.filter(rev__user__username__iexact=username)
+		.exclude(Exists(earlier_rev))
+		.values('target_id')
+	)
 	src_match_ids = (
 		WorkSource.objects.filter(
 			added_by__username__iexact=username, media_id__isnull=False
 		)
-		.exclude(media_id__in=non_system_rev.values('target_id'))
+		.exclude(Exists(non_system_rev.filter(target_id=OuterRef('media_id'))))
 		.values('media_id')
 	)
 	return Q(id__in=rev_match_ids) | Q(id__in=src_match_ids)
@@ -357,15 +357,17 @@ def _contributor_to_q(username):
 	`submitter:X | contributor:X`.
 	"""
 	mediawork_ct = ContentType.objects.get_for_model(MediaWork)
-	rev_match = RevisionChangeEntity.objects.filter(
-		entity_type=mediawork_ct,
-		entity_id=OuterRef('id'),
-		change__rev__user__username__iexact=username,
-	).exclude(change__rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME)
-	src_match = WorkSource.objects.filter(
-		media_id=OuterRef('id'), added_by__username__iexact=username
+	rev_match_ids = (
+		RevisionChangeEntity.objects.filter(
+			entity_type=mediawork_ct, change__rev__user__username__iexact=username
+		)
+		.exclude(change__rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME)
+		.values('entity_id')
 	)
-	touched = Q(Exists(rev_match)) | Q(Exists(src_match))
+	src_match_ids = WorkSource.objects.filter(
+		added_by__username__iexact=username, media_id__isnull=False
+	).values('media_id')
+	touched = Q(id__in=rev_match_ids) | Q(id__in=src_match_ids)
 	return touched & ~_submitter_to_q(username)
 
 

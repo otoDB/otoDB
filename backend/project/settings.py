@@ -188,6 +188,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'account.Account'
 
+TIME_ZONE = 'UTC'
+
 STORAGES = {
 	'default': {
 		'BACKEND': 'django.core.files.storage.FileSystemStorage',

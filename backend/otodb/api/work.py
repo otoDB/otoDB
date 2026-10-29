@@ -1,3 +1,4 @@
+from datetime import datetime
 from functools import reduce
 
 import lark
@@ -10,6 +11,7 @@ from django.db.models import (
 	Exists,
 	F,
 	IntegerField,
+	Min,
 	OuterRef,
 	Q,
 	Subquery,
@@ -254,7 +256,9 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 			return {}, Q(), by('created_at')
 		case WorkOrder.PUBLISHED:
 			dates = WorkSource.objects.filter(
-				media_id=OuterRef('id'), published_date__isnull=False
+				media_id=OuterRef('id'),
+				work_origin=WorkOrigin.AUTHOR,
+				published_date__isnull=False,
 			)
 			ann = {
 				'_pub': Subquery(
@@ -371,6 +375,24 @@ def _contributor_to_q(username):
 	return touched & ~_submitter_to_q(username)
 
 
+def _published_to_q(op, value):
+	"""
+	Match works by the earliest published date of their origin (not reupload).
+	"""
+	first_published = (
+		WorkSource.objects.filter(
+			media_id__isnull=False,
+			work_origin=WorkOrigin.AUTHOR,
+			published_date__isnull=False,
+		)
+		.values('media_id')
+		.annotate(_first=Min('published_date'))
+	)
+	return Q(
+		id__in=first_published.filter(**{f'_first__{op}': value}).values('media_id')
+	)
+
+
 work_metatag_grammars = {
 	'rating': MetatagSpec(Rating, lambda v: Q(rating=v)),
 	'status': MetatagSpec(Status, lambda v: Q(status=v)),
@@ -420,6 +442,9 @@ work_metatag_grammars = {
 		),
 	),
 	'id': MetatagSpec(int, make_range_metatag('id')),
+	'date': MetatagSpec(datetime, make_range_metatag('created_at')),
+	'age': MetatagSpec(datetime, make_range_metatag('created_at')),
+	'published': MetatagSpec(datetime, _published_to_q),
 	'list': MetatagSpec(
 		str,
 		lambda v: (

@@ -685,7 +685,8 @@ def search(
 	else:
 		qs = qs.order_by('-id')
 
-	return qs.distinct()
+	# Only the text query does joins to sources and thus could cause repeats
+	return qs.distinct() if query else qs
 
 
 @work_router.get('work', response=WorkSchema)

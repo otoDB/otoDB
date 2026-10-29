@@ -397,9 +397,9 @@ work_metatag_grammars = {
 		lambda op, value: count_predicate_q(
 			RevisionChangeEntity.objects.filter(
 				entity_type=ContentType.objects.get_for_model(MediaWork),
-				entity_id=OuterRef('id'),
 				change__rev__user__isnull=False,
 			).exclude(change__rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME),
+			'entity_id',
 			op,
 			value,
 			distinct_field='change__rev__user_id',
@@ -410,8 +410,8 @@ work_metatag_grammars = {
 		lambda op, value: count_predicate_q(
 			RevisionChangeEntity.objects.filter(
 				entity_type=ContentType.objects.get_for_model(MediaWork),
-				entity_id=OuterRef('id'),
 			).exclude(change__rev__user__username=settings.OTODB_SYSTEM_BOT_USERNAME),
+			'entity_id',
 			op,
 			value,
 			distinct_field='change__rev_id',
@@ -502,9 +502,9 @@ work_metatag_grammars = {
 		lambda op, value: count_predicate_q(
 			Comment.objects.filter(
 				content_type=ContentType.objects.get_for_model(MediaWork),
-				object_pk=OuterRef('id'),
 				is_removed=False,
 			),
+			'object_pk',
 			op,
 			value,
 		),
@@ -539,9 +539,7 @@ work_metatag_grammars = {
 		name: MetatagSpec(
 			int,
 			lambda op, value, q=q: count_predicate_q(
-				TagWorkInstance.objects.filter(q, work_id=OuterRef('id')),
-				op,
-				value,
+				TagWorkInstance.objects.filter(q), 'work_id', op, value
 			),
 		)
 		for name, q in _WORK_TAG_CATEGORY_FILTERS.items()

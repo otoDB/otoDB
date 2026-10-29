@@ -559,10 +559,9 @@ work_metatag_grammars = {
 	),
 	'relation': MetatagSpec(
 		WorkRelationTypes,
-		lambda v: Exists(
-			WorkRelation.objects.filter(
-				Q(A_id=OuterRef('id')) | Q(B_id=OuterRef('id')), relation=v
-			)
+		lambda v: (
+			Exists(WorkRelation.objects.filter(A_id=OuterRef('id'), relation=v))
+			| Exists(WorkRelation.objects.filter(B_id=OuterRef('id'), relation=v))
 		),
 	),
 	**{

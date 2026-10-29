@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime, time
 from functools import reduce
 
 import lark
@@ -8,17 +8,17 @@ from django.db import transaction
 from django.db.models import (
 	Case,
 	Count,
+	DateTimeField,
 	Exists,
 	F,
 	IntegerField,
-	Min,
 	OuterRef,
 	Q,
 	Subquery,
 	Value,
 	When,
 )
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Cast, Coalesce
 from django.shortcuts import get_object_or_404
 from ninja import ModelSchema, Schema
 from ninja.pagination import paginate
@@ -259,12 +259,10 @@ def _resolve_work_order(v: WorkOrder) -> tuple[dict, Q, tuple[str, ...]]:
 				media_id=OuterRef('id'),
 				work_origin=WorkOrigin.AUTHOR,
 				published_date__isnull=False,
+			).annotate(
+				_at=Coalesce('published_at', Cast('published_date', DateTimeField()))
 			)
-			ann = {
-				'_pub': Subquery(
-					dates.order_by('published_date').values('published_date')[:1]
-				)
-			}
+			ann = {'_pub': Subquery(dates.order_by('_at').values('_at')[:1])}
 			return ann, Exists(dates), by('_pub')
 		case WorkOrder.RESOLUTION:
 			resolutions = WorkSource.objects.filter(
@@ -375,21 +373,29 @@ def _contributor_to_q(username):
 	return touched & ~_submitter_to_q(username)
 
 
+def _created_to_q(op, value):
+	"""A calendar day is the UTC day"""
+	if not isinstance(value, datetime):
+		value = datetime.combine(value, time.min, UTC)
+	return Q(**{f'created_at__{op}': value})
+
+
 def _published_to_q(op, value):
 	"""
-	Match works by the earliest published date of their origin (not reupload).
+	Match works by their first origin (not reupload) upload. A calendar day compares
+	that upload's day on its platform, a relative time its exact time.
 	"""
-	first_published = (
-		WorkSource.objects.filter(
-			media_id__isnull=False,
-			work_origin=WorkOrigin.AUTHOR,
-			published_date__isnull=False,
-		)
-		.values('media_id')
-		.annotate(_first=Min('published_date'))
-	)
+	origins = WorkSource.objects.filter(
+		media_id__isnull=False,
+		work_origin=WorkOrigin.AUTHOR,
+		published_date__isnull=False,
+	).annotate(_at=Coalesce('published_at', Cast('published_date', DateTimeField())))
+	first = origins.order_by('media_id', '_at').distinct('media_id')
+	field = '_at' if isinstance(value, datetime) else 'published_date'
 	return Q(
-		id__in=first_published.filter(**{f'_first__{op}': value}).values('media_id')
+		id__in=origins.filter(
+			pk__in=first.values('pk'), **{f'{field}__{op}': value}
+		).values('media_id')
 	)
 
 
@@ -442,8 +448,8 @@ work_metatag_grammars = {
 		),
 	),
 	'id': MetatagSpec(int, make_range_metatag('id')),
-	'date': MetatagSpec(datetime, make_range_metatag('created_at')),
-	'age': MetatagSpec(datetime, make_range_metatag('created_at')),
+	'date': MetatagSpec(datetime, _created_to_q),
+	'age': MetatagSpec(datetime, _created_to_q),
 	'published': MetatagSpec(datetime, _published_to_q),
 	'list': MetatagSpec(
 		str,

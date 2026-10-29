@@ -783,16 +783,23 @@ def _date_bounds(token, now):
 	return instant, instant
 
 
+def _day_or_instant(bound, token):
+	"""The calendar day of a date's bound, or the exact instant of a relative one, so
+	each field can compare calendar days its own way"""
+	return bound.date() if token.type == 'ABS_DATE' else bound
+
+
 def _date_compare(op, token, now):
 	start, end = _date_bounds(token, now)
 	if token.type == 'REL_DATE':  # Ages compare how old, so `<2w` is after now-2w
 		op = {'<': '>', '<=': '>=', '>': '<', '>=': '<='}[op]
-	return {
+	lookup, bound = {
 		'>': ('gte', end),
 		'>=': ('gte', start),
 		'<': ('lt', start),
 		'<=': ('lt', end),
 	}[op]
+	return lookup, _day_or_instant(bound, token)
 
 
 def _parse_date_atom(node, now):
@@ -802,7 +809,7 @@ def _parse_date_atom(node, now):
 			if v.type == 'REL_DATE':
 				start = datetime.combine(start.date(), time.min, tzinfo=UTC)
 				end = start + timedelta(days=1)
-			return [('gte', start), ('lt', end)]
+			return [('gte', _day_or_instant(start, v)), ('lt', _day_or_instant(end, v))]
 		case 'range_compare', (op, v):
 			return [_date_compare(op, v, now)]
 		case 'range_min', (v,):
@@ -811,12 +818,15 @@ def _parse_date_atom(node, now):
 			return [_date_compare('<=', v, now)]
 		case 'range_max_exc', (v,):
 			return [_date_compare('<', v, now)]
-		case 'range_between', (a, b):
-			lo, hi = sorted([_date_bounds(a, now), _date_bounds(b, now)])
-			return [('gte', lo[0]), ('lt', hi[1])]
-		case 'range_between_exc', (a, b):
-			lo, hi = sorted([_date_bounds(a, now), _date_bounds(b, now)])
-			return [('gte', lo[0]), ('lt', hi[0])]
+		case 'range_between' | 'range_between_exc', (a, b):
+			lo, hi = sorted([a, b], key=lambda token: _date_bounds(token, now))
+			start, _ = _date_bounds(lo, now)
+			hi_start, hi_end = _date_bounds(hi, now)
+			end = hi_end if node.data == 'range_between' else hi_start
+			return [
+				('gte', _day_or_instant(start, lo)),
+				('lt', _day_or_instant(end, hi)),
+			]
 		case _:
 			raise ValueError(
 				f'unrecognized date_range_atom: {node.data!r}/{node.children!r}'

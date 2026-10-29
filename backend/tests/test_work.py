@@ -383,25 +383,25 @@ def parse_dates(tags):
 @pytest.mark.parametrize(
 	'tags,expected',
 	[
-		('date:2010-03-15', [('gte', _d(2010, 3, 15)), ('lt', _d(2010, 3, 16))]),
-		('date:>2010-03-15', [('gte', _d(2010, 3, 16))]),
-		('date:>=2010-03-15', [('gte', _d(2010, 3, 15))]),
-		('date:<2010-03-15', [('lt', _d(2010, 3, 15))]),
-		('date:<=2010-03-15', [('lt', _d(2010, 3, 16))]),
+		('date:2010-03-15', [('gte', date(2010, 3, 15)), ('lt', date(2010, 3, 16))]),
+		('date:>2010-03-15', [('gte', date(2010, 3, 16))]),
+		('date:>=2010-03-15', [('gte', date(2010, 3, 15))]),
+		('date:<2010-03-15', [('lt', date(2010, 3, 15))]),
+		('date:<=2010-03-15', [('lt', date(2010, 3, 16))]),
 		(
 			'date:2010-03-15..2010-03-20',
-			[('gte', _d(2010, 3, 15)), ('lt', _d(2010, 3, 21))],
+			[('gte', date(2010, 3, 15)), ('lt', date(2010, 3, 21))],
 		),
 		(
 			'date:2010-03-15...2010-03-20',
-			[('gte', _d(2010, 3, 15)), ('lt', _d(2010, 3, 20))],
+			[('gte', date(2010, 3, 15)), ('lt', date(2010, 3, 20))],
 		),
-		('date:2010-03-15..', [('gte', _d(2010, 3, 15))]),
-		('date:2010-03-15...', [('gte', _d(2010, 3, 15))]),
-		('date:..2010-03-20', [('lt', _d(2010, 3, 21))]),
-		('date:...2010-03-20', [('lt', _d(2010, 3, 20))]),
-		('date:2010-12-31', [('gte', _d(2010, 12, 31)), ('lt', _d(2011, 1, 1))]),
-		('date:2012-02-29', [('gte', _d(2012, 2, 29)), ('lt', _d(2012, 3, 1))]),
+		('date:2010-03-15..', [('gte', date(2010, 3, 15))]),
+		('date:2010-03-15...', [('gte', date(2010, 3, 15))]),
+		('date:..2010-03-20', [('lt', date(2010, 3, 21))]),
+		('date:...2010-03-20', [('lt', date(2010, 3, 20))]),
+		('date:2010-12-31', [('gte', date(2010, 12, 31)), ('lt', date(2011, 1, 1))]),
+		('date:2012-02-29', [('gte', date(2012, 2, 29)), ('lt', date(2012, 3, 1))]),
 		('age:<2w', [('gte', W2)]),
 		('age:<=2w', [('gte', W2)]),
 		('age:>2w', [('lt', W2)]),
@@ -410,7 +410,7 @@ def parse_dates(tags):
 		('age:2w..', [('lt', W2)]),
 		('age:..2w', [('gte', W2)]),
 		('age:2w', [('gte', _d(2026, 10, 15)), ('lt', _d(2026, 10, 16))]),
-		('date:2010-01-01..1y', [('gte', _d(2010, 1, 1)), ('lt', Y1)]),
+		('date:2010-01-01..1y', [('gte', date(2010, 1, 1)), ('lt', Y1)]),
 	],
 )
 def test_date_value_bounds(tags, expected):
@@ -459,7 +459,7 @@ def test_age_units(value, delta):
 def test_date_comma_list_mixes_forms():
 	assert parse_dates('age:<1d,2010-01-01..2010-01-31') == [
 		[('gte', NOW - timedelta(days=1))],
-		[('gte', _d(2010, 1, 1)), ('lt', _d(2010, 2, 1))],
+		[('gte', date(2010, 1, 1)), ('lt', date(2010, 2, 1))],
 	]
 
 
@@ -519,14 +519,21 @@ def make_work():
 def make_source(member):
 	ids = itertools.count()
 
-	def _make(work_id, published_date, work_origin=WorkOrigin.AUTHOR):
+	def _make(
+		work_id,
+		published_date,
+		work_origin=WorkOrigin.AUTHOR,
+		platform=Platform.YOUTUBE,
+		published_at=None,
+	):
 		n = next(ids)
 		return WorkSource.objects.create(
 			media_id=work_id,
-			platform=Platform.YOUTUBE,
+			platform=platform,
 			source_id=f'date-test-{n}',
 			url=f'https://youtu.be/date-test-{n}',
 			published_date=published_date,
+			published_at=published_at,
 			work_origin=work_origin,
 			added_by=member,
 		)
@@ -598,6 +605,28 @@ def test_published_relative(search_ids, make_work, make_source):
 	make_source(old, date(2010, 1, 1))
 	assert search_ids('published:<1w') == {recent}
 	assert search_ids('published:>1w') == {old}
+
+
+def test_published_first_origin_by_time(search_ids, make_work, make_source):
+	# Niconico's upload came first, though its day in Japan is later than YouTube's
+	work = make_work()
+	make_source(
+		work,
+		date(2026, 10, 29),
+		platform=Platform.NICONICO,
+		published_at=_d(2026, 10, 28, 19, 0, 0),
+	)
+	make_source(work, date(2026, 10, 28), published_at=_d(2026, 10, 28, 19, 0, 22))
+	assert search_ids('published:2026-10-29') == {work}
+	assert search_ids('published:2026-10-28') == set()
+
+
+def test_published_relative_uses_exact_time(search_ids, make_work, make_source):
+	uploaded = datetime.now(UTC) - timedelta(hours=2)
+	work = make_work()
+	make_source(work, uploaded.date(), published_at=uploaded)
+	assert search_ids('published:<1h') == set()
+	assert search_ids('published:<3h') == {work}
 
 
 @pytest.mark.parametrize(

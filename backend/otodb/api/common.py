@@ -6,13 +6,13 @@ from collections.abc import Callable
 from contextlib import contextmanager
 from datetime import datetime
 from functools import reduce, wraps
-from typing import Annotated, Any, NamedTuple, Self
+from typing import Annotated, Any, Literal, NamedTuple, Self
 
 import lark
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.db import connection
-from django.db.models import Count, Exists, F, OuterRef, Q, Value
+from django.db.models import Count, Exists, F, OuterRef, Q, QuerySet
 from django.http import HttpRequest
 from ninja import Field, Header, ModelSchema, Query, Router, Schema
 from ninja.errors import HttpError
@@ -830,17 +830,46 @@ class BitmaskAttr(_KVEnumAttr):
 		)
 
 
-def count_predicate_q(base, op, value, distinct_field=None):
+def count_predicate_q(
+	base: QuerySet,
+	fk_field: str,
+	op: Literal['exact', 'gt', 'gte', 'lt', 'lte', 'range'],
+	value,  # int, or (low, high) for 'range'
+	distinct_field: str | None = None,
+) -> Q:
+	"""
+	Match rows (by `id`) of whatever queryset this `Q` filters, by how many
+	`base` rows point at them via `fk_field`.
+
+	For example, `songtags:>=3` on the work search is:
+	`count_predicate_q(TagWorkInstance.objects.filter(<song tags>), 'work_id', 'gte', 3)`
+
+	`distinct_field` counts distinct values of that field instead of rows.
+	"""
+	related = Q(Exists(base.filter(**{fk_field: OuterRef('id')})))
+
+	# "At least one" and "none" don't need counting, just EXISTS / NOT EXISTS
+	if (op, value) in (('gte', 1), ('gt', 0)):
+		return related
+	if (op, value) in (('exact', 0), ('lt', 1), ('lte', 0)):
+		return ~related
+
 	counter = Count(distinct_field, distinct=True) if distinct_field else Count('*')
-	grouped = base.annotate(_g=Value(1)).values('_g').annotate(c=counter)
-	positive = Exists(grouped.filter(**{f'c__{op}': value}))
+	positive = Q(
+		id__in=base.filter(**{f'{fk_field}__isnull': False})
+		.values(fk_field)
+		.annotate(c=counter)
+		.filter(**{f'c__{op}': value})
+		.values(fk_field)
+	)
+
 	zero_matches = (
 		op == 'lte'
 		or (op in ('exact', 'gte') and value == 0)
 		or (op == 'lt' and value > 0)
 		or (op == 'range' and value[0] == 0)
 	)
-	return positive | ~Exists(base) if zero_matches else positive
+	return positive | ~related if zero_matches else positive
 
 
 def make_range_metatag(
@@ -848,7 +877,7 @@ def make_range_metatag(
 ):
 	if count:
 		return lambda op, value: count_predicate_q(
-			model.objects.filter(**{fk_field: OuterRef('id')}, **filters), op, value
+			model.objects.filter(**filters), fk_field, op, value
 		)
 
 	if model is not None:

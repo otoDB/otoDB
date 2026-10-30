@@ -67,6 +67,7 @@ class Platform(OtodbIntegerEnum):
 	SOUNDCLOUD = 4, 'SoundCloud'
 	TWITTER = 5, 'Twitter'
 	ACFUN = 6, 'AcFun'
+	OTOMAD_SITE = 7, 'otomad.site'
 
 	@staticmethod
 	def from_str(s):
@@ -101,6 +102,7 @@ class ProfileConnectionTypes(OtodbIntegerEnum):
 	TWITTER = 4, 'Twitter'
 	BLUESKY = 5, 'Bluesky'
 	SOUNDCLOUD = 6, 'Soundcloud'
+	OTOMAD_SITE = 7, 'otomad.site'
 
 
 class SongConnectionTypes(OtodbIntegerEnum):
@@ -216,6 +218,10 @@ class MimeType(OtodbIntegerEnum):
 
 	@classmethod
 	def from_str(cls, value):
+		if not value:
+			return None
+		# strip optional parameter field
+		value = value.split(';', 1)[0].strip().lower()
 		for choice, string in cls.choices:
 			if string == value:
 				return choice

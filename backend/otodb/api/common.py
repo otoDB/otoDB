@@ -489,6 +489,10 @@ profile_connection_parsers = [
 		ProfileConnectionTypes.SOUNDCLOUD,
 		re_to_parser(re.compile(r'https?:\/\/soundcloud\.com\/(.+?)(?:\/*)')),
 	),
+	(
+		ProfileConnectionTypes.OTOMAD_SITE,
+		re_to_parser(re.compile(r'https?:\/\/otomad\.site\/@([A-Za-z0-9_]+)\/?')),
+	),
 	(ProfileConnectionTypes.WEBSITE, re_to_parser(re.compile(r'(https?://.+)'))),
 ]
 

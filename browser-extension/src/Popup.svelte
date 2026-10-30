@@ -15,7 +15,16 @@
     const OTODB_WEB = 'https://otodb.net';
 
     type WorkQuery =
-        | { platform: 'youtube' | 'bilibili' | 'niconico' | 'twitter' | 'acfun'; id: string }
+        | {
+              platform:
+                  | 'youtube'
+                  | 'bilibili'
+                  | 'niconico'
+                  | 'twitter'
+                  | 'acfun'
+                  | 'otomad.site';
+              id: string;
+          }
         | { url: string };
 
     function getQuery(url: URL): WorkQuery | undefined {
@@ -34,6 +43,9 @@
         } else if (url.hostname.endsWith('acfun.cn')) {
             const match = url.href.match(/\/v\/(ac[\d_]+)/);
             if (match) return { platform: 'acfun', id: match[1] };
+        } else if (url.hostname.endsWith('otomad.site')) {
+            const match = url.href.match(/\/notes\/(\w+)/);
+            if (match) return { platform: 'otomad.site', id: match[1] };
         } else if (url.hostname.endsWith('soundcloud.com')) {
             return { url: `${url.protocol}//${url.hostname}${url.pathname}` };
         }

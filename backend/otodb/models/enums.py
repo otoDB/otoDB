@@ -99,6 +99,7 @@ PLATFORM_TIMEZONES = {
 	Platform.SOUNDCLOUD: UTC,
 	Platform.TWITTER: UTC,
 	Platform.ACFUN: ZoneInfo('Asia/Shanghai'),
+	Platform.OTOMAD_SITE: UTC,
 }
 
 

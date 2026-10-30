@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 	dependencies = [
-		('otodb', '0126_adopt_xtd_comments'),
+		('otodb', '0127_alter_profileconnection_site_and_more'),
 	]
 
 	operations = [

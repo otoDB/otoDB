@@ -1093,12 +1093,28 @@ def mod_queue(
 
 @work_router.get('similar', response=list[ThinWorkSchema])
 def similar(request: AuthedHttpRequest, work_id: OtodbID):
-	work = get_object_or_404(MediaWork.active_objects, id=work_id)
-	wt = work.tags.filter(deprecated=False).values_list('id', flat=True)
-	return (
-		MediaWork.active_objects.visible()
-		.exclude(id=work_id)
-		.filter(tags__in=Subquery(wt))
-		.annotate(shared_tags_count=Count('tags', filter=Q(tags__in=Subquery(wt))))
-		.order_by('-shared_tags_count')
-	)[:6]
+	# Skip MediaWork.active_objects prefetches
+	get_object_or_404(
+		MediaWork.objects.filter(moved_to__isnull=True).only('id'), id=work_id
+	)
+	wt = TagWorkInstance.objects.filter(
+		work_id=work_id, work_tag__deprecated=False
+	).values('work_tag_id')
+	# Rank by shared tags only, then fetch full works for the top results
+	candidates = list(
+		TagWorkInstance.objects.filter(work_tag__in=Subquery(wt))
+		.exclude(work_id=work_id)
+		.values('work_id')
+		.annotate(shared_tags_count=Count('*'))
+		.order_by('-shared_tags_count', '-work_id')
+		# Grab 30 to account for potentially hidden works (next step)
+		.values_list('work_id', flat=True)[:30]
+	)
+	visible = set(
+		MediaWork.objects.visible()
+		.filter(id__in=candidates, moved_to__isnull=True)
+		.values_list('id', flat=True)
+	)
+	top = [i for i in candidates if i in visible][:6]
+	works = MediaWork.active_objects.in_bulk(top)
+	return [works[i] for i in top]

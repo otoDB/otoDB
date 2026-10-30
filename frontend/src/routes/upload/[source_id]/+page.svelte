@@ -8,6 +8,7 @@
 	import Section from '$lib/Section.svelte';
 	import SourcesViewer from '$lib/SourcesViewer.svelte';
 	import TagsEditor from '$lib/TagsEditor.svelte';
+	import Time from '$lib/Time.svelte';
 	import { autolinkDescription } from '$lib/ui.js';
 	import WorkField from '$lib/WorkField.svelte';
 
@@ -76,7 +77,11 @@
 						<tr>
 							<th class="w-24">{m.super_agent_pigeon_aim()}</th>
 							<td>
-								{#if data.source.published_date}
+								{#if data.source.published_date && data.source.published_at}
+									<Time date={data.source.published_at}>
+										{data.source.published_date}
+									</Time>
+								{:else if data.source.published_date}
 									{data.source.published_date}
 								{:else}
 									{m.simple_less_marlin_enchant()}

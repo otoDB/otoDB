@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from django.contrib.contenttypes.models import ContentType
@@ -17,6 +17,7 @@ from otodb.models import (
 )
 from otodb.models.enums import Platform, WorkOrigin, WorkStatus
 from otodb.models.posts import Subscription
+from otodb.models.revision import RevisionChangeEntity
 
 
 def _set_date(rev_id, when):
@@ -339,3 +340,44 @@ class TestRollbackSubscriptions:
 				subscriber=member, entity_type_id=work_ct
 			).values_list('entity_id', flat=True)
 		) == [restored.pk]
+
+
+@pytest.mark.django_db
+class TestRollbackNewlyTrackedColumn:
+	"""A source from before published_at was tracked has no earlier change for it.
+	Rolling back a revision that only set published_at must restore the column's
+	default instead of deleting the source as created after the cutoff.
+	"""
+
+	def test_source_survives(self, member):
+		now = timezone.now()
+		with revision(user=member, message='create'):
+			src = WorkSource.objects.create(
+				added_by=member,
+				platform=Platform.YOUTUBE,
+				url='https://www.youtube.com/watch?v=old',
+				source_id='old',
+				work_origin=WorkOrigin.AUTHOR,
+				work_status=WorkStatus.AVAILABLE,
+			)
+		created = Revision.objects.latest('id')
+		_set_date(created.id, now - timedelta(seconds=300))
+
+		# As if created before published_at was tracked
+		untracked = RevisionChange.objects.filter(
+			target_id=src.pk, target_column='published_at'
+		)
+		RevisionChangeEntity.objects.filter(change__in=untracked).delete()
+		untracked.delete()
+
+		with revision(user=member, message='set time'):
+			WorkSource.objects.filter(pk=src.pk).update(
+				published_at=datetime(2021, 12, 11, 20, tzinfo=UTC)
+			)
+		_set_date(Revision.objects.latest('id').id, now - timedelta(seconds=100))
+
+		with revision(user=member, message='rollback'):
+			rollback_entity(src.pk, 'worksource', now - timedelta(seconds=200))
+
+		src.refresh_from_db()
+		assert src.published_at is None

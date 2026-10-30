@@ -132,6 +132,7 @@ const boundSource = {
 	title: 'Example Submitted Source Title',
 	// A fixed date, not the current clock, so the dates never move.
 	published_date: '2024-06-05',
+	published_at: '2024-06-05T12:00:00-07:00',
 	description: null,
 	source_id: 'example1',
 	uploader_id: 'uploader1',
@@ -152,6 +153,7 @@ const unboundSource = {
 	url: 'https://www.example-video-share.test/watch/sm0000002',
 	title: 'Example Unbound Source Title',
 	published_date: null,
+	published_at: null,
 	source_id: 'sm0000002',
 	media: null
 };
@@ -186,14 +188,18 @@ const DAY = 24 * 60 * 60 * 1000;
  */
 const sources = Array.from({ length: batchSize }, (_, i) => {
 	const template = sourceTemplates[i % sourceTemplates.length];
+	const published_date =
+		template.published_date === null
+			? null
+			: new Date(Date.parse(template.published_date) - i * 11 * DAY).toISOString().slice(0, 10);
+	// Every other dated row has an exact upload time, so both hover and no-hover dates show.
+	const timed = published_date !== null && i % 2 === 0;
 	return {
 		...template,
 		id: String(i + 1),
 		title: template.title === null ? null : `${template.title} ${i + 1}`,
-		published_date:
-			template.published_date === null
-				? null
-				: new Date(Date.parse(template.published_date) - i * 11 * DAY).toISOString().slice(0, 10)
+		published_date,
+		published_at: timed ? `${published_date}T12:00:00Z` : null
 	};
 });
 

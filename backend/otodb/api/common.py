@@ -4,7 +4,7 @@ import re
 from abc import abstractmethod
 from collections.abc import Callable
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import UTC, date, datetime, time, timedelta
 from functools import reduce, wraps
 from typing import Annotated, Any, Literal, NamedTuple, Self
 
@@ -39,6 +39,7 @@ from otodb.models import (
 	WorkSource,
 )
 from otodb.models.enums import (
+	PLATFORM_TIMEZONES,
 	ErrorCode,
 	FlagStatus,
 	LanguageTypes,
@@ -152,11 +153,18 @@ class WorkSourceSchema(ModelSchema):
 	def resolve_media_title(obj):
 		return obj.media.title if obj.media else None
 
+	@staticmethod
+	def resolve_published_at(obj):
+		if obj.published_at is None:
+			return None
+		return obj.published_at.astimezone(PLATFORM_TIMEZONES[obj.platform])
+
 	class Meta:
 		model = WorkSource
 		fields = [
 			'url',
 			'published_date',
+			'published_at',
 			'work_width',
 			'work_height',
 			'work_duration',
@@ -647,6 +655,8 @@ def get_search_grammar(metatag_grammars: dict[str, MetatagSpec]):
 			value_rule = 'range_value'
 		elif spec.kind is str:
 			value_rule = 'SLUG'
+		elif spec.kind is datetime:
+			value_rule = 'date_range_value'
 		else:
 			value_rule = f'{name.upper()}_VALUE'
 		return f'{name}_meta: "{name}"i _META_CONN {value_rule}'
@@ -654,7 +664,7 @@ def get_search_grammar(metatag_grammars: dict[str, MetatagSpec]):
 	enum_value_terminals = '\n'.join(
 		f'{k.upper()}_VALUE: /{"|".join(sorted(spec.kind.names, key=len, reverse=True))}/i'
 		for k, spec in metatag_grammars.items()
-		if spec.kind not in (int, str)
+		if spec.kind not in (int, str, datetime)
 	)
 
 	return lark.Lark(rf"""
@@ -682,11 +692,24 @@ range_atom: COMPARATOR INT      -> range_compare
           | _RANGE_INC INT      -> range_max
           | INT                 -> range_eq
 
+date_range_value: date_range_atom ("," date_range_atom)*
+date_range_atom: COMPARATOR _date_value               -> range_compare
+               | _date_value _RANGE_EXC _date_value   -> range_between_exc
+               | _date_value _RANGE_INC _date_value   -> range_between
+               | _date_value _RANGE_EXC               -> range_min
+               | _date_value _RANGE_INC               -> range_min
+               | _RANGE_EXC _date_value               -> range_max_exc
+               | _RANGE_INC _date_value               -> range_max
+               | _date_value                          -> range_eq
+_date_value: ABS_DATE | REL_DATE
+
 MODIFIERS:     /[-]/
 TAG_MODIFIERS: /[\^]/
 SLUG:          /\w[\w-]*/u
 COMPARATOR:    ">=" | "<=" | ">" | "<"
 INT:           /\d+(_\d+)*/
+ABS_DATE:      /\d{{4}}-\d{{2}}-\d{{2}}/
+REL_DATE:      /\d+(\.\d+)?[a-z]+/i
 _RANGE_EXC: "..."
 _RANGE_INC: ".."
 _LPAR:   "("
@@ -729,6 +752,84 @@ def _parse_range_atom(node):
 		case _:
 			raise ValueError(
 				f'unrecognized range_atom: {node.data!r}/{node.children!r}'
+			)
+
+
+_AGE_UNITS = {  # Order matters: `m` is a prefix of both and means minutes
+	'seconds': timedelta(seconds=1),
+	'minutes': timedelta(minutes=1),
+	'hours': timedelta(hours=1),
+	'days': timedelta(days=1),
+	'weeks': timedelta(weeks=1),
+	'months': timedelta(days=365.25 / 12),
+	'years': timedelta(days=365.25),
+}
+
+
+def _date_bounds(token, now):
+	"""
+	The UTC interval a date value covers: `2010-03-15` is that whole day,
+	`2w` is the instant 2 weeks before `now`
+	"""
+	if token.type == 'ABS_DATE':
+		start = datetime.combine(date.fromisoformat(token), time.min, tzinfo=UTC)
+		return start, start + timedelta(days=1)
+	number, unit = re.fullmatch(r'([\d.]+)(\D+)', token.lower()).groups()
+	unit = {'hr': 'hours', 'wk': 'weeks', 'yr': 'years'}.get(unit, unit)
+	step = next((d for name, d in _AGE_UNITS.items() if name.startswith(unit)), None)
+	if step is None:
+		raise ValueError(f'unknown unit in {token!r}')
+	instant = now - float(number) * step
+	return instant, instant
+
+
+def _day_or_instant(bound, token):
+	"""The calendar day of a date's bound, or the exact instant of a relative one, so
+	each field can compare calendar days its own way"""
+	return bound.date() if token.type == 'ABS_DATE' else bound
+
+
+def _date_compare(op, token, now):
+	start, end = _date_bounds(token, now)
+	if token.type == 'REL_DATE':  # Ages compare how old, so `<2w` is after now-2w
+		op = {'<': '>', '<=': '>=', '>': '<', '>=': '<='}[op]
+	lookup, bound = {
+		'>': ('gte', end),
+		'>=': ('gte', start),
+		'<': ('lt', start),
+		'<=': ('lt', end),
+	}[op]
+	return lookup, _day_or_instant(bound, token)
+
+
+def _parse_date_atom(node, now):
+	match node.data, node.children:
+		case 'range_eq', (v,):
+			start, end = _date_bounds(v, now)
+			if v.type == 'REL_DATE':
+				start = datetime.combine(start.date(), time.min, tzinfo=UTC)
+				end = start + timedelta(days=1)
+			return [('gte', _day_or_instant(start, v)), ('lt', _day_or_instant(end, v))]
+		case 'range_compare', (op, v):
+			return [_date_compare(op, v, now)]
+		case 'range_min', (v,):
+			return [_date_compare('>=', v, now)]
+		case 'range_max', (v,):
+			return [_date_compare('<=', v, now)]
+		case 'range_max_exc', (v,):
+			return [_date_compare('<', v, now)]
+		case 'range_between' | 'range_between_exc', (a, b):
+			lo, hi = sorted([a, b], key=lambda token: _date_bounds(token, now))
+			start, _ = _date_bounds(lo, now)
+			hi_start, hi_end = _date_bounds(hi, now)
+			end = hi_end if node.data == 'range_between' else hi_start
+			return [
+				('gte', _day_or_instant(start, lo)),
+				('lt', _day_or_instant(end, hi)),
+			]
+		case _:
+			raise ValueError(
+				f'unrecognized date_range_atom: {node.data!r}/{node.children!r}'
 			)
 
 
@@ -910,6 +1011,7 @@ class AbstractTagTransformer(lark.Transformer):
 
 	def transform(self, tree):
 		self.orderings = []
+		self.now = datetime.now(UTC)
 		return super().transform(tree)
 
 	def start(self, v):
@@ -1016,10 +1118,19 @@ class AbstractTagTransformer(lark.Transformer):
 		v = v[0]
 		metatag = v.data.value[:-5]
 		spec = self.metatag_grammars[metatag]
-		if spec.kind is int:
+		if spec.kind in (int, datetime):
+			atoms = v.children[0].children
+			if spec.kind is int:
+				groups = [_parse_range_atom(a) for a in atoms]
+			else:
+				try:
+					groups = [_parse_date_atom(a, self.now) for a in atoms]
+				except ValueError, OverflowError:
+					# e.g. `2010-02-30`, an unknown unit, or out of range (`3000y`)
+					return Q(pk__in=[])
 			or_qs = [
 				reduce(operator.and_, (spec.to_q(op, val) for op, val in group))
-				for group in (_parse_range_atom(a) for a in v.children[0].children)
+				for group in groups
 			]
 			return reduce(operator.or_, or_qs)
 		if spec.kind is str:

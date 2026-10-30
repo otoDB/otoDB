@@ -21,13 +21,18 @@ _INT = {
 	'BigAutoField',
 }
 _STR = {'CharField', 'TextField', 'SlugField'}
-_KINDS = {'BooleanField': 'bool', 'FloatField': 'float', 'DateField': 'date'}
+_KINDS = {
+	'BooleanField': 'bool',
+	'FloatField': 'float',
+	'DateField': 'date',
+	'DateTimeField': 'datetime',
+}
 
 
 def _kind(field):
 	"""Map a Django field to its trigger serialization kind.
 
-	An unmapped type (DateTimeField, JSONField, ...) raises,
+	An unmapped type (JSONField, ...) raises,
 	so that tracking a field of a new type fails THIS test until a byte-parity
 	serialization for it is designed in db_triggers.
 	"""

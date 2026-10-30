@@ -245,6 +245,13 @@ def _serialize(column, kind, alias):
 			)
 		case 'date':  # isoformat, DateStyle-proof, zero-padded
 			return f"to_char({col}, 'YYYY-MM-DD')"
+		case 'datetime':  # UTC isoformat, TimeZone-proof, .ffffff only if nonzero
+			utc = f"({col} AT TIME ZONE 'UTC')"
+			return (
+				f'to_char({utc}, \'YYYY-MM-DD"T"HH24:MI:SS\')'
+				f" || CASE WHEN date_trunc('second', {col}) = {col} THEN '' ELSE to_char({utc}, '.US') END"
+				" || '+00:00'"
+			)
 		case _:
 			raise ValueError(f'unhandled field kind {kind!r} for column {column!r}')
 

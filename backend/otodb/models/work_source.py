@@ -1,11 +1,12 @@
 import hashlib
 import logging
-from datetime import date, datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import requests
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Cast, Coalesce
 
 from otodb.common import fetch_thumbnail_mime_type
 from otodb.storage_manager import storage_manager
@@ -34,6 +35,7 @@ class WorkSource(RevisionTrackedModel):
 	published_date = models.DateField(
 		auto_now=False, auto_now_add=False, null=True, blank=True
 	)
+	published_at = models.DateTimeField(null=True, blank=True)
 	work_origin = models.IntegerField(
 		choices=WorkOrigin.choices, default=WorkOrigin.AUTHOR
 	)
@@ -68,6 +70,7 @@ class WorkSource(RevisionTrackedModel):
 			'source_id',
 			'url',
 			'published_date',
+			'published_at',
 			'work_origin',
 			'work_status',
 			'work_width',
@@ -91,7 +94,12 @@ class WorkSource(RevisionTrackedModel):
 	class Meta:
 		verbose_name = 'Media Source'
 		verbose_name_plural = 'Media Sources'
-		ordering = ['work_status', 'work_origin', 'published_date']
+		# Earliest upload first, by its exact time when known
+		ordering = [
+			'work_status',
+			'work_origin',
+			Coalesce('published_at', Cast('published_date', models.DateTimeField())),
+		]
 		constraints = [
 			models.UniqueConstraint(
 				fields=['platform', 'source_id'],
@@ -183,6 +191,7 @@ class WorkSource(RevisionTrackedModel):
 			platform_extractors,
 		)
 
+		published_date = published_at = None
 		# Handle unavailable sources
 		if info is None and metadata is not None:
 			platform = source_id = canonical_url = None
@@ -211,7 +220,9 @@ class WorkSource(RevisionTrackedModel):
 				logger.exception(f'Failed to parse URL for platform: {url}')
 				return None
 
-			published_date = metadata.get('published_date') if metadata else None
+			if metadata and metadata.get('published_at'):
+				published_at = platform.from_local(metadata['published_at'])
+				published_date = platform.local_date(published_at)
 			thumbnail_url = metadata.get('thumbnail_url') if metadata else None
 
 			# Fetch thumbnail mime type if URL is provided
@@ -225,11 +236,6 @@ class WorkSource(RevisionTrackedModel):
 				'url': canonical_url,
 				'title': metadata.get('title') if metadata else None,
 				'description': metadata.get('description') if metadata else '',
-				'timestamp': datetime.combine(
-					published_date, datetime.min.time()
-				).timestamp()
-				if published_date
-				else None,
 				'uploader_id': metadata.get('uploader_id') if metadata else None,
 				'thumb': thumbnail_url,
 				'thumb_mime': thumb_mime,
@@ -244,6 +250,9 @@ class WorkSource(RevisionTrackedModel):
 
 		if info['site'] is None:
 			return None
+		if info.get('timestamp'):
+			published_at = datetime.fromtimestamp(int(info['timestamp']), UTC)
+			published_date = Platform(info['site']).local_date(published_at)
 
 		src, created = WorkSource.objects.get_or_create(
 			platform=info['site'],
@@ -253,9 +262,8 @@ class WorkSource(RevisionTrackedModel):
 				'title': info['title'],
 				'description': info['description'],
 				'url': info['url'],
-				'published_date': (
-					date.fromtimestamp(info['timestamp']) if info['timestamp'] else None
-				),
+				'published_date': published_date,
+				'published_at': published_at,
 				'work_origin': WorkOrigin(is_reupload),
 				'work_status': WorkStatus.DOWN
 				if metadata is not None

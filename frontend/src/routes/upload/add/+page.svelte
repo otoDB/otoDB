@@ -8,6 +8,12 @@
 
 	let { data, form } = $props();
 	let isUnavailable = $derived(!!data.unavailable_source);
+	let publishedAtInput = $derived(
+		data.unavailable_source?.published_at?.slice(0, 19) ??
+			(data.unavailable_source?.published_date
+				? `${data.unavailable_source.published_date}T00:00`
+				: undefined)
+	);
 </script>
 
 <Section title={data.head.title}>
@@ -162,9 +168,11 @@
 						<th><label for="manual_date">{m.super_agent_pigeon_aim()}</label></th>
 						<td
 							><input
-								type="date"
+								type="datetime-local"
+								step="1"
+								id="manual_date"
 								name="manual_date"
-								value={data.unavailable_source?.published_date}
+								value={publishedAtInput}
 							/></td
 						>
 					</tr>

@@ -7339,6 +7339,18 @@
             ],
             "title": "Published Date"
           },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
           "work_width": {
             "anyOf": [
               {
@@ -7604,17 +7616,17 @@
             ],
             "title": "Work Duration"
           },
-          "published_date": {
+          "published_at": {
             "anyOf": [
               {
-                "format": "date",
+                "format": "date-time",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Published Date"
+            "title": "Published At"
           }
         },
         "title": "WorkSourceMetadataSchema",
@@ -7999,6 +8011,18 @@
               }
             ],
             "title": "Published Date"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
           },
           "work_width": {
             "anyOf": [

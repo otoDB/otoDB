@@ -11,8 +11,9 @@ Each table entry:
   app/model -- content-type (app_label, model) used by the trigger's otodb_ct() lookups
   pk        -- primary-key column
   tracked   -- (revision field NAME, db column, kind) per tracked field.
-               kind: 'str' | 'int' | 'float' | 'bool' | 'date' | 'fk'
-               (drives serialization to match Django str()); FK value = str(pk).
+               kind: 'str' | 'int' | 'float' | 'bool' | 'date' | 'datetime' | 'fk'
+               (drives serialization to match Django str()); FK value = str(pk);
+               'datetime' is the isoformat of the UTC instant.
   entities  -- (kind, app, model, id_column) routing targets per change.
                kind 'self' -> this row (id_column = pk); 'fk' -> the FK's target.
 
@@ -252,6 +253,7 @@ TABLES = [
 			('source_id', 'source_id', 'str'),
 			('url', 'url', 'str'),
 			('published_date', 'published_date', 'date'),
+			('published_at', 'published_at', 'datetime'),
 			('work_origin', 'work_origin', 'int'),
 			('work_status', 'work_status', 'int'),
 			('work_width', 'work_width', 'int'),

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Annotated
 
 from asgiref.sync import sync_to_async
@@ -62,7 +62,7 @@ class WorkSourceMetadataSchema(Schema):
 	work_width: int | None = None
 	work_height: int | None = None
 	work_duration: int | None = None
-	published_date: date | None = None
+	published_at: datetime | None = None
 
 
 @source_router.post('unbind', auth=django_auth, response={200: None, 400: Error})
@@ -132,7 +132,11 @@ def update_source(
 	src.work_width = metadata.work_width
 	src.work_height = metadata.work_height
 	src.work_duration = metadata.work_duration
-	src.published_date = metadata.published_date
+	src.published_date = src.published_at = None
+	if metadata.published_at:
+		platform = Platform(src.platform)
+		src.published_at = platform.from_local(metadata.published_at)
+		src.published_date = platform.local_date(src.published_at)
 
 	src.save_thumbnail()
 	src.save()

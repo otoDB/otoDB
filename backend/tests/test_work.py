@@ -1,20 +1,23 @@
 import asyncio
+import itertools
 import json
 import random
 import string
 import time
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import urlencode
 
+import lark
 import pytest
 from django.contrib.contenttypes.models import ContentType
 
-from otodb.api.common import ApiError
+from otodb.api.common import ApiError, _parse_date_atom
+from otodb.api.work import work_search_grammar
 from otodb.common import process_video_info
 from otodb.models import Comment, MediaWork, WorkSource
-from otodb.models.enums import ErrorCode, Platform, Rating
+from otodb.models.enums import ErrorCode, Platform, Rating, WorkOrigin
 
 
 def random_str(length):
@@ -211,7 +214,7 @@ class TestWork:
 			platform=Platform.YOUTUBE,
 			source_id='test123',
 			url='https://youtube.com/test123',
-			published_date=date.today(),
+			published_date=date(2024, 1, 1),
 			title='Test Source',
 			added_by=editor,
 		)
@@ -252,7 +255,7 @@ class TestWork:
 			platform=Platform.YOUTUBE,
 			source_id='test123',
 			url='https://youtube.com/test123',
-			published_date=date.today(),
+			published_date=date(2024, 1, 1),
 			title='Test Source',
 			added_by=editor,
 		)
@@ -301,7 +304,7 @@ class TestWork:
 			platform=Platform.YOUTUBE,
 			source_id='test123',
 			url='https://youtube.com/test123',
-			published_date=date.today(),
+			published_date=date(2024, 1, 1),
 			title='Test Source',
 			added_by=editor,
 		)
@@ -328,7 +331,7 @@ class TestWork:
 			platform=Platform.YOUTUBE,
 			source_id='test123',
 			url='https://youtube.com/test123',
-			published_date=date.today(),
+			published_date=date(2024, 1, 1),
 			title='Test Source',
 			added_by=editor,
 		)
@@ -359,3 +362,276 @@ class TestWork:
 		work.refresh_from_db()
 		assert work.moved_to is None
 		assert work.title == 'Work'
+
+
+# Date metatags
+
+NOW = datetime(2026, 10, 29, 12, 30, tzinfo=UTC)
+W2 = NOW - timedelta(weeks=2)
+Y1 = NOW - timedelta(days=365.25)
+
+
+def _d(*args):
+	return datetime(*args, tzinfo=UTC)
+
+
+def parse_dates(tags):
+	(value,) = work_search_grammar.parse(tags).find_data('date_range_value')
+	return [_parse_date_atom(atom, NOW) for atom in value.children]
+
+
+@pytest.mark.parametrize(
+	'tags,expected',
+	[
+		('date:2010-03-15', [('gte', date(2010, 3, 15)), ('lt', date(2010, 3, 16))]),
+		('date:>2010-03-15', [('gte', date(2010, 3, 16))]),
+		('date:>=2010-03-15', [('gte', date(2010, 3, 15))]),
+		('date:<2010-03-15', [('lt', date(2010, 3, 15))]),
+		('date:<=2010-03-15', [('lt', date(2010, 3, 16))]),
+		(
+			'date:2010-03-15..2010-03-20',
+			[('gte', date(2010, 3, 15)), ('lt', date(2010, 3, 21))],
+		),
+		(
+			'date:2010-03-15...2010-03-20',
+			[('gte', date(2010, 3, 15)), ('lt', date(2010, 3, 20))],
+		),
+		('date:2010-03-15..', [('gte', date(2010, 3, 15))]),
+		('date:2010-03-15...', [('gte', date(2010, 3, 15))]),
+		('date:..2010-03-20', [('lt', date(2010, 3, 21))]),
+		('date:...2010-03-20', [('lt', date(2010, 3, 20))]),
+		('date:2010-12-31', [('gte', date(2010, 12, 31)), ('lt', date(2011, 1, 1))]),
+		('date:2012-02-29', [('gte', date(2012, 2, 29)), ('lt', date(2012, 3, 1))]),
+		('age:<2w', [('gte', W2)]),
+		('age:<=2w', [('gte', W2)]),
+		('age:>2w', [('lt', W2)]),
+		('age:>=2w', [('lt', W2)]),
+		('age:2w..1y', [('gte', Y1), ('lt', W2)]),
+		('age:2w..', [('lt', W2)]),
+		('age:..2w', [('gte', W2)]),
+		('age:2w', [('gte', _d(2026, 10, 15)), ('lt', _d(2026, 10, 16))]),
+		('date:2010-01-01..1y', [('gte', date(2010, 1, 1)), ('lt', Y1)]),
+	],
+)
+def test_date_value_bounds(tags, expected):
+	assert parse_dates(tags) == [expected]
+
+
+@pytest.mark.parametrize(
+	'forward,backward',
+	[
+		('date:2010-03-15..2010-03-20', 'date:2010-03-20..2010-03-15'),
+		('date:2010-03-15...2010-03-20', 'date:2010-03-20...2010-03-15'),
+		('age:2w..1y', 'age:1y..2w'),
+		('date:2010-01-01..1y', 'date:1y..2010-01-01'),
+	],
+)
+def test_date_range_order_does_not_matter(forward, backward):
+	assert parse_dates(forward) == parse_dates(backward)
+
+
+@pytest.mark.parametrize(
+	'value,delta',
+	[
+		('1s', timedelta(seconds=1)),
+		('1sec', timedelta(seconds=1)),
+		('1seconds', timedelta(seconds=1)),
+		('1m', timedelta(minutes=1)),
+		('1mi', timedelta(minutes=1)),
+		('1min', timedelta(minutes=1)),
+		('1h', timedelta(hours=1)),
+		('1hr', timedelta(hours=1)),
+		('1d', timedelta(days=1)),
+		('1w', timedelta(weeks=1)),
+		('1wk', timedelta(weeks=1)),
+		('1mo', timedelta(days=365.25 / 12)),
+		('1y', timedelta(days=365.25)),
+		('1yr', timedelta(days=365.25)),
+		('2years', timedelta(days=2 * 365.25)),
+		('2W', timedelta(weeks=2)),
+		('1.5d', timedelta(days=1.5)),
+	],
+)
+def test_age_units(value, delta):
+	assert parse_dates(f'age:<{value}') == [[('gte', NOW - delta)]]
+
+
+def test_date_comma_list_mixes_forms():
+	assert parse_dates('age:<1d,2010-01-01..2010-01-31') == [
+		[('gte', NOW - timedelta(days=1))],
+		[('gte', date(2010, 1, 1)), ('lt', date(2010, 2, 1))],
+	]
+
+
+@pytest.mark.parametrize('value', ['<2w', '2010-03-15', '1y..2010-01-01'])
+def test_date_and_age_are_aliases(value):
+	assert parse_dates(f'date:{value}') == parse_dates(f'age:{value}')
+
+
+@pytest.mark.parametrize(
+	'tags,error',
+	[
+		('date:2010-02-30', ValueError),
+		('age:2xyz', ValueError),
+		('age:3000y', OverflowError),
+	],
+)
+def test_invalid_date_values_raise(tags, error):
+	with pytest.raises(error):
+		parse_dates(tags)
+
+
+@pytest.mark.parametrize(
+	'tags', ['date:2010', 'date:2010-03', 'age:2', 'id:2w', 'id:2010-03-15']
+)
+def test_malformed_date_values_do_not_parse(tags):
+	with pytest.raises(lark.exceptions.UnexpectedInput):
+		work_search_grammar.parse(tags)
+
+
+@pytest.mark.parametrize('tags', ['id:5', 'duration:>=300', 'id:1...5'])
+def test_int_ranges_still_parse(tags):
+	assert any(work_search_grammar.parse(tags).find_data('range_value'))
+
+
+@pytest.fixture
+def search_ids(work_client):
+	def _search(tags):
+		res = work_client.get('/search?' + urlencode({'query': '', 'tags': tags}))
+		assert res.status_code == 200
+		return {int(w['id']) for w in res.json()['items']}
+
+	return _search
+
+
+@pytest.fixture
+def make_work():
+	def _make(created_at=None):
+		work = MediaWork.objects.create(title='Work', rating=Rating.GENERAL)
+		if created_at is not None:  # auto_now_add ignores a value passed to create()
+			MediaWork.objects.filter(pk=work.pk).update(created_at=created_at)
+		return work.pk
+
+	return _make
+
+
+@pytest.fixture
+def make_source(member):
+	ids = itertools.count()
+
+	def _make(
+		work_id,
+		published_date,
+		work_origin=WorkOrigin.AUTHOR,
+		platform=Platform.YOUTUBE,
+		published_at=None,
+	):
+		n = next(ids)
+		return WorkSource.objects.create(
+			media_id=work_id,
+			platform=platform,
+			source_id=f'date-test-{n}',
+			url=f'https://youtu.be/date-test-{n}',
+			published_date=published_date,
+			published_at=published_at,
+			work_origin=work_origin,
+			added_by=member,
+		)
+
+	return _make
+
+
+def test_date_day_boundaries(search_ids, make_work):
+	before = make_work(_d(2010, 3, 14, 23, 59, 59))
+	start = make_work(_d(2010, 3, 15))
+	end = make_work(_d(2010, 3, 15, 23, 59, 59, 999999))
+	after = make_work(_d(2010, 3, 16))
+	assert search_ids('date:2010-03-15') == {start, end}
+	assert search_ids('date:>2010-03-15') == {after}
+	assert search_ids('date:<2010-03-15') == {before}
+	assert search_ids('date:<=2010-03-15') == {before, start, end}
+	assert search_ids('date:2010-03-14..2010-03-15') == {before, start, end}
+	assert search_ids('date:2010-03-15...2010-03-16') == {start, end}
+
+
+def test_age_compares_how_old(search_ids, make_work):
+	now = datetime.now(UTC)
+	hour = make_work(now - timedelta(hours=1))
+	days = make_work(now - timedelta(days=10))
+	old = make_work(now - timedelta(days=400))
+	assert search_ids('age:<1d') == {hour}
+	assert search_ids('age:>1w') == {days, old}
+	assert search_ids('age:1w..1y') == {days}
+	assert search_ids('age:1y..1w') == {days}
+	assert search_ids('age:1w..') == {days, old}
+	assert search_ids('age:..1w') == {hour}
+	assert search_ids('age:1y..,<1d') == {hour, old}
+
+
+def test_published_ignores_reuploads(search_ids, make_work, make_source):
+	origin = make_work()
+	make_source(origin, date(2010, 5, 1))
+	reupload_only = make_work()
+	make_source(reupload_only, date(2010, 5, 1), WorkOrigin.REUPLOAD)
+	assert search_ids('published:2010-05-01') == {origin}
+
+
+def test_published_uses_earliest_origin(search_ids, make_work, make_source):
+	work = make_work()
+	make_source(work, date(2010, 1, 1))
+	make_source(work, date(2015, 6, 1))
+	make_source(work, date(2005, 1, 1), WorkOrigin.REUPLOAD)
+	assert search_ids('published:2015-06-01') == set()
+	assert search_ids('published:2010-01-01') == {work}
+	assert search_ids('published:<2008-01-01') == set()
+
+
+def test_negated_published(search_ids, make_work, make_source):
+	match = make_work()
+	make_source(match, date(2010, 5, 1))
+	other = make_work()
+	make_source(other, date(2011, 1, 1))
+	undated = make_work()
+	make_source(undated, None)
+	no_sources = make_work()
+	make_source(None, date(2010, 5, 1))
+	assert search_ids('-published:2010-05-01') == {other, undated, no_sources}
+
+
+def test_published_relative(search_ids, make_work, make_source):
+	recent = make_work()
+	make_source(recent, datetime.now(UTC).date())
+	old = make_work()
+	make_source(old, date(2010, 1, 1))
+	assert search_ids('published:<1w') == {recent}
+	assert search_ids('published:>1w') == {old}
+
+
+def test_published_first_origin_by_time(search_ids, make_work, make_source):
+	# Niconico's upload came first, though its day in Japan is later than YouTube's
+	work = make_work()
+	make_source(
+		work,
+		date(2026, 10, 29),
+		platform=Platform.NICONICO,
+		published_at=_d(2026, 10, 28, 19, 0, 0),
+	)
+	make_source(work, date(2026, 10, 28), published_at=_d(2026, 10, 28, 19, 0, 22))
+	assert search_ids('published:2026-10-29') == {work}
+	assert search_ids('published:2026-10-28') == set()
+
+
+def test_published_relative_uses_exact_time(search_ids, make_work, make_source):
+	uploaded = datetime.now(UTC) - timedelta(hours=2)
+	work = make_work()
+	make_source(work, uploaded.date(), published_at=uploaded)
+	assert search_ids('published:<1h') == set()
+	assert search_ids('published:<3h') == {work}
+
+
+@pytest.mark.parametrize(
+	'tags', ['date:2010-02-30', 'age:2xyz', 'age:3000y', 'date:2010']
+)
+def test_bad_date_values_match_nothing(search_ids, make_work, tags):
+	make_work()
+	assert search_ids(tags) == set()

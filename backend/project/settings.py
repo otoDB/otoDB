@@ -57,16 +57,17 @@ COOKIES_FILE = os.environ.get('OTODB_COOKIES_FILE')
 _EMAIL_BACKEND = os.environ.get(
 	'OTODB_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'
 )
-_EMAIL_PORT = os.environ.get('OTODB_EMAIL_PORT')
+_EMAIL_PORT = int(os.environ.get('OTODB_EMAIL_PORT') or 0) or None
 MAILERS = {
 	'default': {
 		'BACKEND': _EMAIL_BACKEND,
 		'OPTIONS': {
 			'host': os.environ.get('OTODB_EMAIL_HOST') or 'localhost',
-			'port': int(_EMAIL_PORT) if _EMAIL_PORT else None,
+			'port': _EMAIL_PORT,
 			'username': os.environ.get('OTODB_EMAIL_HOST_USER'),
 			'password': os.environ.get('OTODB_EMAIL_HOST_PASSWORD'),
-			'use_tls': True,
+			'use_ssl': _EMAIL_PORT == 465,
+			'use_tls': _EMAIL_PORT != 465,
 		}
 		if _EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend'
 		else {},

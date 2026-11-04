@@ -14,6 +14,7 @@ on:
 defaults:
   run:
     working-directory: backend
+    shell: bash
 
 jobs:
   lint:
@@ -21,13 +22,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: uvx ruff format --check
       - run: uvx ruff check
 
   test:
     name: Test (Python ${{ matrix.python-version }}, ${{ matrix.database.name }})
     runs-on: ubuntu-latest
+    container:
+      image: node:22-bookworm
     needs:
       - migrations
     strategy:
@@ -39,8 +45,9 @@ jobs:
           # - { type: postgresql, name: PostgreSQL 18, version: "18" }
 
     env:
+      UV_PYTHON: ${{ matrix.python-version }}
       OTODB_SECRET_KEY: test-secret-key-for-ci
-      OTODB_DB_HOST: localhost
+      OTODB_DB_HOST: postgres
       OTODB_DB_PORT: 5432
       OTODB_DB_NAME: "otodb_test"
       OTODB_DB_USER: postgres
@@ -57,14 +64,12 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
-          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Install dependencies
         run: uv sync
       - name: Copy .env.example to .env
@@ -86,7 +91,10 @@ jobs:
       OTODB_SKIP_DB: 1
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Install dependencies
         run: uv sync
       - name: Check for missing migrations
@@ -101,18 +109,20 @@ jobs:
       - migrations
     permissions:
       packages: write
+    env:
+      REGISTRY: ${{ vars.REGISTRY || 'ghcr.io' }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ github.token }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ vars.REGISTRY_USERNAME || github.repository_owner }}
+          password: ${{ secrets.REGISTRY_TOKEN || github.token }}
       - uses: docker/metadata-action@v6
         id: backend-metadata
         with:
-          images: ghcr.io/otodb/otodb-backend
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/otodb-backend
           tags: |
             type=sha,format=long,prefix=
             type=ref,event=branch
@@ -128,8 +138,8 @@ jobs:
           tags: ${{ steps.backend-metadata.outputs.tags }}
           labels: ${{ steps.backend-metadata.outputs.labels }}
           platforms: linux/amd64
-          cache-from: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache
-          cache-to: type=registry,ref=ghcr.io/otodb/otodb-backend:buildcache,mode=max
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
           build-args: |
             OTODB_HASH=${{ github.sha }}
 
@@ -144,13 +154,13 @@ jobs:
       - test
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Install dependencies
         run: uv sync
       - name: Regenerate openapi.json and check for diff
-        working-directory: backend
         run: |
           uv run manage.py openapi_schema > openapi.json
           git diff --exit-code openapi.json

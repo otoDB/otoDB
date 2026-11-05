@@ -99,7 +99,7 @@
 			'@type': 'Organization',
 			'name': 'otoDB',
 			'url': 'https://otodb.net',
-			'sameAs': ['https://twitter.com/otoDBnet', 'https://github.com/otoDB']
+			'sameAs': ['https://twitter.com/otoDBnet', 'https://git.mmaker.moe/otoDB']
 		})
 	);
 

@@ -45,7 +45,7 @@
 			/
 			<a href="mailto:contact@otodb.net">contact@otodb.net</a>
 			/
-			<a href="https://github.com/otoDB/otoDB">Source</a>
+			<a href="https://git.mmaker.moe/otoDB/otoDB">Source</a>
 		</div>
 	</div>
 

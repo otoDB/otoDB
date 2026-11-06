@@ -39,6 +39,8 @@ def auth_forward(request: HttpRequest):
 	user = request.user
 	if not user.is_authenticated:
 		return HttpResponse(status=401)
+	if user.level <= Account.Levels.RESTRICTED:
+		return HttpResponse(status=403)
 	response = HttpResponse(status=204)
 	response['X-User-ID'] = str(user.id)
 	response['X-User-Name'] = user.username

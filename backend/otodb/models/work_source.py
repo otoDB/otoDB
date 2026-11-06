@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from django.db import models
 
-from otodb.common import fetch_thumbnail_mime_type
+from otodb.common import clean_description, fetch_thumbnail_mime_type
 from otodb.storage_manager import storage_manager
 
 from .enums import MimeType, Platform, WorkOrigin, WorkStatus
@@ -99,6 +99,11 @@ class WorkSource(RevisionTrackedModel):
 				violation_error_message='This source is already registered',
 			),
 		]
+
+	def save(self, *args, **kwargs):
+		if self.description:
+			self.description = clean_description(self.description)
+		super().save(*args, **kwargs)
 
 	def refresh(self, info, full_info):
 		"""

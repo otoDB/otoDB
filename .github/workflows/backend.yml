@@ -113,9 +113,9 @@ jobs:
       REGISTRY: ${{ vars.REGISTRY || 'ghcr.io' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Compute build cache ref
-        run: echo "CACHE_REF=$(echo "$REGISTRY/$GITHUB_REPOSITORY_OWNER/otodb-backend:buildcache" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
       - uses: docker/setup-buildx-action@v4
+        with:
+          driver: ${{ github.server_url == 'https://github.com' && 'docker-container' || 'docker' }}
       - uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
@@ -140,8 +140,8 @@ jobs:
           tags: ${{ steps.backend-metadata.outputs.tags }}
           labels: ${{ steps.backend-metadata.outputs.labels }}
           platforms: linux/amd64
-          cache-from: type=registry,ref=${{ env.CACHE_REF }}
-          cache-to: ${{ github.ref == 'refs/heads/master' && format('type=registry,ref={0},mode=max,image-manifest=true,oci-mediatypes=true', env.CACHE_REF) || '' }}
+          cache-from: ${{ github.server_url == 'https://github.com' && 'type=gha,scope=backend' || '' }}
+          cache-to: ${{ github.server_url == 'https://github.com' && 'type=gha,scope=backend,mode=max' || '' }}
           build-args: |
             OTODB_HASH=${{ github.sha }}
 

@@ -99,8 +99,11 @@ class ListUpdateSchema(Schema):
 
 
 @list_router.put('items', auth=django_auth)
+@transaction.atomic
 def update_items(request: HttpRequest, list_id: OtodbID, payload: ListUpdateSchema):
 	lst = get_object_or_404(Pool, id=list_id)
+	if lst.author_id != request.user.id:
+		raise HttpError(403, 'Forbidden')
 
 	items = lst.poolitem_set
 

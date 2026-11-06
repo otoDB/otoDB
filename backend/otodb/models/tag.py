@@ -363,7 +363,8 @@ class TagWork(RevisionTrackedModel, OtodbTagModel):
 						aliased_to__isnull=True,
 						deprecated=False,
 					).values('id'),
-					all=True,
+					# Cannot do all=True because we could have diamond problems
+					all=False,
 				)
 				.order_by()
 			)

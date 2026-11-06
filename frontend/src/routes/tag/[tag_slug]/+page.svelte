@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import CommentTree from '$lib/CommentTree/CommentTree.svelte';
 	import Connections from '$lib/Connections.svelte';
 	import LoadMoreButton from '$lib/LoadMoreButton.svelte';
@@ -29,20 +28,6 @@
 
 	let { data } = $props();
 	let results = $derived(data.works!.items);
-
-	const articleLd = $derived(
-		data.wiki_page?.length
-			? '<script type="application/ld+json">' +
-					JSON.stringify({
-						'@context': 'https://schema.org',
-						'@type': 'Article',
-						'headline': data.display_name,
-						'url': `https://otodb.net${page.url.pathname}`
-					}) +
-					'</' +
-					'script>'
-			: null
-	);
 
 	const aliases = $derived(
 		[data.tag.name, ...(data.aliases?.map((e) => e.name) ?? [])].filter(
@@ -79,13 +64,6 @@
 		return get_paths(data.tag.slug);
 	});
 </script>
-
-<svelte:head>
-	{#if articleLd}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html articleLd}
-	{/if}
-</svelte:head>
 
 <Section title={data.display_name} type={m.empty_legal_chicken_taste()} menuLinks={data.links}>
 	<div>

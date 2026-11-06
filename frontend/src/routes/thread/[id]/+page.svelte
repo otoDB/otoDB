@@ -50,37 +50,7 @@
 			.join('\n')
 	);
 	const isGardening = $derived(data.thread?.category === PostCategory.Gardening);
-	const opPost = $derived(data.posts.find((p) => p.num === 1));
-
-	const postLd = $derived.by(() => {
-		if (!data.thread || !opPost) return null;
-		return (
-			'<script type="application/ld+json">' +
-			JSON.stringify({
-				'@context': 'https://schema.org',
-				'@type': 'DiscussionForumPosting',
-				'headline': data.thread.title,
-				'text': opPost.body.slice(0, 500),
-				'url': `https://otodb.net/thread/${data.thread.id}`,
-				'author': {
-					'@type': 'Person',
-					'name': data.thread.added_by.username,
-					'url': `https://otodb.net/user/${data.thread.added_by.username}`
-				},
-				'datePublished': opPost.created_at
-			}) +
-			'</' +
-			'script>'
-		);
-	});
 </script>
-
-<svelte:head>
-	{#if postLd}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html postLd}
-	{/if}
-</svelte:head>
 
 {#if data.thread}
 	<Section>

@@ -91,18 +91,6 @@
 		}
 	});
 
-	const ldTag = (json: string) => '<script type="application/ld+json">' + json + '</' + 'script>';
-
-	const organizationLd = ldTag(
-		JSON.stringify({
-			'@context': 'https://schema.org',
-			'@type': 'Organization',
-			'name': 'otoDB',
-			'url': 'https://otodb.net',
-			'sameAs': ['https://twitter.com/otoDBnet', 'https://git.mmaker.moe/otoDB']
-		})
-	);
-
 	// Canonical URLs strip the query string except for params a route declares
 	// as content-significant (e.g. pagination) via head.canonicalParams
 	const canonicalUrl = $derived.by(() => {
@@ -113,29 +101,6 @@
 			.join('&');
 		return page.url.origin + page.url.pathname + (query ? `?${query}` : '');
 	});
-
-	const breadcrumbLd = $derived(
-		page.data.head?.breadcrumbs
-			? ldTag(
-					JSON.stringify({
-						'@context': 'https://schema.org',
-						'@type': 'BreadcrumbList',
-						'itemListElement': (page.data.head.breadcrumbs as { name: string; url: string }[]).map(
-							(
-								crumb: { name: string; url: string },
-								i: number,
-								arr: { name: string; url: string }[]
-							) => ({
-								'@type': 'ListItem',
-								'position': i + 1,
-								'name': crumb.name,
-								...(i < arr.length - 1 ? { item: `https://otodb.net${crumb.url}` } : {})
-							})
-						)
-					})
-				)
-			: null
-	);
 
 	// theme switcher
 	$effect(() => {
@@ -178,12 +143,6 @@
 	{/if}
 	{#if page.data.head?.isExplicit}
 		<meta name="rating" content="adult" />
-	{/if}
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html organizationLd}
-	{#if breadcrumbLd}
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html breadcrumbLd}
 	{/if}
 </svelte:head>
 

@@ -465,7 +465,9 @@ def alias_tags(
 	assert into.aliased_to is None
 
 	# Prevent users below editor from merging if any `from_tag` has instances
-	effective_from_tags = [t for t in tags if (t.aliased_to_id or t.pk) != into.pk]
+	effective_from_tags = [
+		t.aliased_to or t for t in tags if (t.aliased_to_id or t.pk) != into.pk
+	]
 	if not request.user.is_editor and model.any_have_instances(effective_from_tags):
 		raise ApiError(
 			403,

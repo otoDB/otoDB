@@ -1,17 +1,21 @@
 import pytest
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import connection, models
+from django.test.utils import CaptureQueriesContext
 
+from otodb.api.common import ApiError
 from otodb.common import slugify_tag
 from otodb.models import (
+	MediaSong,
 	MediaWork,
 	TagSong,
+	TagSongInstance,
 	TagWork,
 	TagWorkInstance,
 	TagWorkLangPreference,
 	TagWorkParenthood,
 )
-from otodb.models.enums import LanguageTypes, WorkTagCategory
+from otodb.models.enums import ErrorCode, LanguageTypes, WorkTagCategory
 
 
 # Tests
@@ -459,6 +463,55 @@ class TestTagHierarchy:
 
 
 @pytest.mark.django_db(transaction=True, reset_sequences=True)
+class TestTagDescendantsStackedDiamonds:
+	"""`get_descendants` must walk the multi-parent DAG by node, not by path.
+
+	With UNION ALL in the recursive CTE every distinct path is a row, so n stacked
+	diamonds produce 2^n rows for the bottom tag alone.
+	"""
+
+	DIAMONDS = 6
+
+	def _build_stacked_diamonds(self):
+		"""
+		root -> (l1, r1) -> j1 -> (l2, r2) -> j2 -> ... -> j6
+		"""
+		root = TagWork.objects.create(name='diamond_root')
+		descendants = []
+		top = root
+		for i in range(1, self.DIAMONDS + 1):
+			left = TagWork.objects.create(name=f'diamond_l{i}')
+			right = TagWork.objects.create(name=f'diamond_r{i}')
+			join = TagWork.objects.create(name=f'diamond_j{i}')
+			TagWorkParenthood.objects.create(tag=left, parent=top, primary=True)
+			TagWorkParenthood.objects.create(tag=right, parent=top, primary=True)
+			TagWorkParenthood.objects.create(tag=join, parent=left, primary=True)
+			TagWorkParenthood.objects.create(tag=join, parent=right, primary=False)
+			descendants += [left, right, join]
+			top = join
+		return root, descendants
+
+	def test_descendants_are_distinct_tags(self):
+		root, descendants = self._build_stacked_diamonds()
+
+		result = list(root.get_descendants())
+
+		assert len(result) == len(descendants) == 3 * self.DIAMONDS
+		assert {t.pk for t in result} == {t.pk for t in descendants}
+
+	def test_recursive_cte_does_not_use_union_all(self):
+		root, descendants = self._build_stacked_diamonds()
+
+		with CaptureQueriesContext(connection) as ctx:
+			count = root.get_descendants().count()
+
+		assert count == len(descendants)
+		sql = ' '.join(q['sql'] for q in ctx.captured_queries).upper()
+		assert 'UNION' in sql
+		assert 'UNION ALL' not in sql
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
 class TestTagAliasBaseSwap:
 	"""Test that swapping the base of an alias group doesn't create self-aliases."""
 
@@ -499,6 +552,138 @@ class TestTagAliasBaseSwap:
 			pk__in=[base.pk, alias.pk],
 			aliased_to=models.F('pk'),
 		).exists()
+
+
+@pytest.mark.django_db(transaction=True, reset_sequences=True)
+class TestTagAliasInstanceGuard:
+	"""Members may not merge tags that have instances, including when they name an
+	alias row: `alias` moves the alias's base tag, so the guard must check the base.
+	"""
+
+	def _work_base_with_alias(self):
+		base = TagWork.objects.create(name='guarded_base')
+		alias = TagWork.objects.create(name='guarded_alias')
+		alias.aliased_to = base
+		alias.save()
+		other = TagWork.objects.create(name='guarded_other')
+		work = MediaWork.objects.create(title='Guarded Work')
+		work.tags.add(base)
+		return base, alias, other, work
+
+	def _song_base_with_alias(self):
+		base = TagSong.objects.create(name='guarded_song_base')
+		alias = TagSong.objects.create(name='guarded_song_alias')
+		alias.aliased_to = base
+		alias.save()
+		other = TagSong.objects.create(name='guarded_song_other')
+		song_work_tag = TagWork.objects.create(
+			name='guarded_song', category=WorkTagCategory.SONG
+		)
+		song = MediaSong.objects.create(
+			work_tag=song_work_tag, title='Guarded Song', author='author'
+		)
+		TagSongInstance.objects.create(song=song, song_tag=base)
+		return base, alias, other, song
+
+	def test_member_cannot_alias_work_tag_via_alias_of_tag_with_instances(
+		self, tag_client
+	):
+		base, alias, other, work = self._work_base_with_alias()
+
+		with pytest.raises(ApiError) as exc_info:
+			tag_client.post(
+				f'/alias?into_tag={other.slug}&delete=false',
+				json=[alias.slug],
+			)
+		assert exc_info.value.status == 403
+		assert exc_info.value.code == ErrorCode.TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR
+
+		base.refresh_from_db()
+		assert base.aliased_to is None
+		assert list(
+			TagWorkInstance.objects.filter(work=work).values_list(
+				'work_tag_id', flat=True
+			)
+		) == [base.pk]
+
+	def test_editor_can_alias_work_tag_via_alias_of_tag_with_instances(
+		self, editor, tag_client
+	):
+		base, alias, other, work = self._work_base_with_alias()
+
+		response = tag_client.post(
+			f'/alias?into_tag={other.slug}&delete=false',
+			json=[alias.slug],
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		base.refresh_from_db()
+		assert base.aliased_to_id == other.pk
+		assert list(
+			TagWorkInstance.objects.filter(work=work).values_list(
+				'work_tag_id', flat=True
+			)
+		) == [other.pk]
+
+	def test_member_cannot_alias_song_tag_via_alias_of_tag_with_instances(
+		self, tag_client
+	):
+		base, alias, other, song = self._song_base_with_alias()
+
+		with pytest.raises(ApiError) as exc_info:
+			tag_client.post(
+				f'/alias?into_tag={other.slug}&delete=false&type=song',
+				json=[alias.slug],
+			)
+		assert exc_info.value.status == 403
+		assert exc_info.value.code == ErrorCode.TAG_WITH_INSTANCES_MERGE_REQUIRES_EDITOR
+
+		base.refresh_from_db()
+		assert base.aliased_to is None
+		assert list(
+			TagSongInstance.objects.filter(song=song).values_list(
+				'song_tag_id', flat=True
+			)
+		) == [base.pk]
+
+	def test_editor_can_alias_song_tag_via_alias_of_tag_with_instances(
+		self, editor, tag_client
+	):
+		base, alias, other, song = self._song_base_with_alias()
+
+		response = tag_client.post(
+			f'/alias?into_tag={other.slug}&delete=false&type=song',
+			json=[alias.slug],
+			user=editor,
+		)
+		assert response.status_code == 200
+
+		base.refresh_from_db()
+		assert base.aliased_to_id == other.pk
+		assert list(
+			TagSongInstance.objects.filter(song=song).values_list(
+				'song_tag_id', flat=True
+			)
+		) == [other.pk]
+
+	def test_member_can_alias_tag_without_instances(self, tag_client):
+		base = TagWork.objects.create(name='free_base')
+		alias = TagWork.objects.create(name='free_alias')
+		alias.aliased_to = base
+		alias.save()
+		other = TagWork.objects.create(name='free_other')
+
+		response = tag_client.post(
+			f'/alias?into_tag={other.slug}&delete=false',
+			json=[alias.slug],
+		)
+		assert response.status_code == 200
+
+		base.refresh_from_db()
+		alias.refresh_from_db()
+		assert base.aliased_to_id == other.pk
+		assert alias.aliased_to_id == other.pk
 
 
 @pytest.mark.django_db

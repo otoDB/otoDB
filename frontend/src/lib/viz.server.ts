@@ -170,17 +170,22 @@ export const get_svg_gv = (
 	direction: 'TB' | 'LR',
 	images?: Viz.ImageSize[]
 ) => {
-	return viz.renderString(
-		{
-			nodes,
-			edges,
-			nodeAttributes: { shape: 'box', fontname: gv_font, fontsize: 9 },
-			edgeAttributes: { minlen: 2, fontname: gv_font, fontsize: 8, arrowsize: 0.7 }
-		},
-		{
-			format: 'svg_inline',
-			graphAttributes: { bgcolor: 'transparent', rankdir: direction },
-			images
-		}
+	return (
+		viz
+			.renderString(
+				{
+					nodes,
+					edges,
+					nodeAttributes: { shape: 'box', fontname: gv_font, fontsize: 9 },
+					edgeAttributes: { minlen: 2, fontname: gv_font, fontsize: 8, arrowsize: 0.7 }
+				},
+				{
+					format: 'svg_inline',
+					graphAttributes: { bgcolor: 'transparent', rankdir: direction },
+					images
+				}
+			)
+			// Make links follow SvelteKit router
+			.replaceAll('<a xlink:href=', '<a href=')
 	);
 };

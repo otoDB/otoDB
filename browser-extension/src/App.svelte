@@ -77,19 +77,7 @@
 		themeKey = themes[prefs?.THEME ?? ThemePref.Default].key;
 		localStorage.setItem(CACHE, themeKey);
 	});
-
-	// Frontend components link with site-relative paths like `/tag/foo` which
-	// would otherwise resolve to chrome-extension://.../tag/foo
-	function resolveLink(e: MouseEvent) {
-		const a = (e.target as HTMLElement | null)?.closest("a");
-		const href = a?.getAttribute("href");
-		if (!a || !href) return;
-		a.href = new URL(href, "https://otodb.net/").toString();
-		a.target = "_blank";
-	}
 </script>
-
-<svelte:window onclick={resolveLink} onauxclick={resolveLink} />
 
 <div class="text-otodb-content-primary h-full">
 	<div id="bg-marker" class="bg-otodb-bg-primary fixed inset-0 -z-10"></div>
